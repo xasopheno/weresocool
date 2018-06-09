@@ -1,9 +1,10 @@
 fn main() {
+    let sample_rate = 44_100;
     let buffer = vec![0.0, 0.5, 1.0, 0.5, 0.0, -0.5, -1.0, -0.5, 0.0, 0.0, 0.5, 1.0, 0.5, 0.0, -0.5, -1.0, -0.5, 0.0, 0.5, 1.0, 0.5, 0.0, -0.5, -1.0, -0.5, 0.0, 0.5, 1.0, 0.5, 0.0, -0.5, -1.0];
-    yin_pitch_detection(buffer);
+    yin_pitch_detection(buffer, sample_rate);
 }
 
-fn yin_pitch_detection(buffer: Vec<f32>) -> f32 {
+fn yin_pitch_detection(buffer: Vec<f32>, sample_rate: u16) -> f32 {
     let yd = yin_difference(buffer);
         println!("yin_difference: \n {:?}", yd);
         let cmnd = yin_cumulative_mean_normalized_difference(yd);
@@ -27,7 +28,7 @@ fn yin_pitch_detection(buffer: Vec<f32>) -> f32 {
         let better_tau = yin_parabolic_interpolation(cmnd, tau);
         println!("better tau after parabolic interpolation \n {:?}", better_tau);
 
-        let pitch_in_hertz = 44100.0 / better_tau;
+        let pitch_in_hertz = sample_rate as f32 / better_tau;
         println!("pitch in hertz {:?}", pitch_in_hertz);
 
         pitch_in_hertz
@@ -171,10 +172,11 @@ mod tests {
 
     #[test]
     fn  yin_end_to_end() {
+        let sample_rate = 44_100;
         let input = vec![0.0, 0.5, 1.0, 0.5, 0.0, -0.5, -1.0, -0.5, 0.0, 0.0, 0.5, 1.0, 0.5, 0.0, -0.5, -1.0, -0.5, 0.0, 0.5, 1.0, 0.5, 0.0, -0.5, -1.0, -0.5, 0.0, 0.5, 1.0, 0.5, 0.0, -0.5, -1.0];
         let expected = 4900.0;
             
-        assert_eq!(yin_pitch_detection(input), expected);
+        assert_eq!(yin_pitch_detection(input, sample_rate), expected);
     }
 }
 
