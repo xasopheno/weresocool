@@ -38,8 +38,7 @@ fn yin_difference(buffer: Vec<f32>) -> Vec<f32> {
     let mut buffer_clone = buffer.clone();
     
     let half_buffer_size = &buffer_clone.len() / 2;
-    println!("{}", half_buffer_size);
-    
+
     for tau in 0..half_buffer_size {
         for i in 0..half_buffer_size {
             let delta: f32 = buffer[i] - buffer[i + tau];
@@ -89,18 +88,9 @@ fn yin_parabolic_interpolation(buffer: Vec<f32>, tau_estimate: usize) -> f32 {
     let x0: usize;
     let x2: usize;
 
-	if tau_estimate < 1 {
-        x0 = tau_estimate;
-    } else {
-        x0 = tau_estimate - 1;
-    }
+    x0 = if tau_estimate < 1 { tau_estimate } else { tau_estimate -1 }; 
 
-    if tau_estimate + 1 < buffer.len() / 2 {
-		x2 = tau_estimate + 1;
-	} 
-	else {
-		x2 = tau_estimate;
-	}
+    x2 = if tau_estimate + 1 < buffer.len() /2 { tau_estimate + 1} else { tau_estimate };
 
     if x0 == tau_estimate {
 		if buffer[tau_estimate] <= buffer[x2] {
