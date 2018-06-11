@@ -8,13 +8,13 @@ pub fn set_elements(vec: Vec<i32>) -> Vec<i32> {
 }
 
 pub mod tests {
-    use set_elements;
+    use set_elements::set_elements;
     #[test]
     fn test_set_elements() {
         let test_case = vec![1, 1, 2, 3];
         let expected = vec![1, 2, 3];
         
-        assert_eq!(set_elements::set_elements(test_case), 
+        assert_eq!(set_elements(test_case), 
         expected);
     }
 }

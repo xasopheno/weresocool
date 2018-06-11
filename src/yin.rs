@@ -1,5 +1,5 @@
 pub fn yin_pitch_detection(buffer: Vec<f32>, sample_rate: f32, threshold: f32) -> f32 {
-    let yd = yin_difference(buffer);
+        let yd = yin_difference(buffer);
         let cmnd = yin_cumulative_mean_normalized_difference(yd);
         let yat = yin_absolute_threshold(cmnd.clone(), threshold);
         let tau: usize;
@@ -8,20 +8,20 @@ pub fn yin_pitch_detection(buffer: Vec<f32>, sample_rate: f32, threshold: f32) -
             Some(yat) => {
                 probability = 1.0 - cmnd[yat];
                 tau = yat;
-                println!("probability \n {}", probability);
+                // println!("probability \n {}", probability);
                 },
             _ => {
-                println!("{}", "Was not able to calculate absolute threshold perhaps lower the threshold. Eventually, this should be handled without panicking =)"); 
-                panic!();
+                return 0.0;
             }
         } 
         let better_tau = yin_parabolic_interpolation(cmnd, tau);
         let pitch_in_hertz = sample_rate / better_tau;
-        println!("pitch in hertz {:?}", pitch_in_hertz
-            // .floor()
-        );
 
-        pitch_in_hertz
+        if probability > 0.5 && probability < 1.0  {
+            pitch_in_hertz
+        } else {
+            0.0
+        }
 }
 
 fn yin_difference(buffer: Vec<f32>) -> Vec<f32> {

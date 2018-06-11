@@ -10,8 +10,6 @@ pub fn generate_sinewave(sample_rate: f32, buffer_size: f32, freq: f32) -> Vec<f
             .map(|sample| (*sample as f32 * factor).sin())
             .collect();
 
-        // println!(":{?}", waveform);
-
         waveform 
 }
 
@@ -29,6 +27,7 @@ fn sine_to_square(sample: f32) -> f32 {
 }
 
 pub mod tests {
+    #[allow(unused_imports)]
     use sine::generate_sinewave;
     #[test]
     fn test_sine_generator() {
