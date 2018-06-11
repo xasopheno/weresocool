@@ -4,19 +4,20 @@ mod set_elements;
 fn main() { 
     let sample_rate: f32 = 44_100.0;
     let buffer_size: f32 = 2048.0;
+    let threshold = 0.15;
     let freq: f32 = 1100.0;
+
     println!("generated freq is {}", freq);
     
     let buffer = sine::generate_sinewave(sample_rate, buffer_size, freq);
-    // println!("{:?}", buffer);
 
-    yin_pitch_detection(buffer, sample_rate);
+    yin_pitch_detection(buffer, sample_rate, threshold);
 }
 
-fn yin_pitch_detection(buffer: Vec<f32>, sample_rate: f32) -> f32 {
+fn yin_pitch_detection(buffer: Vec<f32>, sample_rate: f32, threshold: f32) -> f32 {
     let yd = yin_difference(buffer);
         let cmnd = yin_cumulative_mean_normalized_difference(yd);
-        let yat = yin_absolute_threshold(cmnd.clone());
+        let yat = yin_absolute_threshold(cmnd.clone(), threshold);
         let tau: usize;
         let probability: f32;
         match yat {
@@ -67,9 +68,7 @@ fn yin_cumulative_mean_normalized_difference(buffer: Vec<f32>) -> Vec<f32> {
     buffer_clone
 }
 
-
-fn yin_absolute_threshold(buffer: Vec<f32>) -> Option<usize> {
-    let threshold = 0.20;
+fn yin_absolute_threshold(buffer: Vec<f32>, threshold: f32) -> Option<usize> {
     let mut iter = buffer
         .iter()
         .enumerate()
@@ -143,9 +142,10 @@ mod tests {
     #[test]
     fn absolute_threshold_test() {
         let input = vec![0.0, 1.0, 1.4603175, 1.5461539, 1.6146789, 1.354515, 0.91784704, 0.4973684, 0.16494845, 0.15949367, 0.7276996, 1.4171779, 1.8125, 1.7058824, 1.214876, 0.6142668];
+        let threshold = 0.20;
         let expected = Some(9);
             
-        assert_eq!(yin_absolute_threshold(input), expected);
+        assert_eq!(yin_absolute_threshold(input, threshold), expected);
     }
 
     #[test]
@@ -160,10 +160,12 @@ mod tests {
     #[test]
     fn  yin_end_to_end() {
         let sample_rate = 44_100.00;
+        let threshold = 0.20;
+
         let input = vec![0.0, 0.5, 1.0, 0.5, 0.0, -0.5, -1.0, -0.5, 0.0, 0.0, 0.5, 1.0, 0.5, 0.0, -0.5, -1.0, -0.5, 0.0, 0.5, 1.0, 0.5, 0.0, -0.5, -1.0, -0.5, 0.0, 0.5, 1.0, 0.5, 0.0, -0.5, -1.0];
         let expected = 5182.4375;
             
-        assert_eq!(yin_pitch_detection(input, sample_rate), expected);
+        assert_eq!(yin_pitch_detection(input, sample_rate, threshold), expected);
     }
 
     use set_elements;
