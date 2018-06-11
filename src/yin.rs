@@ -1,4 +1,3 @@
-
 pub fn yin_pitch_detection(buffer: Vec<f32>, sample_rate: f32, threshold: f32) -> f32 {
     let yd = yin_difference(buffer);
         let cmnd = yin_cumulative_mean_normalized_difference(yd);
@@ -103,7 +102,7 @@ fn yin_parabolic_interpolation(buffer: Vec<f32>, tau_estimate: usize) -> f32 {
 #[cfg(test)]
 mod tests {
     use yin::*;
-    
+
     #[test]
     fn difference_test() {
         let input = vec![0.0, 0.5, 1.0, 0.5, 0.0, -0.5, -1.0, -0.5, 0.0, 0.0, 0.5, 1.0, 0.5, 0.0, -0.5, -1.0, -0.5, 0.0, 0.5, 1.0, 0.5, 0.0, -0.5, -1.0, -0.5, 0.0, 0.5, 1.0, 0.5, 0.0, -0.5, -1.0];
