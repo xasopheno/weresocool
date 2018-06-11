@@ -1,4 +1,5 @@
 mod sine;
+mod set_elements;
 
 fn main() { 
     let sample_rate: f32 = 44_100.0;
@@ -164,11 +165,21 @@ mod tests {
 
     #[test]
     fn  yin_end_to_end() {
-        let sample_rate = 44_100;
+        let sample_rate = 44_100.00;
         let input = vec![0.0, 0.5, 1.0, 0.5, 0.0, -0.5, -1.0, -0.5, 0.0, 0.0, 0.5, 1.0, 0.5, 0.0, -0.5, -1.0, -0.5, 0.0, 0.5, 1.0, 0.5, 0.0, -0.5, -1.0, -0.5, 0.0, 0.5, 1.0, 0.5, 0.0, -0.5, -1.0];
         let expected = 5182.4375;
             
         assert_eq!(yin_pitch_detection(input, sample_rate), expected);
+    }
+
+    use set_elements;
+    #[test]
+    fn test_set_elements() {
+        let test_case = vec![1, 1, 2, 3];
+        let expected = vec![1, 2, 3];
+        
+        assert_eq!(set_elements::set_elements(test_case), 
+        expected);
     }
 }
 
