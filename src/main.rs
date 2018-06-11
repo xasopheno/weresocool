@@ -15,28 +15,22 @@ fn main() {
 
 fn yin_pitch_detection(buffer: Vec<f32>, sample_rate: f32) -> f32 {
     let yd = yin_difference(buffer);
-        // println!("yin_difference: \n {:?}", yd);
         let cmnd = yin_cumulative_mean_normalized_difference(yd);
-        // println!("cum_mean_norm_difference \n {:?}", cmnd);
-        
         let yat = yin_absolute_threshold(cmnd.clone());
         let tau: usize;
         let probability: f32;
         match yat {
             Some(yat) => {
-                // println!("absolute_threshold \n {:?}", yat);
                 probability = 1.0 - cmnd[yat];
                 tau = yat;
                 println!("probability \n {}", probability);
                 },
             _ => {
-                println!("{}", "Did not work, something is broken"); 
+                println!("{}", "Was not able to calculate absolute threshold perhaps lower the threshold. Eventually, this should be handled without panicking =)"); 
                 panic!();
             }
         } 
         let better_tau = yin_parabolic_interpolation(cmnd, tau);
-        // println!("better tau after parabolic interpolation \n {:?}", better_tau);
-
         let pitch_in_hertz = sample_rate / better_tau;
         println!("pitch in hertz {:?}", pitch_in_hertz
             // .floor()
