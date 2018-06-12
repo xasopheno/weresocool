@@ -13,8 +13,7 @@ pub mod tests {
     fn test_set_elements() {
         let test_case = vec![1, 1, 2, 3];
         let expected = vec![1, 2, 3];
-        
-        assert_eq!(set_elements(test_case), 
-        expected);
+
+        assert_eq!(set_elements(test_case), expected);
     }
 }

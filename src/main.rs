@@ -1,11 +1,11 @@
-extern crate sound;
 extern crate portaudio;
-use std::thread;
+extern crate sound;
 use std::sync::mpsc::channel;
+use std::thread;
 
-use sound::{ sine, set_elements };
-use sound::yin::{ YinBuffer };
 use sound::ring_buffer::RingBuffer;
+use sound::yin::YinBuffer;
+use sound::{set_elements, sine};
 
 use portaudio as pa;
 
@@ -16,15 +16,14 @@ const THRESHOLD: f32 = 0.20;
 const CHANNELS: i32 = 1;
 const INTERLEAVED: bool = true;
 
-
-fn main() { 
+fn main() {
     // let freq: f32 = 440.0;
     // println!("generated freq is {}", freq);
     // let mut buffer = sine::generate_sinewave(SAMPLE_RATE, BUFFER_SIZE, freq);
     // println!("{}", buffer.yin_pitch_detection(SAMPLE_RATE, THRESHOLD));
-    
+
     match run() {
-        Ok(_) => {},
+        Ok(_) => {}
         e => {
             eprintln!("Failed with the following error: {:?}", e);
         }
@@ -32,7 +31,6 @@ fn main() {
 }
 
 fn run() -> Result<(), pa::Error> {
-    
     let (mut stream, rx) = setup()?;
     let mut buffer: RingBuffer<f32> = RingBuffer::<f32>::new(BUFFER_SIZE as usize);
     stream.start()?;
@@ -41,21 +39,26 @@ fn run() -> Result<(), pa::Error> {
         match rx.recv() {
             Ok(vec) => {
                 buffer.append(vec);
-                // println!("{:?}", buffer.to_vec());
-                println!("{:?}", buffer.to_vec().yin_pitch_detection(SAMPLE_RATE, THRESHOLD));
+                println!(
+                    "{:?}",
+                    buffer.to_vec().yin_pitch_detection(SAMPLE_RATE, THRESHOLD)
+                );
             }
-            _ => panic!() 
+            _ => panic!(),
         }
     }
-    
+
     stream.stop()?;
     Ok(())
 }
 
-fn setup() -> Result<(
-    portaudio::Stream<portaudio::NonBlocking, portaudio::Input<f32>>,
-    std::sync::mpsc::Receiver<Vec<f32>>
-    ), pa::Error> {
+fn setup() -> Result<
+    (
+        portaudio::Stream<portaudio::NonBlocking, portaudio::Input<f32>>,
+        std::sync::mpsc::Receiver<Vec<f32>>,
+    ),
+    pa::Error,
+> {
     let pa = pa::PortAudio::new()?;
 
     let def_input = pa.default_input_device()?;
@@ -64,14 +67,15 @@ fn setup() -> Result<(
 
     let latency = input_info.default_low_input_latency;
     let input_params = pa::StreamParameters::<f32>::new(def_input, CHANNELS, INTERLEAVED, latency);
-    
+
     let (tx, rx) = channel();
 
-    let settings = pa::InputStreamSettings::new(input_params, SAMPLE_RATE as f64, CHUNK_SIZE as u32);
+    let settings =
+        pa::InputStreamSettings::new(input_params, SAMPLE_RATE as f64, CHUNK_SIZE as u32);
     let stream = pa.open_non_blocking_stream(settings, move |args| {
         tx.send(args.buffer.to_vec()).unwrap();
-            pa::Continue
-        })?;
+        pa::Continue
+    })?;
 
     Ok((stream, rx))
 }
