@@ -8,6 +8,7 @@ pub trait YinBuffer {
     fn gain(&mut self) -> f32;
 }
 
+
 impl YinBuffer for Vec<f32> {
     fn gain(&mut self) -> f32 {
         let max: f32 = self.iter().cloned().fold(-1./0. /* -inf */, f32::max);
