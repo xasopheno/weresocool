@@ -12,6 +12,19 @@ const THRESHOLD: f32 = 0.20;
 const CHANNELS: i32 = 1;
 const INTERLEAVED: bool = true;
 
+struct AudioBuffer {
+    buffer: Vec<f32>
+}
+
+impl AudioBuffer {
+    fn write() {
+
+    }
+    fn read() {
+
+    }
+}
+
 fn main() { 
     let freq: f32 = 440.0;
     println!("generated freq is {}", freq);
@@ -48,10 +61,11 @@ fn setup() -> Result<portaudio::Stream<portaudio::NonBlocking, portaudio::Input<
 
     let settings = pa::InputStreamSettings::new(input_params, SAMPLE_RATE as f64, BUFFER_SIZE as u32);
 
-    let callback = move |pa::InputStreamCallbackArgs { buffer, .. }| {
-            println!("{:?}", buffer.to_vec().yin_pitch_detection(SAMPLE_RATE, THRESHOLD));
-            { pa::Continue }
-    };
+    Ok(pa.open_non_blocking_stream(settings, yin_callback)?)
+}
 
-    Ok(pa.open_non_blocking_stream(settings, callback)?)
+fn yin_callback(callback_args: pa::InputStreamCallbackArgs<f32> ) -> pa::stream::CallbackResult {
+    let pa::InputStreamCallbackArgs { buffer, .. } = callback_args; 
+    println!("{:?}", buffer.to_vec().yin_pitch_detection(SAMPLE_RATE, THRESHOLD));
+    pa::Continue
 }
