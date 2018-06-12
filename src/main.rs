@@ -13,10 +13,10 @@ const CHANNELS: i32 = 1;
 const INTERLEAVED: bool = true;
 
 fn main() { 
-    let _freq: f32 = 1100.0;
-    // println!("generated freq is {}", freq);
-    // let buffer = sine::generate_sinewave(SAMPLE_RATE, BUFFER_SIZE, _freq);
-    // yin::yin_pitch_detection(BUFFER, SAMPLE_RATE, THRESHOLD);
+    let freq: f32 = 440.0;
+    println!("generated freq is {}", freq);
+    let mut buffer = sine::generate_sinewave(SAMPLE_RATE, BUFFER_SIZE, freq);
+    println!("{}", yin::yin_pitch_detection(&mut buffer, SAMPLE_RATE, THRESHOLD));
 
     match run() {
         Ok(_) => {},
@@ -49,7 +49,7 @@ fn setup() -> Result<portaudio::Stream<portaudio::NonBlocking, portaudio::Input<
     let settings = pa::InputStreamSettings::new(input_params, SAMPLE_RATE as f64, BUFFER_SIZE as u32);
 
     let callback = move |pa::InputStreamCallbackArgs { buffer, .. }| {
-            println!("{:?}", yin::yin_pitch_detection(buffer.to_vec(), SAMPLE_RATE, THRESHOLD));
+            println!("{:?}", yin::yin_pitch_detection(&mut buffer.to_vec(), SAMPLE_RATE, THRESHOLD));
             { pa::Continue }
     };
 
