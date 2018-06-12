@@ -30,3 +30,17 @@ impl<T: Sized + Copy + Clone + std::default::Default> RingBuffer<T> {
         new_vec
     }   
 } 
+
+
+pub mod tests {
+    use super::*;
+    #[test]
+    fn ring_buffer() {
+        let mut rb = RingBuffer::<usize>::new(10);
+        let input = vec![1, 2, 3, 4, 5, 6, 7, 8, 9, 10];
+        let expected = vec![4, 5, 6, 7, 8, 9, 10, 11, 12, 13];
+        rb.append(input);
+        rb.append(vec![11, 12, 13]);
+        assert_eq!(rb.to_vec(), expected);
+    }
+}

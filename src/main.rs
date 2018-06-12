@@ -11,7 +11,7 @@ use portaudio as pa;
 
 const SAMPLE_RATE: f32 = 44_100.0;
 const BUFFER_SIZE: f32 = 2048.0;
-const CHUNK_SIZE: usize = 32;
+const CHUNK_SIZE: usize = 512;
 const THRESHOLD: f32 = 0.20;
 const CHANNELS: i32 = 1;
 const INTERLEAVED: bool = true;
