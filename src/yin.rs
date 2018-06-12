@@ -5,9 +5,16 @@ pub trait YinBuffer {
     fn yin_absolute_threshold(&mut self, threshold: f32) -> Option<usize>;
     fn yin_parabolic_interpolation(&mut self, tau_estimate: usize) -> f32;
     fn yin_cumulative_mean_normalized_difference(&mut self);
+    fn gain(&mut self) -> f32;
 }
 
 impl YinBuffer for Vec<f32> {
+    fn gain(&mut self) -> f32 {
+        let max: f32 = self.iter().cloned().fold(-1./0. /* -inf */, f32::max);
+        let gain = 20.0 * max.log10();
+        gain
+    }
+
     fn yin_pitch_detection(&mut self, sample_rate: f32, threshold: f32) -> f32 {
         self.yin_difference();
         self.yin_cumulative_mean_normalized_difference();
@@ -115,6 +122,16 @@ impl YinBuffer for Vec<f32> {
 #[cfg(test)]
 mod tests {
     use yin::*;
+    #[test]
+    fn gain_test() {
+        let buffer = vec![
+            0.0, 0.06279052, 0.12533323, 0.18738133, 0.2486899, 0.309017, 0.36812457, 0.4257793,
+            0.4817537, 0.53582686,
+        ];
+        let gain = buffer.gain();
+        let expected = 2.7446964;
+        assert_eq!(gain, expected);
+    }
 
     #[test]
     fn difference_test() {

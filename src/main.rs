@@ -1,7 +1,6 @@
-extern crate portaudio;
 extern crate sound;
+extern crate portaudio;
 use std::sync::mpsc::channel;
-use std::thread;
 
 use sound::ring_buffer::RingBuffer;
 use sound::yin::YinBuffer;
@@ -17,11 +16,6 @@ const CHANNELS: i32 = 1;
 const INTERLEAVED: bool = true;
 
 fn main() {
-    // let freq: f32 = 440.0;
-    // println!("generated freq is {}", freq);
-    // let mut buffer = sine::generate_sinewave(SAMPLE_RATE, BUFFER_SIZE, freq);
-    // println!("{}", buffer.yin_pitch_detection(SAMPLE_RATE, THRESHOLD));
-
     match run() {
         Ok(_) => {}
         e => {
@@ -39,10 +33,13 @@ fn run() -> Result<(), pa::Error> {
         match rx.recv() {
             Ok(vec) => {
                 buffer.append(vec);
-                println!(
-                    "{:?}",
-                    buffer.to_vec().yin_pitch_detection(SAMPLE_RATE, THRESHOLD)
-                );
+                let mut buffer_vec: Vec<f32> = buffer.to_vec();
+                if buffer_vec.gain() > -15.0 {
+                    println!(
+                        "{:?}",
+                        buffer_vec.yin_pitch_detection(SAMPLE_RATE, THRESHOLD)
+                    );
+                }
             }
             _ => panic!(),
         }
