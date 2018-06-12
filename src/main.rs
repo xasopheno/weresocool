@@ -2,7 +2,7 @@ extern crate sound;
 extern crate portaudio;
 
 use sound::{ sine, set_elements };
-use sound::yin::{ self, YinBuffer };
+use sound::yin::{ YinBuffer };
 
 use portaudio as pa;
 

@@ -108,35 +108,37 @@ mod tests {
 
     #[test]
     fn difference_test() {
-        let mut input = vec![0.0, 0.5, 1.0, 0.5, 0.0, -0.5, -1.0, -0.5, 0.0, 0.0, 0.5, 1.0, 0.5, 0.0, -0.5, -1.0, -0.5, 0.0, 0.5, 1.0, 0.5, 0.0, -0.5, -1.0, -0.5, 0.0, 0.5, 1.0, 0.5, 0.0, -0.5, -1.0];
+        let mut buffer = vec![0.0, 0.5, 1.0, 0.5, 0.0, -0.5, -1.0, -0.5, 0.0, 0.0, 0.5, 1.0, 0.5, 0.0, -0.5, -1.0, -0.5, 0.0, 0.5, 1.0, 0.5, 0.0, -0.5, -1.0, -0.5, 0.0, 0.5, 1.0, 0.5, 0.0, -0.5, -1.0];
         let expected = vec![0.0, 4.25, 11.5, 16.75, 22.0, 20.25, 13.5, 6.75, 2.0, 1.75, 7.75, 15.75, 21.75, 21.75, 15.75, 7.75];
-        input.yin_difference();  
-        assert_eq!(input, expected);
+        buffer.yin_difference();  
+        assert_eq!(buffer, expected);
     }
     
     #[test]
     fn cumulative_mean_normalized_difference_test() {
-        let mut input = vec![0.0, 4.25, 11.5, 16.75, 22.0, 20.25, 13.5, 6.75, 2.0, 1.75, 7.75, 15.75, 21.75, 21.75, 15.75, 7.75];
+        let mut buffer = vec![0.0, 4.25, 11.5, 16.75, 22.0, 20.25, 13.5, 6.75, 2.0, 1.75, 7.75, 15.75, 21.75, 21.75, 15.75, 7.75];
         let expected = [0.0, 1.0, 1.4603175, 1.5461539, 1.6146789, 1.354515, 0.91784704, 0.4973684, 0.16494845, 0.15949367, 0.7276996, 1.4171779, 1.8125, 1.7058824, 1.214876, 0.6142668];
-        input.yin_cumulative_mean_normalized_difference();
-        assert_eq!(input, expected);
+        buffer.yin_cumulative_mean_normalized_difference();
+        assert_eq!(buffer, expected);
     }
     
     #[test]
     fn absolute_threshold_test() {
-        let mut input = vec![0.0, 1.0, 1.4603175, 1.5461539, 1.6146789, 1.354515, 0.91784704, 0.4973684, 0.16494845, 0.15949367, 0.7276996, 1.4171779, 1.8125, 1.7058824, 1.214876, 0.614266];
+        let mut buffer = 
+            vec![0.0, 1.0, 1.4603175, 1.5461539, 1.6146789, 1.354515, 0.91784704, 0.4973684, 0.16494845, 0.15949367, 0.7276996, 1.4171779, 1.8125, 1.7058824, 1.214876, 0.614266];
         let threshold = 0.20;
         let expected = Some(9);
-        assert_eq!(input.yin_absolute_threshold(threshold), expected);
+        assert_eq!(buffer.yin_absolute_threshold(threshold), expected);
     }
 
     #[test]
     fn  parabolic_interpolation_test() {
-        let mut input = vec![0.0, 1.0, 1.4603175, 1.5461539, 1.6146789, 1.354515, 0.91784704, 0.4973684, 0.16494845, 0.15949367, 0.7276996, 1.4171779, 1.8125, 1.7058824, 1.214876, 0.6142668];
+        let mut buffer = 
+            vec![0.0, 1.0, 1.4603175, 1.5461539, 1.6146789, 1.354515, 0.91784704, 0.4973684, 0.16494845, 0.15949367, 0.7276996, 1.4171779, 1.8125, 1.7058824, 1.214876, 0.6142668];
         let tau_estimate = 9;
         let expected = 8.509509;
             
-        assert_eq!(input.yin_parabolic_interpolation(tau_estimate), expected);
+        assert_eq!(buffer.yin_parabolic_interpolation(tau_estimate), expected);
     }
 
     #[test]
@@ -144,9 +146,10 @@ mod tests {
         let sample_rate = 44_100.00;
         let threshold = 0.20;
 
-        let mut input = vec![0.0, 0.5, 1.0, 0.5, 0.0, -0.5, -1.0, -0.5, 0.0, 0.0, 0.5, 1.0, 0.5, 0.0, -0.5, -1.0, -0.5, 0.0, 0.5, 1.0, 0.5, 0.0, -0.5, -1.0, -0.5, 0.0, 0.5, 1.0, 0.5, 0.0, -0.5, -1.0];
+        let mut buffer = 
+            vec![0.0, 0.5, 1.0, 0.5, 0.0, -0.5, -1.0, -0.5, 0.0, 0.0, 0.5, 1.0, 0.5, 0.0, -0.5, -1.0, -0.5, 0.0, 0.5, 1.0, 0.5, 0.0, -0.5, -1.0, -0.5, 0.0, 0.5, 1.0, 0.5, 0.0, -0.5, -1.0];
         let expected = 5182.4375;
             
-        assert_eq!(input.yin_pitch_detection(sample_rate, threshold), expected);
+        assert_eq!(buffer.yin_pitch_detection(sample_rate, threshold), expected);
     }
 }
