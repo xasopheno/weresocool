@@ -124,12 +124,12 @@ mod tests {
     use yin::*;
     #[test]
     fn gain_test() {
-        let buffer = vec![
+        let mut buffer = vec![
             0.0, 0.06279052, 0.12533323, 0.18738133, 0.2486899, 0.309017, 0.36812457, 0.4257793,
             0.4817537, 0.53582686,
         ];
         let gain = buffer.gain();
-        let expected = 2.7446964;
+        let expected = -5.419511;
         assert_eq!(gain, expected);
     }
 
