@@ -1,16 +1,15 @@
 use std;
 
 #[derive(Debug, Clone)]
-struct RingBuffer<T: Sized> {
+pub struct RingBuffer<T: Copy + Clone + Sized> {
     buffer: Vec<T>,
     top: usize,
 }
 
 impl<T: Sized + Copy + Clone + std::default::Default> RingBuffer<T> {
-    pub fn new<R>(capacity: usize) -> RingBuffer<R> 
-        where R: Sized + Clone + std::default::Default {
+    pub fn new(capacity: usize) -> RingBuffer<T> {
         RingBuffer {
-            buffer: vec![R::default(); capacity],
+            buffer: vec![T::default(); capacity],
             top: 0
         }
     }
