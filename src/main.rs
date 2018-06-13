@@ -29,6 +29,7 @@ fn run() -> Result<(), pa::Error> {
     let (mut stream, rx) = setup()?;
     let mut buffer: RingBuffer<f32> = RingBuffer::<f32>::new(BUFFER_SIZE as usize);
     stream.start()?;
+    let mut frequency: f32 = 0.0;
 
     while let true = stream.is_active()? {
         match rx.recv() {
@@ -36,14 +37,19 @@ fn run() -> Result<(), pa::Error> {
                     buffer.append(vec);
                     let mut buffer_vec: Vec<f32> = buffer.to_vec();
                     if buffer_vec.gain() > GAIN_THRESHOLD {
-                        println!(
-                            "{:?}",
-                            buffer_vec.yin_pitch_detection(SAMPLE_RATE, THRESHOLD).floor()
-                        );
+                        frequency =
+                            buffer_vec
+                            .yin_pitch_detection(SAMPLE_RATE, THRESHOLD)
+                            .floor();
                     }
                 }
                 _ => panic!(),
         }
+
+        if frequency > 0.0 && frequency < 2000.0 {
+            println!("{:?}", frequency);
+        }
+
     }
 
     stream.stop()?;
