@@ -53,22 +53,22 @@ fn get_input_settings(
 pub fn setup_portaudio_output(
     ref pa: &pa::PortAudio,
     ref settings: &Settings,
-) -> Result<
-    (
-        pa::Stream<pa::NonBlocking, pa::Output<f32>>,
-        std::sync::mpsc::Receiver<Vec<f32>>,
-    ),
+) -> Result<pa::Stream<pa::NonBlocking, pa::Output<f32>>,
     pa::Error,
 > {
-    let (output_callback_tx, output_callback_rx) = channel();
     let output_settings = get_output_settings(&pa, &settings)?;
 
     let output_stream = pa.open_non_blocking_stream(output_settings, move |args| {
-        output_callback_tx.send(args.buffer.to_vec()).unwrap();
+        let mut idx = 0;
+        for _ in 0..args.frames {
+            args.buffer[idx] = (idx as f32) / 20000.0;
+            idx += 1;
+        }
+        println!("{}", "writing");
         pa::Continue
     })?;
 
-    Ok((output_stream, output_callback_rx))
+    Ok(output_stream)
 }
 
 fn get_output_settings(
