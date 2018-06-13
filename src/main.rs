@@ -31,17 +31,17 @@ fn run() -> Result<(), pa::Error> {
 
     while let true = stream.is_active()? {
         match rx.recv() {
-            Ok(vec) => {
-                buffer.append(vec);
-                let mut buffer_vec: Vec<f32> = buffer.to_vec();
-                if buffer_vec.gain() > -15.0 {
-                    println!(
-                        "{:?}",
-                        buffer_vec.yin_pitch_detection(SAMPLE_RATE, THRESHOLD)
-                    );
+                Ok(vec) => {
+                    buffer.append(vec);
+                    let mut buffer_vec: Vec<f32> = buffer.to_vec();
+                    if buffer_vec.gain() > -100.0 {
+                        println!(
+                            "{:?}",
+                            buffer_vec.yin_pitch_detection(SAMPLE_RATE, THRESHOLD).floor()
+                        );
+                    }
                 }
-            }
-            _ => panic!(),
+                _ => panic!(),
         }
     }
 
@@ -56,14 +56,10 @@ fn setup() -> Result<
     ),
     pa::Error,
 > {
+
     let pa = pa::PortAudio::new()?;
 
-    let def_input = pa.default_input_device()?;
-    let input_info = pa.device_info(def_input)?;
-    println!("Default input device info: {:#?}", &input_info);
-
-    let latency = input_info.default_low_input_latency;
-    let input_params = pa::StreamParameters::<f32>::new(def_input, CHANNELS, INTERLEAVED, latency);
+    let (input_params, output_params) = setup_params(&pa)?;
 
     let (tx, rx) = channel();
 
@@ -74,5 +70,27 @@ fn setup() -> Result<
         pa::Continue
     })?;
 
-    Ok((stream, rx))
+Ok((stream, rx))
+}
+
+fn setup_params (ref pa: &pa::PortAudio) -> Result<(
+    pa::stream::Parameters<f32>,
+    pa::stream::Parameters<f32>
+    ), pa::Error> 
+{
+    let def_input = pa.default_input_device()?;
+    let input_info = pa.device_info(def_input)?;
+    println!("Default input device info: {:#?}", &input_info);
+
+    let def_output = pa.default_output_device()?;
+    let output_info = pa.device_info(def_output)?;
+    println!("Default output device info: {:#?}", &output_info);
+
+    let latency = input_info.default_low_input_latency;
+    let input_params = pa::StreamParameters::<f32>::new(def_input, CHANNELS, INTERLEAVED, latency);
+
+    let latency = output_info.default_low_output_latency;
+    let output_params = pa::StreamParameters::new(def_output, CHANNELS, INTERLEAVED, latency);
+
+    Ok((input_params, output_params))
 }
