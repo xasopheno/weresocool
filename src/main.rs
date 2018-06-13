@@ -10,8 +10,9 @@ use portaudio as pa;
 
 const SAMPLE_RATE: f32 = 44_100.0;
 const BUFFER_SIZE: f32 = 2048.0;
-const CHUNK_SIZE: usize = 512;
+const CHUNK_SIZE: usize = 256;
 const THRESHOLD: f32 = 0.20;
+const GAIN_THRESHOLD: f32 = -20.0;
 const CHANNELS: i32 = 1;
 const INTERLEAVED: bool = true;
 
@@ -34,7 +35,7 @@ fn run() -> Result<(), pa::Error> {
                 Ok(vec) => {
                     buffer.append(vec);
                     let mut buffer_vec: Vec<f32> = buffer.to_vec();
-                    if buffer_vec.gain() > -100.0 {
+                    if buffer_vec.gain() > GAIN_THRESHOLD {
                         println!(
                             "{:?}",
                             buffer_vec.yin_pitch_detection(SAMPLE_RATE, THRESHOLD).floor()
