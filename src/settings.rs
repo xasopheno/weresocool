@@ -16,7 +16,7 @@ pub fn get_default_app_settings() -> &'static Settings {
         input_buffer_size: 512.0,
         output_buffer_size: 512.0,
         threshold: 0.20,
-        gain_threshold: -100.0,
+        gain_threshold: -15.0,
         channels: 1,
         interleaved: true,
     }

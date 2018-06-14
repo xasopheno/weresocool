@@ -1,13 +1,13 @@
 use std;
 
 pub fn generate_sinewave(
-    freq: &mut f32,
+    freq: f32,
     phase: f32,
     buffer_size: usize,
     sample_rate: f32,
 ) -> Vec<f32> {
     let tau: f32 = std::f32::consts::PI * 2.0;
-    let factor: f32 = *freq * tau / sample_rate;
+    let factor: f32 = freq * tau / sample_rate;
     let mut waveform: Vec<usize> = (0..buffer_size).collect();
 
     let waveform: Vec<f32> = waveform

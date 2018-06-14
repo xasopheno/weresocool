@@ -44,18 +44,22 @@ fn run() -> Result<(), pa::Error> {
     while let true = input.stream.is_active()? {
         match input.callback_rx.recv() {
             Ok(vec) => {
+                let freq = *frequency.lock().unwrap();
                 input.buffer.append(vec);
                 let mut buffer_vec: Vec<f32> = input.buffer.to_vec();
                 if buffer_vec.gain() > settings.gain_threshold {
                     *frequency.lock().unwrap() = buffer_vec
                         .yin_pitch_detection(settings.sample_rate, settings.threshold)
                         .floor() as isize;
+                } else {
+                    *frequency.lock().unwrap() = 0;
                 }
+
             }
             _ => panic!(),
         }
 
-//        let freq = *frequency.lock().unwrap();
+//        l
 //        if freq > 0 && freq < 2500 {
 //            println!("******************{:?}", freq);
 //        }

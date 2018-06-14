@@ -5,6 +5,7 @@ use settings::Settings;
 use std;
 use std::sync::mpsc::channel;
 use std::sync::{Mutex, Arc};
+use sine::generate_sinewave;
 
 
 pub fn setup_portaudio_input(
@@ -62,14 +63,30 @@ pub fn setup_portaudio_output(
 
     let output_stream = pa.open_non_blocking_stream(output_settings, move |args| {
         let mut idx = 0;
-        for _ in 0..args.frames {
-            //            let mut rng = rand::thread_rng();
-            //            args.buffer[idx] = rng.gen_range(-1.0, 1.0);
-            args.buffer[idx] = 0.0;
+        let frequency = *frequency.lock().unwrap();
+        if frequency < 2500 {
+        let waveform =
+            generate_sinewave(
+                frequency as f32,
+                0.0,
+                512.0 as usize,
+                44100.0,
 
-            idx += 1;
+            );
+
+            for _ in 0..args.frames {
+                args.buffer[idx] = waveform[idx];
+
+                idx += 1;
+            }
+        } else {
+            for _ in 0..args.frames {
+                args.buffer[idx] = 0.0;
+
+                idx += 1;
+            }
         }
-        println!("{}", *frequency.lock().unwrap());
+        println!("{:?}", frequency);
         pa::Continue
     })?;
 
