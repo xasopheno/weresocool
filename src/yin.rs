@@ -8,18 +8,12 @@ pub trait YinBuffer {
     fn gain(&mut self) -> f32;
 }
 
-
 impl YinBuffer for Vec<f32> {
     fn gain(&mut self) -> f32 {
-        let max: f32 =
-            self
-                .iter()
-                .cloned()
-                .fold(-1./0. /* -inf */, f32::max);
+        let max: f32 = self.iter().cloned().fold(-1. / 0. /* -inf */, f32::max);
 
         20.0 * max.log10()
     }
-
 
     fn yin_pitch_detection(&mut self, sample_rate: f32, threshold: f32) -> f32 {
         self.yin_difference();
@@ -69,7 +63,8 @@ impl YinBuffer for Vec<f32> {
     }
 
     fn yin_absolute_threshold(&mut self, threshold: f32) -> Option<usize> {
-        let mut iter = self.iter()
+        let mut iter = self
+            .iter()
             .enumerate()
             .skip(2)
             .skip_while(|(_, &sample)| sample > threshold);

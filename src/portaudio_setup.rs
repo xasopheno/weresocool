@@ -1,9 +1,11 @@
 extern crate rand;
+use input_output_setup::Oscillator;
 use portaudio as pa;
 use settings::Settings;
 use std;
 use std::sync::mpsc::channel;
-use portaudio_setup::rand::Rng;
+use std::sync::{Mutex, Arc};
+
 
 pub fn setup_portaudio_input(
     ref pa: &pa::PortAudio,
@@ -54,26 +56,27 @@ fn get_input_settings(
 pub fn setup_portaudio_output(
     ref pa: &pa::PortAudio,
     ref settings: &Settings,
-) -> Result<pa::Stream<pa::NonBlocking, pa::Output<f32>>,
-    pa::Error,
-> {
+    frequency: Arc<std::sync::Mutex<isize>>,
+) -> Result<pa::Stream<pa::NonBlocking, pa::Output<f32>>, pa::Error> {
     let output_settings = get_output_settings(&pa, &settings)?;
 
     let output_stream = pa.open_non_blocking_stream(output_settings, move |args| {
         let mut idx = 0;
         for _ in 0..args.frames {
-            let mut rng = rand::thread_rng();
-            args.buffer[idx] = rng.gen_range(-1.0, 1.0);
+            //            let mut rng = rand::thread_rng();
+            //            args.buffer[idx] = rng.gen_range(-1.0, 1.0);
+            args.buffer[idx] = 0.0;
+
             idx += 1;
         }
-//        println!("{}", "writing");
+        println!("{}", *frequency.lock().unwrap());
         pa::Continue
     })?;
 
     Ok(output_stream)
 }
 
-fn get_output_settings(
+pub fn get_output_settings(
     ref pa: &pa::PortAudio,
     ref settings: &Settings,
 ) -> Result<pa::stream::OutputSettings<f32>, pa::Error> {

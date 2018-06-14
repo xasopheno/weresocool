@@ -1,16 +1,19 @@
 use std;
 
-pub fn generate_sinewave(freq: f32, phase: f32, buffer_size: usize, sample_rate: f32) -> Vec<f32> {
+pub fn generate_sinewave(
+    freq: &mut f32,
+    phase: f32,
+    buffer_size: usize,
+    sample_rate: f32,
+) -> Vec<f32> {
     let tau: f32 = std::f32::consts::PI * 2.0;
-    let factor: f32 = freq * tau / sample_rate;
+    let factor: f32 = *freq * tau / sample_rate;
     let mut waveform: Vec<usize> = (0..buffer_size).collect();
 
     let waveform: Vec<f32> = waveform
         .iter_mut()
         .map(|sample| (*sample as f32 * factor).sin())
         .collect();
-
-    // println!(":{?}", waveform);
 
     waveform
 }
@@ -36,7 +39,7 @@ pub mod tests {
             0.0, 0.06279052, 0.12533323, 0.18738133, 0.2486899, 0.309017, 0.36812457, 0.4257793,
             0.4817537, 0.53582686,
         ];
-        let result: Vec<f32> = generate_sinewave(441.0,0.0,10,44100.0);
+        let result: Vec<f32> = generate_sinewave(441.0, 0.0, 10, 44100.0);
         assert_eq!(result, expected);
     }
 }

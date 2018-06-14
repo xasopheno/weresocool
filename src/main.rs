@@ -1,10 +1,11 @@
 extern crate portaudio;
 extern crate sound;
-use sound::input_output_setup::{ prepare_input, prepare_output };
+use sound::input_output_setup::{prepare_input, Oscillator, Output};
+use sound::portaudio_setup::{get_output_settings, setup_portaudio_output};
 use sound::settings::{get_default_app_settings, Settings};
-use sound::sine;
+use sound::sine::generate_sinewave;
 use sound::yin::YinBuffer;
-
+use std::sync::{Arc, Mutex};
 use portaudio as pa;
 
 fn main() {
@@ -21,11 +22,24 @@ fn run() -> Result<(), pa::Error> {
 
     let pa = pa::PortAudio::new()?;
     let mut input = prepare_input(&pa, &settings)?;
-    let mut output = prepare_output( &pa, &settings)?;
+    let mut frequency: &mut Arc<Mutex<isize>> = &mut Arc::new(Mutex::new(42));
+
+//    let sin_osc = &mut Oscillator {
+//        frequency: &mut frequency,
+//        phase: 0.0,
+//        generator: generate_sinewave,
+//    };
+    let output_settings = get_output_settings(&pa, &settings);
+    let mut output_stream =
+        setup_portaudio_output (&pa, &settings, Arc::clone(frequency))?;
+//
+//    let mut output = Output {
+//        stream: output_stream,
+//        oscillator: sin_osc,
+//    };
 
     input.stream.start()?;
-    output.stream.start()?;
-    let mut frequency: f32 = 0.0;
+    output_stream.start()?;
 
     while let true = input.stream.is_active()? {
         match input.callback_rx.recv() {
@@ -33,20 +47,21 @@ fn run() -> Result<(), pa::Error> {
                 input.buffer.append(vec);
                 let mut buffer_vec: Vec<f32> = input.buffer.to_vec();
                 if buffer_vec.gain() > settings.gain_threshold {
-                    frequency = buffer_vec
+                    *frequency.lock().unwrap() = buffer_vec
                         .yin_pitch_detection(settings.sample_rate, settings.threshold)
-                        .floor();
+                        .floor() as isize;
                 }
             }
             _ => panic!(),
         }
 
-        if frequency > 0.0 && frequency < 2000.0 {
-            println!("{:?}", frequency);
-        }
+//        let freq = *frequency.lock().unwrap();
+//        if freq > 0 && freq < 2500 {
+//            println!("******************{:?}", freq);
+//        }
     }
 
     input.stream.stop()?;
-    output.stream.stop()?;
+    output_stream.stop()?;
     Ok(())
 }
