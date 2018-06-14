@@ -12,7 +12,13 @@ pub struct Input {
 
 pub struct Output {
     pub stream: pa::Stream<pa::stream::NonBlocking, pa::stream::Output<f32>>,
-    pub frequency: &'static f32,
+//    pub frequency: &'static f32,
+}
+
+pub struct Oscillator<'a> {
+    pub frequency: &'a f32,
+    pub phase: f32,
+    pub generator: fn(frequency: &'a f32, phase: f32, buffer_size: usize) -> Vec<f32>,
 }
 
 pub fn prepare_input(ref pa: &pa::PortAudio, ref settings: &Settings) -> Result<Input, pa::Error> {
@@ -22,7 +28,7 @@ pub fn prepare_input(ref pa: &pa::PortAudio, ref settings: &Settings) -> Result<
     let mut input_buffer: RingBuffer<f32> =
         RingBuffer::<f32>::new(settings.yin_buffer_size as usize);
 
-    let mut input = Input{
+    let input = Input{
         stream: input_stream,
         callback_rx: input_callback_rx,
         buffer: input_buffer
@@ -36,6 +42,7 @@ pub fn prepare_output(ref pa: &pa::PortAudio, ref settings: &Settings) -> Result
 
     let mut output = Output{
         stream: output_stream,
+
     };
 
     Ok(output)
