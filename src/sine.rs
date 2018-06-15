@@ -8,8 +8,10 @@ pub struct Oscillator {
 }
 
 impl Oscillator {
-    pub fn get_values(&mut self) -> (f32, f32) {
-        (self.frequency, self.phase)
+    pub fn generate(&mut self, buffer_size: usize, sample_rate: f32) -> Vec<f32> {
+        let (waveform, new_phase) = (self.generator)(self.frequency as f32, self.phase, buffer_size as usize, sample_rate);
+        self.phase = new_phase;
+        waveform
     }
 }
 
