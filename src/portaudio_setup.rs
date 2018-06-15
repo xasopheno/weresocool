@@ -1,11 +1,10 @@
 extern crate rand;
-use input_output_setup::Oscillator;
 use portaudio as pa;
 use settings::Settings;
 use sine::generate_sinewave;
 use std;
 use std::sync::mpsc::channel;
-use std::sync::{Arc, Mutex};
+use std::sync::{Arc};
 
 pub fn setup_portaudio_input(
     ref pa: &pa::PortAudio,
@@ -65,25 +64,15 @@ pub fn setup_portaudio_output(
         let mut idx = 0;
 
         let frequency = *frequency.lock().unwrap();
-//        println!("{:?}", frequency);
-//        let frequency = 440;
-        if frequency < 2500 {
-            let (waveform, new_phase) =
-                generate_sinewave(frequency as f32, phase, 512.0 as usize, 44100.0);
-                phase = new_phase;
-//              println!("{:?}, {:?}", frequency, phase);
+        println!("{:?}", frequency);
+        let (waveform, new_phase) =
+            generate_sinewave(frequency as f32, phase, 512.0 as usize, 44100.0);
+        phase = new_phase;
 
-            for _ in 0..args.frames {
-                args.buffer[idx] = waveform[idx];
+        for _ in 0..args.frames {
+            args.buffer[idx] = waveform[idx];
 
-                idx += 1;
-            }
-        } else {
-            for _ in 0..args.frames {
-                args.buffer[idx] = 0.0;
-
-                idx += 1;
-            }
+            idx += 1;
         }
 
         pa::Continue
