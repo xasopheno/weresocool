@@ -63,8 +63,7 @@ impl YinBuffer for Vec<f32> {
     }
 
     fn yin_absolute_threshold(&mut self, threshold: f32) -> Option<usize> {
-        let mut iter = self
-            .iter()
+        let mut iter = self.iter()
             .enumerate()
             .skip(2)
             .skip_while(|(_, &sample)| sample > threshold);

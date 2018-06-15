@@ -1,10 +1,10 @@
 extern crate rand;
 use portaudio as pa;
 use settings::Settings;
-use sine::generate_sinewave;
+use sine::{Oscillator};
 use std;
 use std::sync::mpsc::channel;
-use std::sync::{Arc};
+use std::sync::Arc;
 
 pub fn setup_portaudio_input(
     ref pa: &pa::PortAudio,
@@ -54,20 +54,20 @@ fn get_input_settings(
 
 pub fn setup_portaudio_output(
     ref pa: &pa::PortAudio,
-    ref settings: &Settings,
-    frequency: Arc<std::sync::Mutex<isize>>,
+    ref settings: &'static Settings,
+    oscillator: Arc<std::sync::Mutex<Oscillator>>,
 ) -> Result<pa::Stream<pa::NonBlocking, pa::Output<f32>>, pa::Error> {
-    let settings = settings.clone();
+    let settings_clone = settings.clone();
     let output_settings = get_output_settings(&pa, &settings)?;
-    let mut phase: f32 = 0.0;
     let output_stream = pa.open_non_blocking_stream(output_settings, move |args| {
         let mut idx = 0;
 
-        let frequency = *frequency.lock().unwrap();
+        let mut osc = oscillator.lock().unwrap();
+        let frequency = osc.frequency;
         println!("{:?}", frequency);
         let (waveform, new_phase) =
-            generate_sinewave(frequency as f32, phase, 512.0 as usize, 44100.0);
-        phase = new_phase;
+            (osc.generator)(frequency as f32, osc.phase, settings_clone.output_buffer_size as usize, settings_clone.sample_rate);
+        osc.phase = new_phase;
 
         for _ in 0..args.frames {
             args.buffer[idx] = waveform[idx];
