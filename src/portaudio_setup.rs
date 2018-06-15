@@ -66,7 +66,7 @@ pub fn setup_portaudio_output(
 
         let frequency = *frequency.lock().unwrap();
 //        println!("{:?}", frequency);
-        let frequency = 440;
+//        let frequency = 440;
         if frequency < 2500 {
             let (waveform, new_phase) =
                 generate_sinewave(frequency as f32, phase, 512.0 as usize, 44100.0);
