@@ -65,10 +65,7 @@ pub fn setup_portaudio_output(
         let mut osc = oscillator.lock().unwrap();
         let frequency = osc.frequency;
 //        println!("{:?}", frequency);
-        let (waveform, new_phase) =
-            (osc.generator)(frequency as f32, osc.phase, settings_clone.output_buffer_size as usize, settings_clone.sample_rate);
-
-        osc.phase = new_phase;
+        let waveform = osc.generate(settings_clone.output_buffer_size as usize, settings_clone.sample_rate);
 
         for _ in 0..args.frames {
             args.buffer[idx] = waveform[idx];

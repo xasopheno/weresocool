@@ -19,8 +19,8 @@ fn main() {
 
 fn run() -> Result<(), pa::Error> {
     let settings: &'static Settings = get_default_app_settings();
-
     let pa = pa::PortAudio::new()?;
+
     let mut input = prepare_input(&pa, &settings)?;
     let oscillator: &mut Arc<Mutex<Oscillator>> = &mut Arc::new(Mutex::new(Oscillator {
         frequency: 42.0,

@@ -22,7 +22,7 @@ pub fn generate_sinewave(
     sample_rate: f32,
 ) -> (Vec<f32>, f32) {
     let tau: f32 = std::f32::consts::PI * 2.0;
-    let freq = freq * 1.0 / 2.0;
+    let freq = freq * 5.0 / 4.0;
     let factor: f32 = freq * tau / sample_rate;
     if freq < 10.0 || freq > 2500.0 {
         return (vec![0.0; buffer_size], 0.0);
@@ -34,7 +34,7 @@ pub fn generate_sinewave(
         .map(|sample| (((*sample as f32 * factor) + phase) % tau).sin())
         .collect();
 
-    let mut new_phase = (freq as f32 * buffer_size as f32 * tau / sample_rate) + phase;
+    let mut new_phase = ( buffer_size as f32 * factor) + phase;
     new_phase %= tau;
     (waveform, new_phase)
 }
