@@ -3,8 +3,7 @@ use portaudio_setup::{setup_portaudio_input, setup_portaudio_output};
 use ring_buffer::RingBuffer;
 use settings::Settings;
 use std;
-use std::sync::atomic::{AtomicIsize};
-
+use std::sync::atomic::AtomicIsize;
 
 pub struct Input {
     pub stream: pa::Stream<pa::stream::NonBlocking, pa::stream::Input<f32>>,
@@ -25,8 +24,7 @@ pub struct Oscillator {
 }
 
 pub fn prepare_input(ref pa: &pa::PortAudio, ref settings: &Settings) -> Result<Input, pa::Error> {
-    let (input_stream, input_callback_rx) =
-        setup_portaudio_input(&pa, settings)?;
+    let (input_stream, input_callback_rx) = setup_portaudio_input(&pa, settings)?;
 
     let mut input_buffer: RingBuffer<f32> =
         RingBuffer::<f32>::new(settings.yin_buffer_size as usize);
