@@ -37,7 +37,7 @@ fn run() -> Result<(), pa::Error> {
     while let true = input.stream.is_active()? {
         match input.callback_rx.recv() {
             Ok(vec) => {
-                input.buffer.append(vec);
+                input.buffer.push_vec(vec);
                 let mut buffer_vec: Vec<f32> = input.buffer.to_vec();
                 let mut osc = oscillator.lock().unwrap();
                 println!("{:?}", osc.frequency);

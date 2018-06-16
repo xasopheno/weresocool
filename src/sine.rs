@@ -22,7 +22,6 @@ pub fn generate_sinewave(
     sample_rate: f32,
 ) -> (Vec<f32>, f32) {
     let tau: f32 = std::f32::consts::PI * 2.0;
-    let freq = freq * 5.0 / 4.0;
     let factor: f32 = freq * tau / sample_rate;
     if freq < 10.0 || freq > 2500.0 {
         return (vec![0.0; buffer_size], 0.0);
