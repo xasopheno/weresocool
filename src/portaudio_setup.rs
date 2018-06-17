@@ -1,7 +1,7 @@
 extern crate rand;
 use portaudio as pa;
 use settings::Settings;
-use sine::{Oscillator};
+use oscillator::{Oscillator};
 use std;
 use std::sync::mpsc::channel;
 use std::sync::Arc;

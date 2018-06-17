@@ -4,9 +4,13 @@ use portaudio as pa;
 use sound::input_output_setup::prepare_input;
 use sound::portaudio_setup::setup_portaudio_output;
 use sound::settings::{get_default_app_settings, Settings};
-use sound::sine::{generate_sinewave, Oscillator};
+use sound::sine::{generate_sinewave};
+use sound::oscillator::{Oscillator};
 use sound::yin::YinBuffer;
+use sound::ring_buffer::RingBuffer;
+use sound::fader::{Fader};
 use std::sync::{Arc, Mutex};
+
 
 fn main() {
     match run() {
@@ -23,9 +27,11 @@ fn run() -> Result<(), pa::Error> {
 
     let mut input = prepare_input(&pa, &settings)?;
     let oscillator: &mut Arc<Mutex<Oscillator>> = &mut Arc::new(Mutex::new(Oscillator {
-        frequency: 42.0,
+        f_buffer: RingBuffer::<f32>::new_full(10 as usize),
         phase: 0.0,
         generator: generate_sinewave,
+        fader: Fader::new(50),
+        faded_in: false,
     }));
 
     let mut output_stream =
@@ -38,15 +44,15 @@ fn run() -> Result<(), pa::Error> {
         match input.callback_rx.recv() {
             Ok(vec) => {
                 input.buffer.push_vec(vec);
-                let mut buffer_vec: Vec<f32> = input.buffer.to_vec();
                 let mut osc = oscillator.lock().unwrap();
-                println!("{:?}", osc.frequency);
+//                println!("{:?}", osc.f_buffer.current());
+                let mut buffer_vec: Vec<f32> = input.buffer.to_vec();
                 if buffer_vec.gain() > settings.gain_threshold {
-                    osc.frequency = buffer_vec
+                    osc.f_buffer.push(buffer_vec
                         .yin_pitch_detection(settings.sample_rate, settings.threshold)
-                        .floor();
+                        .floor());
                 } else {
-                    osc.frequency = 0.0;
+                    osc.f_buffer.push(0.0);
                 }
             }
             _ => panic!(),

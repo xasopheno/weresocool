@@ -13,10 +13,10 @@ pub fn get_default_app_settings() -> &'static Settings {
     &Settings {
         sample_rate: 44_100.0,
         yin_buffer_size: 2048.0,
-        input_buffer_size: 512.0,
-        output_buffer_size: 512.0,
-        threshold: 0.20,
-        gain_threshold: -20.0,
+        input_buffer_size: 1024.0,
+        output_buffer_size: 1024.0,
+        threshold: 0.40,
+        gain_threshold: -25.0,
         channels: 1,
         interleaved: true,
     }

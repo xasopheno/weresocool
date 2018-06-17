@@ -1,5 +1,5 @@
 use std;
-use std::ops::{Index};
+use std::ops::{Index, IndexMut};
 
 #[derive(Debug, Clone)]
 pub struct RingBuffer<T: Copy + Clone + Sized> {
@@ -12,7 +12,6 @@ pub struct RingBuffer<T: Copy + Clone + Sized> {
 impl<T: Sized + Copy + Clone + std::default::Default> RingBuffer<T> {
     pub fn new(capacity: usize) -> RingBuffer<T> {
         RingBuffer {
-//            buffer: vec![T::default(); capacity],
             buffer: vec![],
             head: 0,
             tail: 0,
@@ -49,24 +48,63 @@ impl<T: Sized + Copy + Clone + std::default::Default> RingBuffer<T> {
             self.tail = (self.tail + 1) % self.capacity;
         }
     }
+
+    pub fn current(&mut self) -> T
+        where
+            T: Clone + Copy,
+    {
+        self.to_vec()[self.capacity - 1]
+    }
+
+    pub fn previous(&mut self) -> T
+    where
+        T: Clone + Copy
+    {
+        self.to_vec()[self.capacity - 2]
+    }
+
     pub fn to_vec(&self) -> Vec<T> {
         if self.buffer.len() < self.capacity {
             return self.buffer.clone();
         };
         let mut new_vec = vec![T::default(); self.capacity];
-        for index in 0..self.buffer.len() {
-            let ring_buffer_index = (index + self.head) % self.capacity;
-            new_vec[index] = self.buffer[ring_buffer_index];
+        for idx in 0..self.buffer.len() {
+            let ring_buffer_index = (idx + self.head) % self.capacity;
+            new_vec[idx] = self.buffer[ring_buffer_index];
         }
         new_vec
     }
 }
+impl<T> Index<usize> for RingBuffer<T>
+    where
+        T: Clone + Copy,{
+    type Output = T;
+
+    fn index(&self, idx: usize) -> &Self::Output {
+        if self.buffer.len() < self.capacity {
+            return self.buffer.index(idx);
+        };
+        self.buffer.index((idx + self.tail) % self.capacity)
+    }
+}
+
+//impl<T> IndexMut<usize> for RingBuffer<T>
+//    where
+//        T: Clone + Copy,{
+//
+//    fn index_mut(&mut self, idx: usize) -> &mut Self::Output {
+//        if self.buffer.len() < self.capacity {
+//            return self.buffer.index_mut(idx)
+//        };
+//        self.buffer.index_mut((idx + self.tail) % self.capacity)
+//    }
+//}
 
 pub mod tests {
     use super::*;
     #[test]
     fn ring_buffer() {
-        let mut rb = RingBuffer::<usize>::new(10);
+        let mut rb = RingBuffer::<usize>::new_full(10);
         let input = vec![1, 2, 3, 4, 5, 6, 7, 8, 9, 10];
         rb.push_vec(input);
         rb.push_vec(vec![11, 12, 13]);
@@ -76,7 +114,7 @@ pub mod tests {
         assert_eq!(rb.to_vec(), expected);
     }
     #[test]
-    fn ring_buffer_vec_push_start() {
+    fn ring_buffer_push_vec_half_full() {
         let mut rb = RingBuffer::<usize>::new(10);
         let input = vec![1, 2, 3, 4, 5];
         rb.push_vec(input);
@@ -88,7 +126,7 @@ pub mod tests {
     }
 
     #[test]
-    fn ring_buffer_start() {
+    fn ring_buffer_push() {
         let capacity = 3;
         let mut rb = RingBuffer::<f32>::new(capacity);
         rb.push(440.0);
@@ -107,7 +145,36 @@ pub mod tests {
     #[test]
     fn ring_buffer_empty() {
         let capacity = 3;
-        let rb = RingBuffer::<usize>::new(capacity);
-        assert_eq!(rb.to_vec(), vec![]);
+        let rb = RingBuffer::<usize>::new_full(capacity);
+        assert_eq!(rb.to_vec(), vec![0, 0, 0]);
+    }
+
+    #[test]
+    fn ring_buffer_head() {
+        let capacity = 3;
+        let mut rb = RingBuffer::<usize>::new_full(capacity);
+        rb.push_vec(vec![1, 2, 3]);
+        assert_eq!(*rb.current(), 3);
+        assert_eq!(*rb.previous(), 2);
+        rb.push(4);
+        assert_eq!(*rb.current(), 4);
+        assert_eq!(*rb.previous(), 3);
+        rb.push_vec(vec![5,6]);
+        assert_eq!(*rb.current(), 6);
+        assert_eq!(*rb.previous(), 5);
+    }
+
+    #[test]
+    fn ring_buffer_push_again() {
+        let capacity = 3;
+        let mut rb = RingBuffer::<f32>::new_full(capacity);
+        rb.push(1.1);
+        rb.push(2.2);
+        rb.push(3.3);
+        rb.push(4.4);
+        rb.push(5.5);
+        assert_eq!(*rb.previous(), 4.4);
+        assert_eq!(rb.to_vec(), vec![3.3, 4.4, 5.5]);
+
     }
 }

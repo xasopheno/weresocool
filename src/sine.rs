@@ -1,20 +1,5 @@
 use std;
 
-pub struct Oscillator {
-    pub frequency: f32,
-    pub phase: f32,
-    pub generator:
-        fn(freq: f32, phase: f32, buffer_size: usize, sample_rate: f32) -> (Vec<f32>, f32),
-}
-
-impl Oscillator {
-    pub fn generate(&mut self, buffer_size: usize, sample_rate: f32) -> Vec<f32> {
-        let (waveform, new_phase) = (self.generator)(self.frequency as f32, self.phase, buffer_size as usize, sample_rate);
-        self.phase = new_phase;
-        waveform
-    }
-}
-
 pub fn generate_sinewave(
     freq: f32,
     phase: f32,
