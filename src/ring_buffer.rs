@@ -19,6 +19,14 @@ impl<T: Sized + Copy + Clone + std::default::Default> RingBuffer<T> {
             capacity,
         }
     }
+    pub fn new_full(capacity: usize) -> RingBuffer<T> {
+        RingBuffer {
+            buffer: vec![T::default(); capacity],
+            head: 0,
+            tail: capacity - 1,
+            capacity,
+        }
+    }
     pub fn push_vec(&mut self, values: Vec<T>)
     where
         T: Clone + Copy,
