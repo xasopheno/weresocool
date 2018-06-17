@@ -4,17 +4,18 @@ use std::ops::{Index};
 #[derive(Debug, Clone)]
 pub struct RingBuffer<T: Copy + Clone + Sized> {
     buffer: Vec<T>,
-    top: usize,
+    head: usize,
+    tail: usize,
     capacity: usize,
-    fill: usize,
 }
 
 impl<T: Sized + Copy + Clone + std::default::Default> RingBuffer<T> {
     pub fn new(capacity: usize) -> RingBuffer<T> {
         RingBuffer {
-            buffer: vec![T::default(); capacity],
-            top: 0,
-            fill: 0,
+//            buffer: vec![T::default(); capacity],
+            buffer: vec![],
+            head: 0,
+            tail: 0,
             capacity,
         }
     }
@@ -23,10 +24,7 @@ impl<T: Sized + Copy + Clone + std::default::Default> RingBuffer<T> {
         T: Clone + Copy,
     {
         for v in values.iter() {
-            self.buffer[self.top] = *v;
-            self.top += 1;
-            self.fill += 1;
-            self.top %= self.capacity;
+            self.push(*v)
         }
     }
 
@@ -34,28 +32,25 @@ impl<T: Sized + Copy + Clone + std::default::Default> RingBuffer<T> {
         where
             T: Clone + Copy,
     {
-        self.buffer[self.top] = value;
-        self.top += 1;
-        self.top %= self.capacity;
+        if self.buffer.len() < self.capacity {
+            self.buffer.push(value);
+            self.tail += 1;
+        } else {
+            self.buffer[self.head] = value;
+            self.head = (self.head + 1) % self.capacity;
+            self.tail = (self.tail + 1) % self.capacity;
+        }
     }
     pub fn to_vec(&self) -> Vec<T> {
+        if self.buffer.len() < self.capacity {
+            return self.buffer.clone();
+        };
         let mut new_vec = vec![T::default(); self.capacity];
-        let top = if self.fill < self.capacity { 0 } else { self.top };
         for index in 0..self.buffer.len() {
-            let ring_buffer_index = (index + top) % self.capacity;
+            let ring_buffer_index = (index + self.head) % self.capacity;
             new_vec[index] = self.buffer[ring_buffer_index];
         }
         new_vec
-    }
-}
-
-impl<T> Index<usize> for RingBuffer<T>
-    where T: std::marker::Copy
-{
-    type Output = T;
-
-    fn index(&self, idx: usize) -> &Self::Output {
-        self.buffer.index((idx + self.top) % self.capacity)
     }
 }
 
@@ -77,17 +72,34 @@ pub mod tests {
         let mut rb = RingBuffer::<usize>::new(10);
         let input = vec![1, 2, 3, 4, 5];
         rb.push_vec(input);
-        let expected = vec![1, 2, 3, 4, 5, 0, 0, 0, 0, 0];
+        let expected = vec![1, 2, 3, 4, 5];
+        assert_eq!(rb.to_vec(), expected);
+        rb.push(256);
+        let expected = vec![1, 2, 3, 4, 5, 256];
+        assert_eq!(rb.to_vec(), expected);
+    }
+
+    #[test]
+    fn ring_buffer_start() {
+        let capacity = 3;
+        let mut rb = RingBuffer::<f32>::new(capacity);
+        rb.push(440.0);
+        let expected = vec![440.0];
+        assert_eq!(rb.to_vec(), expected);
+        rb.push(441.0);
+        let expected = vec![440.0, 441.0];
+        assert_eq!(rb.to_vec(), expected);
+        rb.push(442.0);
+        let expected = vec![440.0, 441.0, 442.0];
+        assert_eq!(rb.to_vec(), expected);
+        rb.push(443.0);
+        let expected = vec![441.0, 442.0, 443.0];
         assert_eq!(rb.to_vec(), expected);
     }
     #[test]
-    fn ring_buffer_start() {
-        let mut rb = RingBuffer::<f32>::new(5);
-        rb.push(440.0);
-        let expected = vec![440.0, 0.0, 0.0, 0.0, 0.0];
-        assert_eq!(rb.to_vec(), expected);
-        rb.push(441.0);
-        let expected = vec![441.0, 440.0, 0.0, 0.0, 0.0];
-        assert_eq!(rb.to_vec(), expected);
+    fn ring_buffer_empty() {
+        let capacity = 3;
+        let rb = RingBuffer::<usize>::new(capacity);
+        assert_eq!(rb.to_vec(), vec![]);
     }
 }
