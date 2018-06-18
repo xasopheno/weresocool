@@ -154,14 +154,14 @@ pub mod tests {
         let capacity = 3;
         let mut rb = RingBuffer::<usize>::new_full(capacity);
         rb.push_vec(vec![1, 2, 3]);
-        assert_eq!(*rb.current(), 3);
-        assert_eq!(*rb.previous(), 2);
+        assert_eq!(rb.current(), 3);
+        assert_eq!(rb.previous(), 2);
         rb.push(4);
-        assert_eq!(*rb.current(), 4);
-        assert_eq!(*rb.previous(), 3);
+        assert_eq!(rb.current(), 4);
+        assert_eq!(rb.previous(), 3);
         rb.push_vec(vec![5,6]);
-        assert_eq!(*rb.current(), 6);
-        assert_eq!(*rb.previous(), 5);
+        assert_eq!(rb.current(), 6);
+        assert_eq!(rb.previous(), 5);
     }
 
     #[test]
@@ -173,7 +173,7 @@ pub mod tests {
         rb.push(3.3);
         rb.push(4.4);
         rb.push(5.5);
-        assert_eq!(*rb.previous(), 4.4);
+        assert_eq!(rb.previous(), 4.4);
         assert_eq!(rb.to_vec(), vec![3.3, 4.4, 5.5]);
 
     }

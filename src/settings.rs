@@ -15,8 +15,8 @@ pub fn get_default_app_settings() -> &'static Settings {
         yin_buffer_size: 2048.0,
         input_buffer_size: 1024.0,
         output_buffer_size: 1024.0,
-        threshold: 0.40,
-        gain_threshold: -25.0,
+        threshold: 0.20,
+        gain_threshold: -18.0,
         channels: 1,
         interleaved: true,
     }

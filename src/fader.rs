@@ -5,11 +5,15 @@ pub struct Fader {
 }
 
 impl Fader {
-    pub fn new(length: usize) -> Fader {
+    pub fn new(length: usize, buffer_size: usize) -> Fader {
+        let mut fade_out: Vec<f32> = generate_fade_out(length);
+        for _i in 0..(buffer_size - length + 1) {
+            fade_out.push(-0.0);
+        };
         Fader {
             length,
             fade_in: generate_fade_in(length),
-            fade_out: generate_fade_out(length)
+            fade_out
         }
     }
 }
@@ -33,9 +37,9 @@ pub mod tests {
 
     #[test]
     fn new_fader() {
-        let fader = Fader::new(10);
-        let expected_fade_in = vec![0.1, 0.11111111, 0.125, 0.14285715, 0.16666667, 0.2, 0.25, 0.33333334, 0.5, 1.0];
-        let expected_fade_out = vec![1.0, 0.5, 0.33333334, 0.25, 0.2, 0.16666667, 0.14285715, 0.125, 0.11111111, 0.1];
+        let fader = Fader::new(10, 12);
+        let expected_fade_in = [0.100000024, 0.19999999, 0.3, 0.39999998, 0.5, 0.6, 0.7, 0.8, 0.9];
+        let expected_fade_out = vec![0.9, 0.8, 0.7, 0.6, 0.5, 0.39999998, 0.3, 0.19999999, 0.100000024, 0.0, 0.0, 0.0 ];
         assert_eq!(fader.fade_in, expected_fade_in);
         assert_eq!(fader.fade_out, expected_fade_out);
     }
