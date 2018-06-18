@@ -25,9 +25,7 @@ impl Oscillator {
             }
         }
 
-        let mut print = false;
         if self.f_buffer.previous() as f32 != 0.0 && self.f_buffer.current() == 0.0 {
-            print = true;
             for (i, sample) in self.fader.fade_out.iter().enumerate() {
                 waveform[i] = waveform[i] * sample;
             }
