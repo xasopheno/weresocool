@@ -30,7 +30,7 @@ fn run() -> Result<(), pa::Error> {
         f_buffer: RingBuffer::<f32>::new_full(10 as usize),
         phase: 0.0,
         generator: generate_sinewave,
-        fader: Fader::new(500, settings.output_buffer_size as usize),
+        fader: Fader::new(1024, settings.output_buffer_size as usize),
         faded_in: false,
     }));
 

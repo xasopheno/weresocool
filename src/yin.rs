@@ -10,9 +10,11 @@ pub trait YinBuffer {
 
 impl YinBuffer for Vec<f32> {
     fn gain(&mut self) -> f32 {
-        let max: f32 = self.iter().cloned().fold(-1. / 0. /* -inf */, f32::max);
+        let max: f32 = self.iter().cloned().fold(0.0, |mut sum, x: f32 | {sum += x.powi(2); sum});;
 
-        20.0 * max.log10()
+        let gain = 10.0 * max.log10();
+        println!("{}", gain);
+        gain
     }
 
     fn yin_pitch_detection(&mut self, sample_rate: f32, threshold: f32) -> f32 {
