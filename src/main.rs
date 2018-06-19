@@ -45,12 +45,15 @@ fn run() -> Result<(), pa::Error> {
             Ok(vec) => {
                 input.buffer.push_vec(vec);
                 let mut osc = oscillator.lock().unwrap();
-//                println!("{:?}", osc.f_buffer.current());
+                println!("{:?}", osc.f_buffer.current());
                 let mut buffer_vec: Vec<f32> = input.buffer.to_vec();
                 if buffer_vec.gain() > settings.gain_threshold {
-                    osc.f_buffer.push(buffer_vec
+                    let freq =buffer_vec
                         .yin_pitch_detection(settings.sample_rate, settings.threshold)
-                        .floor());
+                        .floor();
+                    if freq < 2500.0 {
+                        osc.f_buffer.push(freq);
+                    }
                 } else {
                     osc.f_buffer.push(0.0);
                 }
