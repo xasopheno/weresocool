@@ -8,9 +8,9 @@ pub fn generate_sinewave(
 ) -> (Vec<f32>, (f32, f32, f32)) {
     let tau: f32 = std::f32::consts::PI * 2.0;
     let (phase1, phase2, phase3) = phase;
-    let factor1: f32 = freq * 7.0/2.0 * tau / sample_rate;
-    let factor2: f32 = freq * 11.0/4.0 * tau / sample_rate;
-    let factor3: f32 = freq * 1.0/2.0 * tau / sample_rate;
+    let factor1: f32 = freq * 2.0/1.0 * tau / sample_rate;
+    let factor2: f32 = freq * 3.0/2.0 * tau / sample_rate;
+    let factor3: f32 = freq * 5.0/4.0 * tau / sample_rate;
     if freq < 10.0 || freq > 2500.0 {
         return (vec![0.0; buffer_size], (0.0, 0.0, 0.0));
     }
