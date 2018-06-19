@@ -3,9 +3,9 @@ use fader::Fader;
 
 pub struct Oscillator {
     pub f_buffer: RingBuffer<f32>,
-    pub phase: f32,
+    pub phase: (f32, f32, f32),
     pub generator:
-    fn(freq: f32, phase: f32, buffer_size: usize, sample_rate: f32) -> (Vec<f32>, f32),
+    fn(freq: f32, phase: (f32, f32, f32), buffer_size: usize, sample_rate: f32) -> (Vec<f32>, (f32, f32, f32)),
     pub fader: Fader,
     pub faded_in: bool,
 }

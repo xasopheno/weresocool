@@ -2,40 +2,36 @@ use std;
 
 pub fn generate_sinewave(
     freq: f32,
-    phase: f32,
+    phase: (f32, f32, f32),
     buffer_size: usize,
     sample_rate: f32,
-) -> (Vec<f32>, f32) {
+) -> (Vec<f32>, (f32, f32, f32)) {
     let tau: f32 = std::f32::consts::PI * 2.0;
-//    let freq = freq * 3.0/2.0;
-    let factor: f32 = freq * tau / sample_rate;
-    let factor2: f32 = freq * 2.0/1.0 * tau / sample_rate;
+    let (phase1, phase2, phase3) = phase;
+    let factor1: f32 = freq * 7.0/4.0 * tau / sample_rate;
+    let factor2: f32 = freq * 11.0/4.0 * tau / sample_rate;
+    let factor3: f32 = freq * 1.0/4.0 * tau / sample_rate;
     if freq < 10.0 || freq > 2500.0 {
-        return (vec![0.0; buffer_size], 0.0);
+        return (vec![0.0; buffer_size], (0.0, 0.0, 0.0));
     }
 
     let mut waveform: Vec<usize> = (0..buffer_size).collect();
 
     let waveform: Vec<f32> = waveform
         .iter_mut()
-        .map(|sample| (
-            (
-            ((*sample as f32 * factor) + phase) % tau).sin() +
-            ((*sample as f32 * factor2) + phase) % tau).sin()
+        .map(|sample|
+            ((((*sample as f32 * factor1) + phase1) % tau).sin()) +
+            ((((*sample as f32 * factor2) + phase2) % tau).sin()) +
+            ((((*sample as f32 * factor3) + phase3) % tau).sin())
         )
         .collect();
 
-    let phase1 = (( buffer_size as f32 * factor) + phase) % tau;
-    let phase2 = (( buffer_size as f32 * factor) + phase) % tau;
-    println!("{}, {}", phase1, phase2);
+    let new_phase1 = (( buffer_size as f32 * factor1) + phase1) % tau;
+    let new_phase2 = (( buffer_size as f32 * factor2) + phase2) % tau;
+    let new_phase3 = (( buffer_size as f32 * factor3) + phase3) % tau;
+//    println!("{}, {}, {}", new_phase1, new_phase2, new_phase3);
 
-    let mut new_phase =
-        (
-            ((( buffer_size as f32 * factor) + phase) % tau ) +
-            ((( buffer_size as f32 * factor2) + phase) % tau)
-        );
-    new_phase %= tau;
-    (waveform, new_phase)
+    (waveform, (new_phase1, new_phase2, new_phase3))
 }
 
 #[allow(dead_code)]
