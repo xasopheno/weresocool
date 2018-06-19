@@ -1,19 +1,16 @@
-extern crate sound;
 extern crate portaudio;
-use std::sync::mpsc::channel;
-
-use sound::ring_buffer::RingBuffer;
-use sound::yin::YinBuffer;
-use sound::{set_elements, sine};
-
+extern crate sound;
 use portaudio as pa;
+use sound::input_output_setup::prepare_input;
+use sound::portaudio_setup::setup_portaudio_output;
+use sound::settings::{get_default_app_settings, Settings};
+use sound::sine::{generate_sinewave};
+use sound::oscillator::{Oscillator};
+use sound::yin::YinBuffer;
+use sound::ring_buffer::RingBuffer;
+use sound::fader::{Fader};
+use std::sync::{Arc, Mutex};
 
-const SAMPLE_RATE: f32 = 44_100.0;
-const BUFFER_SIZE: f32 = 2048.0;
-const CHUNK_SIZE: usize = 512;
-const THRESHOLD: f32 = 0.20;
-const CHANNELS: i32 = 1;
-const INTERLEAVED: bool = true;
 
 fn main() {
     match run() {
@@ -25,54 +22,47 @@ fn main() {
 }
 
 fn run() -> Result<(), pa::Error> {
-    let (mut stream, rx) = setup()?;
-    let mut buffer: RingBuffer<f32> = RingBuffer::<f32>::new(BUFFER_SIZE as usize);
-    stream.start()?;
+    let settings: &'static Settings = get_default_app_settings();
+    let pa = pa::PortAudio::new()?;
 
-    while let true = stream.is_active()? {
-        match rx.recv() {
+    let mut input = prepare_input(&pa, &settings)?;
+    let oscillator: &mut Arc<Mutex<Oscillator>> = &mut Arc::new(Mutex::new(Oscillator {
+        f_buffer: RingBuffer::<f32>::new_full(10 as usize),
+        phase: (0.0, 0.0, 0.0),
+        generator: generate_sinewave,
+        fader: Fader::new(256, settings.output_buffer_size as usize),
+        faded_in: false,
+    }));
+
+    let mut output_stream =
+        setup_portaudio_output(&pa, &settings, Arc::clone(oscillator))?;
+
+    input.stream.start()?;
+    output_stream.start()?;
+
+    while let true = input.stream.is_active()? {
+        match input.callback_rx.recv() {
             Ok(vec) => {
-                buffer.append(vec);
-                let mut buffer_vec: Vec<f32> = buffer.to_vec();
-                if buffer_vec.gain() > -15.0 {
-                    println!(
-                        "{:?}",
-                        buffer_vec.yin_pitch_detection(SAMPLE_RATE, THRESHOLD)
-                    );
+                input.buffer.push_vec(vec);
+                let mut osc = oscillator.lock().unwrap();
+                // println!("{:?}", osc.f_buffer.current());
+                let mut buffer_vec: Vec<f32> = input.buffer.to_vec();
+                if buffer_vec.gain() > settings.gain_threshold {
+                    let freq =buffer_vec
+                        .yin_pitch_detection(settings.sample_rate, settings.threshold)
+                        .floor();
+                    if freq < 2500.0 {
+                        osc.f_buffer.push(freq);
+                    }
+                } else {
+                    osc.f_buffer.push(0.0);
                 }
             }
             _ => panic!(),
         }
     }
 
-    stream.stop()?;
+    input.stream.stop()?;
+    output_stream.stop()?;
     Ok(())
-}
-
-fn setup() -> Result<
-    (
-        portaudio::Stream<portaudio::NonBlocking, portaudio::Input<f32>>,
-        std::sync::mpsc::Receiver<Vec<f32>>,
-    ),
-    pa::Error,
-> {
-    let pa = pa::PortAudio::new()?;
-
-    let def_input = pa.default_input_device()?;
-    let input_info = pa.device_info(def_input)?;
-    println!("Default input device info: {:#?}", &input_info);
-
-    let latency = input_info.default_low_input_latency;
-    let input_params = pa::StreamParameters::<f32>::new(def_input, CHANNELS, INTERLEAVED, latency);
-
-    let (tx, rx) = channel();
-
-    let settings =
-        pa::InputStreamSettings::new(input_params, SAMPLE_RATE as f64, CHUNK_SIZE as u32);
-    let stream = pa.open_non_blocking_stream(settings, move |args| {
-        tx.send(args.buffer.to_vec()).unwrap();
-        pa::Continue
-    })?;
-
-    Ok((stream, rx))
 }
