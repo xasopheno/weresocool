@@ -39,11 +39,13 @@ fn run() -> Result<(), pa::Error> {
         R::atio(1, 4),
     ];
 
+    let fader = Fader::new(256, 500, settings.output_buffer_size as usize);
+
     let mut input = prepare_input(&pa, &settings)?;
     let oscillator = Oscillator::new(
         10,
         ratios,
-        Fader::new(256, 500, settings.output_buffer_size as usize),
+        fader,
     );
     let oscillator_mutex: &mut Arc<Mutex<Oscillator>> = &mut Arc::new(Mutex::new(oscillator));
 
