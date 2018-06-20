@@ -3,12 +3,35 @@ use fader::Fader;
 
 pub struct Oscillator {
     pub f_buffer: RingBuffer<f32>,
-    pub phase: (f32, f32, f32),
-    pub generator:
-    fn(freq: f32, phase: (f32, f32, f32), buffer_size: usize, sample_rate: f32) -> (Vec<f32>, (f32, f32, f32)),
+    pub ratios: Vec<R>,
+    pub phases: Vec<f32>,
+    pub generator: fn(
+        freq: f32,
+        ratios: &Vec<R>,
+        phases: &Vec<f32>,
+        buffer_size: usize,
+        sample_rate: f32)
+        -> (Vec<f32>, Vec<f32>),
     pub fader: Fader,
     pub faded_in: bool,
 }
+
+#[derive(Debug)]
+pub struct R {
+    pub decimal: f32,
+    pub ratio: String
+}
+
+
+impl R {
+    pub fn new(n: usize, d: usize) -> R {
+        R {
+            decimal: n as f32 / d as f32,
+            ratio: [n.to_string(), d.to_string()].join("/")
+        }
+    }
+}
+
 
 impl Oscillator {
     pub fn generate(&mut self, buffer_size: usize, sample_rate: f32) -> Vec<f32> {
@@ -16,9 +39,9 @@ impl Oscillator {
         if self.f_buffer.previous() as f32 != 0.0 && self.f_buffer.current() == 0.0 {
             frequency = self.f_buffer.previous();
         }
-//        let mut frequency = self.f_buffer.to_vec().iter().sum::<f32>() as f32/ self.f_buffer.to_vec().len() as f32;
-        let (mut waveform, new_phase) = (self.generator)(frequency as f32, self.phase, buffer_size as usize, sample_rate);
-        let mut faded = false;
+
+        let (mut waveform, new_phases) =
+            (self.generator)(frequency as f32, &self.ratios, &self.phases, buffer_size as usize, sample_rate);
         if self.f_buffer.previous() as f32 == 0.0 && self.f_buffer.current() != 0.0 {
             for (i, sample) in self.fader.fade_in.iter().enumerate() {
                 waveform[i] = waveform[i] * sample;
@@ -30,7 +53,20 @@ impl Oscillator {
                 waveform[i] = waveform[i] * sample;
             }
         }
-        self.phase = new_phase;
+        self.phases = new_phases;
         waveform
+    }
+}
+pub mod tests {
+    use oscillator::{R};
+    #[test]
+    fn test_ratio() {
+        let r: R = R::new(3, 2);
+        let result = r.ratio;
+        let expected = "3/2";
+        assert_eq!(result, expected);
+        let result = r.decimal;
+        let expected = 1.5;
+        assert_eq!(result, expected);
     }
 }

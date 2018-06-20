@@ -5,7 +5,7 @@ use sound::input_output_setup::prepare_input;
 use sound::portaudio_setup::setup_portaudio_output;
 use sound::settings::{get_default_app_settings, Settings};
 use sound::sine::{generate_sinewave};
-use sound::oscillator::{Oscillator};
+use sound::oscillator::{Oscillator, R};
 use sound::yin::YinBuffer;
 use sound::ring_buffer::RingBuffer;
 use sound::fader::{Fader};
@@ -28,9 +28,10 @@ fn run() -> Result<(), pa::Error> {
     let mut input = prepare_input(&pa, &settings)?;
     let oscillator: &mut Arc<Mutex<Oscillator>> = &mut Arc::new(Mutex::new(Oscillator {
         f_buffer: RingBuffer::<f32>::new_full(10 as usize),
-        phase: (0.0, 0.0, 0.0),
+        phases: vec![0.0, 0.0, 0.0, 0.0],
+        ratios: vec![R::new(3,2), R::new(1,2), R::new(2,1), R::new(1,1)],
         generator: generate_sinewave,
-        fader: Fader::new(256, settings.output_buffer_size as usize),
+        fader: Fader::new(256, 500, settings.output_buffer_size as usize),
         faded_in: false,
     }));
 

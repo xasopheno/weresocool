@@ -13,7 +13,7 @@ impl YinBuffer for Vec<f32> {
         let max: f32 = self.iter().cloned().fold(0.0, |mut sum, x: f32 | {sum += x.powi(2); sum});;
 
         let gain = 20.0 * max.log10();
-       println!("{}", gain);
+//       println!("{}", gain);
         gain
     }
 
@@ -131,7 +131,7 @@ mod tests {
             0.4817537, 0.53582686,
         ];
         let gain = buffer.gain();
-        let expected = -5.419511;
+        let expected = 0.4080692;
         assert_eq!(gain, expected);
     }
 

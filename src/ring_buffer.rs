@@ -109,6 +109,7 @@ pub mod tests {
         rb.push_vec(input);
         rb.push_vec(vec![11, 12, 13]);
         let expected = vec![4, 5, 6, 7, 8, 9, 10, 11, 12, 13];
+        assert_eq!(rb.to_vec(), expected);
         rb.push_vec(vec![50]);
         let expected = vec![5, 6, 7, 8, 9, 10, 11, 12, 13, 50];
         assert_eq!(rb.to_vec(), expected);
