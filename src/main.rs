@@ -19,6 +19,7 @@ fn main() {
 }
 
 fn run() -> Result<(), pa::Error> {
+    println!("{}", "\n ***** Rust DSP ****** \n ");
     let settings: &'static Settings = get_default_app_settings();
     let pa = pa::PortAudio::new()?;
 

@@ -33,7 +33,7 @@ fn get_input_settings(
 ) -> Result<pa::stream::InputSettings<f32>, pa::Error> {
     let def_input = pa.default_input_device()?;
     let input_info = pa.device_info(def_input)?;
-    println!("Default input device info: {:#?}", &input_info);
+//    println!("Default input device info: {:#?}", &input_info);
 
     let latency = input_info.default_low_input_latency;
     let input_params = pa::StreamParameters::<f32>::new(
@@ -86,7 +86,7 @@ pub fn get_output_settings(
 ) -> Result<pa::stream::OutputSettings<f32>, pa::Error> {
     let def_output = pa.default_output_device()?;
     let output_info = pa.device_info(def_output)?;
-    println!("Default output device info: {:#?}", &output_info);
+//    println!("Default output device info: {:#?}", &output_info);
 
     let latency = output_info.default_low_output_latency;
     let output_params =

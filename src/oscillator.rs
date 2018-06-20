@@ -29,6 +29,10 @@ impl R {
 
 impl Oscillator {
     pub fn new(f_buffer_size: usize, ratios: Vec<R>, fader: Fader) -> Oscillator {
+        println!("{}", "Generated Ratios");
+        for r in ratios.iter() {
+            println!("   - {}", r.ratio);
+        }
         Oscillator {
             f_buffer: RingBuffer::<f32>::new_full(f_buffer_size as usize),
             phases: vec![0.0; ratios.len()],
