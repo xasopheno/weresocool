@@ -1,63 +1,113 @@
+use oscillator::R;
 use std;
 
-pub fn generate_sinewave(
+pub fn generate_waveform(
     freq: f32,
-    phase: (f32, f32, f32),
+    ratios: &Vec<R>,
+    phases: &Vec<f32>,
     buffer_size: usize,
     sample_rate: f32,
-) -> (Vec<f32>, (f32, f32, f32)) {
+) -> (Vec<f32>, Vec<f32>) {
     let tau: f32 = std::f32::consts::PI * 2.0;
-    let (phase1, phase2, phase3) = phase;
-    let factor1: f32 = freq * 2.0/1.0 * tau / sample_rate;
-    let factor2: f32 = freq * 3.0/2.0 * tau / sample_rate;
-    let factor3: f32 = freq * 5.0/4.0 * tau / sample_rate;
+    let factor: f32 = freq * tau / sample_rate;
     if freq < 10.0 || freq > 2500.0 {
-        return (vec![0.0; buffer_size], (0.0, 0.0, 0.0));
+        return (vec![0.0; buffer_size], vec![0.0; ratios.len()]);
     }
 
     let mut waveform: Vec<usize> = (0..buffer_size).collect();
 
     let waveform: Vec<f32> = waveform
         .iter_mut()
-        .map((|sample|
-            (
-                ((((*sample as f32 * factor1) + phase1) % tau).sin()) +
-                ((((*sample as f32 * factor2) + phase2) % tau).sin()) +
-                ((((*sample as f32 * factor3) + phase3) % tau).sin())
-            ) / 3.0)
-        )
+        .map(|sample| {
+            (generate_sample_of_compound_waveform(*sample as f32, factor, &ratios, &phases, tau))
+        })
         .collect();
 
-    let new_phase1 = (( buffer_size as f32 * factor1) + phase1) % tau;
-    let new_phase2 = (( buffer_size as f32 * factor2) + phase2) % tau;
-    let new_phase3 = (( buffer_size as f32 * factor3) + phase3) % tau;
-//    println!("{}, {}, {}", new_phase1, new_phase2, new_phase3);
+    let new_phases = generate_phase_array(factor, &ratios, &phases, tau, buffer_size);
 
-    (waveform, (new_phase1, new_phase2, new_phase3))
+    (waveform, new_phases)
 }
 
-#[allow(dead_code)]
-fn sine_to_square(sample: f32) -> f32 {
-    let result: f32;
-    if sample < 0.0 {
-        result = -1.0;
-    } else if sample > 0.0 {
-        result = 1.0;
-    } else {
-        result = 0.0;
-    }
-    result
+fn generate_sample_of_compound_waveform(
+    sample: f32,
+    factor: f32,
+    ratios: &Vec<R>,
+    phases: &Vec<f32>,
+    tau: f32,
+) -> f32 {
+    let compound_sample: f32 = ratios
+        .iter()
+        .zip(phases.iter())
+        .map(|(ref ratio, ref phase)| {
+            (generate_sample_of_individual_waveform(sample, ratio.decimal, factor, **phase, tau))
+        })
+        .sum();
+    let normalized_compound_sample = compound_sample / ratios.len() as f32;
+
+    normalized_compound_sample
+}
+
+fn generate_sample_of_individual_waveform(
+    sample: f32,
+    ratio: f32,
+    factor: f32,
+    phase: f32,
+    tau: f32,
+) -> f32 {
+    (((sample as f32 * factor * ratio) + phase) % tau).sin()
+}
+
+fn generate_phase_array(
+    factor: f32,
+    ratios: &Vec<R>,
+    phases: &Vec<f32>,
+    tau: f32,
+    buffer_size: usize,
+) -> Vec<f32> {
+    ratios
+        .iter()
+        .zip(phases.iter())
+        .map(|(ref ratio, ref phase)| {
+            calculate_individual_phase(buffer_size as f32, factor, ratio.decimal, **phase, tau)
+        })
+        .collect()
+}
+
+fn calculate_individual_phase(
+    buffer_size: f32,
+    factor: f32,
+    ratio: f32,
+    phase: f32,
+    tau: f32,
+) -> f32 {
+    ((buffer_size as f32 * factor * ratio) + phase) % tau
 }
 
 pub mod tests {
-    use sine::generate_sinewave;
+    use super::*;
+    use oscillator::R;
     #[test]
     fn test_sine_generator() {
         let expected = vec![
-            0.0, 0.06279052, 0.12533323, 0.18738133, 0.2486899, 0.309017, 0.36812457, 0.4257793,
-            0.4817537, 0.53582686,
+            0.0,
+            0.094077356,
+            0.18713482,
+            0.27816567,
+            0.3661894,
+            0.45026422,
+            0.52949953,
+            0.60306656,
+            0.6702096,
+            0.73025507,
         ];
-        let (result, _) = generate_sinewave(441.0, 0.0, 10, 44100.0);
-        assert_eq!(result, expected);
+        let (result, _) = generate_waveform(
+            441.0,
+            &vec![R::atio(2, 1), R::atio(3, 2), R::atio(1, 1)],
+            &vec![0.0, 0.0, 0.0],
+            10,
+            44100.0,
+        );
+        assert_eq!(expected, result);
     }
+
 }
