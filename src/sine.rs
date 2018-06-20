@@ -36,7 +36,7 @@ fn generate_sample_of_compound_waveform(sample: f32, factor: f32, ratios: &Vec<R
             generate_sample_of_individual_waveform(sample, ratio.decimal, factor, **phase, tau))
         )
         .sum();
-    let normalized_compound_sample = sample / ratios.len() as f32;
+    let normalized_compound_sample = compound_sample / ratios.len() as f32;
 
     normalized_compound_sample
 }
@@ -59,13 +59,16 @@ fn calculate_phase(buffer_size: f32, factor: f32, ratio: f32, phase: f32, tau: f
 
 pub mod tests {
     use sine::generate_waveform;
+    use oscillator::R;
     #[test]
     fn test_sine_generator() {
-        let expected = vec![
-            0.0, 0.06279052, 0.12533323, 0.18738133, 0.2486899, 0.309017, 0.36812457, 0.4257793,
-            0.4817537, 0.53582686,
-        ];
-        let (result, _) = generate_waveform(441.0, (0.0, 0.0, 0.0), 10, 44100.0);
-        assert_eq!(result, expected);
+        let expected = vec![0.0, 0.33333334, 0.6666667, 1.0, 1.3333334, 1.6666666, 2.0, 2.3333333, 2.6666667, 3.0];
+        let (result, _) = generate_waveform(
+            441.0,
+            &vec![R::atio(2, 1), R::atio(3, 2), R::atio(1, 1)],
+            &vec![0.0, 0.0, 0.0],
+            10,
+            44100.0);
+        assert_eq!(expected, result);
     }
 }
