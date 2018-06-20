@@ -2,7 +2,7 @@ use std;
 use oscillator::{R};
 
 
-pub fn generate_sinewave(
+pub fn generate_waveform(
     freq: f32,
     ratios: &Vec<R>,
     phases: &Vec<f32>,
@@ -20,53 +20,52 @@ pub fn generate_sinewave(
     let waveform: Vec<f32> = waveform
         .iter_mut()
         .map(|sample|
-            (apply_ratios(*sample as f32, factor, &ratios, &phases, tau))
+            (generate_sample_of_compound_waveform(*sample as f32, factor, &ratios, &phases, tau))
         )
         .collect();
 
-    let new_phases = calc_phases(factor, &ratios, &phases, tau, buffer_size);
+    let new_phases = generate_phase_array(factor, &ratios, &phases, tau, buffer_size);
 
     (waveform, new_phases)
 }
 
-fn calc_sample(sample: f32, ratio: f32, factor: f32, phase: f32, tau: f32) -> f32 {
-    let result = (((sample as f32 * factor * ratio) + phase) % tau).sin();
-    result
-
-}
-
-fn apply_ratios(sample: f32, factor: f32, ratios: &Vec<R>, phases: &Vec<f32>, tau: f32) -> f32 {
-    let mut result: f32 = ratios.iter()
+fn generate_sample_of_compound_waveform(sample: f32, factor: f32, ratios: &Vec<R>, phases: &Vec<f32>, tau: f32) -> f32 {
+    let compound_sample: f32 = ratios.iter()
         .zip(phases.iter())
         .map(|(ref ratio, ref phase)| (
-            calc_sample(sample, ratio.decimal, factor, **phase, tau))
+            generate_sample_of_individual_waveform(sample, ratio.decimal, factor, **phase, tau))
         )
         .sum();
-    result / ratios.len() as f32
+    let normalized_compound_sample = sample / ratios.len() as f32;
+
+    normalized_compound_sample
 }
 
-fn calc_phases(factor: f32, ratios:&Vec<R>, phases: &Vec<f32>, tau: f32, buffer_size: usize) -> Vec<f32> {
-    let ratios = ratios.iter()
+fn generate_sample_of_individual_waveform(sample: f32, ratio: f32, factor: f32, phase: f32, tau: f32) -> f32 {
+    (((sample as f32 * factor * ratio) + phase) % tau).sin()
+}
+
+fn generate_phase_array(factor: f32, ratios:&Vec<R>, phases: &Vec<f32>, tau: f32, buffer_size: usize) -> Vec<f32> {
+    ratios.iter()
         .zip(phases.iter())
         .map(| (ref ratio, ref phase)|
-             calc_phase(buffer_size as f32, factor, ratio.decimal,  **phase, tau))
-        .collect();
-    ratios
+             calculate_phase(buffer_size as f32, factor, ratio.decimal, **phase, tau))
+        .collect()
 }
 
-fn calc_phase(buffer_size: f32, factor: f32, ratio: f32, phase: f32, tau: f32) -> f32 {
+fn calculate_phase(buffer_size: f32, factor: f32, ratio: f32, phase: f32, tau: f32) -> f32 {
     ((buffer_size as f32 * factor * ratio) + phase) % tau
 }
 
 pub mod tests {
-    use sine::generate_sinewave;
+    use sine::generate_waveform;
     #[test]
     fn test_sine_generator() {
         let expected = vec![
             0.0, 0.06279052, 0.12533323, 0.18738133, 0.2486899, 0.309017, 0.36812457, 0.4257793,
             0.4817537, 0.53582686,
         ];
-        let (result, _) = generate_sinewave(441.0, (0.0, 0.0, 0.0), 10, 44100.0);
+        let (result, _) = generate_waveform(441.0, (0.0, 0.0, 0.0), 10, 44100.0);
         assert_eq!(result, expected);
     }
 }

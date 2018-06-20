@@ -4,7 +4,7 @@ use portaudio as pa;
 use sound::input_output_setup::prepare_input;
 use sound::portaudio_setup::setup_portaudio_output;
 use sound::settings::{get_default_app_settings, Settings};
-use sound::sine::{generate_sinewave};
+use sound::sine::{generate_waveform};
 use sound::oscillator::{Oscillator, R};
 use sound::yin::YinBuffer;
 use sound::ring_buffer::RingBuffer;
@@ -45,7 +45,7 @@ fn run() -> Result<(), pa::Error> {
             R::atio(1, 2),
             R::atio(1, 4),
         ],
-        generator: generate_sinewave,
+        generator: generate_waveform,
         fader: Fader::new(256, 500, settings.output_buffer_size as usize),
         faded_in: false,
     }));
