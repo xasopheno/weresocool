@@ -43,15 +43,10 @@ fn run() -> Result<(), pa::Error> {
     let fader = Fader::new(256, 500, settings.output_buffer_size as usize);
 
     let mut input = prepare_input(&pa, &settings)?;
-    let oscillator = Oscillator::new(
-        10,
-        ratios,
-        fader,
-    );
+    let oscillator = Oscillator::new(10, ratios, fader);
     let oscillator_mutex: &mut Arc<Mutex<Oscillator>> = &mut Arc::new(Mutex::new(oscillator));
 
-    let mut output_stream =
-        setup_portaudio_output(&pa, &settings, Arc::clone(oscillator_mutex))?;
+    let mut output_stream = setup_portaudio_output(&pa, &settings, Arc::clone(oscillator_mutex))?;
 
     input.stream.start()?;
     output_stream.start()?;
