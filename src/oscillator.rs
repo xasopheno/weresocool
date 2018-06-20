@@ -24,7 +24,7 @@ pub struct R {
 
 
 impl R {
-    pub fn new(n: usize, d: usize) -> R {
+    pub fn atio(n: usize, d: usize) -> R {
         R {
             decimal: n as f32 / d as f32,
             ratio: [n.to_string(), d.to_string()].join("/")
@@ -61,7 +61,7 @@ pub mod tests {
     use oscillator::{R};
     #[test]
     fn test_ratio() {
-        let r: R = R::new(3, 2);
+        let r: R = R::atio(3, 2);
         let result = r.ratio;
         let expected = "3/2";
         assert_eq!(result, expected);
