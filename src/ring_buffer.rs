@@ -36,8 +36,8 @@ impl<T: Sized + Copy + Clone + std::default::Default> RingBuffer<T> {
     }
 
     pub fn push(&mut self, value: T)
-        where
-            T: Clone + Copy,
+    where
+        T: Clone + Copy,
     {
         if self.buffer.len() < self.capacity {
             self.buffer.push(value);
@@ -50,15 +50,15 @@ impl<T: Sized + Copy + Clone + std::default::Default> RingBuffer<T> {
     }
 
     pub fn current(&mut self) -> T
-        where
-            T: Clone + Copy,
+    where
+        T: Clone + Copy,
     {
         self.to_vec()[self.capacity - 1]
     }
 
     pub fn previous(&mut self) -> T
     where
-        T: Clone + Copy
+        T: Clone + Copy,
     {
         self.to_vec()[self.capacity - 2]
     }
@@ -76,8 +76,9 @@ impl<T: Sized + Copy + Clone + std::default::Default> RingBuffer<T> {
     }
 }
 impl<T> Index<usize> for RingBuffer<T>
-    where
-        T: Clone + Copy,{
+where
+    T: Clone + Copy,
+{
     type Output = T;
 
     fn index(&self, idx: usize) -> &Self::Output {
@@ -160,7 +161,7 @@ pub mod tests {
         rb.push(4);
         assert_eq!(rb.current(), 4);
         assert_eq!(rb.previous(), 3);
-        rb.push_vec(vec![5,6]);
+        rb.push_vec(vec![5, 6]);
         assert_eq!(rb.current(), 6);
         assert_eq!(rb.previous(), 5);
     }
@@ -176,6 +177,5 @@ pub mod tests {
         rb.push(5.5);
         assert_eq!(rb.previous(), 4.4);
         assert_eq!(rb.to_vec(), vec![3.3, 4.4, 5.5]);
-
     }
 }

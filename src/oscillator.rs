@@ -1,47 +1,56 @@
-use ring_buffer::RingBuffer;
 use fader::Fader;
+use ring_buffer::RingBuffer;
+use sine::generate_waveform;
 
 pub struct Oscillator {
     pub f_buffer: RingBuffer<f32>,
     pub ratios: Vec<R>,
     pub phases: Vec<f32>,
-    pub generator: fn(
-        freq: f32,
-        ratios: &Vec<R>,
-        phases: &Vec<f32>,
-        buffer_size: usize,
-        sample_rate: f32)
-        -> (Vec<f32>, Vec<f32>),
+    pub generator:
+        fn(freq: f32, ratios: &Vec<R>, phases: &Vec<f32>, buffer_size: usize, sample_rate: f32)
+            -> (Vec<f32>, Vec<f32>),
     pub fader: Fader,
-    pub faded_in: bool,
 }
 
 #[derive(Debug)]
 pub struct R {
     pub decimal: f32,
-    pub ratio: String
+    pub ratio: String,
 }
-
 
 impl R {
     pub fn atio(n: usize, d: usize) -> R {
         R {
             decimal: n as f32 / d as f32,
-            ratio: [n.to_string(), d.to_string()].join("/")
+            ratio: [n.to_string(), d.to_string()].join("/"),
         }
     }
 }
 
-
 impl Oscillator {
+    pub fn new(f_buffer_size: usize, ratios: Vec<R>, fader: Fader) -> Oscillator {
+        Oscillator {
+            f_buffer: RingBuffer::<f32>::new_full(f_buffer_size as usize),
+            phases: vec![0.0; ratios.len()],
+            ratios,
+            generator: generate_waveform,
+            fader,
+        }
+    }
+
     pub fn generate(&mut self, buffer_size: usize, sample_rate: f32) -> Vec<f32> {
         let mut frequency = self.f_buffer.current();
         if self.f_buffer.previous() as f32 != 0.0 && self.f_buffer.current() == 0.0 {
             frequency = self.f_buffer.previous();
         }
 
-        let (mut waveform, new_phases) =
-            (self.generator)(frequency as f32, &self.ratios, &self.phases, buffer_size as usize, sample_rate);
+        let (mut waveform, new_phases) = (self.generator)(
+            frequency as f32,
+            &self.ratios,
+            &self.phases,
+            buffer_size as usize,
+            sample_rate,
+        );
         if self.f_buffer.previous() as f32 == 0.0 && self.f_buffer.current() != 0.0 {
             for (i, sample) in self.fader.fade_in.iter().enumerate() {
                 waveform[i] = waveform[i] * sample;
@@ -58,7 +67,7 @@ impl Oscillator {
     }
 }
 pub mod tests {
-    use oscillator::{R};
+    use oscillator::R;
     #[test]
     fn test_ratio() {
         let r: R = R::atio(3, 2);

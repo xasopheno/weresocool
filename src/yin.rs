@@ -10,10 +10,13 @@ pub trait YinBuffer {
 
 impl YinBuffer for Vec<f32> {
     fn gain(&mut self) -> f32 {
-        let max: f32 = self.iter().cloned().fold(0.0, |mut sum, x: f32 | {sum += x.powi(2); sum});;
+        let max: f32 = self.iter().cloned().fold(0.0, |mut sum, x: f32| {
+            sum += x.powi(2);
+            sum
+        });
 
         let gain = 20.0 * max.log10();
-//       println!("{}", gain);
+        //       println!("{}", gain);
         gain
     }
 
