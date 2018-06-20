@@ -67,7 +67,7 @@ impl Oscillator {
     }
 }
 pub mod tests {
-    use oscillator::R;
+    use super::*;
     #[test]
     fn test_ratio() {
         let r: R = R::atio(3, 2);

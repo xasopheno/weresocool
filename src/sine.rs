@@ -68,18 +68,18 @@ fn generate_phase_array(
         .iter()
         .zip(phases.iter())
         .map(|(ref ratio, ref phase)| {
-            calculate_phase(buffer_size as f32, factor, ratio.decimal, **phase, tau)
+            calculate_individual_phase(buffer_size as f32, factor, ratio.decimal, **phase, tau)
         })
         .collect()
 }
 
-fn calculate_phase(buffer_size: f32, factor: f32, ratio: f32, phase: f32, tau: f32) -> f32 {
+fn calculate_individual_phase(buffer_size: f32, factor: f32, ratio: f32, phase: f32, tau: f32) -> f32 {
     ((buffer_size as f32 * factor * ratio) + phase) % tau
 }
 
 pub mod tests {
     use oscillator::R;
-    use sine::generate_waveform;
+    use super::*;
     #[test]
     fn test_sine_generator() {
         let expected = vec![
