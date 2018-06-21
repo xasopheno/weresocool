@@ -11,7 +11,7 @@ pub fn generate_waveform(
 ) -> (Vec<f32>, Vec<f32>) {
     let tau: f32 = std::f32::consts::PI * 2.0;
     let factor: f32 = freq * tau / sample_rate;
-    if gain < 0.01 || freq < 10.0 || freq > 2500.0 {
+    if gain < 0.2 || freq < 10.0 {
         return (vec![0.0; buffer_size], vec![0.0; ratios.len()]);
     }
 

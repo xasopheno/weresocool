@@ -68,17 +68,21 @@ impl Oscillator {
             buffer_size as usize,
             sample_rate,
         );
-        if self.f_buffer.previous() as f32 == 0.0 && self.f_buffer.current() != 0.0 {
-            for (i, sample) in self.fader.fade_in.iter().enumerate() {
-                waveform[i] = waveform[i] * sample;
-            }
-        }
 
-        if self.f_buffer.previous() as f32 != 0.0 && self.f_buffer.current() == 0.0 {
-            for (i, sample) in self.fader.fade_out.iter().enumerate() {
-                waveform[i] = waveform[i] * sample;
-            }
-        }
+
+//
+//        if self.f_buffer.previous() as f32 == 0.0 && self.f_buffer.current() != 0.0 {
+//            for (i, sample) in self.fader.fade_in.iter().enumerate() {
+//                waveform[i] = waveform[i] * sample;
+//            }
+//        }
+//
+//        if self.f_buffer.previous() as f32 != 0.0 && self.f_buffer.current() == 0.0 {
+//            for (i, sample) in self.fader.fade_out.iter().enumerate() {
+//                waveform[i] = waveform[i] * sample;
+//            }
+//        }
+
         self.phases = new_phases;
         waveform
     }

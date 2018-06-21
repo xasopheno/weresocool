@@ -57,7 +57,6 @@ fn run() -> Result<(), pa::Error> {
             Ok(vec) => {
                 input.buffer.push_vec(vec);
                 let mut osc = oscillator_mutex.lock().unwrap();
-                // println!("{:?}", osc.f_buffer.current());
                 let mut buffer_vec: Vec<f32> = input.buffer.to_vec();
                 let gain = buffer_vec.gain();
                 let freq = buffer_vec
