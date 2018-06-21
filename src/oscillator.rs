@@ -7,9 +7,10 @@ pub struct Oscillator {
     pub ratios: Vec<R>,
     pub phases: Vec<f32>,
     pub generator:
-        fn(freq: f32, ratios: &Vec<R>, phases: &Vec<f32>, buffer_size: usize, sample_rate: f32)
+        fn(freq: f32, gain: f32, ratios: &Vec<R>, phases: &Vec<f32>, buffer_size: usize, sample_rate: f32)
             -> (Vec<f32>, Vec<f32>),
     pub fader: Fader,
+    pub gain: f32,
 }
 
 #[derive(Debug)]
@@ -39,7 +40,18 @@ impl Oscillator {
             ratios,
             generator: generate_waveform,
             fader,
+            gain: 0.0,
         }
+    }
+
+    pub fn update(&mut self, frequency: f32, gain: f32) {
+        println!("{}, {}", frequency, gain);
+        if frequency < 200.0 {
+            self.f_buffer.push(frequency);
+        } else {
+            self.f_buffer.push(0.0)
+        }
+        self.gain = gain;
     }
 
     pub fn generate(&mut self, buffer_size: usize, sample_rate: f32) -> Vec<f32> {
@@ -50,6 +62,7 @@ impl Oscillator {
 
         let (mut waveform, new_phases) = (self.generator)(
             frequency as f32,
+            self.gain,
             &self.ratios,
             &self.phases,
             buffer_size as usize,

@@ -3,6 +3,7 @@ use std;
 
 pub fn generate_waveform(
     freq: f32,
+    gain: f32,
     ratios: &Vec<R>,
     phases: &Vec<f32>,
     buffer_size: usize,
@@ -10,7 +11,7 @@ pub fn generate_waveform(
 ) -> (Vec<f32>, Vec<f32>) {
     let tau: f32 = std::f32::consts::PI * 2.0;
     let factor: f32 = freq * tau / sample_rate;
-    if freq < 10.0 || freq > 2500.0 {
+    if gain < 0.01 || freq < 10.0 || freq > 2500.0 {
         return (vec![0.0; buffer_size], vec![0.0; ratios.len()]);
     }
 
@@ -19,7 +20,7 @@ pub fn generate_waveform(
     let waveform: Vec<f32> = waveform
         .iter_mut()
         .map(|sample| {
-            (generate_sample_of_compound_waveform(*sample as f32, factor, &ratios, &phases, tau))
+            (generate_sample_of_compound_waveform(*sample as f32, factor, &ratios, &phases, tau) * gain)
         })
         .collect();
 

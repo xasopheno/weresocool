@@ -24,6 +24,7 @@ fn run() -> Result<(), pa::Error> {
     let pa = pa::PortAudio::new()?;
 
     let ratios = vec![
+        R::atio(8, 1),
         R::atio(15, 4),
         R::atio(11, 4),
         R::atio(7, 1),
@@ -58,16 +59,11 @@ fn run() -> Result<(), pa::Error> {
                 let mut osc = oscillator_mutex.lock().unwrap();
                 // println!("{:?}", osc.f_buffer.current());
                 let mut buffer_vec: Vec<f32> = input.buffer.to_vec();
-                if buffer_vec.gain() > settings.gain_threshold {
-                    let freq = buffer_vec
-                        .yin_pitch_detection(settings.sample_rate, settings.threshold)
-                        .floor();
-                    if freq < 2500.0 {
-                        osc.f_buffer.push(freq);
-                    }
-                } else {
-                    osc.f_buffer.push(0.0);
-                }
+                let gain = buffer_vec.gain();
+                let freq = buffer_vec
+                    .yin_pitch_detection(settings.sample_rate, settings.threshold)
+                    .floor();
+                osc.update(freq, gain);
             }
             _ => panic!(),
         }
