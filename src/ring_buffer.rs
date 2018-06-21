@@ -51,16 +51,16 @@ impl<T: Sized + Copy + Clone + std::default::Default> RingBuffer<T> {
 
     pub fn current(&mut self) -> T
     where
-        T: Clone + Copy,
+        T: Clone + Copy
     {
-        self.to_vec()[self.capacity - 1]
+        self.buffer[self.tail]
     }
 
     pub fn previous(&mut self) -> T
     where
-        T: Clone + Copy,
+        T: Clone + Copy
     {
-        self.to_vec()[self.capacity - 2]
+        self.buffer[(self.tail + 2) % self.capacity]
     }
 
     pub fn to_vec(&self) -> Vec<T> {
@@ -75,31 +75,6 @@ impl<T: Sized + Copy + Clone + std::default::Default> RingBuffer<T> {
         new_vec
     }
 }
-impl<T> Index<usize> for RingBuffer<T>
-where
-    T: Clone + Copy,
-{
-    type Output = T;
-
-    fn index(&self, idx: usize) -> &Self::Output {
-        if self.buffer.len() < self.capacity {
-            return self.buffer.index(idx);
-        };
-        self.buffer.index((idx + self.tail) % self.capacity)
-    }
-}
-
-//impl<T> IndexMut<usize> for RingBuffer<T>
-//    where
-//        T: Clone + Copy,{
-//
-//    fn index_mut(&mut self, idx: usize) -> &mut Self::Output {
-//        if self.buffer.len() < self.capacity {
-//            return self.buffer.index_mut(idx)
-//        };
-//        self.buffer.index_mut((idx + self.tail) % self.capacity)
-//    }
-//}
 
 pub mod tests {
     use super::*;
@@ -172,10 +147,21 @@ pub mod tests {
         let mut rb = RingBuffer::<f32>::new_full(capacity);
         rb.push(1.1);
         rb.push(2.2);
+        assert_eq!(rb.previous(), 1.1);
         rb.push(3.3);
+        assert_eq!(rb.previous(), 2.2);
+        assert_eq!(rb.current(), 3.3);
         rb.push(4.4);
         rb.push(5.5);
         assert_eq!(rb.previous(), 4.4);
         assert_eq!(rb.to_vec(), vec![3.3, 4.4, 5.5]);
     }
+
+//    #[test]
+//    fn ring_buffer_arg_max() {
+//        let mut rb = RingBuffer::<usize>::new_full(8);
+//        rb.push_vec(vec![0, 1, 1, 1, 1, 2, 2, 3, 4]);
+//        let expected = 1;
+//        assert_eq!(rb.arg_max(), expected);
+//    }
 }
