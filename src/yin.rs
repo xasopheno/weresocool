@@ -15,9 +15,8 @@ impl YinBuffer for Vec<f32> {
             sum
         });
 
-        let gain = 20.0 * max.log10();
-        //       println!("{}", gain);
-        gain
+        println!("{}", max.sqrt());
+        max
     }
 
     fn yin_pitch_detection(&mut self, sample_rate: f32, threshold: f32) -> f32 {
