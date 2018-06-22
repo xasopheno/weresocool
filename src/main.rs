@@ -25,6 +25,7 @@ fn run() -> Result<(), pa::Error> {
 
     let ratios = vec![
         R::atio(8, 1),
+        R::atio(4, 1),
         R::atio(15, 4),
         R::atio(11, 4),
         R::atio(7, 1),
@@ -38,10 +39,11 @@ fn run() -> Result<(), pa::Error> {
         R::atio(1, 1),
         R::atio(1, 1),
         R::atio(1, 2),
+        R::atio(1, 3),
         R::atio(1, 4),
     ];
 
-    let fader = Fader::new(256, 500, settings.output_buffer_size as usize);
+    let fader = Fader::new(500, 500, settings.output_buffer_size as usize);
 
     let mut input = prepare_input(&pa, &settings)?;
     let oscillator = Oscillator::new(10, ratios, fader);

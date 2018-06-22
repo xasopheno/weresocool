@@ -46,7 +46,7 @@ impl Oscillator {
 
     pub fn update(&mut self, frequency: f32, gain: f32) {
         println!("{}, {}", frequency, gain);
-        if frequency < 200.0 {
+        if frequency < 2500.0 {
             self.f_buffer.push(frequency);
         } else {
             self.f_buffer.push(0.0)
@@ -70,18 +70,18 @@ impl Oscillator {
         );
 
 
-//
-//        if self.f_buffer.previous() as f32 == 0.0 && self.f_buffer.current() != 0.0 {
-//            for (i, sample) in self.fader.fade_in.iter().enumerate() {
-//                waveform[i] = waveform[i] * sample;
-//            }
-//        }
-//
-//        if self.f_buffer.previous() as f32 != 0.0 && self.f_buffer.current() == 0.0 {
-//            for (i, sample) in self.fader.fade_out.iter().enumerate() {
-//                waveform[i] = waveform[i] * sample;
-//            }
-//        }
+
+        if self.f_buffer.previous() as f32 == 0.0 && self.f_buffer.current() != 0.0 {
+            for (i, sample) in self.fader.fade_in.iter().enumerate() {
+                waveform[i] = waveform[i] * sample;
+            }
+        }
+
+        if self.f_buffer.previous() as f32 != 0.0 && self.f_buffer.current() == 0.0 {
+            for (i, sample) in self.fader.fade_out.iter().enumerate() {
+                waveform[i] = waveform[i] * sample;
+            }
+        }
 
         self.phases = new_phases;
         waveform
