@@ -24,6 +24,9 @@ fn run() -> Result<(), pa::Error> {
     let pa = pa::PortAudio::new()?;
 
     let ratios = vec![
+//        R::atio(12, 1),
+        R::atio(11, 1),
+        R::atio(10, 1),
         R::atio(8, 1),
         R::atio(4, 1),
         R::atio(15, 4),

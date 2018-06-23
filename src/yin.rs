@@ -15,11 +15,12 @@ impl YinBuffer for Vec<f32> {
             sum
         });
 
-        max.sqrt() / 10.0
+        let gain = max.sqrt() / 1.0;
+        gain
     }
 
     fn yin_pitch_detection(&mut self, sample_rate: f32, threshold: f32) -> f32 {
-        for i in self.iter_mut() { *i *= 100.0; }
+        for sample in self.iter_mut() { *sample *= 100.0; }
 
         self.yin_difference();
         self.yin_cumulative_mean_normalized_difference();
