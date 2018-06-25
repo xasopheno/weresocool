@@ -24,18 +24,18 @@ pub fn generate_waveform(
         })
         .collect();
 
-    let delta: f32 = (gain.current - gain.past)/ buffer_size;
+    let delta: f32 = (gain.current - gain.past)/ buffer_size as f32;
 
-    let gain_mask: Vec<usize> = (0..buffer_size).collect();
-    let gain_mask: Vec<f32> = gain_mask
-        .iter()
-        .map(|index: usize| {*index as f32 * delta + gain.past})
+    let mut gain_mask: Vec<usize> = (0..buffer_size).collect();
+    let mut gain_mask: Vec<f32> = gain_mask
+        .iter_mut()
+        .map(|index| {(*index as f32 * delta + gain.past)})
         .collect();
 
-    waveform.iter()
+    let waveform = waveform.iter()
         .zip(gain_mask.iter())
-        .map(|ref sample, ref gain| {
-            sample * gain
+        .map(|(ref sample, ref gain)| {
+            *sample * *gain
         })
         .collect();
 

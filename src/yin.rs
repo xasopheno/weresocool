@@ -15,7 +15,7 @@ impl YinBuffer for Vec<f32> {
             sum
         });
 
-        let gain = max.sqrt() / 1.0;
+        let gain = max.sqrt() / 100.0;
         gain
     }
 
