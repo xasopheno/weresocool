@@ -1,9 +1,9 @@
-use oscillator::R;
+use oscillator::{R, Gain};
 use std;
 
 pub fn generate_waveform(
     freq: f32,
-    gain: f32,
+    gain: &Gain,
     ratios: &Vec<R>,
     phases: &Vec<f32>,
     buffer_size: usize,
@@ -20,7 +20,22 @@ pub fn generate_waveform(
     let waveform: Vec<f32> = waveform
         .iter_mut()
         .map(|sample| {
-            (generate_sample_of_compound_waveform(*sample as f32, factor, &ratios, &phases, tau) * gain)
+            (generate_sample_of_compound_waveform(*sample as f32, factor, &ratios, &phases, tau))
+        })
+        .collect();
+
+    let delta: f32 = (gain.current - gain.past)/ buffer_size;
+
+    let gain_mask: Vec<usize> = (0..buffer_size).collect();
+    let gain_mask: Vec<f32> = gain_mask
+        .iter()
+        .map(|index: usize| {*index as f32 * delta + gain.past})
+        .collect();
+
+    waveform.iter()
+        .zip(gain_mask.iter())
+        .map(|ref sample, ref gain| {
+            sample * gain
         })
         .collect();
 

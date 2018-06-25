@@ -7,10 +7,10 @@ pub struct Oscillator {
     pub ratios: Vec<R>,
     pub phases: Vec<f32>,
     pub generator:
-        fn(freq: f32, gain: f32, ratios: &Vec<R>, phases: &Vec<f32>, buffer_size: usize, sample_rate: f32)
+        fn(freq: f32, gain: &Gain, ratios: &Vec<R>, phases: &Vec<f32>, buffer_size: usize, sample_rate: f32)
             -> (Vec<f32>, Vec<f32>),
     pub fader: Fader,
-    pub gain: f32,
+    pub gain: Gain,
 }
 
 #[derive(Debug)]
@@ -28,6 +28,25 @@ impl R {
     }
 }
 
+pub struct Gain {
+    pub past: f32,
+    pub current: f32,
+}
+
+impl Gain {
+    pub fn new() -> Gain {
+        Gain {
+            past: 1.0,
+            current: 1.0,
+        }
+    }
+
+    pub fn update(&mut self, new_gain: f32) -> () {
+        self.past = self.current;
+        self.current = new_gain;
+    }
+}
+
 impl Oscillator {
     pub fn new(f_buffer_size: usize, ratios: Vec<R>, fader: Fader) -> Oscillator {
         println!("{}", "Generated Ratios");
@@ -40,18 +59,20 @@ impl Oscillator {
             ratios,
             generator: generate_waveform,
             fader,
-            gain: 0.0,
+            gain: Gain::new(),
         }
     }
 
-    pub fn update(&mut self, frequency: f32, gain: f32) {
-//        println!("{}, {}", frequency, gain);
+    pub fn update(&mut self, frequency: f32, new_gain: f32) {
+//        println!("{}, {}", frequency, new_gain);
         if frequency < 2500.0 {
             self.f_buffer.push(frequency);
         } else {
+
             self.f_buffer.push(0.0)
         }
-        self.gain = gain;
+
+        self.gain.update(new_gain);
     }
 
     pub fn generate(&mut self, buffer_size: usize, sample_rate: f32) -> Vec<f32> {
@@ -62,7 +83,7 @@ impl Oscillator {
 
         let (mut waveform, new_phases) = (self.generator)(
             frequency as f32,
-            self.gain,
+            &self.gain,
             &self.ratios,
             &self.phases,
             buffer_size as usize,
