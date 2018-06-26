@@ -7,4 +7,4 @@ pub mod ring_buffer;
 pub mod set_elements;
 pub mod settings;
 pub mod sine;
-pub mod yin;
+pub mod analyze;

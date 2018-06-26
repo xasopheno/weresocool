@@ -6,7 +6,7 @@ use sound::input_output_setup::prepare_input;
 use sound::oscillator::{Oscillator, R};
 use sound::portaudio_setup::setup_portaudio_output;
 use sound::settings::{get_default_app_settings, Settings};
-use sound::yin::YinBuffer;
+use sound::analyze::Analyze;
 use std::sync::{Arc, Mutex};
 
 fn main() {
@@ -46,10 +46,8 @@ fn run() -> Result<(), pa::Error> {
 //        R::atio(1, 4),
     ];
 
-    let fader = Fader::new(500, 500, settings.output_buffer_size as usize);
-
     let mut input = prepare_input(&pa, &settings)?;
-    let oscillator = Oscillator::new(10, ratios, fader);
+    let oscillator = Oscillator::new(10, ratios);
     let oscillator_mutex: &mut Arc<Mutex<Oscillator>> = &mut Arc::new(Mutex::new(oscillator));
 
     let mut output_stream = setup_portaudio_output(&pa, &settings, Arc::clone(oscillator_mutex))?;

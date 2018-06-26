@@ -1,14 +1,11 @@
-use fader::Fader;
 use ring_buffer::RingBuffer;
-use sine::generate_waveform;
+use sine::Generator;
 
 pub struct Oscillator {
     pub f_buffer: RingBuffer<f32>,
     pub ratios: Vec<R>,
     pub phases: Vec<f32>,
-    pub generator:
-        fn(freq: f32, gain: &Gain, ratios: &Vec<R>, phases: &Vec<f32>, buffer_size: usize, sample_rate: f32)
-            -> (Vec<f32>, Vec<f32>),
+    pub generator: Generator,
     pub gain: Gain,
 }
 
@@ -33,10 +30,10 @@ pub struct Gain {
 }
 
 impl Gain {
-    pub fn new() -> Gain {
+    pub fn new(past: f32, current: f32) -> Gain {
         Gain {
-            past: 1.0,
-            current: 1.0,
+            past,
+            current,
         }
     }
 
@@ -47,17 +44,18 @@ impl Gain {
 }
 
 impl Oscillator {
-    pub fn new(f_buffer_size: usize, ratios: Vec<R>, fader: Fader) -> Oscillator {
+    pub fn new(f_buffer_size: usize, ratios: Vec<R>) -> Oscillator {
         println!("{}", "Generated Ratios");
         for r in ratios.iter() {
             println!("   - {}", r.ratio);
         }
+
         Oscillator {
             f_buffer: RingBuffer::<f32>::new_full(f_buffer_size as usize),
             phases: vec![0.0; ratios.len()],
             ratios,
-            generator: generate_waveform,
-            gain: Gain::new(),
+            generator: Generator::new(),
+            gain: Gain::new(1.0, 1.0),
         }
     }
 
@@ -66,7 +64,6 @@ impl Oscillator {
         if frequency < 2500.0 {
             self.f_buffer.push(frequency);
         } else {
-
             self.f_buffer.push(0.0)
         }
 
@@ -79,7 +76,7 @@ impl Oscillator {
             frequency = self.f_buffer.previous();
         }
 
-        let (mut waveform, new_phases) = (self.generator)(
+        let (mut waveform, new_phases) = (self.generator.generate)(
             frequency as f32,
             &self.gain,
             &self.ratios,

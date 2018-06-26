@@ -51,14 +51,14 @@ impl<T: Sized + Copy + Clone + std::default::Default> RingBuffer<T> {
 
     pub fn current(&mut self) -> T
     where
-        T: Clone + Copy
+        T: Clone + Copy,
     {
         self.buffer[self.tail]
     }
 
     pub fn previous(&mut self) -> T
     where
-        T: Clone + Copy
+        T: Clone + Copy,
     {
         self.buffer[(self.tail + 2) % self.capacity]
     }
@@ -157,11 +157,11 @@ pub mod tests {
         assert_eq!(rb.to_vec(), vec![3.3, 4.4, 5.5]);
     }
 
-//    #[test]
-//    fn ring_buffer_arg_max() {
-//        let mut rb = RingBuffer::<usize>::new_full(8);
-//        rb.push_vec(vec![0, 1, 1, 1, 1, 2, 2, 3, 4]);
-//        let expected = 1;
-//        assert_eq!(rb.arg_max(), expected);
-//    }
+    //    #[test]
+    //    fn ring_buffer_arg_max() {
+    //        let mut rb = RingBuffer::<usize>::new_full(8);
+    //        rb.push_vec(vec![0, 1, 1, 1, 1, 2, 2, 3, 4]);
+    //        let expected = 1;
+    //        assert_eq!(rb.arg_max(), expected);
+    //    }
 }
