@@ -11,31 +11,21 @@ pub fn generate_waveform(
 ) -> (Vec<f32>, Vec<f32>) {
     let tau: f32 = std::f32::consts::PI * 2.0;
     let factor: f32 = freq * tau / sample_rate;
-//    if gain < 5.0 || freq < 10.0 {
-//        return (vec![0.0; buffer_size], vec![0.0; ratios.len()]);
-//    }
 
     let mut waveform: Vec<usize> = (0..buffer_size).collect();
+    let mut gain_mask: Vec<usize> = (0..buffer_size).collect();
+
+    let delta: f32 = (gain.current - gain.past) / buffer_size as f32;
+    let mut gain_mask: Vec<f32> = gain_mask
+        .iter_mut()
+        .map(|index| {*index as f32 * delta + gain.past})
+        .collect();
 
     let waveform: Vec<f32> = waveform
         .iter_mut()
-        .map(|sample| {
-            (generate_sample_of_compound_waveform(*sample as f32, factor, &ratios, &phases, tau))
-        })
-        .collect();
-
-    let delta: f32 = (gain.current - gain.past)/ buffer_size as f32;
-
-    let mut gain_mask: Vec<usize> = (0..buffer_size).collect();
-    let mut gain_mask: Vec<f32> = gain_mask
-        .iter_mut()
-        .map(|index| {(*index as f32 * delta + gain.past)})
-        .collect();
-
-    let waveform = waveform.iter()
         .zip(gain_mask.iter())
-        .map(|(ref sample, ref gain)| {
-            *sample * *gain
+        .map(|(sample, gain_delta)| {
+            generate_sample_of_compound_waveform(*sample as f32, factor, &ratios, &phases, tau) * *gain_delta
         })
         .collect();
 

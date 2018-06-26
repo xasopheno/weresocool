@@ -9,7 +9,6 @@ pub struct Oscillator {
     pub generator:
         fn(freq: f32, gain: &Gain, ratios: &Vec<R>, phases: &Vec<f32>, buffer_size: usize, sample_rate: f32)
             -> (Vec<f32>, Vec<f32>),
-    pub fader: Fader,
     pub gain: Gain,
 }
 
@@ -58,7 +57,6 @@ impl Oscillator {
             phases: vec![0.0; ratios.len()],
             ratios,
             generator: generate_waveform,
-            fader,
             gain: Gain::new(),
         }
     }
@@ -89,22 +87,6 @@ impl Oscillator {
             buffer_size as usize,
             sample_rate,
         );
-
-
-
-//        if self.f_buffer.previous() as f32 == 0.0 && self.f_buffer.current() != 0.0 {
-//            println!("{}", "FADE_IN");
-//            for (i, sample) in self.fader.fade_in.iter().enumerate() {
-//                waveform[i] = waveform[i] * sample;
-//            }
-//        }
-//
-//        if self.f_buffer.previous() as f32 != 0.0 && self.f_buffer.current() == 0.0 {
-//            println!("{}", "FADE_OUT");
-//            for (i, sample) in self.fader.fade_out.iter().enumerate() {
-//                waveform[i] = waveform[i] * sample;
-//            }
-//        }
 
         self.phases = new_phases;
         waveform
