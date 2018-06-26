@@ -1,3 +1,5 @@
+use std;
+
 pub trait Analyze {
     fn yin_pitch_detection(&mut self, sample_rate: f32, threshold: f32) -> f32;
     fn get_better_tau(&mut self, tau: usize, sample_rate: f32) -> f32;
@@ -6,6 +8,7 @@ pub trait Analyze {
     fn yin_parabolic_interpolation(&mut self, tau_estimate: usize) -> f32;
     fn yin_cumulative_mean_normalized_difference(&mut self);
     fn gain(&mut self) -> f32;
+    fn log_gain(&mut self) -> f32;
 }
 
 impl Analyze for Vec<f32> {
@@ -15,9 +18,22 @@ impl Analyze for Vec<f32> {
             sum
         });
 
-        let gain = max.sqrt() / 100.0;
-        gain
+        let gain = max.sqrt();
+
+       1.0 / gain
     }
+
+    fn log_gain(&mut self) -> f32 {
+        let e = std::f64::consts::E as f32;
+
+        let summation: f32 = self.iter().cloned().fold(0.0, |mut sum, x: f32| {
+            sum += e.powf(-(x * x));
+            sum
+        });
+
+        let factor = std::f64::consts::FRAC_2_SQRT_PI as f32;
+        factor * summation
+}
 
     fn yin_pitch_detection(&mut self, sample_rate: f32, threshold: f32) -> f32 {
         for sample in self.iter_mut() {
