@@ -65,7 +65,7 @@ fn run() -> Result<(), pa::Error> {
                 let (freq, probability) = buffer_vec
                     .yin_pitch_detection(settings.sample_rate, settings.threshold);
                 println!("{}, {}", freq, probability);
-                osc.update(freq, gain);
+                osc.update(freq, gain, probability);
             }
             _ => panic!(),
         }

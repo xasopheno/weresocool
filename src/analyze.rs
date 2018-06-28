@@ -12,14 +12,14 @@ pub trait Analyze {
 
 impl Analyze for Vec<f32> {
     fn gain(&mut self) -> f32 {
-        let max: f32 = self.iter().cloned().fold(0.0, |mut sum, x: f32| {
+        let mean_squared: f32 = self.iter().cloned().fold(0.0, |mut sum, x: f32| {
             sum += x.powi(2);
             sum
         });
 
-        let gain = max.sqrt() / 10.0;
-        if gain < 1.0 {
-            gain
+        let root_mean_squared = mean_squared.sqrt() / 10.0;
+        if root_mean_squared < 1.0 {
+            root_mean_squared
         } else {
             1.0
         }
