@@ -15,7 +15,7 @@ pub struct Generator {
 impl Generator {
     pub fn new() -> Generator {
         Generator {
-            generate: generate_waveform
+            generate: generate_waveform,
         }
     }
 }
@@ -37,14 +37,15 @@ pub fn generate_waveform(
     let delta: f32 = (gain.current - gain.past) / buffer_size as f32;
     let mut gain_mask: Vec<f32> = gain_mask
         .iter_mut()
-        .map(|index| {*index as f32 * delta + gain.past})
+        .map(|index| *index as f32 * delta + gain.past)
         .collect();
 
     let waveform: Vec<f32> = waveform
         .iter_mut()
         .zip(gain_mask.iter())
         .map(|(sample, gain_delta)| {
-            generate_sample_of_compound_waveform(*sample as f32, factor, &ratios, &phases, tau) * *gain_delta
+            generate_sample_of_compound_waveform(*sample as f32, factor, &ratios, &phases, tau)
+                * *gain_delta
         })
         .collect();
 
@@ -52,7 +53,6 @@ pub fn generate_waveform(
 
     (waveform, new_phases)
 }
-
 
 fn generate_sample_of_compound_waveform(
     sample: f32,
@@ -109,14 +109,22 @@ fn calculate_individual_phase(
     ((buffer_size as f32 * factor * ratio) + phase) % tau
 }
 
-
 pub mod tests {
     use super::*;
     use oscillator::R;
     #[test]
     fn test_sine_generator() {
         let expected = vec![
-            0.0, 0.095018126, 0.19087751, 0.28651062, 0.38083696, 0.4727774, 0.5612695, 0.64528126, 0.7238264, 0.79597807
+            0.0,
+            0.095018126,
+            0.19087751,
+            0.28651062,
+            0.38083696,
+            0.4727774,
+            0.5612695,
+            0.64528126,
+            0.7238264,
+            0.79597807,
         ];
         let (result, _) = generate_waveform(
             441.0,

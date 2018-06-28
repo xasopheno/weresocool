@@ -31,10 +31,7 @@ pub struct Gain {
 
 impl Gain {
     pub fn new(past: f32, current: f32) -> Gain {
-        Gain {
-            past,
-            current,
-        }
+        Gain { past, current }
     }
 
     pub fn update(&mut self, new_gain: f32) -> () {
@@ -74,7 +71,7 @@ impl Oscillator {
     }
 
     pub fn generate(&mut self, buffer_size: usize, sample_rate: f32) -> Vec<f32> {
-//        println!("{:?}", self.f_buffer);
+        //        println!("{:?}", self.f_buffer);
         let mut frequency = self.f_buffer.current();
         if self.f_buffer.previous() as f32 != 0.0 && self.f_buffer.current() == 0.0 {
             frequency = self.f_buffer.previous();

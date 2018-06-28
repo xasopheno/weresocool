@@ -45,7 +45,6 @@ pub fn generate_fade_in(length: usize) -> Vec<f32> {
 //            }
 //        }
 
-
 pub mod tests {
     use super::*;
 
