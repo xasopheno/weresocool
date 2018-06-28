@@ -139,7 +139,7 @@ mod tests {
             0.4817537, 0.53582686,
         ];
         let gain = buffer.gain();
-        let expected = 0.0102376845;
+        let expected = 0.10237684;
         assert_eq!(gain, expected);
     }
 
