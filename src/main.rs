@@ -28,12 +28,12 @@ fn run() -> Result<(), pa::Error> {
 //        R::atio(11, 1),
 //        R::atio(10, 1),
 //        R::atio(10, 1),
-        R::atio(4, 1),
-//        R::atio(15, 4),
+        R::atio(2, 1),
+        R::atio(15, 4),
 //        R::atio(11, 4),
-//        R::atio(7, 1),
-//        R::atio(7, 4),
-//        R::atio(5, 2),
+//        R::atio(7, 2),
+        R::atio(7, 4),
+        R::atio(5, 2),
         R::atio(6, 2),
 //        R::atio(4, 1),
         R::atio(2, 1),
@@ -62,9 +62,10 @@ fn run() -> Result<(), pa::Error> {
                 let mut osc = oscillator_mutex.lock().unwrap();
                 let mut buffer_vec: Vec<f32> = input.buffer.to_vec();
                 let gain = buffer_vec.gain();
-                let freq = buffer_vec
-                    .yin_pitch_detection(settings.sample_rate, settings.threshold)
-                    .floor();
+                let (freq, probability) = buffer_vec
+                    .yin_pitch_detection(settings.sample_rate, settings.threshold);
+//                    .floor();
+//                println!("{}, {}", freq, probability);
                 osc.update(freq, gain);
             }
             _ => panic!(),

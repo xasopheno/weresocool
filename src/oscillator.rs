@@ -59,23 +59,22 @@ impl Oscillator {
         }
     }
 
-    pub fn update(&mut self, frequency: f32, new_gain: f32) {
+    pub fn update(&mut self, frequency: f32, gain: f32) {
+        let mut new_freq: f32;
+        let new_freq = if frequency < 2500.0 { frequency } else { 0.0 };
+        let new_gain = if new_freq as usize == 0 { 0.0 } else { gain };
         println!("{}, {}", frequency, new_gain);
-        if frequency < 2500.0 {
-            self.f_buffer.push(frequency);
-        } else {
-            self.f_buffer.push(0.0)
-        }
-
+        self.f_buffer.push(new_freq);
         self.gain.update(new_gain);
     }
 
     pub fn generate(&mut self, buffer_size: usize, sample_rate: f32) -> Vec<f32> {
+//        println!("{:?}", self.f_buffer);
         let mut frequency = self.f_buffer.current();
         if self.f_buffer.previous() as f32 != 0.0 && self.f_buffer.current() == 0.0 {
             frequency = self.f_buffer.previous();
         }
-
+        
         let (mut waveform, new_phases) = (self.generator.generate)(
             frequency as f32,
             &self.gain,
@@ -89,6 +88,7 @@ impl Oscillator {
         waveform
     }
 }
+
 pub mod tests {
     use super::*;
     #[test]

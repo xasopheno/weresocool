@@ -1,7 +1,7 @@
 use std;
 
 pub trait Analyze {
-    fn yin_pitch_detection(&mut self, sample_rate: f32, threshold: f32) -> f32;
+    fn yin_pitch_detection(&mut self, sample_rate: f32, threshold: f32) -> (f32, f32);
     fn get_better_tau(&mut self, tau: usize, sample_rate: f32) -> f32;
     fn yin_difference(&mut self);
     fn yin_absolute_threshold(&mut self, threshold: f32) -> Option<usize>;
@@ -25,7 +25,7 @@ impl Analyze for Vec<f32> {
         }
     }
 
-    fn yin_pitch_detection(&mut self, sample_rate: f32, threshold: f32) -> f32 {
+    fn yin_pitch_detection(&mut self, sample_rate: f32, threshold: f32) -> (f32, f32) {
         for sample in self.iter_mut() {
             *sample *= 100.0;
         }
@@ -39,11 +39,11 @@ impl Analyze for Vec<f32> {
                 (-1.0, 0.0)
             };
 
-        if probability > 0.5 && probability < 1.0 {
-            pitch_in_hertz
-        } else {
-            0.0
-        }
+//        if probability > 0.5 && probability < 1.0 {
+            (pitch_in_hertz, probability)
+//        } else {
+//            (0.0, probability)
+//        }
     }
 
     fn get_better_tau(&mut self, tau: usize, sample_rate: f32) -> f32 {
