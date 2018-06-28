@@ -39,11 +39,7 @@ impl Analyze for Vec<f32> {
                 (-1.0, 0.0)
             };
 
-//        if probability > 0.5 && probability < 1.0 {
             (pitch_in_hertz, probability)
-//        } else {
-//            (0.0, probability)
-//        }
     }
 
     fn get_better_tau(&mut self, tau: usize, sample_rate: f32) -> f32 {

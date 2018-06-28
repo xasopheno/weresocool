@@ -62,7 +62,7 @@ impl Oscillator {
     pub fn update(&mut self, frequency: f32, gain: f32) {
         let mut new_freq: f32;
         let new_freq = if frequency < 2500.0 { frequency } else { 0.0 };
-        let new_gain = if new_freq as usize == 0 { 0.0 } else { gain };
+        let new_gain = if new_freq != 0.0 { gain } else { 0.0 };
         println!("{}, {}", frequency, new_gain);
         self.f_buffer.push(new_freq);
         self.gain.update(new_gain);
@@ -74,7 +74,7 @@ impl Oscillator {
         if self.f_buffer.previous() as f32 != 0.0 && self.f_buffer.current() == 0.0 {
             frequency = self.f_buffer.previous();
         }
-        
+
         let (mut waveform, new_phases) = (self.generator.generate)(
             frequency as f32,
             &self.gain,
