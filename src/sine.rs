@@ -66,7 +66,8 @@ fn generate_sample_of_compound_waveform(
         .iter()
         .zip(phases.iter())
         .map(|(ref ratio, ref phase)| {
-            (generate_sample_of_individual_waveform(sample, base_frequency,ratio.decimal, factor, **phase, tau))
+            let frequency =  (base_frequency * ratio.decimal) + ratio.offset;
+            (generate_sample_of_individual_waveform(sample, frequency, factor, **phase, tau))
         })
         .sum();
     let normalized_compound_sample = compound_sample / ratios.len() as f32;
@@ -76,13 +77,13 @@ fn generate_sample_of_compound_waveform(
 
 fn generate_sample_of_individual_waveform(
     sample: f32,
-    base_frequency: f32,
-    ratio: f32,
+    frequency: f32,
     factor: f32,
     phase: f32,
     tau: f32,
 ) -> f32 {
-    (((sample as f32 * factor * ratio * base_frequency) + phase) % tau).sin()
+    let generated = (((sample as f32 * factor * frequency) + phase) % tau).sin();
+    generated
 }
 
 fn generate_phase_array(
@@ -97,20 +98,20 @@ fn generate_phase_array(
         .iter()
         .zip(phases.iter())
         .map(|(ref ratio, ref phase)| {
-            calculate_individual_phase(base_frequency, buffer_size as f32, factor, ratio.decimal, **phase, tau)
+            let frequency =  base_frequency * ratio.decimal + ratio.offset;
+            calculate_individual_phase(frequency,buffer_size as f32, factor, **phase, tau)
         })
         .collect()
 }
 
 fn calculate_individual_phase(
-    base_frequency: f32,
+    frequency: f32,
     buffer_size: f32,
     factor: f32,
-    ratio: f32,
     phase: f32,
     tau: f32,
 ) -> f32 {
-    ((buffer_size as f32 * factor * ratio * base_frequency) + phase) % tau
+    ((buffer_size as f32 * factor * frequency) + phase) % tau
 }
 
 pub mod tests {

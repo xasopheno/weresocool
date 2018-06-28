@@ -12,13 +12,15 @@ pub struct Oscillator {
 #[derive(Debug)]
 pub struct R {
     pub decimal: f32,
+    pub offset: f32,
     pub ratio: String,
 }
 
 impl R {
-    pub fn atio(n: usize, d: usize) -> R {
+    pub fn atio(n: usize, d: usize, offset: f32) -> R {
         R {
             decimal: n as f32 / d as f32,
+            offset,
             ratio: [n.to_string(), d.to_string()].join("/"),
         }
     }
@@ -44,7 +46,7 @@ impl Oscillator {
     pub fn new(f_buffer_size: usize, ratios: Vec<R>) -> Oscillator {
         println!("{}", "Generated Ratios");
         for r in ratios.iter() {
-            println!("   - {}", r.ratio);
+            println!("   - {} offset: {}", r.ratio, r.offset);
         }
 
         Oscillator {
