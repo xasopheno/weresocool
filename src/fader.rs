@@ -30,6 +30,21 @@ pub fn generate_fade_in(length: usize) -> Vec<f32> {
     fade_vec
 }
 
+// ******************** EXAMPLE ****************************
+//        if self.f_buffer.previous() as f32 == 0.0 && self.f_buffer.current() != 0.0 {
+//            println!("{}", "FADE_IN");
+//            for (i, sample) in self.fader.fade_in.iter().enumerate() {
+//                waveform[i] = waveform[i] * sample;
+//            }
+//        }
+//
+//        if self.f_buffer.previous() as f32 != 0.0 && self.f_buffer.current() == 0.0 {
+//            println!("{}", "FADE_OUT");
+//            for (i, sample) in self.fader.fade_out.iter().enumerate() {
+//                waveform[i] = waveform[i] * sample;
+//            }
+//        }
+
 pub mod tests {
     use super::*;
 

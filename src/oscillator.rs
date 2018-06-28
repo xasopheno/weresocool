@@ -1,15 +1,12 @@
-use fader::Fader;
 use ring_buffer::RingBuffer;
-use sine::generate_waveform;
+use sine::Generator;
 
 pub struct Oscillator {
     pub f_buffer: RingBuffer<f32>,
     pub ratios: Vec<R>,
     pub phases: Vec<f32>,
-    pub generator:
-        fn(freq: f32, ratios: &Vec<R>, phases: &Vec<f32>, buffer_size: usize, sample_rate: f32)
-            -> (Vec<f32>, Vec<f32>),
-    pub fader: Fader,
+    pub generator: Generator,
+    pub gain: Gain,
 }
 
 #[derive(Debug)]
@@ -27,49 +24,73 @@ impl R {
     }
 }
 
+pub struct Gain {
+    pub past: f32,
+    pub current: f32,
+}
+
+impl Gain {
+    pub fn new(past: f32, current: f32) -> Gain {
+        Gain { past, current }
+    }
+
+    pub fn update(&mut self, new_gain: f32) -> () {
+        self.past = self.current;
+        self.current = new_gain;
+    }
+}
+
 impl Oscillator {
-    pub fn new(f_buffer_size: usize, ratios: Vec<R>, fader: Fader) -> Oscillator {
+    pub fn new(f_buffer_size: usize, ratios: Vec<R>) -> Oscillator {
         println!("{}", "Generated Ratios");
         for r in ratios.iter() {
             println!("   - {}", r.ratio);
         }
+
         Oscillator {
             f_buffer: RingBuffer::<f32>::new_full(f_buffer_size as usize),
             phases: vec![0.0; ratios.len()],
             ratios,
-            generator: generate_waveform,
-            fader,
+            generator: Generator::new(),
+            gain: Gain::new(1.0, 1.0),
         }
     }
 
+    pub fn update(&mut self, frequency: f32, gain: f32, probability: f32) {
+        let mut new_freq = if frequency < 2500.0 { frequency } else { 0.0 };
+        let mut new_gain = if new_freq != 0.0 { gain } else { 0.0 };
+
+        if probability < 0.2 {
+            new_freq = self.f_buffer.current();
+        };
+
+        println!("{}, {}", frequency, new_gain);
+
+        self.f_buffer.push(new_freq);
+        self.gain.update(new_gain);
+    }
+
     pub fn generate(&mut self, buffer_size: usize, sample_rate: f32) -> Vec<f32> {
+        //        println!("{:?}", self.f_buffer);
         let mut frequency = self.f_buffer.current();
         if self.f_buffer.previous() as f32 != 0.0 && self.f_buffer.current() == 0.0 {
             frequency = self.f_buffer.previous();
         }
 
-        let (mut waveform, new_phases) = (self.generator)(
+        let (mut waveform, new_phases) = (self.generator.generate)(
             frequency as f32,
+            &self.gain,
             &self.ratios,
             &self.phases,
             buffer_size as usize,
             sample_rate,
         );
-        if self.f_buffer.previous() as f32 == 0.0 && self.f_buffer.current() != 0.0 {
-            for (i, sample) in self.fader.fade_in.iter().enumerate() {
-                waveform[i] = waveform[i] * sample;
-            }
-        }
 
-        if self.f_buffer.previous() as f32 != 0.0 && self.f_buffer.current() == 0.0 {
-            for (i, sample) in self.fader.fade_out.iter().enumerate() {
-                waveform[i] = waveform[i] * sample;
-            }
-        }
         self.phases = new_phases;
         waveform
     }
 }
+
 pub mod tests {
     use super::*;
     #[test]

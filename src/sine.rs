@@ -1,8 +1,28 @@
-use oscillator::R;
+use oscillator::{Gain, R};
 use std;
+
+pub struct Generator {
+    pub generate: fn(
+        freq: f32,
+        gain: &Gain,
+        ratios: &Vec<R>,
+        phases: &Vec<f32>,
+        buffer_size: usize,
+        sample_rate: f32,
+    ) -> (Vec<f32>, Vec<f32>),
+}
+
+impl Generator {
+    pub fn new() -> Generator {
+        Generator {
+            generate: generate_waveform,
+        }
+    }
+}
 
 pub fn generate_waveform(
     freq: f32,
+    gain: &Gain,
     ratios: &Vec<R>,
     phases: &Vec<f32>,
     buffer_size: usize,
@@ -10,16 +30,22 @@ pub fn generate_waveform(
 ) -> (Vec<f32>, Vec<f32>) {
     let tau: f32 = std::f32::consts::PI * 2.0;
     let factor: f32 = freq * tau / sample_rate;
-    if freq < 10.0 || freq > 2500.0 {
-        return (vec![0.0; buffer_size], vec![0.0; ratios.len()]);
-    }
 
     let mut waveform: Vec<usize> = (0..buffer_size).collect();
+    let mut gain_mask: Vec<usize> = (0..buffer_size).collect();
+
+    let delta: f32 = (gain.current - gain.past) / buffer_size as f32;
+    let mut gain_mask: Vec<f32> = gain_mask
+        .iter_mut()
+        .map(|index| *index as f32 * delta + gain.past)
+        .collect();
 
     let waveform: Vec<f32> = waveform
         .iter_mut()
-        .map(|sample| {
-            (generate_sample_of_compound_waveform(*sample as f32, factor, &ratios, &phases, tau))
+        .zip(gain_mask.iter())
+        .map(|(sample, gain_delta)| {
+            generate_sample_of_compound_waveform(*sample as f32, factor, &ratios, &phases, tau)
+                * *gain_delta
         })
         .collect();
 
@@ -90,18 +116,19 @@ pub mod tests {
     fn test_sine_generator() {
         let expected = vec![
             0.0,
-            0.094077356,
-            0.18713482,
-            0.27816567,
-            0.3661894,
-            0.45026422,
-            0.52949953,
-            0.60306656,
-            0.6702096,
-            0.73025507,
+            0.095018126,
+            0.19087751,
+            0.28651062,
+            0.38083696,
+            0.4727774,
+            0.5612695,
+            0.64528126,
+            0.7238264,
+            0.79597807,
         ];
         let (result, _) = generate_waveform(
             441.0,
+            &Gain::new(1.0, 1.1),
             &vec![R::atio(2, 1), R::atio(3, 2), R::atio(1, 1)],
             &vec![0.0, 0.0, 0.0],
             10,

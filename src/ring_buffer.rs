@@ -9,6 +9,20 @@ pub struct RingBuffer<T: Copy + Clone + Sized> {
     capacity: usize,
 }
 
+impl RingBuffer<f32> {
+    pub fn avg_frequency(&mut self) -> f32 {
+        let non_zero_elements = self.buffer.iter().filter(|&freq| *freq != 0.0);
+
+        let non_zero_elements_count: f32 = non_zero_elements.clone().count() as f32;
+        if non_zero_elements_count / self.buffer.len() as f32 > 0.5 {
+            let sum_non_zero: f32 = non_zero_elements.sum();
+            sum_non_zero / non_zero_elements_count
+        } else {
+            0.0
+        }
+    }
+}
+
 impl<T: Sized + Copy + Clone + std::default::Default> RingBuffer<T> {
     pub fn new(capacity: usize) -> RingBuffer<T> {
         RingBuffer {
@@ -51,14 +65,14 @@ impl<T: Sized + Copy + Clone + std::default::Default> RingBuffer<T> {
 
     pub fn current(&mut self) -> T
     where
-        T: Clone + Copy
+        T: Clone + Copy,
     {
         self.buffer[self.tail]
     }
 
     pub fn previous(&mut self) -> T
     where
-        T: Clone + Copy
+        T: Clone + Copy,
     {
         self.buffer[(self.tail + 2) % self.capacity]
     }
@@ -157,11 +171,11 @@ pub mod tests {
         assert_eq!(rb.to_vec(), vec![3.3, 4.4, 5.5]);
     }
 
-//    #[test]
-//    fn ring_buffer_arg_max() {
-//        let mut rb = RingBuffer::<usize>::new_full(8);
-//        rb.push_vec(vec![0, 1, 1, 1, 1, 2, 2, 3, 4]);
-//        let expected = 1;
-//        assert_eq!(rb.arg_max(), expected);
-//    }
+    //    #[test]
+    //    fn ring_buffer_arg_max() {
+    //        let mut rb = RingBuffer::<usize>::new_full(8);
+    //        rb.push_vec(vec![0, 1, 1, 1, 1, 2, 2, 3, 4]);
+    //        let expected = 1;
+    //        assert_eq!(rb.arg_max(), expected);
+    //    }
 }

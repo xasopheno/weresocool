@@ -10,17 +10,6 @@ pub struct Input {
     pub buffer: RingBuffer<f32>,
 }
 
-pub struct Output {
-    pub stream: pa::Stream<pa::stream::NonBlocking, pa::stream::Output<f32>>,
-    pub oscillator: Oscillator,
-}
-
-pub struct Oscillator {
-    pub frequency: f32,
-    pub phase: f32,
-    pub generator: fn(frequency: f32, phase: f32, buffer_size: usize, sample_rate: f32) -> Vec<f32>,
-}
-
 pub fn prepare_input(ref pa: &pa::PortAudio, ref settings: &Settings) -> Result<Input, pa::Error> {
     let (input_stream, input_callback_rx) = setup_portaudio_input(&pa, settings)?;
 

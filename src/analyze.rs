@@ -1,5 +1,7 @@
-pub trait YinBuffer {
-    fn yin_pitch_detection(&mut self, sample_rate: f32, threshold: f32) -> f32;
+use std;
+
+pub trait Analyze {
+    fn yin_pitch_detection(&mut self, sample_rate: f32, threshold: f32) -> (f32, f32);
     fn get_better_tau(&mut self, tau: usize, sample_rate: f32) -> f32;
     fn yin_difference(&mut self);
     fn yin_absolute_threshold(&mut self, threshold: f32) -> Option<usize>;
@@ -8,19 +10,26 @@ pub trait YinBuffer {
     fn gain(&mut self) -> f32;
 }
 
-impl YinBuffer for Vec<f32> {
+impl Analyze for Vec<f32> {
     fn gain(&mut self) -> f32 {
-        let max: f32 = self.iter().cloned().fold(0.0, |mut sum, x: f32| {
+        let mean_squared: f32 = self.iter().cloned().fold(0.0, |mut sum, x: f32| {
             sum += x.powi(2);
             sum
         });
 
-        let gain = 20.0 * max.log10();
-        //       println!("{}", gain);
-        gain
+        let root_mean_squared = mean_squared.sqrt() / 10.0;
+        if root_mean_squared < 1.0 {
+            root_mean_squared
+        } else {
+            1.0
+        }
     }
 
-    fn yin_pitch_detection(&mut self, sample_rate: f32, threshold: f32) -> f32 {
+    fn yin_pitch_detection(&mut self, sample_rate: f32, threshold: f32) -> (f32, f32) {
+        for sample in self.iter_mut() {
+            *sample *= 100.0;
+        }
+
         self.yin_difference();
         self.yin_cumulative_mean_normalized_difference();
         let (probability, pitch_in_hertz) =
@@ -30,11 +39,7 @@ impl YinBuffer for Vec<f32> {
                 (-1.0, 0.0)
             };
 
-        if probability > 0.5 && probability < 1.0 {
-            pitch_in_hertz
-        } else {
-            0.0
-        }
+        (pitch_in_hertz, probability)
     }
 
     fn get_better_tau(&mut self, tau: usize, sample_rate: f32) -> f32 {
@@ -126,7 +131,7 @@ impl YinBuffer for Vec<f32> {
 
 #[cfg(test)]
 mod tests {
-    use yin::*;
+    use analyze::*;
     #[test]
     fn gain_test() {
         let mut buffer = vec![
@@ -134,7 +139,7 @@ mod tests {
             0.4817537, 0.53582686,
         ];
         let gain = buffer.gain();
-        let expected = 0.4080692;
+        let expected = 0.10237684;
         assert_eq!(gain, expected);
     }
 
@@ -198,7 +203,7 @@ mod tests {
             0.0, 0.5, 1.0, 0.5, 0.0, -0.5, -1.0, -0.5, 0.0, 0.0, 0.5, 1.0, 0.5, 0.0, -0.5, -1.0,
             -0.5, 0.0, 0.5, 1.0, 0.5, 0.0, -0.5, -1.0, -0.5, 0.0, 0.5, 1.0, 0.5, 0.0, -0.5, -1.0,
         ];
-        let expected = 5182.4375;
+        let expected = (5181.965, 0.8405063);
 
         assert_eq!(buffer.yin_pitch_detection(sample_rate, threshold), expected);
     }
