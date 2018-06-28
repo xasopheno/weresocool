@@ -21,7 +21,7 @@ impl Generator {
 }
 
 pub fn generate_waveform(
-    freq: f32,
+    base_frequency: f32,
     gain: &Gain,
     ratios: &Vec<R>,
     phases: &Vec<f32>,
@@ -29,7 +29,7 @@ pub fn generate_waveform(
     sample_rate: f32,
 ) -> (Vec<f32>, Vec<f32>) {
     let tau: f32 = std::f32::consts::PI * 2.0;
-    let factor: f32 = freq * tau / sample_rate;
+    let factor: f32 = tau / sample_rate;
 
     let mut waveform: Vec<usize> = (0..buffer_size).collect();
     let mut gain_mask: Vec<usize> = (0..buffer_size).collect();
@@ -44,18 +44,19 @@ pub fn generate_waveform(
         .iter_mut()
         .zip(gain_mask.iter())
         .map(|(sample, gain_delta)| {
-            generate_sample_of_compound_waveform(*sample as f32, factor, &ratios, &phases, tau)
+            generate_sample_of_compound_waveform(*sample as f32, base_frequency, factor, &ratios, &phases, tau)
                 * *gain_delta
         })
         .collect();
 
-    let new_phases = generate_phase_array(factor, &ratios, &phases, tau, buffer_size);
+    let new_phases = generate_phase_array(base_frequency, factor, &ratios, &phases, tau, buffer_size);
 
     (waveform, new_phases)
 }
 
 fn generate_sample_of_compound_waveform(
     sample: f32,
+    base_frequency: f32,
     factor: f32,
     ratios: &Vec<R>,
     phases: &Vec<f32>,
@@ -65,7 +66,7 @@ fn generate_sample_of_compound_waveform(
         .iter()
         .zip(phases.iter())
         .map(|(ref ratio, ref phase)| {
-            (generate_sample_of_individual_waveform(sample, ratio.decimal, factor, **phase, tau))
+            (generate_sample_of_individual_waveform(sample, base_frequency,ratio.decimal, factor, **phase, tau))
         })
         .sum();
     let normalized_compound_sample = compound_sample / ratios.len() as f32;
@@ -75,15 +76,17 @@ fn generate_sample_of_compound_waveform(
 
 fn generate_sample_of_individual_waveform(
     sample: f32,
+    base_frequency: f32,
     ratio: f32,
     factor: f32,
     phase: f32,
     tau: f32,
 ) -> f32 {
-    (((sample as f32 * factor * ratio) + phase) % tau).sin()
+    (((sample as f32 * factor * ratio * base_frequency) + phase) % tau).sin()
 }
 
 fn generate_phase_array(
+    base_frequency: f32,
     factor: f32,
     ratios: &Vec<R>,
     phases: &Vec<f32>,
@@ -94,19 +97,20 @@ fn generate_phase_array(
         .iter()
         .zip(phases.iter())
         .map(|(ref ratio, ref phase)| {
-            calculate_individual_phase(buffer_size as f32, factor, ratio.decimal, **phase, tau)
+            calculate_individual_phase(base_frequency, buffer_size as f32, factor, ratio.decimal, **phase, tau)
         })
         .collect()
 }
 
 fn calculate_individual_phase(
+    base_frequency: f32,
     buffer_size: f32,
     factor: f32,
     ratio: f32,
     phase: f32,
     tau: f32,
 ) -> f32 {
-    ((buffer_size as f32 * factor * ratio) + phase) % tau
+    ((buffer_size as f32 * factor * ratio * base_frequency) + phase) % tau
 }
 
 pub mod tests {
