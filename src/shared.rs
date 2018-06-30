@@ -1,9 +1,9 @@
-use std::sync::atomic::{AtomicUsize, Ordering};
+use std::sync::atomic::{AtomicUsize, Ordering, Arc};
 
 struct Shared {
-    frequency: AtomicUsize,
-    probability: AtomicUsize,
-    gain: AtomicUsize,
+    frequency: Arc,
+    probability: Arc,
+    gain: Arc,
 }
 
 struct SharedAPI {
@@ -15,7 +15,7 @@ struct SharedAPI {
 impl Shared {
     pub fn new() -> Shared {
         Shared {
-            frequency: AtomicUsize::new(0),
+            frequency: Arc::new(AtomicUsize::new(0)),
             probability: AtomicUsize::new(0),
             gain: AtomicUsize::new(0),
         }
