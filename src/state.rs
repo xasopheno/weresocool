@@ -8,9 +8,9 @@ struct State {
 }
 
 struct StateAPI {
-    frequency: Option<f32>,
-    probability: Option<f32>,
-    gain: Option<f32>,
+    frequency: f32,
+    probability: f32,
+    gain: f32,
 }
 
 impl State {
@@ -22,26 +22,17 @@ impl State {
         })
     }
 
-    pub fn update(&mut self, updater: StateAPI) {
-        match updater.frequency {
-          Some(frequency) => self.frequency.store(frequency.to_bits(), Ordering::Relaxed),
-          None => {},
-        }
-        match updater.probability {
-            Some(probability) => self.probability.store(probability.to_bits(), Ordering::Relaxed),
-            None => {}
-        }
-        match updater.gain {
-            Some(gain) => self.gain.store(gain.to_bits(), Ordering::Relaxed),
-            None => {},
-        }
+    pub fn update(&mut self, update: StateAPI) {
+        self.frequency.store(update.frequency.to_bits(), Ordering::Relaxed);
+        self.probability.store(update.probability.to_bits(), Ordering::Relaxed);
+        self.gain.store(update.gain.to_bits(), Ordering::Relaxed);
     }
 
     pub fn get_state(&mut self) -> StateAPI {
         StateAPI {
-            frequency: Some(f32::from_bits(self.frequency.load(Ordering::Relaxed))),
-            probability: Some(f32::from_bits(self.frequency.load(Ordering::Relaxed))),
-            gain: Some(f32::from_bits(self.frequency.load(Ordering::Relaxed))),
+            frequency: f32::from_bits(self.frequency.load(Ordering::Relaxed)),
+            probability: f32::from_bits(self.frequency.load(Ordering::Relaxed)),
+            gain: f32::from_bits(self.frequency.load(Ordering::Relaxed)),
         }
     }
 }
