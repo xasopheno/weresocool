@@ -1,3 +1,4 @@
+#![feature(integer_atomics)]
 extern crate portaudio;
 pub mod analyze;
 pub mod fader;
@@ -8,3 +9,4 @@ pub mod ring_buffer;
 pub mod set_elements;
 pub mod settings;
 pub mod sine;
+pub mod state;
