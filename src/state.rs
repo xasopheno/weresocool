@@ -1,25 +1,27 @@
 use std::sync::atomic::{AtomicU32, Ordering};
 use std::sync::{Arc};
 
-struct State {
+#[derive(Debug)]
+pub struct State {
     frequency: AtomicU32,
     probability: AtomicU32,
     gain: AtomicU32,
 }
 
-struct StateAPI {
-    frequency: f32,
-    probability: f32,
-    gain: f32,
+#[derive(Debug)]
+pub struct StateAPI {
+    pub frequency: f32,
+    pub probability: f32,
+    pub gain: f32,
 }
 
 impl State {
-    pub fn new() -> Arc<State> {
-        Arc::new(State {
+    pub fn new() -> State {
+        State {
             frequency: AtomicU32::new(0),
             probability: AtomicU32::new(0),
             gain: AtomicU32::new(0),
-        })
+        }
     }
 
     pub fn update(&mut self, update: StateAPI) {

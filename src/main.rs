@@ -2,11 +2,11 @@ extern crate portaudio;
 extern crate sound;
 use portaudio as pa;
 use sound::analyze::Analyze;
-use sound::fader::Fader;
 use sound::input_output_setup::prepare_input;
 use sound::oscillator::{Oscillator, R};
 use sound::portaudio_setup::setup_portaudio_output;
 use sound::settings::{get_default_app_settings, Settings};
+use sound::state::{State, StateAPI};
 use std::sync::{Arc, Mutex};
 
 fn main() {
@@ -20,8 +20,6 @@ fn main() {
 
 fn run() -> Result<(), pa::Error> {
     println!("{}", "\n ***** Rust DSP ****** \n ");
-    let settings: &'static Settings = get_default_app_settings();
-    let pa = pa::PortAudio::new()?;
 
     let ratios = vec![
         //        R::atio(12, 1, 0.0),
@@ -47,6 +45,12 @@ fn run() -> Result<(), pa::Error> {
         //        R::atio(1, 4, 0.0),
     ];
 
+
+
+    let shared_state: &mut Arc<State> = &mut Arc::new(State::new());
+    let settings: &'static Settings = get_default_app_settings();
+    let pa = pa::PortAudio::new()?;
+
     let mut input = prepare_input(&pa, &settings)?;
     let oscillator = Oscillator::new(10, ratios);
     let oscillator_mutex: &mut Arc<Mutex<Oscillator>> = &mut Arc::new(Mutex::new(oscillator));
@@ -63,10 +67,22 @@ fn run() -> Result<(), pa::Error> {
                 let mut osc = oscillator_mutex.lock().unwrap();
                 let mut buffer_vec: Vec<f32> = input.buffer.to_vec();
                 let gain = buffer_vec.gain();
-                let (freq, probability) =
+                let (frequency, probability) =
                     buffer_vec.yin_pitch_detection(settings.sample_rate, settings.threshold);
-                println!("{}, {}", freq, probability);
-                osc.update(freq, gain, probability);
+                println!("{}, {}", frequency, probability);
+
+                Arc::get_mut(shared_state)
+                    .unwrap()
+                    .update(
+                        StateAPI {
+                            frequency,
+                            probability,
+                            gain
+                        }
+                    );
+
+                println!("{:?}", shared_state);
+                osc.update(frequency, gain, probability);
             }
             _ => panic!(),
         }
