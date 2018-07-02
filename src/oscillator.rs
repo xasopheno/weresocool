@@ -16,14 +16,16 @@ pub struct R {
     pub decimal: f32,
     pub offset: f32,
     pub ratio: String,
+    pub gain: f32,
 }
 
 impl R {
-    pub fn atio(n: usize, d: usize, offset: f32) -> R {
+    pub fn atio(n: usize, d: usize, offset: f32, gain: f32) -> R {
         R {
             decimal: n as f32 / d as f32,
             offset,
             ratio: [n.to_string(), d.to_string()].join("/"),
+            gain,
         }
     }
 }
@@ -46,10 +48,15 @@ impl Gain {
 
 impl Oscillator {
     pub fn new(f_buffer_size: usize, l_ratios: Vec<R>, r_ratios: Vec<R>) -> Oscillator {
-        println!("{}", "Generated Ratios");
-//        for r in ratios.iter() {
-//            println!("   - {} offset: {}", r.ratio, r.offset);
-//        }
+        println!("{}", "Left Generated Ratios");
+        for r in l_ratios.iter() {
+            println!("   - {} offset: {}", r.ratio, r.offset);
+        }
+
+        println!("{}", "Right Generated Ratios");
+        for r in r_ratios.iter() {
+            println!("   - {} offset: {}", r.ratio, r.offset);
+        }
 
         Oscillator {
             f_buffer: RingBuffer::<f32>::new_full(f_buffer_size as usize),
@@ -72,10 +79,10 @@ impl Oscillator {
 
 //        println!("{}, {}", frequency, new_gain);
 
-        self.f_buffer.push(new_freq);
-        self.gain.update(new_gain);
-//        self.f_buffer.push(220.0);
-//        self.gain.update(1.0);
+//        self.f_buffer.push(new_freq);
+//        self.gain.update(new_gain);
+        self.f_buffer.push(220.0);
+        self.gain.update(1.0);
     }
 
     pub fn generate(&mut self, buffer_size: usize, sample_rate: f32) -> (Vec<f32>, Vec<f32>) {

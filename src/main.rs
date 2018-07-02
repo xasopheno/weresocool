@@ -19,24 +19,37 @@ fn main() {
 }
 
 fn run() -> Result<(), pa::Error> {
-    println!("{}", "\n ***** Rust DSP ****** \n ");
+    println!("{}", "\n ***** Rust DSP __!Now In Stereo!__ ****** \n ");
 
     let r_ratios = vec![
-        R::atio(7, 3, 0.0),
-        R::atio(7, 3, -3.0),
-        R::atio(1, 1, -3.0),
-        R::atio(5, 4, 0.0),
-        R::atio(11, 8, 0.0),
-        R::atio(1, 2, 3.0),
+        R::atio(13, 2, 0.0, 0.2),
+        R::atio(13, 2, -11.0, 0.2),
+        R::atio(11, 4, 0.0, 1.0),
+        R::atio(11, 4, 0.0, 1.0),
+        R::atio(9, 4, 0.0, 1.0),
+        R::atio(9, 4, 6.0, 1.0),
+        R::atio(7, 3, -3.0, 1.0),
+        R::atio(1, 1, -3.0, 1.0),
+        R::atio(5, 4, 0.0, 1.0),
+        R::atio(11, 8, 0.0, 1.0),
+        R::atio(1, 2, -3.0, 0.5),
+        R::atio(1, 2, -0.0, 0.5),
     ];
 
     let l_ratios = vec![
-        R::atio(15, 8, 0.0),
-        R::atio(15, 8, 6.0),
-        R::atio(3, 2, 3.0),
-        R::atio(1, 1, 0.0),
-        R::atio(1, 1, -2.0),
-        R::atio(1, 2, 0.0),
+        R::atio(15, 2, 18.0, 0.1),
+        R::atio(15, 2, 0.0, 0.1),
+        R::atio(10, 2, -9.0, 0.4),
+        R::atio(7, 2, 1.0, 1.0),
+        R::atio(7, 2, 0.0, 1.0),
+        R::atio(12, 4, 0.0, 1.0),
+        R::atio(15, 8, 0.0, 1.0),
+        R::atio(15, 8, 6.0, 1.0),
+        R::atio(3, 2, 3.0, 1.0),
+        R::atio(1, 1, 0.0, 1.0),
+        R::atio(1, 1, -2.0, 1.0),
+        R::atio(1, 2, 0.0, 0.5),
+        R::atio(1, 2, -2.0, 0.5),
     ];
 
     let settings: &'static Settings = get_default_app_settings();

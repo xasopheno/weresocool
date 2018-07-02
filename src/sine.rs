@@ -67,7 +67,7 @@ fn generate_sample_of_compound_waveform(
         .zip(phases.iter())
         .map(|(ref ratio, ref phase)| {
             let frequency =  (base_frequency * ratio.decimal) + ratio.offset;
-            (generate_sample_of_individual_waveform(sample, frequency, factor, **phase, tau))
+            (generate_sample_of_individual_waveform(sample, frequency, factor, **phase, ratio.gain, tau))
         })
         .sum();
     let normalized_compound_sample = compound_sample / ratios.len() as f32;
@@ -80,9 +80,10 @@ fn generate_sample_of_individual_waveform(
     frequency: f32,
     factor: f32,
     phase: f32,
+    gain: f32,
     tau: f32,
 ) -> f32 {
-    let generated = (((sample as f32 * factor * frequency) + phase) % tau).sin();
+    let generated = (((sample as f32 * factor * frequency) + phase) % tau).sin() * gain;
     generated
 }
 
