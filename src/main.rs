@@ -24,10 +24,10 @@ fn run() -> Result<(), pa::Error> {
     let r_ratios = vec![
         R::atio(7, 3, 0.0),
         R::atio(7, 3, -3.0),
-//        R::atio(13, 4, 1.0),
-        R::atio(1, 1, -2.0),
+        R::atio(1, 1, -3.0),
         R::atio(5, 4, 0.0),
         R::atio(11, 8, 0.0),
+        R::atio(1, 2, 3.0),
     ];
 
     let l_ratios = vec![
