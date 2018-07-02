@@ -3,8 +3,10 @@ use sine::Generator;
 
 pub struct Oscillator {
     pub f_buffer: RingBuffer<f32>,
-    pub ratios: Vec<R>,
-    pub phases: Vec<f32>,
+    pub l_ratios: Vec<R>,
+    pub l_phases: Vec<f32>,
+    pub r_ratios: Vec<R>,
+    pub r_phases: Vec<f32>,
     pub generator: Generator,
     pub gain: Gain,
 }
@@ -43,16 +45,18 @@ impl Gain {
 }
 
 impl Oscillator {
-    pub fn new(f_buffer_size: usize, ratios: Vec<R>) -> Oscillator {
+    pub fn new(f_buffer_size: usize, l_ratios: Vec<R>, r_ratios: Vec<R>) -> Oscillator {
         println!("{}", "Generated Ratios");
-        for r in ratios.iter() {
-            println!("   - {} offset: {}", r.ratio, r.offset);
-        }
+//        for r in ratios.iter() {
+//            println!("   - {} offset: {}", r.ratio, r.offset);
+//        }
 
         Oscillator {
             f_buffer: RingBuffer::<f32>::new_full(f_buffer_size as usize),
-            phases: vec![0.0; ratios.len()],
-            ratios,
+            l_phases: vec![0.0; l_ratios.len()],
+            l_ratios,
+            r_phases: vec![0.0; r_ratios.len()],
+            r_ratios,
             generator: Generator::new(),
             gain: Gain::new(1.0, 1.0),
         }
@@ -66,30 +70,43 @@ impl Oscillator {
             new_freq = self.f_buffer.current();
         };
 
-        println!("{}, {}", frequency, new_gain);
+//        println!("{}, {}", frequency, new_gain);
 
         self.f_buffer.push(new_freq);
         self.gain.update(new_gain);
+//        self.f_buffer.push(220.0);
+//        self.gain.update(1.0);
     }
 
-    pub fn generate(&mut self, buffer_size: usize, sample_rate: f32) -> Vec<f32> {
+    pub fn generate(&mut self, buffer_size: usize, sample_rate: f32) -> (Vec<f32>, Vec<f32>) {
         //        println!("{:?}", self.f_buffer);
         let mut frequency = self.f_buffer.current();
         if self.f_buffer.previous() as f32 != 0.0 && self.f_buffer.current() == 0.0 {
             frequency = self.f_buffer.previous();
         }
 
-        let (mut waveform, new_phases) = (self.generator.generate)(
+        let (mut l_waveform, l_new_phases) = (self.generator.generate)(
             frequency as f32,
             &self.gain,
-            &self.ratios,
-            &self.phases,
+            &self.l_ratios,
+            &self.l_phases,
             buffer_size as usize,
             sample_rate,
         );
 
-        self.phases = new_phases;
-        waveform
+
+        let (mut r_waveform, r_new_phases) = (self.generator.generate)(
+            frequency as f32,
+            &self.gain,
+            &self.r_ratios,
+            &self.r_phases,
+            buffer_size as usize,
+            sample_rate,
+        );
+
+        self.l_phases = l_new_phases;
+        self.r_phases = r_new_phases;
+        (l_waveform, r_waveform)
     }
 }
 

@@ -60,22 +60,23 @@ pub fn setup_portaudio_output(
     let settings_clone = settings.clone();
     let output_settings = get_output_settings(&pa, &settings)?;
     let output_stream = pa.open_non_blocking_stream(output_settings, move |args| {
-        let mut idx = 0;
 
         let mut osc = oscillator.lock().unwrap();
-        let waveform = osc.generate(
+        let (l_waveform, r_waveform) = osc.generate(
             settings_clone.output_buffer_size as usize,
             settings_clone.sample_rate,
         );
 
-        for _ in 0..args.frames {
-            if idx % 2 == 0 {
-            args.buffer[idx] = waveform[idx];
+        let mut l_idx = 0;
+        let mut r_idx = 0;
+        for n in 0..args.buffer.len() {
+            if n % 2 == 0 {
+                args.buffer[n] = l_waveform[l_idx];
+                l_idx += 1;
             } else {
-                args.buffer[idx] = 0.0;
-
+                args.buffer[n] = r_waveform[r_idx];
+                r_idx+=1
             }
-            idx += 1;
         }
 
         pa::Continue

@@ -21,34 +21,26 @@ fn main() {
 fn run() -> Result<(), pa::Error> {
     println!("{}", "\n ***** Rust DSP ****** \n ");
 
-    let ratios = vec![
-        //        R::atio(12, 1, 0.0),
-        //        R::atio(11, 1, 0.0),
-        //        R::atio(10, 1, 0.0),
-//        R::atio(10, 1, 0.0),
-//        R::atio(4, 1, 0.3),
-//        R::atio(4, 1, -0.2),
-//        R::atio(15, 4, 0.0),
-//        R::atio(7, 2, 0.0),
-//                R::atio(11, 4, 6.0),
-//        R::atio(11, 4, -5.0),
-//        R::atio(1, 1, 2.0),
-        R::atio(1, 1, -0.25),
-//        R::atio(4, 1, 0.0),
-        R::atio(1, 1, 0.6),
-//        R::atio(5, 4, 0.0),
+    let l_ratios = vec![
+        R::atio(1, 1, -2.0),
+        R::atio(5, 4, 0.0),
+        R::atio(11, 8, 0.0),
+        R::atio(1, 2, 0.0),
+    ];
+
+    let r_ratios = vec![
+        R::atio(15, 8, 0.0),
+        R::atio(15, 8, 6.0),
+        R::atio(3, 2, 3.0),
         R::atio(1, 1, 0.0),
-//        R::atio(1, 2, 2.0),
-//        R::atio(1, 2, 0.0),
-        //        R::atio(1, 3, 0.0),
-        //        R::atio(1, 4, 0.0),
+        R::atio(1, 1, -2.0),
     ];
 
     let settings: &'static Settings = get_default_app_settings();
     let pa = pa::PortAudio::new()?;
 
     let mut input = prepare_input(&pa, &settings)?;
-    let oscillator = Oscillator::new(10, ratios);
+    let oscillator = Oscillator::new(10, l_ratios, r_ratios);
     let oscillator_mutex: &mut Arc<Mutex<Oscillator>> = &mut Arc::new(Mutex::new(oscillator));
 
     let mut output_stream = setup_portaudio_output(&pa, &settings, Arc::clone(oscillator_mutex))?;
