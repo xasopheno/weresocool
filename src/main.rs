@@ -21,19 +21,22 @@ fn main() {
 fn run() -> Result<(), pa::Error> {
     println!("{}", "\n ***** Rust DSP ****** \n ");
 
-    let l_ratios = vec![
+    let r_ratios = vec![
+        R::atio(7, 3, 0.0),
+        R::atio(7, 3, -3.0),
+//        R::atio(13, 4, 1.0),
         R::atio(1, 1, -2.0),
         R::atio(5, 4, 0.0),
         R::atio(11, 8, 0.0),
-        R::atio(1, 2, 0.0),
     ];
 
-    let r_ratios = vec![
+    let l_ratios = vec![
         R::atio(15, 8, 0.0),
         R::atio(15, 8, 6.0),
         R::atio(3, 2, 3.0),
         R::atio(1, 1, 0.0),
         R::atio(1, 1, -2.0),
+        R::atio(1, 2, 0.0),
     ];
 
     let settings: &'static Settings = get_default_app_settings();
@@ -57,7 +60,7 @@ fn run() -> Result<(), pa::Error> {
                 let gain = buffer_vec.gain();
                 let (frequency, probability) =
                     buffer_vec.yin_pitch_detection(settings.sample_rate, settings.threshold);
-                println!("{}, {}", frequency, probability);
+//                println!("{}, {}", frequency, probability);
 
                 osc.update(frequency, gain, probability);
             }
