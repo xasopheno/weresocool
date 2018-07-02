@@ -121,7 +121,7 @@ pub mod tests {
     use super::*;
     #[test]
     fn test_ratio() {
-        let r: R = R::atio(3, 2, 0.0);
+        let r: R = R::atio(3, 2, 0.0, 1.0);
         let result = r.ratio;
         let expected = "3/2";
         assert_eq!(result, expected);
