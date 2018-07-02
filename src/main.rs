@@ -26,28 +26,24 @@ fn run() -> Result<(), pa::Error> {
         //        R::atio(11, 1, 0.0),
         //        R::atio(10, 1, 0.0),
 //        R::atio(10, 1, 0.0),
-        R::atio(2, 1, 4.0),
-        R::atio(2, 1, -3.0),
+//        R::atio(4, 1, 0.3),
+//        R::atio(4, 1, -0.2),
 //        R::atio(15, 4, 0.0),
-//        R::atio(11, 4, 0.0),
-        //        R::atio(7, 2, 0.0),
-        R::atio(7, 4, 0.0),
-//        R::atio(5, 2, 0.0),
-//        R::atio(6, 2, 0.0),
+//        R::atio(7, 2, 0.0),
+//                R::atio(11, 4, 6.0),
+//        R::atio(11, 4, -5.0),
+//        R::atio(1, 1, 2.0),
+        R::atio(1, 1, -0.25),
 //        R::atio(4, 1, 0.0),
-        R::atio(3, 2, 0.0),
-//        R::atio(3, 2, 4.0),
+        R::atio(1, 1, 0.6),
 //        R::atio(5, 4, 0.0),
         R::atio(1, 1, 0.0),
-//        R::atio(1, 1, 2.0),
+//        R::atio(1, 2, 2.0),
 //        R::atio(1, 2, 0.0),
         //        R::atio(1, 3, 0.0),
         //        R::atio(1, 4, 0.0),
     ];
 
-
-
-    let shared_state: &mut Arc<State> = &mut Arc::new(State::new());
     let settings: &'static Settings = get_default_app_settings();
     let pa = pa::PortAudio::new()?;
 
@@ -71,17 +67,6 @@ fn run() -> Result<(), pa::Error> {
                     buffer_vec.yin_pitch_detection(settings.sample_rate, settings.threshold);
                 println!("{}, {}", frequency, probability);
 
-                Arc::get_mut(shared_state)
-                    .unwrap()
-                    .update(
-                        StateAPI {
-                            frequency,
-                            probability,
-                            gain
-                        }
-                    );
-
-                println!("{:?}", shared_state);
                 osc.update(frequency, gain, probability);
             }
             _ => panic!(),

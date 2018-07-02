@@ -69,8 +69,12 @@ pub fn setup_portaudio_output(
         );
 
         for _ in 0..args.frames {
+            if idx % 2 == 0 {
             args.buffer[idx] = waveform[idx];
+            } else {
+                args.buffer[idx] = 0.0;
 
+            }
             idx += 1;
         }
 
