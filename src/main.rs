@@ -63,7 +63,6 @@ fn run() -> Result<(), pa::Error> {
         R::atio(1, 2, 0.5, 0.5),
         R::atio(1, 4, 1.0, 0.6),
         R::atio(1, 4, 0.0, 0.6),
-
     ];
 
     let settings: &'static Settings = get_default_app_settings();
@@ -87,7 +86,7 @@ fn run() -> Result<(), pa::Error> {
                 let gain = buffer_vec.gain();
                 let (frequency, probability) =
                     buffer_vec.yin_pitch_detection(settings.sample_rate, settings.threshold);
-//                println!("{}, {}", frequency, probability);
+                //                println!("{}, {}", frequency, probability);
 
                 osc.update(frequency, gain, probability);
             }

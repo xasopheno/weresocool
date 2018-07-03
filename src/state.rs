@@ -1,5 +1,5 @@
 use std::sync::atomic::{AtomicU32, Ordering};
-use std::sync::{Arc};
+use std::sync::Arc;
 
 #[derive(Debug)]
 pub struct State {
@@ -25,8 +25,10 @@ impl State {
     }
 
     pub fn update(&mut self, update: StateAPI) {
-        self.frequency.store(update.frequency.to_bits(), Ordering::Relaxed);
-        self.probability.store(update.probability.to_bits(), Ordering::Relaxed);
+        self.frequency
+            .store(update.frequency.to_bits(), Ordering::Relaxed);
+        self.probability
+            .store(update.probability.to_bits(), Ordering::Relaxed);
         self.gain.store(update.gain.to_bits(), Ordering::Relaxed);
     }
 

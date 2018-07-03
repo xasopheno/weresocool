@@ -77,12 +77,12 @@ impl Oscillator {
             new_freq = self.f_buffer.current();
         };
 
-//        println!("{}, {}", frequency, new_gain);
+        //        println!("{}, {}", frequency, new_gain);
 
-//        self.f_buffer.push(new_freq);
-//        self.gain.update(new_gain);
-        self.f_buffer.push(220.0);
-        self.gain.update(1.0);
+        self.f_buffer.push(new_freq);
+        self.gain.update(new_gain);
+        //        self.f_buffer.push(220.0);
+        //        self.gain.update(1.0);
     }
 
     pub fn generate(&mut self, buffer_size: usize, sample_rate: f32) -> (Vec<f32>, Vec<f32>) {
@@ -100,7 +100,6 @@ impl Oscillator {
             buffer_size as usize,
             sample_rate,
         );
-
 
         let (mut r_waveform, r_new_phases) = (self.generator.generate)(
             frequency as f32,

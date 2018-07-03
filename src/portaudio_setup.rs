@@ -60,7 +60,6 @@ pub fn setup_portaudio_output(
     let settings_clone = settings.clone();
     let output_settings = get_output_settings(&pa, &settings)?;
     let output_stream = pa.open_non_blocking_stream(output_settings, move |args| {
-
         let mut osc = oscillator.lock().unwrap();
         let (l_waveform, r_waveform) = osc.generate(
             settings_clone.output_buffer_size as usize,
@@ -75,7 +74,7 @@ pub fn setup_portaudio_output(
                 l_idx += 1;
             } else {
                 args.buffer[n] = r_waveform[r_idx];
-                r_idx+=1
+                r_idx += 1
             }
         }
 
