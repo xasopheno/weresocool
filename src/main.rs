@@ -2,7 +2,6 @@ extern crate portaudio;
 extern crate sound;
 use portaudio as pa;
 use sound::analyze::Analyze;
-use sound::input_output_setup::prepare_input;
 use sound::oscillator::{Oscillator, R};
 use sound::portaudio_setup::{setup_portaudio_duplex};
 use sound::settings::{get_default_app_settings, Settings};
@@ -65,20 +64,14 @@ fn run() -> Result<(), pa::Error> {
         R::atio(1, 4, 0.0, 0.6),
     ];
 
-//    let settings: &'static Settings = get_default_app_settings();
     let pa = pa::PortAudio::new()?;
 
-//    let mut input = prepare_input(&pa, &settings)?;
     let oscillator = Oscillator::new(10, l_ratios, r_ratios);
-
     let oscillator_mutex: &mut Arc<Mutex<Oscillator>> = &mut Arc::new(Mutex::new(oscillator));
 
-//    let mut output_stream = setup_portaudio_output(&pa, &settings, Arc::clone(oscillator_mutex))?;
     let mut duplex_stream = setup_portaudio_duplex(&pa, Arc::clone(oscillator_mutex))?;
 
     duplex_stream.start()?;
-//    output_stream.start()?;
-
     while let true = duplex_stream.is_active()? {}
 
     duplex_stream.stop()?;

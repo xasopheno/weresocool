@@ -48,11 +48,11 @@ pub fn generate_waveform(
         .map(|index| *index as f32 * delta + gain.past)
         .collect();
 
-    let mut normalization = 1.0;// freq_to_sones(base_frequency);
-//    if normalization.is_nan() || normalization.is_infinite() {
-//        normalization = 1.0;
-//    };
-//    println!("normalization {}, freq {}", normalization, base_frequency);
+    let mut normalization =  freq_to_sones(base_frequency);
+    if normalization.is_nan() || normalization.is_infinite() {
+        normalization = 1.0;
+    };
+    println!("normalization {}, freq {}", normalization, base_frequency);
 
     let waveform: Vec<f32> = waveform
         .iter_mut()

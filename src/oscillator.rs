@@ -65,7 +65,7 @@ impl Oscillator {
             r_phases: vec![0.0; r_ratios.len()],
             r_ratios,
             generator: Generator::new(),
-            gain: Gain::new(1.0, 1.0),
+            gain: Gain::new(0.0, 0.0),
         }
     }
 
@@ -74,8 +74,8 @@ impl Oscillator {
         let mut new_gain = if new_freq != 0.0 { gain } else { 0.0 };
         let current_frequency = self.f_buffer.current();
 
-        if probability < 0.2 {
-            new_freq = self.f_buffer.current();
+        if probability < 0.2 && frequency != 0.0 {
+            new_freq = current_frequency;
         };
 
 //        if (frequency - current_frequency).abs() > frequency * 0.8
@@ -84,7 +84,7 @@ impl Oscillator {
 //                new_freq = current_frequency;
 //        }
 
-//                println!("{}, {}", frequency, current_frequency);
+//                println!("{}, {}", frequency, probability);
 
         self.f_buffer.push(new_freq);
         self.gain.update(new_gain);
