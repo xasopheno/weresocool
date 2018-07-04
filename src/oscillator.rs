@@ -78,18 +78,18 @@ impl Oscillator {
             new_freq = self.f_buffer.current();
         };
 
-        if (frequency - current_frequency).abs() > frequency * 0.8
-            && frequency != 0.0
-            && current_frequency != 0.0 {
-                new_freq = current_frequency;
-        }
+//        if (frequency - current_frequency).abs() > frequency * 0.8
+//            && frequency != 0.0
+//            && current_frequency != 0.0 {
+//                new_freq = current_frequency;
+//        }
 
 //                println!("{}, {}", frequency, current_frequency);
 
-//        self.f_buffer.push(new_freq);
-//        self.gain.update(new_gain);
-                self.f_buffer.push(220.0);
-                self.gain.update(1.0);
+        self.f_buffer.push(new_freq);
+        self.gain.update(new_gain);
+//                self.f_buffer.push(220.0);
+//                self.gain.update(1.0);
     }
 
     pub fn generate(&mut self, buffer_size: usize, sample_rate: f32) -> (Vec<f32>, Vec<f32>) {
