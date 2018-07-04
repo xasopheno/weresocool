@@ -70,7 +70,7 @@ impl Oscillator {
     }
 
     pub fn update(&mut self, frequency: f32, gain: f32, probability: f32) {
-        let mut new_freq = if frequency < 2500.0 { frequency } else { 0.0 };
+        let mut new_freq = if frequency < 2500.0 && frequency > 44.0 { frequency } else { 0.0 };
         let mut new_gain = if new_freq != 0.0 { gain } else { 0.0 };
         let current_frequency = self.f_buffer.current();
 
@@ -84,11 +84,11 @@ impl Oscillator {
                 new_freq = current_frequency;
         }
 
-        if new_gain < 0.005 {
+        if new_gain < 0.008 {
           new_gain = 0.0
         };
 
-                println!("{}, {}", frequency, new_gain);
+                println!("{}, {}, {}", frequency, probability, new_gain);
 
         self.f_buffer.push(new_freq);
         self.gain.update(new_gain);
