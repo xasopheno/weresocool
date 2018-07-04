@@ -78,13 +78,17 @@ impl Oscillator {
             new_freq = current_frequency;
         };
 
-//        if (frequency - current_frequency).abs() > frequency * 0.8
-//            && frequency != 0.0
-//            && current_frequency != 0.0 {
-//                new_freq = current_frequency;
-//        }
+        if (frequency - current_frequency).abs() > frequency * 0.8
+            && frequency != 0.0
+            && current_frequency != 0.0 {
+                new_freq = current_frequency;
+        }
 
-//                println!("{}, {}", frequency, probability);
+        if new_gain < 0.005 {
+          new_gain = 0.0
+        };
+
+                println!("{}, {}", frequency, new_gain);
 
         self.f_buffer.push(new_freq);
         self.gain.update(new_gain);
