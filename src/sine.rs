@@ -9,7 +9,7 @@ pub struct Generator {
         phases: &Vec<f32>,
         buffer_size: usize,
         sample_rate: f32,
-    ) -> (Vec<f32>, Vec<f32>),
+    ) -> (Vec<f32>, Vec<f32>, f32),
 }
 
 impl Generator {
@@ -22,7 +22,7 @@ impl Generator {
 
 pub fn freq_to_sones(frequency: f32) -> f32 {
     // http://www.ukintpress-conferences.com/conf/08txeu_conf/pdf/day_1/01-06-garcia.pdf
-    1.0 / 2.0_f32.powf(((10.0 * (frequency).log10()) - 40.0) / 10.0)
+    1.0 / 2.0_f32.powf(((20.0 * (frequency).log10()) - 40.0) / 10.0)
 }
 
 pub fn generate_waveform(
@@ -32,7 +32,10 @@ pub fn generate_waveform(
     phases: &Vec<f32>,
     buffer_size: usize,
     sample_rate: f32,
-) -> (Vec<f32>, Vec<f32>) {
+) -> (Vec<f32>, Vec<f32>, f32) {
+    if base_frequency == 0.0 {
+        return (vec![0.0; buffer_size], vec![0.0; buffer_size], 1.0);
+    }
     let tau: f32 = std::f32::consts::PI * 2.0;
     let factor: f32 = tau / sample_rate;
     //    let base_frequency = base_frequency * 2.0;
@@ -45,6 +48,12 @@ pub fn generate_waveform(
         .map(|index| *index as f32 * delta + gain.past)
         .collect();
 
+    let mut normalization = freq_to_sones(base_frequency);
+    if normalization.is_nan() || normalization.is_infinite() {
+        normalization = 1.0;
+    };
+//    println!("normalization {}, freq {}", normalization, base_frequency);
+
     let waveform: Vec<f32> = waveform
         .iter_mut()
         .zip(gain_mask.iter())
@@ -56,14 +65,14 @@ pub fn generate_waveform(
                 &ratios,
                 &phases,
                 tau,
-            ) * *gain_delta * 10.0
+            ) * *gain_delta * normalization * 10.0
         })
         .collect();
 
     let new_phases =
         generate_phase_array(base_frequency, factor, &ratios, &phases, tau, buffer_size);
 
-    (waveform, new_phases)
+    (waveform, new_phases, normalization)
 }
 
 fn generate_sample_of_compound_waveform(
@@ -97,10 +106,7 @@ fn generate_sample_of_individual_waveform(
     gain: f32,
     tau: f32,
 ) -> f32 {
-    let normalization =  1.0; //freq_to_sones(frequency);
-    let generated = (((sample as f32 * factor * frequency) + phase) % tau).sin()
-        * gain
-        * normalization;
+    let generated = (((sample as f32 * factor * frequency) + phase) % tau).sin() * gain;
     generated
 }
 

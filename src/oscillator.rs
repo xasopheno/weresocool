@@ -72,12 +72,19 @@ impl Oscillator {
     pub fn update(&mut self, frequency: f32, gain: f32, probability: f32) {
         let mut new_freq = if frequency < 2500.0 { frequency } else { 0.0 };
         let mut new_gain = if new_freq != 0.0 { gain } else { 0.0 };
+        let current_frequency = self.f_buffer.current();
 
         if probability < 0.2 {
             new_freq = self.f_buffer.current();
         };
 
-        //        println!("{}, {}", frequency, new_gain);
+        if (frequency - current_frequency).abs() > frequency * 0.8
+            && frequency != 0.0
+            && current_frequency != 0.0 {
+                new_freq = current_frequency;
+        }
+
+//                println!("{}, {}", frequency, current_frequency);
 
         self.f_buffer.push(new_freq);
         self.gain.update(new_gain);
@@ -86,13 +93,13 @@ impl Oscillator {
     }
 
     pub fn generate(&mut self, buffer_size: usize, sample_rate: f32) -> (Vec<f32>, Vec<f32>) {
-        //        println!("{:?}", self.f_buffer);
+//                println!("{:?}", self.f_buffer);
         let mut frequency = self.f_buffer.current();
         if self.f_buffer.previous() as f32 != 0.0 && self.f_buffer.current() == 0.0 {
             frequency = self.f_buffer.previous();
         }
 
-        let (mut l_waveform, l_new_phases) = (self.generator.generate)(
+        let (mut l_waveform, l_new_phases, normalization) = (self.generator.generate)(
             frequency as f32,
             &self.gain,
             &self.l_ratios,
@@ -101,7 +108,7 @@ impl Oscillator {
             sample_rate,
         );
 
-        let (mut r_waveform, r_new_phases) = (self.generator.generate)(
+        let (mut r_waveform, r_new_phases, normalization) = (self.generator.generate)(
             frequency as f32,
             &self.gain,
             &self.r_ratios,
@@ -110,6 +117,7 @@ impl Oscillator {
             sample_rate,
         );
 
+        self.gain.past *= normalization;
         self.l_phases = l_new_phases;
         self.r_phases = r_new_phases;
         (l_waveform, r_waveform)
