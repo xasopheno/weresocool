@@ -1,5 +1,5 @@
 extern crate rand;
-use analyze::Analyze;
+use analyze::{Analyze, DetectionResult};
 use oscillator::Oscillator;
 use portaudio as pa;
 use ring_buffer::RingBuffer;
@@ -35,37 +35,35 @@ pub fn setup_portaudio_duplex(
                   time,
                   ..
               }| {
-            //          state.lock().uwrap();
-            let mut osc = oscillator.lock().unwrap();
 
-            // *********** input ************
-            // push new data to input_buffer
             input_buffer.push_vec(in_buffer.to_vec());
 
             // analyze input buffer
-            let mut buffer_vec: Vec<f32> = input_buffer.to_vec();
-            let gain = buffer_vec.gain();
-            let (frequency, probability) = buffer_vec
-                .yin_pitch_detection(settings.sample_rate, settings.probability_threshold);
-            //                println!("{}, {}", frequency, probability);
+            let result: DetectionResult = input_buffer
+                .to_vec()
+                .analyze(settings.sample_rate, settings.probability_threshold);
 
-            //
-            //          state.update()
-            osc.update(frequency, gain, probability);
+
+            // state.update()
+            let mut osc = oscillator.lock().unwrap();
+            osc.update(result.frequency, result.gain, result.probability);
 
             // *********** output ************
 
-            //          Generate waveform
             let (l_waveform, r_waveform) = osc.generate();
 
-            let mut idx = 0;
+//            write_duplex_buffer(&mut out_buffer, l_waveform, r_waveform);
+
+            let mut l_idx = 0;
+            let mut r_idx = 0;
             for n in 0..out_buffer.len() {
                 if n % 2 == 0 {
-                    out_buffer[n] = l_waveform[idx];
+                    out_buffer[n] = l_waveform[l_idx];
+                    l_idx += 1
                 } else {
-                    out_buffer[n] = r_waveform[idx];
+                    out_buffer[n] = r_waveform[r_idx];
+                    r_idx += 1
                 }
-                idx += 1
             }
 
             pa::Continue
@@ -74,6 +72,18 @@ pub fn setup_portaudio_duplex(
 
     Ok(duplex_stream)
 }
+
+//fn write_duplex_buffer(out_buffer: &mut Vec<f32>, l_waveform: Vec<f32>, r_waveform: Vec<f32>) {
+//    let mut idx = 0;
+//    for n in 0..out_buffer.len() {
+//        if n % 2 == 0 {
+//            out_buffer[n] = l_waveform[idx];
+//        } else {
+//            out_buffer[n] = r_waveform[idx];
+//        }
+//        idx += 1
+//    }
+//}
 
 fn get_duplex_settings(
     ref pa: &pa::PortAudio,

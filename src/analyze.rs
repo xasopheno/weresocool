@@ -6,9 +6,28 @@ pub trait Analyze {
     fn yin_parabolic_interpolation(&mut self, tau_estimate: usize) -> f32;
     fn yin_cumulative_mean_normalized_difference(&mut self);
     fn gain(&mut self) -> f32;
+    fn analyze(&mut self, sample_rate: f32, threshold: f32) -> DetectionResult;
+}
+
+
+pub struct DetectionResult {
+    pub frequency: f32,
+    pub probability: f32,
+    pub gain: f32,
 }
 
 impl Analyze for Vec<f32> {
+    fn analyze(&mut self, sample_rate: f32, threshold: f32) -> DetectionResult {
+        let gain = self.gain();
+        let (frequency, probability) = self.yin_pitch_detection(sample_rate, threshold);
+
+        DetectionResult {
+            frequency,
+            probability,
+            gain,
+        }
+    }
+
     fn gain(&mut self) -> f32 {
         let mean_squared: f32 = self.iter().cloned().fold(0.0, |mut sum, x: f32| {
             sum += x.powi(2);
