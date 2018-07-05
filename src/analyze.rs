@@ -9,7 +9,6 @@ pub trait Analyze {
     fn analyze(&mut self, sample_rate: f32, threshold: f32) -> DetectionResult;
 }
 
-
 pub struct DetectionResult {
     pub frequency: f32,
     pub probability: f32,

@@ -1,4 +1,5 @@
-use oscillator::{Gain, R};
+use oscillator::{Gain};
+use ratios::{R};
 use settings::Settings;
 use std;
 
@@ -28,13 +29,11 @@ pub fn generate_waveform(
     settings: &Settings,
 ) -> (Vec<f32>, Vec<f32>, f32) {
     let factor: f32 = tau() / settings.sample_rate;
-            let base_frequency = base_frequency * 2.0;
+//    let base_frequency = base_frequency * 2.0;
     let mut waveform: Vec<usize> = (0..settings.buffer_size).collect();
     let loudness = loudness_normalization(base_frequency);
 
     let gain_mask: Vec<f32> = generate_gain_mask(settings.buffer_size, gain, loudness);
-
-    //    println!("normalization {}, freq {}", normalization, base_frequency);
 
     let waveform: Vec<f32> = waveform
         .iter_mut()
@@ -46,7 +45,7 @@ pub fn generate_waveform(
                 factor,
                 &ratios,
                 &phases,
-            ) * *gain_delta * 100.0
+            ) * *gain_delta * settings.gain_multiplier
         })
         .collect();
 
@@ -63,15 +62,15 @@ pub fn generate_waveform(
 
 fn generate_gain_mask(buffer_size: usize, gain: &Gain, loudness: f32) -> Vec<f32> {
     let mut gain_mask: Vec<usize> = (0..buffer_size).collect();
-    let current_loudness = gain.current * loudness;
+    let current_volume = gain.current * loudness;
 
-    let delta: f32 = (current_loudness - gain.past) / (buffer_size as f32 - 1.0);
+    let delta: f32 = (current_volume - gain.past) / (buffer_size as f32 - 1.0);
     let mut gain_mask: Vec<f32> = gain_mask
         .iter_mut()
-        .map(|index| {*index as f32 * delta + gain.past})
+        .map(|index| *index as f32 * delta + gain.past)
         .collect();
 
-    gain_mask[buffer_size - 1] = current_loudness;
+    gain_mask[buffer_size - 1] = current_volume;
 
     gain_mask
 }
@@ -147,10 +146,10 @@ pub mod tests {
     #[test]
     fn test_sine_generator() {
         let expected = vec![
-            0.0, 0.28031945, 0.60338855, 0.9517994, 1.3051265, 1.6412601, 1.9379045, 2.174138, 2.33192, 2.3974357,
+            0.0, 1.4097947, 2.4691777, 3.0933332, 3.2689452, 3.0487654, 2.5357447, 1.8602986, 1.1552774, 0.53329647
         ];
         let (result, _, _) = generate_waveform(
-            441.0,
+            1441.0,
             &Gain::new(0.5, 1.0),
             &vec![
                 R::atio(2, 1, 0.0, 1.0),
@@ -186,19 +185,22 @@ pub mod tests {
     #[test]
     fn test_generate_gain_mask() {
         let expected = vec![
-            0.8, 0.7111111, 0.62222224, 0.5333333, 0.44444445, 0.35555556, 0.26666665, 0.17777777, 0.08888888, 0.0,
+            0.8, 0.7111111, 0.62222224, 0.5333333, 0.44444445, 0.35555556, 0.26666665, 0.17777777,
+            0.08888888, 0.0,
         ];
         let result = generate_gain_mask(10, &Gain::new(0.8, 0.0), 1.0);
         assert_eq!(expected, result);
 
         let expected = vec![
-            0.5, 0.5222222, 0.54444444, 0.56666666, 0.5888889, 0.6111111, 0.6333333, 0.65555555, 0.67777777, 0.7
+            0.5, 0.5222222, 0.54444444, 0.56666666, 0.5888889, 0.6111111, 0.6333333, 0.65555555,
+            0.67777777, 0.7,
         ];
         let result = generate_gain_mask(10, &Gain::new(0.5, 0.7), 1.0);
         assert_eq!(expected, result);
 
         let expected = vec![
-            1.0, 0.95555556, 0.9111111, 0.8666667, 0.82222223, 0.7777778, 0.73333335, 0.6888889, 0.64444447, 0.6
+            1.0, 0.95555556, 0.9111111, 0.8666667, 0.82222223, 0.7777778, 0.73333335, 0.6888889,
+            0.64444447, 0.6,
         ];
         let result = generate_gain_mask(10, &Gain::new(1.0, 0.6), 1.0);
         assert_eq!(expected, result);
@@ -209,5 +211,18 @@ pub mod tests {
         let expected = 6.2831855;
         let result = tau();
         assert_eq!(expected, result);
+    }
+
+    #[test]
+    fn test_generate_sample_of_individual_waveform() {
+        let result = 0.4731935;
+        let expected = generate_sample_of_individual_waveform(
+            0.12,
+            100.0,
+            tau() * 44_100.0,
+            0.4,
+            1.0,
+        );
+            assert_eq!(result, expected);
     }
 }

@@ -35,17 +35,16 @@ pub fn setup_portaudio_duplex(
               }| {
             if count < 20 {
                 count += 1;
-                println!("{}", 20 - count);
+                if count == 20 {
+                    println!("{}", "*ready*");
+                }
                 pa::Continue
             } else {
                 input_buffer.push_vec(in_buffer.to_vec());
-                // analyze input buffer
                 let result: DetectionResult = input_buffer
                     .to_vec()
                     .analyze(settings.sample_rate, settings.probability_threshold);
 
-
-                // state.update()
                 let mut osc = oscillator.lock().unwrap();
                 osc.update(result.frequency, result.gain, result.probability);
 

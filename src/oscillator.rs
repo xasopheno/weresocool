@@ -1,6 +1,7 @@
 use ring_buffer::RingBuffer;
 use settings::Settings;
 use sine::Generator;
+use ratios::{R};
 
 pub struct Oscillator {
     pub f_buffer: RingBuffer<f32>,
@@ -11,25 +12,6 @@ pub struct Oscillator {
     pub generator: Generator,
     pub gain: Gain,
     pub settings: Settings,
-}
-
-#[derive(Debug)]
-pub struct R {
-    pub decimal: f32,
-    pub offset: f32,
-    pub ratio: String,
-    pub gain: f32,
-}
-
-impl R {
-    pub fn atio(n: usize, d: usize, offset: f32, gain: f32) -> R {
-        R {
-            decimal: n as f32 / d as f32,
-            offset,
-            ratio: [n.to_string(), d.to_string()].join("/"),
-            gain,
-        }
-    }
 }
 
 pub struct Gain {
@@ -77,21 +59,20 @@ impl Oscillator {
         }
     }
 
-    pub fn update(&mut self, frequency: f32, gain: f32, probability: f32) {
-        let mut new_freq = if frequency < self.settings.maximum_frequency
-            && frequency > self.settings.minimum_frequency
-        {
-            frequency
-        } else {
-            0.0
-        };
+    pub fn update(&mut self, frequency: f32, gain: f32, _probability: f32) {
+        let new_freq =
+            if frequency < self.settings.max_freq && frequency > self.settings.min_freq {
+                frequency
+            } else {
+                0.0
+            };
         let mut new_gain = if new_freq != 0.0 { gain } else { 0.0 };
 
         if new_gain < self.settings.gain_threshold_min {
             new_gain = 0.0
         };
 
-//        println!("{}, {}", new_freq, new_gain);
+        //        println!("{}, {}", new_freq, new_gain);
 
         self.f_buffer.push(new_freq);
         self.gain.update(new_gain);
@@ -99,28 +80,15 @@ impl Oscillator {
         //        self.gain.update(1.0);
     }
 
-    fn less_than_probability_threshold_and_not_zero(
-        &self,
-        probability: f32,
-        frequency: f32,
-    ) -> bool {
-        probability < self.settings.probability_threshold && frequency != 0.0
-    }
-
-    fn distance_from_last_frequency_too_large(
-        &self,
-        frequency: f32,
-        currently_sounding_frequency: f32,
-    ) -> bool {
-        frequency != 0.0 && currently_sounding_frequency != 0.0
-            && (frequency - currently_sounding_frequency).abs() > frequency * 0.8
-    }
 
     pub fn generate(&mut self) -> (Vec<f32>, Vec<f32>) {
-//            println!("{:?}", self.f_buffer);
+        //            println!("{:?}", self.f_buffer);
         let current_frequency = self.f_buffer.current();
         let previous_frequency = self.f_buffer.previous();
 
+        if current_frequency == 0.0 && previous_frequency == 0.0 {
+            return silence(self.settings.buffer_size);
+        }
 
         let mut frequency = current_frequency;
 
@@ -128,7 +96,7 @@ impl Oscillator {
             frequency = previous_frequency;
         }
 
-        let (l_waveform, l_new_phases, loudness) = (self.generator.generate)(
+        let (l_waveform, l_new_phases, _loudness) = (self.generator.generate)(
             frequency,
             &self.gain,
             &self.l_ratios,
@@ -149,16 +117,11 @@ impl Oscillator {
         self.r_phases = r_new_phases;
         (l_waveform, r_waveform)
     }
+
 }
 
-fn zerod_array() {
-//    if base_frequency == 0.0 {
-////        return (
-////            vec![0.0; settings.buffer_size],
-////            vec![0.0; settings.buffer_size],
-////            1.0,
-////        );
-////    }
+fn silence(buffer_size: usize) -> (Vec<f32>, Vec<f32>) {
+    (vec![0.0; buffer_size], vec![0.0; buffer_size])
 }
 
 pub mod tests {

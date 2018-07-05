@@ -4,12 +4,12 @@ pub struct Settings {
     pub yin_buffer_size: usize,
     pub buffer_size: usize,
     pub probability_threshold: f32,
-    pub gain_threshold: f32,
     pub gain_threshold_min: f32,
     pub channels: i32,
     pub interleaved: bool,
-    pub maximum_frequency: f32,
-    pub minimum_frequency: f32,
+    pub max_freq: f32,
+    pub min_freq: f32,
+    pub gain_multiplier: f32,
 }
 
 pub fn get_default_app_settings() -> Settings {
@@ -18,12 +18,12 @@ pub fn get_default_app_settings() -> Settings {
         yin_buffer_size: 2048,
         buffer_size: 512,
         probability_threshold: 0.2,
-        gain_threshold: 0.0,
         gain_threshold_min: 0.008,
         channels: 2,
         interleaved: true,
-        maximum_frequency: 2_500.0,
-        minimum_frequency: 0.0,
+        max_freq: 2_500.0,
+        min_freq: 0.0,
+        gain_multiplier: 10.0,
     }
 }
 

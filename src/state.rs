@@ -1,4 +1,3 @@
-
 #[derive(Debug)]
 pub struct State {
     frequency: f32,
