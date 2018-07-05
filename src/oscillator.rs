@@ -128,7 +128,7 @@ impl Oscillator {
             frequency = previous_frequency;
         }
 
-        let (l_waveform, l_new_phases, normalization) = (self.generator.generate)(
+        let (l_waveform, l_new_phases, loudness) = (self.generator.generate)(
             frequency,
             &self.gain,
             &self.l_ratios,
@@ -136,7 +136,7 @@ impl Oscillator {
             &self.settings,
         );
 
-        let (r_waveform, r_new_phases, normalization) = (self.generator.generate)(
+        let (r_waveform, r_new_phases, loudness) = (self.generator.generate)(
             frequency,
             &self.gain,
             &self.r_ratios,
@@ -144,7 +144,7 @@ impl Oscillator {
             &self.settings,
         );
 
-        self.gain.past *= normalization;
+        self.gain.current *= loudness;
         self.l_phases = l_new_phases;
         self.r_phases = r_new_phases;
         (l_waveform, r_waveform)

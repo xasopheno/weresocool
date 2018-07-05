@@ -25,7 +25,7 @@ pub fn setup_portaudio_duplex(
     let duplex_stream_settings = get_duplex_settings(&pa, &settings)?;
 
     let mut input_buffer: RingBuffer<f32> = RingBuffer::<f32>::new(settings.yin_buffer_size);
-
+    let mut count = 0;
     let duplex_stream = pa.open_non_blocking_stream(
         duplex_stream_settings,
         move |pa::DuplexStreamCallbackArgs {
@@ -33,23 +33,28 @@ pub fn setup_portaudio_duplex(
                   mut out_buffer,
                   ..
               }| {
-//            println!("{:?}", );
-            input_buffer.push_vec(in_buffer.to_vec());
-            // analyze input buffer
-            let result: DetectionResult = input_buffer
-                .to_vec()
-                .analyze(settings.sample_rate, settings.probability_threshold);
+            if count < 20 {
+                count += 1;
+                println!("{}", 20 - count);
+                pa::Continue
+            } else {
+                input_buffer.push_vec(in_buffer.to_vec());
+                // analyze input buffer
+                let result: DetectionResult = input_buffer
+                    .to_vec()
+                    .analyze(settings.sample_rate, settings.probability_threshold);
 
 
-            // state.update()
-            let mut osc = oscillator.lock().unwrap();
-            osc.update(result.frequency, result.gain, result.probability);
+                // state.update()
+                let mut osc = oscillator.lock().unwrap();
+                osc.update(result.frequency, result.gain, result.probability);
 
-            let (l_waveform, r_waveform) = osc.generate();
+                let (l_waveform, r_waveform) = osc.generate();
 
-            write_duplex_buffer(&mut out_buffer, l_waveform, r_waveform);
+                write_duplex_buffer(&mut out_buffer, l_waveform, r_waveform);
 
-            pa::Continue
+                pa::Continue
+            }
         },
     )?;
 
