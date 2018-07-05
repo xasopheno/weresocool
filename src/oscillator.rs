@@ -88,17 +88,23 @@ impl Oscillator {
         let mut new_gain = if new_freq != 0.0 { gain } else { 0.0 };
         let currently_sounding_frequency = self.f_buffer.current();
 
-        if self.less_than_probability_threshold_and_not_zero(probability, frequency)
-            || self.distance_from_last_frequency_too_large(frequency, currently_sounding_frequency)
-        {
-            new_freq = currently_sounding_frequency;
-        };
+
+//        if new_freq == 0.0 {
+//            new_freq = currently_sounding_frequency;
+//        }
+//            else {
+////        if self.less_than_probability_threshold_and_not_zero(probability, frequency)
+////            || self.distance_from_last_frequency_too_large(frequency, currently_sounding_frequency)
+////        {
+////            new_freq = currently_sounding_frequency;
+////        };
+//        }
 
         if new_gain < self.settings.gain_threshold_min {
             new_gain = 0.0
         };
 
-        println!("{}, {}, {}", frequency, probability, new_gain);
+        println!("{}, {}", new_freq, new_gain);
 
         self.f_buffer.push(new_freq);
         self.gain.update(new_gain);
@@ -124,7 +130,7 @@ impl Oscillator {
     }
 
     pub fn generate(&mut self) -> (Vec<f32>, Vec<f32>) {
-        //                println!("{:?}", self.f_buffer);
+//                        println!("{:?}", self.f_buffer);
         let mut frequency = self.f_buffer.current();
         if self.f_buffer.previous() != 0.0 && self.f_buffer.current() == 0.0 {
             frequency = self.f_buffer.previous();

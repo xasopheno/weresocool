@@ -52,7 +52,7 @@ pub fn generate_waveform(
                 factor,
                 &ratios,
                 &phases,
-            ) * *gain_delta * normalization * 10.0
+            ) * *gain_delta * normalization * 100.0
         })
         .collect();
 
