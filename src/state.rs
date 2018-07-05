@@ -3,9 +3,9 @@ use std::sync::Arc;
 
 #[derive(Debug)]
 pub struct State {
-    frequency: AtomicU32,
-    probability: AtomicU32,
-    gain: AtomicU32,
+    frequency: f32,
+    probability: f32,
+    gain: f32,
 }
 
 #[derive(Debug)]

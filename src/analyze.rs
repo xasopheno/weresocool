@@ -27,7 +27,7 @@ impl Analyze for Vec<f32> {
 
     fn yin_pitch_detection(&mut self, sample_rate: f32, threshold: f32) -> (f32, f32) {
         for sample in self.iter_mut() {
-            *sample *= 100.0;
+            *sample *= 1000.0;
         }
 
         self.yin_difference();

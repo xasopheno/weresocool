@@ -38,7 +38,7 @@ pub fn generate_waveform(
     }
     let tau: f32 = std::f32::consts::PI * 2.0;
     let factor: f32 = tau / sample_rate;
-        let base_frequency = base_frequency * 2.0;
+    //        let base_frequency = base_frequency * 2.0;
     let mut waveform: Vec<usize> = (0..buffer_size).collect();
     let mut gain_mask: Vec<usize> = (0..buffer_size).collect();
 
@@ -48,11 +48,11 @@ pub fn generate_waveform(
         .map(|index| *index as f32 * delta + gain.past)
         .collect();
 
-    let mut normalization =  freq_to_sones(base_frequency);
+    let mut normalization = freq_to_sones(base_frequency);
     if normalization.is_nan() || normalization.is_infinite() || normalization > 1.0 {
         normalization = 1.0;
     };
-//    println!("normalization {}, freq {}", normalization, base_frequency);
+    //    println!("normalization {}, freq {}", normalization, base_frequency);
 
     let waveform: Vec<f32> = waveform
         .iter_mut()

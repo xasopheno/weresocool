@@ -3,7 +3,7 @@ extern crate sound;
 use portaudio as pa;
 use sound::analyze::Analyze;
 use sound::oscillator::{Oscillator, R};
-use sound::portaudio_setup::{setup_portaudio_duplex};
+use sound::portaudio_setup::setup_portaudio_duplex;
 use sound::settings::{get_default_app_settings, Settings};
 use sound::state::{State, StateAPI};
 use std::sync::{Arc, Mutex};
