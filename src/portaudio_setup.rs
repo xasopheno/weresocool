@@ -6,28 +6,26 @@ use ring_buffer::RingBuffer;
 use settings::{get_default_app_settings, Settings};
 use std;
 use std::sync::Arc;
-use std::slice::bytes;
 
-
-pub struct io {
-//    state: State,
-    pa: &'static pa::PortAudio,
-    input_settings: Settings,
-    output_settings: Settings,
-    oscillator: Arc<std::sync::Mutex<Oscillator>>,
-    audio_buffer: RingBuffer<f32>,
-}
+//pub struct io {
+//    //    state: State,
+//    pa: &'static pa::PortAudio,
+//    input_settings: Settings,
+//    output_settings: Settings,
+//    oscillator: Arc<std::sync::Mutex<Oscillator>>,
+//    audio_buffer: RingBuffer<f32>,
+//}
 
 pub fn setup_portaudio_duplex(
     ref pa: &pa::PortAudio,
     oscillator: Arc<std::sync::Mutex<Oscillator>>,
 ) -> Result<pa::Stream<pa::NonBlocking, pa::Duplex<f32, f32>>, pa::Error> {
-    let input_settings = get_default_app_settings();
-    let output_settings = input_settings.clone();
+    let settings = get_default_app_settings();
 
-    let duplex_stream_settings = get_duplex_settings(&pa, &input_settings)?;
-    let mut input_buffer: RingBuffer<f32> =
-        RingBuffer::<f32>::new(input_settings.yin_buffer_size as usize);
+    let duplex_stream_settings = get_duplex_settings(&pa, &settings)?;
+
+    let mut input_buffer: RingBuffer<f32> = RingBuffer::<f32>::new(settings.yin_buffer_size);
+
     let duplex_stream = pa.open_non_blocking_stream(
         duplex_stream_settings,
         move |pa::DuplexStreamCallbackArgs {
@@ -48,7 +46,7 @@ pub fn setup_portaudio_duplex(
             let mut buffer_vec: Vec<f32> = input_buffer.to_vec();
             let gain = buffer_vec.gain();
             let (frequency, probability) = buffer_vec
-                .yin_pitch_detection(input_settings.sample_rate, input_settings.threshold);
+                .yin_pitch_detection(settings.sample_rate, settings.probability_threshold);
             //                println!("{}, {}", frequency, probability);
 
             //
@@ -58,11 +56,7 @@ pub fn setup_portaudio_duplex(
             // *********** output ************
 
             //          Generate waveform
-            let (l_waveform, r_waveform) = osc.generate(
-//                these should be properties of the oscillator.
-                output_settings.output_buffer_size as usize,
-                output_settings.sample_rate,
-            );
+            let (l_waveform, r_waveform) = osc.generate();
 
             let mut idx = 0;
             for n in 0..out_buffer.len() {
@@ -109,7 +103,7 @@ fn get_duplex_settings(
         input_params,
         output_params,
         settings.sample_rate as f64,
-        settings.output_buffer_size as u32,
+        settings.buffer_size as u32,
     );
 
     Ok(duplex_settings)

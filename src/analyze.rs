@@ -1,5 +1,3 @@
-use std;
-
 pub trait Analyze {
     fn yin_pitch_detection(&mut self, sample_rate: f32, threshold: f32) -> (f32, f32);
     fn get_better_tau(&mut self, tau: usize, sample_rate: f32) -> f32;
@@ -73,8 +71,7 @@ impl Analyze for Vec<f32> {
     }
 
     fn yin_absolute_threshold(&mut self, threshold: f32) -> Option<usize> {
-        let mut iter = self
-            .iter()
+        let mut iter = self.iter()
             .enumerate()
             .skip(2)
             .skip_while(|(_, &sample)| sample > threshold);
@@ -178,7 +175,7 @@ mod tests {
             0.0, 1.0, 1.4603175, 1.5461539, 1.6146789, 1.354515, 0.91784704, 0.4973684, 0.16494845,
             0.15949367, 0.7276996, 1.4171779, 1.8125, 1.7058824, 1.214876, 0.614266,
         ];
-        let threshold = 0.20;
+        let threshold = 0.2;
         let expected = Some(9);
         assert_eq!(buffer.yin_absolute_threshold(threshold), expected);
     }
@@ -204,7 +201,7 @@ mod tests {
             0.0, 0.5, 1.0, 0.5, 0.0, -0.5, -1.0, -0.5, 0.0, 0.0, 0.5, 1.0, 0.5, 0.0, -0.5, -1.0,
             -0.5, 0.0, 0.5, 1.0, 0.5, 0.0, -0.5, -1.0, -0.5, 0.0, 0.5, 1.0, 0.5, 0.0, -0.5, -1.0,
         ];
-        let expected = (5181.965, 0.8405063);
+        let expected = (5181.9604, 0.8405063);
 
         assert_eq!(buffer.yin_pitch_detection(sample_rate, threshold), expected);
     }
