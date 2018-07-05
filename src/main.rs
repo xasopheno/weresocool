@@ -71,6 +71,7 @@ fn run() -> Result<(), pa::Error> {
     let mut duplex_stream = setup_portaudio_duplex(&pa, Arc::clone(oscillator_mutex))?;
 
     duplex_stream.start()?;
+
     while let true = duplex_stream.is_active()? {}
 
     duplex_stream.stop()?;

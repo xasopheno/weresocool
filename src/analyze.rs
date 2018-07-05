@@ -34,8 +34,7 @@ impl Analyze for Vec<f32> {
             sum
         });
 
-        let root_mean_squared = mean_squared.sqrt() / 10.0;
-        let root_mean_squared = mean_squared.sqrt() / 10.0;
+        let root_mean_squared = mean_squared.sqrt() / 100.0;
         if root_mean_squared < 1.0 {
             root_mean_squared
         } else {

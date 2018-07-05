@@ -33,7 +33,7 @@ pub fn setup_portaudio_duplex(
                   mut out_buffer,
                   ..
               }| {
-
+//            println!("{:?}", );
             input_buffer.push_vec(in_buffer.to_vec());
             // analyze input buffer
             let result: DetectionResult = input_buffer

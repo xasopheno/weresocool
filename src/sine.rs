@@ -27,15 +27,8 @@ pub fn generate_waveform(
     phases: &Vec<f32>,
     settings: &Settings,
 ) -> (Vec<f32>, Vec<f32>, f32) {
-    if base_frequency == 0.0 {
-        return (
-            vec![0.0; settings.buffer_size],
-            vec![0.0; settings.buffer_size],
-            1.0,
-        );
-    }
     let factor: f32 = tau() / settings.sample_rate;
-    //        let base_frequency = base_frequency * 2.0;
+            let base_frequency = base_frequency * 2.0;
     let mut waveform: Vec<usize> = (0..settings.buffer_size).collect();
     let gain_mask: Vec<f32> = generate_gain_mask(settings.buffer_size, gain);
 
@@ -52,7 +45,7 @@ pub fn generate_waveform(
                 factor,
                 &ratios,
                 &phases,
-            ) * *gain_delta * normalization * 100.0
+            ) * *gain_delta * normalization * 10.0
         })
         .collect();
 
@@ -70,11 +63,13 @@ pub fn generate_waveform(
 fn generate_gain_mask(buffer_size: usize, gain: &Gain) -> Vec<f32> {
     let mut gain_mask: Vec<usize> = (0..buffer_size).collect();
 
-    let delta: f32 = (gain.current - gain.past) / buffer_size as f32;
-    let gain_mask: Vec<f32> = gain_mask
+    let delta: f32 = (gain.current - gain.past) / (buffer_size as f32 - 1.0);
+    let mut gain_mask: Vec<f32> = gain_mask
         .iter_mut()
-        .map(|index| *index as f32 * delta + gain.past)
+        .map(|index| {*index as f32 * delta + gain.past})
         .collect();
+
+    gain_mask[buffer_size - 1] = gain.current;
 
     gain_mask
 }
@@ -86,7 +81,7 @@ pub fn freq_to_sones(frequency: f32) -> f32 {
 
 pub fn loudness_normalization(base_frequency: f32) -> f32 {
     let mut normalization = freq_to_sones(base_frequency);
-    if normalization.is_nan() || normalization.is_infinite() || normalization > 1.0 {
+    if normalization.is_nan() || normalization.is_infinite() {
         normalization = 1.0;
     };
     normalization
@@ -150,12 +145,11 @@ pub mod tests {
     #[test]
     fn test_sine_generator() {
         let expected = vec![
-            0.0, 0.38888013, 0.78120327, 1.1726003, 1.5586493, 1.9349337, 2.2971044, 2.640939,
-            2.9624, 3.2576942,
+            0.0, 0.28031945, 0.60338855, 0.9517994, 1.3051265, 1.6412601, 1.9379045, 2.174138, 2.33192, 2.3974357,
         ];
         let (result, _, _) = generate_waveform(
             441.0,
-            &Gain::new(1.0, 1.1),
+            &Gain::new(0.5, 1.0),
             &vec![
                 R::atio(2, 1, 0.0, 1.0),
                 R::atio(3, 2, 0.0, 1.0),
@@ -190,9 +184,21 @@ pub mod tests {
     #[test]
     fn test_generate_gain_mask() {
         let expected = vec![
-            0.8, 0.78000003, 0.76, 0.74, 0.72, 0.70000005, 0.68, 0.66, 0.64, 0.62,
+            0.8, 0.7111111, 0.62222224, 0.5333333, 0.44444445, 0.35555556, 0.26666665, 0.17777777, 0.08888888, 0.0,
         ];
-        let result = generate_gain_mask(10, &Gain::new(0.8, 0.6));
+        let result = generate_gain_mask(10, &Gain::new(0.8, 0.0));
+        assert_eq!(expected, result);
+
+        let expected = vec![
+            0.5, 0.5222222, 0.54444444, 0.56666666, 0.5888889, 0.6111111, 0.6333333, 0.65555555, 0.67777777, 0.7
+        ];
+        let result = generate_gain_mask(10, &Gain::new(0.5, 0.7));
+        assert_eq!(expected, result);
+
+        let expected = vec![
+            1.0, 0.95555556, 0.9111111, 0.8666667, 0.82222223, 0.7777778, 0.73333335, 0.6888889, 0.64444447, 0.6
+        ];
+        let result = generate_gain_mask(10, &Gain::new(1.0, 0.6));
         assert_eq!(expected, result);
     }
 
