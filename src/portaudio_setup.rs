@@ -1,36 +1,83 @@
 extern crate rand;
+use analyze::{Analyze, DetectionResult};
 use oscillator::Oscillator;
 use portaudio as pa;
-use settings::Settings;
+use ring_buffer::RingBuffer;
+use settings::{get_default_app_settings, Settings};
 use std;
-use std::sync::mpsc::channel;
 use std::sync::Arc;
 
-pub fn setup_portaudio_input(
+//pub struct io {
+//    //    state: State,
+//    pa: &'static pa::PortAudio,
+//    input_settings: Settings,
+//    output_settings: Settings,
+//    oscillator: Arc<std::sync::Mutex<Oscillator>>,
+//    audio_buffer: RingBuffer<f32>,
+//}
+
+pub fn setup_portaudio_duplex(
     ref pa: &pa::PortAudio,
-    ref settings: &Settings,
-) -> Result<
-    (
-        pa::Stream<pa::NonBlocking, pa::Input<f32>>,
-        std::sync::mpsc::Receiver<Vec<f32>>,
-    ),
-    pa::Error,
-> {
-    let (input_callback_tx, input_callback_rx) = channel();
-    let input_settings = get_input_settings(&pa, &settings)?;
+    oscillator: Arc<std::sync::Mutex<Oscillator>>,
+) -> Result<pa::Stream<pa::NonBlocking, pa::Duplex<f32, f32>>, pa::Error> {
+    let settings = get_default_app_settings();
 
-    let input_stream = pa.open_non_blocking_stream(input_settings, move |args| {
-        input_callback_tx.send(args.buffer.to_vec()).unwrap();
-        pa::Continue
-    })?;
+    let duplex_stream_settings = get_duplex_settings(&pa, &settings)?;
 
-    Ok((input_stream, input_callback_rx))
+    let mut input_buffer: RingBuffer<f32> = RingBuffer::<f32>::new(settings.yin_buffer_size);
+    let mut count = 0;
+    let duplex_stream = pa.open_non_blocking_stream(
+        duplex_stream_settings,
+        move |pa::DuplexStreamCallbackArgs {
+                  in_buffer,
+                  mut out_buffer,
+                  ..
+              }| {
+            if count < 20 {
+                count += 1;
+                if count == 20 {
+                    println!("{}", "*ready*");
+                }
+                pa::Continue
+            } else {
+                input_buffer.push_vec(in_buffer.to_vec());
+                let result: DetectionResult = input_buffer
+                    .to_vec()
+                    .analyze(settings.sample_rate, settings.probability_threshold);
+
+                let mut osc = oscillator.lock().unwrap();
+                osc.update(result.frequency, result.gain, result.probability);
+
+                let (l_waveform, r_waveform) = osc.generate();
+
+                write_duplex_buffer(&mut out_buffer, l_waveform, r_waveform);
+
+                pa::Continue
+            }
+        },
+    )?;
+
+    Ok(duplex_stream)
 }
 
-fn get_input_settings(
+fn write_duplex_buffer(out_buffer: &mut [f32], l_waveform: Vec<f32>, r_waveform: Vec<f32>) {
+    let mut l_idx = 0;
+    let mut r_idx = 0;
+    for n in 0..out_buffer.len() {
+        if n % 2 == 0 {
+            out_buffer[n] = l_waveform[l_idx];
+            l_idx += 1
+        } else {
+            out_buffer[n] = r_waveform[r_idx];
+            r_idx += 1
+        }
+    }
+}
+
+fn get_duplex_settings(
     ref pa: &pa::PortAudio,
     ref settings: &Settings,
-) -> Result<pa::stream::InputSettings<f32>, pa::Error> {
+) -> Result<pa::stream::DuplexSettings<f32, f32>, pa::Error> {
     let def_input = pa.default_input_device()?;
     let input_info = pa.device_info(def_input)?;
     //    println!("Default input device info: {:#?}", &input_info);
@@ -43,47 +90,6 @@ fn get_input_settings(
         latency,
     );
 
-    let input_settings = pa::InputStreamSettings::new(
-        input_params,
-        settings.sample_rate as f64,
-        settings.input_buffer_size as u32,
-    );
-
-    Ok(input_settings)
-}
-
-pub fn setup_portaudio_output(
-    ref pa: &pa::PortAudio,
-    ref settings: &'static Settings,
-    oscillator: Arc<std::sync::Mutex<Oscillator>>,
-) -> Result<pa::Stream<pa::NonBlocking, pa::Output<f32>>, pa::Error> {
-    let settings_clone = settings.clone();
-    let output_settings = get_output_settings(&pa, &settings)?;
-    let output_stream = pa.open_non_blocking_stream(output_settings, move |args| {
-        let mut idx = 0;
-
-        let mut osc = oscillator.lock().unwrap();
-        let waveform = osc.generate(
-            settings_clone.output_buffer_size as usize,
-            settings_clone.sample_rate,
-        );
-
-        for _ in 0..args.frames {
-            args.buffer[idx] = waveform[idx];
-
-            idx += 1;
-        }
-
-        pa::Continue
-    })?;
-
-    Ok(output_stream)
-}
-
-pub fn get_output_settings(
-    ref pa: &pa::PortAudio,
-    ref settings: &Settings,
-) -> Result<pa::stream::OutputSettings<f32>, pa::Error> {
     let def_output = pa.default_output_device()?;
     let output_info = pa.device_info(def_output)?;
     //    println!("Default output device info: {:#?}", &output_info);
@@ -92,11 +98,12 @@ pub fn get_output_settings(
     let output_params =
         pa::StreamParameters::new(def_output, settings.channels, settings.interleaved, latency);
 
-    let output_settings = pa::OutputStreamSettings::new(
+    let duplex_settings = pa::DuplexStreamSettings::new(
+        input_params,
         output_params,
         settings.sample_rate as f64,
-        settings.output_buffer_size as u32,
+        settings.buffer_size as u32,
     );
 
-    Ok(output_settings)
+    Ok(duplex_settings)
 }

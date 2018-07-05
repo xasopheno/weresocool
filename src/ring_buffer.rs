@@ -1,5 +1,4 @@
 use std;
-use std::ops::Index;
 
 #[derive(Debug, Clone)]
 pub struct RingBuffer<T: Copy + Clone + Sized> {
