@@ -5,7 +5,7 @@ use sound::oscillator::{Oscillator};
 
 use sound::portaudio_setup::setup_portaudio_duplex;
 use sound::settings::get_default_app_settings;
-use sound::ratios::{complicated_ratios, R};
+use sound::ratios::{complicated_ratios, simple_ratios, R};
 
 use std::sync::{Arc, Mutex};
 
@@ -21,7 +21,7 @@ fn main() {
 fn run() -> Result<(), pa::Error> {
     println!("{}", "\n ***** WereSoCool __!Now In Stereo!__ ****** \n ");
 
-    let (l_ratios, r_ratios) = complicated_ratios();
+    let (l_ratios, r_ratios) = simple_ratios();
     let pa = pa::PortAudio::new()?;
 
     let oscillator = Oscillator::new(10, l_ratios, r_ratios, get_default_app_settings());

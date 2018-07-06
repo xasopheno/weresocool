@@ -29,7 +29,7 @@ pub fn generate_waveform(
     settings: &Settings,
 ) -> (Vec<f32>, Vec<f32>, f32) {
     let factor: f32 = tau() / settings.sample_rate;
-//    let base_frequency = base_frequency * 2.0;
+    let base_frequency = base_frequency * 2.0;
     let mut waveform: Vec<usize> = (0..settings.buffer_size).collect();
     let loudness = loudness_normalization(base_frequency);
 

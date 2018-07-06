@@ -67,3 +67,22 @@ pub fn complicated_ratios() -> (Vec<R>, Vec<R>) {
 
     (l_ratios, r_ratios)
 }
+
+
+pub fn simple_ratios() -> (Vec<R>, Vec<R>) {
+    let l_ratios = vec![
+        R::atio(5, 4, -2.0, 1.0),
+        R::atio(5, 4, 0.0, 1.0),
+        R::atio(1, 1, 0.0, 1.0),
+        R::atio(1, 1, -2.0, 1.0),
+    ];
+
+    let r_ratios = vec![
+        R::atio(5, 4, -3.0, 1.0),
+        R::atio(5, 4, 5.0, 1.0),
+        R::atio(1, 1, -3.0, 1.0),
+        R::atio(1, 1, 5.0, 1.0),
+    ];
+
+    (l_ratios, r_ratios)
+}
