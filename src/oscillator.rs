@@ -76,22 +76,22 @@ impl Oscillator {
 
 //      println!("{}, {}", new_freq, new_gain);
 
-        self.f_buffer.push(new_freq);
-        self.gain.update(new_gain);
-//                self.f_buffer.push(220.0);
-//                self.gain.update(1.0);
+//        self.f_buffer.push(new_freq);
+//        self.gain.update(new_gain);
+                self.f_buffer.push(220.0);
+                self.gain.update(1.0);
     }
 
 
     pub fn generate(&mut self) -> (Vec<f32>, Vec<f32>) {
-//           println!("{:?}", self.f_buffer);
+//           println!("{:?}", self.f_buffer.to_vec());
         let current_frequency = self.f_buffer.current();
         let previous_frequency = self.f_buffer.previous();
 
         let mut frequency = current_frequency;
 
-        println!("{:?}, {:?}", previous_frequency, current_frequency, );
-        println!("{:?}", self.gain);
+//        println!("freqs previous {:?}, current {:?}", previous_frequency, current_frequency, );
+//        println!("{:?}", self.gain);
 
 //        if current_frequency == 0.0 && previous_frequency == 0.0 {
 //            return silence(self.settings.buffer_size);

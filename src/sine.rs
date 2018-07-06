@@ -29,7 +29,7 @@ pub fn generate_waveform(
     settings: &Settings,
 ) -> (Vec<f32>, Vec<f32>, f32) {
     let factor: f32 = tau() / settings.sample_rate;
-    let base_frequency = base_frequency * 2.0;
+//    let base_frequency = base_frequency * 2.0;
     let mut waveform: Vec<usize> = (0..settings.buffer_size).collect();
     let loudness = loudness_normalization(base_frequency);
 
@@ -63,6 +63,8 @@ pub fn generate_waveform(
 fn generate_gain_mask(buffer_size: usize, gain: &Gain, loudness: f32) -> Vec<f32> {
     let mut gain_mask: Vec<usize> = (0..buffer_size).collect();
     let current_volume = gain.current * loudness;
+
+//    println!("{}, {}", gain.past, current_volume);
 
     let delta: f32 = (current_volume - gain.past) / (buffer_size as f32 - 1.0);
     let mut gain_mask: Vec<f32> = gain_mask
