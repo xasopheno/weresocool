@@ -29,9 +29,11 @@ pub fn generate_waveform(
     settings: &Settings,
 ) -> (Vec<f32>, Vec<f32>, f32) {
     let factor: f32 = tau() / settings.sample_rate;
-//    let base_frequency = base_frequency * 2.0;
+    let base_frequency = base_frequency * 2.0;
     let mut waveform: Vec<usize> = (0..settings.buffer_size).collect();
     let loudness = loudness_normalization(base_frequency);
+
+//    println!("{:?}, {:?}, {:?}", base_frequency, gain, phases);
 
     let gain_mask: Vec<f32> = generate_gain_mask(settings.buffer_size, gain, loudness);
 
@@ -54,6 +56,7 @@ pub fn generate_waveform(
         factor,
         &ratios,
         &phases,
+        gain.current,
         settings.buffer_size as usize,
     );
 
@@ -126,8 +129,13 @@ fn generate_phase_array(
     factor: f32,
     ratios: &Vec<R>,
     phases: &Vec<f32>,
+    current_gain: f32,
     buffer_size: usize,
 ) -> Vec<f32> {
+    if current_gain == 0.0 {
+        return vec![0.0; ratios.len()];
+    }
+
     ratios
         .iter()
         .zip(phases.iter())

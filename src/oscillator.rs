@@ -25,8 +25,11 @@ impl Gain {
         Gain { past, current }
     }
 
-    pub fn update(&mut self, new_gain: f32) -> () {
+    pub fn update(&mut self, mut new_gain: f32) -> () {
         self.past = self.current;
+        if (self.current - new_gain).abs() > 0.5 {
+            new_gain = new_gain * 0.51;
+        }
         self.current = new_gain;
     }
 }
@@ -75,11 +78,12 @@ impl Oscillator {
 //        };
 
 //      println!("{}, {}", new_freq, new_gain);
+//        println!("{}, {}, {}", frequency, gain, _probability);
 
-//        self.f_buffer.push(new_freq);
-//        self.gain.update(new_gain);
-                self.f_buffer.push(220.0);
-                self.gain.update(1.0);
+        self.f_buffer.push(new_freq);
+        self.gain.update(new_gain);
+//                self.f_buffer.push(220.0);
+//                self.gain.update(1.0);
     }
 
 
@@ -90,12 +94,12 @@ impl Oscillator {
 
         let mut frequency = current_frequency;
 
+        if current_frequency == 0.0 && previous_frequency != 0.0 {
+            frequency = previous_frequency
+        }
 //        println!("freqs previous {:?}, current {:?}", previous_frequency, current_frequency, );
 //        println!("{:?}", self.gain);
 
-//        if current_frequency == 0.0 && previous_frequency == 0.0 {
-//            return silence(self.settings.buffer_size);
-//        }
 
         let (l_waveform, l_new_phases, _loudness) = (self.generator.generate)(
             frequency,
@@ -114,8 +118,10 @@ impl Oscillator {
         );
 
         self.gain.current *= loudness;
+
         self.l_phases = l_new_phases;
         self.r_phases = r_new_phases;
+
         (l_waveform, r_waveform)
     }
 

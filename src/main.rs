@@ -5,8 +5,6 @@ use sound::oscillator::{Oscillator};
 
 use sound::portaudio_setup::setup_portaudio_duplex;
 use sound::settings::get_default_app_settings;
-use sound::ratios::{complicated_ratios, simple_ratios, R};
-
 use std::sync::{Arc, Mutex};
 
 fn main() {

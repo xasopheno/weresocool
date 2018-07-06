@@ -38,7 +38,7 @@ pub fn setup_portaudio_duplex(
             if count < 20 {
                 count += 1;
                 if count == 20 {
-                    println!("{}", "* * * ready * * *");
+                    println!("{}", "* * * * * ready * * * * *");
                 }
                 pa::Continue
             } else {
