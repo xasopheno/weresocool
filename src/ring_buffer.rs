@@ -89,6 +89,7 @@ impl<T: Sized + Copy + Clone + std::default::Default> RingBuffer<T> {
     }
 }
 
+#[cfg(test)]
 pub mod tests {
     use super::*;
     #[test]

@@ -140,6 +140,7 @@ fn calculate_individual_phase(frequency: f32, buffer_size: f32, factor: f32, pha
     ((buffer_size as f32 * factor * frequency) + phase) % tau()
 }
 
+#[cfg(test)]
 pub mod tests {
     use super::*;
     use settings::get_test_settings;

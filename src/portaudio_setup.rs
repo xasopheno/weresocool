@@ -3,6 +3,7 @@ use analyze::{Analyze, DetectionResult};
 use oscillator::Oscillator;
 use portaudio as pa;
 use ring_buffer::RingBuffer;
+use ratios::{complicated_ratios, simple_ratios};
 use settings::{get_default_app_settings, Settings};
 use std;
 use std::sync::Arc;
@@ -18,10 +19,11 @@ use std::sync::Arc;
 
 pub fn setup_portaudio_duplex(
     ref pa: &pa::PortAudio,
-    oscillator: Arc<std::sync::Mutex<Oscillator>>,
 ) -> Result<pa::Stream<pa::NonBlocking, pa::Duplex<f32, f32>>, pa::Error> {
     let settings = get_default_app_settings();
 
+    let (l_ratios, r_ratios) = complicated_ratios();
+    let mut osc = Oscillator::new(10, l_ratios, r_ratios, get_default_app_settings());
     let duplex_stream_settings = get_duplex_settings(&pa, &settings)?;
 
     let mut input_buffer: RingBuffer<f32> = RingBuffer::<f32>::new(settings.yin_buffer_size);
@@ -36,7 +38,7 @@ pub fn setup_portaudio_duplex(
             if count < 20 {
                 count += 1;
                 if count == 20 {
-                    println!("{}", "*ready*");
+                    println!("{}", "* * * ready * * *");
                 }
                 pa::Continue
             } else {
@@ -45,9 +47,7 @@ pub fn setup_portaudio_duplex(
                     .to_vec()
                     .analyze(settings.sample_rate, settings.probability_threshold);
 
-                let mut osc = oscillator.lock().unwrap();
                 osc.update(result.frequency, result.gain, result.probability);
-
                 let (l_waveform, r_waveform) = osc.generate();
 
                 write_duplex_buffer(&mut out_buffer, l_waveform, r_waveform);

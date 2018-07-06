@@ -14,6 +14,7 @@ pub struct Oscillator {
     pub settings: Settings,
 }
 
+#[derive(Debug)]
 pub struct Gain {
     pub past: f32,
     pub current: f32,
@@ -72,20 +73,20 @@ impl Oscillator {
             new_gain = 0.0
         };
 
-        //        println!("{}, {}", new_freq, new_gain);
+//      println!("{}, {}", new_freq, new_gain);
 
         self.f_buffer.push(new_freq);
         self.gain.update(new_gain);
-        //        self.f_buffer.push(220.0);
-        //        self.gain.update(1.0);
+//                self.f_buffer.push(220.0);
+//                self.gain.update(1.0);
     }
 
 
     pub fn generate(&mut self) -> (Vec<f32>, Vec<f32>) {
-        //            println!("{:?}", self.f_buffer);
+//           println!("{:?}", self.f_buffer);
         let current_frequency = self.f_buffer.current();
         let previous_frequency = self.f_buffer.previous();
-
+        println!("{:?}, {:?}", previous_frequency, current_frequency, );
         if current_frequency == 0.0 && previous_frequency == 0.0 {
             return silence(self.settings.buffer_size);
         }
@@ -95,6 +96,7 @@ impl Oscillator {
         if previous_frequency != 0.0 && current_frequency == 0.0 {
             frequency = previous_frequency;
         }
+        println!("{:?}", self.gain);
 
         let (l_waveform, l_new_phases, _loudness) = (self.generator.generate)(
             frequency,
@@ -124,6 +126,7 @@ fn silence(buffer_size: usize) -> (Vec<f32>, Vec<f32>) {
     (vec![0.0; buffer_size], vec![0.0; buffer_size])
 }
 
+#[cfg(test)]
 pub mod tests {
     use super::*;
     #[test]
