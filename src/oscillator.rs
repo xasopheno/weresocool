@@ -67,11 +67,12 @@ impl Oscillator {
             } else {
                 0.0
             };
-        let mut new_gain = if new_freq != 0.0 { gain } else { 0.0 };
 
-        if new_gain < self.settings.gain_threshold_min {
-            new_gain = 0.0
-        };
+        let mut new_gain = if new_freq != 0.0 { gain } else { 0.0 };
+//
+//        if new_gain < self.settings.gain_threshold_min {
+//            new_gain = 0.0
+//        };
 
 //      println!("{}, {}", new_freq, new_gain);
 
@@ -86,17 +87,15 @@ impl Oscillator {
 //           println!("{:?}", self.f_buffer);
         let current_frequency = self.f_buffer.current();
         let previous_frequency = self.f_buffer.previous();
-        println!("{:?}, {:?}", previous_frequency, current_frequency, );
-        if current_frequency == 0.0 && previous_frequency == 0.0 {
-            return silence(self.settings.buffer_size);
-        }
 
         let mut frequency = current_frequency;
 
-        if previous_frequency != 0.0 && current_frequency == 0.0 {
-            frequency = previous_frequency;
-        }
+        println!("{:?}, {:?}", previous_frequency, current_frequency, );
         println!("{:?}", self.gain);
+
+//        if current_frequency == 0.0 && previous_frequency == 0.0 {
+//            return silence(self.settings.buffer_size);
+//        }
 
         let (l_waveform, l_new_phases, _loudness) = (self.generator.generate)(
             frequency,
