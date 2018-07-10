@@ -80,10 +80,10 @@ impl Oscillator {
 //      println!("{}, {}", new_freq, new_gain);
 //        println!("{}, {}, {}", frequency, gain, _probability);
 
-//        self.f_buffer.push(new_freq);
-//        self.gain.update(new_gain);
-                self.f_buffer.push(220.0);
-                self.gain.update(1.0);
+        self.f_buffer.push(new_freq);
+        self.gain.update(new_gain);
+//                self.f_buffer.push(220.0);
+//                self.gain.update(1.0);
     }
 
     fn f_buffer_to_ratios(&mut self) {
