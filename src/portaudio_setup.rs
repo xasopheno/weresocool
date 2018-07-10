@@ -8,14 +8,6 @@ use settings::{get_default_app_settings, Settings};
 use std;
 use std::sync::Arc;
 
-//pub struct io {
-//    //    state: State,
-//    pa: &'static pa::PortAudio,
-//    input_settings: Settings,
-//    output_settings: Settings,
-//    oscillator: Arc<std::sync::Mutex<Oscillator>>,
-//    audio_buffer: RingBuffer<f32>,
-//}
 
 pub fn setup_portaudio_duplex(
     ref pa: &pa::PortAudio,

@@ -1,4 +1,6 @@
-# Rust DSP
+# ***** WereSoCool __!Now In Stereo!__ ******
+
+Make cool sounds. Impress your friends. Ratio-based harmonic accompaniment to microphone input. 
 
 ## Run
 
