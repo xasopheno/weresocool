@@ -22,6 +22,7 @@ pub fn setup_portaudio_duplex(
 ) -> Result<pa::Stream<pa::NonBlocking, pa::Duplex<f32, f32>>, pa::Error> {
     let settings = get_default_app_settings();
 
+
     let (l_ratios, r_ratios) = complicated_ratios();
     let mut osc = Oscillator::new(10, l_ratios, r_ratios, get_default_app_settings());
     let duplex_stream_settings = get_duplex_settings(&pa, &settings)?;
