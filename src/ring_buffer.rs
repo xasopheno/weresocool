@@ -73,7 +73,10 @@ impl<T: Sized + Copy + Clone + std::default::Default> RingBuffer<T> {
     where
         T: Clone + Copy,
     {
-        self.buffer[(self.tail + 2) % self.capacity]
+        if self.tail == 0 {
+            return self.buffer[(self.capacity - 1)];
+        }
+        self.buffer[(self.tail - 1) % self.capacity]
     }
 
     pub fn to_vec(&self) -> Vec<T> {
@@ -89,6 +92,7 @@ impl<T: Sized + Copy + Clone + std::default::Default> RingBuffer<T> {
     }
 }
 
+#[cfg(test)]
 pub mod tests {
     use super::*;
     #[test]
