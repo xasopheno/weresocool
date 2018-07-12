@@ -9,7 +9,10 @@ pub struct R {
 impl R {
     pub fn atio(n: usize, d: usize, offset: f32, gain: f32) -> R {
         if d == 0 {
-            panic!("Denominator of a Ratio cannot be 0. Failed at R.atio({}, {}, {}, {})", n, d, offset, gain);
+            panic!(
+                "Denominator of a Ratio cannot be 0. Failed at R.atio({}, {}, {}, {})",
+                n, d, offset, gain
+            );
         }
         R {
             decimal: n as f32 / d as f32,
@@ -67,7 +70,6 @@ pub fn complicated_ratios() -> (Vec<R>, Vec<R>) {
 
     (l_ratios, r_ratios)
 }
-
 
 pub fn simple_ratios() -> (Vec<R>, Vec<R>) {
     let l_ratios = vec![

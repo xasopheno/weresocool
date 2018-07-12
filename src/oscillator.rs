@@ -1,7 +1,7 @@
+use ratios::R;
 use ring_buffer::RingBuffer;
 use settings::Settings;
 use sine::Generator;
-use ratios::{R};
 
 pub struct Oscillator {
     pub f_buffer: RingBuffer<f32>,
@@ -64,26 +64,22 @@ impl Oscillator {
     }
 
     pub fn update(&mut self, frequency: f32, gain: f32, _probability: f32) {
-        let new_freq =
-            if frequency < self.settings.max_freq && frequency > self.settings.min_freq {
-                frequency
-            } else {
-                0.0
-            };
+        let new_freq = if frequency < self.settings.max_freq && frequency > self.settings.min_freq {
+            frequency
+        } else {
+            0.0
+        };
 
         let mut new_gain = if new_freq != 0.0 { gain } else { 0.0 };
 
-//        if new_gain < self.settings.gain_threshold_min {
-//            new_gain = 0.0
-//        };
-
-//      println!("{}, {}", new_freq, new_gain);
-//        println!("{}, {}, {}", frequency, gain, _probability);
+        if new_gain < self.settings.gain_threshold_min {
+            new_gain = 0.0
+        };
 
         self.f_buffer.push(new_freq);
         self.gain.update(new_gain);
-//                self.f_buffer.push(220.0);
-//                self.gain.update(1.0);
+        //                self.f_buffer.push(220.0);
+        //                self.gain.update(1.0);
     }
 
     fn f_buffer_to_ratios(&mut self) {
@@ -94,13 +90,12 @@ impl Oscillator {
             if value.is_infinite() || value.is_nan() || value == 0.0 {
                 value = 1.0;
             }
-//                println!("{}", value);
+            //                println!("{}", value);
         }
     }
 
-
     pub fn generate(&mut self) -> (Vec<f32>, Vec<f32>) {
-//           println!("{:?}", self.f_buffer.to_vec());
+        //           println!("{:?}", self.f_buffer.to_vec());
         self.f_buffer_to_ratios();
         let current_frequency = self.f_buffer.current();
         let previous_frequency = self.f_buffer.previous();
@@ -110,7 +105,6 @@ impl Oscillator {
         if current_frequency == 0.0 && previous_frequency != 0.0 {
             frequency = previous_frequency
         }
-
 
         let (l_waveform, l_new_phases, _loudness) = (self.generator.generate)(
             frequency,
@@ -135,7 +129,6 @@ impl Oscillator {
 
         (l_waveform, r_waveform)
     }
-
 }
 
 fn silence(buffer_size: usize) -> (Vec<f32>, Vec<f32>) {

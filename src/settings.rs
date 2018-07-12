@@ -18,7 +18,7 @@ pub fn get_default_app_settings() -> Settings {
         yin_buffer_size: 2048,
         buffer_size: 512,
         probability_threshold: 0.3,
-        gain_threshold_min: 0.008,
+        gain_threshold_min: 0.000,
         channels: 2,
         interleaved: true,
         max_freq: 2_500.0,

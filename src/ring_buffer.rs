@@ -74,7 +74,7 @@ impl<T: Sized + Copy + Clone + std::default::Default> RingBuffer<T> {
         T: Clone + Copy,
     {
         if self.tail == 0 {
-            return self.buffer[(self.capacity -1)];
+            return self.buffer[(self.capacity - 1)];
         }
         self.buffer[(self.tail - 1) % self.capacity]
     }

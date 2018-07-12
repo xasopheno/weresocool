@@ -1,11 +1,7 @@
 extern crate portaudio;
 extern crate weresocool;
 use portaudio as pa;
-use weresocool::oscillator::{Oscillator};
-
 use weresocool::portaudio_setup::setup_portaudio_duplex;
-use weresocool::settings::get_default_app_settings;
-use std::sync::{Arc, Mutex};
 
 fn main() {
     match run() {
