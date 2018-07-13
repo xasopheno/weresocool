@@ -16,7 +16,7 @@ pub fn setup_portaudio_output(
 
     let (l_ratios, r_ratios) = complicated_ratios();
     let mut oscillator = Oscillator::new(10, l_ratios, r_ratios, get_default_app_settings());
-    let mut freq = 50.0;
+    let mut freq = 100.0;
     oscillator.update(freq, 1.0, 1.0);
     let output_settings = get_output_settings(&pa, &get_default_app_settings())?;
 
@@ -38,19 +38,19 @@ pub fn setup_portaudio_output(
         }
 
         counter += 1;
-        if counter % 100 == 0 {
-            let vs = vec![6.0, 1.0, -1.0, -2.0, 3.1, 0.0, 0.0];
-            let change = rand::thread_rng().choose(&vs);
-            match change {
-                Some(change) => {
-                    if freq > 110.0 || freq < 40.0 {
-                        freq = 50.0
-                    }
-                    freq += change;
-                }
-                _ => {}
-            }
-        }
+//        if counter % 100 == 0 {
+//            let vs = vec![6.0, 1.0, -1.0, -2.0, 3.1, 0.0, 0.0];
+//            let change = rand::thread_rng().choose(&vs);
+//            match change {
+//                Some(change) => {
+//                    if freq > 110.0 || freq < 40.0 {
+//                        freq = 50.0
+//                    }
+//                    freq += change;
+//                }
+//                _ => {}
+//            }
+//        }
 
         oscillator.update(freq, 1.0, 1.0);
         pa::Continue
