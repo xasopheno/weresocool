@@ -4,7 +4,17 @@ version = "0.1.0"
 authors = ["Danny Meyer <Danny.Meyer@gmail.com>"]
 description = "***** WereSoCool __!Now In Stereo!__ ****** Make cool sounds. Impress your friends. Ratio-based harmonic accompaniment to microphone input."
 license = "MIT"
+autobins = false
 
 [dependencies]
 portaudio = "0.7.0"
 rand = "0.5.1"
+
+
+[[bin]]
+name = "mic"
+path = "src/mic.rs"
+
+[[bin]]
+name = "composer"
+path = "src/composer.rs"

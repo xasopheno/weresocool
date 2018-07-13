@@ -5,7 +5,7 @@ use portaudio as pa;
 use std;
 use std::sync::mpsc::channel;
 use std::sync::Arc;
-use ratios::{R, simple_ratios, complicated_ratios, square};
+use ratios::{R, simple_ratios, complicated_ratios};
 use settings::{get_default_app_settings, Settings};
 
 
@@ -38,11 +38,14 @@ pub fn setup_portaudio_output(
         }
 
         counter += 1;
-        if counter % 20 == 0 {
+        if counter % 100 == 0 {
             let vs = vec![6.0, 1.0, -1.0, -2.0, 3.1, 0.0, 0.0];
             let change = rand::thread_rng().choose(&vs);
             match change {
                 Some(change) => {
+                    if freq > 110.0 || freq < 40.0 {
+                        freq = 50.0
+                    }
                     freq += change;
                 }
                 _ => {}

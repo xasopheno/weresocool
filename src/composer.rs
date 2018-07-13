@@ -2,7 +2,7 @@ extern crate portaudio;
 extern crate weresocool;
 use portaudio as pa;
 use weresocool::oscillator::{Oscillator, Gain};
-use weresocool::ratios::{R, StereoRatios, simple_ratios, square};
+use weresocool::ratios::{R, StereoRatios, simple_ratios};
 use weresocool::portaudio_output_setup::setup_portaudio_output;
 use weresocool::settings::{get_default_app_settings, Settings};
 use weresocool::event::{Event, Phrase, Mutate};

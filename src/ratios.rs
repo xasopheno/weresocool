@@ -6,6 +6,12 @@ pub struct R {
     pub gain: f32,
 }
 
+#[derive(Debug)]
+pub struct StereoRatios {
+    pub l_ratios: Vec<R>,
+    pub r_ratios: Vec<R>
+}
+
 impl R {
     pub fn atio(n: usize, d: usize, offset: f32, gain: f32) -> R {
         if d == 0 {
