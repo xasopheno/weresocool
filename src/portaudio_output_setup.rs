@@ -1,6 +1,6 @@
 extern crate rand;
 use self::rand::Rng;
-use oscillator::Oscillator;
+use oscillator::{Oscillator, StereoWaveform};
 use portaudio as pa;
 use std;
 use std::sync::mpsc::channel;
@@ -22,20 +22,14 @@ pub fn setup_portaudio_output(
 
     let mut counter = 0;
 
-    let output_stream = pa.open_non_blocking_stream(output_settings, move |args| {
-        let (l_waveform, r_waveform) = oscillator.generate();
+    let output_stream = pa.open_non_blocking_stream(output_settings, move |pa::OutputStreamCallbackArgs {
+                                                                               mut buffer,
+                                                                               ..
+                                                                           }| {
+        let stereo_waveform = oscillator.generate();
 
-        let mut l_idx = 0;
-        let mut r_idx = 0;
-        for n in 0..args.buffer.len() {
-            if n % 2 == 0 {
-                args.buffer[n] = l_waveform[l_idx];
-                l_idx += 1;
-            } else {
-                args.buffer[n] = r_waveform[r_idx];
-                r_idx += 1
-            }
-        }
+        write_output_buffer(&mut buffer, stereo_waveform);
+
 
         counter += 1;
         if counter % 100 == 0 {
@@ -57,6 +51,20 @@ pub fn setup_portaudio_output(
     })?;
 
     Ok(output_stream)
+}
+
+fn write_output_buffer(out_buffer: &mut [f32], stereo_waveform: StereoWaveform) {
+    let mut l_idx = 0;
+    let mut r_idx = 0;
+    for n in 0..out_buffer.len() {
+        if n % 2 == 0 {
+            out_buffer[n] = stereo_waveform.l_waveform[l_idx];
+            l_idx += 1
+        } else {
+            out_buffer[n] = stereo_waveform.r_waveform[r_idx];
+            r_idx += 1
+        }
+    }
 }
 
 pub fn get_output_settings(

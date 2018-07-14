@@ -6,13 +6,16 @@ use sine::Generator;
 pub struct Oscillator {
     pub f_buffer: RingBuffer<f32>,
     pub stereo_ratios: StereoRatios,
-//    pub l_ratios: Vec<R>,
-//    pub r_ratios: Vec<R>,
     pub l_phases: Vec<f32>,
     pub r_phases: Vec<f32>,
     pub generator: Generator,
     pub gain: Gain,
     pub settings: Settings,
+}
+
+pub struct StereoWaveform {
+    pub l_waveform: Vec<f32>,
+    pub r_waveform: Vec<f32>
 }
 
 
@@ -40,8 +43,6 @@ impl Oscillator {
     pub fn new(
         f_buffer_size: usize,
         stereo_ratios: StereoRatios,
-//        l_ratios: Vec<R>,
-//        r_ratios: Vec<R>,
         settings: Settings,
     ) -> Oscillator {
         println!("{}", "Left Generated Ratios");
@@ -56,8 +57,6 @@ impl Oscillator {
 
         Oscillator {
             f_buffer: RingBuffer::<f32>::new_full(f_buffer_size as usize),
-//            l_ratios,
-//            r_ratios,
             l_phases: vec![0.0; stereo_ratios.l_ratios.len()],
             r_phases: vec![0.0; stereo_ratios.r_ratios.len()],
             stereo_ratios,
@@ -98,8 +97,8 @@ impl Oscillator {
         }
     }
 
-    pub fn generate(&mut self) -> (Vec<f32>, Vec<f32>) {
-        //           println!("{:?}", self.f_buffer.to_vec());
+    pub fn generate(&mut self) -> StereoWaveform {
+//           println!("{:?}", self.f_buffer.to_vec());
         self.f_buffer_to_ratios();
         let current_frequency = self.f_buffer.current();
         let previous_frequency = self.f_buffer.previous();
@@ -131,7 +130,7 @@ impl Oscillator {
         self.l_phases = l_new_phases;
         self.r_phases = r_new_phases;
 
-        ( l_waveform, r_waveform )
+        StereoWaveform { l_waveform, r_waveform }
     }
 }
 

@@ -107,8 +107,18 @@ pub fn simple_ratios() -> StereoRatios {
 //        R::atio(3, 2, 0.0, 1.0),
 //        R::atio(3, 2, -0.75, 1.0),
 //        R::atio(1, 1, -0.5, 1.0),
-        R::atio(1, 1, 0.25, 1.0),
+        R::atio(2, 1, 0.0, 1.0),
     ];
 
     StereoRatios {l_ratios, r_ratios}
+}
+
+
+pub fn mono_ratios() -> StereoRatios {
+    let ratios = vec![
+        R::atio(2, 1, 0.0, 1.0),
+    ];
+
+
+    StereoRatios { l_ratios: ratios.clone(), r_ratios: ratios}
 }
