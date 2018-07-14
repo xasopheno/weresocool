@@ -41,7 +41,6 @@ fn main() {
 fn run() -> Result<(), pa::Error> {
     println!("{}", "\n ***** Rust DSP __!Now In Stereo!__ ****** \n ");
 
-
     let settings: Settings = get_default_app_settings();
     let pa = pa::PortAudio::new()?;
 

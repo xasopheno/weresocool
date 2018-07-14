@@ -1,13 +1,13 @@
 extern crate rand;
 use self::rand::Rng;
+use event::{generate_test_phrase, Event, Mutate, Phrase};
 use oscillator::{Oscillator, StereoWaveform};
 use portaudio as pa;
 use ratios::{complicated_ratios, simple_ratios, R};
 use settings::{get_default_app_settings, Settings};
-use event::{Event, Mutate, Phrase, generate_test_phrase};
+use std;
 use std::sync::mpsc::channel;
 use std::sync::Arc;
-use std;
 
 pub fn setup_portaudio_output(
     ref pa: &pa::PortAudio,
@@ -31,29 +31,30 @@ pub fn setup_portaudio_output(
 
             index = index % (test_phrase.len());
 
-            write_output_buffer(&mut buffer, stereo_waveform);
 
             if counter % 25 == 0 {
                 freq = test_phrase[index].frequency / 1.4;
                 oscillator.stereo_ratios = test_phrase[index].ratios.clone();
+                oscillator.gain.past = 0.0;
                 index += 1;
             }
-//
-//            if counter % 100 == 0 {
-//                let vs = vec![1.0, -1.0, -2.0, 2.0, 0.0];
-//                let change = rand::thread_rng().choose(&vs);
-//                match change {
-//                    Some(change) => {
-//                        if freq > 110.0 || freq < 40.0 {
-//                            freq = 50.0
-//                        }
-//                        freq += change;
-//                    }
-//                    _ => {}
-//                }
-//            }
+            //
+            //            if counter % 100 == 0 {
+            //                let vs = vec![1.0, -1.0, -2.0, 2.0, 0.0];
+            //                let change = rand::thread_rng().choose(&vs);
+            //                match change {
+            //                    Some(change) => {
+            //                        if freq > 110.0 || freq < 40.0 {
+            //                            freq = 50.0
+            //                        }
+            //                        freq += change;
+            //                    }
+            //                    _ => {}
+            //                }
+            //            }
             counter += 1;
-            oscillator.update(freq, 1.0, 1.0);
+            oscillator.update(freq, 0.3, 1.0);
+            write_output_buffer(&mut buffer, stereo_waveform);
             pa::Continue
         },
     )?;

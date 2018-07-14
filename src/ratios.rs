@@ -79,25 +79,29 @@ pub fn complicated_ratios() -> StereoRatios {
 
 pub fn simple_ratios() -> StereoRatios {
     let l_ratios = vec![
+        R::atio(5, 1, -1.0, 0.15),
+        R::atio(5, 1, 0.0, 0.15),
         R::atio(5, 4, -2.0, 0.5),
         R::atio(5, 4, 0.0, 0.5),
         R::atio(2, 1, 0.0, 1.0),
         R::atio(2, 1, 5.0, 1.0),
         R::atio(1, 1, -2.0, 1.0),
-        R::atio(1, 1, 5.0,0.0),
-        R::atio(1, 2, 0.0,0.0),
-        R::atio(1, 2, 0.5,0.0),
+        R::atio(1, 1, 5.0, 0.0),
+        R::atio(1, 2, 0.0, 0.0),
+        R::atio(1, 2, 2.0, 0.0),
     ];
 
     let r_ratios = vec![
+        R::atio(5, 1, -1.0, 0.15),
+        R::atio(5, 1, 0.0, 0.15),
         R::atio(3, 2, 0.0, 0.5),
         R::atio(3, 2, -0.75, 0.5),
         R::atio(2, 1, -0.5, 1.0),
         R::atio(2, 1, -5.0, 1.0),
         R::atio(1, 1, 2.0, 1.0),
         R::atio(1, 1, 0.0, 1.0),
-        R::atio(1, 2, 0.0,0.0),
-        R::atio(1, 2, 0.5,0.0),
+        R::atio(1, 2, 0.0, 0.0),
+        R::atio(1, 2, 2.0, 0.0),
     ];
 
     StereoRatios { l_ratios, r_ratios }
@@ -105,25 +109,29 @@ pub fn simple_ratios() -> StereoRatios {
 
 pub fn simple_ratios2() -> StereoRatios {
     let l_ratios = vec![
+        R::atio(5, 1, -1.0, 0.15),
+        R::atio(5, 1, 0.0, 0.15),
         R::atio(3, 1, 14.0, 0.5),
         R::atio(3, 1, 0.0, 0.5),
         R::atio(2, 1, 0.0, 1.0),
         R::atio(2, 1, 5.0, 1.0),
         R::atio(1, 1, 2.0, 1.0),
         R::atio(1, 1, 0.0, 0.0),
-        R::atio(1, 2, 0.0,0.0),
-        R::atio(1, 2, 2.0,0.0),
+        R::atio(1, 2, 0.0, 0.0),
+        R::atio(1, 2, 1.0, 0.0),
     ];
 
     let r_ratios = vec![
+        R::atio(5, 1, -1.0, 0.05),
+        R::atio(5, 1, 0.0, 0.05),
         R::atio(4, 1, 15.0, 0.5),
         R::atio(4, 1, 0.0, 0.5),
         R::atio(2, 1, -0.0, 1.0),
         R::atio(2, 1, -5.5, 1.0),
         R::atio(1, 1, -2.0, 1.0),
         R::atio(1, 1, 0.0, 1.0),
-        R::atio(1, 2, 0.0,0.0),
-        R::atio(1, 2, 2.0,0.0),
+        R::atio(1, 2, 0.0, 0.0),
+        R::atio(1, 2, 1.0, 0.0),
     ];
 
     StereoRatios { l_ratios, r_ratios }
@@ -131,25 +139,25 @@ pub fn simple_ratios2() -> StereoRatios {
 
 pub fn simple_ratios3() -> StereoRatios {
     let l_ratios = vec![
-        R::atio(2, 1, 14.0, 0.5),
-        R::atio(2, 1, 0.0, 0.5),
-        R::atio(3, 1, 0.0, 1.0),
-        R::atio(11, 4, 0.0, 0.5),
-        R::atio(3, 2, 2.0, 1.0),
-        R::atio(1, 1, 0.0, 0.0),
-        R::atio(1, 1, 0.0,0.0),
-        R::atio(1, 2, 2.0,0.0),
+        R::atio(4, 1, 0.0, 0.5),
+        R::atio(4, 1, 6.0, 0.5),
+        R::atio(2, 1, 1.0, 1.0),
+        R::atio(2, 1, 3.0, 1.0),
+        R::atio(1, 1, 1.0, 1.0),
+        R::atio(1, 1, -1.0, 1.0),
+        R::atio(1, 2, 0.0, 0.0),
+        R::atio(1, 2, 1.0, 0.0),
     ];
 
     let r_ratios = vec![
-        R::atio(2, 1, 14.0, 0.5),
-        R::atio(2, 1, 0.0, 0.5),
-        R::atio(3, 1, 0.0, 1.0),
-        R::atio(11, 4, 0.0, 0.5),
-        R::atio(3, 2, 2.0, 1.0),
-        R::atio(1, 1, 0.0, 0.0),
-        R::atio(1, 1, 0.0,0.0),
-        R::atio(1, 2, 2.0,0.0),
+        R::atio(4, 1, 0.0, 0.5),
+        R::atio(4, 1, 5.0, 0.5),
+        R::atio(2, 1, 1.0, 1.0),
+        R::atio(2, 1, -4.0, 1.0),
+        R::atio(1, 1, 1.0, 1.0),
+        R::atio(1, 1, 3.0, 1.0),
+        R::atio(1, 2, 0.0, 0.0),
+        R::atio(1, 2, 1.0, 0.0),
     ];
 
     StereoRatios { l_ratios, r_ratios }
