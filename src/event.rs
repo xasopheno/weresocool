@@ -95,3 +95,29 @@ impl Mutate<Phrase> for Phrase {
         self.clone()
     }
 }
+
+#[cfg(test)]
+pub mod tests {
+    use super::*;
+    use ratios::{simple_ratios, mono_ratios};
+
+    #[test]
+    fn test_mutate_event() {
+        let result = Event::new(100.0, simple_ratios(), 1.0, 1.0)
+            .mut_ratios(mono_ratios())
+            .transpose(3.0/2.0, 0.0)
+            .mut_length(2.0, 1.0)
+            .mut_gain(0.9, 0.0);
+
+        let expected = Event {
+            frequency: 150.0,
+            ratios: mono_ratios(),
+            length: 3.0,
+            gain: 0.9,
+        };
+        assert_eq!(result.frequency, expected.frequency);
+        assert_eq!(result.ratios, expected.ratios);
+        assert_eq!(result.length, expected.length);
+        assert_eq!(result.gain, expected.gain);
+    }
+}

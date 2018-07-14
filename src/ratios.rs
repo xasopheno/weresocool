@@ -1,4 +1,4 @@
-#[derive(Debug, Clone)]
+#[derive(Debug, Clone, PartialEq)]
 pub struct R {
     pub decimal: f32,
     pub offset: f32,
@@ -6,7 +6,7 @@ pub struct R {
     pub gain: f32,
 }
 
-#[derive(Debug, Clone)]
+#[derive(Debug, Clone, PartialEq)]
 pub struct StereoRatios {
     pub l_ratios: Vec<R>,
     pub r_ratios: Vec<R>,
