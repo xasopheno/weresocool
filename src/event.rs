@@ -1,6 +1,6 @@
 use ratios::{R, StereoRatios};
 
-#[derive(Debug, Clone)]
+#[derive(Debug, Clone, PartialEq)]
 pub struct Event {
     pub frequency: f32,
     pub ratios: StereoRatios,
@@ -8,7 +8,7 @@ pub struct Event {
     pub gain: f32,
 }
 
-#[derive(Debug, Clone)]
+#[derive(Debug, Clone, PartialEq)]
 pub struct Phrase {
     pub events: Vec<Event>,
 }
@@ -115,9 +115,30 @@ pub mod tests {
             length: 3.0,
             gain: 0.9,
         };
-        assert_eq!(result.frequency, expected.frequency);
-        assert_eq!(result.ratios, expected.ratios);
-        assert_eq!(result.length, expected.length);
-        assert_eq!(result.gain, expected.gain);
+        assert_eq!(result, expected);
+    }
+
+    #[test]
+    fn test_mutate_phrase() {
+        let mut phrase = Phrase {
+            events: vec![
+                Event::new(100.0, simple_ratios(), 1.0, 1.0),
+                Event::new(50.0, simple_ratios(), 2.0, 1.0)
+            ]
+        };
+
+        let result = phrase
+            .mut_ratios(mono_ratios())
+            .transpose(3.0/2.0, 0.0)
+            .mut_length(2.0, 1.0)
+            .mut_gain(0.9, 0.0);
+
+        let expected = Phrase {
+            events: vec![
+                Event::new(150.0, mono_ratios(), 3.0, 0.9),
+                Event::new(75.0, mono_ratios(), 5.0, 0.9)
+            ]
+        };
+        assert_eq!(result, expected);
     }
 }
