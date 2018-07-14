@@ -2,53 +2,61 @@ extern crate rand;
 use self::rand::Rng;
 use oscillator::{Oscillator, StereoWaveform};
 use portaudio as pa;
-use std;
+use ratios::{complicated_ratios, simple_ratios, R};
+use settings::{get_default_app_settings, Settings};
+use event::{Event, Mutate, Phrase, generate_test_phrase};
 use std::sync::mpsc::channel;
 use std::sync::Arc;
-use ratios::{R, simple_ratios, complicated_ratios};
-use settings::{get_default_app_settings, Settings};
-
+use std;
 
 pub fn setup_portaudio_output(
     ref pa: &pa::PortAudio,
 ) -> Result<pa::Stream<pa::NonBlocking, pa::Output<f32>>, pa::Error> {
     let settings = get_default_app_settings();
 
-//    let (l_ratios, r_ratios) = ;
+    //    let (l_ratios, r_ratios) = ;
     let mut oscillator = Oscillator::new(10, simple_ratios(), get_default_app_settings());
     let mut freq = 100.0;
     oscillator.update(freq, 1.0, 1.0);
     let output_settings = get_output_settings(&pa, &get_default_app_settings())?;
 
     let mut counter = 0;
+    let mut index = 0;
+    let test_phrase = generate_test_phrase();
 
-    let output_stream = pa.open_non_blocking_stream(output_settings, move |pa::OutputStreamCallbackArgs {
-                                                                               mut buffer,
-                                                                               ..
-                                                                           }| {
-        let stereo_waveform = oscillator.generate();
+    let output_stream = pa.open_non_blocking_stream(
+        output_settings,
+        move |pa::OutputStreamCallbackArgs { mut buffer, .. }| {
+            let stereo_waveform = oscillator.generate();
 
-        write_output_buffer(&mut buffer, stereo_waveform);
+            index = index % (test_phrase.len());
 
+            write_output_buffer(&mut buffer, stereo_waveform);
 
-        counter += 1;
-        if counter % 100 == 0 {
-            let vs = vec![6.0, 1.0, -1.0, -2.0, 3.1, 0.0, 0.0];
-            let change = rand::thread_rng().choose(&vs);
-            match change {
-                Some(change) => {
-                    if freq > 110.0 || freq < 40.0 {
-                        freq = 50.0
-                    }
-                    freq += change;
-                }
-                _ => {}
+            if counter % 25 == 0 {
+                freq = test_phrase[index].frequency / 1.3;
+                oscillator.stereo_ratios = test_phrase[index].ratios.clone();
+                index += 1;
             }
-        }
-
-        oscillator.update(freq, 1.0, 1.0);
-        pa::Continue
-    })?;
+//
+//            if counter % 100 == 0 {
+//                let vs = vec![1.0, -1.0, -2.0, 2.0, 0.0];
+//                let change = rand::thread_rng().choose(&vs);
+//                match change {
+//                    Some(change) => {
+//                        if freq > 110.0 || freq < 40.0 {
+//                            freq = 50.0
+//                        }
+//                        freq += change;
+//                    }
+//                    _ => {}
+//                }
+//            }
+            counter += 1;
+            oscillator.update(freq, 1.0, 1.0);
+            pa::Continue
+        },
+    )?;
 
     Ok(output_stream)
 }

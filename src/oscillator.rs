@@ -1,4 +1,4 @@
-use ratios::{R, StereoRatios};
+use ratios::{StereoRatios, R};
 use ring_buffer::RingBuffer;
 use settings::Settings;
 use sine::Generator;
@@ -15,9 +15,8 @@ pub struct Oscillator {
 
 pub struct StereoWaveform {
     pub l_waveform: Vec<f32>,
-    pub r_waveform: Vec<f32>
+    pub r_waveform: Vec<f32>,
 }
-
 
 #[derive(Debug)]
 pub struct Gain {
@@ -93,13 +92,14 @@ impl Oscillator {
             if value.is_infinite() || value.is_nan() || value == 0.0 {
                 value = 1.0;
             }
-            //                println!("{}", value);
+
+            println!("{}", value);
         }
     }
 
     pub fn generate(&mut self) -> StereoWaveform {
-//           println!("{:?}", self.f_buffer.to_vec());
-        self.f_buffer_to_ratios();
+        println!("{:?}", self.f_buffer.to_vec());
+        //        self.f_buffer_to_ratios();
         let current_frequency = self.f_buffer.current();
         let previous_frequency = self.f_buffer.previous();
 
@@ -130,7 +130,10 @@ impl Oscillator {
         self.l_phases = l_new_phases;
         self.r_phases = r_new_phases;
 
-        StereoWaveform { l_waveform, r_waveform }
+        StereoWaveform {
+            l_waveform,
+            r_waveform,
+        }
     }
 }
 

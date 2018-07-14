@@ -1,63 +1,46 @@
 extern crate portaudio;
 extern crate weresocool;
 use portaudio as pa;
-use weresocool::oscillator::{Oscillator, Gain};
-use weresocool::ratios::{R, StereoRatios, simple_ratios, mono_ratios};
+use weresocool::event::{Event, Mutate, Phrase};
+use weresocool::oscillator::{Gain, Oscillator};
 use weresocool::portaudio_output_setup::setup_portaudio_output;
+use weresocool::ratios::{mono_ratios, simple_ratios, StereoRatios, R};
 use weresocool::settings::{get_default_app_settings, Settings};
-use weresocool::event::{Event, Phrase, Mutate};
-
-fn main() {
-    let events = vec![
-        Event::new(200.0, simple_ratios(), 1.0, 1.0)
-            .mut_gain(0.9, 0.0),
-        Event::new(200.0, simple_ratios(), 1.0, 1.0)
-            .transpose(3.0/2.0, 0.0),
-        Event::new(250.0, simple_ratios(), 1.0, 1.0)
-            .mut_ratios(mono_ratios())
-            .transpose(5.0/4.0, 0.0)
-            .mut_length(2.0, 1.0)
-    ];
-
-    let mut phrase = Phrase {
-        events
-    };
-    println!("{:?}", phrase);
-
-    let phrase = phrase
-        .mut_ratios(mono_ratios())
-        .transpose(5.0/4.0, 0.0)
-        .mut_gain(0.9, 0.0)
-        .mut_length(2.0, 1.0);
-
-    println!("{:?}", phrase);
-}
 
 //fn main() {
-//    match run() {
-//        Ok(_) => {}
-//        e => {
-//            eprintln!("Failed with the following error: {:?}", e);
-//        }
-//    }
+//    let events = vec![
+//        Event::new(200.0, simple_ratios(), 1.0, 1.0).mut_gain(0.9, 0.0),
+//        Event::new(200.0, simple_ratios(), 1.0, 1.0).transpose(3.0 / 2.0, 0.0),
+//        Event::new(250.0, simple_ratios(), 1.0, 1.0)
+//            .mut_ratios(mono_ratios())
+//            .transpose(5.0 / 4.0, 0.0)
+//            .mut_length(2.0, 1.0),
+//    ];
+//
+//    let mut phrase1 = Phrase { events };
+//    println!("{:?}", phrase1);
+//
+//    let phrase2 = phrase1
+//        .mut_ratios(mono_ratios())
+//        .transpose(5.0 / 4.0, 0.0)
+//        .mut_gain(0.9, 0.0)
+//        .mut_length(2.0, 1.0);
+//
+//    println!("{:?}", phrase2);
 //}
+
+fn main() {
+    match run() {
+        Ok(_) => {}
+        e => {
+            eprintln!("Failed with the following error: {:?}", e);
+        }
+    }
+}
 
 fn run() -> Result<(), pa::Error> {
     println!("{}", "\n ***** Rust DSP __!Now In Stereo!__ ****** \n ");
 
-    let r_ratios = vec![
-        R::atio(11, 8, 0.0, 1.0),
-        R::atio(1, 1, -3.0, 1.0),
-        R::atio(1, 2, -0.0, 0.5),
-        R::atio(1, 2, 0.5, 0.5),
-    ];
-
-    let l_ratios = vec![
-        R::atio(15, 8, 0.0, 1.0),
-        R::atio(15, 8, 6.0, 1.0),
-        R::atio(1, 1, 0.0, 1.0),
-        R::atio(1, 1, -2.0, 1.0),
-    ];
 
     let settings: Settings = get_default_app_settings();
     let pa = pa::PortAudio::new()?;
