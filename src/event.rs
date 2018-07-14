@@ -23,7 +23,7 @@ impl Event {
         }
     }
 }
-
+//impl Analyze for Vec<f32> {
 impl Phrase {
     pub fn phrase_from_vec(mut events: Vec<Event>) -> Phrase {
         Phrase {
@@ -58,7 +58,7 @@ impl Mutate for Event {
     }
 }
 
-//impl Mutate for Phrase {
+//impl Mutate for Vec<f32> {
 //    fn transpose(&mut self, mul: f32, add: f32) {
 //        for event in self.events.iter_mut() {
 //            event.transpose(mul, add);
