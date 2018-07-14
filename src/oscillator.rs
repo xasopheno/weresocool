@@ -34,6 +34,7 @@ impl Gain {
         if (self.current - new_gain).abs() > 0.5 {
             new_gain = new_gain * 0.51;
         }
+
         self.current = new_gain;
     }
 }

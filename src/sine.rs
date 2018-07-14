@@ -65,7 +65,10 @@ pub fn generate_waveform(
 
 fn generate_gain_mask(buffer_size: usize, gain: &Gain, loudness: f32) -> Vec<f32> {
     let mut gain_mask: Vec<usize> = (0..buffer_size).collect();
-    let current_volume = gain.current * loudness;
+    let mut current_volume = gain.current * loudness;
+    if current_volume > 1.0 {
+        current_volume = 1.0
+    }
 
     //    println!("{}, {}", gain.past, current_volume);
 

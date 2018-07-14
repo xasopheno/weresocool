@@ -134,30 +134,13 @@ pub fn generate_test_phrase() -> Vec<Event> {
 //        .mut_length(2.0, 1.0);
 //        .mut_gain(0.9, 0.0);
 
-    let phrase3 = Phrase {
-        events: vec![
-            e.clone().transpose(2.0/1.0, 3.0),
-            e.clone().transpose(7.0/4.0, 0.0),
-            e.clone().transpose(5.0/3.0, 0.0),
-            e.clone().transpose(3.0/2.0, 0.0),
-            e.clone().transpose(4.0/3.0, 0.0),
-            e.clone().transpose(5.0/4.0, 0.0),
-            e.clone().transpose(5.0/4.0, 0.0),
-        ]
-    };
+    let phrase3 = phrase2
+        .clone()
+        .transpose(12.0/13.0, 0.0);
 
-    let phrase4 = Phrase { events: vec![
-            e.clone().transpose(11.0/8.0, 0.0),
-            e.clone().transpose(11.0/8.0, 0.0),
-            e.clone().transpose(25.0/24.0, 0.0),
-            e.clone().transpose(25.0/24.0, 0.0),
-            e.clone().transpose(3.0 /2.0, 0.0),
-            e.clone().transpose(3.0 /2.0, 0.0),
-            e.clone().transpose(3.0 /4.0, 0.0),
-        ]}
-        .mut_ratios(simple_ratios3());
-
-    vec![phrase1.clone(), phrase2.clone(), phrase1 ,phrase2, phrase3, phrase4].collapse_to_vec_events()
+    vec![
+     phrase1.clone(), phrase2.clone(), phrase3.clone(), phrase2.clone()
+    ].collapse_to_vec_events()
 }
 
 #[cfg(test)]

@@ -34,7 +34,7 @@ pub fn setup_portaudio_output(
             write_output_buffer(&mut buffer, stereo_waveform);
 
             if counter % 25 == 0 {
-                freq = test_phrase[index].frequency / 1.3;
+                freq = test_phrase[index].frequency / 1.4;
                 oscillator.stereo_ratios = test_phrase[index].ratios.clone();
                 index += 1;
             }
