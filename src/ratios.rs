@@ -9,7 +9,7 @@ pub struct R {
 #[derive(Debug, Clone)]
 pub struct StereoRatios {
     pub l_ratios: Vec<R>,
-    pub r_ratios: Vec<R>
+    pub r_ratios: Vec<R>,
 }
 
 impl R {
@@ -29,7 +29,7 @@ impl R {
     }
 }
 
-pub fn complicated_ratios() -> (Vec<R>, Vec<R>) {
+pub fn complicated_ratios() -> StereoRatios {
     let l_ratios = vec![
         R::atio(23, 2, 0.0, 0.04),
         R::atio(23, 2, -0.1, 0.04),
@@ -74,41 +74,41 @@ pub fn complicated_ratios() -> (Vec<R>, Vec<R>) {
         R::atio(1, 4, 0.0, 0.6),
     ];
 
-    (l_ratios, r_ratios)
+    StereoRatios{ l_ratios, r_ratios }
 }
 
-pub fn simple_ratios() -> (Vec<R>, Vec<R>) {
+pub fn simple_ratios() -> StereoRatios {
     let l_ratios = vec![
-        R::atio(15, 4, -15.0, 0.50),
-        R::atio(15, 4, 0.0, 0.50),
-        R::atio(2, 1, 0.0, 1.0),
-        R::atio(2, 1, -4.0, 1.0),
-        R::atio(3, 2, 5.0, 1.0),
-        R::atio(3, 2, -5.0, 1.0),
+//        R::atio(15, 4, -15.0, 0.50),
+//        R::atio(15, 4, 0.0, 0.50),
+//        R::atio(2, 1, 0.0, 1.0),
+//        R::atio(2, 1, -4.0, 1.0),
+//        R::atio(3, 2, 5.0, 1.0),
+//        R::atio(3, 2, -5.0, 1.0),
 //        R::atio(5, 4, -2.0, 1.0),
 //        R::atio(5, 4, 0.0, 1.0),
 //        R::atio(11, 4, 0.0, 1.0),
 //        R::atio(11, 4, 0.750, 1.0),
-        R::atio(1, 1, 0.0, 1.0),
+//        R::atio(1, 1, 0.0, 1.0),
         R::atio(1, 1, -0.4, 1.0),
     ];
 
     let r_ratios = vec![
 
-        R::atio(15, 4, 14.0, 0.50),
-        R::atio(15, 4, 0.0, 0.50),
-        R::atio(2, 1, -3.0, 1.0),
-        R::atio(2, 1, 0.0, 1.0),
-        R::atio(2, 1, -3.0, 1.0),
-        R::atio(3, 2, 5.0, 1.0),
-        R::atio(3, 2, -5.0, 1.0),
+//        R::atio(15, 4, 14.0, 0.50),
+//        R::atio(15, 4, 0.0, 0.50),
+//        R::atio(2, 1, -3.0, 1.0),
+//        R::atio(2, 1, 0.0, 1.0),
+//        R::atio(2, 1, -3.0, 1.0),
+//        R::atio(3, 2, 5.0, 1.0),
+//        R::atio(3, 2, -5.0, 1.0),
 //        R::atio(7, 4, -3.0, 1.0),
 //        R::atio(7, 4, 5.0, 1.0),
 //        R::atio(3, 2, 0.0, 1.0),
 //        R::atio(3, 2, -0.75, 1.0),
-        R::atio(1, 1, -0.5, 1.0),
+//        R::atio(1, 1, -0.5, 1.0),
         R::atio(1, 1, 0.25, 1.0),
     ];
 
-    (l_ratios, r_ratios)
+    StereoRatios {l_ratios, r_ratios}
 }

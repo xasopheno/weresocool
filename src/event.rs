@@ -1,6 +1,6 @@
 use ratios::{R, StereoRatios};
 
-#[derive(Debug)]
+#[derive(Debug, Clone)]
 pub struct Event {
     pub frequency: f32,
     pub ratios: StereoRatios,
@@ -8,7 +8,7 @@ pub struct Event {
     pub gain: f32,
 }
 
-#[derive(Debug)]
+#[derive(Debug, Clone)]
 pub struct Phrase {
     pub events: Vec<Event>,
 }
@@ -33,16 +33,16 @@ impl Phrase {
 }
 
 pub trait Mutate {
-    fn transpose(&mut self, mul: f32, add: f32) -> &mut Event;
+    fn transpose(&mut self, mul: f32, add: f32) -> Event;
     fn mut_ratios(&mut self, ratios: StereoRatios);
     fn mut_length(&mut self, mul: f32, add: f32);
     fn mut_gain(&mut self, mul: f32, add: f32);
 }
 
 impl Mutate for Event {
-    fn transpose(&mut self, mul: f32, add: f32) -> &mut Event {
+    fn transpose(&mut self, mul: f32, add: f32) -> Event {
         self.frequency = self.frequency * mul + add;
-        self
+        self.clone()
     }
 
     fn mut_ratios(&mut self, ratios: StereoRatios) {

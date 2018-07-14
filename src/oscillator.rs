@@ -1,18 +1,20 @@
-use ratios::R;
+use ratios::{R, StereoRatios};
 use ring_buffer::RingBuffer;
 use settings::Settings;
 use sine::Generator;
 
 pub struct Oscillator {
     pub f_buffer: RingBuffer<f32>,
-    pub l_ratios: Vec<R>,
+    pub stereo_ratios: StereoRatios,
+//    pub l_ratios: Vec<R>,
+//    pub r_ratios: Vec<R>,
     pub l_phases: Vec<f32>,
-    pub r_ratios: Vec<R>,
     pub r_phases: Vec<f32>,
     pub generator: Generator,
     pub gain: Gain,
     pub settings: Settings,
 }
+
 
 #[derive(Debug)]
 pub struct Gain {
@@ -37,26 +39,28 @@ impl Gain {
 impl Oscillator {
     pub fn new(
         f_buffer_size: usize,
-        l_ratios: Vec<R>,
-        r_ratios: Vec<R>,
+        stereo_ratios: StereoRatios,
+//        l_ratios: Vec<R>,
+//        r_ratios: Vec<R>,
         settings: Settings,
     ) -> Oscillator {
         println!("{}", "Left Generated Ratios");
-        for r in l_ratios.iter() {
+        for r in stereo_ratios.l_ratios.iter() {
             println!("   - {} offset: {}", r.ratio, r.offset);
         }
 
         println!("{}", "Right Generated Ratios");
-        for r in r_ratios.iter() {
+        for r in stereo_ratios.r_ratios.iter() {
             println!("   - {} offset: {}", r.ratio, r.offset);
         }
 
         Oscillator {
             f_buffer: RingBuffer::<f32>::new_full(f_buffer_size as usize),
-            l_phases: vec![0.0; l_ratios.len()],
-            l_ratios,
-            r_phases: vec![0.0; r_ratios.len()],
-            r_ratios,
+//            l_ratios,
+//            r_ratios,
+            l_phases: vec![0.0; stereo_ratios.l_ratios.len()],
+            r_phases: vec![0.0; stereo_ratios.r_ratios.len()],
+            stereo_ratios,
             generator: Generator::new(),
             gain: Gain::new(0.0, 0.0),
             settings,
@@ -109,7 +113,7 @@ impl Oscillator {
         let (l_waveform, l_new_phases, _loudness) = (self.generator.generate)(
             frequency,
             &self.gain,
-            &self.l_ratios,
+            &self.stereo_ratios.l_ratios,
             &self.l_phases,
             &self.settings,
         );
@@ -117,7 +121,7 @@ impl Oscillator {
         let (r_waveform, r_new_phases, loudness) = (self.generator.generate)(
             frequency,
             &self.gain,
-            &self.r_ratios,
+            &self.stereo_ratios.r_ratios,
             &self.r_phases,
             &self.settings,
         );
@@ -127,7 +131,7 @@ impl Oscillator {
         self.l_phases = l_new_phases;
         self.r_phases = r_new_phases;
 
-        (l_waveform, r_waveform)
+        ( l_waveform, r_waveform )
     }
 }
 
