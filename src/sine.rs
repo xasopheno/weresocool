@@ -33,7 +33,7 @@ fn generate_single_portamento(
     gain: f32,
     mut phase: f32,
     settings: &Settings,
-) -> Vec<f32> {
+) -> (Vec<f32>, f32) {
     let size = 10;
     let delta = (current_frequency - past_frequency) / size as f32;
     let mut portamento: Vec<usize> = (0..size).collect();
@@ -47,21 +47,9 @@ fn generate_single_portamento(
             generate_sample_of_individual_waveform(*index as f32, freq, factor, phase, gain)
         })
         .collect();
-    portamento
+    (portamento, phase)
 }
 
-//def portamento(self):
-//    diff = self.last_freq - self.freq
-//    if diff > 0:
-//        while self.last_freq > self.freq:
-//            chunk = self.make_chunk(self.last_freq, chunk_size=self.chunk_size/4)
-//            self.write_to_stream(chunk, self.last_freq, chunk_size=self.chunk_size/4)
-//            self.last_freq -= abs(diff) * .05
-//        else:
-//            while self.last_freq < self.freq:
-//            chunk = self.make_chunk(self.last_freq)
-//            self.write_to_stream(chunk, self.last_freq)
-//            self.last_freq += abs(diff) * .05
 
 pub fn generate_waveform(
     base_frequency: f32,
@@ -77,7 +65,6 @@ pub fn generate_waveform(
     let loudness = loudness_normalization(base_frequency);
 
     //    println!("{:?}, {:?}, {:?}", base_frequency, gain, phases);
-
     let gain_mask: Vec<f32> = generate_gain_mask(settings.buffer_size, gain, loudness);
 
     let waveform: Vec<f32> = waveform
@@ -292,8 +279,8 @@ pub mod tests {
 
     #[test]
     fn test_single_portamento() {
-        let expected = vec![0.0];
-        let result = generate_single_portamento(
+        let expected: (Vec<f32>, f32) = (vec![0.0], 1.23);
+        let (result, phase) = generate_single_portamento(
             10.0,
             20.0,
             44_100.0 * tau(),
@@ -301,7 +288,7 @@ pub mod tests {
             1.0,
             &get_test_settings(),
         );
-        assert_eq!(expected, result);
+        assert_eq!(expected, (result, phase));
     }
 
 }
