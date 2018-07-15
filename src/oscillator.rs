@@ -7,12 +7,13 @@ pub struct Oscillator {
     pub f_buffer: RingBuffer<f32>,
     pub stereo_ratios: StereoRatios,
     pub stereo_phases: StereoPhases,
-//    pub stereo_spectral_history: StereoSpectralHistory,
+    pub stereo_spectral_history: StereoSpectralHistory,
     pub generator: Generator,
     pub gain: Gain,
     pub settings: Settings,
 }
 
+#[derive(Debug, Clone)]
 pub struct StereoSpectralHistory {
     pub l_frequencies: SpectralHistory,
     pub r_frequencies: SpectralHistory,
@@ -25,8 +26,13 @@ impl StereoSpectralHistory {
             r_frequencies: SpectralHistory::new(num_r_frequencies),
         }
     }
+    pub fn update(&mut self, l_frequencies: SpectralHistory, r_frequencies: SpectralHistory) {
+        self.l_frequencies = l_frequencies;
+        self.r_frequencies = r_frequencies;
+    }
 }
 
+#[derive(Debug, Clone)]
 pub struct SpectralHistory {
     pub past_frequencies: Vec<f32>,
     pub current_frequencies: Vec<f32>,
@@ -105,7 +111,11 @@ impl Oscillator {
             f_buffer: RingBuffer::<f32>::new_full(f_buffer_size as usize),
             stereo_phases: StereoPhases::new(
                 stereo_ratios.l_ratios.len(),
+                stereo_ratios.r_ratios.len(),
+            ),
+            stereo_spectral_history: StereoSpectralHistory::new(
                 stereo_ratios.l_ratios.len(),
+                stereo_ratios.r_ratios.len(),
             ),
             stereo_ratios,
             generator: Generator::new(),
@@ -180,6 +190,53 @@ impl Oscillator {
             l_waveform,
             r_waveform,
         }
+    }
+    pub fn update_spectral_history(&mut self, current_base_frequency: f32) {
+        let mut calculated_l_frequencies: Vec<f32> = self
+            .stereo_ratios
+            .l_ratios
+            .iter()
+            .map(|ratio| ratio.decimal * current_base_frequency)
+            .collect();
+        let mut calculated_r_frequencies: Vec<f32> = self
+            .stereo_ratios
+            .l_ratios
+            .iter()
+            .map(|ratio| ratio.decimal * current_base_frequency)
+            .collect();
+
+        for (current, past) in calculated_l_frequencies.iter_mut().zip(
+            self.stereo_spectral_history.clone()
+                .l_frequencies
+                .current_frequencies
+                .iter_mut(),
+        ) {
+            if (*current - *past).abs() > 40.0 {
+                *current *= 3.0/2.0;
+            }
+        }
+
+        for (current, past) in calculated_r_frequencies.iter_mut().zip(
+            self.stereo_spectral_history.clone()
+                .r_frequencies
+                .current_frequencies
+                .iter_mut(),
+        ) {
+            if (*current - *past).abs() > 40.0 {
+                *current *= 3.0/2.0;
+            }
+        }
+        let l_frequencies = SpectralHistory {
+          past_frequencies: self.stereo_spectral_history.l_frequencies.current_frequencies.clone(),
+          current_frequencies: calculated_l_frequencies
+        };
+
+        let r_frequencies = SpectralHistory {
+            past_frequencies: self.stereo_spectral_history.r_frequencies.current_frequencies.clone(),
+            current_frequencies: calculated_r_frequencies
+        };
+
+        self.stereo_spectral_history.update(l_frequencies, r_frequencies);
     }
 }
 
