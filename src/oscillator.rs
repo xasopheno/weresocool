@@ -207,27 +207,6 @@ impl Oscillator {
             .map(|ratio| ratio.decimal * current_base_frequency)
             .collect();
 
-        for (current, past) in calculated_l_frequencies.iter_mut().zip(
-            self.stereo_spectral_history.clone()
-                .l_frequencies
-                .current_frequencies
-                .iter_mut(),
-        ) {
-            if *current != 0.0 && (*current - *past).abs() > 40.0 {
-                *current *= 3.0/2.0;
-            }
-        }
-
-        for (current, past) in calculated_r_frequencies.iter_mut().zip(
-            self.stereo_spectral_history.clone()
-                .r_frequencies
-                .current_frequencies
-                .iter_mut(),
-        ) {
-            if (*current - *past).abs() > 40.0 {
-                *current *= 3.0/2.0;
-            }
-        }
         let l_frequencies = SpectralHistory {
           past_frequencies: self.stereo_spectral_history.l_frequencies.current_frequencies.clone(),
           current_frequencies: calculated_l_frequencies
@@ -249,6 +228,7 @@ fn silence(buffer_size: usize) -> (Vec<f32>, Vec<f32>) {
 #[cfg(test)]
 pub mod tests {
     use super::*;
+
     #[test]
     fn test_ratio() {
         let r: R = R::atio(3, 2, 0.0, 1.0);
@@ -261,6 +241,7 @@ pub mod tests {
     }
 
     use settings::{get_test_settings};
+
     #[test]
     fn test_spectral_history() {
         let l = vec![
@@ -287,3 +268,4 @@ pub mod tests {
         assert_eq!(result, expected);
     }
 }
+
