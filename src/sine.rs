@@ -1,12 +1,17 @@
-use oscillator::Gain;
+use oscillator::{Gain, SpectralHistory};
 use ratios::R;
 use settings::Settings;
 use std;
 
 pub struct Generator {
-    pub generate:
-        fn(freq: f32, gain: &Gain, ratios: &Vec<R>, phases: &Vec<f32>, settings: &Settings)
-            -> (Vec<f32>, Vec<f32>, f32),
+    pub generate: fn(
+        base_frequency: f32,
+        gain: &Gain,
+        freqs: &SpectralHistory,
+        ratios: &Vec<R>,
+        phases: &Vec<f32>,
+        settings: &Settings,
+    ) -> (Vec<f32>, Vec<f32>, f32),
 }
 
 impl Generator {
@@ -21,9 +26,47 @@ fn tau() -> f32 {
     std::f32::consts::PI * 2.0
 }
 
+fn generate_single_portamento(
+    past_frequency: f32,
+    current_frequency: f32,
+    factor: f32,
+    gain: f32,
+    mut phase: f32,
+    settings: &Settings,
+) -> Vec<f32> {
+    let size = 10;
+    let delta = (current_frequency - past_frequency) / size as f32;
+    let mut portamento: Vec<usize> = (0..size).collect();
+    let mut portamento: Vec<f32> = portamento
+        .iter_mut()
+        .map(|index| {
+            let freq = *index as f32 * delta + past_frequency;
+            phase += calculate_individual_phase(freq, 1.0, factor, phase);
+            phase %= tau();
+            println!("{}, {}", freq, phase);
+            generate_sample_of_individual_waveform(*index as f32, freq, factor, phase, gain)
+        })
+        .collect();
+    portamento
+}
+
+//def portamento(self):
+//    diff = self.last_freq - self.freq
+//    if diff > 0:
+//        while self.last_freq > self.freq:
+//            chunk = self.make_chunk(self.last_freq, chunk_size=self.chunk_size/4)
+//            self.write_to_stream(chunk, self.last_freq, chunk_size=self.chunk_size/4)
+//            self.last_freq -= abs(diff) * .05
+//        else:
+//            while self.last_freq < self.freq:
+//            chunk = self.make_chunk(self.last_freq)
+//            self.write_to_stream(chunk, self.last_freq)
+//            self.last_freq += abs(diff) * .05
+
 pub fn generate_waveform(
     base_frequency: f32,
     gain: &Gain,
+    spectral_history: &SpectralHistory,
     ratios: &Vec<R>,
     phases: &Vec<f32>,
     settings: &Settings,
@@ -44,6 +87,7 @@ pub fn generate_waveform(
             generate_sample_of_compound_waveform(
                 *sample as f32,
                 base_frequency,
+                &spectral_history,
                 factor,
                 &ratios,
                 &phases,
@@ -66,9 +110,9 @@ pub fn generate_waveform(
 fn generate_gain_mask(buffer_size: usize, gain: &Gain, loudness: f32) -> Vec<f32> {
     let mut gain_mask: Vec<usize> = (0..buffer_size).collect();
     let mut current_volume = gain.current * loudness;
-    if current_volume > 1.0 {
-        current_volume = 1.0
-    }
+    //    if current_volume > 1.0 {
+    //        current_volume = 1.0
+    //    }
 
     //    println!("{}, {}", gain.past, current_volume);
 
@@ -99,6 +143,7 @@ pub fn loudness_normalization(base_frequency: f32) -> f32 {
 fn generate_sample_of_compound_waveform(
     sample: f32,
     base_frequency: f32,
+    spectral_history: &SpectralHistory,
     factor: f32,
     ratios: &Vec<R>,
     phases: &Vec<f32>,
@@ -174,6 +219,7 @@ pub mod tests {
         let (result, _, _) = generate_waveform(
             1441.0,
             &Gain::new(0.5, 1.0),
+            &SpectralHistory::new(10),
             &vec![
                 R::atio(2, 1, 0.0, 1.0),
                 R::atio(3, 2, 0.0, 1.0),
@@ -243,4 +289,19 @@ pub mod tests {
             generate_sample_of_individual_waveform(0.12, 100.0, tau() * 44_100.0, 0.4, 1.0);
         assert_eq!(result, expected);
     }
+
+    #[test]
+    fn test_single_portamento() {
+        let expected = vec![0.0];
+        let result = generate_single_portamento(
+            10.0,
+            20.0,
+            44_100.0 * tau(),
+            1.0,
+            1.0,
+            &get_test_settings(),
+        );
+        assert_eq!(expected, result);
+    }
+
 }

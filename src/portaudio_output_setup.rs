@@ -37,20 +37,20 @@ pub fn setup_portaudio_output(
                 oscillator.gain.past = 0.0;
                 index += 1;
             }
-            //
-            //            if counter % 100 == 0 {
-            //                let vs = vec![1.0, -1.0, -2.0, 2.0, 0.0];
-            //                let change = rand::thread_rng().choose(&vs);
-            //                match change {
-            //                    Some(change) => {
-            //                        if freq > 110.0 || freq < 40.0 {
-            //                            freq = 50.0
+
+            //                        if counter % 100 == 0 {
+            //                            let vs = vec![3.0, -1.0, -2.0, 2.0, -3.0];
+            //                            let change = rand::thread_rng().choose(&vs);
+            //                            match change {
+            //                                Some(change) => {
+            //                                    if freq > 110.0 || freq < 40.0 {
+            //                                        freq = 50.0
+            //                                    }
+            //                                    freq += change;
+            //                                }
+            //                                _ => {}
+            //                            }
             //                        }
-            //                        freq += change;
-            //                    }
-            //                    _ => {}
-            //                }
-            //            }
             counter += 1;
             oscillator.update(freq, 0.3, 1.0);
             write_output_buffer(&mut buffer, stereo_waveform);

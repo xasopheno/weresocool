@@ -166,11 +166,10 @@ impl Oscillator {
             frequency = previous_frequency
         }
 
-
-
         let (l_waveform, l_new_phases, _loudness) = (self.generator.generate)(
             frequency,
             &self.gain,
+            &self.stereo_spectral_history.l_frequencies,
             &self.stereo_ratios.l_ratios,
             &self.stereo_phases.l_phases,
             &self.settings,
@@ -179,6 +178,7 @@ impl Oscillator {
         let (r_waveform, r_new_phases, loudness) = (self.generator.generate)(
             frequency,
             &self.gain,
+            &self.stereo_spectral_history.r_frequencies,
             &self.stereo_ratios.r_ratios,
             &self.stereo_phases.r_phases,
             &self.settings,
@@ -208,16 +208,25 @@ impl Oscillator {
             .collect();
 
         let l_frequencies = SpectralHistory {
-          past_frequencies: self.stereo_spectral_history.l_frequencies.current_frequencies.clone(),
-          current_frequencies: calculated_l_frequencies
+            past_frequencies: self
+                .stereo_spectral_history
+                .l_frequencies
+                .current_frequencies
+                .clone(),
+            current_frequencies: calculated_l_frequencies,
         };
 
         let r_frequencies = SpectralHistory {
-            past_frequencies: self.stereo_spectral_history.r_frequencies.current_frequencies.clone(),
-            current_frequencies: calculated_r_frequencies
+            past_frequencies: self
+                .stereo_spectral_history
+                .r_frequencies
+                .current_frequencies
+                .clone(),
+            current_frequencies: calculated_r_frequencies,
         };
 
-        self.stereo_spectral_history.update(l_frequencies, r_frequencies);
+        self.stereo_spectral_history
+            .update(l_frequencies, r_frequencies);
     }
 }
 
@@ -240,18 +249,12 @@ pub mod tests {
         assert_eq!(result, expected);
     }
 
-    use settings::{get_test_settings};
+    use settings::get_test_settings;
 
     #[test]
     fn test_spectral_history() {
-        let l = vec![
-            R::atio(5, 4, 0.0, 1.0),
-            R::atio(1, 1, 0.0, 1.0)
-        ];
-        let r = vec![
-            R::atio(3, 2, 0.0, 1.0),
-            R::atio(1, 1, 0.0, 1.0)
-        ];
+        let l = vec![R::atio(5, 4, 0.0, 1.0), R::atio(1, 1, 0.0, 1.0)];
+        let r = vec![R::atio(3, 2, 0.0, 1.0), R::atio(1, 1, 0.0, 1.0)];
         let sr = StereoRatios {
             l_ratios: l,
             r_ratios: r,
@@ -260,12 +263,17 @@ pub mod tests {
         let mut osc = Oscillator::new(10, sr, get_test_settings());
         osc.update(10.0, 1.0, 1.0);
         osc.update_spectral_history(10.0);
-        let result = osc.stereo_spectral_history.l_frequencies.current_frequencies;
+        let result = osc
+            .stereo_spectral_history
+            .l_frequencies
+            .current_frequencies;
         let expected = vec![12.5, 10.0];
         assert_eq!(result, expected);
-        let result = osc.stereo_spectral_history.r_frequencies.current_frequencies;
+        let result = osc
+            .stereo_spectral_history
+            .r_frequencies
+            .current_frequencies;
         let expected = vec![15.0, 10.0];
         assert_eq!(result, expected);
     }
 }
-
