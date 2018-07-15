@@ -7,16 +7,43 @@ pub struct Oscillator {
     pub f_buffer: RingBuffer<f32>,
     pub stereo_ratios: StereoRatios,
     pub stereo_phases: StereoPhases,
-    //    pub l_phases: Vec<f32>,
-    //    pub r_phases: Vec<f32>,
+//    pub stereo_spectral_history: StereoSpectralHistory,
     pub generator: Generator,
     pub gain: Gain,
     pub settings: Settings,
 }
 
+pub struct StereoSpectralHistory {
+    pub l_frequencies: SpectralHistory,
+    pub r_frequencies: SpectralHistory,
+}
+
+impl StereoSpectralHistory {
+    pub fn new(num_l_frequencies: usize, num_r_frequencies: usize) -> StereoSpectralHistory {
+        StereoSpectralHistory {
+            l_frequencies: SpectralHistory::new(num_l_frequencies),
+            r_frequencies: SpectralHistory::new(num_r_frequencies),
+        }
+    }
+}
+
+pub struct SpectralHistory {
+    pub past_frequencies: Vec<f32>,
+    pub current_frequencies: Vec<f32>,
+}
+
+impl SpectralHistory {
+    pub fn new(len: usize) -> SpectralHistory {
+        SpectralHistory {
+            past_frequencies: vec![0.0; len],
+            current_frequencies: vec![0.0; len],
+        }
+    }
+}
+
 pub struct StereoPhases {
-    l_phases: Vec<f32>,
-    r_phases: Vec<f32>,
+    pub l_phases: Vec<f32>,
+    pub r_phases: Vec<f32>,
 }
 
 impl StereoPhases {
@@ -102,8 +129,6 @@ impl Oscillator {
 
         self.f_buffer.push(new_freq);
         self.gain.update(new_gain);
-        //                self.f_buffer.push(220.0);
-        //                self.gain.update(1.0);
     }
 
     fn f_buffer_to_ratios(&mut self) {
@@ -150,8 +175,6 @@ impl Oscillator {
         self.gain.current *= loudness;
 
         self.stereo_phases.update(l_new_phases, r_new_phases);
-        //        self.l_phases = l_new_phases;
-        //        self.r_phases = r_new_phases;
 
         StereoWaveform {
             l_waveform,
