@@ -166,6 +166,8 @@ impl Oscillator {
             frequency = previous_frequency
         }
 
+
+
         let (l_waveform, l_new_phases, _loudness) = (self.generator.generate)(
             frequency,
             &self.gain,
@@ -200,7 +202,7 @@ impl Oscillator {
             .collect();
         let mut calculated_r_frequencies: Vec<f32> = self
             .stereo_ratios
-            .l_ratios
+            .r_ratios
             .iter()
             .map(|ratio| ratio.decimal * current_base_frequency)
             .collect();
@@ -211,7 +213,7 @@ impl Oscillator {
                 .current_frequencies
                 .iter_mut(),
         ) {
-            if (*current - *past).abs() > 40.0 {
+            if *current != 0.0 && (*current - *past).abs() > 40.0 {
                 *current *= 3.0/2.0;
             }
         }
@@ -255,6 +257,33 @@ pub mod tests {
         assert_eq!(result, expected);
         let result = r.decimal;
         let expected = 1.5;
+        assert_eq!(result, expected);
+    }
+
+    use settings::{get_test_settings};
+    #[test]
+    fn test_spectral_history() {
+        let l = vec![
+            R::atio(5, 4, 0.0, 1.0),
+            R::atio(1, 1, 0.0, 1.0)
+        ];
+        let r = vec![
+            R::atio(3, 2, 0.0, 1.0),
+            R::atio(1, 1, 0.0, 1.0)
+        ];
+        let sr = StereoRatios {
+            l_ratios: l,
+            r_ratios: r,
+        };
+
+        let mut osc = Oscillator::new(10, sr, get_test_settings());
+        osc.update(10.0, 1.0, 1.0);
+        osc.update_spectral_history(10.0);
+        let result = osc.stereo_spectral_history.l_frequencies.current_frequencies;
+        let expected = vec![12.5, 10.0];
+        assert_eq!(result, expected);
+        let result = osc.stereo_spectral_history.r_frequencies.current_frequencies;
+        let expected = vec![15.0, 10.0];
         assert_eq!(result, expected);
     }
 }
