@@ -153,35 +153,30 @@ pub fn generate_test_phrase() -> Vec<Event> {
         phrase2.clone(),
         phrase1.clone(),
         phrase3.clone(),
-//        phrase1.clone(),
-//        phrase4.clone(),
-//        phrase2.clone(),
-//        phrase3.clone(),
+        //        phrase1.clone(),
+        //        phrase4.clone(),
+        //        phrase2.clone(),
+        //        phrase3.clone(),
     ].collapse_to_vec_events()
 }
 
 pub fn generate_pop() -> Vec<Event> {
     let e = Event::new(50.0, simple_ratios(), 1.0, 1.0);
     let mut phrase1 = Phrase {
-        events: vec![
-            e.clone(),
-        ],
+        events: vec![e.clone()],
     };
 
-    let phrase2 = phrase1
-        .clone()
-        .transpose(2.0 / 3.0, 10.0);
+    let phrase2 = phrase1.clone().transpose(2.0 / 3.0, 10.0);
     //        .mut_length(2.0, 1.0);
     //        .mut_gain(0.9, 0.0);
-
 
     vec![
         phrase1.clone(),
         phrase2.clone(),
-//        phrase1.clone(),
-//        phrase4.clone(),
-//        phrase2.clone(),
-//        phrase3.clone(),
+        //        phrase1.clone(),
+        //        phrase4.clone(),
+        //        phrase2.clone(),
+        //        phrase3.clone(),
     ].collapse_to_vec_events()
 }
 

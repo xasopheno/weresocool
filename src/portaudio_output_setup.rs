@@ -1,6 +1,6 @@
 extern crate rand;
 use self::rand::Rng;
-use event::{generate_test_phrase, generate_pop, Event, Mutate, Phrase};
+use event::{generate_pop, generate_test_phrase, Event, Mutate, Phrase};
 use oscillator::{Oscillator, StereoWaveform};
 use portaudio as pa;
 use ratios::{complicated_ratios, simple_ratios, R};
@@ -30,7 +30,6 @@ pub fn setup_portaudio_output(
             let stereo_waveform = oscillator.generate();
 
             index = index % (test_phrase.len());
-
 
             if counter % 25 == 0 {
                 freq = test_phrase[index].frequency / 1.4;

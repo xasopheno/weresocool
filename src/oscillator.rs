@@ -6,11 +6,30 @@ use sine::Generator;
 pub struct Oscillator {
     pub f_buffer: RingBuffer<f32>,
     pub stereo_ratios: StereoRatios,
-    pub l_phases: Vec<f32>,
-    pub r_phases: Vec<f32>,
+    pub stereo_phases: StereoPhases,
+    //    pub l_phases: Vec<f32>,
+    //    pub r_phases: Vec<f32>,
     pub generator: Generator,
     pub gain: Gain,
     pub settings: Settings,
+}
+
+pub struct StereoPhases {
+    l_phases: Vec<f32>,
+    r_phases: Vec<f32>,
+}
+
+impl StereoPhases {
+    pub fn new(l_ratios_len: usize, r_ratios_len: usize) -> StereoPhases {
+        StereoPhases {
+            l_phases: vec![0.0; l_ratios_len],
+            r_phases: vec![0.0; r_ratios_len],
+        }
+    }
+    pub fn update(&mut self, l_phases: Vec<f32>, r_phases: Vec<f32>) {
+        self.l_phases = l_phases;
+        self.r_phases = r_phases;
+    }
 }
 
 pub struct StereoWaveform {
@@ -57,8 +76,10 @@ impl Oscillator {
 
         Oscillator {
             f_buffer: RingBuffer::<f32>::new_full(f_buffer_size as usize),
-            l_phases: vec![0.0; stereo_ratios.l_ratios.len()],
-            r_phases: vec![0.0; stereo_ratios.r_ratios.len()],
+            stereo_phases: StereoPhases::new(
+                stereo_ratios.l_ratios.len(),
+                stereo_ratios.l_ratios.len(),
+            ),
             stereo_ratios,
             generator: Generator::new(),
             gain: Gain::new(0.0, 0.0),
@@ -114,7 +135,7 @@ impl Oscillator {
             frequency,
             &self.gain,
             &self.stereo_ratios.l_ratios,
-            &self.l_phases,
+            &self.stereo_phases.l_phases,
             &self.settings,
         );
 
@@ -122,14 +143,15 @@ impl Oscillator {
             frequency,
             &self.gain,
             &self.stereo_ratios.r_ratios,
-            &self.r_phases,
+            &self.stereo_phases.r_phases,
             &self.settings,
         );
 
         self.gain.current *= loudness;
 
-        self.l_phases = l_new_phases;
-        self.r_phases = r_new_phases;
+        self.stereo_phases.update(l_new_phases, r_new_phases);
+        //        self.l_phases = l_new_phases;
+        //        self.r_phases = r_new_phases;
 
         StereoWaveform {
             l_waveform,
