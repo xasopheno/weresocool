@@ -14,6 +14,15 @@ pub struct Generator {
     ) -> (Vec<f32>, Vec<f32>, f32),
 }
 
+pub struct GeneratorInput<'g> {
+    base_frequency: f32,
+    gain: &'g Gain,
+    spectral_history: &'g SpectralHistory,
+    ratios: &'g Vec<R>,
+    phases: &'g Vec<f32>,
+    settings: &'g Settings,
+}
+
 impl Generator {
     pub fn new() -> Generator {
         Generator {
@@ -26,18 +35,45 @@ fn tau() -> f32 {
     std::f32::consts::PI * 2.0
 }
 
+fn generate_portamento(
+    base_frequency: f32,
+    gain_mask: Vec<f32>,
+    spectral_history: &SpectralHistory,
+    ratios: &Vec<R>,
+    phases: &Vec<f32>,
+    settings: &Settings,
+) -> (Vec<f32>, Vec<f32>){
+    let phases: Vec<f32> = vec![0.0];
+    let waveform: Vec<f32> = spectral_history.current_frequencies
+        .iter()
+        .zip(spectral_history.past_frequencies.iter())
+        .map(|(past_frequency, current_frequency)| {
+            generate_single_portamento(
+                *past_frequency,
+                *current_frequency,
+                factor,
+                gain,
+                mut phases,
+                100,
+                settings,
+            )
+        })
+        .collect();
+    (waveform, phases)
+}
+
 fn generate_single_portamento(
     past_frequency: f32,
     current_frequency: f32,
     factor: f32,
     gain: f32,
     mut phase: f32,
+    length_portamento: usize,
     settings: &Settings,
 ) -> (Vec<f32>, f32) {
-//    probably need to calculate gain
-    let size = 10;
-    let delta = (current_frequency - past_frequency) / size as f32;
-    let mut portamento: Vec<usize> = (0..size).collect();
+    //    probably need to calculate gain
+    let delta = (current_frequency - past_frequency) / length_portamento as f32;
+    let mut portamento: Vec<usize> = (0..length_portamento).collect();
     let mut portamento: Vec<f32> = portamento
         .iter_mut()
         .map(|index| {
@@ -52,7 +88,6 @@ fn generate_single_portamento(
 }
 
 // When I generate a waveform, I'll generate the portamento and the rest of the wave and concatenate them together.
-
 
 pub fn generate_waveform(
     base_frequency: f32,
@@ -69,6 +104,9 @@ pub fn generate_waveform(
 
     //    println!("{:?}, {:?}, {:?}", base_frequency, gain, phases);
     let gain_mask: Vec<f32> = generate_gain_mask(settings.buffer_size, gain, loudness);
+
+//    let (portamento, phases) =
+//        generate_portamento(base_frequency, &gain, &spectral_history, ratios,  &phases, 100, &settings);
 
     let waveform: Vec<f32> = waveform
         .iter_mut()
@@ -93,6 +131,8 @@ pub fn generate_waveform(
         gain.current,
         settings.buffer_size as usize,
     );
+
+    //    let waveform = portamento.append(&mut waveform)
 
     (waveform, new_phases, loudness)
 }
