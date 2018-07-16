@@ -34,6 +34,7 @@ fn generate_single_portamento(
     mut phase: f32,
     settings: &Settings,
 ) -> (Vec<f32>, f32) {
+//    probably need to calculate gain
     let size = 10;
     let delta = (current_frequency - past_frequency) / size as f32;
     let mut portamento: Vec<usize> = (0..size).collect();
@@ -49,6 +50,8 @@ fn generate_single_portamento(
         .collect();
     (portamento, phase)
 }
+
+// When I generate a waveform, I'll generate the portamento and the rest of the wave and concatenate them together.
 
 
 pub fn generate_waveform(
@@ -281,7 +284,7 @@ pub mod tests {
     fn test_single_portamento() {
         let expected: (Vec<f32>, f32) = (vec![0.0], 1.23);
         let (result, phase) = generate_single_portamento(
-            10.0,
+            30.0,
             20.0,
             44_100.0 * tau(),
             1.0,
