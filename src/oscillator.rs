@@ -36,6 +36,8 @@ impl StereoSpectralHistory {
 pub struct SpectralHistory {
     pub past_frequencies: Vec<f32>,
     pub current_frequencies: Vec<f32>,
+    pub phases: Vec<f32>,
+    pub gains: Vec<Gain>,
 }
 
 impl SpectralHistory {
@@ -43,6 +45,8 @@ impl SpectralHistory {
         SpectralHistory {
             past_frequencies: vec![0.0; len],
             current_frequencies: vec![0.0; len],
+            phases: vec![0.0; len],
+            gains: vec![Gain::new(0.0, 0.0); len],
         }
     }
 }
@@ -68,6 +72,15 @@ impl StereoPhases {
 pub struct StereoWaveform {
     pub l_waveform: Vec<f32>,
     pub r_waveform: Vec<f32>,
+}
+
+impl StereoWaveform {
+    pub fn new(buffer_size: usize) -> StereoWaveform {
+        StereoWaveform {
+            l_waveform: vec![0.0; buffer_size],
+            r_waveform: vec![0.0; buffer_size],
+        }
+    }
 }
 
 #[derive(Debug)]

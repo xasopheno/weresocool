@@ -123,9 +123,9 @@ pub fn generate_test_phrase() -> Vec<Event> {
             e.clone(),
             e.clone().transpose(6.0 / 5.0, 0.0),
             e.clone().transpose(7.0 / 4.0, 0.0),
-            e.clone().transpose(9.0 / 8.0, 0.0),
-            e.clone().transpose(6.0 / 5.0, 0.0),
-            e.clone().transpose(7.0 / 6.0, 0.0),
+            //            e.clone().transpose(9.0 / 8.0, 0.0),
+            //            e.clone().transpose(6.0 / 5.0, 0.0),
+            //            e.clone().transpose(7.0 / 6.0, 0.0),
         ],
     };
 
@@ -138,8 +138,8 @@ pub fn generate_test_phrase() -> Vec<Event> {
 
     let phrase3 = phrase2
         .clone()
-        .mut_ratios(simple_ratios())
-        .transpose(12.0 / 13.0, 0.0);
+//        .mut_ratios(simple_ratios())
+        .transpose(5.0 / 4.0, 0.0);
 
     let phrase4 = phrase2
         .clone()

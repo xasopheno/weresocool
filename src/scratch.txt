@@ -1,0 +1,13 @@
+let waveform_args = WA {}
+
+for sample in (0..buffer_size)
+    .iter_mut()
+    .map(|sample| {
+        if sample < portamento_length {
+            generate_sample_portamento(&mut waveform_args)
+        } else {
+            generate_sample_waveform(&mut waveform_args)
+        }
+    })
+
+
