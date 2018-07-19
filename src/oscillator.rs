@@ -3,16 +3,6 @@ use ring_buffer::RingBuffer;
 use settings::Settings;
 use sine::{Generator, GeneratorInput, GeneratorOutput};
 
-pub struct Oscillator {
-    pub f_buffer: RingBuffer<f32>,
-    pub stereo_ratios: StereoRatios,
-    pub stereo_phases: StereoPhases,
-    pub stereo_spectral_history: StereoSpectralHistory,
-    pub generator: Generator,
-    pub gain: Gain,
-    pub settings: Settings,
-}
-
 #[derive(Debug, Clone)]
 pub struct StereoSpectralHistory {
     pub l_frequencies: SpectralHistory,
@@ -103,6 +93,24 @@ impl Gain {
         self.current = new_gain;
     }
 }
+
+pub struct Voice {
+    phase: f32,
+    gain: Gain,
+    past_frequency: f32,
+    current_frequency: f32,
+}
+
+pub struct Oscillator {
+    pub f_buffer: RingBuffer<f32>,
+    pub stereo_ratios: StereoRatios,
+    pub stereo_phases: StereoPhases,
+    pub stereo_spectral_history: StereoSpectralHistory,
+    pub generator: Generator,
+    pub gain: Gain,
+    pub settings: Settings,
+}
+
 
 impl Oscillator {
     pub fn new(

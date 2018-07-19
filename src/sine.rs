@@ -108,21 +108,15 @@ pub fn generate_waveform(input: GeneratorInput) -> GeneratorOutput {
     let base_frequency = input.base_frequency * 2.0;
     let mut waveform: Vec<usize> = (0..input.settings.buffer_size).collect();
     let loudness = loudness_normalization(input.base_frequency);
-
-    //    println!("{:?}, {:?}, {:?}", base_frequency, gain, phases);
     let gain_mask = generate_gain_mask(input.settings.buffer_size, input.gain, loudness);
 
-    //    let (portamento, phases) =
-    //        generate_portamento(base_frequency, &gain, &spectral_history, ratios,  &phases, 100, &settings);
-
-    let waveform: Vec<f32> = waveform
+    let l_waveform: Vec<f32> = waveform
         .iter_mut()
         .zip(gain_mask.iter())
         .map(|(sample, gain_delta)| {
             generate_sample_of_compound_waveform(
                 *sample as f32,
                 input.base_frequency,
-                //                &spectral_history,
                 factor,
                 &input.stereo_ratios.l_ratios,
                 &input.stereo_phases.l_phases,
@@ -130,7 +124,7 @@ pub fn generate_waveform(input: GeneratorInput) -> GeneratorOutput {
         })
         .collect();
 
-    let new_phases = generate_phase_array(
+    let l_phases = generate_phase_array(
         input.base_frequency,
         factor,
         &input.stereo_ratios.l_ratios,
@@ -139,16 +133,37 @@ pub fn generate_waveform(input: GeneratorInput) -> GeneratorOutput {
         input.settings.buffer_size as usize,
     );
 
-    //    let waveform = portamento.append(&mut waveform)
+    let r_waveform: Vec<f32> = waveform
+        .iter_mut()
+        .zip(gain_mask.iter())
+        .map(|(sample, gain_delta)| {
+            generate_sample_of_compound_waveform(
+                *sample as f32,
+                input.base_frequency,
+                factor,
+                &input.stereo_ratios.r_ratios,
+                &input.stereo_phases.r_phases,
+            ) * *gain_delta * input.settings.gain_multiplier
+        })
+        .collect();
 
+    let r_phases = generate_phase_array(
+        input.base_frequency,
+        factor,
+        &input.stereo_ratios.r_ratios,
+        &input.stereo_phases.r_phases,
+        input.gain.current,
+        input.settings.buffer_size as usize,
+    );
+    
     GeneratorOutput {
         stereo_waveform: StereoWaveform {
-            l_waveform: waveform.clone(),
-            r_waveform: waveform,
+            l_waveform,
+            r_waveform
         },
         stereo_phases: StereoPhases {
-            l_phases: new_phases.clone(),
-            r_phases: new_phases,
+            l_phases,
+            r_phases,
         },
         loudness,
     }

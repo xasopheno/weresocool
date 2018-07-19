@@ -1,13 +1,45 @@
-let waveform_args = WA {}
+pub enum Pan {
+    Left,
+    Right
+}
 
-for sample in (0..buffer_size)
-    .iter_mut()
-    .map(|sample| {
-        if sample < portamento_length {
-            generate_sample_portamento(&mut waveform_args)
-        } else {
-            generate_sample_waveform(&mut waveform_args)
-        }
-    })
+pub struct Instrument {
+    oscillators: Vec<Oscillators>
+}
 
+pub struct Oscillator {
+    voices: Vec<Voices>,
+    base_frequency: f32,
+    portamento_length: usize,
+    settings: &Settings,
+}
 
+pub struct Voice {
+    index: usize,
+    ratio: Ratio,
+    past: OscillatorState
+    present: OscillatorState
+    pan: Pan
+}
+
+pub struct OscillatorState {
+    frequency: f32,
+    gain: f32,
+    phase: f32,
+}
+
+an Oscillator has n Voices, base_frequency,
+a Voice has an index, past and present volume, past and present frequencies, pan
+
+Oscillator.voice[1].ratio(3.0/2.0)
+Oscillator.add_voice()
+Oscillator.remove_voice(1)
+
+impl Oscillator {
+    pub fn generate(&mut self) {
+
+    }
+}
+
+Kiss me Kiss me
+Ladies and Judgment
