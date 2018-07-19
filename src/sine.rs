@@ -1,34 +1,34 @@
-use oscillator::{Gain, SpectralHistory, Oscillator, StereoWaveform, StereoPhases, StereoWaveform};
-use ratios::{R, StereoRatios};
+use oscillator::{Gain, Oscillator, SpectralHistory, StereoPhases, StereoWaveform};
+use ratios::{StereoRatios, R};
 use settings::Settings;
 use std;
 
 pub struct Generator {
-    pub generate: fn(GeneratorInput) -> (StereoWaveform, f32),
+    pub generate: fn(GeneratorInput) -> (GeneratorOutput),
 }
 
 pub struct GeneratorInput<'g> {
-    stereo_waveform: StereoWaveform,
-    gain_mask: Vec<f32>,
-    gain: &'g mut Gain,
-    stereo_ratios: &'g mut StereoRatios,
-    stereo_phases: &'g mut StereoPhases,
-    settings: &'g Settings,
+    pub base_frequency: f32,
+    pub gain: &'g mut Gain,
+    pub stereo_ratios: &'g mut StereoRatios,
+    pub stereo_phases: &'g mut StereoPhases,
+    pub settings: &'g Settings,
 }
 
 pub struct GeneratorOutput {
-
+    pub stereo_waveform: StereoWaveform,
+    pub stereo_phases: StereoPhases,
+    pub loudness: f32,
 }
 
-impl GeneratorInput {
-    pub fn with_oscillator(osc: &Oscillator) -> GeneratorInput {
+impl<'g> GeneratorInput<'g> {
+    pub fn from_oscillator(osc: &mut Oscillator, base_frequency: f32) -> GeneratorInput {
         GeneratorInput {
-            stereo_waveform: (0..osc.settings.buffer_size as f32).collect(),
-            gain_mask: (0..osc.settings.buffer_size as f32).collect(),
+            base_frequency,
             gain: &mut osc.gain,
             stereo_ratios: &mut osc.stereo_ratios,
             stereo_phases: &mut osc.stereo_phases,
-            settings: &settings,
+            settings: &osc.settings,
         }
     }
 }
@@ -45,80 +45,72 @@ fn tau() -> f32 {
     std::f32::consts::PI * 2.0
 }
 
-fn generate_portamento(
-    base_frequency: f32,
-    gain_mask: Vec<f32>,
-    factor: f32,
-    spectral_history: &SpectralHistory,
-    ratios: &Vec<R>,
-    phases: &mut Vec<f32>,
-    settings: &Settings,
-) -> (Vec<f32>, Vec<f32>) {
-    let mut phases: Vec<f32> = vec![0.0];
-    let waveform = spectral_history
-        .current_frequencies
-        .iter()
-        .enumerate()
-        .zip(spectral_history.past_frequencies.iter())
-        .zip(phases.iter_mut())
-        .map(|(((index, past_frequency), current_frequency), phase)| {
-            generate_single_portamento(
-                *past_frequency,
-                *current_frequency,
-                factor,
-                gain_mask[index],
-                *phase,
-                100,
-                settings,
-            )
-        })
-        .collect();
-    (waveform, phases)
-}
-
-fn generate_single_portamento(
-    past_frequency: f32,
-    current_frequency: f32,
-    factor: f32,
-    gain: f32,
-    mut phase: f32,
-    length_portamento: usize,
-    settings: &Settings,
-) -> (Vec<f32>) {
-    //    probably need to calculate gain
-    let delta = (current_frequency - past_frequency) / length_portamento as f32;
-    let mut portamento: Vec<usize> = (0..length_portamento).collect();
-    let mut portamento: Vec<f32> = portamento
-        .iter_mut()
-        .map(|index| {
-            let freq = *index as f32 * delta + past_frequency;
-            phase += calculate_individual_phase(freq, 1.0, factor, phase);
-            phase %= tau();
-            println!("{}, {}", freq, phase);
-            generate_sample_of_individual_waveform(*index as f32, freq, factor, phase, gain)
-        })
-        .collect();
-    portamento
-}
+//fn generate_portamento(
+//    base_frequency: f32,
+//    gain_mask: Vec<f32>,
+//    factor: f32,
+//    spectral_history: &SpectralHistory,
+//    ratios: &Vec<R>,
+//    phases: &mut Vec<f32>,
+//    settings: &Settings,
+//) -> (Vec<f32>, Vec<f32>) {
+//    let mut phases: Vec<f32> = vec![0.0];
+//    let waveform = spectral_history
+//        .current_frequencies
+//        .iter()
+//        .enumerate()
+//        .zip(spectral_history.past_frequencies.iter())
+//        .zip(phases.iter_mut())
+//        .map(|(((index, past_frequency), current_frequency), phase)| {
+//            generate_single_portamento(
+//                *past_frequency,
+//                *current_frequency,
+//                factor,
+//                gain_mask[index],
+//                *phase,
+//                100,
+//                settings,
+//            )
+//        })
+//        .collect();
+//    (waveform, phases)
+//}
+//
+//fn generate_single_portamento(
+//    past_frequency: f32,
+//    current_frequency: f32,
+//    factor: f32,
+//    gain: f32,
+//    mut phase: f32,
+//    length_portamento: usize,
+//    settings: &Settings,
+//) -> (Vec<f32>) {
+//    //    probably need to calculate gain
+//    let delta = (current_frequency - past_frequency) / length_portamento as f32;
+//    let mut portamento: Vec<usize> = (0..length_portamento).collect();
+//    let mut portamento: Vec<f32> = portamento
+//        .iter_mut()
+//        .map(|index| {
+//            let freq = *index as f32 * delta + past_frequency;
+//            phase += calculate_individual_phase(freq, 1.0, factor, phase);
+//            phase %= tau();
+//            println!("{}, {}", freq, phase);
+//            generate_sample_of_individual_waveform(*index as f32, freq, factor, phase, gain)
+//        })
+//        .collect();
+//    portamento
+//}
 
 // When I generate a waveform, I'll generate the portamento and the rest of the wave and concatenate them together.
 
-pub fn generate_waveform(
-    input: GeneratorInput
-//    base_frequency: f32,
-//    gain: &Gain,
-//    spectral_history: &SpectralHistory,
-//    ratios: &Vec<R>,
-//    phases: &Vec<f32>,
-//    settings: &Settings,
-) -> (Vec<f32>, Vec<f32>, f32) {
-    let factor: f32 = tau() / settings.sample_rate;
-    let base_frequency = base_frequency * 2.0;
-    let mut waveform: Vec<usize> = (0..settings.buffer_size).collect();
-    let loudness = loudness_normalization(base_frequency);
+pub fn generate_waveform(input: GeneratorInput) -> GeneratorOutput {
+    let factor: f32 = tau() / input.settings.sample_rate;
+    let base_frequency = input.base_frequency * 2.0;
+    let mut waveform: Vec<usize> = (0..input.settings.buffer_size).collect();
+    let loudness = loudness_normalization(input.base_frequency);
 
     //    println!("{:?}, {:?}, {:?}", base_frequency, gain, phases);
-    let gain_mask: Vec<f32> = generate_gain_mask(settings.buffer_size, gain, loudness);
+    let gain_mask = generate_gain_mask(input.settings.buffer_size, input.gain, loudness);
 
     //    let (portamento, phases) =
     //        generate_portamento(base_frequency, &gain, &spectral_history, ratios,  &phases, 100, &settings);
@@ -129,27 +121,37 @@ pub fn generate_waveform(
         .map(|(sample, gain_delta)| {
             generate_sample_of_compound_waveform(
                 *sample as f32,
-                base_frequency,
-                &spectral_history,
+                input.base_frequency,
+                //                &spectral_history,
                 factor,
-                &ratios,
-                &phases,
-            ) * *gain_delta * settings.gain_multiplier
+                &input.stereo_ratios.l_ratios,
+                &input.stereo_phases.l_phases,
+            ) * *gain_delta * input.settings.gain_multiplier
         })
         .collect();
 
     let new_phases = generate_phase_array(
-        base_frequency,
+        input.base_frequency,
         factor,
-        &ratios,
-        &phases,
-        gain.current,
-        settings.buffer_size as usize,
+        &input.stereo_ratios.l_ratios,
+        &input.stereo_phases.l_phases,
+        input.gain.current,
+        input.settings.buffer_size as usize,
     );
 
     //    let waveform = portamento.append(&mut waveform)
 
-    (waveform, new_phases, loudness)
+    GeneratorOutput {
+        stereo_waveform: StereoWaveform {
+            l_waveform: waveform.clone(),
+            r_waveform: waveform,
+        },
+        stereo_phases: StereoPhases {
+            l_phases: new_phases.clone(),
+            r_phases: new_phases,
+        },
+        loudness,
+    }
 }
 
 fn generate_gain_mask(buffer_size: usize, gain: &Gain, loudness: f32) -> Vec<f32> {
@@ -188,7 +190,7 @@ pub fn loudness_normalization(base_frequency: f32) -> f32 {
 fn generate_sample_of_compound_waveform(
     sample: f32,
     base_frequency: f32,
-    spectral_history: &SpectralHistory,
+    //    spectral_history: &SpectralHistory,
     factor: f32,
     ratios: &Vec<R>,
     phases: &Vec<f32>,

@@ -1,7 +1,7 @@
 use ratios::{StereoRatios, R};
 use ring_buffer::RingBuffer;
 use settings::Settings;
-use sine::Generator;
+use sine::{Generator, GeneratorInput, GeneratorOutput};
 
 pub struct Oscillator {
     pub f_buffer: RingBuffer<f32>,
@@ -36,8 +36,8 @@ impl StereoSpectralHistory {
 pub struct SpectralHistory {
     pub past_frequencies: Vec<f32>,
     pub current_frequencies: Vec<f32>,
-    pub phases: Vec<f32>,
-    pub gains: Vec<Gain>,
+    //    pub phases: Vec<f32>,
+    //    pub gains: Vec<Gain>,
 }
 
 impl SpectralHistory {
@@ -45,8 +45,8 @@ impl SpectralHistory {
         SpectralHistory {
             past_frequencies: vec![0.0; len],
             current_frequencies: vec![0.0; len],
-            phases: vec![0.0; len],
-            gains: vec![Gain::new(0.0, 0.0); len],
+            //            phases: vec![0.0; len],
+            //            gains: vec![Gain::new(0.0, 0.0); len],
         }
     }
 }
@@ -179,32 +179,17 @@ impl Oscillator {
             frequency = previous_frequency
         }
 
-        let (l_waveform, l_new_phases, _loudness) = (self.generator.generate)(
-            frequency,
-            &self.gain,
-            &self.stereo_spectral_history.l_frequencies,
-            &self.stereo_ratios.l_ratios,
-            &self.stereo_phases.l_phases,
-            &self.settings,
-        );
+        let output = (&mut self.generator.generate)(GeneratorInput::from_oscillator(
+            self,
+            current_frequency,
+        ));
 
-        let (r_waveform, r_new_phases, loudness) = (self.generator.generate)(
-            frequency,
-            &self.gain,
-            &self.stereo_spectral_history.r_frequencies,
-            &self.stereo_ratios.r_ratios,
-            &self.stereo_phases.r_phases,
-            &self.settings,
-        );
+        self.gain.current *= output.loudness;
 
-        self.gain.current *= loudness;
+        self.stereo_phases
+            .update(output.stereo_phases.l_phases, output.stereo_phases.r_phases);
 
-        self.stereo_phases.update(l_new_phases, r_new_phases);
-
-        StereoWaveform {
-            l_waveform,
-            r_waveform,
-        }
+        output.stereo_waveform
     }
     pub fn update_spectral_history(&mut self, current_base_frequency: f32) {
         let mut calculated_l_frequencies: Vec<f32> = self
