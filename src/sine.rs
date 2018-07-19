@@ -155,16 +155,13 @@ pub fn generate_waveform(input: GeneratorInput) -> GeneratorOutput {
         input.gain.current,
         input.settings.buffer_size as usize,
     );
-    
+
     GeneratorOutput {
         stereo_waveform: StereoWaveform {
             l_waveform,
-            r_waveform
+            r_waveform,
         },
-        stereo_phases: StereoPhases {
-            l_phases,
-            r_phases,
-        },
+        stereo_phases: StereoPhases { l_phases, r_phases },
         loudness,
     }
 }

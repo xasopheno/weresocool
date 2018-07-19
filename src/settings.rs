@@ -1,4 +1,4 @@
-#[derive(Clone)]
+#[derive(Clone, Debug)]
 pub struct Settings {
     pub sample_rate: f32,
     pub yin_buffer_size: usize,

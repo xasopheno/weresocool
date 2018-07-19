@@ -111,7 +111,6 @@ pub struct Oscillator {
     pub settings: Settings,
 }
 
-
 impl Oscillator {
     pub fn new(
         f_buffer_size: usize,

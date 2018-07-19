@@ -1,6 +1,7 @@
 extern crate rand;
 use self::rand::Rng;
 use event::{generate_pop, generate_test_phrase, Event, Mutate, Phrase};
+use new_oscillator::NewOscillator;
 use oscillator::{Oscillator, StereoWaveform};
 use portaudio as pa;
 use ratios::{complicated_ratios, simple_ratios, R};
