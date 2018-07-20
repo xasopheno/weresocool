@@ -1,6 +1,4 @@
-use ratios::{
-    complicated_ratios, mono_ratios, simple_ratios, simple_ratios2, simple_ratios3, StereoRatios, R,
-};
+use ratios::{mono_ratios, StereoRatios, R};
 
 #[derive(Debug, Clone, PartialEq)]
 pub struct Event {
@@ -117,68 +115,37 @@ impl Mutate<Phrase> for Phrase {
 }
 
 pub fn generate_test_phrase() -> Vec<Event> {
-    let e = Event::new(70.0, simple_ratios(), 1.0, 1.0);
+    let e = Event::new(70.0, mono_ratios(), 1.0, 1.0);
     let mut phrase1 = Phrase {
         events: vec![
             e.clone(),
             e.clone().transpose(6.0 / 5.0, 0.0),
             e.clone().transpose(7.0 / 4.0, 0.0),
-            //            e.clone().transpose(9.0 / 8.0, 0.0),
-            //            e.clone().transpose(6.0 / 5.0, 0.0),
-            //            e.clone().transpose(7.0 / 6.0, 0.0),
         ],
     };
 
-    let phrase2 = phrase1
-        .clone()
-        .mut_ratios(simple_ratios2())
-        .transpose(9.0 / 8.0, 0.0);
-    //        .mut_length(2.0, 1.0);
-    //        .mut_gain(0.9, 0.0);
-
-    let phrase3 = phrase2
-        .clone()
-//        .mut_ratios(simple_ratios())
-        .transpose(5.0 / 4.0, 0.0);
-
-    let phrase4 = phrase2
-        .clone()
-        .mut_ratios(simple_ratios3())
-        .transpose(12.0 / 13.0, 0.0);
-
-    vec![
-        phrase1.clone(),
-        phrase2.clone(),
-        phrase3.clone(),
-        phrase2.clone(),
-        phrase1.clone(),
-        phrase3.clone(),
-        //        phrase1.clone(),
-        //        phrase4.clone(),
-        //        phrase2.clone(),
-        //        phrase3.clone(),
-    ].collapse_to_vec_events()
+    vec![phrase1.clone()].collapse_to_vec_events()
 }
-
-pub fn generate_pop() -> Vec<Event> {
-    let e = Event::new(50.0, simple_ratios(), 1.0, 1.0);
-    let mut phrase1 = Phrase {
-        events: vec![e.clone()],
-    };
-
-    let phrase2 = phrase1.clone().transpose(2.0 / 3.0, 10.0);
-    //        .mut_length(2.0, 1.0);
-    //        .mut_gain(0.9, 0.0);
-
-    vec![
-        phrase1.clone(),
-        phrase2.clone(),
-        //        phrase1.clone(),
-        //        phrase4.clone(),
-        //        phrase2.clone(),
-        //        phrase3.clone(),
-    ].collapse_to_vec_events()
-}
+//
+//pub fn generate_pop() -> Vec<Event> {
+//    let e = Event::new(50.0, simple_ratios(), 1.0, 1.0);
+//    let mut phrase1 = Phrase {
+//        events: vec![e.clone()],
+//    };
+//
+//    let phrase2 = phrase1.clone().transpose(2.0 / 3.0, 10.0);
+//    //        .mut_length(2.0, 1.0);
+//    //        .mut_gain(0.9, 0.0);
+//
+//    vec![
+//        phrase1.clone(),
+//        phrase2.clone(),
+//        //        phrase1.clone(),
+//        //        phrase4.clone(),
+//        //        phrase2.clone(),
+//        //        phrase3.clone(),
+//    ].collapse_to_vec_events()
+//}
 
 #[cfg(test)]
 pub mod tests {
@@ -186,7 +153,7 @@ pub mod tests {
 
     #[test]
     fn test_mutate_event() {
-        let result = Event::new(100.0, simple_ratios(), 1.0, 1.0)
+        let result = Event::new(100.0, mono_ratios(), 1.0, 1.0)
             .mut_ratios(mono_ratios())
             .transpose(3.0 / 2.0, 0.0)
             .mut_length(2.0, 1.0)
@@ -205,8 +172,8 @@ pub mod tests {
     fn test_mutate_phrase() {
         let mut phrase = Phrase {
             events: vec![
-                Event::new(100.0, simple_ratios(), 1.0, 1.0),
-                Event::new(50.0, simple_ratios(), 2.0, 1.0),
+                Event::new(100.0, mono_ratios(), 1.0, 1.0),
+                Event::new(50.0, mono_ratios(), 2.0, 1.0),
             ],
         };
 
@@ -229,8 +196,8 @@ pub mod tests {
     fn test_collapse_phrase() {
         let mut phrase1 = Phrase {
             events: vec![
-                Event::new(100.0, simple_ratios(), 1.0, 1.0),
-                Event::new(50.0, simple_ratios(), 2.0, 1.0),
+                Event::new(100.0, mono_ratios(), 1.0, 1.0),
+                Event::new(50.0, mono_ratios(), 2.0, 1.0),
             ],
         };
 
@@ -244,8 +211,8 @@ pub mod tests {
         let result = vec![phrase1, phrase2].collapse_to_vec_events();
 
         let expected = vec![
-            Event::new(100.0, simple_ratios(), 1.0, 1.0),
-            Event::new(50.0, simple_ratios(), 2.0, 1.0),
+            Event::new(100.0, mono_ratios(), 1.0, 1.0),
+            Event::new(50.0, mono_ratios(), 2.0, 1.0),
             Event::new(150.0, mono_ratios(), 3.0, 0.9),
             Event::new(75.0, mono_ratios(), 5.0, 0.9),
         ];

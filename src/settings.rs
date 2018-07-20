@@ -1,4 +1,4 @@
-#[derive(Clone, Debug)]
+#[derive(Clone, Debug, PartialEq)]
 pub struct Settings {
     pub sample_rate: f32,
     pub yin_buffer_size: usize,
@@ -16,7 +16,7 @@ pub fn get_default_app_settings() -> Settings {
     Settings {
         sample_rate: 44_100.0,
         yin_buffer_size: 2048,
-        buffer_size: 512,
+        buffer_size: 2048,
         probability_threshold: 0.3,
         gain_threshold_min: 0.000,
         channels: 2,

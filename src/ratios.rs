@@ -1,5 +1,3 @@
-
-
 #[derive(Debug, Clone, PartialEq)]
 pub struct R {
     pub decimal: f32,
@@ -147,20 +145,20 @@ impl R {
 //    StereoRatios { l_ratios, r_ratios }
 //}
 
-pub fn simple_ratios3() -> Vec<R> {
+pub fn simple_ratios() -> Vec<R> {
     vec![
-        R::atio(1, 1, 1.0, 1.0, Pan::Left),
+        R::atio(1, 1, 1.0, 1.0, Pan::Right),
         R::atio(1, 1, -1.0, 1.0, Pan::Left),
-        R::atio(1, 2, 0.0, 0.0, Pan::Right),
-        R::atio(1, 2, 1.0, 0.0, Pan::Right),
+        R::atio(3, 2, 0.0, 0.0, Pan::Right),
+        R::atio(5, 4, 1.0, 0.0, Pan::Left),
     ]
 }
 
-//pub fn mono_ratios() -> StereoRatios {
-//    let ratios = vec![R::atio(2, 1, 0.0, 1.0)];
-//
-//    StereoRatios {
-//        l_ratios: ratios.clone(),
-//        r_ratios: ratios,
-//    }
-//}
+pub fn mono_ratios() -> StereoRatios {
+    let ratios = vec![R::atio(2, 1, 0.0, 1.0, Pan::Right)];
+
+    StereoRatios {
+        l_ratios: ratios.clone(),
+        r_ratios: ratios,
+    }
+}
