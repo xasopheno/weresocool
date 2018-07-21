@@ -18,7 +18,6 @@ pub fn setup_portaudio_output(
     //    let (l_ratios, r_ratios) = ;
     let mut oscillator = NewOscillator::init(get_default_app_settings());
     let mut freq = 100.0;
-    oscillator.update(freq, 1.0);
     let output_settings = get_output_settings(&pa, &get_default_app_settings())?;
 
     let mut counter = 0;
@@ -28,32 +27,30 @@ pub fn setup_portaudio_output(
     let output_stream = pa.open_non_blocking_stream(
         output_settings,
         move |pa::OutputStreamCallbackArgs { mut buffer, .. }| {
-            oscillator.update(freq, 1.0);
             let (l_waveform, r_waveform) = oscillator.generate();
+            oscillator.update(freq, 1.0);
 
-//            index = index % (test_phrase.len());
-//
-//            if counter % 25 == 0 {
-//                freq = test_phrase[index].frequency / 1.4;
-//                oscillator.stereo_ratios = test_phrase[index].ratios.clone();
-//                oscillator.gain.past = 0.0;
-//                index += 1;
-//            }
+            //            index = index % (test_phrase.len());
+            //
+            //            if counter % 25 == 0 {
+            //                freq = test_phrase[index].frequency / 1.4;
+            //                oscillator.stereo_ratios = test_phrase[index].ratios.clone();
+            //                oscillator.gain.past = 0.0;
+            //                index += 1;
+            //            }
 
-                if counter % 25 == 0 {
-                    let vs:Vec<f32> = vec![100.0, 500.0];
-                    let change = rand::thread_rng().choose(&vs);
-                    match change {
-                        Some(change) => {
-                            freq = *change;
-                        }
-                        _ => {}
+            if counter % 25 == 0 {
+                let vs: Vec<f32> = vec![100.0, 500.0, 0.0, 300.0, 0.0, 600.0, 250.0];
+                let change = rand::thread_rng().choose(&vs);
+                match change {
+                    Some(change) => {
+                        freq = *change;
                     }
+                    _ => {}
                 }
+            }
             counter += 1;
-            write_output_buffer(&mut buffer,
-                l_waveform, r_waveform
-            );
+            write_output_buffer(&mut buffer, l_waveform, r_waveform);
             pa::Continue
         },
     )?;

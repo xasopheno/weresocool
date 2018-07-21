@@ -51,15 +51,18 @@ impl Voice {
     ) {
         let p_delta = self.calculate_portamento_delta(portamento_length);
         let g_delta = self.calculate_gain_delta(buffer.len());
-        for (index, sample) in buffer.iter_mut().enumerate(){
-            let new_sample = self.generate_sample(index, p_delta, g_delta, portamento_length, factor);
+        for (index, sample) in buffer.iter_mut().enumerate() {
+            let new_sample =
+                self.generate_sample(index, p_delta, g_delta, portamento_length, factor);
             *sample += new_sample
-        };
+        }
     }
 
     pub fn update(&mut self, base_frequency: f32, gain: f32) {
-        let new_freq = base_frequency * self.ratio.decimal;
+        let new_freq = base_frequency * self.ratio.decimal + self.ratio.offset;
         let mut new_gain = if new_freq != 0.0 { gain } else { 0.0 };
+        let loudness = loudness_normalization(new_freq);
+        new_gain *= loudness;
 
         self.past = self.current.clone();
         self.current.frequency = new_freq;
@@ -74,16 +77,19 @@ impl Voice {
         portamento_length: usize,
         factor: f32,
     ) -> f32 {
-        let frequency = if index < portamento_length {
+        let mut frequency = if index < portamento_length && self.past.frequency != 0.0 {
             self.past.frequency + (index as f32 * p_delta)
         } else {
             self.current.frequency
         };
 
+        if self.current.frequency == 0.0 && self.past.frequency != 0.0 {
+            frequency = self.past.frequency;
+        }
+
         let gain = index as f32 * g_delta + self.past.gain;
 
-        let sample =
-            (((factor * frequency) + self.phase) % tau()).sin() * gain;
+        let sample = (((factor * frequency) + self.phase) % tau()).sin() * gain;
 
         self.phase = ((factor * frequency) + self.phase) % tau();
         sample
@@ -97,19 +103,32 @@ impl Voice {
         (self.current.gain - self.past.gain) / (buffer_size as f32 - 1.0)
     }
 
-//    fn calculate_individual_phase(
-//        &self,
-//        frequency: f32,
-//        buffer_size: f32,
-//        factor: f32,
-//    ) -> f32 {
-//        let phase = (;
-//        phase
-//    }
+    //    fn calculate_individual_phase(
+    //        &self,
+    //        frequency: f32,
+    //        buffer_size: f32,
+    //        factor: f32,
+    //    ) -> f32 {
+    //        let phase = (;
+    //        phase
+    //    }
 }
 
 fn tau() -> f32 {
     PI * 2.0
+}
+
+pub fn freq_to_sones(frequency: f32) -> f32 {
+    // http://www.ukintpress-conferences.com/conf/08txeu_conf/pdf/day_1/01-06-garcia.pdf
+    1.0 / 2.0_f32.powf(((20.0 * (frequency).log10()) - 40.0) / 10.0)
+}
+
+pub fn loudness_normalization(frequency: f32) -> f32 {
+    let mut normalization = freq_to_sones(frequency);
+    if normalization.is_nan() || normalization.is_infinite() || normalization > 1.0 {
+        normalization = 1.0;
+    };
+    normalization
 }
 
 impl NewOscillator {
@@ -120,20 +139,20 @@ impl NewOscillator {
             .enumerate()
             .map(|(index, ratio)| Voice::init(index, ratio.clone()))
             .collect::<Vec<Voice>>();
-
+        let settings = get_default_app_settings();
         NewOscillator {
             voices,
-            portamento_length: 2000,
-            settings: get_default_app_settings(),
+            portamento_length: settings.buffer_size,
+            settings,
         }
     }
     pub fn update(&mut self, frequency: f32, gain: f32) {
         // TODO: implement frequency threshold
-//        let new_freq = if frequency < 2_500.0 && frequency > 0.0 {
-//            frequency
-//        } else {
-//            0.0
-//        };
+        //        let new_freq = if frequency < 2_500.0 && frequency > 0.0 {
+        //            frequency
+        //        } else {
+        //            0.0
+        //        };
 
         // TODO: implement gain threshold
         let new_gain = if gain < 0.0 { gain } else { 0.0 };
@@ -154,7 +173,7 @@ impl NewOscillator {
             } else {
                 voice.generate_waveform(&mut r_buffer, portamento_length, factor);
             }
-        };
+        }
         (l_buffer, r_buffer)
     }
 }
