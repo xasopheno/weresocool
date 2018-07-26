@@ -59,7 +59,11 @@ impl Voice {
     }
 
     pub fn update(&mut self, base_frequency: f32, gain: f32) {
-        let new_freq = base_frequency * self.ratio.decimal + self.ratio.offset;
+        let mut new_freq = base_frequency * self.ratio.decimal + self.ratio.offset;
+        if new_freq < 20.0 {
+            new_freq = 0.0;
+        }
+
         let mut new_gain = if new_freq != 0.0 { gain } else { 0.0 };
         let loudness = loudness_normalization(new_freq);
         new_gain *= loudness;

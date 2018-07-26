@@ -40,7 +40,7 @@ pub fn setup_portaudio_output(
             //            }
 
             if counter % 25 == 0 {
-                let vs: Vec<f32> = vec![210.0, 210.0, 227.0];
+                let vs: Vec<f32> = vec![210.0, 210.0, 227.0, 210.0, 210.0, 210.0, 210.0, 210.0, 195.0];
 //                let vs: Vec<f32> = vec![210.0, 320.0, 0.0, 300.0, 250.0, 0.0, 550.0, 570.0];
                 let change = rand::thread_rng().choose(&vs);
                 match change {
@@ -54,7 +54,7 @@ pub fn setup_portaudio_output(
             write_output_buffer(&mut buffer, l_waveform, r_waveform);
             pa::Continue
         },
-    )?;
+    )?; 
 
     Ok(output_stream)
 }
