@@ -69,6 +69,14 @@ impl Voice {
         self.current.gain = new_gain;
     }
 
+    fn silence_to_sound(&self) -> bool {
+        self.past.frequency < 20.0 && self.current.frequency > 20.0
+    }
+
+    fn sound_to_silence(&self) -> bool {
+        self.past.frequency > 20.0 && self.current.frequency < 20.0
+    }
+
     pub fn generate_sample(
         &mut self,
         index: usize,
@@ -77,41 +85,37 @@ impl Voice {
         portamento_length: usize,
         factor: f32,
     ) -> f32 {
-        let mut frequency = if index < portamento_length && self.past.frequency != 0.0 {
+        let mut frequency =
+            if index < portamento_length
+            && !self.silence_to_sound()
+            && !self.sound_to_silence()
+        {
             self.past.frequency + (index as f32 * p_delta)
         } else {
+
             self.current.frequency
         };
 
-        if self.current.frequency == 0.0 && self.past.frequency != 0.0 {
+        let gain = ((index as f32 * g_delta) + self.past.gain) * self.ratio.gain;
+
+        if self.sound_to_silence() {
             frequency = self.past.frequency;
         }
 
-        let gain = index as f32 * g_delta + self.past.gain;
+        let current_phase = ((factor * frequency) + self.phase) % tau();
+        let sample = current_phase.sin() * gain;
 
-        let sample = (((factor * frequency) + self.phase) % tau()).sin() * gain;
-
-        self.phase = ((factor * frequency) + self.phase) % tau();
+        self.phase = current_phase;
         sample
     }
 
     fn calculate_portamento_delta(&self, portamento_length: usize) -> f32 {
-        (self.current.frequency - self.past.frequency) / (portamento_length as f32 - 1.0)
+         (self.current.frequency - self.past.frequency) / (portamento_length as f32)
     }
 
     fn calculate_gain_delta(&self, buffer_size: usize) -> f32 {
-        (self.current.gain - self.past.gain) / (buffer_size as f32 - 1.0)
+        (self.current.gain - self.past.gain) / (buffer_size as f32)
     }
-
-    //    fn calculate_individual_phase(
-    //        &self,
-    //        frequency: f32,
-    //        buffer_size: f32,
-    //        factor: f32,
-    //    ) -> f32 {
-    //        let phase = (;
-    //        phase
-    //    }
 }
 
 fn tau() -> f32 {
@@ -120,7 +124,11 @@ fn tau() -> f32 {
 
 pub fn freq_to_sones(frequency: f32) -> f32 {
     // http://www.ukintpress-conferences.com/conf/08txeu_conf/pdf/day_1/01-06-garcia.pdf
-    1.0 / 2.0_f32.powf(((20.0 * (frequency).log10()) - 40.0) / 10.0)
+    if frequency < 20.0 {
+        0.0
+    } else {
+        1.0 / 2.0_f32.powf(((20.0 * (frequency).log10()) - 40.0) / 10.0)
+    }
 }
 
 pub fn loudness_normalization(frequency: f32) -> f32 {
@@ -169,6 +177,7 @@ impl NewOscillator {
         let factor: f32 = tau() / self.settings.sample_rate;
         for voice in self.voices.iter_mut() {
             if voice.ratio.pan == Pan::Left {
+                //                println!("{} {}", voice.past.gain, voice.current.gain);
                 voice.generate_waveform(&mut l_buffer, portamento_length, factor);
             } else {
                 voice.generate_waveform(&mut r_buffer, portamento_length, factor);

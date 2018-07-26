@@ -147,12 +147,32 @@ impl R {
 
 pub fn simple_ratios() -> Vec<R> {
     vec![
-        R::atio(1, 1, 1.0, 1.0, Pan::Right),
-        R::atio(7, 4, 1.0, 1.0, Pan::Right),
-        R::atio(1, 1, -1.0, 1.0, Pan::Left),
-        R::atio(3, 2, 0.0, 0.0, Pan::Right),
-        R::atio(5, 4, 1.0, 0.0, Pan::Left),
-        R::atio(11, 8, 1.0, 0.0, Pan::Left),
+            R::atio(1, 2, 0.0, 0.9, Pan::Right),
+            R::atio(1, 2, 3.0, 0.9, Pan::Right),
+
+            R::atio(7, 4, 1.0, 0.8, Pan::Right),
+            R::atio(7, 4, 0.0, 0.7, Pan::Right),
+            R::atio(3, 2, 0.0, 0.4, Pan::Right),
+            R::atio(3, 2, 4.0, 0.3, Pan::Right),
+            R::atio(3, 2, 4.0, 0.3, Pan::Right),
+            R::atio(12, 5, 11.0, 0.2, Pan::Right),
+            R::atio(12, 5, 0.0, 0.2, Pan::Right),
+            R::atio(15, 4, 6.0, 0.17, Pan::Right),
+            R::atio(15, 4, 5.0, 0.15, Pan::Right),
+
+
+            R::atio(1, 2, 0.0, 0.9, Pan::Left),
+            R::atio(1, 2, -3.0, 0.9, Pan::Left),
+
+            R::atio(1, 1, -1.0, 1.0, Pan::Left),
+            R::atio(5, 4, 1.0, 0.7, Pan::Left),
+            R::atio(5, 4, 0.0, 0.8, Pan::Left),
+            R::atio(11, 8, 1.0, 0.4, Pan::Left),
+            R::atio(11, 8, -4.0, 0.4, Pan::Left),
+            R::atio(13, 4, -13.0, 0.2, Pan::Left),
+            R::atio(13, 4, 6.0, 0.2, Pan::Left),
+            R::atio(17, 4, 3.0, 0.15, Pan::Left),
+            R::atio(17, 4, 4.0, 0.15, Pan::Left),
     ]
 }
 
