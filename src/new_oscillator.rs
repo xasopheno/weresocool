@@ -1,13 +1,10 @@
 use ratios::{simple_ratios, Pan, R};
 use settings::{get_default_app_settings, get_test_settings, Settings};
 use std::f32::consts::PI;
-
-#[derive(Clone, Debug, PartialEq)]
-pub struct NewOscillator {
-    voices: Vec<Voice>,
-    portamento_length: usize,
-    settings: Settings,
+fn tau() -> f32 {
+    PI * 2.0
 }
+
 
 #[derive(Clone, Debug, PartialEq)]
 pub struct Voice {
@@ -74,11 +71,11 @@ impl Voice {
     }
 
     fn silence_to_sound(&self) -> bool {
-        self.past.frequency < 20.0 && self.current.frequency > 20.0
+        self.past.frequency == 0.0 && self.current.frequency != 0.0
     }
 
     fn sound_to_silence(&self) -> bool {
-        self.past.frequency > 20.0 && self.current.frequency < 20.0
+        self.past.frequency != 0.0 && self.current.frequency == 0.0
     }
 
     pub fn generate_sample(
@@ -89,41 +86,29 @@ impl Voice {
         portamento_length: usize,
         factor: f32,
     ) -> f32 {
-        let mut frequency =
-            if index < portamento_length
-            && !self.silence_to_sound()
-            && !self.sound_to_silence()
+        let mut frequency = if self.sound_to_silence() {
+            self.past.frequency
+        } else if index < portamento_length && !self.silence_to_sound() && !self.sound_to_silence()
         {
             self.past.frequency + (index as f32 * p_delta)
         } else {
-
             self.current.frequency
         };
 
         let gain = ((index as f32 * g_delta) + self.past.gain) * self.ratio.gain;
-
-        if self.sound_to_silence() {
-            frequency = self.past.frequency;
-        }
-
         let current_phase = ((factor * frequency) + self.phase) % tau();
-        let sample = current_phase.sin() * gain;
-
         self.phase = current_phase;
-        sample
+
+        current_phase.sin() * gain
     }
 
     fn calculate_portamento_delta(&self, portamento_length: usize) -> f32 {
-         (self.current.frequency - self.past.frequency) / (portamento_length as f32)
+        (self.current.frequency - self.past.frequency) / (portamento_length as f32)
     }
 
     fn calculate_gain_delta(&self, buffer_size: usize) -> f32 {
         (self.current.gain - self.past.gain) / (buffer_size as f32)
     }
-}
-
-fn tau() -> f32 {
-    PI * 2.0
 }
 
 pub fn freq_to_sones(frequency: f32) -> f32 {
@@ -143,6 +128,13 @@ pub fn loudness_normalization(frequency: f32) -> f32 {
     normalization
 }
 
+#[derive(Clone, Debug, PartialEq)]
+pub struct NewOscillator {
+    voices: Vec<Voice>,
+    portamento_length: usize,
+    settings: Settings,
+}
+
 impl NewOscillator {
     pub fn init(settings: Settings) -> NewOscillator {
         let ratios = simple_ratios();
@@ -160,14 +152,17 @@ impl NewOscillator {
     }
     pub fn update(&mut self, frequency: f32, gain: f32) {
         // TODO: implement frequency threshold
-        //        let new_freq = if frequency < 2_500.0 && frequency > 0.0 {
-        //            frequency
-        //        } else {
-        //            0.0
-        //        };
+        let new_freq = if frequency < self.settings.max_freq && frequency > self.settings.min_freq {
+            frequency
+        } else {
+            0.0
+        };
 
-        // TODO: implement gain threshold
-        let new_gain = if gain < 0.0 { gain } else { 0.0 };
+        let new_gain = if gain < self.settings.gain_threshold_min {
+            gain
+        } else {
+            0.0
+        };
 
         for voice in self.voices.iter_mut() {
             voice.update(frequency, gain);
