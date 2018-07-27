@@ -1,9 +1,11 @@
-use ratios::{mono_ratios, StereoRatios};
+use ratios::{simple_ratios, R};
+use new_oscillator::{NewOscillator, StereoWaveform};
+use settings::{get_default_app_settings};
 
 #[derive(Debug, Clone, PartialEq)]
 pub struct Event {
     pub frequency: f32,
-    pub ratios: StereoRatios,
+    pub ratios: Vec<R>,
     pub length: f32,
     pub gain: f32,
 }
@@ -19,7 +21,7 @@ pub enum Mutable {
 }
 
 impl Event {
-    pub fn new(frequency: f32, ratios: StereoRatios, length: f32, gain: f32) -> Event {
+    pub fn new(frequency: f32, ratios: Vec<R>, length: f32, gain: f32) -> Event {
         Event {
             frequency,
             ratios,
@@ -36,36 +38,45 @@ impl Phrase {
 }
 
 pub trait Render<T> {
-    fn collapse_to_vec_events(&mut self) -> Vec<Event>;
-    //    fn collapse_to_vec_samples(&mut self) -> Vec<f32>;
+    fn render(&mut self, oscillator: &mut NewOscillator) -> StereoWaveform;
+}
+
+impl Render<Event> for Event {
+    fn render(&mut self, oscillator: &mut NewOscillator) -> StereoWaveform {
+        oscillator.update_freq_gain_and_ratios(self.frequency, self.gain, &self.ratios);
+        let n_samples_to_generate = (self.length * 44_100.0).floor() as usize;
+        oscillator.generate(n_samples_to_generate)
+    }
 }
 
 impl Render<Phrase> for Phrase {
-    fn collapse_to_vec_events(&mut self) -> Vec<Event> {
-        self.events.clone()
+    fn render(&mut self, oscillator: &mut NewOscillator) -> StereoWaveform {
+        let mut result: StereoWaveform = StereoWaveform::new(0);
+        for mut event in self.events.clone() {
+            let stereo_waveform = event.render(oscillator);
+            result.append(stereo_waveform);
+        };
+
+        result
     }
-    //    fn collapse_to_vec_samples(&mut self) -> Vec<f32> {
-    //        let buffer_samples: Vec<f32> = vec![];
-    //        for event in self.collapse_to_vec_events() {
-    //            let seconds_to_samples = 44_100.0 * event.length;
-    //        };
-    //        buffer_samples
-    //    }
 }
 
 impl Render<Vec<Phrase>> for Vec<Phrase> {
-    fn collapse_to_vec_events(&mut self) -> Vec<Event> {
+    fn render(&mut self, oscillator: &mut NewOscillator) -> StereoWaveform {
+        let mut result: StereoWaveform = StereoWaveform::new(0);
         let mut vec_events: Vec<Event> = vec![];
         for phrase in self.iter_mut() {
-            vec_events.append(&mut phrase.events)
+            let stereo_waveform = phrase.render(oscillator);
+            result.append(stereo_waveform);
         }
-        vec_events
+
+        result
     }
 }
 
 pub trait Mutate<T> {
     fn transpose(&mut self, mul: f32, add: f32) -> T;
-    fn mut_ratios(&mut self, ratios: StereoRatios) -> T;
+    fn mut_ratios(&mut self, ratios: Vec<R>) -> T;
     fn mut_length(&mut self, mul: f32, add: f32) -> T;
     fn mut_gain(&mut self, mul: f32, add: f32) -> T;
 }
@@ -76,7 +87,7 @@ impl Mutate<Event> for Event {
         self.clone()
     }
 
-    fn mut_ratios(&mut self, ratios: StereoRatios) -> Event {
+    fn mut_ratios(&mut self, ratios: Vec<R>) -> Event {
         self.ratios = ratios;
         self.clone()
     }
@@ -100,7 +111,7 @@ impl Mutate<Phrase> for Phrase {
         self.clone()
     }
 
-    fn mut_ratios(&mut self, ratios: StereoRatios) -> Phrase {
+    fn mut_ratios(&mut self, ratios: Vec<R>) -> Phrase {
         for event in self.events.iter_mut() {
             event.mut_ratios(ratios.clone());
         }
@@ -122,8 +133,10 @@ impl Mutate<Phrase> for Phrase {
     }
 }
 
-pub fn generate_test_phrase() -> Vec<Event> {
-    let e = Event::new(70.0, mono_ratios(), 1.0, 1.0);
+pub fn generate_test_phrase() -> StereoWaveform {
+    let settings = get_default_app_settings();
+    let mut oscillator = NewOscillator::init(&settings);
+    let e = Event::new(150.0, simple_ratios(), 1.2, 1.0);
     let phrase1 = Phrase {
         events: vec![
             e.clone(),
@@ -131,10 +144,26 @@ pub fn generate_test_phrase() -> Vec<Event> {
             e.clone().transpose(7.0 / 4.0, 0.0),
         ],
     };
+    let mut phrase2 = phrase1.clone().transpose(4.0 / 3.0, 0.0);
+    phrase2.events[2].mut_length(5.0, 0.0);
 
-    let phrase2 = phrase1.clone().transpose(4.0 / 3.0, 0.0);
+    let end = Phrase {
+        events: vec![Event::new(0.0, simple_ratios(), 1.0, 0.0)]
+    };
 
-    vec![phrase1, phrase2].collapse_to_vec_events()
+    vec![
+        phrase1,
+        phrase2.clone(),
+        phrase2
+            .clone()
+            .mut_length(0.25, 0.0)
+            .transpose(4.0/5.0, 0.0),
+        phrase2
+            .mut_length(0.25, 0.0)
+            .transpose(2.0/3.0, 0.0),
+
+        end
+    ].render(&mut oscillator)
 }
 
 #[cfg(test)]
@@ -143,15 +172,15 @@ pub mod tests {
 
     #[test]
     fn test_mutate_event() {
-        let result = Event::new(100.0, mono_ratios(), 1.0, 1.0)
-            .mut_ratios(mono_ratios())
+        let result = Event::new(100.0, simple_ratios(), 1.0, 1.0)
+            .mut_ratios(simple_ratios())
             .transpose(3.0 / 2.0, 0.0)
             .mut_length(2.0, 1.0)
             .mut_gain(0.9, 0.0);
 
         let expected = Event {
             frequency: 150.0,
-            ratios: mono_ratios(),
+            ratios: simple_ratios(),
             length: 3.0,
             gain: 0.9,
         };
@@ -162,21 +191,21 @@ pub mod tests {
     fn test_mutate_phrase() {
         let mut phrase = Phrase {
             events: vec![
-                Event::new(100.0, mono_ratios(), 1.0, 1.0),
-                Event::new(50.0, mono_ratios(), 2.0, 1.0),
+                Event::new(100.0, simple_ratios(), 1.0, 1.0),
+                Event::new(50.0, simple_ratios(), 2.0, 1.0),
             ],
         };
 
         let result = phrase
-            .mut_ratios(mono_ratios())
+            .mut_ratios(simple_ratios())
             .transpose(3.0 / 2.0, 0.0)
             .mut_length(2.0, 1.0)
             .mut_gain(0.9, 0.0);
 
         let expected = Phrase {
             events: vec![
-                Event::new(150.0, mono_ratios(), 3.0, 0.9),
-                Event::new(75.0, mono_ratios(), 5.0, 0.9),
+                Event::new(150.0, simple_ratios(), 3.0, 0.9),
+                Event::new(75.0, simple_ratios(), 5.0, 0.9),
             ],
         };
         assert_eq!(result, expected);
@@ -186,14 +215,14 @@ pub mod tests {
     fn test_collapse_phrase() {
         let mut phrase1 = Phrase {
             events: vec![
-                Event::new(100.0, mono_ratios(), 1.0, 1.0),
-                Event::new(50.0, mono_ratios(), 2.0, 1.0),
+                Event::new(100.0, simple_ratios(), 1.0, 1.0),
+                Event::new(50.0, simple_ratios(), 2.0, 1.0),
             ],
         };
 
         let phrase2 = phrase1
             .clone()
-            .mut_ratios(mono_ratios())
+            .mut_ratios(simple_ratios())
             .transpose(3.0 / 2.0, 0.0)
             .mut_length(2.0, 1.0)
             .mut_gain(0.9, 0.0);
@@ -201,10 +230,10 @@ pub mod tests {
         let result = vec![phrase1, phrase2].collapse_to_vec_events();
 
         let expected = vec![
-            Event::new(100.0, mono_ratios(), 1.0, 1.0),
-            Event::new(50.0, mono_ratios(), 2.0, 1.0),
-            Event::new(150.0, mono_ratios(), 3.0, 0.9),
-            Event::new(75.0, mono_ratios(), 5.0, 0.9),
+            Event::new(100.0, simple_ratios(), 1.0, 1.0),
+            Event::new(50.0, simple_ratios(), 2.0, 1.0),
+            Event::new(150.0, simple_ratios(), 3.0, 0.9),
+            Event::new(75.0, simple_ratios(), 5.0, 0.9),
         ];
         assert_eq!(result, expected);
     }

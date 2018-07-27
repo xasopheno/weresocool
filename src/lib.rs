@@ -10,3 +10,4 @@ pub mod ring_buffer;
 pub mod settings;
 pub mod sine;
 pub mod state;
+pub mod write_output_buffer;

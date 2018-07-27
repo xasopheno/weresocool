@@ -1,9 +1,10 @@
 extern crate rand;
 use self::rand::Rng;
-//use event::{generate_test_phrase, Event, Mutate, Phrase};
+use event::{generate_test_phrase, Event, Mutate, Phrase};
 use new_oscillator::{NewOscillator, StereoWaveform};
 use portaudio as pa;
 use settings::{get_default_app_settings, Settings};
+use write_output_buffer::{write_output_buffer};
 
 pub fn setup_portaudio_output(
     ref pa: &pa::PortAudio,
@@ -12,48 +13,20 @@ pub fn setup_portaudio_output(
     let mut oscillator = NewOscillator::init(&settings);
     let mut freq = 0.0;
     let output_settings = get_output_settings(&pa, &settings)?;
-
-    let mut counter = 0;
+    let mut index = 0;
+    let mut stereo_waveform = generate_test_phrase();
     let output_stream = pa.open_non_blocking_stream(
         output_settings,
         move |pa::OutputStreamCallbackArgs { mut buffer, .. }| {
-            let stereo_waveform = oscillator.generate(settings.buffer_size);
-            oscillator.update_freq_and_gain(freq, 1.0);
 
-            if counter % 25 == 0 {
-                let vs: Vec<f32> = vec![
-                    210.0, 210.0, 227.0, 210.0, 210.0, 210.0, 210.0, 210.0, 195.0,
-                ];
-                //                let vs: Vec<f32> = vec![210.0];
-                let change = rand::thread_rng().choose(&vs);
-                match change {
-                    Some(change) => {
-                        freq = *change;
-                    }
-                    _ => {}
-                }
-            }
-            counter += 1;
-            write_output_buffer(&mut buffer, stereo_waveform);
+            let buffer_to_write = stereo_waveform.get_buffer(index, settings.buffer_size);
+            write_output_buffer(&mut buffer, buffer_to_write);
+            index += 1;
             pa::Continue
         },
     )?;
 
     Ok(output_stream)
-}
-
-fn write_output_buffer(out_buffer: &mut [f32], stereo_waveform: StereoWaveform) {
-    let mut l_idx = 0;
-    let mut r_idx = 0;
-    for n in 0..out_buffer.len() {
-        if n % 2 == 0 {
-            out_buffer[n] = stereo_waveform.l_buffer[l_idx] / 2.0;
-            l_idx += 1
-        } else {
-            out_buffer[n] = stereo_waveform.r_buffer[r_idx] / 2.0;
-            r_idx += 1
-        }
-    }
 }
 
 pub fn get_output_settings(

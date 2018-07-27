@@ -2,7 +2,7 @@ extern crate rand;
 use analyze::{Analyze, DetectionResult};
 use new_oscillator::{NewOscillator, StereoWaveform};
 use portaudio as pa;
-
+use write_output_buffer::{write_output_buffer};
 use ring_buffer::RingBuffer;
 use settings::{get_default_app_settings, Settings};
 
@@ -47,19 +47,7 @@ pub fn setup_portaudio_duplex(
     Ok(duplex_stream)
 }
 
-fn write_output_buffer(out_buffer: &mut [f32], stereo_waveform: StereoWaveform) {
-    let mut l_idx = 0;
-    let mut r_idx = 0;
-    for n in 0..out_buffer.len() {
-        if n % 2 == 0 {
-            out_buffer[n] = stereo_waveform.l_buffer[l_idx] / 2.0;
-            l_idx += 1
-        } else {
-            out_buffer[n] = stereo_waveform.r_buffer[r_idx] / 2.0;
-            r_idx += 1
-        }
-    }
-}
+
 
 fn get_duplex_settings(
     ref pa: &pa::PortAudio,
