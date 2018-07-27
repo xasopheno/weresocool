@@ -37,12 +37,20 @@ impl Phrase {
 
 pub trait Render<T> {
     fn collapse_to_vec_events(&mut self) -> Vec<Event>;
+    //    fn collapse_to_vec_samples(&mut self) -> Vec<f32>;
 }
 
 impl Render<Phrase> for Phrase {
     fn collapse_to_vec_events(&mut self) -> Vec<Event> {
         self.events.clone()
     }
+    //    fn collapse_to_vec_samples(&mut self) -> Vec<f32> {
+    //        let buffer_samples: Vec<f32> = vec![];
+    //        for event in self.collapse_to_vec_events() {
+    //            let seconds_to_samples = 44_100.0 * event.length;
+    //        };
+    //        buffer_samples
+    //    }
 }
 
 impl Render<Vec<Phrase>> for Vec<Phrase> {
@@ -124,9 +132,10 @@ pub fn generate_test_phrase() -> Vec<Event> {
         ],
     };
 
-    vec![phrase1.clone()].collapse_to_vec_events()
-}
+    let phrase2 = phrase1.clone().transpose(4.0 / 3.0, 0.0);
 
+    vec![phrase1, phrase2].collapse_to_vec_events()
+}
 
 #[cfg(test)]
 pub mod tests {

@@ -10,8 +10,7 @@ pub fn setup_portaudio_duplex(
     ref pa: &pa::PortAudio,
 ) -> Result<pa::Stream<pa::NonBlocking, pa::Duplex<f32, f32>>, pa::Error> {
     let settings = get_default_app_settings();
-
-    let mut osc = NewOscillator::init(get_default_app_settings());
+    let mut osc = NewOscillator::init(&settings);
     let duplex_stream_settings = get_duplex_settings(&pa, &settings)?;
 
     let mut input_buffer: RingBuffer<f32> = RingBuffer::<f32>::new(settings.yin_buffer_size);
@@ -35,8 +34,8 @@ pub fn setup_portaudio_duplex(
                     .to_vec()
                     .analyze(settings.sample_rate, settings.probability_threshold);
 
-                osc.update(result.frequency, result.gain);
-                let stereo_waveform = osc.generate();
+                osc.update_freq_and_gain(result.frequency, result.gain);
+                let stereo_waveform = osc.generate(settings.buffer_size);
 
                 write_output_buffer(&mut out_buffer, stereo_waveform);
 

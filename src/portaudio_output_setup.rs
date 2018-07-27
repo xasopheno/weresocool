@@ -8,16 +8,17 @@ use settings::{get_default_app_settings, Settings};
 pub fn setup_portaudio_output(
     ref pa: &pa::PortAudio,
 ) -> Result<pa::Stream<pa::NonBlocking, pa::Output<f32>>, pa::Error> {
-    let mut oscillator = NewOscillator::init(get_default_app_settings());
+    let settings = get_default_app_settings();
+    let mut oscillator = NewOscillator::init(&settings);
     let mut freq = 0.0;
-    let output_settings = get_output_settings(&pa, &get_default_app_settings())?;
+    let output_settings = get_output_settings(&pa, &settings)?;
 
     let mut counter = 0;
     let output_stream = pa.open_non_blocking_stream(
         output_settings,
         move |pa::OutputStreamCallbackArgs { mut buffer, .. }| {
-            let stereo_waveform = oscillator.generate();
-            oscillator.update(freq, 1.0);
+            let stereo_waveform = oscillator.generate(settings.buffer_size);
+            oscillator.update_freq_and_gain(freq, 1.0);
 
             if counter % 25 == 0 {
                 let vs: Vec<f32> = vec![

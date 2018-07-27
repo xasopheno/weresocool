@@ -1,5 +1,5 @@
 use ratios::{simple_ratios, Pan, R};
-use settings::{Settings};
+use settings::Settings;
 use std::f32::consts::PI;
 fn tau() -> f32 {
     PI * 2.0
@@ -141,7 +141,7 @@ pub struct NewOscillator {
 }
 
 impl NewOscillator {
-    pub fn init(settings: Settings) -> NewOscillator {
+    pub fn init(settings: &Settings) -> NewOscillator {
         let ratios = simple_ratios();
         let voices = ratios
             .iter()
@@ -151,15 +151,16 @@ impl NewOscillator {
         NewOscillator {
             voices,
             portamento_length: settings.buffer_size,
-            settings,
+            settings: settings.clone(),
         }
     }
-    pub fn update(&mut self, frequency: f32, gain: f32) {
-        let new_freq = if frequency < self.settings.max_freq && frequency > self.settings.min_freq {
-            frequency
-        } else {
-            0.0
-        };
+    pub fn update_freq_and_gain(&mut self, base_frequency: f32, gain: f32) {
+        let new_freq =
+            if base_frequency < self.settings.max_freq && base_frequency > self.settings.min_freq {
+                base_frequency
+            } else {
+                0.0
+            };
 
         let new_gain = if gain > self.settings.gain_threshold_min {
             gain
@@ -172,9 +173,20 @@ impl NewOscillator {
         }
     }
 
-    pub fn generate(&mut self) -> StereoWaveform {
-        let mut l_buffer: Vec<f32> = vec![0.0; self.settings.buffer_size];
-        let mut r_buffer: Vec<f32> = vec![0.0; self.settings.buffer_size];
+    pub fn update_ratios(&mut self, ratios: Vec<R>) {
+        for (voice, ratio) in self.voices.iter_mut().zip(ratios) {
+            voice.ratio = ratio
+        }
+    }
+
+    pub fn update_freq_gain_and_ratios(&mut self, base_frequency: f32, gain: f32, ratios: Vec<R>) {
+        self.update_freq_and_gain(base_frequency, gain);
+        self.update_ratios(ratios)
+    }
+
+    pub fn generate(&mut self, length: usize) -> StereoWaveform {
+        let mut l_buffer: Vec<f32> = vec![0.0; length];
+        let mut r_buffer: Vec<f32> = vec![0.0; length];
         let factor: f32 = tau() / self.settings.sample_rate;
         for voice in self.voices.iter_mut() {
             if voice.ratio.pan == Pan::Left {
@@ -191,7 +203,7 @@ impl NewOscillator {
 #[cfg(test)]
 pub mod tests {
     use super::*;
-
+    use settings::get_test_settings;
     #[test]
     fn oscillator_init_test() {
         let osc = NewOscillator::init(get_test_settings());

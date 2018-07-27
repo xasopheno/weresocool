@@ -1,0 +1,4 @@
+buffer: f32 = vec![];
+for event in events {
+    osc.update
+}
