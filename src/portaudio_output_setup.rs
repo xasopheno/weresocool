@@ -1,47 +1,29 @@
 extern crate rand;
 use self::rand::Rng;
-use event::{generate_test_phrase, Event, Mutate, Phrase};
-use new_oscillator::NewOscillator;
-//use oscillator::{Oscillator, StereoWaveform};
+//use event::{generate_test_phrase, Event, Mutate, Phrase};
+use new_oscillator::{NewOscillator, StereoWaveform};
 use portaudio as pa;
-use ratios::{mono_ratios, R};
 use settings::{get_default_app_settings, Settings};
-use std;
-use std::sync::mpsc::channel;
-use std::sync::Arc;
 
 pub fn setup_portaudio_output(
     ref pa: &pa::PortAudio,
 ) -> Result<pa::Stream<pa::NonBlocking, pa::Output<f32>>, pa::Error> {
-    let settings = get_default_app_settings();
-
-    //    let (l_ratios, r_ratios) = ;
     let mut oscillator = NewOscillator::init(get_default_app_settings());
-    let mut freq = 100.0;
+    let mut freq = 0.0;
     let output_settings = get_output_settings(&pa, &get_default_app_settings())?;
 
     let mut counter = 0;
-    let mut index = 0;
-    let test_phrase = generate_test_phrase();
-
     let output_stream = pa.open_non_blocking_stream(
         output_settings,
         move |pa::OutputStreamCallbackArgs { mut buffer, .. }| {
-            let (l_waveform, r_waveform) = oscillator.generate();
+            let stereo_waveform = oscillator.generate();
             oscillator.update(freq, 1.0);
 
-            //            index = index % (test_phrase.len());
-            //
-            //            if counter % 25 == 0 {
-            //                freq = test_phrase[index].frequency / 1.4;
-            //                oscillator.stereo_ratios = test_phrase[index].ratios.clone();
-            //                oscillator.gain.past = 0.0;
-            //                index += 1;
-            //            }
-
             if counter % 25 == 0 {
-                let vs: Vec<f32> = vec![210.0, 210.0, 227.0, 210.0, 210.0, 210.0, 210.0, 210.0, 195.0];
-//                let vs: Vec<f32> = vec![210.0];
+                let vs: Vec<f32> = vec![
+                    210.0, 210.0, 227.0, 210.0, 210.0, 210.0, 210.0, 210.0, 195.0,
+                ];
+                //                let vs: Vec<f32> = vec![210.0];
                 let change = rand::thread_rng().choose(&vs);
                 match change {
                     Some(change) => {
@@ -51,7 +33,7 @@ pub fn setup_portaudio_output(
                 }
             }
             counter += 1;
-            write_output_buffer(&mut buffer, l_waveform, r_waveform);
+            write_output_buffer(&mut buffer, stereo_waveform);
             pa::Continue
         },
     )?;
@@ -59,15 +41,15 @@ pub fn setup_portaudio_output(
     Ok(output_stream)
 }
 
-fn write_output_buffer(out_buffer: &mut [f32], l_waveform: Vec<f32>, r_waveform: Vec<f32>) {
+fn write_output_buffer(out_buffer: &mut [f32], stereo_waveform: StereoWaveform) {
     let mut l_idx = 0;
     let mut r_idx = 0;
     for n in 0..out_buffer.len() {
         if n % 2 == 0 {
-            out_buffer[n] = l_waveform[l_idx];
+            out_buffer[n] = stereo_waveform.l_buffer[l_idx] / 2.0;
             l_idx += 1
         } else {
-            out_buffer[n] = r_waveform[r_idx];
+            out_buffer[n] = stereo_waveform.r_buffer[r_idx] / 2.0;
             r_idx += 1
         }
     }

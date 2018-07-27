@@ -1,9 +1,8 @@
 extern crate rand;
 use analyze::{Analyze, DetectionResult};
-use new_oscillator::{NewOscillator};
+use new_oscillator::{NewOscillator, StereoWaveform};
 use portaudio as pa;
 
-use ratios::simple_ratios;
 use ring_buffer::RingBuffer;
 use settings::{get_default_app_settings, Settings};
 
@@ -12,7 +11,6 @@ pub fn setup_portaudio_duplex(
 ) -> Result<pa::Stream<pa::NonBlocking, pa::Duplex<f32, f32>>, pa::Error> {
     let settings = get_default_app_settings();
 
-    //    let (l_ratios, r_ratios) = simple_ratios();
     let mut osc = NewOscillator::init(get_default_app_settings());
     let duplex_stream_settings = get_duplex_settings(&pa, &settings)?;
 
@@ -38,9 +36,9 @@ pub fn setup_portaudio_duplex(
                     .analyze(settings.sample_rate, settings.probability_threshold);
 
                 osc.update(result.frequency, result.gain);
-                let (l_waveform, r_waveform) = osc.generate();
+                let stereo_waveform = osc.generate();
 
-                write_output_buffer(&mut out_buffer, l_waveform, r_waveform);
+                write_output_buffer(&mut out_buffer, stereo_waveform);
 
                 pa::Continue
             }
@@ -50,15 +48,15 @@ pub fn setup_portaudio_duplex(
     Ok(duplex_stream)
 }
 
-fn write_output_buffer(out_buffer: &mut [f32], l_waveform: Vec<f32>, r_waveform: Vec<f32>) {
+fn write_output_buffer(out_buffer: &mut [f32], stereo_waveform: StereoWaveform) {
     let mut l_idx = 0;
     let mut r_idx = 0;
     for n in 0..out_buffer.len() {
         if n % 2 == 0 {
-            out_buffer[n] = l_waveform[l_idx];
+            out_buffer[n] = stereo_waveform.l_buffer[l_idx] / 2.0;
             l_idx += 1
         } else {
-            out_buffer[n] = r_waveform[r_idx];
+            out_buffer[n] = stereo_waveform.r_buffer[r_idx] / 2.0;
             r_idx += 1
         }
     }

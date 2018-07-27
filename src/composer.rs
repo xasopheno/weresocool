@@ -2,7 +2,6 @@ extern crate portaudio;
 extern crate weresocool;
 use portaudio as pa;
 use weresocool::portaudio_output_setup::setup_portaudio_output;
-use weresocool::settings::{get_default_app_settings, Settings};
 
 //fn main() {
 //    let events = vec![
@@ -38,9 +37,7 @@ fn main() {
 fn run() -> Result<(), pa::Error> {
     println!("{}", "\n ***** Rust DSP __!Now In Stereo!__ ****** \n ");
 
-    let settings: Settings = get_default_app_settings();
     let pa = pa::PortAudio::new()?;
-
     let mut output_stream = setup_portaudio_output(&pa)?;
     output_stream.start()?;
 

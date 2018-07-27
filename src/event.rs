@@ -1,4 +1,4 @@
-use ratios::{mono_ratios, StereoRatios, R};
+use ratios::{mono_ratios, StereoRatios};
 
 #[derive(Debug, Clone, PartialEq)]
 pub struct Event {
@@ -30,7 +30,7 @@ impl Event {
 }
 
 impl Phrase {
-    pub fn phrase_from_vec(mut events: Vec<Event>) -> Phrase {
+    pub fn phrase_from_vec(events: Vec<Event>) -> Phrase {
         Phrase { events }
     }
 }
@@ -116,7 +116,7 @@ impl Mutate<Phrase> for Phrase {
 
 pub fn generate_test_phrase() -> Vec<Event> {
     let e = Event::new(70.0, mono_ratios(), 1.0, 1.0);
-    let mut phrase1 = Phrase {
+    let phrase1 = Phrase {
         events: vec![
             e.clone(),
             e.clone().transpose(6.0 / 5.0, 0.0),
@@ -126,26 +126,7 @@ pub fn generate_test_phrase() -> Vec<Event> {
 
     vec![phrase1.clone()].collapse_to_vec_events()
 }
-//
-//pub fn generate_pop() -> Vec<Event> {
-//    let e = Event::new(50.0, simple_ratios(), 1.0, 1.0);
-//    let mut phrase1 = Phrase {
-//        events: vec![e.clone()],
-//    };
-//
-//    let phrase2 = phrase1.clone().transpose(2.0 / 3.0, 10.0);
-//    //        .mut_length(2.0, 1.0);
-//    //        .mut_gain(0.9, 0.0);
-//
-//    vec![
-//        phrase1.clone(),
-//        phrase2.clone(),
-//        //        phrase1.clone(),
-//        //        phrase4.clone(),
-//        //        phrase2.clone(),
-//        //        phrase3.clone(),
-//    ].collapse_to_vec_events()
-//}
+
 
 #[cfg(test)]
 pub mod tests {

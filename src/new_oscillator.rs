@@ -1,10 +1,9 @@
 use ratios::{simple_ratios, Pan, R};
-use settings::{get_default_app_settings, get_test_settings, Settings};
+use settings::{Settings};
 use std::f32::consts::PI;
 fn tau() -> f32 {
     PI * 2.0
 }
-
 
 #[derive(Clone, Debug, PartialEq)]
 pub struct Voice {
@@ -42,7 +41,7 @@ impl Voice {
     }
     pub fn generate_waveform(
         &mut self,
-        mut buffer: &mut Vec<f32>,
+        buffer: &mut Vec<f32>,
         portamento_length: usize,
         factor: f32,
     ) {
@@ -86,7 +85,7 @@ impl Voice {
         portamento_length: usize,
         factor: f32,
     ) -> f32 {
-        let mut frequency = if self.sound_to_silence() {
+        let frequency = if self.sound_to_silence() {
             self.past.frequency
         } else if index < portamento_length && !self.silence_to_sound() && !self.sound_to_silence()
         {
@@ -128,6 +127,12 @@ pub fn loudness_normalization(frequency: f32) -> f32 {
     normalization
 }
 
+#[derive(Clone, Debug)]
+pub struct StereoWaveform {
+    pub l_buffer: Vec<f32>,
+    pub r_buffer: Vec<f32>,
+}
+
 #[derive(Clone, Debug, PartialEq)]
 pub struct NewOscillator {
     voices: Vec<Voice>,
@@ -143,7 +148,6 @@ impl NewOscillator {
             .enumerate()
             .map(|(index, ratio)| Voice::init(index, ratio.clone()))
             .collect::<Vec<Voice>>();
-        let settings = get_default_app_settings();
         NewOscillator {
             voices,
             portamento_length: settings.buffer_size,
@@ -151,38 +155,36 @@ impl NewOscillator {
         }
     }
     pub fn update(&mut self, frequency: f32, gain: f32) {
-        // TODO: implement frequency threshold
         let new_freq = if frequency < self.settings.max_freq && frequency > self.settings.min_freq {
             frequency
         } else {
             0.0
         };
 
-        let new_gain = if gain < self.settings.gain_threshold_min {
+        let new_gain = if gain > self.settings.gain_threshold_min {
             gain
         } else {
             0.0
         };
 
         for voice in self.voices.iter_mut() {
-            voice.update(frequency, gain);
+            voice.update(new_freq, new_gain);
         }
     }
 
-    pub fn generate(&mut self) -> (Vec<f32>, Vec<f32>) {
+    pub fn generate(&mut self) -> StereoWaveform {
         let mut l_buffer: Vec<f32> = vec![0.0; self.settings.buffer_size];
         let mut r_buffer: Vec<f32> = vec![0.0; self.settings.buffer_size];
-        let portamento_length = self.portamento_length;
         let factor: f32 = tau() / self.settings.sample_rate;
         for voice in self.voices.iter_mut() {
             if voice.ratio.pan == Pan::Left {
-                //                println!("{} {}", voice.past.gain, voice.current.gain);
-                voice.generate_waveform(&mut l_buffer, portamento_length, factor);
+                voice.generate_waveform(&mut l_buffer, self.portamento_length, factor);
             } else {
-                voice.generate_waveform(&mut r_buffer, portamento_length, factor);
+                voice.generate_waveform(&mut r_buffer, self.portamento_length, factor);
             }
         }
-        (l_buffer, r_buffer)
+
+        StereoWaveform { l_buffer, r_buffer }
     }
 }
 
