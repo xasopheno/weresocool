@@ -40,8 +40,8 @@ pub fn setup_portaudio_output(
             //            }
 
             if counter % 25 == 0 {
-                //                let vs: Vec<f32> = vec![210.0, 210.0, 227.0, 210.0, 210.0, 210.0, 210.0, 210.0, 195.0];
-                let vs: Vec<f32> = vec![210.0, 0.0, 500.0];
+                let vs: Vec<f32> = vec![210.0, 210.0, 227.0, 210.0, 210.0, 210.0, 210.0, 210.0, 195.0];
+//                let vs: Vec<f32> = vec![210.0];
                 let change = rand::thread_rng().choose(&vs);
                 match change {
                     Some(change) => {
