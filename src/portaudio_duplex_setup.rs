@@ -5,12 +5,13 @@ use portaudio as pa;
 use write_output_buffer::{write_output_buffer};
 use ring_buffer::RingBuffer;
 use settings::{get_default_app_settings, Settings};
+use ratios::{simple_ratios};
 
 pub fn setup_portaudio_duplex(
     ref pa: &pa::PortAudio,
 ) -> Result<pa::Stream<pa::NonBlocking, pa::Duplex<f32, f32>>, pa::Error> {
     let settings = get_default_app_settings();
-    let mut osc = NewOscillator::init(&settings);
+    let mut osc = NewOscillator::init(simple_ratios(), &settings);
     let duplex_stream_settings = get_duplex_settings(&pa, &settings)?;
 
     let mut input_buffer: RingBuffer<f32> = RingBuffer::<f32>::new(settings.yin_buffer_size);

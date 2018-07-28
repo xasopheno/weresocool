@@ -167,8 +167,7 @@ pub struct NewOscillator {
 }
 
 impl NewOscillator {
-    pub fn init(settings: &Settings) -> NewOscillator {
-        let ratios = simple_ratios();
+    pub fn init(ratios: Vec<R>, settings: &Settings) -> NewOscillator {
         let voices = ratios
             .iter()
             .enumerate()
@@ -201,7 +200,7 @@ impl NewOscillator {
 
     pub fn update_ratios(&mut self, ratios: &Vec<R>) {
         for (voice, ratio) in self.voices.iter_mut().zip(ratios) {
-            voice.ratio = ratio.clone()
+            voice.ratio = ratio.clone();
         }
     }
 
@@ -232,7 +231,7 @@ pub mod tests {
     use settings::get_test_settings;
     #[test]
     fn oscillator_init_test() {
-        let osc = NewOscillator::init(get_test_settings());
+        let osc = NewOscillator::init(simple_ratios(), &get_test_settings());
         println!("{:?}", osc);
         let expected = vec![5, 6, 7, 8, 9, 10, 11, 12, 13, 50];
         assert_eq!(osc, expected);

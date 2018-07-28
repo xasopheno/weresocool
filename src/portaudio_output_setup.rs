@@ -5,12 +5,17 @@ use new_oscillator::{NewOscillator, StereoWaveform};
 use portaudio as pa;
 use settings::{get_default_app_settings, Settings};
 use write_output_buffer::{write_output_buffer};
+use ratios::{R, Pan, simple_ratios};
 
 pub fn setup_portaudio_output(
     ref pa: &pa::PortAudio,
 ) -> Result<pa::Stream<pa::NonBlocking, pa::Output<f32>>, pa::Error> {
     let settings = get_default_app_settings();
-    let mut oscillator = NewOscillator::init(&settings);
+    let r = vec![
+        R::atio(1, 1, 0.0, 0.8, Pan::Right),
+        R::atio(1, 1, 3.0, 0.8, Pan::Left),
+    ];
+    let mut oscillator = NewOscillator::init(r, &settings);
     let mut freq = 0.0;
     let output_settings = get_output_settings(&pa, &settings)?;
     let mut index = 0;
