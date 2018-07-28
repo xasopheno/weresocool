@@ -329,33 +329,46 @@ pub fn generate_test_phrase() -> StereoWaveform {
     };
 
     vec![
-//        phrase1.clone(),
-//        phrase2.clone(),
-//        phrase2
-//            .clone()
-//            .mut_length(0.25, 0.0)
-//            .transpose(4.0/5.0, 0.0),
-//        phrase2
-//            .clone()
-//            .mut_length(0.25, 0.0)
-//            .transpose(2.0/3.0, 0.0),
-//
-//        phrase1.clone()
-//            .mut_ratios(r.clone()),
-//        phrase2.clone(),
-//        phrase2
-//            .clone()
-//            .mut_length(0.25, 0.0)
-//            .transpose(4.0/5.0, 0.0),
-//        phrase2
-//            .clone()
-//            .mut_length(0.25, 0.0)
-//            .transpose(2.0/3.0, 0.0),
-//
-//        phrase2
-//            .clone()
-//            .mut_length(0.25, 0.0)
-//            .transpose(3.0/4.0, 0.0),
+        phrase1.clone(),
+        phrase2.clone(),
+        phrase2
+            .clone()
+            .mut_length(0.25, 0.0)
+            .transpose(4.0/5.0, 0.0),
+        phrase2
+            .clone()
+            .mut_length(0.25, 0.0)
+            .transpose(2.0/3.0, 0.0),
+
+        phrase1.clone()
+            .mut_ratios(r.clone()),
+        phrase2.clone(),
+
+        phrase2
+            .clone()
+            .mut_length(0.25, 0.0)
+            .transpose(4.0/5.0, 0.0),
+
+        phrase2
+            .clone()
+            .mut_length(0.25, 0.0)
+            .transpose(2.0/3.0, 0.0),
+
+        phrase2
+            .clone()
+            .mut_length(0.25, 0.0)
+            .transpose(3.0/4.0, 0.0),
+
+        phrase2
+            .clone()
+            .mut_length(0.25, 0.0)
+            .transpose(4.0/5.0, 0.0),
+
+        phrase2
+            .clone()
+            .mut_length(0.25, 0.0)
+            .transpose(2.0/3.0, 0.0),
+
 
         resolution(),
         end
