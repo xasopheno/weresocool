@@ -161,7 +161,7 @@ pub fn generate_test_phrase() -> StereoWaveform {
     ];
     let mut oscillator = NewOscillator::init(r.clone(), &settings);
     let freq = 150.0;
-    let e = Event::new(freq, r.clone(), 1.0, 1.0);
+    let e = Event::new(freq, r.clone(), 0.95, 1.0);
     let phrase1 = Phrase {
         events: vec![
             e.clone(),
@@ -231,8 +231,8 @@ pub fn generate_test_phrase() -> StereoWaveform {
                     R::atio(13, 1, 7.0, 0.02, Pan::Left),
                     R::atio(13, 1, 9.0, 0.02, Pan::Left),
 //
-                    R::atio(15, 1, 0.0, 0.015, Pan::Right),
-                    R::atio(17, 1, 0.0, 0.015, Pan::Left),
+                    R::atio(17, 1, 0.0, 0.015, Pan::Right),
+                    R::atio(15, 1, 0.0, 0.015, Pan::Left),
                 ]),
 
             e.clone()
