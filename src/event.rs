@@ -153,6 +153,11 @@ pub fn generate_test_phrase() -> StereoWaveform {
         R::atio(11, 1, 0.0, 0.02, Pan::Right),
         R::atio(11, 1, 13.0, 0.02, Pan::Left),
         R::atio(11, 1, 0.0, 0.02, Pan::Left),
+//
+        R::atio(15, 1, 0.0, 0.02, Pan::Right),
+        R::atio(17, 1, 0.0, 0.02, Pan::Left),
+
+
     ];
     let mut oscillator = NewOscillator::init(r.clone(), &settings);
     let freq = 150.0;
@@ -179,6 +184,9 @@ pub fn generate_test_phrase() -> StereoWaveform {
                     R::atio(11, 1, 0.0, 0.02, Pan::Right),
                     R::atio(11, 1, 11.0, 0.02, Pan::Left),
                     R::atio(11, 1, 0.0, 0.02, Pan::Left),
+//
+                    R::atio(15, 1, 0.0, 0.015, Pan::Right),
+                    R::atio(17, 1, 0.0, 0.015, Pan::Left),
                 ]),
             e.clone()
                 .mut_ratios(vec![
@@ -199,6 +207,9 @@ pub fn generate_test_phrase() -> StereoWaveform {
                     R::atio(13, 1, 0.0, 0.02, Pan::Right),
                     R::atio(13, 1, 9.0, 0.02, Pan::Left),
                     R::atio(13, 1, 0.0, 0.02, Pan::Left),
+//
+                    R::atio(14, 1, 0.0, 0.015, Pan::Right),
+                    R::atio(15, 1, 0.0, 0.015, Pan::Left),
                 ]),
             e.clone()
                 .mut_ratios(vec![
@@ -219,6 +230,9 @@ pub fn generate_test_phrase() -> StereoWaveform {
                     R::atio(13, 1, 5.0, 0.02, Pan::Right),
                     R::atio(13, 1, 7.0, 0.02, Pan::Left),
                     R::atio(13, 1, 9.0, 0.02, Pan::Left),
+//
+                    R::atio(15, 1, 0.0, 0.015, Pan::Right),
+                    R::atio(17, 1, 0.0, 0.015, Pan::Left),
                 ]),
 
             e.clone()
@@ -241,6 +255,9 @@ pub fn generate_test_phrase() -> StereoWaveform {
                     R::atio(13, 1, 9.0, 0.02, Pan::Right),
                     R::atio(13, 1, 7.0, 0.02, Pan::Left),
                     R::atio(13, 1, 1.0, 0.02, Pan::Left),
+//
+                    R::atio(15, 1, 0.0, 0.015, Pan::Right),
+                    R::atio(17, 1, 0.0, 0.015, Pan::Left),
                 ]),
             e.clone()
                 .mut_ratios(vec![
@@ -261,6 +278,9 @@ pub fn generate_test_phrase() -> StereoWaveform {
                     R::atio(13, 1, 0.0, 0.02, Pan::Right),
                     R::atio(13, 1, 0.0, 0.02, Pan::Left),
                     R::atio(13, 1, 7.0, 0.02, Pan::Left),
+
+                    R::atio(19, 1, 0.0, 0.015, Pan::Right),
+                    R::atio(18, 1, 0.0, 0.015, Pan::Left),
                 ])
         ],
     };
