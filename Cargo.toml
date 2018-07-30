@@ -9,6 +9,7 @@ autobins = false
 [dependencies]
 portaudio = "0.7.0"
 rand = "0.5.1"
+hound = "3.4.0"
 
 
 [[bin]]
@@ -18,3 +19,7 @@ path = "src/mic.rs"
 [[bin]]
 name = "composer"
 path = "src/composer.rs"
+
+[[bin]]
+name = "print"
+path = "src/print.rs"

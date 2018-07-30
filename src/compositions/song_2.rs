@@ -192,8 +192,8 @@ pub fn generate_composition() -> StereoWaveform {
                     R::atio(7, 8, 7.0, 0.5, Pan::Right),
                     R::atio(7, 8, 0.0, 0.5, Pan::Right),
 //
-                    R::atio(11, 4, 4.0, 0.2, Pan::Left),
-                    R::atio(11, 4, 0.0, 0.2, Pan::Right),
+                    R::atio(3, 2, 4.0, 0.2, Pan::Left),
+                    R::atio(3, 2, 0.0, 0.2, Pan::Right),
                 ]),
 
             e.clone()
@@ -340,9 +340,6 @@ pub fn generate_composition() -> StereoWaveform {
                     R::atio(3, 4, 5.0, 0.2, Pan::Left),
                     R::atio(3, 4, -4.0, 0.2, Pan::Right),
                 ]),
-
-//            e.clone()
-//                .mut_length(0.0, 0.0)
         ],
     };
 
@@ -351,7 +348,6 @@ pub fn generate_composition() -> StereoWaveform {
     };
 
     vec![
-        phrase1.clone(),
         phrase1.clone(),
         phrase1.clone(),
         end

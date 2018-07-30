@@ -1,5 +1,6 @@
 extern crate portaudio;
 pub mod analyze;
+pub mod compositions;
 pub mod event;
 pub mod oscillator;
 pub mod portaudio_duplex_setup;
@@ -8,4 +9,3 @@ pub mod ratios;
 pub mod ring_buffer;
 pub mod settings;
 pub mod write_output_buffer;
-pub mod compositions;
