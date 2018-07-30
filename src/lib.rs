@@ -1,4 +1,6 @@
 extern crate portaudio;
+#[macro_use]
+pub mod macros;
 pub mod analyze;
 pub mod compositions;
 pub mod event;

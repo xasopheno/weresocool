@@ -1,6 +1,6 @@
 [package]
 name = "weresocool"
-version = "0.1.0"
+version = "0.2.0"
 authors = ["Danny Meyer <Danny.Meyer@gmail.com>"]
 description = "***** WereSoCool __!Now In Stereo!__ ****** Make cool sounds. Impress your friends. Ratio-based harmonic accompaniment to microphone input."
 license = "MIT"

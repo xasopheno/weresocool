@@ -6,14 +6,14 @@ use settings::get_default_app_settings;
 pub fn generate_composition() -> StereoWaveform {
     let settings = get_default_app_settings();
     let r = vec![
-        R::atio(0, 1, 0.0, 0.5, Pan::Left),
-        R::atio(0, 1, 0.0, 0.5, Pan::Left),
-        //
-        R::atio(0, 1, 0.0, 0.5, Pan::Right),
-        R::atio(0, 1, 0.0, 0.5, Pan::Right),
-        //
-        R::atio(0, 1, 0.0, 0.2, Pan::Left),
-        R::atio(0, 1, 0.0, 0.2, Pan::Right),
+            r![0, 1, 0.0, 0.5, left],
+            r![0, 1, 0.0, 0.5, left],
+    //
+            r![0, 1, 0.0, 0.5, right],
+            r![0, 1, 0.0, 0.5, right],
+    //
+            r![0, 1, 0.0, 0.2, left],
+            r![0, 1, 0.0, 0.2, right],
     ];
     let mut oscillator = NewOscillator::init(r.clone(), &settings);
     let freq = 230.0;
@@ -259,7 +259,8 @@ pub fn generate_composition() -> StereoWaveform {
                     R::atio(1, 2, 5.0, 0.2, Pan::Left),
                     R::atio(1, 3, -5.0, 0.2, Pan::Right),
                 ]),
-            e.clone().mut_length(0.5, 0.0).mut_ratios(vec![
+            e.clone()
+                .mut_length(0.5, 0.0).mut_ratios(vec![
                 R::atio(11, 9, 0.0, 0.5, Pan::Left),
                 R::atio(10, 9, 1.0, 0.5, Pan::Left),
                 //
