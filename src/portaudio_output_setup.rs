@@ -17,7 +17,6 @@ pub fn setup_portaudio_output(
     let output_stream = pa.open_non_blocking_stream(
         output_settings,
         move |pa::OutputStreamCallbackArgs { mut buffer, .. }| {
-
             let buffer_to_write = composition.get_buffer(index, settings.buffer_size);
             write_output_buffer(&mut buffer, buffer_to_write);
             index += 1;

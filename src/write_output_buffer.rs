@@ -1,4 +1,4 @@
-use new_oscillator::{StereoWaveform};
+use oscillator::{StereoWaveform};
 
 pub fn write_output_buffer(out_buffer: &mut [f32], stereo_waveform: StereoWaveform) {
     let mut l_idx = 0;

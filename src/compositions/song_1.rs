@@ -1,6 +1,6 @@
 use event::{Mutate, Event, Phrase, Render};
 use ratios::{R, Pan};
-use new_oscillator::{StereoWaveform, NewOscillator};
+use oscillator::{StereoWaveform, NewOscillator};
 use settings::{get_default_app_settings};
 
 pub fn generate_composition() -> StereoWaveform {

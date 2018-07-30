@@ -1,5 +1,5 @@
 use ratios::{R};
-use new_oscillator::{NewOscillator, StereoWaveform};
+use oscillator::{NewOscillator, StereoWaveform};
 
 #[derive(Debug, Clone, PartialEq)]
 pub struct Event {
