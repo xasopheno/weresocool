@@ -1,5 +1,5 @@
-use ratios::{R};
 use oscillator::{NewOscillator, StereoWaveform};
+use ratios::R;
 
 #[derive(Debug, Clone, PartialEq)]
 pub struct Event {
@@ -13,7 +13,6 @@ pub struct Event {
 pub struct Phrase {
     pub events: Vec<Event>,
 }
-
 
 impl Event {
     pub fn new(frequency: f32, ratios: Vec<R>, length: f32, gain: f32) -> Event {
@@ -51,7 +50,7 @@ impl Render<Phrase> for Phrase {
             println!("{:?}", event);
             let stereo_waveform = event.render(oscillator);
             result.append(stereo_waveform);
-        };
+        }
 
         result
     }
@@ -130,7 +129,6 @@ impl Mutate<Phrase> for Phrase {
         self.clone()
     }
 }
-
 
 #[cfg(test)]
 pub mod tests {

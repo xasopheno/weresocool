@@ -1,11 +1,11 @@
 extern crate rand;
 use analyze::{Analyze, DetectionResult};
-use oscillator::{NewOscillator};
+use oscillator::NewOscillator;
 use portaudio as pa;
-use write_output_buffer::{write_output_buffer};
+use ratios::simple_ratios;
 use ring_buffer::RingBuffer;
 use settings::{get_default_app_settings, Settings};
-use ratios::{simple_ratios};
+use write_output_buffer::write_output_buffer;
 
 pub fn setup_portaudio_duplex(
     ref pa: &pa::PortAudio,
@@ -47,8 +47,6 @@ pub fn setup_portaudio_duplex(
 
     Ok(duplex_stream)
 }
-
-
 
 fn get_duplex_settings(
     ref pa: &pa::PortAudio,

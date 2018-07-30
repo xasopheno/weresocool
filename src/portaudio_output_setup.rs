@@ -1,9 +1,7 @@
+use compositions::song_2::generate_composition;
 use portaudio as pa;
-use compositions::{
-    song_2::{generate_composition}
-};
 use settings::{get_default_app_settings, Settings};
-use write_output_buffer::{write_output_buffer};
+use write_output_buffer::write_output_buffer;
 
 pub fn setup_portaudio_output(
     ref pa: &pa::PortAudio,
