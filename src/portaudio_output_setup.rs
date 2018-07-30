@@ -1,6 +1,6 @@
 use portaudio as pa;
 use compositions::{
-    song_1::{generate_composition}
+    song_2::{generate_composition}
 };
 use settings::{get_default_app_settings, Settings};
 use write_output_buffer::{write_output_buffer};

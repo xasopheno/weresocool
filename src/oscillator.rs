@@ -63,9 +63,9 @@ impl Voice {
         let mut new_gain = if new_freq != 0.0 { gain } else { 0.0 };
         let loudness = loudness_normalization(new_freq);
         new_gain *= loudness;
-        if (self.current.gain - new_gain).abs() > 0.5 {
-            new_gain = new_gain * 0.51;
-        }
+//        if (self.current.gain - new_gain).abs() > 0.5 {
+//            new_gain = new_gain * 0.51;
+//        }
 
         self.past = self.current.clone();
         self.current.frequency = new_freq;
