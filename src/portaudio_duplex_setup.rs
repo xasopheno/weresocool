@@ -1,6 +1,6 @@
 extern crate rand;
 use analyze::{Analyze, DetectionResult};
-use new_oscillator::{NewOscillator, StereoWaveform};
+use new_oscillator::{NewOscillator};
 use portaudio as pa;
 use write_output_buffer::{write_output_buffer};
 use ring_buffer::RingBuffer;

@@ -8,3 +8,4 @@ pub mod ratios;
 pub mod ring_buffer;
 pub mod settings;
 pub mod write_output_buffer;
+pub mod compositions;

@@ -1,11 +1,9 @@
-extern crate rand;
-use self::rand::Rng;
-use event::{generate_test_phrase, Event, Mutate, Phrase};
-use new_oscillator::{NewOscillator, StereoWaveform};
 use portaudio as pa;
+use compositions::{
+    song_1::{generate_composition}
+};
 use settings::{get_default_app_settings, Settings};
 use write_output_buffer::{write_output_buffer};
-use ratios::{R, Pan, simple_ratios};
 
 pub fn setup_portaudio_output(
     ref pa: &pa::PortAudio,
@@ -14,7 +12,7 @@ pub fn setup_portaudio_output(
     let output_settings = get_output_settings(&pa, &settings)?;
 
     let mut index = 0;
-    let mut composition = generate_test_phrase();
+    let mut composition = generate_composition();
 
     let output_stream = pa.open_non_blocking_stream(
         output_settings,

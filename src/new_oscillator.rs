@@ -1,4 +1,4 @@
-use ratios::{simple_ratios, Pan, R};
+use ratios::{Pan, R};
 use settings::Settings;
 use std::f32::consts::PI;
 fn tau() -> f32 {
@@ -151,8 +151,8 @@ impl StereoWaveform {
 
     pub fn get_buffer(&mut self, index: usize, buffer_size: usize) -> StereoWaveform {
         if (index + 1) * buffer_size < self.l_buffer.len() {
-            let mut l_buffer = &self.l_buffer[index * buffer_size..(index + 1) * buffer_size];
-            let mut r_buffer = &self.r_buffer[index * buffer_size..(index + 1) * buffer_size];
+            let l_buffer = &self.l_buffer[index * buffer_size..(index + 1) * buffer_size];
+            let r_buffer = &self.r_buffer[index * buffer_size..(index + 1) * buffer_size];
             StereoWaveform {
                 l_buffer: l_buffer.to_vec(),
                 r_buffer: r_buffer.to_vec() }
