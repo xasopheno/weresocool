@@ -126,11 +126,19 @@ pub fn simple_ratios() -> Vec<R> {
     ]
 }
 
-pub fn mono_ratios() -> StereoRatios {
-    let ratios = vec![R::atio(2, 1, 0.0, 1.0, Pan::Right)];
-
-    StereoRatios {
-        l_ratios: ratios.clone(),
-        r_ratios: ratios,
+pub fn init(num_l: usize, num_r: usize) -> Vec<R> {
+    let mut result: Vec<R> = vec![];
+    for _l in 0..num_l {
+        result.push(
+            R::atio(1, 1, 0.0, 0.0, Pan::Left),
+        );
     }
+
+    for _r in 0..num_r {
+        result.push(
+            R::atio(1, 1, 0.0, 0.0, Pan::Right),
+        );
+    }
+
+    result
 }

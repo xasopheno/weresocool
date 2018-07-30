@@ -1,6 +1,6 @@
 use portaudio as pa;
 use compositions::{
-    song_1::{generate_composition}
+    song_2::{generate_composition}
 };
 use settings::{get_default_app_settings, Settings};
 use write_output_buffer::{write_output_buffer};
@@ -13,7 +13,6 @@ pub fn setup_portaudio_output(
 
     let mut index = 0;
     let mut composition = generate_composition();
-
     let output_stream = pa.open_non_blocking_stream(
         output_settings,
         move |pa::OutputStreamCallbackArgs { mut buffer, .. }| {

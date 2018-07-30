@@ -48,6 +48,7 @@ impl Render<Phrase> for Phrase {
     fn render(&mut self, oscillator: &mut NewOscillator) -> StereoWaveform {
         let mut result: StereoWaveform = StereoWaveform::new(0);
         for mut event in self.events.clone() {
+            println!("{:?}", event);
             let stereo_waveform = event.render(oscillator);
             result.append(stereo_waveform);
         };
@@ -93,6 +94,9 @@ impl Mutate<Event> for Event {
 
     fn mut_gain(&mut self, mul: f32, add: f32) -> Event {
         self.gain = self.gain * mul + add;
+        for ratio in self.ratios.iter_mut() {
+            ratio.gain = ratio.gain * mul + add
+        }
         self.clone()
     }
 }
