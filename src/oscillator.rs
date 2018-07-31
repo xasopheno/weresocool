@@ -164,20 +164,20 @@ impl StereoWaveform {
 }
 
 #[derive(Clone, Debug, PartialEq)]
-pub struct NewOscillator {
+pub struct Oscillator {
     voices: Vec<Voice>,
     portamento_length: usize,
     settings: Settings,
 }
 
-impl NewOscillator {
-    pub fn init(ratios: Vec<R>, settings: &Settings) -> NewOscillator {
+impl Oscillator {
+    pub fn init(ratios: Vec<R>, settings: &Settings) -> Oscillator {
         let voices = ratios
             .iter()
             .enumerate()
             .map(|(index, ratio)| Voice::init(index, ratio.clone()))
             .collect::<Vec<Voice>>();
-        NewOscillator {
+        Oscillator {
             voices,
             portamento_length: settings.buffer_size,
             settings: settings.clone(),
@@ -235,7 +235,7 @@ pub mod tests {
     use settings::get_test_settings;
     #[test]
     fn oscillator_init_test() {
-        let osc = NewOscillator::init(simple_ratios(), &get_test_settings());
+        let osc = Oscillator::init(simple_ratios(), &get_test_settings());
         println!("{:?}", osc);
         let expected = vec![5, 6, 7, 8, 9, 10, 11, 12, 13, 50];
         assert_eq!(osc, expected);

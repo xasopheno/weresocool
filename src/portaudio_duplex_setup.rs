@@ -1,6 +1,6 @@
 extern crate rand;
 use analyze::{Analyze, DetectionResult};
-use oscillator::NewOscillator;
+use oscillator::Oscillator;
 use portaudio as pa;
 use ratios::simple_ratios;
 use ring_buffer::RingBuffer;
@@ -11,7 +11,7 @@ pub fn setup_portaudio_duplex(
     ref pa: &pa::PortAudio,
 ) -> Result<pa::Stream<pa::NonBlocking, pa::Duplex<f32, f32>>, pa::Error> {
     let settings = get_default_app_settings();
-    let mut oscillator = NewOscillator::init(simple_ratios(), &settings);
+    let mut oscillator = Oscillator::init(simple_ratios(), &settings);
     let duplex_stream_settings = get_duplex_settings(&pa, &settings)?;
 
     let mut input_buffer: RingBuffer<f32> = RingBuffer::<f32>::new(settings.yin_buffer_size);

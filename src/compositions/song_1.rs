@@ -1,5 +1,5 @@
 use event::{Event, Mutate, Phrase, Render};
-use oscillator::{NewOscillator, StereoWaveform};
+use oscillator::{Oscillator, StereoWaveform};
 use ratios::{Pan, R};
 use settings::get_default_app_settings;
 
@@ -27,7 +27,7 @@ pub fn generate_composition() -> StereoWaveform {
         R::atio(15, 1, 0.0, 0.02, Pan::Right),
         R::atio(17, 1, 0.0, 0.02, Pan::Left),
     ];
-    let mut oscillator = NewOscillator::init(r.clone(), &settings);
+    let mut oscillator = Oscillator::init(r.clone(), &settings);
     let freq = 150.0;
     let e = Event::new(freq, r.clone(), 1.2, 1.0);
     let phrase1 = Phrase {

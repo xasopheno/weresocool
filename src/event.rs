@@ -1,4 +1,4 @@
-use oscillator::{NewOscillator, StereoWaveform};
+use oscillator::{Oscillator, StereoWaveform};
 use ratios::R;
 
 #[derive(Debug, Clone, PartialEq)]
@@ -32,11 +32,11 @@ impl Phrase {
 }
 
 pub trait Render<T> {
-    fn render(&mut self, oscillator: &mut NewOscillator) -> StereoWaveform;
+    fn render(&mut self, oscillator: &mut Oscillator) -> StereoWaveform;
 }
 
 impl Render<Event> for Event {
-    fn render(&mut self, oscillator: &mut NewOscillator) -> StereoWaveform {
+    fn render(&mut self, oscillator: &mut Oscillator) -> StereoWaveform {
         oscillator.update_freq_gain_and_ratios(self.frequency, self.gain, &self.ratios);
         let n_samples_to_generate = (self.length * 44_100.0).floor() as usize;
         oscillator.generate(n_samples_to_generate)
@@ -44,7 +44,7 @@ impl Render<Event> for Event {
 }
 
 impl Render<Phrase> for Phrase {
-    fn render(&mut self, oscillator: &mut NewOscillator) -> StereoWaveform {
+    fn render(&mut self, oscillator: &mut Oscillator) -> StereoWaveform {
         let mut result: StereoWaveform = StereoWaveform::new(0);
         for mut event in self.events.clone() {
             println!("{:?}", event);
@@ -57,7 +57,7 @@ impl Render<Phrase> for Phrase {
 }
 
 impl Render<Vec<Phrase>> for Vec<Phrase> {
-    fn render(&mut self, oscillator: &mut NewOscillator) -> StereoWaveform {
+    fn render(&mut self, oscillator: &mut Oscillator) -> StereoWaveform {
         let mut result: StereoWaveform = StereoWaveform::new(0);
         for phrase in self.iter_mut() {
             let stereo_waveform = phrase.render(oscillator);
