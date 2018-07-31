@@ -47,7 +47,7 @@ impl Render<Phrase> for Phrase {
     fn render(&mut self, oscillator: &mut Oscillator) -> StereoWaveform {
         let mut result: StereoWaveform = StereoWaveform::new(0);
         for mut event in self.events.clone() {
-//            println!("{:?}", event);
+            //            println!("{:?}", event);
             let stereo_waveform = event.render(oscillator);
             result.append(stereo_waveform);
         }

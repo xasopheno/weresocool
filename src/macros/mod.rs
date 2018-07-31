@@ -6,10 +6,3 @@ macro_rules! r {
         )*]
     }
 }
-//macro_rules! pan_expand {
-//    (left) => {Pan::Left};
-//    (right) => {Pan::Right};
-//    ($other:tt) => {$other};
-//}
-
-

@@ -259,8 +259,7 @@ pub fn generate_composition() -> StereoWaveform {
                     R::atio(1, 2, 5.0, 0.2, Pan::Left),
                     R::atio(1, 3, -5.0, 0.2, Pan::Right),
                 ]),
-            e.clone()
-                .mut_length(0.5, 0.0).mut_ratios(vec![
+            e.clone().mut_length(0.5, 0.0).mut_ratios(vec![
                 R::atio(11, 9, 0.0, 0.5, Pan::Left),
                 R::atio(10, 9, 1.0, 0.5, Pan::Left),
                 //
