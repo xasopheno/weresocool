@@ -204,6 +204,18 @@ impl Oscillator {
     }
 
     pub fn update_ratios(&mut self, ratios: &Vec<R>) {
+        let n_voices = self.voices.len();
+        let n_ratios = ratios.len();
+        let difference =  n_voices - n_ratios;
+//
+        if difference < 0 {
+            for
+        }
+
+        if difference > 0 {
+
+        }
+
         for (voice, ratio) in self.voices.iter_mut().zip(ratios) {
             voice.ratio = ratio.clone();
         }
