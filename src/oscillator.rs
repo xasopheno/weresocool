@@ -67,9 +67,10 @@ impl Voice {
         //            new_gain = new_gain * 0.51;
         //        }
 
-        self.past = self.current.clone();
+        self.past.frequency = self.current.frequency;
+        self.past.gain = self.current.gain;
         self.current.frequency = new_freq;
-        self.current.gain = new_gain;
+        self.current.gain = new_gain * self.ratio.gain;
     }
 
     fn silence_to_sound(&self) -> bool {
@@ -97,7 +98,7 @@ impl Voice {
             self.current.frequency
         };
 
-        let gain = ((index as f32 * g_delta) + self.past.gain) * self.ratio.gain;
+        let gain = (index as f32 * g_delta) + self.past.gain;
         let current_phase = ((factor * frequency) + self.phase) % tau();
         self.phase = current_phase;
 

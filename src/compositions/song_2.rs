@@ -3,24 +3,6 @@ use oscillator::{Oscillator, StereoWaveform};
 use ratios::{Pan, R};
 use settings::get_default_app_settings;
 
-//-1 0 1
-//
-//0.0
-//1.0, 1.0
-//0.5, 0.5
-//
-//-0.1
-//1.1, 0.9
-//0.55, 0.45
-//
-//-0.5
-//1.5, 0.5
-//0.75, 0.25
-//
-//l = ((-1 + val).abs / 2.0)
-//r = ((1 + val).abs / 2.0)
-
-
 pub fn generate_composition() -> StereoWaveform {
     let settings = get_default_app_settings();
     let r = vec![

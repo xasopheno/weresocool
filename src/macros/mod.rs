@@ -1,12 +1,15 @@
 macro_rules! r {
-    ($($val1:expr,$val2:expr,$val3:expr,$val4:expr,$pan:ident)*) => {
-        $( R::atio($val1,$val2,$val3,$val4,pan_expand!($pan)))*
+    ($(($num:expr,$den:expr,$offset:expr,$gain:expr,$pan:expr))*) => {
+        vec![$(
+            R::atio($num,$den,$offset, $gain * ((-1.0 + $pan) / -2.0), Pan::Left),
+            R::atio($num,$den,$offset, $gain * ((1.0 + $pan) / 2.0), Pan::Right),
+        )*]
     }
 }
-macro_rules! pan_expand {
-    (left) => {Pan::Left};
-    (right) => {Pan::Right};
-    ($other:tt) => {$other};
-}
+//macro_rules! pan_expand {
+//    (left) => {Pan::Left};
+//    (right) => {Pan::Right};
+//    ($other:tt) => {$other};
+//}
 
 
