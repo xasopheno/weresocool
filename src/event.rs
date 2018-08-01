@@ -121,6 +121,36 @@ impl Mutate<Phrase> for Phrase {
     }
 }
 
+impl Mutate<Vec<Phrase>> for Vec<Phrase> {
+    fn transpose(&mut self, mul: f32, add: f32) -> Vec<Phrase> {
+        for phrase in self.iter_mut() {
+            phrase.transpose(mul, add);
+        }
+        self.clone()
+    }
+
+    fn mut_ratios(&mut self, ratios: Vec<R>) -> Vec<Phrase> {
+        for phrase in self.iter_mut() {
+            phrase.mut_ratios(ratios.clone());
+        }
+        self.clone()
+    }
+
+    fn mut_length(&mut self, mul: f32, add: f32) -> Vec<Phrase> {
+        for phrase in self.iter_mut() {
+            phrase.mut_length(mul, add);
+        }
+        self.clone()
+    }
+
+    fn mut_gain(&mut self, mul: f32, add: f32) -> Vec<Phrase> {
+        for phrase in self.iter_mut() {
+            phrase.mut_gain(mul, add);
+        }
+        self.clone()
+    }
+}
+
 #[cfg(test)]
 pub mod tests {
     use super::*;
@@ -194,43 +224,92 @@ pub mod tests {
         );
     }
 
-    fn test_vec_phrase() {
+    #[test]
+    fn test_vec_phrases() {
         let mut phrase1 = Phrase {
             events: vec![
-                Event::new(100.0, test_ratios(), 1.0, 1.0),
-                Event::new(50.0, test_ratios(), 2.0, 1.0),
+                Event::new(50.0, test_ratios(), 1.0, 1.0),
+                Event::new(50.0, test_ratios(), 1.0, 1.0),
             ],
         };
 
         let mut phrase2 = Phrase {
             events: vec![
-                Event::new(150.0, test_ratios(), 1.0, 1.0),
-                Event::new(750.0, test_ratios(), 2.0, 1.0),
+                Event::new(100.0, test_ratios(), 1.0, 1.0),
+                Event::new(100.0, test_ratios(), 2.0, 1.0),
             ],
         };
 
-        let vec_phrases = vec![
-            phrase1, phrase2
-        ];
+        let mut vec_phrases = vec![phrase1, phrase2];
 
         let mut oscillator1 = Oscillator::init(test_ratios(), &get_test_settings());
         let mut result = vec_phrases
+            .clone()
             .mut_ratios(test_ratios_change())
             .transpose(3.0 / 2.0, 0.0)
             .mut_length(2.0, 1.0)
             .mut_gain(0.9, 0.0);
 
         let mut oscillator2 = Oscillator::init(test_ratios(), &get_test_settings());
-        let mut expected = Phrase {
-            events: vec![
-                Event::new(150.0, test_ratios_change(), 3.0, 0.9),
-                Event::new(75.0, test_ratios_change(), 5.0, 0.9),
-            ],
-        };
-        assert_eq!(result, expected);
-//        assert_eq!(
-//            result.render(&mut oscillator1),
-//            expected.render(&mut oscillator2)
-//        );
+        let mut expected = vec![
+            Phrase {
+                events: vec![
+                    Event::new(
+                        75.0,
+                        vec![
+                            R::atio(3, 2, 0.0, 0.6, Pan::Left),
+                            R::atio(3, 2, 0.0, 0.0, Pan::Right),
+                            R::atio(5, 4, 1.5, 0.125, Pan::Left),
+                            R::atio(5, 4, 1.5, 0.375, Pan::Right),
+                        ],
+                        3.0,
+                        0.9,
+                    ),
+                    Event::new(
+                        75.0,
+                        vec![
+                            R::atio(3, 2, 0.0, 0.6, Pan::Left),
+                            R::atio(3, 2, 0.0, 0.0, Pan::Right),
+                            R::atio(5, 4, 1.5, 0.125, Pan::Left),
+                            R::atio(5, 4, 1.5, 0.375, Pan::Right),
+                        ],
+                        3.0,
+                        0.9,
+                    ),
+                ],
+            },
+            Phrase {
+                events: vec![
+                    Event::new(
+                        150.0,
+                        vec![
+                            R::atio(3, 2, 0.0, 0.6, Pan::Left),
+                            R::atio(3, 2, 0.0, 0.0, Pan::Right),
+                            R::atio(5, 4, 1.5, 0.125, Pan::Left),
+                            R::atio(5, 4, 1.5, 0.375, Pan::Right),
+                        ],
+                        3.0,
+                        0.9,
+                    ),
+                    Event::new(
+                        150.0,
+                        vec![
+                            R::atio(3, 2, 0.0, 0.6, Pan::Left),
+                            R::atio(3, 2, 0.0, 0.0, Pan::Right),
+                            R::atio(5, 4, 1.5, 0.125, Pan::Left),
+                            R::atio(5, 4, 1.5, 0.375, Pan::Right),
+                        ],
+                        5.0,
+                        0.9,
+                    ),
+                ],
+            },
+        ];
+
+        assert_eq!(expected, result);
+        assert_eq!(
+            result.render(&mut oscillator1),
+            expected.render(&mut oscillator2)
+        );
     }
 }
