@@ -7,7 +7,6 @@ fn main() {
     println!("{}", "*** Make cool sounds. Impress your friends ***  ");
     println!("{}", "       )))***=== PRINTER ===***(((  \n ");
 
-
     write_composition_to_wav(generate_composition);
 
     println!("{}", "\n ***** WereSoFinishedWritingTheWavFile ****** \n ");
