@@ -55,7 +55,6 @@ pub fn init(num_l: usize, num_r: usize) -> Vec<R> {
 
 #[cfg(test)]
 mod tests {
-    use super::*;
     use ratios::{Pan, R};
 
     #[test]

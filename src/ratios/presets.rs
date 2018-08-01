@@ -1,4 +1,4 @@
-use ratios::{Pan, R};
+use super::*;
 
 pub fn complicated_ratios() -> Vec<R> {
     vec![

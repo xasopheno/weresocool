@@ -1,8 +1,7 @@
 mod tests {
-    use super::*;
     use ratios::{Pan, R};
     use event::{Phrase, Mutate, Event, Render};
-    use oscillator::{Oscillator, StereoWaveform};
+    use oscillator::{Oscillator};
     use settings::get_test_settings;
 
     fn test_ratios() -> Vec<R> {
@@ -74,21 +73,21 @@ mod tests {
 
     #[test]
     fn test_vec_phrases() {
-        let mut phrase1 = Phrase {
+        let phrase1 = Phrase {
             events: vec![
                 Event::new(50.0, test_ratios(), 1.0, 1.0),
                 Event::new(50.0, test_ratios(), 1.0, 1.0),
             ],
         };
 
-        let mut phrase2 = Phrase {
+        let phrase2 = Phrase {
             events: vec![
                 Event::new(100.0, test_ratios(), 1.0, 1.0),
                 Event::new(100.0, test_ratios(), 2.0, 1.0),
             ],
         };
 
-        let mut vec_phrases = vec![phrase1, phrase2];
+        let vec_phrases = vec![phrase1, phrase2];
 
         let mut oscillator1 = Oscillator::init(test_ratios(), &get_test_settings());
         let mut result = vec_phrases
