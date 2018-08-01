@@ -1,7 +1,7 @@
 extern crate portaudio;
 extern crate weresocool;
 use portaudio as pa;
-use weresocool::portaudio_output_setup::setup_portaudio_output;
+use weresocool::portaudio_setup::output::setup_portaudio_output;
 
 fn main() {
     match run() {
