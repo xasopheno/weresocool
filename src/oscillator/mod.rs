@@ -1,7 +1,7 @@
-pub mod voice;
 mod loudness;
+pub mod voice;
 
-use oscillator::voice::{Voice};
+use oscillator::voice::Voice;
 use ratios::{Pan, R};
 use settings::Settings;
 use std::f32::consts::PI;

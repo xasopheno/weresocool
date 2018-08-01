@@ -52,7 +52,6 @@ pub fn init(num_l: usize, num_r: usize) -> Vec<R> {
     result
 }
 
-
 #[cfg(test)]
 mod tests {
     use ratios::{Pan, R};
@@ -61,7 +60,7 @@ mod tests {
     fn test_ratios() {
         let ratio = R::atio(3, 2, 1.0, 1.0, Pan::Left);
         let expected = R {
-            decimal: 3.0/ 2.0,
+            decimal: 3.0 / 2.0,
             offset: 1.0,
             gain: 1.0,
             pan: Pan::Left,

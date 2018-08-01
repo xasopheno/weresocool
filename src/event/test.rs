@@ -1,7 +1,7 @@
 mod tests {
+    use event::{Event, Mutate, Phrase, Render};
+    use oscillator::Oscillator;
     use ratios::{Pan, R};
-    use event::{Phrase, Mutate, Event, Render};
-    use oscillator::{Oscillator};
     use settings::get_test_settings;
 
     fn test_ratios() -> Vec<R> {

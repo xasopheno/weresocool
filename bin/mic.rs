@@ -13,7 +13,9 @@ fn main() {
 }
 
 fn run() -> Result<(), pa::Error> {
-    println!("{}", "\n ***** WereSoCool __!Now In Stereo!__ ****** \n ");
+    println!("{}", "\n  ****** WereSoCool __!Now In Stereo!__ ****** ");
+    println!("{}", "*** Make cool sounds. Impress your friends ***  ");
+    println!("{}", "          ***=== MICROPHONE ===***  \n ");
 
     let pa = pa::PortAudio::new()?;
     let mut duplex_stream = setup_portaudio_duplex(&pa)?;

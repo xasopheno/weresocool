@@ -21,7 +21,7 @@ pub fn complicated_ratios() -> Vec<R> {
         R::atio(1, 2, 0.5, 0.5, Pan::Left),
         R::atio(1, 4, 1.0, 0.6, Pan::Left),
         R::atio(1, 4, 0.0, 0.6, Pan::Left),
-//
+        //
         R::atio(21, 2, 0.0, 0.05, Pan::Right),
         R::atio(21, 2, 0.2, 0.05, Pan::Right),
         R::atio(17, 2, 0.0, 0.1, Pan::Right),

@@ -13,7 +13,10 @@ fn main() {
 }
 
 fn run() -> Result<(), pa::Error> {
-    println!("{}", "\n ***** Rust DSP __!Now In Stereo!__ ****** \n ");
+    println!("{}", "\n  ****** WereSoCool __!Now In Stereo!__ ****** ");
+    println!("{}", "*** Make cool sounds. Impress your friends ***  ");
+    println!("{}", "          ***=== COMPOSER ===***  \n ");
+
 
     let pa = pa::PortAudio::new()?;
     let mut output_stream = setup_portaudio_output(&pa)?;

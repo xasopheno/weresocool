@@ -1,6 +1,6 @@
-use ratios::{R};
-use std::f32::consts::PI;
 use oscillator::loudness::loudness_normalization;
+use ratios::R;
+use std::f32::consts::PI;
 fn tau() -> f32 {
     PI * 2.0
 }
@@ -92,9 +92,9 @@ impl Voice {
         let frequency = if self.sound_to_silence() {
             self.past.frequency
         } else if index < portamento_length && !self.silence_to_sound() && !self.sound_to_silence()
-            {
-                self.past.frequency + (index as f32 * p_delta)
-            } else {
+        {
+            self.past.frequency + (index as f32 * p_delta)
+        } else {
             self.current.frequency
         };
 
@@ -130,13 +130,13 @@ pub mod tests {
             index,
             past: VoiceState {
                 frequency: 0.0,
-                gain: 0.0
+                gain: 0.0,
             },
             current: VoiceState {
                 frequency: 0.0,
-                gain: 0.0
+                gain: 0.0,
             },
-            phase: 0.0
+            phase: 0.0,
         };
 
         assert_eq!(voice, result);

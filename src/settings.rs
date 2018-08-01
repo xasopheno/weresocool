@@ -22,7 +22,7 @@ pub fn get_default_app_settings() -> Settings {
         channels: 2,
         interleaved: true,
         max_freq: 2_500.0,
-        min_freq: 0.0,
+        min_freq: 20.0,
         gain_multiplier: 10.0,
     }
 }
