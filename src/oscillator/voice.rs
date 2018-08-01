@@ -166,4 +166,17 @@ pub mod tests {
         assert_eq!(buffer, [0.0, 0.022728316, 0.3263405]);
     }
 
+    #[test]
+    fn test_sound_silence() {
+        let ratio = R::atio(1, 1, 0.0, 1.0, Pan::Left);
+        let mut voice = Voice::init(1, ratio.clone());
+        voice.update(100.0, 1.0);
+        let silence_to_sound = voice.silence_to_sound();
+
+        voice.update(0.0, 0.0);
+        let sound_to_silence = voice.sound_to_silence();
+
+        assert_eq!(silence_to_sound, true);
+        assert_eq!(sound_to_silence, true);
+    }
 }
