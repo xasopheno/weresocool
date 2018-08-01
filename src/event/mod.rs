@@ -25,42 +25,6 @@ impl Event {
     }
 }
 
-pub trait Render<T> {
-    fn render(&mut self, oscillator: &mut Oscillator) -> StereoWaveform;
-}
-
-impl Render<Event> for Event {
-    fn render(&mut self, oscillator: &mut Oscillator) -> StereoWaveform {
-        oscillator.update_freq_gain_and_ratios(self.frequency, self.gain, &self.ratios);
-        let n_samples_to_generate = (self.length * 44_100.0).floor() as usize;
-        oscillator.generate(n_samples_to_generate)
-    }
-}
-
-impl Render<Phrase> for Phrase {
-    fn render(&mut self, oscillator: &mut Oscillator) -> StereoWaveform {
-        let mut result: StereoWaveform = StereoWaveform::new(0);
-        for mut event in self.events.clone() {
-            //            println!("{:?}", event);
-            let stereo_waveform = event.render(oscillator);
-            result.append(stereo_waveform);
-        }
-
-        result
-    }
-}
-
-impl Render<Vec<Phrase>> for Vec<Phrase> {
-    fn render(&mut self, oscillator: &mut Oscillator) -> StereoWaveform {
-        let mut result: StereoWaveform = StereoWaveform::new(0);
-        for phrase in self.iter_mut() {
-            let stereo_waveform = phrase.render(oscillator);
-            result.append(stereo_waveform);
-        }
-
-        result
-    }
-}
 
 pub trait Mutate<T> {
     fn transpose(&mut self, mul: f32, add: f32) -> T;
@@ -148,6 +112,43 @@ impl Mutate<Vec<Phrase>> for Vec<Phrase> {
             phrase.mut_gain(mul, add);
         }
         self.clone()
+    }
+}
+
+pub trait Render<T> {
+    fn render(&mut self, oscillator: &mut Oscillator) -> StereoWaveform;
+}
+
+impl Render<Event> for Event {
+    fn render(&mut self, oscillator: &mut Oscillator) -> StereoWaveform {
+        oscillator.update_freq_gain_and_ratios(self.frequency, self.gain, &self.ratios);
+        let n_samples_to_generate = (self.length * 44_100.0).floor() as usize;
+        oscillator.generate(n_samples_to_generate)
+    }
+}
+
+impl Render<Phrase> for Phrase {
+    fn render(&mut self, oscillator: &mut Oscillator) -> StereoWaveform {
+        let mut result: StereoWaveform = StereoWaveform::new(0);
+        for mut event in self.events.clone() {
+            //            println!("{:?}", event);
+            let stereo_waveform = event.render(oscillator);
+            result.append(stereo_waveform);
+        }
+
+        result
+    }
+}
+
+impl Render<Vec<Phrase>> for Vec<Phrase> {
+    fn render(&mut self, oscillator: &mut Oscillator) -> StereoWaveform {
+        let mut result: StereoWaveform = StereoWaveform::new(0);
+        for phrase in self.iter_mut() {
+            let stereo_waveform = phrase.render(oscillator);
+            result.append(stereo_waveform);
+        }
+
+        result
     }
 }
 
