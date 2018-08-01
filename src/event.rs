@@ -150,7 +150,6 @@ pub mod tests {
 
     #[test]
     fn test_mutate_event() {
-        let mut oscillator = Oscillator::init(test_ratios(), &get_test_settings());
         let result = Event::new(100.0, test_ratios(), 0.1, 1.0)
             .mut_ratios(test_ratios_change())
             .transpose(3.0 / 2.0, 0.0)
@@ -171,6 +170,33 @@ pub mod tests {
 
         assert_eq!(expected, result);
     }
+
+    #[test]
+    fn test_event_render() {
+        let mut oscillator1 = Oscillator::init(test_ratios(), &get_test_settings());
+        let result = Event::new(100.0, test_ratios(), 0.001, 1.0)
+            .mut_ratios(test_ratios_change())
+            .transpose(3.0 / 2.0, 0.0)
+            .mut_length(2.0, 0.0)
+            .mut_gain(0.9, 0.0)
+            .render(&mut oscillator1);
+
+        let mut oscillator2 = Oscillator::init(test_ratios(), &get_test_settings());
+        let expected = Event {
+            frequency: 150.0,
+            ratios: vec![
+                R::atio(3, 2, 0.0, 0.6, Pan::Left),
+                R::atio(3, 2, 0.0, 0.0, Pan::Right),
+                R::atio(5, 4, 1.5, 0.125, Pan::Left),
+                R::atio(5, 4, 1.5, 0.375, Pan::Right),
+            ],
+            length: 0.002,
+            gain: 0.9,
+        }.render(&mut oscillator2);
+
+        assert_eq!(expected, result);
+    }
+
 
 //    #[test]
 //    fn test_mutate_phrase() {
