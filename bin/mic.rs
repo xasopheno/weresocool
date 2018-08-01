@@ -17,7 +17,6 @@ fn run() -> Result<(), pa::Error> {
 
     let pa = pa::PortAudio::new()?;
     let mut duplex_stream = setup_portaudio_duplex(&pa)?;
-
     duplex_stream.start()?;
 
     while let true = duplex_stream.is_active()? {}

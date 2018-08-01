@@ -9,14 +9,11 @@ macro_rules! r {
 
 #[cfg(test)]
 pub mod tests {
-    use ratios::{R, Pan};
+    use ratios::{Pan, R};
 
     #[test]
     fn test_r_macro() {
-        let r_macro = r![
-            (3, 2, 0.0, 0.6, -1.0),
-            (5, 4, 1.5, 0.5, 0.5)
-        ];
+        let r_macro = r![(3, 2, 0.0, 0.6, -1.0), (5, 4, 1.5, 0.5, 0.5)];
 
         let result = vec![
             R::atio(3, 2, 0.0, 0.6, Pan::Left),

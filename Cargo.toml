@@ -2,7 +2,7 @@
 name = "weresocool"
 version = "0.2.0"
 authors = ["Danny Meyer <Danny.Meyer@gmail.com>"]
-description = "***** WereSoCool __!Now In Stereo!__ ****** Make cool sounds. Impress your friends. Ratio-based harmonic accompaniment to microphone input."
+description = "***** WereSoCool __!Now In Stereo!__ ****** Make cool sounds. Impress your friends."
 license = "MIT"
 autobins = false
 
@@ -14,12 +14,12 @@ hound = "3.4.0"
 
 [[bin]]
 name = "mic"
-path = "src/mic.rs"
+path = "bin/mic.rs"
 
 [[bin]]
 name = "composer"
-path = "src/composer.rs"
+path = "bin/composer.rs"
 
 [[bin]]
 name = "print"
-path = "src/print.rs"
+path = "bin/print.rs"
