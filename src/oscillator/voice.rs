@@ -1,5 +1,6 @@
 use ratios::{R};
 use std::f32::consts::PI;
+use oscillator::loudness::loudness_normalization;
 fn tau() -> f32 {
     PI * 2.0
 }
@@ -113,19 +114,31 @@ impl Voice {
     }
 }
 
-pub fn freq_to_sones(frequency: f32) -> f32 {
-    // http://www.ukintpress-conferences.com/conf/08txeu_conf/pdf/day_1/01-06-garcia.pdf
-    if frequency < 20.0 {
-        0.0
-    } else {
-        1.0 / 2.0_f32.powf(((20.0 * (frequency).log10()) - 40.0) / 10.0)
-    }
-}
+#[cfg(test)]
+pub mod tests {
+    use super::*;
+    use ratios::{Pan, R};
 
-pub fn loudness_normalization(frequency: f32) -> f32 {
-    let mut normalization = freq_to_sones(frequency);
-    if normalization.is_nan() || normalization.is_infinite() || normalization > 1.0 {
-        normalization = 1.0;
-    };
-    normalization
+    #[test]
+    fn test_voice_init() {
+        let index = 1;
+        let ratio = R::atio(3, 2, 0.0, 0.6, Pan::Left);
+        let voice = Voice::init(index, ratio.clone());
+
+        let result = Voice {
+            ratio,
+            index,
+            past: VoiceState {
+                frequency: 0.0,
+                gain: 0.0
+            },
+            current: VoiceState {
+                frequency: 0.0,
+                gain: 0.0
+            },
+            phase: 0.0
+        };
+
+        assert_eq!(voice, result);
+    }
 }

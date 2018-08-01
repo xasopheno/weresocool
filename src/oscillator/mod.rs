@@ -1,4 +1,6 @@
 pub mod voice;
+mod loudness;
+
 use oscillator::voice::{Voice};
 use ratios::{Pan, R};
 use settings::Settings;
