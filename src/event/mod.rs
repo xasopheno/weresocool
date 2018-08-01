@@ -25,7 +25,6 @@ impl Event {
     }
 }
 
-
 pub trait Mutate<T> {
     fn transpose(&mut self, mul: f32, add: f32) -> T;
     fn mut_ratios(&mut self, ratios: Vec<R>) -> T;

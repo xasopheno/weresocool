@@ -2,7 +2,7 @@ extern crate rand;
 use analyze::{Analyze, DetectionResult};
 use oscillator::Oscillator;
 use portaudio as pa;
-use ratios::simple_ratios;
+use ratios::presets::simple_ratios;
 use ring_buffer::RingBuffer;
 use settings::{get_default_app_settings, Settings};
 use write_output_buffer::write_output_buffer;
