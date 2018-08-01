@@ -15,7 +15,7 @@ fn main() {
 fn run() -> Result<(), pa::Error> {
     println!("{}", "\n  ****** WereSoCool __!Now In Stereo!__ ****** ");
     println!("{}", "*** Make cool sounds. Impress your friends ***  ");
-    println!("{}", "          ***=== COMPOSER ===***  \n ");
+    println!("{}", "       )))***=== COMPOSER ===***(((  \n ");
 
 
     let pa = pa::PortAudio::new()?;
