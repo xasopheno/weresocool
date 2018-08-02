@@ -155,4 +155,40 @@ pub mod tests {
         };
         assert_eq!(osc, expected);
     }
+
+    #[test]
+    fn oscillator_voice_update_test() {
+        let mut osc = Oscillator::init(
+            r![
+                (1, 1, 0.0, 1.0, 0.0),
+            ], &get_test_settings());
+        osc.update_ratios(&r![
+                (3, 2, 0.0, 1.0, 0.0),
+            ]);
+
+        assert_eq!(
+            osc.voices[0].ratio,
+            R::atio(3, 2, 0.0, 0.5, Pan::Left)
+        );
+        assert_eq!(
+            osc.voices[1].ratio,
+            R::atio(3, 2, 0.0, 0.5, Pan::Right)
+        )
+    }
+    #[test]
+    fn oscillator_generate_test() {
+        let mut osc = Oscillator::init(
+            r![
+                (1, 1, 0.0, 1.0, 0.0),
+            ], &get_test_settings());
+
+        osc.update_freq_gain_and_ratios(200.0, 1.0, &r![(3, 2, 0.0, 1.0, 0.0)]);
+
+
+        let expected = StereoWaveform{
+            l_buffer: vec![0.0, 0.006254273, 0.018750122],
+            r_buffer: vec![0.0, 0.006254273, 0.018750122]
+        };
+        assert_eq!(osc.generate(3), expected);
+    }
 }
