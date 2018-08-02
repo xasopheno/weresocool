@@ -1,4 +1,4 @@
-use compositions::template::generate_composition;
+use compositions::song_2::generate_composition;
 use portaudio as pa;
 use settings::{get_default_app_settings, Settings};
 use write::write_output_buffer;
