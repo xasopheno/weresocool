@@ -73,11 +73,11 @@ impl Voice {
         self.current.gain = new_gain * self.ratio.gain;
     }
 
-    fn silence_to_sound(&self) -> bool {
+    pub fn silence_to_sound(&self) -> bool {
         self.past.frequency == 0.0 && self.current.frequency != 0.0
     }
 
-    fn sound_to_silence(&self) -> bool {
+    pub fn sound_to_silence(&self) -> bool {
         self.past.frequency != 0.0 && self.current.frequency == 0.0
     }
 
@@ -105,78 +105,12 @@ impl Voice {
         current_phase.sin() * gain
     }
 
-    fn calculate_portamento_delta(&self, portamento_length: usize) -> f32 {
+    pub fn calculate_portamento_delta(&self, portamento_length: usize) -> f32 {
         (self.current.frequency - self.past.frequency) / (portamento_length as f32)
     }
 
-    fn calculate_gain_delta(&self, fade_length: usize) -> f32 {
+    pub fn calculate_gain_delta(&self, fade_length: usize) -> f32 {
         (self.current.gain - self.past.gain) / (fade_length as f32)
     }
 }
 
-#[cfg(test)]
-pub mod tests {
-    use super::*;
-    use ratios::{Pan, R};
-
-    #[test]
-    fn test_voice_init() {
-        let index = 1;
-        let ratio = R::atio(3, 2, 0.0, 0.6, Pan::Left);
-        let voice = Voice::init(index, ratio.clone());
-
-        let result = Voice {
-            ratio,
-            index,
-            past: VoiceState {
-                frequency: 0.0,
-                gain: 0.0,
-            },
-            current: VoiceState {
-                frequency: 0.0,
-                gain: 0.0,
-            },
-            phase: 0.0,
-        };
-
-        assert_eq!(voice, result);
-    }
-
-    #[test]
-    fn test_deltas() {
-        let index = 1;
-        let ratio = R::atio(1, 1, 0.0, 0.6, Pan::Left);
-        let mut voice = Voice::init(index, ratio.clone());
-        voice.update(200.0, 1.0);
-        let g_delta = voice.calculate_gain_delta(10);
-        let p_delta = voice.calculate_portamento_delta(10);
-
-        assert_eq!(g_delta, 0.039528757);
-        assert_eq!(p_delta, 20.0);
-    }
-
-    #[test]
-    fn test_generate_waveform() {
-        let index = 1;
-        let ratio = R::atio(1, 1, 0.0, 0.5, Pan::Left);
-        let mut buffer = vec![0.0; 3];
-        let mut voice = Voice::init(index, ratio.clone());
-        voice.update(100.0, 1.0);
-        voice.generate_waveform(&mut buffer, 3, 2048.0 / 44_100.0);
-        assert_eq!(buffer, [0.0, 0.022728316, 0.3263405]);
-    }
-
-    #[test]
-    fn test_sound_silence() {
-        let ratio = R::atio(1, 1, 0.0, 1.0, Pan::Left);
-        let mut voice = Voice::init(1, ratio.clone());
-        voice.update(100.0, 1.0);
-        let silence_to_sound = voice.silence_to_sound();
-
-        voice.update(0.0, 0.0);
-        let sound_to_silence = voice.sound_to_silence();
-
-        assert_eq!(silence_to_sound, true);
-        assert_eq!(sound_to_silence, true);
-    }
-}

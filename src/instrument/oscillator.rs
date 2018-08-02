@@ -1,4 +1,4 @@
-use instrument::voice::{Voice};
+use instrument::voice::Voice;
 use ratios::{Pan, R};
 use settings::Settings;
 use std::f32::consts::PI;
@@ -41,9 +41,9 @@ impl StereoWaveform {
 
 #[derive(Clone, Debug, PartialEq)]
 pub struct Oscillator {
-    voices: Vec<Voice>,
-    portamento_length: usize,
-    settings: Settings,
+    pub voices: Vec<Voice>,
+    pub portamento_length: usize,
+    pub settings: Settings,
 }
 
 impl Oscillator {
@@ -105,87 +105,4 @@ impl Oscillator {
     }
 }
 
-#[cfg(test)]
-pub mod tests {
-    use super::*;
-    use settings::get_test_settings;
-    use oscillator::voice::VoiceState;
-    use ratios::Pan;
-    #[test]
-    fn oscillator_init_test() {
-        let osc = Oscillator::init(
-            r![
-                (1, 1, 0.0, 1.0, 0.0),
-            ], &get_test_settings());
-        let expected = Oscillator {
-            portamento_length: 10,
-            settings: get_test_settings(),
-            voices: vec![
-                Voice {
-                    index: 0,
-                    ratio: R::atio(1, 1, 0.0, 0.5, Pan::Left),
-                    phase: 0.0,
-                    past: VoiceState {
-                        frequency: 0.0,
-                        gain: 0.0
-                    },
-                    current: VoiceState {
-                        frequency: 0.0,
-                        gain: 0.0
-                    }
-                },
 
-                Voice {
-                    index: 1,
-                    ratio: R::atio(1, 1, 0.0, 0.5, Pan::Right),
-                    phase: 0.0,
-                    past: VoiceState {
-                        frequency: 0.0,
-                        gain: 0.0
-                    },
-                    current: VoiceState {
-                        frequency: 0.0,
-                        gain: 0.0
-                    }
-                }
-            ]
-        };
-        assert_eq!(osc, expected);
-    }
-
-    #[test]
-    fn oscillator_voice_update_test() {
-        let mut osc = Oscillator::init(
-            r![
-                (1, 1, 0.0, 1.0, 0.0),
-            ], &get_test_settings());
-        osc.update_ratios(&r![
-                (3, 2, 0.0, 1.0, 0.0),
-            ]);
-
-        assert_eq!(
-            osc.voices[0].ratio,
-            R::atio(3, 2, 0.0, 0.5, Pan::Left)
-        );
-        assert_eq!(
-            osc.voices[1].ratio,
-            R::atio(3, 2, 0.0, 0.5, Pan::Right)
-        )
-    }
-    #[test]
-    fn oscillator_generate_test() {
-        let mut osc = Oscillator::init(
-            r![
-                (1, 1, 0.0, 1.0, 0.0),
-            ], &get_test_settings());
-
-        osc.update_freq_gain_and_ratios(200.0, 1.0, &r![(3, 2, 0.0, 1.0, 0.0)]);
-
-
-        let expected = StereoWaveform{
-            l_buffer: vec![0.0, 0.006254273, 0.018750122],
-            r_buffer: vec![0.0, 0.006254273, 0.018750122]
-        };
-        assert_eq!(osc.generate(3), expected);
-    }
-}

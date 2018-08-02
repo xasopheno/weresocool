@@ -1,6 +1,6 @@
 mod tests {
     use event::{Event, Mutate, Phrase, Render};
-    use oscillator::Oscillator;
+    use instrument::oscillator::Oscillator;
     use ratios::{Pan, R};
     use settings::get_test_settings;
 
