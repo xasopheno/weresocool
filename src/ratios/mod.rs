@@ -15,12 +15,6 @@ pub enum Pan {
     Right,
 }
 
-#[derive(Debug, Clone, PartialEq)]
-pub struct StereoRatios {
-    pub l_ratios: Vec<R>,
-    pub r_ratios: Vec<R>,
-}
-
 impl R {
     pub fn atio(n: usize, d: usize, offset: f32, gain: f32, pan: Pan) -> R {
         if d == 0 {
