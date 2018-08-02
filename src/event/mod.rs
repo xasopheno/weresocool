@@ -1,4 +1,7 @@
-use instrument::oscillator::{Oscillator, StereoWaveform};
+use instrument::{
+    oscillator::Oscillator,
+    stereo_waveform::StereoWaveform
+};
 use ratios::R;
 
 #[derive(Debug, Clone, PartialEq)]

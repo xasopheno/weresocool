@@ -1,9 +1,10 @@
 pub mod tests {
     use ratios::{Pan, R};
     use instrument::{
-        oscillator::{Oscillator, StereoWaveform},
+        oscillator::Oscillator,
         voice::{Voice, VoiceState},
-        loudness::loudness_normalization
+        stereo_waveform::StereoWaveform,
+        loudness::loudness_normalization,
     };
     use settings::get_test_settings;
     pub mod voice {
