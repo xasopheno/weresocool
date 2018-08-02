@@ -1,18 +1,17 @@
 extern crate rand;
 use analyze::{Analyze, DetectionResult};
-use oscillator::Oscillator;
+use instrument::oscillator::Oscillator;
 use portaudio as pa;
-use ratios::complicated_ratios;
+use ratios::presets::simple_ratios;
 use ring_buffer::RingBuffer;
 use settings::{get_default_app_settings, Settings};
+use write::write_output_buffer;
 
 pub fn setup_portaudio_duplex(
     ref pa: &pa::PortAudio,
 ) -> Result<pa::Stream<pa::NonBlocking, pa::Duplex<f32, f32>>, pa::Error> {
     let settings = get_default_app_settings();
-
-    let (l_ratios, r_ratios) = complicated_ratios();
-    let mut osc = Oscillator::new(10, l_ratios, r_ratios, get_default_app_settings());
+    let mut oscillator = Oscillator::init(simple_ratios(), &settings);
     let duplex_stream_settings = get_duplex_settings(&pa, &settings)?;
 
     let mut input_buffer: RingBuffer<f32> = RingBuffer::<f32>::new(settings.yin_buffer_size);
@@ -36,10 +35,10 @@ pub fn setup_portaudio_duplex(
                     .to_vec()
                     .analyze(settings.sample_rate, settings.probability_threshold);
 
-                osc.update(result.frequency, result.gain, result.probability);
-                let (l_waveform, r_waveform) = osc.generate();
+                oscillator.update_freq_and_gain(result.frequency, result.gain);
+                let stereo_waveform = oscillator.generate(settings.buffer_size);
 
-                write_duplex_buffer(&mut out_buffer, l_waveform, r_waveform);
+                write_output_buffer(&mut out_buffer, stereo_waveform);
 
                 pa::Continue
             }
@@ -47,20 +46,6 @@ pub fn setup_portaudio_duplex(
     )?;
 
     Ok(duplex_stream)
-}
-
-fn write_duplex_buffer(out_buffer: &mut [f32], l_waveform: Vec<f32>, r_waveform: Vec<f32>) {
-    let mut l_idx = 0;
-    let mut r_idx = 0;
-    for n in 0..out_buffer.len() {
-        if n % 2 == 0 {
-            out_buffer[n] = l_waveform[l_idx];
-            l_idx += 1
-        } else {
-            out_buffer[n] = r_waveform[r_idx];
-            r_idx += 1
-        }
-    }
 }
 
 fn get_duplex_settings(

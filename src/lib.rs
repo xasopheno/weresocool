@@ -1,9 +1,12 @@
 extern crate portaudio;
+#[macro_use]
+pub mod macros;
 pub mod analyze;
-pub mod oscillator;
+pub mod compositions;
+pub mod event;
+pub mod instrument;
 pub mod portaudio_setup;
 pub mod ratios;
 pub mod ring_buffer;
 pub mod settings;
-pub mod sine;
-pub mod state;
+pub mod write;
