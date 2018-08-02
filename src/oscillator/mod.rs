@@ -108,15 +108,51 @@ impl Oscillator {
     }
 }
 
-//#[cfg(test)]
-//pub mod tests {
-//    use super::*;
-//    use settings::get_test_settings;
-//    #[test]
-//    fn oscillator_init_test() {
-//        let osc = Oscillator::init(simple_ratios(), &get_test_settings());
-//        println!("{:?}", osc);
-//        let expected = vec![5, 6, 7, 8, 9, 10, 11, 12, 13, 50];
-//        assert_eq!(osc, expected);
-//    }
-//}
+#[cfg(test)]
+pub mod tests {
+    use super::*;
+    use settings::get_test_settings;
+    use oscillator::voice::VoiceState;
+    use ratios::Pan;
+    #[test]
+    fn oscillator_init_test() {
+        let osc = Oscillator::init(
+            r![
+                (1, 1, 0.0, 1.0, 0.0),
+            ], &get_test_settings());
+        let expected = Oscillator {
+            portamento_length: 10,
+            settings: get_test_settings(),
+            voices: vec![
+                Voice {
+                    index: 0,
+                    ratio: R::atio(1, 1, 0.0, 0.5, Pan::Left),
+                    phase: 0.0,
+                    past: VoiceState {
+                        frequency: 0.0,
+                        gain: 0.0
+                    },
+                    current: VoiceState {
+                        frequency: 0.0,
+                        gain: 0.0
+                    }
+                },
+
+                Voice {
+                    index: 1,
+                    ratio: R::atio(1, 1, 0.0, 0.5, Pan::Right),
+                    phase: 0.0,
+                    past: VoiceState {
+                        frequency: 0.0,
+                        gain: 0.0
+                    },
+                    current: VoiceState {
+                        frequency: 0.0,
+                        gain: 0.0
+                    }
+                }
+            ]
+        };
+        assert_eq!(osc, expected);
+    }
+}

@@ -9,7 +9,6 @@ pub struct Settings {
     pub interleaved: bool,
     pub max_freq: f32,
     pub min_freq: f32,
-    pub gain_multiplier: f32,
 }
 
 pub fn get_default_app_settings() -> Settings {
@@ -23,7 +22,6 @@ pub fn get_default_app_settings() -> Settings {
         interleaved: true,
         max_freq: 2_500.0,
         min_freq: 20.0,
-        gain_multiplier: 10.0,
     }
 }
 

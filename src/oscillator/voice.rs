@@ -16,8 +16,8 @@ pub struct Voice {
 
 #[derive(Clone, Debug, PartialEq)]
 pub struct VoiceState {
-    frequency: f32,
-    gain: f32,
+    pub frequency: f32,
+    pub gain: f32,
 }
 
 impl VoiceState {
