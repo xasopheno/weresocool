@@ -1,4 +1,4 @@
-use oscillator::loudness::loudness_normalization;
+use instrument::loudness::loudness_normalization;
 use ratios::R;
 use std::f32::consts::PI;
 fn tau() -> f32 {

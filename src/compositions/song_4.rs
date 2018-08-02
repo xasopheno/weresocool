@@ -1,5 +1,5 @@
 use event::{Event, Mutate, Phrase, Render};
-use oscillator::{Oscillator, StereoWaveform};
+use instrument::oscillator::{Oscillator, StereoWaveform};
 use ratios::{Pan, R};
 use settings::get_default_app_settings;
 

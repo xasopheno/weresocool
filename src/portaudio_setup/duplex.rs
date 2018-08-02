@@ -1,6 +1,6 @@
 extern crate rand;
 use analyze::{Analyze, DetectionResult};
-use oscillator::Oscillator;
+use instrument::oscillator::Oscillator;
 use portaudio as pa;
 use ratios::presets::simple_ratios;
 use ring_buffer::RingBuffer;

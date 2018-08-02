@@ -4,7 +4,7 @@ pub mod macros;
 pub mod analyze;
 pub mod compositions;
 pub mod event;
-pub mod oscillator;
+pub mod instrument;
 pub mod portaudio_setup;
 pub mod ratios;
 pub mod ring_buffer;
