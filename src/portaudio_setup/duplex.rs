@@ -5,7 +5,7 @@ use portaudio as pa;
 use ratios::presets::simple_ratios;
 use ring_buffer::RingBuffer;
 use settings::{get_default_app_settings, Settings};
-use write_output_buffer::write_output_buffer;
+use write::write_output_buffer;
 
 pub fn setup_portaudio_duplex(
     ref pa: &pa::PortAudio,
