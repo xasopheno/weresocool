@@ -55,8 +55,8 @@ impl Oscillator {
     }
 
     pub fn update_freq_gain_and_ratios(&mut self, base_frequency: f32, gain: f32, ratios: &Vec<R>) {
+        self.update_ratios(&ratios);
         self.update_freq_and_gain(base_frequency, gain);
-        self.update_ratios(&ratios)
     }
 
     pub fn generate(&mut self, length: usize) -> StereoWaveform {
