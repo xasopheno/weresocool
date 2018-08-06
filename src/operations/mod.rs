@@ -1,101 +1,125 @@
 use event::Event;
 use ratios::R;
 
-pub enum Operation {
-    AsIs {},
-    Transpose {mul: f32, add: f32},
-    Length {mul: f32, add: f32},
-    Gain {mul: f32, add: f32},
+pub enum Op {
+    AsIs,
+    Transpose {m: f32, a: f32},
+    Length {m: f32, a: f32},
+    Gain {m: f32, a: f32},
     Ratios {ratios: Vec<R>},
-    Sequence {operations: Vec<Operation>},
-    Compose {operations: Vec<Operation>},
+    Compose {operations: Vec<Op>},
+    Sequence {operations: Vec<Op>},
 }
 
-//pub struct AsIs {}
-//
-//pub struct Transpose {
-//    mul: f32,
-//    add: f32,
-//}
-//
-//pub struct Length {
-//    mul: f32,
-//    add: f32,
-//}
-//
-//pub struct Gain {
-//    mul: f32,
-//    add: f32,
-//}
-//
-//pub struct Ratios {
-//    ratios: Vec<R>,
-//}
-//
-//pub struct Sequence {
-//    operations: Vec<Operation>,
-//}
-//
-//pub struct Compose {
-//    operations: Vec<Operation>,
-//}
+pub trait Operate {
+    fn apply(&self, events: Vec<Event>) -> Vec<Event>;
+}
 
-//pub trait Operate {
-//    fn apply(&self, e: &Event) -> Vec<Operation>;
-//}
-//
-//
-impl Operate for Sequence {
-    fn apply(&self, e: &Event) -> Vec<Event> {
-        let mut container = vec![];
-        for operation in self.operations.iter() {
-            container.push(operation.apply(e))
+impl Operate for Op {
+    fn apply(&self, events: Vec<Event>) -> Vec<Event> {
+        let mut vec_events: Vec<Event> = vec![];
+        match self {
+            Op::AsIs {} => { vec_events = events; }
+
+            Op::Transpose { m, a } => {
+                for event in events.iter() {
+                    let mut e = event.clone();
+                    e.frequency = e.frequency * m + a;
+                    vec_events.push(e)
+                }
+            }
+
+            Op::Length { m, a } => {
+                for event in events.iter() {
+                    let mut e = event.clone();
+                    e.length = e.length * m + a;
+                    vec_events.push(e)
+                }
+            }
+
+            Op::Gain { m, a } => {
+                for event in events.iter() {
+                    let mut e = event.clone();
+                    e.gain = e.gain * m + a;
+                    vec_events.push(e)
+                }
+            }
+
+            Op::Ratios { ratios } => {
+                for event in events.iter() {
+                    let mut es = event.clone();
+                    es.ratios = ratios.clone();
+                    vec_events.push(es)
+                }
+            }
+
+            Op::Compose { operations } => {
+                let mut es = events.clone();
+                for operation in operations.iter() {
+                    es = operation.apply(es);
+                }
+            }
+
+            Op::Sequence { operations } => {
+                let mut es = events.clone();
+                let mut container = vec![];
+                for operation in operations.iter() {
+                    container.push(operation.apply(es.clone()));
+                }
+
+                vec_events = container
+                    .iter()
+                    .flat_map(|evt| evt.clone())
+                    .collect();
+            }
         }
-        container
+
+        vec_events
     }
 }
 
 
-impl Operate<Compose> for Compose {
-    fn apply(&self, e: Vec<Event>) -> Vec<Event> {
-        let mut container = vec![];
-        let result;
-        for operation in self.operations.iter() {
-            let events = vec![e.clone()];
-            for event in events.iter() {
-            newEvents.appendList(operation.apply(event))
-    }
-            event = operation.apply(event)
-            container.push(operation.apply(event))
-        }
-        container
-    }
-}
+//impl Operate<Compose> for Compose {
+//    fn apply(&self, events: Vec<Event>) -> Vec<Event> {
+//        let mut vec_events = vec![];
+//        let result;
+//        for operation in self.operations.iter() {
+//            let events = vec![e.clone()];
+//            for event in events.iter() {
+//            newEvents.appendList(operation.apply(event))
+//    }
+//            event = operation.apply(event)
+//            container.push(operation.apply(event))
+//        }
+//        container
+//    }
+//}
+
 
 //Operator(e, operations);
-fn test() -> Operation {
-    let ratios = r![1, 1, 0.0, 0.0, 0.0];
-    let ops = Compose {
-        operations: vec![
-            Transpose {mul: 2.0, add: 0.0}
-            Length {mul: 2.0, add: 0.0}
-        ]
-
-        operations: vec![
-            Compose { operations: AsIs, AsIs }
-            Sequence { operations: AsIs, Transpose {mul: 1.5, add: 0.0}}
-        ]
-
-        operations: vec![
-            Sequence { operations: AsIs, AsIs }
-            Compose { operations: AsIs, Transpose {mul: 1.5, add: 0.0}}
-        ]
-
-        operations: vec![
-            Sequence { operations: AsIs, AsIs }
-            Sequence { operations: AsIs, Transpose {mul: 1.5, add: 0.0}}
-        ]
-    }
+//fn test() -> Operation {
+//    let ratios = r![1, 1, 0.0, 0.0, 0.0];
+//    let ops = Compose {
+//        operations: vec![
+//            Transpose {mul: 2.0, add: 0.0}
+//            Length {mul: 2.0, add: 0.0}
+//        ]
+//
+//        operations: vec![
+//            Compose { operations: AsIs, AsIs }
+//            Sequence { operations: AsIs, Transpose {mul: 1.5, add: 0.0}}
+//        ]
+//
+//        operations: vec![
+//            Sequence { operations: AsIs, AsIs }
+//            Compose { operations: AsIs, Transpose {mul: 1.5, add: 0.0}}
+//        ]
+//
+//        operations: vec![
+//            Sequence { operations: AsIs, AsIs }
+//            Sequence { operations: AsIs, Transpose {mul: 1.5, add: 0.0}}
+//        ]
+//    }
 //        Operation::Sequence {
 //            operations: vec![
 //              Opertation::AsIs {},
@@ -118,8 +142,8 @@ fn test() -> Operation {
 //                }
 //            ]
 //        };
-    ops
-}
+//    ops
+//}
 
 
 
