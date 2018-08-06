@@ -45,20 +45,33 @@ pub struct ConcatManyOperations {
 
 Operator(e, operations);
 
-
 let ops =
-    ConcatManyOperations([
+    Sum( operations: [
       AsIs,
-      DoManyOperations([Transpose, MutRatios]),
-      DoManyOperations([
-        ConcatManyOperations[AsIs(i), Transpose],
-        Transpose(...))
+
+      Product( operations: [
+        T { m: 2.0, a: 0.0},
+        R { r: ratios }
+      ]),
+
+      Product([
+        Add[
+            AsIs,
+            T { m: 2.0, a: 0.0}
+        ],
+        T { m: 1.5, a: 0.0} )
       ])
     ])
 
-//    [
-//        Transpose,
-//        Multiple { [...] }
-//        [MutLength, Transpose {mul: 1.5, add: 0.0}],
-//        []
-//    ]
+let ops =
+    Sum
+        Asis,
+        Product
+            T 2.0, 0.0
+            R ratios
+        Product
+            Add
+                AsIs
+                T 2.0 0.0
+
+            Transpose 1.5, 0.0
