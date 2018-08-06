@@ -42,7 +42,7 @@ impl Oscillator {
         } else {
             0.0
         };
-
+ 
         for voice in self.voices.iter_mut() {
             voice.update(new_freq, new_gain);
         }
