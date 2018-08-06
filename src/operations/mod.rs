@@ -79,81 +79,8 @@ impl Operate for Op {
 }
 
 
-//impl Operate<Compose> for Compose {
-//    fn apply(&self, events: Vec<Event>) -> Vec<Event> {
-//        let mut vec_events = vec![];
-//        let result;
-//        for operation in self.operations.iter() {
-//            let events = vec![e.clone()];
-//            for event in events.iter() {
-//            newEvents.appendList(operation.apply(event))
-//    }
-//            event = operation.apply(event)
-//            container.push(operation.apply(event))
-//        }
-//        container
-//    }
-//}
+//ops.apply(event)
 
-
-//Operator(e, operations);
-//fn test() -> Operation {
-//    let ratios = r![1, 1, 0.0, 0.0, 0.0];
-//    let ops = Compose {
-//        operations: vec![
-//            Transpose {mul: 2.0, add: 0.0}
-//            Length {mul: 2.0, add: 0.0}
-//        ]
-//
-//        operations: vec![
-//            Compose { operations: AsIs, AsIs }
-//            Sequence { operations: AsIs, Transpose {mul: 1.5, add: 0.0}}
-//        ]
-//
-//        operations: vec![
-//            Sequence { operations: AsIs, AsIs }
-//            Compose { operations: AsIs, Transpose {mul: 1.5, add: 0.0}}
-//        ]
-//
-//        operations: vec![
-//            Sequence { operations: AsIs, AsIs }
-//            Sequence { operations: AsIs, Transpose {mul: 1.5, add: 0.0}}
-//        ]
-//    }
-//        Operation::Sequence {
-//            operations: vec![
-//              Opertation::AsIs {},
-//              Operation::Compose {
-//                operations: vec![
-//                    Operation::Transpose { mul: 2.0, add: 0.0},
-//                    Operation::Ratios { ratios }
-//                  ]
-//                },
-//              Operation::Compose {
-//                operations: vec![
-//                    Operation::Sequence {
-//                        operations:
-//                    vec![
-//                        Operation::AsIs {},
-//                        Operation::Transpose { mul: 2.0, add: 0.0}
-//                    ]},
-//                    Operation::Transpose { mul: 1.5, add: 0.0}
-//                  ]
-//                }
-//            ]
-//        };
-//    ops
-//}
-
-
-
-//
-//            ]
-//        ]
-//    }
-
-
-//    ops.with(event)
 //thing1 = [
 //    _;
 //    ^ 3.0/2.0;
