@@ -1,7 +1,4 @@
-use instrument::{
-    voice::Voice,
-    stereo_waveform::StereoWaveform
-};
+use instrument::{stereo_waveform::StereoWaveform, voice::Voice};
 use ratios::{Pan, R};
 use settings::Settings;
 use std::f32::consts::PI;
@@ -42,7 +39,7 @@ impl Oscillator {
         } else {
             0.0
         };
- 
+
         for voice in self.voices.iter_mut() {
             voice.update(new_freq, new_gain);
         }
@@ -74,5 +71,3 @@ impl Oscillator {
         StereoWaveform { l_buffer, r_buffer }
     }
 }
-
-

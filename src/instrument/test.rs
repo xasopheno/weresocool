@@ -1,11 +1,9 @@
 pub mod tests {
-    use ratios::{Pan, R};
     use instrument::{
-        oscillator::Oscillator,
+        loudness::loudness_normalization, oscillator::Oscillator, stereo_waveform::StereoWaveform,
         voice::{Voice, VoiceState},
-        stereo_waveform::StereoWaveform,
-        loudness::loudness_normalization,
     };
+    use ratios::{Pan, R};
     use settings::get_test_settings;
     pub mod voice {
         use super::*;
@@ -141,7 +139,6 @@ pub mod tests {
             assert_eq!(osc.generate(3), expected);
         }
     }
-
 
     pub mod loudness {
         use super::*;

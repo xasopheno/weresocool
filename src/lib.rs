@@ -5,7 +5,7 @@ pub mod analyze;
 pub mod compositions;
 pub mod event;
 pub mod instrument;
-//pub mod operations;
+pub mod operations;
 pub mod portaudio_setup;
 pub mod ratios;
 pub mod ring_buffer;

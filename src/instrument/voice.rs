@@ -113,4 +113,3 @@ impl Voice {
         (self.current.gain - self.past.gain) / (fade_length as f32)
     }
 }
-
