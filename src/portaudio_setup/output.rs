@@ -1,9 +1,10 @@
-use compositions::song_6::generate_composition;
+use instrument::stereo_waveform::StereoWaveform;
 use portaudio as pa;
 use settings::{get_default_app_settings, Settings};
 use write::write_output_buffer;
 
 pub fn setup_portaudio_output(
+    generate_composition: fn() -> StereoWaveform,
     ref pa: &pa::PortAudio,
 ) -> Result<pa::Stream<pa::NonBlocking, pa::Output<f32>>, pa::Error> {
     let settings = get_default_app_settings();

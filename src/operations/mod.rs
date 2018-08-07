@@ -4,12 +4,12 @@ use ratios::R;
 #[derive(Clone, PartialEq, Debug)]
 pub enum Op {
     AsIs,
-    Transpose {m: f32, a: f32},
-    Length {m: f32, a: f32},
-    Gain {m: f32, a: f32},
-    Ratios {ratios: Vec<R>},
-    Compose {operations: Vec<Op>},
-    Sequence {operations: Vec<Op>},
+    Transpose { m: f32, a: f32 },
+    Length { m: f32, a: f32 },
+    Gain { m: f32, a: f32 },
+    Ratios { ratios: Vec<R> },
+    Compose { operations: Vec<Op> },
+    Sequence { operations: Vec<Op> },
 }
 
 pub trait Operate {
@@ -20,7 +20,9 @@ impl Operate for Op {
     fn apply(&self, events: Vec<Event>) -> Vec<Event> {
         let mut vec_events: Vec<Event> = vec![];
         match self {
-            Op::AsIs {} => { vec_events = events; }
+            Op::AsIs {} => {
+                vec_events = events;
+            }
 
             Op::Transpose { m, a } => {
                 for event in events.iter() {
@@ -69,17 +71,13 @@ impl Operate for Op {
                     container.push(operation.apply(es.clone()));
                 }
 
-                vec_events = container
-                    .iter()
-                    .flat_map(|evt| evt.clone())
-                    .collect();
+                vec_events = container.iter().flat_map(|evt| evt.clone()).collect();
             }
         }
 
         vec_events
     }
 }
-
 
 //ops.apply(event)
 
