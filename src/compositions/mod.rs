@@ -3,5 +3,5 @@ pub mod song_2;
 pub mod song_3;
 pub mod song_4;
 pub mod song_5;
-pub mod ops;
+pub mod song_6;
 pub mod template;

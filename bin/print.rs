@@ -1,5 +1,5 @@
 extern crate weresocool;
-use weresocool::compositions::song_5::generate_composition;
+use weresocool::compositions::song_6::generate_composition;
 use weresocool::write::write_composition_to_wav;
 
 fn main() {
