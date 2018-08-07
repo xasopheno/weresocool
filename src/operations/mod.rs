@@ -79,6 +79,10 @@ impl Operate for Op {
     }
 }
 
+impl Op::Sequence {
+    pub fn fit_to_sequence() {}
+}
+
 //ops.apply(event)
 
 //thing1 = [
