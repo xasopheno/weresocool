@@ -106,10 +106,6 @@ pub fn generate_composition() -> StereoWaveform {
                 .mut_ratios(r.clone())
                 .transpose(9.0 / 8.0, 0.0),
             e3.clone().mut_length(10.0, 0.0).mut_ratios(r2.clone()),
-            //            e3.clone()
-            //                .mut_length(1.0, 0.0)
-            //                .mut_ratios(r.clone())
-            //                .transpose(9.0/8.0, 0.0),
             e3.clone().mut_length(2.0, 0.0).mut_ratios(r2.clone()),
             e3.clone()
                 .mut_length(25.0, 0.0)

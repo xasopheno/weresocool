@@ -1,6 +1,7 @@
 use event::Event;
 use ratios::R;
 
+#[derive(Clone, PartialEq, Debug)]
 pub enum Op {
     AsIs,
     Transpose {m: f32, a: f32},
@@ -58,6 +59,7 @@ impl Operate for Op {
                 for operation in operations.iter() {
                     es = operation.apply(es);
                 }
+                vec_events = es;
             }
 
             Op::Sequence { operations } => {
