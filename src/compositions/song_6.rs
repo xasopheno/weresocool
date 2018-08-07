@@ -111,9 +111,9 @@ pub fn generate_composition() -> StereoWaveform {
 
     let ops3 = Op::Compose {
         operations: vec![
-            sequence1.clone(),
-            sequence2.clone(),
-            sequence3.clone(),
+            sequence1,
+            sequence2,
+            sequence3,
             Op::Compose {
                 operations: vec![
                     Op::Gain { m: 0.5, a: 0.0 },
