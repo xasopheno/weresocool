@@ -124,17 +124,17 @@ pub mod tests {
             osc.update_freq_gain_and_ratios(200.0, 1.0, &r![(3, 2, 0.0, 1.0, 0.0)]);
             assert_eq!(osc.voices[0].past.frequency, 0.0);
             assert_eq!(osc.voices[0].past.gain, 0.0);
-            assert_eq!(osc.voices[0].current.frequency, 200.0);
-            assert_eq!(osc.voices[0].current.gain, 0.3294063);
+            assert_eq!(osc.voices[0].current.frequency, 300.0);
+            assert_eq!(osc.voices[0].current.gain, 0.25805622);
 
-            assert_eq!(osc.voices[1].past.frequency, 0.0);
-            assert_eq!(osc.voices[1].past.gain, 0.0);
-            assert_eq!(osc.voices[1].current.frequency, 200.0);
-            assert_eq!(osc.voices[1].current.gain, 0.3294063);
+            assert_eq!(osc.voices[0].past.frequency, 0.0);
+            assert_eq!(osc.voices[0].past.gain, 0.0);
+            assert_eq!(osc.voices[0].current.frequency, 300.0);
+            assert_eq!(osc.voices[0].current.gain, 0.25805622);
 
             let expected = StereoWaveform {
-                l_buffer: vec![0.0, 0.006254273, 0.018750122],
-                r_buffer: vec![0.0, 0.006254273, 0.018750122],
+                l_buffer: vec![0.0, 0.0073444042, 0.021999665],
+                r_buffer: vec![0.0, 0.0073444042, 0.021999665],
             };
             assert_eq!(osc.generate(3), expected);
         }

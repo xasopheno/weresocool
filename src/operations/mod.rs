@@ -1,22 +1,72 @@
 use event::Event;
 use ratios::R;
+use settings::get_default_app_settings;
 
 #[derive(Clone, PartialEq, Debug)]
 pub enum Op {
     AsIs,
     Transpose { m: f32, a: f32 },
-    Length { m: f32, a: f32 },
+    Length { m: f32 },
     Gain { m: f32, a: f32 },
     Ratios { ratios: Vec<R> },
-    Compose { operations: Vec<Op> },
     Sequence { operations: Vec<Op> },
+    Compose { operations: Vec<Op> },
+    Fit { with_length_of: Box<Op>, main: Box<Op> }
 }
 
 pub trait Operate {
     fn apply(&self, events: Vec<Event>) -> Vec<Event>;
+    fn get_length_ratio(&self) -> f32;
 }
 
 impl Operate for Op {
+    fn get_length_ratio(&self) -> f32 {
+        match self {
+            Op::AsIs {} => 1.0,
+
+            Op::Transpose { m:_ , a:_ } | Op::Gain { m:_, a:_} => {
+                1.0
+            }
+
+            Op::Ratios { ratios:_ } => {
+                1.0
+            }
+
+            Op::Length { m } => {
+                *m
+            }
+
+            Op::Sequence { operations } => {
+                let mut new_total = 0.0;
+                for operation in operations {
+                    new_total += operation.get_length_ratio();
+                }
+                new_total
+            }
+            Op::Compose { operations } => {
+                let mut new_total = 1.0;
+                for operation in operations {
+                    new_total *= operation.get_length_ratio();
+                }
+                new_total
+            }
+
+            Op::Fit { with_length_of, main } => {
+                with_length_of.get_length_ratio()
+            }
+        }
+    }
+
+//    get_length_ratio(op1, op2) -> f32
+//        1.2,
+//
+//    Compose {
+//        operations: vec![
+//            op2,
+//            Length {m: 1.2, a: 0.0}
+//        ]
+//    }
+
     fn apply(&self, events: Vec<Event>) -> Vec<Event> {
         let mut vec_events: Vec<Event> = vec![];
         match self {
@@ -32,10 +82,10 @@ impl Operate for Op {
                 }
             }
 
-            Op::Length { m, a } => {
+            Op::Length { m } => {
                 for event in events.iter() {
                     let mut e = event.clone();
-                    e.length = e.length * m + a;
+                    e.length = e.length * m;
                     vec_events.push(e)
                 }
             }
@@ -73,39 +123,35 @@ impl Operate for Op {
 
                 vec_events = container.iter().flat_map(|evt| evt.clone()).collect();
             }
+
+            Op::Compose { operations } => {
+                let mut es = events.clone();
+                for operation in operations.iter() {
+                    es = operation.apply(es);
+                }
+                vec_events = es;
+            }
+
+            Op::Fit { with_length_of, main } => {
+                let mut es = events.clone();
+                let target_length = with_length_of.get_length_ratio();
+                let main_length = main.get_length_ratio();
+                let ratio = target_length/main_length;
+
+                let new_op = Op::Compose { operations: vec![
+                        *main.clone(),
+                        Op::Length {m: ratio}
+                    ]
+                };
+
+                vec_events = new_op.apply(es);
+            }
         }
 
         vec_events
     }
 }
 
-impl Op {
-    pub fn fit_to_sequence(&self, sequence: &Op) -> ()
-//   Op
-    {}
-}
 
-//ops.apply(event)
-
-//thing1 = [
-//    _;
-//    ^ 3.0/2.0;
-//    compose(
-//         r[
-//            (1, 2, 0.0, 0.3, 0.0)
-//            (1, 2, 1.0, 0.3, 0.0)
-//         ],
-//         l 2.0, 0.0
-//    );
-//    compose(
-//         r
-//            (3, 2, 0.0, 0.5, 0.3)
-//            (3, 2, 4.0, 0.5, -0.3)
-//         l 1.0, 2.0
-//         ^ 9.0/8.0
-//    );
-//     r[
-//        (1, 2, 0.0, 0.3, 0.0)
-//        (1, 2, 1.0, 0.3, 0.0)
-//      ];
-//]
+#[cfg(test)]
+mod test;

@@ -61,6 +61,7 @@ pub fn generate_composition() -> StereoWaveform {
         ],
     };
 
+
     let sequence2 = Op::Sequence {
         operations: vec![
             Op::Transpose {
@@ -114,21 +115,21 @@ pub fn generate_composition() -> StereoWaveform {
             sequence1,
             sequence2,
             sequence3,
-            Op::Compose {
-                operations: vec![
-                    Op::Gain { m: 0.5, a: 0.0 },
-                    Op::Sequence {
-                        operations: vec![
-                            Op::AsIs,
-                            Op::AsIs,
-                            Op::AsIs,
-                            Op::AsIs,
-                            Op::AsIs,
-                            Op::AsIs,
-                        ],
-                    },
-                ],
-            },
+//            Op::Compose {
+//                operations: vec![
+//                    Op::Gain { m: 0.5, a: 0.0 },
+//                    Op::Sequence {
+//                        operations: vec![
+//                            Op::AsIs,
+//                            Op::AsIs,
+//                            Op::AsIs,
+//                            Op::AsIs,
+//                            Op::AsIs,
+//                            Op::AsIs,
+//                        ],
+//                    },
+//                ],
+//            },
         ],
     };
 

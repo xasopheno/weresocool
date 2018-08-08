@@ -51,7 +51,7 @@ pub fn generate_composition() -> StereoWaveform {
 
         ops.push(Op::Compose {
             operations: vec![
-                Op::Length { m: 15.0, a: 0.0 },
+                Op::Length { m: 15.0 },
                 Op::Ratios {
                     ratios: bend_ratios(0),
                 },
