@@ -1,6 +1,5 @@
 use event::Event;
 use ratios::R;
-use settings::get_default_app_settings;
 
 #[derive(Clone, PartialEq, Debug)]
 pub enum Op {
@@ -51,7 +50,7 @@ impl Operate for Op {
                 new_total
             }
 
-            Op::Fit { with_length_of, main } => {
+            Op::Fit { with_length_of, main: _ } => {
                 with_length_of.get_length_ratio()
             }
         }
@@ -123,15 +122,7 @@ impl Operate for Op {
 
                 vec_events = container.iter().flat_map(|evt| evt.clone()).collect();
             }
-
-            Op::Compose { operations } => {
-                let mut es = events.clone();
-                for operation in operations.iter() {
-                    es = operation.apply(es);
-                }
-                vec_events = es;
-            }
-
+            
             Op::Fit { with_length_of, main } => {
                 let mut es = events.clone();
                 let target_length = with_length_of.get_length_ratio();
