@@ -56,16 +56,6 @@ impl Operate for Op {
         }
     }
 
-//    get_length_ratio(op1, op2) -> f32
-//        1.2,
-//
-//    Compose {
-//        operations: vec![
-//            op2,
-//            Length {m: 1.2, a: 0.0}
-//        ]
-//    }
-
     fn apply(&self, events: Vec<Event>) -> Vec<Event> {
         let mut vec_events: Vec<Event> = vec![];
         match self {
@@ -122,7 +112,7 @@ impl Operate for Op {
 
                 vec_events = container.iter().flat_map(|evt| evt.clone()).collect();
             }
-            
+
             Op::Fit { with_length_of, main } => {
                 let mut es = events.clone();
                 let target_length = with_length_of.get_length_ratio();
