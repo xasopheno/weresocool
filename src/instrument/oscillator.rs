@@ -49,7 +49,7 @@ impl Oscillator {
         for (voice, ratio) in self.voices.iter_mut().zip(ratios) {
             voice.ratio = ratio.clone();
         }
-    }git st
+    }
 
     pub fn update_freq_gain_and_ratios(&mut self, base_frequency: f32, gain: f32, ratios: &Vec<R>) {
         self.update_ratios(&ratios);
