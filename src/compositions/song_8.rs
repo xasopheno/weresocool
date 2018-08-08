@@ -25,7 +25,7 @@ pub fn generate_composition() -> StereoWaveform {
         (10, 1, 0.0, 0.1, -0.4),
     ];
 
-    let e = vec![Event::new(130.0, rs.clone(), 0.75, 0.75)];
+    let e = vec![Event::new(130.0, rs.clone(), 0.75, 0.3)];
     let sequence1 = Op::Sequence {
         operations: vec![
             Op::AsIs,
