@@ -28,8 +28,8 @@ pub fn generate_composition() -> StereoWaveform {
         #[cfg_attr(rustfmt, rustfmt_skip)]
         fn bend_ratios(distance:usize) -> Vec<R> {
             r![
-                (2, 3, 0.0-(distance as f32) * 0.075, 0.25, -0.5 + (distance as f32 / 200.0)),
-                (2, 3, 0.0+(distance as f32) * 0.0, 0.25, 0.5 - (distance as f32 / 200.0)),
+                (2, 3, 5.0-(distance as f32) * 0.075, 0.25, 0.5 - (distance as f32 / 200.0)),
+                (2, 3, 0.0-(distance as f32) * 0.075, 0.25, 0.5 - (distance as f32 / 200.0)),
                 (5, 1, 10.0, 0.55, 0.3),
                 (5, 1, 0.0, 0.55, -0.3),
 //

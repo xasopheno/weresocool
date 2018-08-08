@@ -79,8 +79,10 @@ impl Operate for Op {
     }
 }
 
-impl Op::Sequence {
-    pub fn fit_to_sequence(&self, sequence: &Op::Sequence) -> Op::Sequence {}
+impl Op {
+    pub fn fit_to_sequence(&self, sequence: &Op) -> ()
+//   Op
+    {}
 }
 
 //ops.apply(event)
