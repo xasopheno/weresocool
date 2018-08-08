@@ -7,6 +7,8 @@ use settings::get_default_app_settings;
 pub fn generate_composition() -> StereoWaveform {
     let rs = r![
         (1, 1, 0.0, 1.0, 0.0),
+        (3, 2, 0.0, 1.0, -0.5),
+        (3, 2, 3.0, 1.0, 0.5),
     ];
 
     let e = vec![Event::new(120.0, rs.clone(), 0.5, 1.0)];
@@ -21,6 +23,7 @@ pub fn generate_composition() -> StereoWaveform {
 
     let sequence2 = Op::Sequence {
         operations: vec![
+            Op::AsIs,
             Op::AsIs,
             Op::AsIs,
         ],
@@ -43,9 +46,20 @@ pub fn generate_composition() -> StereoWaveform {
         ]
     };
 
+    let sequence4 = Op::Sequence {
+        operations: vec![
+            sequence4.clone(),
+            sequence4.clone(),
+            sequence4.clone(),
+            sequence4.clone(),
+        ]
+    };
+
     let mut oscillator = Oscillator::init(rs.clone(), &get_default_app_settings());
     let mut events = sequence4.apply(e);
 
     events.render(&mut oscillator)
-}git 
+
+
+}
 
