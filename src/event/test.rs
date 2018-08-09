@@ -1,8 +1,6 @@
 mod tests {
-    use event::{Event, Render};
-    use instrument::oscillator::Oscillator;
+    use event::Event;
     use ratios::{Pan, R};
-    use settings::get_test_settings;
 
     fn test_ratios() -> Vec<R> {
         r![(1, 1, 0.0, 0.5, 0.0)]
