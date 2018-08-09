@@ -9,10 +9,6 @@ pub struct Event {
     pub gain: f32,
 }
 
-#[derive(Debug, Clone, PartialEq)]
-pub struct Phrase {
-    pub events: Vec<Event>,
-}
 
 impl Event {
     pub fn new(frequency: f32, ratios: Vec<R>, length: f32, gain: f32) -> Event {
