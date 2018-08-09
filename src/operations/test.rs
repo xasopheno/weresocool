@@ -12,10 +12,10 @@ pub mod tests {
         let e = vec![Event::new(120.0, rs.clone(), 1.0, 1.0)];
         let sequence1 = Op::Sequence {
             operations: vec![
-                Op::AsIs, //1
-                Op::Transpose {m: 2.0, a: 0.0}, //1
-                Op::Ratios {ratios: rs.clone()}, //1
-                Op::Length {m: 2.0}, //2
+                Op::AsIs,
+                Op::Transpose {m: 2.0, a: 0.0},
+                Op::Ratios {ratios: rs.clone()},
+                Op::Length {m: 2.0},
             ],
         };
 
@@ -27,7 +27,7 @@ pub mod tests {
                 sequence1.clone(),
                 Op::Length {m: 2.0}
              ],
-        };//10
+        };
 
         let mut length2 = sequence2.clone().get_length_ratio();
         assert_eq!(10.0, length2);
@@ -36,7 +36,7 @@ pub mod tests {
             operations: vec![
                 sequence1.clone(),
                 sequence2.clone(),
-            ] //40
+            ]
         };
 
         let mut length3 = sequence3.clone().get_length_ratio();

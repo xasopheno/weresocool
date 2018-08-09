@@ -1,4 +1,4 @@
-use event::{Event, Mutate, Phrase, Render};
+use event::{Event, Render};
 use instrument::{oscillator::Oscillator, stereo_waveform::StereoWaveform};
 use ratios::{Pan, R};
 use settings::get_default_app_settings;
