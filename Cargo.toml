@@ -10,7 +10,7 @@ autobins = false
 portaudio = "0.7.0"
 rand = "0.5.1"
 hound = "3.4.0"
-
+num-complex = "0.2"
 
 [[bin]]
 name = "mic"
