@@ -25,5 +25,5 @@ name = "print"
 path = "bin/print.rs"
 
 [[bin]]
-name = "operations"
-path = "bin/operations.rs"
+name = "scratch"
+path = "bin/scratch.rs"
