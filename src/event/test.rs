@@ -1,8 +1,6 @@
 mod tests {
-    use event::{Event, Render};
-    use instrument::oscillator::Oscillator;
+    use event::{Event};
     use ratios::{Pan, R};
-    use settings::get_test_settings;
 
     fn test_ratios() -> Vec<R> {
         r![(1, 1, 0.0, 0.5, 0.0)]
@@ -10,9 +8,9 @@ mod tests {
 
     #[test]
     fn test_event() {
-        let mut result = Event::new(100.0, test_ratios(), 0.001, 1.0);
+        let result = Event::new(100.0, test_ratios(), 0.001, 1.0);
 
-        let mut expected = Event {
+        let expected = Event {
             frequency: 100.0,
             ratios: vec![
                 R::atio(1, 1, 0.0, 0.25, Pan::Left),

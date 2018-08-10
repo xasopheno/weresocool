@@ -38,7 +38,7 @@ pub fn generate_composition() -> StereoWaveform {
                         m: 9.0 / 2.0,
                         a: 0.0,
                     },
-                    Op::Gain { m: 0.5, a: 0.0 },
+                    Op::Gain { m: 0.5 },
                 ],
             },
             Op::Compose {
@@ -47,7 +47,7 @@ pub fn generate_composition() -> StereoWaveform {
                         m: 15.0 / 2.0,
                         a: 0.0,
                     },
-                    Op::Gain { m: 0.55, a: 0.0 },
+                    Op::Gain { m: 0.55 },
                     Op::Ratios {
                         ratios: r![
                             (1, 1, 2.0, 1.0, 0.0),
@@ -117,7 +117,7 @@ pub fn generate_composition() -> StereoWaveform {
             sequence3,
 //            Op::Compose {
 //                operations: vec![
-//                    Op::Gain { m: 0.5, a: 0.0 },
+//                    Op::Gain { m: 0.5 },
 //                    Op::Sequence {
 //                        operations: vec![
 //                            Op::AsIs,

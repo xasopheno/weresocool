@@ -9,7 +9,6 @@ pub struct Event {
     pub gain: f32,
 }
 
-
 impl Event {
     pub fn new(frequency: f32, ratios: Vec<R>, length: f32, gain: f32) -> Event {
         Event {
