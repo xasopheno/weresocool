@@ -1,5 +1,5 @@
-extern crate portaudio;
 extern crate num_complex;
+extern crate portaudio;
 #[macro_use]
 pub mod macros;
 pub mod analyze;
