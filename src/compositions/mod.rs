@@ -1,3 +1,4 @@
+pub mod bach;
 //pub mod song_1;
 //pub mod song_2;
 //pub mod song_3;
@@ -7,4 +8,4 @@
 pub mod song_7;
 pub mod song_8;
 pub mod song_9;
-//pub mod templAA
+//pub mod template
