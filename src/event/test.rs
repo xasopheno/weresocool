@@ -1,5 +1,5 @@
 mod tests {
-    use event::{Event};
+    use event::Event;
     use ratios::{Pan, R};
 
     fn test_ratios() -> Vec<R> {

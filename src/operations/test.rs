@@ -20,7 +20,6 @@ pub mod tests {
         assert_eq!(silence.get_length_ratio(), 1.5);
         assert_eq!(length.get_length_ratio(), 1.5);
 
-
         let sequence1 = Op::Sequence {
             operations: vec![
                 Op::AsIs,
@@ -50,12 +49,11 @@ pub mod tests {
 
         let fit = Op::Fit {
             with_length_of: Box::new(sequence1.clone()),
-            main: Box::new(sequence3.clone())
+            main: Box::new(sequence3.clone()),
         };
 
         let fit_length = fit.get_length_ratio();
 
         assert_eq!(fit_length, 5.0);
-
     }
 }

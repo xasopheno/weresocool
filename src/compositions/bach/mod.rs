@@ -18,14 +18,14 @@ pub fn generate_composition() -> StereoWaveform {
 
     let sequence1 = Op::Sequence {
         operations: vec![
-            phrases::bach::m0_24()
+            phrases::bach::m0_24(),
+            phrases::bach::m24_37(),
         ],
     };
 
     let mut oscillator = Oscillator::init(rs.clone(), &get_default_app_settings());
-    let e = vec![Event::new(290.0, rs.clone(), 2.0, 1.0)];
+    let e = vec![Event::new(290.0, rs.clone(), 2.0, 0.5)];
     let mut events = sequence1.apply(e);
 
     events.render(&mut oscillator)
-
 }
