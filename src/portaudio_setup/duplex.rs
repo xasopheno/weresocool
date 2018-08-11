@@ -35,7 +35,7 @@ pub fn setup_portaudio_duplex(
                     .to_vec()
                     .analyze(settings.sample_rate, settings.probability_threshold);
 
-                oscillator.update_freq_and_gain(result.frequency, result.gain);
+                oscillator.update_freq_and_gain(result.frequency * 2.0, result.gain);
                 let stereo_waveform = oscillator.generate(settings.buffer_size);
 
                 write_output_buffer(&mut out_buffer, stereo_waveform);
