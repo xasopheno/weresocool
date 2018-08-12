@@ -20,12 +20,17 @@ pub fn generate_composition() -> StereoWaveform {
         (1, 1, 0.0, 0.2, 0.0),
         (1, 1, 0.0, 1.0, 0.0),
         (1, 1, 0.0, 0.2, 0.0),
+//
+        (1, 1, 0.0, 1.0, 0.0),
+        (1, 1, 0.0, 0.2, 0.0),
+        (1, 1, 0.0, 1.0, 0.0),
+        (1, 1, 0.0, 0.2, 0.0),
     ];
 
     let sequence1 = Op::Sequence {
         operations: vec![
             phrases::bach::m0_24(),
-            phrases::bach::m24_37(),
+//            phrases::bach::m24_37(),
         ],
     };
 
