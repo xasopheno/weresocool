@@ -35,7 +35,7 @@ pub fn generate_composition() -> StereoWaveform {
                 phrases::bach::m24_37(),
                 phrases::bach::m34_37(),
             ]},
-                Op::Gain { m: 1.2 }
+                Op::Gain { m: 1.6}
             ]}
         ],
     };
