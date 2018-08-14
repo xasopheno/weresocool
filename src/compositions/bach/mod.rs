@@ -11,37 +11,37 @@ pub fn generate_composition() -> StereoWaveform {
         (1, 1, 0.0, 1.0, 0.0),
         (1, 1, 0.0, 1.0, 0.0),
         (1, 1, 0.0, 1.0, 0.0),
+
+        (1, 1, 0.0, 1.0, 0.0),
+        (1, 1, 0.0, 1.0, 0.0),
+        (1, 1, 0.0, 1.0, 0.0),
+
+        (1, 1, 0.0, 1.0, 0.0),
+        (1, 1, 0.0, 0.2, 0.0),
+        (1, 1, 0.0, 1.0, 0.0),
+        (1, 1, 0.0, 0.2, 0.0),
 //
-//        (1, 1, 0.0, 1.0, 0.0),
-//        (1, 1, 0.0, 1.0, 0.0),
-//        (1, 1, 0.0, 1.0, 0.0),
-//
-//        (1, 1, 0.0, 1.0, 0.0),
-//        (1, 1, 0.0, 0.2, 0.0),
-//        (1, 1, 0.0, 1.0, 0.0),
-//        (1, 1, 0.0, 0.2, 0.0),
-////
-//        (1, 1, 0.0, 1.0, 0.0),
-//        (1, 1, 0.0, 0.2, 0.0),
-//        (1, 1, 0.0, 1.0, 0.0),
-//        (1, 1, 0.0, 0.2, 0.0),
+        (1, 1, 0.0, 1.0, 0.0),
+        (1, 1, 0.0, 0.2, 0.0),
+        (1, 1, 0.0, 1.0, 0.0),
+        (1, 1, 0.0, 0.2, 0.0),
     ];
 
     let sequence1 = Op::Sequence {
         operations: vec![
-//            phrases::bach::m0_24(),
-            Op::Compose { operations: vec![
-                Op::Sequence { operations: vec![
+            phrases::bach::m0_24(),
+//            Op::Compose { operations: vec![
+//                Op::Sequence { operations: vec![
 //                phrases::bach::m24_37(),
-                phrases::bach::m34_37(),
-            ]},
-                Op::Gain { m: 1.6}
-            ]}
+//                phrases::bach::m34_37(),
+//            ]},
+//                Op::Gain { m: 1.6}
+//            ]}
         ],
     };
 
     let mut oscillator = Oscillator::init(rs.clone(), &get_default_app_settings());
-    let e = vec![Event::new(290.0 * 9.0/8.0, rs.clone(), 0.2, 0.35)];
+    let e = vec![Event::new(290.0 * 9.0/8.0, rs.clone(), 2.0, 0.35)];
     let mut events = sequence1.apply(e);
 
     events.render(&mut oscillator)
