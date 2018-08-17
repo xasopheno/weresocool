@@ -14,6 +14,16 @@ pub struct Sound {
     pub pan: f32,
 }
 
+impl Sound {
+    pub fn init() -> Sound {
+        Sound {
+            frequency: 0.0,
+            gain: 0.0,
+            pan: 0.0,
+        }
+    }
+}
+
 impl Event {
     pub fn init(frequency: f32, gain: f32, pan: f32, length: f32) -> Event {
         Event {

@@ -64,9 +64,17 @@ pub fn generate_composition() -> StereoWaveform {
         ],
     };
 
+    let sequence5 = Op::Overlay { operations: vec![
+        sequence1.clone(),
+        Op::Compose { operations: vec![
+            sequence2.clone(),
+            Op::Transpose { m: 3.0, a: 0.0 }
+        ]}
+    ]};
+
     let mut oscillator = Oscillator::init(&get_default_app_settings());
-    let e = vec![Event::init(300.0, 1.0, 0.0, 0.5)];
-    let mut events = sequence4.apply(e);
+    let e = vec![Event::init(200.0, 1.0, 0.0, 1.0)];
+    let mut events = sequence5.apply(e);
 
     events.render(&mut oscillator)
 }
