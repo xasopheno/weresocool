@@ -45,7 +45,6 @@ impl Voice {
     ) {
         let p_delta = self.calculate_portamento_delta(portamento_length);
         let g_delta = self.calculate_gain_delta(buffer.len());
-        println!("{}, {}", p_delta, g_delta);
         for (index, sample) in buffer.iter_mut().enumerate() {
             let new_sample =
                 self.generate_sample(index, p_delta, g_delta, portamento_length, factor);
@@ -57,7 +56,7 @@ impl Voice {
         if frequency < 20.0 {
             frequency = 0.0;
         }
-        
+
         let mut gain = if frequency != 0.0 { gain } else { 0.0 };
         let loudness = loudness_normalization(frequency);
         gain *= loudness;
@@ -95,8 +94,6 @@ impl Voice {
         } else {
             self.current.frequency
         };
-
-
 
         let gain = (index as f32 * g_delta) + self.past.gain;
         let current_phase = ((factor * frequency) + self.phase) % tau();

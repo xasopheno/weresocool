@@ -20,9 +20,9 @@ pub enum Op {
     Sequence {
         operations: Vec<Op>,
     },
-//    Compose {
-//        operations: Vec<Op>,
-//    },
+    Compose {
+        operations: Vec<Op>,
+    },
 //    Fit {
 //        with_length_of: Box<Op>,
 //        main: Box<Op>,
@@ -52,13 +52,13 @@ impl Operate for Op {
                 }
                 new_total
             }
-//            Op::Compose { operations } => {
-//                let mut new_total = 1.0;
-//                for operation in operations {
-//                    new_total *= operation.get_length_ratio();
-//                }
-//                new_total
-//            }
+            Op::Compose { operations } => {
+                let mut new_total = 1.0;
+                for operation in operations {
+                    new_total *= operation.get_length_ratio();
+                }
+                new_total
+            }
 
 //            Op::Fit {
 //                with_length_of,
@@ -112,13 +112,13 @@ impl Operate for Op {
                 }
             }
 
-//            Op::Compose { operations } => {
-//                let mut es = events.clone();
-//                for operation in operations.iter() {
-//                    es = operation.apply(es);
-//                }
-//                vec_events = es;
-//            }
+            Op::Compose { operations } => {
+                let mut es = events.clone();
+                for operation in operations.iter() {
+                    es = operation.apply(es);
+                }
+                vec_events = es;
+            }
 
             Op::Sequence { operations } => {
                 let mut es = events.clone();
