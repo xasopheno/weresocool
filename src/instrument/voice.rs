@@ -8,7 +8,6 @@ fn tau() -> f32 {
 #[derive(Clone, Debug, PartialEq)]
 pub struct Voice {
     pub index: usize,
-    pub ratio: R,
     pub past: VoiceState,
     pub current: VoiceState,
     pub phase: f32,
@@ -30,10 +29,9 @@ impl VoiceState {
 }
 
 impl Voice {
-    pub fn init(index: usize, ratio: R) -> Voice {
+    pub fn init(index: usize) -> Voice {
         Voice {
             index,
-            ratio,
             past: VoiceState::init(),
             current: VoiceState::init(),
             phase: 0.0,
@@ -54,23 +52,19 @@ impl Voice {
         }
     }
 
-    pub fn update(&mut self, base_frequency: f32, gain: f32) {
-        let mut new_freq = base_frequency * self.ratio.decimal + self.ratio.offset;
-        if new_freq < 20.0 {
-            new_freq = 0.0;
+    pub fn update(&mut self, frequency: f32, gain: f32) {
+        if frequency < 20.0 {
+            let frequency = 0.0;
         }
 
-        let mut new_gain = if new_freq != 0.0 { gain } else { 0.0 };
-        let loudness = loudness_normalization(new_freq);
+        let mut new_gain = if frequency != 0.0 { gain } else { 0.0 };
+        let loudness = loudness_normalization(frequency);
         new_gain *= loudness;
-        //        if (self.current.gain - new_gain).abs() > 0.5 {
-        //            new_gain = new_gain * 0.51;
-        //        }
 
         self.past.frequency = self.current.frequency;
         self.past.gain = self.current.gain;
-        self.current.frequency = new_freq;
-        self.current.gain = new_gain * self.ratio.gain;
+        self.current.frequency = frequency;
+        self.current.gain = gain;
     }
 
     pub fn silence_to_sound(&self) -> bool {

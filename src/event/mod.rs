@@ -3,19 +3,30 @@ use ratios::{Pan, R};
 
 #[derive(Debug, Clone, PartialEq)]
 pub struct Event {
-    pub frequency: f32,
-    pub ratios: Vec<R>,
+    pub sounds: Vec<Sound>,
     pub length: f32,
+}
+
+#[derive(Debug, Clone, PartialEq)]
+pub struct Sound {
+    pub frequency: f32,
     pub gain: f32,
+    pub pan: f32,
 }
 
 impl Event {
-    pub fn new(frequency: f32, ratios: Vec<R>, length: f32, gain: f32) -> Event {
+    pub fn init(frequency: f32, gain: f32, pan: f32, length: f32) -> Event {
         Event {
-            frequency,
-            ratios,
+            sounds: {
+                vec![
+                    Sound {
+                        frequency,
+                        gain,
+                        pan,
+                    }
+                ]
+            },
             length,
-            gain,
         }
     }
 }
@@ -26,7 +37,7 @@ pub trait Render<T> {
 
 impl Render<Event> for Event {
     fn render(&mut self, oscillator: &mut Oscillator) -> StereoWaveform {
-        oscillator.update_freq_gain_and_ratios(self.frequency, self.gain, &self.ratios);
+        oscillator.update(self.sounds);
         let n_samples_to_generate = (self.length * 44_100.0).floor() as usize;
         oscillator.generate(n_samples_to_generate)
     }
@@ -36,8 +47,8 @@ impl Render<Vec<Event>> for Vec<Event> {
     fn render(&mut self, oscillator: &mut Oscillator) -> StereoWaveform {
         let mut result: StereoWaveform = StereoWaveform::new(0);
         let mut events = self.clone();
-        let r = r![(0, 1, 0.0, 0.0, 0.0)];
-        events.push(Event::new(0.0, r, 3.0, 0.0));
+//        let r = r![(0, 1, 0.0, 0.0, 0.0)];
+//        events.push(Event::new(0.0, r, 3.0, 0.0));
         for mut event in events {
             let stereo_waveform = event.render(oscillator);
             result.append(stereo_waveform);

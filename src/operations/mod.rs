@@ -8,28 +8,25 @@ pub enum Op {
         m: f32,
         a: f32,
     },
-    Silence {
-        m: f32,
-    },
+//    Silence {
+//        m: f32,
+//    },
     Length {
         m: f32,
     },
     Gain {
         m: f32,
     },
-    Ratios {
-        ratios: Vec<R>,
-    },
     Sequence {
         operations: Vec<Op>,
     },
-    Compose {
-        operations: Vec<Op>,
-    },
-    Fit {
-        with_length_of: Box<Op>,
-        main: Box<Op>,
-    },
+//    Compose {
+//        operations: Vec<Op>,
+//    },
+//    Fit {
+//        with_length_of: Box<Op>,
+//        main: Box<Op>,
+//    },
 }
 
 pub trait Operate {
@@ -42,10 +39,11 @@ impl Operate for Op {
         match self {
             Op::AsIs {}
             | Op::Transpose { m: _, a: _ }
-            | Op::Gain { m: _ }
-            | Op::Ratios { ratios: _ } => 1.0,
+            | Op::Gain { m: _ } => 1.0,
 
-            Op::Length { m } | Op::Silence { m } => *m,
+            Op::Length { m }
+//                | Op::Silence { m }
+            => *m,
 
             Op::Sequence { operations } => {
                 let mut new_total = 0.0;
@@ -54,18 +52,18 @@ impl Operate for Op {
                 }
                 new_total
             }
-            Op::Compose { operations } => {
-                let mut new_total = 1.0;
-                for operation in operations {
-                    new_total *= operation.get_length_ratio();
-                }
-                new_total
-            }
+//            Op::Compose { operations } => {
+//                let mut new_total = 1.0;
+//                for operation in operations {
+//                    new_total *= operation.get_length_ratio();
+//                }
+//                new_total
+//            }
 
-            Op::Fit {
-                with_length_of,
-                main: _,
-            } => with_length_of.get_length_ratio(),
+//            Op::Fit {
+//                with_length_of,
+//                main: _,
+//            } => with_length_of.get_length_ratio(),
         }
     }
 
@@ -79,7 +77,9 @@ impl Operate for Op {
             Op::Transpose { m, a } => {
                 for event in events.iter() {
                     let mut e = event.clone();
-                    e.frequency = e.frequency * m + a;
+                        for sound in e.sounds {
+                            sound.frequency = sound.frequency * m + a;
+                    }
                     vec_events.push(e)
                 }
             }
@@ -92,39 +92,33 @@ impl Operate for Op {
                 }
             }
 
-            Op::Silence { m } => {
-                for event in events.iter() {
-                    let mut e = event.clone();
-                    e.length *= m;
-                    e.frequency = 0.0;
-                    e.gain = 0.0;
-                    vec_events.push(e)
-                }
-            }
+//            Op::Silence { m } => {
+//                for event in events.iter() {
+//                    let mut e = event.clone();
+//                    e.length *= m;
+//                    e.frequency = 0.0;
+//                    e.gain = 0.0;
+//                    vec_events.push(e)
+//                }
+//            }
 
             Op::Gain { m } => {
                 for event in events.iter() {
                     let mut e = event.clone();
-                    e.gain = e.gain * m;
+                    for sound in e.sounds {
+                        sound.gain = sound.gain * m;
+                    }
                     vec_events.push(e)
                 }
             }
 
-            Op::Ratios { ratios } => {
-                for event in events.iter() {
-                    let mut es = event.clone();
-                    es.ratios = ratios.clone();
-                    vec_events.push(es)
-                }
-            }
-
-            Op::Compose { operations } => {
-                let mut es = events.clone();
-                for operation in operations.iter() {
-                    es = operation.apply(es);
-                }
-                vec_events = es;
-            }
+//            Op::Compose { operations } => {
+//                let mut es = events.clone();
+//                for operation in operations.iter() {
+//                    es = operation.apply(es);
+//                }
+//                vec_events = es;
+//            }
 
             Op::Sequence { operations } => {
                 let mut es = events.clone();
@@ -136,21 +130,21 @@ impl Operate for Op {
                 vec_events = container.iter().flat_map(|evt| evt.clone()).collect();
             }
 
-            Op::Fit {
-                with_length_of,
-                main,
-            } => {
-                let mut es = events.clone();
-                let target_length = with_length_of.get_length_ratio();
-                let main_length = main.get_length_ratio();
-                let ratio = target_length / main_length;
-
-                let new_op = Op::Compose {
-                    operations: vec![*main.clone(), Op::Length { m: ratio }],
-                };
-
-                vec_events = new_op.apply(es);
-            }
+//            Op::Fit {
+//                with_length_of,
+//                main,
+//            } => {
+//                let mut es = events.clone();
+//                let target_length = with_length_of.get_length_ratio();
+//                let main_length = main.get_length_ratio();
+//                let ratio = target_length / main_length;
+//
+//                let new_op = Op::Compose {
+//                    operations: vec![*main.clone(), Op::Length { m: ratio }],
+//                };
+//
+//                vec_events = new_op.apply(es);
+//            }
         }
 
         vec_events
