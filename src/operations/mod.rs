@@ -8,9 +8,9 @@ pub enum Op {
         m: f32,
         a: f32,
     },
-//    Silence {
-//        m: f32,
-//    },
+    Silence {
+        m: f32,
+    },
     Length {
         m: f32,
     },
@@ -41,9 +41,7 @@ impl Operate for Op {
             | Op::Transpose { m: _, a: _ }
             | Op::Gain { m: _ } => 1.0,
 
-            Op::Length { m }
-//                | Op::Silence { m }
-            => *m,
+            Op::Length { m } | Op::Silence { m } => *m,
 
             Op::Sequence { operations } => {
                 let mut new_total = 0.0;
@@ -92,15 +90,17 @@ impl Operate for Op {
                 }
             }
 
-//            Op::Silence { m } => {
-//                for event in events.iter() {
-//                    let mut e = event.clone();
-//                    e.length *= m;
-//                    e.frequency = 0.0;
-//                    e.gain = 0.0;
-//                    vec_events.push(e)
-//                }
-//            }
+            Op::Silence { m } => {
+                for event in events.iter() {
+                    let mut e = event.clone();
+                    e.length *= m;
+                    for sound in e.sounds.iter_mut() {
+                        sound.frequency = 0.0;
+                        sound.gain = 0.0;
+                    }
+                    vec_events.push(e)
+                }
+            }
 
             Op::Gain { m } => {
                 for event in events.iter() {
