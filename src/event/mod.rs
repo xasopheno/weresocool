@@ -18,13 +18,11 @@ impl Event {
     pub fn init(frequency: f32, gain: f32, pan: f32, length: f32) -> Event {
         Event {
             sounds: {
-                vec![
-                    Sound {
-                        frequency,
-                        gain,
-                        pan,
-                    }
-                ]
+                vec![Sound {
+                    frequency,
+                    gain,
+                    pan,
+                }]
             },
             length,
         }

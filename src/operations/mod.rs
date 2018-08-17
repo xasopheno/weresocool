@@ -4,6 +4,9 @@ use ratios::R;
 #[derive(Clone, PartialEq, Debug)]
 pub enum Op {
     AsIs,
+    Pan {
+        m: f32,
+    },
     Transpose {
         m: f32,
         a: f32,
@@ -23,10 +26,13 @@ pub enum Op {
     Compose {
         operations: Vec<Op>,
     },
-//    Fit {
-//        with_length_of: Box<Op>,
-//        main: Box<Op>,
-//    },
+    Fit {
+        with_length_of: Box<Op>,
+        main: Box<Op>,
+    },
+    Overlay {
+        operations: Vec<Op>,
+    }
 }
 
 pub trait Operate {
@@ -37,9 +43,7 @@ pub trait Operate {
 impl Operate for Op {
     fn get_length_ratio(&self) -> f32 {
         match self {
-            Op::AsIs {}
-            | Op::Transpose { m: _, a: _ }
-            | Op::Gain { m: _ } => 1.0,
+            Op::AsIs {} | Op::Transpose { m: _, a: _ } | Op::Gain { m: _ } => 1.0,
 
             Op::Length { m } | Op::Silence { m } => *m,
 
@@ -58,10 +62,10 @@ impl Operate for Op {
                 new_total
             }
 
-//            Op::Fit {
-//                with_length_of,
-//                main: _,
-//            } => with_length_of.get_length_ratio(),
+            Op::Fit {
+                with_length_of,
+                main: _,
+            } => with_length_of.get_length_ratio(),
         }
     }
 
@@ -75,8 +79,8 @@ impl Operate for Op {
             Op::Transpose { m, a } => {
                 for event in events.iter() {
                     let mut e = event.clone();
-                        for sound in e.sounds.iter_mut() {
-                            sound.frequency = sound.frequency * m + a;
+                    for sound in e.sounds.iter_mut() {
+                        sound.frequency = sound.frequency * m + a;
                     }
                     vec_events.push(e)
                 }
@@ -130,21 +134,21 @@ impl Operate for Op {
                 vec_events = container.iter().flat_map(|evt| evt.clone()).collect();
             }
 
-//            Op::Fit {
-//                with_length_of,
-//                main,
-//            } => {
-//                let mut es = events.clone();
-//                let target_length = with_length_of.get_length_ratio();
-//                let main_length = main.get_length_ratio();
-//                let ratio = target_length / main_length;
-//
-//                let new_op = Op::Compose {
-//                    operations: vec![*main.clone(), Op::Length { m: ratio }],
-//                };
-//
-//                vec_events = new_op.apply(es);
-//            }
+            Op::Fit {
+                with_length_of,
+                main,
+            } => {
+                let mut es = events.clone();
+                let target_length = with_length_of.get_length_ratio();
+                let main_length = main.get_length_ratio();
+                let ratio = target_length / main_length;
+
+                let new_op = Op::Compose {
+                    operations: vec![*main.clone(), Op::Length { m: ratio }],
+                };
+
+                vec_events = new_op.apply(es);
+            }
         }
 
         vec_events

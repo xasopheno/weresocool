@@ -85,10 +85,7 @@ impl Voice {
     ) -> f32 {
         let frequency = if self.sound_to_silence() {
             self.past.frequency
-        } else if
-            index < portamento_length
-            && !self.silence_to_sound()
-            && !self.sound_to_silence()
+        } else if index < portamento_length && !self.silence_to_sound() && !self.sound_to_silence()
         {
             self.past.frequency + (index as f32 * p_delta)
         } else {
