@@ -81,20 +81,30 @@ pub fn generate_composition() -> StereoWaveform {
 
     let macro_test = Op::Overlay { operations: vec![
         Op::Compose { operations: vec! [
-            Op::Transpose { m: 0.0, a: 0.0 },
+            Op::Transpose { m: 1.0, a: 0.0 },
             Op::Gain { m: 1.0 },
-            Op::Pan { a: 1.0 }
+            Op::Pan { a: 0.0 }
         ]},
         Op::Compose { operations: vec! [
-            Op::Transpose { m: 3.0/2.0, a: 0.0 },
+            Op::Transpose { m: 3.0/1.0, a: 0.0 },
             Op::Gain { m: 1.0 },
-            Op::Pan { a: 1.0 }
-        ]}
+            Op::Pan { a: -1.0 }
+        ]},
+        Op::Compose { operations: vec! [
+            Op::Transpose { m: 8.0/1.0, a: 0.0 },
+            Op::Gain { m: 1.0 },
+            Op::Pan { a: 0.0 }
+        ]},
+        Op::Compose { operations: vec! [
+            Op::Transpose { m: 5.0/1.0, a: 0.0 },
+            Op::Gain { m: 1.0 },
+            Op::Pan { a: 0.0 }
+        ]},
     ]};
 
     let mut oscillator = Oscillator::init(&get_default_app_settings());
     let e = vec![Event::init(100.0, 1.0, 0.0, 0.8)];
-    let mut events = sequence4.apply(e);
+    let mut events = macro_test.apply(e);
 
     events.render(&mut oscillator)
 }

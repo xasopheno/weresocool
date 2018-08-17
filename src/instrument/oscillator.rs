@@ -25,15 +25,22 @@ impl Oscillator {
     pub fn update(&mut self, mut sounds: Vec<Sound>) {
         let len_voices = self.voices.len();
         let len_sounds = sounds.len();
+        let difference = (len_voices as isize - len_sounds as isize).abs();
 
         if len_sounds > len_voices {
+            for i in 0..difference {
             self.voices
-                .push((Voice::init(len_voices + 1), Voice::init(len_voices + 2)));
+                .push((Voice::init(len_voices + i as usize + 1), Voice::init(len_voices + i as usize + 2)));
+            }
         }
 
         if len_sounds < len_voices {
-            sounds.push(Sound::init());
+            for i in 0..difference {
+                sounds.push(Sound::init());
+            }
         }
+
+        println!("{} {}", len_sounds, len_voices);
 
         for (sound, lr_voice) in sounds.iter().zip(self.voices.iter_mut()) {
             let l_gain = sound.gain * ((-1.0 + sound.pan) / -2.0);
