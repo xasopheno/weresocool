@@ -77,7 +77,7 @@ impl Operate for Op {
             Op::Transpose { m, a } => {
                 for event in events.iter() {
                     let mut e = event.clone();
-                        for sound in e.sounds {
+                        for sound in e.sounds.iter_mut() {
                             sound.frequency = sound.frequency * m + a;
                     }
                     vec_events.push(e)
@@ -105,7 +105,7 @@ impl Operate for Op {
             Op::Gain { m } => {
                 for event in events.iter() {
                     let mut e = event.clone();
-                    for sound in e.sounds {
+                    for sound in e.sounds.iter_mut() {
                         sound.gain = sound.gain * m;
                     }
                     vec_events.push(e)

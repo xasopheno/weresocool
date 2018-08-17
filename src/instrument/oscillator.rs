@@ -23,10 +23,10 @@ impl Oscillator {
         }
     }
     pub fn update(&mut self, sounds: Vec<Sound>) {
-        for (voice, sound) in self.voices.iter_mut().zip(sounds) {
+        for (sound, lr_voice) in sounds.iter().zip(self.voices.iter_mut()) {
             let l_gain = sound.gain * ((-1.0 + sound.pan) / -2.0);
             let r_gain = sound.gain * ((1.0 + sound.pan) / 2.0);
-            let (mut l_voice, mut r_voice) = *voice;
+            let (ref mut l_voice, ref mut r_voice) = lr_voice;
             l_voice.update(sound.frequency, l_gain);
             r_voice.update(sound.frequency, r_gain);
         }
@@ -37,7 +37,7 @@ impl Oscillator {
         let mut r_buffer: Vec<f32> = vec![0.0; length];
         let factor: f32 = tau() / self.settings.sample_rate;
         for lr_voices in self.voices.iter_mut() {
-            let (mut l_voice, mut r_voice) = *lr_voices;
+            let (ref mut l_voice, ref mut r_voice) = *lr_voices;
             l_voice.generate_waveform(&mut l_buffer, self.portamento_length, factor);
             r_voice.generate_waveform(&mut r_buffer, self.portamento_length, factor);
         }
