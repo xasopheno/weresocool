@@ -27,7 +27,8 @@ impl Oscillator {
         let len_sounds = sounds.len();
 
         if len_sounds > len_voices {
-            self.voices.push((Voice::init(len_voices + 1), Voice::init(len_voices + 2)));
+            self.voices
+                .push((Voice::init(len_voices + 1), Voice::init(len_voices + 2)));
         }
 
         if len_sounds < len_voices {

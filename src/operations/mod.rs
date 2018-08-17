@@ -4,9 +4,9 @@ use ratios::R;
 #[derive(Clone, PartialEq, Debug)]
 pub enum Op {
     AsIs,
-//    Pan {
-//        m: f32,
-//    },
+    Pan {
+        a: f32,
+    },
     Transpose {
         m: f32,
         a: f32,
@@ -32,7 +32,7 @@ pub enum Op {
     },
     Overlay {
         operations: Vec<Op>,
-    }
+    },
 }
 
 pub trait Operate {
@@ -43,7 +43,7 @@ pub trait Operate {
 impl Operate for Op {
     fn get_length_ratio(&self) -> f32 {
         match self {
-            Op::AsIs {} | Op::Transpose { m: _, a: _ } | Op::Gain { m: _ } => 1.0,
+            Op::AsIs {} | Op::Transpose { m: _, a: _ } | Op::Pan { a: _ } | Op::Gain { m: _ } => 1.0,
 
             Op::Length { m } | Op::Silence { m } => *m,
 
@@ -67,7 +67,7 @@ impl Operate for Op {
                 main: _,
             } => with_length_of.get_length_ratio(),
 
-            Op::Overlay {operations} => {0.0},
+            Op::Overlay { operations } => 0.0,
         }
     }
 
@@ -83,6 +83,16 @@ impl Operate for Op {
                     let mut e = event.clone();
                     for sound in e.sounds.iter_mut() {
                         sound.frequency = sound.frequency * m + a;
+                    }
+                    vec_events.push(e)
+                }
+            }
+
+            Op::Pan { a } => {
+                for event in events.iter() {
+                    let mut e = event.clone();
+                    for sound in e.sounds.iter_mut() {
+                        sound.pan += a;
                     }
                     vec_events.push(e)
                 }
@@ -211,12 +221,8 @@ fn join_events(events: Vec<Event>, length: f32) -> Event {
         sounds.append(&mut event.sounds)
     }
 
-    Event {
-        sounds,
-        length
-    }
+    Event { sounds, length }
 }
-
 
 fn next_length(state: &Vec<Vec<Event>>) -> f32 {
     let mut values = vec![];
@@ -224,7 +230,7 @@ fn next_length(state: &Vec<Vec<Event>>) -> f32 {
         let next_val = vec_event[0].length;
         values.push(next_val)
     }
-    let min = values.iter().cloned().fold(1.0/0.0, f32::min);
+    let min = values.iter().cloned().fold(1.0 / 0.0, f32::min);
 
     if min.is_infinite() {
         0.0
