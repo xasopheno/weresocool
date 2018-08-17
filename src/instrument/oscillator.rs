@@ -34,7 +34,6 @@ impl Oscillator {
             sounds.push(Sound::init());
         }
 
-        println!("{} {}", len_voices, len_sounds);
         for (sound, lr_voice) in sounds.iter().zip(self.voices.iter_mut()) {
             let l_gain = sound.gain * ((-1.0 + sound.pan) / -2.0);
             let r_gain = sound.gain * ((1.0 + sound.pan) / 2.0);

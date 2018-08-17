@@ -198,7 +198,9 @@ fn fold_vv_events(accumulator: &mut Vec<Event>, state: &mut Vec<Vec<Event>>) {
 
     if events_to_join.len() > 0 {
         let event = join_events(events_to_join, next_length);
-        accumulator.push(event)
+        if event.length > 0.0001 {
+            accumulator.push(event)
+        }
     }
 }
 
