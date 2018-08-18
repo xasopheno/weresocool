@@ -1,27 +1,38 @@
 macro_rules! r {
     ($(($num:expr,$den:expr,$offset:expr,$gain:expr,$pan:expr)),*$(,)*) => {
-        vec![$(
-            R::atio($num,$den,$offset, $gain * ((-1.0 + $pan) / -2.0), Pan::Left),
-            R::atio($num,$den,$offset, $gain * ((1.0 + $pan) / 2.0), Pan::Right),
-        )*]
+        Op::Overlay { operations: vec![$(
+                Op::Compose { operations: vec! [
+                    Op::Transpose { m: $num as f32 /$den as f32, a: $offset },
+                    Op::Gain { m: $gain },
+                    Op::Pan { a: $pan },
+                ]},
+            )*]
+        }
     }
 }
 
 #[cfg(test)]
 pub mod tests {
-    use ratios::{Pan, R};
-
+    use operations::Op;
     #[test]
     fn test_r_macro() {
-        let r_macro = r![(3, 2, 0.0, 0.6, -1.0), (5, 4, 1.5, 0.5, 0.5)];
+        let r_macro = r![
+                (3, 2, 0.0, 0.6, -1.0), (5, 4, 1.5, 0.5, 0.5)
+            ];
 
-        let result = vec![
-            R::atio(3, 2, 0.0, 0.6, Pan::Left),
-            R::atio(3, 2, 0.0, 0.0, Pan::Right),
-            R::atio(5, 4, 1.5, 0.125, Pan::Left),
-            R::atio(5, 4, 1.5, 0.375, Pan::Right),
-        ];
+        let macro_test = Op::Overlay { operations: vec![
+            Op::Compose { operations: vec! [
+                Op::Transpose { m: 3.0/2.0, a: 0.0 },
+                Op::Gain { m: 0.6 },
+                Op::Pan { a: -1.0 }
+            ]},
+            Op::Compose { operations: vec! [
+                Op::Transpose { m: 5.0/4.0, a: 1.5 },
+                Op::Gain { m: 0.5 },
+                Op::Pan { a: 0.5 }
+            ]},
+        ]};
 
-        assert_eq!(r_macro, result);
+        assert_eq!(r_macro, macro_test);
     }
 }
