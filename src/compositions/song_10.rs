@@ -6,10 +6,11 @@ use settings::get_default_app_settings;
 pub fn generate_composition() -> StereoWaveform {
     let macro_test = r![
       (1, 1, 0.0, 1.0, 0.0),
-      (1, 1, 4.0, 1.0, 0.0),
-      (3, 1, 0.0, 0.24, 0.5),
-      (2, 1, 0.0, 0.24, -0.5),
-      (2, 1, 3.0, 0.24, -0.5),
+      (1, 1, 3.0, 1.0, 0.0),
+      (3, 1, 1.0, 0.14, 0.5),
+      (3, 1, 0.0, 0.14, 0.5),
+      (2, 1, 0.0, 0.1, -0.5),
+      (2, 1, 5.0, 0.1, -0.5),
     ];
     let sequence1 = Op::Sequence {
         operations: vec![
@@ -33,9 +34,9 @@ pub fn generate_composition() -> StereoWaveform {
         ],
     };
 
-    let sequence11 = Op::Compose { operations: vec![
-        macro_test,
-        sequence1.clone()
+    let sequence1 = Op::Compose { operations: vec![
+        macro_test.clone(),
+        sequence1
     ]};
 
     let sequence2 = Op::Fit {
@@ -53,7 +54,8 @@ pub fn generate_composition() -> StereoWaveform {
 
     let overlay = Op::Overlay {
         operations: vec![
-            sequence11.clone(),
+            sequence1.clone(),
+            sequence3.clone(),
             Op::Compose {
                 operations: vec![sequence2.clone(), Op::Transpose { m: 3.0, a: 0.0 }],
             },
