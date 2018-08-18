@@ -17,10 +17,17 @@ pub mod tests {
     #[test]
     fn test_r_macro() {
         let r_macro = r![
-                (3, 2, 0.0, 0.6, -1.0), (5, 4, 1.5, 0.5, 0.5)
+                (1, 1, 3.0, 1.0, 1.0),
+                (3, 2, 0.0, 0.6, -1.0),
+                (5, 4, 1.5, 0.5, 0.5),
             ];
 
         let macro_test = Op::Overlay { operations: vec![
+            Op::Compose { operations: vec! [
+                Op::Transpose { m: 1.0/1.0, a: 3.0 },
+                Op::Gain { m: 1.0 },
+                Op::Pan { a: 1.0 }
+            ]},
             Op::Compose { operations: vec! [
                 Op::Transpose { m: 3.0/2.0, a: 0.0 },
                 Op::Gain { m: 0.6 },

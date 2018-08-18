@@ -67,7 +67,16 @@ impl Operate for Op {
                 main: _,
             } => with_length_of.get_length_ratio(),
 
-            Op::Overlay { operations } => 0.0,
+            Op::Overlay { operations } => {
+                let mut max = 0.0;
+                for op in operations {
+                    let next = op.get_length_ratio();
+                    if next > max {
+                        max = next;
+                    }
+                }
+                max
+            },
         }
     }
 
@@ -161,6 +170,7 @@ impl Operate for Op {
 
                 vec_events = new_op.apply(es);
             }
+
             Op::Overlay { operations } => {
                 let mut vec_vec_events: Vec<Vec<Event>> = vec![];
 
@@ -227,8 +237,7 @@ fn join_events(events: Vec<Event>, length: f32) -> Event {
 fn next_length(state: &Vec<Vec<Event>>) -> f32 {
     let mut values = vec![];
     for vec_event in state.iter() {
-        let next_val = vec_event[0].length;
-        values.push(next_val)
+        values.push(vec_event[0].length)
     }
     let min = values.iter().cloned().fold(1.0 / 0.0, f32::min);
 

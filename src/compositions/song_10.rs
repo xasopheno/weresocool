@@ -4,6 +4,13 @@ use operations::{Op, Operate};
 use settings::get_default_app_settings;
 
 pub fn generate_composition() -> StereoWaveform {
+    let macro_test = r![
+      (1, 1, 0.0, 1.0, 0.0),
+      (1, 1, 4.0, 1.0, 0.0),
+      (3, 1, 0.0, 0.24, 0.5),
+      (2, 1, 0.0, 0.24, -0.5),
+      (2, 1, 3.0, 0.24, -0.5),
+    ];
     let sequence1 = Op::Sequence {
         operations: vec![
             Op::AsIs,
@@ -26,10 +33,17 @@ pub fn generate_composition() -> StereoWaveform {
         ],
     };
 
+    let sequence11 = Op::Compose { operations: vec![
+        macro_test,
+        sequence1.clone()
+    ]};
+
     let sequence2 = Op::Fit {
         with_length_of: Box::new(sequence1.clone()),
         main: Box::new(Op::Sequence {
-            operations: vec![sequence1.clone(), sequence1.clone()],
+            operations: vec![
+                sequence1.clone(),
+                sequence1.clone()],
         }),
     };
 
@@ -39,7 +53,7 @@ pub fn generate_composition() -> StereoWaveform {
 
     let overlay = Op::Overlay {
         operations: vec![
-            sequence1.clone(),
+            sequence11.clone(),
             Op::Compose {
                 operations: vec![sequence2.clone(), Op::Transpose { m: 3.0, a: 0.0 }],
             },
@@ -58,7 +72,7 @@ pub fn generate_composition() -> StereoWaveform {
                         a: 0.0,
                     },
                     Op::Transpose {
-                        m: 6.0 / 5.0,
+                        m: 5.0 / 4.0,
                         a: 0.0,
                     },
                 ],
@@ -79,32 +93,11 @@ pub fn generate_composition() -> StereoWaveform {
         ],
     };
 
-    let macro_test = Op::Overlay { operations: vec![
-        Op::Compose { operations: vec! [
-            Op::Transpose { m: 1.0, a: 0.0 },
-            Op::Gain { m: 1.0 },
-            Op::Pan { a: 0.0 }
-        ]},
-        Op::Compose { operations: vec! [
-            Op::Transpose { m: 3.0/1.0, a: 0.0 },
-            Op::Gain { m: 1.0 },
-            Op::Pan { a: -1.0 }
-        ]},
-        Op::Compose { operations: vec! [
-            Op::Transpose { m: 8.0/1.0, a: 0.0 },
-            Op::Gain { m: 1.0 },
-            Op::Pan { a: 0.0 }
-        ]},
-        Op::Compose { operations: vec! [
-            Op::Transpose { m: 5.0/1.0, a: 0.0 },
-            Op::Gain { m: 1.0 },
-            Op::Pan { a: 0.0 }
-        ]},
-    ]};
+
 
     let mut oscillator = Oscillator::init(&get_default_app_settings());
-    let e = vec![Event::init(100.0, 1.0, 0.0, 0.8)];
-    let mut events = macro_test.apply(e);
+    let e = vec![Event::init(120.0, 1.0, 0.0, 0.8)];
+    let mut events = sequence4.apply(e);
 
     events.render(&mut oscillator)
 }
