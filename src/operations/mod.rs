@@ -65,7 +65,7 @@ impl Operate for Op {
                     length_ratio_of_operations += operation.get_length_ratio();
                 }
 
-                length_ratio_of_operations * n
+                length_ratio_of_operations * *n as f32
             }
 
             Op::Length { m } | Op::Silence { m } => *m,
@@ -112,7 +112,9 @@ impl Operate for Op {
             }
 
             Op::Reverse {} => {
-                vec_events = events.clone().reverse();
+                let mut clone = events.clone();
+                clone.reverse();
+                vec_events = clone
             }
 
             Op::TransposeM { m } => {
@@ -158,13 +160,16 @@ impl Operate for Op {
             } => {
                 let mut es = events.clone();
                 let mut container = vec![];
+                let mut repeat_container: Vec<Event> = vec![];
+
                 for operation in operations.iter() {
                     container.push(operation.apply(es.clone()));
                 }
 
-                let mut repeat_container = vec![];
-                for i in 0..n {
-                    repeat_container.append(container.clone());
+                let flattened_container: Vec<Event> = container.iter().flat_map(|evt| evt.clone()).collect();
+
+                for i in 0..*n {
+                    repeat_container.append(&mut flattened_container.clone());
                 };
 
                 vec_events = repeat_container;
