@@ -3,6 +3,7 @@ use event::Event;
 #[derive(Clone, PartialEq, Debug)]
 pub enum Op {
     AsIs,
+    Reverse,
     Pan {
         a: f32,
     },
@@ -20,6 +21,10 @@ pub enum Op {
     },
     Gain {
         m: f32,
+    },
+    Repeat {
+      n: usize,
+      operations: Vec<Op>,
     },
     Sequence {
         operations: Vec<Op>,
@@ -45,7 +50,23 @@ pub trait Operate {
 impl Operate for Op {
     fn get_length_ratio(&self) -> f32 {
         match self {
-            Op::AsIs {} | Op::TransposeM { m: _ } | Op::TransposeA { a: _} | Op::Pan { a: _ } | Op::Gain { m: _ } => 1.0,
+            Op::AsIs {}
+            | Op::Reverse {}
+            | Op::TransposeM { m: _ }
+            | Op::TransposeA { a: _ }
+            | Op::Pan { a: _ }
+            | Op::Gain { m: _ } => 1.0,
+
+            Op::Repeat {
+                n, operations
+            } => {
+                let mut length_ratio_of_operations = 0.0;
+                for operation in operations {
+                    length_ratio_of_operations += operation.get_length_ratio();
+                }
+
+                length_ratio_of_operations * n
+            }
 
             Op::Length { m } | Op::Silence { m } => *m,
 
@@ -79,7 +100,7 @@ impl Operate for Op {
                     }
                 }
                 max
-            },
+            }
         }
     }
 
@@ -88,6 +109,10 @@ impl Operate for Op {
         match self {
             Op::AsIs {} => {
                 vec_events = events;
+            }
+
+            Op::Reverse {} => {
+                vec_events = events.clone().reverse();
             }
 
             Op::TransposeM { m } => {
@@ -126,6 +151,23 @@ impl Operate for Op {
                     e.length = e.length * m;
                     vec_events.push(e)
                 }
+            }
+
+            Op::Repeat {
+                n, operations
+            } => {
+                let mut es = events.clone();
+                let mut container = vec![];
+                for operation in operations.iter() {
+                    container.push(operation.apply(es.clone()));
+                }
+
+                let mut repeat_container = vec![];
+                for i in 0..n {
+                    repeat_container.append(container.clone());
+                };
+
+                vec_events = repeat_container;
             }
 
             Op::Silence { m } => {
@@ -184,7 +226,9 @@ impl Operate for Op {
                     array_of_main.push(*main.clone())
                 }
 
-                let main_sequence = Op::Sequence { operations: array_of_main };
+                let main_sequence = Op::Sequence {
+                    operations: array_of_main,
+                };
 
                 let new_op = Op::Compose {
                     operations: vec![main_sequence, Op::Length { m: ratio }],

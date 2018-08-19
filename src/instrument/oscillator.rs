@@ -28,8 +28,10 @@ impl Oscillator {
 
         if len_sounds > len_voices {
             for i in 0..difference {
-            self.voices
-                .push((Voice::init(len_voices + i as usize + 1), Voice::init(len_voices + i as usize + 2)));
+                self.voices.push((
+                    Voice::init(len_voices + i as usize + 1),
+                    Voice::init(len_voices + i as usize + 2),
+                ));
             }
         }
 

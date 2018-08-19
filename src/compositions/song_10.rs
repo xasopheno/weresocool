@@ -5,12 +5,12 @@ use settings::get_default_app_settings;
 
 pub fn generate_composition() -> StereoWaveform {
     let macro_test = r![
-      (1, 1, 0.0, 1.0, 0.0),
-      (1, 1, 3.0, 1.0, 0.0),
-      (3, 1, 1.0, 0.14, 0.5),
-      (3, 1, 0.0, 0.14, 0.5),
-      (2, 1, 0.0, 0.1, -0.5),
-      (2, 1, 5.0, 0.1, -0.5),
+        (1, 1, 0.0, 1.0, 0.0),
+        (1, 1, 3.0, 1.0, 0.0),
+        (3, 1, 1.0, 0.14, 0.5),
+        (3, 1, 0.0, 0.14, 0.5),
+        (2, 1, 0.0, 0.1, -0.5),
+        (2, 1, 5.0, 0.1, -0.5),
     ];
 
     let sequence1 = Op::Sequence {
@@ -21,23 +21,21 @@ pub fn generate_composition() -> StereoWaveform {
             Op::Silence { m: 1.0 },
             Op::TransposeM { m: 1.5 },
             Op::Gain { m: 0.5 },
-            Op::TransposeM {
-                m: 5.0 / 4.0,
+            Op::TransposeM { m: 5.0 / 4.0 },
+            Op::Compose {
+                operations: vec![
+                    Op::Sequence {
+                        operations: vec![Op::Pan { a: 0.5 }, Op::Pan { a: -0.5 }],
+                    },
+                    Op::Length { m: 0.5 },
+                ],
             },
-            Op::Compose {operations: vec![
-                Op::Sequence { operations: vec![
-                    Op::Pan { a: 0.5 },
-                    Op::Pan { a: -0.5 },
-                ]},
-                Op::Length { m: 0.5 }
-            ]}
         ],
     };
 
-    let sequence1 = Op::Compose { operations: vec![
-        macro_test.clone(),
-        sequence1
-    ]};
+    let sequence1 = Op::Compose {
+        operations: vec![macro_test.clone(), sequence1],
+    };
 
     let sequence2 = Op::Fit {
         n: 2,
@@ -52,7 +50,7 @@ pub fn generate_composition() -> StereoWaveform {
     let overlay = Op::Overlay {
         operations: vec![
             sequence1.clone(),
-//            sequence3.clone(),
+            //            sequence3.clone(),
             Op::Compose {
                 operations: vec![sequence2.clone(), Op::TransposeM { m: 3.0 }],
             },
@@ -62,7 +60,7 @@ pub fn generate_composition() -> StereoWaveform {
     let overlay2 = Op::Overlay {
         operations: vec![
             overlay.clone(),
-//            sequence3.clone(),
+            //            sequence3.clone(),
             Op::Compose {
                 operations: vec![sequence2.clone(), Op::TransposeM { m: 3.0 }],
             },
@@ -76,29 +74,19 @@ pub fn generate_composition() -> StereoWaveform {
             Op::Sequence {
                 operations: vec![
                     Op::AsIs,
-                    Op::TransposeM {
-                        m: 9.0 / 8.0,
-                    },
-                    Op::TransposeM {
-                        m: 5.0 / 4.0,
-                    },
+                    Op::TransposeM { m: 9.0 / 8.0 },
+                    Op::TransposeM { m: 5.0 / 4.0 },
                 ],
             },
             Op::Sequence {
                 operations: vec![
                     Op::AsIs,
-                    Op::TransposeM {
-                        m: 9.0 / 8.0,
-                    },
-                    Op::TransposeM {
-                        m: 6.0 / 5.0,
-                    },
+                    Op::TransposeM { m: 9.0 / 8.0 },
+                    Op::TransposeM { m: 6.0 / 5.0 },
                 ],
             },
         ],
     };
-
-
 
     let mut oscillator = Oscillator::init(&get_default_app_settings());
     let e = vec![Event::init(120.0, 1.0, 0.0, 0.8)];
