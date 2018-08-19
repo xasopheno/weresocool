@@ -1,6 +1,5 @@
 use event::Sound;
 use instrument::{stereo_waveform::StereoWaveform, voice::Voice};
-use ratios::{Pan, R};
 use settings::Settings;
 use std::f32::consts::PI;
 fn tau() -> f32 {

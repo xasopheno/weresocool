@@ -1,5 +1,4 @@
 use event::Event;
-use ratios::R;
 
 #[derive(Clone, PartialEq, Debug)]
 pub enum Op {
@@ -29,6 +28,7 @@ pub enum Op {
     Fit {
         with_length_of: Box<Op>,
         main: Box<Op>,
+        n: usize,
     },
     Overlay {
         operations: Vec<Op>,
@@ -65,6 +65,7 @@ impl Operate for Op {
             Op::Fit {
                 with_length_of,
                 main: _,
+                n: _,
             } => with_length_of.get_length_ratio(),
 
             Op::Overlay { operations } => {
@@ -158,14 +159,23 @@ impl Operate for Op {
             Op::Fit {
                 with_length_of,
                 main,
+                n,
             } => {
                 let mut es = events.clone();
+
                 let target_length = with_length_of.get_length_ratio();
                 let main_length = main.get_length_ratio();
-                let ratio = target_length / main_length;
+                let ratio = target_length / main_length / *n as f32;
+
+                let mut array_of_main = vec![];
+                for i in 0..*n {
+                    array_of_main.push(*main.clone())
+                }
+
+                let main_sequence = Op::Sequence { operations: array_of_main };
 
                 let new_op = Op::Compose {
-                    operations: vec![*main.clone(), Op::Length { m: ratio }],
+                    operations: vec![main_sequence, Op::Length { m: ratio }],
                 };
 
                 vec_events = new_op.apply(es);

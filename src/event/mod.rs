@@ -1,5 +1,4 @@
 use instrument::{oscillator::Oscillator, stereo_waveform::StereoWaveform};
-use ratios::{Pan, R};
 
 #[derive(Debug, Clone, PartialEq)]
 pub struct Event {
