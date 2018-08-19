@@ -1,30 +1,26 @@
 pub mod tests {
+    use event::{Event, Sound};
     use operations::{Op, Operate};
-    use event::{Sound, Event};
 
     fn event1() -> Event {
         Event {
-            sounds: vec![
-                Sound {
-                    frequency: 100.0,
-                    gain: 1.0,
-                    pan: 0.0
-                }
-            ],
-            length: 1.0
+            sounds: vec![Sound {
+                frequency: 100.0,
+                gain: 1.0,
+                pan: 0.0,
+            }],
+            length: 1.0,
         }
     }
 
     fn event2() -> Event {
         Event {
-            sounds: vec![
-                Sound {
-                    frequency: 100.0,
-                    gain: 1.0,
-                    pan: 0.0
-                }
-            ],
-            length: 1.0
+            sounds: vec![Sound {
+                frequency: 100.0,
+                gain: 1.0,
+                pan: 0.0,
+            }],
+            length: 1.0,
         }
     }
 
@@ -66,10 +62,8 @@ pub mod tests {
     fn op_reverse_test() {
         let reverse = Op::Reverse {};
         assert_eq!(reverse.get_length_ratio(), 1.0);
-        let apply_expected = vec![
-            event2(),
-            event1(),
-        ];
+
+        let apply_expected = vec![event2(), event1()];
         assert_eq!(reverse.apply(vec_event1()), apply_expected);
     }
 
@@ -77,11 +71,11 @@ pub mod tests {
     fn op_pan_test() {
         let pan = Op::Pan { a: 0.5 };
         assert_eq!(pan.get_length_ratio(), 1.0);
+
         let mut expected_event = event1();
         expected_event.sounds[0].pan = 0.5;
-        let pan_apply_expected = vec![expected_event];
-
-        assert_eq!(pan.apply(vec![event1()]), pan_apply_expected);
+        let apply_expected = vec![expected_event];
+        assert_eq!(pan.apply(vec![event1()]), apply_expected);
     }
 
     #[test]
@@ -99,30 +93,57 @@ pub mod tests {
     fn op_length_test() {
         let length = Op::Length { m: 1.5 };
         assert_eq!(length.get_length_ratio(), 1.5);
+
+        let mut expected_event = event1();
+        expected_event.length = 1.5;
+        let apply_expected = vec![expected_event];
+        assert_eq!(length.apply(vec![event1()]), apply_expected);
     }
 
     #[test]
     fn op_transpose_m_test() {
         let transpose_m = Op::TransposeM { m: 1.5 };
         assert_eq!(transpose_m.get_length_ratio(), 1.0);
+
+        let mut expected_event = event1();
+        expected_event.sounds[0].frequency = 150.0;
+        let apply_expected = vec![expected_event];
+        assert_eq!(transpose_m.apply(vec![event1()]), apply_expected);
     }
 
     #[test]
     fn op_transpose_a_test() {
         let transpose_a = Op::TransposeA { a: 1.5 };
         assert_eq!(transpose_a.get_length_ratio(), 1.0);
+
+        let mut expected_event = event1();
+        expected_event.sounds[0].frequency = 101.5;
+        let apply_expected = vec![expected_event];
+        assert_eq!(transpose_a.apply(vec![event1()]), apply_expected);
     }
 
     #[test]
     fn op_silence_test() {
         let silence = Op::Silence { m: 1.5 };
         assert_eq!(silence.get_length_ratio(), 1.5);
+
+        let mut expected_event = event1();
+        expected_event.sounds[0].frequency = 0.0;
+        expected_event.sounds[0].gain = 0.0;
+        expected_event.length = 1.5;
+        let apply_expected = vec![expected_event];
+        assert_eq!(silence.apply(vec![event1()]), apply_expected);
     }
 
     #[test]
     fn op_gain_test() {
         let gain = Op::Gain { m: 1.5 };
         assert_eq!(gain.get_length_ratio(), 1.0);
+
+        let mut expected_event = event1();
+        expected_event.sounds[0].gain = 1.5;
+        let apply_expected = vec![expected_event];
+        assert_eq!(gain.apply(vec![event1()]), apply_expected);
     }
 
     #[test]
@@ -130,19 +151,111 @@ pub mod tests {
         let fit = Op::Fit {
             n: 1,
             with_length_of: Box::new(sequence1()),
-            main: Box::new(sequence3()),
+            main: Box::new(sequence2()),
         };
 
         let fit_length = fit.get_length_ratio();
-
-
         assert_eq!(fit_length, 5.0);
+
+        let expected = vec![
+            Event {
+                sounds: vec![Sound {
+                    frequency: 100.0,
+                    gain: 1.0,
+                    pan: 0.0,
+                }],
+                length: 1.0,
+            },
+            Event {
+                sounds: vec![Sound {
+                    frequency: 100.0,
+                    gain: 1.0,
+                    pan: 0.0,
+                }],
+                length: 1.0,
+            },
+            Event {
+                sounds: vec![Sound {
+                    frequency: 100.0,
+                    gain: 1.0,
+                    pan: 0.0,
+                }],
+                length: 1.0,
+            },
+            Event {
+                sounds: vec![Sound {
+                    frequency: 100.0,
+                    gain: 1.0,
+                    pan: 0.0,
+                }],
+                length: 1.0,
+            },
+            Event {
+                sounds: vec![Sound {
+                    frequency: 200.0,
+                    gain: 1.0,
+                    pan: 0.0,
+                }],
+                length: 1.0,
+            },
+            Event {
+                sounds: vec![Sound {
+                    frequency: 200.0,
+                    gain: 1.0,
+                    pan: 0.0,
+                }],
+                length: 1.0,
+            },
+            Event {
+                sounds: vec![Sound {
+                    frequency: 100.0,
+                    gain: 1.0,
+                    pan: 0.0,
+                }],
+                length: 2.0,
+            },
+            Event {
+                sounds: vec![Sound {
+                    frequency: 100.0,
+                    gain: 1.0,
+                    pan: 0.0,
+                }],
+                length: 2.0,
+            },
+        ];
+
+        assert_eq!(fit.apply(vec_event1()), expected);
     }
 
     #[test]
     fn op_compose_test() {
         let sequence_with_sequence_length = sequence3().get_length_ratio();
         assert_eq!(sequence_with_sequence_length, 50.0);
+
+        let compose = Op::Compose {
+            operations: vec![Op::Length { m: 2.0 }, Op::TransposeM { m: 1.5 }],
+        };
+
+        let expected = vec![
+            Event {
+                sounds: vec![Sound {
+                    frequency: 150.0,
+                    gain: 1.0,
+                    pan: 0.0,
+                }],
+                length: 2.0,
+            },
+            Event {
+                sounds: vec![Sound {
+                    frequency: 150.0,
+                    gain: 1.0,
+                    pan: 0.0,
+                }],
+                length: 2.0,
+            },
+        ];
+
+        assert_eq!(compose.apply(vec_event1()), expected);
     }
 
     #[test]
@@ -151,17 +264,145 @@ pub mod tests {
         let sequence_length_2 = sequence2().get_length_ratio();
         assert_eq!(sequence_length_1, 5.0);
         assert_eq!(sequence_length_2, 10.0);
+
+        let apply_expected = vec![
+            Event {
+                sounds: vec![Sound {
+                    frequency: 100.0,
+                    gain: 1.0,
+                    pan: 0.0,
+                }],
+                length: 1.0,
+            },
+            Event {
+                sounds: vec![Sound {
+                    frequency: 100.0,
+                    gain: 1.0,
+                    pan: 0.0,
+                }],
+                length: 1.0,
+            },
+            Event {
+                sounds: vec![Sound {
+                    frequency: 200.0,
+                    gain: 1.0,
+                    pan: 0.0,
+                }],
+                length: 1.0,
+            },
+            Event {
+                sounds: vec![Sound {
+                    frequency: 100.0,
+                    gain: 1.0,
+                    pan: 0.0,
+                }],
+                length: 2.0,
+            },
+        ];
+        assert_eq!(sequence1().apply(vec![event1()]), apply_expected);
     }
 
     #[test]
     fn op_overlay_test() {
         let overlay = Op::Overlay {
-            operations: vec![
-                sequence1(),
-                sequence2(),
-                sequence3()
-            ]
+            operations: vec![sequence1(), sequence2()],
         };
-        assert_eq!(overlay.get_length_ratio(), 50.0);
+        assert_eq!(overlay.get_length_ratio(), 10.0);
+
+        let apply_expected = vec![
+            Event {
+                sounds: vec![
+                    Sound {
+                        frequency: 100.0,
+                        gain: 1.0,
+                        pan: 0.0,
+                    },
+                    Sound {
+                        frequency: 100.0,
+                        gain: 1.0,
+                        pan: 0.0,
+                    },
+                ],
+                length: 1.0,
+            },
+            Event {
+                sounds: vec![
+                    Sound {
+                        frequency: 100.0,
+                        gain: 1.0,
+                        pan: 0.0,
+                    },
+                    Sound {
+                        frequency: 100.0,
+                        gain: 1.0,
+                        pan: 0.0,
+                    },
+                ],
+                length: 1.0,
+            },
+            Event {
+                sounds: vec![
+                    Sound {
+                        frequency: 200.0,
+                        gain: 1.0,
+                        pan: 0.0,
+                    },
+                    Sound {
+                        frequency: 100.0,
+                        gain: 1.0,
+                        pan: 0.0,
+                    },
+                ],
+                length: 1.0,
+            },
+            Event {
+                sounds: vec![
+                    Sound {
+                        frequency: 100.0,
+                        gain: 1.0,
+                        pan: 0.0,
+                    },
+                    Sound {
+                        frequency: 100.0,
+                        gain: 1.0,
+                        pan: 0.0,
+                    },
+                ],
+                length: 1.0,
+            },
+            Event {
+                sounds: vec![
+                    Sound {
+                        frequency: 100.0,
+                        gain: 1.0,
+                        pan: 0.0,
+                    },
+                    Sound {
+                        frequency: 200.0,
+                        gain: 1.0,
+                        pan: 0.0,
+                    },
+                ],
+                length: 1.0,
+            },
+            Event {
+                sounds: vec![Sound {
+                    frequency: 200.0,
+                    gain: 1.0,
+                    pan: 0.0,
+                }],
+                length: 1.0,
+            },
+            Event {
+                sounds: vec![Sound {
+                    frequency: 100.0,
+                    gain: 1.0,
+                    pan: 0.0,
+                }],
+                length: 4.0,
+            },
+        ];
+
+        assert_eq!(overlay.apply(vec![event1()]), apply_expected);
     }
 }
