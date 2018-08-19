@@ -23,8 +23,8 @@ pub enum Op {
         m: f32,
     },
     Repeat {
-      n: usize,
-      operations: Vec<Op>,
+        n: usize,
+        operations: Vec<Op>,
     },
     Sequence {
         operations: Vec<Op>,
@@ -57,9 +57,7 @@ impl Operate for Op {
             | Op::Pan { a: _ }
             | Op::Gain { m: _ } => 1.0,
 
-            Op::Repeat {
-                n, operations
-            } => {
+            Op::Repeat { n, operations } => {
                 let mut length_ratio_of_operations = 0.0;
                 for operation in operations {
                     length_ratio_of_operations += operation.get_length_ratio();
@@ -155,22 +153,16 @@ impl Operate for Op {
                 }
             }
 
-            Op::Repeat {
-                n, operations
-            } => {
+            Op::Repeat { n, operations } => {
                 let mut es = events.clone();
-                let mut container = vec![];
+                let mut container: Vec<Event> = vec![];
                 let mut repeat_container: Vec<Event> = vec![];
 
-                for operation in operations.iter() {
-                    container.push(operation.apply(es.clone()));
+                let sequence = Op::Sequence { operations: operations.to_vec() }.apply(events);
+
+                for _ in 0..*n {
+                    repeat_container.append(&mut sequence.clone());
                 }
-
-                let flattened_container: Vec<Event> = container.iter().flat_map(|evt| evt.clone()).collect();
-
-                for i in 0..*n {
-                    repeat_container.append(&mut flattened_container.clone());
-                };
 
                 vec_events = repeat_container;
             }
@@ -227,7 +219,7 @@ impl Operate for Op {
                 let ratio = target_length / main_length / *n as f32;
 
                 let mut array_of_main = vec![];
-                for i in 0..*n {
+                for _ in 0..*n {
                     array_of_main.push(*main.clone())
                 }
 
@@ -284,7 +276,6 @@ fn fold_vv_events(accumulator: &mut Vec<Event>, state: &mut Vec<Vec<Event>>) {
         } else {
             s.remove(index);
         }
-        let state = &mut s.clone();
     }
 
     if events_to_join.len() > 0 {

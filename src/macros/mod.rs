@@ -27,8 +27,10 @@ pub mod tests {
             operations: vec![
                 Op::Compose {
                     operations: vec![
-                        Op::Transpose {
+                        Op::TransposeM {
                             m: 1.0 / 1.0,
+                        },
+                        Op::TransposeA {
                             a: 3.0,
                         },
                         Op::Gain { m: 1.0 },
@@ -37,8 +39,10 @@ pub mod tests {
                 },
                 Op::Compose {
                     operations: vec![
-                        Op::Transpose {
+                        Op::TransposeM {
                             m: 3.0 / 2.0,
+                        },
+                        Op::TransposeA {
                             a: 0.0,
                         },
                         Op::Gain { m: 0.6 },
@@ -47,8 +51,10 @@ pub mod tests {
                 },
                 Op::Compose {
                     operations: vec![
-                        Op::Transpose {
+                        Op::TransposeM {
                             m: 5.0 / 4.0,
+                        },
+                        Op::TransposeA {
                             a: 1.5,
                         },
                         Op::Gain { m: 0.5 },

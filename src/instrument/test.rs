@@ -33,13 +33,12 @@ pub mod tests {
         #[test]
         fn test_deltas() {
             let index = 1;
-            let ratio = R::atio(1, 1, 0.0, 0.6, Pan::Left);
             let mut voice = Voice::init(index);
             voice.update(200.0, 1.0);
             let g_delta = voice.calculate_gain_delta(10);
             let p_delta = voice.calculate_portamento_delta(10);
 
-            assert_eq!(g_delta, 0.039528757);
+            assert_eq!(g_delta, 0.06588126);
             assert_eq!(p_delta, 20.0);
         }
 
@@ -51,7 +50,7 @@ pub mod tests {
             let mut voice = Voice::init(index);
             voice.update(100.0, 1.0);
             voice.generate_waveform(&mut buffer, 3, 2048.0 / 44_100.0);
-            assert_eq!(buffer, [0.0, 0.022728316, 0.3263405]);
+            assert_eq!(buffer, [0.0, 0.045456633, 0.652681]);
         }
 
         #[test]
