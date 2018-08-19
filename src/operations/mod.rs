@@ -158,7 +158,9 @@ impl Operate for Op {
                 let mut container: Vec<Event> = vec![];
                 let mut repeat_container: Vec<Event> = vec![];
 
-                let sequence = Op::Sequence { operations: operations.to_vec() }.apply(events);
+                let sequence = Op::Sequence {
+                    operations: operations.to_vec(),
+                }.apply(events);
 
                 for _ in 0..*n {
                     repeat_container.append(&mut sequence.clone());

@@ -19,7 +19,6 @@ pub mod tests {
         assert_eq!(silence.get_length_ratio(), 1.5);
         assert_eq!(length.get_length_ratio(), 1.5);
 
-
         let sequence1 = Op::Sequence {
             operations: vec![
                 Op::AsIs,
@@ -28,7 +27,10 @@ pub mod tests {
                 Op::Length { m: 2.0 },
             ],
         };
-        let repeat = Op::Repeat { n: 2, operations: vec![sequence1.clone()] }.get_length_ratio();
+        let repeat = Op::Repeat {
+            n: 2,
+            operations: vec![sequence1.clone()],
+        }.get_length_ratio();
 
         let length1 = sequence1.get_length_ratio();
         assert_eq!(length1, 5.0);
@@ -52,12 +54,11 @@ pub mod tests {
         let fit = Op::Fit {
             n: 1,
             with_length_of: Box::new(sequence1.clone()),
-            main: Box::new(sequence3.clone())
+            main: Box::new(sequence3.clone()),
         };
 
         let fit_length = fit.get_length_ratio();
 
         assert_eq!(fit_length, 5.0);
-
     }
 }
