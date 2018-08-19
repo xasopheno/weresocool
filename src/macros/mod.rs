@@ -2,7 +2,8 @@ macro_rules! r {
     ($(($num:expr,$den:expr,$offset:expr,$gain:expr,$pan:expr)),*$(,)*) => {
         Op::Overlay { operations: vec![$(
                 Op::Compose { operations: vec! [
-                    Op::Transpose { m: $num as f32 /$den as f32, a: $offset },
+                    Op::TransposeM { m: $num as f32 /$den as f32 },
+                    Op::TransposeA { a: $offset },
                     Op::Gain { m: $gain },
                     Op::Pan { a: $pan },
                 ]},

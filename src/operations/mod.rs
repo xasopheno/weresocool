@@ -6,8 +6,10 @@ pub enum Op {
     Pan {
         a: f32,
     },
-    Transpose {
+    TransposeM {
         m: f32,
+    },
+    TransposeA {
         a: f32,
     },
     Silence {
@@ -43,7 +45,7 @@ pub trait Operate {
 impl Operate for Op {
     fn get_length_ratio(&self) -> f32 {
         match self {
-            Op::AsIs {} | Op::Transpose { m: _, a: _ } | Op::Pan { a: _ } | Op::Gain { m: _ } => 1.0,
+            Op::AsIs {} | Op::TransposeM { m: _ } | Op::TransposeA { a: _} | Op::Pan { a: _ } | Op::Gain { m: _ } => 1.0,
 
             Op::Length { m } | Op::Silence { m } => *m,
 
@@ -88,11 +90,21 @@ impl Operate for Op {
                 vec_events = events;
             }
 
-            Op::Transpose { m, a } => {
+            Op::TransposeM { m } => {
                 for event in events.iter() {
                     let mut e = event.clone();
                     for sound in e.sounds.iter_mut() {
-                        sound.frequency = sound.frequency * m + a;
+                        sound.frequency = sound.frequency * m;
+                    }
+                    vec_events.push(e)
+                }
+            }
+
+            Op::TransposeA { a } => {
+                for event in events.iter() {
+                    let mut e = event.clone();
+                    for sound in e.sounds.iter_mut() {
+                        sound.frequency = sound.frequency + a;
                     }
                     vec_events.push(e)
                 }
