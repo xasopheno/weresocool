@@ -5,7 +5,7 @@ pub mod tests {
         stereo_waveform::StereoWaveform,
         voice::{Voice, VoiceState},
     };
-    use ratios::{Pan, R};
+    use event::Sound;
     use settings::get_test_settings;
     pub mod voice {
         use super::*;
@@ -45,7 +45,6 @@ pub mod tests {
         #[test]
         fn test_generate_waveform() {
             let index = 1;
-            let ratio = R::atio(1, 1, 0.0, 0.5, Pan::Left);
             let mut buffer = vec![0.0; 3];
             let mut voice = Voice::init(index);
             voice.update(100.0, 1.0);
@@ -55,7 +54,6 @@ pub mod tests {
 
         #[test]
         fn test_sound_silence() {
-            let ratio = R::atio(1, 1, 0.0, 1.0, Pan::Left);
             let mut voice = Voice::init(1);
             voice.update(100.0, 1.0);
             let silence_to_sound = voice.silence_to_sound();
@@ -68,76 +66,89 @@ pub mod tests {
         }
     }
 
-    //    pub mod oscillator {
-    //        use super::*;
-    //        #[test]
-    //        fn oscillator_init_test() {
-    //            let osc = Oscillator::init(r![(1, 1, 0.0, 1.0, 0.0),], &get_test_settings());
-    //            let expected = Oscillator {
-    //                portamento_length: 10,
-    //                settings: get_test_settings(),
-    //                voices: vec![
-    //                    Voice {
-    //                        index: 0,
-    //                        ratio: R::atio(1, 1, 0.0, 0.5, Pan::Left),
-    //                        phase: 0.0,
-    //                        past: VoiceState {
-    //                            frequency: 0.0,
-    //                            gain: 0.0,
-    //                        },
-    //                        current: VoiceState {
-    //                            frequency: 0.0,
-    //                            gain: 0.0,
-    //                        },
-    //                    },
-    //                    Voice {
-    //                        index: 1,
-    //                        ratio: R::atio(1, 1, 0.0, 0.5, Pan::Right),
-    //                        phase: 0.0,
-    //                        past: VoiceState {
-    //                            frequency: 0.0,
-    //                            gain: 0.0,
-    //                        },
-    //                        current: VoiceState {
-    //                            frequency: 0.0,
-    //                            gain: 0.0,
-    //                        },
-    //                    },
-    //                ],
-    //            };
-    //            assert_eq!(osc, expected);
-    //        }
-    //
-    //        #[test]
-    //        fn oscillator_ratio_update_test() {
-    //            let mut osc = Oscillator::init(r![(1, 1, 0.0, 1.0, 0.0),], &get_test_settings());
-    //            osc.update_ratios(&r![(3, 2, 0.0, 1.0, 0.0),]);
-    //
-    //            assert_eq!(osc.voices[0].ratio, R::atio(3, 2, 0.0, 0.5, Pan::Left));
-    //            assert_eq!(osc.voices[1].ratio, R::atio(3, 2, 0.0, 0.5, Pan::Right))
-    //        }
-    //        #[test]
-    //        fn oscillator_generate_test() {
-    //            let mut osc = Oscillator::init(r![(1, 1, 0.0, 1.0, 0.0),], &get_test_settings());
-    //
-    //            osc.update_freq_gain_and_ratios(200.0, 1.0, &r![(3, 2, 0.0, 1.0, 0.0)]);
-    //            assert_eq!(osc.voices[0].past.frequency, 0.0);
-    //            assert_eq!(osc.voices[0].past.gain, 0.0);
-    //            assert_eq!(osc.voices[0].current.frequency, 300.0);
-    //            assert_eq!(osc.voices[0].current.gain, 0.25805622);
-    //
-    //            assert_eq!(osc.voices[0].past.frequency, 0.0);
-    //            assert_eq!(osc.voices[0].past.gain, 0.0);
-    //            assert_eq!(osc.voices[0].current.frequency, 300.0);
-    //            assert_eq!(osc.voices[0].current.gain, 0.25805622);
-    //
-    //            let expected = StereoWaveform {
-    //                l_buffer: vec![0.0, 0.0073444042, 0.021999665],
-    //                r_buffer: vec![0.0, 0.0073444042, 0.021999665],
-    //            };
-    //            assert_eq!(osc.generate(3), expected);
-    //        }
-    //    }
+        pub mod oscillator {
+            use super::*;
+            #[test]
+            fn oscillator_init_test() {
+                let osc = Oscillator::init( &get_test_settings());
+                let expected = Oscillator {
+                    portamento_length: 10,
+                    settings: get_test_settings(),
+                    voices: vec![(
+                        Voice {
+                            index: 0,
+                            phase: 0.0,
+                            past: VoiceState {
+                                frequency: 0.0,
+                                gain: 0.0,
+                            },
+                            current: VoiceState {
+                                frequency: 0.0,
+                                gain: 0.0,
+                            },
+                        },
+                        Voice {
+                            index: 1,
+                            phase: 0.0,
+                            past: VoiceState {
+                                frequency: 0.0,
+                                gain: 0.0,
+                            },
+                            current: VoiceState {
+                                frequency: 0.0,
+                                gain: 0.0,
+                            },
+                        },
+                    )],
+                };
+                assert_eq!(osc, expected);
+            }
+
+            #[test]
+            fn oscillator_update_test() {
+                let mut osc = Oscillator::init(&get_test_settings());
+                osc.update(vec![
+                    Sound {
+                        frequency: 100.0,
+                        gain: 1.0,
+                        pan: 0.5
+                    }
+                ]
+                );
+
+                assert_eq!(osc.voices[0].0.past.frequency, 0.0);
+                assert_eq!(osc.voices[0].0.past.gain, 0.0);
+                assert_eq!(osc.voices[0].0.current.frequency, 100.0);
+                assert_eq!(osc.voices[0].0.current.gain, 0.25);
+//                
+                assert_eq!(osc.voices[0].1.past.frequency, 0.0);
+                assert_eq!(osc.voices[0].1.past.gain, 0.0);
+                assert_eq!(osc.voices[0].1.current.frequency, 100.0);
+                assert_eq!(osc.voices[0].1.current.gain, 0.75);
+//                assert_eq!(osc.sounds(1))
+            }
+//            #[test]
+//            fn oscillator_generate_test() {
+//                let mut osc = Oscillator::init(r![(1, 1, 0.0, 1.0, 0.0),], &get_test_settings());
+//
+//                osc.update_freq_gain_and_ratios(200.0, 1.0, &r![(3, 2, 0.0, 1.0, 0.0)]);
+//                assert_eq!(osc.voices[0].past.frequency, 0.0);
+//                assert_eq!(osc.voices[0].past.gain, 0.0);
+//                assert_eq!(osc.voices[0].current.frequency, 300.0);
+//                assert_eq!(osc.voices[0].current.gain, 0.25805622);
+//
+//                assert_eq!(osc.voices[0].past.frequency, 0.0);
+//                assert_eq!(osc.voices[0].past.gain, 0.0);
+//                assert_eq!(osc.voices[0].current.frequency, 300.0);
+//                assert_eq!(osc.voices[0].current.gain, 0.25805622);
+//
+//                let expected = StereoWaveform {
+//                    l_buffer: vec![0.0, 0.0073444042, 0.021999665],
+//                    r_buffer: vec![0.0, 0.0073444042, 0.021999665],
+//                };
+//                assert_eq!(osc.generate(3), expected);
+//            }
+        }
 
     pub mod loudness {
         use super::*;
