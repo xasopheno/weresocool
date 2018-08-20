@@ -6,10 +6,9 @@ use settings::get_default_app_settings;
 pub fn generate_composition() -> StereoWaveform {
     fn ratios() -> Op {
         r![
-            (3, 2, 3.0, 0.1, -1.0),
+            (3, 2, 1.0, 0.1, -1.0),
             (3, 2, 0.0, 0.1, 1.0),
-            (1, 1, 1.0, 1.0, 0.5),
-            (1, 1, 0.0, 1.0, 0.5),
+            (1, 1, 0.0, 1.0, 0.0),
         ]
     }
 
@@ -22,6 +21,7 @@ pub fn generate_composition() -> StereoWaveform {
                     Op::TransposeM { m: 9.0/8.0 },
                     Op::TransposeM { m: 5.0/4.0 },
                     Op::TransposeM { m: 3.0/2.0 },
+                    Op::Silence { m: 1.0 },
                 ],
             }
         ]}
@@ -39,7 +39,7 @@ pub fn generate_composition() -> StereoWaveform {
                         main: Box::new(
                         Op::Compose { operations: vec![
                                 sequence1(),
-                                Op::TransposeM { m: count as f32 * 1.5 },
+                                Op::TransposeM { m: count as f32 * 3.0/2.0 },
                                 Op::Gain { m: 1.0/(3.0 * count as f32) },
                                 Op::Reverse {},
                             ]
@@ -60,18 +60,22 @@ pub fn generate_composition() -> StereoWaveform {
 
     let main = Op::Sequence {
         operations: vec![
-            fractal(10),
-            Op::Silence { m: 0.75 },
-            fractal(17),
-            Op::Silence { m: 0.75 },
             fractal(20),
+            Op::Silence { m: 0.1 },
+            fractal(10),
+            Op::Silence { m: 0.1 },
+            fractal(13),
+            Op::Silence { m: 0.1 },
+            fractal(16),
+            Op::Silence { m: 0.1 },
+            fractal(10),
         ],
     };
 
-    println!("{:?}", main);
+//    println!("{:?}", main);
 
     let mut oscillator = Oscillator::init(&get_default_app_settings());
-    let e = vec![Event::init(120.0, 1.0, 0.0, 4.0)];
+    let e = vec![Event::init(120.0, 0.3, 0.0, 4.0)];
     let mut events = main.apply(e);
 
     events.render(&mut oscillator)
