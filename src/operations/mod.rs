@@ -1,4 +1,5 @@
 use event::Event;
+use std::cmp;
 
 #[derive(Clone, PartialEq, Debug)]
 pub enum Op {
@@ -22,6 +23,7 @@ pub enum Op {
     Gain {
         m: f32,
     },
+//    Capture { n: usize },
     Repeat {
         n: usize,
         operations: Vec<Op>,
@@ -282,7 +284,7 @@ fn fold_vv_events(accumulator: &mut Vec<Event>, state: &mut Vec<Vec<Event>>) {
 
     if events_to_join.len() > 0 {
         let event = join_events(events_to_join, next_length);
-        if event.length > 0.0001 {
+        if event.length > 0.005 {
             accumulator.push(event)
         }
     }
