@@ -5,7 +5,10 @@ use std::cmp;
 pub enum Op {
     AsIs,
     Reverse,
-    Pan {
+    PanM {
+        m: f32
+    },
+    PanA {
         a: f32,
     },
     TransposeM {
@@ -56,7 +59,8 @@ impl Operate for Op {
             | Op::Reverse {}
             | Op::TransposeM { m: _ }
             | Op::TransposeA { a: _ }
-            | Op::Pan { a: _ }
+            | Op::PanA { a: _ }
+            | Op::PanM { m: _ }
             | Op::Gain { m: _ } => 1.0,
 
             Op::Repeat { n, operations } => {
@@ -137,11 +141,21 @@ impl Operate for Op {
                 }
             }
 
-            Op::Pan { a } => {
+            Op::PanA { a } => {
                 for event in events.iter() {
                     let mut e = event.clone();
                     for sound in e.sounds.iter_mut() {
                         sound.pan += a;
+                    }
+                    vec_events.push(e)
+                }
+            }
+
+            Op::PanM { m } => {
+                for event in events.iter() {
+                    let mut e = event.clone();
+                    for sound in e.sounds.iter_mut() {
+                        sound.pan *= m;
                     }
                     vec_events.push(e)
                 }

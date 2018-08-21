@@ -69,13 +69,20 @@ pub mod tests {
 
     #[test]
     fn op_pan_test() {
-        let pan = Op::Pan { a: 0.5 };
-        assert_eq!(pan.get_length_ratio(), 1.0);
+        let pan_a = Op::PanA { a: 0.5 };
+        let pan_m = Op::PanM { m: 0.5 };
+        assert_eq!(pan_a.get_length_ratio(), 1.0);
+        assert_eq!(pan_m.get_length_ratio(), 1.0);
 
         let mut expected_event = event1();
         expected_event.sounds[0].pan = 0.5;
         let apply_expected = vec![expected_event];
-        assert_eq!(pan.apply(vec![event1()]), apply_expected);
+        assert_eq!(pan_a.apply(vec![event1()]), apply_expected);
+
+        let mut expected_event = event1();
+        expected_event.sounds[0].pan = 0.0;
+        let apply_expected = vec![expected_event];
+        assert_eq!(pan_m.apply(vec![event1()]), apply_expected);
     }
 
     #[test]

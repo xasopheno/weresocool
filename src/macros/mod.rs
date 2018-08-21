@@ -5,7 +5,7 @@ macro_rules! r {
                     Op::TransposeM { m: $num as f32 /$den as f32 },
                     Op::TransposeA { a: $offset },
                     Op::Gain { m: $gain },
-                    Op::Pan { a: $pan },
+                    Op::PanA { a: $pan },
                 ]},
             )*]
         }
@@ -30,7 +30,7 @@ pub mod tests {
                         Op::TransposeM { m: 1.0 / 1.0 },
                         Op::TransposeA { a: 3.0 },
                         Op::Gain { m: 1.0 },
-                        Op::Pan { a: 1.0 },
+                        Op::PanA { a: 1.0 },
                     ],
                 },
                 Op::Compose {
@@ -38,7 +38,7 @@ pub mod tests {
                         Op::TransposeM { m: 3.0 / 2.0 },
                         Op::TransposeA { a: 0.0 },
                         Op::Gain { m: 0.6 },
-                        Op::Pan { a: -1.0 },
+                        Op::PanA { a: -1.0 },
                     ],
                 },
                 Op::Compose {
@@ -46,7 +46,7 @@ pub mod tests {
                         Op::TransposeM { m: 5.0 / 4.0 },
                         Op::TransposeA { a: 1.5 },
                         Op::Gain { m: 0.5 },
-                        Op::Pan { a: 0.5 },
+                        Op::PanA { a: 0.5 },
                     ],
                 },
             ],
