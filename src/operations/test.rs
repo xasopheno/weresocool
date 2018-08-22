@@ -154,6 +154,7 @@ pub mod tests {
     }
 
     #[test]
+    #[cfg_attr(rustfmt, rustfmt_skip)]
     fn op_fit() {
         let fit = Op::Fit {
             n: 1,
@@ -165,70 +166,14 @@ pub mod tests {
         assert_eq!(fit_length, 5.0);
 
         let expected = vec![
-            Event {
-                sounds: vec![Sound {
-                    frequency: 100.0,
-                    gain: 1.0,
-                    pan: 0.0,
-                }],
-                length: 1.0,
-            },
-            Event {
-                sounds: vec![Sound {
-                    frequency: 100.0,
-                    gain: 1.0,
-                    pan: 0.0,
-                }],
-                length: 1.0,
-            },
-            Event {
-                sounds: vec![Sound {
-                    frequency: 100.0,
-                    gain: 1.0,
-                    pan: 0.0,
-                }],
-                length: 1.0,
-            },
-            Event {
-                sounds: vec![Sound {
-                    frequency: 100.0,
-                    gain: 1.0,
-                    pan: 0.0,
-                }],
-                length: 1.0,
-            },
-            Event {
-                sounds: vec![Sound {
-                    frequency: 200.0,
-                    gain: 1.0,
-                    pan: 0.0,
-                }],
-                length: 1.0,
-            },
-            Event {
-                sounds: vec![Sound {
-                    frequency: 200.0,
-                    gain: 1.0,
-                    pan: 0.0,
-                }],
-                length: 1.0,
-            },
-            Event {
-                sounds: vec![Sound {
-                    frequency: 100.0,
-                    gain: 1.0,
-                    pan: 0.0,
-                }],
-                length: 2.0,
-            },
-            Event {
-                sounds: vec![Sound {
-                    frequency: 100.0,
-                    gain: 1.0,
-                    pan: 0.0,
-                }],
-                length: 2.0,
-            },
+            Event { sounds: vec![Sound { frequency: 100.0, gain: 1.0, pan: 0.0 }], length: 1.0 },
+            Event { sounds: vec![Sound { frequency: 100.0, gain: 1.0, pan: 0.0 }], length: 1.0 },
+            Event { sounds: vec![Sound { frequency: 100.0, gain: 1.0, pan: 0.0 }], length: 1.0 },
+            Event { sounds: vec![Sound { frequency: 100.0, gain: 1.0, pan: 0.0 }], length: 1.0 },
+            Event { sounds: vec![Sound { frequency: 200.0, gain: 1.0, pan: 0.0 }], length: 1.0 },
+            Event { sounds: vec![Sound { frequency: 200.0, gain: 1.0, pan: 0.0 }], length: 1.0 },
+            Event { sounds: vec![Sound { frequency: 100.0, gain: 1.0, pan: 0.0 }], length: 2.0 },
+            Event { sounds: vec![Sound { frequency: 100.0, gain: 1.0, pan: 0.0 }], length: 2.0 },
         ];
 
         assert_eq!(fit.apply(vec_event1()), expected);
