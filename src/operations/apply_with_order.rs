@@ -1,10 +1,10 @@
-pub mod apply {
+pub mod apply_with_order {
     use event::Event;
     use operations::helpers::helpers::vv_event_to_v_events;
     use operations::{Apply, ApplyWithOrder, GetLengthRatio, Op};
 
-    impl Apply for Op {
-        fn apply(&self, events: Vec<Event>) -> Vec<Event> {
+    impl ApplyWithOrder for Op {
+        fn apply_with_order(&self, order_fn: fn(usize) -> f32, events: Vec<Event>) -> Vec<Event> {
             let mut vec_events: Vec<Event> = vec![];
             match self {
                 Op::AsIs {} => {
@@ -18,49 +18,54 @@ pub mod apply {
                 }
 
                 Op::TransposeM { m } => {
-                    for event in events.iter() {
+                    for (order, event) in events.iter().enumerate() {
+                        let order_after_fn = order_fn(order);
                         let mut e = event.clone();
                         for sound in e.sounds.iter_mut() {
-                            sound.frequency = sound.frequency * m;
+                            sound.frequency = sound.frequency * m * order_after_fn;
                         }
                         vec_events.push(e)
                     }
                 }
 
                 Op::TransposeA { a } => {
-                    for event in events.iter() {
+                    for (order, event) in events.iter().enumerate() {
+                        let order_after_fn = order_fn(order);
                         let mut e = event.clone();
                         for sound in e.sounds.iter_mut() {
-                            sound.frequency = sound.frequency + a;
-                        }
-                        vec_events.push(e)
-                    }
-                }
-
-                Op::PanA { a } => {
-                    for event in events.iter() {
-                        let mut e = event.clone();
-                        for sound in e.sounds.iter_mut() {
-                            sound.pan += a;
+                            sound.frequency = sound.frequency + a * order_after_fn;
                         }
                         vec_events.push(e)
                     }
                 }
 
                 Op::PanM { m } => {
-                    for event in events.iter() {
+                    for (order, event) in events.iter().enumerate() {
+                        let order_after_fn = order_fn(order);
                         let mut e = event.clone();
                         for sound in e.sounds.iter_mut() {
-                            sound.pan *= m;
+                            sound.pan *= m * order_after_fn;
+                        }
+                        vec_events.push(e)
+                    }
+                }
+
+                Op::PanA { a } => {
+                    for (order, event) in events.iter().enumerate() {
+                        let order_after_fn = order_fn(order);
+                        let mut e = event.clone();
+                        for sound in e.sounds.iter_mut() {
+                            sound.pan += a * order_after_fn;
                         }
                         vec_events.push(e)
                     }
                 }
 
                 Op::Length { m } => {
-                    for event in events.iter() {
+                    for (order, event) in events.iter().enumerate() {
+                        let order_after_fn = order_fn(order);
                         let mut e = event.clone();
-                        e.length = e.length * m;
+                        e.length = e.length * m * order_after_fn;
                         vec_events.push(e)
                     }
                 }
@@ -80,9 +85,10 @@ pub mod apply {
                 }
 
                 Op::Silence { m } => {
-                    for event in events.iter() {
+                    for (order, event) in events.iter().enumerate() {
+                        let order_after_fn = order_fn(order);
                         let mut e = event.clone();
-                        e.length *= m;
+                        e.length *= m * order_after_fn;
                         for sound in e.sounds.iter_mut() {
                             sound.frequency = 0.0;
                             sound.gain = 0.0;
@@ -92,10 +98,11 @@ pub mod apply {
                 }
 
                 Op::Gain { m } => {
-                    for event in events.iter() {
+                    for (order, event) in events.iter().enumerate() {
+                        let order_after_fn = order_fn(order);
                         let mut e = event.clone();
                         for sound in e.sounds.iter_mut() {
-                            sound.gain = sound.gain * m;
+                            sound.gain = sound.gain * m * order_after_fn;
                         }
                         vec_events.push(e)
                     }
@@ -104,7 +111,7 @@ pub mod apply {
                 Op::Compose { operations } => {
                     let mut es = events.clone();
                     for operation in operations.iter() {
-                        es = operation.apply(es);
+                        es = operation.apply_with_order(order_fn, es);
                     }
                     vec_events = es;
                 }
@@ -117,11 +124,12 @@ pub mod apply {
                     vec_events = es;
                 }
 
+
                 Op::Sequence { operations } => {
                     let mut es = events.clone();
                     let mut container = vec![];
                     for operation in operations.iter() {
-                        container.push(operation.apply(es.clone()));
+                        container.push(operation.apply_with_order(order_fn, es.clone()));
                     }
 
                     vec_events = container.iter().flat_map(|evt| evt.clone()).collect();
@@ -151,14 +159,14 @@ pub mod apply {
                         operations: vec![main_sequence, Op::Length { m: ratio }],
                     };
 
-                    vec_events = new_op.apply(es);
+                    vec_events = new_op.apply_with_order(order_fn, es);
                 }
 
                 Op::Overlay { operations } => {
                     let mut vec_vec_events: Vec<Vec<Event>> = vec![];
 
                     for operation in operations.iter() {
-                        let es = operation.apply(events.clone());
+                        let es = operation.apply_with_order(order_fn, events.clone());
                         vec_vec_events.push(es);
                     }
 

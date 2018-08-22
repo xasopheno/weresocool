@@ -1,5 +1,6 @@
 use event::Event;
 mod apply;
+mod apply_with_order;
 mod get_length_ratio;
 mod helpers;
 
@@ -39,6 +40,10 @@ pub enum Op {
     Compose {
         operations: Vec<Op>,
     },
+    ComposeWithOrder {
+        operations: Vec<Op>,
+        order_fn: fn(usize) -> f32,
+    },
     Fit {
         with_length_of: Box<Op>,
         main: Box<Op>,
@@ -51,6 +56,11 @@ pub enum Op {
 
 pub trait Apply {
     fn apply(&self, events: Vec<Event>) -> Vec<Event>;
+}
+
+pub trait ApplyWithOrder {
+    fn apply_with_order(&self, order_fn: fn(order: usize) -> f32, events: Vec<Event>)
+        -> Vec<Event>;
 }
 
 pub trait GetLengthRatio {
