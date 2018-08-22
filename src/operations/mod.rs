@@ -1,6 +1,6 @@
 use event::Event;
-use std::cmp;
-mod operate;
+mod apply;
+mod get_length_ratio;
 mod helpers;
 
 #[derive(Clone, PartialEq, Debug)]
@@ -49,10 +49,12 @@ pub enum Op {
     },
 }
 
-pub trait Operate {
+pub trait Apply {
     fn apply(&self, events: Vec<Event>) -> Vec<Event>;
-    fn get_length_ratio(&self) -> f32;
+}
 
+pub trait GetLengthRatio {
+    fn get_length_ratio(&self) -> f32;
 }
 
 #[cfg(test)]

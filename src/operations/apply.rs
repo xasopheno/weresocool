@@ -1,64 +1,9 @@
-pub mod operate {
+pub mod apply {
     use operations::helpers::helpers::vv_event_to_v_events;
-    use operations::{Op, Operate};
+    use operations::{Op, Apply, GetLengthRatio};
     use event::Event;
 
-    impl Operate for Op {
-        fn get_length_ratio(&self) -> f32 {
-            match self {
-                Op::AsIs {}
-                | Op::Reverse {}
-                | Op::TransposeM { m: _ }
-                | Op::TransposeA { a: _ }
-                | Op::PanA { a: _ }
-                | Op::PanM { m: _ }
-                | Op::Gain { m: _ } => 1.0,
-
-                Op::Repeat { n, operations } => {
-                    let mut length_ratio_of_operations = 0.0;
-                    for operation in operations {
-                        length_ratio_of_operations += operation.get_length_ratio();
-                    }
-
-                    length_ratio_of_operations * *n as f32
-                }
-
-                Op::Length { m } | Op::Silence { m } => *m,
-
-                Op::Sequence { operations } => {
-                    let mut new_total = 0.0;
-                    for operation in operations {
-                        new_total += operation.get_length_ratio();
-                    }
-                    new_total
-                }
-                Op::Compose { operations } => {
-                    let mut new_total = 1.0;
-                    for operation in operations {
-                        new_total *= operation.get_length_ratio();
-                    }
-                    new_total
-                }
-
-                Op::Fit {
-                    with_length_of,
-                    main: _,
-                    n: _,
-                } => with_length_of.get_length_ratio(),
-
-                Op::Overlay { operations } => {
-                    let mut max = 0.0;
-                    for op in operations {
-                        let next = op.get_length_ratio();
-                        if next > max {
-                            max = next;
-                        }
-                    }
-                    max
-                }
-            }
-        }
-
+    impl Apply for Op {
         fn apply(&self, events: Vec<Event>) -> Vec<Event> {
             let mut vec_events: Vec<Event> = vec![];
             match self {
@@ -121,8 +66,6 @@ pub mod operate {
                 }
 
                 Op::Repeat { n, operations } => {
-                    let mut es = events.clone();
-                    let mut container: Vec<Event> = vec![];
                     let mut repeat_container: Vec<Event> = vec![];
 
                     let sequence = Op::Sequence {

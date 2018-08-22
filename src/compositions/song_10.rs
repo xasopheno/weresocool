@@ -1,6 +1,6 @@
 use event::{Event, Render};
 use instrument::{oscillator::Oscillator, stereo_waveform::StereoWaveform};
-use operations::{Op, Operate};
+use operations::{Op, Apply};
 use settings::get_default_app_settings;
 
 pub fn generate_composition() -> StereoWaveform {
@@ -51,16 +51,6 @@ pub fn generate_composition() -> StereoWaveform {
         operations: vec![
             sequence1.clone(),
             sequence3.clone(),
-            Op::Compose {
-                operations: vec![sequence2.clone(), Op::TransposeM { m: 3.0 }],
-            },
-        ],
-    };
-
-    let overlay2 = Op::Overlay {
-        operations: vec![
-            overlay.clone(),
-            //            sequence3.clone(),
             Op::Compose {
                 operations: vec![sequence2.clone(), Op::TransposeM { m: 3.0 }],
             },

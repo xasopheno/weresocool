@@ -36,7 +36,7 @@ impl Oscillator {
         }
 
         if len_sounds < len_voices {
-            for i in 0..difference {
+            for _ in 0..difference {
                 sounds.push(Sound::init());
             }
         }
