@@ -42,7 +42,7 @@ pub enum Op {
     },
     ComposeWithOrder {
         operations: Vec<Op>,
-        order_fn: fn(usize) -> f32,
+        order_fn: fn(order: usize, length: usize) -> f32,
     },
     Fit {
         with_length_of: Box<Op>,
@@ -59,7 +59,7 @@ pub trait Apply {
 }
 
 pub trait ApplyWithOrder {
-    fn apply_with_order(&self, order_fn: fn(order: usize) -> f32, events: Vec<Event>)
+    fn apply_with_order(&self, order_fn: fn(order: usize, length: usize) -> f32, events: Vec<Event>)
         -> Vec<Event>;
 }
 

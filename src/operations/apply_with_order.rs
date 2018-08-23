@@ -4,7 +4,11 @@ pub mod apply_with_order {
     use operations::{Apply, ApplyWithOrder, GetLengthRatio, Op};
 
     impl ApplyWithOrder for Op {
-        fn apply_with_order(&self, order_fn: fn(usize) -> f32, events: Vec<Event>) -> Vec<Event> {
+        fn apply_with_order(
+            &self,
+            order_fn: fn(order: usize, length: usize) -> f32,
+            events: Vec<Event>,
+        ) -> Vec<Event> {
             let mut vec_events: Vec<Event> = vec![];
             match self {
                 Op::AsIs {} => {
@@ -19,7 +23,7 @@ pub mod apply_with_order {
 
                 Op::TransposeM { m } => {
                     for (order, event) in events.iter().enumerate() {
-                        let order_after_fn = order_fn(order);
+                        let order_after_fn = order_fn(order,events.len());
                         let mut e = event.clone();
                         for sound in e.sounds.iter_mut() {
                             sound.frequency = sound.frequency * m * order_after_fn;
@@ -30,7 +34,7 @@ pub mod apply_with_order {
 
                 Op::TransposeA { a } => {
                     for (order, event) in events.iter().enumerate() {
-                        let order_after_fn = order_fn(order);
+                        let order_after_fn = order_fn(order, events.len());
                         let mut e = event.clone();
                         for sound in e.sounds.iter_mut() {
                             sound.frequency = sound.frequency + a * order_after_fn;
@@ -41,7 +45,7 @@ pub mod apply_with_order {
 
                 Op::PanM { m } => {
                     for (order, event) in events.iter().enumerate() {
-                        let order_after_fn = order_fn(order);
+                        let order_after_fn = order_fn(order, events.len());
                         let mut e = event.clone();
                         for sound in e.sounds.iter_mut() {
                             sound.pan *= m * order_after_fn;
@@ -52,7 +56,7 @@ pub mod apply_with_order {
 
                 Op::PanA { a } => {
                     for (order, event) in events.iter().enumerate() {
-                        let order_after_fn = order_fn(order);
+                        let order_after_fn = order_fn(order, events.len());
                         let mut e = event.clone();
                         for sound in e.sounds.iter_mut() {
                             sound.pan += a * order_after_fn;
@@ -63,7 +67,7 @@ pub mod apply_with_order {
 
                 Op::Length { m } => {
                     for (order, event) in events.iter().enumerate() {
-                        let order_after_fn = order_fn(order);
+                        let order_after_fn = order_fn(order, events.len());
                         let mut e = event.clone();
                         e.length = e.length * m * order_after_fn;
                         vec_events.push(e)
@@ -86,7 +90,7 @@ pub mod apply_with_order {
 
                 Op::Silence { m } => {
                     for (order, event) in events.iter().enumerate() {
-                        let order_after_fn = order_fn(order);
+                        let order_after_fn = order_fn(order, events.len());
                         let mut e = event.clone();
                         e.length *= m * order_after_fn;
                         for sound in e.sounds.iter_mut() {
@@ -99,7 +103,7 @@ pub mod apply_with_order {
 
                 Op::Gain { m } => {
                     for (order, event) in events.iter().enumerate() {
-                        let order_after_fn = order_fn(order);
+                        let order_after_fn = order_fn(order, events.len());
                         let mut e = event.clone();
                         for sound in e.sounds.iter_mut() {
                             sound.gain = sound.gain * m * order_after_fn;
@@ -116,14 +120,16 @@ pub mod apply_with_order {
                     vec_events = es;
                 }
 
-                Op::ComposeWithOrder { order_fn, operations } => {
+                Op::ComposeWithOrder {
+                    order_fn,
+                    operations,
+                } => {
                     let mut es = events.clone();
                     for operation in operations.iter() {
                         es = operation.apply_with_order(*order_fn, es);
                     }
                     vec_events = es;
                 }
-
 
                 Op::Sequence { operations } => {
                     let mut es = events.clone();

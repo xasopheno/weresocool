@@ -109,7 +109,10 @@ pub mod apply {
                     vec_events = es;
                 }
 
-                Op::ComposeWithOrder { order_fn, operations } => {
+                Op::ComposeWithOrder {
+                    order_fn,
+                    operations,
+                } => {
                     let mut es = events.clone();
                     for operation in operations.iter() {
                         es = operation.apply_with_order(*order_fn, es);

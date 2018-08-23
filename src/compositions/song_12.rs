@@ -23,14 +23,21 @@ pub fn generate_composition() -> StereoWaveform {
     };
 
     fn with_overtones() -> Op {
-        Op::Compose { operations: vec![overtones(), sequence1()] }
+        Op::Compose {
+            operations: vec![overtones(), sequence1()],
+        }
     }
 
-    fn order_fn(order: usize) -> f32 { order as f32 }
+    fn order_fn(order: usize, length: usize) -> f32 {
+        order as f32
+    }
 
     let main = Op::ComposeWithOrder {
         operations: vec![
-            Op::Repeat { n: 10, operations: vec![with_overtones()] },
+            Op::Repeat {
+                n: 10,
+                operations: vec![with_overtones()],
+            },
             Op::TransposeA { a: 100.0 },
         ],
         order_fn,
