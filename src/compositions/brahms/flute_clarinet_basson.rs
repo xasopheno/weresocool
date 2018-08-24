@@ -1,5 +1,5 @@
 pub mod winds {
-    use operations::{Op, Apply};
+    use operations::{Op};
 
     pub fn winds1() -> Op {
         fn sound() -> Op {

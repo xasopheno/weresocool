@@ -1,5 +1,5 @@
 pub mod get_length_ratio {
-    use operations::{Apply, GetLengthRatio, Op};
+    use operations::{GetLengthRatio, Op};
 
     impl GetLengthRatio for Op {
         fn get_length_ratio(&self) -> f32 {
@@ -39,7 +39,7 @@ pub mod get_length_ratio {
                 }
 
                 Op::ComposeWithOrder {
-                    order_fn,
+                    order_fn: _,
                     operations,
                 } => {
                     let mut new_total = 1.0;
