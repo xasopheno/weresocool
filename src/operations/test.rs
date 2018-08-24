@@ -1,6 +1,6 @@
 pub mod tests {
     use event::{Event, Sound};
-    use operations::{Op, Operate};
+    use operations::{Op, Apply, GetLengthRatio};
 
     fn event1() -> Event {
         Event {
