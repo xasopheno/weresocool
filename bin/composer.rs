@@ -1,7 +1,7 @@
 extern crate portaudio;
 extern crate weresocool;
 use portaudio as pa;
-use weresocool::compositions::song_12::generate_composition;
+use weresocool::compositions::brahms::generate_composition;
 use weresocool::portaudio_setup::output::setup_portaudio_output;
 
 fn main() {
