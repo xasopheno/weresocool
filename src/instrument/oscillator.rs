@@ -1,8 +1,5 @@
-use instrument::{
-    voice::Voice,
-    stereo_waveform::StereoWaveform
-};
-use ratios::{Pan, R};
+use event::Sound;
+use instrument::{stereo_waveform::StereoWaveform, voice::Voice};
 use settings::Settings;
 use std::f32::consts::PI;
 fn tau() -> f32 {
@@ -11,68 +8,58 @@ fn tau() -> f32 {
 
 #[derive(Clone, Debug, PartialEq)]
 pub struct Oscillator {
-    pub voices: Vec<Voice>,
+    pub voices: Vec<(Voice, Voice)>,
     pub portamento_length: usize,
     pub settings: Settings,
 }
 
 impl Oscillator {
-    pub fn init(ratios: Vec<R>, settings: &Settings) -> Oscillator {
-        let voices = ratios
-            .iter()
-            .enumerate()
-            .map(|(index, ratio)| Voice::init(index, ratio.clone()))
-            .collect::<Vec<Voice>>();
+    pub fn init(settings: &Settings) -> Oscillator {
         Oscillator {
-            voices,
+            voices: vec![(Voice::init(0), Voice::init(1))],
             portamento_length: settings.buffer_size,
             settings: settings.clone(),
         }
     }
-    pub fn update_freq_and_gain(&mut self, base_frequency: f32, gain: f32) {
-        let new_freq =
-            if base_frequency < self.settings.max_freq && base_frequency > self.settings.min_freq {
-                base_frequency
-            } else {
-                0.0
-            };
+    pub fn update(&mut self, mut sounds: Vec<Sound>) {
+        let len_voices = self.voices.len();
+        let len_sounds = sounds.len();
+        let difference = (len_voices as isize - len_sounds as isize).abs();
 
-        let new_gain = if gain > self.settings.gain_threshold_min {
-            gain
-        } else {
-            0.0
-        };
-
-        for voice in self.voices.iter_mut() {
-            voice.update(new_freq, new_gain);
+        if len_sounds > len_voices {
+            for i in 0..difference {
+                self.voices.push((
+                    Voice::init(len_voices + i as usize + 1),
+                    Voice::init(len_voices + i as usize + 2),
+                ));
+            }
         }
-    }
 
-    pub fn update_ratios(&mut self, ratios: &Vec<R>) {
-        for (voice, ratio) in self.voices.iter_mut().zip(ratios) {
-            voice.ratio = ratio.clone();
+        if len_sounds < len_voices {
+            for _ in 0..difference {
+                sounds.push(Sound::init());
+            }
         }
-    }
 
-    pub fn update_freq_gain_and_ratios(&mut self, base_frequency: f32, gain: f32, ratios: &Vec<R>) {
-        self.update_freq_and_gain(base_frequency, gain);
-        self.update_ratios(&ratios)
+        for (sound, lr_voice) in sounds.iter().zip(self.voices.iter_mut()) {
+            let l_gain = sound.gain * ((-1.0 + sound.pan) / -2.0);
+            let r_gain = sound.gain * ((1.0 + sound.pan) / 2.0);
+            let (ref mut l_voice, ref mut r_voice) = lr_voice;
+            l_voice.update(sound.frequency, l_gain);
+            r_voice.update(sound.frequency, r_gain);
+        }
     }
 
     pub fn generate(&mut self, length: usize) -> StereoWaveform {
         let mut l_buffer: Vec<f32> = vec![0.0; length];
         let mut r_buffer: Vec<f32> = vec![0.0; length];
         let factor: f32 = tau() / self.settings.sample_rate;
-        for voice in self.voices.iter_mut() {
-            if voice.ratio.pan == Pan::Left {
-                voice.generate_waveform(&mut l_buffer, self.portamento_length, factor);
-            } else {
-                voice.generate_waveform(&mut r_buffer, self.portamento_length, factor);
-            }
+        for lr_voices in self.voices.iter_mut() {
+            let (ref mut l_voice, ref mut r_voice) = *lr_voices;
+            l_voice.generate_waveform(&mut l_buffer, self.portamento_length, factor);
+            r_voice.generate_waveform(&mut r_buffer, self.portamento_length, factor);
         }
 
         StereoWaveform { l_buffer, r_buffer }
     }
 }
-
-

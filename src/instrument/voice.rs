@@ -1,5 +1,4 @@
 use instrument::loudness::loudness_normalization;
-use ratios::R;
 use std::f32::consts::PI;
 fn tau() -> f32 {
     PI * 2.0
@@ -8,7 +7,6 @@ fn tau() -> f32 {
 #[derive(Clone, Debug, PartialEq)]
 pub struct Voice {
     pub index: usize,
-    pub ratio: R,
     pub past: VoiceState,
     pub current: VoiceState,
     pub phase: f32,
@@ -30,10 +28,9 @@ impl VoiceState {
 }
 
 impl Voice {
-    pub fn init(index: usize, ratio: R) -> Voice {
+    pub fn init(index: usize) -> Voice {
         Voice {
             index,
-            ratio,
             past: VoiceState::init(),
             current: VoiceState::init(),
             phase: 0.0,
@@ -54,23 +51,19 @@ impl Voice {
         }
     }
 
-    pub fn update(&mut self, base_frequency: f32, gain: f32) {
-        let mut new_freq = base_frequency * self.ratio.decimal + self.ratio.offset;
-        if new_freq < 20.0 {
-            new_freq = 0.0;
+    pub fn update(&mut self, mut frequency: f32, gain: f32) {
+        if frequency < 20.0 {
+            frequency = 0.0;
         }
 
-        let mut new_gain = if new_freq != 0.0 { gain } else { 0.0 };
-        let loudness = loudness_normalization(new_freq);
-        new_gain *= loudness;
-        //        if (self.current.gain - new_gain).abs() > 0.5 {
-        //            new_gain = new_gain * 0.51;
-        //        }
+        let mut gain = if frequency != 0.0 { gain } else { 0.0 };
+        let loudness = loudness_normalization(frequency);
+        gain *= loudness;
 
         self.past.frequency = self.current.frequency;
         self.past.gain = self.current.gain;
-        self.current.frequency = new_freq;
-        self.current.gain = new_gain * self.ratio.gain;
+        self.current.frequency = frequency;
+        self.current.gain = gain;
     }
 
     pub fn silence_to_sound(&self) -> bool {
@@ -113,4 +106,3 @@ impl Voice {
         (self.current.gain - self.past.gain) / (fade_length as f32)
     }
 }
-

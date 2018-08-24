@@ -1,10 +1,8 @@
 pub mod tests {
-    use ratios::{Pan, R};
+    use event::Sound;
     use instrument::{
-        oscillator::Oscillator,
+        loudness::loudness_normalization, oscillator::Oscillator, stereo_waveform::StereoWaveform,
         voice::{Voice, VoiceState},
-        stereo_waveform::StereoWaveform,
-        loudness::loudness_normalization,
     };
     use settings::get_test_settings;
     pub mod voice {
@@ -12,11 +10,9 @@ pub mod tests {
         #[test]
         fn test_voice_init() {
             let index = 1;
-            let ratio = R::atio(3, 2, 0.0, 0.6, Pan::Left);
-            let voice = Voice::init(index, ratio.clone());
+            let voice = Voice::init(index);
 
             let result = Voice {
-                ratio,
                 index,
                 past: VoiceState {
                     frequency: 0.0,
@@ -35,31 +31,28 @@ pub mod tests {
         #[test]
         fn test_deltas() {
             let index = 1;
-            let ratio = R::atio(1, 1, 0.0, 0.6, Pan::Left);
-            let mut voice = Voice::init(index, ratio.clone());
+            let mut voice = Voice::init(index);
             voice.update(200.0, 1.0);
             let g_delta = voice.calculate_gain_delta(10);
             let p_delta = voice.calculate_portamento_delta(10);
 
-            assert_eq!(g_delta, 0.039528757);
+            assert_eq!(g_delta, 0.06588126);
             assert_eq!(p_delta, 20.0);
         }
 
         #[test]
         fn test_generate_waveform() {
             let index = 1;
-            let ratio = R::atio(1, 1, 0.0, 0.5, Pan::Left);
             let mut buffer = vec![0.0; 3];
-            let mut voice = Voice::init(index, ratio.clone());
+            let mut voice = Voice::init(index);
             voice.update(100.0, 1.0);
             voice.generate_waveform(&mut buffer, 3, 2048.0 / 44_100.0);
-            assert_eq!(buffer, [0.0, 0.022728316, 0.3263405]);
+            assert_eq!(buffer, [0.0, 0.045456633, 0.652681]);
         }
 
         #[test]
         fn test_sound_silence() {
-            let ratio = R::atio(1, 1, 0.0, 1.0, Pan::Left);
-            let mut voice = Voice::init(1, ratio.clone());
+            let mut voice = Voice::init(1);
             voice.update(100.0, 1.0);
             let silence_to_sound = voice.silence_to_sound();
 
@@ -75,14 +68,13 @@ pub mod tests {
         use super::*;
         #[test]
         fn oscillator_init_test() {
-            let osc = Oscillator::init(r![(1, 1, 0.0, 1.0, 0.0),], &get_test_settings());
+            let osc = Oscillator::init(&get_test_settings());
             let expected = Oscillator {
                 portamento_length: 10,
                 settings: get_test_settings(),
-                voices: vec![
+                voices: vec![(
                     Voice {
                         index: 0,
-                        ratio: R::atio(1, 1, 0.0, 0.5, Pan::Left),
                         phase: 0.0,
                         past: VoiceState {
                             frequency: 0.0,
@@ -95,7 +87,6 @@ pub mod tests {
                     },
                     Voice {
                         index: 1,
-                        ratio: R::atio(1, 1, 0.0, 0.5, Pan::Right),
                         phase: 0.0,
                         past: VoiceState {
                             frequency: 0.0,
@@ -106,42 +97,47 @@ pub mod tests {
                             gain: 0.0,
                         },
                     },
-                ],
+                )],
             };
             assert_eq!(osc, expected);
         }
 
         #[test]
-        fn oscillator_ratio_update_test() {
-            let mut osc = Oscillator::init(r![(1, 1, 0.0, 1.0, 0.0),], &get_test_settings());
-            osc.update_ratios(&r![(3, 2, 0.0, 1.0, 0.0),]);
+        fn oscillator_update_test() {
+            let mut osc = Oscillator::init(&get_test_settings());
+            osc.update(vec![Sound {
+                frequency: 100.0,
+                gain: 1.0,
+                pan: 0.5,
+            }]);
 
-            assert_eq!(osc.voices[0].ratio, R::atio(3, 2, 0.0, 0.5, Pan::Left));
-            assert_eq!(osc.voices[1].ratio, R::atio(3, 2, 0.0, 0.5, Pan::Right))
+            assert_eq!(osc.voices[0].0.past.frequency, 0.0);
+            assert_eq!(osc.voices[0].0.past.gain, 0.0);
+            assert_eq!(osc.voices[0].0.current.frequency, 100.0);
+            assert_eq!(osc.voices[0].0.current.gain, 0.25);
+            //
+            assert_eq!(osc.voices[0].1.past.frequency, 0.0);
+            assert_eq!(osc.voices[0].1.past.gain, 0.0);
+            assert_eq!(osc.voices[0].1.current.frequency, 100.0);
+            assert_eq!(osc.voices[0].1.current.gain, 0.75);
         }
         #[test]
         fn oscillator_generate_test() {
-            let mut osc = Oscillator::init(r![(1, 1, 0.0, 1.0, 0.0),], &get_test_settings());
+            let mut osc = Oscillator::init(&get_test_settings());
 
-            osc.update_freq_gain_and_ratios(200.0, 1.0, &r![(3, 2, 0.0, 1.0, 0.0)]);
-            assert_eq!(osc.voices[0].past.frequency, 0.0);
-            assert_eq!(osc.voices[0].past.gain, 0.0);
-            assert_eq!(osc.voices[0].current.frequency, 200.0);
-            assert_eq!(osc.voices[0].current.gain, 0.3294063);
-
-            assert_eq!(osc.voices[1].past.frequency, 0.0);
-            assert_eq!(osc.voices[1].past.gain, 0.0);
-            assert_eq!(osc.voices[1].current.frequency, 200.0);
-            assert_eq!(osc.voices[1].current.gain, 0.3294063);
+            osc.update(vec![Sound {
+                frequency: 300.0,
+                gain: 1.0,
+                pan: -0.5,
+            }]);
 
             let expected = StereoWaveform {
-                l_buffer: vec![0.0, 0.006254273, 0.018750122],
-                r_buffer: vec![0.0, 0.006254273, 0.018750122],
+                l_buffer: vec![0.0, 0.011016606, 0.032999497],
+                r_buffer: vec![0.0, 0.0036722021, 0.010999832],
             };
             assert_eq!(osc.generate(3), expected);
         }
     }
-
 
     pub mod loudness {
         use super::*;

@@ -1,6 +1,6 @@
-pub mod oscillator;
-pub mod voice;
-pub mod stereo_waveform;
 mod loudness;
+pub mod oscillator;
+pub mod stereo_waveform;
 #[cfg(test)]
 mod test;
+pub mod voice;
