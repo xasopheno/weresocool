@@ -32,7 +32,7 @@ pub fn generate_composition() -> StereoWaveform {
     };
 
     let mut oscillator = Oscillator::init(&get_default_app_settings());
-    let e = vec![Event::init(164.8, 1.0, 0.0, 0.57)];
+    let e = vec![Event::init(164.8, 1.0, 0.0, 0.52)];
     let mut events = brahms().apply(e);
 
     events.render(&mut oscillator)
