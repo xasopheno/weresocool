@@ -43,6 +43,7 @@ pub mod winds {
                     operations: vec![
                         sound(),
                         phrase_with_space(),
+                        Op::Gain { m: 1.2 }
                     ]
                 }
             ]}

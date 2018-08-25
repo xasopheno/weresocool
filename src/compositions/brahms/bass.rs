@@ -16,12 +16,12 @@ pub mod bass {
             Op::Sequence { operations: vec![
                 Op::Repeat { operations: vec![phrase()], n: 4 },
                 Op::Compose { operations: vec![
-                    r![(4, 5, 1.0, 0.40, -0.5), (2, 5, 0.0, 0.40, 0.5)],
+                    r![(4, 5, 0.0, 0.40, -0.5), (2, 5, 0.0, 0.40, 0.5)],
                     Op::Length {m: 2.0}
                 ]},
                 Op::Silence { m: 2.0 },
                 Op::Compose { operations: vec![
-                    r![(3, 10, 0.5, 0.45, -0.5), (3, 5, 0.0, 0.45, 0.5)],
+                    r![(3, 10, 0.0, 0.45, -0.5), (3, 5, 0.0, 0.45, 0.5)],
                     Op::Length {m: 2.0}
                 ]},
                 Op::Silence { m: 2.0 },
@@ -32,7 +32,10 @@ pub mod bass {
         fn result() -> Op {
             Op::Sequence {operations: vec! [
                 Op::Silence {m: 1.0},
-                phrase1()
+                Op::Compose { operations: vec![
+                    phrase1(),
+                    Op::Gain { m: 2.0 }
+                ]}
             ]}
 
 

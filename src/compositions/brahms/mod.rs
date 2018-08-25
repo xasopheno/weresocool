@@ -1,4 +1,5 @@
 mod violins;
+mod violas;
 mod flute_clarinet_basson;
 mod horns;
 mod cello;
@@ -10,6 +11,7 @@ use operations::{Op, Apply};
 use settings::get_default_app_settings;
 use compositions::brahms::{
     violins::violins::violins1,
+    violas::violas::violas1,
     flute_clarinet_basson::winds::winds1,
     horns::horns::horns1,
     cello::cello::cello1,
@@ -22,6 +24,7 @@ pub fn generate_composition() -> StereoWaveform {
             operations: vec![
                 Op::Overlay { operations: vec![
                     violins1(),
+                    violas1(),
                     winds1(),
                     horns1(),
                     cello1(),
@@ -32,7 +35,7 @@ pub fn generate_composition() -> StereoWaveform {
     };
 
     let mut oscillator = Oscillator::init(&get_default_app_settings());
-    let e = vec![Event::init(164.8, 1.0, 0.0, 0.52)];
+    let e = vec![Event::init(164.8, 1.0, 0.0, 0.57)];
     let mut events = brahms().apply(e);
 
     events.render(&mut oscillator)

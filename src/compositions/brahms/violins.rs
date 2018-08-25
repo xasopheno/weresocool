@@ -3,7 +3,11 @@ pub mod violins {
 
     pub fn violins1() -> Op {
         fn sound() -> Op {
-            r![(4, 1, 3.0, 0.25, 0.0), (2, 1, 0.0, 0.8, 0.0)]
+            r![
+            (4, 1, 5.0, 0.15, 0.2),
+            (4, 1, 0.0, 0.15, -0.2),
+            (2, 1, 2.0, 0.4, 0.2),
+            (2, 1, 0.0, 0.4, -0.2)]
         }
 
         fn violins1(m: Vec<(usize, usize)>, d: f32) -> Op {
@@ -27,7 +31,8 @@ pub mod violins {
                 violins1(vec![(15, 16), (3, 2)], 1.0),
                 violins1(vec![(2, 1), (1, 1)], -1.0),
                 violins1(vec![(6, 5), (3, 2)], 1.0),
-//                violins1(vec![(7, 4), (7, 8)]),
+                violins1(vec![(9, 5), (9, 10)], 1.0),
+                violins1(vec![(16, 15), (4, 3)], 1.0),
             ]}
         }
 
@@ -36,6 +41,7 @@ pub mod violins {
                 operations: vec![
                     sound(),
                     violins_phrase1(),
+                    Op::Gain { m: 1.1 }
                 ]
             }
         }
