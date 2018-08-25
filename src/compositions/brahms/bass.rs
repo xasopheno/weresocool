@@ -34,7 +34,7 @@ pub mod bass {
                 Op::Silence {m: 1.0},
                 Op::Compose { operations: vec![
                     phrase1(),
-                    Op::Gain { m: 2.0 }
+                    Op::Gain { m: 1.3 }
                 ]}
             ]}
 
