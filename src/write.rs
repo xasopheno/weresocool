@@ -25,10 +25,29 @@ pub fn write_composition_to_wav(composition_generator: fn() -> StereoWaveform) {
 
     let composition = composition_generator();
     let mut buffer = vec![0.0; composition.r_buffer.len() * 2];
+
     write_output_buffer(&mut buffer, composition);
+    normalize_waveform(&mut buffer);
 
     let mut writer = hound::WavWriter::create("composition.wav", spec).unwrap();
     for sample in buffer {
         writer.write_sample(sample).unwrap();
     }
+}
+
+fn normalize_waveform(buffer: &mut Vec<f32>) {
+    let mut max = 0.0;
+    for sample in buffer.iter() {
+        if (*sample).abs() > max {
+            max = *sample;
+        }
+    }
+
+    let normalization_ratio = 1.0/max;
+
+    for sample in buffer.iter_mut() {
+        *sample *= normalization_ratio
+    }
+
+    println!("Normalized by {}", normalization_ratio);
 }
