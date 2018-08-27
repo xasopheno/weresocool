@@ -240,8 +240,8 @@ pub fn generate_composition() -> StereoWaveform {
         }
     };
 
-    let main = Op::Compose {
-        operations: vec![sequence1()],
+    let main = Op::Sequence {
+        operations: vec![sequence1(), Op::Silence {m: 1.5} ],
     };
 
     let mut oscillator = Oscillator::init(&get_default_app_settings());
