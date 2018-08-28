@@ -39,6 +39,7 @@ pub fn generate_composition() -> StereoWaveform {
                 Op::AsIs,
                 Op::TransposeM { m: 7.0/8.0 },
                 Op::TransposeM { m: 4.0/5.0 },
+                Op::TransposeM { m: 3.0/4.0 },
             ],
         }
     };
