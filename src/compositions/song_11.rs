@@ -73,7 +73,6 @@ pub fn generate_composition() -> StereoWaveform {
         ],
     };
 
-    //    println!("{:?}", main);
 
     let mut oscillator = Oscillator::init(&get_default_app_settings());
     let e = vec![Event::init(120.0, 0.75, 0.0, 4.0)];
