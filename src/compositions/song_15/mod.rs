@@ -54,7 +54,7 @@ pub fn generate_composition() -> StereoWaveform {
                     sequence2(),
                     Op::Length { m: 5.5 },
                     Op::Gain {m: 0.25},
-                    Op::TransposeA { a: 10.0 }
+                    Op::TransposeA { a: 5.0 }
                 ]},
                 repeat(),
             ],
