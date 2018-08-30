@@ -1,7 +1,7 @@
 pub mod material {
     use operations::{Op};
 
-   fn overtones() -> Op {
+    pub fn overtones() -> Op {
         r![
             (4, 1, 0.0, 0.04, -0.2),
             (3, 1, 7.0, 0.04, 0.2),
@@ -142,7 +142,7 @@ pub mod material {
     pub fn repeat() -> Op {
         Op::Repeat {
             operations: vec![overlay()],
-            n: 3
+            n: 2
         }
     }
 }
