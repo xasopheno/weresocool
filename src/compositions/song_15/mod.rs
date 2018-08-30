@@ -1,12 +1,17 @@
-mod sequence1;
+mod area1;
+mod area2;
 
-use compositions::song_15::sequence1::material::{
+use compositions::song_15::area1::material::{
     sequence1,
     sequence2,
     sequence3,
     repeat,
     overlay
 };
+use compositions::song_15::area2::material2::{
+    sequence4,
+};
+
 use event::{Event, Render};
 use instrument::{oscillator::Oscillator, stereo_waveform::StereoWaveform};
 use operations::{Op, Apply};
@@ -46,20 +51,26 @@ pub fn generate_composition() -> StereoWaveform {
 
 
 
+    fn intro() -> Op {
+        Op::Compose {operations: vec![
+            intro_overtones(),
+            sequence2(),
+            Op::Length { m: 5.5 },
+            Op::Gain {m: 0.25},
+            Op::TransposeA { a: 5.0 }
+        ]}
+    }
+
     fn form() -> Op {
         Op::Sequence {
             operations: vec![
-                Op::Compose {operations: vec![
-                    intro_overtones(),
-                    sequence2(),
-                    Op::Length { m: 5.5 },
-                    Op::Gain {m: 0.25},
-                    Op::TransposeA { a: 5.0 }
-                ]},
-                repeat(),
+//                intro(),
+//                repeat(),
+                  sequence4()
             ],
         }
     }
+
 
     let mut oscillator = Oscillator::init(&get_default_app_settings());
     let e = vec![Event::init(120.0, 1.0, 0.0, 1.25)];

@@ -1,8 +1,7 @@
 pub mod material {
-    use operations::{Op, Apply};
-    use settings::get_default_app_settings;
+    use operations::{Op};
 
-    pub fn overtones() -> Op {
+   fn overtones() -> Op {
         r![
             (4, 1, 0.0, 0.04, -0.2),
             (3, 1, 7.0, 0.04, 0.2),
@@ -21,12 +20,16 @@ pub mod material {
         ]
     }
 
-    pub fn overtones2() -> Op {
+    fn overtones2() -> Op {
         r![
-            (2, 1, 0.0, 0.55, 0.4),
-            (2, 1, 0.0, 0.55, 0.4),
+            (2, 1, 3.0, 0.1, 0.6),
+            (2, 1, 0.0, 0.1, -0.6),
+            (3, 2, 1.0, 0.10, 0.2),
+            (3, 2, 0.0, 0.10, -0.2),
             (1, 1, 0.0, 0.75, 0.0),
             (1, 1, 0.0, 0.75, 0.0),
+            (1, 2, 0.0, 0.05, 0.0),
+            (1, 2, 4.0, 0.05, 0.0),
         ]
     }
 
@@ -131,6 +134,7 @@ pub mod material {
             Op::Compose { operations: vec![
                 overtones2(),
                 melody(),
+                Op::Gain { m: 0.5 }
             ]}
         ]}
     }
