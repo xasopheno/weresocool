@@ -64,22 +64,16 @@ pub fn generate_composition() -> StereoWaveform {
     fn form() -> Op {
         Op::Sequence {
             operations: vec![
-                intro(),
+                sequence4(),
                 repeat(),
-                  Op::Overlay {operations: vec![
-                      Op::Sequence { operations: vec![
-                          sequence1(),
-                          Op::Silence {m: 0.2}
-                      ]},
-                      sequence4()
-                  ]}
+                sequence1(),
             ],
         }
     }
 
 
     let mut oscillator = Oscillator::init(&get_default_app_settings());
-    let e = vec![Event::init(120.0, 1.0, 0.0, 1.25)];
+    let e = vec![Event::init(110.0, 1.0, 0.0, 1.25)];
     let mut events = form().apply(e);
 
     events.render(&mut oscillator)
