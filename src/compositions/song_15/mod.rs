@@ -4,9 +4,9 @@ mod area2;
 use compositions::song_15::area1::material::{
     sequence1,
     sequence2,
-    sequence3,
+    fit,
+    fit_again,
     repeat,
-    overlay
 };
 use compositions::song_15::area2::material2::{
     sequence4,
@@ -61,10 +61,32 @@ pub fn generate_composition() -> StereoWaveform {
         ]}
     }
 
+    fn fit_test() -> Op {
+        Op::Fit {
+            with_length_of: Box::new(sequence4()),
+            n: 1,
+            main: Box::new(
+                Op::Compose { operations: vec![
+                    Op::Sequence { operations: vec![
+                        Op::Silence { m: 10.0 },
+                        fit(),
+                        Op::Silence { m: 12.0 }
+                    ]},
+                    Op::TransposeM {m: 1.8},
+                    Op::Gain { m: 0.07},
+                    Op::Reverse {},
+                ]}
+            )
+        }
+    }
+
     fn form() -> Op {
         Op::Sequence {
             operations: vec![
-                sequence4(),
+                Op::Overlay { operations: vec![
+                    sequence4(),
+                    fit_test()
+                ]},
                 repeat(),
                 sequence1(),
             ],
@@ -73,7 +95,7 @@ pub fn generate_composition() -> StereoWaveform {
 
 
     let mut oscillator = Oscillator::init(&get_default_app_settings());
-    let e = vec![Event::init(110.0, 1.0, 0.0, 1.25)];
+    let e = vec![Event::init(100.0, 1.0, 0.0, 1.25)];
     let mut events = form().apply(e);
 
     events.render(&mut oscillator)
