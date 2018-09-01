@@ -73,7 +73,7 @@ pub fn generate_composition() -> StereoWaveform {
                         Op::Silence { m: 12.0 }
                     ]},
                     Op::TransposeM {m: 1.8},
-                    Op::Gain { m: 0.09},
+                    Op::Gain { m: 0.1},
                     Op::Reverse {},
                 ]}
             )

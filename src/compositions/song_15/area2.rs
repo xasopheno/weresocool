@@ -267,7 +267,7 @@ pub mod material2 {
                 ]}
             ]},
             Op::Length { m: 0.2 },
-            Op::Gain {m: 0.4},
+            Op::Gain {m: 0.7},
         ],
         }
     }
