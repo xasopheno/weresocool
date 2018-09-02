@@ -85,7 +85,10 @@ pub fn generate_composition() -> StereoWaveform {
             operations: vec![
                 Op::Overlay { operations: vec![
                     sequence4(),
-                    fit_test()
+                    Op::Compose {operations: vec![
+                        fit_test(),
+                        Op::Gain {m: 2.6}
+                    ]}
                 ]},
                 repeat(),
                 sequence1(),

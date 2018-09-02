@@ -130,7 +130,7 @@ pub mod material {
             Op::Compose { operations: vec![
                 overtones2(),
                 melody(),
-                Op::Gain { m: 0.7 }
+                Op::Gain { m: 0.75 }
             ]}
         ]}
     }
