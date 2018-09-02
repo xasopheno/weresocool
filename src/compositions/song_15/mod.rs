@@ -1,15 +1,21 @@
 mod area1;
 mod area2;
+mod area3;
 
-use compositions::song_15::area1::material::{
-    sequence1,
-    sequence2,
-    fit,
-    fit_again,
-    repeat,
-};
-use compositions::song_15::area2::material2::{
-    sequence4,
+use compositions::song_15::{
+    area1::material::{
+        sequence1,
+        sequence2,
+        fit,
+        fit_again,
+        repeat,
+    },
+    area2::material2::{
+        sequence4,
+    },
+    area3::material3::{
+        sequence5,
+    }
 };
 
 use event::{Event, Render};
@@ -83,15 +89,16 @@ pub fn generate_composition() -> StereoWaveform {
     fn form() -> Op {
         Op::Sequence {
             operations: vec![
-                Op::Overlay { operations: vec![
-                    sequence4(),
-                    Op::Compose {operations: vec![
-                        fit_test(),
-                        Op::Gain {m: 2.6}
-                    ]}
-                ]},
-                repeat(),
-                sequence1(),
+//                Op::Overlay { operations: vec![
+//                    sequence4(),
+//                    Op::Compose {operations: vec![
+//                        fit_test(),
+//                        Op::Gain {m: 2.6}
+//                    ]}
+//                ]},
+//                repeat(),
+//                sequence1(),
+                sequence5(),
             ],
         }
     }

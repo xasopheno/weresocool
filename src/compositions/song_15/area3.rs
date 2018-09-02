@@ -3,25 +3,19 @@ pub mod material3 {
 
     fn overtones() -> Op {
         r![
-            (4, 1, 0.0, 0.04, -0.2),
-            (3, 1, 7.0, 0.04, 0.2),
-            (9, 4, 5.0, 0.05, 1.0),
-            (9, 4, 0.0, 0.05, 1.0),
-            (5, 2, 4.0, 0.25, -1.0),
-            (5, 2, 0.0, 0.25, -1.0),
-            (7, 4, 3.0, 0.05, 0.7),
-            (7, 4, 0.0, 0.05, 0.7),
-            (3, 2, 4.0, 0.25, -0.7),
-            (3, 2, 0.0, 0.25, -0.7),
-            (2, 1, 0.0, 0.75, 0.4),
-            (2, 1, 0.0, 0.75, 0.4),
+            (2, 1, 5.0, 0.25, 0.8),
+            (2, 1, 0.0, 0.25, -0.8),
+            (3, 1, 7.0, 0.1, 0.4),
+            (3, 1, 0.0, 0.1, -0.4),
+            (1, 1, 3.0, 0.75, 0.3),
+            (1, 1, 0.0, 0.75, -0.3),
         ]
     }
 
     pub fn s5_melody() -> Op {
         Op::Compose { operations: vec![
             Op::Sequence { operations: vec![
-
+                Op::AsIs,
             ]}
         ]}
     }
@@ -31,10 +25,41 @@ pub mod material3 {
             Op::Sequence {
                 operations: vec![
                     Op::AsIs,
-
+                    Op::TransposeM {m: 9.0/8.0},
+                    Op::TransposeM {m: 6.0/5.0},
+                    Op::TransposeM {m: 9.0/8.0},
+                    Op::TransposeM {m: 9.0/4.0},
+                    Op::TransposeM {m: 2.0/1.0},
+                    Op::Silence {m: 1.0},
+                    Op::TransposeM {m: 2.0/1.0},
+                    Op::TransposeM {m: 7.0/4.0},
+                    Op::Silence {m: 1.0},
+                    Op::TransposeM {m: 7.0/4.0},
+                    Op::TransposeM {m: 5.0/3.0},
+                    Op::Silence {m: 1.0},
+                    Op::TransposeM {m: 4.0/3.0},
+                    Op::TransposeM {m: 5.0/4.0},
+                    Op::TransposeM {m: 7.0/6.0},
+                    Op::TransposeM {m: 5.0/4.0},
+                    Op::TransposeM {m: 1.0/1.0},
+                    Op::TransposeM {m: 15.0/16.0},
+                    Op::TransposeM {m: 9.0/8.0},
+                    Op::TransposeM {m: 3.0/2.0},
+                    Op::TransposeM {m: 4.0/3.0},
+                    Op::TransposeM {m: 5.0/4.0},
+                    Op::TransposeM {m: 9.0/8.0},
+                    Op::TransposeM {m: 1.0/1.0},
                 ],
             },
-            Op::TransposeM {m: 3.0/2.0}
+            overtones(),
+//            Op::TransposeM {m: 3.0/2.0}
+        ]}
+    }
+
+    pub fn sequence5() -> Op {
+        Op::Overlay { operations: vec![
+            s5_melody(),
+            s5_bass()
         ]}
     }
 }
