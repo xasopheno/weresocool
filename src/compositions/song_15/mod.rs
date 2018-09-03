@@ -97,8 +97,13 @@ pub fn generate_composition() -> StereoWaveform {
 //                    ]}
 //                ]},
 //                repeat(),
-//                sequence1(),
-                sequence5(),
+                Op::AsIs,
+                Op::AsIs,
+                Op::Compose { operations: vec![
+                    sequence5(),
+                    Op::Gain {m: 0.5},
+                    Op::Length {m: 0.6666}
+                ]}
             ],
         }
     }
