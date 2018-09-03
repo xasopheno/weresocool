@@ -30,6 +30,7 @@ pub enum Op {
         m: f32,
     },
     //    Capture { n: usize },
+    //    Fuzz
     Repeat {
         n: usize,
         operations: Vec<Op>,
