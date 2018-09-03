@@ -87,23 +87,24 @@ pub fn generate_composition() -> StereoWaveform {
     }
 
     fn form() -> Op {
-        Op::Sequence {
-            operations: vec![
-//                Op::Overlay { operations: vec![
-//                    sequence4(),
-//                    Op::Compose {operations: vec![
-//                        fit_test(),
-//                        Op::Gain {m: 2.6}
-//                    ]}
-//                ]},
-//                repeat(),
-                Op::AsIs,
-                Op::AsIs,
-                Op::Compose { operations: vec![
+            Op::Sequence {
+                operations: vec![
+                    Op::Compose { operations: vec![
                     sequence5(),
                     Op::Gain {m: 0.5},
                     Op::Length {m: 0.6666}
-                ]}
+                ]},
+                Op::Overlay { operations: vec![
+                    sequence4(),
+                    Op::Compose {operations: vec![
+                        fit_test(),
+                        Op::Gain {m: 2.6}
+                    ]}
+                ]},
+                repeat(),
+                Op::AsIs,
+                Op::AsIs,
+
             ],
         }
     }

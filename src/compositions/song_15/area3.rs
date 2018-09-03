@@ -150,7 +150,7 @@ pub mod material3 {
 
     pub fn sequence5() -> Op {
         Op::Repeat {
-            n: 2,
+            n: 1,
             operations: vec![
             Op::Overlay {
                 operations: vec![
