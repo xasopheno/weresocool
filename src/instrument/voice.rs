@@ -44,6 +44,8 @@ impl Voice {
     ) {
         let p_delta = self.calculate_portamento_delta(portamento_length);
         let g_delta = self.calculate_gain_delta(buffer.len());
+
+
         for (index, sample) in buffer.iter_mut().enumerate() {
             let new_sample =
                 self.generate_sample(index, p_delta, g_delta, portamento_length, factor);

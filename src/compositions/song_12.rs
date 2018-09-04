@@ -28,7 +28,7 @@ pub fn generate_composition() -> StereoWaveform {
         }
     }
 
-    fn order_fn(order: usize, length: usize) -> f32 {
+    fn order_fn(order: usize, _length: usize) -> f32 {
         order as f32
     }
 

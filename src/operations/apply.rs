@@ -95,7 +95,7 @@ pub mod apply {
                     for event in events.iter() {
                         let mut e = event.clone();
                         for sound in e.sounds.iter_mut() {
-                            sound.gain = sound.gain * m;
+                            sound.gain *= m;
                         }
                         vec_events.push(e)
                     }
