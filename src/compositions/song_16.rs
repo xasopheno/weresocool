@@ -1,6 +1,10 @@
 use event::{Event, Render};
 use instrument::{oscillator::Oscillator, stereo_waveform::StereoWaveform};
-use operations::{Op, Apply};
+use operations::{
+    Op,
+    Op::*,
+    Apply
+};
 use settings::get_default_app_settings;
 
 pub fn generate_composition() -> StereoWaveform {
@@ -21,34 +25,28 @@ pub fn generate_composition() -> StereoWaveform {
     }
 
     fn sequence1() -> Op {
-        Op::Sequence {
-            operations: vec![
-                Op::TransposeM { m: 1.0/1.0 },
-                Op::TransposeM { m: 9.0/8.0 },
-                Op::TransposeM { m: 5.0/4.0 },
-            ],
-        }
+        sequence![
+            TransposeM { m: 1.0/1.0 },
+            TransposeM { m: 9.0/8.0 },
+            TransposeM { m: 5.0/4.0 },
+        ]
     };
 
     fn sequence2() -> Op {
-        Op::Sequence {
-            operations: vec![
-                Op::TransposeM { m: 1.0 / 1.0 },
-                Op::TransposeM { m: 7.0 / 8.0 },
-                Op::TransposeM { m: 4.0 / 5.0 },
-            ],
-        }
+        sequence![
+            TransposeM { m: 1.0 / 1.0 },
+            TransposeM { m: 7.0 / 8.0 },
+            TransposeM { m: 4.0 / 5.0 },
+        ]
     }
 
     fn sequence3() -> Op {
-        Op::Sequence {
-            operations: vec![
-                Op::TransposeM { m: 1.0 / 1.0 },
-                Op::TransposeM { m: 4.0 / 3.0 },
-                Op::TransposeM { m: 7.0 / 8.0 },
-                Op::TransposeM { m: 6.0 / 5.0 },
-            ],
-        }
+        sequence![
+            TransposeM { m: 1.0 / 1.0 },
+            TransposeM { m: 4.0 / 3.0 },
+            TransposeM { m: 7.0 / 8.0 },
+            TransposeM { m: 6.0 / 5.0 },
+        ]
     }
 
     fn fit() -> Op {
@@ -56,35 +54,31 @@ pub fn generate_composition() -> StereoWaveform {
             n: 60,
             with_length_of: Box::new(sequences()),
             main: Box::new(
-                Op::Compose { operations: vec![
+                compose![
                     overtones(),
                     sequence2(),
                     Op::TransposeM {m: 6.0 },
                     Op::Gain {m: 0.1}
-                ]}
+                ]
             )
         }
     }
 
     fn sequences() -> Op {
-        Op::Compose {
-            operations: vec![
-                overtones(),
-                sequence1(),
-                sequence2(),
-                sequence3(),
-            ],
-        }
+        compose![
+            overtones(),
+            sequence1(),
+            sequence2(),
+            sequence3(),
+        ]
     }
 
     fn overlay() -> Op {
-        Op::Overlay { operations: vec![
+        overlay![
             fit(),
             sequences()
-        ]}
+        ]
     }
-
-
 
     let mut oscillator = Oscillator::init(&get_default_app_settings());
     let e = vec![Event::init(120.0, 1.0, 0.0, 0.8)];

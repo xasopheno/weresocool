@@ -12,6 +12,43 @@ macro_rules! r {
     }
 }
 
+macro_rules! compose {
+    ( $( $operation:expr ),*$(,)* ) => {
+        {
+            let mut temp_vec = Vec::new();
+            $(
+                temp_vec.push($operation);
+            )*
+
+            Op::Compose { operations: temp_vec }
+        };
+    };
+}
+
+macro_rules! sequence {
+    ( $( $operation:expr ),*$(,)* ) => {
+        {
+            let mut temp_vec = Vec::new();
+            $(
+                temp_vec.push($operation);
+            )*
+            Op::Sequence { operations: temp_vec }
+        };
+    };
+}
+
+macro_rules! overlay {
+    ( $( $operation:expr ),*$(,)* ) => {
+        {
+            let mut temp_vec = Vec::new();
+            $(
+                temp_vec.push($operation);
+            )*
+            Op::Overlay { operations: temp_vec }
+        };
+    };
+}
+
 #[cfg(test)]
 pub mod tests {
     use operations::Op;
