@@ -18,7 +18,7 @@ pub fn generate_composition() -> StereoWaveform {
                 ratios(),
                 Op::Sequence {
                     operations: vec![
-                        Op::AsIs,
+                        Op::TransposeM { m: 1.0 / 1.0 },
                         Op::TransposeM { m: 9.0 / 8.0 },
                         Op::TransposeM { m: 5.0 / 4.0 },
                         Op::TransposeM { m: 3.0 / 2.0 },
@@ -76,6 +76,7 @@ pub fn generate_composition() -> StereoWaveform {
 
     let mut oscillator = Oscillator::init(&get_default_app_settings());
     let e = vec![Event::init(120.0, 0.75, 0.0, 4.0)];
+
     let mut events = main.apply(e);
 
     events.render(&mut oscillator)

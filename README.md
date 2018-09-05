@@ -2,11 +2,16 @@
 
 Make cool sounds. Impress your friends. 
 
-binaural, microtonal sound generation
+binaural, microtonal sonification 
 
 ## Install
-You'll need portaudio. 
+You'll need Rust and Cargo.
+`https://www.rust-lang.org/en-US/install.html` 
+
+You'll need also need portaudio. 
+
 On Mac
+
 `brew install portaudio`
 
 ## Run
@@ -25,13 +30,6 @@ I use ffmpeg to convert the wave file to mp3'
 `ffmpeg -i composition.wav composition.mp3`
 
 https://www.ffmpeg.org/
-
-### Microphone
-Realtime pitch detection from microphone input. The predicted frequencies are used to generate accompanying frequencies.
-
-I recommend you change the buffer_size in settings.rs to ~256. 
-
-`cargo run --bin mic --release`
 
 ## Test
 `cargo test`

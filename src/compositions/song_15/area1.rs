@@ -138,7 +138,7 @@ pub mod material {
     pub fn repeat() -> Op {
         Op::Repeat {
             operations: vec![overlay()],
-            n: 1
+            n: 2
         }
     }
 }
