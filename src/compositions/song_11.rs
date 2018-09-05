@@ -1,6 +1,10 @@
 use event::{Event, Render};
 use instrument::{oscillator::Oscillator, stereo_waveform::StereoWaveform};
-use operations::{Apply, Op};
+use operations::{
+    Apply, 
+    Op,
+    Op::*,
+};
 use settings::get_default_app_settings;
 
 pub fn generate_composition() -> StereoWaveform {
@@ -11,73 +15,62 @@ pub fn generate_composition() -> StereoWaveform {
             (1, 1, 0.0, 1.0, 0.0),
         ]
     }
-
+    
     fn sequence1() -> Op {
-        Op::Compose {
-            operations: vec![
-                ratios(),
-                Op::Sequence {
-                    operations: vec![
-                        Op::TransposeM { m: 1.0 / 1.0 },
-                        Op::TransposeM { m: 9.0 / 8.0 },
-                        Op::TransposeM { m: 5.0 / 4.0 },
-                        Op::TransposeM { m: 3.0 / 2.0 },
-                        Op::Silence { m: 1.0 },
-                    ],
-                },
+        compose![
+            ratios(),
+            sequence![
+                TransposeM { m: 1.0 / 1.0 },
+                TransposeM { m: 9.0 / 8.0 },
+                TransposeM { m: 5.0 / 4.0 },
+                TransposeM { m: 3.0 / 2.0 },
+                Silence { m: 1.0 },
             ],
-        }
+        ]
     };
 
     fn fractal(depth: usize) -> Op {
         let mut count = 1;
         let mut result = sequence1();
         while count < depth {
-            let new_result = Op::Compose {
-                operations: vec![Op::Fit {
+            let new_result = compose![
+                Op::Fit {
                     n: count * 3,
-                    with_length_of: Box::new(sequence1().clone()),
-                    main: Box::new(Op::Compose {
-                        operations: vec![
+                    with_length_of: Box::new( sequence1() ),
+                    main: Box::new(
+                        compose![
                             sequence1(),
-                            Op::TransposeM {
-                                m: count as f32 * 3.0 / 2.0,
-                            },
-                            Op::Gain {
-                                m: 1.0 / (3.0 * count as f32),
-                            },
-                            Op::Reverse {},
+                            TransposeM { m: count as f32 * 3.0 / 2.0 },
+                            Gain { m: 1.0 / (3.0 * count as f32) },
+                            Reverse {},
                         ],
-                    }),
-                }],
-            };
-            result = Op::Overlay {
-                operations: vec![result, new_result],
-            };
+                    ),
+                }
+            ];
+            result = overlay![result, new_result];
             count += 1
         }
         result
     }
 
-    let main = Op::Sequence {
-        operations: vec![
+    fn main() -> Op {
+        sequence![
             fractal(20),
-            Op::Silence { m: 0.1 },
+            Silence { m: 0.1 },
             fractal(10),
-            Op::Silence { m: 0.1 },
+            Silence { m: 0.1 },
             fractal(13),
-            Op::Silence { m: 0.1 },
+            Silence { m: 0.1 },
             fractal(16),
-            Op::Silence { m: 0.1 },
+            Silence { m: 0.1 },
             fractal(10),
-        ],
-    };
-
+        ]
+    }
 
     let mut oscillator = Oscillator::init(&get_default_app_settings());
     let e = vec![Event::init(120.0, 0.75, 0.0, 4.0)];
 
-    let mut events = main.apply(e);
+    let mut events = main().apply(e);
 
     events.render(&mut oscillator)
 }
