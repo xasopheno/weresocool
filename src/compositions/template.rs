@@ -16,22 +16,22 @@ pub fn generate_composition() -> StereoWaveform {
     }
 
     fn sequence1() -> Op {
-        Op::Sequence {
-            operations: vec![
-                Op::AsIs,
-                Op::TransposeM { m: 1.5 },
-                Op::AsIs,
-            ],
-        }
+        sequence![
+            Op::AsIs,
+            Op::TransposeM { m: 1.5 },
+            Op::AsIs,
+        ]
     };
 
-    let main = Op::Compose {
-        operations: vec![overtones(), sequence1()],
+    fn main() -> Op {
+        compose![
+            overtones(), sequence1()
+        ]
     };
 
     let mut oscillator = Oscillator::init(&get_default_app_settings());
     let e = vec![Event::init(120.0, 1.0, 0.0, 0.8)];
-    let mut events = main.apply(e);
+    let mut events = main().apply(e);
 
     events.render(&mut oscillator)
 }
