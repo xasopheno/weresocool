@@ -49,6 +49,16 @@ macro_rules! overlay {
     };
 }
 
+macro_rules! fit {
+    ($with_length_of:expr, $main:expr, $n:expr) => {
+        Op::Fit {
+            n: $n,
+            with_length_of: Box::new($with_length_of),
+            main: Box::new($main),
+        }
+    };
+}
+
 //Op::Fit {
 //n: 60,
 //with_length_of: Box::new(sequences()),
