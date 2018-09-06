@@ -50,7 +50,7 @@ macro_rules! overlay {
 }
 
 macro_rules! fit {
-    ($with_length_of:expr, $main:expr, $n:expr) => {
+    ($main:expr => $with_length_of:expr, $n:expr) => {
         Op::Fit {
             n: $n,
             with_length_of: Box::new($with_length_of),
@@ -58,13 +58,6 @@ macro_rules! fit {
         }
     };
 }
-
-//Op::Fit {
-//n: 60,
-//with_length_of: Box::new(sequences()),
-//main: Box::new(
-//sequence2())
-//}
 
 #[cfg(test)]
 pub mod tests {

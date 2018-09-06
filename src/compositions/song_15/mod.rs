@@ -3,7 +3,7 @@ mod area2;
 mod area3;
 
 use compositions::song_15::{
-    area1::material::{fit, fit_again, repeat, sequence1, sequence2}, area2::material2::sequence4,
+    area1::material::{fit, repeat, sequence2}, area2::material2::sequence4,
     area3::material3::sequence5,
 };
 

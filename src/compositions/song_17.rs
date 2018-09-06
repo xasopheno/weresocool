@@ -39,7 +39,7 @@ pub fn generate_composition() -> StereoWaveform {
         sequence![TransposeM { m: 1.0 / 1.0 }, TransposeM { m: 1.0 / 1.0 },]
     };
 
-    fn fit_again() -> Op {
+    fn depth_1() -> Op {
         Op::Fit {
             n: 12,
             with_length_of: Box::new(main()),
@@ -51,7 +51,7 @@ pub fn generate_composition() -> StereoWaveform {
         }
     }
 
-    fn fit_again_again() -> Op {
+    fn depth_2() -> Op {
         Op::Fit {
             n: 24,
             with_length_of: Box::new(main()),
@@ -125,27 +125,28 @@ pub fn generate_composition() -> StereoWaveform {
     }
 
     fn fit_chords() -> Op {
-        Op::Fit {
-            n: 10,
-            with_length_of: Box::new(main()),
-            main: Box::new(compose![
+        fit! {
+            compose![
                 overtones(),
                 chords(),
-                TransposeM { m: 1.0 / 1.0 },
                 Gain { m: 0.4 }
-            ]),
+            ] => main(), 10
         }
     }
 
     fn overlay() -> Op {
-        overlay![fit_chords(), fit_again(), fit_again_again(),]
+        overlay![fit_chords(), depth_1(), depth_2(),]
+    }
+
+    fn fit_test() -> Op {
+        fit![
+            fit_chords() => main(),  6
+        ]
     }
 
     let mut oscillator = Oscillator::init(&get_default_app_settings());
-    let e = vec![Event::init(200.0, 1.0, 0.0, 1.8)];
+    let e = vec![Event::init(200.0, 0.75, 0.0, 1.8)];
     let mut events = overlay().apply(e);
-
-    //    println!("{:?}", events);
 
     events.render(&mut oscillator)
 }
