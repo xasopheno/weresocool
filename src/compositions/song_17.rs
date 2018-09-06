@@ -40,26 +40,22 @@ pub fn generate_composition() -> StereoWaveform {
     };
 
     fn depth_1() -> Op {
-        Op::Fit {
-            n: 12,
-            with_length_of: Box::new(main()),
-            main: Box::new(compose![
+        fit! {
+            compose![
                 main(),
                 TransposeM { m: 9.0 / 4.0 },
                 Gain { m: 0.3 },
-            ]),
+            ] => main(), 12
         }
     }
 
     fn depth_2() -> Op {
-        Op::Fit {
-            n: 24,
-            with_length_of: Box::new(main()),
-            main: Box::new(compose![
+        fit! {
+            compose![
                 main(),
                 TransposeM { m: 3.0 / 1.0 },
                 Gain { m: 0.1 }
-            ]),
+            ] => main(), 24
         }
     }
 
@@ -136,12 +132,6 @@ pub fn generate_composition() -> StereoWaveform {
 
     fn overlay() -> Op {
         overlay![fit_chords(), depth_1(), depth_2(),]
-    }
-
-    fn fit_test() -> Op {
-        fit![
-            fit_chords() => main(),  6
-        ]
     }
 
     let mut oscillator = Oscillator::init(&get_default_app_settings());
