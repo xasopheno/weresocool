@@ -9,13 +9,6 @@ use std::io::prelude::*;
 pub fn generate_composition() -> StereoWaveform {
     fn overtones() -> Op {
         r![
-//            (6, 1, 0.0, 0.14, 0.0),
-//            (5, 1, 2.0, 0.24, 0.0),
-//            (5, 1, 0.0, 0.24, 0.0),
-//            (3, 1, 1.0, 0.14, 0.5),
-//            (3, 1, 0.0, 0.14, 0.5),
-//            (2, 1, 3.0, 0.5, 0.0),
-//            (2, 1, 0.0, 0.5, 0.0),
             (3, 2, 0.0, 1.0, -0.5),
             (3, 2, 3.0, 1.0, 0.5),
             (1, 1, 0.0, 1.0, -0.5),
@@ -92,7 +85,6 @@ pub fn generate_composition() -> StereoWaveform {
 
     fn main() -> Op {
         compose![
-//            overtones(),
             sequence1(),
             sequence2(),
             sequence3(),
@@ -103,8 +95,8 @@ pub fn generate_composition() -> StereoWaveform {
     fn chords() -> Op {
         sequence![
             r![
-                (5, 4, 3.0, 1.0, 0.0),
-                (9, 8, -5.0, 1.0, 0.0),
+                (5, 4, 3.0, 1.0, 0.5),
+                (9, 8, -5.0, 1.0, -0.5),
                 (1, 1, 0.0, 1.0, 0.0),
             ],
             r![
@@ -114,13 +106,15 @@ pub fn generate_composition() -> StereoWaveform {
                ],
             r![
                 (3, 2, 3.0, 1.0, -0.3),
-                (3, 2, 0.0, 1.0, 0.3),
                 (11, 8, 0.0, 1.0, 0.0),
+                (5, 4, 0.0, 1.0, 0.3),
             ],
-            r![
-                (15, 16, 0.0, 1.0, -0.4),
-                (5, 4, 5.0, 1.0, 0.4),
-                (9, 8, 0.0, 1.0, 0.0),
+            compose![
+                r![
+                    (15, 16, 0.0, 1.0, -0.4),
+                    (5, 4, 5.0, 1.0, 0.4),
+                    (9, 8, 0.0, 1.0, 0.0),
+                ],
             ],
             compose![
                 r![
@@ -144,13 +138,16 @@ pub fn generate_composition() -> StereoWaveform {
                     (5, 4, -7.0, 1.0, 0.2),
                     (5, 4, 0.0, 1.0, 0.0),
                 ],
-                Gain {m: 0.75}
+                Gain {m: 0.75},
             ],
-            r![
-                (9, 8, -6.0, 1.0, 0.0),
-                (1, 1, 0.0, 1.0, 0.0),
-                (15, 16, 4.0, 1.0, 0.0),
-            ],
+            compose![
+                r![
+                    (9, 8, -6.0, 1.0, -0.4),
+                    (15, 16, 4.0, 1.0, 0.4),
+                    (3, 4, 0.0, 1.0, 0.0),
+                ],
+                Gain {m: 0.75},
+            ]
         ]
     }
 
@@ -170,15 +167,8 @@ pub fn generate_composition() -> StereoWaveform {
     fn overlay() -> Op {
         overlay![
             fit_chords(),
-//            fit(),
             fit_again(),
             fit_again_again(),
-//            main(),
-//            compose![
-//                main(),
-//                TransposeM {m: 0.5},
-//                Gain {m: 1.5},
-//            ]
         ]
     }
 
