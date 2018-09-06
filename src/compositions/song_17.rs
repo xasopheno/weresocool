@@ -16,10 +16,10 @@ pub fn generate_composition() -> StereoWaveform {
 //            (3, 1, 0.0, 0.14, 0.5),
 //            (2, 1, 3.0, 0.5, 0.0),
 //            (2, 1, 0.0, 0.5, 0.0),
-            (1, 1, 0.0, 1.0, 0.0),
-            (1, 1, 0.0, 1.0, 0.0),
-            (1, 2, 0.0, 1.0, 0.0),
-            (1, 2, 0.0, 1.0, 0.0),
+            (3, 2, 0.0, 1.0, -0.5),
+            (3, 2, 3.0, 1.0, 0.5),
+            (1, 1, 0.0, 1.0, -0.5),
+            (1, 1, 3.0, 1.0, 0.5),
         ]
     }
 
@@ -46,7 +46,7 @@ pub fn generate_composition() -> StereoWaveform {
     fn sequence3() -> Op {
         sequence![
             Op::TransposeM { m: 1.0 / 1.0 },
-            Op::TransposeM { m: 3.0 / 2.0 },
+            Op::TransposeM { m: 1.0 / 1.0 },
             //            Op::TransposeM { m: 3.0/2.0 },
             //            Op::TransposeM { m: 3.0/2.0 },
         ]
@@ -56,7 +56,12 @@ pub fn generate_composition() -> StereoWaveform {
         Op::Fit {
             n: 6,
             with_length_of: Box::new(main()),
-            main: Box::new(compose![main(), TransposeM { m: 3.0 / 2.0 }, ]),
+            main: Box::new(compose![
+                main(),
+                TransposeM { m: 3.0 / 2.0 },
+                Gain { m: 0.3 },
+            ]
+        ),
         }
     }
 
@@ -68,7 +73,7 @@ pub fn generate_composition() -> StereoWaveform {
                 main(),
                 TransposeM { m: 9.0 / 4.0 },
                 Gain { m: 0.3 },
-                Reverse {}
+//                Reverse {}
             ]),
         }
     }
@@ -87,7 +92,7 @@ pub fn generate_composition() -> StereoWaveform {
 
     fn main() -> Op {
         compose![
-            //            overtones(),
+//            overtones(),
             sequence1(),
             sequence2(),
             sequence3(),
@@ -95,7 +100,7 @@ pub fn generate_composition() -> StereoWaveform {
         ]
     };
 
-    fn bass() -> Op {
+    fn chords() -> Op {
         sequence![
             r![
                 (5, 4, 3.0, 1.0, 0.0),
@@ -103,35 +108,32 @@ pub fn generate_composition() -> StereoWaveform {
                 (1, 1, 0.0, 1.0, 0.0),
             ],
             r![
-                (1, 1, 0.0, 1.0, -0.2),
-                (5, 3, 0.0, 1.0, 0.2),
-                (9, 4, 0.0, 1.0, 0.0),
+                (11, 8, 0.0, 1.0, -0.2),
+                (5, 4, 0.0, 1.0, 0.2),
+                (9, 8, 0.0, 1.0, 0.0),
                ],
             r![
                 (3, 2, 3.0, 1.0, -0.3),
                 (3, 2, 0.0, 1.0, 0.3),
-                (3, 2, -7.0, 1.0, 0.0),
+                (11, 8, 0.0, 1.0, 0.0),
             ],
             r![
-                (5, 4, 0.0, 1.0, -0.4),
+                (15, 16, 0.0, 1.0, -0.4),
                 (5, 4, 5.0, 1.0, 0.4),
                 (9, 8, 0.0, 1.0, 0.0),
             ],
             compose![
                 r![
-                    (11, 4, 0.0, 1.0, -0.5),
-                    (9, 4, 0.0, 1.0, 0.5),
                     (5, 3, 0.0, 1.0, -0.5),
-                    (5, 4, 0.0, 1.0, 0.5),
-                    (9, 8, 5.0, 1.0, -0.5),
-                    (1, 1, 0.0, 1.0, 0.5),
+                    (3, 2, 0.0, 1.0, 0.5),
+                    (9, 8, 0.0, 1.0, -0.5),
                 ],
-                Gain { m: 0.4444 }
+                Gain { m: 0.75 }
             ],
             compose![
                 r![
-                    (11, 8, 4.0, 1.0, -0.4),
-                    (11, 8, -8.0, 1.0, 0.4),
+                    (3, 2, 0.0, 1.0, -0.4),
+                    (3, 2, -4.0, 1.0, 0.4),
                     (11, 8, 0.0, 1.0, 0.0),
                 ],
                 Gain {m: 0.75}
@@ -145,9 +147,9 @@ pub fn generate_composition() -> StereoWaveform {
                 Gain {m: 0.75}
             ],
             r![
-                (9, 8, 4.0, 1.0, -0.0),
                 (9, 8, -6.0, 1.0, 0.0),
-                (9, 8, 0.0, 1.0, 0.0),
+                (1, 1, 0.0, 1.0, 0.0),
+                (15, 16, 4.0, 1.0, 0.0),
             ],
         ]
     }
@@ -157,8 +159,9 @@ pub fn generate_composition() -> StereoWaveform {
             n: 10,
             with_length_of: Box::new(main()),
             main: Box::new(compose![
-                bass(),
-                TransposeM { m: 4.0 / 1.0 },
+                overtones(),
+                chords(),
+                TransposeM { m: 1.0 / 1.0 },
                 Gain { m: 0.4 }
             ]),
         }
@@ -167,15 +170,15 @@ pub fn generate_composition() -> StereoWaveform {
     fn overlay() -> Op {
         overlay![
             fit_chords(),
-            fit(),
+//            fit(),
             fit_again(),
             fit_again_again(),
-            main(),
-            compose![
-                main(),
-                TransposeM {m: 0.25},
-                Gain {m: 0.2},
-            ]
+//            main(),
+//            compose![
+//                main(),
+//                TransposeM {m: 0.5},
+//                Gain {m: 1.5},
+//            ]
         ]
     }
 
