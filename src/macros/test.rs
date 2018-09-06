@@ -41,50 +41,32 @@ pub mod tests {
     }
     #[test]
     fn test_sequence_macro() {
-        let sequence = sequence![
-                Op::AsIs,
-                Op::TransposeM { m: 2.0 }
-            ];
+        let sequence = sequence![Op::AsIs, Op::TransposeM { m: 2.0 }];
 
         let expected = Op::Sequence {
-            operations: { vec![
-                Op::AsIs {},
-                Op::TransposeM {m: 2.0}
-            ]
-            }};
+            operations: { vec![Op::AsIs {}, Op::TransposeM { m: 2.0 }] },
+        };
 
         assert_eq!(sequence, expected);
     }
     #[test]
     fn test_overlay_macro() {
-        let overlay = overlay![
-                Op::AsIs,
-                Op::TransposeM { m: 2.0 }
-            ];
+        let overlay = overlay![Op::AsIs, Op::TransposeM { m: 2.0 }];
 
         let expected = Op::Overlay {
-            operations: { vec![
-                Op::AsIs,
-                Op::TransposeM {m: 2.0}
-            ]
-            }};
+            operations: { vec![Op::AsIs, Op::TransposeM { m: 2.0 }] },
+        };
 
         assert_eq!(overlay, expected);
     }
 
     #[test]
     fn test_compose_macro() {
-        let compose = compose![
-                Op::AsIs,
-                Op::TransposeM { m: 2.0 }
-            ];
+        let compose = compose![Op::AsIs, Op::TransposeM { m: 2.0 }];
 
         let expected = Op::Compose {
-            operations: { vec![
-                Op::AsIs {},
-                Op::TransposeM {m: 2.0}
-            ]
-            }};
+            operations: { vec![Op::AsIs {}, Op::TransposeM { m: 2.0 }] },
+        };
 
         assert_eq!(compose, expected);
     }
