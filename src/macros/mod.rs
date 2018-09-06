@@ -50,10 +50,10 @@ macro_rules! overlay {
 }
 
 //Op::Fit {
-    //n: 60,
-    //with_length_of: Box::new(sequences()),
-    //main: Box::new(
-    //sequence2())
+//n: 60,
+//with_length_of: Box::new(sequences()),
+//main: Box::new(
+//sequence2())
 //}
 
 #[cfg(test)]

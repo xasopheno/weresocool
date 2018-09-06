@@ -60,8 +60,11 @@ pub trait Apply {
 }
 
 pub trait ApplyWithOrder {
-    fn apply_with_order(&self, order_fn: fn(order: usize, length: usize) -> f32, events: Vec<Event>)
-        -> Vec<Event>;
+    fn apply_with_order(
+        &self,
+        order_fn: fn(order: usize, length: usize) -> f32,
+        events: Vec<Event>,
+    ) -> Vec<Event>;
 }
 
 pub trait GetLengthRatio {

@@ -1,10 +1,6 @@
 use event::{Event, Render};
 use instrument::{oscillator::Oscillator, stereo_waveform::StereoWaveform};
-use operations::{
-    Apply, 
-    Op,
-    Op::*,
-};
+use operations::{Apply, Op, Op::*};
 use settings::get_default_app_settings;
 
 pub fn generate_composition() -> StereoWaveform {
@@ -15,7 +11,7 @@ pub fn generate_composition() -> StereoWaveform {
             (1, 1, 0.0, 1.0, 0.0),
         ]
     }
-    
+
     fn sequence1() -> Op {
         compose![
             ratios(),
@@ -33,20 +29,20 @@ pub fn generate_composition() -> StereoWaveform {
         let mut count = 1;
         let mut result = sequence1();
         while count < depth {
-            let new_result = compose![
-                Op::Fit {
-                    n: count * 3,
-                    with_length_of: Box::new( sequence1() ),
-                    main: Box::new(
-                        compose![
-                            sequence1(),
-                            TransposeM { m: count as f32 * 3.0 / 2.0 },
-                            Gain { m: 1.0 / (3.0 * count as f32) },
-                            Reverse {},
-                        ],
-                    ),
-                }
-            ];
+            let new_result = compose![Op::Fit {
+                n: count * 3,
+                with_length_of: Box::new(sequence1()),
+                main: Box::new(compose![
+                    sequence1(),
+                    TransposeM {
+                        m: count as f32 * 3.0 / 2.0
+                    },
+                    Gain {
+                        m: 1.0 / (2.0 * count as f32)
+                    },
+                    Reverse {},
+                ],),
+            }];
             result = overlay![result, new_result];
             count += 1
         }

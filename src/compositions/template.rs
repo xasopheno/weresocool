@@ -1,6 +1,6 @@
 use event::{Event, Render};
 use instrument::{oscillator::Oscillator, stereo_waveform::StereoWaveform};
-use operations::{Op, Apply};
+use operations::{Apply, Op};
 use settings::get_default_app_settings;
 
 pub fn generate_composition() -> StereoWaveform {
@@ -16,17 +16,11 @@ pub fn generate_composition() -> StereoWaveform {
     }
 
     fn sequence1() -> Op {
-        sequence![
-            Op::AsIs,
-            Op::TransposeM { m: 1.5 },
-            Op::AsIs,
-        ]
+        sequence![Op::AsIs, Op::TransposeM { m: 1.5 }, Op::AsIs,]
     };
 
     fn main() -> Op {
-        compose![
-            overtones(), sequence1()
-        ]
+        compose![overtones(), sequence1()]
     };
 
     let mut oscillator = Oscillator::init(&get_default_app_settings());

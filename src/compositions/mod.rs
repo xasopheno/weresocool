@@ -15,4 +15,5 @@ pub mod song_13;
 pub mod song_14;
 pub mod song_15;
 pub mod song_16;
+pub mod song_17;
 pub mod template;

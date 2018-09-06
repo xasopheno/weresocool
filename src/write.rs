@@ -43,7 +43,7 @@ fn normalize_waveform(buffer: &mut Vec<f32>) {
         }
     }
 
-    let normalization_ratio = 1.0/max;
+    let normalization_ratio = 1.0 / max;
 
     for sample in buffer.iter_mut() {
         *sample *= normalization_ratio

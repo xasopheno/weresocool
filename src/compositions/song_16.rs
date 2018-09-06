@@ -1,10 +1,6 @@
 use event::{Event, Render};
 use instrument::{oscillator::Oscillator, stereo_waveform::StereoWaveform};
-use operations::{
-    Op,
-    Op::*,
-    Apply
-};
+use operations::{Apply, Op, Op::*};
 use settings::get_default_app_settings;
 
 pub fn generate_composition() -> StereoWaveform {
@@ -26,9 +22,9 @@ pub fn generate_composition() -> StereoWaveform {
 
     fn sequence1() -> Op {
         sequence![
-            TransposeM { m: 1.0/1.0 },
-            TransposeM { m: 9.0/8.0 },
-            TransposeM { m: 5.0/4.0 },
+            TransposeM { m: 1.0 / 1.0 },
+            TransposeM { m: 9.0 / 8.0 },
+            TransposeM { m: 5.0 / 4.0 },
         ]
     };
 
@@ -53,31 +49,21 @@ pub fn generate_composition() -> StereoWaveform {
         Op::Fit {
             n: 60,
             with_length_of: Box::new(sequences()),
-            main: Box::new(
-                compose![
-                    overtones(),
-                    sequence2(),
-                    Op::TransposeM {m: 6.0 },
-                    Op::Gain {m: 0.1}
-                ]
-            )
+            main: Box::new(compose![
+                overtones(),
+                sequence2(),
+                Op::TransposeM { m: 6.0 },
+                Op::Gain { m: 0.1 }
+            ]),
         }
     }
 
     fn sequences() -> Op {
-        compose![
-            overtones(),
-            sequence1(),
-            sequence2(),
-            sequence3(),
-        ]
+        compose![overtones(), sequence1(), sequence2(), sequence3(),]
     }
 
     fn overlay() -> Op {
-        overlay![
-            fit(),
-            sequences()
-        ]
+        overlay![fit(), sequences()]
     }
 
     let mut oscillator = Oscillator::init(&get_default_app_settings());
