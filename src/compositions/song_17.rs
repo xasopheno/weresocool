@@ -133,7 +133,7 @@ pub fn generate_composition() -> StereoWaveform {
     }
 
     let mut oscillator = Oscillator::init(&get_default_app_settings());
-    let e = vec![Event::init(200.0, 0.25, 0.0, 1.8)];
+    let e = vec![Event::init(200.0, 1.25, 0.0, 1.8)];
     let mut events = overlay().apply(e);
 
     events.render(&mut oscillator)
