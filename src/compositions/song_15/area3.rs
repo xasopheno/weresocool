@@ -14,7 +14,7 @@ pub mod material3 {
         ]
     }
 
-    pub fn s5_h2() -> Op {
+    pub fn _s5_h2() -> Op {
         Op::Compose {
             operations: vec![
                 Op::Sequence {

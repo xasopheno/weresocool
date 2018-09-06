@@ -13,7 +13,7 @@ use operations::{Apply, Op};
 use settings::get_default_app_settings;
 
 pub fn generate_composition() -> StereoWaveform {
-    fn intro_overtones() -> Op {
+    fn _intro_overtones() -> Op {
         r![
             (23, 1, 4.0, 0.01, -1.0),
             (23, 1, 4.0, 0.01, 1.0),
@@ -44,10 +44,10 @@ pub fn generate_composition() -> StereoWaveform {
         ]
     }
 
-    fn intro() -> Op {
+    fn _intro() -> Op {
         Op::Compose {
             operations: vec![
-                intro_overtones(),
+                _intro_overtones(),
                 sequence2(),
                 Op::Length { m: 5.5 },
                 Op::Gain { m: 0.25 },
