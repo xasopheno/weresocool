@@ -101,4 +101,68 @@ pub mod tests {
 
         assert_eq!(r_macro, macro_test);
     }
+    #[test]
+    fn test_sequence_macro() {
+        let sequence = sequence![
+                Op::AsIs,
+                Op::TransposeM { m: 2.0 }
+            ];
+
+        let expected = Op::Sequence {
+            operations: { vec![
+                Op::AsIs {},
+                Op::TransposeM {m: 2.0}
+            ]
+        }};
+
+        assert_eq!(sequence, expected);
+    }
+    #[test]
+    fn test_overlay_macro() {
+        let overlay = overlay![
+                Op::AsIs,
+                Op::TransposeM { m: 2.0 }
+            ];
+
+        let expected = Op::Overlay {
+            operations: { vec![
+                Op::AsIs,
+                Op::TransposeM {m: 2.0}
+            ]
+            }};
+
+        assert_eq!(overlay, expected);
+    }
+
+    #[test]
+    fn test_compose_macro() {
+        let compose = compose![
+                Op::AsIs,
+                Op::TransposeM { m: 2.0 }
+            ];
+
+        let expected = Op::Compose {
+            operations: { vec![
+                Op::AsIs {},
+                Op::TransposeM {m: 2.0}
+            ]
+            }};
+
+        assert_eq!(compose, expected);
+    }
+
+    #[test]
+    fn test_fit_macro() {
+        let compose = fit![
+                Op::AsIs => Op::AsIs, 4
+            ];
+
+        let expected = Op::Fit {
+                n: 4,
+                with_length_of: Box::new(Op::AsIs),
+            main: Box::new(Op::AsIs),
+        };
+
+        assert_eq!(compose, expected);
+    }
 }
