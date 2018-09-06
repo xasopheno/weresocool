@@ -59,5 +59,14 @@ macro_rules! fit {
     };
 }
 
+macro_rules! repeat {
+    ($operation:expr, $n:expr) => {
+        Op::Repeat {
+            n: $n,
+            operations: {vec![$operation]}
+        }
+    };
+}
+
 #[cfg(test)]
 mod test;
