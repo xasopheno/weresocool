@@ -97,8 +97,6 @@ pub fn generate_composition() -> StereoWaveform {
         }
     };
 
-
-
     fn main() -> Op {
         Op::Compose {
             operations: vec![overtones(), sequence1()],

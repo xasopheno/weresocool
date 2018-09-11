@@ -63,7 +63,7 @@ macro_rules! repeat {
     ($operation:expr, $n:expr) => {
         Op::Repeat {
             n: $n,
-            operations: {vec![$operation]}
+            operations: { vec![$operation] },
         }
     };
 }

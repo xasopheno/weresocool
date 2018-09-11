@@ -22,8 +22,6 @@ pub mod violins {
             }
         };
 
-
-
         fn violins_phrase1() -> Op {
             Op::Sequence {
                 operations: vec![

@@ -3,7 +3,7 @@ use instrument::{oscillator::Oscillator, stereo_waveform::StereoWaveform};
 use operations::{Apply, Op, Op::*};
 use settings::get_default_app_settings;
 
-pub fn generate_composition() -> StereoWaveform {
+fn composition() -> Op {
     fn overtones() -> Op {
         r![
             (3, 2, 0.0, 1.0, -0.5),
@@ -22,7 +22,6 @@ pub fn generate_composition() -> StereoWaveform {
             AsIs,
         ]
     };
-
 
     fn sequence2() -> Op {
         sequence![
@@ -131,7 +130,7 @@ pub fn generate_composition() -> StereoWaveform {
     fn melody() -> Op {
         compose![
             sequence![
-                Silence {m: 30.0},
+                Silence { m: 30.0 },
                 r![(5, 8, 0.0, 1.0, 0.0)],
                 r![(2, 3, 0.0, 1.0, 0.0)],
                 r![(3, 4, 0.0, 1.0, 0.0)],
@@ -173,7 +172,7 @@ pub fn generate_composition() -> StereoWaveform {
                         r![(11, 4, 0.0, 1.0, 0.0)],
                         r![(13, 4, 0.0, 1.0, 0.0)],
                     ],
-                    TransposeM {m: 7.0/8.0}
+                    TransposeM { m: 7.0 / 8.0 }
                 ],
                 compose![
                     sequence![
@@ -184,7 +183,7 @@ pub fn generate_composition() -> StereoWaveform {
                         r![(11, 4, 0.0, 1.0, 0.0)],
                         r![(13, 4, 0.0, 1.0, 0.0)],
                     ],
-                    TransposeM {m: 4.0/5.0}
+                    TransposeM { m: 4.0 / 5.0 }
                 ],
                 compose![
                     sequence![
@@ -195,7 +194,7 @@ pub fn generate_composition() -> StereoWaveform {
                         r![(11, 4, 0.0, 1.0, 0.0)],
                         r![(13, 4, 0.0, 1.0, 0.0)],
                     ],
-                    TransposeM {m: 3.0/4.0}
+                    TransposeM { m: 3.0 / 4.0 }
                 ],
                 r![(7, 4, 0.0, 1.0, 0.0)],
                 r![(3, 2, 0.0, 1.0, 0.0)],
@@ -225,9 +224,9 @@ pub fn generate_composition() -> StereoWaveform {
                     3
                 },
             ],
-            Gain {m: 1.5},
-            Length {m: 0.08},
-            TransposeM {m: 1.5}
+            Gain { m: 1.5 },
+            Length { m: 0.08 },
+            TransposeM { m: 1.5 }
         ]
     }
 
@@ -235,9 +234,29 @@ pub fn generate_composition() -> StereoWaveform {
         overlay![fit_chords(), depth_1(), depth_2(),]
     }
 
-    let mut oscillator = Oscillator::init(&get_default_app_settings());
-    let e = vec![Event::init(200.0, 0.25, 0.0, 1.8)];
-    let mut events = overlay().apply(e);
+    overlay()
+}
 
-    events.render(&mut oscillator)
+fn oscillator() -> Oscillator {
+    Oscillator::init(&get_default_app_settings())
+}
+
+fn event() -> Event {
+    Event::init(200.0, 0.25, 0.0, 1.8)
+}
+
+fn generate_events(event: Event, operation: fn() -> Op) -> Vec<Event> {
+    operation().apply(vec![event])
+}
+
+pub fn operations() -> Op {
+    composition()
+}
+
+pub fn events() -> Vec<Event> {
+    generate_events(event(), composition)
+}
+
+pub fn generate_composition() -> StereoWaveform {
+    events().render(&mut oscillator())
 }
