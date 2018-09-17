@@ -1,12 +1,12 @@
 use instrument::{oscillator::Oscillator, stereo_waveform::StereoWaveform};
 
-#[derive(Debug, Clone, PartialEq)]
+#[derive(Debug, Clone, PartialEq, Serialize)]
 pub struct Event {
     pub sounds: Vec<Sound>,
     pub length: f32,
 }
 
-#[derive(Debug, Clone, PartialEq)]
+#[derive(Debug, Clone, PartialEq, Serialize)]
 pub struct Sound {
     pub frequency: f32,
     pub gain: f32,

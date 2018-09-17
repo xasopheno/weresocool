@@ -57,14 +57,14 @@ fn normalize_waveform(buffer: &mut Vec<f32>) {
     println!("Normalized by {}", normalization_ratio);
 }
 
-//pub fn write_composition_to_json(composition_generator: fn() -> Vec<Event>, file_name: &String) -> std::io::Result<()> {
-//    let composition = composition_generator();
-//    let serialized = serde_json::to_string(&composition).unwrap();
-//    let mut file = File::create(file_name)?;
-//
-//    println!("{}", file_name);
-//    println!("Composition is {} events long", composition.len());
-//
-//    file.write_all(serialized.as_bytes())?;
-//    Ok(())
-//}
+pub fn write_composition_to_json(composition_generator: fn() -> Vec<Event>, file_name: &String) -> std::io::Result<()> {
+    let composition = composition_generator();
+    let serialized = serde_json::to_string(&composition).unwrap();
+    let mut file = File::create(file_name)?;
+
+    println!("{}", file_name);
+    println!("Composition is {} events long", composition.len());
+
+    file.write_all(serialized.as_bytes())?;
+    Ok(())
+}

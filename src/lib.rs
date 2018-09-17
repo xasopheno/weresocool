@@ -1,8 +1,8 @@
 #![feature(extern_prelude)]
 extern crate serde;
 extern crate serde_json;
-//#[macro_use]
-//extern crate serde_derive;
+#[macro_use]
+extern crate serde_derive;
 extern crate portaudio;
 #[macro_use]
 pub mod macros;
