@@ -1,12 +1,12 @@
 use instrument::{oscillator::Oscillator, stereo_waveform::StereoWaveform};
 
-#[derive(Debug, Clone, PartialEq, Serialize)]
+#[derive(Debug, Clone, PartialEq)]
 pub struct Event {
     pub sounds: Vec<Sound>,
     pub length: f32,
 }
 
-#[derive(Debug, Clone, PartialEq, Serialize)]
+#[derive(Debug, Clone, PartialEq)]
 pub struct Sound {
     pub frequency: f32,
     pub gain: f32,
@@ -54,7 +54,7 @@ impl Render<Vec<Event>> for Vec<Event> {
     fn render(&mut self, oscillator: &mut Oscillator) -> StereoWaveform {
         let mut result: StereoWaveform = StereoWaveform::new(0);
         let mut events = self.clone();
-        events.push(Event::init(0.0, 0.0, 0.0, 2.0));
+        events.push(Event::init(0.0, 0.0, 0.0, 0.3));
         for mut event in events {
             let stereo_waveform = event.render(oscillator);
             result.append(stereo_waveform);
