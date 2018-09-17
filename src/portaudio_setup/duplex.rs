@@ -65,6 +65,8 @@ pub fn setup_portaudio_duplex(
                     operation().apply(vec![event])
                 }
 
+
+
                 let events = &generate_events(e.clone(), overtones)[0].sounds;
 //                let event = events[0];
 

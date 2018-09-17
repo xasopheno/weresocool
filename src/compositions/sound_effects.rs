@@ -20,24 +20,6 @@ fn composition() -> Op {
             TransposeM { m: 9.0 / 4.0 },
             TransposeM { m: 11.0 / 4.0 },
             Silence { m: 6.0 }
-//            TransposeM  { m: 7.0 / 2.0 },
-//            TransposeM { m: 9.0 / 2.0 },
-        ]
-    }
-
-    fn sequence2() -> Op {
-        sequence![
-            AsIs,
-            TransposeM { m: 7.0/8.0 },
-            TransposeM { m: 4.0/5.0 },
-        ]
-    }
-
-    fn sequence3() -> Op {
-        sequence![
-            AsIs,
-            TransposeM { m: 9.0/8.0 },
-            TransposeM { m: 5.0/4.0 },
         ]
     }
 
@@ -46,27 +28,7 @@ fn composition() -> Op {
                 overtones(),
                 sequence1(),
                 TransposeM {m: 2.0}
-//                sequence2(),
-//                sequence3(),
-//                Length {m: 0.5}
             ]
-    }
-
-    fn fit() -> Op {
-        fit![
-            compose![
-                result(),
-                TransposeM {m: 5.0/4.0},
-                Reverse,
-            ] => result(), 3
-        ]
-    }
-
-    fn overlay() -> Op {
-        overlay![
-            fit(),
-            result()
-        ]
     }
 
     result()

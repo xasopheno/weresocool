@@ -127,7 +127,7 @@ fn composition() -> Op {
         }
     }
 
-    fn melody() -> Op {
+    fn _melody() -> Op {
         compose![
             sequence![
                 Silence { m: 30.0 },

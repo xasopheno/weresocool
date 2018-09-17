@@ -17,7 +17,9 @@ fn composition() -> Op {
         sequence![AsIs, TransposeM { m: 3.0 / 2.0 }, AsIs,]
     }
 
-    sequence1()
+    compose![
+        sequence1()
+    ]
 }
 
 fn oscillator() -> Oscillator {
@@ -25,7 +27,7 @@ fn oscillator() -> Oscillator {
 }
 
 fn event() -> Event {
-    Event::init(200.0, 0.25, 0.0, 1.8)
+    Event::init(200.0, 0.75, 0.0, 1.8)
 }
 
 fn generate_events(event: Event, operation: fn() -> Op) -> Vec<Event> {
