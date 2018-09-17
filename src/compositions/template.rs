@@ -17,9 +17,7 @@ fn composition() -> Op {
         sequence![AsIs, TransposeM { m: 3.0 / 2.0 }, AsIs,]
     }
 
-    compose![
-        sequence1()
-    ]
+    compose![sequence1()]
 }
 
 fn oscillator() -> Oscillator {

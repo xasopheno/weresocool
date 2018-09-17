@@ -9,18 +9,28 @@ fn composition() -> Op {
             (3, 2, 0.0, 1.0, -0.5),
             (3, 2, 3.0, 1.0, 0.5),
             (1, 1, 0.0, 1.0, -0.25),
-            (1, 1, 3.0, 1.0, -0.25),
+            (1, 1, 3.0, 1.0, 0.25),
         ]
     }
 
     fn sequence1() -> Op {
         sequence![
-            TransposeM { m: 3.0 / 2.0 },
-            TransposeM { m: 3.0 / 2.0 },
+            compose![
+                sequence![
+                    TransposeM { m: 3.0 / 2.0 },
+                    TransposeM { m: 3.0 / 2.0 },
+                ],
+                PanA {a: -0.5}
+            ],
             AsIs,
             AsIs,
-            TransposeM { m: 3.0 / 2.0 },
-            AsIs,
+            compose![
+                sequence![
+                    TransposeM { m: 3.0 / 2.0 },
+                ],
+                PanA {a: 0.5}
+            ],
+            AsIs
         ]
     }
 
@@ -67,12 +77,17 @@ fn composition() -> Op {
                                     ],
                                     sequence![
                                         TransposeM {m: 5.0/3.0},
-                                        TransposeM {m: 10.0/3.0},
-                                        TransposeM {m: 20.0/3.0},
-                                        TransposeM {m: 40.0/3.0},
-                                        TransposeM {m: 60.0/3.0},
-                                        TransposeM {m: 80.0/3.0},
-                                        TransposeM {m: 100.0/3.0},
+                                        compose![
+                                            sequence![
+                                                TransposeM {m: 10.0/3.0},
+                                                TransposeM {m: 20.0/3.0},
+                                                TransposeM {m: 40.0/3.0},
+                                                TransposeM {m: 60.0/3.0},
+                                                TransposeM {m: 80.0/3.0},
+                                                TransposeM {m: 100.0/3.0},
+                                            ],
+                                            PanA {a: 0.75},
+                                        ],
                                     ],
                                     Gain {m: 0.4}
                                 ]
@@ -130,22 +145,28 @@ fn composition() -> Op {
 
     repeat![
         compose![
-            repeat![
-                overlay![
-                    fit2(),
-                    fit(),
-                    bass_fit(),
-                ], 1
+            overlay![
+                fit2(),
+                fit(),
+                bass_fit(),
             ],
             sequence![
                 AsIs,
                 AsIs,
-                TransposeM {m: 9.0/8.0},
+                compose![
+                    TransposeM {m: 4.0/3.0},
+                    Length {m: 2.0/3.0},
+                    PanM {m: -1.0}
+                ],
+                compose![
+                    TransposeM {m: 9.0/8.0},
+                    Length {m: 8.0/9.0},
+                    PanM {m: -1.0}
+                ],
                 AsIs,
                 AsIs,
-                TransposeM {m: 7.0/8.0},
             ]
-        ], 4
+        ], 3
     ]
 }
 
@@ -154,7 +175,7 @@ fn oscillator() -> Oscillator {
 }
 
 fn event() -> Event {
-    Event::init(200.0, 0.75, 0.0, 1.5)
+    Event::init(190.0, 0.75, 0.0, 1.53)
 }
 
 fn generate_events(event: Event, operation: fn() -> Op) -> Vec<Event> {

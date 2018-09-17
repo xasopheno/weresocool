@@ -1,18 +1,18 @@
 extern crate rand;
 use analyze::{Analyze, DetectionResult};
-use instrument::oscillator::Oscillator;
 use event::{Event, Sound};
+use instrument::oscillator::Oscillator;
+use operations::{Apply, Op, Op::*};
 use portaudio as pa;
 use ring_buffer::RingBuffer;
 use settings::{get_default_app_settings, Settings};
 use write::write_output_buffer;
-use operations::{Apply, Op, Op::*};
 
 pub fn setup_portaudio_duplex(
     ref pa: &pa::PortAudio,
 ) -> Result<pa::Stream<pa::NonBlocking, pa::Duplex<f32, f32>>, pa::Error> {
     let settings = get_default_app_settings();
-    let mut oscillator = Oscillator::init( &settings);
+    let mut oscillator = Oscillator::init(&settings);
     let duplex_stream_settings = get_duplex_settings(&pa, &settings)?;
 
     let mut input_buffer: RingBuffer<f32> = RingBuffer::<f32>::new(settings.yin_buffer_size);
@@ -41,8 +41,15 @@ pub fn setup_portaudio_duplex(
                 }
                 println!("freq {}, gain {}", result.frequency, result.gain);
 
-                let sound = Sound {frequency: result.frequency, gain: result.gain * 100.0, pan: 0.0};
-                let e = Event { sounds: vec![sound], length: 1.0};
+                let sound = Sound {
+                    frequency: result.frequency,
+                    gain: result.gain * 100.0,
+                    pan: 0.0,
+                };
+                let e = Event {
+                    sounds: vec![sound],
+                    length: 1.0,
+                };
 
                 fn overtones() -> Op {
                     compose![
@@ -57,7 +64,7 @@ pub fn setup_portaudio_duplex(
                             (1, 2, 3.0, 1.0, 0.5),
                             (1, 2, 0.0, 1.0, 0.5),
                         ],
-//                        TransposeM {m: 2.0}
+                        //                        TransposeM {m: 2.0}
                     ]
                 };
 
@@ -65,12 +72,10 @@ pub fn setup_portaudio_duplex(
                     operation().apply(vec![event])
                 }
 
-
-
                 let events = &generate_events(e.clone(), overtones)[0].sounds;
-//                let event = events[0];
+                //                let event = events[0];
 
-                oscillator.update(events.clone() );
+                oscillator.update(events.clone());
                 let stereo_waveform = oscillator.generate(settings.buffer_size);
 
                 write_output_buffer(&mut out_buffer, stereo_waveform);

@@ -24,11 +24,7 @@ fn composition() -> Op {
     }
 
     fn result() -> Op {
-        compose![
-                overtones(),
-                sequence1(),
-                TransposeM {m: 2.0}
-            ]
+        compose![overtones(), sequence1(), TransposeM { m: 2.0 }]
     }
 
     result()

@@ -11,7 +11,7 @@ fn main() {
     let written = write_composition_to_json(events, &file_name);
 
     match written {
-        Ok(()) => {},
+        Ok(()) => {}
         _ => {}
     }
 
