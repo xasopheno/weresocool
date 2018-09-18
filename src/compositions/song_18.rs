@@ -199,6 +199,6 @@ pub fn events() -> Vec<Event> {
 }
 
 pub fn generate_composition() -> StereoWaveform {
-    println!("{:?}", operations());
+//    println!("{:?}", operations());
     events().render(&mut oscillator())
 }

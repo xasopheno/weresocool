@@ -213,7 +213,7 @@ fn composition() -> Op {
                     ], 7
                 ],
                 tag_fit()
-            ], 4
+            ], 8
         ]
     ]
 }
