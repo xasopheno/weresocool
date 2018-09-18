@@ -1,5 +1,5 @@
 extern crate weresocool;
-use weresocool::compositions::sound_effects::events;
+use weresocool::compositions::song_18::events;
 use weresocool::write::write_composition_to_json;
 
 fn main() {

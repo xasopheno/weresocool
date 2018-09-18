@@ -9,7 +9,7 @@ fn composition() -> Op {
             (3, 2, 0.0, 1.0, -0.5),
             (3, 2, 3.0, 1.0, 0.5),
             (1, 1, 0.0, 1.0, -0.25),
-            (1, 1, 3.0, 1.0, 0.25),
+            (1, 1, 3.0, 1.0, 0.1),
         ]
     }
 
@@ -20,7 +20,7 @@ fn composition() -> Op {
                     TransposeM { m: 3.0 / 2.0 },
                     TransposeM { m: 3.0 / 2.0 },
                 ],
-                PanA {a: -0.5}
+                PanA {a: 0.5}
             ],
             AsIs,
             AsIs,
@@ -28,7 +28,7 @@ fn composition() -> Op {
                 sequence![
                     TransposeM { m: 3.0 / 2.0 },
                 ],
-                PanA {a: 0.5}
+                PanA {a: -0.5}
             ],
             AsIs
         ]
@@ -89,7 +89,7 @@ fn composition() -> Op {
                                             PanA {a: 0.75},
                                         ],
                                     ],
-                                    Gain {m: 0.4}
+                                    Gain {m: 0.35}
                                 ]
                             ],
                             Length {m: 0.3}
@@ -108,7 +108,7 @@ fn composition() -> Op {
                         TransposeM {m: 7.0/8.0},
                         TransposeM {m: 15.0/16.0},
                     ],
-                    Gain {m: 1.55}
+                    Gain {m: 1.75}
                 ]
             ],
             TransposeM {m: 0.5},
@@ -128,7 +128,7 @@ fn composition() -> Op {
                 overtones(),
                 sequence1(),
                 TransposeM {m: 4.0/3.0},
-                Gain {m: 0.35}
+                Gain {m: 0.5}
             ] => sequence1(), 10
         ]
     }
@@ -138,13 +138,20 @@ fn composition() -> Op {
             compose![
                 fit(),
                 TransposeM {m: 5.0/4.0},
-                Gain {m: 0.5}
+                Gain {m: 0.35}
             ] => sequence1(), 5
         ]
     }
 
     repeat![
         compose![
+//            compose![
+//                sequence![
+//                    AsIs,
+//                    TransposeM {m: 2.0},
+//                ],
+//                Length {m: 0.5}
+//            ],
             overlay![
                 fit2(),
                 fit(),
@@ -163,6 +170,7 @@ fn composition() -> Op {
                     Length {m: 8.0/9.0},
                     PanM {m: -1.0}
                 ],
+                AsIs,
                 AsIs,
                 AsIs,
             ]
@@ -191,5 +199,6 @@ pub fn events() -> Vec<Event> {
 }
 
 pub fn generate_composition() -> StereoWaveform {
+    println!("{:?}", operations());
     events().render(&mut oscillator())
 }
