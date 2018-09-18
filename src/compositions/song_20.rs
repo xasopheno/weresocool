@@ -29,9 +29,9 @@ fn composition() -> Op {
                 compose![
                     song_19(),
                     Length {m: 2.0},
-                    Gain {m: 0.95}
+                    Gain {m: 0.90}
                 ]
-            ], 2
+            ], 3
         ]
     }
 
