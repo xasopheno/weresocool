@@ -1,17 +1,8 @@
 extern crate portaudio;
 extern crate weresocool;
 use portaudio as pa;
-use weresocool::compositions::song_19 ::generate_composition;
+use weresocool::compositions::song_20 ::generate_composition;
 use weresocool::portaudio_setup::output::setup_portaudio_output;
-
-//fn main() {
-//    match run() {
-//        Ok(_) => {}
-//        e => {
-//            eprintln!("Failed with the following error: {:?}", e);
-//        }
-//    }
-//}
 
 fn main() -> Result<(), pa::Error> {
     println!("{}", "\n  ****** WereSoCool __!Now In Stereo!__ ****** ");

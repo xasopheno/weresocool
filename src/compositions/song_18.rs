@@ -145,13 +145,6 @@ fn composition() -> Op {
 
     repeat![
         compose![
-//            compose![
-//                sequence![
-//                    AsIs,
-//                    TransposeM {m: 2.0},
-//                ],
-//                Length {m: 0.5}
-//            ],
             overlay![
                 fit2(),
                 fit(),
@@ -172,9 +165,8 @@ fn composition() -> Op {
                 ],
                 AsIs,
                 AsIs,
-                AsIs,
             ]
-        ], 3
+        ], 1
     ]
 }
 

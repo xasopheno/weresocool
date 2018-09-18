@@ -153,9 +153,13 @@ fn composition() -> Op {
     fn tag() -> Op {
         sequence![
             compose![
-                    TransposeM {m: 3.0/8.0},
+                    r![
+                        (3, 4, 0.0, 0.25, 0.0),
+                        (9, 8, 0.0, 0.25, 0.0),
+                        (3, 8, 0.0, 1.0, 0.0),
+                    ],
                     Length {m: 1.0/8.0},
-                    Gain {m: 2.3},
+                    Gain {m: 2.8},
                 ],
             Silence {m: 0.1},
             overlay![
@@ -176,7 +180,11 @@ fn composition() -> Op {
                     ],
                 ],
             compose![
-                    TransposeM {m: 1.0/2.0},
+                   r![
+                        (1, 1, 0.0, 0.25, 1.0),
+                        (3, 4, 4.0, 0.25, -1.0),
+                        (1, 2, 0.0, 1.0, 0.0),
+                    ],
                     Length {m: 1.0/8.0},
                     Gain {m: 2.0},
                 ],
@@ -184,16 +192,16 @@ fn composition() -> Op {
         ]
     }
 
-    fn tag_fit() -> Op {
+    pub fn tag_fit() -> Op {
         fit![
             tag() => sequence![sequence1()], 1
         ]
     }
 
     sequence![
-        tag_fit(),
         repeat![
             sequence![
+            tag_fit(),
                 repeat![
                     compose![
                         r![
@@ -212,9 +220,9 @@ fn composition() -> Op {
                         ]
                     ], 7
                 ],
-                tag_fit()
-            ], 8
-        ]
+            ], 3
+        ],
+        tag_fit(),
     ]
 }
 
