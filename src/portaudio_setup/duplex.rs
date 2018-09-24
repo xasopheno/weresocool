@@ -35,15 +35,15 @@ pub fn setup_portaudio_duplex(
                 let mut result: DetectionResult = input_buffer
                     .to_vec()
                     .analyze(settings.sample_rate, settings.probability_threshold);
-                if result.gain < 0.001 {
+                if result.gain < 0.005 || result.frequency > 2_500.0 {
                     result.frequency = 0.0;
                     result.gain = 0.0;
                 }
                 println!("freq {}, gain {}", result.frequency, result.gain);
 
                 let sound = Sound {
-                    frequency: result.frequency,
-                    gain: result.gain * 100.0,
+                    frequency: result.frequency * 2.0,
+                    gain: result.gain * 10.0,
                     pan: 0.0,
                 };
                 let e = Event {
@@ -54,15 +54,26 @@ pub fn setup_portaudio_duplex(
                 fn overtones() -> Op {
                     compose![
                         r![
-                            (9, 2, 0.0, 0.3, -0.8),
-                            (2, 1, 7.0, 1.0, -0.0),
-                            (2, 1, 0.0, 1.0, -0.5),
-                            (3, 2, 0.0, 1.0, -0.5),
-                            (3, 2, 5.0, 1.0, 0.5),
-                            (1, 1, 0.0, 1.0, -0.5),
-                            (1, 1, 3.0, 1.0, 0.5),
-                            (1, 2, 3.0, 1.0, 0.5),
-                            (1, 2, 0.0, 1.0, 0.5),
+                            (11, 4, 5.0  , 1.0, 01.0),
+                            (11, 4, 0.0, 1.0, 01.0),
+                            (5, 2, 3.0, 1.0, -1.0),
+                            (5, 2, 0.0, 1.0, -1.0),
+                            (3, 2, 0.0, 1.0, 1.0),
+                            (1, 1, 0.0, 1.0, 0.0),
+//                            (9, 1, 0.0, 1.0, 1.0),
+//                            (11, 2, 5.0, 1.0, 1.0),
+//                            (10, 2, 1.0, 1.0, 0.0),
+//                            (10, 2, 0.0, 1.0, 0.0),
+//                            (9, 2, 0.0, 1.0, 0.0),
+//                            (2, 1, 7.0, 1.0, 0.0),
+//                            (2, 1, 0.0, 1.0, 0.5),
+//                            (3, 2, 0.0, 1.0, -0.5),
+//                            (3, 2, 5.0, 1.0, 0.5),
+//                            (1, 1, 0.0, 1.0, -0.5),
+//                            (1, 1, 0.0, 1.0, -0.5),
+//                            (1, 1, 3.0, 1.0, 0.5),
+//                            (1, 2, 3.0, 1.0, 0.5),
+//                            (1, 2, 0.0, 1.0, 0.5),
                         ],
                         //                        TransposeM {m: 2.0}
                     ]
@@ -73,7 +84,6 @@ pub fn setup_portaudio_duplex(
                 }
 
                 let events = &generate_events(e.clone(), overtones)[0].sounds;
-                //                let event = events[0];
 
                 oscillator.update(events.clone());
                 let stereo_waveform = oscillator.generate(settings.buffer_size);
