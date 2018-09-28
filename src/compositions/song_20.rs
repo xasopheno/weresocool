@@ -2,6 +2,12 @@ use event::{Event, Render};
 use instrument::{oscillator::Oscillator, stereo_waveform::StereoWaveform};
 use operations::{Apply, Op, Op::*};
 use settings::get_default_app_settings;
+use compositions::{
+    song_18::operations as song_18,
+    song_19::{
+        operations as song_19,
+    }
+};
 
 fn composition() -> Op {
     fn overtones() -> Op {
@@ -13,11 +19,23 @@ fn composition() -> Op {
         ]
     }
 
-    fn sequence1() -> Op {
-        sequence![AsIs, TransposeM { m: 3.0 / 2.0 }, AsIs,]
+    fn form() -> Op {
+        repeat![
+            sequence![
+                compose![
+                    song_18(),
+                    Length {m: 1.53}
+                ],
+                compose![
+                    song_19(),
+                    Length {m: 2.0},
+                    Gain {m: 0.90}
+                ]
+            ], 3
+        ]
     }
 
-    compose![sequence1()]
+    compose![form()]
 }
 
 fn oscillator() -> Oscillator {
@@ -25,7 +43,7 @@ fn oscillator() -> Oscillator {
 }
 
 fn event() -> Event {
-    Event::init(200.0, 0.75, 0.0, 1.8)
+    Event::init(190.0, 0.75, 0.0, 1.0)
 }
 
 fn generate_events(event: Event, operation: fn() -> Op) -> Vec<Event> {

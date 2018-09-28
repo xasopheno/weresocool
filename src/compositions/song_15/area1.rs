@@ -1,5 +1,5 @@
 pub mod material {
-    use operations::{Op};
+    use operations::Op;
 
     pub fn overtones() -> Op {
         r![
@@ -33,19 +33,22 @@ pub mod material {
         Op::Sequence {
             operations: vec![
                 Op::AsIs,
-                Op::Compose { operations: vec![
-                    Op::Sequence { operations: vec![
-                        Op::TransposeM { m: 3.0/2.0 },
-                        Op::TransposeM { m: 8.0/5.0 },
-                        Op::TransposeM { m: 3.0/2.0 },
-                    ]},
-                    Op::Gain {m: 0.5},
-                    Op::Length { m: 0.333333 }
-                ]},
-                Op::Compose { operations: vec![
-                    Op::AsIs,
-                    Op::Gain {m: 1.05}
-                ]}
+                Op::Compose {
+                    operations: vec![
+                        Op::Sequence {
+                            operations: vec![
+                                Op::TransposeM { m: 3.0 / 2.0 },
+                                Op::TransposeM { m: 8.0 / 5.0 },
+                                Op::TransposeM { m: 3.0 / 2.0 },
+                            ],
+                        },
+                        Op::Gain { m: 0.5 },
+                        Op::Length { m: 0.333333 },
+                    ],
+                },
+                Op::Compose {
+                    operations: vec![Op::AsIs, Op::Gain { m: 1.05 }],
+                },
             ],
         }
     }
@@ -54,41 +57,30 @@ pub mod material {
         Op::Sequence {
             operations: vec![
                 Op::AsIs,
-                Op::TransposeM { m: 7.0/8.0 },
-                Op::TransposeM { m: 4.0/5.0 },
-                Op::Compose { operations: vec![
-                    Op::TransposeM { m: 3.0/4.0 },
-                    Op::Gain {m: 1.5}
-                ]}
+                Op::TransposeM { m: 7.0 / 8.0 },
+                Op::TransposeM { m: 4.0 / 5.0 },
+                Op::Compose {
+                    operations: vec![Op::TransposeM { m: 3.0 / 4.0 }, Op::Gain { m: 1.5 }],
+                },
             ],
         }
     }
 
     pub fn sequence3() -> Op {
         Op::Sequence {
-            operations: vec![
-                Op::AsIs,
-                Op::TransposeM { m: 2.0/3.0 },
-            ],
+            operations: vec![Op::AsIs, Op::TransposeM { m: 2.0 / 3.0 }],
         }
     }
 
     pub fn with_overtones() -> Op {
         Op::Compose {
-            operations: vec![
-                overtones(),
-                sequence1(),
-            ],
+            operations: vec![overtones(), sequence1()],
         }
     }
 
     pub fn melody() -> Op {
         Op::Compose {
-            operations: vec![
-                sequence1(),
-                sequence2(),
-                sequence3(),
-            ],
+            operations: vec![sequence1(), sequence2(), sequence3()],
         }
     }
 
@@ -96,15 +88,14 @@ pub mod material {
         Op::Fit {
             n: 2,
             with_length_of: Box::new(melody()),
-            main:
-            Box::new(
-                Op::Compose { operations: vec![
+            main: Box::new(Op::Compose {
+                operations: vec![
                     with_overtones(),
                     melody(),
-                    Op::TransposeM { m: 3.0/1.0 },
-                    Op::Gain { m: 0.5 }
-                ]
-                })
+                    Op::TransposeM { m: 3.0 / 1.0 },
+                    Op::Gain { m: 0.5 },
+                ],
+            }),
         }
     }
 
@@ -112,33 +103,28 @@ pub mod material {
         Op::Fit {
             n: 2,
             with_length_of: Box::new(melody()),
-            main:
-            Box::new(
-                Op::Compose { operations: vec![
-                    fit(),
-                    Op::TransposeM { m: 3.0/2.0 },
-                    Op::Gain { m: 0.5 }
-                ]
-                })
+            main: Box::new(Op::Compose {
+                operations: vec![fit(), Op::TransposeM { m: 3.0 / 2.0 }, Op::Gain { m: 0.5 }],
+            }),
         }
     }
 
     pub fn overlay() -> Op {
-        Op::Overlay { operations: vec![
-            fit_again(),
-            fit(),
-            Op::Compose { operations: vec![
-                overtones2(),
-                melody(),
-                Op::Gain { m: 0.75 }
-            ]}
-        ]}
+        Op::Overlay {
+            operations: vec![
+                fit_again(),
+                fit(),
+                Op::Compose {
+                    operations: vec![overtones2(), melody(), Op::Gain { m: 0.75 }],
+                },
+            ],
+        }
     }
 
     pub fn repeat() -> Op {
         Op::Repeat {
             operations: vec![overlay()],
-            n: 1
+            n: 2,
         }
     }
 }

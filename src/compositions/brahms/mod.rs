@@ -1,36 +1,25 @@
-mod violins;
-mod violas;
+mod bass;
+mod cello;
 mod flute_clarinet_basson;
 mod horns;
-mod cello;
-mod bass;
+mod violas;
+mod violins;
 
+use compositions::brahms::{
+    bass::bass::bass1, cello::cello::cello1, flute_clarinet_basson::winds::winds1,
+    horns::horns::horns1, violas::violas::violas1, violins::violins::violins1,
+};
 use event::{Event, Render};
 use instrument::{oscillator::Oscillator, stereo_waveform::StereoWaveform};
-use operations::{Op, Apply};
+use operations::{Apply, Op};
 use settings::get_default_app_settings;
-use compositions::brahms::{
-    violins::violins::violins1,
-    violas::violas::violas1,
-    flute_clarinet_basson::winds::winds1,
-    horns::horns::horns1,
-    cello::cello::cello1,
-    bass::bass::bass1,
-};
 
 pub fn generate_composition() -> StereoWaveform {
     fn brahms() -> Op {
         Op::Sequence {
-            operations: vec![
-                Op::Overlay { operations: vec![
-                    violins1(),
-                    violas1(),
-                    winds1(),
-                    horns1(),
-                    cello1(),
-                    bass1(),
-                ]}
-            ],
+            operations: vec![Op::Overlay {
+                operations: vec![violins1(), violas1(), winds1(), horns1(), cello1(), bass1()],
+            }],
         }
     };
 

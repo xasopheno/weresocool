@@ -1,6 +1,6 @@
 use event::{Event, Render};
 use instrument::{oscillator::Oscillator, stereo_waveform::StereoWaveform};
-use operations::{Op, Apply};
+use operations::{Apply, Op};
 use settings::get_default_app_settings;
 
 pub fn generate_composition() -> StereoWaveform {
@@ -24,83 +24,78 @@ pub fn generate_composition() -> StereoWaveform {
     }
 
     fn melody() -> Op {
-        Op::Compose { operations: vec![
-            Op::Sequence { operations: vec![
-                Op::Silence { m: 1.0 },
-                r![
-                    (9, 8, 4.0, 0.1, -1.0),
-                    (9, 8, 0.0, 0.1, -1.0),
-                    (2, 1, 0.0, 0.2, -1.0),
-                    (2, 1, 0.0, 0.2, -1.0),
-                    (8, 5, 3.0, 0.2, 0.5),
-                    (8, 5, 3.0, 0.2, 0.5),
-                ],
-                    Op::Silence { m: 0.1 },
-
-                    Op::Compose {operations: vec![
+        Op::Compose {
+            operations: vec![
+                Op::Sequence {
+                    operations: vec![
+                        Op::Silence { m: 1.0 },
                         r![
-                            (9, 1, 4.0, 0.5, 0.2),
-                            (9, 1, 0.0, 0.5, -0.2),
+                            (9, 8, 4.0, 0.1, -1.0),
+                            (9, 8, 0.0, 0.1, -1.0),
+                            (2, 1, 0.0, 0.2, -1.0),
+                            (2, 1, 0.0, 0.2, -1.0),
+                            (8, 5, 3.0, 0.2, 0.5),
+                            (8, 5, 3.0, 0.2, 0.5),
                         ],
-                        Op::Gain { m: 0.5 },
-                        Op::Length { m: 0.2 }
-                    ]},
-                    Op::Silence { m: 0.1 },
-                r![
-                    (5, 2, 5.0, 0.2, 1.0),
-                    (5, 2, 0.0, 0.2, 1.0),
-                    (9, 4, 0.0, 0.2, 1.0),
-                    (9, 4, 5.0, 0.2, 1.0),
-                    (3, 2, 3.0, 0.2, -0.5),
-                    (3, 2, 0.0, 0.2, -0.5),
-                ],
-                Op::Silence { m: 1.0 },
-            ]},
-            Op::TransposeM { m: 2.0 }
-        ]}
+                        Op::Silence { m: 0.1 },
+                        Op::Compose {
+                            operations: vec![
+                                r![(9, 1, 4.0, 0.5, 0.2), (9, 1, 0.0, 0.5, -0.2),],
+                                Op::Gain { m: 0.5 },
+                                Op::Length { m: 0.2 },
+                            ],
+                        },
+                        Op::Silence { m: 0.1 },
+                        r![
+                            (5, 2, 5.0, 0.2, 1.0),
+                            (5, 2, 0.0, 0.2, 1.0),
+                            (9, 4, 0.0, 0.2, 1.0),
+                            (9, 4, 5.0, 0.2, 1.0),
+                            (3, 2, 3.0, 0.2, -0.5),
+                            (3, 2, 0.0, 0.2, -0.5),
+                        ],
+                        Op::Silence { m: 1.0 },
+                    ],
+                },
+                Op::TransposeM { m: 2.0 },
+            ],
+        }
     }
 
     fn repeat() -> Op {
-        Op::Repeat { operations: vec![
-            Op::AsIs,
-            Op::TransposeM { m: 3.0/2.0 },
-            Op::TransposeM { m: 8.0/5.0 },
-            Op::TransposeM { m: 3.0/2.0 },
-
-            Op::TransposeM { m: 4.0/3.0 },
-            Op::TransposeM { m: 9.0/8.0 },
-            Op::TransposeM { m: 7.0/4.0 },
-            Op::TransposeM { m: 5.0/4.0 },
-
-            Op::TransposeM { m: 4.0/3.0 },
-            Op::TransposeM { m: 11.0/8.0 },
-            Op::TransposeM { m: 13.0/8.0 },
-            Op::TransposeM { m: 8.0/5.0 },
-
-            Op::TransposeM { m: 5.0/3.0 },
-            Op::TransposeM { m: 7.0/4.0 },
-            Op::TransposeM { m: 15.0/8.0 },
-            Op::TransposeM { m: 3.0/2.0 },
-        ],
-            n: 8
+        Op::Repeat {
+            operations: vec![
+                Op::AsIs,
+                Op::TransposeM { m: 3.0 / 2.0 },
+                Op::TransposeM { m: 8.0 / 5.0 },
+                Op::TransposeM { m: 3.0 / 2.0 },
+                Op::TransposeM { m: 4.0 / 3.0 },
+                Op::TransposeM { m: 9.0 / 8.0 },
+                Op::TransposeM { m: 7.0 / 4.0 },
+                Op::TransposeM { m: 5.0 / 4.0 },
+                Op::TransposeM { m: 4.0 / 3.0 },
+                Op::TransposeM { m: 11.0 / 8.0 },
+                Op::TransposeM { m: 13.0 / 8.0 },
+                Op::TransposeM { m: 8.0 / 5.0 },
+                Op::TransposeM { m: 5.0 / 3.0 },
+                Op::TransposeM { m: 7.0 / 4.0 },
+                Op::TransposeM { m: 15.0 / 8.0 },
+                Op::TransposeM { m: 3.0 / 2.0 },
+            ],
+            n: 8,
         }
     }
 
     fn sequence1() -> Op {
-//        Op::Compose {
-//            operations: vec![
-//                repeat(),
-//        ]}
+        //        Op::Compose {
+        //            operations: vec![
+        //                repeat(),
+        //        ]}
         Op::ComposeWithOrder {
-            operations: vec![
-                repeat(),
-                Op::PanM { m: 0.85 }
-            ],
-            order_fn
+            operations: vec![repeat(), Op::PanM { m: 0.85 }],
+            order_fn,
         }
     };
-
-
 
     fn main() -> Op {
         Op::Compose {
@@ -109,8 +104,8 @@ pub fn generate_composition() -> StereoWaveform {
     }
     let new_fit = Op::Fit {
         with_length_of: Box::new(main()),
-        main: Box::new(
-            Op::Compose {operations: vec![
+        main: Box::new(Op::Compose {
+            operations: vec![
                 repeat(),
                 r![
                     (14, 1, 0.0, 0.5, -1.0),
@@ -129,8 +124,8 @@ pub fn generate_composition() -> StereoWaveform {
                 ],
                 Op::Gain { m: 0.08 },
                 Op::Reverse {},
-            ]}
-        ),
+            ],
+        }),
         n: 6,
     };
 
@@ -142,8 +137,8 @@ pub fn generate_composition() -> StereoWaveform {
                 with_length_of: Box::new(main()),
                 main: Box::new(melody()),
                 n: 6,
-            }
-        ]
+            },
+        ],
     };
 
     let mut oscillator = Oscillator::init(&get_default_app_settings());

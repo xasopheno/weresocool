@@ -23,7 +23,7 @@ pub mod apply_with_order {
 
                 Op::TransposeM { m } => {
                     for (order, event) in events.iter().enumerate() {
-                        let order_after_fn = order_fn(order,events.len());
+                        let order_after_fn = order_fn(order, events.len());
                         let mut e = event.clone();
                         for sound in e.sounds.iter_mut() {
                             sound.frequency = sound.frequency * m * order_after_fn;

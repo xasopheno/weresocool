@@ -10,6 +10,7 @@ pub struct Voice {
     pub past: VoiceState,
     pub current: VoiceState,
     pub phase: f32,
+    //    pub randomness: f32,
 }
 
 #[derive(Clone, Debug, PartialEq)]
@@ -44,7 +45,6 @@ impl Voice {
     ) {
         let p_delta = self.calculate_portamento_delta(portamento_length);
         let g_delta = self.calculate_gain_delta(buffer.len());
-
 
         for (index, sample) in buffer.iter_mut().enumerate() {
             let new_sample =

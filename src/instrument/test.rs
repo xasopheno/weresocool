@@ -1,7 +1,9 @@
 pub mod tests {
     use event::Sound;
     use instrument::{
-        loudness::loudness_normalization, oscillator::Oscillator, stereo_waveform::StereoWaveform,
+        loudness::loudness_normalization,
+        oscillator::Oscillator,
+        stereo_waveform::StereoWaveform,
         voice::{Voice, VoiceState},
     };
     use settings::get_test_settings;

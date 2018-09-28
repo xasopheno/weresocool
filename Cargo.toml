@@ -10,7 +10,9 @@ autobins = false
 portaudio = "0.7.0"
 rand = "0.5.1"
 hound = "3.4.0"
-
+serde = "1.0.79"
+serde_derive = "1.0.79"
+serde_json = "1.0.27"
 
 [[bin]]
 name = "mic"
@@ -23,6 +25,10 @@ path = "bin/composer.rs"
 [[bin]]
 name = "print"
 path = "bin/print.rs"
+
+[[bin]]
+name = "json"
+path = "bin/json.rs"
 
 [[bin]]
 name = "scratch"

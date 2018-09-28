@@ -1,5 +1,5 @@
 pub mod winds {
-    use operations::{Op};
+    use operations::Op;
 
     pub fn winds1() -> Op {
         fn sound() -> Op {
@@ -22,32 +22,30 @@ pub mod winds {
                     r![(4, 3, 0.0, 1.0, 0.0), (9, 8, 0.0, 1.0, 0.3)],
                     r![(9, 8, 0.0, 1.0, 0.3), (15, 16, 0.0, 1.0, 0.0)],
                     r![(15, 16, 0.0, 1.0, 0.0), (3, 4, 0.0, 1.0, 0.3)],
-                ]
+                ],
             }
         };
 
         fn phrase_with_space() -> Op {
-            Op::Compose { operations: vec![
-                Op::Sequence { operations: vec![
-                    Op::AsIs,
-                    Op::Silence {m: 1.0}
-                ]},
-                phrase(),
-            ]}
+            Op::Compose {
+                operations: vec![
+                    Op::Sequence {
+                        operations: vec![Op::AsIs, Op::Silence { m: 1.0 }],
+                    },
+                    phrase(),
+                ],
+            }
         }
 
         fn result() -> Op {
-            Op::Sequence {operations: vec! [
-                Op::Silence {m: 2.0},
-                Op::Compose {
-                    operations: vec![
-                        sound(),
-                        phrase_with_space(),
-                        Op::Gain { m: 1.2 }
-                    ]
-                }
-            ]}
-
+            Op::Sequence {
+                operations: vec![
+                    Op::Silence { m: 2.0 },
+                    Op::Compose {
+                        operations: vec![sound(), phrase_with_space(), Op::Gain { m: 1.2 }],
+                    },
+                ],
+            }
         }
 
         result()
