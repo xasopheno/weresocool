@@ -22,4 +22,5 @@ pub mod song_20;
 pub mod song_21;
 pub mod originate;
 pub mod sound_effects;
+pub mod juri;
 pub mod template;
