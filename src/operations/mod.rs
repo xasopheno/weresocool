@@ -29,8 +29,6 @@ pub enum Op {
     Gain {
         m: f32,
     },
-    //    Capture { n: usize },
-    //    Fuzz
     Repeat {
         n: usize,
         operations: Vec<Op>,
@@ -41,6 +39,10 @@ pub enum Op {
     Compose {
         operations: Vec<Op>,
     },
+    Overlay {
+        operations: Vec<Op>,
+    },
+//  Extra
     ComposeWithOrder {
         operations: Vec<Op>,
         order_fn: fn(order: usize, length: usize) -> f32,
@@ -49,9 +51,6 @@ pub enum Op {
         with_length_of: Box<Op>,
         main: Box<Op>,
         n: usize,
-    },
-    Overlay {
-        operations: Vec<Op>,
     },
 }
 
