@@ -9,4 +9,6 @@ pub enum Op {
     PanA {a: f32},
     Gain {m: f32},
     Length {m: f32},
+    Sequence {operations: Vec<Op>},
+    Overlay {operations: Vec<Op>},
 }

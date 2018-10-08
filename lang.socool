@@ -4,7 +4,7 @@ let thing1 = sequence![
     Tm 5/4,
     Tm 15/8,
     | Ta 3.0,
-    Tm 5/4
+    Tm 5/4,
 ]
 
 let thing2 = sequence![
@@ -14,16 +14,14 @@ let thing2 = sequence![
 
 main:
 Overlay [
-    o[(3/2, 3.0, 1.0. 0.0),
-      (3/2, 0.0, 1.0. 0.0)]
+    o[(3/2, 3.0, 1.0, 0.0),
+      (3/2, 0.0, 1.0, 0.0)]
     | thing2
     | Repeat 3
-    | LengthOf thing1,
+    | WithLengthOf(
+        thing1
+        | Repeat 2
+    ),
 
     thing1,
-]
-
-o[
-    (3/2, 0.0, 1.0. 0.0),
-    (3/2, 0.0, 1.0. 0.0)
 ]

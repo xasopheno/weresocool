@@ -3,6 +3,19 @@ use crate::ast::{Op};
 
 grammar;
 
+Comma<T>: Vec<T> = { // (0)
+    <v:(<T> ",")*> <e:T?> => match e { // (1)
+        None=> v,
+        Some(e) => {
+            let mut v = v;
+            v.push(e);
+            v
+        }
+    }
+};
+
+
+
 pub Operation: Op = {
     "AsIs" => Op::AsIs,
     "Reverse" => Op::Reverse,
@@ -13,6 +26,8 @@ pub Operation: Op = {
     "PanA" <v:Value> => Op::PanA {a: v},
     "Length" <v:Value> => Op::Length {m: v},
     "Gain" <v:Value> => Op::Gain {m: v},
+    "Sequence" "[" <operations: Comma<Operation>> "]" => Op::Sequence { operations: operations },
+    "Overlay" "[" <operations: Comma<Operation>> "]" => Op::Overlay { operations: operations }
 };
 
 Value: f32 = {
