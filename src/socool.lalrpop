@@ -3,7 +3,7 @@ use crate::ast::{Op};
 
 grammar;
 
-Comma<T>: Vec<T> = { // (0)
+Comma<T>: Vec<T> = {
     <v:(<T> ",")*> <e:T?> => match e { // (1)
         None=> v,
         Some(e) => {
@@ -14,7 +14,7 @@ Comma<T>: Vec<T> = { // (0)
     }
 };
 
-
+Operations = Comma<Operation>;
 
 pub Operation: Op = {
     "AsIs" => Op::AsIs,
@@ -26,8 +26,8 @@ pub Operation: Op = {
     "PanA" <v:Value> => Op::PanA {a: v},
     "Length" <v:Value> => Op::Length {m: v},
     "Gain" <v:Value> => Op::Gain {m: v},
-    "Sequence" "[" <operations: Comma<Operation>> "]" => Op::Sequence { operations: operations },
-    "Overlay" "[" <operations: Comma<Operation>> "]" => Op::Overlay { operations: operations }
+    "Sequence" "[" <operations: Operations> "]" => Op::Sequence { operations: operations },
+    "Overlay" "[" <operations: Operations> "]" => Op::Overlay { operations: operations },
 };
 
 Value: f32 = {

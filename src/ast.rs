@@ -11,4 +11,5 @@ pub enum Op {
     Length {m: f32},
     Sequence {operations: Vec<Op>},
     Overlay {operations: Vec<Op>},
+    Compose {operations: Vec<Op>},
 }
