@@ -1,0 +1,29 @@
+let thing1 = sequence![
+    AsIs,
+    Tm 3/2,
+    Tm 5/4,
+    Tm 15/8,
+    | Ta 3.0,
+    Tm 5/4
+]
+
+let thing2 = sequence![
+    Tm 9/8,
+    Tm 3/2,
+]
+
+main:
+Overlay [
+    o[(3/2, 3.0, 1.0. 0.0),
+      (3/2, 0.0, 1.0. 0.0)]
+    | thing2
+    | Repeat 3
+    | LengthOf thing1,
+
+    thing1,
+]
+
+o[
+    (3/2, 0.0, 1.0. 0.0),
+    (3/2, 0.0, 1.0. 0.0)
+]
