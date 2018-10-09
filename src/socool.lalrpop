@@ -60,6 +60,7 @@ pub Operation: Op = {
     "Sequence" "[" <operations: Operations> "]" => Op::Sequence { operations: operations },
     "Overlay" "[" <operations: Operations> "]" => Op::Overlay { operations: operations },
     "o" "[" <o: Overtones> "]" => Op::Overlay { operations: o },
+
     // <c: Compose> => Op::Compose { operations: c },
     // "<ops: Pipe<Operation>> => Op::Compose { operations: ops }
 };
