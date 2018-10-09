@@ -3,12 +3,11 @@ l: 1.0
 
 let thing1 = sequence[
     AsIs,
-    Tm 3/2,
+    Tm 7/8,
     Tm 5/4,
-    Tm 15/8,
-    | Ta 3.0,
+    Tm 15/8
     | Gain 0.5
-    | Length 0.5
+    | Length 0.5,
     Tm 5/4,
 ]
 
@@ -29,5 +28,7 @@ Overlay [
         | Repeat 2
     ),
 
-    thing1,
+    thing1
+    .mirror(f * 9/8)
 ]
+

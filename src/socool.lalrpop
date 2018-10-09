@@ -14,23 +14,7 @@ Comma<T>: Vec<T> = {
     }
 };
 
-Overtone: Op = {
-    "("
-        <v:Value> ","
-        <o:Value> ","
-        <g:Value> ","
-        <p:Value>
-    ")"
-    => Op::Compose { operations: vec! [
-            Op::TransposeM { m: v },
-            Op::TransposeA { a: o },
-            Op::Gain { m: g },
-            Op::PanA { a: p },
-        ]
-    }
-}
 
-Overtones = Comma<Overtone>;
 
 Pipe<T>: Vec<T> = {
     <v:(<T> "|")+> <e:T?> => match e {
@@ -48,6 +32,14 @@ Compose = Pipe<Operation>;
 Operations = Comma<Operation>;
 
 pub Operation: Op = {
+    <ops: Pipe<BaseOperation>> => Op::Compose { operations: ops },
+    <o: BaseOperation> => o
+}
+
+<let: Let> => table.add(let)
+
+
+pub BaseOperation: Op = {
     "AsIs" => Op::AsIs,
     "Reverse" => Op::Reverse,
     "Silence" <v:Value> => Op::Silence {m: v},
@@ -60,10 +52,27 @@ pub Operation: Op = {
     "Sequence" "[" <operations: Operations> "]" => Op::Sequence { operations: operations },
     "Overlay" "[" <operations: Operations> "]" => Op::Overlay { operations: operations },
     "o" "[" <o: Overtones> "]" => Op::Overlay { operations: o },
-
-    // <c: Compose> => Op::Compose { operations: c },
-    // "<ops: Pipe<Operation>> => Op::Compose { operations: ops }
+    <id: Identifier> => { table.find(id).clone() }
+    "(" <o: Operation> ")" => o
 };
+
+Overtone: Op = {
+    "("
+        <v:Value> ","
+        <o:Value> ","
+        <g:Value> ","
+        <p:Value>
+    ")"
+    => Op::Compose { operations: vec! [
+            Op::TransposeM { m: v },
+            Op::TransposeA { a: o },
+            Op::Gain { m: g },
+            Op::PanA { a: p },
+        ]
+    }
+}
+
+Overtones = Comma<Overtone>;
 
 Value: f32 = {
     <n:Num> => n,

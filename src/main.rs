@@ -12,9 +12,12 @@ fn main() {
 //           (1, 0.0, 1.0, 0.0)]"
 //        )
 //    );
-//        println!("{:?}", socool::OperationParser::new().parse(
-//            "Compose Tm 3/2 | Gain 0.5"
-//        ));
+        println!("{:?}", socool::OperationParser::new().parse(
+            "Tm 3/2
+            | Gain 0.5
+            | Length 0.5
+            "
+        ));
         println!("{:?}", socool::OperationParser::new().parse(
             "Tm 3/2"
         ));
