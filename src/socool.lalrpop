@@ -4,7 +4,7 @@ use crate::ast::{Op};
 grammar;
 
 Comma<T>: Vec<T> = {
-    <v:(<T> ",")*> <e:T?> => match e { // (1)
+    <v:(<T> ",")*> <e:T?> => match e {
         None=> v,
         Some(e) => {
             let mut v = v;
@@ -13,6 +13,40 @@ Comma<T>: Vec<T> = {
         }
     }
 };
+
+Overtone: Op = {
+        "("
+            <v:Value> ","
+            <o:Value> ","
+            <g:Value> ","
+            <p:Value>
+        ")"
+            => Op::Compose { operations: vec! [
+                    Op::TransposeM { m: v },
+                    Op::TransposeA { a: o },
+                    Op::Gain { m: g },
+                    Op::PanA { a: p },
+                ]
+            }
+
+}
+
+
+Overtones = Comma<Overtone>;
+
+
+Pipe<T>: Vec<T> = {
+    <v:(<T> "|")*> <e:T?> => match e {
+        None=> v,
+        Some(e) => {
+          let mut v = v;
+          v.push(e);
+          v
+        }
+    }
+};
+
+
 
 Operations = Comma<Operation>;
 
@@ -28,6 +62,7 @@ pub Operation: Op = {
     "Gain" <v:Value> => Op::Gain {m: v},
     "Sequence" "[" <operations: Operations> "]" => Op::Sequence { operations: operations },
     "Overlay" "[" <operations: Operations> "]" => Op::Overlay { operations: operations },
+    "o" "[" <o: Overtones> "]" => Op::Overlay { operations: o }
 };
 
 Value: f32 = {
