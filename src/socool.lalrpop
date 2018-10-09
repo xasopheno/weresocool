@@ -1,7 +1,7 @@
 use std::str::FromStr;
 use crate::ast::{Op};
 
-grammar;
+grammar<'nums>(nums: &'nums mut Vec<f32>);
 
 Comma<T>: Vec<T> = {
     <v:(<T> ",")*> <e:T?> => match e {
@@ -36,7 +36,7 @@ pub Operation: Op = {
     <o: BaseOperation> => o
 }
 
-<let: Let> => table.add(let)
+// <let: Let> => table.add(let)
 
 
 pub BaseOperation: Op = {
@@ -52,7 +52,8 @@ pub BaseOperation: Op = {
     "Sequence" "[" <operations: Operations> "]" => Op::Sequence { operations: operations },
     "Overlay" "[" <operations: Operations> "]" => Op::Overlay { operations: operations },
     "o" "[" <o: Overtones> "]" => Op::Overlay { operations: o },
-    <id: Identifier> => { table.find(id).clone() }
+    // <id: Identifier> => { table.find(id).clone() },
+    "let" <n: Value> => { nums.push(n); Op::AsIs },
     "(" <o: Operation> ")" => o
 };
 

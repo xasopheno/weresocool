@@ -4,23 +4,31 @@ lalrpop_mod!(pub socool); // synthesized by LALRPOP
 pub mod ast;
 
 fn main() {
+    let mut nums: Vec<f32> = vec![];
+    println!("{:?}", socool::OperationParser::new().parse(
+        &mut nums,
+        "
+        let 3.0
+        "));
+    println!("{:?}", nums);
+
 //    println!(
 //        "{:?}",
 //        socool::OperationParser::new().parse(
-//            "o[(3/2, 3.0, 1.0, 0.0),
+//        "o[(3/2, 3.0, 1.0, 0.0),
 //           (3/2, 0.0, 1.0, 0.0),
 //           (1, 0.0, 1.0, 0.0)]"
-//        )
+//        ).unwrap()
 //    );
-        println!("{:?}", socool::OperationParser::new().parse(
-            "Tm 3/2
-            | Gain 0.5
-            | Length 0.5
-            "
-        ));
-        println!("{:?}", socool::OperationParser::new().parse(
-            "Tm 3/2"
-        ));
+//    println!("{:?}", socool::OperationParser::new().parse(
+//        "Tm 3/2
+//        | Gain 0.5
+//        | Length 0.5
+//        "
+//    ).unwrap());
+//    println!("{:?}", socool::OperationParser::new().parse(
+//        "Tm 3/2"
+//    ).unwrap());
 }
 
 #[cfg(test)]
