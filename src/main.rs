@@ -4,21 +4,20 @@ lalrpop_mod!(pub socool); // synthesized by LALRPOP
 pub mod ast;
 
 fn main() {
-    println!(
-        "{:?}",
-        socool::OperationParser::new().parse(
-            "o[(3/2, 3.0, 1.0, 0.0),
-           (3/2, 0.0, 1.0, 0.0),
-           (1, 0.0, 1.0, 0.0)]"
-        )
-    );
-    //    println!("{:?}", socool::OperationParser::new().parse(
-    //        "Tm 3/2
-    //        | Gain 0.5"
-    //    ));
-    //    println!("{:?}", socool::OperationParser::new().parse(
-    //        "Tm 3/2"
-    //    ));
+//    println!(
+//        "{:?}",
+//        socool::OperationParser::new().parse(
+//            "o[(3/2, 3.0, 1.0, 0.0),
+//           (3/2, 0.0, 1.0, 0.0),
+//           (1, 0.0, 1.0, 0.0)]"
+//        )
+//    );
+//        println!("{:?}", socool::OperationParser::new().parse(
+//            "Compose Tm 3/2 | Gain 0.5"
+//        ));
+        println!("{:?}", socool::OperationParser::new().parse(
+            "Tm 3/2"
+        ));
 }
 
 #[cfg(test)]
