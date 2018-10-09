@@ -1,7 +1,7 @@
 f: 200
-l: 1
+l: 1.0
 
-let thing1 = sequence![
+let thing1 = sequence[
     AsIs,
     Tm 3/2,
     Tm 5/4,
@@ -12,7 +12,7 @@ let thing1 = sequence![
     Tm 5/4,
 ]
 
-let thing2 = sequence![
+let thing2 = sequence[
     Tm 9/8,
     Tm 3/2,
 ]
@@ -20,7 +20,7 @@ let thing2 = sequence![
 main:
 Overlay [
     o[(3/2, 3.0, 1.0, 0.0),
-      (3/2, 0.0, 1.0, 0.0)
+      (3/2, 0.0, 1.0, 0.0),
       (1, 0.0, 1.0, 0.0)]
     | thing2
     | Repeat 3

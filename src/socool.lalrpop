@@ -21,16 +21,15 @@ Overtone: Op = {
             <g:Value> ","
             <p:Value>
         ")"
-            => Op::Compose { operations: vec! [
-                    Op::TransposeM { m: v },
-                    Op::TransposeA { a: o },
-                    Op::Gain { m: g },
-                    Op::PanA { a: p },
-                ]
-            }
+        => Op::Compose { operations: vec! [
+                Op::TransposeM { m: v },
+                Op::TransposeA { a: o },
+                Op::Gain { m: g },
+                Op::PanA { a: p },
+            ]
+        }
 
 }
-
 
 Overtones = Comma<Overtone>;
 
@@ -45,8 +44,6 @@ Pipe<T>: Vec<T> = {
         }
     }
 };
-
-
 
 Operations = Comma<Operation>;
 
