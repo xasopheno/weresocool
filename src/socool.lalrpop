@@ -1,7 +1,8 @@
 use std::str::FromStr;
-use crate::ast::{Op};
+use std::string::String;
+use crate::ast::{Let, Op};
 
-grammar;
+grammar<'table>(table: &'table mut Vec<Let>);
 
 Comma<T>: Vec<T> = {
     <v:(<T> ",")*> <e:T?> => match e {
@@ -29,9 +30,15 @@ Compose = Pipe<Operation>;
 
 Operations = Comma<Operation>;
 
+pub SoCool: Op = {
+    <o: Operation> => o,
+    "let" <s: Name> "=" <o: Operation> => { table.push(Let {name: s, operation: o}); Op::NoOp },
+}
+
 pub Operation: Op = {
     <ops: Pipe<BaseOperation>> => Op::Compose { operations: ops },
-    <o: BaseOperation> => o
+    <o: BaseOperation> => o,
+
 }
 
 BaseOperation: Op = {
@@ -48,7 +55,6 @@ BaseOperation: Op = {
     "Overlay" "[" <operations: Operations> "]" => Op::Overlay { operations: operations },
     "o" "[" <o: Overtones> "]" => Op::Overlay { operations: o },
     // <id: Identifier> => { table.find(id).clone() },
-    //"let" <n: Value> => { nums.push(n); Op::AsIs },
     "(" <o: Operation> ")" => o
 };
 
@@ -76,4 +82,5 @@ Value: f32 = {
 
 };
 
+Name: String = <s:r"[a-zA-Z_$][a-zA-Z_$0-9]*"> => s.to_string();
 Num: f32 = <s:r"-?(0|([1-9]\d*))(\.\d+)?+"> => f32::from_str(s).unwrap();

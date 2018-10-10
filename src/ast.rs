@@ -14,3 +14,10 @@ pub enum Op {
     Overlay { operations: Vec<Op> },
     Compose { operations: Vec<Op> },
 }
+
+#[derive(Clone, PartialEq, Debug)]
+pub struct Let {
+    pub name: String,
+    pub operation: Op
+}
+
