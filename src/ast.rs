@@ -1,5 +1,6 @@
 #[derive(Clone, PartialEq, Debug)]
 pub enum Op {
+    NoOp,
     AsIs,
     Reverse,
     Silence { m: f32 },

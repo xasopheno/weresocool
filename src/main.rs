@@ -5,12 +5,12 @@ pub mod ast;
 
 fn main() {
     let mut nums: Vec<f32> = vec![];
-    println!("{:?}", socool::OperationParser::new().parse(
-        &mut nums,
-        "
-        let 3.0
-        "));
-    println!("{:?}", nums);
+//    println!("{:?}", socool::OperationParser::new().parse(
+//        &mut nums,
+//        "
+//        let 3.0
+//        "));
+//    println!("{:?}", nums);
 
 //    println!(
 //        "{:?}",

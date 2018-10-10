@@ -1,7 +1,7 @@
 use std::str::FromStr;
 use crate::ast::{Op};
 
-grammar<'nums>(nums: &'nums mut Vec<f32>);
+grammar;
 
 Comma<T>: Vec<T> = {
     <v:(<T> ",")*> <e:T?> => match e {
@@ -13,8 +13,6 @@ Comma<T>: Vec<T> = {
         }
     }
 };
-
-
 
 Pipe<T>: Vec<T> = {
     <v:(<T> "|")+> <e:T?> => match e {
@@ -36,10 +34,7 @@ pub Operation: Op = {
     <o: BaseOperation> => o
 }
 
-// <let: Let> => table.add(let)
-
-
-pub BaseOperation: Op = {
+BaseOperation: Op = {
     "AsIs" => Op::AsIs,
     "Reverse" => Op::Reverse,
     "Silence" <v:Value> => Op::Silence {m: v},
@@ -53,7 +48,7 @@ pub BaseOperation: Op = {
     "Overlay" "[" <operations: Operations> "]" => Op::Overlay { operations: operations },
     "o" "[" <o: Overtones> "]" => Op::Overlay { operations: o },
     // <id: Identifier> => { table.find(id).clone() },
-    "let" <n: Value> => { nums.push(n); Op::AsIs },
+    //"let" <n: Value> => { nums.push(n); Op::AsIs },
     "(" <o: Operation> ")" => o
 };
 
