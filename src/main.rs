@@ -12,8 +12,18 @@ fn main() {
         "let thing =
             Tm 3/2
             | Gain 0.3
-        "));
+
+        ")
+    );
     println!("{:?}", table);
+
+//    println!("{:?}", socool::SoCoolParser::new().parse(
+//        &mut table,
+//        "let thing =
+//            Tm 3/2
+//            | Gain 0.3
+//        "));
+//    println!("{:?}", table);
 
 //    println!(
 //        "{:?}",
@@ -116,7 +126,7 @@ mod tests {
         )
     }
     #[test]
-    fn let_test() {
+    fn let_insert() {
         let mut table = make_table();
         socool::SoCoolParser::new().parse(
             &mut table,
@@ -125,7 +135,25 @@ mod tests {
                 | Gain 0.3
             ").unwrap();
         assert_eq!(
-            table[0],
+            table[thing],
+            Let { name: "thing".to_string(), operation: Op::Compose { operations: vec![Op::TransposeM { m: 1.5 }, Op::Gain { m: 0.3 }] } }
+        )
+    }
+    #[test]
+    fn let_get() {
+        let mut table = make_table();
+        socool::SoCoolParser::new().parse(
+            &mut table,
+            "let thing =
+                    Tm 3/2
+                    | Gain 0.3
+
+            Sequence[
+                thing
+            ]
+            ").unwrap();
+        assert_eq!(
+            table[thing],
             Let { name: "thing".to_string(), operation: Op::Compose { operations: vec![Op::TransposeM { m: 1.5 }, Op::Gain { m: 0.3 }] } }
         )
     }
