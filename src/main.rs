@@ -10,18 +10,23 @@ fn main() {
 
     println!("Settings: {:?}", socool::SoCoolParser::new().parse(
         &mut table,
-        "{ f: 200, l: 1.0, g: 1.0, p: 0.0 };
-            let thing =
-                 Tm 3/2
-                | Gain 0.3;
+        "
+        { f: 200, l: 1.0, g: 1.0, p: 0.0 }
 
-            let thing2 =
-                Tm 5/4;
+        let thing =
+             Tm 3/2
+            | Gain 0.3;
 
-            let main = Sequence[
-                thing,
-                thing2
-            ];
+        let thing2 =
+            Tm 5/4;
+
+        let main = Sequence[
+            o[(3/2, 3.0, 1.0, 0.0),
+              (3/2, 0.0, 1.0, 0.0),
+              (1, 0.0, 1.0, 0.0)]
+            | thing,
+            thing2
+        ];
         ").unwrap()
     );
 
