@@ -1,34 +1,37 @@
-f: 200
-l: 1.0
+def init { f: 200, l: 1.0, g: 1.0, p: 0.0 }
 
-let thing1 = sequence[
-    AsIs,
-    Tm 7/8,
-    Tm 5/4,
-    Tm 15/8
-    | Gain 0.5
-    | Length 0.5,
-    Tm 5/4,
-]
+def {
+    let thing1 = sequence[
+        AsIs,
+        Tm 7/8,
+        Tm 5/4,
+        Tm 15/8
+        | Gain 0.5
+        | Length 0.5,
+        Tm 5/4,
+    ];
 
-let thing2 = sequence[
-    Tm 9/8,
-    Tm 3/2,
-]
+    let thing2 = sequence[
+        Tm 9/8,
+        Tm 3/2,
+    ];
+}
 
-main:
-Overlay [
-    o[(3/2, 3.0, 1.0, 0.0),
-      (3/2, 0.0, 1.0, 0.0),
-      (1, 0.0, 1.0, 0.0)]
-    | thing2
-    | Repeat 3
-    | WithLengthOf(
+main {
+    Overlay [
+
+        o[(3/2, 3.0, 1.0, 0.0),
+          (3/2, 0.0, 1.0, 0.0),
+          (1, 0.0, 1.0, 0.0)]
+        | thing2
+        | Sequence [ AsIs, AsIs ]
+        | WithLengthOf(
+            AsIs
+            | Repeat 2
+        ),
+
         thing1
-        | Repeat 2
-    ),
-
-    thing1
-    .mirror(f * 9/8)
-]
+        .mirror(f * 9/8)
+    ];
+}
 

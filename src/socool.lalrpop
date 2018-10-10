@@ -3,43 +3,21 @@ use std::string::String;
 use crate::ast::{Let, Op};
 use std::collections::HashMap;
 
-grammar<'table>(table: &'table mut HashMap<String, Let>);
+grammar<'table>(table: &'table mut HashMap<String, Op>);
 
-Comma<T>: Vec<T> = {
-    <v:(<T> ",")*> <e:T?> => match e {
-        None=> v,
-        Some(e) => {
-            let mut v = v;
-            v.push(e);
-            v
-        }
-    }
-};
-
-Pipe<T>: Vec<T> = {
-    <v:(<T> "|")+> <e:T?> => match e {
-        None=> v,
-        Some(e) => {
-          let mut v = v;
-          v.push(e);
-          v
-        }
-    }
-};
-
-Compose = Pipe<Operation>;
-
-Operations = Comma<Operation>;
-
-pub SoCool: Op = {
-    <o: Operation> => o,
-    "let" <s: Name> "=" <o: Operation> => { table.insert(s.clone(), Let {name: s, operation: o}); Op::NoOp },
+pub SoCool: () = {
+    <l: LetDefs> => ()
 }
 
-pub Operation: Op = {
+LetDefs = Break<LetDef>;
+
+LetDef: () = {
+    "let" <s: Name> "=" <o: Operation> => { table.insert(s.clone(), o); () },
+}
+
+Operation: Op = {
     <ops: Pipe<BaseOperation>> => Op::Compose { operations: ops },
     <o: BaseOperation> => o,
-
 }
 
 BaseOperation: Op = {
@@ -56,7 +34,7 @@ BaseOperation: Op = {
     "Overlay" "[" <operations: Operations> "]" => Op::Overlay { operations: operations },
     "o" "[" <o: Overtones> "]" => Op::Overlay { operations: o },
     "(" <o: Operation> ")" => o,
-    <id: Name> => { table.get(&id).unwrap().clone().operation },
+    <id: Name> => { table.get(&id).unwrap().clone() },
 };
 
 Overtone: Op = {
@@ -77,11 +55,41 @@ Overtone: Op = {
 
 Overtones = Comma<Overtone>;
 
+Comma<T>: Vec<T> = {
+    <v:(<T> ",")*> <e:T?> => match e {
+        None=> v,
+        Some(e) => {
+            let mut v = v;
+            v.push(e);
+            v
+        }
+    }
+};
+
+Break<T>: Vec<T> = {
+  <v:(<T> ";")*> => v
+};
+
+Pipe<T>: Vec<T> = {
+    <v:(<T> "|")+> <e:T?> => match e {
+        None=> v,
+        Some(e) => {
+          let mut v = v;
+          v.push(e);
+          v
+        }
+    }
+};
+
+Compose = Pipe<Operation>;
+
+Operations = Comma<Operation>;
+
 Value: f32 = {
     <n:Num> => n,
     <n:Num> "/" <d:Num> => n/d
 
 };
 
-Name: String = <s:r"[a-zA-Z_$][a-zA-Z_$0-9]*"> => s.to_string();
+Name: String = <s:r"[a-z_$][a-zA-Z_$0-9]*"> => s.to_string();
 Num: f32 = <s:r"-?(0|([1-9]\d*))(\.\d+)?+"> => f32::from_str(s).unwrap();

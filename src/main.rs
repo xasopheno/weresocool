@@ -7,14 +7,25 @@ use crate::ast::*;
 
 fn main() {
     let mut table = make_table();
+
     println!("{:?}", socool::SoCoolParser::new().parse(
         &mut table,
-        "let thing =
-            Tm 3/2
-            | Gain 0.3
 
+        "
+            let thing =
+                 Tm 3/2
+                | Gain 0.3;
+
+            let thing2 =
+                Tm 5/4;
+
+            let main = Sequence[
+                thing,
+                thing2
+            ];
         ")
     );
+
     println!("{:?}", table);
 
 //    println!("{:?}", socool::SoCoolParser::new().parse(
@@ -44,8 +55,8 @@ fn main() {
 //    ).unwrap());
 }
 
-fn make_table() -> HashMap<String, Let> {
-    let table: HashMap<String, Let> = HashMap::new();
+fn make_table() -> HashMap<String, Op> {
+    let table: HashMap<String, Op> = HashMap::new();
     table
 }
 
