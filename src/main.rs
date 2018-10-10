@@ -1,3 +1,4 @@
+use std::collections::HashMap;
 #[macro_use]
 extern crate lalrpop_util;
 lalrpop_mod!(pub socool); // synthesized by LALRPOP
@@ -5,7 +6,7 @@ pub mod ast;
 use crate::ast::*;
 
 fn main() {
-    let mut table: Vec<Let> = vec![];
+    let mut table = make_table();
     println!("{:?}", socool::SoCoolParser::new().parse(
         &mut table,
         "let thing =
@@ -33,8 +34,8 @@ fn main() {
 //    ).unwrap());
 }
 
-fn make_table() -> Vec<Let> {
-    let table: Vec<Let> = vec![];
+fn make_table() -> HashMap<String, Let> {
+    let table: HashMap<String, Let> = HashMap::new();
     table
 }
 

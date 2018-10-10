@@ -1,8 +1,9 @@
 use std::str::FromStr;
 use std::string::String;
 use crate::ast::{Let, Op};
+use std::collections::HashMap;
 
-grammar<'table>(table: &'table mut Vec<Let>);
+grammar<'table>(table: &'table mut HashMap<String, Let>);
 
 Comma<T>: Vec<T> = {
     <v:(<T> ",")*> <e:T?> => match e {
@@ -32,7 +33,7 @@ Operations = Comma<Operation>;
 
 pub SoCool: Op = {
     <o: Operation> => o,
-    "let" <s: Name> "=" <o: Operation> => { table.push(Let {name: s, operation: o}); Op::NoOp },
+    "let" <s: Name> "=" <o: Operation> => { table.insert(s.clone(), Let {name: s, operation: o}); Op::NoOp },
 }
 
 pub Operation: Op = {
@@ -54,8 +55,8 @@ BaseOperation: Op = {
     "Sequence" "[" <operations: Operations> "]" => Op::Sequence { operations: operations },
     "Overlay" "[" <operations: Operations> "]" => Op::Overlay { operations: operations },
     "o" "[" <o: Overtones> "]" => Op::Overlay { operations: o },
-    // <id: Identifier> => { table.find(id).clone() },
     "(" <o: Operation> ")" => o
+    //<id: Name> => { table[0] (id).clone() },
 };
 
 Overtone: Op = {
