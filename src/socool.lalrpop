@@ -24,7 +24,7 @@ Point: Init = {
 
 LetDefs = Break<LetDef>;
 LetDef: () = {
-    "let" <s: Name> "=" <o: Operation> => { table.insert(s.clone(), o); () },
+    "let" <s: Name> "=" "{" <o: Operation> "}" => { table.insert(s.clone(), o); () },
 }
 
 Operation: Op = {
@@ -35,7 +35,13 @@ Operation: Op = {
 BaseOperation: Op = {
     "AsIs" => Op::AsIs,
     "Reverse" => Op::Reverse,
-    //"Repeat" <i:Int> =>
+    "Repeat" <i:Int> => {
+        let mut vec = Vec::new();
+        for x in 0..i {
+            vec.push(Op::AsIs)
+        }
+        Op::Sequence { operations: vec }
+    },
     "Silence" <v:Rational> => Op::Silence {m: v},
     "Tm" <v:Rational> => Op::TransposeM {m: v},
     "Ta" <v:Rational> => Op::TransposeA {a: v},
@@ -80,7 +86,7 @@ Comma<T>: Vec<T> = {
 };
 
 Break<T>: Vec<T> = {
-  <v:(<T> ";")*> => v
+  <v:(<T>)*> => v
 };
 
 Pipe<T>: Vec<T> = {
