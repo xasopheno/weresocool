@@ -9,8 +9,12 @@ pub SoCool: () = {
     <l: LetDefs> => ()
 }
 
-LetDefs = Break<LetDef>;
+//pub SoCool: InitialStuff = {
+  //  <init: InitialStuff> <LetDefs> => { init }
+//}
 
+
+LetDefs = Break<LetDef>;
 LetDef: () = {
     "let" <s: Name> "=" <o: Operation> => { table.insert(s.clone(), o); () },
 }
