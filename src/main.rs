@@ -8,10 +8,9 @@ use crate::ast::*;
 fn main() {
     let mut table = make_table();
 
-    println!("{:?}", socool::SoCoolParser::new().parse(
+    println!("Settings: {:?}", socool::SoCoolParser::new().parse(
         &mut table,
-
-        "
+        "{ f: 200, l: 1.0, g: 1.0, p: 0.0 };
             let thing =
                  Tm 3/2
                 | Gain 0.3;
@@ -23,10 +22,10 @@ fn main() {
                 thing,
                 thing2
             ];
-        ")
+        ").unwrap()
     );
 
-    println!("{:?}", table);
+    println!("Main: {:?}", table.get("main").unwrap());
 
 //    println!("{:?}", socool::SoCoolParser::new().parse(
 //        &mut table,

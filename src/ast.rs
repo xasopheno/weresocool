@@ -16,8 +16,9 @@ pub enum Op {
 }
 
 #[derive(Clone, PartialEq, Debug)]
-pub struct Let {
-    pub name: String,
-    pub operation: Op
+pub struct Init {
+    pub f: f32,
+    pub l: f32,
+    pub g: f32,
+    pub p: f32,
 }
-

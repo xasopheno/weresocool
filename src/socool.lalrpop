@@ -1,18 +1,26 @@
 use std::str::FromStr;
 use std::string::String;
-use crate::ast::{Let, Op};
+use crate::ast::{Init, Op};
 use std::collections::HashMap;
 
 grammar<'table>(table: &'table mut HashMap<String, Op>);
 
-pub SoCool: () = {
-    <l: LetDefs> => ()
-}
-
-//pub SoCool: InitialStuff = {
-  //  <init: InitialStuff> <LetDefs> => { init }
+// pub SoCool: () = {
+  //  <l: LetDefs> => ()
 //}
 
+pub SoCool: Init = {
+  <init: Point> <l: LetDefs> => { init }
+}
+
+Point: Init = {
+    "{"
+         "f:" <f:Value> ","
+         "l:" <l:Value> ","
+         "g:" <g:Value> ","
+         "p:" <p:Value>
+    "}" ";" => Init {f: f, l: l, g: g, p: p}
+}
 
 LetDefs = Break<LetDef>;
 LetDef: () = {
