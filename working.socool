@@ -1,18 +1,19 @@
 { f: 200, l: 1.0, g: 1.0, p: 0.0 }
 
 let thing = {
-     Tm 3/2
-    | Gain 0.3
+    Sequence [
+     Tm 3/2,
+     Tm 8/5
+    ]
 }
-
 let thing2 = {
     Tm 5/4
     | Repeat 5
+    > fitLength thing
 }
-
 let main = {
-    Sequence[
-        thing,
-        thing2
+    Overlay [
+     thing,
+     thing2
     ]
 }
