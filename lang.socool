@@ -1,5 +1,48 @@
 def init { f: 200, l: 1.0, g: 1.0, p: 0.0 }
 
+let test = Overlay [
+
+
+      thing3
+    | Repeat 3
+    | Tm 2.0
+    > fitLength (thing2 | thing2)
+
+    ~~>>
+
+    op1 > fit(op2)
+
+    ~~>>
+
+    op1 | withLROf(top: op2, bottom: op1)
+
+
+    op1 | withLROf(top: op2, bottom: op3)
+
+
+
+    op1
+    > op2
+    > op3
+
+
+    ~~>
+
+    (op1 > op2) > op3
+
+
+    (op1 | withLROf(op2 / op1)) | withLrOf(op3 / (op1 | withLROf(op2 / op1)))
+
+
+
+    op1 > (op2 > op3)
+
+    ,
+
+    thing2
+
+]
+
 let thing1 = sequence[
     AsIs,
     Tm 7/8,
@@ -22,14 +65,15 @@ shortthing =
     AsIs,
     Tm 2.0
 
-let thing3 =
+let thing3 = Sequence [
     thing1,
     | thing2
     | shortthing;
-
+]
 
 let main = Overlay [
     thing3
+    | Length 0.5
     | withLengthOf(thing1)
     | Tm 2.0,
 

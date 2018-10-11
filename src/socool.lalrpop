@@ -18,12 +18,17 @@ Point: Init = {
     "}" ";"? => Init { f, l, g, p }
 }
 
-LetDefs = Break<LetDef>;
+LetDefs = Lets<LetDef>;
 LetDef: () = {
     "let" <s: Name> "=" "{" <o: Operation> "}" => { table.insert(s.clone(), o); () },
 }
 
 Operation: Op = {
+    <op1: Operation> ">" "fitLength" <op2: BaseOperation> => Op::Compose { operations: vec![op1.clone(), Op::WithLengthRatioOf { top: Box::new(op2), bottom: Box::new(op1) }] },
+    <op: ComposeOperation> => op
+}
+
+ComposeOperation: Op = {
     <ops: Pipe<BaseOperation>> => Op::Compose { operations: ops },
     <o: BaseOperation> => o,
 }
@@ -50,13 +55,6 @@ BaseOperation: Op = {
     "o" "[" <o: Overtones> "]" => Op::Overlay { operations: o },
     "(" <o: Operation> ")" => o,
     <id: Name> => { table.get(&id).unwrap().clone() },
-    // "Fit" <op1: NameOrOp> "in" <op2: NameOrOp> <i: Int> => {
-       // Op::Fit {
-         //   main: Box::new(op1),
-           // with_length_of: Box::new(op2),
-           // n: i,
-        // },
-    // }
 };
 
 NameOrOp: Op = {
@@ -93,7 +91,7 @@ Comma<T>: Vec<T> = {
     }
 };
 
-Break<T>: Vec<T> = {
+Lets<T>: Vec<T> = {
   <v:(<T>)*> => v
 };
 

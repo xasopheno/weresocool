@@ -20,6 +20,7 @@ fn main() {
         let thing2 = {
             Tm 5/4
             | Repeat 5
+            > fitLength(thing)
         }
         let main = {
             Sequence[
