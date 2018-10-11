@@ -12,7 +12,12 @@ pub enum Op {
     Sequence { operations: Vec<Op> },
     Overlay { operations: Vec<Op> },
     Compose { operations: Vec<Op> },
-    Repeat {n: usize}
+    Repeat {n: usize},
+    Fit {
+        with_length_of: Box<Op>,
+        main: Box<Op>,
+        n: usize,
+    },
 }
 
 #[derive(Clone, PartialEq, Debug)]

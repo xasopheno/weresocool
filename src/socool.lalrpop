@@ -5,10 +5,6 @@ use std::collections::HashMap;
 
 grammar<'table>(table: &'table mut HashMap<String, Op>);
 
-// pub SoCool: () = {
-  //  <l: LetDefs> => ()
-//}
-
 pub SoCool: Init = {
   <init: Point> <l: LetDefs> => { init }
 }
@@ -54,7 +50,19 @@ BaseOperation: Op = {
     "o" "[" <o: Overtones> "]" => Op::Overlay { operations: o },
     "(" <o: Operation> ")" => o,
     <id: Name> => { table.get(&id).unwrap().clone() },
+    // "Fit" <op1: NameOrOp> "in" <op2: NameOrOp> <i: Int> => {
+       // Op::Fit {
+         //   main: Box::new(op1),
+           // with_length_of: Box::new(op2),
+           // n: i,
+        // },
+    // }
 };
+
+NameOrOp: Op = {
+    <id: Name> => { table.get(&id).unwrap().clone() },
+    <op: Operation> => op
+}
 
 Overtone: Op = {
     "("
