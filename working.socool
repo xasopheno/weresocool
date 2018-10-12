@@ -1,22 +1,18 @@
 { f: 200, l: 1.0, g: 1.0, p: 0.0 }
 
-let thing = {
+let thing1 = {
     Sequence [
-     Tm 2.0
-     AsIs,
-     Tm 3/2
-     | Length 2.0
+        AsIs,
+        Tm 3/2 | Length 2.0
     ]
 }
 
 let thing2 = {
     Sequence [
+        Tm 5/4,
         Tm 3/2
-        | Length 0.5,
-        Tm 5/4
-    ]
-    | Repeat 3
-    > fitLength thing
+    ] | Repeat 2
+    > fitLength thing1
 }
 
 let main = {
