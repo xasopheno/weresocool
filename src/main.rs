@@ -154,16 +154,40 @@ mod tests {
         );
     }
 
-    //        assert!(
-    //            socool::SoCoolParser::new()
-    //                .parse(&mut table,
-    //                       "o[(3/2, 3.0, 1.0, 0.0),
-    //                       (3/2, 0.0, 1.0, 0.0),
-    //                       (1, 0.0, 1.0, 0.0)]"
-    //                )
-    //                .is_ok()
-    //        )
-    //    }
+    #[test]
+    fn o_test() {
+        let mut parse_str = mock_init();
+        parse_str.push_str(
+            "
+            o[(3/2, 3.0, 1.0, 0.3),
+              (1, 0.0, 0.5, 0.0)]
+        ",
+        );
+        test_parsed_operation(
+            parse_str,
+            Op::Overlay {
+                operations: vec![
+                    Op::Compose {
+                        operations: vec![
+                            Op::TransposeM { m: 1.5 },
+                            Op::TransposeA { a: 3.0 },
+                            Op::Gain { m: 1.0 },
+                            Op::PanA { a: 0.3 },
+                        ],
+                    },
+                    Op::Compose {
+                        operations: vec![
+                            Op::TransposeM { m: 1.0 },
+                            Op::TransposeA { a: 0.0 },
+                            Op::Gain { m: 0.5 },
+                            Op::PanA { a: 0.0 },
+                        ],
+                    },
+                ],
+            },
+        );
+    }
+
     //    #[test]
     //    fn let_insert() {
     //        let mut table = make_table();
