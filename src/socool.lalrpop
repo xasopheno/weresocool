@@ -20,7 +20,7 @@ Point: Init = {
 
 LetDefs = Lets<LetDef>;
 LetDef: () = {
-    "let" <s: Name> "=" "{" <o: Operation> "}" => { table.insert(s.clone(), o); () },
+    <s: Name> "=" "{" <o: Operation> "}" => { table.insert(s.clone(), o); () },
 }
 
 Operation: Op = {

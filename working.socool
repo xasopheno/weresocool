@@ -1,13 +1,13 @@
 { f: 200, l: 1.0, g: 1.0, p: 0.0 }
 
-let thing1 = {
+thing1 = {
     Sequence [
         AsIs,
         Tm 3/2 | Length 2.0
     ]
 }
 
-let thing2 = {
+thing2 = {
     Sequence [
         Tm 5/4,
         Tm 3/2
@@ -15,7 +15,7 @@ let thing2 = {
     > fitLength thing1
 }
 
-let main = {
+main = {
     Overlay [
         thing1,
         thing2

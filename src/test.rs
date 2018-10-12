@@ -5,7 +5,7 @@ pub mod test {
 
     fn mock_init() -> (String) {
         "{ f: 200, l: 1.0, g: 1.0, p: 0.0 }
-            let main = {"
+            main = {"
             .to_string()
     }
 
@@ -166,7 +166,7 @@ pub mod test {
                 "
                     { f: 200, l: 1.0, g: 1.0, p: 0.0 }
 
-                    let thing = {
+                    thing = {
                         Tm 3/2
                         | Gain 0.3
                     }
@@ -191,12 +191,12 @@ pub mod test {
                 "
                     { f: 200, l: 1.0, g: 1.0, p: 0.0 }
 
-                    let thing = {
+                    thing = {
                         Tm 3/2
                         | Gain 0.3
                     }
 
-                    let main = { thing }
+                    main = { thing }
                     ",
             )
             .unwrap();
@@ -211,7 +211,7 @@ pub mod test {
             "
                     { f: 200, l: 1.0, g: 1.0, p: 0.0 }
 
-                    let thing = {
+                    thing = {
                         Sequence [
                          AsIs,
                          Tm 3/2
@@ -219,7 +219,7 @@ pub mod test {
                         ]
                     }
 
-                    let thing2 = {
+                    thing2 = {
                         Sequence [
                             Tm 5/4,
                             Tm 3/2
@@ -228,7 +228,7 @@ pub mod test {
                         > fitLength thing
                     }
 
-                    let main = {
+                    main = {
                         thing2
                     }
                 ",
