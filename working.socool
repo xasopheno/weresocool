@@ -2,6 +2,7 @@
 
 let thing = {
     Sequence [
+     Tm 2.0
      AsIs,
      Tm 3/2
      | Length 2.0
@@ -10,13 +11,17 @@ let thing = {
 
 let thing2 = {
     Sequence [
-        Tm 5/4,
         Tm 3/2
+        | Length 0.5,
+        Tm 5/4
     ]
-    | Repeat 2
+    | Repeat 3
     > fitLength thing
 }
 
 let main = {
-    thing2
+    Overlay [
+        thing1,
+        thing2
+    ]
 }

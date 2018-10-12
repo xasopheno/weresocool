@@ -9,12 +9,15 @@ pub enum Op {
     PanA { a: f32 },
     Gain { m: f32 },
     Length { m: f32 },
+
     Sequence { operations: Vec<Op> },
     Overlay { operations: Vec<Op> },
     Compose { operations: Vec<Op> },
-    Repeat { n: usize },
+
     WithLengthRatioOf { length_of: Box<Op>, main: Box<Op> },
+    WithMaxGainOf { length_of: Box<Op>, main: Box<Op> },
 }
+
 
 #[derive(Clone, PartialEq, Debug)]
 pub struct Init {
