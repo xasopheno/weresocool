@@ -1,7 +1,7 @@
 pub mod test {
     use crate::ast::{Init, Op};
     lalrpop_mod!(pub socool);
-    use crate::make_table;
+    use crate::{make_table, ParseTable, ParsedComposition};
 
     fn mock_init() -> (String) {
         "{ f: 200, l: 1.0, g: 1.0, p: 0.0 }
@@ -25,8 +25,18 @@ pub mod test {
         let mut parse_str = mock_init();
         let mut table = make_table();
         parse_str.push_str("AsIs }");
-        let init = socool::SoCoolParser::new().parse(&mut table, &parse_str).unwrap();
-        assert_eq!(init, Init {f: 200.0, l: 1.0, g: 1.0, p: 0.0});
+        let init = socool::SoCoolParser::new()
+            .parse(&mut table, &parse_str)
+            .unwrap();
+        assert_eq!(
+            init,
+            Init {
+                f: 200.0,
+                l: 1.0,
+                g: 1.0,
+                p: 0.0
+            }
+        );
     }
 
     #[test]
@@ -209,49 +219,75 @@ pub mod test {
         let _result = socool::SoCoolParser::new().parse(
             &mut table,
             "
-                    { f: 200, l: 1.0, g: 1.0, p: 0.0 }
+                { f: 200, l: 1.0, g: 1.0, p: 0.0 }
 
-                    thing = {
-                        Sequence [
-                         AsIs,
-                         Tm 3/2
-                         | Length 2.0
-                        ]
-                    }
+                thing = {
+                    Sequence [
+                     AsIs,
+                     Tm 3/2
+                     | Length 2.0
+                    ]
+                }
 
-                    thing2 = {
-                        Sequence [
-                            Tm 5/4,
-                            Tm 3/2
-                        ]
-                        | Repeat 2
-                        > FitLength thing
-                    }
+                thing2 = {
+                    Sequence [
+                        Tm 5/4,
+                        Tm 3/2
+                    ]
+                    | Repeat 2
+                    > FitLength thing
+                }
 
-                    main = {
-                        thing2
-                    }
-                ",
+                main = {
+                    thing2
+                }
+            ",
         );
         let thing = table.get(&"main".to_string()).unwrap();
         assert_eq!(
             *thing,
-            Op::Compose { operations: vec![
-                Op::Compose { operations: vec![
-                    Op::Sequence { operations: vec![
-                        Op::TransposeM { m: 1.25 }, Op::TransposeM { m: 1.5 }] },
-                    Op::Sequence { operations: vec![Op::AsIs, Op::AsIs] }] },
-                Op::WithLengthRatioOf {
-                    length_of: Box::new(Op::Sequence { operations: vec![
-                        Op::AsIs,
-                        Op::Compose { operations: vec![
-                            Op::TransposeM { m: 1.5 }, Op::Length { m: 2.0 }] }] }),
-                    main: Box::new(Op::Compose { operations: vec![
-                        Op::Sequence { operations: vec![
-                            Op::TransposeM { m: 1.25 }, Op::TransposeM { m: 1.5 }] },
-                        Op::Sequence { operations: vec![
-                            Op::AsIs, Op::AsIs] }] })
-                }]
+            Op::Compose {
+                operations: vec![
+                    Op::Compose {
+                        operations: vec![
+                            Op::Sequence {
+                                operations: vec![
+                                    Op::TransposeM { m: 1.25 },
+                                    Op::TransposeM { m: 1.5 }
+                                ]
+                            },
+                            Op::Sequence {
+                                operations: vec![Op::AsIs, Op::AsIs]
+                            }
+                        ]
+                    },
+                    Op::WithLengthRatioOf {
+                        length_of: Box::new(Op::Sequence {
+                            operations: vec![
+                                Op::AsIs,
+                                Op::Compose {
+                                    operations: vec![
+                                        Op::TransposeM { m: 1.5 },
+                                        Op::Length { m: 2.0 }
+                                    ]
+                                }
+                            ]
+                        }),
+                        main: Box::new(Op::Compose {
+                            operations: vec![
+                                Op::Sequence {
+                                    operations: vec![
+                                        Op::TransposeM { m: 1.25 },
+                                        Op::TransposeM { m: 1.5 }
+                                    ]
+                                },
+                                Op::Sequence {
+                                    operations: vec![Op::AsIs, Op::AsIs]
+                                }
+                            ]
+                        })
+                    }
+                ]
             }
         )
     }

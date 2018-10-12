@@ -17,7 +17,6 @@ pub enum Op {
     WithLengthRatioOf { length_of: Box<Op>, main: Box<Op> },
 }
 
-
 #[derive(Clone, PartialEq, Debug)]
 pub struct Init {
     pub f: f32,

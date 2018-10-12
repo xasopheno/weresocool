@@ -1,42 +1,51 @@
-use std::collections::HashMap;
 #[macro_use]
 extern crate lalrpop_util;
 lalrpop_mod!(pub socool); // synthesized by LALRPOP
 pub mod ast;
 use crate::ast::*;
+use std::collections::HashMap;
+use std::env;
 use std::fs::File;
 use std::io::prelude::*;
 
+pub type ParseTable = HashMap<String, Op>;
+
+pub struct ParsedComposition {
+    init: Init,
+    table: ParseTable,
+}
+
 fn main() {
+    let args: Vec<String> = env::args().collect();
+    let filename = &args[1];
+
+    let parsed = parse_file(filename);
+
+    for (key, val) in parsed.table.iter() {
+        println!("\n Name: {:?} op: {:?}", key, val);
+    }
+
+    println!("\n Main: {:?}", parsed.table.get("main").unwrap());
+}
+
+fn parse_file(filename: &String) -> ParsedComposition {
     let mut table = make_table();
-
-    let filename = "working.socool";
-
-    let mut f = File::open(filename).expect("file not found");
+    let mut f = File::open(filename).expect("File not found");
 
     let mut composition = String::new();
     f.read_to_string(&mut composition)
-        .expect("something went wrong reading the file");
+        .expect("Something went wrong reading the file");
 
-    println!(
-        "\n Settings: {:?}",
-        socool::SoCoolParser::new()
-            .parse(&mut table, &composition)
-            .unwrap()
-    );
+    let init = socool::SoCoolParser::new()
+        .parse(&mut table, &composition)
+        .unwrap();
 
-    for (key, val) in table.iter() {
-        println!("\n name: {:?} op: {:?}", key, val);
-    }
-
-    println!("\n Main: {:?}", table.get("main").unwrap());
+    ParsedComposition { init, table }
 }
 
-fn make_table() -> HashMap<String, Op> {
-    let table: HashMap<String, Op> = HashMap::new();
-    table
+fn make_table() -> ParseTable {
+    HashMap::new()
 }
 
 #[cfg(test)]
 mod test;
-
