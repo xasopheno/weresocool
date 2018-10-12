@@ -12,8 +12,8 @@ pub enum Op {
     Sequence { operations: Vec<Op> },
     Overlay { operations: Vec<Op> },
     Compose { operations: Vec<Op> },
-    Repeat {n: usize},
-    WithLengthRatioOf { top: Box<Op>, bottom: Box<Op> }
+    Repeat { n: usize },
+    WithLengthRatioOf { top: Box<Op>, bottom: Box<Op> },
 }
 
 #[derive(Clone, PartialEq, Debug)]

@@ -18,37 +18,40 @@ fn main() {
     f.read_to_string(&mut composition)
         .expect("something went wrong reading the file");
 
-    println!("Settings: {:?}", socool::SoCoolParser::new().parse(
-        &mut table, &composition).unwrap()
+    println!(
+        "Settings: {:?}",
+        socool::SoCoolParser::new()
+            .parse(&mut table, &composition)
+            .unwrap()
     );
 
     println!("Main: {:?}", table.get("main").unwrap());
 
-//    println!("{:?}", socool::SoCoolParser::new().parse(
-//        &mut table,
-//        "let thing =
-//            Tm 3/2
-//            | Gain 0.3
-//        "));
-//    println!("{:?}", table);
+    //    println!("{:?}", socool::SoCoolParser::new().parse(
+    //        &mut table,
+    //        "let thing =
+    //            Tm 3/2
+    //            | Gain 0.3
+    //        "));
+    //    println!("{:?}", table);
 
-//    println!(
-//        "{:?}",
-//        socool::SoCoolParser::new().parse(
-//        "o[(3/2, 3.0, 1.0, 0.0),
-//           (3/2, 0.0, 1.0, 0.0),
-//           (1, 0.0, 1.0, 0.0)]"
-//        ).unwrap()
-//    );
-//    println!("{:?}", socool::SoCoolParser::new().parse(
-//        "Tm 3/2
-//        | Gain 0.5
-//        | Length 0.5
-//        "
-//    ).unwrap());
-//    println!("{:?}", socool::SoCoolParser::new().parse(
-//        "Tm 3/2"
-//    ).unwrap());
+    //    println!(
+    //        "{:?}",
+    //        socool::SoCoolParser::new().parse(
+    //        "o[(3/2, 3.0, 1.0, 0.0),
+    //           (3/2, 0.0, 1.0, 0.0),
+    //           (1, 0.0, 1.0, 0.0)]"
+    //        ).unwrap()
+    //    );
+    //    println!("{:?}", socool::SoCoolParser::new().parse(
+    //        "Tm 3/2
+    //        | Gain 0.5
+    //        | Length 0.5
+    //        "
+    //    ).unwrap());
+    //    println!("{:?}", socool::SoCoolParser::new().parse(
+    //        "Tm 3/2"
+    //    ).unwrap());
 }
 
 fn make_table() -> HashMap<String, Op> {
@@ -58,154 +61,193 @@ fn make_table() -> HashMap<String, Op> {
 
 #[cfg(test)]
 mod tests {
-    use crate::ast::{Op, Init};
     use super::*;
-    lalrpop_mod!(pub socool); // synthesized by LALRPOP
-    #[test]
-    fn ops() {
-        let mut table = make_table();
-        let result = socool::SoCoolParser::new().parse(&mut table,
-            "
-                { f: 200, l: 1.0, g: 1.0, p: 0.0 }
-                let main = { Tm 3/2 }
-            "
+    use crate::ast::{Init, Op};
+    lalrpop_mod!(pub socool);
 
-        );
-        let main = table.get(&"main".to_string());
-        println!("{:?}", table);
-        println!("{:?}", main);
-        assert_eq!(main, Some(&Op::TransposeM {m: 1.5}));
-
-//    let mut table = make_table();
-//    assert!(socool::SoCoolParser::new().parse(&mut table, "Ta 3.0").is_ok());
-//
-//    let mut table = make_table();
-//        assert_eq!(
-//            socool::SoCoolParser::new().parse(&mut table, "PanM   3.0").unwrap(),
-//            Op::PanM { m: 3.0 }
-//        );
-//        assert_eq!(
-//            socool::SoCoolParser::new().parse(&mut table, "PanA 3.0").unwrap(),
-//            Op::PanA { a: 3.0 }
-//        );
-//        assert_eq!(
-//            socool::SoCoolParser::new().parse(&mut table, "Gain 3.0").unwrap(),
-//            Op::Gain { m: 3.0 }
-//        );
-//        assert_eq!(
-//            socool::SoCoolParser::new().parse(&mut table, "Length 3.0").unwrap(),
-//            Op::Length { m: 3.0 }
-//        );
-//        assert_eq!(
-//            socool::SoCoolParser::new().parse(&mut table, "Reverse").unwrap(),
-//            Op::Reverse
-//        );
-//        assert_eq!(
-//            socool::SoCoolParser::new().parse(&mut table, "AsIs").unwrap(),
-//            Op::AsIs
-//        );
-//        assert_eq!(
-//            socool::SoCoolParser::new()
-//                .parse(&mut table, "
-//                Sequence [
-//                    AsIs,
-//                    Tm 3/2,
-//                ]
-//                ")
-//                .unwrap(),
-//            Op::Sequence {
-//                operations: vec![Op::AsIs, Op::TransposeM { m: 3.0 / 2.0 }]
-//            }
-//        );
-//        assert_eq!(
-//            socool::SoCoolParser::new()
-//                .parse(&mut table, "
-//                Overlay [
-//                    AsIs,
-//                    Tm 3/2,
-//                ]
-//                ")
-//                .unwrap(),
-//            Op::Overlay {
-//                operations: vec![Op::AsIs, Op::TransposeM { m: 3.0 / 2.0 }]
-//            }
-//        );
-//        assert!(
-//            socool::SoCoolParser::new()
-//                .parse(&mut table,
-//                       "o[(3/2, 3.0, 1.0, 0.0),
-//                       (3/2, 0.0, 1.0, 0.0),
-//                       (1, 0.0, 1.0, 0.0)]"
-//                )
-//                .is_ok()
-//        )
-//    }
-//    #[test]
-//    fn let_insert() {
-//        let mut table = make_table();
-//        socool::SoCoolParser::new().parse(
-//            &mut table,
-//            "let thing =
-//                Tm 3/2
-//                | Gain 0.3
-//            ").unwrap();
-//        assert_eq!(
-//            table[thing],
-//            Let { name: "thing".to_string(), operation: Op::Compose { operations: vec![Op::TransposeM { m: 1.5 }, Op::Gain { m: 0.3 }] } }
-//        )
-//    }
-//    #[test]
-//    fn let_get() {
-//        let mut table = make_table();
-//        socool::SoCoolParser::new().parse(
-//            &mut table,
-//            "let thing =
-//                    Tm 3/2
-//                    | Gain 0.3
-//
-//            Sequence[
-//                thing
-//            ]
-//            ").unwrap();
-//        assert_eq!(
-//            table[thing],
-//            Let { name: "thing".to_string(), operation: Op::Compose { operations: vec![Op::TransposeM { m: 1.5 }, Op::Gain { m: 0.3 }] } }
-//        )
-//    }
-//
-//    #[test]
-//    fn fit_length_test() {
-//        let mut table = make_table();
-//        let result = socool::SoCoolParser::new().parse(
-//            &mut table,
-//            "
-//                { f: 200, l: 1.0, g: 1.0, p: 0.0 }
-//
-//                let thing = {
-//                    Sequence [
-//                     Tm 3/2
-//                    ]
-//                }
-//                let thing2 = {
-//                    Tm 5/4
-//                    | Repeat 5
-//                    > fitLength thing
-//                }
-//                let main = {
-//                    Overlay [
-//                        Sequence[
-//                            thing,
-//                            thing2
-//                        ]
-//                        > fitLength thing
-//                    ]
-//                }
-//            ");
-//        assert!(
-//          table.len() == 0;
-//        );
-//    }
+    fn mock_init() -> (String) {
+        "{ f: 200, l: 1.0, g: 1.0, p: 0.0 }
+        let main = {"
+            .to_string()
     }
 
+    fn test_parsed_operation(mut parse_str: String, expected: Op) {
+        let mut table = make_table();
 
+        parse_str.push_str("}");
+
+        let _result = socool::SoCoolParser::new().parse(&mut table, &parse_str);
+
+        let main = table.get(&"main".to_string()).unwrap();
+        assert_eq!(*main, expected);
+    }
+
+    #[test]
+    fn tm_test() {
+        let mut parse_str = mock_init();
+        parse_str.push_str("Tm 3/2");
+        test_parsed_operation(parse_str, Op::TransposeM { m: 1.5 });
+    }
+
+    #[test]
+    fn ta_test() {
+        let mut parse_str = mock_init();
+        parse_str.push_str("Ta 2.0");
+        test_parsed_operation(parse_str, Op::TransposeA { a: 2.0 });
+    }
+
+    #[test]
+    fn pan_a_test() {
+        let mut parse_str = mock_init();
+        parse_str.push_str("PanA 2.0");
+        test_parsed_operation(parse_str, Op::PanA { a: 2.0 });
+    }
+
+    #[test]
+    fn pan_m_test() {
+        let mut parse_str = mock_init();
+        parse_str.push_str("PanM 3.0/2.0");
+        test_parsed_operation(parse_str, Op::PanM { m: 1.5 });
+    }
+
+    #[test]
+    fn gain_test() {
+        let mut parse_str = mock_init();
+        parse_str.push_str("Gain 0.25");
+        test_parsed_operation(parse_str, Op::Gain { m: 0.25 });
+    }
+
+    #[test]
+    fn length_test() {
+        let mut parse_str = mock_init();
+        parse_str.push_str("Length 0.5");
+        test_parsed_operation(parse_str, Op::Length { m: 0.5 });
+    }
+
+    #[test]
+    fn reverse_test() {
+        let mut parse_str = mock_init();
+        parse_str.push_str("Reverse");
+        test_parsed_operation(parse_str, Op::Reverse);
+    }
+
+    #[test]
+    fn asis_test() {
+        let mut parse_str = mock_init();
+        parse_str.push_str("AsIs");
+        test_parsed_operation(parse_str, Op::AsIs);
+    }
+
+    #[test]
+    fn sequence_test() {
+        let mut parse_str = mock_init();
+        parse_str.push_str(
+            "
+            Sequence [
+                AsIs,
+                Tm 3/2,
+            ]
+        ",
+        );
+        test_parsed_operation(
+            parse_str,
+            Op::Sequence {
+                operations: vec![Op::AsIs, Op::TransposeM { m: 3.0 / 2.0 }],
+            },
+        );
+    }
+
+    #[test]
+    fn overlay_test() {
+        let mut parse_str = mock_init();
+        parse_str.push_str(
+            "
+            Overlay [
+                AsIs,
+                Tm 3/2,
+            ]
+        ",
+        );
+        test_parsed_operation(
+            parse_str,
+            Op::Overlay {
+                operations: vec![Op::AsIs, Op::TransposeM { m: 3.0 / 2.0 }],
+            },
+        );
+    }
+
+    //        assert!(
+    //            socool::SoCoolParser::new()
+    //                .parse(&mut table,
+    //                       "o[(3/2, 3.0, 1.0, 0.0),
+    //                       (3/2, 0.0, 1.0, 0.0),
+    //                       (1, 0.0, 1.0, 0.0)]"
+    //                )
+    //                .is_ok()
+    //        )
+    //    }
+    //    #[test]
+    //    fn let_insert() {
+    //        let mut table = make_table();
+    //        socool::SoCoolParser::new().parse(
+    //            &mut table,
+    //            "let thing =
+    //                Tm 3/2
+    //                | Gain 0.3
+    //            ").unwrap();
+    //        assert_eq!(
+    //            table[thing],
+    //            Let { name: "thing".to_string(), operation: Op::Compose { operations: vec![Op::TransposeM { m: 1.5 }, Op::Gain { m: 0.3 }] } }
+    //        )
+    //    }
+    //    #[test]
+    //    fn let_get() {
+    //        let mut table = make_table();
+    //        socool::SoCoolParser::new().parse(
+    //            &mut table,
+    //            "let thing =
+    //                    Tm 3/2
+    //                    | Gain 0.3
+    //
+    //            Sequence[
+    //                thing
+    //            ]
+    //            ").unwrap();
+    //        assert_eq!(
+    //            table[thing],
+    //            Let { name: "thing".to_string(), operation: Op::Compose { operations: vec![Op::TransposeM { m: 1.5 }, Op::Gain { m: 0.3 }] } }
+    //        )
+    //    }
+    //
+    //    #[test]
+    //    fn fit_length_test() {
+    //        let mut table = make_table();
+    //        let result = socool::SoCoolParser::new().parse(
+    //            &mut table,
+    //            "
+    //                { f: 200, l: 1.0, g: 1.0, p: 0.0 }
+    //
+    //                let thing = {
+    //                    Sequence [
+    //                     Tm 3/2
+    //                    ]
+    //                }
+    //                let thing2 = {
+    //                    Tm 5/4
+    //                    | Repeat 5
+    //                    > fitLength thing
+    //                }
+    //                let main = {
+    //                    Overlay [
+    //                        Sequence[
+    //                            thing,
+    //                            thing2
+    //                        ]
+    //                        > fitLength thing
+    //                    ]
+    //                }
+    //            ");
+    //        assert!(
+    //          table.len() == 0;
+    //        );
 }
