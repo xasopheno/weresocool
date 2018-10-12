@@ -231,63 +231,61 @@ mod tests {
                 ",
             )
             .unwrap();
+    }
+
+    #[test]
+    fn fit_length_test() {
+        let mut table = make_table();
+
+        let result = socool::SoCoolParser::new().parse(
+            &mut table,
+            "
+                { f: 200, l: 1.0, g: 1.0, p: 0.0 }
+
+                let thing = {
+                    Sequence [
+                     AsIs,
+                     Tm 3/2
+                     | Length 2.0
+                    ]
+                }
+
+                let thing2 = {
+                    Sequence [
+                        Tm 5/4,
+                        Tm 3/2
+                    ]
+                    | Repeat 2
+                    > fitLength thing
+                }
+
+                let main = {
+                    thing2
+                }
+            ",
+        );
         let thing = table.get(&"main".to_string()).unwrap();
         assert_eq!(
             *thing,
-            Op::Compose {
-                operations: vec![Op::TransposeM { m: 1.5 }, Op::Gain { m: 0.3 }]
+            Op::Compose { operations: vec![
+                Op::Compose { operations: vec![
+                    Op::Sequence { operations: vec![
+                        Op::TransposeM { m: 1.25 }, Op::TransposeM { m: 1.5 }] },
+                    Op::Sequence { operations: vec![Op::AsIs, Op::AsIs] }] },
+                Op::WithLengthRatioOf {
+                    length_of: Box::new(Op::Sequence { operations: vec![
+                        Op::AsIs,
+                        Op::Compose { operations: vec![
+                            Op::TransposeM { m: 1.5 }, Op::Length { m: 2.0 }] }] }),
+                    main: Box::new(Op::Compose { operations: vec![
+                        Op::Sequence { operations: vec![
+                            Op::TransposeM { m: 1.25 }, Op::TransposeM { m: 1.5 }] },
+                        Op::Sequence { operations: vec![
+                            Op::AsIs, Op::AsIs] }] })
+                }]
             }
         )
     }
-
-    //    #[test]
-    //    fn let_get() {
-    //        let mut table = make_table();
-    //        socool::SoCoolParser::new().parse(
-    //            &mut table,
-    //            "let thing =
-    //                    Tm 3/2
-    //                    | Gain 0.3
-    //
-    //            Sequence[
-    //                thing
-    //            ]
-    //            ").unwrap();
-    //        assert_eq!(
-    //            table[thing],
-    //            Let { name: "thing".to_string(), operation: Op::Compose { operations: vec![Op::TransposeM { m: 1.5 }, Op::Gain { m: 0.3 }] } }
-    //        )
-    //    }
-    //
-    //    #[test]
-    //    fn fit_length_test() {
-    //        let mut table = make_table();
-    //        let result = socool::SoCoolParser::new().parse(
-    //            &mut table,
-    //            "
-    //                { f: 200, l: 1.0, g: 1.0, p: 0.0 }
-    //
-    //                let thing = {
-    //                    Sequence [
-    //                     Tm 3/2
-    //                    ]
-    //                }
-    //                let thing2 = {
-    //                    Tm 5/4
-    //                    | Repeat 5
-    //                    > fitLength thing
-    //                }
-    //                let main = {
-    //                    Overlay [
-    //                        Sequence[
-    //                            thing,
-    //                            thing2
-    //                        ]
-    //                        > fitLength thing
-    //                    ]
-    //                }
-    //            ");
-    //        assert!(
-    //          table.len() == 0;
-    //        );
 }
+
+

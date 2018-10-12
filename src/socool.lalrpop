@@ -24,7 +24,7 @@ LetDef: () = {
 }
 
 Operation: Op = {
-    <op1: Operation> ">" "fitLength" <op2: BaseOperation> => Op::Compose { operations: vec![op1.clone(), Op::WithLengthRatioOf { top: Box::new(op2), bottom: Box::new(op1) }] },
+    <op1: ComposeOperation> ">" "fitLength" <op2: ComposeOperation> => Op::Compose { operations: vec![op1.clone(), Op::WithLengthRatioOf { length_of: Box::new(op2), main: Box::new(op1) }] },
     <op: ComposeOperation> => op
 }
 

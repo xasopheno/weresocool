@@ -13,7 +13,7 @@ pub enum Op {
     Overlay { operations: Vec<Op> },
     Compose { operations: Vec<Op> },
     Repeat { n: usize },
-    WithLengthRatioOf { top: Box<Op>, bottom: Box<Op> },
+    WithLengthRatioOf { length_of: Box<Op>, main: Box<Op> },
 }
 
 #[derive(Clone, PartialEq, Debug)]
