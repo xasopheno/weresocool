@@ -19,39 +19,17 @@ fn main() {
         .expect("something went wrong reading the file");
 
     println!(
-        "Settings: {:?}",
+        "\n Settings: {:?}",
         socool::SoCoolParser::new()
             .parse(&mut table, &composition)
             .unwrap()
     );
 
-    println!("Main: {:?}", table.get("main").unwrap());
+    for (key, val) in table.iter() {
+        println!("\n name: {:?} op: {:?}", key, val);
+    }
 
-    //    println!("{:?}", socool::SoCoolParser::new().parse(
-    //        &mut table,
-    //        "let thing =
-    //            Tm 3/2
-    //            | Gain 0.3
-    //        "));
-    //    println!("{:?}", table);
-
-    //    println!(
-    //        "{:?}",
-    //        socool::SoCoolParser::new().parse(
-    //        "o[(3/2, 3.0, 1.0, 0.0),
-    //           (3/2, 0.0, 1.0, 0.0),
-    //           (1, 0.0, 1.0, 0.0)]"
-    //        ).unwrap()
-    //    );
-    //    println!("{:?}", socool::SoCoolParser::new().parse(
-    //        "Tm 3/2
-    //        | Gain 0.5
-    //        | Length 0.5
-    //        "
-    //    ).unwrap());
-    //    println!("{:?}", socool::SoCoolParser::new().parse(
-    //        "Tm 3/2"
-    //    ).unwrap());
+    println!("\n Main: {:?}", table.get("main").unwrap());
 }
 
 fn make_table() -> HashMap<String, Op> {
