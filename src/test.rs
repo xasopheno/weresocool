@@ -225,7 +225,7 @@ pub mod test {
                             Tm 3/2
                         ]
                         | Repeat 2
-                        > fitLength thing
+                        > FitLength thing
                     }
 
                     main = {

@@ -12,7 +12,7 @@ thing2 = {
         Tm 5/4,
         Tm 3/2
     ] | Repeat 2
-    > fitLength thing1
+    > FitLength thing1
 }
 
 main = {
