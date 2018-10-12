@@ -191,22 +191,55 @@ mod tests {
     #[test]
     fn let_insert() {
         let mut table = make_table();
-        socool::SoCoolParser::new().parse(
-            &mut table,
-            "
-            { f: 200, l: 1.0, g: 1.0, p: 0.0 }
+        socool::SoCoolParser::new()
+            .parse(
+                &mut table,
+                "
+                { f: 200, l: 1.0, g: 1.0, p: 0.0 }
 
-            let thing = {
-                Tm 3/2
-                | Gain 0.3
-            }
-            ").unwrap();
+                let thing = {
+                    Tm 3/2
+                    | Gain 0.3
+                }
+                ",
+            )
+            .unwrap();
         let thing = table.get(&"thing".to_string()).unwrap();
         assert_eq!(
             *thing,
-            Op::Compose { operations: vec![Op::TransposeM { m: 1.5 }, Op::Gain { m: 0.3 }]}
+            Op::Compose {
+                operations: vec![Op::TransposeM { m: 1.5 }, Op::Gain { m: 0.3 }]
+            }
         )
     }
+
+    #[test]
+    fn let_get() {
+        let mut table = make_table();
+        socool::SoCoolParser::new()
+            .parse(
+                &mut table,
+                "
+                { f: 200, l: 1.0, g: 1.0, p: 0.0 }
+
+                let thing = {
+                    Tm 3/2
+                    | Gain 0.3
+                }
+
+                let main = { thing }
+                ",
+            )
+            .unwrap();
+        let thing = table.get(&"main".to_string()).unwrap();
+        assert_eq!(
+            *thing,
+            Op::Compose {
+                operations: vec![Op::TransposeM { m: 1.5 }, Op::Gain { m: 0.3 }]
+            }
+        )
+    }
+
     //    #[test]
     //    fn let_get() {
     //        let mut table = make_table();
