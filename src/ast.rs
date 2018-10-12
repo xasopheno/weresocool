@@ -15,7 +15,6 @@ pub enum Op {
     Compose { operations: Vec<Op> },
 
     WithLengthRatioOf { length_of: Box<Op>, main: Box<Op> },
-    WithMaxGainOf { length_of: Box<Op>, main: Box<Op> },
 }
 
 
