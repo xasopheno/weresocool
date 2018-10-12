@@ -21,6 +21,15 @@ pub mod test {
     }
 
     #[test]
+    fn init_test() {
+        let mut parse_str = mock_init();
+        let mut table = make_table();
+        parse_str.push_str("AsIs }");
+        let init = socool::SoCoolParser::new().parse(&mut table, &parse_str).unwrap();
+        assert_eq!(init, Init {f: 200.0, l: 1.0, g: 1.0, p: 0.0});
+    }
+
+    #[test]
     fn tm_test() {
         let mut parse_str = mock_init();
         parse_str.push_str("Tm 3/2");
@@ -197,7 +206,7 @@ pub mod test {
     fn fit_length_test() {
         let mut table = make_table();
 
-        let result = socool::SoCoolParser::new().parse(
+        let _result = socool::SoCoolParser::new().parse(
             &mut table,
             "
                     { f: 200, l: 1.0, g: 1.0, p: 0.0 }
