@@ -138,7 +138,7 @@ pub mod test {
         let mut parse_str = mock_init();
         parse_str.push_str(
             "
-                o[(3/2, 3.0, 1.0, 0.3),
+                O[(3/2, 3.0, 1.0, 0.3),
                   (1, 0.0, 0.5, 0.0)]
             ",
         );

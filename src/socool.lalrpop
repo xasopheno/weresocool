@@ -34,6 +34,7 @@ ComposeOperation: Op = {
 }
 
 BaseOperation: Op = {
+    "(" <o: Operation> ")" => o,
     "AsIs" => Op::AsIs,
     "Reverse" => Op::Reverse,
     "Repeat" <i:Int> => {
@@ -52,15 +53,9 @@ BaseOperation: Op = {
     "Gain" <v:Rational> => Op::Gain {m: v},
     "Sequence" "[" <operations: Operations> "]" => Op::Sequence { operations: operations },
     "Overlay" "[" <operations: Operations> "]" => Op::Overlay { operations: operations },
-    "o" "[" <o: Overtones> "]" => Op::Overlay { operations: o },
-    "(" <o: Operation> ")" => o,
+    "O" "[" <o: Overtones> "]" => Op::Overlay { operations: o },
     <id: Name> => { table.get(&id).unwrap().clone() },
 };
-
-NameOrOp: Op = {
-    <id: Name> => { table.get(&id).unwrap().clone() },
-    <op: Operation> => op
-}
 
 Overtone: Op = {
     "("
