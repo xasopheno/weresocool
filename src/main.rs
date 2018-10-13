@@ -1,12 +1,15 @@
 #[macro_use]
 extern crate lalrpop_util;
-lalrpop_mod!(pub socool); // synthesized by LALRPOP
+extern crate colored;
+use colored::*;
 pub mod ast;
 use crate::ast::*;
 use std::collections::HashMap;
 use std::env;
 use std::fs::File;
 use std::io::prelude::*;
+
+lalrpop_mod!(pub socool);
 
 pub type ParseTable = HashMap<String, Op>;
 
@@ -17,7 +20,14 @@ pub struct ParsedComposition {
 
 fn main() {
     let args: Vec<String> = env::args().collect();
-    let filename = &args[1];
+    let filename;
+    if args.len() == 2 {
+        filename = &args[1];
+    } else {
+        println!("\n{}\n", "Forgot to pass in a filename.".red().bold());
+        panic!("Wrong number of args")
+
+    }
 
     let parsed = parse_file(filename);
 
