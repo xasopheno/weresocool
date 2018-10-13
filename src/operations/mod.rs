@@ -59,6 +59,10 @@ pub trait Apply {
     fn apply(&self, events: Vec<Event>) -> Vec<Event>;
 }
 
+pub trait GetLengthRatio {
+    fn get_length_ratio(&self) -> f32;
+}
+
 pub trait ApplyWithOrder {
     fn apply_with_order(
         &self,
@@ -67,9 +71,7 @@ pub trait ApplyWithOrder {
     ) -> Vec<Event>;
 }
 
-pub trait GetLengthRatio {
-    fn get_length_ratio(&self) -> f32;
-}
+
 
 #[cfg(test)]
 mod test;
