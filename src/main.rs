@@ -25,7 +25,9 @@ fn main() {
         filename = &args[1];
     } else {
         println!("\n{}\n", "Forgot to pass in a filename.".red().bold());
-        panic!("Wrong number of args")
+        println!("{}", "Example:".cyan());
+        println!("{}\n", "./weresocool song.socool".cyan().italic());
+        panic!("Wrong number of arguments.")
 
     }
 
