@@ -1,4 +1,5 @@
 pub mod brahms;
+pub mod juri;
 //pub mod song_1;
 //pub mod song_2;
 //pub mod song_3;
