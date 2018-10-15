@@ -1,9 +1,14 @@
 #![feature(extern_prelude)]
 extern crate serde;
 extern crate serde_json;
+
 #[macro_use]
 extern crate serde_derive;
+
+extern crate socool_parser;
 extern crate portaudio;
+extern crate colored;
+
 #[macro_use]
 pub mod macros;
 pub mod analyze;
@@ -15,3 +20,5 @@ pub mod portaudio_setup;
 pub mod ring_buffer;
 pub mod settings;
 pub mod write;
+
+

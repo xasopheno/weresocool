@@ -21,6 +21,7 @@ pub mod song_18;
 pub mod song_19;
 pub mod song_20;
 pub mod song_21;
+pub mod song_22;
 pub mod originate;
 pub mod sound_effects;
 pub mod template;
