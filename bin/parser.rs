@@ -24,10 +24,7 @@ fn main() {
 
     let parsed = parse_file(filename);
 
-    for (key, val) in parsed.table.iter() {
-        println!("\n Name: {:?} op: {:?}", key, val);
-    }
-
+    println!("{:?}", parsed.init);
     println!("\n Main: {:?}", parsed.table.get("main").unwrap());
 }
 
@@ -36,10 +33,6 @@ fn main() {
 //    println!("{}", "*** Make cool sounds. Impress your friends ***  ");
 //    println!("{}", " ~~~~“Catchy tunes for your next seizure.”~~~~");
 //
-////    TODO: Implement withLengthRatioOf
-////    TODO: this will take the filename as an arg, pass it to the parser
-////    TODO: after a successful parsed:
-////
 ////      TODO: Init{f, l, g, p} will be passed to Event::new(f, g, p, l)
 //    //    TODO: init oscillator
 //

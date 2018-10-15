@@ -38,21 +38,9 @@ pub mod get_length_ratio {
                     new_total
                 }
 
-                Op::ComposeWithOrder {
-                    order_fn: _,
-                    operations,
-                } => {
-                    let mut new_total = 1.0;
-                    for operation in operations {
-                        new_total *= operation.get_length_ratio();
-                    }
-                    new_total
-                }
-
-                Op::Fit {
+                Op::WithLengthRatioOf {
                     with_length_of,
                     main: _,
-                    n: _,
                 } => with_length_of.get_length_ratio(),
 
                 Op::Overlay { operations } => {
