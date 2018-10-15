@@ -1,7 +1,7 @@
 pub mod test {
-    use crate::ast::{Init, Op};
-    lalrpop_mod!(pub socool);
-    use crate::{make_table, ParseTable, ParsedComposition};
+    use socool_parser::parser::*;
+    use socool_parser::ast::{Init, Op};
+    use std::collections::HashMap;
 
     fn mock_init() -> (String) {
         "{ f: 200, l: 1.0, g: 1.0, p: 0.0 }
@@ -10,7 +10,7 @@ pub mod test {
     }
 
     fn test_parsed_operation(mut parse_str: String, expected: Op) {
-        let mut table = make_table();
+        let mut table = HashMap::new();
 
         parse_str.push_str("}");
 
@@ -23,7 +23,7 @@ pub mod test {
     #[test]
     fn init_test() {
         let mut parse_str = mock_init();
-        let mut table = make_table();
+        let mut table = HashMap::new();
         parse_str.push_str("AsIs }");
         let init = socool::SoCoolParser::new()
             .parse(&mut table, &parse_str)
@@ -169,7 +169,7 @@ pub mod test {
 
     #[test]
     fn let_insert() {
-        let mut table = make_table();
+        let mut table = HashMap::new();
         socool::SoCoolParser::new()
             .parse(
                 &mut table,
@@ -194,7 +194,7 @@ pub mod test {
 
     #[test]
     fn let_get() {
-        let mut table = make_table();
+        let mut table = HashMap::new();
         socool::SoCoolParser::new()
             .parse(
                 &mut table,
@@ -214,7 +214,7 @@ pub mod test {
 
     #[test]
     fn fit_length_test() {
-        let mut table = make_table();
+        let mut table = HashMap::new();
 
         let _result = socool::SoCoolParser::new().parse(
             &mut table,
