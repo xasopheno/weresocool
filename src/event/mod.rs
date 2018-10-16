@@ -1,4 +1,5 @@
 use instrument::{oscillator::Oscillator, stereo_waveform::StereoWaveform};
+use pbr::ProgressBar;
 
 #[derive(Debug, Clone, PartialEq, Serialize)]
 pub struct Event {
@@ -55,10 +56,23 @@ impl Render<Vec<Event>> for Vec<Event> {
         let mut result: StereoWaveform = StereoWaveform::new(0);
         let mut events = self.clone();
         events.push(Event::init(0.0, 0.0, 0.0, 0.3));
+        let n_events = events.len();
+        let mut pb = ProgressBar::new(n_events as u64);
+        pb.tick_format("cool");
+        pb.message("Rendering:  ");
+        let subdiv = 1
+            + n_events / 20;
+        let mut i = 1;
         for mut event in events {
+            i += 1;
+            if i % subdiv == 0 {
+                pb.add(subdiv as u64);
+            }
             let stereo_waveform = event.render(oscillator);
             result.append(stereo_waveform);
         }
+        let finish_string = "".to_string();
+        pb.finish_print(&finish_string);
 
         result
     }

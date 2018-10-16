@@ -4,7 +4,7 @@ extern crate serde_json;
 
 #[macro_use]
 extern crate serde_derive;
-
+extern crate pbr;
 extern crate socool_parser;
 extern crate portaudio;
 extern crate colored;

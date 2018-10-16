@@ -1,4 +1,4 @@
-{ f: 220, l: 1.0, g: 1.0, p: 0.0}
+{ f: 180, l: 1.12, g: 1.0, p: 0.0}
 
 overtones = {
     O[
@@ -35,12 +35,7 @@ thing2 = {
         Tm 3/2,
     ] 
     | Tm 0.5
-    | Sequence [
-    	AsIs,
-    	Tm 2/3,
-    	Tm 9/8,
-    	Tm 2/3,
-    ]
+    | Sequence [AsIs, Tm 2/3, Tm 9/8, Tm 2/3]
     > FitLength thing1
 }
 
@@ -65,15 +60,16 @@ thing3 = {
 }
 
 bass = {
-	Sequence 
-	[
-		Tm 5/6,
-		Tm 3/4,
-		Tm 1,
-	]
-	| Tm 0.25
-	| Repeat 4
-	| Gain 0.8
+	O[
+		(24/1, 11.0, 0.15, 0.6),
+		(24/1, 0.0, 0.15, -0.6),
+    	(20/1, 1.0, 0.1, 0.0),
+    	(20/1, -5.0, 0.1, 0.0),
+    	(20/1, 0.0, 0.2, 0.0),
+      	(1, 0.0, 1.0, 0.0)
+  	] |
+		Sequence [Tm 5/6, Tm 1]
+			| Tm 0.25 | Gain 0.8
 	> FitLength thing1
 }
 
@@ -88,26 +84,21 @@ main = {
 	Sequence [
 	    Overlay [
 	        thing1
-	        | Gain 0.5,
+	        	| Gain 0.5,
 	        thing2,
 	        thing1 | Tm 6 | Gain 0.2 | 
 	        	Sequence [Silence 2, Tm 7/8, Silence 1, Tm 3/4, Tm 1/2] | 
-	        		Sequence[Silence 0.25, AsIs, Silence 0.25, Reverse] > FitLength thing1,
+	        		Sequence[Silence 0.25, AsIs, Silence 0.25, Reverse] 
+    		> FitLength thing1,
 	 		thing3s,
 	    	bass
 	    ]
 	    | Repeat 2,
 	    overtones
-	    | Length 2
     ] 
     | Sequence [AsIs, Reverse]
-    | Sequence [
-    	AsIs, 
-    	Tm 7/8
-    ]
-    | Sequence [
-    	AsIs, 
-    	Tm 9/8
-    ]
+    | Sequence [AsIs, Length 0.5 | Tm 7/8, Length 0.25 | Tm 4/5 | Repeat 2]
+    | Sequence [AsIs, Tm 7/8]
+    | Sequence [AsIs, Tm 9/8]
     | Repeat 2
 }
