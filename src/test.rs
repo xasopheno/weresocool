@@ -1,6 +1,6 @@
 pub mod test {
-    use socool_parser::parser::*;
     use socool_parser::ast::{Init, Op};
+    use socool_parser::parser::*;
     use std::collections::HashMap;
 
     fn mock_init() -> (String) {

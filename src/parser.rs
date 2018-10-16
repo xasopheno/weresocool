@@ -1,8 +1,11 @@
 lalrpop_mod!(pub socool);
-
+extern crate colored;
+use colored::*;
 use std::fs::File;
 use std::io::prelude::*;
 use std::collections::HashMap;
+use std::sync::{Arc, Mutex};
+use std::cmp;
 use crate::ast::*;
 
 #[derive(Clone, PartialEq, Debug)]
@@ -30,10 +33,23 @@ pub fn parse_file(filename: &String) -> ParsedComposition {
         .expect("Something went wrong reading the file");
 
     let init = socool::SoCoolParser::new()
-        .parse(&mut table, &composition)
-        .unwrap();
+        .parse(&mut table, &composition);
 
-    ParsedComposition { init, table }
+    match init.clone() {
+        Ok(init) => ParsedComposition { init, table },
+        Err(error) => {
+            let location = Arc::new(Mutex::new(Vec::new()));
+            error.map_location(|l| location.lock().unwrap().push(l));
+            let start = location.lock().unwrap()[0];
+            let end =  location.lock().unwrap()[1];
+            let offset = 100;
+            println!("{}{}",
+                &composition[cmp::max(0, start - offset)..start].yellow(),
+                &composition[start..end].red(),
+            );
+            panic!("ahhh")
+        }
+    }
 }
 
 

@@ -7,7 +7,7 @@ use std::collections::HashMap;
 grammar<'table>(table: &'table mut HashMap<String, Op>);
 
 pub SoCool: Init = {
-  <init: Point> <l: LetDefs> => { init }
+  <init: Point> <l: LetDefs> => { init },
 }
 
 Point: Init = {

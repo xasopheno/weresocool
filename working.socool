@@ -9,7 +9,7 @@ overtones = {
 thing1 = {
     overtones |
     Sequence [
-        AsIs,
+        AsIs
         Tm 3/2 | Length 2.0
     ]
 }

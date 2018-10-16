@@ -1,7 +1,7 @@
 extern crate colored;
 use colored::*;
-use std::env;
 use socool_parser::parser::*;
+use std::env;
 
 fn main() {
     let args: Vec<String> = env::args().collect();
@@ -13,7 +13,6 @@ fn main() {
         println!("{}", "Example:".cyan());
         println!("{}\n", "./weresocool song.socool".cyan().italic());
         panic!("Wrong number of arguments.")
-
     }
 
     let parsed = parse_file(filename);
@@ -24,7 +23,6 @@ fn main() {
 
     println!("\n Main: {:?}", parsed.table.get("main").unwrap());
 }
-
 
 #[cfg(test)]
 mod test;
