@@ -5,8 +5,17 @@ use std::io::prelude::*;
 use std::collections::HashMap;
 use crate::ast::*;
 
+#[derive(Clone, PartialEq, Debug)]
+pub struct Init {
+    pub f: f32,
+    pub l: f32,
+    pub g: f32,
+    pub p: f32,
+}
+
 pub type ParseTable = HashMap<String, Op>;
 
+#[derive(Clone, PartialEq, Debug)]
 pub struct ParsedComposition {
     pub init: Init,
     pub table: ParseTable,
