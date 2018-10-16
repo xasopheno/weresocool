@@ -38,16 +38,44 @@ pub fn parse_file(filename: &String) -> ParsedComposition {
     match init.clone() {
         Ok(init) => ParsedComposition { init, table },
         Err(error) => {
+            let start_offset = 150;
+            let end_offset = 50;
             let location = Arc::new(Mutex::new(Vec::new()));
             error.map_location(|l| location.lock().unwrap().push(l));
             let start = location.lock().unwrap()[0];
             let end =  location.lock().unwrap()[1];
-            let offset = 100;
+            let cmp_len = &composition.len();
+            let feed_start = cmp::max(0, start as isize - start_offset) as usize;
+            let feed_end = cmp::min(end + end_offset, *cmp_len);
+
+            let mut lines = 0;
+            let mut n_c = 0;
+            for c in composition.clone().chars() {
+                n_c += 1;
+                if n_c > start { break; }
+
+                if c == '\n' {
+                    println!("{:?}", c);
+                    lines += 1
+                }
+            }
             println!("{}{}",
-                &composition[cmp::max(0, start - offset)..start].yellow(),
-                &composition[start..end].red(),
+                &composition[feed_start..start].yellow(),
+                &composition[start..feed_end].red(),
             );
-            panic!("ahhh")
+
+
+            println!("
+            {}
+            errors at line {}
+            {}
+            ",
+                     "working".yellow().underline(),
+                     lines.to_string().red().bold(),
+                     "broken".red().underline(),
+            );
+
+            panic!("Unexpected Token")
         }
     }
 }

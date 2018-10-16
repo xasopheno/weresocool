@@ -9,14 +9,14 @@ overtones = {
 thing1 = {
     overtones |
     Sequence [
-        AsIs
+        AsIs,
         Tm 3/2 | Length 2.0
     ]
 }
 
 thing2 = {
     Sequence [
-        Tm 7/4,
+        Tm 7/4
         Tm 3/2
     ] | Repeat 2
     > FitLength thing1
