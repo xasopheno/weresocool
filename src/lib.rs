@@ -11,6 +11,7 @@ extern crate colored;
 
 #[macro_use]
 pub mod macros;
+pub mod generation;
 pub mod analyze;
 pub mod compositions;
 pub mod event;

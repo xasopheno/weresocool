@@ -1,7 +1,8 @@
 pub mod apply {
     use event::Event;
     use operations::helpers::helpers::vv_event_to_v_events;
-    use operations::{Apply, GetLengthRatio, Op};
+    use operations::{Apply, GetLengthRatio};
+    use socool_parser::ast::Op;
 
     impl Apply for Op {
         fn apply(&self, events: Vec<Event>) -> Vec<Event> {
@@ -74,20 +75,6 @@ pub mod apply {
                         e.length = e.length * m;
                         vec_events.push(e)
                     }
-                }
-
-                Op::Repeat { n, operations } => {
-                    let mut repeat_container: Vec<Event> = vec![];
-
-                    let sequence = Op::Sequence {
-                        operations: operations.to_vec(),
-                    }.apply(events);
-
-                    for _ in 0..*n {
-                        repeat_container.append(&mut sequence.clone());
-                    }
-
-                    vec_events = repeat_container;
                 }
 
                 Op::Silence { m } => {
