@@ -15,11 +15,13 @@ overtones = {
 thing1 = {
     overtones |
     Sequence [
+    	Silence 0.5,
         AsIs,
         Tm 9/8,
         Tm 5/4,
         Tm 3/2,
         Tm 5/4,
+        Tm 4/3,
     ]
 }
 
@@ -28,7 +30,7 @@ thing2 = {
     	Silence 0.5,
         Tm 7/8
         | Length 0.2
-        | Gain 0.3,
+        | Gain 0.3, 
         Tm 7/4,
         Tm 3/2,
     ] 
@@ -54,7 +56,6 @@ thing3 = {
 		Tm 11/4,
 		Tm 6/5,
 		Tm 5/4,
-		Silence 3,
 	] 
 	| Tm 4
 	| Gain 0.2
@@ -86,9 +87,12 @@ thing3s = { Overlay [
 main = {
 	Sequence [
 	    Overlay [
-	        thing1,
+	        thing1
+	        | Gain 0.5,
 	        thing2,
-	        thing1 | Tm 6 | Gain 0.2 | Sequence [Silence 2, Tm 7/8, Silence 1, Tm 3/4, Tm 1/2] | Sequence[Silence 0.25, AsIs, Silence 0.25, Reverse] > FitLength thing1,
+	        thing1 | Tm 6 | Gain 0.2 | 
+	        	Sequence [Silence 2, Tm 7/8, Silence 1, Tm 3/4, Tm 1/2] | 
+	        		Sequence[Silence 0.25, AsIs, Silence 0.25, Reverse] > FitLength thing1,
 	 		thing3s,
 	    	bass
 	    ]
@@ -96,9 +100,14 @@ main = {
 	    overtones
 	    | Length 2
     ] 
-    | Repeat 2
+    | Sequence [AsIs, Reverse]
     | Sequence [
     	AsIs, 
     	Tm 7/8
     ]
+    | Sequence [
+    	AsIs, 
+    	Tm 9/8
+    ]
+    | Repeat 2
 }
