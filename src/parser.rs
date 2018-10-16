@@ -48,14 +48,13 @@ pub fn parse_file(filename: &String) -> ParsedComposition {
             let feed_start = cmp::max(0, start as isize - start_offset) as usize;
             let feed_end = cmp::min(end + end_offset, *cmp_len);
 
-            let mut lines = 0;
+            let mut lines = 1;
             let mut n_c = 0;
             for c in composition.clone().chars() {
                 n_c += 1;
                 if n_c > start { break; }
 
                 if c == '\n' {
-                    println!("{:?}", c);
                     lines += 1
                 }
             }
@@ -70,9 +69,9 @@ pub fn parse_file(filename: &String) -> ParsedComposition {
             errors at line {}
             {}
             ",
-                     "working".yellow().underline(),
-                     lines.to_string().red().bold(),
-                     "broken".red().underline(),
+             "working".yellow().underline(),
+             lines.to_string().red().bold(),
+             "broken".red().underline(),
             );
 
             panic!("Unexpected Token")
