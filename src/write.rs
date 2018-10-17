@@ -19,7 +19,7 @@ pub fn write_output_buffer(out_buffer: &mut [f32], stereo_waveform: StereoWavefo
     }
 }
 
-pub fn write_composition_to_wav(composition_generator: fn() -> StereoWaveform) {
+pub fn write_composition_to_wav(composition: StereoWaveform) {
     let spec = hound::WavSpec {
         channels: 2,
         sample_rate: 44100,
@@ -27,7 +27,6 @@ pub fn write_composition_to_wav(composition_generator: fn() -> StereoWaveform) {
         sample_format: hound::SampleFormat::Float,
     };
 
-    let composition = composition_generator();
     let mut buffer = vec![0.0; composition.r_buffer.len() * 2];
 
     write_output_buffer(&mut buffer, composition);

@@ -19,8 +19,8 @@ socool_parser = { path = "../socool_parser" }
 clap = "2.32.0"
 
 [[bin]]
-name = "parser"
-path = "bin/parser.rs"
+name = "wsc"
+path = "bin/wsc.rs"
 
 [[bin]]
 name = "mic"
