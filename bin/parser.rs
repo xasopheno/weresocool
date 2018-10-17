@@ -9,10 +9,8 @@ use weresocool::{
 };
 use std::env;
 use colored::*;
-use std::collections::HashMap;
 use socool_parser::{
     parser::*,
-    ast::*
 };
 
 
