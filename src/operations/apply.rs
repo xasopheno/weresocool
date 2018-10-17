@@ -117,7 +117,6 @@ pub mod apply {
                     vec_events = container.iter().flat_map(|evt| evt.clone()).collect();
                 }
 
-
                 Op::Overlay { operations } => {
                     let mut vec_vec_events: Vec<Vec<Event>> = vec![];
 

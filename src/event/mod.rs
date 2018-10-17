@@ -1,5 +1,5 @@
 use instrument::{oscillator::Oscillator, stereo_waveform::StereoWaveform};
-use pbr::{ProgressBar};
+use pbr::ProgressBar;
 
 #[derive(Debug, Clone, PartialEq, Serialize)]
 pub struct Event {

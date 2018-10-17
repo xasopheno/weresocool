@@ -11,6 +11,5 @@ pub trait GetLengthRatio {
     fn get_length_ratio(&self) -> f32;
 }
 
-
 #[cfg(test)]
 mod test;

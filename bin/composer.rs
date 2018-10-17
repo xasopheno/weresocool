@@ -11,8 +11,7 @@ fn main() -> Result<(), pa::Error> {
     println!("{}", " ~~~~“Catchy tunes for your next seizure.”~~~~");
 
     let pa = pa::PortAudio::new()?;
-    let mut output_stream =
-        setup_portaudio_output(generate_composition, &pa)?;
+    let mut output_stream = setup_portaudio_output(generate_composition, &pa)?;
     output_stream.start()?;
 
     while let true = output_stream.is_active()? {}

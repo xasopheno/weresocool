@@ -1,38 +1,43 @@
-extern crate portaudio;
-extern crate weresocool;
 extern crate colored;
+extern crate portaudio;
 extern crate socool_parser;
-use portaudio as pa;
-use weresocool::{
-    portaudio_setup::output::setup_portaudio_output,
-    generation::parsed_to_waveform::generate_composition,
-};
-use std::env;
+extern crate weresocool;
+extern crate clap;
 use colored::*;
-use socool_parser::{
-    parser::*,
+use portaudio as pa;
+use socool_parser::parser::*;
+use weresocool::{
+    generation::parsed_to_waveform::generate_composition,
+    portaudio_setup::output::setup_portaudio_output,
+    ui::were_so_cool_logo,
 };
 
+use clap::{Arg, App, SubCommand};
 
 fn main() -> Result<(), pa::Error> {
-    println!("{}", "\n  ****** WereSoCool __!Now In Stereo!__ ****** ".magenta().bold());
-    println!("{}", "*** Make cool sounds. Impress your friends ***  ".cyan());
-    println!("{}", " ~~~~“Catchy tunes for your next seizure.”~~~~".cyan());
+    were_so_cool_logo();
 
-    let args: Vec<String> = env::args().collect();
-    let filename;
-    if args.len() == 2 {
-        filename = &args[1];
-        println!("\n        Now Playing: {}\n", filename);
-    } else {
-        println!("\n{}\n", "Forgot to pass in a filename.".red().bold());
-        println!("{}", "Example:".cyan());
-        println!("{}\n", "./weresocool song.socool".cyan().italic());
-        panic!("Wrong number of arguments.")
+    let matches = App::new("Were So Cool")
+        .about("*** Make cool sounds. Impress your friends ***")
+        .author("Danny Meyer <Danny.Meyer@gmail.com>")
+        .arg(Arg::with_name("filename")
+                 .help("filename eg: my_song.socool")
+                 .required(false)
+        )
+        .get_matches();
+
+    let filename = matches.value_of("filename");
+    match filename {
+            Some(_filename) => {},
+            _ => {        println!("\n{}\n", "Forgot to pass in a filename.".red().bold());
+            println!("{}", "Example:".cyan());
+            println!("{}\n", "./weresocool song.socool".cyan().italic());
+            panic!("Wrong number of arguments.")
+        }
 
     }
 
-    let parsed = parse_file(filename);
+    let parsed = parse_file(&filename.unwrap().to_string());
     let main = parsed.table.get("main").unwrap();
     let init = parsed.init;
 

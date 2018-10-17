@@ -1,7 +1,6 @@
 pub mod get_length_ratio {
-    use operations::{GetLengthRatio};
+    use operations::GetLengthRatio;
     use socool_parser::ast::Op;
-
 
     impl GetLengthRatio for Op {
         fn get_length_ratio(&self) -> f32 {

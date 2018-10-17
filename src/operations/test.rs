@@ -91,7 +91,8 @@ pub mod tests {
         let repeat = Op::Repeat {
             n: 2,
             operations: vec![sequence1.clone()],
-        }.get_length_ratio();
+        }
+        .get_length_ratio();
 
         assert_eq!(repeat, 10.0);
     }
