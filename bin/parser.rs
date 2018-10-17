@@ -25,7 +25,7 @@ fn main() -> Result<(), pa::Error> {
     let filename;
     if args.len() == 2 {
         filename = &args[1];
-        println!("\nNow Playing {}\n", filename);
+        println!("\n        Now Playing: {}\n", filename);
     } else {
         println!("\n{}\n", "Forgot to pass in a filename.".red().bold());
         println!("{}", "Example:".cyan());

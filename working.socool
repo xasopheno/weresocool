@@ -73,7 +73,8 @@ bass = {
 	> FitLength thing1
 }
 
-thing3s = { Overlay [
+thing3s = { 
+	Overlay [
 		thing3 | Gain 0.5,
 		thing3 | Tm 5/4 | Gain 0.5,
 		thing3 | Tm 0.5 | Gain 0.5,
