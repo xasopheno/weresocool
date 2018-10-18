@@ -1,16 +1,19 @@
 pub fn documentation() {
     println!("{}", "
         ___ Base Operations ___
+        + addition
+        * multiplication
+
         AsIs
         Reverse
         Repeat
-        Silence <n>
-        Tm <n>
-        Ta <n>
-        PanM <n>
-        PanA <n>
-        Length <n>
-        Gain <n>
+        Silence <n> *
+        Tm <n> *
+        Ta <n> +
+        PanM <n> *
+        PanA <n> +
+        Length <n> *
+        Gain <n> *
 
         ___ Grouping Operations ___
         Sequence [ op1, op2, op3, etc ]
