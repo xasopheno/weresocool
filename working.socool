@@ -16,7 +16,7 @@ thing1 = {
 
 thing2 = {
     Sequence [
-        Tm 7/4
+        Tm 7/4,
         Tm 3/2
     ] | Repeat 2
     > FitLength thing1
