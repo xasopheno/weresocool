@@ -41,7 +41,7 @@ pub fn printed(file_type: String) {
 }
 
 pub fn get_args() -> ArgMatches<'static> {
-    App::new("Were So Cool")
+    App::new("WereSoCool")
         .about("*** Make cool sounds. Impress your friends ***")
         .author("Danny Meyer <Danny.Meyer@gmail.com>")
         .arg(

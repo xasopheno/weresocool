@@ -1,3 +1,4 @@
+#[allow(unused_macros)]
 macro_rules! r {
     ($(($num:expr,$den:expr,$offset:expr,$gain:expr,$pan:expr)),*$(,)*) => {
         Op::Overlay { operations: vec![$(
@@ -12,6 +13,7 @@ macro_rules! r {
     }
 }
 
+#[allow(unused_macros)]
 macro_rules! compose {
     ( $( $operation:expr ),*$(,)* ) => {
         {
@@ -25,6 +27,7 @@ macro_rules! compose {
     };
 }
 
+#[allow(unused_macros)]
 macro_rules! sequence {
     ( $( $operation:expr ),*$(,)* ) => {
         {
@@ -37,6 +40,7 @@ macro_rules! sequence {
     };
 }
 
+#[allow(unused_macros)]
 macro_rules! overlay {
     ( $( $operation:expr ),*$(,)* ) => {
         {
@@ -49,20 +53,12 @@ macro_rules! overlay {
     };
 }
 
+#[allow(unused_macros)]
 macro_rules! withLengthRatioOf {
     ($main:expr => $with_length_of:expr, $n:expr) => {
         Op::Fit {
             with_length_of: Box::new($with_length_of),
             main: Box::new($main),
-        }
-    };
-}
-
-macro_rules! repeat {
-    ($operation:expr, $n:expr) => {
-        Op::Repeat {
-            n: $n,
-            operations: { vec![$operation] },
         }
     };
 }
