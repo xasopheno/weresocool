@@ -14,7 +14,7 @@ fn event_from_init(init: Init) -> Event {
     Event::init(init.f, init.g, init.p, init.l)
 }
 
-fn generate_events(init: Init, main: Op) -> Vec<Event> {
+pub fn generate_events(init: Init, main: Op) -> Vec<Event> {
     main.apply(vec![event_from_init(init)])
 }
 

@@ -101,5 +101,4 @@ main = {
     | Sequence [AsIs, Length 0.5 | Tm 7/8, Length 0.25 | Tm 4/5 | Repeat 2]
     | Sequence [AsIs, Tm 7/8]
     | Sequence [AsIs, Tm 9/8]
-    | Repeat 2
 }

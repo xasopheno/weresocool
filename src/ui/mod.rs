@@ -1,8 +1,7 @@
-extern crate colored;
 extern crate clap;
-use self::clap::{Arg, App, ArgMatches};
+extern crate colored;
+use self::clap::{App, Arg, ArgMatches};
 use colored::*;
-
 
 pub fn were_so_cool_logo() {
     println!(
@@ -32,21 +31,34 @@ pub fn no_file_name() {
     panic!("Wrong number of arguments.")
 }
 
-pub fn printed() {
-    println!("{}", "\n ***** WereSoFinishedWritingTheWavFile ****** \n ".magenta().bold());
+pub fn printed(file_type: String) {
+    println!(
+        "{}{}{}",
+        "\n ***** WereSoFinishedWritingThe".magenta().bold(),
+        file_type.magenta().bold(),
+        "File ****** \n ".magenta().bold()
+    );
 }
 
 pub fn get_args() -> ArgMatches<'static> {
     App::new("Were So Cool")
         .about("*** Make cool sounds. Impress your friends ***")
         .author("Danny Meyer <Danny.Meyer@gmail.com>")
-        .arg(Arg::with_name("filename")
-            .help("filename eg: my_song.socool")
-            .required(false)
+        .arg(
+            Arg::with_name("filename")
+                .help("filename eg: my_song.socool")
+                .required(false),
         )
-        .arg(Arg::with_name("print")
-            .help("Prints file to .wav")
-            .short("p")
-            .long("print"))
+        .arg(
+            Arg::with_name("print")
+                .help("Prints file to .wav")
+                .short("p")
+                .long("print"),
+        )
+        .arg(
+            Arg::with_name("json")
+                .help("Prints file to .json")
+                .long("json"),
+        )
         .get_matches()
 }
