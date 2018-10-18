@@ -1,8 +1,8 @@
 use event::{Event, Render};
 use instrument::{oscillator::Oscillator, stereo_waveform::StereoWaveform};
-use operations::{Apply};
-use socool_parser::ast::{Op, Op::*};
+use operations::Apply;
 use settings::get_default_app_settings;
+use socool_parser::ast::{Op, Op::*};
 
 fn composition() -> Op {
     fn _overtones() -> Op {
