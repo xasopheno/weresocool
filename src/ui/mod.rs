@@ -35,7 +35,7 @@ pub fn printed(file_type: String) {
     println!(
         "{}{}{}",
         "\n ***** WereSoFinishedWritingThe".magenta().bold(),
-        file_type.magenta().bold(),
+        file_type.blue().bold(),
         "File ****** \n ".magenta().bold()
     );
 }

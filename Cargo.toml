@@ -31,13 +31,5 @@ name = "composer"
 path = "bin/composer.rs"
 
 [[bin]]
-name = "print"
-path = "bin/print.rs"
-
-[[bin]]
-name = "json"
-path = "bin/json.rs"
-
-[[bin]]
 name = "scratch"
 path = "bin/scratch.rs"
