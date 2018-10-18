@@ -29,13 +29,13 @@ fn main() -> Result<(), pa::Error> {
         write_composition_to_wav(composition);
         printed("WAV".to_string());
     } else if args.is_present("json") {
-        banner("Printing".to_string(), filename.unwrap().to_string());
+        banner("JSONIFY-ing".to_string(), filename.unwrap().to_string());
         let events = generate_events(init, main.clone());
         write_composition_to_json(events, &filename.unwrap().to_string())
             .expect("Writing to JSON failed");
         printed("JSON".to_string());
     } else {
-        banner("New Playing".to_string(), filename.unwrap().to_string());
+        banner("Now Playing".to_string(), filename.unwrap().to_string());
         let composition = generate_composition(init, main.clone());
 
         let pa = pa::PortAudio::new()?;
