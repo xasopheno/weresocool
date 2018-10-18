@@ -1,5 +1,5 @@
 pub mod test {
-    use socool_parser::ast::{Init, Op};
+    use socool_parser::ast::{Op};
     use socool_parser::parser::*;
     use std::collections::HashMap;
 
@@ -262,7 +262,7 @@ pub mod test {
                         ]
                     },
                     Op::WithLengthRatioOf {
-                        length_of: Box::new(Op::Sequence {
+                        with_length_of: Box::new(Op::Sequence {
                             operations: vec![
                                 Op::AsIs,
                                 Op::Compose {

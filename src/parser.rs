@@ -26,11 +26,18 @@ pub struct ParsedComposition {
 
 pub fn parse_file(filename: &String) -> ParsedComposition {
     let mut table = HashMap::new();
-    let mut f = File::open(filename).expect("File not found");
-
+    let f = File::open(filename);
     let mut composition = String::new();
-    f.read_to_string(&mut composition)
-        .expect("Something went wrong reading the file");
+
+    match f {
+        Ok(mut f) => {
+            f.read_to_string(&mut composition).expect("Something went wrong reading the file");
+        },
+        _ => {
+            println!("{} {}\n", "\n        File not found:".red().bold(), filename.red().bold());
+            panic!("File not found");
+        }
+    }
 
     let init = socool::SoCoolParser::new()
         .parse(&mut table, &composition);

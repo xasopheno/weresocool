@@ -36,8 +36,8 @@ ComposeOperation: Op = {
 
 BaseOperation: Op = {
     "(" <o: Operation> ")" => o,
-    "AsIs" => Op::AsIs,
-    "Reverse" => Op::Reverse,
+    "AsIs" => Op::AsIs {},
+    "Reverse" => Op::Reverse {},
     "Repeat" <i:Int> => {
         let mut vec = Vec::new();
         for x in 0..i {
