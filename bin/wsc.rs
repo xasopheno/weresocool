@@ -4,17 +4,10 @@ extern crate weresocool;
 use portaudio as pa;
 use socool_parser::parser::*;
 use weresocool::{
-    generation::parsed_to_waveform::{
-        generate_events,
-        generate_composition
-    },
+    generation::parsed_to_waveform::{generate_composition, generate_events},
     portaudio_setup::output::setup_portaudio_output,
     ui::{banner, get_args, no_file_name, printed, were_so_cool_logo},
-    write::{
-        write_composition_to_json,
-        write_composition_to_wav
-    },
-
+    write::{write_composition_to_json, write_composition_to_wav},
 };
 
 fn main() -> Result<(), pa::Error> {

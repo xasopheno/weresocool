@@ -2,8 +2,8 @@ extern crate rand;
 use analyze::{Analyze, DetectionResult};
 use event::{Event, Sound};
 use instrument::oscillator::Oscillator;
-use operations::{Apply};
-use socool_parser::{ast::Op};
+use operations::Apply;
+use socool_parser::ast::Op;
 
 use portaudio as pa;
 use ring_buffer::RingBuffer;
