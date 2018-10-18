@@ -12,7 +12,7 @@ pub fn were_so_cool_logo() {
     );
     println!(
         "{}",
-        "*** Make cool sounds. Impress your friends ***  ".cyan()
+        "*** Make cool sounds. Impress your friends/pets ***  ".cyan()
     );
     println!(
         "{}",
@@ -58,7 +58,14 @@ pub fn get_args() -> ArgMatches<'static> {
         .arg(
             Arg::with_name("json")
                 .help("Prints file to .json")
+                .short("j")
                 .long("json"),
+        )
+        .arg(
+            Arg::with_name("doc")
+                .help("Prints some documentation")
+                .short("d")
+                .long("doc"),
         )
         .get_matches()
 }

@@ -12,6 +12,7 @@ pub mod macros;
 pub mod analyze;
 pub mod compositions;
 pub mod event;
+pub mod examples;
 pub mod generation;
 pub mod instrument;
 pub mod operations;
