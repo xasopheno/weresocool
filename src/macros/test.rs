@@ -1,5 +1,5 @@
 pub mod tests {
-    use operations::Op;
+    use socool_parser::ast::Op;
     #[test]
     fn test_r_macro() {
         let r_macro = r![
@@ -66,21 +66,6 @@ pub mod tests {
 
         let expected = Op::Compose {
             operations: { vec![Op::AsIs {}, Op::TransposeM { m: 2.0 }] },
-        };
-
-        assert_eq!(compose, expected);
-    }
-
-    #[test]
-    fn test_fit_macro() {
-        let compose = fit![
-                Op::AsIs => Op::AsIs, 4
-            ];
-
-        let expected = Op::Fit {
-            n: 4,
-            with_length_of: Box::new(Op::AsIs),
-            main: Box::new(Op::AsIs),
         };
 
         assert_eq!(compose, expected);

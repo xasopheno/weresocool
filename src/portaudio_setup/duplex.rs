@@ -2,7 +2,9 @@ extern crate rand;
 use analyze::{Analyze, DetectionResult};
 use event::{Event, Sound};
 use instrument::oscillator::Oscillator;
-use operations::{Apply, Op, Op::*};
+use operations::Apply;
+use socool_parser::ast::Op;
+
 use portaudio as pa;
 use ring_buffer::RingBuffer;
 use settings::{get_default_app_settings, Settings};
@@ -52,31 +54,7 @@ pub fn setup_portaudio_duplex(
                 };
 
                 fn overtones() -> Op {
-                    compose![
-                        r![
-                            (11, 4, 5.0  , 1.0, 01.0),
-                            (11, 4, 0.0, 1.0, 01.0),
-                            (5, 2, 3.0, 1.0, -1.0),
-                            (5, 2, 0.0, 1.0, -1.0),
-                            (3, 2, 0.0, 1.0, 1.0),
-                            (1, 1, 0.0, 1.0, 0.0),
-//                            (9, 1, 0.0, 1.0, 1.0),
-//                            (11, 2, 5.0, 1.0, 1.0),
-//                            (10, 2, 1.0, 1.0, 0.0),
-//                            (10, 2, 0.0, 1.0, 0.0),
-//                            (9, 2, 0.0, 1.0, 0.0),
-//                            (2, 1, 7.0, 1.0, 0.0),
-//                            (2, 1, 0.0, 1.0, 0.5),
-//                            (3, 2, 0.0, 1.0, -0.5),
-//                            (3, 2, 5.0, 1.0, 0.5),
-//                            (1, 1, 0.0, 1.0, -0.5),
-//                            (1, 1, 0.0, 1.0, -0.5),
-//                            (1, 1, 3.0, 1.0, 0.5),
-//                            (1, 2, 3.0, 1.0, 0.5),
-//                            (1, 2, 0.0, 1.0, 0.5),
-                        ],
-                        //                        TransposeM {m: 2.0}
-                    ]
+                    Op::AsIs
                 };
 
                 fn generate_events(event: Event, operation: fn() -> Op) -> Vec<Event> {

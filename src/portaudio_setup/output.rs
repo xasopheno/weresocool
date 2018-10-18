@@ -4,14 +4,13 @@ use settings::{get_default_app_settings, Settings};
 use write::write_output_buffer;
 
 pub fn setup_portaudio_output(
-    generate_composition: fn() -> StereoWaveform,
+    mut composition: StereoWaveform,
     ref pa: &pa::PortAudio,
 ) -> Result<pa::Stream<pa::NonBlocking, pa::Output<f32>>, pa::Error> {
     let settings = get_default_app_settings();
     let output_settings = get_output_settings(&pa, &settings)?;
 
     let mut index = 0;
-    let mut composition = generate_composition();
     let output_stream = pa.open_non_blocking_stream(
         output_settings,
         move |pa::OutputStreamCallbackArgs { mut buffer, .. }| {

@@ -1,10 +1,11 @@
 use event::{Event, Render};
 use instrument::{oscillator::Oscillator, stereo_waveform::StereoWaveform};
-use operations::{Apply, Op, Op::*};
+use operations::Apply;
 use settings::get_default_app_settings;
+use socool_parser::ast::{Op, Op::*};
 
 fn composition() -> Op {
-    fn overtones() -> Op {
+    fn _overtones() -> Op {
         r![
             (3, 2, 0.0, 1.0, -0.5),
             (3, 2, 3.0, 1.0, 0.5),

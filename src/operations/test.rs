@@ -1,6 +1,7 @@
 pub mod tests {
     use event::{Event, Sound};
-    use operations::{Apply, GetLengthRatio, Op};
+    use operations::{Apply, GetLengthRatio};
+    use socool_parser::ast::Op;
 
     fn event1() -> Event {
         Event {
@@ -86,17 +87,6 @@ pub mod tests {
     }
 
     #[test]
-    fn op_repeat_test() {
-        let sequence1 = sequence1();
-        let repeat = Op::Repeat {
-            n: 2,
-            operations: vec![sequence1.clone()],
-        }.get_length_ratio();
-
-        assert_eq!(repeat, 10.0);
-    }
-
-    #[test]
     fn op_length_test() {
         let length = Op::Length { m: 1.5 };
         assert_eq!(length.get_length_ratio(), 1.5);
@@ -156,8 +146,7 @@ pub mod tests {
     #[test]
     #[cfg_attr(rustfmt, rustfmt_skip)]
     fn op_fit() {
-        let fit = Op::Fit {
-            n: 1,
+        let fit = Op::WithLengthRatioOf {
             with_length_of: Box::new(sequence1()),
             main: Box::new(sequence2()),
         };
@@ -165,16 +154,9 @@ pub mod tests {
         let fit_length = fit.get_length_ratio();
         assert_eq!(fit_length, 5.0);
 
-        let expected = vec![
-            Event { sounds: vec![Sound { frequency: 100.0, gain: 1.0, pan: 0.0 }], length: 1.0 },
-            Event { sounds: vec![Sound { frequency: 100.0, gain: 1.0, pan: 0.0 }], length: 1.0 },
-            Event { sounds: vec![Sound { frequency: 100.0, gain: 1.0, pan: 0.0 }], length: 1.0 },
-            Event { sounds: vec![Sound { frequency: 100.0, gain: 1.0, pan: 0.0 }], length: 1.0 },
-            Event { sounds: vec![Sound { frequency: 200.0, gain: 1.0, pan: 0.0 }], length: 1.0 },
-            Event { sounds: vec![Sound { frequency: 200.0, gain: 1.0, pan: 0.0 }], length: 1.0 },
-            Event { sounds: vec![Sound { frequency: 100.0, gain: 1.0, pan: 0.0 }], length: 2.0 },
-            Event { sounds: vec![Sound { frequency: 100.0, gain: 1.0, pan: 0.0 }], length: 2.0 },
-        ];
+        let expected =
+            vec![Event { sounds: vec![Sound { frequency: 100.0, gain: 1.0, pan: 0.0 }], length: 0.5 },
+                 Event { sounds: vec![Sound { frequency: 100.0, gain: 1.0, pan: 0.0 }], length: 0.5 }];
 
         assert_eq!(fit.apply(vec_event1()), expected);
     }

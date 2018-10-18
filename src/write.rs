@@ -19,7 +19,7 @@ pub fn write_output_buffer(out_buffer: &mut [f32], stereo_waveform: StereoWavefo
     }
 }
 
-pub fn write_composition_to_wav(composition_generator: fn() -> StereoWaveform) {
+pub fn write_composition_to_wav(composition: StereoWaveform) {
     let spec = hound::WavSpec {
         channels: 2,
         sample_rate: 44100,
@@ -27,7 +27,6 @@ pub fn write_composition_to_wav(composition_generator: fn() -> StereoWaveform) {
         sample_format: hound::SampleFormat::Float,
     };
 
-    let composition = composition_generator();
     let mut buffer = vec![0.0; composition.r_buffer.len() * 2];
 
     write_output_buffer(&mut buffer, composition);
@@ -57,14 +56,13 @@ fn normalize_waveform(buffer: &mut Vec<f32>) {
 }
 
 pub fn write_composition_to_json(
-    composition_generator: fn() -> Vec<Event>,
-    file_name: &String,
+    composition: Vec<Event>,
+    filename: &String,
 ) -> std::io::Result<()> {
-    let composition = composition_generator();
     let serialized = serde_json::to_string(&composition).unwrap();
-    let mut file = File::create(file_name)?;
+    let mut file = File::create(format!("{}{}", filename, ".json".to_string()))?;
 
-    println!("{}", file_name);
+    println!("{}", filename);
     println!("Composition is {} events long", composition.len());
 
     file.write_all(serialized.as_bytes())?;
