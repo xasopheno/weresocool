@@ -60,5 +60,10 @@ pub fn get_args() -> ArgMatches<'static> {
                 .help("Prints file to .json")
                 .long("json"),
         )
+        .arg(
+            Arg::with_name("doc")
+                .help("Prints some documentation")
+                .long("doc"),
+        )
         .get_matches()
 }

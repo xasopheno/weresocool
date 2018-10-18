@@ -6,6 +6,7 @@ use socool_parser::parser::*;
 use weresocool::{
     generation::parsed_to_waveform::{generate_composition, generate_events},
     portaudio_setup::output::setup_portaudio_output,
+    examples::documentation,
     ui::{banner, get_args, no_file_name, printed, were_so_cool_logo},
     write::{write_composition_to_json, write_composition_to_wav},
 };
@@ -13,6 +14,10 @@ use weresocool::{
 fn main() -> Result<(), pa::Error> {
     were_so_cool_logo();
     let args = get_args();
+
+    if args.is_present("doc") {
+        documentation();
+    }
 
     let filename = args.value_of("filename");
     match filename {
