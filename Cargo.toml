@@ -27,9 +27,5 @@ name = "mic"
 path = "bin/mic.rs"
 
 [[bin]]
-name = "composer"
-path = "bin/composer.rs"
-
-[[bin]]
 name = "scratch"
 path = "bin/scratch.rs"
