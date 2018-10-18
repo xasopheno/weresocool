@@ -62,8 +62,7 @@ pub fn write_composition_to_json(
     let serialized = serde_json::to_string(&composition).unwrap();
     let mut file = File::create(format!("{}{}", filename, ".json".to_string()))?;
 
-    println!("{}", filename);
-    println!("Composition is {} events long", composition.len());
+    println!("{} is {} events long", filename, composition.len());
 
     file.write_all(serialized.as_bytes())?;
     Ok(())
