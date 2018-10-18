@@ -1,6 +1,7 @@
 use event::{Event, Render};
 use instrument::{oscillator::Oscillator, stereo_waveform::StereoWaveform};
-use operations::{Apply, Op, Op::*};
+use operations::{Apply};
+use socool_parser::ast::{Op, Op::*};
 use settings::get_default_app_settings;
 
 fn composition() -> Op {
