@@ -12,7 +12,7 @@ pub fn were_so_cool_logo() {
     );
     println!(
         "{}",
-        "*** Make cool sounds. Impress your friends ***  ".cyan()
+        "*** Make cool sounds. Impress your friends/pets ***  ".cyan()
     );
     println!(
         "{}",
