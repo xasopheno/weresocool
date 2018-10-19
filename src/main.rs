@@ -1,4 +1,5 @@
 extern crate colored;
+extern crate socool_parser;
 use colored::*;
 use socool_parser::parser::*;
 use std::env;

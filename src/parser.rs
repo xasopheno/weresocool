@@ -6,6 +6,7 @@ use std::io::prelude::*;
 use std::collections::HashMap;
 use std::sync::{Arc, Mutex};
 use std::cmp;
+use std::io::BufReader;
 use crate::ast::*;
 
 #[derive(Clone, PartialEq, Debug)]
@@ -30,8 +31,18 @@ pub fn parse_file(filename: &String) -> ParsedComposition {
     let mut composition = String::new();
 
     match f {
-        Ok(mut f) => {
-            f.read_to_string(&mut composition).expect("Something went wrong reading the file");
+        Ok(f) => {
+            let file = BufReader::new(&f);
+            for line in file.lines() {
+                let l = line.unwrap();
+                let copy_l = l.trim_left();
+                if copy_l.starts_with("--") {
+                    composition.push_str("\n");
+                } else {
+                    composition.push_str("\n");
+                    composition.push_str(&l);
+                }
+            }
         },
         _ => {
             println!("{} {}\n", "\n        File not found:".red().bold(), filename.red().bold());
