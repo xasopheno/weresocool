@@ -1,0 +1,41 @@
+{ f: 220, l: 1.0, g: 1.0, p: 0.0}
+
+overtones = {
+    O[
+      	(3/1, 2.0, 1.0, 0.0),
+      	(2/1, 2.0, 1.0, 0.0),
+    	(11/8, 3.0, 1.0, 1.0),
+      	(9/8, 0.0, 1.0, -1.0),
+      	(1/1, 2.0, 1.0, 0.0),
+      	(1/2, 0.0, 1.0, 0.0),
+      	(1/3, 0.0, 1.0, 0.0),
+      	(1/4, 0.0, 1.0, 0.0),
+  	]
+}
+
+length = {
+	Sequence [Length 0.4]
+}
+
+
+length_recursive = { length | Sequence [Length 1, Length 0.75 | Gain 1.1, Length 0.5, Reverse | Length 0.4 | Gain 0.5 ] }
+
+thing1 = {
+	overtones |
+	Sequence [
+		AsIs,
+		Tm 9/8,
+		Tm 3/2,
+		Tm 2,
+	] | Length 0.5
+}
+
+main = {
+	Sequence [
+		thing1 | length_recursive,
+		Silence 0.6
+	]
+	| Sequence [AsIs, Reverse, Reverse | Tm 4/5, AsIs]
+	| Repeat 4
+}
+
