@@ -104,8 +104,8 @@ melody = {
 		Silence 1,
 		Tm 4/3,
 		Silence 1,
-		Tm 3/2,
-		Silence 1,
+		Tm 3/2 | Length 2,
+		Silence 0.5,
 	] | Gain 0.75 | Tm 4
 	| Sequence [AsIs, Silence 1]
 	> FitLength bass

@@ -1,0 +1,65 @@
+{ f: 220, l: 1.0, g: 1.0, p: 0.0}
+
+overtones = {
+    O[
+    	(5/4, 3.0, 1.0, 1.0),
+      	(9/8, 0.0, 1.0, -1.0),
+      	(1/1, 2.0, 1.0, 0.5),
+      	(1/1, 0.0, 1.0, -0.5),
+      	(1/2, 0.0, 1.0, 0.0),
+      	(1/2, 3, 1.0, 0.0),
+      	(3/4, 0, 0.1, 0.0),
+      	(1/4, 0, 0.2, -0.5),
+      	(1/4, 2, 0.2, 0.5),
+  	]
+}
+
+gain = {
+	Sequence [Gain 0.9, Gain 0.5, Gain 0.25, Gain 0.1, Gain 0.05, Gain 0.01, Gain 0.005, Silence 0.02]
+}
+
+gain_recursive = { gain | gain }
+
+thing1 = {
+	overtones |
+	Sequence [
+		Tm 1/2,
+		AsIs,
+		Tm 9/8,
+		Tm 4/3,
+		Tm 15/8,
+		Tm 5/4,
+		Tm 5/3,
+		Tm 2,
+		Tm 3/2,
+	] 
+	| Length 0.00055
+}
+
+drums = {
+		thing1 
+		| gain_recursive
+		| Sequence [AsIs, Silence 0.2]
+		| Sequence [
+			AsIs | Length 0.5 | Repeat 2 | Gain 1.6, 
+			Tm 3 | Length 0.5 | Repeat 2 | Gain 1.5, 
+			Tm 100 | Gain 5 | Length 0.5 | Repeat 2, 
+			Tm 7/4 | Length 0.5 | Sequence [AsIs | PanA 0.6, AsIs | PanA -0.6],
+			Tm 110 | Gain 5 | Length 1/5 | Repeat 5, 
+			Tm 2 | Length 0.5 | Repeat 2 | Gain 1.5, 
+			Tm 9/8 | Length 0.25 | Sequence [AsIs | PanA 0.5, AsIs | PanA -0.5, Tm 9/8, Tm 5/4],
+			Tm 15/8 | Length 0.25 | Sequence [AsIs | PanA -0.9, AsIs | PanA 0.9, Tm 7/8, Tm 4/5],
+		]
+		| Repeat 4
+		| Sequence [
+			Tm 2/3, 
+			Tm 3/4, 
+			Tm 9/4 | Length 2/5 
+		]
+}
+
+main = {
+	Sequence [
+		drums,
+	] | Repeat 4	
+}
