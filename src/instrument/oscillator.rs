@@ -21,6 +21,7 @@ impl Oscillator {
             settings: settings.clone(),
         }
     }
+
     pub fn update(&mut self, mut sounds: Vec<Sound>) {
         let len_voices = self.voices.len();
         let len_sounds = sounds.len();
@@ -34,7 +35,6 @@ impl Oscillator {
                 ));
             }
         }
-
         if len_sounds < len_voices {
             for _ in 0..difference {
                 sounds.push(Sound::init());
