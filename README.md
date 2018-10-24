@@ -14,6 +14,16 @@ On Mac
 
 `brew install portaudio`
 
+## Parser
+Currently, the parser needs to be in a directory at the same level as this repository.
+It's linked locally through the `Cargo.toml`. 
+
+`https://github.com/xasopheno/weresocool-parser`
+
+Grammar:
+
+https://github.com/xasopheno/weresocool-parser/blob/master/src/socool.lalrpop
+
 ## Run
 Listen to something created with the framework
 
