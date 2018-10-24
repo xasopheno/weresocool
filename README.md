@@ -15,21 +15,39 @@ On Mac
 `brew install portaudio`
 
 ## Run
-### Composer
 Listen to something created with the framework
 
-`cargo run --bin composer --release`
-
-### Print
-Print something created with the framework to .wav
-
-`cargo run --bin print --release`
-
-I use ffmpeg to convert the wave file to mp3'
+`cargo run --release --bin wsc songs/working.socool`
 
 `ffmpeg -i composition.wav composition.mp3`
 
 https://www.ffmpeg.org/
+
+## Building a binary
+To build the binary:
+
+`cargo build --release --bin wsc`
+
+and then you can parse and play files without having to build the binary each time.
+
+`./target/release/wsc songs/sweep.socool -p`
+
+## Usage
+
+```
+USAGE:
+    wsc [FLAGS] [filename]
+
+FLAGS:
+    -d, --doc        Prints some documentation
+    -h, --help       Prints help information
+    -j, --json       Prints file to .json
+    -p, --print      Prints file to .wav
+    -V, --version    Prints version information
+
+ARGS:
+    <filename>    filename eg: my_song.socool
+```
 
 ## Test
 `cargo test`
