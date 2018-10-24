@@ -53,11 +53,6 @@ bass = {
 	> FitLength thing1 | Repeat 2
 }
 
-melody = {
-	Sequence [
-		Tm 3
-	]
-}
 
 two_ears = {
 	Sequence [
@@ -73,7 +68,12 @@ two_ears = {
 }
 
 main = {
-	two_ears
-	| Sequence [AsIs, Tm 3/5]
-	| Repeat 5
+	Sequence [
+		Overlay [
+			two_ears
+			| Sequence [AsIs, Tm 3/5]
+			| Repeat 1
+		],
+	
+	] | Repeat 4
 }

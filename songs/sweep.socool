@@ -1,0 +1,83 @@
+{ f: 200, l: 0.203, g: 1.0, p: 0.0}
+
+overtones = {
+    O[	
+    	(15/2, 12.0, 0.01, 0.0),
+      	(15/2, 0.0, 0.01, 0.0),
+      	(12/2, 10.0, 0.01, 0.0),
+      	(12/2, 0.0, 0.01, 0.0),
+      	(13/2, 9.0, 0.01, 0.0),
+      	(13/2, 0.0, 0.01, 0.0),
+      	(12/2, 0.0, 0.01, 0.0),
+      	(12/2, 0.0, 0.01, 0.0),
+      	(9/4, 0.0, 0.3, 0.0),
+      	(3/2, 0.0, 0.5, 0.0),
+      	(1/1, 0.0, 1.0, 0.0),
+      	(1/2, 0.0, 1.0, 0.0),
+  	]
+}
+
+
+pan_l = {
+	Sequence [
+		PanA 0.0,
+		PanA 0.1,
+		PanA 0.2,
+		PanA 0.3,
+		PanA 0.4,
+		PanA 0.5,
+		PanA 0.6,
+		PanA 0.7,
+		PanA 0.8,
+		PanA 0.9,
+		PanA 1.0,
+	]	
+}
+
+pan_r = {
+		pan_l | PanM -1.0
+}
+
+sweeps1 = {
+	overtones |
+	Overlay [
+		pan_r | Tm 2/1| Length 1/3 | Tm 3/1 | Repeat 4,
+		pan_l | Tm 9/8 | Length 1/5 | Tm 3/1 | Sequence [AsIs | Repeat 5, Tm 9/8],
+		pan_l | Tm 3/4 | Length 1/4 | Tm 3/1 | Sequence [AsIs, AsIs, Tm 4/3, Tm 3/2, Tm 3/2],
+		pan_r | Tm 1/2| Length 1/6 | Tm 3/1 | Sequence [AsIs | Repeat 6, Tm 1/2],
+		pan_l | Tm 1/2 | Ta 2,
+	] | Tm 3/4 | Gain 0.2 
+}
+
+sweeps2 = {
+	overtones |
+	Overlay [
+		pan_l | Tm 5/2 | Gain 0.75 | Length 1/4 | Tm 3/1 | Sequence [AsIs | Repeat 4, Tm 9/8],
+		pan_r | Tm 2/1| Length 1/3 | Tm 3/1 | Repeat 4,
+		pan_l | Tm 9/8 | Length 1/5 | Tm 3/1 | Sequence [AsIs | Repeat 5, Tm 9/8],
+		pan_r | Tm 15/8 | Length 1/3 | Tm 3/1 | Sequence [AsIs | Repeat 3, Tm 6/5],
+		pan_l | Tm 3/2 | Ta 3 | Length 1/2 | Tm 3/1 | Sequence [AsIs, Tm 4/3, Tm 3/2],
+		pan_r | Tm 3/2 | Length 1/2 | Tm 3/1 | Repeat 2,
+		pan_r | Length 1/2 | Tm 3/1 | Repeat 2,
+		pan_l | Tm 3/4 | Length 1/4 | Tm 3/1 | Sequence [AsIs, AsIs, Tm 4/3, Tm 3/2, Tm 3/2],
+		pan_r | Tm 1/2| Length 1/6 | Tm 3/1 | Sequence [AsIs | Repeat 6, Tm 1/2],
+		pan_l | Tm 1/2 | Ta 2,
+	] | Tm 3/4 | Gain 0.2 
+}
+
+sweep_melody = {
+	Sequence [
+		AsIs,
+		PanM -1.0,
+		Tm 3/4,
+		Tm 5/6 | PanM -1.0,
+	]	
+}
+
+main = {
+	Sequence [
+		sweeps1 | sweep_melody | Repeat 2,
+		sweeps2 | Gain 0.65 | sweep_melody | Repeat 2, 
+		sweeps1 | Gain 0.65 | sweep_melody | Reverse | Tm 7/8 | Length 3/4 | Repeat 3
+	] | Repeat 4
+}
