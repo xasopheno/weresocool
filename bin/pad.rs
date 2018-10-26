@@ -171,32 +171,10 @@ pub mod tests {
             ]),
         ];
 
-//        let result = render(&root);
-
-        let expected = vec![3, 3, 0, 3, 1, 0, 0, 1, 1];
-        assert_eq!(expected, result);
-    }
-
-    #[test]
-    fn test_inner_long_render() {
-        let root = vec![
-            Collection(vec![
-                List(vec![1, 1, 0, 1]),
-                Collection(vec![
-                    List(vec![1, 1, 0, 1]),
-                    List(vec![1, 1, 0, 1, 1, 0, 0, 1, 1]),
-                ]),
-                Collection(vec![
-                    List(vec![1, 1, 0, 1]),
-                    List(vec![1, 1, 0, 1, 1, 0, 0, 1, 1, 0, 0, 0, 1]),
-                ]),
-                List(vec![0, 1, 1, 0, 1]),
-            ]),
-        ];
+        update(&mut root, &vec![succ_f, succ_g, succ_l]);
 
         let result = render(&root);
-
-        let expected = vec![5, 6, 1, 5, 3, 0, 0, 2, 2, 0, 0, 0, 1];
+        let expected = vec![5.0, 5.0, 5.0, 1.6666666];
         assert_eq!(expected, result);
     }
 }
