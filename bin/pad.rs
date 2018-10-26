@@ -1,32 +1,37 @@
 extern crate itertools;
 extern crate weresocool;
+extern crate num_rational;
 use itertools::Itertools;
+use num_rational::{
+    Ratio,
+    Rational,
+};
 
-#[derive(Debug)]
+#[derive(Debug, Clone)]
 enum Item {
     Collection(Vec<Item>),
     List(Vec<Event>),
 }
 
-#[derive(Debug)]
+#[derive(Debug, Clone)]
 struct Event {
     s: Sound,
-    l: f32
+    l: Rational
 }
 
-#[derive(Debug)]
+#[derive(Debug, Clone)]
 struct Sound {
-    f: f32,
-    g: f32,
-    p: f32
+    f: Rational,
+    g: Rational,
+    p: Rational
 }
 
 impl Sound {
     fn new() -> Sound {
         Sound {
-            f: 10.0,
-            g: 1.0,
-            p: 0.0
+            f: Ratio::new(2, 3),
+            g: Ratio::new(6, 7),
+            p: Ratio::new(0, 1)
         }
     }
 }
@@ -35,42 +40,50 @@ impl Event {
     fn new() -> Event {
         Event {
             s: Sound::new(),
-            l: 1.0
+            l: Ratio::from_integer(2/3)
         }
     }
 }
 
-fn render(collection: &[Item]) -> Vec<usize> {
+fn render(collection: &[Item]) -> Vec<f32> {
     let mut acc = vec![];
     for item in collection {
-        println!("{:?}", item);
         match item {
             &Item::Collection(ref items) => {
                 let result = render(items);
                 acc = sum_vec(&acc, result)
             }
-            &Item::List(ref v) => acc = sum_vec(&acc, v.to_vec()),
+            &Item::List(ref v) => acc = sum_vec(&acc, event_to_f32(&v.to_vec())),
         }
     }
 
     acc
 }
 
-//fn sum_vec(a: &Vec<usize>, b: Vec<usize>) -> Vec<usize> {
-//    let vec_len = std::cmp::max(a.len(), b.len());
-//    let mut acc: Vec<usize> = vec![0; vec_len];
-//    for (i, val) in a.iter().zip_longest(&b).enumerate() {
-//        match val {
-//            itertools::EitherOrBoth::Both(v1, v2) => acc[i] = v1 + v2,
-//            itertools::EitherOrBoth::Left(v) => acc[i] = *v,
-//            itertools::EitherOrBoth::Right(v) => acc[i] = *v
-//        }
-//    }
-//
-//    acc
-//}
+fn event_to_f32(v: &Vec<Event>) -> Vec<f32> {
+    let mut acc = vec![];
+    for event in v {
+        acc.push(*event.s.f.numer() as f32 / *event.s.f.denom() as f32)
+    }
 
-fn update(collection: &mut [Item], fs: &Vec<fn(&mut Vec<usize>)>) {
+    acc
+}
+
+fn sum_vec(a: &Vec<f32>, b: Vec<f32>) -> Vec<f32> {
+    let vec_len = std::cmp::max(a.len(), b.len());
+    let mut acc: Vec<f32> = vec![0.0; vec_len];
+    for (i, e) in a.iter().zip_longest(&b).enumerate() {
+        match e {
+            itertools::EitherOrBoth::Both(v1, v2) => acc[i] = v1 + v2,
+            itertools::EitherOrBoth::Left(e) => acc[i] = *e,
+            itertools::EitherOrBoth::Right(e) => acc[i] = *e
+        }
+    }
+
+    acc
+}
+
+fn update(collection: &mut [Item], fs: &Vec<fn(&mut Vec<Event>)>) {
     for item in collection {
         match *item {
             Item::Collection(ref mut items) => update(items, fs),
@@ -84,12 +97,41 @@ fn update(collection: &mut [Item], fs: &Vec<fn(&mut Vec<usize>)>) {
     }
 }
 
-fn add_one(list: &mut Vec<usize>) {
+fn succ_f(list: &mut Vec<Event>) {
     for mut v in list {
-        *v += 1;
+        v.s.f += Ratio::from_integer(1);
     }
 }
 
+fn succ_g(list: &mut Vec<Event>) {
+    for mut v in list {
+        v.s.g += Ratio::from_integer(1);
+    }
+}
+
+fn succ_l(list: &mut Vec<Event>) {
+    for mut v in list {
+        v.l += Ratio::from_integer(1);
+    }
+}
+
+fn rational_play() {
+    println!("\n\n");
+
+    let a = Ratio::from_float(1.0/7.0).unwrap();
+    let b = Ratio::from_integer(-2);
+    let c = Ratio::from_integer(0);
+
+    println!("{} {} {}", a, b, c);
+
+    let d = Ratio::new(1, 7);
+    let e = Ratio::new(3, 2);
+
+    println!("{}", d + e);
+    println!("{}", d * e);
+    println!("{}", d / e);
+    println!("{}", d - e);
+}
 
 fn main() {
     use Item::*;
@@ -104,17 +146,13 @@ fn main() {
         ]),
     ];
 
-//    let result = render(&root);
-//    println!("{:?}", result);
+    update(&mut root, &vec![succ_f, succ_g, succ_l]);
 
-
-//    for _i in 0..4 {
-    update(&mut root, &vec![add_one]);
-//    }
-
-
-//    let result = render(&root);
+    let result = render(&root);
     println!("{:?}", root);
+    println!("{:?}", result);
+
+    rational_play()
 }
 
 #[cfg(test)]
@@ -128,7 +166,7 @@ pub mod tests {
                 List(vec![Event::new(), Event::new(), Event::new(), Event::new()]),
                 Collection(vec![
                     List(vec![Event::new(), Event::new(), Event::new()]),
-                    List(vec![Event::new(), Event::new()]),
+                    List(vec![Event::new(), Event::new(), Event::new()]),
                 ]),
             ]),
         ];

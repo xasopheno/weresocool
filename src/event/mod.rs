@@ -55,7 +55,7 @@ impl Render<Vec<Event>> for Vec<Event> {
     fn render(&mut self, oscillator: &mut Oscillator) -> StereoWaveform {
         let mut result: StereoWaveform = StereoWaveform::new(0);
         let mut events = self.clone();
-        events.push(Event::init(0.0, 0.0, 0.0, 0.3));
+//        events.push(Event::init(0.0, 0.0, 0.0, 0.3));
         let n_events = events.len();
         let mut pb = ProgressBar::new(n_events as u64);
         pb.format("╢w♬░╟");
