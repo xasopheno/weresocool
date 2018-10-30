@@ -531,7 +531,7 @@ fn oscillator() -> Oscillator {
 }
 
 fn event() -> Event {
-    Event::init(138.59, 0.2, 0.0, 4.0)
+    Event::init(155.563, 0.2, 0.0, 4.0)
 }
 
 fn generate_events(event: Event, operation: fn() -> Op) -> Vec<Event> {
