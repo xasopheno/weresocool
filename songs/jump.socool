@@ -29,5 +29,5 @@ thing1 = {
 }
 
 main = {
-	thing1
+	thing1	
 }
