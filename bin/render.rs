@@ -37,10 +37,10 @@ type NormEv = Vec<Vec<Event>>;
 type VecWav = Vec<StereoWaveform>;
 type Wav = StereoWaveform;
 
+
 fn main() -> Result<(), pa::Error> {
     rational_play();
 
-    let e = Event::init(200.0, 2.0, 0.0, 1.0);
 
     let overlay: NormOp = vec![
             Sequence { operations: vec![
@@ -57,6 +57,8 @@ fn main() -> Result<(), pa::Error> {
     println!("\n ____NormalForm____ \n{:?}", overlay);
 
 //  NormOp -> NormEv
+    let e = Event::init(200.0, 2.0, 0.0, 1.0);
+
     let mut norm_ev: NormEv = vec![];
     for sequence in overlay {
         norm_ev.push(sequence.apply(vec![e.clone()]))
@@ -79,7 +81,7 @@ fn main() -> Result<(), pa::Error> {
         result.l_buffer = sum_vec(&result.l_buffer, wav.l_buffer);
         result.r_buffer = sum_vec(&result.r_buffer, wav.r_buffer)
     }
-    
+
     println!("____Playing___");
 
     let pa = pa::PortAudio::new()?;
