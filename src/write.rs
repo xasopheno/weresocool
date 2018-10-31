@@ -38,7 +38,7 @@ pub fn write_composition_to_wav(composition: StereoWaveform) {
     }
 }
 
-fn normalize_waveform(buffer: &mut Vec<f32>) {
+pub fn normalize_waveform(buffer: &mut Vec<f32>) {
     let mut max = 0.0;
     for sample in buffer.iter() {
         if (*sample).abs() > max {
