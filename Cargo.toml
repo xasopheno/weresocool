@@ -31,3 +31,7 @@ path = "bin/mic.rs"
 [[bin]]
 name = "scratch"
 path = "bin/pad.rs"
+
+[[bin]]
+name = "render"
+path = "bin/render.rs"
