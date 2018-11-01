@@ -2,35 +2,23 @@ extern crate itertools;
 extern crate weresocool;
 extern crate portaudio;
 extern crate socool_parser;
-extern crate num_rational;
 use portaudio as pa;
 use socool_parser::parser::*;
 use itertools::Itertools;
-use num_rational::{
-    Ratio,
-};
 use weresocool::{
     event::{Event, Render},
     instrument::{
         oscillator::Oscillator,
-        stereo_waveform::StereoWaveform
+        stereo_waveform::{StereoWaveform, Normalize}
     },
     generation::parsed_to_waveform::{event_from_init},
     operations::{Apply, GetOperations},
     settings::get_default_app_settings,
     portaudio_setup::output::setup_portaudio_output,
-    ui::{banner, get_args, no_file_name, printed, were_so_cool_logo},
+    ui::{get_args, no_file_name, were_so_cool_logo},
     examples::documentation,
 };
-use socool_parser::ast::{Op, Op::*};
-
-fn rational_play() {
-    let d = Ratio::new(1, 7);
-    let e = Ratio::new(3, 2);
-
-    println!("Hello New Renderer {}", d + e);
-}
-
+use socool_parser::ast::{Op};
 
 type NormOp = Op;
 type Sequences = Vec<Op>;
@@ -73,35 +61,41 @@ fn main() -> Result<(), pa::Error> {
 fn render(normal_form_op: &NormOp, init: Init) -> StereoWaveform {
     let sequences: Sequences = normal_form_op.get_operations().expect("Not in Normal Form");
 
-    println!("\n ____Sequences____ \n{:?}", sequences);
-
-//  NormOp -> NormEv
     let e = event_from_init(init);
 
+    let norm_ev = generate_events(sequences, e);
+    let vec_wav = generate_waveforms(norm_ev);
+    let mut result = sum_all_waveforms(vec_wav);
+    result.normalize();
+ 
+    result
+}
+
+fn generate_events(sequences: Sequences, event: Event) -> NormEv {
     let mut norm_ev: NormEv = vec![];
     for sequence in sequences {
-        norm_ev.push(sequence.apply(vec![e.clone()]))
+        norm_ev.push(sequence.apply(vec![event.clone()]))
     }
 
-    println!("\n ____Creating Events____ \n{:?}", norm_ev);
+    norm_ev
+}
 
+fn generate_waveforms(norm_ev: NormEv) -> VecWav {
     let mut vec_wav: VecWav = vec![];
     for mut vec_events in norm_ev {
         let mut osc = Oscillator::init(&get_default_app_settings());
         vec_wav.push(vec_events.render(&mut osc))
     }
 
-    println!("____Rendering____");
-    println!("Rendered {:?} waveforms", vec_wav.len());
+    vec_wav
+}
 
-    println!("\n____Combining Waveforms____");
+fn sum_all_waveforms(vec_wav: VecWav) -> StereoWaveform {
     let mut result = StereoWaveform::new(0);
     for wav in vec_wav {
         result.l_buffer = sum_vec(&result.l_buffer, wav.l_buffer);
         result.r_buffer = sum_vec(&result.r_buffer, wav.r_buffer)
     }
-
-    println!("...combined\n");
 
     result
 }
