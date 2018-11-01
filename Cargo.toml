@@ -34,4 +34,4 @@ path = "bin/pad.rs"
 
 [[bin]]
 name = "render"
-path = "bin/render.rs"
+path = "bin/renderer.rs"

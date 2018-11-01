@@ -77,21 +77,5 @@ impl Render<Vec<Event>> for Vec<Event> {
     }
 }
 
-pub trait NewRender<T> {
-    fn render(&mut self) -> StereoWaveform;
-}
-
-impl NewRender<Vec<Vec<Event>>> for Vec<Vec<Event>> {
-    fn render(&mut self) -> StereoWaveform {
-        let mut result = StereoWaveform::new(0);
-
-        for vec_event in self.iter() {
-
-        }
-    result
-
-    }
-}
-
 #[cfg(test)]
 mod test;

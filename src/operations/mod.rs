@@ -1,3 +1,5 @@
+extern crate socool_parser;
+use socool_parser::ast::Op;
 use event::Event;
 mod apply;
 mod get_length_ratio;
@@ -13,7 +15,7 @@ pub trait GetLengthRatio {
 }
 
 pub trait GetOperations {
-    fn get_operations(&self) -> Option<GetOperations>;
+    fn get_operations(&self) -> Option<Vec<Op>>;
 }
 
 #[cfg(test)]

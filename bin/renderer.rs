@@ -8,18 +8,16 @@ use portaudio as pa;
 use itertools::Itertools;
 use num_rational::{
     Ratio,
-    Rational,
 };
 use weresocool::{
-    event::{Event, Render, NewRender},
+    event::{Event, Render},
     instrument::{
         oscillator::Oscillator,
         stereo_waveform::StereoWaveform
     },
-    operations::Apply,
+    operations::{Apply, GetOperations},
     settings::get_default_app_settings,
     portaudio_setup::output::setup_portaudio_output,
-    write::normalize_waveform,
 };
 use socool_parser::ast::{Op, Op::*};
 
@@ -30,19 +28,17 @@ fn rational_play() {
     println!("Hello New Renderer {}", d + e);
 }
 
-type Operation = ();
 
-type NormOp = Vec<Op>;
+type NormOp = Op;
+type Sequences = Vec<Op>;
 type NormEv = Vec<Vec<Event>>;
 type VecWav = Vec<StereoWaveform>;
-type Wav = StereoWaveform;
 
 
 fn main() -> Result<(), pa::Error> {
     rational_play();
 
-
-    let overlay: NormOp = vec![
+    let overlay: NormOp = Overlay { operations: vec![
             Sequence { operations: vec![
                 AsIs, TransposeM {m: 5.0/4.0}, AsIs
             ]},
@@ -52,15 +48,17 @@ fn main() -> Result<(), pa::Error> {
             Sequence { operations: vec![
                 Silence {m: 2.0}, TransposeM {m: 0.5}
             ]},
-    ];
+        ]};
 
-    println!("\n ____NormalForm____ \n{:?}", overlay);
+    let sequences: Sequences = overlay.get_operations().expect("Not in Normal Form");
+
+    println!("\n ____Sequences____ \n{:?}", sequences);
 
 //  NormOp -> NormEv
     let e = Event::init(200.0, 2.0, 0.0, 1.0);
 
     let mut norm_ev: NormEv = vec![];
-    for sequence in overlay {
+    for sequence in sequences {
         norm_ev.push(sequence.apply(vec![e.clone()]))
     }
 
@@ -75,13 +73,14 @@ fn main() -> Result<(), pa::Error> {
     println!("____Rendering____");
     println!("Rendered {:?} waveforms", vec_wav.len());
 
-    println!("\n____Combining Waveforms____\n");
+    println!("\n____Combining Waveforms____");
     let mut result = StereoWaveform::new(0);
     for wav in vec_wav {
         result.l_buffer = sum_vec(&result.l_buffer, wav.l_buffer);
         result.r_buffer = sum_vec(&result.r_buffer, wav.r_buffer)
     }
 
+    println!("...combined\n");
     println!("____Playing___");
 
     let pa = pa::PortAudio::new()?;
