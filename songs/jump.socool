@@ -1,0 +1,33 @@
+{ f: 220, l: 1.0, g: 1.0, p: 0.0}
+
+overtones = {
+    O[
+    	(5/4, 3.0, 1.0, 1.0),
+      	(9/8, 0.0, 1.0, -1.0),
+      	(1/1, 2.0, 1.0, 0.5),
+      	(1/1, 0.0, 1.0, -0.5),
+  	]
+}
+
+r = {
+	Sequence [
+		Tm 9/8,
+		Tm 4/3,
+		Tm 3/2,
+		Tm 5/3,
+	] 
+}
+
+thing1 = {
+	overtones |
+	Sequence [
+		AsIs,
+		r | Repeat 3,
+		Tm 9/4,
+	] 
+	| Length 0.01 | Tm 7/8 | Gain 0.4
+}
+
+main = {
+	thing1	
+}

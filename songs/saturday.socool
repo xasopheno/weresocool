@@ -18,7 +18,7 @@ gain = {
 	Sequence [Gain 0.9, Gain 0.5, Gain 0.25, Gain 0.1, Gain 0.05, Gain 0.01, Gain 0.005, Silence 0.02]
 }
 
-gain_recursive = { gain | gain }
+gain_recursive = { gain | Sequence [Repeat 3, Gain 0.25, Gain 0.1, Gain 0.05, Gain 0.001, Silence 0.02] }
 
 thing1 = {
 	overtones |
@@ -52,9 +52,9 @@ drums = {
 		]
 		| Repeat 4
 		| Sequence [
+			Tm 9/4 | Length 2/5 | Sequence [AsIs, Tm 7/16], 
 			Tm 2/3, 
 			Tm 3/4,
-			Tm 9/4 | Length 2/5 | Sequence [AsIs, Tm 7/16] 
 		]
 }
 

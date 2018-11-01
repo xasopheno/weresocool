@@ -1,0 +1,565 @@
+(*
+To run:
+
+`npm install makam`
+
+(or `npm install makam@0.7.16` to match the version this is tested with)
+(make sure to have makam>=0.7.15 to get bigint support!)
+
+makam --run-tests danny-so-cool.makam
+
+*)
+
+tests : testsuite. %testsuite tests.
+
+ratio : type.
+
+ratio : (Nom: int) (Denom: int) -> ratio.
+
+%extend ratio.
+
+commonden, commonden_cases : (ratio * ratio) -> (ratio * ratio) -> prop.
+
+commonden X Y :- demand.case (commonden_cases X Y).
+commonden_cases (ratio N1 D, ratio N2 D) (ratio N1 D, ratio N2 D).
+commonden_cases (ratio N1 D1, ratio N2 D2) (ratio N1' D, ratio N2' D) :-
+  mult N1 D2 N1', mult N2 D1 N2', mult D1 D2 D.
+
+liftint : (int -> int -> int -> prop) -> ratio -> ratio -> ratio -> prop.
+liftint Op X Y (ratio R D) :-
+  commonden (X, Y) (ratio A D, ratio B D),
+  Op A B R.
+
+plus : ratio -> ratio -> ratio -> prop.
+plus X Y R :- liftint plus X Y R.
+
+mult, mult_cases : ratio -> ratio -> ratio -> prop.
+mult X Y Z :- demand.case (mult_cases X Y Z).
+mult_cases (ratio 0 D) (ratio A B) (ratio 0 1).
+mult_cases (ratio A B) (ratio 0 D) (ratio 0 1).
+mult_cases (ratio N1 D1) (ratio N2 D2) (ratio N D) :-
+  mult N1 N2 N,
+  mult D1 D2 D.
+
+div, div_cases : ratio -> ratio -> ratio -> prop.
+div X Y Z :- demand.case (div_cases X Y Z).
+div_cases (ratio A B) (ratio C D) (ratio AD BC) :-
+  mult A D AD, mult B C BC,
+  if (eq BC 0)
+  then (log_error _ `division by zero! should not happen`, failure)
+  else success.
+
+max : int -> int -> int -> prop.
+max A B B when lessthan A B true.
+max A B A when lessthan A B false.
+
+>> max 1 2 X ?
+>> Yes:
+>> X := 2.
+
+>> max 2 1 X ?
+>> Yes:
+>> X := 2.
+
+>> max 2 2 X ?
+>> Yes:
+>> X := 2.
+
+max : ratio -> ratio -> ratio -> prop.
+max X Y R :- liftint max X Y R.
+
+difforzero : int -> int -> int -> prop.
+difforzero A B 0 when lessthan A B true.
+difforzero A B Diff when lessthan A B false, plus B Diff A.
+
+>> difforzero 1 2 X ?
+>> Yes:
+>> X := 0.
+
+>> difforzero 2 1 X ?
+>> Yes:
+>> X := 1.
+
+>> difforzero 2 2 X ?
+>> Yes:
+>> X := 0.
+
+difforzero : ratio -> ratio -> ratio -> prop.
+difforzero X Y R :- liftint difforzero X Y R.
+
+mod : int -> int -> int -> prop.
+mod X Y MOD :-
+  mult Q Y X, (* oops *)
+  mult Q Y M,
+  plus M MOD X.
+
+gcd : int -> int -> int -> prop.
+gcd X Y GCD :-
+  if (eq Y 0) then eq GCD X
+  else (mod X Y MOD, gcd Y MOD GCD).
+
+reduce : ratio -> ratio -> prop.
+reduce (ratio N D) (ratio N' D') :-
+  gcd N D GCD, mult N' GCD N, mult D' GCD D.
+
+%end.
+
+point : type.
+point : (Freq: ratio) (Gain: ratio) (Length: ratio) (Pan: ratio) -> point.
+
+point_op : type.
+
+freqmult : ratio -> point_op.
+freqadd : ratio -> point_op.
+gainmult : ratio -> point_op.
+lenmult : ratio -> point_op.
+panmult : ratio -> point_op.
+panadd : ratio -> point_op.
+silence : ratio -> point_op.
+
+op : type.
+
+id : op.
+map : point_op -> op.
+seq : op -> op -> op.
+compose : op -> op -> op.
+overlay : op -> op -> op.
+
+normalop : type.
+voiceop : type.
+simpleop : type.
+fullpoint_op : type.
+
+fullpoint_sil : (Silence: ratio) -> fullpoint_op.
+fullpoint_id : fullpoint_op.
+fullpoint_op : (FreqMult: ratio) (FreqAdd: ratio) (GainMult: ratio) (LenMult: ratio) (PanMult: ratio) (PanAdd: ratio) -> fullpoint_op.
+
+point_to_fullpoint_op : point_op -> fullpoint_op -> prop.
+
+point_to_fullpoint_op (freqmult R) (fullpoint_op R (ratio 0 1) (ratio 1 1) (ratio 1 1) (ratio 1 1) (ratio 0 1)).
+point_to_fullpoint_op (freqadd R) (fullpoint_op (ratio 1 1) R (ratio 1 1) (ratio 1 1) (ratio 1 1) (ratio 0 1)).
+point_to_fullpoint_op (gainmult R) (fullpoint_op (ratio 1 1) (ratio 0 1) R (ratio 1 1) (ratio 1 1) (ratio 0 1)).
+point_to_fullpoint_op (lenmult R) (fullpoint_op (ratio 1 1) (ratio 0 1) (ratio 1 1) R (ratio 1 1) (ratio 0 1)).
+point_to_fullpoint_op (panmult R) (fullpoint_op (ratio 1 1) (ratio 0 1) (ratio 1 1) (ratio 1 1) R (ratio 0 1)).
+point_to_fullpoint_op (panadd R) (fullpoint_op (ratio 1 1) (ratio 0 1) (ratio 1 1) (ratio 1 1) (ratio 1 1) R).
+point_to_fullpoint_op (silence R) (fullpoint_sil R).
+
+overlays  : list voiceop -> normalop.
+sequences : list simpleop -> voiceop.
+simpleop : fullpoint_op -> simpleop.
+
+lrof : fullpoint_op -> ratio -> prop.
+lrof : op -> ratio -> prop.
+
+lrof (fullpoint_id) (ratio 1 1).
+lrof (fullpoint_sil R) R.
+lrof (fullpoint_op _ _ _ LR _ _) LR.
+
+lrof id (ratio 1 1).
+lrof (map F) Ratio :- point_to_fullpoint_op F F', lrof F' Ratio.
+lrof (seq O1 O2) Ratio :-
+  lrof O1 Ratio1, lrof O2 Ratio2, ratio.plus Ratio1 Ratio2 Ratio.
+lrof (overlay O1 O2) Ratio :-
+  lrof O1 Ratio1, lrof O2 Ratio2, ratio.max Ratio1 Ratio2 Ratio.
+lrof (compose O1 O2) Ratio :-
+  lrof O1 Ratio1, lrof O2 Ratio2, ratio.mult Ratio1 Ratio2 Ratio.
+
+fold1 : (A -> A -> A -> prop) -> list A -> A -> prop.
+fold1 P (HD :: TL) Result :-
+  foldl P HD TL Result.
+
+%extend normalop.
+
+silence : normalop -> ratio -> normalop -> prop.
+silence (overlays Overlays) (ratio 0 D) (overlays Overlays') :-
+  map (pfun unused => eq (sequences [])) Overlays Overlays'.
+
+silence (overlays Overlays) SilenceRatio (overlays Overlays') when not(eq SilenceRatio (ratio 0 D)) :-
+  map (pfun unused => eq (sequences [ simpleop (fullpoint_sil SilenceRatio) ])) Overlays Overlays'.
+
+(* this assumes that both ops have the same number of voices *)
+sequence : normalop -> normalop -> normalop -> prop.
+sequence (overlays Overlays1) (overlays Overlays2) (overlays Overlays') :-
+  map (pfun (sequences Seq1) (sequences Seq2) (sequences Seq3) => append Seq1 Seq2 Seq3) Overlays1 Overlays2 Overlays'.
+
+(* this assumes that both ops have the same length ratio *)
+overlay : normalop -> normalop -> normalop -> prop.
+overlay (overlays Overlays1) (overlays Overlays2) (overlays Overlays') :-
+  (* if (not(lrof Overlays1 LR1, lrof Overlays2 LR2, eqv LR1 LR2))
+  then (log_error Overlays1 `do not have the same length`)
+  else *) (append Overlays1 Overlays2 Overlays').
+
+foreach : normalop -> (simpleop -> A -> prop) -> list (list A) -> prop.
+foreach : voiceop -> (simpleop -> A -> prop) -> list A -> prop.
+
+foreach (overlays O) P Result :-
+  map (pfun V => foreach V P) O Result.
+
+foreach (sequences S) P Result :-
+  map P S Result.
+%end.
+
+transform : normalop -> simpleop -> normalop -> prop.
+transform : voiceop -> simpleop -> voiceop -> prop.
+transform : simpleop -> simpleop -> simpleop -> prop.
+transform : fullpoint_op -> fullpoint_op -> fullpoint_op -> prop.
+
+transform (overlays O) SOP (overlays O') :- map (pfun V => transform V SOP) O O'.
+
+transform (sequences S) SOP (sequences S') :- map (pfun E => transform E SOP) S S'.
+
+transform (simpleop Ops) (simpleop Ops') (simpleop Ops'') :-
+  transform Ops Ops' Ops''.
+
+transform (fullpoint_id) F F.
+transform F fullpoint_id F.
+transform (fullpoint_sil LR) F' (fullpoint_sil LR'') :- lrof F' LR', ratio.mult LR LR' LR''.
+transform (fullpoint_op _ _ _ LR _ _) (fullpoint_sil LR') (fullpoint_sil LR'') :- ratio.mult LR LR' LR''.
+
+compose_linear : (Mult1: ratio) (Add1: ratio) (Mult2: ratio) (Add2: ratio) (MultR: ratio) (AddR: ratio) -> prop.
+(* (M1 * x + A1) * M2 + A2 = M1 * M2 * x + (A1 * M2 + A2) *)
+compose_linear M1 A1 M2 A2 MR AR :-
+  ratio.mult M1 M2 MR,
+  ratio.mult A1 M2 A1M2, ratio.plus A1M2 A2 AR.
+
+transform (fullpoint_op FM   FA   GM   LM   PM   PA)
+          (fullpoint_op FM'  FA'  GM'  LM'  PM'  PA')
+          (fullpoint_op FM'' FA'' GM'' LM'' PM'' PA'') :-
+  compose_linear FM FA FM' FA' FM'' FA'',
+  compose_linear PM PA PM' PA' PM'' PA'',
+  ratio.mult GM GM' GM'', ratio.mult LM LM' LM''.
+
+normalize : op -> normalop -> prop.
+
+normalize id (overlays [ sequences [ simpleop fullpoint_id ] ]).
+
+normalize (map F) (overlays [ sequences [ simpleop F' ] ]) :-
+  point_to_fullpoint_op F F',
+  if (eq F (lenmult (ratio 0 D)))
+  then (log_error F `multiplying length by 0 is not allowed!`, failure)
+  else success.
+
+normalize (overlay O1 O2) Result :-
+  normalize O1 Result1, lrof O1 LR1,
+  normalize O2 Result2, lrof O2 LR2,
+  ratio.difforzero LR2 LR1 SLR1,
+  ratio.difforzero LR1 LR2 SLR2,
+  normalop.silence Result1 SLR1 Silence1,
+  normalop.silence Result2 SLR2 Silence2,
+  normalop.sequence Result1 Silence1 Result1',
+  normalop.sequence Result2 Silence2 Result2',
+  normalop.overlay Result1' Result2' Result.
+
+normalize (seq O1 O2) Result :-
+  normalize O1 (overlays (HD1 :: TL1)), lrof O1 LR1,
+  normalize O2 (overlays (HD2 :: TL2)), lrof O2 LR2,
+  normalop.silence (overlays TL1) LR2 Silence1,
+  normalop.silence (overlays TL2) LR1 Silence2,
+  normalop.sequence (overlays [HD1]) (overlays [HD2]) (overlays [HD]),
+  normalop.sequence (overlays TL1) Silence1 TL1',
+  normalop.sequence Silence2 (overlays TL2) TL2',
+  fold1 normalop.overlay [overlays [HD], TL1', TL2'] Result.
+
+normalize (compose O1 O2) Result :-
+  normalize O1 Res1,
+  normalize O2 Res2,
+  normalop.foreach Res2 (pfun SimpleOp => transform Res1 SimpleOp) Everything,
+  map (fold1 normalop.sequence) Everything Everything',
+  fold1 normalop.overlay Everything' Result.
+
+
+sugar, sugar_cases : [A] A -> A -> prop.
+
+sugar X Y :-
+  demand.case_otherwise
+    (sugar_cases X Y)
+    (structural @sugar X Y).
+
+seq : list op -> op.
+overlay : list op -> op.
+compose : list op -> op.
+
+sugar_cases (seq [O]) O' :- sugar O O'.
+sugar_cases (seq (HD :: TL)) (seq HD' TL') :-
+  sugar HD HD',
+  sugar (seq TL) TL'.
+
+sugar_cases (overlay [O]) O' :- sugar O O'.
+sugar_cases (overlay (HD :: TL)) (overlay HD' TL') :-
+  sugar HD HD',
+  sugar (overlay TL) TL'.
+
+sugar_cases (compose [O]) O' :- sugar O O'.
+sugar_cases (compose (HD :: TL)) (compose HD' TL') :-
+  sugar HD HD',
+  sugar (compose TL) TL'.
+
+withlrof : op -> op -> op.
+sugar_cases (withlrof Op1 Op2) (map (lenmult Ratio)) :-
+  sugar Op1 Op1', sugar Op2 Op2',
+  lrof Op1' R1, lrof Op2' R2,
+  ratio.div R1 R2 Ratio.
+
+fitop : type.
+fitlength : op -> fitop.
+
+fit : op -> fitop -> op.
+sugar_cases (fit Op1 (fitlength Op2)) Result :-
+  sugar Op1 Op1', sugar Op2 Op2',
+  sugar (compose Op1' (withlrof Op2' Op1')) Result.
+
+let : op -> (bindone op op) -> op.
+sugar_cases (let Op1 (bind _ X_Op2)) Result :-
+  sugar Op1 Op1',
+  (x:op -> sugar x Op1' -> sugar (X_Op2 x) Result).
+
+fraction : int -> string -> ratio.
+
+power : int -> int -> int -> prop.
+power N 0 1.
+power N 1 N.
+power N M N'' when lessthan 1 M true :-
+  plus 1 Mpred M,
+  power N Mpred N',
+  mult N' N N''.
+
+sugar_cases (fraction Dec FracS) (ratio N Power) :-
+  string.explode FracS FracL, length FracL Digits,
+  power 10 Digits Power,
+  refl.fromstring FracS Frac,
+  mult Dec Power Dec',
+  plus Dec' Frac N.
+
+rneg : ratio -> ratio.
+sugar_cases (rneg Ratio) (ratio NegN D) :-
+  sugar Ratio (ratio N D),
+  plus NegN N 0.
+
+>> sugar (fraction 1 "0001") X ?
+>> Yes:
+>> X := (ratio 10001 10000).
+
+>> sugar (fraction 0 "0001") X ?
+>> Yes:
+>> X := (ratio 1 10000).
+
+>> sugar (fraction 100 "15") X ?
+>> Yes:
+>> X := (ratio 10015 100).
+
+repeat : int -> op.
+sugar_cases (repeat N) R :-
+  length L N, map (fun u => eq id) L L', sugar (seq L') R.
+
+%extend syntax.
+
+sratio, zratio : syntax ratio.
+point_op : syntax point_op.
+fitop : syntax fitop.
+op, op_fit, op_compose, op_base, overtone : syntax op.
+cop : syntax (concrete op).
+
+frac_, frac : syntax ratio.
+rule frac_ (apply fraction [ captured makam.int_literal_, exact ".",
+                             captured (char_once_or_many makam.int_literal_char) ]).
+rule frac (token frac_).
+
+%end.
+
+(* sratio has different order for parsing and for printing :( *)
+
+%extend peg.
+
+sratio, zratio : peg ratio.
+rule sratio (apply ratio [ captured (syntax makam.int_literal), syntax (syntax.token "/"), captured (syntax makam.int_literal) ]).
+rule sratio (syntax syntax.frac).
+rule sratio (apply (fun n => ratio n 1) [ captured (syntax makam.int_literal) ]).
+
+rule zratio (apply rneg [ syntax (syntax.token "-"), captured sratio ]).
+rule zratio sratio.
+
+%end.
+
+%extend pretty.
+
+sratio, zratio : pretty ratio.
+rule sratio (unapply (fun n => ratio n 1) [ captured (syntax makam.int_literal) ]).
+rule sratio (unapply ratio [ captured (syntax makam.int_literal), syntax (syntax.token "/"), captured (syntax makam.int_literal) ]).
+
+rule zratio (untransform (pfun (ratio ON OD) (ratio IN ID) => lessthan IN 0 true, plus IN ON 0, eq ID OD) [ syntax (syntax.exact "-"), captured sratio ]).
+rule zratio sratio.
+
+%end.
+
+vars : concrete.namespace op.
+concrete.pick_namespace_userdef (_: op) vars.
+
+%extend syntax.
+
+rule sratio (iso peg.sratio pretty.sratio).
+rule zratio (iso peg.zratio pretty.zratio).
+
+list_sep_plusplus : syntax unit -> syntax A -> syntax (list A).
+rule (list_sep_plusplus Sep P) (apply cons [captured P, Sep, captured (list_sep_plus Sep P) ]).
+
+list_sep_plus_opt : syntax unit -> syntax A -> syntax (list A).
+rule (list_sep_plus_opt Sep P) (group [captured (list_sep_plus Sep P), iso (peg.syntax (optunit Sep)) pretty.empty ]).
+
+`( syntax_rules {{
+
+point_op -> freqmult { "Tm" <zratio> }
+          / freqadd { "Ta" <zratio> }
+          / gainmult { "Gain" <zratio> }
+          / panmult { "PanM" <zratio> }
+          / panadd { "PanA" <zratio> }
+          / lenmult { "Length" <zratio> }
+          / silence { "Silence" <zratio> }
+
+op -> (fun id => fun o1 => fun o2 => let o1 (concrete.bindone (concrete.name vars id) o2))
+      { <makam.ident> "=" "{" <op> "}" <op> }
+    / op_fit ;
+
+op_fit ->
+     (fun op1 => fun op2 => fit op1 (fitlength op2))
+      { <op_compose> ">" "FitLength" <op_compose> }
+    / op_compose ;
+
+op_compose ->
+      compose { <list_sep_plusplus (token "|") op_base> }
+    / op_base ;
+
+op_base ->
+      (fun u => id) { <token "AsIs"> }
+    / map { <point_op> }
+    / seq { "Sequence" "[" <list_sep_plus_opt (token ",") op> "]" }
+    / overlay { "Overlay" "[" <list_sep_plus_opt (token ",") op> "]" }
+    / overlay { "O" "[" <list_sep_plus_opt (token ",") overtone> "]" }
+    / repeat { "Repeat" <makam.int_literal> }
+    / (fun id => concrete.var (concrete.name vars id)) { <makam.ident> }
+    / { "(" <op> ")" }
+
+overtone ->
+      (fun v => fun o => fun g => fun p =>
+       compose (cons (map (freqmult v)) (cons (map (freqadd o))
+               (cons (map (gainmult g)) (cons (map (panadd p)) nil)))))
+      { "(" <zratio> "," <zratio> "," <zratio> "," <zratio> ")" }
+
+cop -> concrete { <op> }
+
+}} ).
+
+`( syntax.def_toplevel_js cop ).
+
+%end.
+
+parser : string -> concrete op -> prop.
+parser X Y :- syntax.parse_opt syntax.cop X Y.
+
+resolver : concrete op -> op -> prop.
+resolver X Y :- concrete.resolve X Y.
+
+printer : op -> string -> prop.
+printer X Y :- syntax.pretty syntax.op X Y.
+
+reconvert : normalop -> op -> prop.
+reconvert : voiceop -> op -> prop.
+reconvert : simpleop -> op -> prop.
+
+reconvert (overlays OS) (overlay OS') :-
+  map reconvert OS OS'.
+
+reconvert (sequences SS) (seq SS') :-
+  map reconvert SS SS'.
+
+reconvert (simpleop (fullpoint_op FM_ FA_ GM_ LM_ PM_ PA_)) Result :-
+  map ratio.reduce [FM_, FA_, GM_, LM_, PM_, PA_] [FM, FA, GM, LM, PM, PA],
+  if (eq FM (ratio 1 1)) then eq C1 [] else eq C1 [map (freqmult FM)],
+  if (eq FA (ratio 0 1)) then eq C2 [] else eq C2 [map (freqadd FA)],
+  if (eq GM (ratio 1 1)) then eq C3 [] else eq C3 [map (gainmult GM)],
+  if (eq LM (ratio 1 1)) then eq C4 [] else eq C4 [map (lenmult LM)],
+  if (eq PM (ratio 1 1)) then eq C5 [] else eq C5 [map (panmult PM)],
+  if (eq PA (ratio 0 1)) then eq C6 [] else eq C6 [map (panadd PA)],
+  concat [C1, C2, C3, C4, C5, C6] CS,
+  if (eq CS []) then eq Result id
+  else if (eq CS [X]) then eq Result X
+  else eq Result (compose CS).
+
+reconvert (simpleop fullpoint_id) (id).
+reconvert (simpleop (fullpoint_sil R)) (map (silence R)).
+
+pipe : type -> type -> type.
+nil : pipe A A.
+cons : (A -> B -> prop) -> pipe B C -> pipe A C.
+
+pipe : [A B] pipe A B -> A -> B -> prop.
+pipe [] X X.
+pipe (P :: Rest) X Y :-
+  if (P X X')
+  then (pipe Rest X' Y)
+  else (tostring P S, tostring X XS,
+        log_error X `phase ${S} failed to produce a result for input ${XS}`,
+        failure).
+
+
+compiler : string -> string -> prop.
+compiler X Y :- pipe [parser, resolver, sugar, normalize, reconvert, printer] X Y.
+
+noprint_compiler : string -> op -> prop.
+noprint_compiler X Y :- pipe [parser, resolver, sugar, normalize, reconvert] X Y.
+
+output_matches : string -> string -> prop.
+output_matches P1 P2 :- noprint_compiler P1 R1, sugar R1 R1', pipe [parser, resolver, sugar] P2 R2, eq R1' R2.
+
+(* printing using syntax is slow, so the tests just make sure the compiler evaluates to the same output. but these were generated using the compiler. I've left an example compiler query in there. *)
+
+
+compiler {{ Overlay[Sequence[AsIs, AsIs, AsIs], Sequence[AsIs, AsIs, AsIs] | Length 1/10] }} X ?
+
+(* tests *)
+
+>> output_matches {{ AsIs }} {{ Overlay [ Sequence [ AsIs ] ] }} ?
+>> Yes.
+
+>> output_matches {{ Tm - 0.021 }} {{ Overlay [ Sequence [ Tm -21 / 1000 ] ] }} ?
+>> Yes.
+
+>> output_matches {{ Sequence [AsIs, AsIs, AsIs] }} {{ Overlay [ Sequence [ AsIs , AsIs , AsIs ] ] }} ?
+>> Yes.
+
+>> output_matches {{ Sequence [AsIs, Overlay[AsIs, AsIs], AsIs] }} {{ Overlay [ Sequence [ AsIs , AsIs , AsIs ] , Sequence [ Silence 1 , AsIs , Silence 1 ] ] }} ?
+>> Yes.
+
+>> output_matches {{ Overlay[AsIs, Tm 2] | Sequence[AsIs, AsIs, AsIs] }} {{ Overlay [ Sequence [ AsIs , AsIs , AsIs ] , Sequence [ Tm 2 , Tm 2 , Tm 2 ] ] }} ?
+>> Yes.
+
+>> output_matches {{ Overlay[Sequence[AsIs, AsIs, AsIs], Sequence[AsIs, AsIs, AsIs] | Length 1/10] }} {{ Overlay [ Sequence [ AsIs , AsIs , AsIs ] , Sequence [ Length 1 / 10 , Length 1 / 10 , Length 1 / 10 , Silence 27 / 10 ] ] }} ?
+>> Yes.
+
+>> output_matches {{ AsIs > FitLength (Sequence [AsIs, AsIs]) }} {{ Overlay [ Sequence [ Length 2 ] ] }} ?
+>> Yes.
+
+>> output_matches {{
+  main = { Sequence[ AsIs, AsIs ] }
+  main | Sequence[ AsIs, Tm 3/4 ]
+}} {{ Overlay [ Sequence [ AsIs , AsIs , Tm 3 / 4 , Tm 3 / 4 ] ] }} ?
+>> Yes.
+
+>> output_matches {{ Sequence[Overlay[Tm 2, AsIs] | Sequence[AsIs, Tm 5] | Overlay[Tm 3, Tm 4], AsIs] }} {{ Overlay [ Sequence [ Tm 6 , Tm 30 , AsIs ] , Sequence [ Tm 3 , Tm 15 , Silence 1 ] , Sequence [ Tm 8 , Tm 40 , Silence 1 ] , Sequence [ Tm 4 , Tm 20 , Silence 1 ] ] }} ?
+>> Yes.
+
+>> output_matches {{
+    O[
+    	(5/4, 3.0, 1.0, 1.0),
+      	(9/8, 0.0, 1.0, -1.0),
+      	(1/1, 2.0, 1.0, 0.5),
+      	(1/1, 0.0, 1.0, -0.5),
+  	]
+}} {{
+  Overlay [
+    Sequence [ Tm 5 / 4 | Ta 3 | PanA 1 , ] ,
+    Sequence [ Tm 9 / 8 | PanA -1 , ] ,
+    Sequence [ Ta 2 | PanA 1 / 2 , ] ,
+    Sequence [ PanA -1 / 2 , ] ,
+  ]
+}} ?
+>> Yes.

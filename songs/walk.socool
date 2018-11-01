@@ -1,0 +1,40 @@
+{ f: 1000, l: 1.0, g: 1.0, p: 0.0}
+
+overtones = {
+    O[
+    	(5/4, 3.0, 1.0, 0.5),
+      	(9/8, 0.0, 1.0, -0.5),
+      	(1/1, 2.0, 1.0, 0.0),
+      	(1/1, 0.0, 1.0, 0.0),
+      	(1/2, 0.0, 1.0, 0.0),
+      	(1/2, 3, 1.0, 0.0),
+      	(3/4, 0, 0.1, 0.0),
+      	(1/4, 0, 0.2, -0.5),
+      	(1/4, 2, 0.2, 0.5),
+  	]
+}
+
+
+gain = {
+	Sequence [Gain 0.9, Gain 0.5, Gain 0.25, Gain 0.1, Gain 0.05, Gain 0.01, Gain 0.005, Silence 0.02]
+}
+
+gain_recursive = { gain | ( gain | PanM 2.0 ) }
+
+thing1 = {
+	overtones |
+	Tm 1/2
+	| Length 0.001
+}
+
+drums = {
+		thing1 
+		| gain_recursive
+		| Sequence [AsIs, Silence 0.2]
+}
+
+main = {
+	Sequence [
+		drums,
+	]
+}

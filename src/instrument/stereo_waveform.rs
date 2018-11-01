@@ -4,6 +4,10 @@ pub struct StereoWaveform {
     pub r_buffer: Vec<f32>,
 }
 
+pub trait Normalize {
+    fn normalize(&mut self);
+}
+
 impl StereoWaveform {
     pub fn new(buffer_size: usize) -> StereoWaveform {
         StereoWaveform {
@@ -28,5 +32,33 @@ impl StereoWaveform {
         } else {
             StereoWaveform::new(2048)
         }
+    }
+}
+
+impl Normalize for StereoWaveform {
+    fn normalize(&mut self) {
+        let mut max = 0.0;
+        for sample in self.l_buffer.iter() {
+            if (*sample).abs() > max {
+                max = *sample;
+            }
+        }
+
+        for sample in self.r_buffer.iter() {
+            if (*sample).abs() > max {
+                max = *sample;
+            }
+        }
+
+        let normalization_ratio = 1.0 / max * 0.85;
+
+        for sample in self.l_buffer.iter_mut() {
+            *sample *= normalization_ratio
+        }
+
+        for sample in self.r_buffer.iter_mut() {
+            *sample *= normalization_ratio
+        }
+//        println!("Normalized by {}", normalization_ratio);
     }
 }

@@ -10,7 +10,7 @@ fn oscillator() -> Oscillator {
     Oscillator::init(&get_default_app_settings())
 }
 
-fn event_from_init(init: Init) -> Event {
+pub fn event_from_init(init: Init) -> Event {
     Event::init(init.f, init.g, init.p, init.l)
 }
 
