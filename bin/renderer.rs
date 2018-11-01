@@ -4,7 +4,7 @@ extern crate portaudio;
 extern crate socool_parser;
 extern crate num_rational;
 use portaudio as pa;
-
+use socool_parser::parser::*;
 use itertools::Itertools;
 use num_rational::{
     Ratio,
@@ -15,9 +15,12 @@ use weresocool::{
         oscillator::Oscillator,
         stereo_waveform::StereoWaveform
     },
+    generation::parsed_to_waveform::{event_from_init},
     operations::{Apply, GetOperations},
     settings::get_default_app_settings,
     portaudio_setup::output::setup_portaudio_output,
+    ui::{banner, get_args, no_file_name, printed, were_so_cool_logo},
+    examples::documentation,
 };
 use socool_parser::ast::{Op, Op::*};
 
@@ -36,25 +39,24 @@ type VecWav = Vec<StereoWaveform>;
 
 
 fn main() -> Result<(), pa::Error> {
-    rational_play();
+    were_so_cool_logo();
+    let args = get_args();
 
-//  read file
-//  parse file
-//  
+    if args.is_present("doc") {
+        documentation();
+    }
 
-    let normal_form_op: NormOp = Overlay { operations: vec![
-            Sequence { operations: vec![
-                AsIs, TransposeM {m: 5.0/4.0}, AsIs
-            ]},
-            Sequence { operations: vec![
-                TransposeM {m: 5.0/4.0}, TransposeM {m: 8.0/5.0}, TransposeM {m: 5.0/4.0}
-            ]},
-            Sequence { operations: vec![
-                Silence {m: 2.0}, TransposeM {m: 0.5}
-            ]},
-        ]};
+    let filename = args.value_of("filename");
+    match filename {
+        Some(_filename) => {}
+        _ => no_file_name(),
+    }
 
-    let composition = render(normal_form_op);
+    let parsed = parse_file(&filename.unwrap().to_string());
+    let main = parsed.table.get("main").unwrap();
+    let init = parsed.init;
+
+    let composition = render(main, init);
 
     let pa = pa::PortAudio::new()?;
 
@@ -68,13 +70,13 @@ fn main() -> Result<(), pa::Error> {
     Ok(())
 }
 
-fn render(normal_form_op: NormOp) -> StereoWaveform {
+fn render(normal_form_op: &NormOp, init: Init) -> StereoWaveform {
     let sequences: Sequences = normal_form_op.get_operations().expect("Not in Normal Form");
 
     println!("\n ____Sequences____ \n{:?}", sequences);
 
 //  NormOp -> NormEv
-    let e = Event::init(200.0, 2.0, 0.0, 1.0);
+    let e = event_from_init(init);
 
     let mut norm_ev: NormEv = vec![];
     for sequence in sequences {
