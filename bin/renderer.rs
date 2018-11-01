@@ -67,7 +67,7 @@ fn render(normal_form_op: &NormOp, init: Init) -> StereoWaveform {
     let vec_wav = generate_waveforms(norm_ev);
     let mut result = sum_all_waveforms(vec_wav);
     result.normalize();
- 
+
     result
 }
 
