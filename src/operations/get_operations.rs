@@ -1,9 +1,7 @@
 pub mod get_operations {
     use operations::GetOperations;
     use socool_parser::ast::Op;
-
-    type GetOp = Option<Box<Vec<Op>>>;
-
+    
     impl GetOperations for Op {
         fn get_operations(&self) -> Option<Vec<Op>> {
             match self {
@@ -15,9 +13,9 @@ pub mod get_operations {
                 | Op::PanM { m: _ }
                 | Op::Gain { m: _ } => None,
 
-                Op::Length { m } | Op::Silence { m } => None,
+                Op::Length { m: _ } | Op::Silence { m: _ } => None,
 
-                Op::Sequence { operations } | Op::Compose { operations } => None,
+                Op::Sequence { operations: _ } | Op::Compose { operations: _ } => None,
 
                 Op::WithLengthRatioOf {
                     with_length_of: _,
