@@ -38,7 +38,11 @@ type VecWav = Vec<StereoWaveform>;
 fn main() -> Result<(), pa::Error> {
     rational_play();
 
-    let overlay: NormOp = Overlay { operations: vec![
+//  read file
+//  parse file
+//  
+
+    let normal_form_op: NormOp = Overlay { operations: vec![
             Sequence { operations: vec![
                 AsIs, TransposeM {m: 5.0/4.0}, AsIs
             ]},
@@ -50,7 +54,22 @@ fn main() -> Result<(), pa::Error> {
             ]},
         ]};
 
-    let sequences: Sequences = overlay.get_operations().expect("Not in Normal Form");
+    let composition = render(normal_form_op);
+
+    let pa = pa::PortAudio::new()?;
+
+    let mut output_stream = setup_portaudio_output(composition, &pa)?;
+    output_stream.start()?;
+
+    while let true = output_stream.is_active()? {}
+
+    output_stream.stop()?;
+
+    Ok(())
+}
+
+fn render(normal_form_op: NormOp) -> StereoWaveform {
+    let sequences: Sequences = normal_form_op.get_operations().expect("Not in Normal Form");
 
     println!("\n ____Sequences____ \n{:?}", sequences);
 
@@ -81,18 +100,8 @@ fn main() -> Result<(), pa::Error> {
     }
 
     println!("...combined\n");
-    println!("____Playing___");
 
-    let pa = pa::PortAudio::new()?;
-
-    let mut output_stream = setup_portaudio_output(result, &pa)?;
-    output_stream.start()?;
-
-    while let true = output_stream.is_active()? {}
-
-    output_stream.stop()?;
-
-    Ok(())
+    result
 }
 
 fn sum_vec(a: &Vec<f32>, b: Vec<f32>) -> Vec<f32> {
