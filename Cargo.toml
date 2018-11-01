@@ -33,5 +33,5 @@ name = "scratch"
 path = "bin/pad.rs"
 
 [[bin]]
-name = "render"
+name = "makam"
 path = "bin/renderer.rs"
