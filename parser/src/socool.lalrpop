@@ -1,0 +1,121 @@
+use std::str::FromStr;
+use std::string::String;
+use crate::ast::Op;
+use crate::parser::Init;
+use std::collections::HashMap;
+
+grammar<'table>(table: &'table mut HashMap<String, Op>);
+
+pub SoCool: Init = {
+  <init: Point> <l: LetDefs> => { init },
+}
+
+Point: Init = {
+    "{"
+         "f:" <f:Rational> ","
+         "l:" <l:Rational> ","
+         "g:" <g:Rational> ","
+         "p:" <p:Rational>
+    "}" ";"? => Init { f, l, g, p }
+}
+
+LetDefs = Lets<LetDef>;
+LetDef: () = {
+    <s: Name> "=" "{" <o: Operation> "}" => { table.insert(s.clone(), o); () },
+}
+
+Operation: Op = {
+    <op1: ComposeOperation> ">" "FitLength" <op2: ComposeOperation> => Op::Compose { operations: vec![op1.clone(), Op::WithLengthRatioOf { with_length_of: Box::new(op2), main: Box::new(op1) }] },
+    <op: ComposeOperation> => op
+}
+
+ComposeOperation: Op = {
+    <ops: Pipe<BaseOperation>> => Op::Compose { operations: ops },
+    <o: BaseOperation> => o,
+}
+
+BaseOperation: Op = {
+    "(" <o: Operation> ")" => o,
+    "AsIs" => Op::AsIs {},
+    "Reverse" => Op::Reverse {},
+    "Repeat" <i:Int> => {
+        let mut vec = Vec::new();
+        for x in 0..i {
+            vec.push(Op::AsIs)
+        }
+        Op::Sequence { operations: vec }
+    },
+    "Silence" <v:Rational> => Op::Silence {m: v},
+    "Tm" <v:Rational> => Op::TransposeM {m: v},
+    "Ta" <v:Rational> => Op::TransposeA {a: v},
+    "PanM" <v:Rational> => Op::PanM {m: v},
+    "PanA" <v:Rational> => Op::PanA {a: v},
+    "Length" <v:Rational> => Op::Length {m: v},
+    "Gain" <v:Rational> => Op::Gain {m: v},
+    "Sequence" "[" <operations: Operations> "]" => Op::Sequence { operations: operations },
+    "Overlay" "[" <operations: Operations> "]" => Op::Overlay { operations: operations },
+    "O" "[" <o: Overtones> "]" => Op::Overlay { operations: o },
+    <id: Name> => { table.get(&id).unwrap().clone() },
+};
+
+Overtone: Op = {
+    "("
+        <v:Rational> ","
+        <o:Rational> ","
+        <g:Rational> ","
+        <p:Rational>
+    ")"
+    => Op::Compose { operations: vec! [
+            Op::TransposeM { m: v },
+            Op::TransposeA { a: o },
+            Op::Gain { m: g },
+            Op::PanA { a: p },
+        ]
+    }
+}
+
+Overtones = Comma<Overtone>;
+
+Comma<T>: Vec<T> = {
+    <v:(<T> ",")*> <e:T?> => match e {
+        None=> v,
+        Some(e) => {
+            let mut v = v;
+            v.push(e);
+            v
+        }
+    }
+};
+
+Lets<T>: Vec<T> = {
+  <v:(<T>)*> => v
+};
+
+Pipe<T>: Vec<T> = {
+    <v:(<T> "|")+> <e:T?> => match e {
+        None=> v,
+        Some(e) => {
+          let mut v = v;
+          v.push(e);
+          v
+        }
+    }
+};
+
+Compose = Pipe<Operation>;
+
+Operations = Comma<Operation>;
+
+Num: f32 = {
+   <n: Float> => n,
+   <n: Int> => { n as f32 }
+}
+
+Rational: f32 = {
+    <n:Num> => n,
+    <n:Num> "/" <d:Num> => n/d,
+};
+
+Name: String = <s:r"[a-z_$][a-zA-Z_$0-9]*"> => s.to_string();
+Float: f32 = <s:r"-?(0|([1-9]\d*))\.\d+"> => f32::from_str(s).unwrap();
+Int: i32 = <s:r"-?[0-9]+"> => i32::from_str(s).unwrap();

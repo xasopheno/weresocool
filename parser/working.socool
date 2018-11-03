@@ -1,0 +1,30 @@
+{ f: 200, l: 1.0, g: 1.0, p: 0.0 }
+
+overtones = {
+    O[(3/2, 3.0, 1.0, 0.0),
+      (3/2, 0.0, 1.0, 0.0),
+      (1, 0.0, 1.0, 0.0)]
+}
+
+thing1 = {
+    overtones |
+    Sequence [
+        AsIs,
+        Tm 3/2 | Length 2.0
+    ]
+}
+
+thing2 = {
+    Sequence [
+        Tm 7/4,
+        Tm 3/2
+    ] | Repeat 2
+    > FitLength thing1
+}
+
+main = {
+    Overlay [
+        thing1,
+        thing2
+    ]
+}
