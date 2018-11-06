@@ -1,0 +1,142 @@
+(* ------------------------------------------ *)
+(* add syntax for negative int literals *)
+
+%extend syntax.
+
+sint_, sint : syntax signedint.
+
+rule sint_ (apply negint [token "-", captured makam.int_literal_]).
+rule sint_ (apply posint [ captured makam.int_literal_ ]).
+
+`( def_js sint (token sint_) ).
+
+%end.
+
+
+(* ------------------------------------------ *)
+(* syntax for decimals *)
+
+%extend syntax.
+
+deci_, deci : syntax ratio.
+rule deci_ (apply decimal [ captured sint_, exact ".",
+                             captured (char_once_or_many makam.int_literal_char) ]).
+rule deci (token deci_).
+
+%end.
+
+
+(* ------------------------------------------ *)
+(* syntax for ratios; note that they do not have symmetric parsing/printing *)
+
+%extend peg.
+
+sratio : peg ratio.
+rule sratio (apply signedratio [ captured (syntax syntax.sint), syntax (syntax.token "/"), captured (syntax makam.int_literal) ]).
+rule sratio (syntax syntax.deci).
+rule sratio (apply (fun n => signedratio n 1) [ captured (syntax syntax.sint) ]).
+
+%end.
+
+%extend pretty.
+
+sratio : pretty ratio.
+rule sratio (untransform (pfun s (ratio I 1) => if (lessthan I 0 false) then (eq s (posint I)) else (sub 0 I N, eq s (negint N))) [ captured (syntax syntax.sint) ]).
+rule sratio (untransform (pfun N D (ratio I D) => if (lessthan I 0 true) then (eq N (posint I)) else (sub 0 I POS, eq N (negint POS))) [ captured (syntax syntax.sint), syntax (syntax.token "/"), captured (syntax makam.int_literal) ]).
+
+%end.
+
+%extend syntax.
+
+sratio : syntax ratio.
+rule sratio (iso peg.sratio pretty.sratio).
+
+%end.
+
+
+(* ------------------------------------------ *)
+(* some helpers *)
+
+%extend syntax.
+
+list_sep_plusplus : syntax unit -> syntax A -> syntax (list A).
+rule (list_sep_plusplus Sep P) (apply cons [captured P, Sep, captured (list_sep_plus Sep P) ]).
+
+list_sep_plus_opt : syntax unit -> syntax A -> syntax (list A).
+rule (list_sep_plus_opt Sep P) (group [captured (list_sep_plus Sep P), iso (peg.syntax (optunit Sep)) pretty.empty ]).
+
+%end.
+
+
+(* ------------------------------------------ *)
+(* a namespace for let variables *)
+
+vars : concrete.namespace op.
+concrete.pick_namespace_userdef (_: op) vars.
+concrete.handle_unresolved_name (concrete.name vars S) X :-
+  log_error S `unresolved variable: ${S}`, failure.
+
+
+(* ------------------------------------------ *)
+(* now for the syntax of the language *)
+
+%extend syntax.
+
+point_op : syntax point_op.
+fitop : syntax fitop.
+op, op_fit, op_compose, op_base, overtone : syntax op.
+spoint : syntax point.
+sprogram : syntax program.
+cprogram : syntax (concrete program).
+
+`( syntax_rules {{
+
+point_op -> freqmult { "Tm" <sratio> }
+          / freqadd { "Ta" <sratio> }
+          / gainmult { "Gain" <sratio> }
+          / panmult { "PanM" <sratio> }
+          / panadd { "PanA" <sratio> }
+          / lenmult { "Length" <sratio> }
+          / silence { "Silence" <sratio> }
+
+op -> (fun id => fun o1 => fun o2 => let o1 (concrete.bindone (concrete.name vars id) o2))
+      { <makam.ident> "=" "{" <op> "}" <op> }
+    / (fun id => fun o1 => let o1 (concrete.bindone (concrete.name vars id) (concrete.var (concrete.name vars "main"))))
+      { <makam.ident> "=" "{" <op> "}" }
+    / op_fit ;
+
+op_fit ->
+     (fun op1 => fun op2 => fit op1 (fitlength op2))
+      { <op_compose> ">" "FitLength" <op_compose> }
+    / op_compose ;
+
+op_compose ->
+      compose { <list_sep_plusplus (token "|") op_base> }
+    / op_base ;
+
+op_base ->
+      (fun u => id) { <token "AsIs"> }
+    / map { <point_op> }
+    / seq { "Sequence" "[" <list_sep_plus_opt (token ",") op> "]" }
+    / overlay { "Overlay" "[" <list_sep_plus_opt (token ",") op> "]" }
+    / overlay { "O" "[" <list_sep_plus_opt (token ",") overtone> "]" }
+    / repeat { "Repeat" <makam.int_literal> }
+    / (fun id => concrete.var (concrete.name vars id)) { <makam.ident> }
+    / { "(" <op> ")" }
+
+overtone ->
+      (fun v => fun o => fun g => fun p =>
+       compose (cons (map (freqmult v)) (cons (map (freqadd o))
+               (cons (map (gainmult g)) (cons (map (panadd p)) nil)))))
+      { "(" <sratio> "," <sratio> "," <sratio> "," <sratio> ")" }
+
+spoint -> point { "{" "f" ":" <sratio> "," "l" ":" <sratio> "," "g" ":" <sratio> "," "p" ":" <sratio> "}" }
+
+sprogram -> program { <option spoint> <op> }
+cprogram -> concrete { <sprogram> }
+
+}} ).
+
+`( syntax.def_toplevel_js cprogram ).
+
+%end.

@@ -1,0 +1,69 @@
+%use "init".
+
+tests : testsuite. %testsuite tests.
+
+output_matches : string -> string -> prop.
+output_matches P1 P2 :- fastprint_compiler P1 R1, fastprint_compiler P2 R2, eq R1 R2.
+
+(* tests *)
+
+>> output_matches {{ AsIs }} {{ Overlay [ Sequence [ AsIs ] ] }} ?
+>> Yes.
+
+>> output_matches {{ Tm - 0.021 }} {{ Overlay [ Sequence [ Tm -21 / 1000 ] ] }} ?
+>> Yes.
+
+>> output_matches {{ Sequence [AsIs, AsIs, AsIs] }} {{ Overlay [ Sequence [ AsIs , AsIs , AsIs ] ] }} ?
+>> Yes.
+
+>> output_matches {{ Sequence [AsIs, Overlay[AsIs, AsIs], AsIs] }} {{ Overlay [ Sequence [ AsIs , AsIs , AsIs ] , Sequence [ Silence 1 , AsIs , Silence 1 ] ] }} ?
+>> Yes.
+
+>> output_matches {{ Overlay[AsIs, Tm 2] | Sequence[AsIs, AsIs, AsIs] }} {{ Overlay [ Sequence [ AsIs , AsIs , AsIs ] , Sequence [ Tm 2 , Tm 2 , Tm 2 ] ] }} ?
+>> Yes.
+
+>> output_matches {{ Overlay[Sequence[AsIs, AsIs, AsIs], Sequence[AsIs, AsIs, AsIs] | Length 1/10] }} {{ Overlay [ Sequence [ AsIs , AsIs , AsIs ] , Sequence [ Length 1 / 10 , Length 1 / 10 , Length 1 / 10 , Silence 27 / 10 ] ] }} ?
+>> Yes.
+
+>> output_matches {{ AsIs > FitLength (Sequence [AsIs, AsIs]) }} {{ Overlay [ Sequence [ Length 2 ] ] }} ?
+>> Yes.
+
+>> output_matches {{
+  main = { Sequence[ AsIs, AsIs ] }
+  main | Sequence[ AsIs, Tm 3/4 ]
+}} {{ Overlay [ Sequence [ AsIs , AsIs , Tm 3 / 4 , Tm 3 / 4 ] ] }} ?
+>> Yes.
+
+>> output_matches {{ Sequence[Overlay[Tm 2, AsIs] | Sequence[AsIs, Tm 5] | Overlay[Tm 3, Tm 4], AsIs] }} {{ Overlay [ Sequence [ Tm 6 , Tm 30 , AsIs ] , Sequence [ Tm 3 , Tm 15 , Silence 1 ] , Sequence [ Tm 8 , Tm 40 , Silence 1 ] , Sequence [ Tm 4 , Tm 20 , Silence 1 ] ] }} ?
+>> Yes.
+
+>> output_matches {{ 
+    O[
+    	(5/4, 3.0, 1.0, 1.0),
+      	(9/8, 0.0, 1.0, -1.0),
+      	(1/1, 2.0, 1.0, 0.5),
+      	(1/1, 0.0, 1.0, -0.5),
+  	]
+}} {{
+  Overlay [ 
+    Sequence [ Tm 5 / 4 | Ta 3 | PanA 1 , ] , 
+    Sequence [ Tm 9 / 8 | PanA -1 , ] , 
+    Sequence [ Ta 2 | PanA 1 / 2 , ] , 
+    Sequence [ PanA -1 / 2 , ] ,
+  ] 
+}} ?
+>> Yes.
+
+>> slowprint_compiler {{ Sequence[AsIs, Tm 2] | Tm 3 }} X ?
+>> Yes:
+>> X := "Overlay [ Sequence [ Tm 3 , Tm 6 ] ] ".
+
+>> fastprint_compiler {{ 
+
+{ f: 220, l: 1.0, g: 1.0, p: 0.0}
+
+main = { Sequence[ AsIs, Tm 3/4 ] }
+
+}} X ?
+>> Yes:
+>> X := "{ f: 220, l: 1, g: 1, p: 0 }\n\nmain = {\nOverlay [\n  Sequence [ AsIs, Tm 0.75 ]\n]\n\n}\n".

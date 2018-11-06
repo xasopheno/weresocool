@@ -1,0 +1,12 @@
+pipe : type -> type -> type.
+nil : pipe A A.
+cons : (A -> B -> prop) -> pipe B C -> pipe A C.
+
+pipe : [A B] pipe A B -> A -> B -> prop.
+pipe [] X X.
+pipe (P :: Rest) X Y :-
+  if (once(P X X'))
+  then (pipe Rest X' Y)
+  else (tostring P S, tostring X XS,
+        log_error X `phase ${S} failed to produce a result for input ${XS}`,
+        failure).

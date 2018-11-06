@@ -1,0 +1,45 @@
+point : type.
+point : (Freq: ratio) (Gain: ratio) (Length: ratio) (Pan: ratio) -> point.
+
+point_op : type.
+
+freqmult : ratio -> point_op.
+freqadd : ratio -> point_op.
+gainmult : ratio -> point_op.
+lenmult : ratio -> point_op.
+panmult : ratio -> point_op.
+panadd : ratio -> point_op.
+silence : ratio -> point_op.
+
+op : type.
+
+id : op.
+map : point_op -> op.
+seq : op -> op -> op.
+compose : op -> op -> op.
+overlay : op -> op -> op.
+let : op -> bindone op op -> op.
+
+program : type.
+(* the basic point isn't really optional, but isn't really used anywhere other
+   than rendering existing songs, so it's optional for the purposes of this model *)
+program : option point -> op -> program.
+
+(* extra AST constructors that get desugared *)
+
+seq : list op -> op.
+overlay : list op -> op.
+compose : list op -> op.
+repeat : int -> op.
+
+withlrof : op -> op -> op.
+fitop : type.
+fit : op -> fitop -> op.
+fitlength : op -> fitop.
+
+signedint : type.
+posint : int -> signedint.
+negint : int -> signedint.
+
+signedratio : signedint -> int -> ratio.
+decimal : signedint -> string -> ratio.
