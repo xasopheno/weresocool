@@ -15,7 +15,7 @@ serde_derive = "1.0.79"
 serde_json = "1.0.27"
 colored = "1.6"
 pbr = "1.0.1"
-socool_parser = { path = "../socool_parser" }
+socool_parser = { path = "parser" }
 clap = "2.32.0"
 itertools = "0.7.8"
 num-rational = "0.2"

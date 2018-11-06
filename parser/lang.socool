@@ -1,0 +1,126 @@
+def init { f: 200, l: 1.0, g: 1.0, p: 0.0 }
+
+{ f: 200, l: 1.0, g: 1.0, p: 0.0 }
+
+let thing = {
+    Sequence [
+     Tm 3/2
+
+    ]
+}
+let thing2 = {
+    Tm 5/4
+    | Repeat 5
+    > fitLength thing
+}
+let main = {
+    Overlay [
+        Sequence[
+            thing,
+            thing2
+        ]
+        > fitLength thing
+    ]
+}
+
+let test = Overlay [
+
+
+      thing3
+    | Repeat 3
+    | Tm 2.0
+    > fitLength (thing2 | thing2)
+
+    ~~>>
+
+    op1 > fit(op2)
+
+    ~~>>
+
+    op1 | withLROf(top: op2, bottom: op1)
+
+
+    op1 | withLROf(top: op2, bottom: op3)
+
+
+
+    op1
+    > op2
+    > op3
+
+
+    ~~>
+
+    (op1 > op2) > op3
+
+
+    (op1 | withLROf(op2 / op1)) | withLrOf(op3 / (op1 | withLROf(op2 / op1)))
+
+
+
+    op1 > (op2 > op3)
+
+    ,
+
+    thing2
+
+]
+
+let thing1 = sequence[
+    AsIs,
+    Tm 7/8,
+    Tm 5/4,
+    Tm 15/8
+    | Gain 0.5
+    | Length 0.5,
+    Tm 5/4,
+];
+
+let thing2 = sequence[
+    AsIs,
+    Tm 9/8,
+    Tm 5/4
+    | Length 0.5
+    Tm 3/2,
+];
+
+shortthing =
+    AsIs,
+    Tm 2.0
+
+let thing3 = Sequence [
+    thing1,
+    | thing2
+    | shortthing;
+]
+
+let main = Overlay [
+    thing3
+    | Length 0.5
+    | withLengthOf(thing1)
+    | Tm 2.0,
+
+    thing1
+]
+
+let main =
+    Sequence [
+        Overlay [
+            o[(3/2, 3.0, 1.0, 0.0),
+              (3/2, 0.0, 1.0, 0.0),
+              (1, 0.0, 1.0, 0.0)]
+            | thing2
+            | Sequence [ AsIs, AsIs ]
+            | WithLengthOf(
+                AsIs
+                | Repeat 2
+            ),
+
+            thing1
+        ]
+        | Repeat 4,
+
+        thing1
+    ]
+    ;
+
