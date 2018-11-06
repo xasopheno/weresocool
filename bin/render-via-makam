@@ -1,6 +1,7 @@
 #!/usr/bin/env bash
 
 set -e
+set -o pipefail
 
 if [[ $# -lt 1 ]]; then
   echo "Usage: $0 <filename>"

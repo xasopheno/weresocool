@@ -5,8 +5,11 @@ normalprogram : type.
 normalop : type.
 voiceop : type.
 simpleop : type.
-fullpoint_op : type.
 
+(* let's get the tedious part out of the way:
+   fullpoint_op is a combination of multiple unit operations (Tm, Ta, etc.) into one *)
+
+fullpoint_op : type.
 fullpoint_sil : (Silence: ratio) -> fullpoint_op.
 fullpoint_id : fullpoint_op.
 fullpoint_op : (FreqMult: ratio) (FreqAdd: ratio) (GainMult: ratio) (LenMult: ratio) (PanMult: ratio) (PanAdd: ratio) -> fullpoint_op.
@@ -21,17 +24,35 @@ point_to_fullpoint_op (panmult R) (fullpoint_op (ratio 1 1) (ratio 0 1) (ratio 1
 point_to_fullpoint_op (panadd R) (fullpoint_op (ratio 1 1) (ratio 0 1) (ratio 1 1) (ratio 1 1) (ratio 1 1) R).
 point_to_fullpoint_op (silence R) (fullpoint_sil R).
 
-normalprogram : option point -> normalop -> normalprogram.
-overlays  : list voiceop -> normalop.
-sequences : list simpleop -> voiceop.
-simpleop : fullpoint_op -> simpleop.
 
 lrof : fullpoint_op -> ratio -> prop.
-lrof : op -> ratio -> prop.
 
 lrof (fullpoint_id) (ratio 1 1).
 lrof (fullpoint_sil R) R.
 lrof (fullpoint_op _ _ _ LR _ _) LR.
+
+combine_linear : (Mult1: ratio) (Add1: ratio) (Mult2: ratio) (Add2: ratio) (MultR: ratio) (AddR: ratio) -> prop.
+(* (M1 * x + A1) * M2 + A2 = M1 * M2 * x + (A1 * M2 + A2) *)
+combine_linear M1 A1 M2 A2 MR AR :-
+  ratio.mult M1 M2 MR,
+  ratio.mult A1 M2 A1M2, ratio.plus A1M2 A2 AR.
+
+combine : fullpoint_op -> fullpoint_op -> fullpoint_op -> prop.
+
+combine (fullpoint_id) F F.
+combine F fullpoint_id F.
+combine (fullpoint_sil LR) F' (fullpoint_sil LR'') :- lrof F' LR', ratio.mult LR LR' LR''.
+combine (fullpoint_op _ _ _ LR _ _) (fullpoint_sil LR') (fullpoint_sil LR'') :- ratio.mult LR LR' LR''.
+combine   (fullpoint_op FM   FA   GM   LM   PM   PA)
+          (fullpoint_op FM'  FA'  GM'  LM'  PM'  PA')
+          (fullpoint_op FM'' FA'' GM'' LM'' PM'' PA'') :-
+  combine_linear FM FA FM' FA' FM'' FA'',
+  combine_linear PM PA PM' PA' PM'' PA'',
+  ratio.mult GM GM' GM'', ratio.mult LM LM' LM''.
+
+
+(* lrof: calculate length ratio of an operation *)
+lrof : op -> ratio -> prop.
 
 lrof id (ratio 1 1).
 lrof (map F) Ratio :- point_to_fullpoint_op F F', lrof F' Ratio.
@@ -41,6 +62,15 @@ lrof (overlay O1 O2) Ratio :-
   lrof O1 Ratio1, lrof O2 Ratio2, ratio.max Ratio1 Ratio2 Ratio.
 lrof (compose O1 O2) Ratio :-
   lrof O1 Ratio1, lrof O2 Ratio2, ratio.mult Ratio1 Ratio2 Ratio.
+lrof (let O1 (bind _ O2)) Ratio :-
+  lrof O1 Ratio1, (x:op -> lrof x Ratio1 -> lrof (O2 x) Ratio).
+
+(* now for normal programs *)
+
+normalprogram : option point -> normalop -> normalprogram.
+overlays  : list voiceop -> normalop.
+sequences : list simpleop -> voiceop.
+simpleop : fullpoint_op -> simpleop.
 
 fold1 : (A -> A -> A -> prop) -> list A -> A -> prop.
 fold1 P (HD :: TL) Result :-
@@ -87,25 +117,12 @@ transform (overlays O) SOP (overlays O') :- map (pfun V => transform V SOP) O O'
 transform (sequences S) SOP (sequences S') :- map (pfun E => transform E SOP) S S'.
 
 transform (simpleop Ops) (simpleop Ops') (simpleop Ops'') :-
-  transform Ops Ops' Ops''.
+  combine Ops Ops' Ops''.
 
-transform (fullpoint_id) F F.
-transform F fullpoint_id F.
-transform (fullpoint_sil LR) F' (fullpoint_sil LR'') :- lrof F' LR', ratio.mult LR LR' LR''.
-transform (fullpoint_op _ _ _ LR _ _) (fullpoint_sil LR') (fullpoint_sil LR'') :- ratio.mult LR LR' LR''.
+lrof : simpleop -> ratio -> prop.
+lrof (simpleop F) R :- lrof F R.
 
-compose_linear : (Mult1: ratio) (Add1: ratio) (Mult2: ratio) (Add2: ratio) (MultR: ratio) (AddR: ratio) -> prop.
-(* (M1 * x + A1) * M2 + A2 = M1 * M2 * x + (A1 * M2 + A2) *)
-compose_linear M1 A1 M2 A2 MR AR :-
-  ratio.mult M1 M2 MR,
-  ratio.mult A1 M2 A1M2, ratio.plus A1M2 A2 AR.
 
-transform (fullpoint_op FM   FA   GM   LM   PM   PA)
-          (fullpoint_op FM'  FA'  GM'  LM'  PM'  PA')
-          (fullpoint_op FM'' FA'' GM'' LM'' PM'' PA'') :-
-  compose_linear FM FA FM' FA' FM'' FA'',
-  compose_linear PM PA PM' PA' PM'' PA'',
-  ratio.mult GM GM' GM'', ratio.mult LM LM' LM''.
 
 normalize : program -> normalprogram -> prop.
 normalize : op -> normalop -> prop.
@@ -193,6 +210,11 @@ desugar_cases (withlrof Op1 Op2) (map (lenmult Ratio)) :-
   desugar Op1 Op1', desugar Op2 Op2',
   lrof Op1' R1, lrof Op2' R2,
   ratio.div R1 R2 Ratio.
+
+desugar_cases (let Op1 (bind X Op2)) (let Op1' (bind X Op2')) :-
+  desugar Op1 Op1',
+  lrof Op1' LR1,
+  (x:op -> lrof x LR1 -> desugar (Op2 x) (Op2' x)).
 
 desugar_cases (fit Op1 (fitlength Op2)) Result :-
   desugar Op1 Op1', desugar Op2 Op2',
