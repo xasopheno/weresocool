@@ -1,0 +1,15 @@
+(* -------------------- *)
+(* things that should be moved into the makam stdlib *)
+
+%use "int".
+%use "ratio".
+%use "pipe".
+
+
+(* -------------------- *)
+(* the actual model *)
+
+%use "ast".
+%use "syntax".
+%use "fastprinter".
+%use "transforms".

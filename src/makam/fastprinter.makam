@@ -1,0 +1,92 @@
+(* lacking a pretty -> js generator, we have to write this manually *)
+
+fastprinter : program -> string -> prop.
+
+fastprinter X Y :-
+  eq << (s) => {
+    const parseSexp = (cur, startidx) => {
+      var idx = startidx;
+      if (idx == cur.length) return [{}, idx];
+
+      if (cur[idx].match(/^[a-z]/)) {
+        const firstWordIdx = idx + cur.substring(idx).search(/([ )]|$)/);
+        const firstWord = cur.substring(idx, firstWordIdx);
+        if (firstWord == "nil") return [ [], firstWordIdx];
+        else return [ { [firstWord]: {} }, firstWordIdx];
+      }
+
+      if (cur[idx] == "(") {
+        idx++;
+        const firstWordIdx = idx + cur.substring(idx).search(/[ )]/);
+
+        var args = [];
+        idx = firstWordIdx;
+        while (cur[idx] == " ") {
+          const result = parseSexp(cur, idx + 1);
+          const [arg, newIdx] = result;
+          args.push(arg);
+          idx = newIdx;
+        }
+        if (!(cur[idx] == ")")) throw new Error("assertion failed");
+        idx++;
+
+        const firstWord = cur.substring(startidx + 1, firstWordIdx);
+        if (firstWord == "cons") {
+          if (!(args.length == 2)) throw new Error("assertion failed");
+          return [ [args[0]].concat(args[1]), idx ];
+        } else {
+          return [ { [firstWord]: args }, idx ];
+        }
+      }
+
+      var n = cur.substring(idx).match(/^-?[0-9]+/)[0];
+      return [n, idx + n.length];
+   };
+
+   const printRational = (ratio) => (parseFloat(ratio[0]) / parseFloat(ratio[1])).toString();
+
+   const printOp = (op) => {
+     if (op.id) return "AsIs";
+     if (op.compose) {
+       return op.compose[0].map(printOp).join(" | ");
+     }
+     if (op.map) {
+       var realop = op.map[0];
+       if (realop.freqmult) return `Tm ${printRational(realop.freqmult[0].ratio)}`;
+       if (realop.freqadd)  return `Ta ${printRational(realop.freqadd[0].ratio)}`;
+       if (realop.gainmult)  return `Gain ${printRational(realop.gainmult[0].ratio)}`;
+       if (realop.lenmult)  return `Length ${printRational(realop.lenmult[0].ratio)}`;
+       if (realop.panmult)  return `PanM ${printRational(realop.panmult[0].ratio)}`;
+       if (realop.panadd)  return `PanA ${printRational(realop.panadd[0].ratio)}`;
+       if (realop.silence)  return `Silence ${printRational(realop.silence[0].ratio)}`;
+     }
+     console.error(op.map && op.map[0].freqmult && op.map[0].freqmult);
+     return "ΑsIs";
+   }
+
+   const printVoice = (voice) => {
+     var ops = voice.seq[0].map(printOp);
+     return `Sequence [ ${ops.join(", ")} ]`;
+   };
+
+   const printNormalForm = (normal) => {
+     var voices = normal.overlay[0].map(printVoice);
+     return `Overlay [\n  ${voices.join(",\n  ")}\n]\n`;
+   };
+
+   const printProgram = (point, op) => {
+     if ("some" in point) {
+       var [f, l, g, p] = point.some[0].point;
+       var ps = `{ f: ${printRational(f.ratio)}, l: ${printRational(l.ratio)}, g: ${printRational(g.ratio)}, p: ${printRational(p.ratio)} }`;
+       return `${ps}\n\nmain = {\n${printNormalForm(op)}\n}\n`;
+     } else {
+       return printNormalForm(op);
+     }
+   }
+
+   var [point, op] = parseSexp(s, 0)[0].program;
+   return printProgram(point, op);
+  }
+  >> Printer,
+  tostring X XS, expansion.str `(${XS})` XSS, tostring XSS XSSS,
+  expansion.str `(${Printer})(${XSSS})` JS, js.eval JS Y.

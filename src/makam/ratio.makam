@@ -1,0 +1,74 @@
+ratio : type.
+ratio : (Nom: int) (Denom: int) -> ratio.
+
+%extend ratio.
+
+reduce : ratio -> ratio -> prop.
+reduce (ratio N D) (ratio N' D') :-
+  gcd N D GCD, quot N GCD N', quot D GCD D'.
+
+commonden, commonden_cases : (ratio * ratio) -> (ratio * ratio) -> prop.
+
+commonden X Y :- demand.case (commonden_cases X Y).
+commonden_cases (ratio N1 D, ratio N2 D) (ratio N1 D, ratio N2 D).
+commonden_cases (ratio N1 D1, ratio N2 D2) (ratio N1' D, ratio N2' D) :-
+  mult N1 D2 N1', mult N2 D1 N2', mult D1 D2 D.
+
+liftint : (int -> int -> int -> prop) -> ratio -> ratio -> ratio -> prop.
+liftint Op X Y (ratio N' D') :-
+  commonden (X, Y) (ratio A D, ratio B D),
+  Op A B R,
+  eq (ratio R D) (ratio N' D'). (* or reduce to keep things always reduced *)
+
+plus : ratio -> ratio -> ratio -> prop.
+plus X Y R :- liftint plus X Y R.
+
+mult, mult_cases : ratio -> ratio -> ratio -> prop.
+mult X Y Z :- demand.case (mult_cases X Y Z).
+mult_cases (ratio 0 D) (ratio A B) (ratio 0 1).
+mult_cases (ratio A B) (ratio 0 D) (ratio 0 1).
+mult_cases (ratio N1 D1) (ratio N2 D2) (ratio N' D') :-
+  mult N1 N2 N,
+  mult D1 D2 D,
+  eq (ratio N D) (ratio N' D'). (* or reduce to keep things always reduced *)
+
+div : ratio -> ratio -> ratio -> prop.
+div (ratio A B) (ratio C D) (ratio AD BC) :-
+  mult A D AD, mult B C BC,
+  if (eq BC 0)
+  then (log_error _ `division by zero! should not happen`, failure)
+  else success.
+
+max : ratio -> ratio -> ratio -> prop.
+max X Y R :- liftint max X Y R.
+
+difforzero : ratio -> ratio -> ratio -> prop.
+difforzero X Y R :- liftint difforzero X Y R.
+
+fromdecimal : (IntegerPart: int) (FractionalPart: string) -> ratio -> prop.
+fromdecimal Int FracS (ratio IntFrac Power) :-
+  string.explode FracS FracL, length FracL Digits,
+  power 10 Digits Power,
+  refl.fromstring FracS Frac,
+  mult Int Power IntToPower,
+  plus IntToPower Frac IntFrac.
+
+%end.
+
+%extend ratio_tests.
+
+all : testsuite. %testsuite all.
+
+>> ratio.plus (ratio 1 2) (ratio 1 3) X ?
+>> Yes:
+>> X := ratio 5 6.
+
+>> ratio.reduce (ratio 12 16) X ?
+>> Yes:
+>> X := ratio 3 4.
+
+>> ratio.fromdecimal 1 "0001" X ?
+>> Yes:
+>> X := ratio 10001 10000.
+
+%end.

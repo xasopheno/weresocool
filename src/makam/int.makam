@@ -1,0 +1,105 @@
+%extend builtin.
+plus, mult : int -> int -> int -> prop.
+plus X Y SUM :- .plus X Y SUM.
+mult X Y PROD :- .mult X Y PROD.
+%end.
+
+plus : int -> int -> int -> prop.
+plus X Y SUM when not(refl.isunif X), not(refl.isunif Y) :-
+  builtin.plus X Y SUM.
+
+mult : int -> int -> int -> prop.
+mult X Y PROD when not(refl.isunif X), not(refl.isunif Y) :-
+  builtin.mult X Y PROD.
+
+sub : int -> int -> int -> prop.
+sub X Y DIFF when not(refl.isunif X), not(refl.isunif Y) :-
+  builtin.plus Y DIFF X.
+
+quot : int -> int -> int -> prop.
+quot X Y QUOT when not(refl.isunif X), not(refl.isunif Y) :-
+  builtin.mult QUOT Y X.
+
+mod : int -> int -> int -> prop.
+mod X Y REM when not(refl.isunif X), not(refl.isunif Y) :-
+  quot X Y QUOT,
+  builtin.mult QUOT Y M,
+  sub X M REM.
+
+gcd : int -> int -> int -> prop.
+gcd X Y GCD when not(refl.isunif X), not(refl.isunif Y) :-
+  if (eq Y 0) then eq GCD X
+  else (mod X Y MOD, gcd Y MOD GCD).
+
+max : int -> int -> int -> prop.
+max A B B when not(refl.isunif A), not(refl.isunif B), lessthan A B true.
+max A B A when not(refl.isunif A), not(refl.isunif B), lessthan A B false.
+
+difforzero : int -> int -> int -> prop.
+difforzero A B 0
+  when not(refl.isunif A), not(refl.isunif B),
+       lessthan A B true.
+difforzero A B Diff
+  when not(refl.isunif A), not(refl.isunif B),
+       lessthan A B false, sub A B Diff.
+
+power : int -> int -> int -> prop.
+power N M 1 when not(refl.isunif M), eq M 0.
+power N M N when not(refl.isunif M), eq M 1.
+power N M N'' when lessthan 1 M true :-
+  sub M 1 MPred,
+  power N MPred N',
+  mult N' N N''.
+
+%extend int_tests.
+
+all : testsuite. %testsuite all.
+
+>> plus 1 2 X ?
+>> Yes:
+>> X := 3.
+
+>> plus 1 X 3 ?
+>> Impossible.
+
+>> sub 5 1 X ?
+>> Yes:
+>> X := 4.
+
+>> mult 3 4 X ?
+>> Yes:
+>> X := 12.
+
+>> quot 11 4 X ?
+>> Yes:
+>> X := 2.
+
+>> mod 11 4 X ?
+>> Yes:
+>> X := 3.
+
+>> max 1 2 X ?
+>> Yes:
+>> X := 2.
+
+>> max 2 1 X ?
+>> Yes:
+>> X := 2.
+
+>> max 2 2 X ?
+>> Yes:
+>> X := 2.
+
+>> difforzero 5 2 X ?
+>> Yes:
+>> X := 3.
+
+>> difforzero 5 6 X ?
+>> Yes:
+>> X := 0.
+
+>> power 2 8 X ?
+>> Yes:
+>> X := 256.
+
+%end.

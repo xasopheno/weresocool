@@ -1,0 +1,24 @@
+#!/usr/bin/env bash
+
+set -e
+
+if [[ $# -lt 1 ]]; then
+  echo "Usage: $0 <filename>"
+  exit 1
+fi
+
+cat > tmp.makam <<EOF
+fulltransform {{
+EOF
+
+cat $1 | sed -e 's/--.*$//' - >> tmp.makam
+
+cat >> tmp.makam <<EOF
+}} ?
+EOF
+
+makam src/makam/init tmp | tee tmp.socool
+awk -i inplace '/^>>>$/{flag=1;next}/^<<<$/{flag=0}flag' tmp.socool
+
+./target/release/makam tmp.socool
+rm -f tmp.socool tmp.makam

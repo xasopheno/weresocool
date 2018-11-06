@@ -1,0 +1,270 @@
+(* ------------------- *)
+(* normalize: the main thing (op ~~> normal_op) *)
+
+normalprogram : type.
+normalop : type.
+voiceop : type.
+simpleop : type.
+fullpoint_op : type.
+
+fullpoint_sil : (Silence: ratio) -> fullpoint_op.
+fullpoint_id : fullpoint_op.
+fullpoint_op : (FreqMult: ratio) (FreqAdd: ratio) (GainMult: ratio) (LenMult: ratio) (PanMult: ratio) (PanAdd: ratio) -> fullpoint_op.
+
+point_to_fullpoint_op : point_op -> fullpoint_op -> prop.
+
+point_to_fullpoint_op (freqmult R) (fullpoint_op R (ratio 0 1) (ratio 1 1) (ratio 1 1) (ratio 1 1) (ratio 0 1)).
+point_to_fullpoint_op (freqadd R) (fullpoint_op (ratio 1 1) R (ratio 1 1) (ratio 1 1) (ratio 1 1) (ratio 0 1)).
+point_to_fullpoint_op (gainmult R) (fullpoint_op (ratio 1 1) (ratio 0 1) R (ratio 1 1) (ratio 1 1) (ratio 0 1)).
+point_to_fullpoint_op (lenmult R) (fullpoint_op (ratio 1 1) (ratio 0 1) (ratio 1 1) R (ratio 1 1) (ratio 0 1)).
+point_to_fullpoint_op (panmult R) (fullpoint_op (ratio 1 1) (ratio 0 1) (ratio 1 1) (ratio 1 1) R (ratio 0 1)).
+point_to_fullpoint_op (panadd R) (fullpoint_op (ratio 1 1) (ratio 0 1) (ratio 1 1) (ratio 1 1) (ratio 1 1) R).
+point_to_fullpoint_op (silence R) (fullpoint_sil R).
+
+normalprogram : option point -> normalop -> normalprogram.
+overlays  : list voiceop -> normalop.
+sequences : list simpleop -> voiceop.
+simpleop : fullpoint_op -> simpleop.
+
+lrof : fullpoint_op -> ratio -> prop.
+lrof : op -> ratio -> prop.
+
+lrof (fullpoint_id) (ratio 1 1).
+lrof (fullpoint_sil R) R.
+lrof (fullpoint_op _ _ _ LR _ _) LR.
+
+lrof id (ratio 1 1).
+lrof (map F) Ratio :- point_to_fullpoint_op F F', lrof F' Ratio.
+lrof (seq O1 O2) Ratio :-
+  lrof O1 Ratio1, lrof O2 Ratio2, ratio.plus Ratio1 Ratio2 Ratio.
+lrof (overlay O1 O2) Ratio :-
+  lrof O1 Ratio1, lrof O2 Ratio2, ratio.max Ratio1 Ratio2 Ratio.
+lrof (compose O1 O2) Ratio :-
+  lrof O1 Ratio1, lrof O2 Ratio2, ratio.mult Ratio1 Ratio2 Ratio.
+
+fold1 : (A -> A -> A -> prop) -> list A -> A -> prop.
+fold1 P (HD :: TL) Result :-
+  foldl P HD TL Result.
+
+%extend normalop.
+
+silence : normalop -> ratio -> normalop -> prop.
+silence (overlays Overlays) (ratio 0 D) (overlays Overlays') :-
+  map (pfun unused => eq (sequences [])) Overlays Overlays'.
+
+silence (overlays Overlays) SilenceRatio (overlays Overlays') when not(eq SilenceRatio (ratio 0 D)) :-
+  map (pfun unused => eq (sequences [ simpleop (fullpoint_sil SilenceRatio) ])) Overlays Overlays'.
+
+(* this assumes that both ops have the same number of voices *)
+sequence : normalop -> normalop -> normalop -> prop.
+sequence (overlays Overlays1) (overlays Overlays2) (overlays Overlays') :-
+  map (pfun (sequences Seq1) (sequences Seq2) (sequences Seq3) => append Seq1 Seq2 Seq3) Overlays1 Overlays2 Overlays'.
+
+(* this assumes that both ops have the same length ratio *)
+overlay : normalop -> normalop -> normalop -> prop.
+overlay (overlays Overlays1) (overlays Overlays2) (overlays Overlays') :-
+  (* if (not(lrof Overlays1 LR1, lrof Overlays2 LR2, eqv LR1 LR2))
+  then (log_error Overlays1 `do not have the same length`)
+  else *) (append Overlays1 Overlays2 Overlays').
+
+foreach : normalop -> (simpleop -> A -> prop) -> list (list A) -> prop.
+foreach : voiceop -> (simpleop -> A -> prop) -> list A -> prop.
+
+foreach (overlays O) P Result :-
+  map (pfun V => foreach V P) O Result.
+
+foreach (sequences S) P Result :-
+  map P S Result.
+%end.
+
+transform : normalop -> simpleop -> normalop -> prop.
+transform : voiceop -> simpleop -> voiceop -> prop.
+transform : simpleop -> simpleop -> simpleop -> prop.
+transform : fullpoint_op -> fullpoint_op -> fullpoint_op -> prop.
+
+transform (overlays O) SOP (overlays O') :- map (pfun V => transform V SOP) O O'.
+
+transform (sequences S) SOP (sequences S') :- map (pfun E => transform E SOP) S S'.
+
+transform (simpleop Ops) (simpleop Ops') (simpleop Ops'') :-
+  transform Ops Ops' Ops''.
+
+transform (fullpoint_id) F F.
+transform F fullpoint_id F.
+transform (fullpoint_sil LR) F' (fullpoint_sil LR'') :- lrof F' LR', ratio.mult LR LR' LR''.
+transform (fullpoint_op _ _ _ LR _ _) (fullpoint_sil LR') (fullpoint_sil LR'') :- ratio.mult LR LR' LR''.
+
+compose_linear : (Mult1: ratio) (Add1: ratio) (Mult2: ratio) (Add2: ratio) (MultR: ratio) (AddR: ratio) -> prop.
+(* (M1 * x + A1) * M2 + A2 = M1 * M2 * x + (A1 * M2 + A2) *)
+compose_linear M1 A1 M2 A2 MR AR :-
+  ratio.mult M1 M2 MR,
+  ratio.mult A1 M2 A1M2, ratio.plus A1M2 A2 AR.
+
+transform (fullpoint_op FM   FA   GM   LM   PM   PA)
+          (fullpoint_op FM'  FA'  GM'  LM'  PM'  PA')
+          (fullpoint_op FM'' FA'' GM'' LM'' PM'' PA'') :-
+  compose_linear FM FA FM' FA' FM'' FA'',
+  compose_linear PM PA PM' PA' PM'' PA'',
+  ratio.mult GM GM' GM'', ratio.mult LM LM' LM''.
+
+normalize : program -> normalprogram -> prop.
+normalize : op -> normalop -> prop.
+
+normalize (program Point Op) (normalprogram Point Op') :-
+  normalize Op Op'.
+
+normalize id (overlays [ sequences [ simpleop fullpoint_id ] ]).
+
+normalize (map F) (overlays [ sequences [ simpleop F' ] ]) :-
+  point_to_fullpoint_op F F',
+  if (eq F (lenmult (ratio 0 D)))
+  then (log_error F `multiplying length by 0 is not allowed!`, failure)
+  else success.
+
+normalize (overlay O1 O2) Result :-
+  normalize O1 Result1, lrof O1 LR1,
+  normalize O2 Result2, lrof O2 LR2,
+  ratio.difforzero LR2 LR1 SLR1,
+  ratio.difforzero LR1 LR2 SLR2,
+  normalop.silence Result1 SLR1 Silence1,
+  normalop.silence Result2 SLR2 Silence2,
+  normalop.sequence Result1 Silence1 Result1',
+  normalop.sequence Result2 Silence2 Result2',
+  normalop.overlay Result1' Result2' Result.
+
+normalize (seq O1 O2) Result :-
+  normalize O1 (overlays (HD1 :: TL1)), lrof O1 LR1,
+  normalize O2 (overlays (HD2 :: TL2)), lrof O2 LR2,
+  normalop.silence (overlays TL1) LR2 Silence1,
+  normalop.silence (overlays TL2) LR1 Silence2,
+  normalop.sequence (overlays [HD1]) (overlays [HD2]) (overlays [HD]),
+  normalop.sequence (overlays TL1) Silence1 TL1',
+  normalop.sequence Silence2 (overlays TL2) TL2',
+  fold1 normalop.overlay [overlays [HD], TL1', TL2'] Result.
+
+normalize (compose O1 O2) Result :-
+  normalize O1 Res1,
+  normalize O2 Res2,
+  normalop.foreach Res2 (pfun SimpleOp => transform Res1 SimpleOp) Everything,
+  map (fold1 normalop.sequence) Everything Everything',
+  fold1 normalop.overlay Everything' Result.
+
+normalize (let Op1 (bind _ X_Op2)) Result :-
+  normalize Op1 Op1', lrof Op1 LR,
+  (x:op -> normalize x Op1' -> lrof x LR -> normalize (X_Op2 x) Result).
+
+(* ------------------- *)
+(* desugaring *)
+
+desugar, desugar_cases : [A] A -> A -> prop.
+
+desugar X Y :-
+  demand.case_otherwise
+    (desugar_cases X Y)
+    (structural @desugar X Y).
+
+desugar_cases (decimal (posint Dec) FracS) Ratio :-
+  ratio.fromdecimal Dec FracS Ratio.
+
+desugar_cases (decimal (negint Dec) FracS) Ratio :-
+  ratio.fromdecimal Dec FracS (ratio N D),
+  desugar (signedratio (negint N) D) Ratio.
+
+desugar_cases (signedratio (posint P) D) (ratio P D).
+desugar_cases (signedratio (negint P) D) (ratio N D) :-
+  sub 0 P N.
+
+desugar_cases (seq [O]) O' :- desugar O O'.
+desugar_cases (seq (HD :: TL)) (seq HD' TL') :-
+  desugar HD HD',
+  desugar (seq TL) TL'.
+
+desugar_cases (overlay [O]) O' :- desugar O O'.
+desugar_cases (overlay (HD :: TL)) (overlay HD' TL') :-
+  desugar HD HD',
+  desugar (overlay TL) TL'.
+
+desugar_cases (compose [O]) O' :- desugar O O'.
+desugar_cases (compose (HD :: TL)) (compose HD' TL') :-
+  desugar HD HD',
+  desugar (compose TL) TL'.
+
+desugar_cases (withlrof Op1 Op2) (map (lenmult Ratio)) :-
+  desugar Op1 Op1', desugar Op2 Op2',
+  lrof Op1' R1, lrof Op2' R2,
+  ratio.div R1 R2 Ratio.
+
+desugar_cases (fit Op1 (fitlength Op2)) Result :-
+  desugar Op1 Op1', desugar Op2 Op2',
+  desugar (compose Op1' (withlrof Op2' Op1')) Result.
+
+desugar_cases (repeat N) R :-
+  length L N, map (fun u => eq id) L L', desugar (seq L') R.
+
+
+(* ------------------- *)
+(* stuff we get for free *)
+
+parser : string -> concrete program -> prop.
+parser X Y :- syntax.parse_opt syntax.cprogram X Y.
+
+resolver : concrete program -> program -> prop.
+resolver X Y :- concrete.resolve X Y.
+
+printer : program -> string -> prop.
+printer X Y :- syntax.pretty syntax.sprogram X Y.
+
+
+(* ------------------- *)
+(* reconvert: normal_op ~~> op *)
+
+reconvert : normalprogram -> program -> prop.
+reconvert : normalop -> op -> prop.
+reconvert : voiceop -> op -> prop.
+reconvert : simpleop -> op -> prop.
+
+reconvert (normalprogram Point Op) (program Point Op') :-
+  reconvert Op Op'.
+
+reconvert (overlays OS) (overlay OS') :-
+  map reconvert OS OS'.
+
+reconvert (sequences SS) (seq SS') :-
+  map reconvert SS SS'.
+
+reconvert (simpleop (fullpoint_op FM_ FA_ GM_ LM_ PM_ PA_)) Result :-
+  map ratio.reduce [FM_, FA_, GM_, LM_, PM_, PA_] [FM, FA, GM, LM, PM, PA],
+  if (eq FM (ratio 1 1)) then eq C1 [] else eq C1 [map (freqmult FM)],
+  if (eq FA (ratio 0 1)) then eq C2 [] else eq C2 [map (freqadd FA)],
+  if (eq GM (ratio 1 1)) then eq C3 [] else eq C3 [map (gainmult GM)],
+  if (eq LM (ratio 1 1)) then eq C4 [] else eq C4 [map (lenmult LM)],
+  if (eq PM (ratio 1 1)) then eq C5 [] else eq C5 [map (panmult PM)],
+  if (eq PA (ratio 0 1)) then eq C6 [] else eq C6 [map (panadd PA)],
+  concat [C1, C2, C3, C4, C5, C6] CS,
+  if (eq CS []) then eq Result id
+  else if (eq CS [X]) then eq Result X
+  else eq Result (compose CS).
+
+reconvert (simpleop fullpoint_id) (id).
+reconvert (simpleop (fullpoint_sil R)) (map (silence R)).
+
+
+(* ---------------- *)
+(* drivers *)
+
+slowprint_compiler : string -> string -> prop.
+slowprint_compiler X Y :-
+  pipe [parser, resolver, desugar, normalize, reconvert, printer] X Y.
+
+fastprint_compiler : string -> string -> prop.
+fastprint_compiler X Y :-
+  pipe [parser, resolver, desugar, normalize, reconvert, fastprinter] X Y.
+
+fulltransform : string -> prop.
+fulltransform X :-
+  fastprint_compiler X Y,
+  print_string `
+>>>
+${Y}
+<<<
+`.

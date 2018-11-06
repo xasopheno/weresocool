@@ -1,13 +1,9 @@
 { f: 220, l: 1.0, g: 1.0, p: 0.0}
-overtones = {
-  O[
-    (1/1, 0, 0.6, 0.0),
-    (3/2, 0, 0.3, 0.0)
-  ]
-}
+
 et12semitone = { Tm 1.05946 }
 et12semitonedown = { Tm 0.943878 }
 et12tone = { et12semitone | et12semitone }
+
 majorScale = {
   Sequence[
     AsIs,
@@ -20,6 +16,7 @@ majorScale = {
     et12tone | et12tone | et12semitone | et12tone | et12tone | et12tone | et12semitone
   ]
 }
+
 et12_c  = { AsIs }
 et12_cS = { et12_c | et12semitone }
 et12_d  = { et12_cS | et12semitone }
@@ -33,75 +30,10 @@ et12_a  = { et12_gS | et12semitone }
 et12_aS = { et12_a | et12semitone }
 et12_b  = { et12_aS | et12semitone }
 et12_C  = { et12_b | et12semitone }
-pia = { et12_c }
-piw = { et12_cS }
-pis = { et12_d }
-pie = { et12_dS }
-pid = { et12_e }
-pif = { et12_f }
-pit = { et12_fS }
-pig = { et12_g }
-piy = { et12_gS }
-pih = { et12_a }
-piu = { et12_aS }
-pij = { et12_b }
-pik = { et12_C }
-ykz = { AsIs }
-yka = { Tm 256/243 }
-ykq = { Tm 2187/2048 }
-yk1 = { Tm 65536/59049 }
-ykx = { Tm 9/8 }
-yks = { Tm 32/27 }
-ykw = { Tm 19683/16384 }
-yk2 = { Tm 8192/6561 }
-ykc = { Tm 81/64 }
-ykd = { Tm 2097152/1594323 }
-yke = { Tm 4/3 }
-yk3 = { Tm 1024/729 }
-ykv = { Tm 729/512 }
-ykf = { Tm 262144/177147 }
-ykr = { Tm 3/2 }
-yk4 = { Tm 128/81 }
-ykb = { Tm 6561/4096 }
-ykg = { Tm 32768/19683 }
-ykt = { Tm 27/16 }
-yk5 = { Tm 8388608/4782969 }
-ykn = { Tm 16/9 }
-ykh = { Tm 4096/2187 }
-yky = { Tm 243/128 }
-yk6 = { Tm 1048576/531441 }
-ykp = { Tm 2/1 }
-yekta24Scale = {
-  Sequence[
-    ykz,
-    yka,
-    ykq,
-    yk1,
-    ykx,
-    yks,
-    ykw,
-    yk2,
-    ykc,
-    ykd,
-    yke,
-    yk3,
-    ykv,
-    ykf,
-    ykr,
-    yk4,
-    ykb,
-    ykg,
-    ykt,
-    yk5,
-    ykn,
-    ykh,
-    yky,
-    yk6,
-    ykp,
-  ]
-}
+
 et24qtone = { Tm 1.0293 }
 et24qtonedown = { Tm 0.97153 }
+
 bayati_d   = { et12_d }
 bayati_eHF = { et12_e | et24qtonedown }
 bayati_f   = { et12_f }
@@ -110,6 +42,7 @@ bayati_a   = { et12_a }
 bayati_bF  = { et12_b | et12semitonedown }
 bayati_C   = { et12_C }
 bayati_D   = { et12_d | Tm 2.0 }
+
 bya = { bayati_d }
 bys = { bayati_eHF }
 byd = { bayati_f }
@@ -118,70 +51,16 @@ byg = { bayati_a }
 byh = { bayati_bF }
 byj = { bayati_C }
 byk = { bayati_D }
-rast_c = { et12_c }
-rast_d = { et12_d }
-rast_eHF = { et12_d | et24qtone | et12semitone }
-rast_f = { et12_f }
-rast_g = { et12_g }
-rast_a = { et12_a }
-rast_bHF = { et12_b | et24qtonedown }
-rast_bF = { et12_b | et12semitonedown }
-rast_C = { et12_C }
-rsa = { rast_c }
-rss = { rast_d }
-rsd = { rast_eHF }
-rsf = { rast_f }
-rsg = { rast_g }
-rsh = { rast_a }
-rsu = { rast_bHF }
-rsn = { rast_bF }
-rsk = { rast_C }
-sil = { AsIs | Gain 0.0 }
-hf = { Length 1/2 }
-qt = { hf | hf }
-qthf = { Sequence [ qt, hf ] }
-db = { Length 2/1 }
-qtwh = { Sequence [ qt, AsIs ] }
-wh = { AsIs }
-et31intv = { Tm 1.0226 }
-e31nz = { AsIs }
-e31na = { e31nz | et31intv }
-e31nq = { e31na | et31intv }
-e31n1 = { e31nq | et31intv }
-e31nx = { e31n1 | et31intv }
-e31ns = { e31nx | et31intv }
-e31nw = { e31ns | et31intv }
-e31n2 = { e31nw | et31intv }
-e31nc = { e31n2 | et31intv }
-e31nd = { e31nc | et31intv }
-e31ne = { e31nd | et31intv }
-e31n3 = { e31ne | et31intv }
-e31nv = { e31n3 | et31intv }
-e31nf = { e31nv | et31intv }
-e31nr = { e31nf | et31intv }
-e31n4 = { e31nr | et31intv }
-e31nb = { e31n4 | et31intv }
-e31ng = { e31nb | et31intv }
-e31nt = { e31ng | et31intv }
-e31n5 = { e31nt | et31intv }
-e31nn = { e31n5 | et31intv }
-e31nh = { e31nn | et31intv }
-e31ny = { e31nh | et31intv }
-e31n6 = { e31ny | et31intv }
-e31nm = { e31n6 | et31intv }
-e31nj = { e31nm | et31intv }
-e31nu = { e31nj | et31intv }
-e31n7 = { e31nu | et31intv }
-e31nk = { e31n7 | et31intv }
-e31ni = { e31nk | et31intv }
-e31n8 = { e31ni | et31intv }
+
 bayati_melody = { Sequence[ Silence 1, bya, byj, byh, byf, byg, byg, bya, byj, byh, byf, byg, byg, byh, byj, byh, byg, byf, byg, byg, byh, byj, byh, byg, byf, byg, byg, byk, byg, byh, byj, byf, byg, byh, byf, byg, byh, byd, byf, byg, byh, byj, byd, byf, byg, bys, byd, byf, bya, bys, byd, bys, bya, byk, byk, byk, byj, byh, byg, byh, byj, byh, byg, byf, byg, byg, byf, byd, byf, byd, bys, byd, byf, byd, bys, bya ] }
-instrument = { Overlay[ AsIs, Overlay [
-                 byg | Sequence[Silence 0.08, Length 0.01, Silence 0.05, Length 0.1] | Repeat 5,
-                 byd | Sequence[Silence 0.05, Length 0.05] | Gain 0.7,
-                 byj | Sequence[Length 0.4] | Gain 0.3,
-               ] | Gain 0.4 ] }
+
+instrument = { Overlay[
+                 AsIs,
+                 byg | Sequence[Silence 0.08, Length 0.01] | Gain 0.4,
+               ] }
+
 input = { instrument | bayati_melody }
+
 main = {
-  input| Length 0.2
+  input | Length 0.2
 }
