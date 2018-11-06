@@ -66,4 +66,4 @@ main = { Sequence[ AsIs, Tm 3/4 ] }
 
 }} X ?
 >> Yes:
->> X := "{ f: 220, f: 220, f: 220, f: 220 }\n\nmain = {\nOverlay [\n  Sequence [ AsIs, Tm 0.75 ]\n]\n\n}\n".
+>> X := "{ f: 220, l: 1, g: 1, p: 0 }\n\nmain = {\nOverlay [\n  Sequence [ AsIs, Tm 0.75 ]\n]\n\n}\n".
