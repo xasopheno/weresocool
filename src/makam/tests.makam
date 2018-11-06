@@ -37,20 +37,20 @@ output_matches P1 P2 :- fastprint_compiler P1 R1, fastprint_compiler P2 R2, eq R
 >> output_matches {{ Sequence[Overlay[Tm 2, AsIs] | Sequence[AsIs, Tm 5] | Overlay[Tm 3, Tm 4], AsIs] }} {{ Overlay [ Sequence [ Tm 6 , Tm 30 , AsIs ] , Sequence [ Tm 3 , Tm 15 , Silence 1 ] , Sequence [ Tm 8 , Tm 40 , Silence 1 ] , Sequence [ Tm 4 , Tm 20 , Silence 1 ] ] }} ?
 >> Yes.
 
->> output_matches {{ 
+>> output_matches {{
     O[
-    	(5/4, 3.0, 1.0, 1.0),
-      	(9/8, 0.0, 1.0, -1.0),
-      	(1/1, 2.0, 1.0, 0.5),
-      	(1/1, 0.0, 1.0, -0.5),
-  	]
+        (5/4, 3.0, 1.0, 1.0),
+        (9/8, 0.0, 1.0, -1.0),
+        (1/1, 2.0, 1.0, 0.5),
+        (1/1, 0.0, 1.0, -0.5),
+        ]
 }} {{
-  Overlay [ 
-    Sequence [ Tm 5 / 4 | Ta 3 | PanA 1 , ] , 
-    Sequence [ Tm 9 / 8 | PanA -1 , ] , 
-    Sequence [ Ta 2 | PanA 1 / 2 , ] , 
+  Overlay [
+    Sequence [ Tm 5 / 4 | Ta 3 | PanA 1 , ] ,
+    Sequence [ Tm 9 / 8 | PanA -1 , ] ,
+    Sequence [ Ta 2 | PanA 1 / 2 , ] ,
     Sequence [ PanA -1 / 2 , ] ,
-  ] 
+  ]
 }} ?
 >> Yes.
 
@@ -58,7 +58,7 @@ output_matches P1 P2 :- fastprint_compiler P1 R1, fastprint_compiler P2 R2, eq R
 >> Yes:
 >> X := "Overlay [ Sequence [ Tm 3 , Tm 6 ] ] ".
 
->> fastprint_compiler {{ 
+>> fastprint_compiler {{
 
 { f: 220, l: 1.0, g: 1.0, p: 0.0}
 
