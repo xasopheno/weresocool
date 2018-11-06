@@ -52,15 +52,21 @@ byh = { bayati_bF }
 byj = { bayati_C }
 byk = { bayati_D }
 
-bayati_melody = { Sequence[ Silence 1, bya, byj, byh, byf, byg, byg, bya, byj, byh, byf, byg, byg, byh, byj, byh, byg, byf, byg, byg, byh, byj, byh, byg, byf, byg, byg, byk, byg, byh, byj, byf, byg, byh, byf, byg, byh, byd, byf, byg, byh, byj, byd, byf, byg, bys, byd, byf, bya, bys, byd, bys, bya, byk, byk, byk, byj, byh, byg, byh, byj, byh, byg, byf, byg, byg, byf, byd, byf, byd, bys, byd, byf, byd, bys, bya ] }
+bayati_melody = { Sequence[ bya, byj, byh, byf, byg, byg, bya ] }
 
-instrument = { Overlay[
-                 AsIs,
-                 byg | Sequence[Silence 0.08, Length 0.01] | Gain 0.4,
-               ] }
+instrument = { Sequence[
+                 Overlay[
+                   AsIs,
+                   Tm 3 | Gain 0.4,
+                 ],
+                 Overlay[
+                   AsIs,
+                   Tm 5 | Gain 0.9,
+                 ]
+              ] }
 
-input = { instrument | bayati_melody }
+input = { instrument > ModulateBy bayati_melody }
 
 main = {
-  input | Length 0.2
+  input | Length 0.2 | Repeat 4
 }

@@ -19,6 +19,7 @@ seq : op -> op -> op.
 compose : op -> op -> op.
 overlay : op -> op -> op.
 let : op -> bindone op op -> op.
+modulate : op -> op -> op.
 
 program : type.
 (* the basic point isn't really optional, but isn't really used anywhere other

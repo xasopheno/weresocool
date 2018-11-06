@@ -64,6 +64,8 @@ lrof (compose O1 O2) Ratio :-
   lrof O1 Ratio1, lrof O2 Ratio2, ratio.mult Ratio1 Ratio2 Ratio.
 lrof (let O1 (bind _ O2)) Ratio :-
   lrof O1 Ratio1, (x:op -> lrof x Ratio1 -> lrof (O2 x) Ratio).
+lrof (modulate O1 _) Ratio :-
+  lrof O1 Ratio.
 
 (* now for normal programs *)
 
@@ -122,6 +124,34 @@ transform (simpleop Ops) (simpleop Ops') (simpleop Ops'') :-
 lrof : simpleop -> ratio -> prop.
 lrof (simpleop F) R :- lrof F R.
 
+chopoff : normalop -> ratio -> normalop -> normalop -> prop.
+chopoff : voiceop -> ratio -> voiceop -> voiceop -> prop.
+chopoff : (list simpleop * list simpleop) -> ratio -> (list simpleop * list simpleop) -> prop.
+
+chopoff (overlays O) LR (overlays O') (overlays O'') :-
+  map (pfun V => chopoff V LR) O O' O''.
+chopoff (sequences S) LR (sequences S') (sequences S'') :-
+  chopoff ([], S) LR (S', S'').
+
+chopoff (BeforeCut, AfterCut) (ratio 0 _) (BeforeCut, AfterCut).
+
+chopoff (BeforeCut, (HD :: TL)) LR Result
+    when not(eq LR (ratio 0 _)),
+         lrof HD LRactual, ratio.difforzero LRactual LR (ratio 0 X) :-
+  ratio.difforzero LR LRactual LR',
+  append BeforeCut [HD] BeforeCut',
+  chopoff (BeforeCut', TL) LR' Result.
+
+chopoff (BeforeCut, (HD :: TL)) LR (BeforeCut', (HD2 :: TL))
+    when not(eq LR (ratio 0 _)),
+         lrof HD LRactual, ratio.difforzero LRactual LR (ratio NZ X), not(eq NZ 0) :-
+  ratio.div LR LRactual FirstPart,
+  ratio.div (ratio NZ X) LRactual SecondPart,
+  point_to_fullpoint_op (lenmult FirstPart) F1,
+  point_to_fullpoint_op (lenmult SecondPart) F2,
+  transform HD (simpleop F1) HD1,
+  transform HD (simpleop F2) HD2,
+  append BeforeCut [HD1] BeforeCut'.
 
 
 normalize : program -> normalprogram -> prop.
@@ -165,6 +195,18 @@ normalize (compose O1 O2) Result :-
   normalop.foreach Res2 (pfun SimpleOp => transform Res1 SimpleOp) Everything,
   map (fold1 normalop.sequence) Everything Everything',
   fold1 normalop.overlay Everything' Result.
+
+normalize (modulate O1 O2) Result :-
+  normalize O1 Res1,
+  normalize O2 (overlays [ sequences Seq ]),
+  eq Res1 (overlays Voices),
+  map (fun u => eq (sequences [])) Voices Voices',
+  foldl (pfun (In, Out) (simpleop F) (In', Out') => [LR Cur Cur']
+    lrof F LR, chopoff In LR Cur In', transform Cur (simpleop F) Cur',
+    normalop.sequence Out Cur' Out')
+  (Res1, (overlays Voices'))
+  Seq
+  (_, Result).
 
 normalize (let Op1 (bind _ X_Op2)) Result :-
   normalize Op1 Op1', lrof Op1 LR,
