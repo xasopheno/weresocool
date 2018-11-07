@@ -108,7 +108,7 @@ op -> (fun id => fun o1 => fun o2 => let o1 (concrete.bindone (concrete.name var
 op_fit ->
      (fun op1 => fun op2 => fit op1 (fitlength op2))
       { <op_compose> ">" "FitLength" <op_compose> }
-    / (fun op1 => fun op2 => modulate (fit op1 (fitlength op2)) op2)
+    / (fun op1 => fun op2 => modulate op1 (fit op2 (fitlength op1)))
       { <op_compose> ">" "ModulateBy" <op_compose> }
     / op_compose ;
 

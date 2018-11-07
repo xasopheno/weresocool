@@ -50,6 +50,19 @@ combine   (fullpoint_op FM   FA   GM   LM   PM   PA)
   combine_linear PM PA PM' PA' PM'' PA'',
   ratio.mult GM GM' GM'', ratio.mult LM LM' LM''.
 
+modcombine : fullpoint_op -> fullpoint_op -> fullpoint_op -> prop.
+
+modcombine (fullpoint_id) F F.
+modcombine F fullpoint_id F.
+modcombine (fullpoint_sil LR) F' (fullpoint_sil LR).
+modcombine (fullpoint_op _ _ _ LR _ _) (fullpoint_sil _) (fullpoint_sil LR).
+modcombine (fullpoint_op FM   FA   GM   LM   PM   PA)
+           (fullpoint_op FM'  FA'  GM'  _    PM'  PA')
+           (fullpoint_op FM'' FA'' GM'' LM   PM'' PA'') :-
+  combine_linear FM FA FM' FA' FM'' FA'',
+  combine_linear PM PA PM' PA' PM'' PA'',
+  ratio.mult GM GM' GM''.
+
 
 (* lrof: calculate length ratio of an operation *)
 lrof : op -> ratio -> prop.
@@ -65,7 +78,7 @@ lrof (compose O1 O2) Ratio :-
 lrof (let O1 (bind _ O2)) Ratio :-
   lrof O1 Ratio1, (x:op -> lrof x Ratio1 -> lrof (O2 x) Ratio).
 lrof (modulate O1 _) Ratio :-
-  lrof O1 Ratio.
+  lrof O1 Ratio. (* TODO: check that the ratios match *)
 
 (* now for normal programs *)
 
@@ -109,17 +122,16 @@ foreach (sequences S) P Result :-
   map P S Result.
 %end.
 
-transform : normalop -> simpleop -> normalop -> prop.
-transform : voiceop -> simpleop -> voiceop -> prop.
-transform : simpleop -> simpleop -> simpleop -> prop.
-transform : fullpoint_op -> fullpoint_op -> fullpoint_op -> prop.
+transform : (fullpoint_op -> fullpoint_op -> fullpoint_op -> prop) -> normalop -> simpleop -> normalop -> prop.
+transform : (fullpoint_op -> fullpoint_op -> fullpoint_op -> prop) -> voiceop -> simpleop -> voiceop -> prop.
+transform : (fullpoint_op -> fullpoint_op -> fullpoint_op -> prop) -> simpleop -> simpleop -> simpleop -> prop.
 
-transform (overlays O) SOP (overlays O') :- map (pfun V => transform V SOP) O O'.
+transform P (overlays O) SOP (overlays O') :- map (pfun V => transform P V SOP) O O'.
 
-transform (sequences S) SOP (sequences S') :- map (pfun E => transform E SOP) S S'.
+transform P (sequences S) SOP (sequences S') :- map (pfun E => transform P E SOP) S S'.
 
-transform (simpleop Ops) (simpleop Ops') (simpleop Ops'') :-
-  combine Ops Ops' Ops''.
+transform P (simpleop Ops) (simpleop Ops') (simpleop Ops'') :-
+  P Ops Ops' Ops''.
 
 lrof : simpleop -> ratio -> prop.
 lrof (simpleop F) R :- lrof F R.
@@ -149,8 +161,8 @@ chopoff (BeforeCut, (HD :: TL)) LR (BeforeCut', (HD2 :: TL))
   ratio.div (ratio NZ X) LRactual SecondPart,
   point_to_fullpoint_op (lenmult FirstPart) F1,
   point_to_fullpoint_op (lenmult SecondPart) F2,
-  transform HD (simpleop F1) HD1,
-  transform HD (simpleop F2) HD2,
+  transform combine HD (simpleop F1) HD1,
+  transform combine HD (simpleop F2) HD2,
   append BeforeCut [HD1] BeforeCut'.
 
 
@@ -192,21 +204,23 @@ normalize (seq O1 O2) Result :-
 normalize (compose O1 O2) Result :-
   normalize O1 Res1,
   normalize O2 Res2,
-  normalop.foreach Res2 (pfun SimpleOp => transform Res1 SimpleOp) Everything,
+  normalop.foreach Res2 (pfun SimpleOp => transform combine Res1 SimpleOp) Everything,
   map (fold1 normalop.sequence) Everything Everything',
   fold1 normalop.overlay Everything' Result.
 
 normalize (modulate O1 O2) Result :-
   normalize O1 Res1,
-  normalize O2 (overlays [ sequences Seq ]),
+  normalize O2 (overlays Sequences),
   eq Res1 (overlays Voices),
   map (fun u => eq (sequences [])) Voices Voices',
-  foldl (pfun (In, Out) (simpleop F) (In', Out') => [LR Cur Cur']
-    lrof F LR, chopoff In LR Cur In', transform Cur (simpleop F) Cur',
-    normalop.sequence Out Cur' Out')
-  (Res1, (overlays Voices'))
-  Seq
-  (_, Result).
+  map (pfun (sequences Seq) ThisRes => [Unused]
+    foldl (pfun (In, Out) (simpleop F) (In', Out') => [LR Cur Cur']
+      lrof F LR, chopoff In LR Cur In', transform modcombine Cur (simpleop F) Cur',
+      normalop.sequence Out Cur' Out')
+    (Res1, (overlays Voices'))
+    Seq
+    (Unused, ThisRes)) Sequences AllRes,
+  fold1 normalop.overlay AllRes Result.
 
 normalize (let Op1 (bind _ X_Op2)) Result :-
   normalize Op1 Op1', lrof Op1 LR,
