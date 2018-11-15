@@ -24,4 +24,4 @@
 //pub mod song_22;
 //pub mod originate;
 //pub mod sound_effects;
-pub mod template;
+//pub mod template;
