@@ -7,7 +7,7 @@ pub mod get_length_ratio {
             match self {
                 Op::AsIs {}
 //                | Op::Reverse {}
-//                | Op::TransposeM { m: _ }
+                | Op::TransposeM { m: _ }
 //                | Op::TransposeA { a: _ }
 //                | Op::PanA { a: _ }
 //                | Op::PanM { m: _ }
@@ -24,13 +24,13 @@ pub mod get_length_ratio {
                     new_total
                 }
 
-//                Op::Compose { operations } => {
-//                    let mut new_total = 1.0;
-//                    for operation in operations {
-//                        new_total *= operation.get_length_ratio();
-//                    }
-//                    new_total
-//                }
+                Op::Compose { operations } => {
+                    let mut new_total = 1.0;
+                    for operation in operations {
+                        new_total *= operation.get_length_ratio();
+                    }
+                    new_total
+                }
 //
 //                Op::WithLengthRatioOf {
 //                    with_length_of,

@@ -46,7 +46,7 @@ BaseOperation: Op = {
 //        Op::Sequence { operations: vec }
 //    },
 //    "Silence" <v:Rational> => Op::Silence {m: v},
-//    "Tm" <v:Rational> => Op::TransposeM {m: v},
+    "Tm" <v:Rational> => Op::TransposeM {m: v},
 //    "Ta" <v:Rational> => Op::TransposeA {a: v},
 //    "PanM" <v:Rational> => Op::PanM {m: v},
 //    "PanA" <v:Rational> => Op::PanA {a: v},

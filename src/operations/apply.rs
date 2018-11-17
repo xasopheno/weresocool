@@ -18,20 +18,20 @@ pub mod apply {
 //                    vec_events = clone
 //                }
 //
-//                Op::TransposeM { m } => {
-//                    if m.is_infinite() {
-//                        panic!(
-//                            "Cannot pass infinite value to TransposeM. Probably divide by 0 error"
-//                        )
-//                    }
-//                    for event in events.iter() {
-//                        let mut e = event.clone();
-//                        for sound in e.sounds.iter_mut() {
-//                            sound.frequency = sound.frequency * m;
-//                        }
-//                        vec_events.push(e)
-//                    }
-//                }
+                Op::TransposeM { m } => {
+                    if m.is_infinite() {
+                        panic!(
+                            "Cannot pass infinite value to TransposeM. Probably divide by 0 error"
+                        )
+                    }
+                    for event in events.iter() {
+                        let mut e = event.clone();
+                        for sound in e.sounds.iter_mut() {
+                            sound.frequency = sound.frequency * m;
+                        }
+                        vec_events.push(e)
+                    }
+                }
 //
 //                Op::TransposeA { a } => {
 //                    for event in events.iter() {
@@ -98,15 +98,15 @@ pub mod apply {
 //                        vec_events.push(e)
 //                    }
 //                }
-//
-//                Op::Compose { operations } => {
-//                    let mut es = events.clone();
-//                    for operation in operations.iter() {
-//                        es = operation.apply(es);
-//                    }
-//                    vec_events = es;
-//                }
-//
+
+                Op::Compose { operations } => {
+                    let mut es = events.clone();
+                    for operation in operations.iter() {
+                        es = operation.apply(es);
+                    }
+                    vec_events = es;
+                }
+
                 Op::Sequence { operations } => {
                     let mut es = events.clone();
                     let mut container = vec![];

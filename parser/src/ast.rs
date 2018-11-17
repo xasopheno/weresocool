@@ -5,9 +5,9 @@ pub enum Op {
 //    Silence {
 //        m: f32,
 //    },
-//    TransposeM {
-//        m: f32,
-//    },
+    TransposeM {
+        m: f32,
+    },
 //    TransposeA {
 //        a: f32,
 //    },
@@ -30,9 +30,9 @@ pub enum Op {
     Overlay {
         operations: Vec<Op>,
     },
-//    Compose {
-//        operations: Vec<Op>,
-//    },
+    Compose {
+        operations: Vec<Op>,
+    },
 //
 //    WithLengthRatioOf {
 //        with_length_of: Box<Op>,

@@ -7,7 +7,7 @@ pub mod get_operations {
             match self {
                 Op::AsIs {}
 //                | Op::Reverse {}
-//                | Op::TransposeM { m: _ }
+                | Op::TransposeM { m: _ }
 //                | Op::TransposeA { a: _ }
 //                | Op::PanA { a: _ }
 //                | Op::PanM { m: _ }
@@ -17,7 +17,7 @@ pub mod get_operations {
 //                Op::Length { m: _ } | Op::Silence { m: _ } => None,
 //
                 Op::Sequence { operations: _ }
-//                | Op::Compose { operations: _ }
+                | Op::Compose { operations: _ }
                 => None,
 //
 //                Op::WithLengthRatioOf {
