@@ -1,9 +1,15 @@
 { f: 220, l: 2.0, g: 1.0, p: 0.0}
 
 main = {
-    Overlay [
-        Sequence [
-            AsIs
+    Sequence [
+        Overlay [
+            AsIs,
+            Tm 3/2,
+            Tm 5/2,
+        ],
+        Overlay [
+            Tm 3,
+            Tm 4,
         ]
-    ]
+   ]
 }

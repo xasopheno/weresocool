@@ -1,7 +1,7 @@
 pub mod normalize {
     use operations::{NormalForm, Normalize, GetLengthRatio};
     use socool_parser::ast::{Op, Op::*};
-
+    use std::cmp::Ordering::{Less, Greater, Equal};
 
     impl Normalize for Op {
         fn apply_to_normal_form(&self, input: NormalForm) -> NormalForm {
@@ -10,7 +10,8 @@ pub mod normalize {
                 Op::AsIs => {
                     output = input
                 }
-                | Op::TransposeM { m } => {
+
+                Op::TransposeM { m } => {
                     for mut voice in input {
                         let mut new_voice = vec![];
                         for op in voice {
@@ -37,20 +38,20 @@ pub mod normalize {
                     }
                 },
 //
-                Op::Sequence { operations: _ } => { output = input },
+                Op::Sequence { operations } => {
+                    let mut result = input.clone();
+
+                    for op in operations {
+                        result = join_sequence(result.clone(), op.apply_to_normal_form(input.clone()));
+                        println!("{:?}", result);
+                    }
+
+                    output = result
+                },
 
                 Op::Compose { operations } => {
-                        for mut voice in input {
-                            for compose_op in operations.clone() {
-                            let mut new_voice = vec![];
-                            for op in voice.clone() {
-                                new_voice.push(
-                                    Op::Compose {
-                                        operations: vec![op, compose_op.clone()]
-                                    }
-                                )
-                            }
-                        }
+                    for op in operations {
+                        op.apply_to_normal_form(input.clone());
                     }
                 }
 //
@@ -59,7 +60,14 @@ pub mod normalize {
 //                    main: _,
 //                } => None,
 
-                Op::Overlay { operations: _ } => { output = input }
+                Op::Overlay { operations } => {
+                    let mut voices = vec![];
+                    for op in operations {
+                        let result = op.apply_to_normal_form(input.clone());
+                        voices.push(result[0].clone())
+                    }
+                    output = voices
+                }
             }
 
             match_length(&mut output);
@@ -71,7 +79,6 @@ pub mod normalize {
 
     fn match_length(input: &mut NormalForm) {
         let max_len = get_max_length_ratio(&input);
-
         for voice in input {
             let mut voice_len = 0.0;
             for op in voice.clone() {
@@ -95,6 +102,30 @@ pub mod normalize {
             }
         }
         max_len
+    }
+
+    fn join_sequence(mut l: NormalForm, mut r: NormalForm) -> NormalForm {
+        let diff = l.len() - r.len();
+        let l_max_len = get_max_length_ratio(&l);
+        let r_max_len = get_max_length_ratio(&r);
+        match diff.partial_cmp(&0).unwrap() {
+            Equal => {},
+            Greater => {
+                for i in 0..diff {
+                    r.push(vec![Op::Silence {m: r_max_len}])
+                }
+            }
+            Less => {
+                for i in 0..diff {
+                    l.push(vec![Op::Silence {m: l_max_len}])
+                }
+            }
+        }
+        for (l_voice, mut r_voice) in l.iter_mut().zip(r.iter_mut()) {
+            l_voice.append(&mut r_voice)
+        }
+
+        l
     }
 
 }
