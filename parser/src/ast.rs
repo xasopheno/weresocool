@@ -2,9 +2,9 @@
 pub enum Op {
     AsIs,
 //    Reverse,
-//    Silence {
-//        m: f32,
-//    },
+    Silence {
+        m: f32,
+    },
     TransposeM {
         m: f32,
     },

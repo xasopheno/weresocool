@@ -14,7 +14,8 @@ pub mod get_operations {
 //                | Op::Gain { m: _ }
                 => None,
 //
-//                Op::Length { m: _ } | Op::Silence { m: _ } => None,
+//                Op::Length { m: _ } |
+                Op::Silence { m: _ } => None,
 //
                 Op::Sequence { operations: _ }
                 | Op::Compose { operations: _ }

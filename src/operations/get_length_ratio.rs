@@ -14,7 +14,8 @@ pub mod get_length_ratio {
 //                | Op::Gain { m: _ }
                 => 1.0,
 //
-//                Op::Length { m } | Op::Silence { m } => *m,
+//                Op::Length { m } |
+                Op::Silence { m } => *m,
 //
                 Op::Sequence { operations } => {
                     let mut new_total = 0.0;

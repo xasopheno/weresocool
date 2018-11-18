@@ -76,18 +76,18 @@ pub mod apply {
 //                        vec_events.push(e)
 //                    }
 //                }
-//
-//                Op::Silence { m } => {
-//                    for event in events.iter() {
-//                        let mut e = event.clone();
-//                        e.length *= m;
-//                        for sound in e.sounds.iter_mut() {
-//                            sound.frequency = 0.0;
-//                            sound.gain = 0.0;
-//                        }
-//                        vec_events.push(e)
-//                    }
-//                }
+
+                Op::Silence { m } => {
+                    for event in events.iter() {
+                        let mut e = event.clone();
+                        e.length *= m;
+                        for sound in e.sounds.iter_mut() {
+                            sound.frequency = 0.0;
+                            sound.gain = 0.0;
+                        }
+                        vec_events.push(e)
+                    }
+                }
 //
 //                Op::Gain { m } => {
 //                    for event in events.iter() {
