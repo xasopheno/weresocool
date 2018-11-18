@@ -16,7 +16,13 @@ output_matches P1 P2 :- fastprint_compiler P1 R1, fastprint_compiler P2 R2, eq R
 >> output_matches {{ Sequence [AsIs, AsIs, AsIs] }} {{ Overlay [ Sequence [ AsIs , AsIs , AsIs ] ] }} ?
 >> Yes.
 
+fastprint_compiler {{ Sequence [AsIs, Overlay[AsIs, AsIs], AsIs] }} X ?
+fastprint_compiler {{ Overlay [ Sequence [ AsIs , AsIs , AsIs ] , Sequence [ Silence 1 , AsIs , Silence 1 ] ] }} X ?
+
 >> output_matches {{ Sequence [AsIs, Overlay[AsIs, AsIs], AsIs] }} {{ Overlay [ Sequence [ AsIs , AsIs , AsIs ] , Sequence [ Silence 1 , AsIs , Silence 1 ] ] }} ?
+>> Yes.
+
+>> output_matches {{ Sequence[AsIs, AsIs] | Sequence[Overlay[AsIs, Tm 2], Overlay[AsIs, Tm 3]] }} {{ Overlay [ Sequence [ AsIs, AsIs, AsIs, AsIs ], Sequence [ Tm 2, Tm 2, Silence 2 ], Sequence [ Silence 2, Tm 3, Tm 3 ] ] }} ?
 >> Yes.
 
 >> output_matches {{ Overlay[AsIs, Tm 2] | Sequence[AsIs, AsIs, AsIs] }} {{ Overlay [ Sequence [ AsIs , AsIs , AsIs ] , Sequence [ Tm 2 , Tm 2 , Tm 2 ] ] }} ?

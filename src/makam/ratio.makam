@@ -55,6 +55,10 @@ fromdecimal Int FracS (ratio IntFrac Power) :-
 
 %end.
 
+eqv (ratio N D) (ratio N' D') :-
+  ratio.reduce (ratio N D) (ratio N'' D''),
+  ratio.reduce (ratio N' D') (ratio N'' D'').
+
 %extend ratio_tests.
 
 all : testsuite. %testsuite all.
