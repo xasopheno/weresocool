@@ -63,7 +63,7 @@ fn main() -> Result<(), pa::Error> {
 fn render(composition: &NormOp, init: Init) -> StereoWaveform {
     let input = vec![vec![Op::AsIs]];
     let piece = composition.apply_to_normal_form(input);
-    println!("{:?}", piece);
+//    println!("{:?}", piece);
     let normal_form_op = Op::Overlay {
         operations: piece[0].clone()
     };

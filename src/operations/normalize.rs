@@ -42,9 +42,10 @@ pub mod normalize {
                 },
 //
                 Op::Sequence { operations } => {
-                    let mut result = input.clone();
+                    let mut result = vec![];
 
                     for op in operations {
+//                        println!("op {:?} result {:?}", op, result);
                         result = join_sequence(
                             result,
                             op.apply_to_normal_form(input.clone()));
@@ -72,16 +73,17 @@ pub mod normalize {
                     for op in operations {
                         let result = op.apply_to_normal_form(input.clone());
                         if result.len() > 0 {
-                            voices.push(result[0].clone());
+                            voices.append(&mut result.clone());
                         }
-
                     }
+
+
                     output = voices
                 }
             }
 
             match_length(&mut output);
-            println!("{:?}", output);
+//            println!("{:?}", output);
             output
         }
     }
@@ -116,7 +118,6 @@ pub mod normalize {
 
     fn join_sequence(mut l: NormalForm, mut r: NormalForm) -> NormalForm {
         let diff = l.len() as isize - r.len() as isize;
-        println!("{} {}", diff, diff.abs());
         let l_max_len = get_max_length_ratio(&l);
         let r_max_len = get_max_length_ratio(&r);
         match diff.partial_cmp(&0).unwrap() {
@@ -132,7 +133,9 @@ pub mod normalize {
                 }
             }
         }
+
         for (l_voice, mut r_voice) in l.iter_mut().zip(r.iter_mut()) {
+            println!("LLL  {:?} RRR {:?}", l_voice, r_voice);
             l_voice.append(&mut r_voice)
         }
 
