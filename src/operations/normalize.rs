@@ -46,7 +46,7 @@ pub mod normalize {
 
                     for op in operations {
                         result = join_sequence(
-                            result.clone(),
+                            result,
                             op.apply_to_normal_form(input.clone()));
                     }
 
@@ -115,18 +115,19 @@ pub mod normalize {
     }
 
     fn join_sequence(mut l: NormalForm, mut r: NormalForm) -> NormalForm {
-        let diff = l.len() - r.len();
+        let diff = l.len() as isize - r.len() as isize;
+        println!("{} {}", diff, diff.abs());
         let l_max_len = get_max_length_ratio(&l);
         let r_max_len = get_max_length_ratio(&r);
         match diff.partial_cmp(&0).unwrap() {
             Equal => {},
             Greater => {
-                for i in 0..diff {
+                for i in 0..(diff.abs()) {
                     r.push(vec![Op::Silence {m: r_max_len}])
                 }
             }
             Less => {
-                for i in 0..diff {
+                for i in 0..diff.abs() {
                     l.push(vec![Op::Silence {m: l_max_len}])
                 }
             }

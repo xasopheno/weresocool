@@ -7,9 +7,15 @@ main = {
             Tm 3/2,
             Tm 5/2,
         ],
-        Overlay [
+        -- Overlay [
+        --     Tm 3,
+        --     Tm 4,
+        -- ],
+        Sequence [
+            AsIs,
             Tm 3,
-            Tm 4,
+            Tm 2,
+            Tm 5
         ]
    ]
 }
