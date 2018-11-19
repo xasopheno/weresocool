@@ -3,7 +3,10 @@ extern crate weresocool;
 extern crate portaudio;
 extern crate socool_parser;
 use portaudio as pa;
-use socool_parser::parser::*;
+use socool_parser::{
+    parser::*,
+    ast::Op
+};
 use itertools::Itertools;
 use weresocool::{
     event::{Event, Render},
@@ -12,13 +15,12 @@ use weresocool::{
         stereo_waveform::{StereoWaveform, Normalize}
     },
     generation::parsed_to_waveform::{event_from_init},
-    operations::{Apply, GetOperations},
+    operations::{Apply, GetOperations, Normalize as NormalizeOp},
     settings::get_default_app_settings,
     portaudio_setup::output::setup_portaudio_output,
     ui::{get_args, no_file_name, were_so_cool_logo},
     examples::documentation,
 };
-use socool_parser::ast::{Op};
 
 type NormOp = Op;
 type Sequences = Vec<Op>;
@@ -58,7 +60,14 @@ fn main() -> Result<(), pa::Error> {
     Ok(())
 }
 
-fn render(normal_form_op: &NormOp, init: Init) -> StereoWaveform {
+fn render(composition: &NormOp, init: Init) -> StereoWaveform {
+    let input = vec![vec![Op::AsIs]];
+    let piece = composition.apply_to_normal_form(input);
+    println!("{:?}", piece);
+    let normal_form_op = Op::Overlay {
+        operations: piece[0].clone()
+    };
+
     let sequences: Sequences = normal_form_op.get_operations().expect("Not in Normal Form");
 
     let e = event_from_init(init);

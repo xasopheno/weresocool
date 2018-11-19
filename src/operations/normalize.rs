@@ -39,6 +39,7 @@ pub mod normalize {
                 },
 //
                 Op::Sequence { operations } => {
+                    println!("in Sequence {:?}", operations);
                     let mut result = input.clone();
 
                     for op in operations {
@@ -50,9 +51,13 @@ pub mod normalize {
                 },
 
                 Op::Compose { operations } => {
+                    let mut result = vec![];
                     for op in operations {
-                        op.apply_to_normal_form(input.clone());
+                        result.push(op.apply_to_normal_form(input.clone()));
                     }
+
+                    println!("in Compose {:?}", output);
+                    output = result[0].clone()
                 }
 //
 //                Op::WithLengthRatioOf {
@@ -61,11 +66,17 @@ pub mod normalize {
 //                } => None,
 
                 Op::Overlay { operations } => {
+                    println!("in Overlay {:?}", operations);
                     let mut voices = vec![];
                     for op in operations {
                         let result = op.apply_to_normal_form(input.clone());
-                        voices.push(result[0].clone())
+                        println!("{:?}", result);
+                        if result.len() > 0 {
+                            voices.push(result[0].clone());
+                        }
+
                     }
+                    println!("End of Overlay {:?}", voices);
                     output = voices
                 }
             }
