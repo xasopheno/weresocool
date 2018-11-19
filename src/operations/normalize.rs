@@ -12,6 +12,7 @@ pub mod normalize {
                 }
 
                 Op::TransposeM { m } => {
+                    let mut result = vec![];
                     for mut voice in input {
                         let mut new_voice = vec![];
                         for op in voice {
@@ -21,7 +22,9 @@ pub mod normalize {
                                 }
                             )
                         }
+                        result.push(new_voice.clone())
                     }
+                    output = result
                 }
 //                | Op::TransposeA { a: _ }
 //                | Op::PanA { a: _ }
@@ -39,12 +42,12 @@ pub mod normalize {
                 },
 //
                 Op::Sequence { operations } => {
-                    println!("in Sequence {:?}", operations);
                     let mut result = input.clone();
 
                     for op in operations {
-                        result = join_sequence(result.clone(), op.apply_to_normal_form(input.clone()));
-                        println!("{:?}", result);
+                        result = join_sequence(
+                            result.clone(),
+                            op.apply_to_normal_form(input.clone()));
                     }
 
                     output = result
@@ -56,7 +59,6 @@ pub mod normalize {
                         result.push(op.apply_to_normal_form(input.clone()));
                     }
 
-                    println!("in Compose {:?}", output);
                     output = result[0].clone()
                 }
 //
@@ -66,23 +68,20 @@ pub mod normalize {
 //                } => None,
 
                 Op::Overlay { operations } => {
-                    println!("in Overlay {:?}", operations);
                     let mut voices = vec![];
                     for op in operations {
                         let result = op.apply_to_normal_form(input.clone());
-                        println!("{:?}", result);
                         if result.len() > 0 {
                             voices.push(result[0].clone());
                         }
 
                     }
-                    println!("End of Overlay {:?}", voices);
                     output = voices
                 }
             }
 
             match_length(&mut output);
-
+            println!("{:?}", output);
             output
         }
     }
