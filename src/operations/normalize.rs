@@ -3,7 +3,7 @@ pub mod normalize {
     use socool_parser::ast::{Op, Op::*};
     use std::cmp::Ordering::{Less, Greater, Equal};
 
-    fn op_map(new_op: Op, input: NormalForm) -> NormalForm {
+    fn fmap_point_op(new_op: Op, input: NormalForm) -> NormalForm {
         let mut result = vec![];
         for mut voice in input {
             let mut new_voice = vec![];
@@ -38,27 +38,27 @@ pub mod normalize {
                 }
 
                 Op::TransposeM { m } => {
-                    output = op_map(Op::TransposeM { m: *m }, input);
+                    output = fmap_point_op(Op::TransposeM { m: *m }, input);
                 }
 
                 Op::TransposeA { a } => {
-                    output = op_map(Op::TransposeA { a: *a }, input);
+                    output = fmap_point_op(Op::TransposeA { a: *a }, input);
                 }
 
                 Op::PanA { a } => {
-                    output = op_map(Op::PanA { a: *a }, input);
+                    output = fmap_point_op(Op::PanA { a: *a }, input);
                 }
 
                 Op::PanM { m } => {
-                    output = op_map(Op::PanM { m: *m }, input);
+                    output = fmap_point_op(Op::PanM { m: *m }, input);
                 }
 
                 Op::Gain { m } => {
-                    output = op_map(Op::Gain{ m: *m }, input);
+                    output = fmap_point_op(Op::Gain{ m: *m }, input);
                 }
 
                 Op::Length { m } => {
-                    output = op_map(Op::Length { m: *m }, input);
+                    output = fmap_point_op(Op::Length { m: *m }, input);
                 }
 
                 Op::Silence { m } => {
@@ -137,7 +137,7 @@ pub mod normalize {
             for op in voice.clone() {
                 voice_len += op.get_length_ratio()
             }
-            if voice_len < max_len && (max_len - voice_len) > 0.0 {
+            if voice_len < max_len  {
                 voice.push(Silence {m: max_len - voice_len});
             }
         }

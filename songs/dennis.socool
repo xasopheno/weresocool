@@ -32,12 +32,24 @@ melody = {
 }
 
 bass = {
+    O[
+    	(5/2, 3.0, 1.0, 1.0),
+      	(3/2, 2.0, 1.0, 0.5),
+      	(1/1, 0.0, 1.0, -0.5),
+  	] |
 	harmony | Sequence [AsIs, Tm 3/2, Tm 9/4] | Tm 1/2 > FitLength melody 
 }
 
 main = {
-	Overlay [
-		melody, 
-		bass
+	Sequence [
+		Overlay [
+			Sequence [Silence 2, overtones | Tm 10] > FitLength melody,
+			melody | 
+			Overlay [ 
+				overtones | Tm 1, 
+				overtones | Tm 9
+			] | Gain 1/6,
+			bass
+		] | Repeat 2
 	]
 }
