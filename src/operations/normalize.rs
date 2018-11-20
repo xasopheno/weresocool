@@ -3,6 +3,22 @@ pub mod normalize {
     use socool_parser::ast::{Op, Op::*};
     use std::cmp::Ordering::{Less, Greater, Equal};
 
+    fn fmap_point(new_op: Op, input: NormalForm) -> NormalForm {
+        let mut result = vec![];
+        for mut voice in input {
+            let mut new_voice = vec![];
+            for op in voice {
+                new_voice.push(
+                    Op::Compose {
+                        operations: vec![op, new_op.clone()]
+                    }
+                )
+            }
+            result.push(new_voice.clone());
+        }
+        result
+    }
+
     impl Normalize for Op {
         fn apply_to_normal_form(&self, input: NormalForm) -> NormalForm {
             let mut output: NormalForm = vec![];
@@ -22,99 +38,27 @@ pub mod normalize {
                 }
 
                 Op::TransposeM { m } => {
-                    let mut result = vec![];
-                    for mut voice in input {
-                        let mut new_voice = vec![];
-                        for op in voice {
-                            new_voice.push(
-                                Op::Compose {
-                                    operations: vec![op, Op::TransposeM { m: *m }]
-                                }
-                            )
-                        }
-                        result.push(new_voice.clone())
-                    }
-                    output = result
+                    output = fmap_point(Op::TransposeM { m: *m }, input);
                 }
 
                 Op::TransposeA { a } => {
-                    let mut result = vec![];
-                    for mut voice in input {
-                        let mut new_voice = vec![];
-                        for op in voice {
-                            new_voice.push(
-                                Op::Compose {
-                                    operations: vec![op, Op::TransposeA { a: *a }]
-                                }
-                            )
-                        }
-                        result.push(new_voice.clone())
-                    }
-                    output = result
+                    output = fmap_point(Op::TransposeA { a: *a }, input);
                 }
 
                 Op::PanA { a } => {
-                    let mut result = vec![];
-                    for mut voice in input {
-                        let mut new_voice = vec![];
-                        for op in voice {
-                            new_voice.push(
-                                Op::Compose {
-                                    operations: vec![op, Op::PanA { a: *a }]
-                                }
-                            )
-                        }
-                        result.push(new_voice.clone())
-                    }
-                    output = result
+                    output = fmap_point(Op::PanA { a: *a }, input);
                 }
 
                 Op::PanM { m } => {
-                    let mut result = vec![];
-                    for mut voice in input {
-                        let mut new_voice = vec![];
-                        for op in voice {
-                            new_voice.push(
-                                Op::Compose {
-                                    operations: vec![op, Op::PanM { m: *m }]
-                                }
-                            )
-                        }
-                        result.push(new_voice.clone())
-                    }
-                    output = result
+                    output = fmap_point(Op::PanM { m: *m }, input);
                 }
 
                 Op::Gain { m } => {
-                    let mut result = vec![];
-                    for mut voice in input {
-                        let mut new_voice = vec![];
-                        for op in voice {
-                            new_voice.push(
-                                Op::Compose {
-                                    operations: vec![op, Op::Gain { m: *m }]
-                                }
-                            )
-                        }
-                        result.push(new_voice.clone())
-                    }
-                    output = result
+                    output = fmap_point(Op::Gain{ m: *m }, input);
                 }
 
                 Op::Length { m } => {
-                    let mut result = vec![];
-                    for mut voice in input {
-                        let mut new_voice = vec![];
-                        for op in voice {
-                            new_voice.push(
-                                Op::Compose {
-                                    operations: vec![op, Op::Length { m: *m }]
-                                }
-                            )
-                        }
-                        result.push(new_voice.clone())
-                    }
-                    output = result
+                    output = fmap_point(Op::Length { m: *m }, input);
                 }
 
                 Op::Silence { m } => {

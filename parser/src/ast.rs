@@ -1,7 +1,6 @@
 #[derive(Clone, PartialEq, Debug)]
 pub enum Op {
     AsIs,
-    Reverse,
     Silence {
         m: f32,
     },
@@ -33,6 +32,8 @@ pub enum Op {
     Compose {
         operations: Vec<Op>,
     },
+//
+    Reverse,
 
     WithLengthRatioOf {
         with_length_of: Box<Op>,
