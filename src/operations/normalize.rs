@@ -34,21 +34,26 @@ pub mod normalize {
 //                Op::Length { m: _ } |
 
                 Op::Silence { m } => {
+                    let mut result = vec![];
+
                     let max_len = get_max_length_ratio(&input);
 
                     for _i in 0..input.len() {
-                        output.push(vec![Op::Silence { m: max_len * m }])
+                        result.push(vec![Op::Silence { m: max_len * m }])
                     }
+
+                    output = result
                 },
 //
                 Op::Sequence { operations } => {
+                    println!("INPUTTT {:?}", input);
                     let mut result = vec![];
 
                     for op in operations {
-//                        println!("op {:?} result {:?}", op, result);
                         result = join_sequence(
                             result,
                             op.apply_to_normal_form(input.clone()));
+
                     }
 
                     output = result
@@ -57,10 +62,10 @@ pub mod normalize {
                 Op::Compose { operations } => {
                     let mut result = vec![];
                     for op in operations {
-                        result.push(op.apply_to_normal_form(input.clone()));
+                        result.append(&mut op.apply_to_normal_form(input.clone()));
                     }
 
-                    output = result[0].clone()
+                    output = result
                 }
 //
 //                Op::WithLengthRatioOf {
@@ -82,8 +87,8 @@ pub mod normalize {
                 }
             }
 
-            match_length(&mut output);
-//            println!("{:?}", output);
+//            match_length(&mut output);
+            println!(">>>>>> OUTPUT {:?}", output);
             output
         }
     }
@@ -96,8 +101,8 @@ pub mod normalize {
             for op in voice.clone() {
                 voice_len += op.get_length_ratio()
             }
-            if voice_len < max_len {
-                voice.push(Silence {m: max_len - voice_len})
+            if voice_len < max_len && (max_len - voice_len) > 0.0 {
+                voice.push(Silence {m: voice_len})
             }
         }
     }
@@ -109,37 +114,66 @@ pub mod normalize {
             for op in voice {
                 voice_len += op.get_length_ratio()
             }
+
             if voice_len > max_len {
                 max_len = voice_len
             }
         }
+//        if max_len == 0.0 {
+//            println!("max_len Len {:?}", input);
+//        }
+
         max_len
     }
 
     fn join_sequence(mut l: NormalForm, mut r: NormalForm) -> NormalForm {
+        if l.len() == 0 {
+            return r
+        }
+
         let diff = l.len() as isize - r.len() as isize;
         let l_max_len = get_max_length_ratio(&l);
         let r_max_len = get_max_length_ratio(&r);
         match diff.partial_cmp(&0).unwrap() {
-            Equal => {},
+            Equal => { println!("equal!");},
             Greater => {
                 for i in 0..(diff.abs()) {
-                    r.push(vec![Op::Silence {m: r_max_len}])
+                    r.push(vec![Op::Silence { m: 1.0/5.0  * r_max_len }, Op::Silence { m: 4.0/5.0 * r_max_len }])
                 }
             }
             Less => {
                 for i in 0..diff.abs() {
-                    l.push(vec![Op::Silence {m: l_max_len}])
+                    l.push(vec![Op::Silence { m: 1.0/5.0 * l_max_len }, Op::Silence { m: 4.0/5.0  * l_max_len }])
                 }
             }
+
         }
 
-        for (l_voice, mut r_voice) in l.iter_mut().zip(r.iter_mut()) {
-            println!("LLL  {:?} RRR {:?}", l_voice, r_voice);
-            l_voice.append(&mut r_voice)
-        }
+        println!("LLL {:?} RRR {:?}", l, r);
 
-        l
+        let mut result = vec![];
+
+//                let mut voice = vec![];
+                for (x, y) in l
+                    .iter_mut()
+                    .zip(r.iter_mut()) {
+                        println!("lv &&& {:?} rv &&& {:?}", x, y);
+                    x.append(y);
+
+                    result.push(x.clone())
+                }
+//                for o in lv {
+//                    voice.push(o.clone());
+//                }
+//
+//                for o2 in rv {
+//                    voice.push(o2.clone());
+//                }
+
+//                result.push(voice);
+//            };
+
+        result
     }
 
 }

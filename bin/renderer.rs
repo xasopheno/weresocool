@@ -62,10 +62,22 @@ fn main() -> Result<(), pa::Error> {
 
 fn render(composition: &NormOp, init: Init) -> StereoWaveform {
     let input = vec![vec![Op::AsIs]];
-    let piece = composition.apply_to_normal_form(input);
-//    println!("{:?}", piece);
+    let piece = composition
+        .apply_to_normal_form(input);
+//        .iter()
+//        .flat_map(|array| array.iter())
+//        .cloned()
+//        .collect();
+
+    println!("PIECE {:?}", piece);
+    let mut seqs = vec![];
+    for seq in piece {
+        seqs.push(Op::Sequence { operations: seq})
+    }
+
     let normal_form_op = Op::Overlay {
-        operations: piece[0].clone()
+        operations: seqs
+
     };
 
     let sequences: Sequences = normal_form_op.get_operations().expect("Not in Normal Form");

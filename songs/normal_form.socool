@@ -4,18 +4,23 @@ main = {
     Sequence [
         Overlay [
             Tm 9/8,
-            Tm 3/2,
-       --     Tm 5/2,
+            Tm 5/4,
+            Tm 3/1,
         ],
-        -- Overlay [
-        --     Tm 3,
-        --     Tm 4,
-        -- ],
-        Sequence [
-      --      AsIs,
-            Tm 3,
-            Tm 2,
-            Tm 5
-        ]
-   ]
+       Overlay [
+           Tm 15/8,
+           Tm 3/2,
+        ],
+        Overlay [
+            Tm 8/5,
+            Tm 5/2,
+            Tm 4/1,
+        ],
+       Sequence [
+           Tm 1/1,
+           Tm 3/2,
+           Tm 9/8,
+           Tm 4/3
+       ]
+  ]
 }
