@@ -8,13 +8,13 @@ pub mod get_operations {
                 Op::AsIs {}
 //                | Op::Reverse {}
                 | Op::TransposeM { m: _ }
-//                | Op::TransposeA { a: _ }
-//                | Op::PanA { a: _ }
+                | Op::TransposeA { a: _ }
+                | Op::PanA { a: _ }
 //                | Op::PanM { m: _ }
-//                | Op::Gain { m: _ }
+                | Op::Gain { m: _ }
                 => None,
 //
-//                Op::Length { m: _ } |
+                Op::Length { m: _ } |
                 Op::Silence { m: _ } => None,
 //
                 Op::Sequence { operations: _ }

@@ -8,21 +8,21 @@ pub enum Op {
     TransposeM {
         m: f32,
     },
-//    TransposeA {
-//        a: f32,
-//    },
+    TransposeA {
+        a: f32,
+    },
 //    PanM {
 //        m: f32,
 //    },
-//    PanA {
-//        a: f32,
-//    },
-//    Gain {
-//        m: f32,
-//    },
-//    Length {
-//        m: f32,
-//    },
+    PanA {
+        a: f32,
+    },
+    Gain {
+        m: f32,
+    },
+    Length {
+        m: f32,
+    },
 //
     Sequence {
         operations: Vec<Op>,

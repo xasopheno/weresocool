@@ -38,43 +38,43 @@ BaseOperation: Op = {
     "(" <o: Operation> ")" => o,
     "AsIs" => Op::AsIs {},
 //    "Reverse" => Op::Reverse {},
-//    "Repeat" <i:Int> => {
-//        let mut vec = Vec::new();
-//        for x in 0..i {
-//            vec.push(Op::AsIs)
-//        }
-//        Op::Sequence { operations: vec }
-//    },
+    "Repeat" <i:Int> => {
+        let mut vec = Vec::new();
+        for x in 0..i {
+            vec.push(Op::AsIs)
+        }
+        Op::Sequence { operations: vec }
+    },
     "Silence" <v:Rational> => Op::Silence {m: v},
     "Tm" <v:Rational> => Op::TransposeM {m: v},
-//    "Ta" <v:Rational> => Op::TransposeA {a: v},
+    "Ta" <v:Rational> => Op::TransposeA {a: v},
 //    "PanM" <v:Rational> => Op::PanM {m: v},
-//    "PanA" <v:Rational> => Op::PanA {a: v},
-//    "Length" <v:Rational> => Op::Length {m: v},
-//    "Gain" <v:Rational> => Op::Gain {m: v},
+    "PanA" <v:Rational> => Op::PanA {a: v},
+    "Length" <v:Rational> => Op::Length {m: v},
+    "Gain" <v:Rational> => Op::Gain {m: v},
     "Sequence" "[" <operations: Operations> "]" => Op::Sequence { operations: operations },
     "Overlay" "[" <operations: Operations> "]" => Op::Overlay { operations: operations },
-//    "O" "[" <o: Overtones> "]" => Op::Overlay { operations: o },
+    "O" "[" <o: Overtones> "]" => Op::Overlay { operations: o },
     <id: Name> => { table.get(&id).unwrap().clone() },
 };
 
-// Overtone: Op = {
-//    "("
-//        <v:Rational> ","
-//        <o:Rational> ","
-//        <g:Rational> ","
-//        <p:Rational>
-//    ")"
-//    => Op::Compose { operations: vec! [
-//            Op::TransposeM { m: v },
-//            Op::TransposeA { a: o },
-//            Op::Gain { m: g },
-//            Op::PanA { a: p },
-//        ]
-//    }
-// }
+Overtone: Op = {
+    "("
+        <v:Rational> ","
+        <o:Rational> ","
+        <g:Rational> ","
+        <p:Rational>
+    ")"
+    => Op::Compose { operations: vec! [
+            Op::TransposeM { m: v },
+            Op::TransposeA { a: o },
+            Op::Gain { m: g },
+            Op::PanA { a: p },
+        ]
+    }
+}
 
-// Overtones = Comma<Overtone>;
+Overtones = Comma<Overtone>;
 
 Comma<T>: Vec<T> = {
     <v:(<T> ",")*> <e:T?> => match e {

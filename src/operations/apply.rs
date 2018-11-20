@@ -32,26 +32,26 @@ pub mod apply {
                         vec_events.push(e)
                     }
                 }
-//
-//                Op::TransposeA { a } => {
-//                    for event in events.iter() {
-//                        let mut e = event.clone();
-//                        for sound in e.sounds.iter_mut() {
-//                            sound.frequency = sound.frequency + a;
-//                        }
-//                        vec_events.push(e)
-//                    }
-//                }
-//
-//                Op::PanA { a } => {
-//                    for event in events.iter() {
-//                        let mut e = event.clone();
-//                        for sound in e.sounds.iter_mut() {
-//                            sound.pan += a;
-//                        }
-//                        vec_events.push(e)
-//                    }
-//                }
+
+                Op::TransposeA { a } => {
+                    for event in events.iter() {
+                        let mut e = event.clone();
+                        for sound in e.sounds.iter_mut() {
+                            sound.frequency = sound.frequency + a;
+                        }
+                        vec_events.push(e)
+                    }
+                }
+
+                Op::PanA { a } => {
+                    for event in events.iter() {
+                        let mut e = event.clone();
+                        for sound in e.sounds.iter_mut() {
+                            sound.pan += a;
+                        }
+                        vec_events.push(e)
+                    }
+                }
 //
 //                Op::PanM { m } => {
 //                    if m.is_infinite() {
@@ -66,16 +66,16 @@ pub mod apply {
 //                    }
 //                }
 //
-//                Op::Length { m } => {
-//                    if m.is_infinite() {
-//                        panic!("Cannot pass infinite value to Length. Probably divide by 0 error")
-//                    }
-//                    for event in events.iter() {
-//                        let mut e = event.clone();
-//                        e.length = e.length * m;
-//                        vec_events.push(e)
-//                    }
-//                }
+                Op::Length { m } => {
+                    if m.is_infinite() {
+                        panic!("Cannot pass infinite value to Length. Probably divide by 0 error")
+                    }
+                    for event in events.iter() {
+                        let mut e = event.clone();
+                        e.length = e.length * m;
+                        vec_events.push(e)
+                    }
+                }
 
                 Op::Silence { m } => {
                     for event in events.iter() {
@@ -89,15 +89,15 @@ pub mod apply {
                     }
                 }
 //
-//                Op::Gain { m } => {
-//                    for event in events.iter() {
-//                        let mut e = event.clone();
-//                        for sound in e.sounds.iter_mut() {
-//                            sound.gain *= m;
-//                        }
-//                        vec_events.push(e)
-//                    }
-//                }
+                Op::Gain { m } => {
+                    for event in events.iter() {
+                        let mut e = event.clone();
+                        for sound in e.sounds.iter_mut() {
+                            sound.gain *= m;
+                        }
+                        vec_events.push(e)
+                    }
+                }
 
                 Op::Compose { operations } => {
                     let mut es = events.clone();

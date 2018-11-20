@@ -8,13 +8,13 @@ pub mod get_length_ratio {
                 Op::AsIs {}
 //                | Op::Reverse {}
                 | Op::TransposeM { m: _ }
-//                | Op::TransposeA { a: _ }
-//                | Op::PanA { a: _ }
+                | Op::TransposeA { a: _ }
+                | Op::PanA { a: _ }
 //                | Op::PanM { m: _ }
-//                | Op::Gain { m: _ }
+                | Op::Gain { m: _ }
                 => 1.0,
 //
-//                Op::Length { m } |
+                Op::Length { m } |
                 Op::Silence { m } => *m,
 //
                 Op::Sequence { operations } => {

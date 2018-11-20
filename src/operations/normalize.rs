@@ -26,12 +26,72 @@ pub mod normalize {
                     }
                     output = result
                 }
-//                | Op::TransposeA { a: _ }
+
+                Op::TransposeA { a } => {
+                    let mut result = vec![];
+                    for mut voice in input {
+                        let mut new_voice = vec![];
+                        for op in voice {
+                            new_voice.push(
+                                Op::Compose {
+                                    operations: vec![op, Op::TransposeA { a: *a }]
+                                }
+                            )
+                        }
+                        result.push(new_voice.clone())
+                    }
+                    output = result
+                }
+
+                Op::PanA { a } => {
+                    let mut result = vec![];
+                    for mut voice in input {
+                        let mut new_voice = vec![];
+                        for op in voice {
+                            new_voice.push(
+                                Op::Compose {
+                                    operations: vec![op, Op::PanA { a: *a }]
+                                }
+                            )
+                        }
+                        result.push(new_voice.clone())
+                    }
+                    output = result
+                }
 //                | Op::PanA { a: _ }
 //                | Op::PanM { m: _ }
-//                | Op::Gain { m: _ }
-//
-//                Op::Length { m: _ } |
+
+                Op::Gain { m } => {
+                    let mut result = vec![];
+                    for mut voice in input {
+                        let mut new_voice = vec![];
+                        for op in voice {
+                            new_voice.push(
+                                Op::Compose {
+                                    operations: vec![op, Op::Gain { m: *m }]
+                                }
+                            )
+                        }
+                        result.push(new_voice.clone())
+                    }
+                    output = result
+                }
+
+                Op::Length { m } => {
+                    let mut result = vec![];
+                    for mut voice in input {
+                        let mut new_voice = vec![];
+                        for op in voice {
+                            new_voice.push(
+                                Op::Compose {
+                                    operations: vec![op, Op::Length { m: *m }]
+                                }
+                            )
+                        }
+                        result.push(new_voice.clone())
+                    }
+                    output = result
+                }
 
                 Op::Silence { m } => {
                     let mut result = vec![];
@@ -102,7 +162,6 @@ pub mod normalize {
             }
             if voice_len < max_len && (max_len - voice_len) > 0.0 {
                 voice.push(Silence {m: voice_len * 1.0/5.0});
-                voice.push(Silence {m: voice_len * 4.0/5.0});
             }
         }
     }
@@ -135,12 +194,12 @@ pub mod normalize {
             Equal => {},
             Greater => {
                 for i in 0..(diff.abs()) {
-                    r.push(vec![Op::Silence { m: 1.0/5.0  * r_max_len }, Op::Silence { m: 4.0/5.0 * r_max_len }])
+                    r.push(vec![Op::Silence { m: r_max_len }])
                 }
             }
             Less => {
                 for i in 0..diff.abs() {
-                    l.push(vec![Op::Silence { m: 1.0/5.0 * l_max_len }, Op::Silence { m: 4.0/5.0  * l_max_len }])
+                    l.push(vec![Op::Silence { m: l_max_len }])
                 }
             }
 
