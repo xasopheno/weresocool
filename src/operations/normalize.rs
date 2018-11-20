@@ -3,7 +3,7 @@ pub mod normalize {
     use socool_parser::ast::{Op, Op::*};
     use std::cmp::Ordering::{Less, Greater, Equal};
 
-    fn fmap_point(new_op: Op, input: NormalForm) -> NormalForm {
+    fn op_map(new_op: Op, input: NormalForm) -> NormalForm {
         let mut result = vec![];
         for mut voice in input {
             let mut new_voice = vec![];
@@ -38,27 +38,27 @@ pub mod normalize {
                 }
 
                 Op::TransposeM { m } => {
-                    output = fmap_point(Op::TransposeM { m: *m }, input);
+                    output = op_map(Op::TransposeM { m: *m }, input);
                 }
 
                 Op::TransposeA { a } => {
-                    output = fmap_point(Op::TransposeA { a: *a }, input);
+                    output = op_map(Op::TransposeA { a: *a }, input);
                 }
 
                 Op::PanA { a } => {
-                    output = fmap_point(Op::PanA { a: *a }, input);
+                    output = op_map(Op::PanA { a: *a }, input);
                 }
 
                 Op::PanM { m } => {
-                    output = fmap_point(Op::PanM { m: *m }, input);
+                    output = op_map(Op::PanM { m: *m }, input);
                 }
 
                 Op::Gain { m } => {
-                    output = fmap_point(Op::Gain{ m: *m }, input);
+                    output = op_map(Op::Gain{ m: *m }, input);
                 }
 
                 Op::Length { m } => {
-                    output = fmap_point(Op::Length { m: *m }, input);
+                    output = op_map(Op::Length { m: *m }, input);
                 }
 
                 Op::Silence { m } => {

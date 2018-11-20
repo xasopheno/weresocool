@@ -32,7 +32,7 @@ melody = {
 }
 
 bass = {
-	harmony | Sequence [AsIs, Tm 3/2, Tm 9/4, Tm 5, Tm 8] | Tm 1/2 > FitLength melody 
+	harmony | Sequence [AsIs, Tm 3/2, Tm 9/4] | Tm 1/2 > FitLength melody 
 }
 
 main = {
