@@ -1,4 +1,4 @@
-{ f: 220, l: 1.0, g: 1.0, p: 0.0}
+r{ f: 220, l: 1.0, g: 1.0, p: 0.0}
 
 overtones = {
     O[
@@ -10,7 +10,7 @@ overtones = {
 }
 
 thing1 = {
-	-- overtones |
+	overtones |
 	Sequence [
 		AsIs,
 		Tm 9/8,
