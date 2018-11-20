@@ -1,6 +1,6 @@
 { f: 220, l: 2.0, g: 1.0, p: 0.0}
 
-main = {
+thing = {
     Sequence [
         Overlay [
             Tm 9/8,
@@ -18,9 +18,22 @@ main = {
         ],
        Sequence [
            Tm 1/1,
-           Tm 3/2,
+           Overlay [
+            Tm 7/4,
+            Tm 5/3,
+            Tm 2/1,
+           ],
            Tm 9/8,
-           Tm 4/3
+           Tm 4/3,
+           Tm 5/4
        ]
-  ]
+    ]
+}
+
+main = {
+        Overlay [
+            AsIs | Tm 10,
+            thing, 
+            thing | Tm 3
+        ]
 }

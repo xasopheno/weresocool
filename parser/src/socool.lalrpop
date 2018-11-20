@@ -30,7 +30,7 @@ Operation: Op = {
 }
 
 ComposeOperation: Op = {
-//    <ops: Pipe<BaseOperation>> => Op::Compose { operations: ops },
+    <ops: Pipe<BaseOperation>> => Op::Compose { operations: ops },
     <o: BaseOperation> => o,
 }
 
@@ -102,7 +102,7 @@ Pipe<T>: Vec<T> = {
     }
 };
 
-// Compose = Pipe<Operation>;
+Compose = Pipe<Operation>;
 
 Operations = Comma<Operation>;
 
