@@ -11,6 +11,16 @@ pub mod normalize {
                     output = input
                 }
 
+                Op::Reverse => {
+                    let mut result = vec![];
+                    for mut voice in input.clone() {
+                        voice.reverse();
+                        result.push(voice)
+                    }
+
+                    output = result
+                }
+
                 Op::TransposeM { m } => {
                     let mut result = vec![];
                     for mut voice in input {
@@ -58,8 +68,22 @@ pub mod normalize {
                     }
                     output = result
                 }
-//                | Op::PanA { a: _ }
-//                | Op::PanM { m: _ }
+
+                Op::PanM { m } => {
+                    let mut result = vec![];
+                    for mut voice in input {
+                        let mut new_voice = vec![];
+                        for op in voice {
+                            new_voice.push(
+                                Op::Compose {
+                                    operations: vec![op, Op::PanM { m: *m }]
+                                }
+                            )
+                        }
+                        result.push(new_voice.clone())
+                    }
+                    output = result
+                }
 
                 Op::Gain { m } => {
                     let mut result = vec![];
@@ -127,10 +151,20 @@ pub mod normalize {
                     output = result
                 }
 
-//                Op::WithLengthRatioOf {
-//                    with_length_of: _,
-//                    main: _,
-//                } => None,
+                Op::WithLengthRatioOf {
+                    with_length_of,
+                    main,
+                } => {
+                    let mut i = input.clone();
+
+                    let target_length = with_length_of.get_length_ratio();
+                    let main_length = main.get_length_ratio();
+                    let ratio = target_length / main_length;
+
+                    let new_op = Op::Length { m: ratio };
+
+                    output = new_op.apply_to_normal_form(i);
+                }
 
                 Op::Overlay { operations } => {
                     let mut voices = vec![];
@@ -147,7 +181,6 @@ pub mod normalize {
             }
 
             match_length(&mut output);
-            println!(">>>>>> OUTPUT {:?}", output);
             output
         }
     }
@@ -161,7 +194,7 @@ pub mod normalize {
                 voice_len += op.get_length_ratio()
             }
             if voice_len < max_len && (max_len - voice_len) > 0.0 {
-                voice.push(Silence {m: voice_len * 1.0/5.0});
+                voice.push(Silence {m: max_len - voice_len});
             }
         }
     }

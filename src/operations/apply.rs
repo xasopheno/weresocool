@@ -12,12 +12,12 @@ pub mod apply {
                     vec_events = events;
                 }
 
-//                Op::Reverse {} => {
-//                    let mut clone = events.clone();
-//                    clone.reverse();
-//                    vec_events = clone
-//                }
-//
+                Op::Reverse {} => {
+                    let mut clone = events.clone();
+                    clone.reverse();
+                    vec_events = clone
+                }
+
                 Op::TransposeM { m } => {
                     if m.is_infinite() {
                         panic!(
@@ -52,20 +52,20 @@ pub mod apply {
                         vec_events.push(e)
                     }
                 }
-//
-//                Op::PanM { m } => {
-//                    if m.is_infinite() {
-//                        panic!("Cannot pass infinite value to PanM. Probably divide by 0 error")
-//                    }
-//                    for event in events.iter() {
-//                        let mut e = event.clone();
-//                        for sound in e.sounds.iter_mut() {
-//                            sound.pan *= m;
-//                        }
-//                        vec_events.push(e)
-//                    }
-//                }
-//
+
+                Op::PanM { m } => {
+                    if m.is_infinite() {
+                        panic!("Cannot pass infinite value to PanM. Probably divide by 0 error")
+                    }
+                    for event in events.iter() {
+                        let mut e = event.clone();
+                        for sound in e.sounds.iter_mut() {
+                            sound.pan *= m;
+                        }
+                        vec_events.push(e)
+                    }
+                }
+
                 Op::Length { m } => {
                     if m.is_infinite() {
                         panic!("Cannot pass infinite value to Length. Probably divide by 0 error")
@@ -88,7 +88,7 @@ pub mod apply {
                         vec_events.push(e)
                     }
                 }
-//
+
                 Op::Gain { m } => {
                     for event in events.iter() {
                         let mut e = event.clone();
@@ -116,7 +116,7 @@ pub mod apply {
 
                     vec_events = container.iter().flat_map(|evt| evt.clone()).collect();
                 }
-//
+
                 Op::Overlay { operations } => {
                     let mut vec_vec_events: Vec<Vec<Event>> = vec![];
 
@@ -127,21 +127,21 @@ pub mod apply {
 
                     vec_events = vv_event_to_v_events(&vec_vec_events);
                 }
-//
-//                Op::WithLengthRatioOf {
-//                    with_length_of,
-//                    main,
-//                } => {
-//                    let mut es = events.clone();
-//
-//                    let target_length = with_length_of.get_length_ratio();
-//                    let main_length = main.get_length_ratio();
-//                    let ratio = target_length / main_length;
-//
-//                    let new_op = Op::Length { m: ratio };
-//
-//                    vec_events = new_op.apply(es);
-//                }
+
+                Op::WithLengthRatioOf {
+                    with_length_of,
+                    main,
+                } => {
+                    let mut es = events.clone();
+
+                    let target_length = with_length_of.get_length_ratio();
+                    let main_length = main.get_length_ratio();
+                    let ratio = target_length / main_length;
+
+                    let new_op = Op::Length { m: ratio };
+
+                    vec_events = new_op.apply(es);
+                }
             }
 
             vec_events

@@ -41,6 +41,6 @@ main = {
         Overlay [
             -- AsIs | Tm 10,
             thing, 
-            thing | Tm 3 | Length 0.1 | Repeat 8
+            thing | Tm 3 | Length 0.1 | Repeat 8 
         ]
 }

@@ -25,7 +25,7 @@ LetDef: () = {
 }
 
 Operation: Op = {
-//    <op1: ComposeOperation> ">" "FitLength" <op2: ComposeOperation> => Op::Compose { operations: vec![op1.clone(), Op::WithLengthRatioOf { with_length_of: Box::new(op2), main: Box::new(op1) }] },
+    <op1: ComposeOperation> ">" "FitLength" <op2: ComposeOperation> => Op::Compose { operations: vec![op1.clone(), Op::WithLengthRatioOf { with_length_of: Box::new(op2), main: Box::new(op1) }] },
     <op: ComposeOperation> => op
 }
 
@@ -37,7 +37,7 @@ ComposeOperation: Op = {
 BaseOperation: Op = {
     "(" <o: Operation> ")" => o,
     "AsIs" => Op::AsIs {},
-//    "Reverse" => Op::Reverse {},
+    "Reverse" => Op::Reverse {},
     "Repeat" <i:Int> => {
         let mut vec = Vec::new();
         for x in 0..i {
@@ -48,7 +48,7 @@ BaseOperation: Op = {
     "Silence" <v:Rational> => Op::Silence {m: v},
     "Tm" <v:Rational> => Op::TransposeM {m: v},
     "Ta" <v:Rational> => Op::TransposeA {a: v},
-//    "PanM" <v:Rational> => Op::PanM {m: v},
+    "PanM" <v:Rational> => Op::PanM {m: v},
     "PanA" <v:Rational> => Op::PanA {a: v},
     "Length" <v:Rational> => Op::Length {m: v},
     "Gain" <v:Rational> => Op::Gain {m: v},

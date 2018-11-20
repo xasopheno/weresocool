@@ -6,11 +6,11 @@ pub mod get_length_ratio {
         fn get_length_ratio(&self) -> f32 {
             match self {
                 Op::AsIs {}
-//                | Op::Reverse {}
+                | Op::Reverse {}
                 | Op::TransposeM { m: _ }
                 | Op::TransposeA { a: _ }
                 | Op::PanA { a: _ }
-//                | Op::PanM { m: _ }
+                | Op::PanM { m: _ }
                 | Op::Gain { m: _ }
                 => 1.0,
 //
@@ -32,12 +32,12 @@ pub mod get_length_ratio {
                     }
                     new_total
                 }
-//
-//                Op::WithLengthRatioOf {
-//                    with_length_of,
-//                    main: _,
-//                } => with_length_of.get_length_ratio(),
-//
+
+                Op::WithLengthRatioOf {
+                    with_length_of,
+                    main: _,
+                } => with_length_of.get_length_ratio(),
+
                 Op::Overlay { operations } => {
                     let mut max = 0.0;
                     for op in operations {
