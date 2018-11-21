@@ -61,11 +61,11 @@ fn main() -> Result<(), pa::Error> {
 }
 
 fn render(composition: &NormOp, init: Init) -> StereoWaveform {
-    let mut input = vec![vec![Op::AsIs]];
+    let mut piece = vec![vec![Op::AsIs]];
 
-    composition.apply_to_normal_form(&mut input);
+    composition.apply_to_normal_form(&mut piece);
 
-    let voices = input.iter_mut().map(|voice| {
+    let voices = piece.iter_mut().map(|voice| {
         Op::Sequence { operations: voice.to_owned() }
     }).collect();
 
