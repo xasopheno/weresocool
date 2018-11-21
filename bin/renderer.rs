@@ -63,6 +63,8 @@ fn main() -> Result<(), pa::Error> {
 fn render(composition: &NormOp, init: Init) -> StereoWaveform {
     let mut piece = vec![vec![Op::AsIs]];
 
+    println!("Applying Operations \n");
+
     composition.apply_to_normal_form(&mut piece);
 
     let voices = piece.iter_mut().map(|voice| {
@@ -77,6 +79,8 @@ fn render(composition: &NormOp, init: Init) -> StereoWaveform {
     let sequences: Sequences = normal_form_op.get_operations().expect("Not in Normal Form");
 
     let e = event_from_init(init);
+
+    println!("Generating Events \n");
 
     let norm_ev = generate_events(sequences, e);
     let vec_wav = generate_waveforms(norm_ev);
