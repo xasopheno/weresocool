@@ -65,14 +65,12 @@ fn render(composition: &NormOp, init: Init) -> StereoWaveform {
 
     composition.apply_to_normal_form(&mut input);
 
-    let mut seqs = vec![];
-    
-    for seq in input {
-        seqs.push(Op::Sequence { operations: seq})
-    }
+    let voices = input.iter_mut().map(|voice| {
+        Op::Sequence { operations: voice.to_owned() }
+    }).collect();
 
     let normal_form_op = Op::Overlay {
-        operations: seqs
+        operations: voices
 
     };
 
