@@ -1,26 +1,29 @@
+extern crate num_rational;
+use num_rational::Rational;
+
 #[derive(Clone, PartialEq, Debug)]
 pub enum Op {
     AsIs,
     Silence {
-        m: f32,
+        m: Rational,
     },
     TransposeM {
-        m: f32,
+        m: Rational,
     },
     TransposeA {
-        a: f32,
+        a: Rational,
     },
     PanM {
-        m: f32,
+        m: Rational,
     },
     PanA {
-        a: f32,
+        a: Rational,
     },
     Gain {
-        m: f32,
+        m: Rational,
     },
     Length {
-        m: f32,
+        m: Rational
     },
 //
     Sequence {
