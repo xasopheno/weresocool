@@ -3,129 +3,108 @@ pub mod normalize {
     use socool_parser::ast::{Op, Op::*};
     use std::cmp::Ordering::{Less, Greater, Equal};
 
-    fn fmap_point_op(new_op: Op, input: NormalForm) -> NormalForm {
-        let mut result = vec![];
+    fn fmap_point_op(new_op: Op, input: &mut NormalForm) {
         for mut voice in input {
-            let mut new_voice = vec![];
-            for op in voice {
-                new_voice.push(
-                    Op::Compose {
-                        operations: vec![op, new_op.clone()]
-                    }
-                )
+            for mut op in voice {
+                *op = Op::Compose {
+                    operations: vec![op.clone(), new_op.clone()]
+                };
             }
-            result.push(new_voice.clone());
         }
-        result
     }
 
     impl Normalize for Op {
-        fn apply_to_normal_form(&self, input: NormalForm) -> NormalForm {
-            let mut output: NormalForm = vec![];
+        fn apply_to_normal_form(&self, input: &mut NormalForm) {
+//            println!("{:?}", input);
             match self {
-                Op::AsIs => {
-                    output = input
-                }
+                Op::AsIs => {}
 
                 Op::Reverse => {
-                    let mut result = vec![];
-                    for mut voice in input.clone() {
+                    for mut voice in input.iter_mut() {
                         voice.reverse();
-                        result.push(voice)
                     }
-
-                    output = result
                 }
 
                 Op::TransposeM { m } => {
-                    output = fmap_point_op(Op::TransposeM { m: *m }, input);
+                    fmap_point_op(Op::TransposeM { m: *m }, input);
                 }
 
                 Op::TransposeA { a } => {
-                    output = fmap_point_op(Op::TransposeA { a: *a }, input);
+                    fmap_point_op(Op::TransposeA { a: *a }, input);
                 }
 
                 Op::PanA { a } => {
-                    output = fmap_point_op(Op::PanA { a: *a }, input);
+                    fmap_point_op(Op::PanA { a: *a }, input);
                 }
 
                 Op::PanM { m } => {
-                    output = fmap_point_op(Op::PanM { m: *m }, input);
+                    fmap_point_op(Op::PanM { m: *m }, input);
                 }
 
                 Op::Gain { m } => {
-                    output = fmap_point_op(Op::Gain{ m: *m }, input);
+                    fmap_point_op(Op::Gain { m: *m }, input);
                 }
 
                 Op::Length { m } => {
-                    output = fmap_point_op(Op::Length { m: *m }, input);
+                    fmap_point_op(Op::Length { m: *m }, input);
                 }
 
                 Op::Silence { m } => {
-                    let mut result = vec![];
-
                     let max_len = get_max_length_ratio(&input);
 
-                    for _i in 0..input.len() {
-                        result.push(vec![Op::Silence { m: max_len * m }])
+                    for voice in input.iter_mut() {
+                        *voice = vec![Op::Silence { m: max_len * m }]
                     }
-
-                    output = result
                 },
 //
                 Op::Sequence { operations } => {
                     let mut result = vec![];
 
                     for op in operations {
+                        let mut input_clone = input.clone();
+                        op.apply_to_normal_form(&mut input_clone);
                         result = join_sequence(
                             result,
-                            op.apply_to_normal_form(input.clone()));
+                            input_clone);
 
                     }
 
-                    output = result
+                    *input = result
                 },
 
                 Op::Compose { operations } => {
-                    let mut result = input.clone();
                     for op in operations {
-                        result = op.apply_to_normal_form(result);
+                        op.apply_to_normal_form(input);
                     }
 
-                    output = result
                 }
 
                 Op::WithLengthRatioOf {
                     with_length_of,
                     main,
                 } => {
-                    let mut i = input.clone();
-
                     let target_length = with_length_of.get_length_ratio();
                     let main_length = main.get_length_ratio();
                     let ratio = target_length / main_length;
 
                     let new_op = Op::Length { m: ratio };
 
-                    output = new_op.apply_to_normal_form(i);
+                    new_op.apply_to_normal_form(input);
                 }
 
                 Op::Overlay { operations } => {
-                    let mut voices = vec![];
+                    let mut result = vec![];
                     for op in operations {
-                        let result = op.apply_to_normal_form(input.clone());
-                        if result.len() > 0 {
-                            voices.append(&mut result.clone());
-                        }
+                        let mut input_clone = input.clone();
+                        op.apply_to_normal_form(&mut input_clone);
+                        result.append(&mut input_clone);
                     }
 
-
-                    output = voices
+                    *input = result
                 }
             }
 
-            match_length(&mut output);
-            output
+            match_length(input);
         }
     }
 
@@ -137,8 +116,8 @@ pub mod normalize {
             for op in voice.clone() {
                 voice_len += op.get_length_ratio()
             }
-            if voice_len < max_len  {
-                voice.push(Silence {m: max_len - voice_len});
+            if voice_len < max_len {
+                voice.push(Silence { m: max_len - voice_len });
             }
         }
     }
@@ -179,7 +158,6 @@ pub mod normalize {
                     l.push(vec![Op::Silence { m: l_max_len }])
                 }
             }
-
         }
 
         let mut result = vec![];
@@ -193,7 +171,5 @@ pub mod normalize {
 
         result
     }
-
 }
-
 

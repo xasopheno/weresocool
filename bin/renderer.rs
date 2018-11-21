@@ -15,7 +15,7 @@ use weresocool::{
         stereo_waveform::{StereoWaveform, Normalize}
     },
     generation::parsed_to_waveform::{event_from_init},
-    operations::{Apply, GetOperations, Normalize as NormalizeOp},
+    operations::{Apply, GetOperations, Normalize as NormalizeOp, Point},
     settings::get_default_app_settings,
     portaudio_setup::output::setup_portaudio_output,
     ui::{get_args, no_file_name, were_so_cool_logo},
@@ -61,12 +61,13 @@ fn main() -> Result<(), pa::Error> {
 }
 
 fn render(composition: &NormOp, init: Init) -> StereoWaveform {
-    let input = vec![vec![Op::AsIs]];
-    let piece = composition
-        .apply_to_normal_form(input);
+    let mut input = vec![vec![Op::AsIs]];
+
+    composition.apply_to_normal_form(&mut input);
 
     let mut seqs = vec![];
-    for seq in piece {
+    
+    for seq in input {
         seqs.push(Op::Sequence { operations: seq})
     }
 
