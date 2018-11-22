@@ -1,8 +1,6 @@
 
 pub mod helpers {
     extern crate num_rational;
-    extern crate regex;
-    use regex::Regex;
     use num_rational::{Ratio, Rational};
     use std::str::FromStr;
 
@@ -10,11 +8,8 @@ pub mod helpers {
         let mut s =
             float_string
             .to_string();
-//            .chars();
         let decimal = s.split(".").collect::<Vec<&str>>()[1];
-        println!("{:?}", decimal);
         let denometer = isize::pow(10, decimal.len() as u32);
-        println!("{:?}", denometer);
         let num = isize::from_str(&s.replace(".", "")).unwrap();
 
        Ratio::new(num, denometer)
