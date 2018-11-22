@@ -1,5 +1,7 @@
 lalrpop_mod!(pub socool);
 extern crate colored;
+extern crate num_rational;
+use num_rational::{Ratio, Rational};
 use colored::*;
 use std::fs::File;
 use std::io::prelude::*;
@@ -11,10 +13,10 @@ use crate::ast::*;
 
 #[derive(Clone, PartialEq, Debug)]
 pub struct Init {
-    pub f: f32,
-    pub l: f32,
-    pub g: f32,
-    pub p: f32,
+    pub f: Rational,
+    pub l: Rational,
+    pub g: Rational,
+    pub p: Rational,
 }
 
 pub type ParseTable = HashMap<String, Op>;

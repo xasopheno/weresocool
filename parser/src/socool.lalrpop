@@ -3,6 +3,7 @@ use std::str::FromStr;
 use std::string::String;
 use crate::ast::Op;
 use crate::parser::Init;
+use crate::float_to_rational::helpers::*;
 use std::collections::HashMap;
 
 grammar<'table>(table: &'table mut HashMap<String, Op>);
@@ -108,11 +109,11 @@ Compose = Pipe<Operation>;
 Operations = Comma<Operation>;
 
 Rational: Rational = {
-    <n: Float> => Ratio::new(1, 1),
+    <n: Float> => f32_to_rational(n),
     <n: Int> => Ratio::new(n, 1),
     <n: Int> "/" <d:Int> => Ratio::new(n, d),
 };
 
 Name: String = <s:r"[a-z_$][a-zA-Z_$0-9]*"> => s.to_string();
-Float: f32 = <s:r"-?(0|([1-9]\d*))\.\d+"> => f32::from_str(s).unwrap();
-Int: isize = <s:r"-?[0-9]+"> => i32::from_str(s).unwrap();
+Float: String = <s:r"-?(0|([1-9]\d*))\.\d+"> => s.to_string();
+Int: isize = <s:r"-?[0-9]+"> => isize::from_str(s).unwrap();
