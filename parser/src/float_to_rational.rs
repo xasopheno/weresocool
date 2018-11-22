@@ -11,12 +11,13 @@ pub mod helpers {
             float_string
             .to_string();
 //            .chars();
-        let re = Regex::new(r"\.(.*)$").unwrap();
-        let decimal = re.captures(&s).unwrap()[1].to_string().clone();
-        let d = decimal.len();
-        let num = f32::from_str().unwrap() * d;
+        let decimal = s.split(".").collect::<Vec<&str>>()[1];
+        println!("{:?}", decimal);
+        let denometer = isize::pow(10, decimal.len() as u32);
+        println!("{:?}", denometer);
+        let num = isize::from_str(&s.replace(".", "")).unwrap();
 
-       Ratio::new(float, 1)
+       Ratio::new(num, denometer)
     }
 
     #[cfg(test)]
@@ -27,7 +28,7 @@ pub mod helpers {
      #[test]
         fn test_float_to_rational() {
             let result = f32_to_rational("112.999".to_string());
-            let expected = Ratio::new(10001, 10000);
+            let expected = Ratio::new(112999, 1000);
             assert_eq!(result, expected);
         }
     }
