@@ -1,11 +1,8 @@
 extern crate itertools;
-extern crate weresocool;
 extern crate num_rational;
+extern crate weresocool;
 use itertools::Itertools;
-use num_rational::{
-    Ratio,
-    Rational,
-};
+use num_rational::{Ratio, Rational};
 
 #[derive(Debug, Clone)]
 enum Item {
@@ -16,14 +13,14 @@ enum Item {
 #[derive(Debug, Clone)]
 struct Event {
     s: Sound,
-    l: Rational
+    l: Rational,
 }
 
 #[derive(Debug, Clone)]
 struct Sound {
     f: Rational,
     g: Rational,
-    p: Rational
+    p: Rational,
 }
 
 impl Sound {
@@ -31,7 +28,7 @@ impl Sound {
         Sound {
             f: Ratio::new(2, 3),
             g: Ratio::new(6, 7),
-            p: Ratio::new(0, 1)
+            p: Ratio::new(0, 1),
         }
     }
 }
@@ -40,7 +37,7 @@ impl Event {
     fn new() -> Event {
         Event {
             s: Sound::new(),
-            l: Ratio::from_integer(2/3)
+            l: Ratio::from_integer(2 / 3),
         }
     }
 }
@@ -76,7 +73,7 @@ fn sum_vec(a: &Vec<f32>, b: Vec<f32>) -> Vec<f32> {
         match e {
             itertools::EitherOrBoth::Both(v1, v2) => acc[i] = v1 + v2,
             itertools::EitherOrBoth::Left(e) => acc[i] = *e,
-            itertools::EitherOrBoth::Right(e) => acc[i] = *e
+            itertools::EitherOrBoth::Right(e) => acc[i] = *e,
         }
     }
 
@@ -91,7 +88,6 @@ fn update(collection: &mut [Item], fs: &Vec<fn(&mut Vec<Event>)>) {
                 for f in fs {
                     f(list);
                 }
-
             }
         }
     }
@@ -118,7 +114,7 @@ fn succ_l(list: &mut Vec<Event>) {
 fn rational_play() {
     println!("\n\n");
 
-    let a = Ratio::from_float(1.0/7.0).unwrap();
+    let a = Ratio::from_float(1.0 / 7.0).unwrap();
     let b = Ratio::from_integer(-2);
     let c = Ratio::from_integer(0);
 
@@ -136,15 +132,13 @@ fn rational_play() {
 fn main() {
     use Item::*;
 
-    let mut root = vec![
+    let mut root = vec![Collection(vec![
+        List(vec![Event::new(), Event::new(), Event::new(), Event::new()]),
         Collection(vec![
-            List(vec![Event::new(), Event::new(), Event::new(), Event::new()]),
-            Collection(vec![
-                List(vec![Event::new(), Event::new(), Event::new()]),
-                List(vec![Event::new(), Event::new()]),
-            ]),
+            List(vec![Event::new(), Event::new(), Event::new()]),
+            List(vec![Event::new(), Event::new()]),
         ]),
-    ];
+    ])];
 
     update(&mut root, &vec![succ_f, succ_g, succ_l]);
 
@@ -157,19 +151,17 @@ fn main() {
 
 #[cfg(test)]
 pub mod tests {
-    use super::*;
     use self::Item::*;
+    use super::*;
     #[test]
     fn test_render() {
-        let mut root = vec![
+        let mut root = vec![Collection(vec![
+            List(vec![Event::new(), Event::new(), Event::new(), Event::new()]),
             Collection(vec![
-                List(vec![Event::new(), Event::new(), Event::new(), Event::new()]),
-                Collection(vec![
-                    List(vec![Event::new(), Event::new(), Event::new()]),
-                    List(vec![Event::new(), Event::new(), Event::new()]),
-                ]),
+                List(vec![Event::new(), Event::new(), Event::new()]),
+                List(vec![Event::new(), Event::new(), Event::new()]),
             ]),
-        ];
+        ])];
 
         update(&mut root, &vec![succ_f, succ_g, succ_l]);
 

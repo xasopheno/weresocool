@@ -1,8 +1,14 @@
 pub mod apply {
+    extern crate num_rational;
+    use num_rational::Ratio;
     use event::Event;
     use operations::helpers::helpers::vv_event_to_v_events;
     use operations::{Apply, GetLengthRatio};
     use socool_parser::ast::Op;
+    use generation::parsed_to_waveform::r_to_f32;
+    use socool_parser::float_to_rational::helpers::f32_to_rational;
+
+
 
     impl Apply for Op {
         fn apply(&self, events: Vec<Event>) -> Vec<Event> {
@@ -19,15 +25,15 @@ pub mod apply {
                 }
 
                 Op::TransposeM { m } => {
-                    if m.is_infinite() {
-                        panic!(
-                            "Cannot pass infinite value to TransposeM. Probably divide by 0 error"
-                        )
-                    }
+                    //                    if m.is_infinite() {
+                    //                        panic!(
+                    //                            "Cannot pass infinite value to TransposeM. Probably divide by 0 error"
+                    //                        )
+                    //                    }
                     for event in events.iter() {
                         let mut e = event.clone();
                         for sound in e.sounds.iter_mut() {
-                            sound.frequency = sound.frequency * m;
+                            sound.frequency = sound.frequency * r_to_f32(*m);
                         }
                         vec_events.push(e)
                     }
@@ -37,7 +43,7 @@ pub mod apply {
                     for event in events.iter() {
                         let mut e = event.clone();
                         for sound in e.sounds.iter_mut() {
-                            sound.frequency = sound.frequency + a;
+                            sound.frequency = sound.frequency + r_to_f32(*a);
                         }
                         vec_events.push(e)
                     }
@@ -47,32 +53,32 @@ pub mod apply {
                     for event in events.iter() {
                         let mut e = event.clone();
                         for sound in e.sounds.iter_mut() {
-                            sound.pan += a;
+                            sound.pan += r_to_f32(*a);
                         }
                         vec_events.push(e)
                     }
                 }
 
                 Op::PanM { m } => {
-                    if m.is_infinite() {
-                        panic!("Cannot pass infinite value to PanM. Probably divide by 0 error")
-                    }
+//                    if m.is_infinite() {
+//                        panic!("Cannot pass infinite value to PanM. Probably divide by 0 error")
+//                    }
                     for event in events.iter() {
                         let mut e = event.clone();
                         for sound in e.sounds.iter_mut() {
-                            sound.pan *= m;
+                            sound.pan *= r_to_f32(*m);;
                         }
                         vec_events.push(e)
                     }
                 }
 
                 Op::Length { m } => {
-                    if m.is_infinite() {
-                        panic!("Cannot pass infinite value to Length. Probably divide by 0 error")
-                    }
+//                    if m.is_infinite() {
+//                        panic!("Cannot pass infinite value to Length. Probably divide by 0 error")
+//                    }
                     for event in events.iter() {
                         let mut e = event.clone();
-                        e.length = e.length * m;
+                        e.length = e.length * r_to_f32(*m);;
                         vec_events.push(e)
                     }
                 }
@@ -80,7 +86,7 @@ pub mod apply {
                 Op::Silence { m } => {
                     for event in events.iter() {
                         let mut e = event.clone();
-                        e.length *= m;
+                        e.length *= r_to_f32(*m);
                         for sound in e.sounds.iter_mut() {
                             sound.frequency = 0.0;
                             sound.gain = 0.0;
@@ -93,7 +99,7 @@ pub mod apply {
                     for event in events.iter() {
                         let mut e = event.clone();
                         for sound in e.sounds.iter_mut() {
-                            sound.gain *= m;
+                            sound.gain *= r_to_f32(*m)
                         }
                         vec_events.push(e)
                     }

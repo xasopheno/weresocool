@@ -1,5 +1,7 @@
 pub fn documentation() {
-    println!("{}", "
+    println!(
+        "{}",
+        "
         ___ Base Operations ___
         + addition
         * multiplication
@@ -46,5 +48,6 @@ pub fn documentation() {
                 > FitLength thing1
             ]
         }
-    ")
+    "
+    )
 }

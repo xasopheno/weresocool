@@ -1,32 +1,28 @@
 extern crate itertools;
-extern crate weresocool;
 extern crate portaudio;
 extern crate socool_parser;
-use portaudio as pa;
-use socool_parser::{
-    parser::*,
-    ast::Op
-};
+extern crate weresocool;
 use itertools::Itertools;
+use portaudio as pa;
+use socool_parser::{ast::Op, parser::*};
 use weresocool::{
     event::{Event, Render},
+    examples::documentation,
+    generation::parsed_to_waveform::event_from_init,
     instrument::{
         oscillator::Oscillator,
-        stereo_waveform::{StereoWaveform, Normalize}
+        stereo_waveform::{Normalize, StereoWaveform},
     },
-    generation::parsed_to_waveform::{event_from_init},
-    operations::{Apply, GetOperations, Normalize as NormalizeOp, Point},
-    settings::get_default_app_settings,
+    operations::{Apply, GetOperations, Normalize as NormalizeOp},
     portaudio_setup::output::setup_portaudio_output,
+    settings::get_default_app_settings,
     ui::{get_args, no_file_name, were_so_cool_logo},
-    examples::documentation,
 };
 
 type NormOp = Op;
 type Sequences = Vec<Op>;
 type NormEv = Vec<Vec<Event>>;
 type VecWav = Vec<StereoWaveform>;
-
 
 fn main() -> Result<(), pa::Error> {
     were_so_cool_logo();
@@ -67,14 +63,14 @@ fn render(composition: &NormOp, init: Init) -> StereoWaveform {
 
     composition.apply_to_normal_form(&mut piece);
 
-    let voices = piece.iter_mut().map(|voice| {
-        Op::Sequence { operations: voice.to_owned() }
-    }).collect();
+    let voices = piece
+        .iter_mut()
+        .map(|voice| Op::Sequence {
+            operations: voice.to_owned(),
+        })
+        .collect();
 
-    let normal_form_op = Op::Overlay {
-        operations: voices
-
-    };
+    let normal_form_op = Op::Overlay { operations: voices };
 
     let sequences: Sequences = normal_form_op.get_operations().expect("Not in Normal Form");
 
@@ -126,7 +122,7 @@ fn sum_vec(a: &Vec<f32>, b: Vec<f32>) -> Vec<f32> {
         match e {
             itertools::EitherOrBoth::Both(v1, v2) => acc[i] = v1 + v2,
             itertools::EitherOrBoth::Left(e) => acc[i] = *e,
-            itertools::EitherOrBoth::Right(e) => acc[i] = *e
+            itertools::EitherOrBoth::Right(e) => acc[i] = *e,
         }
     }
 

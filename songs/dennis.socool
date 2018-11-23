@@ -50,6 +50,6 @@ main = {
 				overtones | Tm 9
 			] | Gain 1/6,
 			bass
-		] | Repeat 2
+		] | Sequence [AsIs, Reverse, AsIs]
 	]
 }

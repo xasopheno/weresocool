@@ -10,7 +10,6 @@ pub struct Voice {
     pub past: VoiceState,
     pub current: VoiceState,
     pub phase: f32,
-    //    pub randomness: f32,
 }
 
 #[derive(Clone, Debug, PartialEq)]
