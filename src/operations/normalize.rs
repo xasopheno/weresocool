@@ -84,7 +84,6 @@ pub mod normalize {
                     let target_length = with_length_of.get_length_ratio();
                     let main_length = main.get_length_ratio();
                     let ratio = target_length / main_length;
-                    println!("{:?}", ratio);
                     let new_op = Op::Length { m: ratio };
 
                     new_op.apply_to_normal_form(input);
@@ -110,7 +109,7 @@ pub mod normalize {
         let max_len = get_max_length_ratio(&input);
         for voice in input {
             let mut voice_len = Ratio::new(0, 1);
-            for op in voice.clone() {
+            for op in voice.iter() {
                 voice_len += op.get_length_ratio()
             }
             if voice_len < max_len {
@@ -143,17 +142,19 @@ pub mod normalize {
         }
 
         let diff = l.len() as isize - r.len() as isize;
-        let l_max_len = get_max_length_ratio(&l);
-        let r_max_len = get_max_length_ratio(&r);
         match diff.partial_cmp(&0).unwrap() {
             Equal => {}
             Greater => {
-                for _ in 0..(diff.abs()) {
+                let r_max_len = get_max_length_ratio(&r);
+
+                for _ in 0..diff {
                     r.push(vec![Op::Silence { m: r_max_len }])
                 }
             }
             Less => {
-                for _ in 0..diff.abs() {
+                let l_max_len = get_max_length_ratio(&l);
+
+                for _ in 0..-diff {
                     l.push(vec![Op::Silence { m: l_max_len }])
                 }
             }

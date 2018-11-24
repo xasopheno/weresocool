@@ -16,9 +16,8 @@ pub fn r_to_f32(r: Rational) -> f32 {
         let mut fract = r.fract();
         for _ in 0..32 {
             if fract.is_integer() {
-                break; // This means we already got all digits available
+                break;
             }
-            // By multiplying by 10 we move the digit to the "whole part" of the ratio
             fract = fract * 10
         }
 
