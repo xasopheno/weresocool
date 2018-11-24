@@ -43,9 +43,12 @@ impl PointOp {
             ]
         }
     }
+    fn get_length_ratio(&self) -> Rational {
+       self.l
+    }
 }
 
-pub type NormalForm = Vec<Vec<Op>>;
+pub type NormalForm = Vec<Vec<PointOp>>;
 
 pub trait Apply {
     fn apply(&self, events: Vec<Event>) -> Vec<Event>;

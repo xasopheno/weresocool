@@ -1,19 +1,9 @@
 pub mod normalize {
     extern crate num_rational;
     use num_rational::{Ratio, Rational};
-    use operations::{GetLengthRatio, NormalForm, Normalize};
+    use operations::{GetLengthRatio, NormalForm, Normalize, PointOp};
     use socool_parser::ast::{Op, Op::*};
     use std::cmp::Ordering::{Equal, Greater, Less};
-
-    fn fmap_point_op(new_op: Op, input: &mut NormalForm) {
-        for mut voice in input {
-            for mut op in voice {
-                *op = Op::Compose {
-                    operations: vec![op.clone(), new_op.clone()],
-                };
-            }
-        }
-    }
 
     impl Normalize for Op {
         fn apply_to_normal_form(&self, input: &mut NormalForm) {
@@ -28,37 +18,65 @@ pub mod normalize {
                 }
 
                 Op::TransposeM { m } => {
-                    fmap_point_op(Op::TransposeM { m: *m }, input);
+                    for mut voice in input {
+                        for mut point_op in voice {
+                            *point_op.fm *= m;
+                        }
+                    }
                 }
 
                 Op::TransposeA { a } => {
-                    fmap_point_op(Op::TransposeA { a: *a }, input);
+                    for mut voice in input {
+                        for mut point_op in voice {
+                            *point_op.fa += a;
+                        }
+                    }
                 }
 
                 Op::PanA { a } => {
-                    fmap_point_op(Op::PanA { a: *a }, input);
+                    for mut voice in input {
+                        for mut point_op in voice {
+                            *point_op.pa += a;
+                        }
+                    }
                 }
 
                 Op::PanM { m } => {
-                    fmap_point_op(Op::PanM { m: *m }, input);
+                    for mut voice in input {
+                        for mut point_op in voice {
+                            *point_op.pm *= m;
+                        }
+                    }
                 }
 
                 Op::Gain { m } => {
-                    fmap_point_op(Op::Gain { m: *m }, input);
+                    for mut voice in input {
+                        for mut point_op in voice {
+                            *point_op.g *= g;
+                        }
+                    }
                 }
 
                 Op::Length { m } => {
-                    fmap_point_op(Op::Length { m: *m }, input);
+                    for mut voice in input {
+                        for mut point_op in voice {
+                            *point_op.g *= g;
+                        }
+                    }
                 }
 
                 Op::Silence { m } => {
                     let max_len = get_max_length_ratio(&input);
 
-                    for voice in input.iter_mut() {
-                        *voice = vec![Op::Silence { m: max_len * m }]
+                    for mut voice in input {
+                        for mut point_op in voice {
+                            *point_op.fm = Ratio::new(0,1);
+                            *point_op.fa = Ratio::new(0,1);
+                            *point_op.g = Ratio::new(0,1);
+                        }
                     }
                 }
-                //
+
                 Op::Sequence { operations } => {
                     let mut result = vec![];
 
@@ -113,8 +131,13 @@ pub mod normalize {
                 voice_len += op.get_length_ratio()
             }
             if voice_len < max_len {
-                voice.push(Silence {
-                    m: max_len - voice_len,
+                voice.push(PointOp {
+                    fm: Ratio::new(0,1),
+                    fa: Ratio::new(0,1),
+                    pm: Ratio::new(1,0),
+                    pa: Ratio::new(0,1),
+                    g: Ratio::new(0,1),
+                    l: max_len - voice_len,
                 });
             }
         }
