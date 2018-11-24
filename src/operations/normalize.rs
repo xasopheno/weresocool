@@ -84,7 +84,7 @@ pub mod normalize {
                     let target_length = with_length_of.get_length_ratio();
                     let main_length = main.get_length_ratio();
                     let ratio = target_length / main_length;
-
+                    println!("{:?}", ratio);
                     let new_op = Op::Length { m: ratio };
 
                     new_op.apply_to_normal_form(input);
@@ -109,7 +109,7 @@ pub mod normalize {
     fn match_length(input: &mut NormalForm) {
         let max_len = get_max_length_ratio(&input);
         for voice in input {
-            let mut voice_len = Ratio::new(0,1);
+            let mut voice_len = Ratio::new(0, 1);
             for op in voice.clone() {
                 voice_len += op.get_length_ratio()
             }
@@ -122,9 +122,9 @@ pub mod normalize {
     }
 
     fn get_max_length_ratio(input: &NormalForm) -> Rational {
-        let mut max_len = Ratio::new(0,1);
+        let mut max_len = Ratio::new(0, 1);
         for voice in input {
-            let mut voice_len = Ratio::new(0,1);
+            let mut voice_len = Ratio::new(0, 1);
             for op in voice {
                 voice_len += op.get_length_ratio()
             }
@@ -148,22 +148,22 @@ pub mod normalize {
         match diff.partial_cmp(&0).unwrap() {
             Equal => {}
             Greater => {
-                for i in 0..(diff.abs()) {
+                for _ in 0..(diff.abs()) {
                     r.push(vec![Op::Silence { m: r_max_len }])
                 }
             }
             Less => {
-                for i in 0..diff.abs() {
+                for _ in 0..diff.abs() {
                     l.push(vec![Op::Silence { m: l_max_len }])
                 }
             }
         }
 
         let mut result = vec![];
-        for (x, y) in l.iter_mut().zip(r.iter_mut()) {
-            x.append(y);
+        for (left, right) in l.iter_mut().zip(r.iter_mut()) {
+            left.append(right);
 
-            result.push(x.clone())
+            result.push(left.clone())
         }
 
         result

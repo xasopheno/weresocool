@@ -1,14 +1,11 @@
 pub mod apply {
     extern crate num_rational;
-    use num_rational::Ratio;
     use event::Event;
+    use generation::parsed_to_waveform::r_to_f32;
+    use num_rational::Ratio;
     use operations::helpers::helpers::vv_event_to_v_events;
     use operations::{Apply, GetLengthRatio};
     use socool_parser::ast::Op;
-    use generation::parsed_to_waveform::r_to_f32;
-    use socool_parser::float_to_rational::helpers::f32_to_rational;
-
-
 
     impl Apply for Op {
         fn apply(&self, events: Vec<Event>) -> Vec<Event> {
@@ -25,11 +22,6 @@ pub mod apply {
                 }
 
                 Op::TransposeM { m } => {
-                    //                    if m.is_infinite() {
-                    //                        panic!(
-                    //                            "Cannot pass infinite value to TransposeM. Probably divide by 0 error"
-                    //                        )
-                    //                    }
                     for event in events.iter() {
                         let mut e = event.clone();
                         for sound in e.sounds.iter_mut() {
@@ -60,9 +52,6 @@ pub mod apply {
                 }
 
                 Op::PanM { m } => {
-//                    if m.is_infinite() {
-//                        panic!("Cannot pass infinite value to PanM. Probably divide by 0 error")
-//                    }
                     for event in events.iter() {
                         let mut e = event.clone();
                         for sound in e.sounds.iter_mut() {
@@ -73,9 +62,6 @@ pub mod apply {
                 }
 
                 Op::Length { m } => {
-//                    if m.is_infinite() {
-//                        panic!("Cannot pass infinite value to Length. Probably divide by 0 error")
-//                    }
                     for event in events.iter() {
                         let mut e = event.clone();
                         e.length = e.length * r_to_f32(*m);;

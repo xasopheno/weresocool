@@ -1,8 +1,8 @@
-extern crate socool_parser;
 extern crate num_rational;
-use num_rational::Rational;
+extern crate socool_parser;
 use event::{Event, Render};
 use instrument::{oscillator::Oscillator, stereo_waveform::StereoWaveform};
+use num_rational::Rational;
 use operations::Apply;
 use settings::get_default_app_settings;
 use socool_parser::{ast::Op, parser::Init};
@@ -12,6 +12,23 @@ fn oscillator() -> Oscillator {
 }
 
 pub fn r_to_f32(r: Rational) -> f32 {
+    if r.numer() > &1000000000000000 || r.denom() > &1000000000000000 {
+        let mut fract = r.fract();
+        for _ in 0..32 {
+            if fract.is_integer() {
+                break; // This means we already got all digits available
+            }
+            // By multiplying by 10 we move the digit to the "whole part" of the ratio
+            fract = fract * 10
+        }
+
+        return r.to_integer() as f32 + fract.to_integer() as f32;
+    }
+
+    simple_r_to_f32(r)
+}
+
+fn simple_r_to_f32(r: Rational) -> f32 {
     *r.numer() as f32 / *r.denom() as f32
 }
 
