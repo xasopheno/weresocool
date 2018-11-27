@@ -25,6 +25,7 @@ melody = {
 	thing1 | 
 	Sequence [
 		AsIs,
+		Choice [AsIs, Tm 3, Tm 3/2]
 		Tm 9/8,
 		Tm 5/4,
 		Tm 4/3,
@@ -46,6 +47,7 @@ bass = {
 	| Tm 0.5
 	> FitLength melody
 }
+
 
 main = {
 	Overlay [
