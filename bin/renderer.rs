@@ -2,6 +2,7 @@ extern crate itertools;
 extern crate portaudio;
 extern crate socool_parser;
 extern crate weresocool;
+extern crate rayon;
 use itertools::Itertools;
 use portaudio as pa;
 use socool_parser::{ast::Op, parser::*};
@@ -19,6 +20,7 @@ use weresocool::{
     ui::{get_args, no_file_name, were_so_cool_logo, banner, printed},
     write::{write_composition_to_wav},
 };
+use rayon::prelude::*;
 
 type NormOp = Op;
 type Sequences = Vec<Op>;
@@ -117,12 +119,13 @@ fn generate_events(sequences: Sequences, event: Event) -> NormEv {
 }
 
 fn generate_waveforms(mut norm_ev: NormEv) -> VecWav {
-    let mut vec_wav: VecWav = vec![];
     println!("Generating {:?} waveforms", norm_ev.len());
-    for mut vec_events in norm_ev {
-        let mut osc = Oscillator::init(&get_default_app_settings());
-        vec_wav.push(vec_events.render(&mut osc))
-    }
+    let vec_wav = norm_ev.par_iter_mut()
+        .map(|ref mut vec_events: &mut Vec<Event>| {
+            let mut osc = Oscillator::init(&get_default_app_settings());
+            vec_events.render(&mut osc)
+        })
+        .collect();
 
     vec_wav
 }
