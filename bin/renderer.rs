@@ -15,7 +15,7 @@ use weresocool::{
         oscillator::Oscillator,
         stereo_waveform::{Normalize, StereoWaveform},
     },
-    operations::{Apply, GetOperations, Normalize as NormalizeOp, PointOp},
+    operations::{Apply, GetOperations, Normalize as NormalizeOp, PointOp, NormalForm},
     portaudio_setup::output::setup_portaudio_output,
     settings::get_default_app_settings,
     ui::{banner, get_args, no_file_name, printed, were_so_cool_logo},
@@ -79,13 +79,13 @@ fn point_ops_to_ops(input: Vec<Vec<PointOp>>) -> Vec<Vec<Op>> {
 }
 
 fn render(composition: &NormOp, init: Init) -> StereoWaveform {
-    let mut piece = vec![vec![PointOp::init()]];
+    let mut piece = NormalForm::init();
 
     println!("Applying Operations \n");
 
     composition.apply_to_normal_form(&mut piece);
 
-    let mut piece = point_ops_to_ops(piece);
+    let mut piece = point_ops_to_ops(piece.operations);
 
     let voices = piece
         .iter_mut()

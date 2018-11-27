@@ -48,12 +48,27 @@ impl PointOp {
     }
 }
 
+#[derive(Debug, Clone)]
 pub struct NormalForm {
     pub operations: Vec<Vec<PointOp>>,
     pub length_ratio: Rational
 }
 
 impl NormalForm {
+    pub fn init() -> NormalForm {
+        NormalForm {
+            operations: vec![vec![PointOp::init()]],
+            length_ratio: Ratio::new(1,1)
+        }
+    }
+
+    pub fn init_empty() -> NormalForm {
+        NormalForm {
+            operations: vec![vec![]],
+            length_ratio: Ratio::new(1,1)
+        }
+    }
+
     pub fn get_length_ratio(&self) -> Rational { self.length_ratio }
 }
 

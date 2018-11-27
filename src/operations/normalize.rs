@@ -11,13 +11,13 @@ pub mod normalize {
                 Op::AsIs => {}
 
                 Op::Reverse => {
-                    for mut voice in input.iter_mut() {
+                    for mut voice in input.operations.iter_mut() {
                         voice.reverse();
                     }
                 }
 
                 Op::TransposeM { m } => {
-                    for mut voice in input.iter_mut() {
+                    for mut voice in input.operations.iter_mut() {
                         for mut point_op in voice {
                             point_op.fm *= m;
                         }
@@ -25,7 +25,7 @@ pub mod normalize {
                 }
 
                 Op::TransposeA { a } => {
-                    for mut voice in input.iter_mut() {
+                    for mut voice in input.operations.iter_mut() {
                         for mut point_op in voice {
                             point_op.fa += a;
                         }
@@ -33,7 +33,7 @@ pub mod normalize {
                 }
 
                 Op::PanA { a } => {
-                    for mut voice in input.iter_mut() {
+                    for mut voice in input.operations.iter_mut() {
                         for mut point_op in voice {
                             point_op.pa += a;
                         }
@@ -41,7 +41,7 @@ pub mod normalize {
                 }
 
                 Op::PanM { m } => {
-                    for mut voice in input.iter_mut() {
+                    for mut voice in input.operations.iter_mut() {
                         for mut point_op in voice {
                             point_op.pm *= m;
                         }
@@ -49,7 +49,7 @@ pub mod normalize {
                 }
 
                 Op::Gain { m } => {
-                    for mut voice in input.iter_mut() {
+                    for mut voice in input.operations.iter_mut() {
                         for mut point_op in voice {
                             point_op.g *= m;
                         }
@@ -57,7 +57,7 @@ pub mod normalize {
                 }
 
                 Op::Length { m } => {
-                    for mut voice in input.iter_mut() {
+                    for mut voice in input.operations.iter_mut() {
                         for mut point_op in voice {
                             point_op.l *= m;
                         }
@@ -65,7 +65,7 @@ pub mod normalize {
                 }
 
                 Op::Silence { m } => {
-                    for mut voice in input.iter_mut() {
+                    for mut voice in input.operations.iter_mut() {
                         for mut point_op in voice {
                             point_op.fm = Ratio::new(0, 1);
                             point_op.fa = Ratio::new(0, 1);
@@ -76,7 +76,7 @@ pub mod normalize {
                 }
 
                 Op::Sequence { operations } => {
-                    let mut result = vec![];
+                    let mut result = NormalForm::init_empty();
 
                     for op in operations {
                         let mut input_clone = input.clone();
@@ -106,11 +106,11 @@ pub mod normalize {
                 }
 
                 Op::Overlay { operations } => {
-                    let mut result = vec![];
+                    let mut result = NormalForm::init_empty();
                     for op in operations {
                         let mut input_clone = input.clone();
                         op.apply_to_normal_form(&mut input_clone);
-                        result.append(&mut input_clone);
+                        result.operations.append(&mut input_clone.operations);
                     }
 
                     match_length(input);
@@ -122,7 +122,7 @@ pub mod normalize {
 
     fn match_length(input: &mut NormalForm) {
         let max_len = get_max_length_ratio(&input);
-        for voice in input.iter_mut() {
+        for voice in input.operations.iter_mut() {
             let mut voice_len = Ratio::new(0, 1);
             for point_op in voice.iter() {
                 voice_len += point_op.get_length_ratio()
@@ -138,11 +138,13 @@ pub mod normalize {
                 });
             }
         }
+
+        input.length_ratio = max_len;
     }
 
     fn get_max_length_ratio(input: &NormalForm) -> Rational {
         let mut max_len = Ratio::new(0, 1);
-        for voice in input {
+        for voice in input.operations.iter() {
             let mut voice_len = Ratio::new(0, 1);
             for op in voice {
                 voice_len += op.get_length_ratio()
@@ -157,48 +159,44 @@ pub mod normalize {
     }
 
     fn join_sequence(mut l: NormalForm, mut r: NormalForm) -> NormalForm {
-        if l.len() == 0 {
+        if l.operations.len() == 0 {
             return r;
         }
 
-        let diff = l.len() as isize - r.len() as isize;
+        let diff = l.operations.len() as isize - r.operations.len() as isize;
         match diff.partial_cmp(&0).unwrap() {
             Equal => {}
             Greater => {
-                let r_max_len = get_max_length_ratio(&r);
-
                 for _ in 0..diff {
-                    r.push(vec![PointOp {
+                    r.operations.push(vec![PointOp {
                         fm: Ratio::new(0, 1),
                         fa: Ratio::new(0, 1),
                         pm: Ratio::new(1, 1),
                         pa: Ratio::new(0, 1),
                         g: Ratio::new(0, 1),
-                        l: r_max_len,
+                        l: r.length_ratio,
                     }])
                 }
             }
             Less => {
-                let l_max_len = get_max_length_ratio(&l);
-
                 for _ in 0..-diff {
-                    l.push(vec![PointOp {
+                    l.operations.push(vec![PointOp {
                         fm: Ratio::new(0, 1),
                         fa: Ratio::new(0, 1),
                         pm: Ratio::new(1, 1),
                         pa: Ratio::new(0, 1),
                         g: Ratio::new(0, 1),
-                        l: l_max_len,
+                        l: l.length_ratio,
                     }])
                 }
             }
         }
 
-        let mut result = vec![];
-        for (left, right) in l.iter_mut().zip(r.iter_mut()) {
+        let mut result = NormalForm::init_empty();
+        for (left, right) in l.operations.iter_mut().zip(r.operations.iter_mut()) {
             left.append(right);
 
-            result.push(left.clone())
+            result.operations.push(left.clone())
         }
 
         result
