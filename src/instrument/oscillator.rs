@@ -20,7 +20,7 @@ impl Oscillator {
             voices: vec![(Voice::init(0), Voice::init(1))],
             portamento_length: settings.buffer_size,
             settings: settings.clone(),
-            sample_phase: 0.0
+            sample_phase: 0.0,
         }
     }
 

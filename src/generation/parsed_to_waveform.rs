@@ -12,23 +12,6 @@ fn oscillator() -> Oscillator {
 }
 
 pub fn r_to_f32(r: Rational) -> f32 {
-//    let x = 100000000000000000000000000000000000000;
-//    if r.numer() > &x || r.denom() > &x {
-//        let mut fract = r.fract();
-//        for _ in 0..32 {
-//            if fract.is_integer() {
-//                break;
-//            }
-//            fract = fract * 10
-//        }
-//
-//        return r.to_integer() as f32 + fract.to_integer() as f32;
-//    }
-
-    simple_r_to_f32(r)
-}
-
-fn simple_r_to_f32(r: Rational) -> f32 {
     *r.numer() as f32 / *r.denom() as f32
 }
 

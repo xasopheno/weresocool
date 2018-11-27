@@ -2,7 +2,6 @@ pub mod apply {
     extern crate num_rational;
     use event::Event;
     use generation::parsed_to_waveform::r_to_f32;
-    use num_rational::Ratio;
     use operations::helpers::helpers::vv_event_to_v_events;
     use operations::{Apply, GetLengthRatio};
     use socool_parser::ast::Op;

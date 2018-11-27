@@ -1,7 +1,7 @@
 extern crate num_rational;
 extern crate socool_parser;
 use event::Event;
-use num_rational::{Rational, Ratio};
+use num_rational::{Ratio, Rational};
 use socool_parser::ast::Op;
 mod apply;
 mod get_length_ratio;
@@ -22,12 +22,12 @@ pub struct PointOp {
 impl PointOp {
     pub fn init() -> PointOp {
         PointOp {
-            fm: Ratio::new(1,1),
-            fa: Ratio::new(0,1),
-            pm: Ratio::new(1,1),
-            pa: Ratio::new(0,1),
-            g: Ratio::new(1,1),
-            l: Ratio::new(1,1),
+            fm: Ratio::new(1, 1),
+            fa: Ratio::new(0, 1),
+            pm: Ratio::new(1, 1),
+            pa: Ratio::new(0, 1),
+            g: Ratio::new(1, 1),
+            l: Ratio::new(1, 1),
         }
     }
 
@@ -40,11 +40,11 @@ impl PointOp {
                 Op::PanA { a: self.pa },
                 Op::Gain { m: self.g },
                 Op::Length { m: self.l },
-            ]
+            ],
         }
     }
     fn get_length_ratio(&self) -> Rational {
-       self.l
+        self.l
     }
 }
 

@@ -2,7 +2,7 @@ pub mod normalize {
     extern crate num_rational;
     use num_rational::{Ratio, Rational};
     use operations::{GetLengthRatio, NormalForm, Normalize, PointOp};
-    use socool_parser::ast::{Op, Op::*};
+    use socool_parser::ast::Op;
     use std::cmp::Ordering::{Equal, Greater, Less};
 
     impl Normalize for Op {
@@ -25,7 +25,7 @@ pub mod normalize {
                 }
 
                 Op::TransposeA { a } => {
-                    for mut voice in input.iter_mut()  {
+                    for mut voice in input.iter_mut() {
                         for mut point_op in voice {
                             point_op.fa += a;
                         }
@@ -33,7 +33,7 @@ pub mod normalize {
                 }
 
                 Op::PanA { a } => {
-                    for mut voice in input.iter_mut()  {
+                    for mut voice in input.iter_mut() {
                         for mut point_op in voice {
                             point_op.pa += a;
                         }
@@ -41,7 +41,7 @@ pub mod normalize {
                 }
 
                 Op::PanM { m } => {
-                    for mut voice in input.iter_mut()  {
+                    for mut voice in input.iter_mut() {
                         for mut point_op in voice {
                             point_op.pm *= m;
                         }
@@ -49,7 +49,7 @@ pub mod normalize {
                 }
 
                 Op::Gain { m } => {
-                    for mut voice in input.iter_mut()  {
+                    for mut voice in input.iter_mut() {
                         for mut point_op in voice {
                             point_op.g *= m;
                         }
@@ -57,7 +57,7 @@ pub mod normalize {
                 }
 
                 Op::Length { m } => {
-                    for mut voice in input.iter_mut()  {
+                    for mut voice in input.iter_mut() {
                         for mut point_op in voice {
                             point_op.l *= m;
                         }
@@ -65,11 +65,11 @@ pub mod normalize {
                 }
 
                 Op::Silence { m } => {
-                    for mut voice in input.iter_mut()  {
+                    for mut voice in input.iter_mut() {
                         for mut point_op in voice {
-                            point_op.fm = Ratio::new(0,1);
-                            point_op.fa = Ratio::new(0,1);
-                            point_op.g = Ratio::new(0,1);
+                            point_op.fm = Ratio::new(0, 1);
+                            point_op.fa = Ratio::new(0, 1);
+                            point_op.g = Ratio::new(0, 1);
                             point_op.l = point_op.l * m;
                         }
                     }
@@ -114,11 +114,9 @@ pub mod normalize {
                     }
 
                     match_length(input);
-
                     *input = result
                 }
             }
-
         }
     }
 
@@ -126,16 +124,16 @@ pub mod normalize {
         let max_len = get_max_length_ratio(&input);
         for voice in input.iter_mut() {
             let mut voice_len = Ratio::new(0, 1);
-            for op in voice.iter() {
-                voice_len += op.get_length_ratio()
+            for point_op in voice.iter() {
+                voice_len += point_op.get_length_ratio()
             }
             if voice_len < max_len {
                 voice.push(PointOp {
-                    fm: Ratio::new(0,1),
-                    fa: Ratio::new(0,1),
-                    pm: Ratio::new(1,1),
-                    pa: Ratio::new(0,1),
-                    g: Ratio::new(0,1),
+                    fm: Ratio::new(0, 1),
+                    fa: Ratio::new(0, 1),
+                    pm: Ratio::new(1, 1),
+                    pa: Ratio::new(0, 1),
+                    g: Ratio::new(0, 1),
                     l: max_len - voice_len,
                 });
             }
@@ -171,11 +169,11 @@ pub mod normalize {
 
                 for _ in 0..diff {
                     r.push(vec![PointOp {
-                        fm: Ratio::new(0,1),
-                        fa: Ratio::new(0,1),
-                        pm: Ratio::new(1,1),
-                        pa: Ratio::new(0,1),
-                        g: Ratio::new(0,1),
+                        fm: Ratio::new(0, 1),
+                        fa: Ratio::new(0, 1),
+                        pm: Ratio::new(1, 1),
+                        pa: Ratio::new(0, 1),
+                        g: Ratio::new(0, 1),
                         l: r_max_len,
                     }])
                 }
@@ -185,11 +183,11 @@ pub mod normalize {
 
                 for _ in 0..-diff {
                     l.push(vec![PointOp {
-                        fm: Ratio::new(0,1),
-                        fa: Ratio::new(0,1),
-                        pm: Ratio::new(1,1),
-                        pa: Ratio::new(0,1),
-                        g: Ratio::new(0,1),
+                        fm: Ratio::new(0, 1),
+                        fa: Ratio::new(0, 1),
+                        pm: Ratio::new(1, 1),
+                        pa: Ratio::new(0, 1),
+                        g: Ratio::new(0, 1),
                         l: l_max_len,
                     }])
                 }
