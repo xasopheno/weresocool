@@ -108,7 +108,8 @@ main = {
 	] 
 	| Sequence [
 		AsIs, 
-		Tm 4/3, 
-		Tm 7/8 | Length 0.75
-	] | Repeat 2
+		-- Tm 4/3, 
+		-- Tm 7/8 | Length 0.75
+	] 
+	-- | Repeat 2
 }
