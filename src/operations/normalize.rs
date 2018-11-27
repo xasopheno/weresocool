@@ -118,7 +118,7 @@ pub mod normalize {
                 }
             }
 
-//            match_length(input);
+            match_length(input);
         }
     }
 
