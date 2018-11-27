@@ -7,7 +7,6 @@ pub mod normalize {
 
     impl Normalize for Op {
         fn apply_to_normal_form(&self, input: &mut NormalForm) {
-            //            println!("{:?}", input);
             match self {
                 Op::AsIs => {}
 
