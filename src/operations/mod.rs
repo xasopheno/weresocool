@@ -48,7 +48,16 @@ impl PointOp {
     }
 }
 
-pub type NormalForm = Vec<Vec<PointOp>>;
+pub struct NormalForm {
+    pub operations: Vec<Vec<PointOp>>,
+    pub length_ratio: Rational
+}
+
+impl NormalForm {
+    pub fn get_length_ratio(&self) -> Rational { self.length_ratio }
+}
+
+//pub type NormalForm = Vec<Vec<PointOp>>;
 
 pub trait Apply {
     fn apply(&self, events: Vec<Event>) -> Vec<Event>;

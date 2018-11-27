@@ -1,4 +1,4 @@
-{ f: 100, l: 0.23, g: 1.0, p: 0.0}
+{ f: 100, l: 0.19, g: 1.0, p: 0.0}
 
 overtones = {
     O[
@@ -106,5 +106,9 @@ main = {
 		bass > FitLength drums,
 		Gain 1.2 | drums,
 	] 
-	| Sequence [AsIs, Tm 4/3] | Repeat 8
+	| Sequence [
+		AsIs, 
+		Tm 4/3, 
+		Tm 7/8 | Length 0.75
+	]
 }
