@@ -73,6 +73,7 @@ pub mod tests {
             let osc = Oscillator::init(&get_test_settings());
             let expected = Oscillator {
                 portamento_length: 10,
+                sample_phase: 0.0,
                 settings: get_test_settings(),
                 voices: vec![(
                     Voice {
@@ -137,7 +138,7 @@ pub mod tests {
                 l_buffer: vec![0.0, 0.011016606, 0.032999497],
                 r_buffer: vec![0.0, 0.0036722021, 0.010999832],
             };
-            assert_eq!(osc.generate(3), expected);
+            assert_eq!(osc.generate(3.0), expected);
         }
     }
 

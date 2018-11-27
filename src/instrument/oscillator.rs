@@ -11,7 +11,7 @@ pub struct Oscillator {
     pub voices: Vec<(Voice, Voice)>,
     pub portamento_length: usize,
     pub settings: Settings,
-    sample_phase: f32,
+    pub sample_phase: f32,
 }
 
 impl Oscillator {
