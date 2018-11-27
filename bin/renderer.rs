@@ -19,8 +19,6 @@ use weresocool::{
     ui::{get_args, no_file_name, were_so_cool_logo, banner, printed},
     write::{write_composition_to_wav},
 };
-use std::io::Write;
-use std::io;
 
 type NormOp = Op;
 type Sequences = Vec<Op>;
@@ -121,7 +119,7 @@ fn generate_events(sequences: Sequences, event: Event) -> NormEv {
 fn generate_waveforms(mut norm_ev: NormEv) -> VecWav {
     let mut vec_wav: VecWav = vec![];
     println!("Generating {:?} waveforms", norm_ev.len());
-    for (i, mut vec_events) in norm_ev.iter_mut().enumerate() {
+    for mut vec_events in norm_ev {
         let mut osc = Oscillator::init(&get_default_app_settings());
         vec_wav.push(vec_events.render(&mut osc))
     }

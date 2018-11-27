@@ -114,11 +114,12 @@ pub mod normalize {
                         result.append(&mut input_clone);
                     }
 
+                    match_length(input);
+
                     *input = result
                 }
             }
 
-            match_length(input);
         }
     }
 
