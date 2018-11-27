@@ -106,7 +106,7 @@ c_bass = {
 		Tm 3/5,
 		Tm 2/3 | Length 2,
 		Tm 3/4,
-	] | Gain 1.05 | Tm 1/2 > FitLength c
+	] | Gain 0.65 | Tm 1/2 > FitLength c
 }
 
 coda = {
