@@ -16,8 +16,11 @@ use weresocool::{
     operations::{Apply, GetOperations, Normalize as NormalizeOp, PointOp},
     portaudio_setup::output::setup_portaudio_output,
     settings::get_default_app_settings,
-    ui::{get_args, no_file_name, were_so_cool_logo},
+    ui::{get_args, no_file_name, were_so_cool_logo, banner, printed},
+    write::{write_composition_to_wav},
 };
+use std::io::Write;
+use std::io;
 
 type NormOp = Op;
 type Sequences = Vec<Op>;
@@ -44,28 +47,46 @@ fn main() -> Result<(), pa::Error> {
 
     let composition = render(main, init);
 
-    let pa = pa::PortAudio::new()?;
+    if args.is_present("print") {
+        banner("Printing".to_string(), filename.unwrap().to_string());
+        write_composition_to_wav(composition);
+        printed("WAV".to_string());
+    } else {
+        let pa = pa::PortAudio::new()?;
 
-    let mut output_stream = setup_portaudio_output(composition, &pa)?;
-    output_stream.start()?;
+        let mut output_stream = setup_portaudio_output(composition, &pa)?;
+        output_stream.start()?;
 
-    while let true = output_stream.is_active()? {}
+        while let true = output_stream.is_active()? {}
 
-    output_stream.stop()?;
+        output_stream.stop()?;
+    }
+
 
     Ok(())
 }
 
 fn point_ops_to_ops(input: Vec<Vec<PointOp>>) -> Vec<Vec<Op>> {
+    let mut result = vec![];
+    for sequence in input {
+        let mut seq = vec![];
+        for point_op in sequence {
+            seq.push(point_op.to_op())
+        }
+        result.push(seq);
+    }
 
+    result
 }
 
 fn render(composition: &NormOp, init: Init) -> StereoWaveform {
-    let mut piece = vec![vec![Op::AsIs]];
+    let mut piece = vec![vec![PointOp::init()]];
 
     println!("Applying Operations \n");
 
     composition.apply_to_normal_form(&mut piece);
+
+    let mut piece = point_ops_to_ops(piece);
 
     let voices = piece
         .iter_mut()
@@ -79,8 +100,6 @@ fn render(composition: &NormOp, init: Init) -> StereoWaveform {
     let sequences: Sequences = normal_form_op.get_operations().expect("Not in Normal Form");
 
     let e = event_from_init(init);
-
-    println!("Generating Events \n");
 
     let norm_ev = generate_events(sequences, e);
     let vec_wav = generate_waveforms(norm_ev);
@@ -99,9 +118,10 @@ fn generate_events(sequences: Sequences, event: Event) -> NormEv {
     norm_ev
 }
 
-fn generate_waveforms(norm_ev: NormEv) -> VecWav {
+fn generate_waveforms(mut norm_ev: NormEv) -> VecWav {
     let mut vec_wav: VecWav = vec![];
-    for mut vec_events in norm_ev {
+    println!("Generating {:?} waveforms", norm_ev.len());
+    for (i, mut vec_events) in norm_ev.iter_mut().enumerate() {
         let mut osc = Oscillator::init(&get_default_app_settings());
         vec_wav.push(vec_events.render(&mut osc))
     }

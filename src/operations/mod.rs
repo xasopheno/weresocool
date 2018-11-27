@@ -20,18 +20,18 @@ pub struct PointOp {
 }
 
 impl PointOp {
-    fn init() -> PointOp {
+    pub fn init() -> PointOp {
         PointOp {
             fm: Ratio::new(1,1),
             fa: Ratio::new(0,1),
-            pm: Ratio::new(1,0),
+            pm: Ratio::new(1,1),
             pa: Ratio::new(0,1),
             g: Ratio::new(1,1),
             l: Ratio::new(1,1),
         }
     }
 
-    fn to_op(&self) -> Op {
+    pub fn to_op(&self) -> Op {
         Op::Compose {
             operations: vec![
                 Op::TransposeM { m: self.fm },
