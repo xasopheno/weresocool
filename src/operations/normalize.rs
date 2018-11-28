@@ -76,7 +76,7 @@ pub mod normalize {
                         }
                     }
 
-                    input.length_ratio *= m;
+                    input.length_ratio = *m;
 
                 }
 
@@ -108,6 +108,8 @@ pub mod normalize {
                     let new_op = Op::Length { m: ratio };
 
                     new_op.apply_to_normal_form(input);
+
+                    input.length_ratio *= ratio;
                 }
 
                 Op::Overlay { operations } => {
