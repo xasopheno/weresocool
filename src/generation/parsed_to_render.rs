@@ -24,7 +24,19 @@ type NormEv = Vec<Vec<Event>>;
 type VecWav = Vec<StereoWaveform>;
 
 pub fn r_to_f32(r: Rational) -> f32 {
-    *r.numer() as f32 / *r.denom() as f32
+//    if r.numer() > &10000000000 || r.denom() > &1000000000 {
+//        let mut fract = r.fract();
+//        for _ in 0..32 {
+//            if fract.is_integer() {
+//                break;
+//            }
+//            fract = fract * 10
+//        }
+//
+//        return r.to_integer() as f32 + fract.to_integer() as f32;
+//    }
+
+    (*r.numer() as f64 / *r.denom() as f64) as f32
 }
 
 pub fn event_from_init(init: Init) -> Event {
