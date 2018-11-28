@@ -77,7 +77,6 @@ pub mod normalize {
                     }
 
                     input.length_ratio = *m;
-
                 }
 
                 Op::Sequence { operations } => {
@@ -113,15 +112,19 @@ pub mod normalize {
                 }
 
                 Op::Overlay { operations } => {
-                    let mut result = NormalForm::init_empty();
+                    let mut result = vec![];
                     for op in operations {
                         let mut input_clone = input.clone();
                         op.apply_to_normal_form(&mut input_clone);
-                        result.operations.append(&mut input_clone.operations);
+                        result.append(&mut input_clone.operations);
                     }
 
+                    *input = NormalForm {
+                        operations: result,
+                        length_ratio: Ratio::new(0, 1),
+                    };
+
                     match_length(input);
-                    *input = result
                 }
             }
         }
@@ -204,7 +207,9 @@ pub mod normalize {
             left.append(right);
 
             result.operations.push(left.clone());
-            result.length_ratio += result.length_ratio
+
+            result.length_ratio += r.length_ratio;
+            result.length_ratio += l.length_ratio;
         }
 
         result
@@ -348,7 +353,7 @@ pub mod tests {
         Silence {
             m: Ratio::new(2, 1),
         }
-            .apply_to_normal_form(&mut input);
+        .apply_to_normal_form(&mut input);
 
         let expected = NormalForm {
             length_ratio: Ratio::new(2, 1),
@@ -371,7 +376,7 @@ pub mod tests {
         Length {
             m: Ratio::new(2, 1),
         }
-            .apply_to_normal_form(&mut input);
+        .apply_to_normal_form(&mut input);
 
         let expected = NormalForm {
             length_ratio: Ratio::new(2, 1),
@@ -394,24 +399,26 @@ pub mod tests {
 
         Compose {
             operations: vec![
-                TransposeM { m: Ratio::new(2, 1), },
-                Length { m: Ratio::new(2, 1), }
+                TransposeM {
+                    m: Ratio::new(2, 1),
+                },
+                Length {
+                    m: Ratio::new(2, 1),
+                },
             ],
         }
-            .apply_to_normal_form(&mut input);
+        .apply_to_normal_form(&mut input);
 
         let expected = NormalForm {
             length_ratio: Ratio::new(2, 1),
-            operations: vec![vec![
-                PointOp {
-                    fm: Ratio::new(2, 1),
-                    fa: Ratio::new(0, 1),
-                    pm: Ratio::new(1, 1),
-                    pa: Ratio::new(0, 1),
-                    g: Ratio::new(1, 1),
-                    l: Ratio::new(2, 1),
-                },
-            ]],
+            operations: vec![vec![PointOp {
+                fm: Ratio::new(2, 1),
+                fa: Ratio::new(0, 1),
+                pm: Ratio::new(1, 1),
+                pa: Ratio::new(0, 1),
+                g: Ratio::new(1, 1),
+                l: Ratio::new(2, 1),
+            }]],
         };
 
         assert_eq!(input, expected);
@@ -423,11 +430,15 @@ pub mod tests {
 
         Sequence {
             operations: vec![
-                TransposeM { m: Ratio::new(2, 1), },
-                Length { m: Ratio::new(2, 1), }
+                TransposeM {
+                    m: Ratio::new(2, 1),
+                },
+                Length {
+                    m: Ratio::new(2, 1),
+                },
             ],
         }
-            .apply_to_normal_form(&mut input);
+        .apply_to_normal_form(&mut input);
 
         let expected = NormalForm {
             length_ratio: Ratio::new(3, 1),
@@ -449,6 +460,57 @@ pub mod tests {
                     l: Ratio::new(2, 1),
                 },
             ]],
+        };
+
+        assert_eq!(input, expected);
+    }
+
+    #[test]
+    fn normalize_overlay() {
+        let mut input = NormalForm::init();
+
+        Overlay {
+            operations: vec![
+                TransposeM {
+                    m: Ratio::new(2, 1),
+                },
+                Length {
+                    m: Ratio::new(2, 1),
+                },
+            ],
+        }
+        .apply_to_normal_form(&mut input);
+
+        let expected = NormalForm {
+            length_ratio: Ratio::new(2, 1),
+            operations: vec![
+                vec![
+                    PointOp {
+                        fm: Ratio::new(2, 1),
+                        fa: Ratio::new(0, 1),
+                        pm: Ratio::new(1, 1),
+                        pa: Ratio::new(0, 1),
+                        g: Ratio::new(1, 1),
+                        l: Ratio::new(1, 1),
+                    },
+                    PointOp {
+                        fm: Ratio::new(0, 1),
+                        fa: Ratio::new(0, 1),
+                        pm: Ratio::new(1, 1),
+                        pa: Ratio::new(0, 1),
+                        g: Ratio::new(0, 1),
+                        l: Ratio::new(1, 1),
+                    },
+                ],
+                vec![PointOp {
+                    fm: Ratio::new(1, 1),
+                    fa: Ratio::new(0, 1),
+                    pm: Ratio::new(1, 1),
+                    pa: Ratio::new(0, 1),
+                    g: Ratio::new(1, 1),
+                    l: Ratio::new(2, 1),
+                }],
+            ],
         };
 
         assert_eq!(input, expected);
