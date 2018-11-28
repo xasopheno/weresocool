@@ -6,6 +6,7 @@ extern crate serde_json;
 extern crate socool_parser;
 #[macro_use]
 extern crate serde_derive;
+extern crate itertools;
 extern crate num_rational;
 extern crate rayon;
 

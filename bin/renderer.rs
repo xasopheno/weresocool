@@ -1,31 +1,15 @@
-extern crate itertools;
 extern crate portaudio;
 extern crate rayon;
 extern crate socool_parser;
 extern crate weresocool;
-use itertools::Itertools;
 use portaudio as pa;
-use rayon::prelude::*;
-use socool_parser::{ast::Op, parser::*};
+use socool_parser::parser::*;
 use weresocool::{
-    event::{Event, Render},
     examples::documentation,
-    generation::parsed_to_waveform::{event_from_init, r_to_f32},
-    instrument::{
-        oscillator::Oscillator,
-        stereo_waveform::{Normalize, StereoWaveform},
-    },
-    operations::{NormalForm, Normalize as NormalizeOp, PointOp},
+    generation::parsed_to_render::{to_json, to_wav, render},
     portaudio_setup::output::setup_portaudio_output,
-    settings::get_default_app_settings,
-    ui::{banner, get_args, no_file_name, printed, were_so_cool_logo},
-    write::{write_composition_to_json, write_composition_to_wav},
+    ui::{banner, get_args, no_file_name,  were_so_cool_logo},
 };
-
-type NormOp = Op;
-type Sequences = Vec<Vec<PointOp>>;
-type NormEv = Vec<Vec<Event>>;
-type VecWav = Vec<StereoWaveform>;
 
 fn main() -> Result<(), pa::Error> {
     were_so_cool_logo();
@@ -45,21 +29,21 @@ fn main() -> Result<(), pa::Error> {
     let main = parsed.table.get("main").unwrap();
     let init = parsed.init;
 
-//    let composition = render(main, init);
-
     if args.is_present("print") {
         let composition = render(main, init);
-        banner("Printing".to_string(), filename.unwrap().to_string());
-        write_composition_to_wav(composition);
-        printed("WAV".to_string());
+        to_wav(composition, filename.unwrap().to_string());
+
     } else if args.is_present("json") {
-        json(main, init, filename.unwrap().to_string());
+        to_json(main, init, filename.unwrap().to_string());
     } else {
         let composition = render(main, init);
 
         let pa = pa::PortAudio::new()?;
 
         let mut output_stream = setup_portaudio_output(composition, &pa)?;
+
+        banner("Now Playing".to_string(), filename.unwrap().to_string());
+
         output_stream.start()?;
 
         while let true = output_stream.is_active()? {}
@@ -70,126 +54,4 @@ fn main() -> Result<(), pa::Error> {
     Ok(())
 }
 
-fn render(composition: &NormOp, init: Init) -> StereoWaveform {
-    let mut normal_form = NormalForm::init();
 
-    println!("Applying Operations \n");
-    composition.apply_to_normal_form(&mut normal_form);
-
-    let e = event_from_init(init);
-
-    let norm_ev = generate_events(normal_form.operations, e);
-    let vec_wav = generate_waveforms(norm_ev);
-    let mut result = sum_all_waveforms(vec_wav);
-    result.normalize();
-
-    result
-}
-
-fn json(composition: &NormOp, init: Init, filename: String) {
-    banner("JSONIFY-ing".to_string(), filename.clone());
-    let mut normal_form = NormalForm::init();
-
-    println!("Applying Operations \n");
-    composition.apply_to_normal_form(&mut normal_form);
-
-    let e = event_from_init(init);
-
-    let norm_ev = generate_events(normal_form.operations, e);
-
-    write_composition_to_json(norm_ev, &filename)
-        .expect("Writing to JSON failed");
-    printed("JSON".to_string());
-}
-
-fn generate_events(sequences: Sequences, event: Event) -> NormEv {
-    let mut norm_ev: NormEv = vec![];
-    for sequence in sequences {
-        let mut event_sequence = vec![];
-        for point_op in sequence {
-            let mut e = event.clone();
-            for mut sound in e.sounds.iter_mut() {
-                sound.frequency *= r_to_f32(point_op.fm);
-                sound.frequency += r_to_f32(point_op.fa);
-                sound.pan *= r_to_f32(point_op.pm);
-                sound.pan += r_to_f32(point_op.pa);
-                sound.gain *= r_to_f32(point_op.g);
-            }
-
-            e.length *= r_to_f32(point_op.l);
-            event_sequence.push(e)
-        }
-
-        norm_ev.push(event_sequence)
-    }
-
-    norm_ev
-}
-
-fn generate_waveforms(mut norm_ev: NormEv) -> VecWav {
-    println!("Generating {:?} waveforms", norm_ev.len());
-    let vec_wav = norm_ev
-        .par_iter_mut()
-        .map(|ref mut vec_events: &mut Vec<Event>| {
-            let mut osc = Oscillator::init(&get_default_app_settings());
-            vec_events.render(&mut osc)
-        })
-        .collect();
-
-    vec_wav
-}
-
-fn sum_all_waveforms(vec_wav: VecWav) -> StereoWaveform {
-    let mut result = StereoWaveform::new(0);
-    for wav in vec_wav {
-        result.l_buffer = sum_vec(&result.l_buffer, wav.l_buffer);
-        result.r_buffer = sum_vec(&result.r_buffer, wav.r_buffer)
-    }
-
-    result
-}
-
-fn sum_vec(a: &Vec<f32>, b: Vec<f32>) -> Vec<f32> {
-    let vec_len = std::cmp::max(a.len(), b.len());
-    let mut acc: Vec<f32> = vec![0.0; vec_len];
-    for (i, e) in a.iter().zip_longest(&b).enumerate() {
-        match e {
-            itertools::EitherOrBoth::Both(v1, v2) => acc[i] = v1 + v2,
-            itertools::EitherOrBoth::Left(e) => acc[i] = *e,
-            itertools::EitherOrBoth::Right(e) => acc[i] = *e,
-        }
-    }
-
-    acc
-}
-
-#[cfg(test)]
-pub mod tests {
-    use super::*;
-    #[test]
-    fn render_equal() {
-        let a = vec![1.0, 2.0, 3.0];
-        let b = vec![1.0, 2.0, 3.0];
-        let result = sum_vec(&a, b);
-        let expected = [2.0, 4.0, 6.0];
-        assert_eq!(result, expected);
-    }
-
-    #[test]
-    fn render_left() {
-        let a = vec![1.0, 2.0, 3.0, 2.0];
-        let b = vec![1.0, 2.0, 3.0];
-        let result = sum_vec(&a, b);
-        let expected = [2.0, 4.0, 6.0, 2.0];
-        assert_eq!(result, expected);
-    }
-
-    #[test]
-    fn render_right() {
-        let a = vec![1.0, 2.0, 3.0];
-        let b = vec![1.0, 2.0, 3.0, 1.0];
-        let result = sum_vec(&a, b);
-        let expected = [2.0, 4.0, 6.0, 1.0];
-        assert_eq!(result, expected);
-    }
-}
