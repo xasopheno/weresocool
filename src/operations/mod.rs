@@ -74,8 +74,6 @@ impl NormalForm {
     }
 }
 
-//pub type NormalForm = Vec<Vec<PointOp>>;
-
 pub trait Apply {
     fn apply(&self, events: Vec<Event>) -> Vec<Event>;
 }
