@@ -10,20 +10,20 @@ use socool_parser::{ast::Op, parser::*};
 use weresocool::{
     event::{Event, Render},
     examples::documentation,
-    generation::parsed_to_waveform::event_from_init,
+    generation::parsed_to_waveform::{event_from_init, r_to_f32},
     instrument::{
         oscillator::Oscillator,
         stereo_waveform::{Normalize, StereoWaveform},
     },
-    operations::{Apply, GetOperations, NormalForm, Normalize as NormalizeOp, PointOp},
+    operations::{NormalForm, Normalize as NormalizeOp, PointOp},
     portaudio_setup::output::setup_portaudio_output,
     settings::get_default_app_settings,
     ui::{banner, get_args, no_file_name, printed, were_so_cool_logo},
-    write::write_composition_to_wav,
+    write::{write_composition_to_json, write_composition_to_wav},
 };
 
 type NormOp = Op;
-type Sequences = Vec<Op>;
+type Sequences = Vec<Vec<PointOp>>;
 type NormEv = Vec<Vec<Event>>;
 type VecWav = Vec<StereoWaveform>;
 
@@ -45,13 +45,18 @@ fn main() -> Result<(), pa::Error> {
     let main = parsed.table.get("main").unwrap();
     let init = parsed.init;
 
-    let composition = render(main, init);
+//    let composition = render(main, init);
 
     if args.is_present("print") {
+        let composition = render(main, init);
         banner("Printing".to_string(), filename.unwrap().to_string());
         write_composition_to_wav(composition);
         printed("WAV".to_string());
+    } else if args.is_present("json") {
+        json(main, init, filename.unwrap().to_string());
     } else {
+        let composition = render(main, init);
+
         let pa = pa::PortAudio::new()?;
 
         let mut output_stream = setup_portaudio_output(composition, &pa)?;
@@ -65,41 +70,15 @@ fn main() -> Result<(), pa::Error> {
     Ok(())
 }
 
-fn point_ops_to_ops(input: Vec<Vec<PointOp>>) -> Vec<Vec<Op>> {
-    let mut result = vec![];
-    for sequence in input {
-        let mut seq = vec![];
-        for point_op in sequence {
-            seq.push(point_op.to_op())
-        }
-        result.push(seq);
-    }
-
-    result
-}
-
 fn render(composition: &NormOp, init: Init) -> StereoWaveform {
-    let mut piece = NormalForm::init();
+    let mut normal_form = NormalForm::init();
 
     println!("Applying Operations \n");
-    composition.apply_to_normal_form(&mut piece);
-
-    let mut piece = point_ops_to_ops(piece.operations);
-
-    let voices = piece
-        .iter_mut()
-        .map(|voice| Op::Sequence {
-            operations: voice.to_owned(),
-        })
-        .collect();
-
-    let normal_form_op = Op::Overlay { operations: voices };
-
-    let sequences: Sequences = normal_form_op.get_operations().expect("Not in Normal Form");
+    composition.apply_to_normal_form(&mut normal_form);
 
     let e = event_from_init(init);
 
-    let norm_ev = generate_events(sequences, e);
+    let norm_ev = generate_events(normal_form.operations, e);
     let vec_wav = generate_waveforms(norm_ev);
     let mut result = sum_all_waveforms(vec_wav);
     result.normalize();
@@ -107,10 +86,41 @@ fn render(composition: &NormOp, init: Init) -> StereoWaveform {
     result
 }
 
+fn json(composition: &NormOp, init: Init, filename: String) {
+    banner("JSONIFY-ing".to_string(), filename.clone());
+    let mut normal_form = NormalForm::init();
+
+    println!("Applying Operations \n");
+    composition.apply_to_normal_form(&mut normal_form);
+
+    let e = event_from_init(init);
+
+    let norm_ev = generate_events(normal_form.operations, e);
+
+    write_composition_to_json(norm_ev, &filename)
+        .expect("Writing to JSON failed");
+    printed("JSON".to_string());
+}
+
 fn generate_events(sequences: Sequences, event: Event) -> NormEv {
     let mut norm_ev: NormEv = vec![];
     for sequence in sequences {
-        norm_ev.push(sequence.apply(vec![event.clone()]))
+        let mut event_sequence = vec![];
+        for point_op in sequence {
+            let mut e = event.clone();
+            for mut sound in e.sounds.iter_mut() {
+                sound.frequency *= r_to_f32(point_op.fm);
+                sound.frequency += r_to_f32(point_op.fa);
+                sound.pan *= r_to_f32(point_op.pm);
+                sound.pan += r_to_f32(point_op.pa);
+                sound.gain *= r_to_f32(point_op.g);
+            }
+
+            e.length *= r_to_f32(point_op.l);
+            event_sequence.push(e)
+        }
+
+        norm_ev.push(event_sequence)
     }
 
     norm_ev

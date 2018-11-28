@@ -1,6 +1,5 @@
 extern crate num_rational;
 extern crate socool_parser;
-use event::Event;
 use num_rational::{Ratio, Rational};
 use socool_parser::ast::Op;
 mod apply;
@@ -11,12 +10,12 @@ mod normalize;
 
 #[derive(Debug, Clone, PartialEq)]
 pub struct PointOp {
-    fm: Rational,
-    fa: Rational,
-    pm: Rational,
-    pa: Rational,
-    g: Rational,
-    l: Rational,
+    pub fm: Rational,
+    pub fa: Rational,
+    pub pm: Rational,
+    pub pa: Rational,
+    pub g: Rational,
+    pub l: Rational,
 }
 
 impl PointOp {
@@ -72,10 +71,6 @@ impl NormalForm {
     pub fn get_length_ratio(&self) -> Rational {
         self.length_ratio
     }
-}
-
-pub trait Apply {
-    fn apply(&self, events: Vec<Event>) -> Vec<Event>;
 }
 
 pub trait Normalize {

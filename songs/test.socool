@@ -52,5 +52,5 @@ main = {
 		thing1,
 		thing2,
 		thing3
-	] | Length 0.5 | Repeat 10
+	] | Length 0.5
 }

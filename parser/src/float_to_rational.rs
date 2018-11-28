@@ -5,7 +5,7 @@ pub mod helpers {
     use std::str::FromStr;
 
     pub fn f32_to_rational(float_string: String) -> Rational {
-        let mut s =
+        let s =
             float_string
             .to_string();
         let decimal = s.split(".").collect::<Vec<&str>>()[1];

@@ -21,9 +21,9 @@ itertools = "0.7.8"
 num-rational = "0.2"
 rayon = "1.0"
 
-[[bin]]
-name = "wsc"
-path = "bin/wsc.rs"
+#[[bin]]
+#name = "wsc"
+#path = "bin/wsc.rs"
 
 #[[bin]]
 #name = "mic"

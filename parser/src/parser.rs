@@ -1,7 +1,7 @@
 lalrpop_mod!(pub socool);
 extern crate colored;
 extern crate num_rational;
-use num_rational::{Ratio, Rational};
+use num_rational::{Rational};
 use colored::*;
 use std::fs::File;
 use std::io::prelude::*;
