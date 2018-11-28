@@ -4,6 +4,10 @@ Make cool sounds. Impress your friends.
 
 binaural, microtonal sonification 
 
+Copyright (C) 2018 - Danny Meyer
+
+This program is free software, licensed under the GPLv3 (see LICENSE).
+
 ## Install
 You'll need Rust and Cargo.
 `https://www.rust-lang.org/en-US/install.html` 
