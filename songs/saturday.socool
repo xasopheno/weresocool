@@ -111,5 +111,5 @@ main = {
 		Tm 4/3, 
 		Tm 7/8 | Length 0.75
 	] 
-	| Repeat 4
+	| Sequence [AsIs, Tm 2 | Length 0.75, Tm 3/2, Tm 5/4 | Length 0.5] | Repeat 2
 }

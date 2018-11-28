@@ -91,6 +91,6 @@ pub trait GetOperations {
 }
 
 #[cfg(test)]
-mod normalize_tests;
-#[cfg(test)]
 mod apply_tests;
+#[cfg(test)]
+mod normalize_tests;
