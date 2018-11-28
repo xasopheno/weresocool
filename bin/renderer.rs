@@ -154,9 +154,11 @@ fn sum_vec(a: &Vec<f32>, b: Vec<f32>) -> Vec<f32> {
     acc
 }
 
-//#[cfg(test)]
-//pub mod tests {
-//    use super::*;
-//    #[test]
-//    fn test_render() {}
-//}
+#[cfg(test)]
+pub mod tests {
+    use super::*;
+    #[test]
+    fn test_render() {
+        assert_eq!(true, false);
+    }
+}
