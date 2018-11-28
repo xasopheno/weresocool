@@ -9,7 +9,7 @@ mod get_operations;
 mod helpers;
 mod normalize;
 
-#[derive(Debug, Clone)]
+#[derive(Debug, Clone, PartialEq)]
 pub struct PointOp {
     fm: Rational,
     fa: Rational,
@@ -48,28 +48,30 @@ impl PointOp {
     }
 }
 
-#[derive(Debug, Clone)]
+#[derive(Debug, Clone, PartialEq)]
 pub struct NormalForm {
     pub operations: Vec<Vec<PointOp>>,
-    pub length_ratio: Rational
+    pub length_ratio: Rational,
 }
 
 impl NormalForm {
     pub fn init() -> NormalForm {
         NormalForm {
             operations: vec![vec![PointOp::init()]],
-            length_ratio: Ratio::new(1,1)
+            length_ratio: Ratio::new(1, 1),
         }
     }
 
     pub fn init_empty() -> NormalForm {
         NormalForm {
             operations: vec![vec![]],
-            length_ratio: Ratio::new(1,1)
+            length_ratio: Ratio::new(1, 1),
         }
     }
 
-    pub fn get_length_ratio(&self) -> Rational { self.length_ratio }
+    pub fn get_length_ratio(&self) -> Rational {
+        self.length_ratio
+    }
 }
 
 //pub type NormalForm = Vec<Vec<PointOp>>;

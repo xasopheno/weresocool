@@ -15,7 +15,7 @@ use weresocool::{
         oscillator::Oscillator,
         stereo_waveform::{Normalize, StereoWaveform},
     },
-    operations::{Apply, GetOperations, Normalize as NormalizeOp, PointOp, NormalForm},
+    operations::{Apply, GetOperations, NormalForm, Normalize as NormalizeOp, PointOp},
     portaudio_setup::output::setup_portaudio_output,
     settings::get_default_app_settings,
     ui::{banner, get_args, no_file_name, printed, were_so_cool_logo},
@@ -158,7 +158,27 @@ fn sum_vec(a: &Vec<f32>, b: Vec<f32>) -> Vec<f32> {
 pub mod tests {
     use super::*;
     #[test]
-    fn test_render() {
-        assert_eq!(true, false);
+    fn render_equal() {
+        let a = vec![1.0, 2.0, 3.0];
+        let b = vec![1.0, 2.0, 3.0];
+        let result = sum_vec(&a, b);
+        let expected = [2.0, 4.0, 6.0];
+        assert_eq!(result, expected);
+    }
+
+    fn render_left() {
+        let a = vec![1.0, 2.0, 3.0, 2.0];
+        let b = vec![1.0, 2.0, 3.0];
+        let result = sum_vec(&a, b);
+        let expected = [2.0, 4.0, 6.0, 2.0];
+        assert_eq!(result, expected);
+    }
+
+    fn render_right() {
+        let a = vec![1.0, 2.0, 3.0];
+        let b = vec![1.0, 2.0, 3.0, 1.0];
+        let result = sum_vec(&a, b);
+        let expected = [2.0, 4.0, 6.0, 1.0];
+        assert_eq!(result, expected);
     }
 }

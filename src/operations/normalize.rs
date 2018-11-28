@@ -62,6 +62,8 @@ pub mod normalize {
                             point_op.l *= m;
                         }
                     }
+
+                    input.length_ratio *= m;
                 }
 
                 Op::Silence { m } => {
@@ -73,6 +75,9 @@ pub mod normalize {
                             point_op.l = point_op.l * m;
                         }
                     }
+
+                    input.length_ratio *= m;
+
                 }
 
                 Op::Sequence { operations } => {
@@ -200,5 +205,183 @@ pub mod normalize {
         }
 
         result
+    }
+}
+
+#[cfg(test)]
+pub mod tests {
+    use super::*;
+    extern crate num_rational;
+    extern crate socool_parser;
+    use num_rational::Ratio;
+    use operations::{NormalForm, Normalize, PointOp};
+    use socool_parser::ast::{Op, Op::*};
+
+    #[test]
+    fn normalize_asis() {
+        let mut input = NormalForm::init();
+        AsIs.apply_to_normal_form(&mut input);
+        let expected = NormalForm {
+            operations: vec![vec![PointOp::init()]],
+            length_ratio: Ratio::new(1, 1),
+        };
+
+        assert_eq!(input, expected);
+    }
+    #[test]
+    fn normalize_tm() {
+        let mut input = NormalForm::init();
+        TransposeM {
+            m: Ratio::new(2, 1),
+        }
+        .apply_to_normal_form(&mut input);
+
+        let expected = NormalForm {
+            length_ratio: Ratio::new(1, 1),
+            operations: vec![vec![PointOp {
+                fm: Ratio::new(2, 1),
+                fa: Ratio::new(0, 1),
+                pm: Ratio::new(1, 1),
+                pa: Ratio::new(0, 1),
+                g: Ratio::new(1, 1),
+                l: Ratio::new(1, 1),
+            }]],
+        };
+
+        assert_eq!(input, expected);
+    }
+    #[test]
+    fn normalize_ta() {
+        let mut input = NormalForm::init();
+        TransposeA {
+            a: Ratio::new(2, 1),
+        }
+        .apply_to_normal_form(&mut input);
+
+        let expected = NormalForm {
+            length_ratio: Ratio::new(1, 1),
+            operations: vec![vec![PointOp {
+                fm: Ratio::new(1, 1),
+                fa: Ratio::new(2, 1),
+                pm: Ratio::new(1, 1),
+                pa: Ratio::new(0, 1),
+                g: Ratio::new(1, 1),
+                l: Ratio::new(1, 1),
+            }]],
+        };
+
+        assert_eq!(input, expected);
+    }
+
+    #[test]
+    fn normalize_pan_m() {
+        let mut input = NormalForm::init();
+        PanM {
+            m: Ratio::new(2, 1),
+        }
+        .apply_to_normal_form(&mut input);
+
+        let expected = NormalForm {
+            length_ratio: Ratio::new(1, 1),
+            operations: vec![vec![PointOp {
+                fm: Ratio::new(1, 1),
+                fa: Ratio::new(0, 1),
+                pm: Ratio::new(2, 1),
+                pa: Ratio::new(0, 1),
+                g: Ratio::new(1, 1),
+                l: Ratio::new(1, 1),
+            }]],
+        };
+
+        assert_eq!(input, expected);
+    }
+    #[test]
+    fn normalize_pan_a() {
+        let mut input = NormalForm::init();
+        PanA {
+            a: Ratio::new(2, 1),
+        }
+        .apply_to_normal_form(&mut input);
+
+        let expected = NormalForm {
+            length_ratio: Ratio::new(1, 1),
+            operations: vec![vec![PointOp {
+                fm: Ratio::new(1, 1),
+                fa: Ratio::new(0, 1),
+                pm: Ratio::new(1, 1),
+                pa: Ratio::new(2, 1),
+                g: Ratio::new(1, 1),
+                l: Ratio::new(1, 1),
+            }]],
+        };
+
+        assert_eq!(input, expected);
+    }
+    #[test]
+    fn normalize_gain() {
+        let mut input = NormalForm::init();
+        Gain {
+            m: Ratio::new(2, 1),
+        }
+        .apply_to_normal_form(&mut input);
+
+        let expected = NormalForm {
+            length_ratio: Ratio::new(1, 1),
+            operations: vec![vec![PointOp {
+                fm: Ratio::new(1, 1),
+                fa: Ratio::new(0, 1),
+                pm: Ratio::new(1, 1),
+                pa: Ratio::new(0, 1),
+                g: Ratio::new(2, 1),
+                l: Ratio::new(1, 1),
+            }]],
+        };
+
+        assert_eq!(input, expected);
+    }
+    #[test]
+    fn normalize_silence() {
+        let mut input = NormalForm::init();
+        Silence {
+            m: Ratio::new(2, 1),
+        }
+            .apply_to_normal_form(&mut input);
+
+        let expected = NormalForm {
+            length_ratio: Ratio::new(2, 1),
+            operations: vec![vec![PointOp {
+                fm: Ratio::new(0, 1),
+                fa: Ratio::new(0, 1),
+                pm: Ratio::new(1, 1),
+                pa: Ratio::new(0, 1),
+                g: Ratio::new(0, 1),
+                l: Ratio::new(2, 1),
+            }]],
+        };
+
+        assert_eq!(input, expected);
+    }
+
+    #[test]
+    fn normalize_length() {
+        let mut input = NormalForm::init();
+        Length {
+            m: Ratio::new(2, 1),
+        }
+            .apply_to_normal_form(&mut input);
+
+        let expected = NormalForm {
+            length_ratio: Ratio::new(2, 1),
+            operations: vec![vec![PointOp {
+                fm: Ratio::new(1, 1),
+                fa: Ratio::new(0, 1),
+                pm: Ratio::new(1, 1),
+                pa: Ratio::new(0, 1),
+                g: Ratio::new(1, 1),
+                l: Ratio::new(2, 1),
+            }]],
+        };
+
+        assert_eq!(input, expected);
     }
 }

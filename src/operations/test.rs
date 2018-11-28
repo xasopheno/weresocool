@@ -1,7 +1,7 @@
 pub mod tests {
     extern crate num_rational;
-    use num_rational::{Ratio};
     use event::{Event, Sound};
+    use num_rational::Ratio;
     use operations::{Apply, GetLengthRatio};
     use socool_parser::ast::Op;
 
@@ -36,15 +36,24 @@ pub mod tests {
             operations: vec![
                 Op::AsIs,
                 Op::AsIs,
-                Op::TransposeM { m: Ratio::new(2, 1) },
-                Op::Length { m: Ratio::new(2, 1) },
+                Op::TransposeM {
+                    m: Ratio::new(2, 1),
+                },
+                Op::Length {
+                    m: Ratio::new(2, 1),
+                },
             ],
         }
     }
 
     fn sequence2() -> Op {
         Op::Compose {
-            operations: vec![sequence1(), Op::Length { m: Ratio::new(2, 1) }],
+            operations: vec![
+                sequence1(),
+                Op::Length {
+                    m: Ratio::new(2, 1),
+                },
+            ],
         }
     }
 
@@ -72,8 +81,12 @@ pub mod tests {
 
     #[test]
     fn op_pan_test() {
-        let pan_a = Op::PanA { a: Ratio::new(1, 2) };
-        let pan_m = Op::PanM { m: Ratio::new(1, 2) };
+        let pan_a = Op::PanA {
+            a: Ratio::new(1, 2),
+        };
+        let pan_m = Op::PanM {
+            m: Ratio::new(1, 2),
+        };
         assert_eq!(pan_a.get_length_ratio(), Ratio::new(1, 1));
         assert_eq!(pan_m.get_length_ratio(), Ratio::new(1, 1));
 
@@ -90,7 +103,9 @@ pub mod tests {
 
     #[test]
     fn op_length_test() {
-        let length = Op::Length { m: Ratio::new(3, 2) };
+        let length = Op::Length {
+            m: Ratio::new(3, 2),
+        };
         assert_eq!(length.get_length_ratio(), Ratio::new(3, 2));
 
         let mut expected_event = event1();
@@ -101,7 +116,9 @@ pub mod tests {
 
     #[test]
     fn op_transpose_m_test() {
-        let transpose_m = Op::TransposeM { m: Ratio::new(3, 2) };
+        let transpose_m = Op::TransposeM {
+            m: Ratio::new(3, 2),
+        };
         assert_eq!(transpose_m.get_length_ratio(), Ratio::new(1, 1));
 
         let mut expected_event = event1();
@@ -112,7 +129,9 @@ pub mod tests {
 
     #[test]
     fn op_transpose_a_test() {
-        let transpose_a = Op::TransposeA { a: Ratio::new(3, 2) };
+        let transpose_a = Op::TransposeA {
+            a: Ratio::new(3, 2),
+        };
         assert_eq!(transpose_a.get_length_ratio(), Ratio::new(1, 1));
 
         let mut expected_event = event1();
@@ -123,7 +142,9 @@ pub mod tests {
 
     #[test]
     fn op_silence_test() {
-        let silence = Op::Silence { m: Ratio::new(3, 2) };
+        let silence = Op::Silence {
+            m: Ratio::new(3, 2),
+        };
         assert_eq!(silence.get_length_ratio(), Ratio::new(3, 2));
 
         let mut expected_event = event1();
@@ -136,7 +157,9 @@ pub mod tests {
 
     #[test]
     fn op_gain_test() {
-        let gain = Op::Gain { m: Ratio::new(3, 2) };
+        let gain = Op::Gain {
+            m: Ratio::new(3, 2),
+        };
         assert_eq!(gain.get_length_ratio(), Ratio::new(1, 1));
 
         let mut expected_event = event1();
@@ -169,7 +192,14 @@ pub mod tests {
         assert_eq!(sequence_with_sequence_length, Ratio::new(50, 1));
 
         let compose = Op::Compose {
-            operations: vec![Op::Length { m:  Ratio::new(2, 1) }, Op::TransposeM { m: Ratio::new(3, 2) }],
+            operations: vec![
+                Op::Length {
+                    m: Ratio::new(2, 1),
+                },
+                Op::TransposeM {
+                    m: Ratio::new(3, 2),
+                },
+            ],
         };
 
         let expected = vec![
