@@ -1,4 +1,4 @@
-pub mod tests {
+pub mod apply_tests {
     extern crate num_rational;
     use event::{Event, Sound};
     use num_rational::Ratio;

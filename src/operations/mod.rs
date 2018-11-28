@@ -90,6 +90,7 @@ pub trait GetOperations {
     fn get_operations(&self) -> Option<Vec<Op>>;
 }
 
+#[cfg(test)]
 mod normalize_tests;
 #[cfg(test)]
-mod test;
+mod apply_tests;
