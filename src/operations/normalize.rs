@@ -99,7 +99,7 @@ pub mod normalize {
 
                 Op::WithLengthRatioOf {
                     with_length_of,
-                    main,
+                    main
                 } => {
                     let target_length = with_length_of.get_length_ratio();
                     let main_length = main.get_length_ratio();
@@ -218,12 +218,11 @@ pub mod normalize {
 
 #[cfg(test)]
 pub mod tests {
-    use super::*;
     extern crate num_rational;
     extern crate socool_parser;
     use num_rational::Ratio;
     use operations::{NormalForm, Normalize, PointOp};
-    use socool_parser::ast::{Op, Op::*};
+    use socool_parser::ast::{Op::*};
 
     #[test]
     fn normalize_asis() {
@@ -511,6 +510,39 @@ pub mod tests {
                     l: Ratio::new(2, 1),
                 }],
             ],
+        };
+
+        assert_eq!(input, expected);
+    }
+
+    #[test]
+    fn normalize_with_lr_of() {
+        let mut input = NormalForm::init();
+
+        TransposeM {m: Ratio::new(3, 2)}.apply_to_normal_form(&mut input);
+
+        WithLengthRatioOf {
+            with_length_of: Box::new(Length {
+                m: Ratio::new(2, 1),
+            }),
+            main: Box::new(TransposeM {
+                m: Ratio::new(2, 1),
+            }),
+        }
+        .apply_to_normal_form(&mut input);
+
+        let expected = NormalForm {
+            length_ratio: Ratio::new(2, 1),
+            operations: vec![vec![
+                PointOp {
+                    fm: Ratio::new(3, 2),
+                    fa: Ratio::new(0, 1),
+                    pm: Ratio::new(1, 1),
+                    pa: Ratio::new(0, 1),
+                    g: Ratio::new(1, 1),
+                    l: Ratio::new(2, 1),
+                },
+            ]],
         };
 
         assert_eq!(input, expected);

@@ -165,7 +165,8 @@ pub mod tests {
         let expected = [2.0, 4.0, 6.0];
         assert_eq!(result, expected);
     }
-
+    
+    #[test]
     fn render_left() {
         let a = vec![1.0, 2.0, 3.0, 2.0];
         let b = vec![1.0, 2.0, 3.0];
@@ -174,6 +175,7 @@ pub mod tests {
         assert_eq!(result, expected);
     }
 
+    #[test]
     fn render_right() {
         let a = vec![1.0, 2.0, 3.0];
         let b = vec![1.0, 2.0, 3.0, 1.0];
