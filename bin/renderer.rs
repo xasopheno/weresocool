@@ -82,7 +82,6 @@ fn render(composition: &NormOp, init: Init) -> StereoWaveform {
     let mut piece = NormalForm::init();
 
     println!("Applying Operations \n");
-
     composition.apply_to_normal_form(&mut piece);
 
     let mut piece = point_ops_to_ops(piece.operations);
@@ -165,7 +164,7 @@ pub mod tests {
         let expected = [2.0, 4.0, 6.0];
         assert_eq!(result, expected);
     }
-    
+
     #[test]
     fn render_left() {
         let a = vec![1.0, 2.0, 3.0, 2.0];
