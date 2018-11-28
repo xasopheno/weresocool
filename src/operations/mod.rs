@@ -64,8 +64,8 @@ impl NormalForm {
 
     pub fn init_empty() -> NormalForm {
         NormalForm {
-            operations: vec![vec![]],
-            length_ratio: Ratio::new(1, 1),
+            operations: vec![],
+            length_ratio: Ratio::new(0, 1),
         }
     }
 

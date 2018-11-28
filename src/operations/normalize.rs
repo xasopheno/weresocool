@@ -109,7 +109,7 @@ pub mod normalize {
 
                     new_op.apply_to_normal_form(input);
 
-                    input.length_ratio *= ratio;
+                    input.length_ratio = ratio;
                 }
 
                 Op::Overlay { operations } => {
@@ -203,7 +203,8 @@ pub mod normalize {
         for (left, right) in l.operations.iter_mut().zip(r.operations.iter_mut()) {
             left.append(right);
 
-            result.operations.push(left.clone())
+            result.operations.push(left.clone());
+            result.length_ratio += result.length_ratio
         }
 
         result
@@ -382,6 +383,72 @@ pub mod tests {
                 g: Ratio::new(1, 1),
                 l: Ratio::new(2, 1),
             }]],
+        };
+
+        assert_eq!(input, expected);
+    }
+
+    #[test]
+    fn normalize_compose() {
+        let mut input = NormalForm::init();
+
+        Compose {
+            operations: vec![
+                TransposeM { m: Ratio::new(2, 1), },
+                Length { m: Ratio::new(2, 1), }
+            ],
+        }
+            .apply_to_normal_form(&mut input);
+
+        let expected = NormalForm {
+            length_ratio: Ratio::new(2, 1),
+            operations: vec![vec![
+                PointOp {
+                    fm: Ratio::new(2, 1),
+                    fa: Ratio::new(0, 1),
+                    pm: Ratio::new(1, 1),
+                    pa: Ratio::new(0, 1),
+                    g: Ratio::new(1, 1),
+                    l: Ratio::new(2, 1),
+                },
+            ]],
+        };
+
+        assert_eq!(input, expected);
+    }
+
+    #[test]
+    fn normalize_sequence() {
+        let mut input = NormalForm::init();
+
+        Sequence {
+            operations: vec![
+                TransposeM { m: Ratio::new(2, 1), },
+                Length { m: Ratio::new(2, 1), }
+            ],
+        }
+            .apply_to_normal_form(&mut input);
+
+        let expected = NormalForm {
+            length_ratio: Ratio::new(3, 1),
+            operations: vec![vec![
+                PointOp {
+                    fm: Ratio::new(2, 1),
+                    fa: Ratio::new(0, 1),
+                    pm: Ratio::new(1, 1),
+                    pa: Ratio::new(0, 1),
+                    g: Ratio::new(1, 1),
+                    l: Ratio::new(1, 1),
+                },
+                PointOp {
+                    fm: Ratio::new(1, 1),
+                    fa: Ratio::new(0, 1),
+                    pm: Ratio::new(1, 1),
+                    pa: Ratio::new(0, 1),
+                    g: Ratio::new(1, 1),
+                    l: Ratio::new(2, 1),
+                },
+            ]],
         };
 
         assert_eq!(input, expected);
