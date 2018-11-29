@@ -136,7 +136,7 @@ pub mod tests {
 
             let expected = StereoWaveform {
                 l_buffer: vec![0.0, 0.011016606476346103, 0.03299950110260482],
-                r_buffer: vec![0.0, 0.003672202158782034, 0.010999833700868274]
+                r_buffer: vec![0.0, 0.003672202158782034, 0.010999833700868274],
             };
             assert_eq!(osc.generate(3.0), expected);
         }

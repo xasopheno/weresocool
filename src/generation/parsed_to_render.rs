@@ -12,10 +12,7 @@ use num_rational::Rational64;
 use operations::{NormalForm, Normalize as NormalizeOp, PointOp};
 use rayon::prelude::*;
 use settings::get_default_app_settings;
-use socool_parser::{
-    ast::Op,
-    parser::Init
-};
+use socool_parser::{ast::Op, parser::Init};
 use ui::{banner, printed};
 use write::{write_composition_to_json, write_composition_to_wav};
 
@@ -78,7 +75,7 @@ fn generate_events(sequences: PointOpSequences, event: Event) -> NormEv {
     for sequence in sequences {
         let mut event_sequence = vec![];
         for point_op in sequence {
-//            println!("{:?}", point_op);
+            //            println!("{:?}", point_op);
             let mut e = event.clone();
             for mut sound in e.sounds.iter_mut() {
                 sound.frequency *= r_to_f64(point_op.fm);

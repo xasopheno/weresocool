@@ -118,7 +118,7 @@ pub mod normalize {
                         let mut input_clone = input.clone();
                         op.apply_to_normal_form(&mut input_clone);
                         normal_forms.push(input_clone);
-                    };
+                    }
 
                     let mut max_lr = Ratio::new(0, 1);
 
@@ -140,10 +140,7 @@ pub mod normalize {
                         operations: result,
                         length_ratio: max_lr,
                     };
-
-
                 }
-
             }
         }
     }
@@ -152,16 +149,15 @@ pub mod normalize {
         let input_lr = input.get_length_ratio();
         if input_lr < max_len {
             for voice in input.operations.iter_mut() {
-                    voice.push(PointOp {
-                        fm: Ratio::new(0, 1),
-                        fa: Ratio::new(0, 1),
-                        pm: Ratio::new(1, 1),
-                        pa: Ratio::new(0, 1),
-                        g: Ratio::new(0, 1),
-                        l: max_len - input_lr,
-                    });
-                }
-
+                voice.push(PointOp {
+                    fm: Ratio::new(0, 1),
+                    fa: Ratio::new(0, 1),
+                    pm: Ratio::new(1, 1),
+                    pa: Ratio::new(0, 1),
+                    g: Ratio::new(0, 1),
+                    l: max_len - input_lr,
+                });
+            }
         }
         input.length_ratio = max_len;
     }
@@ -205,7 +201,6 @@ pub mod normalize {
             left.append(right);
 
             result.operations.push(left.clone());
-
         }
 
         result.length_ratio += r.length_ratio;

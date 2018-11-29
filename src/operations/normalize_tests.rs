@@ -307,8 +307,12 @@ pub mod normalize_tests {
         .apply_to_normal_form(&mut input);
 
         WithLengthRatioOf {
-            with_length_of: Box::new(Length {
-                m: Ratio::new(2, 1),
+            with_length_of: Box::new(Sequence {
+                operations: vec![
+                    Length { m: Ratio::new(2, 1)},
+                    Length { m: Ratio::new(4, 1)},
+                    Length { m: Ratio::new(3, 1)},
+                ],
             }),
             main: Box::new(TransposeM {
                 m: Ratio::new(2, 1),
@@ -317,14 +321,14 @@ pub mod normalize_tests {
         .apply_to_normal_form(&mut input);
 
         let expected = NormalForm {
-            length_ratio: Ratio::new(2, 1),
+            length_ratio: Ratio::new(9, 1),
             operations: vec![vec![PointOp {
                 fm: Ratio::new(3, 2),
                 fa: Ratio::new(0, 1),
                 pm: Ratio::new(1, 1),
                 pa: Ratio::new(0, 1),
                 g: Ratio::new(1, 1),
-                l: Ratio::new(2, 1),
+                l: Ratio::new(9, 1),
             }]],
         };
 

@@ -132,23 +132,23 @@ fn rational_play() {
 fn main() {
     let a: isize = 9223372036854775807;
     println!("{}", a * 2);
-//    use Item::*;
-//
-//    let mut root = vec![Collection(vec![
-//        List(vec![Event::new(), Event::new(), Event::new(), Event::new()]),
-//        Collection(vec![
-//            List(vec![Event::new(), Event::new(), Event::new()]),
-//            List(vec![Event::new(), Event::new()]),
-//        ]),
-//    ])];
-//
-//    update(&mut root, &vec![succ_f, succ_g, succ_l]);
-//
-//    let result = render(&root);
-//    println!("{:?}", root);
-//    println!("{:?}", result);
-//
-//    rational_play()
+    //    use Item::*;
+    //
+    //    let mut root = vec![Collection(vec![
+    //        List(vec![Event::new(), Event::new(), Event::new(), Event::new()]),
+    //        Collection(vec![
+    //            List(vec![Event::new(), Event::new(), Event::new()]),
+    //            List(vec![Event::new(), Event::new()]),
+    //        ]),
+    //    ])];
+    //
+    //    update(&mut root, &vec![succ_f, succ_g, succ_l]);
+    //
+    //    let result = render(&root);
+    //    println!("{:?}", root);
+    //    println!("{:?}", result);
+    //
+    //    rational_play()
 }
 
 #[cfg(test)]
