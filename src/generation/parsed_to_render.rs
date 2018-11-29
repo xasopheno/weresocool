@@ -25,7 +25,7 @@ type VecWav = Vec<StereoWaveform>;
 
 pub fn r_to_f64(r: Rational64) -> f64 {
 //    if r.numer() > &-10000000000 || r.denom() > &-1000000000 {
-//        println!("{:?}", r);
+        println!("{:?}", r);
 //    }
 //        let mut fract = r.fract();
 //        for _ in 0..32 {
@@ -105,7 +105,7 @@ fn generate_events(sequences: PointOpSequences, event: Event) -> NormEv {
             e.length *= r_to_f64(point_op.l);
             event_sequence.push(e)
         }
-
+        println!("{:?}", event_sequence);
         norm_ev.push(event_sequence)
     }
 

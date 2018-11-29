@@ -33,6 +33,6 @@ path = "bin/wsc.rs"
 name = "scratch"
 path = "bin/pad.rs"
 
-[[bin]]
-name = "makam"
-path = "bin/renderer.rs"
+#[[bin]]
+#name = "makam"
+#path = "bin/renderer.rs"
