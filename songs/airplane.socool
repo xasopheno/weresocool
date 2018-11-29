@@ -2,9 +2,9 @@
 
 overtones = {
     O[
-      	-- (1/1, 3.0, 0.05, -0.5),
-      	-- (1/1, 0.0, 0.05, 0.5),
-      	(1/1, 0.0, 0.0, 0.0),
+      	(1/1, 3.0, 0.05, -0.5),
+      	(1/1, 0.0, 0.05, 0.5),
+      	(1/1, 0.0, 1.0, 0.0),
   	]
 }
 
@@ -124,13 +124,13 @@ a = {
 	]
 }
 
--- stars = {
--- 	a | Reverse | Gain 0.4 | Tm 5 > FitLength Length 1.95
--- }
+stars = {
+	a | Reverse | Gain 0.4 | Tm 5 > FitLength Length 1.95
+}
 
 main = {
 	Sequence [
-		-- stars,
+		stars,
 		Silence 0.1,
 		a | Sequence [AsIs, AsIs]
 	]

@@ -24,7 +24,7 @@ thing1 = {
 }
 
 harmony = {
-	Sequence [AsIs, Tm 9/8, Tm 7/8]
+	Sequence [AsIs, Tm 9/8]
 }
 
 melody = {

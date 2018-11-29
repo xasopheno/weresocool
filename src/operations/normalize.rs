@@ -154,7 +154,9 @@ pub mod normalize {
                 });
             }
         }
-
+        if max_len > Ratio::new(100000, 1) {
+            panic!()
+        }
         input.length_ratio = max_len;
     }
 
@@ -176,6 +178,13 @@ pub mod normalize {
     fn join_sequence(mut l: NormalForm, mut r: NormalForm) -> NormalForm {
         if l.operations.len() == 0 {
             return r;
+        }
+
+        if l.length_ratio > Ratio::new(10000000, 1) {
+            panic!()
+        }
+        if r.length_ratio > Ratio::new(10000000, 1) {
+            panic!()
         }
 
         let diff = l.operations.len() as isize - r.operations.len() as isize;
@@ -213,9 +222,9 @@ pub mod normalize {
 
             result.operations.push(left.clone());
 
-            result.length_ratio += r.length_ratio;
-            result.length_ratio += l.length_ratio;
         }
+        result.length_ratio += r.length_ratio;
+        result.length_ratio += l.length_ratio;
 
         result
     }
