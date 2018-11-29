@@ -1,4 +1,4 @@
-use num_rational::{Ratio, Rational};
+use num_rational::{Ratio, Rational64};
 use std::str::FromStr;
 use std::string::String;
 use crate::ast::Op;
@@ -108,12 +108,12 @@ Compose = Pipe<Operation>;
 
 Operations = Comma<Operation>;
 
-Rational: Rational = {
+Rational: Rational64 = {
     <n: Float> => f32_to_rational(n),
-    <n: Int> => Ratio::new(n, 1),
-    <n: Int> "/" <d:Int> => Ratio::new(n, d),
+    <n: Int> => Rational64::new(n, 1),
+    <n: Int> "/" <d:Int> => Rational64::new(n, d),
 };
 
 Name: String = <s:r"[a-z_$][a-zA-Z_$0-9]*"> => s.to_string();
 Float: String = <s:r"-?(0|([1-9]\d*))\.\d+"> => s.to_string();
-Int: isize = <s:r"-?[0-9]+"> => isize::from_str(s).unwrap();
+Int: i64 = <s:r"-?[0-9]+"> => i64::from_str(s).unwrap();

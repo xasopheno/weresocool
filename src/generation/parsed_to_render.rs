@@ -8,7 +8,7 @@ use instrument::{
     stereo_waveform::{Normalize, StereoWaveform},
 };
 use itertools::Itertools;
-use num_rational::Rational;
+use num_rational::Rational64;
 use operations::{NormalForm, Normalize as NormalizeOp, PointOp};
 use rayon::prelude::*;
 use settings::get_default_app_settings;
@@ -23,8 +23,10 @@ type PointOpSequences = Vec<Vec<PointOp>>;
 type NormEv = Vec<Vec<Event>>;
 type VecWav = Vec<StereoWaveform>;
 
-pub fn r_to_f32(r: Rational) -> f32 {
-//    if r.numer() > &10000000000 || r.denom() > &1000000000 {
+pub fn r_to_f64(r: Rational64) -> f64 {
+//    if r.numer() > &-10000000000 || r.denom() > &-1000000000 {
+//        println!("{:?}", r);
+//    }
 //        let mut fract = r.fract();
 //        for _ in 0..32 {
 //            if fract.is_integer() {
@@ -35,16 +37,16 @@ pub fn r_to_f32(r: Rational) -> f32 {
 //
 //        return r.to_integer() as f32 + fract.to_integer() as f32;
 //    }
-
-    (*r.numer() as f64 / *r.denom() as f64) as f32
+//    println!("{}, {}", r.numer() as f32, r.denom() as f32);
+    *r.numer() as f64 / *r.denom() as f64
 }
 
 pub fn event_from_init(init: Init) -> Event {
     Event::init(
-        r_to_f32(init.f),
-        r_to_f32(init.g),
-        r_to_f32(init.p),
-        r_to_f32(init.l),
+        r_to_f64(init.f),
+        r_to_f64(init.g),
+        r_to_f64(init.p),
+        r_to_f64(init.l),
     )
 }
 
@@ -90,16 +92,17 @@ fn generate_events(sequences: PointOpSequences, event: Event) -> NormEv {
     for sequence in sequences {
         let mut event_sequence = vec![];
         for point_op in sequence {
+//            println!("{:?}", point_op);
             let mut e = event.clone();
             for mut sound in e.sounds.iter_mut() {
-                sound.frequency *= r_to_f32(point_op.fm);
-                sound.frequency += r_to_f32(point_op.fa);
-                sound.pan *= r_to_f32(point_op.pm);
-                sound.pan += r_to_f32(point_op.pa);
-                sound.gain *= r_to_f32(point_op.g);
+                sound.frequency *= r_to_f64(point_op.fm);
+                sound.frequency += r_to_f64(point_op.fa);
+                sound.pan *= r_to_f64(point_op.pm);
+                sound.pan += r_to_f64(point_op.pa);
+                sound.gain *= r_to_f64(point_op.g);
             }
 
-            e.length *= r_to_f32(point_op.l);
+            e.length *= r_to_f64(point_op.l);
             event_sequence.push(e)
         }
 
@@ -132,9 +135,9 @@ fn sum_all_waveforms(vec_wav: VecWav) -> StereoWaveform {
     result
 }
 
-fn sum_vec(a: &Vec<f32>, b: Vec<f32>) -> Vec<f32> {
+fn sum_vec(a: &Vec<f64>, b: Vec<f64>) -> Vec<f64> {
     let vec_len = std::cmp::max(a.len(), b.len());
-    let mut acc: Vec<f32> = vec![0.0; vec_len];
+    let mut acc: Vec<f64> = vec![0.0; vec_len];
     for (i, e) in a.iter().zip_longest(&b).enumerate() {
         match e {
             itertools::EitherOrBoth::Both(v1, v2) => acc[i] = v1 + v2,

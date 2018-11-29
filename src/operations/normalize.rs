@@ -1,6 +1,6 @@
 pub mod normalize {
     extern crate num_rational;
-    use num_rational::{Ratio, Rational};
+    use num_rational::{Ratio, Rational64};
     use operations::{GetLengthRatio, NormalForm, Normalize, PointOp};
     use socool_parser::ast::Op;
     use std::cmp::Ordering::{Equal, Greater, Less};
@@ -125,8 +125,14 @@ pub mod normalize {
                     };
 
                     match_length(input);
+
                 }
+
             }
+//            if self.get_length_ratio() > Ratio::new(10000, 1){
+//                println!("{:?}", self);
+//                panic!()
+//            }
         }
     }
 
@@ -152,7 +158,7 @@ pub mod normalize {
         input.length_ratio = max_len;
     }
 
-    fn get_max_length_ratio(input: &NormalForm) -> Rational {
+    fn get_max_length_ratio(input: &NormalForm) -> Rational64 {
         let mut max_len = Ratio::new(0, 1);
         for voice in input.operations.iter() {
             let mut voice_len = Ratio::new(0, 1);
@@ -164,7 +170,6 @@ pub mod normalize {
                 max_len = voice_len
             }
         }
-
         max_len
     }
 

@@ -1,8 +1,8 @@
 use event::Sound;
 use instrument::{stereo_waveform::StereoWaveform, voice::Voice};
 use settings::Settings;
-use std::f32::consts::PI;
-fn tau() -> f32 {
+use std::f64::consts::PI;
+fn tau() -> f64 {
     PI * 2.0
 }
 
@@ -11,7 +11,7 @@ pub struct Oscillator {
     pub voices: Vec<(Voice, Voice)>,
     pub portamento_length: usize,
     pub settings: Settings,
-    pub sample_phase: f32,
+    pub sample_phase: f64,
 }
 
 impl Oscillator {
@@ -52,13 +52,13 @@ impl Oscillator {
         }
     }
 
-    pub fn generate(&mut self, n_samples_to_generate: f32) -> StereoWaveform {
+    pub fn generate(&mut self, n_samples_to_generate: f64) -> StereoWaveform {
         let total_len = self.sample_phase + n_samples_to_generate;
         let length = total_len.floor() as usize;
         self.sample_phase = total_len.fract();
-        let mut l_buffer: Vec<f32> = vec![0.0; length];
-        let mut r_buffer: Vec<f32> = vec![0.0; length];
-        let factor: f32 = tau() / self.settings.sample_rate;
+        let mut l_buffer: Vec<f64> = vec![0.0; length];
+        let mut r_buffer: Vec<f64> = vec![0.0; length];
+        let factor: f64 = tau() / self.settings.sample_rate;
         for lr_voices in self.voices.iter_mut() {
             let (ref mut l_voice, ref mut r_voice) = *lr_voices;
             l_voice.generate_waveform(&mut l_buffer, self.portamento_length, factor);

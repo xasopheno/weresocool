@@ -1,6 +1,6 @@
 extern crate num_rational;
 extern crate socool_parser;
-use num_rational::{Ratio, Rational};
+use num_rational::{Ratio, Rational64};
 use socool_parser::ast::Op;
 mod get_length_ratio;
 mod get_operations;
@@ -9,12 +9,12 @@ mod normalize;
 
 #[derive(Debug, Clone, PartialEq)]
 pub struct PointOp {
-    pub fm: Rational,
-    pub fa: Rational,
-    pub pm: Rational,
-    pub pa: Rational,
-    pub g: Rational,
-    pub l: Rational,
+    pub fm: Rational64,
+    pub fa: Rational64,
+    pub pm: Rational64,
+    pub pa: Rational64,
+    pub g: Rational64,
+    pub l: Rational64,
 }
 
 impl PointOp {
@@ -41,7 +41,7 @@ impl PointOp {
             ],
         }
     }
-    fn get_length_ratio(&self) -> Rational {
+    fn get_length_ratio(&self) -> Rational64 {
         self.l
     }
 }
@@ -49,7 +49,7 @@ impl PointOp {
 #[derive(Debug, Clone, PartialEq)]
 pub struct NormalForm {
     pub operations: Vec<Vec<PointOp>>,
-    pub length_ratio: Rational,
+    pub length_ratio: Rational64,
 }
 
 impl NormalForm {
@@ -67,7 +67,7 @@ impl NormalForm {
         }
     }
 
-    pub fn get_length_ratio(&self) -> Rational {
+    pub fn get_length_ratio(&self) -> Rational64 {
         self.length_ratio
     }
 }
@@ -77,7 +77,7 @@ pub trait Normalize {
 }
 
 pub trait GetLengthRatio {
-    fn get_length_ratio(&self) -> Rational;
+    fn get_length_ratio(&self) -> Rational64;
 }
 
 pub trait GetOperations {

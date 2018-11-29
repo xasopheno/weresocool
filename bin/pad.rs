@@ -2,7 +2,7 @@ extern crate itertools;
 extern crate num_rational;
 extern crate weresocool;
 use itertools::Itertools;
-use num_rational::{Ratio, Rational};
+use num_rational::{Ratio, Rational64};
 
 #[derive(Debug, Clone)]
 enum Item {
@@ -13,14 +13,14 @@ enum Item {
 #[derive(Debug, Clone)]
 struct Event {
     s: Sound,
-    l: Rational,
+    l: Rational64,
 }
 
 #[derive(Debug, Clone)]
 struct Sound {
-    f: Rational,
-    g: Rational,
-    p: Rational,
+    f: Rational64,
+    g: Rational64,
+    p: Rational64,
 }
 
 impl Sound {

@@ -1,7 +1,7 @@
 #[derive(Clone, Debug, PartialEq)]
 pub struct StereoWaveform {
-    pub l_buffer: Vec<f32>,
-    pub r_buffer: Vec<f32>,
+    pub l_buffer: Vec<f64>,
+    pub r_buffer: Vec<f64>,
 }
 
 pub trait Normalize {

@@ -1,29 +1,29 @@
 extern crate num_rational;
-use num_rational::Rational;
+use num_rational::Rational64;
 
 #[derive(Clone, PartialEq, Debug)]
 pub enum Op {
     AsIs,
     Silence {
-        m: Rational,
+        m: Rational64,
     },
     TransposeM {
-        m: Rational,
+        m: Rational64,
     },
     TransposeA {
-        a: Rational,
+        a: Rational64,
     },
     PanM {
-        m: Rational,
+        m: Rational64,
     },
     PanA {
-        a: Rational,
+        a: Rational64,
     },
     Gain {
-        m: Rational,
+        m: Rational64,
     },
     Length {
-        m: Rational
+        m: Rational64
     },
 //
     Sequence {

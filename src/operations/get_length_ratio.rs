@@ -2,10 +2,10 @@ pub mod get_length_ratio {
     use operations::GetLengthRatio;
     use socool_parser::ast::Op;
     extern crate num_rational;
-    use num_rational::{Ratio, Rational};
+    use num_rational::{Ratio, Rational64};
 
     impl GetLengthRatio for Op {
-        fn get_length_ratio(&self) -> Rational {
+        fn get_length_ratio(&self) -> Rational64 {
             match self {
                 Op::AsIs {}
                 | Op::Reverse {}
