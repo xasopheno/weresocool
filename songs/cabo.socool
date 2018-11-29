@@ -155,7 +155,7 @@ main = {
 			| Sequence [Repeat 3 | Ta 10, AsIs | Reverse | Length 0.5 | Tm 25/24, Gain 1.2],
 			Silence 2,
 			Overlay [
-				thing1_overtones | Length 24,
+				thing1_overtones | Length 24 | Gain 0.25,
 				O[
 			    	(10/1, 3.0, 0.3, 0.0),
 			    	(3/1, 0.0, 0.5, 0.0),

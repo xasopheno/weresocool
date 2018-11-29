@@ -108,83 +108,67 @@ pub mod normalize {
 
                     new_op.apply_to_normal_form(input);
 
-                    input.length_ratio = ratio;
+                    input.length_ratio = target_length;
                 }
 
                 Op::Overlay { operations } => {
-                    let mut result = vec![];
+                    let mut normal_forms = vec![];
+
                     for op in operations {
                         let mut input_clone = input.clone();
                         op.apply_to_normal_form(&mut input_clone);
-                        result.append(&mut input_clone.operations);
+                        normal_forms.push(input_clone);
+                    };
+
+                    let mut max_lr = Ratio::new(0, 1);
+
+                    for nf in normal_forms.clone() {
+                        let lr = nf.length_ratio;
+                        if lr > max_lr {
+                            max_lr = lr
+                        }
+                    }
+
+                    let mut result = vec![];
+
+                    for mut nf in normal_forms {
+                        pad_length(&mut nf, max_lr);
+                        result.append(&mut nf.operations);
                     }
 
                     *input = NormalForm {
                         operations: result,
-                        length_ratio: Ratio::new(0, 1),
+                        length_ratio: max_lr,
                     };
 
-                    match_length(input);
 
                 }
 
             }
-//            if self.get_length_ratio() > Ratio::new(10000, 1){
-//                println!("{:?}", self);
-//                panic!()
-//            }
         }
     }
 
-    fn match_length(input: &mut NormalForm) {
-        let max_len = get_max_length_ratio(&input);
-        for voice in input.operations.iter_mut() {
-            let mut voice_len = Ratio::new(0, 1);
-            for point_op in voice.iter() {
-                voice_len += point_op.get_length_ratio()
-            }
-            if voice_len < max_len {
-                voice.push(PointOp {
-                    fm: Ratio::new(0, 1),
-                    fa: Ratio::new(0, 1),
-                    pm: Ratio::new(1, 1),
-                    pa: Ratio::new(0, 1),
-                    g: Ratio::new(0, 1),
-                    l: max_len - voice_len,
-                });
-            }
-        }
-        if max_len > Ratio::new(100000, 1) {
-            panic!()
+    fn pad_length(input: &mut NormalForm, max_len: Rational64) {
+        let input_lr = input.get_length_ratio();
+        if input_lr < max_len {
+            for voice in input.operations.iter_mut() {
+                    voice.push(PointOp {
+                        fm: Ratio::new(0, 1),
+                        fa: Ratio::new(0, 1),
+                        pm: Ratio::new(1, 1),
+                        pa: Ratio::new(0, 1),
+                        g: Ratio::new(0, 1),
+                        l: max_len - input_lr,
+                    });
+                }
+
         }
         input.length_ratio = max_len;
-    }
-
-    fn get_max_length_ratio(input: &NormalForm) -> Rational64 {
-        let mut max_len = Ratio::new(0, 1);
-        for voice in input.operations.iter() {
-            let mut voice_len = Ratio::new(0, 1);
-            for op in voice {
-                voice_len += op.get_length_ratio()
-            }
-
-            if voice_len > max_len {
-                max_len = voice_len
-            }
-        }
-        max_len
     }
 
     fn join_sequence(mut l: NormalForm, mut r: NormalForm) -> NormalForm {
         if l.operations.len() == 0 {
             return r;
-        }
-
-        if l.length_ratio > Ratio::new(10000000, 1) {
-            panic!()
-        }
-        if r.length_ratio > Ratio::new(10000000, 1) {
-            panic!()
         }
 
         let diff = l.operations.len() as isize - r.operations.len() as isize;
@@ -223,6 +207,7 @@ pub mod normalize {
             result.operations.push(left.clone());
 
         }
+
         result.length_ratio += r.length_ratio;
         result.length_ratio += l.length_ratio;
 
