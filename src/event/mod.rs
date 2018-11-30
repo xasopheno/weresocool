@@ -45,7 +45,6 @@ pub trait Render<T> {
 
 impl Render<Event> for Event {
     fn render(&mut self, oscillator: &mut Oscillator) -> StereoWaveform {
-        //        println!("{:?}", self);
         oscillator.update(self.sounds.clone());
         let n_samples_to_generate = self.length * 44_100.0;
         oscillator.generate(n_samples_to_generate)

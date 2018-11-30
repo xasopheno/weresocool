@@ -25,14 +25,10 @@ rayon = "1.0"
 name = "wsc"
 path = "bin/wsc.rs"
 
-#[[bin]]
-#name = "mic"
-#path = "bin/mic.rs"
+[[bin]]
+name = "mic"
+path = "bin/mic.rs"
 
 #[[bin]]
 #name = "scratch"
 #path = "bin/pad.rs"
-
-#[[bin]]
-#name = "makam"
-#path = "bin/renderer.rs"

@@ -68,7 +68,8 @@ bass_drum2 = {
 drums = {
 		Sequence [
 			bass_drum,
-			snare
+			bass_drum2
+			-- snare
 		]
 
 

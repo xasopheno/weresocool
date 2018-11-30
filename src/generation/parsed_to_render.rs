@@ -49,6 +49,18 @@ pub fn render(composition: &Op, init: Init) -> StereoWaveform {
     result
 }
 
+pub fn render_mic(composition: &Op, event: Event) -> StereoWaveform {
+    let mut normal_form = NormalForm::init();
+
+    composition.apply_to_normal_form(&mut normal_form);
+    let norm_ev = generate_events(normal_form.operations, event);
+    let vec_wav = generate_waveforms(norm_ev);
+    let mut result = sum_all_waveforms(vec_wav);
+    result.normalize();
+
+    result
+}
+
 pub fn to_wav(composition: StereoWaveform, filename: String) {
     banner("Printing".to_string(), filename);
     write_composition_to_wav(composition);
