@@ -54,8 +54,7 @@ main = {
 		thing3
 	] 
 	| Length 0.5 
-	| Tm 3
 	| Repeat 3
 	| Sequence [AsIs, Tm 4/3, Tm 3/2, Tm 9/8, Tm 3/2] 
-	| Sequence [Repeat 2, Reverse, Tm 3]
+	| Sequence [Repeat 2, Tm 3] | Reverse
 }
