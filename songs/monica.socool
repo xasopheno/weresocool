@@ -10,7 +10,7 @@ overtones = {
 }
 
 thing1 = {
-	-- overtones |
+	overtones |
 	Sequence [
 		AsIs,
 		Tm 9/8,
@@ -46,6 +46,7 @@ bass = {
 	| Tm 0.5
 	> FitLength melody
 }
+
 
 main = {
 	Overlay [

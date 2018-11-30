@@ -38,7 +38,7 @@ pub mod tests {
             let g_delta = voice.calculate_gain_delta(10);
             let p_delta = voice.calculate_portamento_delta(10);
 
-            assert_eq!(g_delta, 0.06588126);
+            assert_eq!(g_delta, 0.06588125800126557);
             assert_eq!(p_delta, 20.0);
         }
 
@@ -49,7 +49,7 @@ pub mod tests {
             let mut voice = Voice::init(index);
             voice.update(100.0, 1.0);
             voice.generate_waveform(&mut buffer, 3, 2048.0 / 44_100.0);
-            assert_eq!(buffer, [0.0, 0.045456633, 0.652681]);
+            assert_eq!(buffer, [0.0, 0.04545661739507462, 0.6526809620585622]);
         }
 
         #[test]
@@ -73,6 +73,7 @@ pub mod tests {
             let osc = Oscillator::init(&get_test_settings());
             let expected = Oscillator {
                 portamento_length: 10,
+                sample_phase: 0.0,
                 settings: get_test_settings(),
                 voices: vec![(
                     Voice {
@@ -134,10 +135,10 @@ pub mod tests {
             }]);
 
             let expected = StereoWaveform {
-                l_buffer: vec![0.0, 0.011016606, 0.032999497],
-                r_buffer: vec![0.0, 0.0036722021, 0.010999832],
+                l_buffer: vec![0.0, 0.011016606476346103, 0.03299950110260482],
+                r_buffer: vec![0.0, 0.003672202158782034, 0.010999833700868274],
             };
-            assert_eq!(osc.generate(3), expected);
+            assert_eq!(osc.generate(3.0), expected);
         }
     }
 
@@ -158,11 +159,11 @@ pub mod tests {
             assert_eq!(expected, result);
 
             let expected = loudness_normalization(250.0);
-            let result = 0.5759918;
+            let result = 0.5759917219028009;
             assert_eq!(expected, result);
 
             let expected = loudness_normalization(500.0);
-            let result = 0.3794706;
+            let result = 0.3794705923727163;
             assert_eq!(expected, result);
 
             let expected = loudness_normalization(1000.0);
@@ -170,7 +171,7 @@ pub mod tests {
             assert_eq!(expected, result);
 
             let expected = loudness_normalization(1500.0);
-            let result = 0.19584954;
+            let result = 0.19584951787253815;
             assert_eq!(expected, result);
         }
     }

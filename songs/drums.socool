@@ -1,0 +1,124 @@
+{ f: 100, l: 0.19, g: 1.0, p: 0.0}
+
+snare_overtones = {
+    O[
+    	(5/4, 3.0, 1.0, 1.0),
+      	(9/8, 0.0, 1.0, -1.0),
+      	(1/1, 2.0, 1.0, 0.5),
+      	(1/1, 0.0, 1.0, -0.5),
+      	(1/2, 0.0, 1.0, 0.0),
+      	(1/2, 3, 1.0, 0.0),
+      	(3/4, 0, 0.1, 0.0),
+      	(1/4, 0, 0.2, -0.5),
+       	(1/4, 2, 0.2, 0.5),
+  	]
+}
+
+gain = {
+	Sequence [Gain 9/10, Gain 1/5, Gain 1/4]
+}
+
+gain_recursive = { gain | Sequence [Repeat 5, Gain 1/4, Gain 1/10, Gain 1/20] }
+
+snare = {
+	snare_overtones |
+	Sequence [
+		Tm 1/2,
+		AsIs,
+		Tm 5/4,
+		Tm 2/1,
+	] 
+	| Length 1/100
+	| gain_recursive
+	| Sequence [AsIs | Length 3/4, Silence 1/4]
+}
+
+
+overtones = {
+    O[
+      	(3/2, 0.0, 1.0, 0.5),
+      	(3/2, 0.0, 1.0, -0.5),
+      	(1/1, 0.0, 1.0, 0.0),
+      	(1/2, 0.0, 1.0, 0.0),
+  	]
+}
+
+bass_drum = { 
+	overtones 
+	| Length 1/10
+	| Sequence [AsIs, Tm 4/5 | Gain 4/5, Tm 3/5 | Gain 3/5, Tm 2/5 | Gain 2/5, Tm 1/5 | Gain 1/5]
+	| Sequence [
+		  AsIs,
+		  Silence 10,
+	  ]
+}
+
+bass_drum2 = {
+	Gain 0.75
+	| Tm 4
+	| overtones
+	| Length 1/250
+	| Sequence [Tm 1/2, AsIs, Tm 2, Tm 4, Tm 5/4, Tm 7/4] | Sequence [Repeat 4, Gain 1/2, Gain 1/4, Gain 1/8]
+	| Sequence [
+		  AsIs,
+	  	  Silence 10,
+    ]
+}
+
+drums = {
+		Sequence [
+			bass_drum,
+			bass_drum2
+			-- snare
+		]
+
+
+		-- | Repeat 2
+		-- | Sequence [
+		-- 	-- Tm 9/4 | Length 2/5 | Sequence [AsIs, Tm 7/16], 
+		-- 	Tm 2/3, 
+		-- 	Tm 3/4,
+		-- ]
+}
+
+-- bass = {
+-- 	Sequence [
+-- 		O[
+-- 	      	(5/2, 3.0, 1.0, 1.0),
+-- 	      	(9/8, 0.0, 1.0, -1.0),
+-- 	      	(1/1, 2.0, 1.0, 0.5),
+-- 	      	(1/1, 0.0, 1.0, -0.5),
+-- 	      	(1/2, 0.0, 1.0, 0.0),
+-- 	      	(1/2, 3, 1.0, 0.0),
+-- 	      	(3/4, 0, 0.1, 0.0),
+-- 	      	(1/4, 0, 0.2, -0.5),
+-- 	       	(1/4, 2, 0.2, 0.5),
+-- 	  	] | Tm 3 | Gain 2,
+-- 	  	Silence 1,
+-- 		O[
+-- 	      	(11/1, 0, 0.2, 0.0),
+-- 	      	(10/1, 5, 0.2, -0.5),
+-- 	      	(10/1, 0, 0.2, 0.5),
+-- 	      	(9/1, 5, 0.2, -0.5),
+-- 	      	(9/1, 0, 0.2, 0.5),
+-- 	      	(8/1, 5, 0.2, -0.5),
+-- 	      	(8/1, 0, 0.2, 0.5),
+-- 	      	(1/1, 2, 0.2, 0.5),
+-- 	      	(1/1, 0, 0.2, -0.5),
+-- 	  	] |
+-- 		Sequence [
+-- 			Tm 1/2,
+-- 			Tm 2/3,
+-- 			Tm 7/8,
+-- 			Tm 6/5, 
+-- 		] | Gain 3 | Sequence [AsIs, Tm 7/8, Tm 4/5 | Reverse, Tm 2/3],
+		
+-- 	]
+-- }
+
+main = {
+	Overlay [
+		drums,
+	] 
+	| Repeat 100
+}

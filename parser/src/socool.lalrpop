@@ -1,7 +1,9 @@
+use num_rational::{Rational64};
 use std::str::FromStr;
 use std::string::String;
 use crate::ast::Op;
 use crate::parser::Init;
+use crate::float_to_rational::helpers::*;
 use std::collections::HashMap;
 
 grammar<'table>(table: &'table mut HashMap<String, Op>);
@@ -38,7 +40,7 @@ BaseOperation: Op = {
     "(" <o: Operation> ")" => o,
     "AsIs" => Op::AsIs {},
     "Reverse" => Op::Reverse {},
-    "Repeat" <i:Int> => {
+    "Repeat" <i: Int> => {
         let mut vec = Vec::new();
         for x in 0..i {
             vec.push(Op::AsIs)
@@ -106,16 +108,12 @@ Compose = Pipe<Operation>;
 
 Operations = Comma<Operation>;
 
-Num: f32 = {
-   <n: Float> => n,
-   <n: Int> => { n as f32 }
-}
-
-Rational: f32 = {
-    <n:Num> => n,
-    <n:Num> "/" <d:Num> => n/d,
+Rational: Rational64 = {
+    <n: Float> => f32_to_rational(n),
+    <n: Int> => Rational64::new(n, 1),
+    <n: Int> "/" <d:Int> => Rational64::new(n, d),
 };
 
 Name: String = <s:r"[a-z_$][a-zA-Z_$0-9]*"> => s.to_string();
-Float: f32 = <s:r"-?(0|([1-9]\d*))\.\d+"> => f32::from_str(s).unwrap();
-Int: i32 = <s:r"-?[0-9]+"> => i32::from_str(s).unwrap();
+Float: String = <s:r"-?(0|([1-9]\d*))\.\d+"> => s.to_string();
+Int: i64 = <s:r"-?[0-9]+"> => i64::from_str(s).unwrap();

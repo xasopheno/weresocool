@@ -10,10 +10,10 @@ pub fn write_output_buffer(out_buffer: &mut [f32], stereo_waveform: StereoWavefo
     let mut r_idx = 0;
     for n in 0..out_buffer.len() {
         if n % 2 == 0 {
-            out_buffer[n] = stereo_waveform.l_buffer[l_idx];
+            out_buffer[n] = stereo_waveform.l_buffer[l_idx] as f32;
             l_idx += 1
         } else {
-            out_buffer[n] = stereo_waveform.r_buffer[r_idx];
+            out_buffer[n] = stereo_waveform.r_buffer[r_idx] as f32;
             r_idx += 1
         }
     }
@@ -56,13 +56,17 @@ pub fn normalize_waveform(buffer: &mut Vec<f32>) {
 }
 
 pub fn write_composition_to_json(
-    composition: Vec<Event>,
+    composition: Vec<Vec<Event>>,
     filename: &String,
 ) -> std::io::Result<()> {
     let serialized = serde_json::to_string(&composition).unwrap();
     let mut file = File::create(format!("{}{}", filename, ".json".to_string()))?;
 
-    println!("{} is {} events long", filename, composition.len());
+    println!(
+        "{}.json was written and has {} event stream(s).",
+        filename,
+        composition.len()
+    );
 
     file.write_all(serialized.as_bytes())?;
     Ok(())

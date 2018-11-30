@@ -20,5 +20,5 @@ EOF
 makam src/makam/init tmp | tee tmp.socool
 awk -i inplace '/^>>>$/{flag=1;next}/^<<<$/{flag=0}flag' tmp.socool
 
-./target/release/makam tmp.socool
+./target/release/wsc tmp.socool
 rm -f tmp.socool tmp.makam

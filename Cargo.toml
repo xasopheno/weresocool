@@ -1,6 +1,6 @@
 [package]
 name = "weresocool"
-version = "0.2.0"
+version = "0.3.0"
 authors = ["Danny Meyer <Danny.Meyer@gmail.com>"]
 description = "***** WereSoCool __!Now In Stereo!__ ****** Make cool sounds. Impress your friends."
 license = "MIT"
@@ -19,6 +19,7 @@ socool_parser = { path = "parser" }
 clap = "2.32.0"
 itertools = "0.7.8"
 num-rational = "0.2"
+rayon = "1.0"
 
 [[bin]]
 name = "wsc"
@@ -31,7 +32,3 @@ path = "bin/mic.rs"
 [[bin]]
 name = "scratch"
 path = "bin/pad.rs"
-
-[[bin]]
-name = "makam"
-path = "bin/renderer.rs"

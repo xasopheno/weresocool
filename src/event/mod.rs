@@ -4,14 +4,14 @@ use pbr::ProgressBar;
 #[derive(Debug, Clone, PartialEq, Serialize)]
 pub struct Event {
     pub sounds: Vec<Sound>,
-    pub length: f32,
+    pub length: f64,
 }
 
 #[derive(Debug, Clone, PartialEq, Serialize)]
 pub struct Sound {
-    pub frequency: f32,
-    pub gain: f32,
-    pub pan: f32,
+    pub frequency: f64,
+    pub gain: f64,
+    pub pan: f64,
 }
 
 impl Sound {
@@ -25,7 +25,7 @@ impl Sound {
 }
 
 impl Event {
-    pub fn init(frequency: f32, gain: f32, pan: f32, length: f32) -> Event {
+    pub fn init(frequency: f64, gain: f64, pan: f64, length: f64) -> Event {
         Event {
             sounds: {
                 vec![Sound {
@@ -46,7 +46,7 @@ pub trait Render<T> {
 impl Render<Event> for Event {
     fn render(&mut self, oscillator: &mut Oscillator) -> StereoWaveform {
         oscillator.update(self.sounds.clone());
-        let n_samples_to_generate = (self.length * 44_100.0).floor() as usize;
+        let n_samples_to_generate = self.length * 44_100.0;
         oscillator.generate(n_samples_to_generate)
     }
 }
@@ -55,7 +55,7 @@ impl Render<Vec<Event>> for Vec<Event> {
     fn render(&mut self, oscillator: &mut Oscillator) -> StereoWaveform {
         let mut result: StereoWaveform = StereoWaveform::new(0);
         let mut events = self.clone();
-        events.push(Event::init(0.0, 0.0, 0.0, 0.3));
+        events.push(Event::init(0.0, 0.0, 0.0, 1.0));
         let n_events = events.len();
         let mut pb = ProgressBar::new(n_events as u64);
         pb.format("╢w♬░╟");

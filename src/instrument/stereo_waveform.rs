@@ -1,7 +1,7 @@
 #[derive(Clone, Debug, PartialEq)]
 pub struct StereoWaveform {
-    pub l_buffer: Vec<f32>,
-    pub r_buffer: Vec<f32>,
+    pub l_buffer: Vec<f64>,
+    pub r_buffer: Vec<f64>,
 }
 
 pub trait Normalize {
@@ -59,6 +59,6 @@ impl Normalize for StereoWaveform {
         for sample in self.r_buffer.iter_mut() {
             *sample *= normalization_ratio
         }
-//        println!("Normalized by {}", normalization_ratio);
+        //        println!("Normalized by {}", normalization_ratio);
     }
 }

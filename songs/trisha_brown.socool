@@ -118,7 +118,7 @@ high = {
 	]
 	| Reverse
 	| Length 0.25
-	| Gain 0.14
+	| Gain 0.23
 	| Tm 2
 	| Repeat 2
 	> FitLength melody

@@ -1,9 +1,46 @@
-{ f: 220, l: 2.0, g: 1.0, p: 0.0}
+{ f: 120, l: 2.0, g: 1.0, p: 0.0}
+
+thing = {
+    O[
+        (5/4, 3.0, 1.0, 1.0),
+        (9/8, 0.0, 1.0, -1.0),
+        (1/1, 2.0, 1.0, 0.5),
+        (1/1, 0.0, 1.0, -0.5),
+    ] |
+    Sequence [
+        Overlay [
+            Tm 9/8 | Ta 5,
+            Tm 9/8,
+            Tm 5/4,
+            Tm 3/1,
+        ],
+       Overlay [
+           Tm 15/8,
+           Tm 3/2,
+        ],
+        Overlay [
+            Tm 8/5,
+            Tm 5/2,
+            Tm 4/1,
+        ],
+       Sequence [
+           Tm 1/1,
+           Overlay [
+            Tm 7/4,
+            Tm 5/3,
+            Tm 2/1,
+           ],
+           Tm 9/8,
+           Tm 4/3,
+           Tm 5/4
+       ]
+    ]
+}
 
 main = {
-	Overlay [
-	    Sequence [AsIs, Tm 5/4, AsIs],
-	    Sequence [Tm 5/4, Tm 8/5, Tm 5/4],
-	    Sequence [Silence 2, Tm 1/2]
-	]
+        Overlay [
+            -- AsIs | Tm 10,
+            thing, 
+            thing | Tm 3 | Length 0.1 | Repeat 8 
+        ]
 }

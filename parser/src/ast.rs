@@ -1,29 +1,31 @@
+extern crate num_rational;
+use num_rational::Rational64;
+
 #[derive(Clone, PartialEq, Debug)]
 pub enum Op {
     AsIs,
-    Reverse,
     Silence {
-        m: f32,
+        m: Rational64,
     },
     TransposeM {
-        m: f32,
+        m: Rational64,
     },
     TransposeA {
-        a: f32,
+        a: Rational64,
     },
     PanM {
-        m: f32,
+        m: Rational64,
     },
     PanA {
-        a: f32,
+        a: Rational64,
     },
     Gain {
-        m: f32,
+        m: Rational64,
     },
     Length {
-        m: f32,
+        m: Rational64
     },
-
+//
     Sequence {
         operations: Vec<Op>,
     },
@@ -33,6 +35,8 @@ pub enum Op {
     Compose {
         operations: Vec<Op>,
     },
+//
+    Reverse,
 
     WithLengthRatioOf {
         with_length_of: Box<Op>,
