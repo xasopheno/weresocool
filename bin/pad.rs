@@ -130,8 +130,6 @@ fn rational_play() {
 }
 
 fn main() {
-    let a: isize = 9223372036854775807;
-    println!("{}", a * 2);
         use Item::*;
 
         let mut root = vec![Collection(vec![

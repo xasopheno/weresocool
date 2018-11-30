@@ -29,6 +29,6 @@ path = "bin/wsc.rs"
 name = "mic"
 path = "bin/mic.rs"
 
-#[[bin]]
-#name = "scratch"
-#path = "bin/pad.rs"
+[[bin]]
+name = "scratch"
+path = "bin/pad.rs"
