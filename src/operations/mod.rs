@@ -41,9 +41,6 @@ impl PointOp {
             ],
         }
     }
-    fn get_length_ratio(&self) -> Rational64 {
-        self.l
-    }
 }
 
 #[derive(Debug, Clone, PartialEq)]

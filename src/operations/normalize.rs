@@ -112,22 +112,20 @@ pub mod normalize {
                 }
 
                 Op::Overlay { operations } => {
-                    let mut normal_forms = vec![];
+                    let normal_forms: Vec<NormalForm> = operations
+                        .iter()
+                        .map(|op| {
+                            let mut input_clone = input.clone();
+                            op.apply_to_normal_form(&mut input_clone);
+                            input_clone
+                        })
+                        .collect();
 
-                    for op in operations {
-                        let mut input_clone = input.clone();
-                        op.apply_to_normal_form(&mut input_clone);
-                        normal_forms.push(input_clone);
-                    }
-
-                    let mut max_lr = Ratio::new(0, 1);
-
-                    for nf in normal_forms.clone() {
-                        let lr = nf.length_ratio;
-                        if lr > max_lr {
-                            max_lr = lr
-                        }
-                    }
+                    let max_lr = normal_forms
+                        .iter()
+                        .map(|nf| nf.length_ratio)
+                        .max()
+                        .expect("Normalize, max_lr not working");
 
                     let mut result = vec![];
 

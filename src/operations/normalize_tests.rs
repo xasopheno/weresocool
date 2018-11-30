@@ -309,9 +309,15 @@ pub mod normalize_tests {
         WithLengthRatioOf {
             with_length_of: Box::new(Sequence {
                 operations: vec![
-                    Length { m: Ratio::new(2, 1)},
-                    Length { m: Ratio::new(4, 1)},
-                    Length { m: Ratio::new(3, 1)},
+                    Length {
+                        m: Ratio::new(2, 1),
+                    },
+                    Length {
+                        m: Ratio::new(4, 1),
+                    },
+                    Length {
+                        m: Ratio::new(3, 1),
+                    },
                 ],
             }),
             main: Box::new(TransposeM {

@@ -1,4 +1,4 @@
-use num_rational::{Ratio, Rational64};
+use num_rational::{Rational64};
 use std::str::FromStr;
 use std::string::String;
 use crate::ast::Op;
