@@ -1,0 +1,35 @@
+thing = {
+	Sequence [
+		A,
+		B, 
+		Choice [C, D]
+	]
+}
+
+thing2 = {
+	Sequence [
+		AsIs, 
+		Tm 3/2
+	]
+}
+
+thing3 = {
+	Sequence [
+		Choice [E, F],
+		Choice [G, H]
+	]
+}
+
+main = {
+	thing2 | thing1 | thing3
+}
+
+
+
+result = {
+	Sequence [
+		A, B, Choice [C, D],
+		A | Tm 3/2, B | Tm 3/2, Choice [C, D] | Tm 3/2
+	]
+}
+

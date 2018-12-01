@@ -1,0 +1,58 @@
+{ f: 220, l: 5.0, g: 1.0, p: 0.0}
+
+overtones = {
+    O[
+      	(2/1, 0.0, 0.1, 0.0),
+      	(1/1, 0.05, 1.0, 0.5),
+      	(1/1, 0.0, 1.0, -0.5),
+  	]
+}
+
+thing1 = {
+	overtones | 
+	Sequence [
+		Choice [AsIs, Tm 3/2],
+		Choice [Tm 5/4, Tm 7/4],
+		Choice [Tm 5/3, Tm 11/8],
+		Choice [Tm 2, Tm 1, Silence 1] | Length 2,
+	] 
+}
+
+thing2 = { Sequence [
+		thing1,
+		thing1,
+		thing1,  
+		thing1,  
+		thing1,  
+		thing1,
+	]
+}
+
+drone = {
+	O[
+      	(4/1, 11.0, 0.2, 0.8),
+      	(4/1, 0.0, 0.2, -0.8),
+      	(5/2, 0.0, 0.4, 0.0),
+      	(3/2, 0.0, 1.0, 0.5),
+      	(3/2, 3.0, 1.0, -0.5),
+      	(1/1, 4.0, 1.0, -0.5),
+      	(1/1, 0.0, 1.0, 0.5),
+  	] |
+	Sequence [
+		AsIs, 
+		Tm 3/2, 
+	] 
+	| Tm 1/2
+	| Sequence [AsIs, PanM -1]
+	| Repeat 4
+	> FitLength thing2
+}
+
+main = {
+	Overlay [
+		thing2,
+		Gain 0.55 | thing2 | thing2 > FitLength thing2, 
+		Gain 0.15 | Tm 2 | thing2 | thing2 | Repeat 2 > FitLength thing2, 
+		drone
+	]
+}

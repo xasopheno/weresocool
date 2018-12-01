@@ -35,6 +35,10 @@ pub enum Op {
     Compose {
         operations: Vec<Op>,
     },
+    Choice {
+        operations: Vec<Op>
+    },
+
 //
     Reverse,
 

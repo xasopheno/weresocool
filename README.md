@@ -14,7 +14,6 @@ On Mac
 
 `brew install portaudio`
 
-## Parser
 Currently, the parser needs to be in a directory at the same level as this repository.
 It's linked locally through the `Cargo.toml`. 
 
