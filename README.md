@@ -9,10 +9,12 @@ You'll need Rust and Cargo.
 `https://www.rust-lang.org/en-US/install.html` 
 
 You'll need also need portaudio. 
+https://github.com/RustAudio/rust-portaudio
 
 On Mac
-
 `brew install portaudio`
+`brew install pkg-config`
+`&& cargo clean` if you are having problems linking
 
 ## Parser
 Currently, the parser needs to be in a directory at the same level as this repository.
