@@ -21,6 +21,7 @@ thing3 = {
 }
 
 bass = {
+bass = {
 	Choice [
 		AsIs,
 		Tm 3/2 

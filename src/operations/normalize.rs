@@ -13,6 +13,16 @@ pub mod normalize {
             match self {
                 Op::AsIs => {}
 
+                Op::FInvert => {
+                    for mut voice in input.operations.iter_mut() {
+                        for mut point_op in voice {
+                            if *point_op.fm.numer() != 0 {
+                                point_op.fm = point_op.fm.recip();
+                            }
+                        }
+                    }
+                }
+
                 Op::Reverse => {
                     for mut voice in input.operations.iter_mut() {
                         voice.reverse();

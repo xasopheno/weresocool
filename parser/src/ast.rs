@@ -4,6 +4,7 @@ use num_rational::Rational64;
 #[derive(Clone, PartialEq, Debug)]
 pub enum Op {
     AsIs,
+    FInvert,
     Silence {
         m: Rational64,
     },
@@ -38,7 +39,6 @@ pub enum Op {
     Choice {
         operations: Vec<Op>
     },
-
 //
     Reverse,
 
