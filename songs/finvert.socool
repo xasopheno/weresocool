@@ -1,7 +1,9 @@
-{ f: 220, l: 1.0, g: 1.0, p: 0.0}
+{ f: 260, l: 1.0, g: 1.0, p: 0.0}
 
 overtones = {
     O[
+    	(2/1, 15.0, 1.0, 0.0),
+    	(2/1, 0.0, 1.0, 0.0),
     	(5/4, 3.0, 1.0, 1.0),
       	(9/8, 0.0, 1.0, -1.0),
       	(1/1, 2.0, 1.0, 0.5),
@@ -9,23 +11,32 @@ overtones = {
   	]
 }
 
-thing1 = {
+melody = {
 	Sequence [
 		AsIs,
-		Tm 9/8,
+		Tm 9/8,	
 		Tm 5/4,
-		Tm 3/2,
-		Tm 5/3,
 	] 
-	| Length 0.25	
+	| Length 0.15	
 }
 
 main = {
-	-- overtones |
 	Sequence [
-		thing1,
- 		thing1
-		| FInvert
-		| Tm 5/3
-	]
+		melody 
+		| overtones,
+		
+		melody
+		| Invert
+		| overtones,
+		
+		melody
+		| Reverse
+		| overtones,
+
+		melody 
+		| Invert
+		| Reverse 
+		| overtones,
+
+	] | Sequence [AsIs, Tm 9/8, Tm 5/4] | Sequence [AsIs, Tm 3/2] | Sequence [AsIs, Reverse | Invert | Tm 4]
 }

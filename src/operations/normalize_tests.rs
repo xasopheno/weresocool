@@ -340,4 +340,62 @@ pub mod normalize_tests {
 
         assert_eq!(input, expected);
     }
+
+    #[test]
+    fn normalize_invert() {
+        let mut input = NormalForm::init();
+
+        Compose {
+            operations: vec![
+                Sequence {
+                    operations: vec![
+                        TransposeM {
+                            m: Ratio::new(1, 1),
+                        },
+                        TransposeM {
+                            m: Ratio::new(9, 8),
+                        },
+                        TransposeM {
+                            m: Ratio::new(5,4),
+                        },
+                    ],
+                },
+                FInvert
+            ]
+        }
+            .apply_to_normal_form(&mut input);
+
+        let expected = NormalForm {
+            length_ratio: Ratio::new(3, 1),
+            operations: vec![vec![
+                PointOp {
+                    fm: Ratio::new(1, 1),
+                    fa: Ratio::new(0, 1),
+                    pm: Ratio::new(1, 1),
+                    pa: Ratio::new(0, 1),
+                    g: Ratio::new(1, 1),
+                    l: Ratio::new(1, 1),
+                },
+                PointOp {
+                    fm: Ratio::new(8,9),
+                    fa: Ratio::new(0, 1),
+                    pm: Ratio::new(1, 1),
+                    pa: Ratio::new(0, 1),
+                    g: Ratio::new(1, 1),
+                    l: Ratio::new(1, 1),
+                },
+                PointOp {
+                    fm: Ratio::new(4,5),
+                    fa: Ratio::new(0, 1),
+                    pm: Ratio::new(1, 1),
+                    pa: Ratio::new(0, 1),
+                    g: Ratio::new(1, 1),
+                    l: Ratio::new(1, 1),
+                },
+            ]],
+        };
+
+        assert_eq!(input, expected);
+    }
+
 }
