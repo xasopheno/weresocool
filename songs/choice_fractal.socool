@@ -1,0 +1,53 @@
+{ f: 300, l: 1.0, g: 1.0, p: 0.0}
+
+overtones = {
+    O[
+        -- (5/4, 3.0, 1.0, 1.0),
+        -- (9/8, 0.0, 1.0, -1.0),
+        (1/1, 2.0, 1.0, 0.5),
+        (1/1, 0.0, 1.0, -0.5),
+    ]
+}
+
+thing1 = {
+  overtones |
+  Sequence [
+    -- AsIs,
+    -- Tm 5/4,
+    Choice [
+      Overlay [
+        Tm 3,
+        Tm 9/4,
+        Tm 3/2
+      ] | PanA -1,
+      Overlay [
+        Tm 3 | Ta 3,
+        Tm 3,
+        Tm 3/2
+      ] | Gain 1/2 | PanA 1,
+    ],
+    Tm 4/3,
+    Tm 9/4,
+    Choice [
+      Tm 1/2, 
+      Tm 2/3
+    ]
+  ] 
+  | Length 0.12
+}
+
+self = {
+  Sequence [
+    thing1,
+    thing1,
+  ] | Repeat 2
+}
+
+main = {
+  Sequence [
+    self, 
+    self | Invert | Tm 3/2, 
+    self, 
+    self | Reverse | Invert | Tm 3/2,
+  ] | Repeat 8
+}
