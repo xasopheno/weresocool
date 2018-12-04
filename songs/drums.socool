@@ -21,6 +21,7 @@ gain = {
 gain_recursive = { gain | Sequence [Repeat 5, Gain 1/4, Gain 1/10, Gain 1/20] }
 
 snare = {
+	Tm 8 |
 	snare_overtones |
 	Sequence [
 		Tm 1/2,
@@ -45,11 +46,11 @@ overtones = {
 
 bass_drum = { 
 	overtones 
-	| Length 1/10
-	| Sequence [AsIs, Tm 4/5 | Gain 4/5, Tm 3/5 | Gain 3/5, Tm 2/5 | Gain 2/5, Tm 1/5 | Gain 1/5]
+	| Length 1/20
+	| Sequence [AsIs, Gain 4/5, Gain 3/5, Gain 2/5, Gain 1/5]
 	| Sequence [
 		  AsIs,
-		  Silence 10,
+		  -- Silence 20,
 	  ]
 }
 
@@ -61,15 +62,28 @@ bass_drum2 = {
 	| Sequence [Tm 1/2, AsIs, Tm 2, Tm 4, Tm 5/4, Tm 7/4] | Sequence [Repeat 4, Gain 1/2, Gain 1/4, Gain 1/8]
 	| Sequence [
 		  AsIs,
-	  	  Silence 10,
+	  	  -- Silence 10,
     ]
 }
 
 drums = {
 		Sequence [
-			bass_drum,
-			bass_drum2
-			-- snare
+ 			Overlay [
+				bass_drum,
+				-- bass_drum2 > FitLength bass_drum,
+				snare > FitLength bass_drum
+			],
+			Silence 1
+		] | Sequence [
+			AsIs,
+			Tm 9/8,
+			Tm 5/4,
+			Tm 4/3,
+		] | Sequence [
+			-- AsIs | Gain 3/2,
+			Tm 7/8 | Reverse,
+			Invert | Tm 8/5,
+			-- Tm 3/4
 		]
 
 
@@ -120,5 +134,6 @@ main = {
 	Overlay [
 		drums,
 	] 
-	| Repeat 100
+	| Length 3/2 
+	| Repeat 10
 }
