@@ -1,0 +1,113 @@
+{ f: 220, l: 1.0, g: 1.0, p: 0.0}
+
+overtones = {
+    O[
+    	(5/4, 3.0, 1.0, 1.0),
+      	(9/8, 0.0, 1.0, -1.0),
+      	(1/1, 2.0, 1.0, 0.5),
+      	(1/1, 0.0, 1.0, -0.5),
+  	]
+}
+
+thing1 = {
+	-- overtones |
+	Sequence [
+		AsIs,
+		Tm 2,
+		Sequence [
+			Tm 15/8,
+			Tm 5/3,
+			Tm 3/2,
+			Tm 4/3,
+			Tm 5/4,
+			Tm 3/2,
+ 		] | Length 1/2,
+ 		Tm 5/4 | Length 3,
+ 		AsIs,
+ 		Tm 5/3,
+ 		Sequence [
+	 		Tm 3/2,
+	 		Tm 4/3,
+	 		Tm 5/4,
+	 		Tm 9/8,
+ 		] | Length 1/2,
+ 		AsIs | Length 4,
+ 	]
+}
+
+thing2 = {
+	Sequence [
+		AsIs | Length 2,
+		Tm 9/8,
+		Sequence [
+			AsIs,
+			Tm 9/8
+		] | Length 1/2,
+		Sequence [
+			Tm 5/4,
+			Tm 3/2,
+			Tm 5/3,
+		] | Length 2/3,
+		Tm 15/8,
+		Tm 5/3,
+		Tm 5/4
+		| Sequence [Tm 5/4, Tm 4/3, Tm 3/2, AsIs],
+		Tm 9/8,
+		Tm 3/2,
+		Tm 3/4,
+		Tm 15/16 
+	]	 
+}
+
+thing3 = {
+	Sequence [
+		AsIs | Length 2,
+		Tm 9/8,
+		Sequence [
+			AsIs,
+			Tm 9/8
+		] | Length 1/2,
+		Sequence [
+			Tm 5/4,
+			Tm 3/2,
+			Tm 5/3,
+		] | Length 2/3,
+		Tm 15/8 | Length 4,
+	]	 
+}
+
+coda = {
+	Sequence [
+		Sequence [
+			Sequence [
+				Tm 2,
+				Tm 5/3,
+			] | Length 2/3,
+			Tm 3/2,
+			AsIs | Length 3
+		] 
+		| Sequence [
+			AsIs,
+			Tm 5/4 | Length 4/5,
+			Tm 3/2 | thing1 | Length 0.1 | Reverse,
+			Tm 3 | Length 0.1 | Sequence [AsIs, Tm 9/8 | AsIs, Reverse] | Repeat 3,
+			Silence 0.25,
+			Tm 2,
+			Tm 2,
+		],
+		Tm 9/4 | Length 4,
+		Tm 2 | Length 4, 
+		AsIs | Length 4
+	]
+}
+
+main = {
+	Sequence [
+ 		thing1,
+ 		thing2,
+ 		thing1,
+ 		thing3,
+ 		coda
+
+	]
+}
