@@ -1,4 +1,3 @@
-extern crate rand;
 use analyze::{Analyze, DetectionResult};
 use event::{Event, Sound};
 use socool_parser::ast::Op;

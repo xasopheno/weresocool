@@ -1,14 +1,27 @@
 pub mod normalize {
     extern crate num_rational;
+    extern crate rand;
     use num_rational::{Ratio, Rational64};
     use operations::{GetLengthRatio, NormalForm, Normalize, PointOp};
     use socool_parser::ast::Op;
     use std::cmp::Ordering::{Equal, Greater, Less};
+    use rand::prelude::*;
+
 
     impl Normalize for Op {
         fn apply_to_normal_form(&self, input: &mut NormalForm) {
             match self {
                 Op::AsIs => {}
+
+                Op::FInvert => {
+                    for mut voice in input.operations.iter_mut() {
+                        for mut point_op in voice {
+                            if *point_op.fm.numer() != 0 {
+                                point_op.fm = point_op.fm.recip();
+                            }
+                        }
+                    }
+                }
 
                 Op::Reverse => {
                     for mut voice in input.operations.iter_mut() {
@@ -70,6 +83,7 @@ pub mod normalize {
                     for mut voice in input.operations.iter_mut() {
                         for mut point_op in voice {
                             point_op.fm = Ratio::new(0, 1);
+                            point_op.fm = Ratio::new(0, 1);
                             point_op.fa = Ratio::new(0, 1);
                             point_op.g = Ratio::new(0, 1);
                             point_op.l = point_op.l * m;
@@ -77,6 +91,11 @@ pub mod normalize {
                     }
 
                     input.length_ratio = *m;
+                }
+
+                Op::Choice { operations } => {
+                    let mut choice = rand::thread_rng().choose(&operations).unwrap();
+                    choice.apply_to_normal_form(input)
                 }
 
                 Op::Sequence { operations } => {

@@ -1,0 +1,67 @@
+thing = {
+	Sequence [
+		A,
+		B, 
+		Choice [C, D]
+	]
+}
+
+thing2 = {
+	Sequence [
+		AsIs, 
+		Tm 3/2
+	]
+}
+
+thing3 = {
+	Sequence [
+		Choice [E, F],
+		Choice [G, H]
+	]
+}
+
+bass = {
+bass = {
+	Choice [
+		AsIs,
+		Tm 3/2 
+	]
+	Repeat 8
+	> FitLength thing3
+}
+
+main = {
+	Overlay [
+		thing1 | thing2 | thing3,
+		bass
+	]
+}
+
+
+
+result1 = {
+	Sequence [
+		A, B, Choice [C, D],
+		A | Tm 3/2, B | Tm 3/2, Choice [C, D] | Tm 3/2
+	] | thing3
+}
+
+result2 = {
+	Overlay [
+		Sequence [
+			Sequence [
+				A, B, Choice [C, D],
+				A | Tm 3/2, B | Tm 3/2, Choice [C, D] | Tm 3/2
+			] | Choice [E, F],
+			
+			Sequence [
+				A, B, Choice [C, D],
+				A | Tm 3/2, B | Tm 3/2, Choice [C, D] | Tm 3/2
+			] | Choice [G, H]
+
+			Choice [AsIs, Tm 3] | Repeat 8 | Length [?]
+		]
+	]
+
+}
+

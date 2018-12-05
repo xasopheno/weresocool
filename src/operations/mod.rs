@@ -3,7 +3,6 @@ extern crate socool_parser;
 use num_rational::{Ratio, Rational64};
 use socool_parser::ast::Op;
 mod get_length_ratio;
-mod get_operations;
 mod helpers;
 mod normalize;
 
@@ -75,10 +74,6 @@ pub trait Normalize {
 
 pub trait GetLengthRatio {
     fn get_length_ratio(&self) -> Rational64;
-}
-
-pub trait GetOperations {
-    fn get_operations(&self) -> Option<Vec<Op>>;
 }
 
 #[cfg(test)]

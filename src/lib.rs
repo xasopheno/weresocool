@@ -9,6 +9,7 @@ extern crate serde_derive;
 extern crate itertools;
 extern crate num_rational;
 extern crate rayon;
+extern crate rand;
 
 #[macro_use]
 pub mod macros;

@@ -16,10 +16,8 @@ On Mac
 `brew install pkg-config`
 `&& cargo clean` if you are having problems linking
 
-## Parser
-Currently, the parser needs to be in a directory at the same level as this repository.
-It's linked locally through the `Cargo.toml`. 
 
+## Parser
 `https://github.com/xasopheno/weresocool-parser`
 
 Grammar:
@@ -29,7 +27,7 @@ https://github.com/xasopheno/weresocool-parser/blob/master/src/socool.lalrpop
 ## Run
 Listen to something created with the framework
 
-`cargo run --release --bin wsc songs/working.socool`
+`cargo run --release --bin wsc songs/drums.socool`
 
 `ffmpeg -i composition.wav composition.mp3`
 
@@ -42,7 +40,7 @@ To build the binary:
 
 and then you can parse and play files without having to build the binary each time.
 
-`./target/release/wsc songs/sweep.socool -p`
+`./target/release/wsc songs/airplane.socool -p`
 
 ## Usage
 

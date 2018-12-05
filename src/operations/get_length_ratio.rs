@@ -1,13 +1,16 @@
 pub mod get_length_ratio {
-    use operations::GetLengthRatio;
-    use socool_parser::ast::Op;
-    extern crate num_rational;
     use num_rational::{Ratio, Rational64};
+    use socool_parser::ast::Op;
+
+    use operations::GetLengthRatio;
+
+    extern crate num_rational;
 
     impl GetLengthRatio for Op {
         fn get_length_ratio(&self) -> Rational64 {
             match self {
                 Op::AsIs {}
+                | Op::FInvert {}
                 | Op::Reverse {}
                 | Op::TransposeM { m: _ }
                 | Op::TransposeA { a: _ }
@@ -32,6 +35,10 @@ pub mod get_length_ratio {
                     }
                     new_total
                 }
+
+                Op::Choice { operations } => {
+                    operations[0].get_length_ratio()
+                },
 
                 Op::WithLengthRatioOf {
                     with_length_of,
