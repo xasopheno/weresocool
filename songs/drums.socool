@@ -109,7 +109,7 @@ drums = {
 rs = {
 	Overlay [
 		drums,
-		kit | Repeat 1 > FitLength drums
+		kit > FitLength drums
 	]
 }
 
