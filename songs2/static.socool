@@ -1,0 +1,25 @@
+{ f: 220, l: 1.0, g: 1.0, p: 0.0}
+
+overtones = {
+    O[
+    	(5/4, 3.0, 1.0, 1.0),
+      	(9/8, 0.0, 1.0, -1.0),
+      	(1/1, 2.0, 1.0, 0.5),
+      	(1/1, 0.0, 1.0, -0.5),
+  	]
+}
+
+thing1 = {
+	-- overtones |
+	Sequence [ 
+		AsIs,
+		PanA 1.0,
+		AsIs,
+		PanA -1.0,
+	]
+	| Sequence [Repeat 6] | Sequence [Length 1/4, Length 1/50 | Repeat 8, Length 1/25 | Repeat 8] | Repeat 4
+}
+
+main = {
+	thing1 | Repeat 4
+}

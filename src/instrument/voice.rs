@@ -1,8 +1,12 @@
+extern crate rand;
 use instrument::loudness::loudness_normalization;
 use std::f64::consts::PI;
 fn tau() -> f64 {
     PI * 2.0
 }
+use rand::Rng;
+
+
 
 #[derive(Clone, Debug, PartialEq)]
 pub struct Voice {
@@ -44,7 +48,6 @@ impl Voice {
     ) {
         let p_delta = self.calculate_portamento_delta(portamento_length);
         let g_delta = self.calculate_gain_delta(buffer.len());
-
         for (index, sample) in buffer.iter_mut().enumerate() {
             let new_sample =
                 self.generate_sample(index, p_delta, g_delta, portamento_length, factor);
@@ -96,7 +99,9 @@ impl Voice {
         let current_phase = ((factor * frequency) + self.phase) % tau();
         self.phase = current_phase;
 
-        current_phase.sin() * gain
+//         rand::thread_rng().gen_range(-1.0, 1.0)
+             current_phase.sin()
+         * gain
     }
 
     pub fn calculate_portamento_delta(&self, portamento_length: usize) -> f64 {
