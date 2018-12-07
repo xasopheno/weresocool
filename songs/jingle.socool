@@ -175,11 +175,12 @@ final = {
 		AsIs | Length 4,
 		Tm 9/4 | Length 0.1, 
 		Tm 5 | Length 0.1, 
-	] | Repeat 4
+	] | Repeat 6
 }
 
 main = {
 	Sequence [
+		final,
 		weird,
  		thing1,
  		thing2,

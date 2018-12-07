@@ -1,17 +1,17 @@
 use analyze::{Analyze, DetectionResult};
 use event::{Event, Sound};
-use socool_parser::ast::Op;
 use generation::parsed_to_render::*;
 use portaudio as pa;
 use ring_buffer::RingBuffer;
 use settings::{get_default_app_settings, Settings};
+use socool_parser::ast::Op;
 use write::write_output_buffer;
 
 pub fn setup_portaudio_duplex(
     ref pa: &pa::PortAudio,
 ) -> Result<pa::Stream<pa::NonBlocking, pa::Duplex<f32, f32>>, pa::Error> {
     let settings = get_default_app_settings();
-//    let mut oscillator = Oscillator::init(&settings);
+    //    let mut oscillator = Oscillator::init(&settings);
     let duplex_stream_settings = get_duplex_settings(&pa, &settings)?;
 
     let mut input_buffer: RingBuffer<f32> = RingBuffer::<f32>::new(settings.yin_buffer_size);
@@ -54,7 +54,7 @@ pub fn setup_portaudio_duplex(
                     Op::AsIs
                 };
 
-                let stereo_waveform =  render_mic(&overtones(), e);
+                let stereo_waveform = render_mic(&overtones(), e);
 
                 write_output_buffer(&mut out_buffer, stereo_waveform);
 

@@ -8,8 +8,8 @@ extern crate socool_parser;
 extern crate serde_derive;
 extern crate itertools;
 extern crate num_rational;
-extern crate rayon;
 extern crate rand;
+extern crate rayon;
 
 #[macro_use]
 pub mod macros;

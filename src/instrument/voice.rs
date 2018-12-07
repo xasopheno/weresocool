@@ -6,8 +6,6 @@ fn tau() -> f64 {
 }
 use rand::Rng;
 
-
-
 #[derive(Clone, Debug, PartialEq)]
 pub struct Voice {
     pub index: usize,
@@ -99,9 +97,8 @@ impl Voice {
         let current_phase = ((factor * frequency) + self.phase) % tau();
         self.phase = current_phase;
 
-//         rand::thread_rng().gen_range(-1.0, 1.0)
-             current_phase.sin()
-         * gain
+//        rand::thread_rng().gen_range(-1.0, 1.0)
+        current_phase.sin() * gain
     }
 
     pub fn calculate_portamento_delta(&self, portamento_length: usize) -> f64 {
