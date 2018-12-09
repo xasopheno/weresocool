@@ -38,8 +38,7 @@ drum_sound = {
 
 kit = {
 		drum_sound 
-		| Tm 3/2
-		| Length 0.01
+		| Tm 3/2 | Length 0.01
 		| g_r
 		| Sequence [AsIs | Length 3/4, Silence 1/4]
 		| Sequence [
@@ -75,7 +74,7 @@ bass_drum_overtones = {
     O[
       	(3/2, 0.0, 1.0, 0.5),
       	(3/2, 0.0, 1.0, -0.5),
-      	(1/1, 0.0, 1.0, 0.0),
+	  	(1/1, 0.0, 1.0, 0.0),
       	(1/2, 0.0, 1.0, 0.0),
   	]
 }
