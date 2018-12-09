@@ -1,4 +1,4 @@
-{ f: 220, l: 1.0, g: 1.0, p: 0.0}
+{ f: 100, l: 1.0, g: 1.0, p: 0.0}
 
 overtones = {
     O[
@@ -10,8 +10,9 @@ overtones = {
 }
 
 thing1 = {
-	-- overtones |
+	overtones |
 	Sequence [
+		Tm 1/2,
 		AsIs,
 		Tm 9/8,
 		Tm 5/4,
@@ -21,7 +22,7 @@ thing1 = {
 		Tm 15/8,
 		Tm 2,
 	] 
-	| Length 0.25	
+	| Length 0.3 | Repeat 4
 }
 
 main = {

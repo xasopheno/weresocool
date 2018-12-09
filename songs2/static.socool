@@ -2,24 +2,39 @@
 
 overtones = {
     O[
-    	(5/4, 3.0, 1.0, 1.0),
-      	(9/8, 0.0, 1.0, -1.0),
-      	(1/1, 2.0, 1.0, 0.5),
+    	(5/2, 3.0, 1.0, 1.0),
+      	(9/4, 0.0, 1.0, -1.0),
+      	(1/2, 2.0, 1.0, 0.5),
       	(1/1, 0.0, 1.0, -0.5),
   	]
 }
 
 thing1 = {
 	-- overtones |
-	Sequence [ 
+	Sequence [
+		-- Tm 1/16,
+		-- Tm 1/8,
+		-- Tm 1/4,
+		-- Tm 1/2,
 		AsIs,
-		PanA 1.0,
-		AsIs,
-		PanA -1.0,
+		Tm 9/8,
+		Tm 5/4,
+		Tm 4/3,  
+		Tm 2,
+		-- Tm 7/4, 
+		-- Tm 6/5, 
+		-- Tm 8,
+		-- Tm 16, 
+		-- Tm 2,
+		-- Tm 1/2,
 	]
-	| Sequence [Repeat 6] | Sequence [Length 1/4, Length 1/50 | Repeat 8, Length 1/25 | Repeat 8] | Repeat 4
+	-- | Repeat 10
+	| Sequence [Repeat 4] | Sequence [
+		Length 1, 
+		-- Length 1/50 | Repeat 8, Length 1/25 | Repeat 8
+		] | Repeat 4
 }
 
 main = {
-	thing1 | Repeat 4
+	thing1
 }

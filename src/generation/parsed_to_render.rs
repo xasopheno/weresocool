@@ -120,6 +120,7 @@ fn generate_waveforms(mut norm_ev: NormEv) -> VecWav {
 }
 
 fn sum_all_waveforms(vec_wav: VecWav) -> StereoWaveform {
+
     let mut result = StereoWaveform::new(0);
     for wav in vec_wav {
         result.l_buffer = sum_vec(&result.l_buffer, wav.l_buffer);
