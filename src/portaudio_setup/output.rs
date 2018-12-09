@@ -28,19 +28,17 @@ pub fn get_output_settings(
 ) -> Result<pa::stream::OutputSettings<f32>, pa::Error> {
     let def_output = pa.default_output_device()?;
     let output_info = pa.device_info(def_output)?;
-//        println!("Default output device info: {:#?}", &output_info);
+    //        println!("Default output device info: {:#?}", &output_info);
 
     let latency = output_info.default_low_output_latency;
     let output_params =
         pa::StreamParameters::new(def_output, settings.channels, settings.interleaved, latency);
-
 
     let output_settings = pa::OutputStreamSettings::new(
         output_params,
         settings.sample_rate as f64,
         settings.buffer_size as u32,
     );
-
 
     Ok(output_settings)
 }

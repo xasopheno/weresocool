@@ -1,5 +1,6 @@
 extern crate itertools;
 extern crate num_rational;
+extern crate pbr;
 extern crate rayon;
 extern crate socool_parser;
 use event::{Event, Render};
@@ -10,9 +11,11 @@ use instrument::{
 use itertools::Itertools;
 use num_rational::Rational64;
 use operations::{NormalForm, Normalize as NormalizeOp, PointOp};
+use pbr::ProgressBar;
 use rayon::prelude::*;
 use settings::get_default_app_settings;
 use socool_parser::{ast::Op, parser::Init};
+use std::sync::{Arc, Mutex};
 use ui::{banner, printed};
 use write::{write_composition_to_json, write_composition_to_wav};
 
@@ -108,19 +111,30 @@ fn generate_events(sequences: PointOpSequences, event: Event) -> NormEv {
 
 fn generate_waveforms(mut norm_ev: NormEv) -> VecWav {
     println!("Rendering {:?} waveforms", norm_ev.len());
+
+    let n_events = norm_ev.len();
+    let mut pb = ProgressBar::new(n_events as u64);
+    pb.format("╢w♬░╟");
+    pb.message("Rendering:  ");
+
+    let mut pb = Arc::new(Mutex::new(pb));
+
     let vec_wav = norm_ev
         .par_iter_mut()
         .map(|ref mut vec_events: &mut Vec<Event>| {
+            pb.lock().unwrap().add(1 as u64);
             let mut osc = Oscillator::init(&get_default_app_settings());
             vec_events.render(&mut osc)
         })
         .collect();
 
+    let finish_string = "".to_string();
+    pb.lock().unwrap().finish_print(&finish_string);
+
     vec_wav
 }
 
 fn sum_all_waveforms(vec_wav: VecWav) -> StereoWaveform {
-
     let mut result = StereoWaveform::new(0);
     for wav in vec_wav {
         result.l_buffer = sum_vec(&result.l_buffer, wav.l_buffer);
