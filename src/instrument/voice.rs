@@ -89,7 +89,8 @@ impl Voice {
         portamento_length: usize,
         factor: f64,
     ) -> f64 {
-        let frequency = if self.sound_to_silence() {
+        let frequency =
+            if self.sound_to_silence() {
             self.past.frequency
         } else if index < portamento_length && !self.silence_to_sound() && !self.sound_to_silence()
             {
@@ -97,8 +98,8 @@ impl Voice {
             } else {
             self.current.frequency
         };
-        self.past.gain /= 20.0;
-        let gain = (index as f64 * g_delta) + self.past.gain / 1.0;
+//        self.past.gain /= 20.0;
+        let gain = (index as f64 * g_delta) + self.past.gain;
         let mut x = 0.5;
 
         let r: f64 = rand::thread_rng().gen_range(-x,x);
@@ -117,15 +118,14 @@ impl Voice {
         portamento_length: usize,
         factor: f64,
     ) -> f64 {
-        let frequency =
-//            if self.sound_to_silence() {
-//            self.past.frequency;
-//        } else if index < portamento_length && !self.silence_to_sound() && !self.sound_to_silence()
-//            {
-//                self.past.frequency + (index as f64 * p_delta)
-//            } else {
-            self.current.frequency;
-//        };
+        let frequency = if self.sound_to_silence() {
+            self.past.frequency
+        } else if index < portamento_length && !self.silence_to_sound() && !self.sound_to_silence()
+            {
+                self.past.frequency + (index as f64 * p_delta)
+            } else {
+            self.current.frequency
+        };
 
         let gain = (index as f64 * g_delta) + self.past.gain;
         let current_phase = ((factor * frequency) + self.phase) % tau();

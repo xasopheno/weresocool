@@ -10,28 +10,24 @@ overtones = {
 }
 
 thing1 = {
-	-- overtones |
+	overtones |
 	Sequence [
 		-- Tm 1/16,
 		-- Tm 1/8,
-		-- Tm 1/4,
-		-- Tm 1/2,
-		AsIs,
-		Tm 9/8,
-		Tm 5/4,
-		Tm 4/3,  
+		Tm 1/4,
+		Tm 1/2,
+		AsIs,  
 		Tm 2,
-		-- Tm 7/4, 
-		-- Tm 6/5, 
-		-- Tm 8,
-		-- Tm 16, 
+		Tm 4,  
+		Tm 8, 
 		-- Tm 2,
 		-- Tm 1/2,
 	]
 	-- | Repeat 10
 	| Sequence [Repeat 4] | Sequence [
 		Length 1, 
-		-- Length 1/50 | Repeat 8, Length 1/25 | Repeat 8
+		-- Length 1/50 | Repeat 8, 
+		-- Length 1/25 | Repeat 8
 		] | Repeat 4
 }
 
