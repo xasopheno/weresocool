@@ -81,35 +81,35 @@ impl Voice {
         self.past.frequency != 0.0 && self.current.frequency == 0.0
     }
 
-    pub fn generate_random_sample(
-        &mut self,
-        index: usize,
-        p_delta: f64,
-        g_delta: f64,
-        portamento_length: usize,
-        factor: f64,
-    ) -> f64 {
-        let frequency =
+//    pub fn generate_random_sample(
+//        &mut self,
+//        index: usize,
+//        p_delta: f64,
+//        g_delta: f64,
+//        portamento_length: usize,
+//        factor: f64,
+//    ) -> f64 {
+//        let frequency =
 //            if self.sound_to_silence() {
 //            self.past.frequency
 //        } else if index < portamento_length && !self.silence_to_sound() && !self.sound_to_silence()
 //            {
-//                self.past.frequency + (index as f64 * p_delta)
+//                self.past.frequency
 //            } else {
-            self.current.frequency;
+//            self.current.frequency;
 //        };
-
-        let gain = (index as f64 * g_delta) + self.past.gain / 20.0
-        ;
-        let mut x = 0.5;
-
-        let r: f64 = rand::thread_rng().gen_range(-x,x);
-        let current_phase = ((factor * frequency) + self.phase + r) % tau();
-        self.phase = ((factor * frequency) + self.phase) % tau();
-
-        current_phase.sin()
-            * gain
-    }
+//
+//        let gain = (index as f64 * g_delta) + self.past.gain / 20.0
+//        ;
+//        let mut x = 0.5;
+//
+//        let r: f64 = rand::thread_rng().gen_range(-x,x);
+//        let current_phase = ((factor * frequency) + self.phase + r) % tau();
+//        self.phase = ((factor * frequency) + self.phase) % tau();
+//
+//        current_phase.sin()
+//            * gain
+//    }
 
     pub fn generate_sample(
         &mut self,
