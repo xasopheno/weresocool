@@ -109,15 +109,17 @@ fn generate_events(sequences: PointOpSequences, event: Event) -> NormEv {
     norm_ev
 }
 
-fn generate_waveforms(mut norm_ev: NormEv) -> VecWav {
-    println!("Rendering {:?} waveforms", norm_ev.len());
-
-    let n_events = norm_ev.len();
-    let mut pb = ProgressBar::new(n_events as u64);
+fn create_pb_instance(n: usize) -> Arc<Mutex<ProgressBar<std::io::Stdout>>> {
+    let mut pb = ProgressBar::new(n as u64);
     pb.format("╢w♬░╟");
     pb.message("Rendering:  ");
+    let pb = Arc::new(Mutex::new(pb));
+    pb
+}
 
-    let mut pb = Arc::new(Mutex::new(pb));
+fn generate_waveforms(mut norm_ev: NormEv) -> VecWav {
+    println!("Rendering {:?} waveforms", norm_ev.len());
+    let pb = create_pb_instance(norm_ev.len());
 
     let vec_wav = norm_ev
         .par_iter_mut()
