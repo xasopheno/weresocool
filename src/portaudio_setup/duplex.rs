@@ -1,5 +1,6 @@
 use analyze::{Analyze, DetectionResult};
 use event::{Event, Sound};
+use instrument::oscillator::{OscType};
 use generation::parsed_to_render::*;
 use portaudio as pa;
 use ring_buffer::RingBuffer;
@@ -44,6 +45,7 @@ pub fn setup_portaudio_duplex(
                     frequency: (result.frequency * 2.0) as f64,
                     gain: (result.gain * 10.0) as f64,
                     pan: 0.0,
+                    osc_type: OscType::Sine
                 };
                 let e = Event {
                     sounds: vec![sound],

@@ -4,6 +4,10 @@ use num_rational::Rational64;
 #[derive(Clone, PartialEq, Debug)]
 pub enum Op {
     AsIs,
+//
+    Noise,
+    Sine,
+//
     FInvert,
     Silence {
         m: Rational64,

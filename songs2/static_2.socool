@@ -124,6 +124,10 @@ line = {
 }	
 
 noise = {
+	O[
+     	(7/4, 0.0, 0.5, 0.0),
+    	(1, 0.0, 0.5, 0.0),
+	] | 
 	Sequence [
 		Silence 4,
 		Tm 8 | PanA 0.2,
@@ -137,11 +141,19 @@ noise = {
 }
 
 main = {
-	Overlay [
-		line | Gain 0.09,
-		melody | Gain 0.8,
-		bass_drum | Gain 0.5,
-		bass,
-		noise,
-	] | Repeat 4
+	Sequence [
+		Overlay [
+			line | Gain 0.09,
+			melody | Gain 0.8,
+			bass,
+			noise,
+		],
+		Overlay [
+			line | Gain 0.09,
+			melody | Gain 0.8,
+			bass_drum | Gain 0.5,
+			bass,
+			noise,
+		] 
+	]
 }

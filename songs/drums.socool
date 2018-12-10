@@ -21,10 +21,10 @@ gain = {
 gain_recursive = { gain | Sequence [Repeat 5, Gain 1/4, Gain 1/10, Gain 1/20] }
 
 g = {
-	Sequence [Gain 9/10, Gain 1/5, Gain 1/4]
+	sequence [gain 9/10, gain 1/5, gain 1/4]
 }
 
-g_r = { gain | Sequence [Repeat 5, Gain 1/4, Gain 1/10, Gain 1/20] }
+g_r = { gain | sequence [repeat 5, gain 1/4, gain 1/10, gain 1/20] }
 
 drum_sound = {
 	-- overtones |

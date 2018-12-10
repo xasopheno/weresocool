@@ -10,6 +10,8 @@ pub mod get_length_ratio {
         fn get_length_ratio(&self) -> Rational64 {
             match self {
                 Op::AsIs {}
+                | Op::Sine {}
+                | Op::Noise {}
                 | Op::FInvert {}
                 | Op::Reverse {}
                 | Op::TransposeM { m: _ }

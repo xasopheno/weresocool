@@ -5,7 +5,7 @@ extern crate rayon;
 extern crate socool_parser;
 use event::{Event, Render};
 use instrument::{
-    oscillator::Oscillator,
+    oscillator::{Oscillator, OscType},
     stereo_waveform::{Normalize, StereoWaveform},
 };
 use itertools::Itertools;
@@ -98,6 +98,7 @@ fn generate_events(sequences: PointOpSequences, event: Event) -> NormEv {
                 sound.pan *= r_to_f64(point_op.pm);
                 sound.pan += r_to_f64(point_op.pa);
                 sound.gain *= r_to_f64(point_op.g);
+                sound.osc_type = point_op.osc_type;
             }
 
             e.length *= r_to_f64(point_op.l);
@@ -113,8 +114,7 @@ fn create_pb_instance(n: usize) -> Arc<Mutex<ProgressBar<std::io::Stdout>>> {
     let mut pb = ProgressBar::new(n as u64);
     pb.format("╢w♬░╟");
     pb.message("Rendering:  ");
-    let pb = Arc::new(Mutex::new(pb));
-    pb
+    Arc::new(Mutex::new(pb))
 }
 
 fn generate_waveforms(mut norm_ev: NormEv) -> VecWav {
@@ -130,8 +130,7 @@ fn generate_waveforms(mut norm_ev: NormEv) -> VecWav {
         })
         .collect();
 
-    let finish_string = "".to_string();
-    pb.lock().unwrap().finish_print(&finish_string);
+    pb.lock().unwrap().finish_print(&"".to_string());
 
     vec_wav
 }

@@ -6,6 +6,12 @@ fn tau() -> f64 {
     PI * 2.0
 }
 
+#[derive(Copy, Clone, Debug, PartialEq, Serialize)]
+pub enum OscType {
+    Sine,
+    Noise
+}
+
 #[derive(Clone, Debug, PartialEq)]
 pub struct Oscillator {
     pub voices: Vec<(Voice, Voice)>,
@@ -47,8 +53,8 @@ impl Oscillator {
             let l_gain = sound.gain * ((-1.0 + sound.pan) / -2.0);
             let r_gain = sound.gain * ((1.0 + sound.pan) / 2.0);
             let (ref mut l_voice, ref mut r_voice) = lr_voice;
-            l_voice.update(sound.frequency, l_gain);
-            r_voice.update(sound.frequency, r_gain);
+            l_voice.update(sound.frequency, l_gain, sound.osc_type);
+            r_voice.update(sound.frequency, r_gain, sound.osc_type);
         }
     }
 

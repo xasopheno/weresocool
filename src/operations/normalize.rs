@@ -2,6 +2,7 @@ pub mod normalize {
     extern crate num_rational;
     extern crate rand;
     use num_rational::{Ratio, Rational64};
+    use instrument::oscillator::OscType;
     use operations::{GetLengthRatio, NormalForm, Normalize, PointOp};
     use rand::prelude::*;
     use socool_parser::ast::Op;
@@ -25,6 +26,22 @@ pub mod normalize {
                 Op::Reverse => {
                     for mut voice in input.operations.iter_mut() {
                         voice.reverse();
+                    }
+                }
+
+                Op::Sine => {
+                    for mut voice in input.operations.iter_mut() {
+                        for mut point_op in voice {
+                            point_op.osc_type = OscType::Sine
+                        }
+                    }
+                }
+
+                Op::Noise => {
+                    for mut voice in input.operations.iter_mut() {
+                        for mut point_op in voice {
+                            point_op.osc_type = OscType::Noise
+                        }
                     }
                 }
 
@@ -163,8 +180,9 @@ pub mod normalize {
 
     fn pad_length(input: &mut NormalForm, max_len: Rational64) {
         let input_lr = input.get_length_ratio();
-        if input_lr < max_len {
+        if max_len > Rational64::new(0,1) && input_lr < max_len {
             for voice in input.operations.iter_mut() {
+                let osc_type = voice.clone().last().unwrap().osc_type;
                 voice.push(PointOp {
                     fm: Ratio::new(0, 1),
                     fa: Ratio::new(0, 1),
@@ -172,6 +190,7 @@ pub mod normalize {
                     pa: Ratio::new(0, 1),
                     g: Ratio::new(0, 1),
                     l: max_len - input_lr,
+                    osc_type
                 });
             }
         }
@@ -195,6 +214,7 @@ pub mod normalize {
                         pa: Ratio::new(0, 1),
                         g: Ratio::new(0, 1),
                         l: r.length_ratio,
+                        osc_type: OscType::Sine
                     }])
                 }
             }
@@ -207,6 +227,7 @@ pub mod normalize {
                         pa: Ratio::new(0, 1),
                         g: Ratio::new(0, 1),
                         l: l.length_ratio,
+                        osc_type: OscType::Sine
                     }])
                 }
             }

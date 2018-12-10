@@ -1,4 +1,7 @@
-use instrument::loudness::loudness_normalization;
+use instrument::{
+    loudness::loudness_normalization,
+    oscillator::OscType,
+};
 use rand::Rng;
 use std::f64::consts::PI;
 fn tau() -> f64 {
@@ -11,6 +14,7 @@ pub struct Voice {
     pub past: VoiceState,
     pub current: VoiceState,
     pub phase: f64,
+    pub osc_type: OscType,
 }
 
 #[derive(Clone, Debug, PartialEq)]
@@ -26,15 +30,13 @@ impl VoiceState {
             gain: 0.0,
         }
     }
-}
-
-impl Voice {
-    pub fn init(index: usize) -> Voice {
+} impl Voice { pub fn init(index: usize) -> Voice {
         Voice {
             index,
             past: VoiceState::init(),
             current: VoiceState::init(),
             phase: 0.0,
+            osc_type: OscType::Sine
         }
     }
     pub fn generate_waveform(
@@ -45,29 +47,36 @@ impl Voice {
     ) {
         let p_delta = self.calculate_portamento_delta(portamento_length);
         let g_delta = self.calculate_gain_delta(buffer.len());
-        let rand: f64 = rand::thread_rng().gen_range(0.0, 1.0);
 
         for (index, sample) in buffer.iter_mut().enumerate() {
-            let new_sample = if rand > 0.0 {
-                self.generate_sample(index, p_delta, g_delta, portamento_length, factor)
-            } else {
-                self.generate_random_sample(index, p_delta, g_delta, portamento_length, factor)
+            let new_sample = match self.osc_type {
+                OscType::Sine => self.generate_sample(index, p_delta, g_delta, portamento_length, factor),
+                OscType::Noise => self.generate_random_sample(index, p_delta, g_delta, portamento_length, factor)
             };
             *sample += new_sample
         }
     }
 
-    pub fn update(&mut self, mut frequency: f64, gain: f64) {
+    pub fn update(&mut self, mut frequency: f64, gain: f64, osc_type: OscType) {
         if frequency < 20.0 {
             frequency = 0.0;
         }
 
         let mut gain = if frequency != 0.0 { gain } else { 0.0 };
+        if osc_type == OscType::Noise {
+            gain /= 3.0
+        }
         let loudness = loudness_normalization(frequency);
         gain *= loudness;
 
+        if self.osc_type == OscType::Sine && osc_type == OscType::Noise {
+            self.past.gain = self.current.gain / 3.0;
+        } else {
+            self.past.gain = self.current.gain
+        }
+
+        self.osc_type = osc_type;
         self.past.frequency = self.current.frequency;
-        self.past.gain = self.current.gain;
         self.current.frequency = frequency;
         self.current.gain = gain;
     }
@@ -96,7 +105,6 @@ impl Voice {
         } else {
             self.current.frequency
         };
-        //        self.past.gain /= 20.0;
         let gain = (index as f64 * g_delta) + self.past.gain;
         let mut x = 0.5;
 
