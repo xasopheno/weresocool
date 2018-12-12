@@ -38,7 +38,7 @@ pub mod normalize_tests {
 
         assert_eq!(input, expected);
 
-        Sine{}.apply_to_normal_form(&mut input);
+        Sine {}.apply_to_normal_form(&mut input);
 
         let expected = NormalForm {
             length_ratio: Ratio::new(1, 1),
