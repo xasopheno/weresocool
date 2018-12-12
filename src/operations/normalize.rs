@@ -4,11 +4,14 @@ pub mod normalize {
     use num_rational::{Ratio, Rational64};
     use operations::{GetLengthRatio, NormalForm, Normalize, PointOp};
     use rand::prelude::*;
-    use socool_parser::ast::Op;
+    use socool_parser::{
+        parser::ParseTable,
+        ast::Op
+    };
     use std::cmp::Ordering::{Equal, Greater, Less};
 
     impl Normalize for Op {
-        fn apply_to_normal_form(&self, input: &mut NormalForm) {
+        fn apply_to_normal_form(&self, input: &mut NormalForm, table: &ParseTable) {
             match self {
                 Op::AsIs => {}
 
@@ -94,7 +97,7 @@ pub mod normalize {
 
                 Op::Choice { operations } => {
                     let mut choice = rand::thread_rng().choose(&operations).unwrap();
-                    choice.apply_to_normal_form(input)
+                    choice.apply_to_normal_form(input, table)
                 }
 
                 Op::Sequence { operations } => {
@@ -102,7 +105,7 @@ pub mod normalize {
 
                     for op in operations {
                         let mut input_clone = input.clone();
-                        op.apply_to_normal_form(&mut input_clone);
+                        op.apply_to_normal_form(&mut input_clone, table);
                         result = join_sequence(result, input_clone);
                     }
 
@@ -111,7 +114,7 @@ pub mod normalize {
 
                 Op::Compose { operations } => {
                     for op in operations {
-                        op.apply_to_normal_form(input);
+                        op.apply_to_normal_form(input, table);
                     }
                 }
 
@@ -124,7 +127,7 @@ pub mod normalize {
                     let ratio = target_length / main_length;
                     let new_op = Op::Length { m: ratio };
 
-                    new_op.apply_to_normal_form(input);
+                    new_op.apply_to_normal_form(input, table);
 
                     input.length_ratio = target_length;
                 }
@@ -134,7 +137,7 @@ pub mod normalize {
                         .iter()
                         .map(|op| {
                             let mut input_clone = input.clone();
-                            op.apply_to_normal_form(&mut input_clone);
+                            op.apply_to_normal_form(&mut input_clone, table);
                             input_clone
                         })
                         .collect();

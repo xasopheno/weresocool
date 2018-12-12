@@ -1,10 +1,10 @@
 extern crate num_rational;
 use num_rational::Rational64;
+use crate::parser::ParseTable;
 
 #[derive(Clone, PartialEq, Debug)]
 pub enum Op {
     Let { id: String },
-//    table.get(&id).unwrap().clone()
     AsIs,
     FInvert,
     Silence {

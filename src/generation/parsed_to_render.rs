@@ -12,7 +12,7 @@ use num_rational::Rational64;
 use operations::{NormalForm, Normalize as NormalizeOp, PointOp};
 use rayon::prelude::*;
 use settings::get_default_app_settings;
-use socool_parser::{ast::Op, parser::Init};
+use socool_parser::{ast::Op, parser::{Init, ParseTable}};
 use ui::{banner, printed};
 use write::{write_composition_to_json, write_composition_to_wav};
 
@@ -33,11 +33,11 @@ pub fn event_from_init(init: Init) -> Event {
     )
 }
 
-pub fn render(composition: &Op, init: Init) -> StereoWaveform {
+pub fn render(composition: &Op, init: Init, table: &ParseTable) -> StereoWaveform {
     let mut normal_form = NormalForm::init();
 
     println!("\nGenerating Composition ");
-    composition.apply_to_normal_form(&mut normal_form);
+    composition.apply_to_normal_form(&mut normal_form, table);
 
     let e = event_from_init(init);
 
@@ -49,17 +49,17 @@ pub fn render(composition: &Op, init: Init) -> StereoWaveform {
     result
 }
 
-pub fn render_mic(composition: &Op, event: Event) -> StereoWaveform {
-    let mut normal_form = NormalForm::init();
-
-    composition.apply_to_normal_form(&mut normal_form);
-    let norm_ev = generate_events(normal_form.operations, event);
-    let vec_wav = generate_waveforms(norm_ev);
-    let mut result = sum_all_waveforms(vec_wav);
-    result.normalize();
-
-    result
-}
+//pub fn render_mic(composition: &Op, event: Event) -> StereoWaveform {
+//    let mut normal_form = NormalForm::init();
+//
+//    composition.apply_to_normal_form(&mut normal_formm);
+//    let norm_ev = generate_events(normal_form.operations, event);
+//    let vec_wav = generate_waveforms(norm_ev);
+//    let mut result = sum_all_waveforms(vec_wav);
+//    result.normalize();
+//
+//    result
+//}
 
 pub fn to_wav(composition: StereoWaveform, filename: String) {
     banner("Printing".to_string(), filename);
@@ -67,12 +67,12 @@ pub fn to_wav(composition: StereoWaveform, filename: String) {
     printed("WAV".to_string());
 }
 
-pub fn to_json(composition: &Op, init: Init, filename: String) {
+pub fn to_json(composition: &Op, init: Init, table: &ParseTable, filename: String) {
     banner("JSONIFY-ing".to_string(), filename.clone());
     let mut normal_form = NormalForm::init();
 
     println!("Generating Composition \n");
-    composition.apply_to_normal_form(&mut normal_form);
+    composition.apply_to_normal_form(&mut normal_form, table);
 
     let e = event_from_init(init);
 

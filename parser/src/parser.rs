@@ -28,7 +28,9 @@ pub struct ParsedComposition {
 }
 
 fn normalize_table_entries(table: &mut ParseTable) {
+    for entry in table {
 
+    }
 }
 
 pub fn parse_file(filename: &String) -> ParsedComposition {
@@ -51,7 +53,7 @@ pub fn parse_file(filename: &String) -> ParsedComposition {
             }
         },
         _ => {
-            println!("{} {}\n", "\n        File not found:".red().bold(), filename.red().bold());
+            println!("{} {}\n", "\n File not found:".red().bold(), filename.red().bold());
             panic!("File not found");
         }
     }

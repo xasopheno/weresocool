@@ -1,7 +1,10 @@
 extern crate num_rational;
 extern crate socool_parser;
 use num_rational::{Ratio, Rational64};
-use socool_parser::ast::Op;
+use socool_parser::{
+    ast::Op,
+    parser::ParseTable
+};
 mod get_length_ratio;
 mod helpers;
 mod normalize;
@@ -69,7 +72,7 @@ impl NormalForm {
 }
 
 pub trait Normalize {
-    fn apply_to_normal_form(&self, normal_form: &mut NormalForm);
+    fn apply_to_normal_form(&self, normal_form: &mut NormalForm, table: &ParseTable);
 }
 
 pub trait GetLengthRatio {
