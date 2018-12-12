@@ -17,12 +17,12 @@ fn run() -> Result<(), pa::Error> {
     println!("{}", "*** Make cool sounds. Impress your friends ***  ");
     println!("{}", "       )))***=== MICROPHONE ===***(((  \n ");
 
-//    let pa = pa::PortAudio::new()?;
-//    let mut duplex_stream = setup_portaudio_duplex(&pa)?;
-//    duplex_stream.start()?;
-//
-//    while let true = duplex_stream.is_active()? {}
-//
-//    duplex_stream.stop()?;
-//    Ok(())
+    //    let pa = pa::PortAudio::new()?;
+    //    let mut duplex_stream = setup_portaudio_duplex(&pa)?;
+    //    duplex_stream.start()?;
+    //
+    //    while let true = duplex_stream.is_active()? {}
+    //
+    //    duplex_stream.stop()?;
+    //    Ok(())
 }

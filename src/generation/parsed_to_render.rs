@@ -12,7 +12,10 @@ use num_rational::Rational64;
 use operations::{NormalForm, Normalize as NormalizeOp, PointOp};
 use rayon::prelude::*;
 use settings::get_default_app_settings;
-use socool_parser::{ast::Op, parser::{Init, ParseTable}};
+use socool_parser::{
+    ast::Op,
+    parser::{Init, ParseTable},
+};
 use ui::{banner, printed};
 use write::{write_composition_to_json, write_composition_to_wav};
 

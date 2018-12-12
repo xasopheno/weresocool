@@ -4,16 +4,15 @@ pub mod normalize {
     use num_rational::{Ratio, Rational64};
     use operations::{GetLengthRatio, NormalForm, Normalize, PointOp};
     use rand::prelude::*;
-    use socool_parser::{
-        parser::ParseTable,
-        ast::Op
-    };
+    use socool_parser::{ast::Op, parser::ParseTable};
     use std::cmp::Ordering::{Equal, Greater, Less};
 
     impl Normalize for Op {
         fn apply_to_normal_form(&self, input: &mut NormalForm, table: &ParseTable) {
             match self {
                 Op::AsIs => {}
+
+                Op::Let { id } => table.get(&id).unwrap().clone(),
 
                 Op::FInvert => {
                     for mut voice in input.operations.iter_mut() {

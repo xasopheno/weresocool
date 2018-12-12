@@ -1,10 +1,7 @@
 extern crate num_rational;
 extern crate socool_parser;
 use num_rational::{Ratio, Rational64};
-use socool_parser::{
-    ast::Op,
-    parser::ParseTable
-};
+use socool_parser::{ast::Op, parser::ParseTable};
 mod get_length_ratio;
 mod helpers;
 mod normalize;
