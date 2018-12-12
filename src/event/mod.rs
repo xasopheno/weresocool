@@ -1,4 +1,7 @@
-use instrument::{oscillator::{Oscillator, OscType}, stereo_waveform::StereoWaveform};
+use instrument::{
+    oscillator::{OscType, Oscillator},
+    stereo_waveform::StereoWaveform,
+};
 
 #[derive(Debug, Clone, PartialEq, Serialize)]
 pub struct Event {
@@ -11,7 +14,7 @@ pub struct Sound {
     pub frequency: f64,
     pub gain: f64,
     pub pan: f64,
-    pub osc_type: OscType
+    pub osc_type: OscType,
 }
 
 impl Sound {
@@ -20,7 +23,7 @@ impl Sound {
             frequency: 0.0,
             gain: 0.0,
             pan: 0.0,
-            osc_type: OscType::Sine
+            osc_type: OscType::Sine,
         }
     }
 }
@@ -33,7 +36,7 @@ impl Event {
                     frequency,
                     gain,
                     pan,
-                    osc_type: OscType::Sine
+                    osc_type: OscType::Sine,
                 }]
             },
             length,

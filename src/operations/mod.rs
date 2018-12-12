@@ -1,7 +1,7 @@
 extern crate num_rational;
 extern crate socool_parser;
-use num_rational::{Ratio, Rational64};
 use instrument::oscillator::OscType;
+use num_rational::{Ratio, Rational64};
 use socool_parser::ast::Op;
 mod get_length_ratio;
 mod helpers;
@@ -27,12 +27,12 @@ impl PointOp {
             pa: Ratio::new(0, 1),
             g: Ratio::new(1, 1),
             l: Ratio::new(1, 1),
-            osc_type: OscType::Sine
+            osc_type: OscType::Sine,
         }
     }
 
     pub fn to_op(&self) -> Op {
-        let osc_op = match self.osc_type  {
+        let osc_op = match self.osc_type {
             OscType::Sine => Op::Sine,
             OscType::Noise => Op::Noise,
         };

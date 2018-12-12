@@ -1,8 +1,8 @@
 pub mod normalize {
     extern crate num_rational;
     extern crate rand;
-    use num_rational::{Ratio, Rational64};
     use instrument::oscillator::OscType;
+    use num_rational::{Ratio, Rational64};
     use operations::{GetLengthRatio, NormalForm, Normalize, PointOp};
     use rand::prelude::*;
     use socool_parser::ast::Op;
@@ -180,7 +180,7 @@ pub mod normalize {
 
     fn pad_length(input: &mut NormalForm, max_len: Rational64) {
         let input_lr = input.get_length_ratio();
-        if max_len > Rational64::new(0,1) && input_lr < max_len {
+        if max_len > Rational64::new(0, 1) && input_lr < max_len {
             for voice in input.operations.iter_mut() {
                 let osc_type = voice.clone().last().unwrap().osc_type;
                 voice.push(PointOp {
@@ -190,7 +190,7 @@ pub mod normalize {
                     pa: Ratio::new(0, 1),
                     g: Ratio::new(0, 1),
                     l: max_len - input_lr,
-                    osc_type
+                    osc_type,
                 });
             }
         }
@@ -214,7 +214,7 @@ pub mod normalize {
                         pa: Ratio::new(0, 1),
                         g: Ratio::new(0, 1),
                         l: r.length_ratio,
-                        osc_type: OscType::Sine
+                        osc_type: OscType::Sine,
                     }])
                 }
             }
@@ -227,7 +227,7 @@ pub mod normalize {
                         pa: Ratio::new(0, 1),
                         g: Ratio::new(0, 1),
                         l: l.length_ratio,
-                        osc_type: OscType::Sine
+                        osc_type: OscType::Sine,
                     }])
                 }
             }

@@ -5,7 +5,7 @@ extern crate rayon;
 extern crate socool_parser;
 use event::{Event, Render};
 use instrument::{
-    oscillator::{Oscillator, OscType},
+    oscillator::Oscillator,
     stereo_waveform::{Normalize, StereoWaveform},
 };
 use itertools::Itertools;

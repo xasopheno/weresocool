@@ -1,0 +1,54 @@
+{ f: 120, l: 1.0, g: 1.0, p: 0.0}
+
+instrument1 = {
+    O[
+    	(11/2, 15.0, 0.45, -0.35),
+    	(11/2, 0.0, 0.45, 0.35),
+      	(9/4, 10.0, 1.0, 1.0),
+      	(9/4, 0.0, 1.0, -0.75),
+      	(1/1, 5.0, 1.0, -0.5),
+      	(1/1, 0.0, 1.0, 0.2),
+      	(1/2, 2.5, 1.0, -0.5),
+      	(1/2, 0.0, 1.0, 0.8),
+  	]
+}
+
+instrument2 = {
+	O[
+		(7, 0, 0.5, 0),
+		(4, 0, 0.75, 0),
+		(1, 0, 1, 0),
+	]
+}
+
+thing1 = {
+	Overlay [AsIs, Noise | Gain 0.1] 
+	| Sequence [
+		 Sequence [
+			Tm 5/6,
+			Tm 5/4,
+			Tm 3/2 | PanM -1.0,
+		] | Length 4/3,  
+		Tm 7/4, 
+		Tm 4/3 | PanM -1.0, 
+		Tm 5/4 | PanM -1.0 | Tm 5/4
+	] 
+	| Sequence [
+		AsIs, Tm 5/4, Invert | Tm 8/5
+	] 
+	| instrument1 
+}
+
+thing2 = {
+	Sequence [
+		AsIs,
+		Tm 9/8, 
+		Tm 25/24, 
+		Tm 9/8, 
+		Tm 15/8
+	] | Length 0.1
+}
+
+main = {
+	thing1 | instrument2
+}
