@@ -19,6 +19,44 @@ pub mod normalize_tests {
         assert_eq!(input, expected);
     }
     #[test]
+    fn normalize_sine_and_noise() {
+        let mut input = NormalForm::init();
+        Noise.apply_to_normal_form(&mut input);
+
+        let expected = NormalForm {
+            length_ratio: Ratio::new(1, 1),
+            operations: vec![vec![PointOp {
+                fm: Ratio::new(1, 1),
+                fa: Ratio::new(0, 1),
+                pm: Ratio::new(1, 1),
+                pa: Ratio::new(0, 1),
+                g: Ratio::new(1, 1),
+                l: Ratio::new(1, 1),
+                osc_type: OscType::Noise,
+            }]],
+        };
+
+        assert_eq!(input, expected);
+
+        Sine{}.apply_to_normal_form(&mut input);
+
+        let expected = NormalForm {
+            length_ratio: Ratio::new(1, 1),
+            operations: vec![vec![PointOp {
+                fm: Ratio::new(1, 1),
+                fa: Ratio::new(0, 1),
+                pm: Ratio::new(1, 1),
+                pa: Ratio::new(0, 1),
+                g: Ratio::new(1, 1),
+                l: Ratio::new(1, 1),
+                osc_type: OscType::Sine,
+            }]],
+        };
+
+        assert_eq!(input, expected);
+    }
+
+    #[test]
     fn normalize_tm() {
         let mut input = NormalForm::init();
         TransposeM {
