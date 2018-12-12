@@ -59,7 +59,7 @@ pub fn parse_file(filename: &String) -> ParsedComposition {
     let init = socool::SoCoolParser::new()
         .parse(&mut table, &composition);
 
-    normalize_table_entries(table);
+    normalize_table_entries(&mut table);
 
     match init.clone() {
         Ok(init) => ParsedComposition { init, table },

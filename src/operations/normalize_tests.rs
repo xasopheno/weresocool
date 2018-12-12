@@ -356,14 +356,14 @@ pub mod normalize_tests {
                             m: Ratio::new(9, 8),
                         },
                         TransposeM {
-                            m: Ratio::new(5,4),
+                            m: Ratio::new(5, 4),
                         },
                     ],
                 },
-                FInvert
-            ]
+                FInvert,
+            ],
         }
-            .apply_to_normal_form(&mut input);
+        .apply_to_normal_form(&mut input);
 
         let expected = NormalForm {
             length_ratio: Ratio::new(3, 1),
@@ -377,7 +377,7 @@ pub mod normalize_tests {
                     l: Ratio::new(1, 1),
                 },
                 PointOp {
-                    fm: Ratio::new(8,9),
+                    fm: Ratio::new(8, 9),
                     fa: Ratio::new(0, 1),
                     pm: Ratio::new(1, 1),
                     pa: Ratio::new(0, 1),
@@ -385,7 +385,7 @@ pub mod normalize_tests {
                     l: Ratio::new(1, 1),
                 },
                 PointOp {
-                    fm: Ratio::new(4,5),
+                    fm: Ratio::new(4, 5),
                     fa: Ratio::new(0, 1),
                     pm: Ratio::new(1, 1),
                     pa: Ratio::new(0, 1),

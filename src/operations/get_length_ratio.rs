@@ -36,9 +36,7 @@ pub mod get_length_ratio {
                     new_total
                 }
 
-                Op::Choice { operations } => {
-                    operations[0].get_length_ratio()
-                },
+                Op::Choice { operations } => operations[0].get_length_ratio(),
 
                 Op::WithLengthRatioOf {
                     with_length_of,

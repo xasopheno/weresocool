@@ -3,10 +3,9 @@ pub mod normalize {
     extern crate rand;
     use num_rational::{Ratio, Rational64};
     use operations::{GetLengthRatio, NormalForm, Normalize, PointOp};
+    use rand::prelude::*;
     use socool_parser::ast::Op;
     use std::cmp::Ordering::{Equal, Greater, Less};
-    use rand::prelude::*;
-
 
     impl Normalize for Op {
         fn apply_to_normal_form(&self, input: &mut NormalForm) {
