@@ -27,6 +27,10 @@ pub struct ParsedComposition {
     pub table: ParseTable,
 }
 
+fn normalize_table_entries(table: &mut ParseTable) {
+
+}
+
 pub fn parse_file(filename: &String) -> ParsedComposition {
     let mut table = HashMap::new();
     let f = File::open(filename);
@@ -55,6 +59,8 @@ pub fn parse_file(filename: &String) -> ParsedComposition {
     let init = socool::SoCoolParser::new()
         .parse(&mut table, &composition);
 
+    normalize_table_entries(table);
+
     match init.clone() {
         Ok(init) => ParsedComposition { init, table },
         Err(error) => {
@@ -68,7 +74,7 @@ pub fn parse_file(filename: &String) -> ParsedComposition {
             let feed_start = cmp::max(0, start as isize - start_offset) as usize;
             let feed_end = cmp::min(end + end_offset, *cmp_len);
 
-            let mut lines = 1;
+            let mut lines = 0;
             let mut n_c = 0;
             for c in composition.clone().chars() {
                 n_c += 1;
@@ -86,7 +92,7 @@ pub fn parse_file(filename: &String) -> ParsedComposition {
 
             println!("
             {}
-            errors at line {}
+            error at line {}
             {}
             ",
              "working".yellow().underline(),

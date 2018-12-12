@@ -3,6 +3,8 @@ use num_rational::Rational64;
 
 #[derive(Clone, PartialEq, Debug)]
 pub enum Op {
+    Let { id: String },
+//    table.get(&id).unwrap().clone()
     AsIs,
     FInvert,
     Silence {

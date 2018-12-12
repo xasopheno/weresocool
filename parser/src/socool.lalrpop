@@ -59,7 +59,7 @@ BaseOperation: Op = {
     "Sequence" "[" <operations: Operations> "]" => Op::Sequence { operations: operations },
     "Overlay" "[" <operations: Operations> "]" => Op::Overlay { operations: operations },
     "O" "[" <o: Overtones> "]" => Op::Overlay { operations: o },
-    <id: Name> => { table.get(&id).unwrap().clone() },
+    <id: Name> => { Op::Let { id } },
 };
 
 Overtone: Op = {
