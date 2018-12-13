@@ -27,12 +27,6 @@ pub struct ParsedComposition {
     pub table: ParseTable,
 }
 
-fn normalize_table_entries(table: &mut ParseTable) {
-    for entry in table {
-
-    }
-}
-
 pub fn parse_file(filename: &String) -> ParsedComposition {
     let mut table = HashMap::new();
     let f = File::open(filename);
@@ -60,8 +54,6 @@ pub fn parse_file(filename: &String) -> ParsedComposition {
 
     let init = socool::SoCoolParser::new()
         .parse(&mut table, &composition);
-
-    normalize_table_entries(&mut table);
 
     match init.clone() {
         Ok(init) => ParsedComposition { init, table },

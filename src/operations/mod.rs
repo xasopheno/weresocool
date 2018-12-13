@@ -5,6 +5,7 @@ use socool_parser::{ast::Op, parser::ParseTable};
 mod get_length_ratio;
 mod helpers;
 mod normalize;
+use std::collections::HashMap;
 
 #[derive(Debug, Clone, PartialEq)]
 pub struct PointOp {
@@ -42,6 +43,8 @@ impl PointOp {
     }
 }
 
+pub type NormalTable = HashMap<String, NormalForm>;
+
 #[derive(Debug, Clone, PartialEq)]
 pub struct NormalForm {
     pub operations: Vec<Vec<PointOp>>,
@@ -69,7 +72,7 @@ impl NormalForm {
 }
 
 pub trait Normalize {
-    fn apply_to_normal_form(&self, normal_form: &mut NormalForm, table: &ParseTable);
+    fn apply_to_normal_form(&self, normal_form: &mut NormalForm, table: &NormalTable);
 }
 
 pub trait GetLengthRatio {

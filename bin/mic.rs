@@ -1,7 +1,7 @@
 extern crate portaudio;
 extern crate weresocool;
 use portaudio as pa;
-use weresocool::portaudio_setup::duplex::setup_portaudio_duplex;
+//use weresocool::portaudio_setup::duplex::setup_portaudio_duplex;
 
 fn main() {
     match run() {
@@ -24,5 +24,5 @@ fn run() -> Result<(), pa::Error> {
     //    while let true = duplex_stream.is_active()? {}
     //
     //    duplex_stream.stop()?;
-    //    Ok(())
+        Ok(())
 }
