@@ -24,5 +24,5 @@ fn run() -> Result<(), pa::Error> {
     //    while let true = duplex_stream.is_active()? {}
     //
     //    duplex_stream.stop()?;
-        Ok(())
+    Ok(())
 }

@@ -1,11 +1,12 @@
 extern crate num_rational;
 extern crate socool_parser;
+extern crate indexmap;
+use indexmap::IndexMap;
 use num_rational::{Ratio, Rational64};
 use socool_parser::{ast::Op, parser::ParseTable};
 mod get_length_ratio;
 mod helpers;
 mod normalize;
-use std::collections::HashMap;
 
 #[derive(Debug, Clone, PartialEq)]
 pub struct PointOp {
@@ -43,7 +44,7 @@ impl PointOp {
     }
 }
 
-pub type NormalTable = HashMap<String, NormalForm>;
+pub type NormalTable = IndexMap<String, NormalForm>;
 
 #[derive(Debug, Clone, PartialEq)]
 pub struct NormalForm {
@@ -76,7 +77,7 @@ pub trait Normalize {
 }
 
 pub trait GetLengthRatio {
-    fn get_length_ratio(&self) -> Rational64;
+    fn get_length_ratio(&self, table: &NormalTable) -> Rational64;
 }
 
 #[cfg(test)]

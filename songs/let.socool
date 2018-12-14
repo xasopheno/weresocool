@@ -1,0 +1,45 @@
+{ f: 220, l: 1.0, g: 1.0, p: 0.0}
+
+overtones = {
+    O[
+    	(5/4, 3.0, 1.0, 1.0),
+      	(9/8, 0.0, 1.0, -1.0),
+      	(1/1, 2.0, 1.0, 0.5),
+      	(1/1, 0.0, 1.0, -0.5),
+  	]
+}
+
+thing1 = {
+	overtones |
+	Sequence [
+		AsIs,
+		Tm 2,
+	] 
+	| Repeat 3
+}
+
+thing2 = {
+	Sequence [
+		AsIs, 
+		Tm 7/4
+	]
+	> FitLength thing1
+}
+
+thing3 = {
+	Tm 1/2 > FitLength thing2
+}
+
+main = {
+	Sequence [
+		Overlay [
+			-- Sequence [
+			-- 	thing1,
+			-- 	thing2
+			-- ],
+			thing1, 
+			thing2,
+			thing3
+		] | Repeat 3 > FitLength thing1 
+	]
+}

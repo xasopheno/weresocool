@@ -1,14 +1,15 @@
 lalrpop_mod!(pub socool);
 extern crate colored;
 extern crate num_rational;
+extern crate indexmap;
 use num_rational::{Rational64};
 use colored::*;
 use std::fs::File;
 use std::io::prelude::*;
-use std::collections::HashMap;
 use std::sync::{Arc, Mutex};
 use std::cmp;
 use std::io::BufReader;
+use indexmap::IndexMap;
 use crate::ast::*;
 
 #[derive(Clone, PartialEq, Debug)]
@@ -19,7 +20,7 @@ pub struct Init {
     pub p: Rational64,
 }
 
-pub type ParseTable = HashMap<String, Op>;
+pub type ParseTable = IndexMap<String, Op>;
 
 #[derive(Clone, PartialEq, Debug)]
 pub struct ParsedComposition {
@@ -28,7 +29,7 @@ pub struct ParsedComposition {
 }
 
 pub fn parse_file(filename: &String) -> ParsedComposition {
-    let mut table = HashMap::new();
+    let mut table = IndexMap::new();
     let f = File::open(filename);
     let mut composition = String::new();
 

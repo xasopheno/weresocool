@@ -4,9 +4,9 @@ use std::string::String;
 use crate::ast::Op;
 use crate::parser::Init;
 use crate::float_to_rational::helpers::*;
-use std::collections::HashMap;
+use indexmap::IndexMap;
 
-grammar<'table>(table: &'table mut HashMap<String, Op>);
+grammar<'table>(table: &'table mut IndexMap<String, Op>);
 
 pub SoCool: Init = {
   <init: Point> <l: LetDefs> => { init },

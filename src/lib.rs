@@ -10,7 +10,7 @@ extern crate itertools;
 extern crate num_rational;
 extern crate rand;
 extern crate rayon;
-
+extern crate indexmap;
 #[macro_use]
 pub mod macros;
 pub mod analyze;

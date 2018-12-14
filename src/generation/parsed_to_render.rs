@@ -9,7 +9,7 @@ use instrument::{
 };
 use itertools::Itertools;
 use num_rational::Rational64;
-use operations::{NormalForm, Normalize as NormalizeOp, PointOp};
+use operations::{NormalForm, NormalTable, Normalize as NormalizeOp, PointOp};
 use rayon::prelude::*;
 use settings::get_default_app_settings;
 use socool_parser::{
@@ -36,7 +36,7 @@ pub fn event_from_init(init: Init) -> Event {
     )
 }
 
-pub fn render(composition: &Op, init: Init, table: &ParseTable) -> StereoWaveform {
+pub fn render(composition: &Op, init: Init, table: &NormalTable) -> StereoWaveform {
     let mut normal_form = NormalForm::init();
 
     println!("\nGenerating Composition ");
@@ -70,7 +70,7 @@ pub fn to_wav(composition: StereoWaveform, filename: String) {
     printed("WAV".to_string());
 }
 
-pub fn to_json(composition: &Op, init: Init, table: &ParseTable, filename: String) {
+pub fn to_json(composition: &Op, init: Init, table: &NormalTable, filename: String) {
     banner("JSONIFY-ing".to_string(), filename.clone());
     let mut normal_form = NormalForm::init();
 

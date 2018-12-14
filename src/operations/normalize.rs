@@ -2,7 +2,7 @@ pub mod normalize {
     extern crate num_rational;
     extern crate rand;
     use num_rational::{Ratio, Rational64};
-    use operations::{GetLengthRatio, NormalForm, Normalize, PointOp, NormalTable};
+    use operations::{GetLengthRatio, NormalForm, NormalTable, Normalize, PointOp};
     use rand::prelude::*;
     use socool_parser::{ast::Op, parser::ParseTable};
     use std::cmp::Ordering::{Equal, Greater, Less};
@@ -12,7 +12,10 @@ pub mod normalize {
             match self {
                 Op::AsIs => {}
 
-                Op::Let { id } => {}// table.get(&id).unwrap().clone(),
+                Op::Let { id } => {
+                    let result = table.get(id).unwrap().clone();
+                    *input = result
+                },
 
                 Op::FInvert => {
                     for mut voice in input.operations.iter_mut() {
@@ -121,8 +124,8 @@ pub mod normalize {
                     with_length_of,
                     main,
                 } => {
-                    let target_length = with_length_of.get_length_ratio();
-                    let main_length = main.get_length_ratio();
+                    let target_length = with_length_of.get_length_ratio(table);
+                    let main_length = main.get_length_ratio(table);
                     let ratio = target_length / main_length;
                     let new_op = Op::Length { m: ratio };
 

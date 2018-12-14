@@ -2,16 +2,17 @@ extern crate portaudio;
 extern crate rayon;
 extern crate socool_parser;
 extern crate weresocool;
+extern crate indexmap;
+use indexmap::IndexMap;
 use portaudio as pa;
-use socool_parser::{parser::*, ast::Op};
+use socool_parser::{ast::Op, parser::*};
 use weresocool::{
     examples::documentation,
-    operations::{NormalForm, Normalize, NormalTable},
     generation::parsed_to_render::{render, to_json, to_wav},
+    operations::{NormalForm, NormalTable, Normalize},
     portaudio_setup::output::setup_portaudio_output,
     ui::{banner, get_args, no_file_name, were_so_cool_logo},
 };
-use std::collections::HashMap;
 
 fn main() -> Result<(), pa::Error> {
     were_so_cool_logo();
@@ -29,16 +30,18 @@ fn main() -> Result<(), pa::Error> {
 
     let parsed = parse_file(&filename.unwrap().to_string());
 
+    let normal_table = normalize_table_entries(&parsed.table);
+
     let main = parsed.table.get("main").unwrap();
     let init = parsed.init;
 
     if args.is_present("print") {
-        let composition = render(main, init, &parsed.table);
+        let composition = render(main, init, &normal_table);
         to_wav(composition, filename.unwrap().to_string());
     } else if args.is_present("json") {
-        to_json(main, init, &parsed.table, filename.unwrap().to_string());
+        to_json(main, init, &normal_table, filename.unwrap().to_string());
     } else {
-        let composition = render(main, init, &parsed.table);
+        let composition = render(main, init, &normal_table);
 
         let pa = pa::PortAudio::new()?;
 
@@ -57,13 +60,13 @@ fn main() -> Result<(), pa::Error> {
 }
 
 fn normalize_table_entries(table: &ParseTable) -> NormalTable {
-    let mut new_table  = HashMap::new();
+    let mut new_table = IndexMap::new();
     for (name, op) in table {
         let mut nf = NormalForm::init();
-        op.apply_to_normal_form(&mut nf, new_table);
-
+        op.apply_to_normal_form(&mut nf, &new_table);
+        println!("name {:?} length {:?}", name, nf.get_length_ratio());
         new_table.insert(name.clone(), nf);
-    };
+    }
 
     new_table
 }
