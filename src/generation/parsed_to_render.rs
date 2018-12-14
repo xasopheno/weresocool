@@ -1,5 +1,6 @@
 extern crate itertools;
 extern crate num_rational;
+extern crate pbr;
 extern crate rayon;
 extern crate socool_parser;
 use event::{Event, Render};
@@ -10,9 +11,11 @@ use instrument::{
 use itertools::Itertools;
 use num_rational::Rational64;
 use operations::{NormalForm, Normalize as NormalizeOp, PointOp};
+use pbr::ProgressBar;
 use rayon::prelude::*;
 use settings::get_default_app_settings;
 use socool_parser::{ast::Op, parser::Init};
+use std::sync::{Arc, Mutex};
 use ui::{banner, printed};
 use write::{write_composition_to_json, write_composition_to_wav};
 
@@ -95,6 +98,7 @@ fn generate_events(sequences: PointOpSequences, event: Event) -> NormEv {
                 sound.pan *= r_to_f64(point_op.pm);
                 sound.pan += r_to_f64(point_op.pa);
                 sound.gain *= r_to_f64(point_op.g);
+                sound.osc_type = point_op.osc_type;
             }
 
             e.length *= r_to_f64(point_op.l);
@@ -106,15 +110,27 @@ fn generate_events(sequences: PointOpSequences, event: Event) -> NormEv {
     norm_ev
 }
 
+fn create_pb_instance(n: usize) -> Arc<Mutex<ProgressBar<std::io::Stdout>>> {
+    let mut pb = ProgressBar::new(n as u64);
+    pb.format("╢w♬░╟");
+    pb.message("Rendering:  ");
+    Arc::new(Mutex::new(pb))
+}
+
 fn generate_waveforms(mut norm_ev: NormEv) -> VecWav {
     println!("Rendering {:?} waveforms", norm_ev.len());
+    let pb = create_pb_instance(norm_ev.len());
+
     let vec_wav = norm_ev
         .par_iter_mut()
         .map(|ref mut vec_events: &mut Vec<Event>| {
+            pb.lock().unwrap().add(1 as u64);
             let mut osc = Oscillator::init(&get_default_app_settings());
             vec_events.render(&mut osc)
         })
         .collect();
+
+    pb.lock().unwrap().finish_print(&"".to_string());
 
     vec_wav
 }

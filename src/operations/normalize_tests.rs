@@ -2,6 +2,7 @@
 pub mod normalize_tests {
     extern crate num_rational;
     extern crate socool_parser;
+    use instrument::oscillator::OscType;
     use num_rational::Ratio;
     use operations::{NormalForm, Normalize, PointOp};
     use socool_parser::ast::Op::*;
@@ -17,6 +18,44 @@ pub mod normalize_tests {
 
         assert_eq!(input, expected);
     }
+    #[test]
+    fn normalize_sine_and_noise() {
+        let mut input = NormalForm::init();
+        Noise.apply_to_normal_form(&mut input);
+
+        let expected = NormalForm {
+            length_ratio: Ratio::new(1, 1),
+            operations: vec![vec![PointOp {
+                fm: Ratio::new(1, 1),
+                fa: Ratio::new(0, 1),
+                pm: Ratio::new(1, 1),
+                pa: Ratio::new(0, 1),
+                g: Ratio::new(1, 1),
+                l: Ratio::new(1, 1),
+                osc_type: OscType::Noise,
+            }]],
+        };
+
+        assert_eq!(input, expected);
+
+        Sine {}.apply_to_normal_form(&mut input);
+
+        let expected = NormalForm {
+            length_ratio: Ratio::new(1, 1),
+            operations: vec![vec![PointOp {
+                fm: Ratio::new(1, 1),
+                fa: Ratio::new(0, 1),
+                pm: Ratio::new(1, 1),
+                pa: Ratio::new(0, 1),
+                g: Ratio::new(1, 1),
+                l: Ratio::new(1, 1),
+                osc_type: OscType::Sine,
+            }]],
+        };
+
+        assert_eq!(input, expected);
+    }
+
     #[test]
     fn normalize_tm() {
         let mut input = NormalForm::init();
@@ -34,6 +73,7 @@ pub mod normalize_tests {
                 pa: Ratio::new(0, 1),
                 g: Ratio::new(1, 1),
                 l: Ratio::new(1, 1),
+                osc_type: OscType::Sine,
             }]],
         };
 
@@ -56,6 +96,7 @@ pub mod normalize_tests {
                 pa: Ratio::new(0, 1),
                 g: Ratio::new(1, 1),
                 l: Ratio::new(1, 1),
+                osc_type: OscType::Sine,
             }]],
         };
 
@@ -79,6 +120,7 @@ pub mod normalize_tests {
                 pa: Ratio::new(0, 1),
                 g: Ratio::new(1, 1),
                 l: Ratio::new(1, 1),
+                osc_type: OscType::Sine,
             }]],
         };
 
@@ -101,6 +143,7 @@ pub mod normalize_tests {
                 pa: Ratio::new(2, 1),
                 g: Ratio::new(1, 1),
                 l: Ratio::new(1, 1),
+                osc_type: OscType::Sine,
             }]],
         };
 
@@ -123,6 +166,7 @@ pub mod normalize_tests {
                 pa: Ratio::new(0, 1),
                 g: Ratio::new(2, 1),
                 l: Ratio::new(1, 1),
+                osc_type: OscType::Sine,
             }]],
         };
 
@@ -145,6 +189,7 @@ pub mod normalize_tests {
                 pa: Ratio::new(0, 1),
                 g: Ratio::new(0, 1),
                 l: Ratio::new(2, 1),
+                osc_type: OscType::Sine,
             }]],
         };
 
@@ -168,6 +213,7 @@ pub mod normalize_tests {
                 pa: Ratio::new(0, 1),
                 g: Ratio::new(1, 1),
                 l: Ratio::new(2, 1),
+                osc_type: OscType::Sine,
             }]],
         };
 
@@ -199,6 +245,7 @@ pub mod normalize_tests {
                 pa: Ratio::new(0, 1),
                 g: Ratio::new(1, 1),
                 l: Ratio::new(2, 1),
+                osc_type: OscType::Sine,
             }]],
         };
 
@@ -231,6 +278,7 @@ pub mod normalize_tests {
                     pa: Ratio::new(0, 1),
                     g: Ratio::new(1, 1),
                     l: Ratio::new(1, 1),
+                    osc_type: OscType::Sine,
                 },
                 PointOp {
                     fm: Ratio::new(1, 1),
@@ -239,6 +287,7 @@ pub mod normalize_tests {
                     pa: Ratio::new(0, 1),
                     g: Ratio::new(1, 1),
                     l: Ratio::new(2, 1),
+                    osc_type: OscType::Sine,
                 },
             ]],
         };
@@ -273,6 +322,7 @@ pub mod normalize_tests {
                         pa: Ratio::new(0, 1),
                         g: Ratio::new(1, 1),
                         l: Ratio::new(1, 1),
+                        osc_type: OscType::Sine,
                     },
                     PointOp {
                         fm: Ratio::new(0, 1),
@@ -281,6 +331,7 @@ pub mod normalize_tests {
                         pa: Ratio::new(0, 1),
                         g: Ratio::new(0, 1),
                         l: Ratio::new(1, 1),
+                        osc_type: OscType::Sine,
                     },
                 ],
                 vec![PointOp {
@@ -290,6 +341,7 @@ pub mod normalize_tests {
                     pa: Ratio::new(0, 1),
                     g: Ratio::new(1, 1),
                     l: Ratio::new(2, 1),
+                    osc_type: OscType::Sine,
                 }],
             ],
         };
@@ -335,6 +387,7 @@ pub mod normalize_tests {
                 pa: Ratio::new(0, 1),
                 g: Ratio::new(1, 1),
                 l: Ratio::new(9, 1),
+                osc_type: OscType::Sine,
             }]],
         };
 
@@ -356,14 +409,14 @@ pub mod normalize_tests {
                             m: Ratio::new(9, 8),
                         },
                         TransposeM {
-                            m: Ratio::new(5,4),
+                            m: Ratio::new(5, 4),
                         },
                     ],
                 },
-                FInvert
-            ]
+                FInvert,
+            ],
         }
-            .apply_to_normal_form(&mut input);
+        .apply_to_normal_form(&mut input);
 
         let expected = NormalForm {
             length_ratio: Ratio::new(3, 1),
@@ -375,22 +428,25 @@ pub mod normalize_tests {
                     pa: Ratio::new(0, 1),
                     g: Ratio::new(1, 1),
                     l: Ratio::new(1, 1),
+                    osc_type: OscType::Sine,
                 },
                 PointOp {
-                    fm: Ratio::new(8,9),
+                    fm: Ratio::new(8, 9),
                     fa: Ratio::new(0, 1),
                     pm: Ratio::new(1, 1),
                     pa: Ratio::new(0, 1),
                     g: Ratio::new(1, 1),
                     l: Ratio::new(1, 1),
+                    osc_type: OscType::Sine,
                 },
                 PointOp {
-                    fm: Ratio::new(4,5),
+                    fm: Ratio::new(4, 5),
                     fa: Ratio::new(0, 1),
                     pm: Ratio::new(1, 1),
                     pa: Ratio::new(0, 1),
                     g: Ratio::new(1, 1),
                     l: Ratio::new(1, 1),
+                    osc_type: OscType::Sine,
                 },
             ]],
         };

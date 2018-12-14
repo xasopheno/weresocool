@@ -1,5 +1,6 @@
 mod tests {
     use event::{Event, Sound};
+    use instrument::oscillator::OscType;
 
     #[test]
     fn test_event() {
@@ -8,6 +9,7 @@ mod tests {
             frequency: 100.0,
             gain: 1.0,
             pan: 1.0,
+            osc_type: OscType::Sine,
         }];
 
         let result = Event::init(100.0, 1.0, 1.0, 0.001);

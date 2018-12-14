@@ -130,23 +130,23 @@ fn rational_play() {
 }
 
 fn main() {
-        use Item::*;
+    use Item::*;
 
-        let mut root = vec![Collection(vec![
-            List(vec![Event::new(), Event::new(), Event::new(), Event::new()]),
-            Collection(vec![
-                List(vec![Event::new(), Event::new(), Event::new()]),
-                List(vec![Event::new(), Event::new()]),
-            ]),
-        ])];
+    let mut root = vec![Collection(vec![
+        List(vec![Event::new(), Event::new(), Event::new(), Event::new()]),
+        Collection(vec![
+            List(vec![Event::new(), Event::new(), Event::new()]),
+            List(vec![Event::new(), Event::new()]),
+        ]),
+    ])];
 
-        update(&mut root, &vec![succ_f, succ_g, succ_l]);
+    update(&mut root, &vec![succ_f, succ_g, succ_l]);
 
-        let result = render(&root);
-        println!("{:?}", root);
-        println!("{:?}", result);
+    let result = render(&root);
+    println!("{:?}", root);
+    println!("{:?}", result);
 
-        rational_play()
+    rational_play()
 }
 
 #[cfg(test)]

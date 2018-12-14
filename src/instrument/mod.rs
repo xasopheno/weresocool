@@ -1,5 +1,7 @@
 mod loudness;
+mod noise;
 pub mod oscillator;
+mod sine;
 pub mod stereo_waveform;
 #[cfg(test)]
 mod test;

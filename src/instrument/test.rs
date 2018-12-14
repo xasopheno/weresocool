@@ -2,7 +2,7 @@ pub mod tests {
     use event::Sound;
     use instrument::{
         loudness::loudness_normalization,
-        oscillator::Oscillator,
+        oscillator::{OscType, Oscillator},
         stereo_waveform::StereoWaveform,
         voice::{Voice, VoiceState},
     };
@@ -25,6 +25,7 @@ pub mod tests {
                     gain: 0.0,
                 },
                 phase: 0.0,
+                osc_type: OscType::Sine,
             };
 
             assert_eq!(voice, result);
@@ -34,7 +35,7 @@ pub mod tests {
         fn test_deltas() {
             let index = 1;
             let mut voice = Voice::init(index);
-            voice.update(200.0, 1.0);
+            voice.update(200.0, 1.0, OscType::Sine);
             let g_delta = voice.calculate_gain_delta(10);
             let p_delta = voice.calculate_portamento_delta(10);
 
@@ -47,7 +48,7 @@ pub mod tests {
             let index = 1;
             let mut buffer = vec![0.0; 3];
             let mut voice = Voice::init(index);
-            voice.update(100.0, 1.0);
+            voice.update(100.0, 1.0, OscType::Sine);
             voice.generate_waveform(&mut buffer, 3, 2048.0 / 44_100.0);
             assert_eq!(buffer, [0.0, 0.04545661739507462, 0.6526809620585622]);
         }
@@ -55,10 +56,10 @@ pub mod tests {
         #[test]
         fn test_sound_silence() {
             let mut voice = Voice::init(1);
-            voice.update(100.0, 1.0);
+            voice.update(100.0, 1.0, OscType::Sine);
             let silence_to_sound = voice.silence_to_sound();
 
-            voice.update(0.0, 0.0);
+            voice.update(0.0, 0.0, OscType::Sine);
             let sound_to_silence = voice.sound_to_silence();
 
             assert_eq!(silence_to_sound, true);
@@ -87,6 +88,7 @@ pub mod tests {
                             frequency: 0.0,
                             gain: 0.0,
                         },
+                        osc_type: OscType::Sine,
                     },
                     Voice {
                         index: 1,
@@ -99,6 +101,7 @@ pub mod tests {
                             frequency: 0.0,
                             gain: 0.0,
                         },
+                        osc_type: OscType::Sine,
                     },
                 )],
             };
@@ -112,26 +115,30 @@ pub mod tests {
                 frequency: 100.0,
                 gain: 1.0,
                 pan: 0.5,
+                osc_type: OscType::Noise,
             }]);
 
             assert_eq!(osc.voices[0].0.past.frequency, 0.0);
             assert_eq!(osc.voices[0].0.past.gain, 0.0);
             assert_eq!(osc.voices[0].0.current.frequency, 100.0);
-            assert_eq!(osc.voices[0].0.current.gain, 0.25);
+            assert_eq!(osc.voices[0].0.current.gain, 0.08333333333333333);
+            assert_eq!(osc.voices[0].0.osc_type, OscType::Noise);
             //
             assert_eq!(osc.voices[0].1.past.frequency, 0.0);
             assert_eq!(osc.voices[0].1.past.gain, 0.0);
             assert_eq!(osc.voices[0].1.current.frequency, 100.0);
-            assert_eq!(osc.voices[0].1.current.gain, 0.75);
+            assert_eq!(osc.voices[0].1.current.gain, 0.25);
+            assert_eq!(osc.voices[0].1.osc_type, OscType::Noise);
         }
         #[test]
-        fn oscillator_generate_test() {
+        fn oscillator_generate_sine_test() {
             let mut osc = Oscillator::init(&get_test_settings());
 
             osc.update(vec![Sound {
                 frequency: 300.0,
                 gain: 1.0,
                 pan: -0.5,
+                osc_type: OscType::Sine,
             }]);
 
             let expected = StereoWaveform {

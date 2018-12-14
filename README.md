@@ -16,7 +16,6 @@ On Mac
 `brew install pkg-config`
 `&& cargo clean` if you are having problems linking
 
-
 ## Parser
 `https://github.com/xasopheno/weresocool-parser`
 
@@ -28,6 +27,13 @@ https://github.com/xasopheno/weresocool-parser/blob/master/src/socool.lalrpop
 Listen to something created with the framework
 
 `cargo run --release --bin wsc songs/drums.socool`
+
+
+Run with `-p` flag to print a wav file.
+
+`cargo run --release --bin wsc songs/drums.socool -p`
+
+I use `ffmpeg` to convert to `mp3`
 
 `ffmpeg -i composition.wav composition.mp3`
 

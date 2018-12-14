@@ -1,0 +1,42 @@
+{ f: 120, l: 0.45, g: 1.0, p: 0.0}
+
+overtones = {
+    O[
+      	(8, -20, 1/20, 0.0),
+      	(7, 6, 1/20, 1.0),
+      	(6, 0, 1/20, -1.0),
+      	(5, 2, 2/10, 0.0),
+      	(4, 0, 3/10, 1.0),
+      	(3, 0, 1/10, -1.0),
+      	(2, 0, 5/10, 0.0),
+      	(1, 0, 1, 0.0),
+  	]
+}
+
+thing1 = {
+	Sequence [
+		AsIs | Length 2,
+		Tm 3/2 
+	] 
+	| Overlay [AsIs, Invert]
+	| Sequence [AsIs, Tm 5/4 | Reverse]
+	| Sequence [AsIs, Tm 4/3, Tm 7/4]
+	| Sequence [AsIs, Reverse]
+	| Length 0.3
+	| Repeat 3
+	| Sequence [AsIs, Tm 9/8]
+	| overtones
+}
+
+main = {
+	Overlay [
+		thing1,
+		thing1 | Gain 0.15 | Tm 3 
+		| Sequence [
+			AsIs, 
+			Overlay [AsIs, Tm 3 | Gain 0.5, Noise | Gain 0.3] | Repeat 1,
+			Overlay [AsIs, Tm 3 | Gain 0.2, Noise | Gain 0.5 | Overlay [AsIs, Tm 1/2, Tm 4] ] | Repeat 3
+		]
+		> FitLength thing1
+	]	
+}
