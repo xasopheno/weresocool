@@ -11,6 +11,7 @@ pub mod get_length_ratio {
             match self {
                 Op::AsIs {}
                 | Op::Sine {}
+                | Op::Square {}
                 | Op::Noise {}
                 | Op::FInvert {}
                 | Op::Reverse {}

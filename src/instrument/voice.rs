@@ -62,6 +62,7 @@ impl Voice {
             };
             let new_sample = match self.osc_type {
                 OscType::Sine => self.generate_sine_sample(info),
+                OscType::Square => self.generate_square_sample(info),
                 OscType::Noise => self.generate_random_sample(info),
             };
             *sample += new_sample
@@ -74,7 +75,7 @@ impl Voice {
         }
 
         let mut gain = if frequency != 0.0 { gain } else { 0.0 };
-        if osc_type == OscType::Noise {
+        if osc_type != OscType::Sine {
             gain /= 3.0
         }
         let loudness = loudness_normalization(frequency);
