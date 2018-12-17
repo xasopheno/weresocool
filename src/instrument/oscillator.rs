@@ -10,7 +10,7 @@ fn tau() -> f64 {
 pub enum OscType {
     Sine,
     Noise,
-    Square
+    Square,
 }
 
 #[derive(Clone, Debug, PartialEq)]

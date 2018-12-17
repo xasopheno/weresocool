@@ -11,9 +11,9 @@ impl Voice {
         } else if info.index < info.portamento_length
             && !self.silence_to_sound()
             && !self.sound_to_silence()
-            {
-                self.past.frequency + (info.index as f64 * info.p_delta)
-            } else {
+        {
+            self.past.frequency + (info.index as f64 * info.p_delta)
+        } else {
             self.current.frequency
         };
 

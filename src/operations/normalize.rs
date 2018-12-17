@@ -45,7 +45,6 @@ pub mod normalize {
                     }
                 }
 
-
                 Op::Noise => {
                     for mut voice in input.operations.iter_mut() {
                         for mut point_op in voice {
