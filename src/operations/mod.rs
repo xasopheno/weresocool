@@ -34,6 +34,7 @@ impl PointOp {
     pub fn to_op(&self) -> Op {
         let osc_op = match self.osc_type {
             OscType::Sine => Op::Sine,
+            OscType::Square => Op::Square,
             OscType::Noise => Op::Noise,
         };
         Op::Compose {

@@ -7,6 +7,7 @@ pub enum Op {
 //
     Noise,
     Sine,
+    Square,
 //
     FInvert,
     Silence {
