@@ -1,4 +1,4 @@
-{ f: 160, l: 1.0, g: 1.0, p: 0.0}
+{ f: 160, l: 1.05, g: 1.0, p: 0.0}
 
 overtones = {
     O[
@@ -50,13 +50,15 @@ bells = {
 
 melody = {
     O[
-      	(6, 6.0, 0.05, 0.0),
-      	(5, 5.0, 0.1, -0.5),
+      	(8, -1.0, 0.029, 0.0),
+      	(7, 0.0, 0.025, 0.0),
+      	(6, 6.0, 0.075, 0.55),
+      	(5, 5.0, 0.1, -0.55),
       	(4, 7.0, 0.05, -0.75),
       	(4, 0.0, 0.05, 0.75),
       	(3, 0.0, 0.2, 0.5),
       	(2, 5.0, 0.4, -0.5),
-      	(1, 0.0, 1.0, 0.5),
+      	(1, 0.0, 1.0, 0.0),
   	]
 	| Sequence [
 		Tm 2,
@@ -64,11 +66,12 @@ melody = {
 		Tm 5/4 | Length 3, 
 		Tm 3/2, 
 		Tm 9/8,
-		AsIs | Length 3, 
+		AsIs | Length 7/2, 
 		Tm 3/2, 
 		Tm 9/8,
 		Tm 5/4,
 		Tm 7/8 | Length 2,
+		Tm 3/4 | Gain 1/4 | Length 1/6,
 		Tm 4/5 | Length 3/2,
 		Tm 15/16 | Length 1/2,  
 		Sequence [
@@ -88,7 +91,13 @@ melody = {
 			| Sequence [AsIs, Tm 15/16, Tm 7/8]
 		] | Tm 5/4 | Length 1/7,
 		Tm 5/4 | Length 5,
-		Tm 1/4
+		Tm 5/4 | Sequence [
+			Tm 1/2,
+			Tm 1/3, 
+			Overlay [Tm 1/4, Tm 1/4 | Ta 5], 
+		] | Length 5/2,
+		Overlay [Tm 1/5, Tm 1/5 | Ta 5] | Length 3, 
+		Silence 1
 	]
 	| Sequence [AsIs, Overlay [AsIs | PanA 1, Ta 0.25 | PanA -0.25] | Gain 1/2]
 	> FitLength chord
@@ -101,6 +110,6 @@ main = {
 			chord | Gain 1/5, 
 			Sequence [Silence 3.3, bells | Gain 1/8]	
 		],
-		Silence 2,
+		Silence 6,
 	]
 }

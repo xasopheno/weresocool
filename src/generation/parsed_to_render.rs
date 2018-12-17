@@ -145,6 +145,7 @@ fn sum_all_waveforms(vec_wav: VecWav) -> StereoWaveform {
     result
 }
 
+
 fn sum_vec(a: &Vec<f64>, b: Vec<f64>) -> Vec<f64> {
     let vec_len = std::cmp::max(a.len(), b.len());
     let mut acc: Vec<f64> = vec![0.0; vec_len];
@@ -158,6 +159,7 @@ fn sum_vec(a: &Vec<f64>, b: Vec<f64>) -> Vec<f64> {
 
     acc
 }
+
 
 #[cfg(test)]
 pub mod tests {
