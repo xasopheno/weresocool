@@ -1,4 +1,4 @@
-{ f: 160, l: 1.05, g: 1.0, p: 0.0}
+{ f: 160, l: 1.1, g: 1.0, p: 0.0}
 
 overtones = {
     O[
@@ -89,7 +89,7 @@ melody = {
 			| Length 1/3
 			| Overlay [AsIs, Tm 9/8 | Gain 0.05]
 			| Sequence [AsIs, Tm 15/16, Tm 7/8]
-		] | Tm 5/4 | Length 1/7,
+		] | Tm	 5/4 | Length 2/15,
 		Tm 5/4 | Length 5,
 		Tm 5/4 | Sequence [
 			Tm 1/2,
