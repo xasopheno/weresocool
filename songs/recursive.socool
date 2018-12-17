@@ -1,4 +1,4 @@
-{ f: 100, l: 1.0, g: 1.0, p: 0.0}
+{ f: 220, l: 1.0, g: 1.0, p: 0.0}
 
 overtones = {
     O[
@@ -33,13 +33,13 @@ thing1 = {
 		Tm 15/8,
 		Tm 2,
 	] 
-	| Length 0.005
+	| Length 0.1	
 }
 
 jitter = {
 	thing1 
-		-- | gain_recursive
-		| Sequence [AsIs, Silence 3]
+		| gain_recursive
+		| Sequence [AsIs, Silence 0.2]
 		| Sequence [AsIs | Gain 1.5, Tm 2, Tm 100 | Gain 5 | Length 0.5 | Repeat 2, Tm 2 | Length 0.24 | Sequence [AsIs | PanA 0.5, AsIs | PanA -0.5, Tm 9/8, Tm 5/4]]
 		| Repeat 4 |
 		Sequence [
@@ -52,13 +52,9 @@ jitter = {
 
 drums = {
 		thing1 
-		-- | gain_recursive]
-		| Sequence [
-			Overlay [AsIs],
-			Overlay [Tm 1/2], 
-			Overlay [Silence 5, Silence 6], 
-		]
-		-- | Sequence [AsIs | Gain 1.5, Tm 2, Tm 10 | Gain 1 | Length 0.5 | Repeat 2, Tm 2 | Length 0.24 | Sequence [AsIs | PanA 0.5, AsIs | PanA -0.5, Tm 9/8, Tm 5/4]]
+		| gain_recursive
+		| Sequence [AsIs, Silence 0.2]
+		| Sequence [AsIs | Gain 1.5, Tm 2, Tm 100 | Gain 5 | Length 0.5 | Repeat 2, Tm 2 | Length 0.24 | Sequence [AsIs | PanA 0.5, AsIs | PanA -0.5, Tm 9/8, Tm 5/4]]
 		| Repeat 4
 		| Sequence [Tm 7/8, AsIs]
 }
@@ -76,5 +72,5 @@ main = {
 	Sequence [
 		drums,
 		-- jitter
-	] | Repeat 1 | Square
+	] | Repeat 1
 }
