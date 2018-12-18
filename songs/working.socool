@@ -27,19 +27,19 @@ thing1 = {
     ]
 }
 
--- thing2 = {
---     Sequence [
---     	Silence 0.5,
---         Tm 7/8
---         | Length 0.2
---         | Gain 0.3, 
---         Tm 7/4,
---         Tm 3/2,
---     ] 
---     | Tm 0.5
---     | Sequence [AsIs, Tm 2/3, Tm 9/8, Tm 2/3]
---     > FitLength thing1
--- }
+thing2 = {
+    Sequence [
+    	Silence 0.5,
+        Tm 7/8
+        | Length 0.2
+        | Gain 0.3, 
+        Tm 7/4,
+        Tm 3/2,
+    ] 
+    | Tm 0.5
+    | Sequence [AsIs, Tm 2/3, Tm 9/8, Tm 2/3]
+    > FitLength thing1
+}
 
 thing3 = {
 	O[
