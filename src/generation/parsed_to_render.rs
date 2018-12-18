@@ -158,28 +158,28 @@ pub mod tests {
     use super::*;
     #[test]
     fn render_equal() {
-        let a = vec![1.0, 2.0, 3.0];
+        let mut a = vec![1.0, 2.0, 3.0];
         let b = vec![1.0, 2.0, 3.0];
-        let result = sum_vec(&a, b);
+        sum_vec(&mut a, &b[..]);
         let expected = [2.0, 4.0, 6.0];
-        assert_eq!(result, expected);
+        assert_eq!(a, expected);
     }
 
     #[test]
     fn render_left() {
-        let a = vec![1.0, 2.0, 3.0, 2.0];
+        let mut a = vec![1.0, 2.0, 3.0, 2.0];
         let b = vec![1.0, 2.0, 3.0];
-        let result = sum_vec(&a, b);
+        sum_vec(&mut a, &b[..]);
         let expected = [2.0, 4.0, 6.0, 2.0];
-        assert_eq!(result, expected);
+        assert_eq!(a, expected);
     }
 
     #[test]
     fn render_right() {
-        let a = vec![1.0, 2.0, 3.0];
+        let mut a = vec![1.0, 2.0, 3.0];
         let b = vec![1.0, 2.0, 3.0, 1.0];
-        let result = sum_vec(&a, b);
+        let result = sum_vec(&mut a, &b[..]);
         let expected = [2.0, 4.0, 6.0, 1.0];
-        assert_eq!(result, expected);
+        assert_eq!(a, expected);
     }
 }
