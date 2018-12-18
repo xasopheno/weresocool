@@ -17,7 +17,6 @@ colored = "1.6"
 pbr = "1.0.1"
 socool_parser = { path = "parser" }
 clap = "2.32.0"
-itertools = "0.7.8"
 num-rational = "0.2"
 rayon = "1.0"
 

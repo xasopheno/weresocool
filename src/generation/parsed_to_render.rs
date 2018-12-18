@@ -1,4 +1,3 @@
-extern crate itertools;
 extern crate num_rational;
 extern crate pbr;
 extern crate rayon;
@@ -8,7 +7,6 @@ use instrument::{
     oscillator::Oscillator,
     stereo_waveform::{Normalize, StereoWaveform},
 };
-use itertools::Itertools;
 use num_rational::Rational64;
 use operations::{NormalForm, Normalize as NormalizeOp, PointOp};
 use pbr::ProgressBar;
@@ -138,28 +136,22 @@ fn generate_waveforms(mut norm_ev: NormEv) -> VecWav {
 fn sum_all_waveforms(vec_wav: VecWav) -> StereoWaveform {
     let mut result = StereoWaveform::new(0);
     for wav in vec_wav {
-        result.l_buffer = sum_vec(&result.l_buffer, wav.l_buffer);
-        result.r_buffer = sum_vec(&result.r_buffer, wav.r_buffer)
+        sum_vec(&mut result.l_buffer, &wav.l_buffer[..]);
+        sum_vec(&mut result.r_buffer, &wav.r_buffer[..])
     }
 
     result
 }
 
-
-fn sum_vec(a: &Vec<f64>, b: Vec<f64>) -> Vec<f64> {
-    let vec_len = std::cmp::max(a.len(), b.len());
-    let mut acc: Vec<f64> = vec![0.0; vec_len];
-    for (i, e) in a.iter().zip_longest(&b).enumerate() {
-        match e {
-            itertools::EitherOrBoth::Both(v1, v2) => acc[i] = v1 + v2,
-            itertools::EitherOrBoth::Left(e) => acc[i] = *e,
-            itertools::EitherOrBoth::Right(e) => acc[i] = *e,
-        }
+fn sum_vec(a: &mut Vec<f64>, b: &[f64]) {
+    if a.len() < b.len() {
+        a.resize(b.len(), 0.0);
     }
 
-    acc
+    for (ai, bi) in a.iter_mut().zip(b) {
+        *ai += *bi;
+    }
 }
-
 
 #[cfg(test)]
 pub mod tests {

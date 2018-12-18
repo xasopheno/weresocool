@@ -1,7 +1,5 @@
-extern crate itertools;
 extern crate num_rational;
 extern crate weresocool;
-use itertools::Itertools;
 use num_rational::{Ratio, Rational64};
 
 #[derive(Debug, Clone)]
@@ -48,9 +46,9 @@ fn render(collection: &[Item]) -> Vec<f32> {
         match item {
             &Item::Collection(ref items) => {
                 let result = render(items);
-                acc = sum_vec(&acc, result)
+                sum_vec(&mut acc, &result[..])
             }
-            &Item::List(ref v) => acc = sum_vec(&acc, event_to_f32(&v.to_vec())),
+            &Item::List(ref v) => sum_vec(&mut acc, &event_to_f32(&v.to_vec())[..]),
         }
     }
 
@@ -66,18 +64,14 @@ fn event_to_f32(v: &Vec<Event>) -> Vec<f32> {
     acc
 }
 
-fn sum_vec(a: &Vec<f32>, b: Vec<f32>) -> Vec<f32> {
-    let vec_len = std::cmp::max(a.len(), b.len());
-    let mut acc: Vec<f32> = vec![0.0; vec_len];
-    for (i, e) in a.iter().zip_longest(&b).enumerate() {
-        match e {
-            itertools::EitherOrBoth::Both(v1, v2) => acc[i] = v1 + v2,
-            itertools::EitherOrBoth::Left(e) => acc[i] = *e,
-            itertools::EitherOrBoth::Right(e) => acc[i] = *e,
-        }
+fn sum_vec(a: &mut Vec<f32>, b: &[f32]) {
+    if a.len() < b.len() {
+        a.resize(b.len(), 0.0);
     }
 
-    acc
+    for (ai, bi) in a.iter_mut().zip(b) {
+        *ai += *bi;
+    }
 }
 
 fn update(collection: &mut [Item], fs: &Vec<fn(&mut Vec<Event>)>) {
