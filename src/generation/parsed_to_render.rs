@@ -1,4 +1,3 @@
-extern crate itertools;
 extern crate num_rational;
 extern crate pbr;
 extern crate rayon;
@@ -8,7 +7,6 @@ use instrument::{
     oscillator::Oscillator,
     stereo_waveform::{Normalize, StereoWaveform},
 };
-use itertools::Itertools;
 use num_rational::Rational64;
 use operations::{NormalForm, Normalize as NormalizeOp, PointOp};
 use pbr::ProgressBar;
@@ -135,28 +133,32 @@ fn generate_waveforms(mut norm_ev: NormEv) -> VecWav {
     vec_wav
 }
 
-fn sum_all_waveforms(vec_wav: VecWav) -> StereoWaveform {
+fn sum_all_waveforms(mut vec_wav: VecWav) -> StereoWaveform {
     let mut result = StereoWaveform::new(0);
+
+    sort_vecs(&mut vec_wav);
+
+    let max_len = vec_wav[0].l_buffer.len();
+
+    result.l_buffer.resize(max_len, 0.0);
+    result.r_buffer.resize(max_len, 0.0);
+
     for wav in vec_wav {
-        result.l_buffer = sum_vec(&result.l_buffer, wav.l_buffer);
-        result.r_buffer = sum_vec(&result.r_buffer, wav.r_buffer)
+        sum_vec(&mut result.l_buffer, &wav.l_buffer[..]);
+        sum_vec(&mut result.r_buffer, &wav.r_buffer[..])
     }
 
     result
 }
 
-fn sum_vec(a: &Vec<f64>, b: Vec<f64>) -> Vec<f64> {
-    let vec_len = std::cmp::max(a.len(), b.len());
-    let mut acc: Vec<f64> = vec![0.0; vec_len];
-    for (i, e) in a.iter().zip_longest(&b).enumerate() {
-        match e {
-            itertools::EitherOrBoth::Both(v1, v2) => acc[i] = v1 + v2,
-            itertools::EitherOrBoth::Left(e) => acc[i] = *e,
-            itertools::EitherOrBoth::Right(e) => acc[i] = *e,
-        }
-    }
+fn sort_vecs(vec_wav: &mut VecWav) {
+    vec_wav.sort_unstable_by(|a, b| b.l_buffer.len().cmp(&a.l_buffer.len()));
+}
 
-    acc
+fn sum_vec(a: &mut Vec<f64>, b: &[f64]) {
+    for (ai, bi) in a.iter_mut().zip(b) {
+        *ai += *bi;
+    }
 }
 
 #[cfg(test)]
@@ -164,28 +166,28 @@ pub mod tests {
     use super::*;
     #[test]
     fn render_equal() {
-        let a = vec![1.0, 2.0, 3.0];
+        let mut a = vec![1.0, 2.0, 3.0];
         let b = vec![1.0, 2.0, 3.0];
-        let result = sum_vec(&a, b);
+        sum_vec(&mut a, &b[..]);
         let expected = [2.0, 4.0, 6.0];
-        assert_eq!(result, expected);
+        assert_eq!(a, expected);
     }
 
     #[test]
     fn render_left() {
-        let a = vec![1.0, 2.0, 3.0, 2.0];
+        let mut a = vec![1.0, 2.0, 3.0, 2.0];
         let b = vec![1.0, 2.0, 3.0];
-        let result = sum_vec(&a, b);
+        sum_vec(&mut a, &b[..]);
         let expected = [2.0, 4.0, 6.0, 2.0];
-        assert_eq!(result, expected);
+        assert_eq!(a, expected);
     }
 
     #[test]
     fn render_right() {
-        let a = vec![1.0, 2.0, 3.0];
+        let mut a = vec![1.0, 2.0, 3.0];
         let b = vec![1.0, 2.0, 3.0, 1.0];
-        let result = sum_vec(&a, b);
+        let result = sum_vec(&mut a, &b[..]);
         let expected = [2.0, 4.0, 6.0, 1.0];
-        assert_eq!(result, expected);
+        assert_eq!(a, expected);
     }
 }
