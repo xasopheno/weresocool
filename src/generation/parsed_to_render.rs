@@ -133,8 +133,16 @@ fn generate_waveforms(mut norm_ev: NormEv) -> VecWav {
     vec_wav
 }
 
-fn sum_all_waveforms(vec_wav: VecWav) -> StereoWaveform {
+fn sum_all_waveforms(mut vec_wav: VecWav) -> StereoWaveform {
     let mut result = StereoWaveform::new(0);
+
+    sort_vecs(&mut vec_wav);
+
+    let max_len = vec_wav[0].l_buffer.len();
+
+    result.l_buffer.resize(max_len, 0.0);
+    result.r_buffer.resize(max_len, 0.0);
+
     for wav in vec_wav {
         sum_vec(&mut result.l_buffer, &wav.l_buffer[..]);
         sum_vec(&mut result.r_buffer, &wav.r_buffer[..])
@@ -143,11 +151,11 @@ fn sum_all_waveforms(vec_wav: VecWav) -> StereoWaveform {
     result
 }
 
-fn sum_vec(a: &mut Vec<f64>, b: &[f64]) {
-    if a.len() < b.len() {
-        a.resize(b.len(), 0.0);
-    }
+fn sort_vecs(vec_wav: &mut VecWav) {
+    vec_wav.sort_unstable_by(|a, b| b.l_buffer.len().cmp(&a.l_buffer.len()));
+}
 
+fn sum_vec(a: &mut Vec<f64>, b: &[f64]) {
     for (ai, bi) in a.iter_mut().zip(b) {
         *ai += *bi;
     }
