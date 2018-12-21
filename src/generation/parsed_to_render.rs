@@ -181,13 +181,4 @@ pub mod tests {
         let expected = [2.0, 4.0, 6.0, 2.0];
         assert_eq!(a, expected);
     }
-
-    #[test]
-    fn render_right() {
-        let mut a = vec![1.0, 2.0, 3.0];
-        let b = vec![1.0, 2.0, 3.0, 1.0];
-        let result = sum_vec(&mut a, &b[..]);
-        let expected = [2.0, 4.0, 6.0, 1.0];
-        assert_eq!(a, expected);
-    }
 }

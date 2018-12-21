@@ -144,8 +144,8 @@ pub mod normalize {
                     with_length_of,
                     main,
                 } => {
-                    let target_length = with_length_of.get_length_ratio();
-                    let main_length = main.get_length_ratio();
+                    let target_length = with_length_of.get_length_ratio(input);
+                    let main_length = main.get_length_ratio(input);
                     let ratio = target_length / main_length;
                     let new_op = Op::Length { m: ratio };
 
@@ -153,6 +153,8 @@ pub mod normalize {
 
                     input.length_ratio = target_length;
                 }
+
+                Op::ModulateBy { operations } => {}
 
                 Op::Overlay { operations } => {
                     let normal_forms: Vec<NormalForm> = operations
@@ -187,7 +189,7 @@ pub mod normalize {
     }
 
     fn pad_length(input: &mut NormalForm, max_len: Rational64) {
-        let input_lr = input.get_length_ratio();
+        let input_lr = input.get_nf_length_ratio();
         if max_len > Rational64::new(0, 1) && input_lr < max_len {
             for voice in input.operations.iter_mut() {
                 let osc_type = voice.clone().last().unwrap().osc_type;
