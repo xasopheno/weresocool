@@ -61,6 +61,7 @@ BaseOperation: Op = {
     "Choice" "[" <operations: Operations> "]" => Op::Choice { operations: operations },
     "Sequence" "[" <operations: Operations> "]" => Op::Sequence { operations: operations },
     "Overlay" "[" <operations: Operations> "]" => Op::Overlay { operations: operations },
+    "ModulateBy" "[" <operations: Operations> "]" => Op::ModulateBy { operations: operations },
     "O" "[" <o: Overtones> "]" => Op::Overlay { operations: o },
     <id: Name> => { table.get(&id).unwrap().clone() },
 };

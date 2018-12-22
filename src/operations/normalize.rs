@@ -154,7 +154,33 @@ pub mod normalize {
                     input.length_ratio = target_length;
                 }
 
-                Op::ModulateBy { operations } => {}
+                Op::ModulateBy { operations } => {
+                    let mut modulator = NormalForm::init_empty();
+
+                    for op in operations {
+                        let mut nf = NormalForm::init();
+                        op.apply_to_normal_form(&mut nf);
+                        modulator = join_sequence(modulator, nf);
+                    }
+
+                    Op::Length {
+                        m: input.length_ratio / modulator.length_ratio,
+                    }
+                    .apply_to_normal_form(&mut modulator);
+
+                    let mut result = NormalForm::init_empty();
+
+                    result.length_ratio = input.length_ratio;
+                    for modulation_line in modulator.operations.iter() {
+                        for input_line in input.operations.iter() {
+                            result
+                                .operations
+                                .push(modulate(input_line, modulation_line));
+                        }
+                    }
+
+                    *input = result
+                }
 
                 Op::Overlay { operations } => {
                     let normal_forms: Vec<NormalForm> = operations
@@ -186,6 +212,57 @@ pub mod normalize {
                 }
             }
         }
+    }
+
+    fn modulate(input: &Vec<PointOp>, modulator: &Vec<PointOp>) -> Vec<PointOp> {
+        let mut m = modulator.clone();
+        let mut i = input.clone();
+        let mut result = vec![];
+        while m.len() > 0 && i.len() > 0 {
+            let inpu = i[0].clone();
+            let modu = m[0].clone();
+            if modu.l < inpu.l {
+                let mut new_op = modu.clone();
+                new_op.fm *= inpu.fm;
+                new_op.fa += inpu.fa;
+                new_op.pm *= inpu.pm;
+                new_op.pa += inpu.pa;
+                new_op.g *= inpu.g;
+
+                result.push(new_op);
+
+                i[0].l -= modu.l;
+
+                m.remove(0);
+            } else if modu.l > inpu.l {
+                let mut new_op = inpu.clone();
+                new_op.fm *= modu.fm;
+                new_op.fa += modu.fa;
+                new_op.pm *= modu.pm;
+                new_op.pa += modu.pa;
+                new_op.g *= modu.g;
+
+                result.push(new_op);
+
+                m[0].l -= inpu.l;
+
+                i.remove(0);
+            } else {
+                let mut new_op = inpu.clone();
+                new_op.fm *= modu.fm;
+                new_op.fa += modu.fa;
+                new_op.pm *= modu.pm;
+                new_op.pa += modu.pa;
+                new_op.g *= modu.g;
+
+                result.push(new_op);
+
+                i.remove(0);
+                m.remove(0);
+            }
+        }
+
+        result
     }
 
     fn pad_length(input: &mut NormalForm, max_len: Rational64) {

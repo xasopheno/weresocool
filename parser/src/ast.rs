@@ -9,7 +9,9 @@ pub enum Op {
     Sine,
     Square,
 //
+    Reverse,
     FInvert,
+//    
     Silence {
         m: Rational64
     },
@@ -48,7 +50,6 @@ pub enum Op {
         operations: Vec<Op>
     },
 //
-    Reverse,
 
     WithLengthRatioOf {
         with_length_of: Box<Op>,

@@ -454,4 +454,80 @@ pub mod normalize_tests {
         assert_eq!(input, expected);
     }
 
+    #[test]
+    fn normalize_modulate_by() {
+        let mut input = NormalForm::init();
+        Sequence {
+            operations: vec![
+                TransposeM {
+                    m: Ratio::new(1, 1),
+                },
+                TransposeM {
+                    m: Ratio::new(9, 8),
+                },
+                TransposeM {
+                    m: Ratio::new(5, 4),
+                },
+            ],
+        }
+        .apply_to_normal_form(&mut input);
+
+        let modulator = Sequence {
+            operations: vec![
+                Gain {
+                    m: Ratio::new(1, 1),
+                },
+                Gain {
+                    m: Ratio::new(1, 2),
+                },
+            ],
+        };
+
+        modulator.apply_to_normal_form(&mut input);
+
+        let expected = NormalForm {
+            length_ratio: Ratio::new(3, 1),
+            operations: vec![vec![
+                PointOp {
+                    fm: Ratio::new(1, 1),
+                    fa: Ratio::new(0, 1),
+                    pm: Ratio::new(1, 1),
+                    pa: Ratio::new(0, 1),
+                    g: Ratio::new(1, 1),
+                    l: Ratio::new(1, 1),
+                    osc_type: OscType::Sine,
+                },
+                PointOp {
+                    fm: Ratio::new(9, 8),
+                    fa: Ratio::new(0, 1),
+                    pm: Ratio::new(1, 1),
+                    pa: Ratio::new(0, 1),
+                    g: Ratio::new(1, 1),
+                    l: Ratio::new(1, 1),
+                    osc_type: OscType::Sine,
+                },
+                PointOp {
+                    fm: Ratio::new(9, 8),
+                    fa: Ratio::new(0, 1),
+                    pm: Ratio::new(1, 1),
+                    pa: Ratio::new(0, 1),
+                    g: Ratio::new(1, 2),
+                    l: Ratio::new(1, 1),
+                    osc_type: OscType::Sine,
+                },
+                PointOp {
+                    fm: Ratio::new(5, 4),
+                    fa: Ratio::new(0, 1),
+                    pm: Ratio::new(1, 1),
+                    pa: Ratio::new(0, 1),
+                    g: Ratio::new(1, 2),
+                    l: Ratio::new(1, 1),
+                    osc_type: OscType::Sine,
+                },
+            ]],
+        };
+
+        assert_eq!(input, expected);
+    }
+
 }
