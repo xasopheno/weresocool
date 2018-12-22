@@ -472,7 +472,7 @@ pub mod normalize_tests {
         }
         .apply_to_normal_form(&mut input);
 
-        let modulator = Sequence {
+        let modulator = ModulateBy {
             operations: vec![
                 Gain {
                     m: Ratio::new(1, 1),
@@ -503,7 +503,7 @@ pub mod normalize_tests {
                     pm: Ratio::new(1, 1),
                     pa: Ratio::new(0, 1),
                     g: Ratio::new(1, 1),
-                    l: Ratio::new(1, 1),
+                    l: Ratio::new(1, 2),
                     osc_type: OscType::Sine,
                 },
                 PointOp {
@@ -512,7 +512,7 @@ pub mod normalize_tests {
                     pm: Ratio::new(1, 1),
                     pa: Ratio::new(0, 1),
                     g: Ratio::new(1, 2),
-                    l: Ratio::new(1, 1),
+                    l: Ratio::new(1, 2),
                     osc_type: OscType::Sine,
                 },
                 PointOp {

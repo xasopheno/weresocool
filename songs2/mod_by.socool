@@ -44,7 +44,7 @@ modulator = {
 }
 
 gain_thing = {
-	Sequence [Gain 5/5, Gain 2/5, Gain 3/5, Gain 4/5, Gain 5/5]
+	Sequence [Gain 5/5, Gain 4/5, Gain 3/5, Gain 4/5, Gain 5/5]
 }
 
 main = {
@@ -55,6 +55,7 @@ main = {
 		| ModulateBy [gain_thing]
 	]
 	| Repeat 2
-	| ModulateBy [gain_thing]
-	| Sequence [AsIs, Tm 9/8, Tm 7/4, AsIs]
+	| ModulateBy [gain_thing | Repeat 2]
+	| Sequence [AsIs, Tm 9/8]
+	| Repeat 4
 }
