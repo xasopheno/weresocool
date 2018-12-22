@@ -222,39 +222,21 @@ pub mod normalize {
             let inpu = i[0].clone();
             let modu = m[0].clone();
             if modu.l < inpu.l {
-                let mut new_op = modu.clone();
-                new_op.fm *= inpu.fm;
-                new_op.fa += inpu.fa;
-                new_op.pm *= inpu.pm;
-                new_op.pa += inpu.pa;
-                new_op.g *= inpu.g;
-
+                let new_op = &modu.clone() * &inpu;
                 result.push(new_op);
 
                 i[0].l -= modu.l;
 
                 m.remove(0);
             } else if modu.l > inpu.l {
-                let mut new_op = inpu.clone();
-                new_op.fm *= modu.fm;
-                new_op.fa += modu.fa;
-                new_op.pm *= modu.pm;
-                new_op.pa += modu.pa;
-                new_op.g *= modu.g;
-
+                let new_op = &inpu.clone() * &modu;
                 result.push(new_op);
 
                 m[0].l -= inpu.l;
 
                 i.remove(0);
             } else {
-                let mut new_op = inpu.clone();
-                new_op.fm *= modu.fm;
-                new_op.fa += modu.fa;
-                new_op.pm *= modu.pm;
-                new_op.pa += modu.pa;
-                new_op.g *= modu.g;
-
+                let new_op = &inpu.clone() * &modu;
                 result.push(new_op);
 
                 i.remove(0);

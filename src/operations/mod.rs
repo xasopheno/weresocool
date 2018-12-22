@@ -30,7 +30,7 @@ impl<'a, 'b> Mul<&'b PointOp> for &'a PointOp {
             pm: self.pm * other.pm,
             pa: self.pa + other.pa,
             g: self.g * other.g,
-            l: other.l,
+            l: self.l,
             osc_type: other.osc_type,
         }
     }
