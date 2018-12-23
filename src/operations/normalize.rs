@@ -3,7 +3,7 @@ pub mod normalize {
     extern crate rand;
     use instrument::oscillator::OscType;
     use num_rational::Ratio;
-    use operations::helpers::helpers::*;
+    use operations::helpers::*;
     use operations::{GetLengthRatio, NormalForm, Normalize};
     use rand::prelude::*;
     use socool_parser::ast::Op;
