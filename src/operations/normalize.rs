@@ -2,11 +2,11 @@ pub mod normalize {
     extern crate num_rational;
     extern crate rand;
     use instrument::oscillator::OscType;
-    use num_rational::{Ratio, Rational64};
-    use operations::{GetLengthRatio, NormalForm, Normalize, PointOp};
+    use num_rational::Ratio;
+    use operations::helpers::helpers::*;
+    use operations::{GetLengthRatio, NormalForm, Normalize};
     use rand::prelude::*;
     use socool_parser::ast::Op;
-    use std::cmp::Ordering::{Equal, Greater, Less};
 
     impl Normalize for Op {
         fn apply_to_normal_form(&self, input: &mut NormalForm) {
@@ -144,14 +144,42 @@ pub mod normalize {
                     with_length_of,
                     main,
                 } => {
-                    let target_length = with_length_of.get_length_ratio();
-                    let main_length = main.get_length_ratio();
+                    let target_length = with_length_of.get_length_ratio(input);
+                    let main_length = main.get_length_ratio(input);
                     let ratio = target_length / main_length;
                     let new_op = Op::Length { m: ratio };
 
                     new_op.apply_to_normal_form(input);
 
                     input.length_ratio = target_length;
+                }
+
+                Op::ModulateBy { operations } => {
+                    let mut modulator = NormalForm::init_empty();
+
+                    for op in operations {
+                        let mut nf = NormalForm::init();
+                        op.apply_to_normal_form(&mut nf);
+                        modulator = join_sequence(modulator, nf);
+                    }
+
+                    Op::Length {
+                        m: input.length_ratio / modulator.length_ratio,
+                    }
+                    .apply_to_normal_form(&mut modulator);
+
+                    let mut result = NormalForm::init_empty();
+
+                    for modulation_line in modulator.operations.iter() {
+                        for input_line in input.operations.iter() {
+                            result
+                                .operations
+                                .push(modulate(input_line, modulation_line));
+                        }
+                    }
+
+                    result.length_ratio = input.length_ratio;
+                    *input = result
                 }
 
                 Op::Overlay { operations } => {
@@ -184,73 +212,5 @@ pub mod normalize {
                 }
             }
         }
-    }
-
-    fn pad_length(input: &mut NormalForm, max_len: Rational64) {
-        let input_lr = input.get_length_ratio();
-        if max_len > Rational64::new(0, 1) && input_lr < max_len {
-            for voice in input.operations.iter_mut() {
-                let osc_type = voice.clone().last().unwrap().osc_type;
-                voice.push(PointOp {
-                    fm: Ratio::new(0, 1),
-                    fa: Ratio::new(0, 1),
-                    pm: Ratio::new(1, 1),
-                    pa: Ratio::new(0, 1),
-                    g: Ratio::new(0, 1),
-                    l: max_len - input_lr,
-                    osc_type,
-                });
-            }
-        }
-        input.length_ratio = max_len;
-    }
-
-    fn join_sequence(mut l: NormalForm, mut r: NormalForm) -> NormalForm {
-        if l.operations.len() == 0 {
-            return r;
-        }
-
-        let diff = l.operations.len() as isize - r.operations.len() as isize;
-        match diff.partial_cmp(&0).unwrap() {
-            Equal => {}
-            Greater => {
-                for _ in 0..diff {
-                    r.operations.push(vec![PointOp {
-                        fm: Ratio::new(0, 1),
-                        fa: Ratio::new(0, 1),
-                        pm: Ratio::new(1, 1),
-                        pa: Ratio::new(0, 1),
-                        g: Ratio::new(0, 1),
-                        l: r.length_ratio,
-                        osc_type: OscType::Sine,
-                    }])
-                }
-            }
-            Less => {
-                for _ in 0..-diff {
-                    l.operations.push(vec![PointOp {
-                        fm: Ratio::new(0, 1),
-                        fa: Ratio::new(0, 1),
-                        pm: Ratio::new(1, 1),
-                        pa: Ratio::new(0, 1),
-                        g: Ratio::new(0, 1),
-                        l: l.length_ratio,
-                        osc_type: OscType::Sine,
-                    }])
-                }
-            }
-        }
-
-        let mut result = NormalForm::init_empty();
-        for (left, right) in l.operations.iter_mut().zip(r.operations.iter_mut()) {
-            left.append(right);
-
-            result.operations.push(left.clone());
-        }
-
-        result.length_ratio += r.length_ratio;
-        result.length_ratio += l.length_ratio;
-
-        result
     }
 }

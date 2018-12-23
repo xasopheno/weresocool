@@ -3,6 +3,7 @@ extern crate socool_parser;
 use instrument::oscillator::OscType;
 use num_rational::{Ratio, Rational64};
 use socool_parser::ast::Op;
+use std::ops::{Mul, MulAssign};
 mod get_length_ratio;
 mod helpers;
 mod normalize;
@@ -16,6 +17,36 @@ pub struct PointOp {
     pub g: Rational64,
     pub l: Rational64,
     pub osc_type: OscType,
+}
+
+impl Mul<PointOp> for PointOp {
+    type Output = PointOp;
+
+    fn mul(self, other: PointOp) -> PointOp {
+        PointOp {
+            fm: self.fm * other.fm,
+            fa: self.fa + other.fa,
+            pm: self.pm * other.pm,
+            pa: self.pa + other.pa,
+            g: self.g * other.g,
+            l: self.l,
+            osc_type: other.osc_type,
+        }
+    }
+}
+
+impl MulAssign for PointOp {
+    fn mul_assign(&mut self, other: PointOp) {
+        *self = PointOp {
+            fm: self.fm * other.fm,
+            fa: self.fa + other.fa,
+            pm: self.pm * other.pm,
+            pa: self.pa + other.pa,
+            g: self.g * other.g,
+            l: self.l,
+            osc_type: other.osc_type,
+        }
+    }
 }
 
 impl PointOp {
@@ -72,7 +103,7 @@ impl NormalForm {
         }
     }
 
-    pub fn get_length_ratio(&self) -> Rational64 {
+    pub fn get_nf_length_ratio(&self) -> Rational64 {
         self.length_ratio
     }
 }
@@ -82,7 +113,7 @@ pub trait Normalize {
 }
 
 pub trait GetLengthRatio {
-    fn get_length_ratio(&self) -> Rational64;
+    fn get_length_ratio(&self, input: &NormalForm) -> Rational64;
 }
 
 #[cfg(test)]

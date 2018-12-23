@@ -8,6 +8,43 @@ pub mod normalize_tests {
     use socool_parser::ast::Op::*;
 
     #[test]
+    fn point_op_mul() {
+        let a = PointOp {
+            fm: Ratio::new(3, 2),
+            fa: Ratio::new(0, 1),
+            pm: Ratio::new(1, 1),
+            pa: Ratio::new(2, 1),
+            g: Ratio::new(1, 2),
+            l: Ratio::new(5, 2),
+            osc_type: OscType::Sine,
+        };
+
+        let b = PointOp {
+            fm: Ratio::new(2, 1),
+            fa: Ratio::new(2, 1),
+            pm: Ratio::new(1, 2),
+            pa: Ratio::new(1, 2),
+            g: Ratio::new(1, 2),
+            l: Ratio::new(2, 1),
+            osc_type: OscType::Noise,
+        };
+
+        let result = &a * &b;
+
+        let expected = PointOp {
+            fm: Ratio::new(3, 1),
+            fa: Ratio::new(2, 1),
+            pm: Ratio::new(1, 2),
+            pa: Ratio::new(5, 2),
+            g: Ratio::new(1, 4),
+            l: Ratio::new(5, 2),
+            osc_type: OscType::Noise,
+        };
+
+        assert_eq!(result, expected)
+    }
+
+    #[test]
     fn normalize_asis() {
         let mut input = NormalForm::init();
         AsIs.apply_to_normal_form(&mut input);
@@ -445,6 +482,82 @@ pub mod normalize_tests {
                     pm: Ratio::new(1, 1),
                     pa: Ratio::new(0, 1),
                     g: Ratio::new(1, 1),
+                    l: Ratio::new(1, 1),
+                    osc_type: OscType::Sine,
+                },
+            ]],
+        };
+
+        assert_eq!(input, expected);
+    }
+
+    #[test]
+    fn normalize_modulate_by() {
+        let mut input = NormalForm::init();
+        Sequence {
+            operations: vec![
+                TransposeM {
+                    m: Ratio::new(1, 1),
+                },
+                TransposeM {
+                    m: Ratio::new(9, 8),
+                },
+                TransposeM {
+                    m: Ratio::new(5, 4),
+                },
+            ],
+        }
+        .apply_to_normal_form(&mut input);
+
+        let modulator = ModulateBy {
+            operations: vec![
+                Gain {
+                    m: Ratio::new(1, 1),
+                },
+                Gain {
+                    m: Ratio::new(1, 2),
+                },
+            ],
+        };
+
+        modulator.apply_to_normal_form(&mut input);
+
+        let expected = NormalForm {
+            length_ratio: Ratio::new(3, 1),
+            operations: vec![vec![
+                PointOp {
+                    fm: Ratio::new(1, 1),
+                    fa: Ratio::new(0, 1),
+                    pm: Ratio::new(1, 1),
+                    pa: Ratio::new(0, 1),
+                    g: Ratio::new(1, 1),
+                    l: Ratio::new(1, 1),
+                    osc_type: OscType::Sine,
+                },
+                PointOp {
+                    fm: Ratio::new(9, 8),
+                    fa: Ratio::new(0, 1),
+                    pm: Ratio::new(1, 1),
+                    pa: Ratio::new(0, 1),
+                    g: Ratio::new(1, 1),
+                    l: Ratio::new(1, 2),
+                    osc_type: OscType::Sine,
+                },
+                PointOp {
+                    fm: Ratio::new(9, 8),
+                    fa: Ratio::new(0, 1),
+                    pm: Ratio::new(1, 1),
+                    pa: Ratio::new(0, 1),
+                    g: Ratio::new(1, 2),
+                    l: Ratio::new(1, 2),
+                    osc_type: OscType::Sine,
+                },
+                PointOp {
+                    fm: Ratio::new(5, 4),
+                    fa: Ratio::new(0, 1),
+                    pm: Ratio::new(1, 1),
+                    pa: Ratio::new(0, 1),
+                    g: Ratio::new(1, 2),
                     l: Ratio::new(1, 1),
                     osc_type: OscType::Sine,
                 },
