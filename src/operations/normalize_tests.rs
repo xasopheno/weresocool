@@ -8,6 +8,43 @@ pub mod normalize_tests {
     use socool_parser::ast::Op::*;
 
     #[test]
+    fn point_op_mul() {
+        let a = PointOp {
+            fm: Ratio::new(3, 2),
+            fa: Ratio::new(0, 1),
+            pm: Ratio::new(1, 1),
+            pa: Ratio::new(2, 1),
+            g: Ratio::new(1, 2),
+            l: Ratio::new(5, 2),
+            osc_type: OscType::Sine,
+        };
+
+        let b = PointOp {
+            fm: Ratio::new(2, 1),
+            fa: Ratio::new(2, 1),
+            pm: Ratio::new(1, 2),
+            pa: Ratio::new(1, 2),
+            g: Ratio::new(1, 2),
+            l: Ratio::new(2, 1),
+            osc_type: OscType::Noise,
+        };
+
+        let result = &a * &b;
+
+        let expected = PointOp {
+            fm: Ratio::new(3, 1),
+            fa: Ratio::new(2, 1),
+            pm: Ratio::new(1, 2),
+            pa: Ratio::new(5, 2),
+            g: Ratio::new(1, 4),
+            l: Ratio::new(5, 2),
+            osc_type: OscType::Noise,
+        };
+
+        assert_eq!(result, expected)
+    }
+
+    #[test]
     fn normalize_asis() {
         let mut input = NormalForm::init();
         AsIs.apply_to_normal_form(&mut input);
