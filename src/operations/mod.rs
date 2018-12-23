@@ -19,10 +19,10 @@ pub struct PointOp {
     pub osc_type: OscType,
 }
 
-impl<'a, 'b> Mul<&'b PointOp> for &'a PointOp {
+impl Mul<PointOp> for PointOp {
     type Output = PointOp;
 
-    fn mul(self, other: &'b PointOp) -> PointOp {
+    fn mul(self, other: PointOp) -> PointOp {
         PointOp {
             fm: self.fm * other.fm,
             fa: self.fa + other.fa,
@@ -37,20 +37,17 @@ impl<'a, 'b> Mul<&'b PointOp> for &'a PointOp {
 
 impl MulAssign for PointOp {
     fn mul_assign(&mut self, other: PointOp) {
-        *self =
-            PointOp {
-                fm: self.fm * other.fm,
-                fa: self.fa + other.fa,
-                pm: self.pm * other.pm,
-                pa: self.pa + other.pa,
-                g: self.g * other.g,
-                l: self.l,
-                osc_type: other.osc_type,
-            }
-
+        *self = PointOp {
+            fm: self.fm * other.fm,
+            fa: self.fa + other.fa,
+            pm: self.pm * other.pm,
+            pa: self.pa + other.pa,
+            g: self.g * other.g,
+            l: self.l,
+            osc_type: other.osc_type,
+        }
     }
 }
-
 
 impl PointOp {
     pub fn init() -> PointOp {

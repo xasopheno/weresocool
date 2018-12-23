@@ -1,64 +1,110 @@
-//#[allow(dead_code)]
-//pub mod helpers {
-//    use event::Event;
-//
-//    pub fn vv_event_to_v_events(vv_events: &Vec<Vec<Event>>) -> Vec<Event> {
-//        let mut accumulator = vec![];
-//        let mut state = vv_events.clone();
-//        while state.len() > 0 {
-//            state.retain(|ref x| x.len() > 0);
-//            fold_vv_events(&mut accumulator, &mut state);
-//        }
-//        accumulator
-//    }
-//
-//    fn fold_vv_events(accumulator: &mut Vec<Event>, state: &mut Vec<Vec<Event>>) {
-//        let next_length = next_length(&state);
-//        let mut s = state.clone();
-//        let mut events_to_join = vec![];
-//        for (index, vec_event) in state.iter_mut().enumerate() {
-//            if vec_event.len() > 0 {
-//                let current = vec_event.remove(0);
-//                if current.length > next_length {
-//                    let mut remainder = current.clone();
-//                    remainder.length = current.length - next_length;
-//                    vec_event.insert(0, remainder)
-//                }
-//                events_to_join.push(current);
-//            } else {
-//                s.remove(index);
-//            }
-//        }
-//
-//        if events_to_join.len() > 0 {
-//            let event = join_events(events_to_join, next_length);
-//            if event.length > 0.005 {
-//                accumulator.push(event)
-//            }
-//        }
-//    }
-//
-//    fn join_events(events: Vec<Event>, length: f32) -> Event {
-//        let mut sounds = vec![];
-//
-//        for mut event in events {
-//            sounds.append(&mut event.sounds)
-//        }
-//
-//        Event { sounds, length }
-//    }
-//
-//    fn next_length(state: &Vec<Vec<Event>>) -> f32 {
-//        let mut values = vec![];
-//        for vec_event in state.iter() {
-//            values.push(vec_event[0].length)
-//        }
-//        let min = values.iter().cloned().fold(1.0 / 0.0, f32::min);
-//
-//        if min.is_infinite() {
-//            0.0
-//        } else {
-//            min
-//        }
-//    }
-//}
+pub mod helpers {
+    extern crate num_rational;
+    use num_rational::{Rational64, Ratio};
+    use operations::{PointOp, NormalForm};
+    use instrument::oscillator::OscType;
+    use std::cmp::Ordering::{Equal, Greater, Less};
+
+    pub fn modulate(input: &Vec<PointOp>, modulator: &Vec<PointOp>) -> Vec<PointOp> {
+        let mut m = modulator.clone();
+        let mut i = input.clone();
+        let mut result = vec![];
+        while m.len() > 0 && i.len() > 0 {
+            let mut inpu = i[0].clone();
+            let mut modu = m[0].clone();
+            let modu_l = modu.l;
+            let inpu_l = inpu.l;
+            if modu_l < inpu_l {
+                modu *= inpu;
+                result.push(modu);
+
+                i[0].l -= modu_l;
+
+                m.remove(0);
+            } else if modu.l > inpu.l {
+                inpu *= modu;
+                result.push(inpu);
+
+                m[0].l -= inpu_l;
+
+                i.remove(0);
+            } else {
+                inpu *= modu;
+                result.push(inpu);
+
+                i.remove(0);
+                m.remove(0);
+            }
+        }
+
+        result
+    }
+
+    pub fn pad_length(input: &mut NormalForm, max_len: Rational64) {
+        let input_lr = input.get_nf_length_ratio();
+        if max_len > Rational64::new(0, 1) && input_lr < max_len {
+            for voice in input.operations.iter_mut() {
+                let osc_type = voice.clone().last().unwrap().osc_type;
+                voice.push(PointOp {
+                    fm: Ratio::new(0, 1),
+                    fa: Ratio::new(0, 1),
+                    pm: Ratio::new(1, 1),
+                    pa: Ratio::new(0, 1),
+                    g: Ratio::new(0, 1),
+                    l: max_len - input_lr,
+                    osc_type,
+                });
+            }
+        }
+        input.length_ratio = max_len;
+    }
+
+    pub fn join_sequence(mut l: NormalForm, mut r: NormalForm) -> NormalForm {
+        if l.operations.len() == 0 {
+            return r;
+        }
+
+        let diff = l.operations.len() as isize - r.operations.len() as isize;
+        match diff.partial_cmp(&0).unwrap() {
+            Equal => {}
+            Greater => {
+                for _ in 0..diff {
+                    r.operations.push(vec![PointOp {
+                        fm: Ratio::new(0, 1),
+                        fa: Ratio::new(0, 1),
+                        pm: Ratio::new(1, 1),
+                        pa: Ratio::new(0, 1),
+                        g: Ratio::new(0, 1),
+                        l: r.length_ratio,
+                        osc_type: OscType::Sine,
+                    }])
+                }
+            }
+            Less => {
+                for _ in 0..-diff {
+                    l.operations.push(vec![PointOp {
+                        fm: Ratio::new(0, 1),
+                        fa: Ratio::new(0, 1),
+                        pm: Ratio::new(1, 1),
+                        pa: Ratio::new(0, 1),
+                        g: Ratio::new(0, 1),
+                        l: l.length_ratio,
+                        osc_type: OscType::Sine,
+                    }])
+                }
+            }
+        }
+
+        let mut result = NormalForm::init_empty();
+        for (left, right) in l.operations.iter_mut().zip(r.operations.iter_mut()) {
+            left.append(right);
+
+            result.operations.push(left.clone());
+        }
+
+        result.length_ratio += r.length_ratio;
+        result.length_ratio += l.length_ratio;
+
+        result
+    }
+}
