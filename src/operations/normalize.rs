@@ -2,11 +2,11 @@ pub mod normalize {
     extern crate num_rational;
     extern crate rand;
     use instrument::oscillator::OscType;
-    use num_rational::{Ratio};
+    use num_rational::Ratio;
+    use operations::helpers::helpers::*;
     use operations::{GetLengthRatio, NormalForm, Normalize};
     use rand::prelude::*;
     use socool_parser::ast::Op;
-    use operations::helpers::helpers::*;
 
     impl Normalize for Op {
         fn apply_to_normal_form(&self, input: &mut NormalForm) {
@@ -170,7 +170,6 @@ pub mod normalize {
 
                     let mut result = NormalForm::init_empty();
 
-                    result.length_ratio = input.length_ratio;
                     for modulation_line in modulator.operations.iter() {
                         for input_line in input.operations.iter() {
                             result
@@ -179,6 +178,7 @@ pub mod normalize {
                         }
                     }
 
+                    result.length_ratio = input.length_ratio;
                     *input = result
                 }
 

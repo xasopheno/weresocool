@@ -1,8 +1,8 @@
 pub mod helpers {
     extern crate num_rational;
-    use num_rational::{Rational64, Ratio};
-    use operations::{PointOp, NormalForm};
     use instrument::oscillator::OscType;
+    use num_rational::{Ratio, Rational64};
+    use operations::{NormalForm, PointOp};
     use std::cmp::Ordering::{Equal, Greater, Less};
 
     pub fn modulate(input: &Vec<PointOp>, modulator: &Vec<PointOp>) -> Vec<PointOp> {
