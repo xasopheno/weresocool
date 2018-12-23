@@ -219,25 +219,27 @@ pub mod normalize {
         let mut i = input.clone();
         let mut result = vec![];
         while m.len() > 0 && i.len() > 0 {
-            let inpu = i[0].clone();
-            let modu = m[0].clone();
-            if modu.l < inpu.l {
-                let new_op = &modu.clone() * &inpu;
-                result.push(new_op);
+            let mut inpu = i[0].clone();
+            let mut modu = m[0].clone();
+            let modu_l = modu.l;
+            let inpu_l = inpu.l;
+            if modu_l < inpu_l {
+                modu *= inpu;
+                result.push(modu);
 
-                i[0].l -= modu.l;
+                i[0].l -= modu_l;
 
                 m.remove(0);
             } else if modu.l > inpu.l {
-                let new_op = &inpu.clone() * &modu;
-                result.push(new_op);
+                inpu *= modu;
+                result.push(inpu);
 
-                m[0].l -= inpu.l;
+                m[0].l -= inpu_l;
 
                 i.remove(0);
             } else {
-                let new_op = &inpu.clone() * &modu;
-                result.push(new_op);
+                inpu *= modu;
+                result.push(inpu);
 
                 i.remove(0);
                 m.remove(0);

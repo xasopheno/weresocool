@@ -3,7 +3,7 @@ extern crate socool_parser;
 use instrument::oscillator::OscType;
 use num_rational::{Ratio, Rational64};
 use socool_parser::ast::Op;
-use std::ops::Mul;
+use std::ops::{Mul, MulAssign};
 mod get_length_ratio;
 mod helpers;
 mod normalize;
@@ -23,7 +23,6 @@ impl<'a, 'b> Mul<&'b PointOp> for &'a PointOp {
     type Output = PointOp;
 
     fn mul(self, other: &'b PointOp) -> PointOp {
-        //      expects ops to be same length
         PointOp {
             fm: self.fm * other.fm,
             fa: self.fa + other.fa,
@@ -35,6 +34,23 @@ impl<'a, 'b> Mul<&'b PointOp> for &'a PointOp {
         }
     }
 }
+
+impl MulAssign for PointOp {
+    fn mul_assign(&mut self, other: PointOp) {
+        *self =
+            PointOp {
+                fm: self.fm * other.fm,
+                fa: self.fa + other.fa,
+                pm: self.pm * other.pm,
+                pa: self.pa + other.pa,
+                g: self.g * other.g,
+                l: self.l,
+                osc_type: other.osc_type,
+            }
+
+    }
+}
+
 
 impl PointOp {
     pub fn init() -> PointOp {
