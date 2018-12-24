@@ -210,10 +210,12 @@ next = {
 					Sequence [AsIs | PanA -1, Overlay [Tm 1/2, Tm 3/4, Tm 7/8]],
 					Sequence [Tm 9/8 | PanA -1, Tm 9/8 | PanA 1],
 					Sequence [Tm 5/4 | PanA -1, Tm 5/4 | PanA 1],
-					Sequence [Tm 3/2 | PanA -1, Tm 3/2 | PanA 1]
+					Sequence [Tm 3/2 | PanA -1, Tm 3/2 | PanA 1],
+					Sequence [Tm 2/3 | PanA -1, Tm 2/3 | PanA 1],
+					Sequence [Tm 1/2 | PanA -1, Tm 1/2 | PanA 1]
 				]
 			],
-			Gain 1/8 |
+			Gain 1/6 |
 			O[
 		    	(5/4, 3.0, 0.5, -0.2),
 		    	(5/2, 0.0, 0.25, 0.8),
@@ -242,6 +244,6 @@ main = {
 	Sequence [
 		intro,
 		Silence 1/4,
-		next
+		Tm 9/8 | next
 	]
 }
