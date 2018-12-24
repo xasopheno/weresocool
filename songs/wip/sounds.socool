@@ -1,0 +1,103 @@
+{ f: 120, l: 1.3, g: 1.0, p: 0.0}
+
+overtones = {
+    O[
+    	(3/1, 3.0, 0.2, 0.0),
+    	(2/1, 0.0, 0.2, 0.0),
+    	(7/4, 3.0, 0.2, 0.0),
+    	(3/2, 0.0, 0.1, 0.0),
+      	(11/8, 0.0, 0.4, 0.0),
+      	(5/4, 0.0, 0.8, 0.0),
+      	(9/8, 0.0, 0.5, 0.0),
+      	(1/1, 2.0, 1.0, 0.0),
+  	]
+}
+
+thing1 = {
+	Tm 2 |
+	overtones |
+	Sequence [
+		-- Tm 1/2,
+		AsIs,
+		-- Tm 3/2,
+		-- Tm 7/8,
+	] | Length 1/30
+}
+
+-- modby = {
+-- 	Sequence [
+-- 		AsIs,
+-- 		Tm 2 
+-- 	] | Repeat 2
+-- }
+
+gain_expr = {
+	Sequence [Gain 5/5, Gain 4/5, Gain 3/5, Gain 2/5, Gain 1/8]
+}
+
+snare = {
+	thing1 
+	| Sequence [Repeat 2, Silence 3] 
+	| ModulateBy [Tm 1, Tm 2, Tm 4] 
+}
+
+snare_pattern = {
+	snare
+	| Sequence [
+		Tm 1/4, 
+		Tm 2/3 | Gain 3/2,
+		Tm 2/3,
+		Tm 1,
+		Silence 2,
+		Tm 1/4,
+		Tm 2/3 | Gain 1/2,
+		Silence 1,
+		Tm 1, 
+		Tm 3/4 | Gain 1/2,
+		Silence 1,
+		Tm 1/4,  
+		Tm 3/2,
+	]
+	| Overlay [Noise | Gain 1/12, Gain 1/5 | Tm 8 | Length 1/2 | Sequence [AsIs, Tm 2/3]] 
+	| Repeat 1 
+	> FitLength Length 3 
+}
+
+bass = {
+	Gain 1/2 |
+	Overlay [
+		AsIs, 
+		Tm 2,
+		Tm 3 | Ta 3,
+		Tm 3, 
+		Tm 4,
+		Ta 3,
+		Tm 6 | Gain 1/4
+	] |
+	Sequence [
+		AsIs,
+		Tm 3/2 | Length 4,
+		Tm 5/4,
+		Tm 5/3,
+		Tm 3/2 | Length 2,
+		Tm 6/5,
+		Tm 5/4,
+		AsIs, 
+	] 
+	| ModulateBy [Repeat 2, Ta -5, AsIs]
+	| Tm 1/2
+	> FitLength Length 3 
+}
+
+rs = {
+	Overlay [
+		Gain 1/2 | Overlay [Tm 1/2, AsIs, Tm 9/8, Tm 5/4, Tm 11/8, Tm 8/5, Tm 7/4, Tm 15/8, Tm 2] |
+		snare_pattern,
+		bass
+	] 
+
+}
+
+main = {
+	rs | Sequence [AsIs] | Repeat 12 
+}

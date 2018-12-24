@@ -1,0 +1,48 @@
+{ f: 220, l: 2.5, g: 1.0, p: 0.0}
+
+overtones = {
+    O[
+    	(2/1, 3.0, 1.0, 0.0),
+    	(5/4, 0.0, 1.0, 1.0),
+      	(9/8, 0.0, 1.0, -1.0),
+      	(1/1, 2.0, 1.0, 0.5),
+      	(1/1, 0.0, 1.0, -0.5),
+      	(1/2, 0.0, 1.0, 0.0),
+      	(1/4, 0.0, 0.5, 0.0),
+  	]
+}
+
+modulator = {
+	Sequence [
+		Overlay [AsIs, Tm 3/2, Tm 5/2 | Gain 1/5] | Gain 1/2,
+		AsIs | Length 20,
+	] 
+	| ModulateBy [Gain 3/5, Gain 4/5, Gain 3/5, Gain 2/5, Gain 1/5]
+}
+
+thing1 = {
+	Sequence [
+		overtones |
+		ModulateBy [modulator] |
+		Sequence [
+			Tm 2,
+			Tm 3/2, 
+			Tm 4/3, 
+			Tm 7/4, 
+			Tm 5/3,
+		],
+		overtones | 
+		Sequence [
+			Tm 3/2, 
+			Tm 4/3, 
+			Tm 9/8, 
+		],
+		Silence 1/10, 
+	]
+}
+
+
+
+main = {
+	thing1 | Repeat 4 
+}
