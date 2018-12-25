@@ -51,24 +51,38 @@ pub fn parse_file(filename: &String) -> ParsedComposition {
             panic!("File not found");
         }
     }
-
     let init = socool::SoCoolParser::new()
-        .parse(&mut table, &composition);
+        .parse(
+            &mut table,
+            &composition);
 
     match init.clone() {
         Ok(init) => ParsedComposition { init, table },
         Err(error) => {
-            let start_offset = 150;
+            let start_offset = 125;
             let end_offset = 50;
             let location = Arc::new(Mutex::new(Vec::new()));
-            error.map_location(|l| location.lock().unwrap().push(l));
-            let start = location.lock().unwrap()[0];
-            let end =  location.lock().unwrap()[1];
             let cmp_len = &composition.len();
-            let feed_start = cmp::max(0, start as isize - start_offset) as usize;
-            let feed_end = cmp::min(end + end_offset, *cmp_len);
+            error.map_location(|l| {
+                location.lock().unwrap().push(l)
+            });
+            let end = cmp_len;
 
-            let mut lines = 1;
+            let arg_len = location.lock().unwrap().len();
+                match arg_len {
+                2 => {
+                    let _end = location.lock().unwrap()[1];
+                },
+                _ => {}
+            }
+            let start = location.lock().unwrap()[0];
+
+            let feed_start = cmp::max(0, start as isize - start_offset) as usize;
+            let mut feed_end = cmp::min(end + end_offset, *cmp_len);
+            if feed_end - feed_start > 300 {
+                feed_end = feed_start + 300
+            }
+            let mut lines = 0;
             let mut n_c = 0;
             for c in composition.clone().chars() {
                 n_c += 1;
