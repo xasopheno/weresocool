@@ -10,7 +10,6 @@ use std::sync::{Arc, Mutex};
 use std::cmp;
 use std::io::BufReader;
 use crate::ast::*;
-extern crate lalrpop_util;
 
 #[derive(Clone, PartialEq, Debug)]
 pub struct Init {
@@ -60,7 +59,7 @@ pub fn parse_file(filename: &String) -> ParsedComposition {
     match init.clone() {
         Ok(init) => ParsedComposition { init, table },
         Err(error) => {
-            let start_offset = 100;
+            let start_offset = 125;
             let end_offset = 50;
             let location = Arc::new(Mutex::new(Vec::new()));
             let cmp_len = &composition.len();
