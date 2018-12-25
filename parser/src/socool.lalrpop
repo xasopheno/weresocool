@@ -1,12 +1,13 @@
-use num_rational::{Rational64};
-use std::str::FromStr;
+use num_rational::{Rational64}; use std::str::FromStr;
 use std::string::String;
 use crate::ast::Op;
 use crate::parser::Init;
 use crate::float_to_rational::helpers::*;
 use std::collections::HashMap;
 
-grammar<'table>(table: &'table mut HashMap<String, Op>);
+grammar<'table, 'err>(
+    table: &'table mut HashMap<String, Op>,
+);
 
 pub SoCool: Init = {
   <init: Point> <l: LetDefs> => { init },
@@ -28,7 +29,7 @@ LetDef: () = {
 
 Operation: Op = {
     <op1: ComposeOperation> ">" "FitLength" <op2: ComposeOperation> => Op::Compose { operations: vec![op1.clone(), Op::WithLengthRatioOf { with_length_of: Box::new(op2), main: Box::new(op1) }] },
-    <op: ComposeOperation> => op
+    <op: ComposeOperation> => op,
 }
 
 ComposeOperation: Op = {
