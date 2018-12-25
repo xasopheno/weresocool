@@ -113,7 +113,7 @@ pub trait Normalize {
 }
 
 pub trait GetLengthRatio {
-    fn get_length_ratio(&self, input: &NormalForm) -> Rational64;
+    fn get_length_ratio(&self) -> Rational64;
 }
 
 #[cfg(test)]

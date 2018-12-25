@@ -1,0 +1,56 @@
+{ f: 220, l: 1.0, g: 1.0, p: 0.0}
+
+overtones = {
+    O[
+    	(5/4, 3.0, 1.0, 1.0),
+      	(9/8, 0.0, 1.0, -1.0),
+      	(1/1, 2.0, 1.0, 0.5),
+      	(1/1, 0.0, 1.0, -0.5),
+  	]
+}
+
+thing1 = {
+	overtones |
+	Sequence [
+		AsIs,
+		Tm 9/8,
+		Tm 15/8,
+		Tm 2,
+	] 
+	| Length 0.5	
+}
+
+melody = {
+	overtones |
+	thing1 | 
+	Sequence [
+		AsIs,
+		Tm 9/8,
+		Tm 5/4,
+		Tm 4/3,
+	] | Length 0.25
+	| Sequence [AsIs, Reverse | Tm 9/8, Reverse, Tm 7/8, Reverse]
+}
+
+bass = {
+	O[
+      	(3/2, 0.0, 1.0, 0.0),
+      	(1/1, 0.0, 1.0, 0.0),
+  	] |
+	Sequence [
+		AsIs, 
+		Tm 7/8,
+		Tm 6/5, 
+		Tm 2/3
+	] 
+	| Tm 0.5
+	> FitLength melody
+}
+
+
+main = {
+	Overlay [
+		melody,
+		bass
+		] | Repeat 4
+}

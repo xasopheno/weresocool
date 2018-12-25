@@ -2,55 +2,133 @@
 
 overtones = {
     O[
-    	(5/4, 3.0, 1.0, 1.0),
-      	(9/8, 0.0, 1.0, -1.0),
+    	(7/3, 0.0, 0.1, 0.7),
+    	(7/3, 0.0, 0.1, -0.7),
+    	(7/4, 0.0, 0.1, 0.0),
+    	(3/2, 3.0, 1.0, 0.2),
+    	(3/2, 0.0, 1.0, -0.2),
       	(1/1, 2.0, 1.0, 0.5),
       	(1/1, 0.0, 1.0, -0.5),
   	]
 }
 
+overtones2 = {
+	O[
+		(9/4, 1.0, 0.2, 0.2),
+    	(9/4, 0.0, 0.2, -0.2),
+		(15/8, 4.0, 1.0, 0.2),
+    	(15/8, 0.0, 1.0, -0.2),
+    	(3/2, 3.0, 1.0, 0.2),
+    	(3/2, 0.0, 1.0, -0.2),
+      	(9/8, 2.0, 1.0, 1.0),
+      	(9/8, 0.0, 1.0, -1.0),
+      	(1/1, 2.0, 1.0, 0.5),
+      	(1/1, 0.0, 1.0, -0.5),
+  	]	
+}
+
 thing1 = {
 	overtones |
 	Sequence [
-		AsIs,
-		Tm 9/8,
-		Tm 15/8,
-		Tm 2,
+		AsIs | Length 3 | Gain 1.1,
+		Tm 3/2 | Length 3,
+		Tm 2 | Length 2,
 	] 
-	| Length 0.5	
-}
-
-melody = {
-	overtones |
-	thing1 | 
-	Sequence [
-		AsIs,
-		Tm 9/8,
-		Tm 5/4,
-		Tm 4/3,
-	] | Length 0.25
-	| Sequence [AsIs, Reverse | Tm 9/8, Reverse, Tm 7/8, Reverse]
+	| Tm 0.5
+	| Length 0.15
 }
 
 bass = {
-	O[
-      	(3/2, 0.0, 1.0, 0.0),
-      	(1/1, 0.0, 1.0, 0.0),
-  	] |
 	Sequence [
-		AsIs, 
-		Tm 7/8,
-		Tm 6/5, 
-		Tm 2/3
-	] 
-	| Tm 0.5
-	> FitLength melody
+		thing1 | Repeat 2,
+		thing1 | Sequence [Tm 6/5, Tm 7/6 | Reverse]
+	]
 }
 
+chords = {
+	overtones2 |
+	Sequence [
+		AsIs, 
+		Tm 7/4
+	] | Tm 2
+	| Gain 0.2 | Sequence [Repeat 3, Silence 3, Sequence [Tm 9/8, AsIs]]
+	| Sequence [AsIs, Tm 7/8]
+	> FitLength bass
+}
+
+highs = {
+	Sequence [
+		overtones2 
+		| Sequence [Silence 1, Repeat 3]
+		| Tm 6 | Gain 0.1
+  	] 
+  	| Sequence [Tm 7/8, AsIs]
+  	> FitLength bass	
+}
+
+highs2 = {
+	Sequence [
+		overtones2 
+		| Tm 4 | Gain 0.38
+  	] 
+  	| Sequence [Tm 7/8 | Repeat 2, AsIs, Tm 9/8]
+  	| Sequence [Silence 1, AsIs]
+  	> FitLength bass	
+}
+
+melody = {
+	O[
+      	(2/1, 11.0, 0.5, 0.8),
+      	(2/1, 0.0, 0.5, -0.8),
+      	(7/4, 9.0, 0.5, 0.4),
+      	(7/4, 0.0, 0.5, -0.4),
+      	(4/3, 5.0, 0.5, 0.0),
+      	(4/3, 0.0, 0.5, 0.0),
+      	(9/8, 0.0, 0.5, 1.0),
+      	(1/1, 0.0, 0.5, -1.0),
+		(9/16, 0.0, 0.5, 1.0),
+		(1/2, 0.0, 0.5, 1.0),
+		(1/4, 0.0, 0.5, 1.0),
+  	] |
+	Sequence [
+		Silence 1,
+		Tm 2,
+		Silence 1,
+		Tm 7/4,
+		Silence 1,
+		Tm 3/2,
+		Silence 0.5,
+		Tm 4/3,
+		Silence 1,
+		Tm 6/5,
+		Silence 1,
+		Tm 4/3,
+		Silence 1,
+		Tm 3/2 | Length 2,
+		Silence 0.5,
+	] | Gain 0.75 | Tm 4
+	| Sequence [AsIs, Silence 1]
+	> FitLength bass
+}
 
 main = {
-	Overlay [
-		melody,
-		bass
-		] | Repeat 4
+	Sequence [
+		Overlay [
+			highs, 
+			chords,
+			bass
+		] | Repeat 2,
+		Overlay [
+			highs2, 
+			chords,
+			bass,
+			melody,
+		],
+		Overlay [ 
+			highs | Tm 3/2, 
+			chords,
+			bass
+		],
+	]
+	| Repeat 8
 }

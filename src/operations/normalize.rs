@@ -3,7 +3,7 @@ pub mod normalize {
     extern crate rand;
     use instrument::oscillator::OscType;
     use num_rational::Ratio;
-    use operations::helpers::helpers::*;
+    use operations::helpers::*;
     use operations::{GetLengthRatio, NormalForm, Normalize};
     use rand::prelude::*;
     use socool_parser::ast::Op;
@@ -144,8 +144,8 @@ pub mod normalize {
                     with_length_of,
                     main,
                 } => {
-                    let target_length = with_length_of.get_length_ratio(input);
-                    let main_length = main.get_length_ratio(input);
+                    let target_length = with_length_of.get_length_ratio();
+                    let main_length = main.get_length_ratio();
                     let ratio = target_length / main_length;
                     let new_op = Op::Length { m: ratio };
 

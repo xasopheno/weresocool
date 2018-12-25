@@ -29,7 +29,7 @@ pub mod normalize_tests {
             osc_type: OscType::Noise,
         };
 
-        let result = &a * &b;
+        let result = a * b;
 
         let expected = PointOp {
             fm: Ratio::new(3, 1),
