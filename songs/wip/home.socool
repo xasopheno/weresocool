@@ -1,4 +1,4 @@
-{ f: 220, l: 1.2, g: 1.0, p: 0.0}
+{ f: 220, l: 1.2, g: 1, p: 0}
 
 overtones = {
     O[
@@ -240,10 +240,91 @@ next = {
 	]	
 }
 
+after_left_overtones = {
+    O[
+    	(2/1, 0.0, 1/2, 0),
+    	(3/2, 0.0, 1/2, 0),
+      	(5/8, 0.0, 1/2, 0),
+      	(9/8, 2.0, 1, 0),
+      	(1/1, 0.0, 1, 0),
+      	(1/2, 0.0, 1, 0),
+      	(1/2, 0.0, 1, 0),
+      	(1/4, 0.0, 1, 0),
+  	]
+}
+
+after = {
+	after_left_overtones |	
+	Sequence [
+		Tm 2, 
+		Tm 15/8, 
+		Tm 8/5, 
+		Tm 3/2, 
+		-- Tm 4/3, 
+		Tm 5/4, 
+		Tm 25/24,
+		AsIs,
+		Tm 2/3 | Length 3, 
+		Tm 3/4 | Length 3,
+		AsIs | Length 6,
+	] 
+	| Sequence [
+		Tm 2, 
+		Tm 4/3,
+		Tm 7/4
+	] | Length 1/11
+	| Overlay [
+		AsIs | PanA -1, 
+		Sequence [Silence 1/12, Tm 5/4] | PanA 1,
+	]
+	| Sequence [
+		AsIs, 
+		Tm 7/8 | Length 4/5| PanM -1/4,
+		Tm 6/5 | Length 1/2 | Reverse | Sequence [AsIs | Gain 1/2 | PanM -1/2, Tm 3/2, Gain 1/4 | PanM -1] 
+	]
+}
+
+after_melody = {
+    O[
+      	(4/1, 0.0, 1/8, 0.0),
+    	(3/1, 7.0, 1/4, -0.2),
+      	(3/1, 0.0, 1/4, 0.2),
+      	(1/1, 2.0, 1, 0.5),
+      	(1/1, 0.0, 1, -0.5),
+  	] |
+	Sequence [
+		AsIs, 
+		Tm 5/4, 
+		Tm 3/2,
+		Tm 4/3, 
+		Tm 5/4, 
+		Tm 9/8, 
+		Tm 15/16,
+		Tm 5/6, 
+		Tm 15/16,
+		AsIs, 
+		Tm 5/4 | Length 2,
+		Tm 3/4,
+		Tm 15/16,
+		Tm 9/8,
+		Tm 4/3,
+		Tm 5/4, 
+		Tm 9/8,
+		AsIs | Length 6 
+	] | Tm 2 
+	| ModulateBy [Sequence [AsIs, Gain 2/3, Gain 1/3] | Repeat 6]
+	| Sequence [Repeat 2, Overlay [AsIs, Tm 1/2] | Repeat 2, AsIs] 
+	> FitLength after
+}
+
 main = {
 	Sequence [
 		intro,
 		Silence 1/4,
-		Tm 9/8 | next
+		Tm 6/5 | next,
+		Gain 3 | Overlay [
+			after | Gain 1/6,
+			Sequence [Silence 1, after_melody]
+		]
 	]
 }
