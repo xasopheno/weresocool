@@ -11,7 +11,8 @@ grammar<'table, 'err>(
 );
 
 pub SoCool: Init = {
-  <init: Point> <l: LetDefs> => { init }
+  <init: Point>
+  <l: LetDefs> => { init }
 }
 
 Point: Init = {
@@ -65,7 +66,7 @@ BaseOperation: Op = {
     "Overlay" "[" <operations: Operations> "]" => Op::Overlay { operations: operations },
     "ModulateBy" "[" <operations: Operations> "]" => Op::ModulateBy { operations: operations },
     "O" "[" <o: Overtones> "]" => Op::Overlay { operations: o },
-    <id: Name> => { table.get(&id).unwrap().clone() },
+    <id: Import> => { table.get(&id[0]).unwrap().clone() },
 };
 
 Overtone: Op = {
@@ -96,6 +97,11 @@ Comma<T>: Vec<T> = {
         }
     }
 };
+
+Import: Vec<String> = {
+    <a: Name>"."<b: Name> => vec![a],
+    <a: Name> => vec![a]
+}
 
 Lets<T>: Vec<T> = {
   <v:(<T>)*> => v
