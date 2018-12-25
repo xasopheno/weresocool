@@ -66,7 +66,13 @@ BaseOperation: Op = {
     "Overlay" "[" <operations: Operations> "]" => Op::Overlay { operations: operations },
     "ModulateBy" "[" <operations: Operations> "]" => Op::ModulateBy { operations: operations },
     "O" "[" <o: Overtones> "]" => Op::Overlay { operations: o },
-    <id: Import> => { table.get(&id[0]).unwrap().clone() },
+    <id_vec: Import> => {
+        match id_vec.len() {
+            1 => table.get(&id_vec[0]).unwrap().clone(),
+            2 => table.get(&id_vec[1]).unwrap().clone(),
+            _ => panic!("Only one dot allowed in imports.")
+        }
+    },
 };
 
 Overtone: Op = {
@@ -99,7 +105,7 @@ Comma<T>: Vec<T> = {
 };
 
 Import: Vec<String> = {
-    <a: Name>"."<b: Name> => vec![a],
+    <a: Name>"."<b: Name> => vec![a, b],
     <a: Name> => vec![a]
 }
 

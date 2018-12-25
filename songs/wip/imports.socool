@@ -1,4 +1,4 @@
--- import std 
+-- import std
 -- import template
 
 { f: 220, l: 1, g: 1, p: 0}
