@@ -73,7 +73,7 @@ pub fn parse_file(
     for file in imports_needed {
         //        let filename = get_filename_from_import_string();
         //        let import_as = get_import_name();
-        let filename = "../songs/wip/test.socool";
+        let filename = "songs/wip/test.socool";
         let import_as = "test".to_string();
         let parsed_composition = parse_file(
             &filename.to_string(),
