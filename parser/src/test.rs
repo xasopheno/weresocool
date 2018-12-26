@@ -1,7 +1,7 @@
 pub mod test {
     extern crate num_rational;
     use num_rational::{Ratio, Rational};
-    use socool_parser::ast::{Op};
+    use socool_parser::ast::Op;
     use socool_parser::parser::*;
     use std::collections::HashMap;
 
@@ -45,42 +45,72 @@ pub mod test {
     fn tm_test() {
         let mut parse_str = mock_init();
         parse_str.push_str("Tm 3/2");
-        test_parsed_operation(parse_str, Op::TransposeM { m: Ratio::new(3,2)});
+        test_parsed_operation(
+            parse_str,
+            Op::TransposeM {
+                m: Ratio::new(3, 2),
+            },
+        );
     }
 
     #[test]
     fn ta_test() {
         let mut parse_str = mock_init();
         parse_str.push_str("Ta 2.0");
-        test_parsed_operation(parse_str, Op::TransposeA { a: Ratio::new(2, 1) });
+        test_parsed_operation(
+            parse_str,
+            Op::TransposeA {
+                a: Ratio::new(2, 1),
+            },
+        );
     }
 
     #[test]
     fn pan_a_test() {
         let mut parse_str = mock_init();
         parse_str.push_str("PanA 2.0");
-        test_parsed_operation(parse_str, Op::PanA { a: Ratio::new(2, 1)  });
+        test_parsed_operation(
+            parse_str,
+            Op::PanA {
+                a: Ratio::new(2, 1),
+            },
+        );
     }
 
     #[test]
     fn pan_m_test() {
         let mut parse_str = mock_init();
         parse_str.push_str("PanM 3.0/2.0");
-        test_parsed_operation(parse_str, Op::PanM { m: Ratio::new(3, 2)  });
+        test_parsed_operation(
+            parse_str,
+            Op::PanM {
+                m: Ratio::new(3, 2),
+            },
+        );
     }
 
     #[test]
     fn gain_test() {
         let mut parse_str = mock_init();
         parse_str.push_str("Gain 0.25");
-        test_parsed_operation(parse_str, Op::Gain { m: Ratio::new(1, 4)  });
+        test_parsed_operation(
+            parse_str,
+            Op::Gain {
+                m: Ratio::new(1, 4),
+            },
+        );
     }
 
     #[test]
     fn length_test() {
         let mut parse_str = mock_init();
         parse_str.push_str("Length 0.5");
-        test_parsed_operation(parse_str, Op::Length { m: Ratio::new(1, 2)  });
+        test_parsed_operation(
+            parse_str,
+            Op::Length {
+                m: Ratio::new(1, 2),
+            },
+        );
     }
 
     #[test]
@@ -111,7 +141,12 @@ pub mod test {
         test_parsed_operation(
             parse_str,
             Op::Sequence {
-                operations: vec![Op::AsIs, Op::TransposeM { m: Ratio::new(3, 2)  }],
+                operations: vec![
+                    Op::AsIs,
+                    Op::TransposeM {
+                        m: Ratio::new(3, 2),
+                    },
+                ],
             },
         );
     }
@@ -130,7 +165,12 @@ pub mod test {
         test_parsed_operation(
             parse_str,
             Op::Overlay {
-                operations: vec![Op::AsIs, Op::TransposeM { m: Ratio::new(3, 2)  }],
+                operations: vec![
+                    Op::AsIs,
+                    Op::TransposeM {
+                        m: Ratio::new(3, 2),
+                    },
+                ],
             },
         );
     }
@@ -150,18 +190,34 @@ pub mod test {
                 operations: vec![
                     Op::Compose {
                         operations: vec![
-                            Op::TransposeM { m: Ratio::new(3, 2)  },
-                            Op::TransposeA { a: Ratio::new(3, 1)  },
-                            Op::Gain { m: Ratio::new(1, 1)  },
-                            Op::PanA { a: Ratio::new(3, 10)  },
+                            Op::TransposeM {
+                                m: Ratio::new(3, 2),
+                            },
+                            Op::TransposeA {
+                                a: Ratio::new(3, 1),
+                            },
+                            Op::Gain {
+                                m: Ratio::new(1, 1),
+                            },
+                            Op::PanA {
+                                a: Ratio::new(3, 10),
+                            },
                         ],
                     },
                     Op::Compose {
                         operations: vec![
-                            Op::TransposeM { m: Ratio::new(1, 1)  },
-                            Op::TransposeA { a: Ratio::new(0, 1)  },
-                            Op::Gain { m: Ratio::new(1, 2)  },
-                            Op::PanA { a: Ratio::new(0, 1)  },
+                            Op::TransposeM {
+                                m: Ratio::new(1, 1),
+                            },
+                            Op::TransposeA {
+                                a: Ratio::new(0, 1),
+                            },
+                            Op::Gain {
+                                m: Ratio::new(1, 2),
+                            },
+                            Op::PanA {
+                                a: Ratio::new(0, 1),
+                            },
                         ],
                     },
                 ],
@@ -189,7 +245,14 @@ pub mod test {
         assert_eq!(
             *thing,
             Op::Compose {
-                operations: vec![Op::TransposeM { m: Ratio::new(3, 2)  }, Op::Gain { m: Ratio::new(3, 10)  }]
+                operations: vec![
+                    Op::TransposeM {
+                        m: Ratio::new(3, 2)
+                    },
+                    Op::Gain {
+                        m: Ratio::new(3, 10)
+                    }
+                ]
             }
         )
     }
@@ -254,8 +317,12 @@ pub mod test {
                         operations: vec![
                             Op::Sequence {
                                 operations: vec![
-                                    Op::TransposeM { m: Ratio::new(5, 4)  },
-                                    Op::TransposeM { m: Ratio::new(3, 2)  }
+                                    Op::TransposeM {
+                                        m: Ratio::new(5, 4)
+                                    },
+                                    Op::TransposeM {
+                                        m: Ratio::new(3, 2)
+                                    }
                                 ]
                             },
                             Op::Sequence {
@@ -269,8 +336,12 @@ pub mod test {
                                 Op::AsIs,
                                 Op::Compose {
                                     operations: vec![
-                                        Op::TransposeM { m: Ratio::new(3, 2)  },
-                                        Op::Length { m: Ratio::new(2, 1)  }
+                                        Op::TransposeM {
+                                            m: Ratio::new(3, 2)
+                                        },
+                                        Op::Length {
+                                            m: Ratio::new(2, 1)
+                                        }
                                     ]
                                 }
                             ]
@@ -279,8 +350,12 @@ pub mod test {
                             operations: vec![
                                 Op::Sequence {
                                     operations: vec![
-                                        Op::TransposeM { m: Ratio::new(5, 4)  },
-                                        Op::TransposeM { m: Ratio::new(3, 2)  }
+                                        Op::TransposeM {
+                                            m: Ratio::new(5, 4)
+                                        },
+                                        Op::TransposeM {
+                                            m: Ratio::new(3, 2)
+                                        }
                                     ]
                                 },
                                 Op::Sequence {
