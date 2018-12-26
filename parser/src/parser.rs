@@ -31,7 +31,6 @@ pub struct ParsedComposition {
 pub fn parse_file(
     filename: &String,
     parse_table: Option<ParseTable>,
-    import_as: Option<String>,
 ) -> ParsedComposition {
     let mut table = if parse_table.is_some() {
         parse_table.unwrap()
@@ -75,14 +74,19 @@ pub fn parse_file(
         //        let filename = get_filename_from_import_string();
         //        let import_as = get_import_name();
         let filename = "../songs/wip/test.socool";
-        let import_as = "test";
+        let import_as = "test".to_string();
         let parsed_composition = parse_file(
             &filename.to_string(),
             Some(table.clone()),
-            Some(import_as.to_string()),
         );
 
-        table = parsed_composition.table;
+        for (key, val) in parsed_composition.table {
+            let mut name = import_as.clone();
+            name.push('.');
+            name.push_str(&key);
+            table.insert(name, val);
+        }
+
     }
 
     let init = socool::SoCoolParser::new().parse(&mut table, &composition);

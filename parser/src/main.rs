@@ -16,7 +16,7 @@ fn main() {
         panic!("Wrong number of arguments.")
     }
 
-    let parsed = parse_file(filename, None, None);
+    let parsed = parse_file(filename, None);
 
     for (key, val) in parsed.table.iter() {
         println!("\n Name: {:?}", key);

@@ -69,7 +69,12 @@ BaseOperation: Op = {
     <id_vec: Import> => {
         match id_vec.len() {
             1 => table.get(&id_vec[0]).unwrap().clone(),
-            2 => table.get(&id_vec[1]).unwrap().clone(),
+            2 => {
+                let mut name = id_vec[0].clone();
+                name.push('.');
+                name.push_str(&id_vec[1].clone());
+                table.get(&name).unwrap().clone()
+            },
             _ => panic!("Only one dot allowed in imports.")
         }
     },
