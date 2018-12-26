@@ -3,6 +3,7 @@ extern crate socool_parser;
 use colored::*;
 use socool_parser::parser::*;
 use std::env;
+use regex::Regex;
 
 fn main() {
     let args: Vec<String> = env::args().collect();
@@ -16,6 +17,7 @@ fn main() {
         panic!("Wrong number of arguments.")
     }
 
+    let re = Regex::new(r"^\$").unwrap();
     let parsed = parse_file(filename, None);
 
     for (key, val) in parsed.table.iter() {

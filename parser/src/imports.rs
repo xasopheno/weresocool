@@ -15,6 +15,10 @@ fn test_data() -> Vec<String> {
     vec![import_str, import_as_str, not_import_as_str, not_import]
 }
 
+//fn get_import_name(s: String) {
+//
+//}
+
 #[test]
 fn test_import_strings() {
     let lines = test_data();
