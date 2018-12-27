@@ -33,7 +33,7 @@ pub mod test {
         assert_eq!(
             init,
             Init {
-                f: Ratio::from_integer(220),
+                f: Ratio::from_integer(200),
                 l: Ratio::from_integer(1),
                 g: Ratio::from_integer(1),
                 p: Ratio::from_integer(0),
@@ -80,7 +80,7 @@ pub mod test {
     #[test]
     fn pan_m_test() {
         let mut parse_str = mock_init();
-        parse_str.push_str("PanM 3.0/2.0");
+        parse_str.push_str("PanM 3/2");
         test_parsed_operation(
             parse_str,
             Op::PanM {
