@@ -29,7 +29,7 @@ fn main() -> Result<(), pa::Error> {
     let main = parsed.table.get("main").unwrap();
     let init = parsed.init;
 
-    for (name, op) in parsed.table.clone()  {
+    for (name, op) in parsed.table.clone() {
         println!("{:?}", name);
     }
 

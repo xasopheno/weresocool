@@ -23,11 +23,16 @@ pub mod test {
         assert_eq!(*main, expected);
     }
 
+//    #[test]
+//    fn test_get_filepath_import_name() {
+//
+//    }
+
     #[test]
-    fn test_filename() {
+    fn test_get_import_name() {
         let tests = vec![
-            "import songs/wip/test.socool as test".to_string(),
-            "import ../songs/test.socool".to_string(),
+            "import songs/wip/test.socool  as test".to_string(),
+            "import ../songs/test.socool  ".to_string(),
             "import test.socool".to_string(),
         ];
 
@@ -42,9 +47,9 @@ pub mod test {
     #[test]
     fn test_get_filepath() {
         let tests = vec![
-            "import songs/wip/test.socool as test".to_string(),
+            "import  songs/wip/test.socool  as test ".to_string(),
             "import ../songs/test.socool".to_string(),
-            "import test.socool".to_string(),
+            "import  test.socool".to_string(),
         ];
 
         let result: Vec<String> = tests
