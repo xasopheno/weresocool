@@ -25,10 +25,9 @@ fn get_filename_or_as_from_path(s: String) -> String {
     result
 }
 
-
 fn get_filepath(s: String) -> String {
     if !is_as_import(s.clone()) {
-       s
+        s
     } else {
         let split: Vec<&str> = s.split('/').collect();
         let split_len = split.len();

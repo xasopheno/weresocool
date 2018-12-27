@@ -2,7 +2,7 @@ lalrpop_mod!(pub socool);
 extern crate colored;
 extern crate num_rational;
 use crate::ast::*;
-use crate::imports::{is_import, get_import_name};
+use crate::imports::{is_import, get_import_name, get_filepath};
 use colored::*;
 use num_rational::Rational64;
 use std::cmp;
@@ -71,10 +71,9 @@ pub fn parse_file(
 
     println!("{:#?}", imports_needed);
     for import in imports_needed {
-//        let filename = get_filename_from_import_string();
+        let filename = get_filepath(import.clone());
         let import_as = get_import_name(import);
-
-        let filename = "../songs/wip/test.socool";
+        println!("{:?} {:?}", filename, import_as);
         let parsed_composition = parse_file(
             &filename.to_string(),
             Some(table.clone()),
