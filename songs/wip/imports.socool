@@ -1,4 +1,4 @@
-import test.socool
+import songs/wip/test.socool
 
 { f: 220, l: 1, g: 1, p: 0}
 
@@ -12,7 +12,7 @@ danny = {
 		Tm 9/8, 
 		Tm 3
 	] 
-	| Length 0.25	
+	| Length 1.0	
 }
 
 main = {

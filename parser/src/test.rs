@@ -4,6 +4,7 @@ pub mod test {
     use socool_parser::ast::Op;
     use socool_parser::parser::*;
     use std::collections::HashMap;
+    use socool_parser::imports::{get_filepath, get_import_name};
 
     fn mock_init() -> (String) {
         "{ f: 200, l: 1.0, g: 1.0, p: 0.0 }
@@ -21,6 +22,48 @@ pub mod test {
         let main = table.get(&"main".to_string()).unwrap();
         assert_eq!(*main, expected);
     }
+
+    #[test]
+    fn test_filename() {
+        let tests = vec![
+            "import songs/wip/test.socool as test".to_string(),
+            "import ../songs/test.socool".to_string(),
+            "import test.socool".to_string(),
+        ];
+
+        let result: Vec<String> = tests
+            .iter()
+            .map(|test| get_import_name(test.to_string()))
+            .collect();
+        println!("{:?}", result);
+        assert_eq!(result, vec!["test", "test", "test",])
+    }
+
+    #[test]
+    fn test_get_filepath() {
+        let tests = vec![
+            "import songs/wip/test.socool as test".to_string(),
+            "import ../songs/test.socool".to_string(),
+            "import test.socool".to_string(),
+        ];
+
+        let result: Vec<String> = tests
+            .iter()
+            .map(|test| get_filepath(test.to_string()))
+            .collect();
+
+        println!("{:?}", result);
+
+        assert_eq!(
+            result,
+            vec![
+                "songs/wip/test.socool",
+                "../songs/test.socool",
+                "test.socool"
+            ]
+        )
+    }
+
 
     #[test]
     fn init_test() {

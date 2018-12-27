@@ -1,9 +1,9 @@
 extern crate colored;
 extern crate socool_parser;
 use colored::*;
+use regex::Regex;
 use socool_parser::parser::*;
 use std::env;
-use regex::Regex;
 
 fn main() {
     let args: Vec<String> = env::args().collect();

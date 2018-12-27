@@ -10,10 +10,10 @@ fn get_filename_or_as_from_path(s: String) -> String {
 }
 
 pub fn get_filepath(s: String) -> String {
+    let s = s.replace("import ", "");
     if !is_as_import(s.clone()) {
-        s.replace("import ", "")
+        s
     } else {
-        let s = s.replace("import ", "");
         let split: Vec<&str> = s.split('/').collect();
         let split_len = split.len();
         let mut path = split[0..split_len - 1].join("/").to_string();
@@ -26,30 +26,6 @@ pub fn get_filepath(s: String) -> String {
     }
 }
 
-#[test]
-fn test_get_filepath() {
-    let tests = vec![
-        "import songs/wip/test.socool as test".to_string(),
-        "import ../songs/test.socool".to_string(),
-        "import test.socool".to_string(),
-    ];
-
-    let result: Vec<String> = tests
-        .iter()
-        .map(|test| get_filepath(test.to_string()))
-        .collect();
-
-    println!("{:?}", result);
-
-    assert_eq!(
-        result,
-        vec![
-            "songs/wip/test.socool",
-            "../songs/test.socool",
-            "test.socool"
-        ]
-    )
-}
 
 pub fn is_as_import(s: String) -> bool {
     s.trim();
@@ -73,23 +49,6 @@ pub fn get_import_name(s: String) -> String {
     }
 }
 
- #[test]
-fn test_filename() {
-    let tests = vec![
-        "import songs/wip/test.socool as test".to_string(),
-        "import ../songs/test.socool".to_string(),
-        "import test.socool".to_string(),
-    ];
-
-    let result: Vec<String> = tests
-        .iter()
-        .map(|test| {
-            get_import_name(test.to_string())
-        })
-        .collect();
-    println!("{:?}", result);
-    assert_eq!(result, vec!["test", "test", "test",])
-}
 
 fn test_data() -> Vec<String> {
     let import_str = "   import standard ".to_string();

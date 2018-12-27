@@ -8,7 +8,7 @@ overtones = {
       	(9/8, 0, 1, -1),
       	(1/1, 2, 1, 1/2),
       	(1/1, 0, 1, -1/2),
-  	]
+  	] | ModulateBy [std.fade_out]
 }
 
 main = {

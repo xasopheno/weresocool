@@ -2,7 +2,7 @@ lalrpop_mod!(pub socool);
 extern crate colored;
 extern crate num_rational;
 use crate::ast::*;
-use crate::imports::{is_import, get_import_name, get_filepath};
+use crate::imports::{get_filepath, get_import_name, is_import};
 use colored::*;
 use num_rational::Rational64;
 use std::cmp;
@@ -28,10 +28,7 @@ pub struct ParsedComposition {
     pub table: ParseTable,
 }
 
-pub fn parse_file(
-    filename: &String,
-    parse_table: Option<ParseTable>,
-) -> ParsedComposition {
+pub fn parse_file(filename: &String, parse_table: Option<ParseTable>) -> ParsedComposition {
     let mut table = if parse_table.is_some() {
         parse_table.unwrap()
     } else {
@@ -74,10 +71,7 @@ pub fn parse_file(
         let filename = get_filepath(import.clone());
         let import_as = get_import_name(import);
         println!("{:?} {:?}", filename, import_as);
-        let parsed_composition = parse_file(
-            &filename.to_string(),
-            Some(table.clone()),
-        );
+        let parsed_composition = parse_file(&filename.to_string(), Some(table.clone()));
 
         for (key, val) in parsed_composition.table {
             let mut name = import_as.clone();
@@ -85,7 +79,6 @@ pub fn parse_file(
             name.push_str(&key);
             table.insert(name, val);
         }
-
     }
 
     let init = socool::SoCoolParser::new().parse(&mut table, &composition);
