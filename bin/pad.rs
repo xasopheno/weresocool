@@ -42,6 +42,7 @@ fn get_filepath(s: String) -> String {
     }
 }
 
+#[test]
 fn test_filepath() {
     let tests = vec![
         "songs/wip/test.socool as test".to_string(),
