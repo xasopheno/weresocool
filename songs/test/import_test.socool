@@ -8,7 +8,6 @@ danny = {
 		AsIs,
 		Tm 2,
 	] 
-	| Length 1.0	
 }
 
 main = {
