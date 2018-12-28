@@ -2,16 +2,9 @@
 
 fade_out = {
 	Sequence [
-		Gain 10/10, 
-		Gain 9/10, 
-		Gain 8/10, 
-		Gain 7/10,
-		Gain 6/10,
-		Gain 5/10, 
-		Gain 4/10, 
-		Gain 3/10,
-		Gain 2/10, 
-		Gain 1/10	
+		Gain 3/3, 
+		Gain 2/3,
+		Gain 1/3,
 	]
 }
 

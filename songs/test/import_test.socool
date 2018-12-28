@@ -7,12 +7,7 @@ danny = {
 	Sequence [
 		AsIs,
 		Tm 2,
-		Tm 3/2, 
-		Tm 2,
-		Tm 9/8, 
-		Tm 3
 	] 
-	| Length 1.0	
 }
 
 main = {
