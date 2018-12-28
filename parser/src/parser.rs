@@ -66,11 +66,9 @@ pub fn parse_file(filename: &String, parse_table: Option<ParseTable>) -> ParsedC
         }
     }
 
-    println!("{:#?}", imports_needed);
     for import in imports_needed {
         let filename = get_filepath(import.clone());
         let import_as = get_import_name(import);
-        println!("{:?} {:?}", filename, import_as);
         let parsed_composition = parse_file(&filename.to_string(), Some(table.clone()));
 
         for (key, val) in parsed_composition.table {

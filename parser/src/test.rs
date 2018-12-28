@@ -2,9 +2,9 @@ pub mod test {
     extern crate num_rational;
     use num_rational::{Ratio, Rational};
     use socool_parser::ast::Op;
+    use socool_parser::imports::{get_filepath, get_import_name, is_as_import, is_import};
     use socool_parser::parser::*;
     use std::collections::HashMap;
-    use socool_parser::imports::{get_filepath, get_import_name};
 
     fn mock_init() -> (String) {
         "{ f: 200, l: 1.0, g: 1.0, p: 0.0 }
@@ -23,10 +23,30 @@ pub mod test {
         assert_eq!(*main, expected);
     }
 
-//    #[test]
-//    fn test_get_filepath_import_name() {
-//
-//    }
+    fn test_data() -> Vec<String> {
+        let import_str = "   import standard ".to_string();
+        let import_as_str = "import  standard as std".to_string();
+        let not_import_as_str = "import standardasstd  ".to_string();
+        let not_import = "not an import".to_string();
+        vec![import_str, import_as_str, not_import_as_str, not_import]
+    }
+
+    #[test]
+    fn test_import_strings() {
+        let lines = test_data();
+        let starts_with_import: Vec<bool> = lines
+            .iter()
+            .map(|line| is_import(line.to_string()))
+            .collect();
+
+        let is_as_import: Vec<bool> = lines
+            .iter()
+            .map(|line| is_as_import(line.to_string()))
+            .collect();
+
+        assert_eq!(starts_with_import, vec![true, true, true, false]);
+        assert_eq!(is_as_import, vec![false, true, false, false]);
+    }
 
     #[test]
     fn test_get_import_name() {
@@ -57,8 +77,6 @@ pub mod test {
             .map(|test| get_filepath(test.to_string()))
             .collect();
 
-        println!("{:?}", result);
-
         assert_eq!(
             result,
             vec![
@@ -68,7 +86,6 @@ pub mod test {
             ]
         )
     }
-
 
     #[test]
     fn init_test() {
