@@ -29,9 +29,9 @@ fn main() -> Result<(), pa::Error> {
     let main = parsed.table.get("main").unwrap();
     let init = parsed.init;
 
-    for (name, op) in parsed.table.clone() {
-        println!("{:?}", name);
-    }
+    //    for (name, op) in parsed.table.clone() {
+    //        println!("{:?}", name);
+    //    }
 
     if args.is_present("print") {
         let composition = render(main, init);

@@ -75,6 +75,7 @@ pub fn parse_file(filename: &String, parse_table: Option<ParseTable>) -> ParsedC
             let mut name = import_as.clone();
             name.push('.');
             name.push_str(&key);
+            println!("{:?}", name);
             table.insert(name, val);
         }
     }
