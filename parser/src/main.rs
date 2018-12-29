@@ -1,7 +1,6 @@
 extern crate colored;
 extern crate socool_parser;
 use colored::*;
-use regex::Regex;
 use socool_parser::parser::*;
 use std::env;
 
@@ -17,15 +16,11 @@ fn main() {
         panic!("Wrong number of arguments.")
     }
 
-    let re = Regex::new(r"^\$").unwrap();
     let parsed = parse_file(filename, None);
 
     for (key, val) in parsed.table.iter() {
         println!("\n Name: {:?}", key);
-        //        println!("\nop: {:?}", val);
     }
-
-    //    println!("\n Main: {:?}", parsed.table.get("main").unwrap());
 }
 
 #[cfg(test)]

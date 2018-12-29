@@ -3,7 +3,6 @@ use colored::*;
 use std::cmp;
 use std::sync::{Arc, Mutex};
 
-
 pub fn handle_parse_error(location: Arc<Mutex<Vec<usize>>>, composition: &String) {
     let start_offset = 125;
     let end_offset = 50;
