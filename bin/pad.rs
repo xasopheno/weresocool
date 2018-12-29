@@ -10,8 +10,6 @@ fn main() {
 
     let joined = string_list.join(".");
     assert_eq!(joined, "this.thing".to_string());
-
-    test_filepath();
 }
 
 pub fn is_as_import(s: String) -> bool {
@@ -41,27 +39,3 @@ fn get_filepath(s: String) -> String {
     }
 }
 
-#[test]
-fn test_filepath() {
-    let tests = vec![
-        "songs/wip/test.socool as test".to_string(),
-        "../songs/test.socool".to_string(),
-        "test.socool".to_string(),
-    ];
-
-    let result: Vec<String> = tests
-        .iter()
-        .map(|test| get_filepath(test.to_string()))
-        .collect();
-
-    println!("{:?}", result);
-
-    assert_eq!(
-        result,
-        vec![
-            "songs/wip/test.socool",
-            "../songs/test.socool",
-            "test.socool"
-        ]
-    )
-}
