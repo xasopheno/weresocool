@@ -70,7 +70,6 @@ pub mod test {
         .map(|(a, b)| ((a.to_string(), b.to_string())))
         .collect();
 
-        println!("{:?}", result);
         assert_eq!(result, expected)
     }
 
