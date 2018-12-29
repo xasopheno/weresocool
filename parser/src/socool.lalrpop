@@ -67,15 +67,27 @@ BaseOperation: Op = {
     "ModulateBy" "[" <operations: Operations> "]" => Op::ModulateBy { operations: operations },
     "O" "[" <o: Overtones> "]" => Op::Overlay { operations: o },
     <id_vec: Import> => {
-        match id_vec.len() {
-            1 => table.get(&id_vec[0]).unwrap().clone(),
+        let result = match id_vec.len() {
+            1 => {
+                    table.get(&id_vec[0])
+                },
             2 => {
                 let mut name = id_vec[0].clone();
                 name.push('.');
                 name.push_str(&id_vec[1].clone());
-                table.get(&name).unwrap().clone()
+                table.get(&name)
             },
             _ => panic!("Only one dot allowed in imports.")
+
+        };
+
+        match result {
+            Some(result) => { result.clone() },
+            None => {
+                println!("Not able to find {:?}", id_vec);
+                panic!("Id not found");
+
+            }
         }
     },
 };
