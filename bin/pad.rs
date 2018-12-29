@@ -1,5 +1,5 @@
 extern crate weresocool;
 
 fn main() {
-    println!("Hello Scratch Pad");
+    println!("\nHello Danny's WereSoCool Scratch Pad");
 }

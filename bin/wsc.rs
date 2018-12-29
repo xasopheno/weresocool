@@ -25,7 +25,7 @@ fn main() -> Result<(), pa::Error> {
         _ => no_file_name(),
     }
 
-    let parsed = parse_file(&filename.unwrap().to_string());
+    let parsed = parse_file(&filename.unwrap().to_string(), None);
     let main = parsed.table.get("main").unwrap();
     let init = parsed.init;
 

@@ -2,7 +2,7 @@
 
 Make cool sounds. Impress your friends. 
 
-binaural, microtonal sonification 
+A language for binaural, microtonal composition built in Rust
 
 ## Install
 You'll need Rust and Cargo.
@@ -26,12 +26,12 @@ https://github.com/xasopheno/weresocool-parser/blob/master/src/socool.lalrpop
 ## Run
 Listen to something created with the framework
 
-`cargo run --release --bin wsc songs/drums.socool`
+`cargo run --release --bin wsc songs/wallace.socool`
 
 
 Run with `-p` flag to print a wav file.
 
-`cargo run --release --bin wsc songs/drums.socool -p`
+`cargo run --release --bin wsc songs/wallace.socool -p`
 
 I use `ffmpeg` to convert to `mp3`
 
@@ -46,7 +46,7 @@ To build the binary:
 
 and then you can parse and play files without having to build the binary each time.
 
-`./target/release/wsc songs/airplane.socool -p`
+`./target/release/wsc songs/wallace.socool -p`
 
 ## Usage
 
@@ -66,7 +66,9 @@ ARGS:
 ```
 
 ## Test
-`cargo test`
+To run tests for both WereSoCool and the WereSoCool parser, run:
+
+`./test_all.sh`
 
 Copyright (C) 2018 - Danny Meyer
 

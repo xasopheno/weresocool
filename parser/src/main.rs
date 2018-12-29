@@ -16,13 +16,11 @@ fn main() {
         panic!("Wrong number of arguments.")
     }
 
-    let parsed = parse_file(filename);
+    let parsed = parse_file(filename, None);
 
-    for (key, val) in parsed.table.iter() {
-        println!("\n Name: {:?} op: {:?}", key, val);
+    for (key, _val) in parsed.table.iter() {
+        println!("\n Name: {:?}", key);
     }
-
-    println!("\n Main: {:?}", parsed.table.get("main").unwrap());
 }
 
 #[cfg(test)]

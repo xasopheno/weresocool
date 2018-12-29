@@ -1,0 +1,21 @@
+import songs/test/import_test_2.socool
+
+{ f: 220, l: 1, g: 1, p: 0}
+
+danny = {
+	test.overtones |
+	Sequence [
+		AsIs,
+		Tm 2,
+		Tm 3/2, 
+		Tm 2,
+		Tm 9/8, 
+		Tm 3
+	] 
+	| Length 1.0	
+}
+
+main = {
+	danny
+}
+	

@@ -11,7 +11,8 @@ grammar<'table, 'err>(
 );
 
 pub SoCool: Init = {
-  <init: Point> <l: LetDefs> => { init }
+  <init: Point>
+  <l: LetDefs> => { init }
 }
 
 Point: Init = {
@@ -65,7 +66,30 @@ BaseOperation: Op = {
     "Overlay" "[" <operations: Operations> "]" => Op::Overlay { operations: operations },
     "ModulateBy" "[" <operations: Operations> "]" => Op::ModulateBy { operations: operations },
     "O" "[" <o: Overtones> "]" => Op::Overlay { operations: o },
-    <id: Name> => { table.get(&id).unwrap().clone() },
+    <id_vec: Import> => {
+        let result = match id_vec.len() {
+            1 => {
+                    table.get(&id_vec[0])
+                },
+            2 => {
+                let mut name = id_vec[0].clone();
+                name.push('.');
+                name.push_str(&id_vec[1].clone());
+                table.get(&name)
+            },
+            _ => panic!("Only one dot allowed in imports.")
+
+        };
+
+        match result {
+            Some(result) => { result.clone() },
+            None => {
+                println!("Not able to find {:?}", id_vec);
+                panic!("Id not found");
+
+            }
+        }
+    },
 };
 
 Overtone: Op = {
@@ -96,6 +120,11 @@ Comma<T>: Vec<T> = {
         }
     }
 };
+
+Import: Vec<String> = {
+    <a: Name>"."<b: Name> => vec![a, b],
+    <a: Name> => vec![a]
+}
 
 Lets<T>: Vec<T> = {
   <v:(<T>)*> => v

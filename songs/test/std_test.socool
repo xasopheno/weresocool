@@ -1,0 +1,14 @@
+{ f: 220, l: 1, g: 1, p: 0}
+
+fade_out = {
+	Sequence [
+		Gain 3/3, 
+		Gain 2/3,
+		Gain 1/3,
+	]
+}
+
+main = {
+	AsIs 	
+}
+	
