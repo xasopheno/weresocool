@@ -2,8 +2,8 @@ lalrpop_mod!(pub socool);
 extern crate colored;
 extern crate num_rational;
 use crate::ast::*;
-use crate::imports::{get_filepath, get_import_name, is_import};
 use crate::error_handling::handle_parse_error;
+use crate::imports::{get_filepath_and_import_name, is_import};
 use colored::*;
 use num_rational::Rational64;
 use std::collections::HashMap;
@@ -67,15 +67,13 @@ pub fn parse_file(filename: &String, parse_table: Option<ParseTable>) -> ParsedC
     }
 
     for import in imports_needed {
-        let filename = get_filepath(import.clone());
-        let import_as = get_import_name(import);
-        let parsed_composition = parse_file(&filename.to_string(), Some(table.clone()));
+        let (filepath, import_name) = get_filepath_and_import_name(import);
+        let parsed_composition = parse_file(&filepath.to_string(), Some(table.clone()));
 
         for (key, val) in parsed_composition.table {
-            let mut name = import_as.clone();
+            let mut name = import_name.clone();
             name.push('.');
             name.push_str(&key);
-            println!("{:?}", name);
             table.insert(name, val);
         }
     }

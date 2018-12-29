@@ -1,5 +1,6 @@
 pub fn get_filepath_and_import_name(s: String) -> (String, String) {
-    let s = s.replace("import", "");
+    let s = s.trim().to_string();
+    let s = s.replace("import ", "");
     let filepath = get_filepath(s.clone());
     let import_name = get_import_name(s.clone());
     (filepath, import_name)
@@ -15,14 +16,12 @@ pub fn is_as_import(s: String) -> bool {
 }
 
 fn get_import_name_from_path(s: String) -> String {
-    let s = s.replace("import ", "");
     let split: Vec<&str> = s.split('/').collect();
     let result = split[split.len() - 1].to_string();
     result.trim().to_string()
 }
 
 pub fn get_filepath(s: String) -> String {
-    let s = s.replace("import ", "");
     if !is_as_import(s.clone()) {
         s.trim().to_string()
     } else {

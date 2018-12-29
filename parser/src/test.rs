@@ -1,8 +1,8 @@
 pub mod test {
     extern crate num_rational;
-    use num_rational::{Ratio, Rational};
+    use num_rational::{Ratio};
     use socool_parser::ast::Op;
-    use socool_parser::imports::{get_filepath, get_import_name, is_as_import, is_import};
+    use socool_parser::imports::{get_filepath_and_import_name, is_as_import, is_import};
     use socool_parser::parser::*;
     use std::collections::HashMap;
 
@@ -27,7 +27,7 @@ pub mod test {
         let import_str = "   import standard ".to_string();
         let import_as_str = "import  standard as std".to_string();
         let not_import_as_str = "import standardasstd  ".to_string();
-        let not_import = "not an import".to_string();
+        let not_import = " not an  import".to_string();
         vec![import_str, import_as_str, not_import_as_str, not_import]
     }
 
@@ -49,42 +49,29 @@ pub mod test {
     }
 
     #[test]
-    fn test_get_import_name() {
+    fn test_get_filename_and_import_name() {
         let tests = vec![
-            "import songs/wip/test.socool  as test".to_string(),
+            "import songs/wip/test.socool  as other_name".to_string(),
             "import ../songs/test.socool  ".to_string(),
             "import test.socool".to_string(),
         ];
 
-        let result: Vec<String> = tests
+        let result: Vec<(String, String)> = tests
             .iter()
-            .map(|test| get_import_name(test.to_string()))
+            .map(|test| get_filepath_and_import_name(test.to_string()))
             .collect();
+
+        let expected: Vec<(String, String)> = vec![
+            ("songs/wip/test.socool", "other_name"),
+            ("../songs/test.socool", "test"),
+            ("test.socool", "test"),
+        ]
+        .iter()
+        .map(|(a, b)| ((a.to_string(), b.to_string())))
+        .collect();
+
         println!("{:?}", result);
-        assert_eq!(result, vec!["test", "test", "test",])
-    }
-
-    #[test]
-    fn test_get_filepath() {
-        let tests = vec![
-            "import  songs/wip/test.socool  as test ".to_string(),
-            "import ../songs/test.socool".to_string(),
-            "import  test.socool".to_string(),
-        ];
-
-        let result: Vec<String> = tests
-            .iter()
-            .map(|test| get_filepath(test.to_string()))
-            .collect();
-
-        assert_eq!(
-            result,
-            vec![
-                "songs/wip/test.socool",
-                "../songs/test.socool",
-                "test.socool"
-            ]
-        )
+        assert_eq!(result, expected)
     }
 
     #[test]

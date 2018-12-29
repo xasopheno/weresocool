@@ -51,5 +51,4 @@ pub fn handle_parse_error(location: Arc<Mutex<Vec<usize>>>, composition: &String
         lines.to_string().red().bold(),
         "broken".red().underline(),
     );
-
 }

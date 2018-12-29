@@ -18,7 +18,7 @@ fn main() {
 
     let parsed = parse_file(filename, None);
 
-    for (key, val) in parsed.table.iter() {
+    for (key, _val) in parsed.table.iter() {
         println!("\n Name: {:?}", key);
     }
 }
