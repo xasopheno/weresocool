@@ -1,6 +1,6 @@
 pub mod test {
     extern crate num_rational;
-    use num_rational::{Ratio};
+    use num_rational::Ratio;
     use socool_parser::ast::Op;
     use socool_parser::imports::{get_filepath_and_import_name, is_as_import, is_import};
     use socool_parser::parser::*;
