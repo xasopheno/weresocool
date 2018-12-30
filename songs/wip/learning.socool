@@ -81,7 +81,7 @@ shaker = {
       	(1/2, 0, 1/3, -1/2),
       	(1/8, 0, 1/3, 0),
   	] |
-	Gain 1/12 
+	Gain 1/8 
 	| Noise
 	| ModulateBy [Gain 3/3, Gain 2/3, Gain 1/3, Silence 7]
 	| Sequence [AsIs, Silence 1, Gain 3/4, Tm 2, Tm 1/2 | Gain 3/4]
@@ -91,13 +91,13 @@ shaker = {
 
 main = {
 	Sequence [
+		-- Overlay [
+		-- 	shaker,
+		-- 	bass
+		-- ],
 		Overlay [
 			shaker,
-			bass
-		],
-		Overlay [
-			shaker,
-			chords | Gain 1/2,
+			chords | Gain 1/8,
 			bass
 		] | Repeat 4,
 	]
