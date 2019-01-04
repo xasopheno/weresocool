@@ -1,7 +1,7 @@
 extern crate num_rational;
 use num_rational::Rational64;
 
-#[derive(Clone, PartialEq, Debug)]
+#[derive(Clone, PartialEq, Debug, Hash)]
 pub enum Op {
     AsIs,
     //

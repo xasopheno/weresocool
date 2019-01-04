@@ -78,7 +78,7 @@ pub fn parse_file(filename: &String, parse_table: Option<ParseTable>) -> ParsedC
         }
     }
 
-    let init = socool::SoCoolParser::new().parse(&mut table, &composition);
+    let init = socool::SoCoolParser::new().parse(&mut table , &composition);
 
     match init.clone() {
         Ok(init) => ParsedComposition { init, table },
