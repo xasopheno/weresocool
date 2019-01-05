@@ -1,0 +1,71 @@
+{ f: 250, l: 2, g: 1.0, p: 0.0}
+
+overtones = {
+    O[
+      	(2/1, 0, 1/2, 0),
+      	(3/2, 0, 1, 0),
+      	(1/1, 7, 1, 1/2),
+      	(1/1, 0, 1, -1/2),
+  	]
+}
+
+thing1 = {
+	Choice [
+		AsIs, 
+		AsIs,
+		AsIs,
+		AsIs,
+		AsIs,
+		AsIs,
+		AsIs,
+		AsIs,
+		Tm 5/4,
+		Tm 5/3 | Gain 1/2,
+		Tm 3/2, 
+		Tm 9/8,
+		Tm 15/8 | Gain 1/2,
+		Tm 4/3,
+		Tm 11/8,
+		Tm 6/5, 
+		Tm 7/6,
+		-- Silence 1, 
+		-- Silence 1, 
+		-- Silence 1, 
+		-- Silence 1, 
+	]
+}
+
+main = { 
+	Sequence [
+		overtones |
+		Overlay [
+			thing1 
+			| Choice [AsIs, Tm 2/3]
+			| Length 1/2 
+			> Repeat 16,
+
+			thing1
+			| Overlay [AsIs, Invert | Tm 2 | Gain 1/2]
+			| Tm 3 
+			| Gain 1/2
+			| Choice [PanA -1/8, PanA 1/8, Tm 7/8]
+			| Length 1/2
+			> Repeat 16,
+			
+		    O[
+		      	(8/1, 9, 1, 1/2),
+		      	(8/1, 0, 1, -1/2),
+		      	(1/1, 0, 1, 1/2),
+		      	(1/1, 0, 1, -1/2),
+		  	]
+		  	| Gain 1/4
+			| Tm 1/2 
+			| Choice [AsIs, Tm 1/2, Tm 2/3, Tm 3/4, Silence 1]
+			| Length 4
+			> Repeat 2 
+		] 
+		| Length 1/7
+		| Repeat 4
+		> Repeat 2 
+	] | Repeat 4
+}

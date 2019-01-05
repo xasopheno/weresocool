@@ -1,11 +1,12 @@
 use num_rational::{Rational64};
 use std::str::FromStr;
 use std::string::String;
-use crate::ast::Op;
+use crate::ast::{Op, is_choice_op};
 use crate::parser::Init;
 use crate::float_to_rational::helpers::*;
 use crate::error_handling::handle_id_error;
 use std::collections::HashMap;
+
 
 grammar<'table, 'err>(
     table: &'table mut HashMap<String, Op>,
@@ -31,9 +32,17 @@ LetDef: () = {
 }
 
 Operation: Op = {
-    <op1: ComposeOperation> ">" "FitLength" <op2: ComposeOperation> => Op::Compose { operations: vec![op1.clone(), Op::WithLengthRatioOf { with_length_of: Box::new(op2), main: Box::new(op1) }] },
-    <op1: ComposeOperation> ">" "Repeat" <i: Int> => {
-        Op::Compose { operations: vec![op1.clone()] }
+    <op1: Operation> ">" "FitLength" <op2: ComposeOperation> => Op::Compose { operations: vec![op1.clone(), Op::WithLengthRatioOf { with_length_of: Box::new(op2), main: Box::new(op1) }] },
+    <op1: Operation> ">" "Repeat" <i: Int> => {
+        let mut op = Op::AsIs;
+        if is_choice_op(op1.clone()) {
+            op = op1
+        }
+        let mut vec = Vec::new();
+        for x in 0..i {
+            vec.push(op.clone())
+        }
+        Op::Sequence { operations: vec }
     },
     <op: ComposeOperation> => op,
 }

@@ -77,7 +77,7 @@ pub fn is_choice_op(op: Op) -> bool {
                 Op::WithLengthRatioOf {
                     with_length_of,
                     main: _,
-                } => with_length_of.get_length_ratio(),
+                } => is_choice_op(*with_length_of),
 
                 Op::Sequence { operations }
                 | Op::ModulateBy { operations }
