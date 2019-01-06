@@ -20,6 +20,14 @@ use write::{write_composition_to_json, write_composition_to_wav};
 type PointOpSequences = Vec<Vec<PointOp>>;
 type NormEv = Vec<Vec<Event>>;
 type VecWav = Vec<StereoWaveform>;
+use std::collections::hash_map::DefaultHasher;
+use std::hash::{Hash, Hasher};
+
+fn calculate_hash<T: Hash>(t: &T) -> u64 {
+    let mut s = DefaultHasher::new();
+    t.hash(&mut s);
+    s.finish()
+}
 
 pub fn r_to_f64(r: Rational64) -> f64 {
     *r.numer() as f64 / *r.denom() as f64
@@ -34,15 +42,53 @@ pub fn event_from_init(init: Init) -> Event {
     )
 }
 
+#[derive(Clone, Debug, PartialEq)]
+struct CacheableVecPointOp {
+    hash: u64,
+    operations: Vec<PointOp>,
+}
+
+#[derive(Clone, Debug, PartialEq)]
+struct CacheableNormalForm {
+    operations: Vec<CacheableVecPointOp>,
+}
+
 pub fn render(composition: &Op, init: Init) -> StereoWaveform {
     let mut normal_form = NormalForm::init();
 
     println!("\nGenerating Composition ");
     composition.apply_to_normal_form(&mut normal_form);
 
+    let mut cachable_vecs: Vec<CacheableVecPointOp> = normal_form
+        .operations
+        .iter()
+        .map(|vec_point_op| CacheableVecPointOp {
+            operations: vec_point_op.to_vec(),
+            hash: calculate_hash(&vec_point_op),
+        })
+        .collect();
+
+    let mut cacheable_normal_form = CacheableNormalForm {
+        operations: cachable_vecs,
+    };
+
+    let vec_wav: Vec<StereoWaveform> = vec![];
+
+    for (i, vec) in cacheable_normal_form
+        .operations
+        .clone()
+        .iter_mut()
+        .enumerate()
+    {
+        if vec.hash == 0 {
+            println!("{} {:?}", i, vec.hash);
+            cacheable_normal_form.operations.remove(i);
+        }
+    }
+
     let e = event_from_init(init);
 
-    let norm_ev = generate_events(normal_form.operations, e);
+    let norm_ev = generate_events(cacheable_normal_form, e);
     let vec_wav = generate_waveforms(norm_ev);
     let mut result = sum_all_waveforms(vec_wav);
     result.normalize();
@@ -50,17 +96,17 @@ pub fn render(composition: &Op, init: Init) -> StereoWaveform {
     result
 }
 
-pub fn render_mic(composition: &Op, event: Event) -> StereoWaveform {
-    let mut normal_form = NormalForm::init();
-
-    composition.apply_to_normal_form(&mut normal_form);
-    let norm_ev = generate_events(normal_form.operations, event);
-    let vec_wav = generate_waveforms(norm_ev);
-    let mut result = sum_all_waveforms(vec_wav);
-    result.normalize();
-
-    result
-}
+//pub fn render_mic(composition: &Op, event: Event) -> StereoWaveform {
+//    let mut normal_form = NormalForm::init();
+//
+//    composition.apply_to_normal_form(&mut normal_form);
+//    let norm_ev = generate_events(normal_forms, event);
+//    let vec_wav = generate_waveforms(norm_ev);
+//    let mut result = sum_all_waveforms(vec_wav);
+//    result.normalize();
+//
+//    result
+//}
 
 pub fn to_wav(composition: StereoWaveform, filename: String) {
     banner("Printing".to_string(), filename);
@@ -68,26 +114,26 @@ pub fn to_wav(composition: StereoWaveform, filename: String) {
     printed("WAV".to_string());
 }
 
-pub fn to_json(composition: &Op, init: Init, filename: String) {
-    banner("JSONIFY-ing".to_string(), filename.clone());
-    let mut normal_form = NormalForm::init();
+//pub fn to_json(composition: &Op, init: Init, filename: String) {
+//    banner("JSONIFY-ing".to_string(), filename.clone());
+//    let mut normal_form = NormalForm::init();
+//
+//    println!("Generating Composition \n");
+//    composition.apply_to_normal_form(&mut normal_form);
+//
+//    let e = event_from_init(init);
+//
+//    let norm_ev = generate_events(normal_form.operations, e);
+//
+//    write_composition_to_json(norm_ev, &filename).expect("Writing to JSON failed");
+//    printed("JSON".to_string());
+//}
 
-    println!("Generating Composition \n");
-    composition.apply_to_normal_form(&mut normal_form);
-
-    let e = event_from_init(init);
-
-    let norm_ev = generate_events(normal_form.operations, e);
-
-    write_composition_to_json(norm_ev, &filename).expect("Writing to JSON failed");
-    printed("JSON".to_string());
-}
-
-fn generate_events(sequences: PointOpSequences, event: Event) -> NormEv {
+fn generate_events(sequences: CacheableNormalForm, event: Event) -> NormEv {
     let mut norm_ev: NormEv = vec![];
-    for sequence in sequences {
+    for sequence in sequences.operations {
         let mut event_sequence = vec![];
-        for point_op in sequence {
+        for point_op in sequence.operations {
             //            println!("{:?}", point_op);
             let mut e = event.clone();
             for mut sound in e.sounds.iter_mut() {
