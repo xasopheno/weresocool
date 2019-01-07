@@ -33,6 +33,6 @@ thing1 = {
 }
 
 main = {
-	thing1 | Sequence [AsIs, Tm 7/8] | Repeat 3
+	thing1 | Repeat 4
 }
 	

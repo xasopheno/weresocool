@@ -29,8 +29,6 @@ fn main() -> Result<(), pa::Error> {
     let main = parsed.table.get("main").unwrap();
     let init = parsed.init;
 
-//    println!("{:#?}", main);
-
     if args.is_present("print") {
         let composition = render(main, init);
         to_wav(composition, filename.unwrap().to_string());
