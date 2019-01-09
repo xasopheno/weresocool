@@ -2,9 +2,9 @@ pub mod normalize {
     extern crate num_rational;
     extern crate rand;
     use instrument::oscillator::OscType;
-    use num_rational::Ratio;
+    use num_rational::{Ratio, Rational64};
     use operations::helpers::*;
-    use operations::{GetLengthRatio, NormalForm, Normalize};
+    use operations::{GetLengthRatio, GetGainRatio, NormalForm, Normalize};
     use rand::prelude::*;
     use socool_parser::ast::Op;
 
@@ -154,6 +154,17 @@ pub mod normalize {
                     input.length_ratio = target_length;
                 }
 
+                Op::WithGainRatioOf { with_gain_of, main } => {
+                    let target_gain = with_gain_of.get_gain_ratio();
+                    let main_gain = main.get_gain_ratio();
+                    let ratio = target_gain / main_gain;
+                    let new_op = Op::Gain { m: ratio };
+
+                    new_op.apply_to_normal_form(input);
+
+                    input.gain_ratio = target_gain;
+                }
+
                 Op::ModulateBy { operations } => {
                     let mut modulator = NormalForm::init_empty();
 
@@ -179,6 +190,7 @@ pub mod normalize {
                     }
 
                     result.length_ratio = input.length_ratio;
+                    result.gain_ratio = Rational64::new(1, 1);
                     *input = result
                 }
 
@@ -208,6 +220,7 @@ pub mod normalize {
                     *input = NormalForm {
                         operations: result,
                         length_ratio: max_lr,
+                        gain_ratio: Rational64::new(1, 1)
                     };
                 }
             }

@@ -2,12 +2,12 @@ pub mod get_length_ratio {
     use num_rational::{Ratio, Rational64};
     use socool_parser::ast::Op;
 
-    use operations::GetLengthRatio;
+    use operations::GetGainRatio;
 
     extern crate num_rational;
 
-    impl GetLengthRatio for Op {
-        fn get_length_ratio(&self) -> Rational64 {
+    impl GetGainRatio for Op {
+        fn get_gain_ratio(&self) -> Rational64 {
             match self {
                 Op::AsIs {}
                 | Op::Sine {}
@@ -19,44 +19,54 @@ pub mod get_length_ratio {
                 | Op::TransposeA { a: _ }
                 | Op::PanA { a: _ }
                 | Op::PanM { m: _ }
-                | Op::Gain { m: _ } => Ratio::from_integer(1),
+                | Op::Length { m: _ } => Ratio::from_integer(1),
 
-                Op::Length { m } | Op::Silence { m } => *m,
+                Op::Gain { m } => *m,
+
+                Op::Silence { m: _ } => Ratio::from_integer(0),
 
                 Op::Sequence { operations } => {
-                    let mut new_total = Ratio::from_integer(0);
+                    let mut max = Ratio::from_integer(0);
                     for operation in operations {
-                        new_total += operation.get_length_ratio();
+                        let gr = operation.get_gain_ratio();
+                        if gr > max {
+                            max = gr;
+                        }
                     }
-                    new_total
+
+                    max
                 }
 
                 Op::Compose { operations } => {
-                    let mut new_total = Ratio::from_integer(1);
+                    let mut max = Ratio::from_integer(0);
                     for operation in operations {
-                        new_total *= operation.get_length_ratio();
+                        let gr = operation.get_gain_ratio();
+                        if gr > max {
+                            max = gr;
+                        }
                     }
-                    new_total
+
+                    max
                 }
 
-                Op::Choice { operations } => operations[0].get_length_ratio(),
+                Op::Choice { operations } => operations[0].get_gain_ratio(),
 
                 Op::WithLengthRatioOf {
                     with_length_of,
-                    main: _,
-                } => with_length_of.get_length_ratio(),
+                    main,
+                } => main.get_gain_ratio(),
 
                 Op::WithGainRatioOf {
-                    with_gain_of: _,
-                    main,
-                } => main.get_length_ratio(),
+                    with_gain_of,
+                    main: _,
+                } => with_gain_of.get_gain_ratio(),
 
                 Op::ModulateBy { operations: _ } => Ratio::from_integer(1),
 
                 Op::Overlay { operations } => {
                     let mut max = Ratio::new(0, 1);
                     for op in operations {
-                        let next = op.get_length_ratio();
+                        let next = op.get_gain_ratio();
                         if next > max {
                             max = next;
                         }

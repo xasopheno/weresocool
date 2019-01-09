@@ -4,6 +4,7 @@ use instrument::oscillator::OscType;
 use num_rational::{Ratio, Rational64};
 use socool_parser::ast::Op;
 use std::ops::{Mul, MulAssign};
+mod get_gain_ratio;
 mod get_length_ratio;
 mod helpers;
 mod normalize;
@@ -86,6 +87,7 @@ impl PointOp {
 pub struct NormalForm {
     pub operations: Vec<Vec<PointOp>>,
     pub length_ratio: Rational64,
+    pub gain_ratio: Rational64,
 }
 
 impl NormalForm {
@@ -93,6 +95,7 @@ impl NormalForm {
         NormalForm {
             operations: vec![vec![PointOp::init()]],
             length_ratio: Ratio::new(1, 1),
+            gain_ratio: Ratio::new(1, 1),
         }
     }
 
@@ -100,11 +103,16 @@ impl NormalForm {
         NormalForm {
             operations: vec![],
             length_ratio: Ratio::new(0, 1),
+            gain_ratio: Ratio::new(0, 1),
         }
     }
 
     pub fn get_nf_length_ratio(&self) -> Rational64 {
         self.length_ratio
+    }
+
+    pub fn get_nf_gain_ratio(&self) -> Rational64 {
+        self.gain_ratio
     }
 }
 
@@ -114,6 +122,10 @@ pub trait Normalize {
 
 pub trait GetLengthRatio {
     fn get_length_ratio(&self) -> Rational64;
+}
+
+pub trait GetGainRatio {
+    fn get_gain_ratio(&self) -> Rational64;
 }
 
 #[cfg(test)]

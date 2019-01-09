@@ -54,6 +54,10 @@ pub enum Op {
         with_length_of: Box<Op>,
         main: Box<Op>,
     },
+    WithGainRatioOf {
+        with_gain_of: Box<Op>,
+        main: Box<Op>,
+    },
 }
 
 pub fn is_choice_op(op: Op) -> bool {
@@ -78,6 +82,12 @@ pub fn is_choice_op(op: Op) -> bool {
                     with_length_of,
                     main: _,
                 } => is_choice_op(*with_length_of),
+
+                Op::WithGainRatioOf {
+                    with_gain_of,
+                    main: _,
+                } => is_choice_op(*with_gain_of),
+
 
                 Op::Sequence { operations }
                 | Op::ModulateBy { operations }
