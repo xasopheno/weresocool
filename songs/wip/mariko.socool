@@ -125,12 +125,6 @@ v4b = {
 phrase1 = {
 	Sequence [
 		Overlay [
-			v4a | Silence 1, 
-			v3a | Silence 1, 
-			v2a, 
-			v1a
-		] | Repeat 1,
-		Overlay [
 			v4a, 
 			v3a, 
 			v2a, 
