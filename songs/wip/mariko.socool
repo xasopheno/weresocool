@@ -123,18 +123,26 @@ v4b = {
 }
 
 phrase1 = {
-	Overlay [
-		v4a, 
-		v3a, 
-		v2a, 
-		v1a
+	Sequence [
+		Overlay [
+			v4a | Silence 1, 
+			v3a | Silence 1, 
+			v2a, 
+			v1a
+		] | Repeat 1,
+		Overlay [
+			v4a, 
+			v3a, 
+			v2a, 
+			v1a
+		] | Repeat 2,
 	]
 }
 
 phrase2 = {
 	Overlay [
-		-- v4b,
-		-- v3b,
+		v4b | Silence 1,
+		v3b | Silence 1,
 		v2b,
 		v1b, 
 	]	
@@ -142,8 +150,11 @@ phrase2 = {
 
 main = {
 	Sequence [
-		phrase1,
-		-- phrase2,
-	]
+		phrase2
+		| Tm 15/16,
+		Silence 2,
+		phrase1 
+		| Repeat 3,
+	] | Repeat 2
 }
 	

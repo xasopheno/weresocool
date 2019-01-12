@@ -3,12 +3,13 @@ extern crate socool_parser;
 use instrument::oscillator::OscType;
 use num_rational::{Ratio, Rational64};
 use socool_parser::ast::Op;
+use std::hash::Hash;
 use std::ops::{Mul, MulAssign};
 mod get_length_ratio;
 mod helpers;
 mod normalize;
 
-#[derive(Debug, Clone, PartialEq)]
+#[derive(Debug, Clone, PartialEq, Hash)]
 pub struct PointOp {
     pub fm: Rational64,
     pub fa: Rational64,
@@ -29,7 +30,7 @@ impl Mul<PointOp> for PointOp {
             pm: self.pm * other.pm,
             pa: self.pa + other.pa,
             g: self.g * other.g,
-            l: self.l,
+            l: self.l * other.l,
             osc_type: other.osc_type,
         }
     }
@@ -43,7 +44,7 @@ impl MulAssign for PointOp {
             pm: self.pm * other.pm,
             pa: self.pa + other.pa,
             g: self.g * other.g,
-            l: self.l,
+            l: self.l * other.l,
             osc_type: other.osc_type,
         }
     }

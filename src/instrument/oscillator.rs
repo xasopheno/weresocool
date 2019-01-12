@@ -6,7 +6,7 @@ fn tau() -> f64 {
     PI * 2.0
 }
 
-#[derive(Copy, Clone, Debug, PartialEq, Serialize)]
+#[derive(Copy, Clone, Debug, PartialEq, Serialize, Hash)]
 pub enum OscType {
     Sine,
     Noise,
