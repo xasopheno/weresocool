@@ -58,37 +58,36 @@ pub enum Op {
 
 pub fn is_choice_op(op: Op) -> bool {
     match op {
-                Op::AsIs {}
-                | Op::Sine {}
-                | Op::Square {}
-                | Op::Noise {}
-                | Op::FInvert {}
-                | Op::Reverse {}
-                | Op::TransposeM { m: _ }
-                | Op::TransposeA { a: _ }
-                | Op::PanA { a: _ }
-                | Op::PanM { m: _ }
-                | Op::Gain { m: _ }
-                | Op::Length { m: _ }
-                | Op::Silence { m: _ } => false,
-                Op::Choice { operations: _ } => true,
+        Op::AsIs {}
+        | Op::Sine {}
+        | Op::Square {}
+        | Op::Noise {}
+        | Op::FInvert {}
+        | Op::Reverse {}
+        | Op::TransposeM { m: _ }
+        | Op::TransposeA { a: _ }
+        | Op::PanA { a: _ }
+        | Op::PanM { m: _ }
+        | Op::Gain { m: _ }
+        | Op::Length { m: _ }
+        | Op::Silence { m: _ } => false,
+        Op::Choice { operations: _ } => true,
 
+        Op::WithLengthRatioOf {
+            with_length_of: _,
+            main: _,
+        } => false,
 
-                Op::WithLengthRatioOf {
-                    with_length_of,
-                    main: _,
-                } => false,
-
-                Op::Sequence { operations }
-                | Op::ModulateBy { operations }
-                | Op::Compose { operations }
-                | Op::Overlay { operations } => {
-                    for operation in operations {
-                        if is_choice_op(operation) {
-                            return true
-                        }
-                    }
-                    false
+        Op::Sequence { operations }
+        | Op::ModulateBy { operations }
+        | Op::Compose { operations }
+        | Op::Overlay { operations } => {
+            for operation in operations {
+                if is_choice_op(operation) {
+                    return true;
                 }
             }
+            false
+        }
     }
+}
