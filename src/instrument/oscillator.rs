@@ -17,7 +17,6 @@ pub enum OscType {
 
 #[derive(Clone, Debug, PartialEq)]
 pub struct Oscillator {
-    pub basis: OscillatorBasis,
     pub voices: (Voice, Voice),
     pub portamento_length: usize,
     pub settings: Settings,
@@ -33,9 +32,8 @@ pub struct OscillatorBasis {
 }
 
 impl Oscillator {
-    pub fn init(basis: OscillatorBasis, settings: &Settings) -> Oscillator {
+    pub fn init(settings: &Settings) -> Oscillator {
         Oscillator {
-            basis,
             voices: (Voice::init(0), Voice::init(1)),
             portamento_length: settings.buffer_size,
             settings: settings.clone(),
@@ -43,28 +41,28 @@ impl Oscillator {
         }
     }
 
-    pub fn update(&mut self, point_op: &PointOp) {
+    pub fn update(&mut self, basis: OscillatorBasis, point_op: &PointOp) {
         let l_gain = r_to_f64(point_op.g)
-            * (self.basis.p * -1.0 + (r_to_f64(point_op.pm) + r_to_f64(point_op.pa)) / -2.0)
-            * self.basis.g;
+            * (basis.p * -1.0 + (r_to_f64(point_op.pm) + r_to_f64(point_op.pa)) / -2.0)
+            * basis.g;
         let r_gain = r_to_f64(point_op.g)
-            * (self.basis.p * 1.0 + (r_to_f64(point_op.pm) + r_to_f64(point_op.pa)) / 2.0)
-            * self.basis.g;
+            * (basis.p * 1.0 + (r_to_f64(point_op.pm) + r_to_f64(point_op.pa)) / 2.0)
+            * basis.g;
         let (ref mut l_voice, ref mut r_voice) = self.voices;
 
         l_voice.update(
-            (self.basis.f * r_to_f64(point_op.fm)) + r_to_f64(point_op.fa),
+            (basis.f * r_to_f64(point_op.fm)) + r_to_f64(point_op.fa),
             l_gain,
             point_op.osc_type,
         );
         r_voice.update(
-            (self.basis.f * r_to_f64(point_op.fm)) + r_to_f64(point_op.fa),
+            (basis.f * r_to_f64(point_op.fm)) + r_to_f64(point_op.fa),
             r_gain,
             point_op.osc_type,
         );
     }
 
-    pub fn generate(&mut self, n_samples_to_generate: f64) -> StereoWaveform {
+    pub fn generate(&mut self, basis: OscillatorBasis, n_samples_to_generate: f64) -> StereoWaveform {
         let total_len = self.sample_phase + n_samples_to_generate;
         let length = total_len.floor() as usize;
         self.sample_phase = total_len.fract();

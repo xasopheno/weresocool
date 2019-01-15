@@ -1,3 +1,5 @@
+extern crate num_rational;
+use num_rational::Rational64;
 use analyze::{Analyze, DetectionResult};
 use generation::parsed_to_render::*;
 use instrument::oscillator::{Oscillator, OscillatorBasis};
@@ -16,6 +18,7 @@ pub fn setup_portaudio_duplex(
 
     let mut input_buffer: RingBuffer<f32> = RingBuffer::<f32>::new(settings.yin_buffer_size);
     let mut count = 0;
+    let mut osc = Oscillator::init(&default_settings());
     let duplex_stream = pa.open_non_blocking_stream(
         duplex_stream_settings,
         move |pa::DuplexStreamCallbackArgs {
@@ -40,15 +43,17 @@ pub fn setup_portaudio_duplex(
                 }
                 println!("freq {}, gain {}", result.frequency, result.gain);
                 let basis = OscillatorBasis {
-                    f: 0.0,
+                    f: result.frequency as f64,
+//                    f: 300.0 as f64,
                     l: 1.0,
-                    g: 1.0,
+                    g: result.gain as f64,
+//                    g: 0.19 as f64,
                     p: 0.0,
                 };
 
-                let point_op = PointOp::init();
-                let osc = Oscillator::init(basis, &default_settings());
-                let stereo_waveform = render_mic(&point_op, basis, osc);
+                let mut point_op = PointOp::init();
+                point_op.l = Rational64::new(1024, 44100);
+                let stereo_waveform = render_mic(&point_op, basis, &mut osc);
                 write_output_buffer(&mut out_buffer, stereo_waveform);
 
                 pa::Continue

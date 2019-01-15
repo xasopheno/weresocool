@@ -3,7 +3,7 @@ use instrument::{
     oscillator::{Oscillator, OscillatorBasis},
     stereo_waveform::StereoWaveform,
 };
-use operations::{PointOp};
+use operations::PointOp;
 
 pub trait Render<T> {
     fn render(&mut self, basis: &OscillatorBasis, oscillator: &mut Oscillator) -> StereoWaveform;
@@ -11,9 +11,9 @@ pub trait Render<T> {
 
 impl Render<PointOp> for PointOp {
     fn render(&mut self, basis: &OscillatorBasis, oscillator: &mut Oscillator) -> StereoWaveform {
-        oscillator.update(self);
+        oscillator.update(*basis, self);
         let n_samples_to_generate = r_to_f64(self.l) * basis.l * 44_100.0;
-        oscillator.generate(n_samples_to_generate)
+        oscillator.generate(*basis, n_samples_to_generate)
     }
 }
 
