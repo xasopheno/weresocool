@@ -1,7 +1,7 @@
 extern crate num_rational;
 use analyze::{Analyze, DetectionResult};
 use generation::parsed_to_render::*;
-use instrument::oscillator::{Oscillator, OscillatorBasis};
+use instrument::oscillator::{Origin, Oscillator};
 use num_rational::Rational64;
 use operations::PointOp;
 use portaudio as pa;
@@ -18,7 +18,7 @@ struct RealTimeState {
 
 impl RealTimeState {
     fn inc(&mut self) {
-        self.count += self.inc * Rational64::new(12, 1)
+        self.count += self.inc * Rational64::new(2, 1)
     }
 }
 
@@ -26,7 +26,6 @@ pub fn setup_portaudio_duplex(
     ref pa: &pa::PortAudio,
 ) -> Result<pa::Stream<pa::NonBlocking, pa::Duplex<f32, f32>>, pa::Error> {
     let settings = default_settings();
-    //    let mut oscillator = Oscillator::init(&settings);
     let duplex_stream_settings = get_duplex_settings(&pa, &settings)?;
 
     let mut input_buffer: RingBuffer<f32> = RingBuffer::<f32>::new(settings.yin_buffer_size);
@@ -41,14 +40,30 @@ pub fn setup_portaudio_duplex(
     let mut point_op_c = PointOp::init();
     point_op_c.fm = Rational64::new(9, 4);
 
+    let mut point_op_d = PointOp::init();
+    point_op_d.fm = Rational64::new(1, 2);
+    point_op_d.l = Rational64::new(2, 1);
+
+    let mut point_op_e = PointOp::init();
+    point_op_e.fm = Rational64::new(3, 4);
+    point_op_e.l = Rational64::new(2, 1);
+
     let mut osc = Oscillator::init(&default_settings());
-    let mut sequence = vec![point_op_a, point_op_b.clone(), point_op_c, point_op_b]
-        .into_iter()
-        .cycle();
+//
+    let nf = vec![
+        vec![point_op_a, point_op_b.clone(), point_op_c, point_op_b],
+        vec![point_op_d, point_op_e]
+    ];
+    let mut nf_iterators = vec![];
+
+    for seq in nf {
+        nf_iterators.push(seq.clone().into_iter().cycle())
+    };
+//
     let mut state = RealTimeState {
         count: Rational64::new(0, 1),
         inc: Rational64::new(settings.buffer_size as i64, settings.sample_rate as i64),
-        current_op: sequence.next().unwrap(),
+        current_op: nf_iterators[0].next().unwrap(),
     };
 
     let duplex_stream = pa.open_non_blocking_stream(
@@ -75,23 +90,22 @@ pub fn setup_portaudio_duplex(
                 }
 
                 println!("freq {}, gain {}", result.frequency, result.gain);
-                let basis = OscillatorBasis {
+
+                let origin = Origin {
                     f: result.frequency as f64,
-                    // f: 300.0 as f64,
                     l: 1.0,
                     g: result.gain as f64,
-                    // g: 0.19 as f64,
                     p: 0.0,
                 };
 
                 if state.count >= state.current_op.l {
                     state.count = Rational64::new(0, 1);
-                    state.current_op = sequence.next().unwrap()
+                    state.current_op = nf_iterators[0].next().unwrap()
                 }
                 let mut current_point_op = state.current_op.clone();
                 current_point_op.l =
                     Rational64::new(settings.buffer_size as i64, settings.sample_rate as i64);
-                let stereo_waveform = render_mic(&current_point_op, basis, &mut osc);
+                let stereo_waveform = render_mic(&current_point_op, origin, &mut osc);
                 write_output_buffer(&mut out_buffer, stereo_waveform);
                 state.inc();
 

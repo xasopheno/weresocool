@@ -3,7 +3,7 @@ extern crate pbr;
 extern crate rayon;
 extern crate socool_parser;
 use instrument::{
-    oscillator::{Oscillator, OscillatorBasis},
+    oscillator::{Origin, Oscillator},
     stereo_waveform::{Normalize, StereoWaveform},
 };
 use num_rational::Rational64;
@@ -21,25 +21,21 @@ pub fn r_to_f64(r: Rational64) -> f64 {
     *r.numer() as f64 / *r.denom() as f64
 }
 
-pub fn render(basis: &OscillatorBasis, composition: &Op) -> StereoWaveform {
+pub fn render(origin: &Origin, composition: &Op) -> StereoWaveform {
     let mut normal_form = NormalForm::init();
 
     println!("\nGenerating Composition ");
     composition.apply_to_normal_form(&mut normal_form);
 
-    let vec_wav = generate_waveforms(&basis, normal_form.operations);
+    let vec_wav = generate_waveforms(&origin, normal_form.operations);
     let mut result = sum_all_waveforms(vec_wav);
     result.normalize();
 
     result
 }
 
-pub fn render_mic(
-    point_op: &PointOp,
-    basis: OscillatorBasis,
-    osc: &mut Oscillator,
-) -> StereoWaveform {
-    let result = point_op.clone().render(&basis, osc);
+pub fn render_mic(point_op: &PointOp, origin: Origin, osc: &mut Oscillator) -> StereoWaveform {
+    let result = point_op.clone().render(&origin, osc);
     result
 }
 
@@ -73,7 +69,7 @@ fn create_pb_instance(n: usize) -> Arc<Mutex<ProgressBar<std::io::Stdout>>> {
 }
 
 fn generate_waveforms(
-    basis: &OscillatorBasis,
+    origin: &Origin,
     mut vec_sequences: Vec<Vec<PointOp>>,
 ) -> Vec<StereoWaveform> {
     println!("Rendering {:?} waveforms", vec_sequences.len());
@@ -84,7 +80,7 @@ fn generate_waveforms(
         .map(|ref mut vec_point_op: &mut Vec<PointOp>| {
             pb.lock().unwrap().add(1 as u64);
             let mut osc = Oscillator::init(&default_settings());
-            vec_point_op.render(&basis, &mut osc)
+            vec_point_op.render(&origin, &mut osc)
         })
         .collect();
 

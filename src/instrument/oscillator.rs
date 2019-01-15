@@ -24,7 +24,7 @@ pub struct Oscillator {
 }
 
 #[derive(Copy, Clone, Debug, PartialEq)]
-pub struct OscillatorBasis {
+pub struct Origin {
     pub f: f64,
     pub p: f64,
     pub g: f64,
@@ -41,7 +41,7 @@ impl Oscillator {
         }
     }
 
-    pub fn update(&mut self, basis: OscillatorBasis, point_op: &PointOp) {
+    pub fn update(&mut self, basis: Origin, point_op: &PointOp) {
         let l_gain = r_to_f64(point_op.g)
             * (basis.p * -1.0 + (r_to_f64(point_op.pm) + r_to_f64(point_op.pa)) / -2.0)
             * basis.g;
@@ -62,11 +62,7 @@ impl Oscillator {
         );
     }
 
-    pub fn generate(
-        &mut self,
-        basis: OscillatorBasis,
-        n_samples_to_generate: f64,
-    ) -> StereoWaveform {
+    pub fn generate(&mut self, basis: Origin, n_samples_to_generate: f64) -> StereoWaveform {
         let total_len = self.sample_phase + n_samples_to_generate;
         let length = total_len.floor() as usize;
         self.sample_phase = total_len.fract();
