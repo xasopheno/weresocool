@@ -1,13 +1,26 @@
 extern crate num_rational;
-use num_rational::Rational64;
 use analyze::{Analyze, DetectionResult};
 use generation::parsed_to_render::*;
 use instrument::oscillator::{Oscillator, OscillatorBasis};
+use num_rational::Rational64;
 use operations::PointOp;
 use portaudio as pa;
 use ring_buffer::RingBuffer;
 use settings::{default_settings, Settings};
+use std::sync::{Arc, Mutex};
 use write::write_output_buffer;
+
+struct RealTimeState {
+    count: Rational64,
+    inc: Rational64,
+    current_op: PointOp,
+}
+
+impl RealTimeState {
+    fn inc(&mut self) {
+        self.count += self.inc * Rational64::new(12, 1)
+    }
+}
 
 pub fn setup_portaudio_duplex(
     ref pa: &pa::PortAudio,
@@ -17,8 +30,27 @@ pub fn setup_portaudio_duplex(
     let duplex_stream_settings = get_duplex_settings(&pa, &settings)?;
 
     let mut input_buffer: RingBuffer<f32> = RingBuffer::<f32>::new(settings.yin_buffer_size);
+
     let mut count = 0;
+    let mut point_op_a = PointOp::init();
+    point_op_a.fm = Rational64::new(1, 2);
+    point_op_a.l = Rational64::new(4, 1);
+
+    let mut point_op_b = PointOp::init();
+    point_op_b.fm = Rational64::new(3, 2);
+    let mut point_op_c = PointOp::init();
+    point_op_c.fm = Rational64::new(9, 4);
+
     let mut osc = Oscillator::init(&default_settings());
+    let mut sequence = vec![point_op_a, point_op_b.clone(), point_op_c, point_op_b]
+        .into_iter()
+        .cycle();
+    let mut state = RealTimeState {
+        count: Rational64::new(0, 1),
+        inc: Rational64::new(settings.buffer_size as i64, settings.sample_rate as i64),
+        current_op: sequence.next().unwrap(),
+    };
+
     let duplex_stream = pa.open_non_blocking_stream(
         duplex_stream_settings,
         move |pa::DuplexStreamCallbackArgs {
@@ -41,20 +73,27 @@ pub fn setup_portaudio_duplex(
                     result.frequency = 0.0;
                     result.gain = 0.0;
                 }
+
                 println!("freq {}, gain {}", result.frequency, result.gain);
                 let basis = OscillatorBasis {
                     f: result.frequency as f64,
-//                    f: 300.0 as f64,
+                    // f: 300.0 as f64,
                     l: 1.0,
                     g: result.gain as f64,
-//                    g: 0.19 as f64,
+                    // g: 0.19 as f64,
                     p: 0.0,
                 };
 
-                let mut point_op = PointOp::init();
-                point_op.l = Rational64::new(1024, 44100);
-                let stereo_waveform = render_mic(&point_op, basis, &mut osc);
+                if state.count >= state.current_op.l {
+                    state.count = Rational64::new(0, 1);
+                    state.current_op = sequence.next().unwrap()
+                }
+                let mut current_point_op = state.current_op.clone();
+                current_point_op.l =
+                    Rational64::new(settings.buffer_size as i64, settings.sample_rate as i64);
+                let stereo_waveform = render_mic(&current_point_op, basis, &mut osc);
                 write_output_buffer(&mut out_buffer, stereo_waveform);
+                state.inc();
 
                 pa::Continue
             }

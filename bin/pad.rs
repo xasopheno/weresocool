@@ -9,23 +9,18 @@ use std::hash::{Hash, Hasher};
 fn main() {
     println!("\nHello Danny's WereSoCool Scratch Pad");
 
-    let s = Sequence {
-        operations: vec![TransposeM {
-            m: Rational64::new(2, 1),
-        }],
-    };
-    let o = Overlay {
-        operations: vec![TransposeM {
-            m: Rational64::new(2, 1),
-        }],
-    };
-
-    let hash = calculate_hash(&AsIs);
-    let hash2 = calculate_hash(&o);
-    let hash3 = calculate_hash(&s);
-    println!("{:?}", hash);
-    println!("{:?}", hash2);
-    println!("{:?}", hash3);
+    let mut seq = vec![1.0, 2.0, 3.0].into_iter().cycle();
+    let mut counter = 0.0;
+    let inc = 0.5;
+    let mut current = seq.next().unwrap();
+    while true {
+        if counter >= current {
+            counter = 0.0;
+            current = seq.next().unwrap()
+        }
+        println!("{:?}", current);
+        counter += inc;
+    }
 }
 
 fn calculate_hash<T: Hash>(t: &T) -> u64 {
