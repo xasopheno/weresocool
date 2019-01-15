@@ -2,9 +2,9 @@ extern crate num_rational;
 extern crate pbr;
 extern crate rayon;
 extern crate socool_parser;
-use event::{Event, Render};
+use render::Render;
 use instrument::{
-    oscillator::Oscillator,
+    oscillator::{Oscillator, OscillatorBasis},
     stereo_waveform::{Normalize, StereoWaveform},
 };
 use num_rational::Rational64;
@@ -15,24 +15,23 @@ use settings::get_default_app_settings;
 use socool_parser::{ast::Op, parser::Init};
 use std::sync::{Arc, Mutex};
 use ui::{banner, printed};
-use write::{write_composition_to_json, write_composition_to_wav};
+use write::write_composition_to_wav;
 
 type PointOpSequences = Vec<Vec<PointOp>>;
-type NormEv = Vec<Vec<Event>>;
 type VecWav = Vec<StereoWaveform>;
 
 pub fn r_to_f64(r: Rational64) -> f64 {
     *r.numer() as f64 / *r.denom() as f64
 }
 
-pub fn event_from_init(init: Init) -> Event {
-    Event::init(
-        r_to_f64(init.f),
-        r_to_f64(init.g),
-        r_to_f64(init.p),
-        r_to_f64(init.l),
-    )
-}
+//pub fn event_from_init(init: Init) -> Event {
+//    Event::init(
+//        r_to_f64(init.f),
+//        r_to_f64(init.g),
+//        r_to_f64(init.p),
+//        r_to_f64(init.l),
+//    )
+//}
 
 pub fn render(composition: &Op, init: Init) -> StereoWaveform {
     let mut normal_form = NormalForm::init();
@@ -40,26 +39,27 @@ pub fn render(composition: &Op, init: Init) -> StereoWaveform {
     println!("\nGenerating Composition ");
     composition.apply_to_normal_form(&mut normal_form);
 
-    let e = event_from_init(init);
+    //    let e = event_from_init(init);
 
-    let norm_ev = generate_events(normal_form.operations, e);
-    let vec_wav = generate_waveforms(norm_ev);
+    //    let norm_ev = generate_events(normal_form.operations, e);
+    let vec_wav = generate_waveforms(init, normal_form.operations);
     let mut result = sum_all_waveforms(vec_wav);
     result.normalize();
 
     result
 }
 
-pub fn render_mic(composition: &Op, event: Event) -> StereoWaveform {
-    let mut normal_form = NormalForm::init();
-
-    composition.apply_to_normal_form(&mut normal_form);
-    let norm_ev = generate_events(normal_form.operations, event);
-    let vec_wav = generate_waveforms(norm_ev);
-    let mut result = sum_all_waveforms(vec_wav);
-    result.normalize();
-
-    result
+pub fn render_mic(composition: &Op) -> StereoWaveform {
+//    let mut normal_form = NormalForm::init();
+    //
+    //    composition.apply_to_normal_form(&mut normal_form);
+    ////    let norm_ev = generate_events(normal_form.operations, render);
+    //    let vec_wav = generate_waveforms(normal_form.operations);
+    //    let mut result = sum_all_waveforms(vec_wav);
+    //    result.normalize();
+    //
+    //    result
+    StereoWaveform::new(2048)
 }
 
 pub fn to_wav(composition: StereoWaveform, filename: String) {
@@ -69,43 +69,19 @@ pub fn to_wav(composition: StereoWaveform, filename: String) {
 }
 
 pub fn to_json(composition: &Op, init: Init, filename: String) {
-    banner("JSONIFY-ing".to_string(), filename.clone());
-    let mut normal_form = NormalForm::init();
-
-    println!("Generating Composition \n");
-    composition.apply_to_normal_form(&mut normal_form);
-
-    let e = event_from_init(init);
-
-    let norm_ev = generate_events(normal_form.operations, e);
-
-    write_composition_to_json(norm_ev, &filename).expect("Writing to JSON failed");
-    printed("JSON".to_string());
-}
-
-fn generate_events(sequences: PointOpSequences, event: Event) -> NormEv {
-    let mut norm_ev: NormEv = vec![];
-    for sequence in sequences {
-        let mut event_sequence = vec![];
-        for point_op in sequence {
-            //            println!("{:?}", point_op);
-            let mut e = event.clone();
-            for mut sound in e.sounds.iter_mut() {
-                sound.frequency *= r_to_f64(point_op.fm);
-                sound.frequency += r_to_f64(point_op.fa);
-                sound.pan *= r_to_f64(point_op.pm);
-                sound.pan += r_to_f64(point_op.pa);
-                sound.gain *= r_to_f64(point_op.g);
-                sound.osc_type = point_op.osc_type;
-            }
-
-            e.length *= r_to_f64(point_op.l);
-            event_sequence.push(e)
-        }
-        norm_ev.push(event_sequence)
-    }
-
-    norm_ev
+    println!("Not working");
+    //    banner("JSONIFY-ing".to_string(), filename.clone());
+    //    let mut normal_form = NormalForm::init();
+    //
+    //    println!("Generating Composition \n");
+    //    composition.apply_to_normal_form(&mut normal_form);
+    //
+    ////    let e = event_from_init(init);
+    //
+    //    let norm_ev = generate_events(normal_form.operations, e);
+    //
+    //    write_composition_to_json(norm_ev, &filename).expect("Writing to JSON failed");
+    //    printed("JSON".to_string());
 }
 
 fn create_pb_instance(n: usize) -> Arc<Mutex<ProgressBar<std::io::Stdout>>> {
@@ -115,16 +91,24 @@ fn create_pb_instance(n: usize) -> Arc<Mutex<ProgressBar<std::io::Stdout>>> {
     Arc::new(Mutex::new(pb))
 }
 
-fn generate_waveforms(mut norm_ev: NormEv) -> VecWav {
+fn generate_waveforms(init: Init, mut norm_ev: Vec<Vec<PointOp>>) -> VecWav {
     println!("Rendering {:?} waveforms", norm_ev.len());
     let pb = create_pb_instance(norm_ev.len());
 
     let vec_wav = norm_ev
         .par_iter_mut()
-        .map(|ref mut vec_events: &mut Vec<Event>| {
+        .map(|ref mut vec_point_op: &mut Vec<PointOp>| {
             pb.lock().unwrap().add(1 as u64);
-            let mut osc = Oscillator::init(&get_default_app_settings());
-            vec_events.render(&mut osc)
+            let mut osc = Oscillator::init(
+                OscillatorBasis {
+                    f: r_to_f64(init.f),
+                    g: r_to_f64(init.g),
+                    l: r_to_f64(init.l),
+                    p: r_to_f64(init.p),
+                },
+                &get_default_app_settings(),
+            );
+            vec_point_op.render(&mut osc)
         })
         .collect();
 

@@ -1,5 +1,4 @@
 extern crate hound;
-use event::Event;
 use instrument::stereo_waveform::StereoWaveform;
 use serde_json;
 use std::fs::File;
@@ -55,19 +54,19 @@ pub fn normalize_waveform(buffer: &mut Vec<f32>) {
     println!("Normalized by {}", normalization_ratio);
 }
 
-pub fn write_composition_to_json(
-    composition: Vec<Vec<Event>>,
-    filename: &String,
-) -> std::io::Result<()> {
-    let serialized = serde_json::to_string(&composition).unwrap();
-    let mut file = File::create(format!("{}{}", filename, ".json".to_string()))?;
-
-    println!(
-        "{}.json was written and has {} event stream(s).",
-        filename,
-        composition.len()
-    );
-
-    file.write_all(serialized.as_bytes())?;
-    Ok(())
-}
+//pub fn write_composition_to_json(
+//    composition: Vec<Vec<Event>>,
+//    filename: &String,
+//) -> std::io::Result<()> {
+//    let serialized = serde_json::to_string(&composition).unwrap();
+//    let mut file = File::create(format!("{}{}", filename, ".json".to_string()))?;
+//
+//    println!(
+//        "{}.json was written and has {} render stream(s).",
+//        filename,
+//        composition.len()
+//    );
+//
+//    file.write_all(serialized.as_bytes())?;
+//    Ok(())
+//}

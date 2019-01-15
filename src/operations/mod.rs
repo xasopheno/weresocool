@@ -61,6 +61,17 @@ impl PointOp {
             osc_type: OscType::Sine,
         }
     }
+    pub fn init_silent() -> PointOp {
+        PointOp {
+            fm: Ratio::new(0, 1),
+            fa: Ratio::new(0, 1),
+            pm: Ratio::new(1, 1),
+            pa: Ratio::new(0, 1),
+            g: Ratio::new(0, 1),
+            l: Ratio::new(1, 1),
+            osc_type: OscType::Sine,
+        }
+    }
 
     pub fn to_op(&self) -> Op {
         let osc_op = match self.osc_type {
