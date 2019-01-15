@@ -1,7 +1,6 @@
 extern crate num_rational;
 use generation::parsed_to_render::r_to_f64;
 use instrument::{stereo_waveform::StereoWaveform, voice::Voice};
-use num_rational::Rational64;
 use operations::PointOp;
 use settings::Settings;
 use std::f64::consts::PI;

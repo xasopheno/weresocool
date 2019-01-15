@@ -11,7 +11,7 @@ pub struct Settings {
     pub min_freq: f32,
 }
 
-pub fn get_default_app_settings() -> Settings {
+pub fn default_settings() -> Settings {
     Settings {
         sample_rate: 44_100.0,
         yin_buffer_size: 2048,
@@ -28,6 +28,6 @@ pub fn get_default_app_settings() -> Settings {
 pub fn get_test_settings() -> Settings {
     Settings {
         buffer_size: 10,
-        ..get_default_app_settings()
+        ..default_settings()
     }
 }

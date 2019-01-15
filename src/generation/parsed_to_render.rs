@@ -2,7 +2,6 @@ extern crate num_rational;
 extern crate pbr;
 extern crate rayon;
 extern crate socool_parser;
-use render::Render;
 use instrument::{
     oscillator::{Oscillator, OscillatorBasis},
     stereo_waveform::{Normalize, StereoWaveform},
@@ -11,55 +10,37 @@ use num_rational::Rational64;
 use operations::{NormalForm, Normalize as NormalizeOp, PointOp};
 use pbr::ProgressBar;
 use rayon::prelude::*;
-use settings::get_default_app_settings;
+use render::Render;
+use settings::default_settings;
 use socool_parser::{ast::Op, parser::Init};
 use std::sync::{Arc, Mutex};
 use ui::{banner, printed};
 use write::write_composition_to_wav;
 
-type PointOpSequences = Vec<Vec<PointOp>>;
-type VecWav = Vec<StereoWaveform>;
-
 pub fn r_to_f64(r: Rational64) -> f64 {
     *r.numer() as f64 / *r.denom() as f64
 }
 
-//pub fn event_from_init(init: Init) -> Event {
-//    Event::init(
-//        r_to_f64(init.f),
-//        r_to_f64(init.g),
-//        r_to_f64(init.p),
-//        r_to_f64(init.l),
-//    )
-//}
-
-pub fn render(composition: &Op, init: Init) -> StereoWaveform {
+pub fn render(basis: &OscillatorBasis, composition: &Op) -> StereoWaveform {
     let mut normal_form = NormalForm::init();
 
     println!("\nGenerating Composition ");
     composition.apply_to_normal_form(&mut normal_form);
 
-    //    let e = event_from_init(init);
-
-    //    let norm_ev = generate_events(normal_form.operations, e);
-    let vec_wav = generate_waveforms(init, normal_form.operations);
+    let vec_wav = generate_waveforms(&basis, normal_form.operations);
     let mut result = sum_all_waveforms(vec_wav);
     result.normalize();
 
     result
 }
 
-pub fn render_mic(composition: &Op) -> StereoWaveform {
-//    let mut normal_form = NormalForm::init();
-    //
-    //    composition.apply_to_normal_form(&mut normal_form);
-    ////    let norm_ev = generate_events(normal_form.operations, render);
-    //    let vec_wav = generate_waveforms(normal_form.operations);
-    //    let mut result = sum_all_waveforms(vec_wav);
-    //    result.normalize();
-    //
-    //    result
-    StereoWaveform::new(2048)
+pub fn render_mic(
+    point_op: &PointOp,
+    basis: OscillatorBasis,
+    mut osc: Oscillator,
+) -> StereoWaveform {
+    let result = point_op.clone().render(&basis, &mut osc);
+    result
 }
 
 pub fn to_wav(composition: StereoWaveform, filename: String) {
@@ -91,24 +72,19 @@ fn create_pb_instance(n: usize) -> Arc<Mutex<ProgressBar<std::io::Stdout>>> {
     Arc::new(Mutex::new(pb))
 }
 
-fn generate_waveforms(init: Init, mut norm_ev: Vec<Vec<PointOp>>) -> VecWav {
-    println!("Rendering {:?} waveforms", norm_ev.len());
-    let pb = create_pb_instance(norm_ev.len());
+fn generate_waveforms(
+    basis: &OscillatorBasis,
+    mut vec_sequences: Vec<Vec<PointOp>>,
+) -> Vec<StereoWaveform> {
+    println!("Rendering {:?} waveforms", vec_sequences.len());
+    let pb = create_pb_instance(vec_sequences.len());
 
-    let vec_wav = norm_ev
+    let vec_wav = vec_sequences
         .par_iter_mut()
         .map(|ref mut vec_point_op: &mut Vec<PointOp>| {
             pb.lock().unwrap().add(1 as u64);
-            let mut osc = Oscillator::init(
-                OscillatorBasis {
-                    f: r_to_f64(init.f),
-                    g: r_to_f64(init.g),
-                    l: r_to_f64(init.l),
-                    p: r_to_f64(init.p),
-                },
-                &get_default_app_settings(),
-            );
-            vec_point_op.render(&mut osc)
+            let mut osc = Oscillator::init(*basis, &default_settings());
+            vec_point_op.render(&basis, &mut osc)
         })
         .collect();
 
@@ -117,7 +93,7 @@ fn generate_waveforms(init: Init, mut norm_ev: Vec<Vec<PointOp>>) -> VecWav {
     vec_wav
 }
 
-fn sum_all_waveforms(mut vec_wav: VecWav) -> StereoWaveform {
+fn sum_all_waveforms(mut vec_wav: Vec<StereoWaveform>) -> StereoWaveform {
     let mut result = StereoWaveform::new(0);
 
     sort_vecs(&mut vec_wav);
@@ -135,7 +111,7 @@ fn sum_all_waveforms(mut vec_wav: VecWav) -> StereoWaveform {
     result
 }
 
-fn sort_vecs(vec_wav: &mut VecWav) {
+fn sort_vecs(vec_wav: &mut Vec<StereoWaveform>) {
     vec_wav.sort_unstable_by(|a, b| b.l_buffer.len().cmp(&a.l_buffer.len()));
 }
 
