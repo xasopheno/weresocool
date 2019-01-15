@@ -89,7 +89,7 @@ fn generate_waveforms(
     vec_wav
 }
 
-fn sum_all_waveforms(mut vec_wav: Vec<StereoWaveform>) -> StereoWaveform {
+pub fn sum_all_waveforms(mut vec_wav: Vec<StereoWaveform>) -> StereoWaveform {
     let mut result = StereoWaveform::new(0);
 
     sort_vecs(&mut vec_wav);

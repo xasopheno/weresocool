@@ -13,7 +13,7 @@ impl Render<PointOp> for PointOp {
     fn render(&mut self, origin: &Origin, oscillator: &mut Oscillator) -> StereoWaveform {
         oscillator.update(*origin, self);
         let n_samples_to_generate = r_to_f64(self.l) * origin.l * 44_100.0;
-        oscillator.generate(*origin, n_samples_to_generate)
+        oscillator.generate(n_samples_to_generate)
     }
 }
 

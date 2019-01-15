@@ -7,7 +7,6 @@ use operations::PointOp;
 use portaudio as pa;
 use ring_buffer::RingBuffer;
 use settings::{default_settings, Settings};
-use std::sync::{Arc, Mutex};
 use write::write_output_buffer;
 
 struct RealTimeState {
@@ -22,6 +21,22 @@ impl RealTimeState {
     }
 }
 
+fn process_result(result: &mut DetectionResult) -> Origin {
+    if result.gain < 0.005 || result.frequency > 1_000.0 {
+        result.frequency = 0.0;
+        result.gain = 0.0;
+    }
+
+    println!("freq {}, gain {}", result.frequency, result.gain);
+
+    Origin {
+        f: result.frequency as f64,
+        l: 1.0,
+        g: result.gain as f64,
+        p: 0.0,
+    }
+}
+
 pub fn setup_portaudio_duplex(
     ref pa: &pa::PortAudio,
 ) -> Result<pa::Stream<pa::NonBlocking, pa::Duplex<f32, f32>>, pa::Error> {
@@ -33,7 +48,7 @@ pub fn setup_portaudio_duplex(
     let mut count = 0;
     let mut point_op_a = PointOp::init();
     point_op_a.fm = Rational64::new(1, 2);
-    point_op_a.l = Rational64::new(4, 1);
+    point_op_a.l = Rational64::new(1, 1);
 
     let mut point_op_b = PointOp::init();
     point_op_b.fm = Rational64::new(3, 2);
@@ -41,30 +56,31 @@ pub fn setup_portaudio_duplex(
     point_op_c.fm = Rational64::new(9, 4);
 
     let mut point_op_d = PointOp::init();
-    point_op_d.fm = Rational64::new(1, 2);
-    point_op_d.l = Rational64::new(2, 1);
+    point_op_d.fm = Rational64::new(5, 1);
+    point_op_d.l = Rational64::new(3, 2);
 
     let mut point_op_e = PointOp::init();
-    point_op_e.fm = Rational64::new(3, 4);
-    point_op_e.l = Rational64::new(2, 1);
+    point_op_e.fm = Rational64::new(3, 1);
+    point_op_e.l = Rational64::new(3, 2);
 
-    let mut osc = Oscillator::init(&default_settings());
-//
+    //
     let nf = vec![
         vec![point_op_a, point_op_b.clone(), point_op_c, point_op_b],
-        vec![point_op_d, point_op_e]
+        vec![point_op_d, point_op_e],
     ];
     let mut nf_iterators = vec![];
 
     for seq in nf {
-        nf_iterators.push(seq.clone().into_iter().cycle())
-    };
-//
-    let mut state = RealTimeState {
-        count: Rational64::new(0, 1),
-        inc: Rational64::new(settings.buffer_size as i64, settings.sample_rate as i64),
-        current_op: nf_iterators[0].next().unwrap(),
-    };
+        let mut iterator = seq.clone().into_iter().cycle();
+        let mut state = RealTimeState {
+            count: Rational64::new(0, 1),
+            inc: Rational64::new(settings.buffer_size as i64, settings.sample_rate as i64),
+            current_op: iterator.next().unwrap(),
+        };
+
+        nf_iterators.push((Oscillator::init(&default_settings()), iterator, state))
+    }
+    //
 
     let duplex_stream = pa.open_non_blocking_stream(
         duplex_stream_settings,
@@ -84,30 +100,29 @@ pub fn setup_portaudio_duplex(
                 let mut result: DetectionResult = input_buffer
                     .to_vec()
                     .analyze(settings.sample_rate as f32, settings.probability_threshold);
-                if result.gain < 0.005 || result.frequency > 2_500.0 {
-                    result.frequency = 0.0;
-                    result.gain = 0.0;
+
+                let origin = process_result(&mut result);
+
+                let mut result = vec![];
+
+                for (ref mut oscillator, ref mut iterator, ref mut state) in nf_iterators.iter_mut()
+                {
+                    if state.count >= state.current_op.l {
+                        state.count = Rational64::new(0, 1);
+                        state.current_op = iterator.next().unwrap()
+                    }
+
+                    let mut current_point_op = state.current_op.clone();
+
+                    current_point_op.l =
+                        Rational64::new(settings.buffer_size as i64, settings.sample_rate as i64);
+                    let stereo_waveform = render_mic(&current_point_op, origin, oscillator);
+                    result.push(stereo_waveform);
+                    state.inc();
                 }
 
-                println!("freq {}, gain {}", result.frequency, result.gain);
-
-                let origin = Origin {
-                    f: result.frequency as f64,
-                    l: 1.0,
-                    g: result.gain as f64,
-                    p: 0.0,
-                };
-
-                if state.count >= state.current_op.l {
-                    state.count = Rational64::new(0, 1);
-                    state.current_op = nf_iterators[0].next().unwrap()
-                }
-                let mut current_point_op = state.current_op.clone();
-                current_point_op.l =
-                    Rational64::new(settings.buffer_size as i64, settings.sample_rate as i64);
-                let stereo_waveform = render_mic(&current_point_op, origin, &mut osc);
+                let stereo_waveform = sum_all_waveforms(result);
                 write_output_buffer(&mut out_buffer, stereo_waveform);
-                state.inc();
 
                 pa::Continue
             }

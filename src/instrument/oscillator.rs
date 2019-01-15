@@ -62,7 +62,7 @@ impl Oscillator {
         );
     }
 
-    pub fn generate(&mut self, basis: Origin, n_samples_to_generate: f64) -> StereoWaveform {
+    pub fn generate(&mut self, n_samples_to_generate: f64) -> StereoWaveform {
         let total_len = self.sample_phase + n_samples_to_generate;
         let length = total_len.floor() as usize;
         self.sample_phase = total_len.fract();
