@@ -30,7 +30,7 @@ fn process_result(result: &mut DetectionResult) -> Origin {
     println!("freq {}, gain {}", result.frequency, result.gain);
 
     Origin {
-        f: result.frequency as f64,
+        f: 1.0 * result.frequency as f64,
         l: 1.0,
         g: result.gain as f64,
         p: 0.0,
