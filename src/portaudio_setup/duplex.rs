@@ -61,12 +61,27 @@ pub fn setup_portaudio_duplex(
 
     let mut point_op_e = PointOp::init();
     point_op_e.fm = Rational64::new(3, 1);
+    point_op_e.g = Rational64::new(1, 2);
     point_op_e.l = Rational64::new(3, 2);
 
+    let mut point_op_f = PointOp::init();
+    point_op_f.fm = Rational64::new(6, 1);
+    point_op_f.g = Rational64::new(1, 4);
+    point_op_f.pa = Rational64::new(1, 2);
+    point_op_f.l = Rational64::new(3, 1);
+
+    let mut point_op_g = PointOp::init();
+    point_op_g.fm = Rational64::new(6, 1);
+    point_op_g.g = Rational64::new(1, 4);
+    point_op_g.fa = Rational64::new(9, 1);
+    point_op_g.pa = Rational64::new(1, 2);
+    point_op_g.l = Rational64::new(3, 1);
     //
     let nf = vec![
         vec![point_op_a, point_op_b.clone(), point_op_c, point_op_b],
         vec![point_op_d, point_op_e],
+        vec![point_op_f],
+        vec![point_op_g],
     ];
     let mut nf_iterators = vec![];
 
