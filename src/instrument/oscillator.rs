@@ -42,12 +42,27 @@ impl Oscillator {
     }
 
     pub fn update(&mut self, basis: Origin, point_op: &PointOp) {
-        let l_gain = r_to_f64(point_op.g)
-            * (basis.p * -1.0 + (r_to_f64(point_op.pm) + r_to_f64(point_op.pa)) / -2.0)
-            * basis.g;
-        let r_gain = r_to_f64(point_op.g)
-            * (basis.p * 1.0 + (r_to_f64(point_op.pm) + r_to_f64(point_op.pa)) / 2.0)
-            * basis.g;
+        let pm = if *point_op.pm.numer() == 0 {
+            1.0
+        } else {
+            r_to_f64(point_op.pm)
+        };
+
+        let l_gain = if *point_op.g.numer() == 0 {
+           0.0
+        } else {
+            r_to_f64(point_op.g)
+                * (pm * (-1.0 + r_to_f64(point_op.pa)) / -2.0)
+                * basis.g
+        };
+
+        let r_gain = if *point_op.g.numer() == 0 {
+            0.0
+        } else {
+            r_to_f64(point_op.g)
+                * (pm * (1.0 + r_to_f64(point_op.pa)) / 2.0)
+                * basis.g
+        };
         let (ref mut l_voice, ref mut r_voice) = self.voices;
 
         l_voice.update(
