@@ -52,7 +52,7 @@ impl Oscillator {
            0.0
         } else {
             r_to_f64(point_op.g)
-                * (pm * (-1.0 + r_to_f64(point_op.pa)) / -2.0)
+                * ((-1.0 + r_to_f64(point_op.pa) * pm) / -2.0)
                 * basis.g
         };
 
@@ -60,7 +60,7 @@ impl Oscillator {
             0.0
         } else {
             r_to_f64(point_op.g)
-                * (pm * (1.0 + r_to_f64(point_op.pa)) / 2.0)
+                * ((1.0 + r_to_f64(point_op.pa) * pm) / 2.0)
                 * basis.g
         };
         let (ref mut l_voice, ref mut r_voice) = self.voices;
