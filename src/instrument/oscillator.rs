@@ -51,26 +51,18 @@ impl Oscillator {
         let l_gain = if *point_op.g.numer() == 0 {
             0.0
         } else {
-             g * (((-1.0 + pa * pm) + basis.p) / -2.0) * basis.g
+            g * (((1.0 + pa * pm) + basis.p) / 2.0) * basis.g
         };
 
         let r_gain = if *point_op.g.numer() == 0 {
             0.0
         } else {
-            g * (((1.0 + pa * pm) + basis.p) / 2.0) * basis.g
+            g * (((-1.0 + pa * pm) + basis.p) / -2.0) * basis.g
         };
         let (ref mut l_voice, ref mut r_voice) = self.voices;
 
-        l_voice.update(
-            (basis.f * fm) + fa,
-            l_gain,
-            point_op.osc_type,
-        );
-        r_voice.update(
-            (basis.f * fm) + fa,
-            r_gain,
-            point_op.osc_type,
-        );
+        l_voice.update((basis.f * fm) + fa, l_gain, point_op.osc_type);
+        r_voice.update((basis.f * fm) + fa, r_gain, point_op.osc_type);
     }
 
     pub fn generate(&mut self, n_samples_to_generate: f64) -> StereoWaveform {
