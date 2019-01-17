@@ -33,7 +33,7 @@ thing1 = {
 		Tm 15/8,
 		Tm 2,
 	] 
-	| Length 0.1	
+	| Length 0.001	
 }
 
 jitter = {
