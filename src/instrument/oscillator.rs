@@ -49,19 +49,15 @@ impl Oscillator {
         };
 
         let l_gain = if *point_op.g.numer() == 0 {
-           0.0
+            0.0
         } else {
-            r_to_f64(point_op.g)
-                * ((-1.0 + r_to_f64(point_op.pa) * pm) / -2.0)
-                * basis.g
+            r_to_f64(point_op.g) * ((-1.0 + r_to_f64(point_op.pa) * pm) / -2.0) * basis.g
         };
 
         let r_gain = if *point_op.g.numer() == 0 {
             0.0
         } else {
-            r_to_f64(point_op.g)
-                * ((1.0 + r_to_f64(point_op.pa) * pm) / 2.0)
-                * basis.g
+            r_to_f64(point_op.g) * ((1.0 + r_to_f64(point_op.pa) * pm) / 2.0) * basis.g
         };
         let (ref mut l_voice, ref mut r_voice) = self.voices;
 
