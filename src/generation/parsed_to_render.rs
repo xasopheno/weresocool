@@ -68,7 +68,7 @@ fn create_pb_instance(n: usize) -> Arc<Mutex<ProgressBar<std::io::Stdout>>> {
     Arc::new(Mutex::new(pb))
 }
 
-fn generate_waveforms(
+pub fn generate_waveforms(
     origin: &Origin,
     mut vec_sequences: Vec<Vec<PointOp>>,
 ) -> Vec<StereoWaveform> {
