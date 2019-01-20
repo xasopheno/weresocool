@@ -8,7 +8,7 @@ mod get_length_ratio;
 mod helpers;
 mod normalize;
 
-#[derive(Debug, Clone, PartialEq)]
+#[derive(Debug, Clone, PartialEq, Hash)]
 pub struct PointOp {
     pub fm: Rational64,
     pub fa: Rational64,
@@ -93,7 +93,7 @@ impl PointOp {
     }
 }
 
-#[derive(Debug, Clone, PartialEq)]
+#[derive(Debug, Clone, PartialEq, Hash)]
 pub struct NormalForm {
     pub operations: Vec<Vec<PointOp>>,
     pub length_ratio: Rational64,

@@ -42,6 +42,12 @@ fn run() -> Result<(), pa::Error> {
     let main = parsed.table.get("main").unwrap();
     let init = parsed.init;
 
+    let mut normal_form = NormalForm::init();
+
+    println!("\nGenerating Composition ");
+    main.apply_to_normal_form(&mut normal_form);
+
+    let pa = pa::PortAudio::new()?;
     let origin = Origin {
         f: r_to_f64(init.f),
         g: r_to_f64(init.g),
@@ -49,12 +55,6 @@ fn run() -> Result<(), pa::Error> {
         p: r_to_f64(init.p),
     };
 
-    let mut normal_form = NormalForm::init();
-
-    println!("\nGenerating Composition ");
-    main.apply_to_normal_form(&mut normal_form);
-
-    let pa = pa::PortAudio::new()?;
     let mut duplex_stream = setup_portaudio_duplex(normal_form.operations, origin, &pa)?;
     duplex_stream.start()?;
 
