@@ -1,29 +1,29 @@
-{ f: 220, l: 1, g: 1, p: 0}
+{ f: 300, l: 1, g: 1, p: 0}
 
 overtones = {
     O[
-    	-- (5/4, 3, 1, 0),
-     --  	(9/8, 0, 1, 0),
-      	-- (1/1, 2, 1, 0),
+    	(9/4, 3, 1, 0),
+    	(7/4, 0, 1, 0),
+    	(5/2, 0, 1, 0),
+      	(3/2, 0, 1, 0),
+      	(1/1, 2, 1, 0),
       	(1/1, 0, 1, 0),
+      	(1/2, 0, 1, 0),
   	]
 }
 
 thing1 = {
 	overtones |
-	Length 1/6 |
+	Length 1/8 |
 	Sequence [
-		-- PanA 1
-		-- PanA 3/4,
-		-- PanA 2/4, 
-		-- PanA 1/4,
 		AsIs,
 		Tm 9/8, 
 		Tm 5/4,
 		Silence 1
-	] 
-	| Sequence [AsIs, PanM -1, PanM 1] 
-	-- | Repeat 2
+	]
+	| PanA 1 
+	| Sequence [AsIs, PanM -1] 
+	| Sequence [AsIs, Gain 1/3, Gain 1/8, Gain 1/16]
 }
 
 main = {

@@ -1,0 +1,69 @@
+{ f: 220, l: 0.1, g: 1, p: 0}
+
+overtones = {
+    O[
+    	(10/3, 0, 1/4, 1),
+      	(9/4, 0, 1/2, -1),
+      	(3/2, 0, 1, 1/2),
+      	(1/1, 0, 1, -1/2),
+  	]
+}
+
+
+
+panner_l = {
+	Sequence [
+		AsIs, 
+		PanA -1/2,
+		PanA -1/4, 
+		PanA -1/8,
+		PanA -1/16
+	]
+}
+
+panner_r = {
+	Sequence [
+		AsIs, 
+		PanA 1/2,
+		PanA 1/4, 
+		PanA 1/8,
+		PanA 1/16
+	]
+}
+
+thing1 = {
+	overtones |
+	Overlay [
+		Tm 9/4 | panner_l | Repeat 3 > FitLength panner_l,
+		Tm 15/8 | panner_r | Repeat 2 > FitLength panner_r,
+		Tm 5/3,
+		Tm 5/4 | panner_l,
+		AsIs | panner_r,
+	] 
+	| Repeat 4 
+	| Sequence [
+		AsIs, 
+		Tm 9/8,
+		Tm 7/8, 
+		Tm 3/4,
+	]
+}
+
+
+thing2 = {
+	Sequence [
+		AsIs, 
+		Tm 9/8, 
+		Tm 7/4,
+		Tm 3/2, 
+	]
+	| Tm 1/2
+}
+
+main = {
+	Overlay [
+		thing1,
+	]
+
+}
+	

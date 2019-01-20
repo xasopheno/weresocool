@@ -3,24 +3,34 @@ extern crate socool_parser;
 extern crate weresocool;
 use num_rational::Rational64;
 use socool_parser::ast::Op::*;
+use socool_parser::parser::*;
 use std::collections::hash_map::DefaultHasher;
+use std::collections::HashMap;
+use std::fs;
 use std::hash::{Hash, Hasher};
+use std::io::Write;
+use std::path::PathBuf;
 
 fn main() {
     println!("\nHello Danny's WereSoCool Scratch Pad");
 
-    let mut seq = vec![1.0, 2.0, 3.0].into_iter().cycle();
-    let mut counter = 0.0;
-    let inc = 0.5;
-    let mut current = seq.next().unwrap();
-    while true {
-        if counter >= current {
-            counter = 0.0;
-            current = seq.next().unwrap()
+    let paths = fs::read_dir("./songs/test").unwrap();
+    for path in paths {
+        let p = path.unwrap().path();
+        if p.ends_with("pan_test.socool") {
+            println!("{:?}", p);
+            let hash = get_file_hash(p);
+            println!("{}", hash);
+            assert_eq!(hash, 11366878093498661911)
         }
-        println!("{:?}", current);
-        counter += inc;
     }
+}
+
+fn get_file_hash(p: PathBuf) -> u64 {
+    let parsed = parse_file(&p.into_os_string().into_string().unwrap(), None);
+    let main_op = parsed.table.get("main").unwrap();
+    let init = parsed.init;
+    calculate_hash(main_op)
 }
 
 fn calculate_hash<T: Hash>(t: &T) -> u64 {
