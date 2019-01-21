@@ -27,7 +27,7 @@ pub fn render(origin: &Origin, composition: &Op) -> StereoWaveform {
     println!("\nGenerating Composition ");
     composition.apply_to_normal_form(&mut normal_form);
 
-    let vec_wav = generate_waveforms(&origin, normal_form.operations);
+    let vec_wav = generate_waveforms(&origin, normal_form.operations, true);
     let mut result = sum_all_waveforms(vec_wav);
     result.normalize();
 
@@ -71,8 +71,11 @@ fn create_pb_instance(n: usize) -> Arc<Mutex<ProgressBar<std::io::Stdout>>> {
 pub fn generate_waveforms(
     origin: &Origin,
     mut vec_sequences: Vec<Vec<PointOp>>,
+    show: bool,
 ) -> Vec<StereoWaveform> {
-    println!("Rendering {:?} waveforms", vec_sequences.len());
+    if show {
+        println!("Rendering {:?} waveforms", vec_sequences.len());
+    }
     let pb = create_pb_instance(vec_sequences.len());
 
     let vec_wav = vec_sequences
