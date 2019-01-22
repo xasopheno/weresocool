@@ -34,6 +34,9 @@ type TestTable = IndexMap<String, CompositionHashes>;
 fn main() {
     println!("\nHello Danny's WereSoCool Scratch Pad");
 
+    //  1) Generate Hashes --bin test --generate
+    //  2) Run All Tests --bin test --all
+    //  3) Run Single Test --bin test --file ./songs/test/pan_test.socool
     let test_table = generate_test_table();
     //    write_test_table_to_json_file(&test_table);
     let decoded = read_test_table_from_json_file();
@@ -42,9 +45,8 @@ fn main() {
         println!("All Tests Passed");
     } else {
         show_difference(decoded, test_table);
-        println!("Error");
+        println!("Error above");
     }
-    //    assert_eq!(test_table, decoded)
 }
 
 #[allow(unused_must_use)]
@@ -175,7 +177,6 @@ fn generate_render_hashes(p: &String) -> CompositionHashes {
         stereo_waveform: render_hash,
     };
 
-    //    println!("{:#?}", hashes);
     hashes
 }
 
