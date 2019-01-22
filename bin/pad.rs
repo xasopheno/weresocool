@@ -36,7 +36,6 @@ fn main() {
     let paths = fs::read_dir("./songs/test").unwrap();
     for path in paths {
         let p = path.unwrap().path().into_os_string().into_string().unwrap();
-        //        if p.ends_with("pan_test.socool") {
         let composition_hashes = generate_render_hashes(&p);
         hm.insert(p, composition_hashes);
     }

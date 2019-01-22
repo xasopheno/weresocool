@@ -1,32 +1,16 @@
 { f: 300, l: 1, g: 1, p: 0}
 
-overtones = {
-    O[
-    	(9/4, 3, 1, 0),
-    	(7/4, 0, 1, 0),
-    	(5/2, 0, 1, 0),
-      	(3/2, 0, 1, 0),
-      	(1/1, 2, 1, 0),
-      	(1/1, 0, 1, 0),
-      	(1/2, 0, 1, 0),
-  	]
-}
-
-thing1 = {
-	overtones |
-	Length 1/8 |
+pan_test = {
 	Sequence [
-		AsIs,
-		Tm 9/8, 
-		Tm 5/4,
-		Silence 1
+		AsIs
 	]
-	| PanA 1 
-	| Sequence [AsIs, PanM -1] 
-	| Sequence [AsIs, Gain 1/3, Gain 1/8, Gain 1/16]
+	| Length 1/5
+	| Sequence [AsIs, Reverse]
+	| Sequence [AsIs, PanA -1.0, PanA 1/1] 
+	| Sequence [AsIs, PanM -1]
 }
 
 main = {
-	thing1
+	pan_test
 }
 	
