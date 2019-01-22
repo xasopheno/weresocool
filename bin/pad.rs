@@ -1,11 +1,14 @@
-extern crate bincode;
 extern crate num_rational;
 #[macro_use]
 extern crate serde_derive;
+extern crate indexmap;
+extern crate serde_json;
 extern crate socool_parser;
 extern crate weresocool;
-use bincode::{deserialize_from, serialize_into};
+use fs::write;
+use indexmap::IndexMap;
 use num_rational::Rational64;
+use serde_json::{from_reader, to_string_pretty, to_writer};
 use socool_parser::ast::Op::*;
 use socool_parser::parser::*;
 use std::collections::hash_map::DefaultHasher;
@@ -24,28 +27,31 @@ use weresocool::{
     operations::{NormalForm, Normalize as NormalizeOp},
 };
 
-type TestTable = HashMap<String, CompositionHashes>;
+type TestTable = IndexMap<String, CompositionHashes>;
 
 fn main() {
     println!("\nHello Danny's WereSoCool Scratch Pad");
 
-    //    let mut hm: TestTable = HashMap::new();
-    //    let paths = fs::read_dir("./songs/test").unwrap();
-    //    for path in paths {
-    //        let p = path.unwrap().path().into_os_string().into_string().unwrap();
-    //        //        if p.ends_with("pan_test.socool") {
-    //        let composition_hashes = generate_render_hashes(&p);
-    //        hm.insert(p, composition_hashes);
-    //    }
+    let mut hm: TestTable = IndexMap::new();
+    let paths = fs::read_dir("./songs/test").unwrap();
+    for path in paths {
+        let p = path.unwrap().path().into_os_string().into_string().unwrap();
+        //        if p.ends_with("pan_test.socool") {
+        let composition_hashes = generate_render_hashes(&p);
+        hm.insert(p, composition_hashes);
+    }
 
-    //    {
-    //        let mut file = File::create("test_hashes.bin").unwrap();
-    //        serialize_into(&mut file, &hm).unwrap();
-    //    }
+    hm.sort_by(|a, _b, c, _d| a.partial_cmp(c).unwrap());
 
-    let mut file = File::open("test_hashes.bin").unwrap();
+    {
+        let pretty = to_string_pretty(&hm).unwrap();
+        let mut file = File::create("test_hashes.json").unwrap();
+        file.write_all(pretty.as_bytes());
+    }
 
-    let decoded: TestTable = deserialize_from(&file).unwrap();
+    let mut file = File::open("test_hashes.json").unwrap();
+
+    let decoded: TestTable = from_reader(&file).unwrap();
     println!("{:#?}", decoded);
 }
 

@@ -1,0 +1,22 @@
+{
+  "./songs/test/import_test.socool": {
+    "op": 3576509625651144843,
+    "normal_form": 10959049080140485793,
+    "stereo_waveform": -0.24119003822767607
+  },
+  "./songs/test/import_test_2.socool": {
+    "op": 13646096770106105413,
+    "normal_form": 12138105103101760779,
+    "stereo_waveform": -1.752924671742581e-10
+  },
+  "./songs/test/pan_test.socool": {
+    "op": 11366878093498661911,
+    "normal_form": 17888512810530479489,
+    "stereo_waveform": -0.25227999105205157
+  },
+  "./songs/test/std_test.socool": {
+    "op": 13646096770106105413,
+    "normal_form": 12138105103101760779,
+    "stereo_waveform": -1.752924671742581e-10
+  }
+}
