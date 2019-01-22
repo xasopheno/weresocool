@@ -46,6 +46,7 @@ pub fn to_wav(composition: StereoWaveform, filename: String) {
 }
 
 pub fn to_json(_composition: &Op, _init: Init, _filename: String) {
+    println!("to_json is not working right now, sorry. back soon.");
 //    banner("JSONIFY-ing".to_string(), filename.clone());
 //        let mut normal_form = NormalForm::init();
 //
