@@ -1,3 +1,5 @@
+#![feature(test)]
+
 extern crate num_rational;
 #[macro_use]
 extern crate serde_derive;
@@ -6,7 +8,7 @@ extern crate serde_json;
 extern crate socool_parser;
 extern crate weresocool;
 use indexmap::IndexMap;
-use serde_json::to_string_pretty;
+use serde_json::{from_reader, to_string_pretty};
 use socool_parser::parser::*;
 use std::collections::hash_map::DefaultHasher;
 use std::fs;
@@ -19,6 +21,11 @@ use weresocool::{
     operations::{NormalForm, Normalize as NormalizeOp},
 };
 
+use test::Bencher;
+
+//#![feature(test)]
+extern crate test;
+
 type TestTable = IndexMap<String, CompositionHashes>;
 
 fn main() {
@@ -26,10 +33,9 @@ fn main() {
 
     let test_table = generate_test_table();
     write_test_table_to_json_file(&test_table);
-    //    let mut file = File::open("test/hashes.json").unwrap();
-    //
-    //    let decoded: TestTable = from_reader(&file).unwrap();
-    //    println!("{:#?}", decoded);
+
+    let decoded = read_test_table_from_json_file();
+//    assert_eq!(test_table, decoded)
 }
 
 #[derive(Debug, Copy, Clone, Serialize, Deserialize)]
@@ -45,6 +51,13 @@ fn write_test_table_to_json_file(test_table: &TestTable) {
     file.write_all(pretty.as_bytes()).unwrap();
 }
 
+fn read_test_table_from_json_file() -> TestTable {
+    let file = File::open("test/hashes.json").unwrap();
+
+    let decoded: TestTable = from_reader(&file).unwrap();
+    decoded
+}
+
 fn generate_test_table() -> TestTable {
     let mut test_table: TestTable = IndexMap::new();
     let paths = fs::read_dir("./songs/test").unwrap();
@@ -57,6 +70,13 @@ fn generate_test_table() -> TestTable {
     test_table.sort_by(|a, _b, c, _d| a.partial_cmp(c).unwrap());
     test_table
 }
+
+//#[bench]
+//fn bench_1(b: &mut Bencher) {
+//    b.iter(|| {
+//        1 + 2
+//    });
+//}
 
 fn generate_render_hashes(p: &String) -> CompositionHashes {
     let parsed = parse_file(p, None);
