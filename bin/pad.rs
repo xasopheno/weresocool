@@ -20,7 +20,10 @@ use weresocool::{
     instrument::{oscillator::Origin, stereo_waveform::Normalize},
     operations::{NormalForm, Normalize as NormalizeOp},
 };
-
+extern crate difference;
+extern crate term;
+use difference::{Changeset, Difference};
+use std::collections::HashMap;
 use test::Bencher;
 
 //#![feature(test)]
@@ -32,13 +35,76 @@ fn main() {
     println!("\nHello Danny's WereSoCool Scratch Pad");
 
     let test_table = generate_test_table();
-    write_test_table_to_json_file(&test_table);
-
+    //    write_test_table_to_json_file(&test_table);
     let decoded = read_test_table_from_json_file();
-//    assert_eq!(test_table, decoded)
+
+    if test_table == decoded {
+        println!("All Tests Passed");
+    } else {
+        show_difference(test_table, decoded);
+        println!("Error");
+    }
+    //    assert_eq!(test_table, decoded)
 }
 
-#[derive(Debug, Copy, Clone, Serialize, Deserialize)]
+#[allow(unused_must_use)]
+fn show_difference(a: TestTable, b: TestTable) {
+    let Changeset { diffs, .. } = Changeset::new(
+        &to_string_pretty(&a).unwrap(),
+        &to_string_pretty(&b).unwrap(),
+        "\n",
+    );
+
+    let mut t = term::stdout().unwrap();
+
+    for i in 0..diffs.len() {
+        match diffs[i] {
+            Difference::Same(ref x) => {
+                t.reset().unwrap();
+                writeln!(t, " {}", x);
+            }
+            Difference::Add(ref x) => {
+                match diffs[i - 1] {
+                    Difference::Rem(ref y) => {
+                        t.fg(term::color::GREEN).unwrap();
+                        write!(t, "+");
+                        let Changeset { diffs, .. } = Changeset::new(y, x, " ");
+                        for c in diffs {
+                            match c {
+                                Difference::Same(ref z) => {
+                                    t.fg(term::color::GREEN).unwrap();
+                                    write!(t, "{}", z);
+                                    write!(t, " ");
+                                }
+                                Difference::Add(ref z) => {
+                                    t.fg(term::color::WHITE).unwrap();
+                                    t.bg(term::color::GREEN).unwrap();
+                                    write!(t, "{}", z);
+                                    t.reset().unwrap();
+                                    write!(t, " ");
+                                }
+                                _ => (),
+                            }
+                        }
+                        writeln!(t, "");
+                    }
+                    _ => {
+                        t.fg(term::color::BRIGHT_GREEN).unwrap();
+                        writeln!(t, "+{}", x);
+                    }
+                };
+            }
+            Difference::Rem(ref x) => {
+                t.fg(term::color::RED).unwrap();
+                writeln!(t, "-{}", x);
+            }
+        }
+    }
+    t.reset().unwrap();
+    t.flush().unwrap();
+}
+
+#[derive(Debug, Copy, Clone, PartialEq, Serialize, Deserialize)]
 struct CompositionHashes {
     op: u64,
     normal_form: u64,
@@ -47,14 +113,15 @@ struct CompositionHashes {
 
 fn write_test_table_to_json_file(test_table: &TestTable) {
     let pretty = to_string_pretty(test_table).unwrap();
-    let mut file = File::create("test/hashes.json").unwrap();
+    let mut file = File::create("testing/hashes.json").unwrap();
     file.write_all(pretty.as_bytes()).unwrap();
 }
 
 fn read_test_table_from_json_file() -> TestTable {
-    let file = File::open("test/hashes.json").unwrap();
+    let file = File::open("testing/hashes.json").unwrap();
 
-    let decoded: TestTable = from_reader(&file).unwrap();
+    let mut decoded: TestTable = from_reader(&file).unwrap();
+    decoded.sort_by(|a, _b, c, _d| a.partial_cmp(c).unwrap());
     decoded
 }
 
@@ -100,6 +167,7 @@ fn generate_render_hashes(p: &String) -> CompositionHashes {
     result.normalize();
 
     let render_hash = sum_vec(result.l_buffer) + sum_vec(result.r_buffer);
+    let render_hash = (render_hash * 1_000_000_000_000.0).round() / 1_000_000_000_000.0;
 
     let hashes = CompositionHashes {
         op: op_hash,
