@@ -2,61 +2,61 @@
   "./songs/test/dennis_test.socool": {
     "op": 14688925666595994437,
     "normal_form": 6879130519557740661,
-    "stereo_waveform": 0.201314959112
+    "stereo_waveform": 0.20131495911242
   },
   "./songs/test/drew_test.socool": {
     "op": 6893752851884923541,
     "normal_form": 9270248506981122683,
-    "stereo_waveform": 2.377521157518
+    "stereo_waveform": 2.37752115751801
   },
   "./songs/test/gain_test.socool": {
     "op": 9728056129607408476,
     "normal_form": 1133329437140376761,
-    "stereo_waveform": 2.744485114458
+    "stereo_waveform": 2.74448511445751
   },
   "./songs/test/import_test.socool": {
     "op": 3576509625651144843,
     "normal_form": 10959049080140485793,
-    "stereo_waveform": -0.241190038228
+    "stereo_waveform": -0.24119003822768
   },
   "./songs/test/import_test_2.socool": {
     "op": 13646096770106105413,
     "normal_form": 12138105103101760779,
-    "stereo_waveform": -1.75e-10
+    "stereo_waveform": -1.7529e-10
   },
   "./songs/test/lee_test.socool": {
     "op": 8893446991647680332,
     "normal_form": 13878357867172957840,
-    "stereo_waveform": 0.714840948811
+    "stereo_waveform": 0.71484094881121
   },
   "./songs/test/length_test.socool": {
     "op": 603308914188024334,
     "normal_form": 16803304073225843292,
-    "stereo_waveform": -1.326078357726
+    "stereo_waveform": -1.32607835772581
   },
   "./songs/test/mod_by_test.socool": {
     "op": 15176773574076094935,
     "normal_form": 10993610789353102965,
-    "stereo_waveform": 5.326551373503
+    "stereo_waveform": 5.32655137350287
   },
   "./songs/test/pan_test.socool": {
     "op": 15376051873815421503,
     "normal_form": 14191243673982744204,
-    "stereo_waveform": 2.86e-10
+    "stereo_waveform": 2.8558e-10
   },
   "./songs/test/std_test.socool": {
     "op": 13646096770106105413,
     "normal_form": 12138105103101760779,
-    "stereo_waveform": -1.75e-10
+    "stereo_waveform": -1.7529e-10
   },
   "./songs/test/ta_test.socool": {
     "op": 10043374855076878730,
     "normal_form": 13297566025539050694,
-    "stereo_waveform": 1.331526212205
+    "stereo_waveform": 1.33152621220546
   },
   "./songs/test/tm_test.socool": {
     "op": 6779617967590285579,
     "normal_form": 9512399707634316840,
-    "stereo_waveform": -1.24725339998
+    "stereo_waveform": -1.24725339997995
   }
 }
