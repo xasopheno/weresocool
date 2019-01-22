@@ -5,25 +5,17 @@ extern crate indexmap;
 extern crate serde_json;
 extern crate socool_parser;
 extern crate weresocool;
-use fs::write;
 use indexmap::IndexMap;
-use num_rational::Rational64;
-use serde_json::{from_reader, to_string_pretty, to_writer};
-use socool_parser::ast::Op::*;
+use serde_json::to_string_pretty;
 use socool_parser::parser::*;
 use std::collections::hash_map::DefaultHasher;
-use std::collections::HashMap;
 use std::fs;
 use std::fs::File;
 use std::hash::{Hash, Hasher};
 use std::io::Write;
-use std::path::PathBuf;
 use weresocool::{
-    generation::parsed_to_render::{generate_waveforms, r_to_f64, render, sum_all_waveforms},
-    instrument::{
-        oscillator::Origin,
-        stereo_waveform::{Normalize, StereoWaveform},
-    },
+    generation::parsed_to_render::{generate_waveforms, r_to_f64, sum_all_waveforms},
+    instrument::{oscillator::Origin, stereo_waveform::Normalize},
     operations::{NormalForm, Normalize as NormalizeOp},
 };
 
@@ -32,26 +24,12 @@ type TestTable = IndexMap<String, CompositionHashes>;
 fn main() {
     println!("\nHello Danny's WereSoCool Scratch Pad");
 
-    let mut hm: TestTable = IndexMap::new();
-    let paths = fs::read_dir("./songs/test").unwrap();
-    for path in paths {
-        let p = path.unwrap().path().into_os_string().into_string().unwrap();
-        let composition_hashes = generate_render_hashes(&p);
-        hm.insert(p, composition_hashes);
-    }
-
-    hm.sort_by(|a, _b, c, _d| a.partial_cmp(c).unwrap());
-
-    {
-        let pretty = to_string_pretty(&hm).unwrap();
-        let mut file = File::create("test_hashes.json").unwrap();
-        file.write_all(pretty.as_bytes());
-    }
-
-    let mut file = File::open("test_hashes.json").unwrap();
-
-    let decoded: TestTable = from_reader(&file).unwrap();
-    println!("{:#?}", decoded);
+    let test_table = generate_test_table();
+    write_test_table_to_json_file(&test_table);
+    //    let mut file = File::open("test/hashes.json").unwrap();
+    //
+    //    let decoded: TestTable = from_reader(&file).unwrap();
+    //    println!("{:#?}", decoded);
 }
 
 #[derive(Debug, Copy, Clone, Serialize, Deserialize)]
@@ -59,6 +37,25 @@ struct CompositionHashes {
     op: u64,
     normal_form: u64,
     stereo_waveform: f64,
+}
+
+fn write_test_table_to_json_file(test_table: &TestTable) {
+    let pretty = to_string_pretty(test_table).unwrap();
+    let mut file = File::create("test/hashes.json").unwrap();
+    file.write_all(pretty.as_bytes()).unwrap();
+}
+
+fn generate_test_table() -> TestTable {
+    let mut test_table: TestTable = IndexMap::new();
+    let paths = fs::read_dir("./songs/test").unwrap();
+    for path in paths {
+        let p = path.unwrap().path().into_os_string().into_string().unwrap();
+        let composition_hashes = generate_render_hashes(&p);
+        test_table.insert(p, composition_hashes);
+    }
+
+    test_table.sort_by(|a, _b, c, _d| a.partial_cmp(c).unwrap());
+    test_table
 }
 
 fn generate_render_hashes(p: &String) -> CompositionHashes {
