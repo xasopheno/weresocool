@@ -140,12 +140,6 @@ fn generate_test_table() -> TestTable {
     test_table
 }
 
-//#[bench]
-//fn bench_1(b: &mut Bencher) {
-//    b.iter(|| {
-//        1 + 2
-//    });
-//}
 
 fn generate_render_hashes(p: &String) -> CompositionHashes {
     let parsed = parse_file(p, None);

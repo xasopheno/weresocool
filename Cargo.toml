@@ -33,7 +33,7 @@ path = "bin/mic.rs"
 
 [[bin]]
 name = "scratch"
-path = "bin/scratch.rs"
+path = "bin/pad.rs"
 
 [[bin]]
 name = "test"
