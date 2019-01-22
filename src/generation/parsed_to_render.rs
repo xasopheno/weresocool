@@ -15,7 +15,7 @@ use settings::default_settings;
 use socool_parser::{ast::Op, parser::Init};
 use std::sync::{Arc, Mutex};
 use ui::{banner, printed};
-use write::write_composition_to_wav;
+use write::{write_composition_to_wav};
 
 pub fn r_to_f64(r: Rational64) -> f64 {
     *r.numer() as f64 / *r.denom() as f64
@@ -45,20 +45,15 @@ pub fn to_wav(composition: StereoWaveform, filename: String) {
     printed("WAV".to_string());
 }
 
-pub fn to_json(composition: &Op, init: Init, filename: String) {
-    println!("Not working");
-    //    banner("JSONIFY-ing".to_string(), filename.clone());
-    //    let mut normal_form = NormalForm::init();
-    //
-    //    println!("Generating Composition \n");
-    //    composition.apply_to_normal_form(&mut normal_form);
-    //
-    ////    let e = event_from_init(init);
-    //
-    //    let norm_ev = generate_events(normal_form.operations, e);
-    //
-    //    write_composition_to_json(norm_ev, &filename).expect("Writing to JSON failed");
-    //    printed("JSON".to_string());
+pub fn to_json(_composition: &Op, _init: Init, _filename: String) {
+//    banner("JSONIFY-ing".to_string(), filename.clone());
+//        let mut normal_form = NormalForm::init();
+//
+//        println!("Generating Composition \n");
+//        composition.apply_to_normal_form(&mut normal_form);
+//
+//        write_composition_to_json(norm_ev, &filename).expect("Writing to JSON failed");
+//        printed("JSON".to_string());
 }
 
 fn create_pb_instance(n: usize) -> Arc<Mutex<ProgressBar<std::io::Stdout>>> {

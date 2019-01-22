@@ -1,5 +1,3 @@
-#![feature(test)]
-
 extern crate num_rational;
 #[macro_use]
 extern crate serde_derive;
@@ -24,10 +22,6 @@ extern crate difference;
 extern crate term;
 use difference::{Changeset, Difference};
 use std::collections::HashMap;
-use test::Bencher;
-
-//#![feature(test)]
-extern crate test;
 
 type TestTable = IndexMap<String, CompositionHashes>;
 
