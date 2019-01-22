@@ -39,7 +39,6 @@ fn process_result(result: &mut DetectionResult) -> Origin {
 
 pub fn setup_portaudio_duplex(
     parsed_composition: Vec<Vec<PointOp>>,
-    origin: Origin,
     ref pa: &pa::PortAudio,
 ) -> Result<pa::Stream<pa::NonBlocking, pa::Duplex<f32, f32>>, pa::Error> {
     let settings = default_settings();
@@ -48,43 +47,6 @@ pub fn setup_portaudio_duplex(
     let mut input_buffer: RingBuffer<f32> = RingBuffer::<f32>::new(settings.yin_buffer_size);
 
     let mut count = 0;
-    //    let mut point_op_a = PointOp::init();
-    //    point_op_a.fm = Rational64::new(1, 2);
-    //    point_op_a.l = Rational64::new(1, 1);
-    //
-    //    let mut point_op_b = PointOp::init();
-    //    point_op_b.fm = Rational64::new(3, 2);
-    //    let mut point_op_c = PointOp::init();
-    //    point_op_c.fm = Rational64::new(9, 4);
-    //
-    //    let mut point_op_d = PointOp::init();
-    //    point_op_d.fm = Rational64::new(5, 1);
-    //    point_op_d.l = Rational64::new(3, 2);
-    //
-    //    let mut point_op_e = PointOp::init();
-    //    point_op_e.fm = Rational64::new(3, 1);
-    //    point_op_e.g = Rational64::new(1, 2);
-    //    point_op_e.l = Rational64::new(3, 2);
-    //
-    //    let mut point_op_f = PointOp::init();
-    //    point_op_f.fm = Rational64::new(6, 1);
-    //    point_op_f.g = Rational64::new(1, 4);
-    //    point_op_f.pa = Rational64::new(1, 2);
-    //    point_op_f.l = Rational64::new(3, 1);
-    //
-    //    let mut point_op_g = PointOp::init();
-    //    point_op_g.fm = Rational64::new(6, 1);
-    //    point_op_g.g = Rational64::new(1, 4);
-    //    point_op_g.fa = Rational64::new(9, 1);
-    //    point_op_g.pa = Rational64::new(1, 2);
-    //    point_op_g.l = Rational64::new(3, 1);
-    //    //
-    //    let nf = vec![
-    //        vec![point_op_a, point_op_b.clone(), point_op_c, point_op_b],
-    //        vec![point_op_d, point_op_e],
-    //        vec![point_op_f],
-    //        vec![point_op_g],
-    //    ];
 
     let mut nf_iterators = vec![];
 

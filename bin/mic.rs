@@ -48,14 +48,8 @@ fn run() -> Result<(), pa::Error> {
     main.apply_to_normal_form(&mut normal_form);
 
     let pa = pa::PortAudio::new()?;
-    let origin = Origin {
-        f: r_to_f64(init.f),
-        g: r_to_f64(init.g),
-        l: r_to_f64(init.l),
-        p: r_to_f64(init.p),
-    };
 
-    let mut duplex_stream = setup_portaudio_duplex(normal_form.operations, origin, &pa)?;
+    let mut duplex_stream = setup_portaudio_duplex(normal_form.operations, &pa)?;
     duplex_stream.start()?;
 
     while let true = duplex_stream.is_active()? {}

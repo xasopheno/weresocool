@@ -27,7 +27,7 @@ pub fn handle_id_error(id_vec: Vec<String>, table: &HashMap<String, Op>) -> Op {
     }
 }
 
-pub fn handle_parse_error(location: Arc<Mutex<Vec<usize>>>, composition: &String) {
+pub fn handle_parse_error(location: Arc<Mutex<Vec<usize>>>, composition: &str) {
     let start_offset = 125;
     let end_offset = 50;
     let cmp_len = &composition.len();

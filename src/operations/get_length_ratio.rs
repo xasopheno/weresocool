@@ -15,11 +15,11 @@ pub mod get_length_ratio {
                 | Op::Noise {}
                 | Op::FInvert {}
                 | Op::Reverse {}
-                | Op::TransposeM { m: _ }
-                | Op::TransposeA { a: _ }
-                | Op::PanA { a: _ }
-                | Op::PanM { m: _ }
-                | Op::Gain { m: _ } => Ratio::from_integer(1),
+                | Op::TransposeM { .. }
+                | Op::TransposeA { .. }
+                | Op::PanA { .. }
+                | Op::PanM { .. }
+                | Op::Gain { .. } => Ratio::from_integer(1),
 
                 Op::Length { m } | Op::Silence { m } => *m,
 
