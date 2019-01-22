@@ -54,6 +54,11 @@
     "normal_form": 13297566025539050694,
     "stereo_waveform": 1.33152621220546
   },
+  "./songs/test/template.socool": {
+    "op": 8971301816335188839,
+    "normal_form": 12481259452404257734,
+    "stereo_waveform": 0.02005977744595
+  },
   "./songs/test/tm_test.socool": {
     "op": 6779617967590285579,
     "normal_form": 9512399707634316840,

@@ -59,15 +59,15 @@ pub fn write_composition_to_json(
     _composition: NormalForm,
     _filename: &String,
 ) -> std::io::Result<()> {
-//    let serialized = serde_json::to_string(&composition).unwrap();
-//    let mut file = File::create(format!("{}{}", filename, ".json".to_string()))?;
-//
-//    println!(
-//        "{}.json was written and has {} render stream(s).",
-//        filename,
-//        composition.len()
-//    );
-//
-//    file.write_all(serialized.as_bytes())?;
+    //    let serialized = serde_json::to_string(&composition).unwrap();
+    //    let mut file = File::create(format!("{}{}", filename, ".json".to_string()))?;
+    //
+    //    println!(
+    //        "{}.json was written and has {} render stream(s).",
+    //        filename,
+    //        composition.len()
+    //    );
+    //
+    //    file.write_all(serialized.as_bytes())?;
     Ok(())
 }

@@ -15,7 +15,7 @@ use settings::default_settings;
 use socool_parser::{ast::Op, parser::Init};
 use std::sync::{Arc, Mutex};
 use ui::{banner, printed};
-use write::{write_composition_to_wav};
+use write::write_composition_to_wav;
 
 pub fn r_to_f64(r: Rational64) -> f64 {
     *r.numer() as f64 / *r.denom() as f64
@@ -47,14 +47,14 @@ pub fn to_wav(composition: StereoWaveform, filename: String) {
 
 pub fn to_json(_composition: &Op, _init: Init, _filename: String) {
     println!("to_json is not working right now, sorry. back soon.");
-//    banner("JSONIFY-ing".to_string(), filename.clone());
-//        let mut normal_form = NormalForm::init();
-//
-//        println!("Generating Composition \n");
-//        composition.apply_to_normal_form(&mut normal_form);
-//
-//        write_composition_to_json(norm_ev, &filename).expect("Writing to JSON failed");
-//        printed("JSON".to_string());
+    //    banner("JSONIFY-ing".to_string(), filename.clone());
+    //        let mut normal_form = NormalForm::init();
+    //
+    //        println!("Generating Composition \n");
+    //        composition.apply_to_normal_form(&mut normal_form);
+    //
+    //        write_composition_to_json(norm_ev, &filename).expect("Writing to JSON failed");
+    //        printed("JSON".to_string());
 }
 
 fn create_pb_instance(n: usize) -> Arc<Mutex<ProgressBar<std::io::Stdout>>> {
