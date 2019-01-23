@@ -1,9 +1,7 @@
-//extern crate num_rational;
 //extern crate socool_parser;
 //extern crate weresocool;
 //use socool_parser::parser::*;
-//use weresocool::{
-//    instrument::{oscillator::Origin, stereo_waveform::Normalize},
+//use weresocool::j
 //    operations::{NormalForm, Normalize as NormalizeOp},
 //};
 

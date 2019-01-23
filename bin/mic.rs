@@ -4,8 +4,6 @@ extern crate weresocool;
 use socool_parser::parser::*;
 use weresocool::{
     examples::documentation,
-    generation::parsed_to_render::r_to_f64,
-    instrument::oscillator::Origin,
     operations::{NormalForm, Normalize},
     portaudio_setup::duplex::setup_portaudio_duplex,
     ui::{get_args, no_file_name, were_so_cool_logo},
@@ -40,7 +38,6 @@ fn run() -> Result<(), pa::Error> {
 
     let parsed = parse_file(&filename.unwrap().to_string(), None);
     let main = parsed.table.get("main").unwrap();
-    let init = parsed.init;
 
     let mut normal_form = NormalForm::init();
 
