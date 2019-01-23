@@ -52,7 +52,7 @@ fn main() -> Result<(), pa::Error> {
 
         banner("Now Playing".to_string(), filename.unwrap().to_string());
 
-      output_stream.start()?;
+        output_stream.start()?;
 
         while let true = output_stream.is_active()? {}
 
