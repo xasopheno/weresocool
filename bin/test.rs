@@ -1,15 +1,15 @@
 extern crate num_rational;
 extern crate weresocool;
-use weresocool::testing::{
-    generate_test_table, read_test_table_from_json_file, show_difference,
-    write_test_table_to_json_file,
+use weresocool::{
+    testing::{
+        generate_test_table, read_test_table_from_json_file, show_difference,
+        write_test_table_to_json_file,
+    },
+    ui::get_test_args,
 };
 
 fn main() {
-    println!("\nHello Danny's WereSoCool Scratch Pad");
-    //  1) Generate Hashes --bin test --re-hash
-    //  2) Run All Tests --bin test --all
-    //  3) Run Single Test --bin test --file ./songs/test/pan_test.socool
+    println!("\nHello Danny's WereSoCool Tests");
     let test_table = generate_test_table();
 
     if false {
