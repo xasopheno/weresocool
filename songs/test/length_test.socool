@@ -1,0 +1,22 @@
+{ f: 300, l: 1, g: 1, p: 0}
+
+length_test = {
+	Length 1/10 |
+	Sequence [
+		AsIs, 
+		Tm 3/2, 
+		Tm 5/4,
+		Tm 2
+	] 
+	| Sequence [
+		Length 0.75, 
+		Length 1,
+		Length 3/2,
+		Length 2
+	]
+}
+
+main = {
+	length_test
+}
+	

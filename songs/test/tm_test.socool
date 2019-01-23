@@ -1,0 +1,22 @@
+{ f: 300, l: 1, g: 1, p: 0}
+
+tm_test = {
+	Length 1/8 |
+	Sequence [
+		Tm 1.0,
+		Tm 5/4, 
+		Tm 1.5, 
+		Tm 7/8, 
+		Tm 1.0, 
+		Tm 9/8, 
+		Tm 5/4,
+		Tm 1/1,
+		Tm 3/4,
+		Tm 1/2,
+	]
+}
+
+main = {
+	tm_test
+}
+	

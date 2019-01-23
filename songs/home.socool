@@ -79,7 +79,8 @@ bass = {
 intro = {
 	Overlay [
 		Sequence [
-			Tm 4/3
+			Gain 3/4 
+			| Tm 4/3
 			| thing1 
 			| ModulateBy [modulator]
 			| Overlay [AsIs, Tm 3/2],
@@ -114,7 +115,7 @@ intro = {
 					    Gain 1/30 | Tm 3,
 					],
 				],
-				Gain 3 
+				Gain 3/4
 				| overtones 
 				| Sequence [Tm 3/2, Tm 9/8, Tm 4/3 | Length 1/2, Tm 9/8, Tm 5/4]
 				| Overlay [
@@ -279,8 +280,8 @@ after = {
 	]
 	| Sequence [
 		AsIs, 
-		Tm 7/8 | Length 4/5| PanM -1/4,
-		Tm 6/5 | Length 1/2 | Reverse | Sequence [AsIs | Gain 1/2 | PanM -1/2, Tm 3/2, Gain 1/4 | PanM -1] 
+		Tm 7/8 | Length 4/5 | PanM -1,
+		Tm 6/5 | Length 1/2 | Reverse | Sequence [AsIs | Gain 1/2 | PanM -1, Tm 3/2, Gain 1/4] 
 	]
 }
 
@@ -321,8 +322,8 @@ main = {
 	Sequence [
 		intro,
 		Silence 1/4,
-		Tm 6/5 | next,
-		Gain 3 | Overlay [
+		Gain 2/3 | Tm 6/5 | next,
+		Gain 2 | Overlay [
 			after | Gain 1/6,
 			Sequence [Silence 1, after_melody]
 		]

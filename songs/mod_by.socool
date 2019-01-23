@@ -13,7 +13,7 @@ instrument = {
 }
 
 thing1 = {
-	instrument |
+	-- instrument |
 	Sequence [
 		AsIs,
 		Tm 9/8,

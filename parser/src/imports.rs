@@ -39,17 +39,14 @@ pub fn get_filepath(s: String) -> String {
 
 fn get_as_name(s: String) -> String {
     let split: Vec<&str> = s.split(" as ").collect();
-    let result = split[split.len() - 1].to_string();
-    result
+    split[split.len() - 1].to_string()
 }
 
 pub fn get_import_name(s: String) -> String {
     let filename_or_as = get_import_name_from_path(s.to_string());
     if is_as_import(filename_or_as.clone()) {
-        let filename = get_as_name(filename_or_as);
-        filename
+        get_as_name(filename_or_as)
     } else {
-        let filename = filename_or_as.replace(".socool", "");
-        filename
+        filename_or_as.replace(".socool", "")
     }
 }

@@ -1,11 +1,13 @@
 pub mod tests {
-    use event::Sound;
+    extern crate num_rational;
     use instrument::{
         loudness::loudness_normalization,
-        oscillator::{OscType, Oscillator},
+        oscillator::{Origin, OscType, Oscillator},
         stereo_waveform::StereoWaveform,
         voice::{Voice, VoiceState},
     };
+    use num_rational::Rational64;
+    use operations::PointOp;
     use settings::get_test_settings;
     pub mod voice {
         use super::*;
@@ -76,7 +78,7 @@ pub mod tests {
                 portamento_length: 10,
                 sample_phase: 0.0,
                 settings: get_test_settings(),
-                voices: vec![(
+                voices: (
                     Voice {
                         index: 0,
                         phase: 0.0,
@@ -103,7 +105,7 @@ pub mod tests {
                         },
                         osc_type: OscType::Sine,
                     },
-                )],
+                ),
             };
             assert_eq!(osc, expected);
         }
@@ -111,35 +113,46 @@ pub mod tests {
         #[test]
         fn oscillator_update_test() {
             let mut osc = Oscillator::init(&get_test_settings());
-            osc.update(vec![Sound {
-                frequency: 100.0,
-                gain: 1.0,
-                pan: 0.5,
-                osc_type: OscType::Noise,
-            }]);
 
-            assert_eq!(osc.voices[0].0.past.frequency, 0.0);
-            assert_eq!(osc.voices[0].0.past.gain, 0.0);
-            assert_eq!(osc.voices[0].0.current.frequency, 100.0);
-            assert_eq!(osc.voices[0].0.current.gain, 0.08333333333333333);
-            assert_eq!(osc.voices[0].0.osc_type, OscType::Noise);
+            let origin = Origin {
+                f: 100.0,
+                g: 1.0,
+                l: 1.0,
+                p: 0.0,
+            };
+
+            let mut point_op = PointOp::init();
+            point_op.pa = Rational64::new(1, 2);
+
+            osc.update(origin, &point_op);
+
+            assert_eq!(osc.voices.0.past.frequency, 0.0);
+            assert_eq!(osc.voices.0.past.gain, 0.0);
+            assert_eq!(osc.voices.0.current.frequency, 100.0);
+            assert_eq!(osc.voices.0.current.gain, 0.75);
+            assert_eq!(osc.voices.0.osc_type, OscType::Sine);
             //
-            assert_eq!(osc.voices[0].1.past.frequency, 0.0);
-            assert_eq!(osc.voices[0].1.past.gain, 0.0);
-            assert_eq!(osc.voices[0].1.current.frequency, 100.0);
-            assert_eq!(osc.voices[0].1.current.gain, 0.25);
-            assert_eq!(osc.voices[0].1.osc_type, OscType::Noise);
+            assert_eq!(osc.voices.1.past.frequency, 0.0);
+            assert_eq!(osc.voices.1.past.gain, 0.0);
+            assert_eq!(osc.voices.1.current.frequency, 100.0);
+            assert_eq!(osc.voices.1.current.gain, 0.25);
+            assert_eq!(osc.voices.1.osc_type, OscType::Sine);
         }
         #[test]
         fn oscillator_generate_sine_test() {
             let mut osc = Oscillator::init(&get_test_settings());
 
-            osc.update(vec![Sound {
-                frequency: 300.0,
-                gain: 1.0,
-                pan: -0.5,
-                osc_type: OscType::Sine,
-            }]);
+            let origin = Origin {
+                f: 300.0,
+                g: 1.0,
+                l: 1.0,
+                p: 0.0,
+            };
+
+            let mut point_op = PointOp::init();
+            point_op.pa = Rational64::new(1, 2);
+
+            osc.update(origin, &point_op);
 
             let expected = StereoWaveform {
                 l_buffer: vec![0.0, 0.011016606476346103, 0.03299950110260482],

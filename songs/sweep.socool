@@ -79,5 +79,5 @@ main = {
 		sweeps1 | sweep_melody | Repeat 2,
 		sweeps2 | Gain 0.65 | sweep_melody | Repeat 2, 
 		sweeps1 | Gain 0.65 | sweep_melody | Reverse | Tm 7/8 | Length 3/4 | Repeat 3
-	] | Repeat 4
+	] | Repeat 2
 }

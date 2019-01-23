@@ -1,0 +1,23 @@
+{ f: 300, l: 1, g: 1, p: 0}
+
+ta_test = {
+	Length 1/10 |
+	Sequence [
+		Ta 0, 
+		Ta 5, 
+		Ta 22.5,
+		Ta -20, 
+		Ta 24/2,
+		Ta 0, 
+		Ta -20, 
+		Ta -50,
+		Ta -80,
+		Ta -100, 
+		Ta 90
+	]
+}
+
+main = {
+	ta_test
+}
+	

@@ -28,7 +28,7 @@ pub struct ParsedComposition {
     pub table: ParseTable,
 }
 
-pub fn parse_file(filename: &String, parse_table: Option<ParseTable>) -> ParsedComposition {
+pub fn parse_file(filename: &str, parse_table: Option<ParseTable>) -> ParsedComposition {
     let mut table = if parse_table.is_some() {
         parse_table.unwrap()
     } else {
@@ -78,7 +78,7 @@ pub fn parse_file(filename: &String, parse_table: Option<ParseTable>) -> ParsedC
         }
     }
 
-    let init = socool::SoCoolParser::new().parse(&mut table , &composition);
+    let init = socool::SoCoolParser::new().parse(&mut table, &composition);
 
     match init.clone() {
         Ok(init) => ParsedComposition { init, table },

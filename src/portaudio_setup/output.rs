@@ -1,13 +1,13 @@
 use instrument::stereo_waveform::StereoWaveform;
 use portaudio as pa;
-use settings::{get_default_app_settings, Settings};
+use settings::{default_settings, Settings};
 use write::write_output_buffer;
 
 pub fn setup_portaudio_output(
     mut composition: StereoWaveform,
     ref pa: &pa::PortAudio,
 ) -> Result<pa::Stream<pa::NonBlocking, pa::Output<f32>>, pa::Error> {
-    let settings = get_default_app_settings();
+    let settings = default_settings();
     let output_settings = get_output_settings(&pa, &settings)?;
     let mut index = 0;
     let output_stream = pa.open_non_blocking_stream(

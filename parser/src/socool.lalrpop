@@ -7,7 +7,6 @@ use crate::float_to_rational::helpers::*;
 use crate::error_handling::handle_id_error;
 use std::collections::HashMap;
 
-
 grammar<'table, 'err>(
     table: &'table mut HashMap<String, Op>,
 );

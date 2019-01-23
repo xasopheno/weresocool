@@ -1,12 +1,14 @@
-use event::Sound;
+extern crate num_rational;
+use generation::parsed_to_render::r_to_f64;
 use instrument::{stereo_waveform::StereoWaveform, voice::Voice};
+use operations::PointOp;
 use settings::Settings;
 use std::f64::consts::PI;
 fn tau() -> f64 {
     PI * 2.0
 }
 
-#[derive(Copy, Clone, Debug, PartialEq, Serialize)]
+#[derive(Copy, Clone, Debug, PartialEq, Serialize, Hash)]
 pub enum OscType {
     Sine,
     Noise,
@@ -15,48 +17,52 @@ pub enum OscType {
 
 #[derive(Clone, Debug, PartialEq)]
 pub struct Oscillator {
-    pub voices: Vec<(Voice, Voice)>,
+    pub voices: (Voice, Voice),
     pub portamento_length: usize,
     pub settings: Settings,
     pub sample_phase: f64,
 }
 
+#[derive(Copy, Clone, Debug, PartialEq)]
+pub struct Origin {
+    pub f: f64,
+    pub p: f64,
+    pub g: f64,
+    pub l: f64,
+}
+
 impl Oscillator {
     pub fn init(settings: &Settings) -> Oscillator {
         Oscillator {
-            voices: vec![(Voice::init(0), Voice::init(1))],
+            voices: (Voice::init(0), Voice::init(1)),
             portamento_length: settings.buffer_size,
             settings: settings.clone(),
             sample_phase: 0.0,
         }
     }
 
-    pub fn update(&mut self, mut sounds: Vec<Sound>) {
-        let len_voices = self.voices.len();
-        let len_sounds = sounds.len();
-        let difference = (len_voices as isize - len_sounds as isize).abs();
+    pub fn update(&mut self, basis: Origin, point_op: &PointOp) {
+        let pm = r_to_f64(point_op.pm);
+        let pa = r_to_f64(point_op.pa);
+        let g = r_to_f64(point_op.g);
+        let fm = r_to_f64(point_op.fm);
+        let fa = r_to_f64(point_op.fa);
 
-        if len_sounds > len_voices {
-            for i in 0..difference {
-                self.voices.push((
-                    Voice::init(len_voices + i as usize + 1),
-                    Voice::init(len_voices + i as usize + 2),
-                ));
-            }
-        }
-        if len_sounds < len_voices {
-            for _ in 0..difference {
-                sounds.push(Sound::init());
-            }
-        }
+        let l_gain = if *point_op.g.numer() == 0 {
+            0.0
+        } else {
+            g * (((1.0 + pa * pm) + basis.p) / 2.0) * basis.g
+        };
 
-        for (sound, lr_voice) in sounds.iter().zip(self.voices.iter_mut()) {
-            let l_gain = sound.gain * ((-1.0 + sound.pan) / -2.0);
-            let r_gain = sound.gain * ((1.0 + sound.pan) / 2.0);
-            let (ref mut l_voice, ref mut r_voice) = lr_voice;
-            l_voice.update(sound.frequency, l_gain, sound.osc_type);
-            r_voice.update(sound.frequency, r_gain, sound.osc_type);
-        }
+        let r_gain = if *point_op.g.numer() == 0 {
+            0.0
+        } else {
+            g * (((-1.0 + pa * pm) + basis.p) / -2.0) * basis.g
+        };
+        let (ref mut l_voice, ref mut r_voice) = self.voices;
+
+        l_voice.update((basis.f * fm) + fa, l_gain, point_op.osc_type);
+        r_voice.update((basis.f * fm) + fa, r_gain, point_op.osc_type);
     }
 
     pub fn generate(&mut self, n_samples_to_generate: f64) -> StereoWaveform {
@@ -66,11 +72,10 @@ impl Oscillator {
         let mut l_buffer: Vec<f64> = vec![0.0; length];
         let mut r_buffer: Vec<f64> = vec![0.0; length];
         let factor: f64 = tau() / self.settings.sample_rate;
-        for lr_voices in self.voices.iter_mut() {
-            let (ref mut l_voice, ref mut r_voice) = *lr_voices;
-            l_voice.generate_waveform(&mut l_buffer, self.portamento_length, factor);
-            r_voice.generate_waveform(&mut r_buffer, self.portamento_length, factor);
-        }
+
+        let (ref mut l_voice, ref mut r_voice) = self.voices;
+        l_voice.generate_waveform(&mut l_buffer, self.portamento_length, factor);
+        r_voice.generate_waveform(&mut r_buffer, self.portamento_length, factor);
 
         StereoWaveform { l_buffer, r_buffer }
     }

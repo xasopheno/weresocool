@@ -69,3 +69,16 @@ pub fn get_args() -> ArgMatches<'static> {
         )
         .get_matches()
 }
+
+pub fn get_test_args() -> ArgMatches<'static> {
+    App::new("WereSoCoolTest")
+        .about("*** Make cool tests. Impress your friends ***")
+        .author("Danny Meyer <Danny.Meyer@gmail.com>")
+        .arg(
+            Arg::with_name("rehash")
+                .help("Recalculate Hashes")
+                .short("r")
+                .long("rehash"),
+        )
+        .get_matches()
+}

@@ -6,4 +6,5 @@ pub mod ast;
 pub mod error_handling;
 pub mod float_to_rational;
 pub mod imports;
+#[allow(clippy::all)]
 pub mod parser;

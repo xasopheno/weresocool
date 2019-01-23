@@ -1,0 +1,16 @@
+{ f: 300, l: 1, g: 1, p: 0}
+
+pan_test = {
+	Sequence [
+		AsIs
+	]
+	| Length 1/5
+	| Sequence [AsIs, Reverse]
+	| Sequence [AsIs, PanA -1.0, PanA 1/1] 
+	| Sequence [AsIs, PanM -1]
+}
+
+main = {
+	pan_test
+}
+	
