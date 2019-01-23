@@ -36,5 +36,5 @@ name = "scratch"
 path = "bin/pad.rs"
 
 [[bin]]
-name = "test"
-path = "bin/test.rs"
+name = "snapshot"
+path = "bin/snapshot.rs"

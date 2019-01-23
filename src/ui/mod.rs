@@ -78,7 +78,7 @@ pub fn get_test_args() -> ArgMatches<'static> {
             Arg::with_name("rehash")
                 .help("Recalculate Hashes")
                 .short("r")
-                .long("print"),
+                .long("rehash"),
         )
         .get_matches()
 }
