@@ -12,7 +12,9 @@ fn main() {
     println!("\nHello Danny's WereSoCool Tests");
     let test_table = generate_test_table();
 
-    if false {
+    let args = get_test_args();
+
+    if args.is_present("rehash") {
         write_test_table_to_json_file(&test_table);
     } else {
         let decoded = read_test_table_from_json_file();

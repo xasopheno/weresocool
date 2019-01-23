@@ -75,11 +75,6 @@ pub fn get_test_args() -> ArgMatches<'static> {
         .about("*** Make cool tests. Impress your friends ***")
         .author("Danny Meyer <Danny.Meyer@gmail.com>")
         .arg(
-            Arg::with_name("filename")
-                .help("Run on single file")
-                .required(false),
-        )
-        .arg(
             Arg::with_name("rehash")
                 .help("Recalculate Hashes")
                 .short("r")
