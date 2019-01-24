@@ -22,6 +22,9 @@ fn main() {
             TransposeM {
                 m: Rational64::new(5, 4),
             },
+            Length {
+                m: Rational64::new(2, 1),
+            },
         ],
     }
     .apply_to_normal_form(&mut a);
@@ -31,6 +34,9 @@ fn main() {
             AsIs,
             TransposeA {
                 a: Rational64::new(2, 1),
+            },
+            Length {
+                m: Rational64::new(2, 1),
             },
         ],
     }

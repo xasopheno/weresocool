@@ -58,21 +58,28 @@ impl Mul<NormalForm> for NormalForm {
 
     fn mul(self, other: NormalForm) -> NormalForm {
         let mut nf_result = vec![];
+        let mut max_lr = Rational64::new(0,1);
         for other_seq in other.operations.iter() {
             for other_point_op in other_seq.iter() {
                 let mut seq_result: Vec<PointOp> = vec![];
+                let mut seq_lr = Rational64::new(0,1);
                 for self_seq in self.operations.iter() {
                     for self_point_op in self_seq.iter() {
+                        seq_lr += self_point_op.l * other_point_op.l;
                         seq_result.push(self_point_op.clone() * other_point_op.clone());
                     }
                 }
+
                 nf_result.push(seq_result);
+                if seq_lr > max_lr {
+                    max_lr = seq_lr
+                }
             }
         }
 
         NormalForm {
             operations: nf_result,
-            length_ratio: Rational64::new(0,1)
+            length_ratio: max_lr
         }
     }
 
@@ -80,6 +87,7 @@ impl Mul<NormalForm> for NormalForm {
 
 //impl MulAssign for NormalForm {
 //    fn mul_assign(&mut self, other: NormalForm) {
+//
 //    }
 //}
 
