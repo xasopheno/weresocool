@@ -1,8 +1,6 @@
 extern crate num_rational;
-extern crate socool_parser;
-use instrument::oscillator::OscType;
+use crate::ast::{Op, OscType};
 use num_rational::{Ratio, Rational64};
-use socool_parser::ast::Op;
 use std::ops::{Mul, MulAssign};
 mod get_length_ratio;
 mod helpers;

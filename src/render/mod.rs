@@ -1,9 +1,10 @@
+extern crate socool_ast;
 use generation::parsed_to_render::r_to_f64;
 use instrument::{
     oscillator::{Origin, Oscillator},
     stereo_waveform::StereoWaveform,
 };
-use operations::PointOp;
+use socool_ast::operations::PointOp;
 
 pub trait Render<T> {
     fn render(&mut self, origin: &Origin, oscillator: &mut Oscillator) -> StereoWaveform;

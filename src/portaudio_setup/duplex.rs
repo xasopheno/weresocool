@@ -1,12 +1,13 @@
 extern crate num_rational;
+extern crate socool_ast;
 use analyze::{Analyze, DetectionResult};
 use generation::parsed_to_render::*;
 use instrument::oscillator::{Origin, Oscillator};
 use num_rational::Rational64;
-use operations::PointOp;
 use portaudio as pa;
 use ring_buffer::RingBuffer;
 use settings::{default_settings, Settings};
+use socool_ast::operations::PointOp;
 use write::write_output_buffer;
 
 struct RealTimeState {

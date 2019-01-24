@@ -1,4 +1,6 @@
-use instrument::{loudness::loudness_normalization, oscillator::OscType};
+extern crate socool_ast;
+use instrument::loudness::loudness_normalization;
+use socool_ast::ast::OscType;
 
 #[derive(Clone, Debug, PartialEq)]
 pub struct Voice {

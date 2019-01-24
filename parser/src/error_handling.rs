@@ -1,6 +1,7 @@
 extern crate colored;
-use crate::ast::Op;
+extern crate socool_ast;
 use colored::*;
+use socool_ast::ast::Op;
 use std::cmp;
 use std::collections::HashMap;
 use std::sync::{Arc, Mutex};

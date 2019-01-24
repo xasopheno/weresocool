@@ -1,12 +1,11 @@
 pub mod normalize {
     extern crate num_rational;
     extern crate rand;
-    use instrument::oscillator::OscType;
+    use crate::ast::{Op, OscType};
+    use crate::operations::helpers::*;
+    use crate::operations::{GetLengthRatio, NormalForm, Normalize};
     use num_rational::Ratio;
-    use operations::helpers::*;
-    use operations::{GetLengthRatio, NormalForm, Normalize};
     use rand::prelude::*;
-    use socool_parser::ast::Op;
 
     impl Normalize for Op {
         fn apply_to_normal_form(&self, input: &mut NormalForm) {
@@ -14,8 +13,8 @@ pub mod normalize {
                 Op::AsIs => {}
 
                 Op::FInvert => {
-                    for mut voice in input.operations.iter_mut() {
-                        for mut point_op in voice {
+                    for voice in input.operations.iter_mut() {
+                        for point_op in voice {
                             if *point_op.fm.numer() != 0 {
                                 point_op.fm = point_op.fm.recip();
                             }
@@ -24,78 +23,78 @@ pub mod normalize {
                 }
 
                 Op::Reverse => {
-                    for mut voice in input.operations.iter_mut() {
+                    for voice in input.operations.iter_mut() {
                         voice.reverse();
                     }
                 }
 
                 Op::Sine => {
-                    for mut voice in input.operations.iter_mut() {
-                        for mut point_op in voice {
+                    for voice in input.operations.iter_mut() {
+                        for point_op in voice {
                             point_op.osc_type = OscType::Sine
                         }
                     }
                 }
 
                 Op::Square => {
-                    for mut voice in input.operations.iter_mut() {
-                        for mut point_op in voice {
+                    for voice in input.operations.iter_mut() {
+                        for point_op in voice {
                             point_op.osc_type = OscType::Square
                         }
                     }
                 }
 
                 Op::Noise => {
-                    for mut voice in input.operations.iter_mut() {
-                        for mut point_op in voice {
+                    for voice in input.operations.iter_mut() {
+                        for point_op in voice {
                             point_op.osc_type = OscType::Noise
                         }
                     }
                 }
 
                 Op::TransposeM { m } => {
-                    for mut voice in input.operations.iter_mut() {
-                        for mut point_op in voice {
+                    for voice in input.operations.iter_mut() {
+                        for point_op in voice {
                             point_op.fm *= m;
                         }
                     }
                 }
 
                 Op::TransposeA { a } => {
-                    for mut voice in input.operations.iter_mut() {
-                        for mut point_op in voice {
+                    for voice in input.operations.iter_mut() {
+                        for point_op in voice {
                             point_op.fa += a;
                         }
                     }
                 }
 
                 Op::PanA { a } => {
-                    for mut voice in input.operations.iter_mut() {
-                        for mut point_op in voice {
+                    for voice in input.operations.iter_mut() {
+                        for point_op in voice {
                             point_op.pa += a;
                         }
                     }
                 }
 
                 Op::PanM { m } => {
-                    for mut voice in input.operations.iter_mut() {
-                        for mut point_op in voice {
+                    for voice in input.operations.iter_mut() {
+                        for point_op in voice {
                             point_op.pm *= m;
                         }
                     }
                 }
 
                 Op::Gain { m } => {
-                    for mut voice in input.operations.iter_mut() {
-                        for mut point_op in voice {
+                    for voice in input.operations.iter_mut() {
+                        for point_op in voice {
                             point_op.g *= m;
                         }
                     }
                 }
 
                 Op::Length { m } => {
-                    for mut voice in input.operations.iter_mut() {
-                        for mut point_op in voice {
+                    for voice in input.operations.iter_mut() {
+                        for point_op in voice {
                             point_op.l *= m;
                         }
                     }
@@ -104,7 +103,7 @@ pub mod normalize {
                 }
 
                 Op::Silence { m } => {
-                    for mut voice in input.operations.iter_mut() {
+                    for voice in input.operations.iter_mut() {
                         for mut point_op in voice {
                             point_op.fm = Ratio::new(0, 1);
                             point_op.fm = Ratio::new(0, 1);
@@ -118,7 +117,7 @@ pub mod normalize {
                 }
 
                 Op::Choice { operations } => {
-                    let mut choice = rand::thread_rng().choose(&operations).unwrap();
+                    let choice = rand::thread_rng().choose(&operations).unwrap();
                     choice.apply_to_normal_form(input)
                 }
 

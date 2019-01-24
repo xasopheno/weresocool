@@ -1,18 +1,12 @@
 extern crate num_rational;
+extern crate socool_ast;
 use generation::parsed_to_render::r_to_f64;
 use instrument::{stereo_waveform::StereoWaveform, voice::Voice};
-use operations::PointOp;
 use settings::Settings;
+use socool_ast::operations::PointOp;
 use std::f64::consts::PI;
 fn tau() -> f64 {
     PI * 2.0
-}
-
-#[derive(Copy, Clone, Debug, PartialEq, Serialize, Hash)]
-pub enum OscType {
-    Sine,
-    Noise,
-    Square,
 }
 
 #[derive(Clone, Debug, PartialEq)]

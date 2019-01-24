@@ -1,10 +1,11 @@
 extern crate portaudio;
+extern crate socool_ast;
 extern crate socool_parser;
 extern crate weresocool;
-use socool_parser::parser::*;
+use socool_ast::operations::{NormalForm, Normalize};
+use socool_parser::parser::parse_file;
 use weresocool::{
     examples::documentation,
-    operations::{NormalForm, Normalize},
     portaudio_setup::duplex::setup_portaudio_duplex,
     ui::{get_args, no_file_name, were_so_cool_logo},
 };

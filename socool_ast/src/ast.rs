@@ -56,6 +56,13 @@ pub enum Op {
     },
 }
 
+#[derive(Copy, Clone, Debug, PartialEq, Serialize, Hash)]
+pub enum OscType {
+    Sine,
+    Noise,
+    Square,
+}
+
 pub fn is_choice_op(op: Op) -> bool {
     match op {
         Op::AsIs {}

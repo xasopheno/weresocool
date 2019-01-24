@@ -1,17 +1,14 @@
-extern crate num_rational;
-//#[macro_use]
-//extern crate serde_derive;
-//extern crate difference;
 extern crate indexmap;
-//extern crate serde_json;
+extern crate num_rational;
+extern crate socool_ast;
 extern crate socool_parser;
 extern crate term;
 use difference::{Changeset, Difference};
 use generation::parsed_to_render::{generate_waveforms, r_to_f64, sum_all_waveforms};
 use indexmap::IndexMap;
 use instrument::{oscillator::Origin, stereo_waveform::Normalize};
-use operations::{NormalForm, Normalize as NormalizeOp};
 use serde_json::{from_reader, to_string_pretty};
+use socool_ast::operations::{NormalForm, Normalize as NormalizeOp};
 use socool_parser::parser::*;
 use std::collections::hash_map::DefaultHasher;
 use std::fs;

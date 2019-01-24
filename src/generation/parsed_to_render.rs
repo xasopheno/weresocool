@@ -1,18 +1,20 @@
 extern crate num_rational;
 extern crate pbr;
 extern crate rayon;
+extern crate socool_ast;
 extern crate socool_parser;
 use instrument::{
     oscillator::{Origin, Oscillator},
     stereo_waveform::{Normalize, StereoWaveform},
 };
 use num_rational::Rational64;
-use operations::{NormalForm, Normalize as NormalizeOp, PointOp};
 use pbr::ProgressBar;
 use rayon::prelude::*;
 use render::Render;
 use settings::default_settings;
-use socool_parser::{ast::Op, parser::Init};
+use socool_ast::ast::Op;
+use socool_ast::operations::{NormalForm, Normalize as NormalizeOp, PointOp};
+use socool_parser::parser::Init;
 use std::sync::{Arc, Mutex};
 use ui::{banner, printed};
 use write::write_composition_to_wav;
