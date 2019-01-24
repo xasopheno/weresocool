@@ -7,6 +7,12 @@ mod helpers;
 mod normalize;
 
 #[derive(Debug, Clone, PartialEq, Hash)]
+pub struct NormalForm {
+    pub operations: Vec<Vec<PointOp>>,
+    pub length_ratio: Rational64,
+}
+
+#[derive(Debug, Clone, PartialEq, Hash)]
 pub struct PointOp {
     pub fm: Rational64,
     pub fa: Rational64,
@@ -46,6 +52,36 @@ impl MulAssign for PointOp {
         }
     }
 }
+
+impl Mul<NormalForm> for NormalForm {
+    type Output = NormalForm;
+
+    fn mul(self, other: NormalForm) -> NormalForm {
+        let mut nf_result = vec![];
+        for other_seq in other.operations.iter() {
+            for other_point_op in other_seq.iter() {
+                let mut seq_result: Vec<PointOp> = vec![];
+                for self_seq in self.operations.iter() {
+                    for self_point_op in self_seq.iter() {
+                        seq_result.push(self_point_op.clone() * other_point_op.clone());
+                    }
+                }
+                nf_result.push(seq_result);
+            }
+        }
+
+        NormalForm {
+            operations: nf_result,
+            length_ratio: Rational64::new(0,1)
+        }
+    }
+
+}
+
+//impl MulAssign for NormalForm {
+//    fn mul_assign(&mut self, other: NormalForm) {
+//    }
+//}
 
 impl PointOp {
     pub fn mod_by(&mut self, other: PointOp) {
@@ -101,12 +137,6 @@ impl PointOp {
             ],
         }
     }
-}
-
-#[derive(Debug, Clone, PartialEq, Hash)]
-pub struct NormalForm {
-    pub operations: Vec<Vec<PointOp>>,
-    pub length_ratio: Rational64,
 }
 
 impl NormalForm {
