@@ -1,16 +1,15 @@
 #[cfg(test)]
 pub mod normalize_tests {
     extern crate num_rational;
-    extern crate socool_ast;
-    extern crate socool_parser;
-    use crate::ast::OscType;
+    use crate::{
+        ast::{Op::*, OscType},
+        operations::{NormalForm, Normalize, PointOp},
+    };
     use num_rational::Ratio;
-    use socool_ast::operations::{NormalForm, Normalize, PointOp};
-    use socool_parser::ast::Op::*;
 
     #[test]
-    fn point_op_mul() {
-        let a = PointOp {
+    fn point_op_mod_by_mul() {
+        let mut a = PointOp {
             fm: Ratio::new(3, 2),
             fa: Ratio::new(0, 1),
             pm: Ratio::new(1, 1),
@@ -30,7 +29,7 @@ pub mod normalize_tests {
             osc_type: OscType::Noise,
         };
 
-        let result = a * b;
+        a.mod_by(b);
 
         let expected = PointOp {
             fm: Ratio::new(3, 1),
@@ -42,7 +41,7 @@ pub mod normalize_tests {
             osc_type: OscType::Noise,
         };
 
-        assert_eq!(result, expected)
+        assert_eq!(a, expected)
     }
 
     #[test]
