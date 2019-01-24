@@ -29,7 +29,7 @@ impl Mul<PointOp> for PointOp {
             pm: self.pm * other.pm,
             pa: self.pa + other.pa,
             g: self.g * other.g,
-            l: self.l,
+            l: self.l * other.l,
             osc_type: other.osc_type,
         }
     }
@@ -43,13 +43,25 @@ impl MulAssign for PointOp {
             pm: self.pm * other.pm,
             pa: self.pa + other.pa,
             g: self.g * other.g,
-            l: self.l,
+            l: self.l * other.l,
             osc_type: other.osc_type,
         }
     }
 }
 
 impl PointOp {
+    pub fn mod_by(&mut self, other: PointOp) {
+        *self = PointOp {
+            fm: self.fm * other.fm,
+            fa: self.fa + other.fa,
+            pm: self.pm * other.pm,
+            pa: self.pa + other.pa,
+            g: self.g * other.g,
+            l: self.l,
+            osc_type: other.osc_type,
+        }
+    }
+
     pub fn init() -> PointOp {
         PointOp {
             fm: Ratio::new(1, 1),

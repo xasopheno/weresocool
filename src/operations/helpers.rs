@@ -14,21 +14,21 @@ pub fn modulate(input: &Vec<PointOp>, modulator: &Vec<PointOp>) -> Vec<PointOp> 
         let modu_l = modu.l;
         let inpu_l = inpu.l;
         if modu_l < inpu_l {
-            modu *= inpu;
+            modu.mod_by(inpu);
             result.push(modu);
 
             i[0].l -= modu_l;
 
             m.remove(0);
         } else if modu.l > inpu.l {
-            inpu *= modu;
+            inpu.mod_by(modu);
             result.push(inpu);
 
             m[0].l -= inpu_l;
 
             i.remove(0);
         } else {
-            inpu *= modu;
+            inpu.mod_by(modu);
             result.push(inpu);
 
             i.remove(0);
