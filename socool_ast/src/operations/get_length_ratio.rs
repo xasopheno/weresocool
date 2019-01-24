@@ -1,8 +1,7 @@
 pub mod get_length_ratio {
     use num_rational::{Ratio, Rational64};
-    use socool_parser::ast::Op;
-
-    use operations::GetLengthRatio;
+    use crate::ast::Op;
+    use crate::operations::GetLengthRatio;
 
     extern crate num_rational;
 

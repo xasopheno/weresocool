@@ -2,9 +2,10 @@
 pub mod normalize_tests {
     extern crate num_rational;
     extern crate socool_parser;
-    use instrument::oscillator::OscType;
+    extern crate socool_ast;
+    use crate::ast::OscType;
     use num_rational::Ratio;
-    use operations::{NormalForm, Normalize, PointOp};
+    use socool_ast::operations::{NormalForm, Normalize, PointOp};
     use socool_parser::ast::Op::*;
 
     #[test]

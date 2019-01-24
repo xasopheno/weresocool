@@ -13,3 +13,4 @@ lalrpop-util = "0.16.0"
 regex = "1"
 colored = "1.6"
 num-rational = "0.2"
+socool_ast = { path = "../socool_ast" }

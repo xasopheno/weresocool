@@ -1,12 +1,11 @@
 pub mod normalize {
     extern crate num_rational;
     extern crate rand;
-    use instrument::oscillator::OscType;
     use num_rational::Ratio;
-    use operations::helpers::*;
-    use operations::{GetLengthRatio, NormalForm, Normalize};
+    use crate::operations::helpers::*;
+    use crate::operations::{GetLengthRatio, NormalForm, Normalize};
     use rand::prelude::*;
-    use socool_parser::ast::Op;
+    use crate::ast::{Op, OscType};
 
     impl Normalize for Op {
         fn apply_to_normal_form(&self, input: &mut NormalForm) {

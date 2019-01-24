@@ -1,5 +1,6 @@
 extern crate colored;
-use crate::ast::Op;
+extern crate socool_ast;
+use socool_ast::ast::Op;
 use colored::*;
 use std::cmp;
 use std::collections::HashMap;

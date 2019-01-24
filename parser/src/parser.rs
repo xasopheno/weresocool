@@ -1,7 +1,8 @@
 lalrpop_mod!(pub socool);
 extern crate colored;
 extern crate num_rational;
-use crate::ast::*;
+extern crate socool_ast;
+use socool_ast::ast::*;
 use crate::error_handling::handle_parse_error;
 use crate::imports::{get_filepath_and_import_name, is_import};
 use colored::*;
