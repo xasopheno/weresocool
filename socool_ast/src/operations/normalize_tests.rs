@@ -5,7 +5,7 @@ pub mod normalize_tests {
         ast::{Op::*, OscType},
         operations::{NormalForm, Normalize, PointOp},
     };
-    use num_rational::Ratio;
+    use num_rational::{Ratio, Rational64};
 
     #[test]
     fn point_op_mod_by_mul() {
@@ -42,6 +42,137 @@ pub mod normalize_tests {
         };
 
         assert_eq!(a, expected)
+    }
+
+    #[test]
+    fn normal_form_mul() {
+        let mut a = NormalForm::init();
+        let mut b = NormalForm::init();
+
+        Sequence {
+            operations: vec![
+                TransposeM {
+                    m: Rational64::new(3, 2),
+                },
+                TransposeM {
+                    m: Rational64::new(5, 4),
+                },
+                Length {
+                    m: Rational64::new(2, 1),
+                },
+            ],
+        }
+        .apply_to_normal_form(&mut a);
+
+        Sequence {
+            operations: vec![
+                AsIs,
+                TransposeA {
+                    a: Rational64::new(2, 1),
+                },
+                Length {
+                    m: Rational64::new(2, 1),
+                },
+            ],
+        }
+        .apply_to_normal_form(&mut b);
+
+        let c = a * b;
+
+        let expected = NormalForm {
+            operations: vec![
+                vec![
+                    PointOp {
+                        fm: Ratio::new(3, 2),
+                        fa: Ratio::new(0, 1),
+                        pm: Ratio::new(1, 1),
+                        pa: Ratio::new(0, 1),
+                        g: Ratio::new(1, 1),
+                        l: Ratio::new(1, 1),
+                        osc_type: OscType::Sine,
+                    },
+                    PointOp {
+                        fm: Ratio::new(5, 4),
+                        fa: Ratio::new(0, 1),
+                        pm: Ratio::new(1, 1),
+                        pa: Ratio::new(0, 1),
+                        g: Ratio::new(1, 1),
+                        l: Ratio::new(1, 1),
+                        osc_type: OscType::Sine,
+                    },
+                    PointOp {
+                        fm: Ratio::new(1, 1),
+                        fa: Ratio::new(0, 1),
+                        pm: Ratio::new(1, 1),
+                        pa: Ratio::new(0, 1),
+                        g: Ratio::new(1, 1),
+                        l: Ratio::new(2, 1),
+                        osc_type: OscType::Sine,
+                    },
+                ],
+                vec![
+                    PointOp {
+                        fm: Ratio::new(3, 2),
+                        fa: Ratio::new(2, 1),
+                        pm: Ratio::new(1, 1),
+                        pa: Ratio::new(0, 1),
+                        g: Ratio::new(1, 1),
+                        l: Ratio::new(1, 1),
+                        osc_type: OscType::Sine,
+                    },
+                    PointOp {
+                        fm: Ratio::new(5, 4),
+                        fa: Ratio::new(2, 1),
+                        pm: Ratio::new(1, 1),
+                        pa: Ratio::new(0, 1),
+                        g: Ratio::new(1, 1),
+                        l: Ratio::new(1, 1),
+                        osc_type: OscType::Sine,
+                    },
+                    PointOp {
+                        fm: Ratio::new(1, 1),
+                        fa: Ratio::new(2, 1),
+                        pm: Ratio::new(1, 1),
+                        pa: Ratio::new(0, 1),
+                        g: Ratio::new(1, 1),
+                        l: Ratio::new(2, 1),
+                        osc_type: OscType::Sine,
+                    },
+                ],
+                vec![
+                    PointOp {
+                        fm: Ratio::new(3, 2),
+                        fa: Ratio::new(0, 1),
+                        pm: Ratio::new(1, 1),
+                        pa: Ratio::new(0, 1),
+                        g: Ratio::new(1, 1),
+                        l: Ratio::new(2, 1),
+                        osc_type: OscType::Sine,
+                    },
+                    PointOp {
+                        fm: Ratio::new(5, 4),
+                        fa: Ratio::new(0, 1),
+                        pm: Ratio::new(1, 1),
+                        pa: Ratio::new(0, 1),
+                        g: Ratio::new(1, 1),
+                        l: Ratio::new(2, 1),
+                        osc_type: OscType::Sine,
+                    },
+                    PointOp {
+                        fm: Ratio::new(1, 1),
+                        fa: Ratio::new(0, 1),
+                        pm: Ratio::new(1, 1),
+                        pa: Ratio::new(0, 1),
+                        g: Ratio::new(1, 1),
+                        l: Ratio::new(4, 1),
+                        osc_type: OscType::Sine,
+                    },
+                ],
+            ],
+            length_ratio: Ratio::new(8, 1),
+        };
+
+        assert_eq!(c, expected)
     }
 
     #[test]
