@@ -1,8 +1,8 @@
 #[cfg(test)]
 pub mod normalize_tests {
     extern crate num_rational;
-    extern crate socool_parser;
     extern crate socool_ast;
+    extern crate socool_parser;
     use crate::ast::OscType;
     use num_rational::Ratio;
     use socool_ast::operations::{NormalForm, Normalize, PointOp};

@@ -1,7 +1,7 @@
 pub mod get_length_ratio {
-    use num_rational::{Ratio, Rational64};
     use crate::ast::Op;
     use crate::operations::GetLengthRatio;
+    use num_rational::{Ratio, Rational64};
 
     extern crate num_rational;
 
