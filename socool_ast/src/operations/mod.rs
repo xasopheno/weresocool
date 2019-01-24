@@ -39,6 +39,22 @@ impl Mul<PointOp> for PointOp {
     }
 }
 
+impl<'a, 'b> Mul<&'b PointOp> for &'a PointOp {
+    type Output = PointOp;
+
+    fn mul(self, other: &'b PointOp) -> PointOp {
+        PointOp {
+            fm: self.fm * other.fm,
+            fa: self.fa + other.fa,
+            pm: self.pm * other.pm,
+            pa: self.pa + other.pa,
+            g: self.g * other.g,
+            l: self.l * other.l,
+            osc_type: other.osc_type,
+        }
+    }
+}
+
 impl MulAssign for PointOp {
     fn mul_assign(&mut self, other: PointOp) {
         *self = PointOp {
@@ -53,6 +69,8 @@ impl MulAssign for PointOp {
     }
 }
 
+
+
 impl Mul<NormalForm> for NormalForm {
     type Output = NormalForm;
 
@@ -66,7 +84,7 @@ impl Mul<NormalForm> for NormalForm {
                 for self_seq in self.operations.iter() {
                     for self_point_op in self_seq.iter() {
                         seq_lr += self_point_op.l * other_point_op.l;
-                        seq_result.push(self_point_op.clone() * other_point_op.clone());
+                        seq_result.push(self_point_op * other_point_op);
                     }
                 }
 
@@ -84,12 +102,6 @@ impl Mul<NormalForm> for NormalForm {
     }
 
 }
-
-//impl MulAssign for NormalForm {
-//    fn mul_assign(&mut self, other: NormalForm) {
-//
-//    }
-//}
 
 impl PointOp {
     pub fn mod_by(&mut self, other: PointOp) {
