@@ -1,11 +1,11 @@
 pub mod normalize {
     extern crate num_rational;
     extern crate rand;
-    use num_rational::Ratio;
+    use crate::ast::{Op, OscType};
     use crate::operations::helpers::*;
     use crate::operations::{GetLengthRatio, NormalForm, Normalize};
+    use num_rational::Ratio;
     use rand::prelude::*;
-    use crate::ast::{Op, OscType};
 
     impl Normalize for Op {
         fn apply_to_normal_form(&self, input: &mut NormalForm) {

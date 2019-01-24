@@ -1,6 +1,6 @@
 extern crate num_rational;
-use num_rational::{Ratio, Rational64};
 use crate::ast::{Op, OscType};
+use num_rational::{Ratio, Rational64};
 use std::ops::{Mul, MulAssign};
 mod get_length_ratio;
 mod helpers;

@@ -1,7 +1,7 @@
 extern crate num_rational;
 use crate::ast::OscType;
-use num_rational::{Ratio, Rational64};
 use crate::operations::{NormalForm, PointOp};
+use num_rational::{Ratio, Rational64};
 use std::cmp::Ordering::{Equal, Greater, Less};
 
 pub fn modulate(input: &Vec<PointOp>, modulator: &Vec<PointOp>) -> Vec<PointOp> {
