@@ -1,6 +1,7 @@
 #[cfg(test)]
 pub mod normalize_tests {
     extern crate num_rational;
+    extern crate pretty_assertions;
     use crate::{
         ast::{Op::*, OscType},
         operations::{NormalForm, Normalize, PointOp},
