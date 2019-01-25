@@ -170,10 +170,6 @@ impl NormalForm {
             length_ratio: Ratio::new(0, 1),
         }
     }
-
-    pub fn get_nf_length_ratio(&self) -> Rational64 {
-        self.length_ratio
-    }
 }
 
 pub trait Normalize {
@@ -182,6 +178,12 @@ pub trait Normalize {
 
 pub trait GetLengthRatio {
     fn get_length_ratio(&self) -> Rational64;
+}
+
+impl GetLengthRatio for NormalForm {
+    fn get_length_ratio(&self) -> Rational64 {
+        self.length_ratio
+    }
 }
 
 #[cfg(test)]

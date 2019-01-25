@@ -1,6 +1,6 @@
 extern crate num_rational;
 use crate::ast::OscType;
-use crate::operations::{NormalForm, PointOp};
+use crate::operations::{GetLengthRatio, NormalForm, PointOp};
 use num_rational::{Ratio, Rational64};
 use std::cmp::Ordering::{Equal, Greater, Less};
 
@@ -40,7 +40,7 @@ pub fn modulate(input: &Vec<PointOp>, modulator: &Vec<PointOp>) -> Vec<PointOp> 
 }
 
 pub fn pad_length(input: &mut NormalForm, max_len: Rational64) {
-    let input_lr = input.get_nf_length_ratio();
+    let input_lr = input.get_length_ratio();
     if max_len > Rational64::new(0, 1) && input_lr < max_len {
         for voice in input.operations.iter_mut() {
             let osc_type = voice.clone().last().unwrap().osc_type;
