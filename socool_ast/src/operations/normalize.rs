@@ -1,14 +1,14 @@
 pub mod normalize {
     extern crate num_rational;
     extern crate rand;
-    use crate::ast::{Op, OscType};
+    use crate::ast::{ParseTable, Op, OscType};
     use crate::operations::helpers::*;
     use crate::operations::{GetLengthRatio, NormalForm, Normalize};
     use num_rational::Ratio;
     use rand::prelude::*;
 
     impl Normalize for Op {
-        fn apply_to_normal_form(&self, input: &mut NormalForm) {
+        fn apply_to_normal_form(&self, input: &mut NormalForm, table: &ParseTable) {
             match self {
                 Op::AsIs => {}
 
@@ -118,7 +118,7 @@ pub mod normalize {
 
                 Op::Choice { operations } => {
                     let choice = rand::thread_rng().choose(&operations).unwrap();
-                    choice.apply_to_normal_form(input)
+                    choice.apply_to_normal_form(input, table)
                 }
 
                 Op::Sequence { operations } => {
@@ -126,7 +126,7 @@ pub mod normalize {
 
                     for op in operations {
                         let mut input_clone = input.clone();
-                        op.apply_to_normal_form(&mut input_clone);
+                        op.apply_to_normal_form(&mut input_clone, table);
                         result = join_sequence(result, input_clone);
                     }
 
@@ -135,7 +135,7 @@ pub mod normalize {
 
                 Op::Compose { operations } => {
                     for op in operations {
-                        op.apply_to_normal_form(input);
+                        op.apply_to_normal_form(input, table);
                     }
                 }
 
@@ -148,7 +148,7 @@ pub mod normalize {
                     let ratio = target_length / main_length;
                     let new_op = Op::Length { m: ratio };
 
-                    new_op.apply_to_normal_form(input);
+                    new_op.apply_to_normal_form(input, table);
 
                     input.length_ratio = target_length;
                 }
@@ -158,14 +158,14 @@ pub mod normalize {
 
                     for op in operations {
                         let mut nf = NormalForm::init();
-                        op.apply_to_normal_form(&mut nf);
+                        op.apply_to_normal_form(&mut nf, table);
                         modulator = join_sequence(modulator, nf);
                     }
 
                     Op::Length {
                         m: input.length_ratio / modulator.length_ratio,
                     }
-                    .apply_to_normal_form(&mut modulator);
+                    .apply_to_normal_form(&mut modulator, table);
 
                     let mut result = NormalForm::init_empty();
 
@@ -186,7 +186,7 @@ pub mod normalize {
                         .iter()
                         .map(|op| {
                             let mut input_clone = input.clone();
-                            op.apply_to_normal_form(&mut input_clone);
+                            op.apply_to_normal_form(&mut input_clone, table);
                             input_clone
                         })
                         .collect();

@@ -13,17 +13,17 @@ fn main() {
 
     //    foo = { foo_op }
     //    table.insert('foo', foo_op.Normalize())
-    //    foo = NormalForm(Op, LR)
+    //    foo = foo_op.normalize()
 
     //      bar = {
     //          Sequence [
-    //          AsIs,
-    //          Tm 3/2,
-    //          foo => Id('foo'),
-    //          AsIs,
-    //          ]
-    //          > FitLength foo => (Length lr_input/lr_foo)
-    //      }
+    //              AsIs = AsIs.normalize,
+    //              Tm 3/2 = Tm3/2.normalize,
+    //              foo => Id('foo'),
+    //              AsIs = AsIs.normalize,
+    //          ].normalize
+    //          > FitLength Length 2 => (Length lr_input/lr_foo)
+    //      }.normalize
 
     //      table.insert('bar', bar.Normalize())
     //
@@ -37,4 +37,8 @@ fn main() {
     //          ]
 
     //      }
+
+    //      Normalize:
+    //          NormalizeForm -> self
+    //          Op -> self.normalize()
 }

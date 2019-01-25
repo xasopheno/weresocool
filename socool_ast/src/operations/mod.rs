@@ -1,5 +1,5 @@
 extern crate num_rational;
-use crate::ast::{Op, OscType};
+use crate::ast::{ParseTable, Op, OscType};
 use num_rational::{Ratio, Rational64};
 use std::ops::{Mul, MulAssign};
 mod get_length_ratio;
@@ -173,7 +173,7 @@ impl NormalForm {
 }
 
 pub trait Normalize {
-    fn apply_to_normal_form(&self, normal_form: &mut NormalForm);
+    fn apply_to_normal_form(&self, normal_form: &mut NormalForm, table: &ParseTable);
 }
 
 pub trait GetLengthRatio {

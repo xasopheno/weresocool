@@ -1,9 +1,13 @@
 extern crate num_rational;
+use std::collections::HashMap;
 use num_rational::Rational64;
+
+pub type ParseTable = HashMap<String, Op>;
 
 #[derive(Clone, PartialEq, Debug, Hash)]
 pub enum Op {
     AsIs,
+    Id(String),
     //
     Noise,
     Sine,

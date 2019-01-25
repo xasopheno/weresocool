@@ -6,7 +6,6 @@ use socool_ast::{
         Op,
         is_choice_op,
     },
-    operations::{NormalForm, Normalize}
 };
 use crate::parser::Init;
 use crate::float_to_rational::helpers::*;
@@ -14,7 +13,7 @@ use crate::error_handling::handle_id_error;
 use std::collections::HashMap;
 
 grammar<'table, 'err>(
-    table: &'table mut HashMap<String, NormalForm>,
+    table: &'table mut HashMap<String, Op>,
 );
 
 pub SoCool: Init = {
@@ -32,8 +31,8 @@ Point: Init = {
 }
 
 LetDefs = Lets<LetDef>;
-LetDef: () = {
-    <s: Name> "=" "{" <o: Operation> "}" => { table.insert(s.clone(), o); () },
+LetDef: Op = {
+    <s: Name> "=" "{" <o: Operation> "}" => { table.insert(s.clone(), o); Op::Id(s.clone()) },
 }
 
 Operation: Op = {

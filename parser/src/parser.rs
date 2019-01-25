@@ -24,7 +24,6 @@ pub struct Init {
     pub p: Rational64,
 }
 
-pub type ParseTable = HashMap<String, NormalForm>;
 
 #[derive(Clone, PartialEq, Debug)]
 pub struct ParsedComposition {
