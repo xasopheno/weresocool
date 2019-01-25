@@ -1,14 +1,20 @@
 use num_rational::{Rational64};
 use std::str::FromStr;
 use std::string::String;
-use socool_ast::ast::{Op, is_choice_op};
+use socool_ast::{
+    ast::{
+        Op,
+        is_choice_op,
+    },
+    operations::{NormalForm, Normalize}
+};
 use crate::parser::Init;
 use crate::float_to_rational::helpers::*;
 use crate::error_handling::handle_id_error;
 use std::collections::HashMap;
 
 grammar<'table, 'err>(
-    table: &'table mut HashMap<String, Op>,
+    table: &'table mut HashMap<String, NormalForm>,
 );
 
 pub SoCool: Init = {

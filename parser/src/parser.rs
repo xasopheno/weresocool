@@ -6,7 +6,10 @@ use crate::error_handling::handle_parse_error;
 use crate::imports::{get_filepath_and_import_name, is_import};
 use colored::*;
 use num_rational::Rational64;
-use socool_ast::ast::*;
+use socool_ast::{
+    ast::*,
+    operations::NormalForm,
+};
 use std::collections::HashMap;
 use std::fs::File;
 use std::io::prelude::*;
@@ -21,7 +24,7 @@ pub struct Init {
     pub p: Rational64,
 }
 
-pub type ParseTable = HashMap<String, Op>;
+pub type ParseTable = HashMap<String, NormalForm>;
 
 #[derive(Clone, PartialEq, Debug)]
 pub struct ParsedComposition {
