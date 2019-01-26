@@ -3,6 +3,7 @@ use std::str::FromStr;
 use std::string::String;
 use socool_ast::{
     ast::{
+        ParseTable,
         Op,
         is_choice_op,
     },
@@ -10,10 +11,9 @@ use socool_ast::{
 use crate::parser::Init;
 use crate::float_to_rational::helpers::*;
 use crate::error_handling::handle_id_error;
-use indexmap::IndexMap;
 
 grammar<'table, 'err>(
-    table: &'table mut IndexMap<String, Op>,
+    table: &'table mut ParseTable,
 );
 
 pub SoCool: Init = {
@@ -83,19 +83,22 @@ BaseOperation: Op = {
     "Overlay" "[" <operations: Operations> "]" => Op::Overlay { operations: operations },
     "ModulateBy" "[" <operations: Operations> "]" => Op::ModulateBy { operations: operations },
     "O" "[" <o: Overtones> "]" => Op::Overlay { operations: o },
-    <id_vec: Import> => { handle_id_error(id_vec, &table) },
+    <id_vec: Import> => {
+
+        handle_id_error(id_vec, &table)
+    },
 };
 
 Overtone: Op = {
     "("
-        <v:Rational> ","
-        <o:Rational> ","
+        <fm:Rational> ","
+        <fa:Rational> ","
         <g:Rational> ","
         <p:Rational>
     ")"
     => Op::Compose { operations: vec! [
-            Op::TransposeM { m: v },
-            Op::TransposeA { a: o },
+            Op::TransposeM { m: fm },
+            Op::TransposeA { a: fa },
             Op::Gain { m: g },
             Op::PanA { a: p },
         ]

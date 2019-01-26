@@ -31,6 +31,8 @@ fn main() -> Result<(), pa::Error> {
     let main = parsed.table.get("main").unwrap();
     let init = parsed.init;
 
+    println!("{:?}", main);
+
     let origin = Origin {
         f: r_to_f64(init.f),
         g: r_to_f64(init.g),
