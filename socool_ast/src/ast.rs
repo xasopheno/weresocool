@@ -1,5 +1,6 @@
 extern crate indexmap;
 extern crate num_rational;
+use crate::operations::helpers::handle_id_error;
 use indexmap::IndexMap;
 use num_rational::Rational64;
 
@@ -78,7 +79,7 @@ pub enum OscType {
     Square,
 }
 
-pub fn is_choice_op(op: Op) -> bool {
+pub fn is_choice_op(op: Op, table: &ParseTable) -> bool {
     match op {
         Op::AsIs {}
         | Op::Sine {}
@@ -95,7 +96,9 @@ pub fn is_choice_op(op: Op) -> bool {
         | Op::Silence { .. } => false,
         Op::Choice { .. } => true,
 
-        Op::Id(string) => panic!("normalize id What happend?"),
+        Op::Id(id_vec) => {
+            is_choice_op(handle_id_error(id_vec.to_vec(), table), table)
+        },
         Op::WithLengthRatioOf { .. } => false,
 
         Op::Sequence { operations }
@@ -103,7 +106,7 @@ pub fn is_choice_op(op: Op) -> bool {
         | Op::Compose { operations }
         | Op::Overlay { operations } => {
             for operation in operations {
-                if is_choice_op(operation) {
+                if is_choice_op(operation, table) {
                     return true;
                 }
             }

@@ -39,7 +39,7 @@ Operation: Op = {
     <op1: Operation> ">" "FitLength" <op2: ComposeOperation> => Op::Compose { operations: vec![op1.clone(), Op::WithLengthRatioOf { with_length_of: Box::new(op2), main: Box::new(op1) }] },
     <op1: Operation> ">" "Repeat" <i: Int> => {
         let mut op = Op::AsIs;
-        if is_choice_op(op1.clone()) {
+        if is_choice_op(op1.clone(), table) {
             op = op1
         }
         let mut vec = Vec::new();
