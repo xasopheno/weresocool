@@ -3,10 +3,14 @@ pub mod normalize_tests {
     extern crate num_rational;
     extern crate pretty_assertions;
     use crate::{
-        ast::{Op::*, OscType},
+        ast::{Op::*, OscType, ParseTable},
         operations::{NormalForm, Normalize, PointOp},
     };
     use num_rational::{Ratio, Rational64};
+
+    fn make_parse_table() -> ParseTable {
+        ParseTable::new()
+    }
 
     #[test]
     fn point_op_mod_by_mul() {
@@ -49,6 +53,7 @@ pub mod normalize_tests {
     fn normal_form_mul() {
         let mut a = NormalForm::init();
         let mut b = NormalForm::init();
+        let pt = make_parse_table();
 
         Sequence {
             operations: vec![
@@ -63,7 +68,7 @@ pub mod normalize_tests {
                 },
             ],
         }
-        .apply_to_normal_form(&mut a);
+        .apply_to_normal_form(&mut a, &pt);
 
         Sequence {
             operations: vec![
@@ -76,7 +81,7 @@ pub mod normalize_tests {
                 },
             ],
         }
-        .apply_to_normal_form(&mut b);
+        .apply_to_normal_form(&mut b, &pt);
 
         let c = a * b;
 
@@ -179,7 +184,8 @@ pub mod normalize_tests {
     #[test]
     fn normalize_asis() {
         let mut input = NormalForm::init();
-        AsIs.apply_to_normal_form(&mut input);
+        let pt = make_parse_table();
+        AsIs.apply_to_normal_form(&mut input, &pt);
         let expected = NormalForm {
             operations: vec![vec![PointOp::init()]],
             length_ratio: Ratio::new(1, 1),
@@ -190,7 +196,8 @@ pub mod normalize_tests {
     #[test]
     fn normalize_sine_and_noise() {
         let mut input = NormalForm::init();
-        Noise.apply_to_normal_form(&mut input);
+        let pt = make_parse_table();
+        Noise.apply_to_normal_form(&mut input, &pt);
 
         let expected = NormalForm {
             length_ratio: Ratio::new(1, 1),
@@ -207,7 +214,7 @@ pub mod normalize_tests {
 
         assert_eq!(input, expected);
 
-        Sine {}.apply_to_normal_form(&mut input);
+        Sine {}.apply_to_normal_form(&mut input, &pt);
 
         let expected = NormalForm {
             length_ratio: Ratio::new(1, 1),
@@ -228,10 +235,11 @@ pub mod normalize_tests {
     #[test]
     fn normalize_tm() {
         let mut input = NormalForm::init();
+        let pt = make_parse_table();
         TransposeM {
             m: Ratio::new(2, 1),
         }
-        .apply_to_normal_form(&mut input);
+        .apply_to_normal_form(&mut input, &pt);
 
         let expected = NormalForm {
             length_ratio: Ratio::new(1, 1),
@@ -248,13 +256,15 @@ pub mod normalize_tests {
 
         assert_eq!(input, expected);
     }
+
     #[test]
     fn normalize_ta() {
         let mut input = NormalForm::init();
+        let pt = make_parse_table();
         TransposeA {
             a: Ratio::new(2, 1),
         }
-        .apply_to_normal_form(&mut input);
+        .apply_to_normal_form(&mut input, &pt);
 
         let expected = NormalForm {
             length_ratio: Ratio::new(1, 1),
@@ -275,10 +285,11 @@ pub mod normalize_tests {
     #[test]
     fn normalize_pan_m() {
         let mut input = NormalForm::init();
+        let pt = make_parse_table();
         PanM {
             m: Ratio::new(2, 1),
         }
-        .apply_to_normal_form(&mut input);
+        .apply_to_normal_form(&mut input, &pt);
 
         let expected = NormalForm {
             length_ratio: Ratio::new(1, 1),
@@ -298,10 +309,11 @@ pub mod normalize_tests {
     #[test]
     fn normalize_pan_a() {
         let mut input = NormalForm::init();
+        let pt = make_parse_table();
         PanA {
             a: Ratio::new(2, 1),
         }
-        .apply_to_normal_form(&mut input);
+        .apply_to_normal_form(&mut input, &pt);
 
         let expected = NormalForm {
             length_ratio: Ratio::new(1, 1),
@@ -321,10 +333,11 @@ pub mod normalize_tests {
     #[test]
     fn normalize_gain() {
         let mut input = NormalForm::init();
+        let pt = make_parse_table();
         Gain {
             m: Ratio::new(2, 1),
         }
-        .apply_to_normal_form(&mut input);
+        .apply_to_normal_form(&mut input, &pt);
 
         let expected = NormalForm {
             length_ratio: Ratio::new(1, 1),
@@ -344,10 +357,11 @@ pub mod normalize_tests {
     #[test]
     fn normalize_silence() {
         let mut input = NormalForm::init();
+        let pt = make_parse_table();
         Silence {
             m: Ratio::new(2, 1),
         }
-        .apply_to_normal_form(&mut input);
+        .apply_to_normal_form(&mut input, &pt);
 
         let expected = NormalForm {
             length_ratio: Ratio::new(2, 1),
@@ -368,10 +382,11 @@ pub mod normalize_tests {
     #[test]
     fn normalize_length() {
         let mut input = NormalForm::init();
+        let pt = make_parse_table();
         Length {
             m: Ratio::new(2, 1),
         }
-        .apply_to_normal_form(&mut input);
+        .apply_to_normal_form(&mut input, &pt);
 
         let expected = NormalForm {
             length_ratio: Ratio::new(2, 1),
@@ -392,6 +407,7 @@ pub mod normalize_tests {
     #[test]
     fn normalize_compose() {
         let mut input = NormalForm::init();
+        let pt = make_parse_table();
 
         Compose {
             operations: vec![
@@ -403,7 +419,7 @@ pub mod normalize_tests {
                 },
             ],
         }
-        .apply_to_normal_form(&mut input);
+        .apply_to_normal_form(&mut input, &pt);
 
         let expected = NormalForm {
             length_ratio: Ratio::new(2, 1),
@@ -424,6 +440,7 @@ pub mod normalize_tests {
     #[test]
     fn normalize_sequence() {
         let mut input = NormalForm::init();
+        let pt = make_parse_table();
 
         Sequence {
             operations: vec![
@@ -435,7 +452,7 @@ pub mod normalize_tests {
                 },
             ],
         }
-        .apply_to_normal_form(&mut input);
+        .apply_to_normal_form(&mut input, &pt);
 
         let expected = NormalForm {
             length_ratio: Ratio::new(3, 1),
@@ -467,6 +484,7 @@ pub mod normalize_tests {
     #[test]
     fn normalize_overlay() {
         let mut input = NormalForm::init();
+        let pt = make_parse_table();
 
         Overlay {
             operations: vec![
@@ -478,7 +496,7 @@ pub mod normalize_tests {
                 },
             ],
         }
-        .apply_to_normal_form(&mut input);
+        .apply_to_normal_form(&mut input, &pt);
 
         let expected = NormalForm {
             length_ratio: Ratio::new(2, 1),
@@ -520,12 +538,13 @@ pub mod normalize_tests {
 
     #[test]
     fn normalize_with_lr_of() {
+        let pt = make_parse_table();
         let mut input = NormalForm::init();
 
         TransposeM {
             m: Ratio::new(3, 2),
         }
-        .apply_to_normal_form(&mut input);
+        .apply_to_normal_form(&mut input, &pt);
 
         WithLengthRatioOf {
             with_length_of: Box::new(Sequence {
@@ -545,7 +564,7 @@ pub mod normalize_tests {
                 m: Ratio::new(2, 1),
             }),
         }
-        .apply_to_normal_form(&mut input);
+        .apply_to_normal_form(&mut input, &pt);
 
         let expected = NormalForm {
             length_ratio: Ratio::new(9, 1),
@@ -566,6 +585,7 @@ pub mod normalize_tests {
     #[test]
     fn normalize_invert() {
         let mut input = NormalForm::init();
+        let pt = make_parse_table();
 
         Compose {
             operations: vec![
@@ -585,7 +605,7 @@ pub mod normalize_tests {
                 FInvert,
             ],
         }
-        .apply_to_normal_form(&mut input);
+        .apply_to_normal_form(&mut input, &pt);
 
         let expected = NormalForm {
             length_ratio: Ratio::new(3, 1),
@@ -625,6 +645,7 @@ pub mod normalize_tests {
 
     #[test]
     fn normalize_modulate_by() {
+        let pt = make_parse_table();
         let mut input = NormalForm::init();
         Sequence {
             operations: vec![
@@ -639,7 +660,7 @@ pub mod normalize_tests {
                 },
             ],
         }
-        .apply_to_normal_form(&mut input);
+        .apply_to_normal_form(&mut input, &pt);
 
         let modulator = ModulateBy {
             operations: vec![
@@ -652,7 +673,7 @@ pub mod normalize_tests {
             ],
         };
 
-        modulator.apply_to_normal_form(&mut input);
+        modulator.apply_to_normal_form(&mut input, &pt);
 
         let expected = NormalForm {
             length_ratio: Ratio::new(3, 1),

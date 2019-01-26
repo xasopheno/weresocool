@@ -10,10 +10,10 @@ use socool_ast::{
 use crate::parser::Init;
 use crate::float_to_rational::helpers::*;
 use crate::error_handling::handle_id_error;
-use std::collections::HashMap;
+use indexmap::IndexMap;
 
 grammar<'table, 'err>(
-    table: &'table mut HashMap<String, Op>,
+    table: &'table mut IndexMap<String, Op>,
 );
 
 pub SoCool: Init = {

@@ -20,6 +20,8 @@ pub mod get_length_ratio {
                 | Op::PanM { .. }
                 | Op::Gain { .. } => Ratio::from_integer(1),
 
+                Op::Id(string) => panic!("normalize id What happend?"),
+
                 Op::Length { m } | Op::Silence { m } => *m,
 
                 Op::Sequence { operations } => {

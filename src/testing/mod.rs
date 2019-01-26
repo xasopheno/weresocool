@@ -59,7 +59,7 @@ fn generate_render_hashes(p: &String) -> CompositionHashes {
     let op_hash = calculate_hash(main_op);
     let mut normal_form = NormalForm::init();
 
-    main_op.apply_to_normal_form(&mut normal_form);
+    main_op.apply_to_normal_form(&mut normal_form, &parsed.table);
     let nf_hash = calculate_hash(&normal_form);
 
     let origin = Origin {

@@ -1,12 +1,11 @@
 extern crate colored;
 extern crate socool_ast;
 use colored::*;
-use socool_ast::ast::Op;
+use socool_ast::ast::{Op, ParseTable};
 use std::cmp;
-use std::collections::HashMap;
 use std::sync::{Arc, Mutex};
 
-pub fn handle_id_error(id_vec: Vec<String>, table: &HashMap<String, Op>) -> Op {
+pub fn handle_id_error(id_vec: Vec<String>, table: &ParseTable) -> Op {
     let result = match id_vec.len() {
         1 => table.get(&id_vec[0]),
         2 => {

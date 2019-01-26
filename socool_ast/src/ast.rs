@@ -1,8 +1,20 @@
+extern crate indexmap;
 extern crate num_rational;
-use std::collections::HashMap;
+use indexmap::IndexMap;
 use num_rational::Rational64;
+use std::collections::HashMap;
 
-pub type ParseTable = HashMap<String, Op>;
+pub type ParseTable = IndexMap<String, Op>;
+
+trait New<T> {
+    fn new() -> T;
+}
+
+impl New<ParseTable> for ParseTable {
+    fn new() -> ParseTable {
+        IndexMap::new()
+    }
+}
 
 #[derive(Clone, PartialEq, Debug, Hash)]
 pub enum Op {
@@ -84,6 +96,7 @@ pub fn is_choice_op(op: Op) -> bool {
         | Op::Silence { .. } => false,
         Op::Choice { .. } => true,
 
+        Op::Id(string) => panic!("normalize id What happend?"),
         Op::WithLengthRatioOf { .. } => false,
 
         Op::Sequence { operations }

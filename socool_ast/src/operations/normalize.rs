@@ -1,7 +1,7 @@
 pub mod normalize {
     extern crate num_rational;
     extern crate rand;
-    use crate::ast::{ParseTable, Op, OscType};
+    use crate::ast::{Op, OscType, ParseTable};
     use crate::operations::helpers::*;
     use crate::operations::{GetLengthRatio, NormalForm, Normalize};
     use num_rational::Ratio;
@@ -10,6 +10,8 @@ pub mod normalize {
     impl Normalize for Op {
         fn apply_to_normal_form(&self, input: &mut NormalForm, table: &ParseTable) {
             match self {
+                Op::Id(string) => panic!("normalize id What happend?"),
+
                 Op::AsIs => {}
 
                 Op::FInvert => {

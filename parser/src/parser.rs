@@ -6,11 +6,7 @@ use crate::error_handling::handle_parse_error;
 use crate::imports::{get_filepath_and_import_name, is_import};
 use colored::*;
 use num_rational::Rational64;
-use socool_ast::{
-    ast::*,
-    operations::NormalForm,
-};
-use std::collections::HashMap;
+use socool_ast::ast::*;
 use std::fs::File;
 use std::io::prelude::*;
 use std::io::BufReader;
@@ -24,7 +20,6 @@ pub struct Init {
     pub p: Rational64,
 }
 
-
 #[derive(Clone, PartialEq, Debug)]
 pub struct ParsedComposition {
     pub init: Init,
@@ -35,7 +30,7 @@ pub fn parse_file(filename: &str, parse_table: Option<ParseTable>) -> ParsedComp
     let mut table = if parse_table.is_some() {
         parse_table.unwrap()
     } else {
-        HashMap::new()
+        ParseTable::new()
     };
 
     let f = File::open(filename);

@@ -12,7 +12,7 @@ use pbr::ProgressBar;
 use rayon::prelude::*;
 use render::Render;
 use settings::default_settings;
-use socool_ast::ast::Op;
+use socool_ast::ast::{Op, ParseTable};
 use socool_ast::operations::{NormalForm, Normalize as NormalizeOp, PointOp};
 use socool_parser::parser::Init;
 use std::sync::{Arc, Mutex};
@@ -23,11 +23,11 @@ pub fn r_to_f64(r: Rational64) -> f64 {
     *r.numer() as f64 / *r.denom() as f64
 }
 
-pub fn render(origin: &Origin, composition: &Op) -> StereoWaveform {
+pub fn render(origin: &Origin, composition: &Op, table: &ParseTable) -> StereoWaveform {
     let mut normal_form = NormalForm::init();
 
     println!("\nGenerating Composition ");
-    composition.apply_to_normal_form(&mut normal_form);
+    composition.apply_to_normal_form(&mut normal_form, table);
 
     let vec_wav = generate_waveforms(&origin, normal_form.operations, true);
     let mut result = sum_all_waveforms(vec_wav);

@@ -39,12 +39,12 @@ fn main() -> Result<(), pa::Error> {
     };
 
     if args.is_present("print") {
-        let composition = render(&origin, main);
+        let composition = render(&origin, main, &parsed.table);
         to_wav(composition, filename.unwrap().to_string());
     } else if args.is_present("json") {
         to_json(main, init, filename.unwrap().to_string());
     } else {
-        let composition = render(&origin, main);
+        let composition = render(&origin, main, &parsed.table);
 
         let pa = pa::PortAudio::new()?;
 

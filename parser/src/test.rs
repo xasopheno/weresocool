@@ -2,10 +2,9 @@ pub mod test {
     extern crate num_rational;
     extern crate socool_ast;
     use num_rational::Ratio;
-    use socool_ast::ast::Op;
+    use socool_ast::ast::{Op, ParseTable};
     use socool_parser::imports::{get_filepath_and_import_name, is_as_import, is_import};
     use socool_parser::parser::*;
-    use std::collections::HashMap;
 
     fn mock_init() -> (String) {
         "{ f: 200, l: 1.0, g: 1.0, p: 0.0 }
@@ -14,7 +13,7 @@ pub mod test {
     }
 
     fn test_parsed_operation(mut parse_str: String, expected: Op) {
-        let mut table = HashMap::new();
+        let mut table = ParseTable::new();
 
         parse_str.push_str("}");
 
@@ -77,7 +76,7 @@ pub mod test {
     #[test]
     fn init_test() {
         let mut parse_str = mock_init();
-        let mut table = HashMap::new();
+        let mut table = ParseTable::new();
         parse_str.push_str("AsIs }");
         let init = socool::SoCoolParser::new()
             .parse(&mut table, &parse_str)
@@ -279,7 +278,7 @@ pub mod test {
 
     #[test]
     fn let_insert() {
-        let mut table = HashMap::new();
+        let mut table = ParseTable::new();
         socool::SoCoolParser::new()
             .parse(
                 &mut table,
@@ -311,7 +310,7 @@ pub mod test {
 
     #[test]
     fn let_get() {
-        let mut table = HashMap::new();
+        let mut table = ParseTable::new();
         socool::SoCoolParser::new()
             .parse(
                 &mut table,
@@ -331,7 +330,7 @@ pub mod test {
 
     #[test]
     fn fit_length_test() {
-        let mut table = HashMap::new();
+        let mut table = ParseTable::new();
 
         let _result = socool::SoCoolParser::new().parse(
             &mut table,
