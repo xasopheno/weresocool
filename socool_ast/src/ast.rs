@@ -96,9 +96,7 @@ pub fn is_choice_op(op: Op, table: &ParseTable) -> bool {
         | Op::Silence { .. } => false,
         Op::Choice { .. } => true,
 
-        Op::Id(id_vec) => {
-            is_choice_op(handle_id_error(id_vec.to_vec(), table), table)
-        },
+        Op::Id(id_vec) => is_choice_op(handle_id_error(id_vec.to_vec(), table), table),
         Op::WithLengthRatioOf { .. } => false,
 
         Op::Sequence { operations }

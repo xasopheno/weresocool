@@ -1,9 +1,6 @@
 pub mod get_length_ratio {
     use crate::ast::{Op, ParseTable};
-    use crate::operations::{
-        GetLengthRatio,
-        helpers::*,
-    };
+    use crate::operations::{helpers::*, GetLengthRatio};
     use num_rational::{Ratio, Rational64};
 
     extern crate num_rational;
@@ -23,9 +20,7 @@ pub mod get_length_ratio {
                 | Op::PanM { .. }
                 | Op::Gain { .. } => Ratio::from_integer(1),
 
-                Op::Id(id_vec) => {
-                   handle_id_error(id_vec.to_vec(), table).get_length_ratio(table)
-                },
+                Op::Id(id_vec) => handle_id_error(id_vec.to_vec(), table).get_length_ratio(table),
 
                 Op::Length { m } | Op::Silence { m } => *m,
 

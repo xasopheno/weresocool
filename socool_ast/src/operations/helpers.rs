@@ -1,8 +1,8 @@
-extern crate num_rational;
 extern crate colored;
-use colored::*;
-use crate::ast::{OscType, Op, ParseTable};
+extern crate num_rational;
+use crate::ast::{Op, OscType, ParseTable};
 use crate::operations::{GetLengthRatio, NormalForm, PointOp};
+use colored::*;
 use num_rational::{Ratio, Rational64};
 use std::cmp::Ordering::{Equal, Greater, Less};
 
@@ -27,7 +27,6 @@ pub fn handle_id_error(id_vec: Vec<String>, table: &ParseTable) -> Op {
         }
     }
 }
-
 
 pub fn modulate(input: &Vec<PointOp>, modulator: &Vec<PointOp>) -> Vec<PointOp> {
     let mut m = modulator.clone();

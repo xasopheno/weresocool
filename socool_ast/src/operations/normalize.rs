@@ -11,8 +11,8 @@ pub mod normalize {
         fn apply_to_normal_form(&self, input: &mut NormalForm, table: &ParseTable) {
             match self {
                 Op::Id(id_vec) => {
-                   handle_id_error(id_vec.to_vec(), table).apply_to_normal_form(input, table);
-                },
+                    handle_id_error(id_vec.to_vec(), table).apply_to_normal_form(input, table);
+                }
 
                 Op::AsIs => {}
 
