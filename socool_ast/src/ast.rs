@@ -2,7 +2,6 @@ extern crate indexmap;
 extern crate num_rational;
 use indexmap::IndexMap;
 use num_rational::Rational64;
-use std::collections::HashMap;
 
 pub type ParseTable = IndexMap<String, Op>;
 
@@ -19,7 +18,7 @@ impl New<ParseTable> for ParseTable {
 #[derive(Clone, PartialEq, Debug, Hash)]
 pub enum Op {
     AsIs,
-    Id(String),
+    Id(Vec<String>),
     //
     Noise,
     Sine,

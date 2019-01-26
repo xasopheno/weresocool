@@ -10,7 +10,7 @@ use socool_ast::{
 };
 use crate::parser::Init;
 use crate::float_to_rational::helpers::*;
-use crate::error_handling::handle_id_error;
+// use crate::error_handling::handle_id_error;
 
 grammar<'table, 'err>(
     table: &'table mut ParseTable,
@@ -31,8 +31,8 @@ Point: Init = {
 }
 
 LetDefs = Lets<LetDef>;
-LetDef: Op = {
-    <s: Name> "=" "{" <o: Operation> "}" => { table.insert(s.clone(), o); Op::Id(s.clone()) },
+LetDef: () = {
+    <s: Name> "=" "{" <o: Operation> "}" => { table.insert(s.clone(), o); () },
 }
 
 Operation: Op = {
@@ -84,8 +84,8 @@ BaseOperation: Op = {
     "ModulateBy" "[" <operations: Operations> "]" => Op::ModulateBy { operations: operations },
     "O" "[" <o: Overtones> "]" => Op::Overlay { operations: o },
     <id_vec: Import> => {
-
-        handle_id_error(id_vec, &table)
+        // handle_id_error(id_vec, &table)
+        Op::Id(id_vec)
     },
 };
 

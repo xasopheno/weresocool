@@ -1,8 +1,33 @@
 extern crate num_rational;
-use crate::ast::OscType;
+extern crate colored;
+use colored::*;
+use crate::ast::{OscType, Op, ParseTable};
 use crate::operations::{GetLengthRatio, NormalForm, PointOp};
 use num_rational::{Ratio, Rational64};
 use std::cmp::Ordering::{Equal, Greater, Less};
+
+pub fn handle_id_error(id_vec: Vec<String>, table: &ParseTable) -> Op {
+    let result = match id_vec.len() {
+        1 => table.get(&id_vec[0]),
+        2 => {
+            let mut name = id_vec[0].clone();
+            name.push('.');
+            name.push_str(&id_vec[1].clone());
+            table.get(&name)
+        }
+        _ => panic!("Only one dot allowed in imports."),
+    };
+
+    match result {
+        Some(result) => result.clone(),
+        None => {
+            let id = id_vec.join(".");
+            println!("Not able to find {} in let table", id.red().bold());
+            panic!("Id Not Found");
+        }
+    }
+}
+
 
 pub fn modulate(input: &Vec<PointOp>, modulator: &Vec<PointOp>) -> Vec<PointOp> {
     let mut m = modulator.clone();
@@ -39,8 +64,8 @@ pub fn modulate(input: &Vec<PointOp>, modulator: &Vec<PointOp>) -> Vec<PointOp> 
     result
 }
 
-pub fn pad_length(input: &mut NormalForm, max_len: Rational64) {
-    let input_lr = input.get_length_ratio();
+pub fn pad_length(input: &mut NormalForm, max_len: Rational64, table: &ParseTable) {
+    let input_lr = input.get_length_ratio(table);
     if max_len > Rational64::new(0, 1) && input_lr < max_len {
         for voice in input.operations.iter_mut() {
             let osc_type = voice.clone().last().unwrap().osc_type;

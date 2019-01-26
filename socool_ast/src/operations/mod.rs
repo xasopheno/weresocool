@@ -177,11 +177,11 @@ pub trait Normalize {
 }
 
 pub trait GetLengthRatio {
-    fn get_length_ratio(&self) -> Rational64;
+    fn get_length_ratio(&self, table: &ParseTable) -> Rational64;
 }
 
 impl GetLengthRatio for NormalForm {
-    fn get_length_ratio(&self) -> Rational64 {
+    fn get_length_ratio(&self, _table: &ParseTable) -> Rational64 {
         self.length_ratio
     }
 }

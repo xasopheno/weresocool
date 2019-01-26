@@ -10,7 +10,9 @@ pub mod normalize {
     impl Normalize for Op {
         fn apply_to_normal_form(&self, input: &mut NormalForm, table: &ParseTable) {
             match self {
-                Op::Id(string) => panic!("normalize id What happend?"),
+                Op::Id(id_vec) => {
+                   handle_id_error(id_vec.to_vec(), table).apply_to_normal_form(input, table);
+                },
 
                 Op::AsIs => {}
 
@@ -145,8 +147,8 @@ pub mod normalize {
                     with_length_of,
                     main,
                 } => {
-                    let target_length = with_length_of.get_length_ratio();
-                    let main_length = main.get_length_ratio();
+                    let target_length = with_length_of.get_length_ratio(table);
+                    let main_length = main.get_length_ratio(table);
                     let ratio = target_length / main_length;
                     let new_op = Op::Length { m: ratio };
 
@@ -202,7 +204,7 @@ pub mod normalize {
                     let mut result = vec![];
 
                     for mut nf in normal_forms {
-                        pad_length(&mut nf, max_lr);
+                        pad_length(&mut nf, max_lr, table);
                         result.append(&mut nf.operations);
                     }
 
