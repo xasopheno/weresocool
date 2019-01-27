@@ -1,12 +1,12 @@
 pub mod get_length_ratio {
-    use crate::ast::{Op, ParseTable};
+    use crate::ast::{Op, OpTable};
     use crate::operations::{helpers::*, GetLengthRatio};
     use num_rational::{Ratio, Rational64};
 
     extern crate num_rational;
 
     impl GetLengthRatio for Op {
-        fn get_length_ratio(&self, table: &ParseTable) -> Rational64 {
+        fn get_length_ratio(&self, table: &OpTable) -> Rational64 {
             match self {
                 Op::AsIs {}
                 | Op::Sine {}

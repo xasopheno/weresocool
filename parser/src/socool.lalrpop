@@ -3,17 +3,16 @@ use std::str::FromStr;
 use std::string::String;
 use socool_ast::{
     ast::{
-        ParseTable,
+        OpTable,
         Op,
         is_choice_op,
     },
 };
 use crate::parser::Init;
 use crate::float_to_rational::helpers::*;
-// use crate::error_handling::handle_id_error;
 
 grammar<'table, 'err>(
-    table: &'table mut ParseTable,
+    table: &'table mut OpTable,
 );
 
 pub SoCool: Init = {
@@ -84,7 +83,6 @@ BaseOperation: Op = {
     "ModulateBy" "[" <operations: Operations> "]" => Op::ModulateBy { operations: operations },
     "O" "[" <o: Overtones> "]" => Op::Overlay { operations: o },
     <id_vec: Import> => {
-        // handle_id_error(id_vec, &table)
         Op::Id(id_vec)
     },
 };

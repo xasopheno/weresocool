@@ -3,13 +3,13 @@ pub mod normalize_tests {
     extern crate num_rational;
     extern crate pretty_assertions;
     use crate::{
-        ast::{Op::*, OscType, ParseTable},
+        ast::{Op::*, OpTable, OscType},
         operations::{NormalForm, Normalize, PointOp},
     };
     use num_rational::{Ratio, Rational64};
 
-    fn make_parse_table() -> ParseTable {
-        ParseTable::new()
+    fn make_parse_table() -> OpTable {
+        OpTable::new()
     }
 
     #[test]

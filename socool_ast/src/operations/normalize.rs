@@ -1,14 +1,14 @@
 pub mod normalize {
     extern crate num_rational;
     extern crate rand;
-    use crate::ast::{Op, OscType, ParseTable};
+    use crate::ast::{Op, OpTable, OscType};
     use crate::operations::helpers::*;
     use crate::operations::{GetLengthRatio, NormalForm, Normalize};
     use num_rational::Ratio;
     use rand::prelude::*;
 
     impl Normalize for Op {
-        fn apply_to_normal_form(&self, input: &mut NormalForm, table: &ParseTable) {
+        fn apply_to_normal_form(&self, input: &mut NormalForm, table: &OpTable) {
             match self {
                 Op::Id(id_vec) => {
                     handle_id_error(id_vec.to_vec(), table).apply_to_normal_form(input, table);

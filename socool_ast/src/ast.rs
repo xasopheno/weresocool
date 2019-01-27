@@ -1,17 +1,24 @@
 extern crate indexmap;
 extern crate num_rational;
-use crate::operations::helpers::handle_id_error;
+use crate::operations::{helpers::handle_id_error, NormalForm};
 use indexmap::IndexMap;
 use num_rational::Rational64;
 
-pub type ParseTable = IndexMap<String, Op>;
+pub type OpTable = IndexMap<String, Op>;
+pub type NormalTable = IndexMap<String, NormalForm>;
 
 trait New<T> {
     fn new() -> T;
 }
 
-impl New<ParseTable> for ParseTable {
-    fn new() -> ParseTable {
+impl New<OpTable> for OpTable {
+    fn new() -> OpTable {
+        IndexMap::new()
+    }
+}
+
+impl New<NormalTable> for NormalTable {
+    fn new() -> NormalTable {
         IndexMap::new()
     }
 }
@@ -79,7 +86,7 @@ pub enum OscType {
     Square,
 }
 
-pub fn is_choice_op(op: Op, table: &ParseTable) -> bool {
+pub fn is_choice_op(op: Op, table: &OpTable) -> bool {
     match op {
         Op::AsIs {}
         | Op::Sine {}

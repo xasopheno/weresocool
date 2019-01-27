@@ -6,7 +6,10 @@ use crate::error_handling::handle_parse_error;
 use crate::imports::{get_filepath_and_import_name, is_import};
 use colored::*;
 use num_rational::Rational64;
-use socool_ast::ast::*;
+use socool_ast::{
+    ast::*,
+    operations::{NormalForm, Normalize},
+};
 use std::fs::File;
 use std::io::prelude::*;
 use std::io::BufReader;
@@ -23,14 +26,26 @@ pub struct Init {
 #[derive(Clone, PartialEq, Debug)]
 pub struct ParsedComposition {
     pub init: Init,
-    pub table: ParseTable,
+    pub table: OpTable,
 }
 
-pub fn parse_file(filename: &str, parse_table: Option<ParseTable>) -> ParsedComposition {
+fn process_op_table(ot: OpTable) -> OpTable {
+    let mut result = OpTable::new();
+
+    for (name, op) in ot.iter() {
+        let mut nf = NormalForm::init();
+        op.apply_to_normal_form(&mut nf, &ot);
+        result.insert(name.to_string(), nf.to_op());
+    }
+
+    result
+}
+
+pub fn parse_file(filename: &str, parse_table: Option<OpTable>) -> ParsedComposition {
     let mut table = if parse_table.is_some() {
         parse_table.unwrap()
     } else {
-        ParseTable::new()
+        OpTable::new()
     };
 
     let f = File::open(filename);
@@ -79,7 +94,10 @@ pub fn parse_file(filename: &str, parse_table: Option<ParseTable>) -> ParsedComp
     let init = socool::SoCoolParser::new().parse(&mut table, &composition);
 
     match init.clone() {
-        Ok(init) => ParsedComposition { init, table },
+        Ok(init) => {
+            let table = process_op_table(table);
+            ParsedComposition { init, table }
+        }
         Err(error) => {
             let location = Arc::new(Mutex::new(Vec::new()));
             error.map_location(|l| location.lock().unwrap().push(l));
