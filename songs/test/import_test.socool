@@ -3,8 +3,7 @@ import songs/test/std_test.socool as standard
 
 { f: 220, l: 1, g: 1, p: 0}
 
-danny = {
-	import_test_2.root_fifth |
+thing = { import_test_2.thing |
 	Sequence [
 		AsIs,
 		Tm 2,
@@ -12,6 +11,6 @@ danny = {
 }
 
 main = {
-	danny
+	thing
 }
 	

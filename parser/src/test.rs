@@ -2,9 +2,7 @@ pub mod test {
     extern crate num_rational;
     extern crate socool_ast;
     use num_rational::Ratio;
-    use socool_ast::{
-        ast::{Op, OpTable},
-    };
+    use socool_ast::ast::{Op, OpTable};
     use socool_parser::imports::{get_filepath_and_import_name, is_as_import, is_import};
     use socool_parser::parser::*;
 
@@ -319,7 +317,7 @@ pub mod test {
                 "
                     { f: 200, l: 1.0, g: 1.0, p: 0.0 }
 
-                    thing = {
+                    main = {
                         Tm 3/2
                         | Gain 0.3
                     }
@@ -330,95 +328,77 @@ pub mod test {
             .unwrap();
     }
 
-    //    #[test]
-    //    fn fit_length_test() {
-    //        let mut table = OpTable::new();
-    //
-    //        let _result = socool::SoCoolParser::new().parse(
-    //            &mut table,
-    //            "
-    //                { f: 200, l: 1.0, g: 1.0, p: 0.0 }
-    //
-    //                thing = {
-    //                    Sequence [
-    //                     AsIs,
-    //                     Tm 3/2
-    //                     | Length 2.0
-    //                    ]
-    //                }
-    //
-    //                thing2 = {
-    //                    Sequence [
-    //                        Tm 5/4,
-    //                        Tm 3/2
-    //                    ]
-    //                    | Repeat 2
-    //                    > FitLength thing
-    //                }
-    //
-    //                main = {
-    //                    thing2
-    //                }
-    //            ",
-    //        );
-    //        let thing = table.get(&"main".to_string()).unwrap();
-    //        assert_eq!(
-    //            *thing,
-    //            Op::Compose {
-    //                operations: vec![
-    //                    Op::Compose {
-    //                        operations: vec![
-    //                            Op::Sequence {
-    //                                operations: vec![
-    //                                    Op::TransposeM {
-    //                                        m: Ratio::new(5, 4)
-    //                                    },
-    //                                    Op::TransposeM {
-    //                                        m: Ratio::new(3, 2)
-    //                                    }
-    //                                ]
-    //                            },
-    //                            Op::Sequence {
-    //                                operations: vec![Op::AsIs, Op::AsIs]
-    //                            }
-    //                        ]
-    //                    },
-    //                    Op::WithLengthRatioOf {
-    //                        with_length_of: Box::new(Op::Sequence {
-    //                            operations: vec![
-    //                                Op::AsIs,
-    //                                Op::Compose {
-    //                                    operations: vec![
-    //                                        Op::TransposeM {
-    //                                            m: Ratio::new(3, 2)
-    //                                        },
-    //                                        Op::Length {
-    //                                            m: Ratio::new(2, 1)
-    //                                        }
-    //                                    ]
-    //                                }
-    //                            ]
-    //                        }),
-    //                        main: Box::new(Op::Compose {
-    //                            operations: vec![
-    //                                Op::Sequence {
-    //                                    operations: vec![
-    //                                        Op::TransposeM {
-    //                                            m: Ratio::new(5, 4)
-    //                                        },
-    //                                        Op::TransposeM {
-    //                                            m: Ratio::new(3, 2)
-    //                                        }
-    //                                    ]
-    //                                },
-    //                                Op::Sequence {
-    //                                    operations: vec![Op::AsIs, Op::AsIs]
-    //                                }
-    //                            ]
-    //                        })
-    //                    }
-    //                ]
-    //            }
-    //        )
-    //    }
+    #[test]
+    fn fit_length_test() {
+        let mut table = OpTable::new();
+
+        let _result = socool::SoCoolParser::new().parse(
+            &mut table,
+            "
+                    { f: 200, l: 1.0, g: 1.0, p: 0.0 }
+
+                    thing = {
+                        Sequence [
+                         AsIs,
+                         Tm 3/2
+                         | Length 2.0
+                        ]
+                    }
+
+                    main = {
+                        Sequence [
+                            Tm 5/4,
+                            Tm 3/2
+                        ]
+                        | Repeat 2
+                        > FitLength thing
+                    }
+                ",
+        );
+        let thing = table.get(&"main".to_string()).unwrap();
+        assert_eq!(
+            *thing,
+            Op::Compose {
+                operations: vec![
+                    Op::Compose {
+                        operations: vec![
+                            Op::Sequence {
+                                operations: vec![
+                                    Op::TransposeM {
+                                        m: Ratio::new(5, 4)
+                                    },
+                                    Op::TransposeM {
+                                        m: Ratio::new(3, 2)
+                                    }
+                                ]
+                            },
+                            Op::Sequence {
+                                operations: vec![Op::AsIs, Op::AsIs]
+                            }
+                        ]
+                    },
+                    Op::WithLengthRatioOf {
+                        with_length_of: Box::new(Op::Id(vec!["thing".to_string()])),
+                        main: Box::new(Op::Compose {
+                            operations: vec![
+                                Op::Sequence {
+                                    operations: vec![
+                                        Op::TransposeM {
+                                            m: Ratio::new(5, 4)
+                                        },
+                                        Op::TransposeM {
+                                            m: Ratio::new(3, 2)
+                                        }
+                                    ]
+                                },
+                                Op::Sequence {
+                                    operations: vec![Op::AsIs, Op::AsIs]
+                                }
+                            ]
+                        })
+                    }
+                ]
+            }
+        )
+    }
 }
