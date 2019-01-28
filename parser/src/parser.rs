@@ -7,7 +7,7 @@ use crate::imports::{get_filepath_and_import_name, is_import};
 use colored::*;
 use num_rational::Rational64;
 use socool_ast::{
-    ast::*,
+    ast::{OpOrNfTable, OpOrNf::*},
     operations::{NormalForm, Normalize},
 };
 use std::fs::File;
@@ -34,12 +34,12 @@ fn process_op_table(ot: OpOrNfTable) -> OpOrNfTable {
 
     for (name, op_or_nf) in ot.iter() {
         match op_or_nf {
-            OpOrNf::Nf(_) => {}
-            OpOrNf::Op(op) => {
+            Nf(nf) => {result.insert(name.to_string(), Nf(nf.clone()));}
+            Op(op) => {
                 let mut nf = NormalForm::init();
                 op.apply_to_normal_form(&mut nf, &ot);
 
-                result.insert(name.to_string(), OpOrNf::Nf(nf));
+                result.insert(name.to_string(), Nf(nf));
             }
         }
     }
