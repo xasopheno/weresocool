@@ -14,18 +14,18 @@ mod parse_tests {
         result.sort();
 
         let mut expected: Vec<String> = vec![
-            "danny",
             "import_test_2.main",
-            "import_test_2.root_fifth",
             "import_test_2.std_test.fade_out",
             "import_test_2.std_test.main",
+            "import_test_2.thing",
             "main",
             "standard.fade_out",
             "standard.import_test_2.main",
-            "standard.import_test_2.root_fifth",
             "standard.import_test_2.std_test.fade_out",
             "standard.import_test_2.std_test.main",
+            "standard.import_test_2.thing",
             "standard.main",
+            "thing",
         ]
         .iter()
         .map(|s| s.to_string())

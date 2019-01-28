@@ -1,9 +1,9 @@
 extern crate num_rational;
-use crate::ast::{Op, OscType};
+use crate::ast::{Op, OpTable, OscType};
 use num_rational::{Ratio, Rational64};
 use std::ops::{Mul, MulAssign};
 mod get_length_ratio;
-mod helpers;
+pub mod helpers;
 mod normalize;
 
 #[derive(Debug, Clone, PartialEq, Hash)]
@@ -157,6 +157,20 @@ impl PointOp {
 }
 
 impl NormalForm {
+    pub fn to_op(&self) -> Op {
+        let mut result = vec![];
+        for seq in self.operations.iter() {
+            let mut seq_result = vec![];
+            for p_op in seq.iter() {
+                seq_result.push(p_op.to_op())
+            }
+            result.push(Op::Sequence {
+                operations: seq_result,
+            })
+        }
+
+        Op::Overlay { operations: result }
+    }
     pub fn init() -> NormalForm {
         NormalForm {
             operations: vec![vec![PointOp::init()]],
@@ -170,18 +184,20 @@ impl NormalForm {
             length_ratio: Ratio::new(0, 1),
         }
     }
-
-    pub fn get_nf_length_ratio(&self) -> Rational64 {
-        self.length_ratio
-    }
 }
 
 pub trait Normalize {
-    fn apply_to_normal_form(&self, normal_form: &mut NormalForm);
+    fn apply_to_normal_form(&self, normal_form: &mut NormalForm, table: &OpTable);
 }
 
 pub trait GetLengthRatio {
-    fn get_length_ratio(&self) -> Rational64;
+    fn get_length_ratio(&self, table: &OpTable) -> Rational64;
+}
+
+impl GetLengthRatio for NormalForm {
+    fn get_length_ratio(&self, _table: &OpTable) -> Rational64 {
+        self.length_ratio
+    }
 }
 
 #[cfg(test)]

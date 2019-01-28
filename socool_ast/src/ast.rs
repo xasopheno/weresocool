@@ -1,9 +1,32 @@
+extern crate indexmap;
 extern crate num_rational;
+use crate::operations::{helpers::handle_id_error, NormalForm};
+use indexmap::IndexMap;
 use num_rational::Rational64;
+
+pub type OpTable = IndexMap<String, Op>;
+pub type NormalTable = IndexMap<String, NormalForm>;
+
+trait New<T> {
+    fn new() -> T;
+}
+
+impl New<OpTable> for OpTable {
+    fn new() -> OpTable {
+        IndexMap::new()
+    }
+}
+
+impl New<NormalTable> for NormalTable {
+    fn new() -> NormalTable {
+        IndexMap::new()
+    }
+}
 
 #[derive(Clone, PartialEq, Debug, Hash)]
 pub enum Op {
     AsIs,
+    Id(Vec<String>),
     //
     Noise,
     Sine,
@@ -63,7 +86,7 @@ pub enum OscType {
     Square,
 }
 
-pub fn is_choice_op(op: Op) -> bool {
+pub fn is_choice_op(op: Op, table: &OpTable) -> bool {
     match op {
         Op::AsIs {}
         | Op::Sine {}
@@ -80,6 +103,7 @@ pub fn is_choice_op(op: Op) -> bool {
         | Op::Silence { .. } => false,
         Op::Choice { .. } => true,
 
+        Op::Id(id_vec) => is_choice_op(handle_id_error(id_vec.to_vec(), table), table),
         Op::WithLengthRatioOf { .. } => false,
 
         Op::Sequence { operations }
@@ -87,7 +111,7 @@ pub fn is_choice_op(op: Op) -> bool {
         | Op::Compose { operations }
         | Op::Overlay { operations } => {
             for operation in operations {
-                if is_choice_op(operation) {
+                if is_choice_op(operation, table) {
                     return true;
                 }
             }

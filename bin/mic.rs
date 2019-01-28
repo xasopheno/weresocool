@@ -43,7 +43,7 @@ fn run() -> Result<(), pa::Error> {
     let mut normal_form = NormalForm::init();
 
     println!("\nGenerating Composition ");
-    main.apply_to_normal_form(&mut normal_form);
+    main.apply_to_normal_form(&mut normal_form, &parsed.table);
 
     let pa = pa::PortAudio::new()?;
 

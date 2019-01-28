@@ -1,14 +1,18 @@
 use num_rational::{Rational64};
 use std::str::FromStr;
 use std::string::String;
-use socool_ast::ast::{Op, is_choice_op};
+use socool_ast::{
+    ast::{
+        OpTable,
+        Op,
+        is_choice_op,
+    },
+};
 use crate::parser::Init;
 use crate::float_to_rational::helpers::*;
-use crate::error_handling::handle_id_error;
-use std::collections::HashMap;
 
 grammar<'table, 'err>(
-    table: &'table mut HashMap<String, Op>,
+    table: &'table mut OpTable,
 );
 
 pub SoCool: Init = {
@@ -34,7 +38,7 @@ Operation: Op = {
     <op1: Operation> ">" "FitLength" <op2: ComposeOperation> => Op::Compose { operations: vec![op1.clone(), Op::WithLengthRatioOf { with_length_of: Box::new(op2), main: Box::new(op1) }] },
     <op1: Operation> ">" "Repeat" <i: Int> => {
         let mut op = Op::AsIs;
-        if is_choice_op(op1.clone()) {
+        if is_choice_op(op1.clone(), table) {
             op = op1
         }
         let mut vec = Vec::new();
@@ -78,19 +82,21 @@ BaseOperation: Op = {
     "Overlay" "[" <operations: Operations> "]" => Op::Overlay { operations: operations },
     "ModulateBy" "[" <operations: Operations> "]" => Op::ModulateBy { operations: operations },
     "O" "[" <o: Overtones> "]" => Op::Overlay { operations: o },
-    <id_vec: Import> => { handle_id_error(id_vec, &table) },
+    <id_vec: Import> => {
+        Op::Id(id_vec)
+    },
 };
 
 Overtone: Op = {
     "("
-        <v:Rational> ","
-        <o:Rational> ","
+        <fm:Rational> ","
+        <fa:Rational> ","
         <g:Rational> ","
         <p:Rational>
     ")"
     => Op::Compose { operations: vec! [
-            Op::TransposeM { m: v },
-            Op::TransposeA { a: o },
+            Op::TransposeM { m: fm },
+            Op::TransposeA { a: fa },
             Op::Gain { m: g },
             Op::PanA { a: p },
         ]
