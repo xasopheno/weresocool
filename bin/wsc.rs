@@ -1,8 +1,10 @@
 extern crate portaudio;
 extern crate rayon;
+extern crate socool_ast;
 extern crate socool_parser;
 extern crate weresocool;
 use portaudio as pa;
+use socool_ast::ast::OpOrNf;
 use socool_parser::parser::*;
 use weresocool::{
     examples::documentation,
@@ -28,7 +30,13 @@ fn main() -> Result<(), pa::Error> {
     }
 
     let parsed = parse_file(&filename.unwrap().to_string(), None);
-    let main = parsed.table.get("main").unwrap();
+    let parsed_main = parsed.table.get("main").unwrap();
+
+    let nf = match parsed_main {
+        OpOrNf::Nf(nf) => nf,
+        OpOrNf::Op(_) => panic!("main is Not in Normal Form for some terrible reason."),
+    };
+
     let init = parsed.init;
 
     let origin = Origin {
@@ -39,12 +47,12 @@ fn main() -> Result<(), pa::Error> {
     };
 
     if args.is_present("print") {
-        let composition = render(&origin, main, &parsed.table);
-        to_wav(composition, filename.unwrap().to_string());
+        //        let composition = render(&origin, main, &parsed.table);
+        //        to_wav(composition, filename.unwrap().to_string());
     } else if args.is_present("json") {
-        to_json(main, init, filename.unwrap().to_string());
+        //        to_json(main, init, filename.unwrap().to_string());
     } else {
-        let composition = render(&origin, main, &parsed.table);
+        let composition = render(&origin, &nf, &parsed.table);
 
         let pa = pa::PortAudio::new()?;
 

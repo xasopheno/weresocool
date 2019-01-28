@@ -2,12 +2,12 @@ pub mod normalize_nf {
     extern crate num_rational;
     extern crate rand;
 
-    use crate::ast::{OpTable, OpOrNf};
+    use crate::ast::{OpOrNfTable, OpOrNf};
     use crate::operations::{GetLengthRatio, NormalForm, Normalize};
     use num_rational::Rational64;
 
     impl Normalize for OpOrNf {
-        fn apply_to_normal_form(&self, input: &mut NormalForm, table: &OpTable) {
+        fn apply_to_normal_form(&self, input: &mut NormalForm, table: &OpOrNfTable) {
             match self {
                OpOrNf::Op(op) => {
                    op.apply_to_normal_form(input, table)
@@ -20,7 +20,7 @@ pub mod normalize_nf {
     }
 
     impl GetLengthRatio for OpOrNf {
-        fn get_length_ratio(&self, table: &OpTable) -> Rational64 {
+        fn get_length_ratio(&self, table: &OpOrNfTable) -> Rational64 {
             match self {
                 OpOrNf::Op(op) => {
                     op.get_length_ratio(table)

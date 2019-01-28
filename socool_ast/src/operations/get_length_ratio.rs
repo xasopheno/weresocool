@@ -1,12 +1,12 @@
 pub mod get_length_ratio {
-    use crate::ast::{Op, OpTable};
+    use crate::ast::{Op, OpOrNfTable};
     use crate::operations::{helpers::*, GetLengthRatio};
     use num_rational::{Ratio, Rational64};
 
     extern crate num_rational;
 
     impl GetLengthRatio for Op {
-        fn get_length_ratio(&self, table: &OpTable) -> Rational64 {
+        fn get_length_ratio(&self, table: &OpOrNfTable) -> Rational64 {
             match self {
                 Op::AsIs {}
                 | Op::Sine {}
@@ -40,7 +40,7 @@ pub mod get_length_ratio {
                     new_total
                 }
 
-                Op::Choice { operations } => operations[0].get_length_ratio(table),
+//                Op::Choice { operations } => operations[0].get_length_ratio(table),
 
                 Op::WithLengthRatioOf {
                     with_length_of,

@@ -1,5 +1,5 @@
 extern crate num_rational;
-use crate::ast::{Op, OpTable, OscType};
+use crate::ast::{Op, OpOrNfTable, OscType};
 use num_rational::{Ratio, Rational64};
 use std::ops::{Mul, MulAssign};
 mod get_length_ratio;
@@ -25,15 +25,15 @@ pub struct PointOp {
 }
 
 pub trait Normalize {
-    fn apply_to_normal_form(&self, normal_form: &mut NormalForm, table: &OpTable);
+    fn apply_to_normal_form(&self, normal_form: &mut NormalForm, table: &OpOrNfTable);
 }
 
 pub trait GetLengthRatio {
-    fn get_length_ratio(&self, table: &OpTable) -> Rational64;
+    fn get_length_ratio(&self, table: &OpOrNfTable) -> Rational64;
 }
 
 impl GetLengthRatio for NormalForm {
-    fn get_length_ratio(&self, _table: &OpTable) -> Rational64 {
+    fn get_length_ratio(&self, _table: &OpOrNfTable) -> Rational64 {
         self.length_ratio
     }
 }
@@ -101,7 +101,7 @@ impl<'a, 'b> Mul<NormalForm> for &'a mut NormalForm {
 }
 
 impl Normalize for NormalForm {
-    fn apply_to_normal_form(&self, input: &mut NormalForm, _table: &OpTable) {
+    fn apply_to_normal_form(&self, input: &mut NormalForm, _table: &OpOrNfTable) {
         let input_clone = input.clone();
         *input = input_clone * self.clone()
     }

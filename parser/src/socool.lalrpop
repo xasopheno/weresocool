@@ -3,16 +3,17 @@ use std::str::FromStr;
 use std::string::String;
 use socool_ast::{
     ast::{
-        OpTable,
+        OpOrNfTable,
         Op,
-        is_choice_op,
+        OpOrNf,
+//        is_choice_op,
     },
 };
 use crate::parser::Init;
 use crate::float_to_rational::helpers::*;
 
 grammar<'table, 'err>(
-    table: &'table mut OpTable,
+    table: &'table mut OpOrNfTable,
 );
 
 pub SoCool: Init = {
@@ -31,16 +32,16 @@ Point: Init = {
 
 LetDefs = Lets<LetDef>;
 LetDef: () = {
-    <s: Name> "=" "{" <o: Operation> "}" => { table.insert(s.clone(), o); () },
+    <s: Name> "=" "{" <o: Operation> "}" => { table.insert(s.clone(), OpOrNf::Op(o)); () },
 }
 
 Operation: Op = {
     <op1: Operation> ">" "FitLength" <op2: ComposeOperation> => Op::Compose { operations: vec![op1.clone(), Op::WithLengthRatioOf { with_length_of: Box::new(op2), main: Box::new(op1) }] },
     <op1: Operation> ">" "Repeat" <i: Int> => {
-        let mut op = Op::AsIs;
-        if is_choice_op(op1.clone(), table) {
-            op = op1
-        }
+        let op = Op::AsIs;
+    //    if is_choice_op(op1.clone(), table) {
+    //        op = op1
+    //    }
         let mut vec = Vec::new();
         for x in 0..i {
             vec.push(op.clone())
@@ -77,7 +78,7 @@ BaseOperation: Op = {
     "PanA" <v:Rational> => Op::PanA {a: v},
     "Length" <v:Rational> => Op::Length {m: v},
     "Gain" <v:Rational> => Op::Gain {m: v},
-    "Choice" "[" <operations: Operations> "]" => Op::Choice { operations: operations },
+    // "Choice" "[" <operations: Operations> "]" => Op::Choice { operations: operations },
     "Sequence" "[" <operations: Operations> "]" => Op::Sequence { operations: operations },
     "Overlay" "[" <operations: Operations> "]" => Op::Overlay { operations: operations },
     "ModulateBy" "[" <operations: Operations> "]" => Op::ModulateBy { operations: operations },

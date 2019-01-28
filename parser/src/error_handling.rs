@@ -1,11 +1,11 @@
 extern crate colored;
 extern crate socool_ast;
 use colored::*;
-use socool_ast::ast::{Op, OpTable};
+use socool_ast::ast::{OpOrNf, OpOrNfTable};
 use std::cmp;
 use std::sync::{Arc, Mutex};
 
-pub fn handle_id_error(id_vec: Vec<String>, table: &OpTable) -> Op {
+pub fn handle_id_error(id_vec: Vec<String>, table: &OpOrNfTable) -> OpOrNf {
     let result = match id_vec.len() {
         1 => table.get(&id_vec[0]),
         2 => {

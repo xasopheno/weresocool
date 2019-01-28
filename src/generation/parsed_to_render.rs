@@ -12,7 +12,7 @@ use pbr::ProgressBar;
 use rayon::prelude::*;
 use render::Render;
 use settings::default_settings;
-use socool_ast::ast::{Op, OpTable};
+use socool_ast::ast::{Op, OpOrNfTable};
 use socool_ast::operations::{NormalForm, Normalize as NormalizeOp, PointOp};
 use socool_parser::parser::Init;
 use std::sync::{Arc, Mutex};
@@ -23,7 +23,7 @@ pub fn r_to_f64(r: Rational64) -> f64 {
     *r.numer() as f64 / *r.denom() as f64
 }
 
-pub fn render(origin: &Origin, composition: &Op, table: &OpTable) -> StereoWaveform {
+pub fn render(origin: &Origin, composition: &NormalForm, table: &OpOrNfTable) -> StereoWaveform {
     let mut normal_form = NormalForm::init();
 
     println!("\nGenerating Composition ");
