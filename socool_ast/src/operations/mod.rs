@@ -4,6 +4,7 @@ use num_rational::{Ratio, Rational64};
 use std::ops::{Mul, MulAssign};
 mod get_length_ratio;
 pub mod helpers;
+pub mod normalize_nf;
 mod normalize;
 
 #[derive(Debug, Clone, PartialEq, Hash)]
