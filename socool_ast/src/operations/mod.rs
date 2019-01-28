@@ -23,6 +23,89 @@ pub struct PointOp {
     pub osc_type: OscType,
 }
 
+pub trait Normalize {
+    fn apply_to_normal_form(&self, normal_form: &mut NormalForm, table: &OpTable);
+}
+
+pub trait GetLengthRatio {
+    fn get_length_ratio(&self, table: &OpTable) -> Rational64;
+}
+
+impl GetLengthRatio for NormalForm {
+    fn get_length_ratio(&self, _table: &OpTable) -> Rational64 {
+        self.length_ratio
+    }
+}
+
+impl Mul<NormalForm> for NormalForm {
+    type Output = NormalForm;
+
+    fn mul(self, other: NormalForm) -> NormalForm {
+        let mut nf_result = vec![];
+        let mut max_lr = Rational64::new(0, 1);
+        for other_seq in other.operations.iter() {
+            for other_point_op in other_seq.iter() {
+                let mut seq_result: Vec<PointOp> = vec![];
+                let mut seq_lr = Rational64::new(0, 1);
+                for self_seq in self.operations.iter() {
+                    for self_point_op in self_seq.iter() {
+                        seq_lr += self_point_op.l * other_point_op.l;
+                        seq_result.push(self_point_op * other_point_op);
+                    }
+                }
+
+                nf_result.push(seq_result);
+                if seq_lr > max_lr {
+                    max_lr = seq_lr
+                }
+            }
+        }
+
+        NormalForm {
+            operations: nf_result,
+            length_ratio: max_lr,
+        }
+    }
+}
+
+impl<'a, 'b> Mul<NormalForm> for &'a mut NormalForm {
+    type Output = NormalForm;
+
+    fn mul(self, other: NormalForm) -> NormalForm {
+        let mut nf_result = vec![];
+        let mut max_lr = Rational64::new(0, 1);
+        for other_seq in other.operations.iter() {
+            for other_point_op in other_seq.iter() {
+                let mut seq_result: Vec<PointOp> = vec![];
+                let mut seq_lr = Rational64::new(0, 1);
+                for self_seq in self.operations.iter() {
+                    for self_point_op in self_seq.iter() {
+                        seq_lr += self_point_op.l * other_point_op.l;
+                        seq_result.push(self_point_op * other_point_op);
+                    }
+                }
+
+                nf_result.push(seq_result);
+                if seq_lr > max_lr {
+                    max_lr = seq_lr
+                }
+            }
+        }
+
+        NormalForm {
+            operations: nf_result,
+            length_ratio: max_lr,
+        }
+    }
+}
+
+impl Normalize for NormalForm {
+    fn apply_to_normal_form(&self, input: &mut NormalForm, _table: &OpTable) {
+        let input_clone = input.clone();
+        *input = input_clone * self.clone()
+    }
+}
+
 impl Mul<PointOp> for PointOp {
     type Output = PointOp;
 
@@ -65,37 +148,6 @@ impl MulAssign for PointOp {
             g: self.g * other.g,
             l: self.l * other.l,
             osc_type: other.osc_type,
-        }
-    }
-}
-
-impl Mul<NormalForm> for NormalForm {
-    type Output = NormalForm;
-
-    fn mul(self, other: NormalForm) -> NormalForm {
-        let mut nf_result = vec![];
-        let mut max_lr = Rational64::new(0, 1);
-        for other_seq in other.operations.iter() {
-            for other_point_op in other_seq.iter() {
-                let mut seq_result: Vec<PointOp> = vec![];
-                let mut seq_lr = Rational64::new(0, 1);
-                for self_seq in self.operations.iter() {
-                    for self_point_op in self_seq.iter() {
-                        seq_lr += self_point_op.l * other_point_op.l;
-                        seq_result.push(self_point_op * other_point_op);
-                    }
-                }
-
-                nf_result.push(seq_result);
-                if seq_lr > max_lr {
-                    max_lr = seq_lr
-                }
-            }
-        }
-
-        NormalForm {
-            operations: nf_result,
-            length_ratio: max_lr,
         }
     }
 }
@@ -183,20 +235,6 @@ impl NormalForm {
             operations: vec![],
             length_ratio: Ratio::new(0, 1),
         }
-    }
-}
-
-pub trait Normalize {
-    fn apply_to_normal_form(&self, normal_form: &mut NormalForm, table: &OpTable);
-}
-
-pub trait GetLengthRatio {
-    fn get_length_ratio(&self, table: &OpTable) -> Rational64;
-}
-
-impl GetLengthRatio for NormalForm {
-    fn get_length_ratio(&self, _table: &OpTable) -> Rational64 {
-        self.length_ratio
     }
 }
 

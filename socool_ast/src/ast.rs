@@ -5,7 +5,12 @@ use indexmap::IndexMap;
 use num_rational::Rational64;
 
 pub type OpTable = IndexMap<String, Op>;
-pub type NormalTable = IndexMap<String, NormalForm>;
+pub type OpOrNfTable = IndexMap<String, NormalForm>;
+
+pub enum OpOrNf {
+    Op(Op),
+    Nf(NormalForm),
+}
 
 trait New<T> {
     fn new() -> T;
@@ -17,11 +22,11 @@ impl New<OpTable> for OpTable {
     }
 }
 
-impl New<NormalTable> for NormalTable {
-    fn new() -> NormalTable {
-        IndexMap::new()
-    }
-}
+//impl New<NormalTable> for NormalTable {
+//    fn new() -> OpOrNfTable {
+//        IndexMap::new()
+//    }
+//}
 
 #[derive(Clone, PartialEq, Debug, Hash)]
 pub enum Op {
