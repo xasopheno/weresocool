@@ -64,24 +64,24 @@ pub enum Op {
     },
     //
     Sequence {
-        operations: Vec<Op>,
+        operations: Vec<OpOrNf>,
     },
     Overlay {
-        operations: Vec<Op>,
+        operations: Vec<OpOrNf>,
     },
     Compose {
-        operations: Vec<Op>,
+        operations: Vec<OpOrNf>,
     },
 //    Choice {
 //        operations: Vec<Op>,
 //    },
     ModulateBy {
-        operations: Vec<Op>,
+        operations: Vec<OpOrNf>,
     },
     //
     WithLengthRatioOf {
-        with_length_of: Box<Op>,
-        main: Box<Op>,
+        with_length_of: Box<OpOrNf>,
+        main: Box<OpOrNf>,
     },
 }
 

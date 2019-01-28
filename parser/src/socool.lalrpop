@@ -32,13 +32,18 @@ Point: Init = {
 
 LetDefs = Lets<LetDef>;
 LetDef: () = {
-    <s: Name> "=" "{" <o: Operation> "}" => { table.insert(s.clone(), OpOrNf::Op(o)); () },
+    <s: Name> "=" "{" <o: Operation> "}" => { table.insert(s.clone(), o); () },
 }
 
-Operation: Op = {
-    <op1: Operation> ">" "FitLength" <op2: ComposeOperation> => Op::Compose { operations: vec![op1.clone(), Op::WithLengthRatioOf { with_length_of: Box::new(op2), main: Box::new(op1) }] },
+Operation: OpOrNf = {
+    <op1: Operation> ">" "FitLength" <op2: ComposeOperation> => {
+        OpOrNf::Op(
+            Op::Compose { operations:
+            vec![op1.clone(), OpOrNf::Op(Op::WithLengthRatioOf { with_length_of: Box::new(op2), main: Box::new(op1) })]
+        })
+    },
     <op1: Operation> ">" "Repeat" <i: Int> => {
-        let op = Op::AsIs;
+        let op = OpOrNf::Op(Op::AsIs);
     //    if is_choice_op(op1.clone(), table) {
     //        op = op1
     //    }
@@ -46,62 +51,64 @@ Operation: Op = {
         for x in 0..i {
             vec.push(op.clone())
         }
-        Op::Sequence { operations: vec }
+
+        OpOrNf::Op(Op::Sequence { operations: vec })
     },
+
     <op: ComposeOperation> => op,
 }
 
-ComposeOperation: Op = {
-    <ops: Pipe<BaseOperation>> => Op::Compose { operations: ops },
+ComposeOperation: OpOrNf = {
+    <ops: Pipe<BaseOperation>> => OpOrNf::Op(Op::Compose { operations: ops }),
     <o: BaseOperation> => o,
 }
 
-BaseOperation: Op = {
+BaseOperation: OpOrNf = {
     "(" <o: Operation> ")" => o,
-    "AsIs" => Op::AsIs {},
-    "Sine" => Op::Sine {},
-    "Square" => Op::Square {},
-    "Noise" => Op::Noise {},
-    "Reverse" => Op::Reverse {},
-    "Invert" => Op::FInvert,
+    "AsIs" => OpOrNf::Op(Op::AsIs {}),
+    "Sine" => OpOrNf::Op(Op::Sine {}),
+    "Square" => OpOrNf::Op(Op::Square {}),
+    "Noise" => OpOrNf::Op(Op::Noise {}),
+    "Reverse" => OpOrNf::Op(Op::Reverse {}),
+    "Invert" => OpOrNf::Op(Op::FInvert),
     "Repeat" <i: Int> => {
         let mut vec = Vec::new();
         for x in 0..i {
-            vec.push(Op::AsIs)
+            vec.push(OpOrNf::Op(Op::AsIs))
         }
-        Op::Sequence { operations: vec }
+        OpOrNf::Op(Op::Sequence { operations: vec })
     },
-    "Silence" <v:Rational> => Op::Silence {m: v},
-    "Tm" <v:Rational> => Op::TransposeM {m: v},
-    "Ta" <v:Rational> => Op::TransposeA {a: v},
-    "PanM" <v:Rational> => Op::PanM {m: v},
-    "PanA" <v:Rational> => Op::PanA {a: v},
-    "Length" <v:Rational> => Op::Length {m: v},
-    "Gain" <v:Rational> => Op::Gain {m: v},
-    // "Choice" "[" <operations: Operations> "]" => Op::Choice { operations: operations },
-    "Sequence" "[" <operations: Operations> "]" => Op::Sequence { operations: operations },
-    "Overlay" "[" <operations: Operations> "]" => Op::Overlay { operations: operations },
-    "ModulateBy" "[" <operations: Operations> "]" => Op::ModulateBy { operations: operations },
-    "O" "[" <o: Overtones> "]" => Op::Overlay { operations: o },
+    "Silence" <v:Rational> => OpOrNf::Op(Op::Silence {m: v}),
+    "Tm" <v:Rational> => OpOrNf::Op(Op::TransposeM {m: v}),
+    "Ta" <v:Rational> => OpOrNf::Op(Op::TransposeA {a: v}),
+    "PanM" <v:Rational> => OpOrNf::Op(Op::PanM {m: v}),
+    "PanA" <v:Rational> => OpOrNf::Op(Op::PanA {a: v}),
+    "Length" <v:Rational> => OpOrNf::Op(Op::Length {m: v}),
+    "Gain" <v:Rational> => OpOrNf::Op(Op::Gain {m: v}),
+    // "Choice" "[" <operations: Operations> "]" => OpOrNf::Op(Op::Choice { operations: operations }),
+    "Sequence" "[" <operations: Operations> "]" => OpOrNf::Op(Op::Sequence { operations: operations }),
+    "Overlay" "[" <operations: Operations> "]" => OpOrNf::Op(Op::Overlay { operations: operations }),
+    "ModulateBy" "[" <operations: Operations> "]" => OpOrNf::Op(Op::ModulateBy { operations: operations }),
+    "O" "[" <o: Overtones> "]" => OpOrNf::Op(Op::Overlay { operations: o }),
     <id_vec: Import> => {
-        Op::Id(id_vec)
+        OpOrNf::Op(Op::Id(id_vec))
     },
 };
 
-Overtone: Op = {
+Overtone: OpOrNf = {
     "("
         <fm:Rational> ","
         <fa:Rational> ","
         <g:Rational> ","
         <p:Rational>
     ")"
-    => Op::Compose { operations: vec! [
-            Op::TransposeM { m: fm },
-            Op::TransposeA { a: fa },
-            Op::Gain { m: g },
-            Op::PanA { a: p },
+    => OpOrNf::Op(Op::Compose { operations: vec! [
+            OpOrNf::Op(Op::TransposeM { m: fm }),
+            OpOrNf::Op(Op::TransposeA { a: fa }),
+            OpOrNf::Op(Op::Gain { m: g }),
+            OpOrNf::Op(Op::PanA { a: p }),
         ]
-    }
+    })
 }
 
 Overtones = Comma<Overtone>;
