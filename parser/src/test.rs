@@ -3,7 +3,7 @@ pub mod test {
     extern crate socool_ast;
 
     use num_rational::Ratio;
-    use socool_ast::ast::{Op, OpOrNf, OpOrNfTable};
+    use socool_ast::ast::{Op, Op::*, OpOrNf::*, OpOrNfTable};
     use socool_parser::imports::{get_filepath_and_import_name, is_as_import, is_import};
     use socool_parser::parser::*;
 
@@ -21,7 +21,7 @@ pub mod test {
         let _result = socool::SoCoolParser::new().parse(&mut table, &parse_str);
 
         let main = table.get(&"main".to_string()).unwrap();
-        assert_eq!(*main, OpOrNf::Op(expected));
+        assert_eq!(*main, Op(expected));
     }
 
     fn test_data() -> Vec<String> {
@@ -99,7 +99,7 @@ pub mod test {
         parse_str.push_str("Tm 3/2");
         test_parsed_operation(
             parse_str,
-            Op::TransposeM {
+            TransposeM {
                 m: Ratio::new(3, 2),
             },
         );
@@ -111,7 +111,7 @@ pub mod test {
         parse_str.push_str("Ta 2.0");
         test_parsed_operation(
             parse_str,
-            Op::TransposeA {
+            TransposeA {
                 a: Ratio::new(2, 1),
             },
         );
@@ -123,7 +123,7 @@ pub mod test {
         parse_str.push_str("PanA 2.0");
         test_parsed_operation(
             parse_str,
-            Op::PanA {
+            PanA {
                 a: Ratio::new(2, 1),
             },
         );
@@ -135,7 +135,7 @@ pub mod test {
         parse_str.push_str("PanM 3/2");
         test_parsed_operation(
             parse_str,
-            Op::PanM {
+            PanM {
                 m: Ratio::new(3, 2),
             },
         );
@@ -147,7 +147,7 @@ pub mod test {
         parse_str.push_str("Gain 0.25");
         test_parsed_operation(
             parse_str,
-            Op::Gain {
+            Gain {
                 m: Ratio::new(1, 4),
             },
         );
@@ -159,7 +159,7 @@ pub mod test {
         parse_str.push_str("Length 0.5");
         test_parsed_operation(
             parse_str,
-            Op::Length {
+            Length {
                 m: Ratio::new(1, 2),
             },
         );
@@ -169,14 +169,14 @@ pub mod test {
     fn reverse_test() {
         let mut parse_str = mock_init();
         parse_str.push_str("Reverse");
-        test_parsed_operation(parse_str, Op::Reverse);
+        test_parsed_operation(parse_str, Reverse);
     }
 
     #[test]
     fn asis_test() {
         let mut parse_str = mock_init();
         parse_str.push_str("AsIs");
-        test_parsed_operation(parse_str, Op::AsIs);
+        test_parsed_operation(parse_str, AsIs);
     }
 
     #[test]
@@ -192,10 +192,10 @@ pub mod test {
         );
         test_parsed_operation(
             parse_str,
-            Op::Sequence {
+            Sequence {
                 operations: vec![
-                    OpOrNf::Op(Op::AsIs),
-                    OpOrNf::Op(Op::TransposeM {
+                    Op(AsIs),
+                    Op(TransposeM {
                         m: Ratio::new(3, 2),
                     }),
                 ],
@@ -216,10 +216,10 @@ pub mod test {
         );
         test_parsed_operation(
             parse_str,
-            Op::Overlay {
+            Overlay {
                 operations: vec![
-                    OpOrNf::Op(Op::AsIs),
-                    OpOrNf::Op(Op::TransposeM {
+                    Op(AsIs),
+                    Op(TransposeM {
                         m: Ratio::new(3, 2),
                     }),
                 ],
@@ -238,36 +238,36 @@ pub mod test {
         );
         test_parsed_operation(
             parse_str,
-            Op::Overlay {
+            Overlay {
                 operations: vec![
-                    OpOrNf::Op(Op::Compose {
+                    Op(Compose {
                         operations: vec![
-                            OpOrNf::Op(Op::TransposeM {
+                            Op(TransposeM {
                                 m: Ratio::new(3, 2),
                             }),
-                            OpOrNf::Op(Op::TransposeA {
+                            Op(TransposeA {
                                 a: Ratio::new(3, 1),
                             }),
-                            OpOrNf::Op(Op::Gain {
+                            Op(Gain {
                                 m: Ratio::new(1, 1),
                             }),
-                            OpOrNf::Op(Op::PanA {
+                            Op(PanA {
                                 a: Ratio::new(3, 10),
                             }),
                         ],
                     }),
-                    OpOrNf::Op(Op::Compose {
+                    Op(Compose {
                         operations: vec![
-                            OpOrNf::Op(Op::TransposeM {
+                            Op(TransposeM {
                                 m: Ratio::new(1, 1),
                             }),
-                            OpOrNf::Op(Op::TransposeA {
+                            Op(TransposeA {
                                 a: Ratio::new(0, 1),
                             }),
-                            OpOrNf::Op(Op::Gain {
+                            Op(Gain {
                                 m: Ratio::new(1, 2),
                             }),
-                            OpOrNf::Op(Op::PanA {
+                            Op(PanA {
                                 a: Ratio::new(0, 1),
                             }),
                         ],
@@ -296,12 +296,12 @@ pub mod test {
         let thing = table.get(&"thing".to_string()).unwrap();
         assert_eq!(
             *thing,
-            OpOrNf::Op(Op::Compose {
+            Op(Compose {
                 operations: vec![
-                    OpOrNf::Op(Op::TransposeM {
+                    Op(TransposeM {
                         m: Ratio::new(3, 2)
                     }),
-                    OpOrNf::Op(Op::Gain {
+                    Op(Gain {
                         m: Ratio::new(3, 10)
                     })
                 ]
@@ -359,41 +359,41 @@ pub mod test {
         let thing = table.get(&"main".to_string()).unwrap();
         assert_eq!(
             *thing,
-            OpOrNf::Op(Op::Compose {
+            Op(Compose {
                 operations: vec![
-                    OpOrNf::Op(Op::Compose {
+                    Op(Compose {
                         operations: vec![
-                            OpOrNf::Op(Op::Sequence {
+                            Op(Sequence {
                                 operations: vec![
-                                    OpOrNf::Op(Op::TransposeM {
+                                    Op(TransposeM {
                                         m: Ratio::new(5, 4)
                                     }),
-                                    OpOrNf::Op(Op::TransposeM {
+                                    Op(TransposeM {
                                         m: Ratio::new(3, 2)
                                     })
                                 ]
                             }),
-                            OpOrNf::Op(Op::Sequence {
-                                operations: vec![OpOrNf::Op(Op::AsIs), OpOrNf::Op(Op::AsIs)]
+                            Op(Sequence {
+                                operations: vec![Op(AsIs), Op(AsIs)]
                             })
                         ]
                     }),
-                    OpOrNf::Op(Op::WithLengthRatioOf {
-                        with_length_of: Box::new(OpOrNf::Op(Op::Id(vec!["thing".to_string()]))),
-                        main: Box::new(OpOrNf::Op(Op::Compose {
+                    Op(WithLengthRatioOf {
+                        with_length_of: Box::new(Op(Id(vec!["thing".to_string()]))),
+                        main: Box::new(Op(Compose {
                             operations: vec![
-                                OpOrNf::Op(Op::Sequence {
+                                Op(Sequence {
                                     operations: vec![
-                                        OpOrNf::Op(Op::TransposeM {
+                                        Op(TransposeM {
                                             m: Ratio::new(5, 4)
                                         }),
-                                        OpOrNf::Op(Op::TransposeM {
+                                        Op(TransposeM {
                                             m: Ratio::new(3, 2)
                                         })
                                     ]
                                 }),
-                                OpOrNf::Op(Op::Sequence {
-                                    operations: vec![OpOrNf::Op(Op::AsIs), OpOrNf::Op(Op::AsIs)]
+                                Op(Sequence {
+                                    operations: vec![Op(AsIs), Op(AsIs)]
                                 })
                             ]
                         }))
