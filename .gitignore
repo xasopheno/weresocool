@@ -3,3 +3,4 @@
 *.makam-cache
 socool_ast/target
 parser/ast
+*.iml
