@@ -10,17 +10,10 @@ pub enum OpOrNf {
     Nf(NormalForm),
 }
 
-pub type OpTable = IndexMap<String, Op>;
 pub type OpOrNfTable = IndexMap<String, OpOrNf>;
 
 trait New<T> {
     fn new() -> T;
-}
-
-impl New<OpTable> for OpTable {
-    fn new() -> OpTable {
-        IndexMap::new()
-    }
 }
 
 impl New<OpOrNfTable> for OpOrNfTable {
@@ -72,9 +65,9 @@ pub enum Op {
     Compose {
         operations: Vec<OpOrNf>,
     },
-//    Choice {
-//        operations: Vec<Op>,
-//    },
+    //    Choice {
+    //        operations: Vec<Op>,
+    //    },
     ModulateBy {
         operations: Vec<OpOrNf>,
     },

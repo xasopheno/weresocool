@@ -1,6 +1,6 @@
 extern crate colored;
 extern crate num_rational;
-use crate::ast::{Op, OpOrNf, OpOrNfTable, OscType};
+use crate::ast::{OpOrNf, OpOrNfTable, OscType};
 use crate::operations::{GetLengthRatio, NormalForm, PointOp};
 use colored::*;
 use num_rational::{Ratio, Rational64};

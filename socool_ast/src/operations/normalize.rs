@@ -1,7 +1,7 @@
 pub mod normalize {
     extern crate num_rational;
     extern crate rand;
-    use crate::ast::{Op, OpTable, OscType, OpOrNfTable};
+    use crate::ast::{Op, OpOrNfTable, OscType};
     use crate::operations::helpers::*;
     use crate::operations::{GetLengthRatio, NormalForm, Normalize};
     use num_rational::Ratio;
@@ -120,11 +120,10 @@ pub mod normalize {
                     input.length_ratio = *m;
                 }
 
-//                Op::Choice { operations } => {
-//                    let choice = rand::thread_rng().choose(&operations).unwrap();
-//                    choice.apply_to_normal_form(input, table)
-//                }
-
+                //                Op::Choice { operations } => {
+                //                    let choice = rand::thread_rng().choose(&operations).unwrap();
+                //                    choice.apply_to_normal_form(input, table)
+                //                }
                 Op::Sequence { operations } => {
                     let mut result = NormalForm::init_empty();
 

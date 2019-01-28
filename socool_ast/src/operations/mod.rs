@@ -1,11 +1,11 @@
 extern crate num_rational;
-use crate::ast::{Op, OpOrNfTable, OscType};
+use crate::ast::{OpOrNfTable, OscType};
 use num_rational::{Ratio, Rational64};
 use std::ops::{Mul, MulAssign};
 mod get_length_ratio;
 pub mod helpers;
-pub mod normalize_nf;
 mod normalize;
+pub mod normalize_nf;
 
 #[derive(Debug, Clone, PartialEq, Hash)]
 pub struct NormalForm {
@@ -44,51 +44,21 @@ impl Mul<NormalForm> for NormalForm {
     fn mul(self, other: NormalForm) -> NormalForm {
         let mut nf_result = vec![];
         let mut max_lr = Rational64::new(0, 1);
-        for other_seq in other.operations.iter() {
-            for other_point_op in other_seq.iter() {
-                let mut seq_result: Vec<PointOp> = vec![];
-                let mut seq_lr = Rational64::new(0, 1);
-                for self_seq in self.operations.iter() {
+        for other_seq in self.operations.iter() {
+            for self_seq in other.operations.iter() {
+                for other_point_op in other_seq.iter() {
+                    let mut seq_result: Vec<PointOp> = vec![];
+                    let mut seq_lr = Rational64::new(0, 1);
                     for self_point_op in self_seq.iter() {
                         seq_lr += self_point_op.l * other_point_op.l;
-                        seq_result.push(self_point_op * other_point_op);
+                        seq_result.push(other_point_op * self_point_op);
                     }
-                }
 
-                nf_result.push(seq_result);
-                if seq_lr > max_lr {
-                    max_lr = seq_lr
-                }
-            }
-        }
-
-        NormalForm {
-            operations: nf_result,
-            length_ratio: max_lr,
-        }
-    }
-}
-
-impl<'a, 'b> Mul<NormalForm> for &'a mut NormalForm {
-    type Output = NormalForm;
-
-    fn mul(self, other: NormalForm) -> NormalForm {
-        let mut nf_result = vec![];
-        let mut max_lr = Rational64::new(0, 1);
-        for other_seq in other.operations.iter() {
-            for other_point_op in other_seq.iter() {
-                let mut seq_result: Vec<PointOp> = vec![];
-                let mut seq_lr = Rational64::new(0, 1);
-                for self_seq in self.operations.iter() {
-                    for self_point_op in self_seq.iter() {
-                        seq_lr += self_point_op.l * other_point_op.l;
-                        seq_result.push(self_point_op * other_point_op);
+                    if seq_lr > max_lr {
+                        max_lr = seq_lr
                     }
-                }
 
-                nf_result.push(seq_result);
-                if seq_lr > max_lr {
-                    max_lr = seq_lr
+                    nf_result.push(seq_result);
                 }
             }
         }
@@ -189,41 +159,41 @@ impl PointOp {
         }
     }
 
-//    pub fn to_op(&self) -> Op {
-//        let osc_op = match self.osc_type {
-//            OscType::Sine => Op::Sine,
-//            OscType::Square => Op::Square,
-//            OscType::Noise => Op::Noise,
-//        };
-//        Op::Compose {
-//            operations: vec![
-//                osc_op,
-//                Op::TransposeM { m: self.fm },
-//                Op::TransposeA { a: self.fa },
-//                Op::PanM { m: self.pm },
-//                Op::PanA { a: self.pa },
-//                Op::Gain { m: self.g },
-//                Op::Length { m: self.l },
-//            ],
-//        }
-//    }
+    //    pub fn to_op(&self) -> Op {
+    //        let osc_op = match self.osc_type {
+    //            OscType::Sine => Op::Sine,
+    //            OscType::Square => Op::Square,
+    //            OscType::Noise => Op::Noise,
+    //        };
+    //        Op::Compose {
+    //            operations: vec![
+    //                osc_op,
+    //                Op::TransposeM { m: self.fm },
+    //                Op::TransposeA { a: self.fa },
+    //                Op::PanM { m: self.pm },
+    //                Op::PanA { a: self.pa },
+    //                Op::Gain { m: self.g },
+    //                Op::Length { m: self.l },
+    //            ],
+    //        }
+    //    }
 }
 
 impl NormalForm {
-//    pub fn to_op(&self) -> Op {
-//        let mut result = vec![];
-//        for seq in self.operations.iter() {
-//            let mut seq_result = vec![];
-//            for p_op in seq.iter() {
-//                seq_result.push(p_op.to_op())
-//            }
-//            result.push(Op::Sequence {
-//                operations: seq_result,
-//            })
-//        }
-//
-//        Op::Overlay { operations: result }
-//    }
+    //    pub fn to_op(&self) -> Op {
+    //        let mut result = vec![];
+    //        for seq in self.operations.iter() {
+    //            let mut seq_result = vec![];
+    //            for p_op in seq.iter() {
+    //                seq_result.push(p_op.to_op())
+    //            }
+    //            result.push(Op::Sequence {
+    //                operations: seq_result,
+    //            })
+    //        }
+    //
+    //        Op::Overlay { operations: result }
+    //    }
     pub fn init() -> NormalForm {
         NormalForm {
             operations: vec![vec![PointOp::init()]],

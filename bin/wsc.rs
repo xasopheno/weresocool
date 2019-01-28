@@ -37,7 +37,7 @@ fn main() -> Result<(), pa::Error> {
         OpOrNf::Op(_) => panic!("main is Not in Normal Form for some terrible reason."),
     };
 
-//    println!("{:?}", nf);
+    //    println!("{:?}", nf);
 
     let init = parsed.init;
 
