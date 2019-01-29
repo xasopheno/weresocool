@@ -1,7 +1,10 @@
 extern crate num_rational;
 use crate::ast::{OpOrNfTable, OscType};
 use num_rational::{Ratio, Rational64};
-use std::ops::{Mul, MulAssign};
+use std::{
+    collections::BTreeSet,
+    ops::{Mul, MulAssign}
+};
 mod get_length_ratio;
 pub mod helpers;
 mod normalize;
@@ -13,6 +16,8 @@ pub struct NormalForm {
     pub length_ratio: Rational64,
 }
 
+pub type NameSet = BTreeSet<String>;
+
 #[derive(Debug, Clone, PartialEq, Hash)]
 pub struct PointOp {
     pub fm: Rational64,
@@ -22,6 +27,7 @@ pub struct PointOp {
     pub g: Rational64,
     pub l: Rational64,
     pub osc_type: OscType,
+    pub names: NameSet
 }
 
 pub trait Normalize {
@@ -36,6 +42,15 @@ impl GetLengthRatio for NormalForm {
     fn get_length_ratio(&self, _table: &OpOrNfTable) -> Rational64 {
         self.length_ratio
     }
+}
+
+pub fn union_names(b_tree_set: NameSet, left: &NameSet) -> NameSet {
+    let mut result= b_tree_set.clone();
+    for val in left {
+        result.insert(val.clone());
+    }
+
+    result
 }
 
 impl Mul<NormalForm> for NormalForm {
@@ -81,6 +96,7 @@ impl Mul<PointOp> for PointOp {
     type Output = PointOp;
 
     fn mul(self, other: PointOp) -> PointOp {
+        let names = union_names(self.names.clone(), &other.names);
         PointOp {
             fm: self.fm * other.fm,
             fa: self.fa + other.fa,
@@ -89,6 +105,7 @@ impl Mul<PointOp> for PointOp {
             g: self.g * other.g,
             l: self.l * other.l,
             osc_type: other.osc_type,
+            names
         }
     }
 }
@@ -97,6 +114,7 @@ impl<'a, 'b> Mul<&'b PointOp> for &'a PointOp {
     type Output = PointOp;
 
     fn mul(self, other: &'b PointOp) -> PointOp {
+        let names = union_names(self.names.clone(), &other.names);
         PointOp {
             fm: self.fm * other.fm,
             fa: self.fa + other.fa,
@@ -105,12 +123,14 @@ impl<'a, 'b> Mul<&'b PointOp> for &'a PointOp {
             g: self.g * other.g,
             l: self.l * other.l,
             osc_type: other.osc_type,
+            names
         }
     }
 }
 
 impl MulAssign for PointOp {
     fn mul_assign(&mut self, other: PointOp) {
+        let names = union_names(self.names.clone(), &other.names);
         *self = PointOp {
             fm: self.fm * other.fm,
             fa: self.fa + other.fa,
@@ -119,12 +139,14 @@ impl MulAssign for PointOp {
             g: self.g * other.g,
             l: self.l * other.l,
             osc_type: other.osc_type,
+            names
         }
     }
 }
 
 impl PointOp {
     pub fn mod_by(&mut self, other: PointOp) {
+        let names = union_names(self.names.clone(), &other.names);
         *self = PointOp {
             fm: self.fm * other.fm,
             fa: self.fa + other.fa,
@@ -133,6 +155,7 @@ impl PointOp {
             g: self.g * other.g,
             l: self.l,
             osc_type: other.osc_type,
+            names
         }
     }
 
@@ -145,6 +168,8 @@ impl PointOp {
             g: Ratio::new(1, 1),
             l: Ratio::new(1, 1),
             osc_type: OscType::Sine,
+            names: NameSet::new()
+
         }
     }
     pub fn init_silent() -> PointOp {
@@ -156,6 +181,7 @@ impl PointOp {
             g: Ratio::new(0, 1),
             l: Ratio::new(1, 1),
             osc_type: OscType::Sine,
+            names: NameSet::new()
         }
     }
 
