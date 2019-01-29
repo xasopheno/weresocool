@@ -12,7 +12,7 @@ use pbr::ProgressBar;
 use rayon::prelude::*;
 use render::Render;
 use settings::default_settings;
-use socool_ast::ast::{Op, OpOrNfTable};
+use socool_ast::ast::OpOrNfTable;
 use socool_ast::operations::{NormalForm, Normalize as NormalizeOp, PointOp};
 use socool_parser::parser::Init;
 use std::sync::{Arc, Mutex};
@@ -47,7 +47,7 @@ pub fn to_wav(composition: StereoWaveform, filename: String) {
     printed("WAV".to_string());
 }
 
-pub fn to_json(_composition: &Op, _init: Init, _filename: String) {
+pub fn to_json(_composition: &NormalForm, _init: Init, _filename: String) {
     println!("to_json is not working right now, sorry. back soon.");
     //    banner("JSONIFY-ing".to_string(), filename.clone());
     //        let mut normal_form = NormalForm::init();

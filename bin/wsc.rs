@@ -37,8 +37,6 @@ fn main() -> Result<(), pa::Error> {
         OpOrNf::Op(_) => panic!("main is Not in Normal Form for some terrible reason."),
     };
 
-    //    println!("{:?}", nf);
-
     let init = parsed.init;
 
     let origin = Origin {
@@ -49,10 +47,10 @@ fn main() -> Result<(), pa::Error> {
     };
 
     if args.is_present("print") {
-        //        let composition = render(&origin, main, &parsed.table);
-        //        to_wav(composition, filename.unwrap().to_string());
+        let composition = render(&origin, &nf, &parsed.table);
+        to_wav(composition, filename.unwrap().to_string());
     } else if args.is_present("json") {
-        //        to_json(main, init, filename.unwrap().to_string());
+        to_json(&nf, init, filename.unwrap().to_string());
     } else {
         let composition = render(&origin, &nf, &parsed.table);
 
