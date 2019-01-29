@@ -3,7 +3,7 @@ use crate::ast::{OpOrNfTable, OscType};
 use num_rational::{Ratio, Rational64};
 use std::{
     collections::BTreeSet,
-    ops::{Mul, MulAssign}
+    ops::{Mul, MulAssign},
 };
 mod get_length_ratio;
 pub mod helpers;
@@ -27,7 +27,7 @@ pub struct PointOp {
     pub g: Rational64,
     pub l: Rational64,
     pub osc_type: OscType,
-    pub names: NameSet
+    pub names: NameSet,
 }
 
 pub trait Normalize {
@@ -45,7 +45,7 @@ impl GetLengthRatio for NormalForm {
 }
 
 pub fn union_names(b_tree_set: NameSet, left: &NameSet) -> NameSet {
-    let mut result= b_tree_set.clone();
+    let mut result = b_tree_set.clone();
     for val in left {
         result.insert(val.clone());
     }
@@ -105,7 +105,7 @@ impl Mul<PointOp> for PointOp {
             g: self.g * other.g,
             l: self.l * other.l,
             osc_type: other.osc_type,
-            names
+            names,
         }
     }
 }
@@ -123,7 +123,7 @@ impl<'a, 'b> Mul<&'b PointOp> for &'a PointOp {
             g: self.g * other.g,
             l: self.l * other.l,
             osc_type: other.osc_type,
-            names
+            names,
         }
     }
 }
@@ -139,7 +139,7 @@ impl MulAssign for PointOp {
             g: self.g * other.g,
             l: self.l * other.l,
             osc_type: other.osc_type,
-            names
+            names,
         }
     }
 }
@@ -155,7 +155,7 @@ impl PointOp {
             g: self.g * other.g,
             l: self.l,
             osc_type: other.osc_type,
-            names
+            names,
         }
     }
 
@@ -168,8 +168,7 @@ impl PointOp {
             g: Ratio::new(1, 1),
             l: Ratio::new(1, 1),
             osc_type: OscType::Sine,
-            names: NameSet::new()
-
+            names: NameSet::new(),
         }
     }
     pub fn init_silent() -> PointOp {
@@ -181,7 +180,7 @@ impl PointOp {
             g: Ratio::new(0, 1),
             l: Ratio::new(1, 1),
             osc_type: OscType::Sine,
-            names: NameSet::new()
+            names: NameSet::new(),
         }
     }
 
