@@ -14,6 +14,8 @@ pub mod normalize_tests {
 
     #[test]
     fn point_op_mod_by_mul() {
+        let mut names_a = NameSet::new();
+        names_a.insert("foo".to_string());
         let mut a = PointOp {
             fm: Ratio::new(3, 2),
             fa: Ratio::new(0, 1),
@@ -22,9 +24,11 @@ pub mod normalize_tests {
             g: Ratio::new(1, 2),
             l: Ratio::new(5, 2),
             osc_type: OscType::Sine,
-            names: NameSet::new(),
+            names: names_a,
         };
 
+        let mut names_b = NameSet::new();
+        names_b.insert("bar".to_string());
         let b = PointOp {
             fm: Ratio::new(2, 1),
             fa: Ratio::new(2, 1),
@@ -33,11 +37,14 @@ pub mod normalize_tests {
             g: Ratio::new(1, 2),
             l: Ratio::new(2, 1),
             osc_type: OscType::Noise,
-            names: NameSet::new(),
+            names: names_b,
         };
 
         a.mod_by(b);
 
+        let mut names_expected = NameSet::new();
+        names_expected.insert("foo".to_string());
+        names_expected.insert("bar".to_string());
         let expected = PointOp {
             fm: Ratio::new(3, 1),
             fa: Ratio::new(2, 1),
@@ -46,7 +53,7 @@ pub mod normalize_tests {
             g: Ratio::new(1, 4),
             l: Ratio::new(5, 2),
             osc_type: OscType::Noise,
-            names: NameSet::new(),
+            names: names_expected,
         };
 
         assert_eq!(a, expected)
