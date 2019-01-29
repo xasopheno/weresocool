@@ -63,22 +63,28 @@ pub mod normalize_tests {
     fn normal_form_mul() {
         let mut a = NormalForm::init();
         let mut b = NormalForm::init();
-        let pt = make_parse_table();
+        let mut pt = make_parse_table();
 
-        Sequence {
+        let foo = Op(TransposeM {
+            m: Rational64::new(5, 4),
+        });
+
+        let bar = Op(Sequence {
             operations: vec![
                 Op(TransposeM {
                     m: Rational64::new(3, 2),
                 }),
-                Op(TransposeM {
-                    m: Rational64::new(5, 4),
-                }),
+                Op(Id(vec!["foo".to_string()])),
                 Op(Length {
                     m: Rational64::new(2, 1),
                 }),
             ],
-        }
-        .apply_to_normal_form(&mut a, &pt);
+        });
+
+        pt.insert("foo".to_string(), foo);
+        pt.insert("bar".to_string(), bar);
+
+        Id(vec!["bar".to_string()]).apply_to_normal_form(&mut a, &pt);
 
         Sequence {
             operations: vec![
