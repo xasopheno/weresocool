@@ -15,7 +15,7 @@ overtones = {
 }
 
 unit = {
-	Length 4 
+	Length 8 
 }
 
 thing1 = {
@@ -67,5 +67,6 @@ main = {
 		Gain 1/10 | overtones | thing1 | thing2 | thing3 > FitLength unit,
 		bass > FitLength unit
 	]
+	| Repeat 2
 }
 	
