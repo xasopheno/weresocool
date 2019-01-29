@@ -1,3 +1,5 @@
+import songs/lee.socool
+
 { f: 300, l: 1, g: 1, p: 0}
 
 overtones = {
@@ -72,16 +74,17 @@ toddler_maria = {
 }
 
 main = {
-	Overlay [
-		bass > FitLength unit, 
-		Gain 1/8 
-		| overtones | overtones 
-		| thing1 
-		| thing2 
-		| thing3
-		> FitLength unit
-	] 
-	| ModulateBy [toddler_maria]
-	| Repeat 2 
+	-- Overlay [
+	-- 	bass > FitLength unit, 
+	-- 	Gain 1/8 
+	-- 	| overtones | overtones 
+	-- 	| thing1 
+	-- 	| thing2 
+	-- 	| thing3
+	-- 	> FitLength unit
+	-- ] 
+	-- | ModulateBy [toddler_maria]
+	-- | Repeat 2 
+	lee.melody1
 }
 	

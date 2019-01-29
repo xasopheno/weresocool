@@ -1,14 +1,14 @@
 pub mod normalize {
     extern crate num_rational;
     extern crate rand;
-    use crate::ast::{Op, OpTable, OscType};
+    use crate::ast::{Op, OpOrNfTable, OscType};
     use crate::operations::helpers::*;
     use crate::operations::{GetLengthRatio, NormalForm, Normalize};
     use num_rational::Ratio;
     use rand::prelude::*;
 
     impl Normalize for Op {
-        fn apply_to_normal_form(&self, input: &mut NormalForm, table: &OpTable) {
+        fn apply_to_normal_form(&self, input: &mut NormalForm, table: &OpOrNfTable) {
             match self {
                 Op::Id(id_vec) => {
                     handle_id_error(id_vec.to_vec(), table).apply_to_normal_form(input, table);
@@ -120,11 +120,10 @@ pub mod normalize {
                     input.length_ratio = *m;
                 }
 
-                Op::Choice { operations } => {
-                    let choice = rand::thread_rng().choose(&operations).unwrap();
-                    choice.apply_to_normal_form(input, table)
-                }
-
+                //                Op::Choice { operations } => {
+                //                    let choice = rand::thread_rng().choose(&operations).unwrap();
+                //                    choice.apply_to_normal_form(input, table)
+                //                }
                 Op::Sequence { operations } => {
                     let mut result = NormalForm::init_empty();
 

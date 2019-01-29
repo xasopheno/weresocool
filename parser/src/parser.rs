@@ -7,7 +7,7 @@ use crate::imports::{get_filepath_and_import_name, is_import};
 use colored::*;
 use num_rational::Rational64;
 use socool_ast::{
-    ast::*,
+    ast::{OpOrNf::*, OpOrNfTable},
     operations::{NormalForm, Normalize},
 };
 use std::fs::File;
@@ -26,26 +26,34 @@ pub struct Init {
 #[derive(Clone, PartialEq, Debug)]
 pub struct ParsedComposition {
     pub init: Init,
-    pub table: OpTable,
+    pub table: OpOrNfTable,
 }
 
-fn process_op_table(ot: OpTable) -> OpTable {
-    let mut result = OpTable::new();
+fn process_op_table(ot: OpOrNfTable) -> OpOrNfTable {
+    let mut result = OpOrNfTable::new();
 
-    for (name, op) in ot.iter() {
-        let mut nf = NormalForm::init();
-        op.apply_to_normal_form(&mut nf, &ot);
-        result.insert(name.to_string(), nf.to_op());
+    for (name, op_or_nf) in ot.iter() {
+        match op_or_nf {
+            Nf(nf) => {
+                result.insert(name.to_string(), Nf(nf.clone()));
+            }
+            Op(op) => {
+                let mut nf = NormalForm::init();
+                op.apply_to_normal_form(&mut nf, &ot);
+
+                result.insert(name.to_string(), Nf(nf));
+            }
+        }
     }
 
     result
 }
 
-pub fn parse_file(filename: &str, parse_table: Option<OpTable>) -> ParsedComposition {
+pub fn parse_file(filename: &str, parse_table: Option<OpOrNfTable>) -> ParsedComposition {
     let mut table = if parse_table.is_some() {
         parse_table.unwrap()
     } else {
-        OpTable::new()
+        OpOrNfTable::new()
     };
 
     let f = File::open(filename);

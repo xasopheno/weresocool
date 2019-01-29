@@ -3,13 +3,13 @@ pub mod normalize_tests {
     extern crate num_rational;
     extern crate pretty_assertions;
     use crate::{
-        ast::{Op::*, OpTable, OscType},
+        ast::{Op::*, OpOrNf::*, OpOrNfTable, OscType},
         operations::{NormalForm, Normalize, PointOp},
     };
     use num_rational::{Ratio, Rational64};
 
-    fn make_parse_table() -> OpTable {
-        OpTable::new()
+    fn make_parse_table() -> OpOrNfTable {
+        OpOrNfTable::new()
     }
 
     #[test]
@@ -57,28 +57,28 @@ pub mod normalize_tests {
 
         Sequence {
             operations: vec![
-                TransposeM {
+                Op(TransposeM {
                     m: Rational64::new(3, 2),
-                },
-                TransposeM {
+                }),
+                Op(TransposeM {
                     m: Rational64::new(5, 4),
-                },
-                Length {
+                }),
+                Op(Length {
                     m: Rational64::new(2, 1),
-                },
+                }),
             ],
         }
         .apply_to_normal_form(&mut a, &pt);
 
         Sequence {
             operations: vec![
-                AsIs,
-                TransposeA {
+                Op(AsIs),
+                Op(TransposeA {
                     a: Rational64::new(2, 1),
-                },
-                Length {
+                }),
+                Op(Length {
                     m: Rational64::new(2, 1),
-                },
+                }),
             ],
         }
         .apply_to_normal_form(&mut b, &pt);
@@ -98,8 +98,8 @@ pub mod normalize_tests {
                         osc_type: OscType::Sine,
                     },
                     PointOp {
-                        fm: Ratio::new(5, 4),
-                        fa: Ratio::new(0, 1),
+                        fm: Ratio::new(3, 2),
+                        fa: Ratio::new(2, 1),
                         pm: Ratio::new(1, 1),
                         pa: Ratio::new(0, 1),
                         g: Ratio::new(1, 1),
@@ -107,7 +107,7 @@ pub mod normalize_tests {
                         osc_type: OscType::Sine,
                     },
                     PointOp {
-                        fm: Ratio::new(1, 1),
+                        fm: Ratio::new(3, 2),
                         fa: Ratio::new(0, 1),
                         pm: Ratio::new(1, 1),
                         pa: Ratio::new(0, 1),
@@ -118,8 +118,8 @@ pub mod normalize_tests {
                 ],
                 vec![
                     PointOp {
-                        fm: Ratio::new(3, 2),
-                        fa: Ratio::new(2, 1),
+                        fm: Ratio::new(5, 4),
+                        fa: Ratio::new(0, 1),
                         pm: Ratio::new(1, 1),
                         pa: Ratio::new(0, 1),
                         g: Ratio::new(1, 1),
@@ -136,8 +136,8 @@ pub mod normalize_tests {
                         osc_type: OscType::Sine,
                     },
                     PointOp {
-                        fm: Ratio::new(1, 1),
-                        fa: Ratio::new(2, 1),
+                        fm: Ratio::new(5, 4),
+                        fa: Ratio::new(0, 1),
                         pm: Ratio::new(1, 1),
                         pa: Ratio::new(0, 1),
                         g: Ratio::new(1, 1),
@@ -147,7 +147,7 @@ pub mod normalize_tests {
                 ],
                 vec![
                     PointOp {
-                        fm: Ratio::new(3, 2),
+                        fm: Ratio::new(1, 1),
                         fa: Ratio::new(0, 1),
                         pm: Ratio::new(1, 1),
                         pa: Ratio::new(0, 1),
@@ -156,8 +156,8 @@ pub mod normalize_tests {
                         osc_type: OscType::Sine,
                     },
                     PointOp {
-                        fm: Ratio::new(5, 4),
-                        fa: Ratio::new(0, 1),
+                        fm: Ratio::new(1, 1),
+                        fa: Ratio::new(2, 1),
                         pm: Ratio::new(1, 1),
                         pa: Ratio::new(0, 1),
                         g: Ratio::new(1, 1),
@@ -411,12 +411,12 @@ pub mod normalize_tests {
 
         Compose {
             operations: vec![
-                TransposeM {
+                Op(TransposeM {
                     m: Ratio::new(2, 1),
-                },
-                Length {
+                }),
+                Op(Length {
                     m: Ratio::new(2, 1),
-                },
+                }),
             ],
         }
         .apply_to_normal_form(&mut input, &pt);
@@ -444,12 +444,12 @@ pub mod normalize_tests {
 
         Sequence {
             operations: vec![
-                TransposeM {
+                Op(TransposeM {
                     m: Ratio::new(2, 1),
-                },
-                Length {
+                }),
+                Op(Length {
                     m: Ratio::new(2, 1),
-                },
+                }),
             ],
         }
         .apply_to_normal_form(&mut input, &pt);
@@ -488,12 +488,12 @@ pub mod normalize_tests {
 
         Overlay {
             operations: vec![
-                TransposeM {
+                Op(TransposeM {
                     m: Ratio::new(2, 1),
-                },
-                Length {
+                }),
+                Op(Length {
                     m: Ratio::new(2, 1),
-                },
+                }),
             ],
         }
         .apply_to_normal_form(&mut input, &pt);
@@ -547,22 +547,22 @@ pub mod normalize_tests {
         .apply_to_normal_form(&mut input, &pt);
 
         WithLengthRatioOf {
-            with_length_of: Box::new(Sequence {
+            with_length_of: Box::new(Op(Sequence {
                 operations: vec![
-                    Length {
+                    Op(Length {
                         m: Ratio::new(2, 1),
-                    },
-                    Length {
+                    }),
+                    Op(Length {
                         m: Ratio::new(4, 1),
-                    },
-                    Length {
+                    }),
+                    Op(Length {
                         m: Ratio::new(3, 1),
-                    },
+                    }),
                 ],
-            }),
-            main: Box::new(TransposeM {
+            })),
+            main: Box::new(Op(TransposeM {
                 m: Ratio::new(2, 1),
-            }),
+            })),
         }
         .apply_to_normal_form(&mut input, &pt);
 
@@ -589,20 +589,20 @@ pub mod normalize_tests {
 
         Compose {
             operations: vec![
-                Sequence {
+                Op(Sequence {
                     operations: vec![
-                        TransposeM {
+                        Op(TransposeM {
                             m: Ratio::new(1, 1),
-                        },
-                        TransposeM {
+                        }),
+                        Op(TransposeM {
                             m: Ratio::new(9, 8),
-                        },
-                        TransposeM {
+                        }),
+                        Op(TransposeM {
                             m: Ratio::new(5, 4),
-                        },
+                        }),
                     ],
-                },
-                FInvert,
+                }),
+                Op(FInvert),
             ],
         }
         .apply_to_normal_form(&mut input, &pt);
@@ -649,27 +649,27 @@ pub mod normalize_tests {
         let mut input = NormalForm::init();
         Sequence {
             operations: vec![
-                TransposeM {
+                Op(TransposeM {
                     m: Ratio::new(1, 1),
-                },
-                TransposeM {
+                }),
+                Op(TransposeM {
                     m: Ratio::new(9, 8),
-                },
-                TransposeM {
+                }),
+                Op(TransposeM {
                     m: Ratio::new(5, 4),
-                },
+                }),
             ],
         }
         .apply_to_normal_form(&mut input, &pt);
 
         let modulator = ModulateBy {
             operations: vec![
-                Gain {
+                Op(Gain {
                     m: Ratio::new(1, 1),
-                },
-                Gain {
+                }),
+                Op(Gain {
                     m: Ratio::new(1, 2),
-                },
+                }),
             ],
         };
 
