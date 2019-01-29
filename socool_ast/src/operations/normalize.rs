@@ -11,6 +11,12 @@ pub mod normalize {
         fn apply_to_normal_form(&self, input: &mut NormalForm, table: &OpOrNfTable) {
             match self {
                 Op::Id(id_vec) => {
+                    for seq in input.operations.iter_mut() {
+                        for p_op in seq {
+                            let id = id_vec.join(".");
+                            p_op.names.insert(id);
+                        }
+                    }
                     handle_id_error(id_vec.to_vec(), table).apply_to_normal_form(input, table);
                 }
 

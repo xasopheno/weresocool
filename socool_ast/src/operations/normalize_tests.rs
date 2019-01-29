@@ -4,7 +4,7 @@ pub mod normalize_tests {
     extern crate pretty_assertions;
     use crate::{
         ast::{Op::*, OpOrNf::*, OpOrNfTable, OscType},
-        operations::{NormalForm, Normalize, PointOp},
+        operations::{NameSet, NormalForm, Normalize, PointOp},
     };
     use num_rational::{Ratio, Rational64};
 
@@ -22,6 +22,7 @@ pub mod normalize_tests {
             g: Ratio::new(1, 2),
             l: Ratio::new(5, 2),
             osc_type: OscType::Sine,
+            names: NameSet::new(),
         };
 
         let b = PointOp {
@@ -32,6 +33,7 @@ pub mod normalize_tests {
             g: Ratio::new(1, 2),
             l: Ratio::new(2, 1),
             osc_type: OscType::Noise,
+            names: NameSet::new(),
         };
 
         a.mod_by(b);
@@ -44,6 +46,7 @@ pub mod normalize_tests {
             g: Ratio::new(1, 4),
             l: Ratio::new(5, 2),
             osc_type: OscType::Noise,
+            names: NameSet::new(),
         };
 
         assert_eq!(a, expected)
@@ -96,6 +99,7 @@ pub mod normalize_tests {
                         g: Ratio::new(1, 1),
                         l: Ratio::new(1, 1),
                         osc_type: OscType::Sine,
+                        names: NameSet::new(),
                     },
                     PointOp {
                         fm: Ratio::new(3, 2),
@@ -105,6 +109,7 @@ pub mod normalize_tests {
                         g: Ratio::new(1, 1),
                         l: Ratio::new(1, 1),
                         osc_type: OscType::Sine,
+                        names: NameSet::new(),
                     },
                     PointOp {
                         fm: Ratio::new(3, 2),
@@ -114,6 +119,7 @@ pub mod normalize_tests {
                         g: Ratio::new(1, 1),
                         l: Ratio::new(2, 1),
                         osc_type: OscType::Sine,
+                        names: NameSet::new(),
                     },
                 ],
                 vec![
@@ -125,6 +131,7 @@ pub mod normalize_tests {
                         g: Ratio::new(1, 1),
                         l: Ratio::new(1, 1),
                         osc_type: OscType::Sine,
+                        names: NameSet::new(),
                     },
                     PointOp {
                         fm: Ratio::new(5, 4),
@@ -134,6 +141,7 @@ pub mod normalize_tests {
                         g: Ratio::new(1, 1),
                         l: Ratio::new(1, 1),
                         osc_type: OscType::Sine,
+                        names: NameSet::new(),
                     },
                     PointOp {
                         fm: Ratio::new(5, 4),
@@ -143,6 +151,7 @@ pub mod normalize_tests {
                         g: Ratio::new(1, 1),
                         l: Ratio::new(2, 1),
                         osc_type: OscType::Sine,
+                        names: NameSet::new(),
                     },
                 ],
                 vec![
@@ -154,6 +163,7 @@ pub mod normalize_tests {
                         g: Ratio::new(1, 1),
                         l: Ratio::new(2, 1),
                         osc_type: OscType::Sine,
+                        names: NameSet::new(),
                     },
                     PointOp {
                         fm: Ratio::new(1, 1),
@@ -163,6 +173,7 @@ pub mod normalize_tests {
                         g: Ratio::new(1, 1),
                         l: Ratio::new(2, 1),
                         osc_type: OscType::Sine,
+                        names: NameSet::new(),
                     },
                     PointOp {
                         fm: Ratio::new(1, 1),
@@ -172,6 +183,7 @@ pub mod normalize_tests {
                         g: Ratio::new(1, 1),
                         l: Ratio::new(4, 1),
                         osc_type: OscType::Sine,
+                        names: NameSet::new(),
                     },
                 ],
             ],
@@ -209,6 +221,7 @@ pub mod normalize_tests {
                 g: Ratio::new(1, 1),
                 l: Ratio::new(1, 1),
                 osc_type: OscType::Noise,
+                names: NameSet::new(),
             }]],
         };
 
@@ -226,6 +239,7 @@ pub mod normalize_tests {
                 g: Ratio::new(1, 1),
                 l: Ratio::new(1, 1),
                 osc_type: OscType::Sine,
+                names: NameSet::new(),
             }]],
         };
 
@@ -251,6 +265,7 @@ pub mod normalize_tests {
                 g: Ratio::new(1, 1),
                 l: Ratio::new(1, 1),
                 osc_type: OscType::Sine,
+                names: NameSet::new(),
             }]],
         };
 
@@ -276,6 +291,7 @@ pub mod normalize_tests {
                 g: Ratio::new(1, 1),
                 l: Ratio::new(1, 1),
                 osc_type: OscType::Sine,
+                names: NameSet::new(),
             }]],
         };
 
@@ -301,6 +317,7 @@ pub mod normalize_tests {
                 g: Ratio::new(1, 1),
                 l: Ratio::new(1, 1),
                 osc_type: OscType::Sine,
+                names: NameSet::new(),
             }]],
         };
 
@@ -325,6 +342,7 @@ pub mod normalize_tests {
                 g: Ratio::new(1, 1),
                 l: Ratio::new(1, 1),
                 osc_type: OscType::Sine,
+                names: NameSet::new(),
             }]],
         };
 
@@ -349,6 +367,7 @@ pub mod normalize_tests {
                 g: Ratio::new(2, 1),
                 l: Ratio::new(1, 1),
                 osc_type: OscType::Sine,
+                names: NameSet::new(),
             }]],
         };
 
@@ -373,6 +392,7 @@ pub mod normalize_tests {
                 g: Ratio::new(0, 1),
                 l: Ratio::new(2, 1),
                 osc_type: OscType::Sine,
+                names: NameSet::new(),
             }]],
         };
 
@@ -398,6 +418,7 @@ pub mod normalize_tests {
                 g: Ratio::new(1, 1),
                 l: Ratio::new(2, 1),
                 osc_type: OscType::Sine,
+                names: NameSet::new(),
             }]],
         };
 
@@ -431,6 +452,7 @@ pub mod normalize_tests {
                 g: Ratio::new(1, 1),
                 l: Ratio::new(2, 1),
                 osc_type: OscType::Sine,
+                names: NameSet::new(),
             }]],
         };
 
@@ -465,6 +487,7 @@ pub mod normalize_tests {
                     g: Ratio::new(1, 1),
                     l: Ratio::new(1, 1),
                     osc_type: OscType::Sine,
+                    names: NameSet::new(),
                 },
                 PointOp {
                     fm: Ratio::new(1, 1),
@@ -474,6 +497,7 @@ pub mod normalize_tests {
                     g: Ratio::new(1, 1),
                     l: Ratio::new(2, 1),
                     osc_type: OscType::Sine,
+                    names: NameSet::new(),
                 },
             ]],
         };
@@ -510,6 +534,7 @@ pub mod normalize_tests {
                         g: Ratio::new(1, 1),
                         l: Ratio::new(1, 1),
                         osc_type: OscType::Sine,
+                        names: NameSet::new(),
                     },
                     PointOp {
                         fm: Ratio::new(0, 1),
@@ -519,6 +544,7 @@ pub mod normalize_tests {
                         g: Ratio::new(0, 1),
                         l: Ratio::new(1, 1),
                         osc_type: OscType::Sine,
+                        names: NameSet::new(),
                     },
                 ],
                 vec![PointOp {
@@ -529,6 +555,7 @@ pub mod normalize_tests {
                     g: Ratio::new(1, 1),
                     l: Ratio::new(2, 1),
                     osc_type: OscType::Sine,
+                    names: NameSet::new(),
                 }],
             ],
         };
@@ -576,6 +603,7 @@ pub mod normalize_tests {
                 g: Ratio::new(1, 1),
                 l: Ratio::new(9, 1),
                 osc_type: OscType::Sine,
+                names: NameSet::new(),
             }]],
         };
 
@@ -618,6 +646,7 @@ pub mod normalize_tests {
                     g: Ratio::new(1, 1),
                     l: Ratio::new(1, 1),
                     osc_type: OscType::Sine,
+                    names: NameSet::new(),
                 },
                 PointOp {
                     fm: Ratio::new(8, 9),
@@ -627,6 +656,7 @@ pub mod normalize_tests {
                     g: Ratio::new(1, 1),
                     l: Ratio::new(1, 1),
                     osc_type: OscType::Sine,
+                    names: NameSet::new(),
                 },
                 PointOp {
                     fm: Ratio::new(4, 5),
@@ -636,6 +666,7 @@ pub mod normalize_tests {
                     g: Ratio::new(1, 1),
                     l: Ratio::new(1, 1),
                     osc_type: OscType::Sine,
+                    names: NameSet::new(),
                 },
             ]],
         };
@@ -686,6 +717,7 @@ pub mod normalize_tests {
                     g: Ratio::new(1, 1),
                     l: Ratio::new(1, 1),
                     osc_type: OscType::Sine,
+                    names: NameSet::new(),
                 },
                 PointOp {
                     fm: Ratio::new(9, 8),
@@ -695,6 +727,7 @@ pub mod normalize_tests {
                     g: Ratio::new(1, 1),
                     l: Ratio::new(1, 2),
                     osc_type: OscType::Sine,
+                    names: NameSet::new(),
                 },
                 PointOp {
                     fm: Ratio::new(9, 8),
@@ -704,6 +737,7 @@ pub mod normalize_tests {
                     g: Ratio::new(1, 2),
                     l: Ratio::new(1, 2),
                     osc_type: OscType::Sine,
+                    names: NameSet::new(),
                 },
                 PointOp {
                     fm: Ratio::new(5, 4),
@@ -713,6 +747,7 @@ pub mod normalize_tests {
                     g: Ratio::new(1, 2),
                     l: Ratio::new(1, 1),
                     osc_type: OscType::Sine,
+                    names: NameSet::new(),
                 },
             ]],
         };
