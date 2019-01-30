@@ -6,10 +6,18 @@ overtones = {
       (1, 0.0, 1.0, 0.0)]
 }
 
+foo = {
+    Overlay [
+        Tm 3/2,
+        AsIs,
+    ]
+}
+
 thing1 = {
     overtones |
     Sequence [
         AsIs,
+        foo,
         Tm 3/2 | Length 2.0
     ]
 }
@@ -24,7 +32,11 @@ thing2 = {
 
 main = {
     Overlay [
-        thing1,
+        thing1
+        | Sequence [
+            AsIs,
+            AsIs > @foo | Sequence [Tm 9/8, Tm 3/2]
+        ],
         thing2
     ]
 }
