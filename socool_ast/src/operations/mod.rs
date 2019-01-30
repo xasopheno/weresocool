@@ -205,6 +205,19 @@ impl PointOp {
 }
 
 impl NormalForm {
+    pub fn init() -> NormalForm {
+        NormalForm {
+            operations: vec![vec![PointOp::init()]],
+            length_ratio: Ratio::new(1, 1),
+        }
+    }
+
+    pub fn init_empty() -> NormalForm {
+        NormalForm {
+            operations: vec![],
+            length_ratio: Ratio::new(0, 1),
+        }
+    }
     //    pub fn to_op(&self) -> Op {
     //        let mut result = vec![];
     //        for seq in self.operations.iter() {
@@ -219,18 +232,39 @@ impl NormalForm {
     //
     //        Op::Overlay { operations: result }
     //    }
-    pub fn init() -> NormalForm {
-        NormalForm {
-            operations: vec![vec![PointOp::init()]],
-            length_ratio: Ratio::new(1, 1),
-        }
-    }
 
-    pub fn init_empty() -> NormalForm {
-        NormalForm {
-            operations: vec![],
-            length_ratio: Ratio::new(0, 1),
+    pub fn partition(nf: &NormalForm, name: String) -> (NormalForm, NormalForm) {
+        let silence = PointOp::init_silent();
+        let mut named = NormalForm::init_empty();
+        let mut rest = NormalForm::init_empty();
+
+        for seq in nf.operations.iter() {
+            let mut named_seq = vec![];
+            let mut rest_seq = vec![];
+
+            for p_op in seq {
+                let mut name_op: PointOp;
+                let mut rest_op: PointOp;
+                if p_op.names.contains(&name) {
+                    name_op = p_op.clone();
+                    rest_op = p_op.clone() * silence.clone();
+                } else {
+                    name_op = p_op.clone() * silence.clone();
+                    rest_op = p_op.clone();
+                }
+
+                named_seq.push(name_op);
+                rest_seq.push(rest_op);
+            }
+
+            named.operations.push(named_seq);
+            rest.operations.push(rest_seq);
         }
+
+        named.length_ratio = nf.length_ratio;
+        rest.length_ratio = nf.length_ratio;
+
+        (named, rest)
     }
 }
 
