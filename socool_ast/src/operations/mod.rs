@@ -239,30 +239,39 @@ impl NormalForm {
         let mut rest = NormalForm::init_empty();
 
         for seq in self.operations.iter() {
+            let elem_with_name = seq.iter().find(|&p_op| p_op.names.contains(&name));
+
             let mut named_seq = vec![];
             let mut rest_seq = vec![];
+            match elem_with_name {
+                Some(_) => {
+                    for p_op in seq {
+                        let mut name_op: PointOp;
+                        let mut rest_op: PointOp;
+                        if p_op.names.contains(&name) {
+                            name_op = p_op.clone();
+                            rest_op = p_op.clone() * silence.clone();
+                            rest_op.fa = Rational64::new(0, 1);
+                            rest_op.pa = Rational64::new(0, 1);
+                        } else {
+                            name_op = p_op.clone() * silence.clone();
+                            name_op.fa = Rational64::new(0, 1);
+                            name_op.pa = Rational64::new(0, 1);
+                            rest_op = p_op.clone();
+                        }
 
-            for p_op in seq {
-                let mut name_op: PointOp;
-                let mut rest_op: PointOp;
-                if p_op.names.contains(&name) {
-                    name_op = p_op.clone();
-                    rest_op = p_op.clone() * silence.clone();
-                    rest_op.fa = Rational64::new(0, 1);
-                    rest_op.pa = Rational64::new(0, 1);
-                } else {
-                    name_op = p_op.clone() * silence.clone();
-                    name_op.fa = Rational64::new(0, 1);
-                    name_op.pa = Rational64::new(0, 1);
-                    rest_op = p_op.clone();
+                        named_seq.push(name_op);
+                        rest_seq.push(rest_op);
+                    }
+
+                    named.operations.push(named_seq);
+                    rest.operations.push(rest_seq);
                 }
-
-                named_seq.push(name_op);
-                rest_seq.push(rest_op);
+                None => {
+                    rest_seq = seq.clone();
+                    rest.operations.push(rest_seq);
+                }
             }
-
-            named.operations.push(named_seq);
-            rest.operations.push(rest_seq);
         }
 
         named.length_ratio = self.length_ratio;
