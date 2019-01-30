@@ -12,6 +12,169 @@ pub mod normalize_tests {
         OpOrNfTable::new()
     }
 
+    fn mock_names() -> (NameSet, NameSet) {
+        let mut names_bar = NameSet::new();
+        names_bar.insert("bar".to_string());
+        let mut names_foo_bar = NameSet::new();
+        names_foo_bar.insert("foo".to_string());
+        names_foo_bar.insert("bar".to_string());
+
+        (names_bar, names_foo_bar)
+    }
+
+    fn mock() -> NormalForm {
+        let mut a = NormalForm::init();
+        let mut b = NormalForm::init();
+        let mut pt = make_parse_table();
+
+        let foo = Op(TransposeM {
+            m: Rational64::new(5, 4),
+        });
+
+        let bar = Op(Sequence {
+            operations: vec![
+                Op(TransposeM {
+                    m: Rational64::new(3, 2),
+                }),
+                Op(Id(vec!["foo".to_string()])),
+                Op(Length {
+                    m: Rational64::new(2, 1),
+                }),
+            ],
+        });
+
+        pt.insert("foo".to_string(), foo);
+        pt.insert("bar".to_string(), bar);
+
+        Id(vec!["bar".to_string()]).apply_to_normal_form(&mut a, &pt);
+
+        Sequence {
+            operations: vec![
+                Op(AsIs),
+                Op(TransposeA {
+                    a: Rational64::new(2, 1),
+                }),
+                Op(Length {
+                    m: Rational64::new(2, 1),
+                }),
+            ],
+        }
+        .apply_to_normal_form(&mut b, &pt);
+
+        a * b
+    }
+
+    #[test]
+    fn normal_form_partition() {
+        let nf = mock();
+        let (named, rest) = nf.partition("foo".to_string());
+        let (names_bar, names_foo_bar) = mock_names();
+
+        let expected = NormalForm {
+            operations: vec![
+                vec![
+                    PointOp {
+                        fm: Ratio::new(0, 1),
+                        fa: Ratio::new(0, 1),
+                        pm: Ratio::new(1, 1),
+                        pa: Ratio::new(0, 1),
+                        g: Ratio::new(0, 1),
+                        l: Ratio::new(1, 1),
+                        osc_type: OscType::Sine,
+                        names: names_bar.clone(),
+                    },
+                    PointOp {
+                        fm: Ratio::new(0, 1),
+                        fa: Ratio::new(0, 1),
+                        pm: Ratio::new(1, 1),
+                        pa: Ratio::new(0, 1),
+                        g: Ratio::new(0, 1),
+                        l: Ratio::new(1, 1),
+                        osc_type: OscType::Sine,
+                        names: names_bar.clone(),
+                    },
+                    PointOp {
+                        fm: Ratio::new(0, 1),
+                        fa: Ratio::new(0, 1),
+                        pm: Ratio::new(1, 1),
+                        pa: Ratio::new(0, 1),
+                        g: Ratio::new(0, 1),
+                        l: Ratio::new(2, 1),
+                        osc_type: OscType::Sine,
+                        names: names_bar.clone(),
+                    },
+                ],
+                vec![
+                    PointOp {
+                        fm: Ratio::new(5, 4),
+                        fa: Ratio::new(0, 1),
+                        pm: Ratio::new(1, 1),
+                        pa: Ratio::new(0, 1),
+                        g: Ratio::new(1, 1),
+                        l: Ratio::new(1, 1),
+                        osc_type: OscType::Sine,
+                        names: names_foo_bar.clone(),
+                    },
+                    PointOp {
+                        fm: Ratio::new(5, 4),
+                        fa: Ratio::new(2, 1),
+                        pm: Ratio::new(1, 1),
+                        pa: Ratio::new(0, 1),
+                        g: Ratio::new(1, 1),
+                        l: Ratio::new(1, 1),
+                        osc_type: OscType::Sine,
+                        names: names_foo_bar.clone(),
+                    },
+                    PointOp {
+                        fm: Ratio::new(5, 4),
+                        fa: Ratio::new(0, 1),
+                        pm: Ratio::new(1, 1),
+                        pa: Ratio::new(0, 1),
+                        g: Ratio::new(1, 1),
+                        l: Ratio::new(2, 1),
+                        osc_type: OscType::Sine,
+                        names: names_foo_bar.clone(),
+                    },
+                ],
+                vec![
+                    PointOp {
+                        fm: Ratio::new(0, 1),
+                        fa: Ratio::new(0, 1),
+                        pm: Ratio::new(1, 1),
+                        pa: Ratio::new(0, 1),
+                        g: Ratio::new(0, 1),
+                        l: Ratio::new(2, 1),
+                        osc_type: OscType::Sine,
+                        names: names_bar.clone(),
+                    },
+                    PointOp {
+                        fm: Ratio::new(0, 1),
+                        fa: Ratio::new(0, 1),
+                        pm: Ratio::new(1, 1),
+                        pa: Ratio::new(0, 1),
+                        g: Ratio::new(0, 1),
+                        l: Ratio::new(2, 1),
+                        osc_type: OscType::Sine,
+                        names: names_bar.clone(),
+                    },
+                    PointOp {
+                        fm: Ratio::new(0, 1),
+                        fa: Ratio::new(0, 1),
+                        pm: Ratio::new(1, 1),
+                        pa: Ratio::new(0, 1),
+                        g: Ratio::new(0, 1),
+                        l: Ratio::new(4, 1),
+                        osc_type: OscType::Sine,
+                        names: names_bar.clone(),
+                    },
+                ],
+            ],
+            length_ratio: Ratio::new(8, 1),
+        };
+
+        assert_eq!(named, expected)
+    }
+
     #[test]
     fn point_op_mod_by_mul() {
         let mut names_a = NameSet::new();
@@ -61,51 +224,7 @@ pub mod normalize_tests {
 
     #[test]
     fn normal_form_mul() {
-        let mut a = NormalForm::init();
-        let mut b = NormalForm::init();
-        let mut pt = make_parse_table();
-
-        let foo = Op(TransposeM {
-            m: Rational64::new(5, 4),
-        });
-
-        let bar = Op(Sequence {
-            operations: vec![
-                Op(TransposeM {
-                    m: Rational64::new(3, 2),
-                }),
-                Op(Id(vec!["foo".to_string()])),
-                Op(Length {
-                    m: Rational64::new(2, 1),
-                }),
-            ],
-        });
-
-        pt.insert("foo".to_string(), foo);
-        pt.insert("bar".to_string(), bar);
-
-        Id(vec!["bar".to_string()]).apply_to_normal_form(&mut a, &pt);
-
-        Sequence {
-            operations: vec![
-                Op(AsIs),
-                Op(TransposeA {
-                    a: Rational64::new(2, 1),
-                }),
-                Op(Length {
-                    m: Rational64::new(2, 1),
-                }),
-            ],
-        }
-        .apply_to_normal_form(&mut b, &pt);
-
-        let c = a * b;
-
-        let mut names_bar = NameSet::new();
-        names_bar.insert("bar".to_string());
-        let mut names_foo_bar = NameSet::new();
-        names_foo_bar.insert("foo".to_string());
-        names_foo_bar.insert("bar".to_string());
+        let (names_bar, names_foo_bar) = mock_names();
 
         let expected = NormalForm {
             operations: vec![
@@ -209,7 +328,7 @@ pub mod normalize_tests {
             length_ratio: Ratio::new(8, 1),
         };
 
-        assert_eq!(c, expected)
+        assert_eq!(mock(), expected)
     }
 
     #[test]

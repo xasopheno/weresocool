@@ -233,12 +233,12 @@ impl NormalForm {
     //        Op::Overlay { operations: result }
     //    }
 
-    pub fn partition(nf: &NormalForm, name: String) -> (NormalForm, NormalForm) {
+    pub fn partition(&self, name: String) -> (NormalForm, NormalForm) {
         let silence = PointOp::init_silent();
         let mut named = NormalForm::init_empty();
         let mut rest = NormalForm::init_empty();
 
-        for seq in nf.operations.iter() {
+        for seq in self.operations.iter() {
             let mut named_seq = vec![];
             let mut rest_seq = vec![];
 
@@ -248,8 +248,12 @@ impl NormalForm {
                 if p_op.names.contains(&name) {
                     name_op = p_op.clone();
                     rest_op = p_op.clone() * silence.clone();
+                    rest_op.fa = Rational64::new(0, 1);
+                    rest_op.pa = Rational64::new(0, 1);
                 } else {
                     name_op = p_op.clone() * silence.clone();
+                    name_op.fa = Rational64::new(0, 1);
+                    name_op.pa = Rational64::new(0, 1);
                     rest_op = p_op.clone();
                 }
 
@@ -261,8 +265,8 @@ impl NormalForm {
             rest.operations.push(rest_seq);
         }
 
-        named.length_ratio = nf.length_ratio;
-        rest.length_ratio = nf.length_ratio;
+        named.length_ratio = self.length_ratio;
+        rest.length_ratio = self.length_ratio;
 
         (named, rest)
     }
