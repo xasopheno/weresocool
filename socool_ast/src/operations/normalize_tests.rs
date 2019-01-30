@@ -101,6 +101,12 @@ pub mod normalize_tests {
 
         let c = a * b;
 
+        let mut names_bar = NameSet::new();
+        names_bar.insert("bar".to_string());
+        let mut names_foo_bar = NameSet::new();
+        names_foo_bar.insert("foo".to_string());
+        names_foo_bar.insert("bar".to_string());
+
         let expected = NormalForm {
             operations: vec![
                 vec![
@@ -112,7 +118,7 @@ pub mod normalize_tests {
                         g: Ratio::new(1, 1),
                         l: Ratio::new(1, 1),
                         osc_type: OscType::Sine,
-                        names: NameSet::new(),
+                        names: names_bar.clone(),
                     },
                     PointOp {
                         fm: Ratio::new(3, 2),
@@ -122,7 +128,7 @@ pub mod normalize_tests {
                         g: Ratio::new(1, 1),
                         l: Ratio::new(1, 1),
                         osc_type: OscType::Sine,
-                        names: NameSet::new(),
+                        names: names_bar.clone(),
                     },
                     PointOp {
                         fm: Ratio::new(3, 2),
@@ -132,7 +138,7 @@ pub mod normalize_tests {
                         g: Ratio::new(1, 1),
                         l: Ratio::new(2, 1),
                         osc_type: OscType::Sine,
-                        names: NameSet::new(),
+                        names: names_bar.clone(),
                     },
                 ],
                 vec![
@@ -144,7 +150,7 @@ pub mod normalize_tests {
                         g: Ratio::new(1, 1),
                         l: Ratio::new(1, 1),
                         osc_type: OscType::Sine,
-                        names: NameSet::new(),
+                        names: names_foo_bar.clone(),
                     },
                     PointOp {
                         fm: Ratio::new(5, 4),
@@ -154,7 +160,7 @@ pub mod normalize_tests {
                         g: Ratio::new(1, 1),
                         l: Ratio::new(1, 1),
                         osc_type: OscType::Sine,
-                        names: NameSet::new(),
+                        names: names_foo_bar.clone(),
                     },
                     PointOp {
                         fm: Ratio::new(5, 4),
@@ -164,7 +170,7 @@ pub mod normalize_tests {
                         g: Ratio::new(1, 1),
                         l: Ratio::new(2, 1),
                         osc_type: OscType::Sine,
-                        names: NameSet::new(),
+                        names: names_foo_bar.clone(),
                     },
                 ],
                 vec![
@@ -176,7 +182,7 @@ pub mod normalize_tests {
                         g: Ratio::new(1, 1),
                         l: Ratio::new(2, 1),
                         osc_type: OscType::Sine,
-                        names: NameSet::new(),
+                        names: names_bar.clone(),
                     },
                     PointOp {
                         fm: Ratio::new(1, 1),
@@ -186,7 +192,7 @@ pub mod normalize_tests {
                         g: Ratio::new(1, 1),
                         l: Ratio::new(2, 1),
                         osc_type: OscType::Sine,
-                        names: NameSet::new(),
+                        names: names_bar.clone(),
                     },
                     PointOp {
                         fm: Ratio::new(1, 1),
@@ -196,7 +202,7 @@ pub mod normalize_tests {
                         g: Ratio::new(1, 1),
                         l: Ratio::new(4, 1),
                         osc_type: OscType::Sine,
-                        names: NameSet::new(),
+                        names: names_bar.clone(),
                     },
                 ],
             ],
