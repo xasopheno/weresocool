@@ -7,7 +7,8 @@ overtones = {
 }
 
 foo = {
-    Overlay [
+    Tag(foo)
+    | Overlay [
         Tm 3/2,
         AsIs,
     ]
@@ -25,18 +26,21 @@ thing1 = {
 thing2 = {
     Sequence [
         Tm 7/4,
-        Tm 3/2
+        Tm 5/2
     ] | Repeat 2
     > FitLength thing1
 }
 
 main = {
     Overlay [
-        thing1
+        Sequence [
+            AsIs,
+            foo,
+            Tm 3/2 | Length 2.0
+        ]
         | Sequence [
             AsIs,
-            AsIs > @foo | Sequence [Tm 9/8, Tm 3/2]
-        ],
-        thing2
+            AsIs > @foo | Tm 9/8
+        ]
     ]
 }

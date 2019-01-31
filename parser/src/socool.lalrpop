@@ -37,17 +37,17 @@ LetDef: () = {
     <s: Name> "=" "{" <o: Operation> "}" => { table.insert(s.clone(), o); () },
 }
 
-//OperationFunction: Op = {
-//  "FitLength" <b: ComposeOperation> => {
+//  OperationFunction: Op = {
+//    "FitLength" <b: ComposeOperation> => {
 //        OpOrNf::Op(
 //            Op::Compose { operations:
 //            vec![op1.clone(), Op(WithLengthRatioOf { with_length_of: Box::new(op2), main: Box::new(op1) })]
 //        })
+//     }
 //  }
-//}
 
 Operation: OpOrNf = {
-//    <op1: Operation> ">" <opF: OperationFunction> => { op1 },
+//  <op1: Operation> ">" <opF: OperationFunction> => { op1 },
     <op1: Operation> ">" "FitLength" <op2: ComposeOperation> => {
         OpOrNf::Op(
             Op::Compose { operations:
@@ -55,10 +55,12 @@ Operation: OpOrNf = {
         })
     },
     <op1: Operation> ">" "@" <name: Import> "|" <op2: ComposeOperation> => {
-        OpOrNf::Op(
-            Op::Compose { operations:
-            vec![op1.clone(), Op(WithLengthRatioOf { with_length_of: Box::new(op2), main: Box::new(op1) })]
-        })
+        Op(
+            Focus {
+                name: name,
+                main: Box::new(op1.clone()),
+                op_to_apply: Box::new(op2.clone()),
+            })
     },
       <op: ComposeOperation> => op,
 }
@@ -98,6 +100,7 @@ BaseOperation: OpOrNf = {
     <id_vec: Import> => {
         Op(Id(id_vec))
     },
+    "Tag" "(" <name: Import> ")" => Op(Tag(name)),
 };
 
 Overtone: OpOrNf = {

@@ -1,23 +1,26 @@
 pub mod normalize {
     extern crate num_rational;
     extern crate rand;
-    use crate::ast::{Op, OpOrNfTable, OscType};
+    use crate::ast::{Op, OpOrNf::*, OpOrNfTable, OscType};
     use crate::operations::helpers::*;
     use crate::operations::{GetLengthRatio, NormalForm, Normalize};
     use num_rational::Ratio;
-    use rand::prelude::*;
+    //    use rand::prelude::*;
 
     impl Normalize for Op {
         fn apply_to_normal_form(&self, input: &mut NormalForm, table: &OpOrNfTable) {
             match self {
                 Op::Id(id_vec) => {
+                    handle_id_error(id_vec.to_vec(), table).apply_to_normal_form(input, table);
+                }
+
+                Op::Tag(name_vec) => {
+                    let name = name_vec.join(".").to_string();
                     for seq in input.operations.iter_mut() {
                         for p_op in seq {
-                            let id = id_vec.join(".");
-                            p_op.names.insert(id);
+                            p_op.names.insert(name.clone());
                         }
                     }
-                    handle_id_error(id_vec.to_vec(), table).apply_to_normal_form(input, table);
                 }
 
                 Op::AsIs => {}
@@ -187,6 +190,27 @@ pub mod normalize {
                     }
 
                     result.length_ratio = input.length_ratio;
+                    *input = result
+                }
+
+                Op::Focus {
+                    name,
+                    main: _,
+                    op_to_apply,
+                } => {
+                    let id = name.join(".");
+                    let (named, rest) = input.partition(id.to_string());
+                    let mut nf = NormalForm::init();
+                    op_to_apply.apply_to_normal_form(&mut nf, table);
+                    let named_applied = nf * named;
+
+                    let mut result = NormalForm::init();
+
+                    Op::Overlay {
+                        operations: vec![Nf(named_applied), Nf(rest)],
+                    }
+                    .apply_to_normal_form(&mut result, table);
+
                     *input = result
                 }
 

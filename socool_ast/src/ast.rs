@@ -1,6 +1,6 @@
 extern crate indexmap;
 extern crate num_rational;
-use crate::operations::{helpers::handle_id_error, NormalForm};
+use crate::operations::NormalForm;
 use indexmap::IndexMap;
 use num_rational::Rational64;
 
@@ -26,6 +26,7 @@ impl New<OpOrNfTable> for OpOrNfTable {
 pub enum Op {
     AsIs,
     Id(Vec<String>),
+    Tag(Vec<String>),
     //
     Noise,
     Sine,
@@ -75,6 +76,12 @@ pub enum Op {
     WithLengthRatioOf {
         with_length_of: Box<OpOrNf>,
         main: Box<OpOrNf>,
+    },
+
+    Focus {
+        name: Vec<String>,
+        main: Box<OpOrNf>,
+        op_to_apply: Box<OpOrNf>,
     },
 }
 
