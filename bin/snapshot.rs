@@ -25,7 +25,7 @@ fn main() {
             println!("All Snapshot Tests Passed");
         } else {
             show_difference(decoded, test_table);
-            println!("Error above");
+            panic!()
         }
     }
 }
