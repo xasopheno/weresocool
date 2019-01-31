@@ -1,7 +1,10 @@
 extern crate num_rational;
 use crate::ast::{OpOrNfTable, OscType};
 use num_rational::{Ratio, Rational64};
-use std::ops::{Mul, MulAssign};
+use std::{
+    collections::BTreeSet,
+    ops::{Mul, MulAssign},
+};
 mod get_length_ratio;
 pub mod helpers;
 mod normalize;
@@ -13,6 +16,8 @@ pub struct NormalForm {
     pub length_ratio: Rational64,
 }
 
+pub type NameSet = BTreeSet<String>;
+
 #[derive(Debug, Clone, PartialEq, Hash)]
 pub struct PointOp {
     pub fm: Rational64,
@@ -22,6 +27,7 @@ pub struct PointOp {
     pub g: Rational64,
     pub l: Rational64,
     pub osc_type: OscType,
+    pub names: NameSet,
 }
 
 pub trait Normalize {
@@ -36,6 +42,15 @@ impl GetLengthRatio for NormalForm {
     fn get_length_ratio(&self, _table: &OpOrNfTable) -> Rational64 {
         self.length_ratio
     }
+}
+
+pub fn union_names(b_tree_set: NameSet, left: &NameSet) -> NameSet {
+    let mut result = b_tree_set.clone();
+    for val in left {
+        result.insert(val.clone());
+    }
+
+    result
 }
 
 impl Mul<NormalForm> for NormalForm {
@@ -81,6 +96,7 @@ impl Mul<PointOp> for PointOp {
     type Output = PointOp;
 
     fn mul(self, other: PointOp) -> PointOp {
+        let names = union_names(self.names.clone(), &other.names);
         PointOp {
             fm: self.fm * other.fm,
             fa: self.fa + other.fa,
@@ -89,6 +105,7 @@ impl Mul<PointOp> for PointOp {
             g: self.g * other.g,
             l: self.l * other.l,
             osc_type: other.osc_type,
+            names,
         }
     }
 }
@@ -97,6 +114,7 @@ impl<'a, 'b> Mul<&'b PointOp> for &'a PointOp {
     type Output = PointOp;
 
     fn mul(self, other: &'b PointOp) -> PointOp {
+        let names = union_names(self.names.clone(), &other.names);
         PointOp {
             fm: self.fm * other.fm,
             fa: self.fa + other.fa,
@@ -105,12 +123,14 @@ impl<'a, 'b> Mul<&'b PointOp> for &'a PointOp {
             g: self.g * other.g,
             l: self.l * other.l,
             osc_type: other.osc_type,
+            names,
         }
     }
 }
 
 impl MulAssign for PointOp {
     fn mul_assign(&mut self, other: PointOp) {
+        let names = union_names(self.names.clone(), &other.names);
         *self = PointOp {
             fm: self.fm * other.fm,
             fa: self.fa + other.fa,
@@ -119,12 +139,14 @@ impl MulAssign for PointOp {
             g: self.g * other.g,
             l: self.l * other.l,
             osc_type: other.osc_type,
+            names,
         }
     }
 }
 
 impl PointOp {
     pub fn mod_by(&mut self, other: PointOp) {
+        let names = union_names(self.names.clone(), &other.names);
         *self = PointOp {
             fm: self.fm * other.fm,
             fa: self.fa + other.fa,
@@ -133,6 +155,7 @@ impl PointOp {
             g: self.g * other.g,
             l: self.l,
             osc_type: other.osc_type,
+            names,
         }
     }
 
@@ -145,6 +168,7 @@ impl PointOp {
             g: Ratio::new(1, 1),
             l: Ratio::new(1, 1),
             osc_type: OscType::Sine,
+            names: NameSet::new(),
         }
     }
     pub fn init_silent() -> PointOp {
@@ -156,6 +180,7 @@ impl PointOp {
             g: Ratio::new(0, 1),
             l: Ratio::new(1, 1),
             osc_type: OscType::Sine,
+            names: NameSet::new(),
         }
     }
 
@@ -180,6 +205,19 @@ impl PointOp {
 }
 
 impl NormalForm {
+    pub fn init() -> NormalForm {
+        NormalForm {
+            operations: vec![vec![PointOp::init()]],
+            length_ratio: Ratio::new(1, 1),
+        }
+    }
+
+    pub fn init_empty() -> NormalForm {
+        NormalForm {
+            operations: vec![],
+            length_ratio: Ratio::new(0, 1),
+        }
+    }
     //    pub fn to_op(&self) -> Op {
     //        let mut result = vec![];
     //        for seq in self.operations.iter() {
@@ -194,18 +232,52 @@ impl NormalForm {
     //
     //        Op::Overlay { operations: result }
     //    }
-    pub fn init() -> NormalForm {
-        NormalForm {
-            operations: vec![vec![PointOp::init()]],
-            length_ratio: Ratio::new(1, 1),
-        }
-    }
 
-    pub fn init_empty() -> NormalForm {
-        NormalForm {
-            operations: vec![],
-            length_ratio: Ratio::new(0, 1),
+    pub fn partition(&self, name: String) -> (NormalForm, NormalForm) {
+        let silence = PointOp::init_silent();
+        let mut named = NormalForm::init_empty();
+        let mut rest = NormalForm::init_empty();
+
+        for seq in self.operations.iter() {
+            let elem_with_name = seq.iter().find(|&p_op| p_op.names.contains(&name));
+
+            let mut named_seq = vec![];
+            let mut rest_seq = vec![];
+            match elem_with_name {
+                Some(_) => {
+                    for p_op in seq {
+                        let mut name_op: PointOp;
+                        let mut rest_op: PointOp;
+                        if p_op.names.contains(&name) {
+                            name_op = p_op.clone();
+                            rest_op = p_op.clone() * silence.clone();
+                            rest_op.fa = Rational64::new(0, 1);
+                            rest_op.pa = Rational64::new(0, 1);
+                        } else {
+                            name_op = p_op.clone() * silence.clone();
+                            name_op.fa = Rational64::new(0, 1);
+                            name_op.pa = Rational64::new(0, 1);
+                            rest_op = p_op.clone();
+                        }
+
+                        named_seq.push(name_op);
+                        rest_seq.push(rest_op);
+                    }
+
+                    named.operations.push(named_seq);
+                    rest.operations.push(rest_seq);
+                }
+                None => {
+                    rest_seq = seq.clone();
+                    rest.operations.push(rest_seq);
+                }
+            }
         }
+
+        named.length_ratio = self.length_ratio;
+        rest.length_ratio = self.length_ratio;
+
+        (named, rest)
     }
 }
 

@@ -71,10 +71,11 @@ fn generate_render_hashes(p: &String) -> CompositionHashes {
 
     let vec_wav = generate_waveforms(&origin, normal_form.operations, false);
     let mut result = sum_all_waveforms(vec_wav);
+
     result.normalize();
 
     let render_hash = sum_vec(result.l_buffer) + sum_vec(result.r_buffer);
-    let render_hash = (render_hash * 100_000_000_000_000.0).round() / 100_000_000_000_000.0;
+    let render_hash = (render_hash * 100_000_000_000.0).round() / 100_000_000_000.0;
 
     let hashes = CompositionHashes {
         op: op_hash,

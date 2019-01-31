@@ -18,6 +18,7 @@ pub mod get_length_ratio {
                 | Op::TransposeA { .. }
                 | Op::PanA { .. }
                 | Op::PanM { .. }
+                | Op::Tag(_)
                 | Op::Gain { .. } => Ratio::from_integer(1),
 
                 Op::Id(id_vec) => handle_id_error(id_vec.to_vec(), table).get_length_ratio(table),
@@ -47,6 +48,12 @@ pub mod get_length_ratio {
                 } => with_length_of.get_length_ratio(table),
 
                 Op::ModulateBy { operations: _ } => Ratio::from_integer(1),
+
+                Op::Focus {
+                    name: _,
+                    main,
+                    op_to_apply,
+                } => main.get_length_ratio(table) * op_to_apply.get_length_ratio(table),
 
                 Op::Overlay { operations } => {
                     let mut max = Ratio::new(0, 1);

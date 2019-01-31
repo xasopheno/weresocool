@@ -22,10 +22,10 @@ fn main() {
         let decoded = read_test_table_from_json_file();
 
         if test_table == decoded {
-            println!("All Tests Passed");
+            println!("All Snapshot Tests Passed");
         } else {
             show_difference(decoded, test_table);
-            println!("Error above");
+            panic!()
         }
     }
 }
