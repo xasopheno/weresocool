@@ -1,9 +1,7 @@
-#!/usr/bin/env sh
+#!/usr/bin/env bash
+
+set -euo pipefail
 
 printf 'Running Parser Tests\n'
 
-if cargo run --release working.socool; then
-    printf 'Parser Test Passed\n'
-else
-    printf '!!!!!Parser Test Failed!!!!!\n'
-fi
+cargo run --release working.socool
