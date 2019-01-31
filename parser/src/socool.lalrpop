@@ -37,17 +37,7 @@ LetDef: () = {
     <s: Name> "=" "{" <o: Operation> "}" => { table.insert(s.clone(), o); () },
 }
 
-//  OperationFunction: Op = {
-//    "FitLength" <b: ComposeOperation> => {
-//        OpOrNf::Op(
-//            Op::Compose { operations:
-//            vec![op1.clone(), Op(WithLengthRatioOf { with_length_of: Box::new(op2), main: Box::new(op1) })]
-//        })
-//     }
-//  }
-
 Operation: OpOrNf = {
-//  <op1: Operation> ">" <opF: OperationFunction> => { op1 },
     <op1: Operation> ">" "FitLength" <op2: ComposeOperation> => {
         OpOrNf::Op(
             Op::Compose { operations:
