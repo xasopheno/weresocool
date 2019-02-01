@@ -30,7 +30,6 @@ pub enum Op {
     AsIs,
     Id(Vec<String>),
     Tag(Vec<String>),
-    LazyRepeat {n: i64},
     //
     Noise,
     Sine,

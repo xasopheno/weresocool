@@ -8,6 +8,7 @@ use socool_ast::{
         Op::*,
         OpOrNf,
         OpOrNf::*,
+        is_choice_op,
     },
 };
 use crate::parser::Init;
@@ -43,6 +44,7 @@ Operation: OpOrNf = {
             vec![op1.clone(), Op(WithLengthRatioOf { with_length_of: Box::new(op2), main: Box::new(op1) })]
         })
     },
+
     <op1: Operation> ">" "@" <name: Import> "|" <op2: ComposeOperation> => {
         Op(
             Focus {
@@ -51,6 +53,19 @@ Operation: OpOrNf = {
                 op_to_apply: Box::new(op2.clone()),
             })
     },
+
+    <op1: Operation> ">" "LazyRepeat" <i: Int> => {
+            let mut op = Op(AsIs);
+            if is_choice_op(op1.clone(), table) {
+                op = op1
+            }
+            let mut vec = Vec::new();
+            for x in 0..i {
+                vec.push(op.clone())
+            }
+            Op(Sequence { operations: vec })
+        },
+
       <op: ComposeOperation> => op,
 }
 
@@ -74,7 +89,6 @@ BaseOperation: OpOrNf = {
         }
         Op(Sequence { operations: vec })
     },
-    "LazyRepeat" <i: Int> => Op(LazyRepeat {n: i}),
     "Silence" <v:Rational> => Op(Silence {m: v}),
     "Tm" <v:Rational> => Op(TransposeM {m: v}),
     "Ta" <v:Rational> => Op(TransposeA {a: v}),
