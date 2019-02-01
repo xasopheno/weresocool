@@ -134,8 +134,17 @@ main = {
         bass 
         | Gain 1/12 
         | Tm 6 
-        | Sequence [Silence 3, AsIs, Silence 3, Tm 4/3, Silence 2, Tm 9/4] 
-        | Sequence[Silence 1, AsIs] 
+        | Sequence [
+            Silence 3,
+            AsIs,
+            Silence 3,
+            Tm 4/3,
+            Silence 2,
+            Tm 9/4]
+        | Sequence[
+            Silence 1,
+            AsIs
+        ]
         | Repeat 2 
         > FitLength mess,
         bass | Gain 1/2 > FitLength mess, 
