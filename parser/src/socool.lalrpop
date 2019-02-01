@@ -8,7 +8,6 @@ use socool_ast::{
         Op::*,
         OpOrNf,
         OpOrNf::*,
-//        is_choice_op,
     },
 };
 use crate::parser::Init;
@@ -82,7 +81,7 @@ BaseOperation: OpOrNf = {
     "PanA" <v:Rational> => Op(PanA {a: v}),
     "Length" <v:Rational> => Op(Length {m: v}),
     "Gain" <v:Rational> => Op(Gain {m: v}),
-    // "Choice" "[" <operations: Operations> "]" => Op(Choice { operations: operations }),
+    "Choice" "[" <operations: Operations> "]" => Op(Choice { operations: operations }),
     "Sequence" "[" <operations: Operations> "]" => Op(Sequence { operations: operations }),
     "Overlay" "[" <operations: Operations> "]" => Op(Overlay { operations: operations }),
     "ModulateBy" "[" <operations: Operations> "]" => Op(ModulateBy { operations: operations }),

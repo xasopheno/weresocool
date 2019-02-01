@@ -5,7 +5,7 @@ pub mod normalize {
     use crate::operations::helpers::*;
     use crate::operations::{GetLengthRatio, NormalForm, Normalize};
     use num_rational::Ratio;
-    //    use rand::prelude::*;
+    use rand::prelude::*;
 
     impl Normalize for Op {
         fn apply_to_normal_form(&self, input: &mut NormalForm, table: &OpOrNfTable) {
@@ -129,10 +129,11 @@ pub mod normalize {
                     input.length_ratio = *m;
                 }
 
-                //                Op::Choice { operations } => {
-                //                    let choice = rand::thread_rng().choose(&operations).unwrap();
-                //                    choice.apply_to_normal_form(input, table)
-                //                }
+                Op::Choice { operations } => {
+                    let choice = rand::thread_rng().choose(&operations).unwrap();
+                    choice.apply_to_normal_form(input, table)
+                }
+
                 Op::Sequence { operations } => {
                     let mut result = NormalForm::init_empty();
 

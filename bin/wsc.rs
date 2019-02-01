@@ -54,6 +54,7 @@ fn main() -> Result<(), pa::Error> {
     } else {
         let composition = render(&origin, &nf, &parsed.table);
 
+
         let pa = pa::PortAudio::new()?;
 
         let mut output_stream = setup_portaudio_output(composition, &pa)?;

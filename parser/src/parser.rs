@@ -7,7 +7,7 @@ use crate::imports::{get_filepath_and_import_name, is_import};
 use colored::*;
 use num_rational::Rational64;
 use socool_ast::{
-    ast::{OpOrNf::*, OpOrNfTable},
+    ast::{is_choice_op, OpOrNf::*, OpOrNfTable},
     operations::{NormalForm, Normalize},
 };
 use std::fs::File;
