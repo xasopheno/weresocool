@@ -25,6 +25,12 @@ pub mod normalize {
 
                 Op::AsIs => {}
 
+                Op::LazyRepeat { op, n } => {
+                    for _ in 0..n {
+
+                    }
+                }
+
                 Op::FInvert => {
                     for voice in input.operations.iter_mut() {
                         for point_op in voice {

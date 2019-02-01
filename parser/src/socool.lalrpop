@@ -74,6 +74,7 @@ BaseOperation: OpOrNf = {
         }
         Op(Sequence { operations: vec })
     },
+    "LazyRepeat" <i: Int> => Op(LazyRepeat {n: i}),
     "Silence" <v:Rational> => Op(Silence {m: v}),
     "Tm" <v:Rational> => Op(TransposeM {m: v}),
     "Ta" <v:Rational> => Op(TransposeA {a: v}),
