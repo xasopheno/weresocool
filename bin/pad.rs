@@ -74,7 +74,7 @@ impl API for Table {
 
 #[derive(Debug)]
 pub enum Get {
-     Pointer(Uuid),
+    Pointer(Uuid),
     Payload(Payload),
 }
 
