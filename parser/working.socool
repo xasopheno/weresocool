@@ -7,7 +7,7 @@ overtones = {
 }
 
 foo = {
-    Tag(foo)
+    #(foo)
     | Overlay [
         Tm 3/2,
         AsIs,

@@ -1,9 +1,6 @@
 extern crate indexmap;
 extern crate num_rational;
-use crate::operations::{
-    NormalForm,
-    helpers::handle_id_error,
-};
+use crate::operations::{helpers::handle_id_error, NormalForm};
 use indexmap::IndexMap;
 use num_rational::Rational64;
 
@@ -98,44 +95,44 @@ pub enum OscType {
 pub fn is_choice_op(op_or_nf: OpOrNf, table: &OpOrNfTable) -> bool {
     match op_or_nf {
         OpOrNf::Nf(_) => false,
-        OpOrNf::Op(op) => {
-            match op {
-                Op::AsIs {}
-                | Op::Sine {}
-                | Op::Square {}
-                | Op::Noise {}
-                | Op::FInvert {}
-                | Op::Reverse {}
-                | Op::TransposeM { .. }
-                | Op::TransposeA { .. }
-                | Op::PanA { .. }
-                | Op::PanM { .. }
-                | Op::Gain { .. }
-                | Op::Length { .. }
-                | Op::Tag { .. }
-                | Op::Silence { .. } => false,
+        OpOrNf::Op(op) => match op {
+            Op::AsIs {}
+            | Op::Sine {}
+            | Op::Square {}
+            | Op::Noise {}
+            | Op::FInvert {}
+            | Op::Reverse {}
+            | Op::TransposeM { .. }
+            | Op::TransposeA { .. }
+            | Op::PanA { .. }
+            | Op::PanM { .. }
+            | Op::Gain { .. }
+            | Op::Length { .. }
+            | Op::Tag { .. }
+            | Op::Silence { .. } => false,
 
-                Op::Choice { .. } => true,
+            Op::Choice { .. } => true,
 
-                Op::Id(id_vec) => is_choice_op(handle_id_error(id_vec.to_vec(), table), table),
-                Op::WithLengthRatioOf { .. } => false,
+            Op::Id(id_vec) => is_choice_op(handle_id_error(id_vec.to_vec(), table), table),
+            Op::WithLengthRatioOf { .. } => false,
 
-                Op::Focus { op_to_apply, main, name: _} => {
-                    is_choice_op(*op_to_apply, table) | is_choice_op(*main, table)
-                }
+            Op::Focus {
+                op_to_apply,
+                main,
+                name: _,
+            } => is_choice_op(*op_to_apply, table) | is_choice_op(*main, table),
 
-                Op::Sequence { operations }
-                | Op::ModulateBy { operations }
-                | Op::Compose { operations }
-                | Op::Overlay { operations } => {
-                    for operation in operations {
-                        if is_choice_op(operation, table) {
-                            return true;
-                        }
+            Op::Sequence { operations }
+            | Op::ModulateBy { operations }
+            | Op::Compose { operations }
+            | Op::Overlay { operations } => {
+                for operation in operations {
+                    if is_choice_op(operation, table) {
+                        return true;
                     }
-                    false
                 }
+                false
             }
-        }
+        },
     }
 }

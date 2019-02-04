@@ -3,5 +3,5 @@
 set -euo pipefail
 
 cargo fmt
-pushd parser && cargo fmt -- --check && popd
-pushd socool_ast && cargo fmt -- --check && popd
+pushd parser && cargo fmt && popd
+pushd socool_ast && cargo fmt && popd
