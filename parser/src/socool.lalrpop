@@ -34,7 +34,10 @@ Point: Init = {
 
 LetDefs = Lets<LetDef>;
 LetDef: () = {
-
+    <s: Name> "(" <vars: Comma<Name>>  ")" "=" "{" <o: Operation> "}" => {
+        println!("{:?}", vars);
+        table.insert(s.clone(), o); ()
+    },
     <s: Name> "=" "{" <o: Operation> "}" => { table.insert(s.clone(), o); () },
 
 }

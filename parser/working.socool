@@ -7,7 +7,7 @@ overtones = {
 }
 
 foo = {
-    #(foo)
+    #foo
     | Overlay [
         Tm 3/2,
         AsIs,
@@ -15,6 +15,25 @@ foo = {
 }
 
 thing1 = {
+    overtones |
+    Sequence [
+        AsIs,
+        foo,
+        Tm 3/2 | Length 2.0
+    ]
+}
+
+function(a, b) = {
+    overtones |
+    Sequence [
+        AsIs,
+        foo,
+        Tm 3/2 | Length 2.0
+    ]
+}
+
+
+function2(a, b, c, d,) = {
     overtones |
     Sequence [
         AsIs,
