@@ -33,9 +33,14 @@ fn main() {
         op_or_nf: OpOrNf::Op(Op::AsIs),
     };
 
-    table.set(&"name".to_string(), payload);
+    let u1 = table.set(&"name_of_it".to_string(), payload.clone());
 
-    println!("{:?}", table);
+    let u2 = table.set(&"name_of_it".to_string(), payload.clone());
+    let u3 = table.set(&"name_of_it".to_string(), payload.clone());
+    let u3 = table.set(&"name_of_it".to_string(), payload);
+
+    println!("u1 {:?}\nu2 {:?}\nu3 {:?}", u1, u2, u3);
+    println!("{:?}\n", table);
 }
 
 fn new_uuid() -> Uuid {
@@ -46,58 +51,62 @@ type Table = IndexMap<String, Get>;
 
 pub trait API {
     //        fn get(&self, name: &String) -> Result<OpOrNf, Box<Error>>;
-    fn set(&mut self, name: &String, payload: Payload) -> Result<String, Box<Error>>;
+    fn set(&mut self, name: &String, payload: Payload) -> Result<(String), Box<Error>>;
 }
 
 impl API for Table {
     //    fn get(&self, name: &String) -> Result<OpOrNf, Box<Error>> {
     //        Result::
     //    }
-    fn set(&mut self, name: &String, payload: Payload) -> Result<String, Box<Error>> {
-        let uuid = new_uuid().to_string();
-        self.insert(uuid.to_string(), Get::Payload(payload));
-        //        for (name, entry) in self.iter() {
-        //            match entry {
-        //                Get::Pointer(_) => {}
-        //                Get::Payload(value) => {
-        //                    if value.context.filename == payload.context.filename
-        //                        && value.context.scope == payload.context.scope {
-        //
-        //                    }
-        //                }
-        //            };
-        //        }
-        //        result
-        Ok(uuid.to_string())
+    fn set(&mut self, name: &String, payload: Payload) -> Result<(String), Box<Error>> {
+        let mut result = name.clone();
+        for (look_up_name, entry) in self.clone().iter() {
+            match entry {
+                Get::Pointer(_) => {}
+                Get::Payload(value) => {
+                    if value.context.filename == payload.context.filename
+                        && value.context.scope == payload.context.scope
+                    {
+                        let uuid = new_uuid().to_string();
+                        self.insert(uuid.clone(), Get::Pointer(look_up_name.to_string()));
+                        result = uuid
+                    }
+                }
+            };
+        }
+        if result == name.to_string() {
+            self.insert(name.to_string(), Get::Payload(payload));
+        }
+        Ok(result)
     }
 }
 
-#[derive(Debug)]
+#[derive(Debug, Clone, PartialEq, Hash)]
 pub enum Get {
-    Pointer(Uuid),
+    Pointer(String),
     Payload(Payload),
 }
 
-#[derive(Debug)]
+#[derive(Debug, Clone, PartialEq, Hash)]
 pub struct Payload {
     import_name: String,
     context: Context,
     op_or_nf: OpOrNf,
 }
 
-#[derive(Debug)]
+#[derive(Debug, Clone, PartialEq, Hash)]
 enum Scope {
     Global,
     Scope(Uuid),
 }
 
-#[derive(Debug)]
+#[derive(Debug, Clone, PartialEq, Hash)]
 struct Context {
     filename: String,
     scope: Scope,
 }
 
-#[derive(Debug)]
+#[derive(Debug, Clone, PartialEq, Hash)]
 struct Function {
     passed_in: Vec<OpOrNf>,
     uuid: Uuid,
