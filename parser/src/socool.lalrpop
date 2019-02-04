@@ -34,7 +34,9 @@ Point: Init = {
 
 LetDefs = Lets<LetDef>;
 LetDef: () = {
+
     <s: Name> "=" "{" <o: Operation> "}" => { table.insert(s.clone(), o); () },
+
 }
 
 Operation: OpOrNf = {
@@ -104,7 +106,7 @@ BaseOperation: OpOrNf = {
     <id_vec: Import> => {
         Op(Id(id_vec))
     },
-    "#" "(" <name: Import> ")" => Op(Tag(name)),
+    "#"<name: Import> => Op(Tag(name)),
 };
 
 Overtone: OpOrNf = {

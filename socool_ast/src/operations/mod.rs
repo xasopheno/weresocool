@@ -213,24 +213,24 @@ impl PointOp {
         }
     }
 
-    //        pub fn to_op(&self) -> Op {
-    //            let osc_op = match self.osc_type {
-    //                OscType::Sine => Op::Sine,
-    //                OscType::Square => Op::Square,
-    //                OscType::Noise => Op::Noise,
-    //            };
-    //            Op::Compose {
-    //                operations: vec![
-    //                    osc_op,
-    //                    Op::TransposeM { m: self.fm },
-    //                    Op::TransposeA { a: self.fa },
-    //                    Op::PanM { m: self.pm },
-    //                    Op::PanA { a: self.pa },
-    //                    Op::Gain { m: self.g },
-    //                    Op::Length { m: self.l },
-    //                ],
-    //            }
-    //        }
+//        pub fn to_op(&self) -> Op {
+//            let osc_op = match self.osc_type {
+//                OscType::Sine => Op::Sine,
+//                OscType::Square => Op::Square,
+//                OscType::Noise => Op::Noise,
+//            };
+//            Op::Compose {
+//                operations: vec![
+//                    osc_op,
+//                    Op::TransposeM { m: self.fm },
+//                    Op::TransposeA { a: self.fa },
+//                    Op::PanM { m: self.pm },
+//                    Op::PanA { a: self.pa },
+//                    Op::Gain { m: self.g },
+//                    Op::Length { m: self.l },
+//                ],
+//            }
+//        }
 }
 
 impl NormalForm {

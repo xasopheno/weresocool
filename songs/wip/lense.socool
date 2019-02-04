@@ -10,9 +10,9 @@ overtones = {
 
 huhu = {
     Sequence [
-        Tm 3/2 | #(foo),
+        Tm 3/2 | #foo,
         AsIs, 
-        Tm 4/3 | #(foo),
+        Tm 4/3 | #foo,
         Tm 2
     ]
 }
