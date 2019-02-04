@@ -104,7 +104,7 @@ BaseOperation: OpOrNf = {
     <id_vec: Import> => {
         Op(Id(id_vec))
     },
-    "Tag" "(" <name: Import> ")" => Op(Tag(name)),
+    "#" "(" <name: Import> ")" => Op(Tag(name)),
 };
 
 Overtone: OpOrNf = {
