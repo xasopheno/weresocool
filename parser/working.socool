@@ -26,16 +26,8 @@ thing1 = {
 function(a, b) = {
     overtones |
     Sequence [
-        AsIs,
-        foo,
-        Tm 3/2 | Length 2.0
-    ]
-}
-
-
-function2(a, b, c, d,) = {
-    overtones |
-    Sequence [
+        $a,
+        $b,
         AsIs,
         foo,
         Tm 3/2 | Length 2.0
@@ -44,6 +36,7 @@ function2(a, b, c, d,) = {
 
 thing2 = {
     Sequence [
+        function(AsIs, Tm 3/2),
         Tm 7/4,
         Tm 5/2
     ] | Repeat 2

@@ -35,12 +35,21 @@ Point: Init = {
 LetDefs = Lets<LetDef>;
 LetDef: () = {
     <s: Name> "(" <vars: Comma<Name>>  ")" "=" "{" <o: Operation> "}" => {
-        println!("{:?}", vars);
-        table.insert(s.clone(), o); ()
+         table.insert(
+             s.clone(),
+             Op(Function {
+                 name: s,
+                 vars: vars,
+                 op_or_nf: Box::new(o)
+             })
+         );
+        ()
     },
-    <s: Name> "=" "{" <o: Operation> "}" => { table.insert(s.clone(), o); () },
 
-}
+    <s: Name> "=" "{" <o: Operation> "}" => {
+        table.insert(s.clone(), o); ()
+    }
+};
 
 Operation: OpOrNf = {
     <op1: Operation> ">" "FitLength" <op2: ComposeOperation> => {
@@ -56,7 +65,8 @@ Operation: OpOrNf = {
                 name: name,
                 main: Box::new(op1.clone()),
                 op_to_apply: Box::new(op2.clone()),
-            })
+            }
+        )
     },
 
     <op1: Operation> ">" "LazyRepeat" <i: Int> => {
@@ -110,6 +120,15 @@ BaseOperation: OpOrNf = {
         Op(Id(id_vec))
     },
     "#"<name: Import> => Op(Tag(name)),
+    <name: Name> "(" <args: Comma<Operation>>  ")" => {
+        Op(
+            FunctionCall {
+                op: Box::new(Op(Id(name)))
+                args: vars
+            }
+        )
+    }
+    "$"<id_vec: Import> => Op(Fid(id_vec)),
 };
 
 Overtone: OpOrNf = {
@@ -171,6 +190,6 @@ Rational: Rational64 = {
     <n: Int> "/" <d:Int> => Rational64::new(n, d),
 };
 
-Name: String = <s:r"[a-z_$][a-zA-Z_$0-9]*"> => s.to_string();
+Name: String = <s:r"[a-z_][a-zA-Z_0-9]*"> => s.to_string();
 Float: String = <s:r"-?(0|([1-9]\d*))\.\d+"> => s.to_string();
 Int: i64 = <s:r"-?[0-9]+"> => i64::from_str(s).unwrap();
