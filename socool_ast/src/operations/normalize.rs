@@ -10,12 +10,31 @@ pub mod normalize {
     impl Normalize for Op {
         fn apply_to_normal_form(&self, input: &mut NormalForm, table: &OpOrNfTable) {
             match self {
-                Op::Id(id_vec) => {
-                    handle_id_error(id_vec.to_vec(), table).apply_to_normal_form(input, table);
+                Op::Id(id) => {
+                    handle_id_error(id.to_string(), table).apply_to_normal_form(input, table);
                 }
 
-                Op::Tag(name_vec) => {
-                    let name = name_vec.join(".").to_string();
+                Op::Fid(_) => {}
+                Op::FunctionDef {
+                    name,
+                    vars,
+                    op_or_nf
+                } => {
+                    println!("{:?}", name);
+                    println!("{:?}", vars);
+                    println!("{:?}", op_or_nf);
+                }
+
+                Op::FunctionCall {
+                    args,
+                    function
+                } => {
+                    println!("{:?}", args);
+                    println!("{:?}", function);
+                }
+
+                Op::Tag(name) => {
+                    let name = name.to_string();
                     for seq in input.operations.iter_mut() {
                         for p_op in seq {
                             p_op.names.insert(name.clone());
@@ -199,7 +218,7 @@ pub mod normalize {
                     main: _,
                     op_to_apply,
                 } => {
-                    let id = name.join(".");
+                    let id = name;
                     let (named, rest) = input.partition(id.to_string());
                     let mut nf = NormalForm::init();
                     op_to_apply.apply_to_normal_form(&mut nf, table);

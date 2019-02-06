@@ -19,9 +19,13 @@ pub mod get_length_ratio {
                 | Op::PanA { .. }
                 | Op::PanM { .. }
                 | Op::Tag(_)
+                | Op::Fid(_)
+                | Op::FunctionDef { .. }
+                | Op::FunctionCall { .. }
                 | Op::Gain { .. } => Ratio::from_integer(1),
 
-                Op::Id(id_vec) => handle_id_error(id_vec.to_vec(), table).get_length_ratio(table),
+
+                Op::Id(id) => handle_id_error(id.to_string(), table).get_length_ratio(table),
 
                 Op::Length { m } | Op::Silence { m } => *m,
 

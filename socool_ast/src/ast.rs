@@ -22,11 +22,23 @@ impl New<OpOrNfTable> for OpOrNfTable {
     }
 }
 
+
 #[derive(Clone, PartialEq, Debug, Hash)]
 pub enum Op {
     AsIs,
-    Id(Vec<String>),
-    Tag(Vec<String>),
+    Id(String),
+    Tag(String),
+    //
+    Fid(String),
+    FunctionDef {
+        name: String,
+        vars: Vec<String>,
+        op_or_nf: Box<OpOrNf>
+    },
+    FunctionCall {
+        function: Box<OpOrNf>,
+        args: Vec<OpOrNf>
+    },
     //
     Noise,
     Sine,
@@ -79,7 +91,7 @@ pub enum Op {
     },
 
     Focus {
-        name: Vec<String>,
+        name: String,
         main: Box<OpOrNf>,
         op_to_apply: Box<OpOrNf>,
     },
@@ -109,11 +121,14 @@ pub fn is_choice_op(op_or_nf: OpOrNf, table: &OpOrNfTable) -> bool {
             | Op::Gain { .. }
             | Op::Length { .. }
             | Op::Tag { .. }
+            | Op::Fid { .. }
+            | Op::FunctionDef { .. }
+            | Op::FunctionCall { .. }
             | Op::Silence { .. } => false,
 
             Op::Choice { .. } => true,
 
-            Op::Id(id_vec) => is_choice_op(handle_id_error(id_vec.to_vec(), table), table),
+            Op::Id(id) => is_choice_op(handle_id_error(id, table), table),
             Op::WithLengthRatioOf { .. } => false,
 
             Op::Focus {

@@ -37,7 +37,7 @@ LetDef: () = {
     <s: Name> "(" <vars: Comma<Name>>  ")" "=" "{" <o: Operation> "}" => {
          table.insert(
              s.clone(),
-             Op(Function {
+             Op(FunctionDef {
                  name: s,
                  vars: vars,
                  op_or_nf: Box::new(o)
@@ -59,7 +59,7 @@ Operation: OpOrNf = {
         })
     },
 
-    <op1: Operation> ">" "@" <name: Import> "|" <op2: ComposeOperation> => {
+    <op1: Operation> ">" "@" <name: Name> "|" <op2: ComposeOperation> => {
         Op(
             Focus {
                 name: name,
@@ -116,19 +116,19 @@ BaseOperation: OpOrNf = {
     "Overlay" "[" <operations: Operations> "]" => Op(Overlay { operations: operations }),
     "ModulateBy" "[" <operations: Operations> "]" => Op(ModulateBy { operations: operations }),
     "O" "[" <o: Overtones> "]" => Op(Overlay { operations: o }),
-    <id_vec: Import> => {
-        Op(Id(id_vec))
+    <id: Name> => {
+        Op(Id(id))
     },
-    "#"<name: Import> => Op(Tag(name)),
+    "#"<name: Name> => Op(Tag(name)),
     <name: Name> "(" <args: Comma<Operation>>  ")" => {
         Op(
             FunctionCall {
-                op: Box::new(Op(Id(name)))
-                args: vars
+                function: Box::new(Op(Id(name))),
+                args
             }
         )
-    }
-    "$"<id_vec: Import> => Op(Fid(id_vec)),
+    },
+    "$"<id_vec: Name> => Op(Fid(id_vec)),
 };
 
 Overtone: OpOrNf = {
