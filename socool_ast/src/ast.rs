@@ -36,7 +36,7 @@ pub enum Op {
         op_or_nf: Box<OpOrNf>
     },
     FunctionCall {
-        function: Box<OpOrNf>,
+        name: String,
         args: Vec<OpOrNf>
     },
     //

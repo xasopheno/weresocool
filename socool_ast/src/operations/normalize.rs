@@ -1,11 +1,12 @@
 pub mod normalize {
     extern crate num_rational;
     extern crate rand;
-    use crate::ast::{Op, OpOrNf::*, OpOrNfTable, OscType};
+    use crate::ast::{Op, OpOrNf, OpOrNf::*, OpOrNfTable, OscType};
     use crate::operations::helpers::*;
     use crate::operations::{GetLengthRatio, NormalForm, Normalize};
     use num_rational::Ratio;
     use rand::prelude::*;
+    use std::collections::HashMap;
 
     impl Normalize for Op {
         fn apply_to_normal_form(&self, input: &mut NormalForm, table: &OpOrNfTable) {
@@ -13,26 +14,46 @@ pub mod normalize {
                 Op::Id(id) => {
                     handle_id_error(id.to_string(), table).apply_to_normal_form(input, table);
                 }
-
+                //
                 Op::Fid(_) => {}
                 Op::FunctionDef {
                     name,
                     vars,
                     op_or_nf
                 } => {
-                    println!("{:?}", name);
-                    println!("{:?}", vars);
-                    println!("{:?}", op_or_nf);
+//                    println!("{:?}", name);
+//                    println!("{:?}", vars);
+//                    println!("{:?}", op_or_nf);
                 }
 
                 Op::FunctionCall {
+                    name,
                     args,
-                    function
                 } => {
-                    println!("{:?}", args);
-                    println!("{:?}", function);
-                }
+                    let mut arg_map: HashMap<String, OpOrNf> = HashMap::new();
+                    let f= handle_id_error(name.to_string(), table);
+                    match f {
+                        OpOrNf::Op(fun) => {
+                            match fun {
+                                Op::FunctionDef { op_or_nf: _, name, vars } => {
+//                                    println!("{:?}\n", vars);
+//                                    println!("{:?}", args);
 
+                                    for (var, arg) in vars.iter().zip(args.iter()) {
+//                                        println!("{:?}, {:?}", var, arg);
+                                        arg_map.insert(var.to_string(), arg.clone());
+                                    }
+                                }
+                                _ => { panic!("Function Stored not FunctionDef") }
+                            }
+                        },
+                        _ => {
+                            panic!("Function stored in NormalForm");
+                        }
+                    }
+
+                    println!("{:?}", arg_map);
+                }
                 Op::Tag(name) => {
                     let name = name.to_string();
                     for seq in input.operations.iter_mut() {

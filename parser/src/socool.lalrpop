@@ -120,15 +120,16 @@ BaseOperation: OpOrNf = {
         Op(Id(id))
     },
     "#"<name: Name> => Op(Tag(name)),
+    //
     <name: Name> "(" <args: Comma<Operation>>  ")" => {
         Op(
             FunctionCall {
-                function: Box::new(Op(Id(name))),
+                name,
                 args
             }
         )
     },
-    "$"<id_vec: Name> => Op(Fid(id_vec)),
+    "$"<id: Name> => Op(Fid(id)),
 };
 
 Overtone: OpOrNf = {
