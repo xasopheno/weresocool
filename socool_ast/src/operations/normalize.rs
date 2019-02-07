@@ -8,40 +8,97 @@ pub mod normalize {
     use rand::prelude::*;
     use std::collections::HashMap;
 
+    type ArgMap = HashMap<String, OpOrNf>;
+
+    fn get_fn_arg_map(f: OpOrNf, args: &Vec<OpOrNf>) -> ArgMap {
+        let mut arg_map: ArgMap = HashMap::new();
+        match f {
+            OpOrNf::Op(fun) => {
+                match fun {
+                    Op::FunctionDef { op_or_nf: _, name: _, vars } => {
+                        for (var, arg) in vars.iter().zip(args.iter()) {
+//                                        println!("{:?}, {:?}", var, arg);
+                            arg_map.insert(var.to_string(), arg.clone());
+                        }
+                    }
+                    _ => { panic!("Function Stored not FunctionDef") }
+                }
+            },
+            _ => {
+                panic!("Function stored in NormalForm");
+            }
+        }
+
+        arg_map
+    }
+
+    fn substitute(op: Op, arg_map: ArgMap) -> OpOrNf {
+        println!("\n arg_map {:?}\n", arg_map);
+        println!("Op to substitute {:?}", op);
+
+        let mut result = vec![];
+
+        match op {
+            Op::Sequence { operations} => {
+                println!("{:?}", operations);
+                for op_or_nf in operations {
+                    match op_or_nf {
+                        OpOrNf::Nf(nf) => {
+                           result.push(OpOrNf::Nf(nf))
+                        }
+                        OpOrNf::Op(op) => {
+                           match op {
+                               Op::Fid(name) => {
+                                   let sub = arg_map.get(&name).unwrap();
+                                   result.push(sub.clone())
+                               },
+                               _ => result.push(OpOrNf::Op(op))
+                           }
+                        }
+                    }
+                }
+            }
+            _ => {}
+        };
+
+        OpOrNf::Op(Op::Sequence { operations: result })
+    }
+
     impl Normalize for Op {
         fn apply_to_normal_form(&self, input: &mut NormalForm, table: &OpOrNfTable) {
             match self {
+                Op::AsIs => {}
+
                 Op::Id(id) => {
                     handle_id_error(id.to_string(), table).apply_to_normal_form(input, table);
                 }
                 //
                 Op::Fid(_) => {}
                 Op::FunctionDef {
-                    name,
-                    vars,
-                    op_or_nf
-                } => {
-//                    println!("{:?}", name);
-//                    println!("{:?}", vars);
-//                    println!("{:?}", op_or_nf);
-                }
-
+                    name: _,
+                    vars: _,
+                    op_or_nf: _
+                } => {}
                 Op::FunctionCall {
                     name,
                     args,
                 } => {
-                    let mut arg_map: HashMap<String, OpOrNf> = HashMap::new();
                     let f= handle_id_error(name.to_string(), table);
+                    let arg_map = get_fn_arg_map(f.clone(), args);
+
                     match f {
                         OpOrNf::Op(fun) => {
                             match fun {
-                                Op::FunctionDef { op_or_nf: _, name, vars } => {
-//                                    println!("{:?}\n", vars);
-//                                    println!("{:?}", args);
+                                Op::FunctionDef { op_or_nf, name: _, vars: _ } => {
+                                    match *op_or_nf {
+                                        OpOrNf::Op(op) => {
+                                            let result_op = substitute(op, arg_map);
 
-                                    for (var, arg) in vars.iter().zip(args.iter()) {
-//                                        println!("{:?}, {:?}", var, arg);
-                                        arg_map.insert(var.to_string(), arg.clone());
+                                            result_op.apply_to_normal_form(input, table)
+                                        },
+                                        OpOrNf::Nf(_) => {
+                                            panic!("Function stored in NormalForm");
+                                        }
                                     }
                                 }
                                 _ => { panic!("Function Stored not FunctionDef") }
@@ -51,9 +108,8 @@ pub mod normalize {
                             panic!("Function stored in NormalForm");
                         }
                     }
-
-                    println!("{:?}", arg_map);
                 }
+
                 Op::Tag(name) => {
                     let name = name.to_string();
                     for seq in input.operations.iter_mut() {
@@ -62,8 +118,6 @@ pub mod normalize {
                         }
                     }
                 }
-
-                Op::AsIs => {}
 
                 Op::FInvert => {
                     for voice in input.operations.iter_mut() {
