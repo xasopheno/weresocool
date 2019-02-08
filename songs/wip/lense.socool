@@ -27,12 +27,9 @@ mess = {
         ]
         | Sequence [
             AsIs,
-            AsIs 
-            > @foo | Tm 9/8 | PanA 1/2,
-            AsIs 
-            > @foo | Tm 5/4 | PanA -1/2,
-            AsIs 
-            > @foo | Overlay [AsIs, Tm 3/2]
+            AsIs > @foo | Tm 9/8 | PanA 1/2,
+            AsIs > @foo | Tm 5/4 | PanA -1/2,
+            AsIs > @foo | Overlay [AsIs, Tm 3/2]
         ]
         | Sequence [
             AsIs, 

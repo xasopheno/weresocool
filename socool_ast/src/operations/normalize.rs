@@ -17,7 +17,6 @@ pub mod normalize {
                 match fun {
                     Op::FunctionDef { op_or_nf: _, name: _, vars } => {
                         for (var, arg) in vars.iter().zip(args.iter()) {
-//                                        println!("{:?}, {:?}", var, arg);
                             arg_map.insert(var.to_string(), arg.clone());
                         }
                     }
@@ -35,33 +34,51 @@ pub mod normalize {
     fn substitute(op: Op, arg_map: ArgMap) -> OpOrNf {
         println!("\n arg_map {:?}\n", arg_map);
         println!("Op to substitute {:?}", op);
-
-        let mut result = vec![];
-
         match op {
+            Op::Fid(name) => {
+                let sub = arg_map.get(&name).unwrap();
+                sub.clone()
+            },
             Op::Sequence { operations} => {
-                println!("{:?}", operations);
-                for op_or_nf in operations {
-                    match op_or_nf {
-                        OpOrNf::Nf(nf) => {
-                           result.push(OpOrNf::Nf(nf))
-                        }
-                        OpOrNf::Op(op) => {
-                           match op {
-                               Op::Fid(name) => {
-                                   let sub = arg_map.get(&name).unwrap();
-                                   result.push(sub.clone())
-                               },
-                               _ => result.push(OpOrNf::Op(op))
-                           }
-                        }
+                OpOrNf::Op(Op::Sequence { operations: substitute_operations(operations, arg_map) })
+            }
+            Op::Overlay { operations } => {
+                OpOrNf::Op(Op::Overlay { operations: substitute_operations(operations, arg_map) })
+            }
+            Op::Compose { operations } => {
+                OpOrNf::Op(Op::Compose { operations: substitute_operations(operations, arg_map) })
+            }
+            Op::Choice { operations } => {
+                OpOrNf::Op(Op::Choice { operations: substitute_operations(operations, arg_map) })
+            }
+            Op::ModulateBy { operations } => {
+                OpOrNf::Op(Op::Choice { operations: substitute_operations(operations, arg_map) })
+            }
+            _ => { OpOrNf::Op(op) }
+        }
+
+    }
+
+    fn substitute_operations(operations: Vec<OpOrNf>, arg_map: ArgMap) -> Vec<OpOrNf> {
+        let mut result = vec![];
+        for op_or_nf in operations {
+            match op_or_nf {
+                OpOrNf::Nf(nf) => {
+                    result.push(OpOrNf::Nf(nf))
+                }
+                OpOrNf::Op(op) => {
+                    match op {
+                        Op::Fid(name) => {
+                            let sub = arg_map.get(&name).unwrap();
+                            result.push(sub.clone())
+                        },
+                        _ => result.push(OpOrNf::Op(op))
                     }
                 }
             }
-            _ => {}
-        };
+        }
 
-        OpOrNf::Op(Op::Sequence { operations: result })
+        result
     }
 
     impl Normalize for Op {
