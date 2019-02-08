@@ -3,12 +3,11 @@ pub mod normalize {
     extern crate rand;
     use crate::ast::{Op, OpOrNf, OpOrNf::*, OpOrNfTable, OscType};
     use crate::operations::helpers::*;
-    use crate::operations::{GetLengthRatio, NormalForm, Normalize};
+    use crate::operations::{GetLengthRatio, ArgMap, NormalForm, Normalize, Substitute};
     use num_rational::Ratio;
     use rand::prelude::*;
     use std::collections::HashMap;
 
-    type ArgMap = HashMap<String, OpOrNf>;
 
     fn get_fn_arg_map(f: OpOrNf, args: &Vec<OpOrNf>) -> ArgMap {
         let mut arg_map: ArgMap = HashMap::new();
@@ -31,35 +30,36 @@ pub mod normalize {
         arg_map
     }
 
-    fn substitute(op: Op, arg_map: ArgMap) -> OpOrNf {
-        println!("\n arg_map {:?}\n", arg_map);
-        println!("Op to substitute {:?}", op);
-        match op {
-            Op::Fid(name) => {
-                let sub = arg_map.get(&name).unwrap();
-                sub.clone()
-            },
-            Op::Sequence { operations} => {
-                OpOrNf::Op(Op::Sequence { operations: substitute_operations(operations, arg_map) })
+    impl Substitute for Op {
+        fn substitute(&self, normal_form: &mut NormalForm, table: &OpOrNfTable, arg_map: &ArgMap) -> OpOrNf {
+            println!("\n arg_map {:?}\n", arg_map);
+//            println!("Op to substitute {:?}", op);
+            match self {
+                Op::Fid(name) => {
+                    let sub = arg_map.get(&name.clone()).unwrap();
+                    sub.clone()
+                },
+                Op::Sequence { operations} => {
+                    OpOrNf::Op(Op::Sequence { operations: substitute_operations(operations.to_vec(), normal_form, table,  arg_map) })
+                }
+                Op::Overlay { operations } => {
+                    OpOrNf::Op(Op::Overlay { operations: substitute_operations(operations.to_vec(), normal_form, table,  arg_map) })
+                }
+                Op::Compose { operations } => {
+                    OpOrNf::Op(Op::Compose { operations: substitute_operations(operations.to_vec(), normal_form, table, arg_map) })
+                }
+                Op::Choice { operations } => {
+                    OpOrNf::Op(Op::Choice { operations: substitute_operations(operations.to_vec(), normal_form, table, arg_map) })
+                }
+                Op::ModulateBy { operations } => {
+                    OpOrNf::Op(Op::Choice { operations: substitute_operations(operations.to_vec(), normal_form, table, arg_map) })
+                }
+                _ => { OpOrNf::Op(self.clone()) }
             }
-            Op::Overlay { operations } => {
-                OpOrNf::Op(Op::Overlay { operations: substitute_operations(operations, arg_map) })
-            }
-            Op::Compose { operations } => {
-                OpOrNf::Op(Op::Compose { operations: substitute_operations(operations, arg_map) })
-            }
-            Op::Choice { operations } => {
-                OpOrNf::Op(Op::Choice { operations: substitute_operations(operations, arg_map) })
-            }
-            Op::ModulateBy { operations } => {
-                OpOrNf::Op(Op::Choice { operations: substitute_operations(operations, arg_map) })
-            }
-            _ => { OpOrNf::Op(op) }
         }
-
     }
 
-    fn substitute_operations(operations: Vec<OpOrNf>, arg_map: ArgMap) -> Vec<OpOrNf> {
+    fn substitute_operations(operations: Vec<OpOrNf>, normal_form: &mut NormalForm, table: &OpOrNfTable, arg_map: &ArgMap) -> Vec<OpOrNf> {
         let mut result = vec![];
         for op_or_nf in operations {
             match op_or_nf {
@@ -67,12 +67,16 @@ pub mod normalize {
                     result.push(OpOrNf::Nf(nf))
                 }
                 OpOrNf::Op(op) => {
-                    match op {
+                    match op.clone() {
                         Op::Fid(name) => {
                             let sub = arg_map.get(&name).unwrap();
-                            result.push(sub.clone())
+                            let subbed = op.substitute(normal_form, table, arg_map);
+                            result.push(subbed)
                         },
-                        _ => result.push(OpOrNf::Op(op))
+                        _ => {
+                            let subbed = op.substitute(normal_form, table, arg_map);
+                            result.push(subbed)
+                        }
                     }
                 }
             }
@@ -109,7 +113,7 @@ pub mod normalize {
                                 Op::FunctionDef { op_or_nf, name: _, vars: _ } => {
                                     match *op_or_nf {
                                         OpOrNf::Op(op) => {
-                                            let result_op = substitute(op, arg_map);
+                                            let result_op = op.substitute(input, table, &arg_map);
 
                                             result_op.apply_to_normal_form(input, table)
                                         },

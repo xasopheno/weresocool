@@ -1,8 +1,8 @@
 extern crate num_rational;
-use crate::ast::{OpOrNfTable, OscType};
+use crate::ast::{OpOrNf, OpOrNfTable, OscType};
 use num_rational::{Ratio, Rational64};
 use std::{
-    collections::BTreeSet,
+    collections::{BTreeSet, HashMap},
     ops::{Mul, MulAssign},
 };
 mod get_length_ratio;
@@ -38,9 +38,21 @@ pub trait GetLengthRatio {
     fn get_length_ratio(&self, table: &OpOrNfTable) -> Rational64;
 }
 
+pub trait Substitute {
+    fn substitute(&self, normal_form: &mut NormalForm, table: &OpOrNfTable, arg_map: &ArgMap) -> OpOrNf;
+}
+
 impl GetLengthRatio for NormalForm {
     fn get_length_ratio(&self, _table: &OpOrNfTable) -> Rational64 {
         self.length_ratio
+    }
+}
+
+pub type ArgMap = HashMap<String, OpOrNf>;
+
+impl Substitute for NormalForm {
+        fn substitute(&self, normal_form: &mut NormalForm, table: &OpOrNfTable, arg_map: &ArgMap) -> OpOrNf {
+        OpOrNf::Nf(self.clone())
     }
 }
 
