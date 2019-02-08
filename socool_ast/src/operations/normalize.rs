@@ -32,14 +32,39 @@ pub mod normalize {
 
     impl Substitute for Op {
         fn substitute(&self, normal_form: &mut NormalForm, table: &OpOrNfTable, arg_map: &ArgMap) -> OpOrNf {
-            println!("\n arg_map {:?}\n", arg_map);
-//            println!("Op to substitute {:?}", op);
             match self {
                 Op::Fid(name) => {
                     let sub = arg_map.get(&name.clone()).unwrap();
                     sub.clone()
                 },
-                Op::Sequence { operations} => {
+                Op::Focus {
+                    name,
+                    main,
+                    op_to_apply,
+                } => {
+                    let mut nf = NormalForm::init();
+                    let m = main.substitute(normal_form, table, arg_map);
+                    m.apply_to_normal_form(&mut nf, table);
+                    let (named, rest) = nf.partition(name.to_string());
+
+                    let mut nf = NormalForm::init();
+                    let op_to_apply = op_to_apply.substitute(normal_form, table, arg_map);
+                    op_to_apply.apply_to_normal_form(&mut nf, table);
+                    let named_applied = nf * named;
+//
+                    let mut result = NormalForm::init();
+//
+                    Op::Overlay {
+                        operations: vec![Nf(named_applied), Nf(rest)],
+                    }
+                        .apply_to_normal_form(&mut result, table);
+
+                    Nf(result)
+                },
+                Op::FunctionCall { name, args } => {
+                    OpOrNf::Op(Op::FunctionCall {name: name.to_string(), args: substitute_operations(args.to_vec(), normal_form, table, arg_map)})
+                }
+                Op::Sequence { operations } => {
                     OpOrNf::Op(Op::Sequence { operations: substitute_operations(operations.to_vec(), normal_form, table,  arg_map) })
                 }
                 Op::Overlay { operations } => {
@@ -114,7 +139,6 @@ pub mod normalize {
                                     match *op_or_nf {
                                         OpOrNf::Op(op) => {
                                             let result_op = op.substitute(input, table, &arg_map);
-
                                             result_op.apply_to_normal_form(input, table)
                                         },
                                         OpOrNf::Nf(_) => {
@@ -281,6 +305,27 @@ pub mod normalize {
                     input.length_ratio = target_length;
                 }
 
+                Op::Focus {
+                    name,
+                    main: _,
+                    op_to_apply,
+                } => {
+                    let id = name;
+                    let (named, rest) = input.partition(id.to_string());
+                    let mut nf = NormalForm::init();
+                    op_to_apply.apply_to_normal_form(&mut nf, table);
+                    let named_applied = nf * named;
+
+                    let mut result = NormalForm::init();
+
+                    Op::Overlay {
+                        operations: vec![Nf(named_applied), Nf(rest)],
+                    }
+                        .apply_to_normal_form(&mut result, table);
+
+                    *input = result
+                }
+
                 Op::ModulateBy { operations } => {
                     let mut modulator = NormalForm::init_empty();
 
@@ -306,27 +351,6 @@ pub mod normalize {
                     }
 
                     result.length_ratio = input.length_ratio;
-                    *input = result
-                }
-
-                Op::Focus {
-                    name,
-                    main: _,
-                    op_to_apply,
-                } => {
-                    let id = name;
-                    let (named, rest) = input.partition(id.to_string());
-                    let mut nf = NormalForm::init();
-                    op_to_apply.apply_to_normal_form(&mut nf, table);
-                    let named_applied = nf * named;
-
-                    let mut result = NormalForm::init();
-
-                    Op::Overlay {
-                        operations: vec![Nf(named_applied), Nf(rest)],
-                    }
-                    .apply_to_normal_form(&mut result, table);
-
                     *input = result
                 }
 
