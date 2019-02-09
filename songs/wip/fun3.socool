@@ -2,21 +2,21 @@
 
 f(a, b, c) = {
     Sequence [
-        $b, 
-        $c,
         $a, 
         $a > @foo | Tm 3,
-        $a > @foo | Tm 1/2 
+        $a > @foo | Tm 1/2,
+        $b | Length 3,
+        $c | Length 3,
     ] 
-    > FitLength Length 3 
 }
 
 main = {
+    Length 1/8 |
     Sequence [
         f(
-            Sequence [AsIs, Tm 9/8 | Overlay [AsIs, Tm 2], Tm 5/4] | #foo,
+            Sequence [AsIs, Tm 9/8 | Overlay [AsIs, Tm 2] | #foo, Tm 5/4],
             Sequence [Tm 4/3, Tm 3/4, Tm 5/3 | Overlay [AsIs, Tm 2]],
-            Gain 1/4 | Sequence [Tm 1, Tm 2, Tm 3, Tm 4, Tm 5, Tm 6] | Length 1/3 | Sequence [AsIs, Reverse] 
+            Gain 1 | Sequence [Tm 1, Tm 2, Tm 3, Tm 4, Tm 5, Tm 6] | Length 1/3 | Sequence [AsIs, Reverse] 
         ),
     ]
     | Repeat 2  
