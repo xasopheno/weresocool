@@ -24,7 +24,6 @@ pub mod get_length_ratio {
                 | Op::FunctionCall { .. }
                 | Op::Gain { .. } => Ratio::from_integer(1),
 
-
                 Op::Id(id) => handle_id_error(id.to_string(), table).get_length_ratio(table),
 
                 Op::Length { m } | Op::Silence { m } => *m,

@@ -39,7 +39,12 @@ pub trait GetLengthRatio {
 }
 
 pub trait Substitute {
-    fn substitute(&self, normal_form: &mut NormalForm, table: &OpOrNfTable, arg_map: &ArgMap) -> OpOrNf;
+    fn substitute(
+        &self,
+        normal_form: &mut NormalForm,
+        table: &OpOrNfTable,
+        arg_map: &ArgMap,
+    ) -> OpOrNf;
 }
 
 impl GetLengthRatio for NormalForm {
@@ -51,7 +56,12 @@ impl GetLengthRatio for NormalForm {
 pub type ArgMap = HashMap<String, OpOrNf>;
 
 impl Substitute for NormalForm {
-        fn substitute(&self, normal_form: &mut NormalForm, table: &OpOrNfTable, arg_map: &ArgMap) -> OpOrNf {
+    fn substitute(
+        &self,
+        normal_form: &mut NormalForm,
+        table: &OpOrNfTable,
+        arg_map: &ArgMap,
+    ) -> OpOrNf {
         OpOrNf::Nf(self.clone())
     }
 }
@@ -225,24 +235,24 @@ impl PointOp {
         }
     }
 
-//        pub fn to_op(&self) -> Op {
-//            let osc_op = match self.osc_type {
-//                OscType::Sine => Op::Sine,
-//                OscType::Square => Op::Square,
-//                OscType::Noise => Op::Noise,
-//            };
-//            Op::Compose {
-//                operations: vec![
-//                    osc_op,
-//                    Op::TransposeM { m: self.fm },
-//                    Op::TransposeA { a: self.fa },
-//                    Op::PanM { m: self.pm },
-//                    Op::PanA { a: self.pa },
-//                    Op::Gain { m: self.g },
-//                    Op::Length { m: self.l },
-//                ],
-//            }
-//        }
+    //        pub fn to_op(&self) -> Op {
+    //            let osc_op = match self.osc_type {
+    //                OscType::Sine => Op::Sine,
+    //                OscType::Square => Op::Square,
+    //                OscType::Noise => Op::Noise,
+    //            };
+    //            Op::Compose {
+    //                operations: vec![
+    //                    osc_op,
+    //                    Op::TransposeM { m: self.fm },
+    //                    Op::TransposeA { a: self.fa },
+    //                    Op::PanM { m: self.pm },
+    //                    Op::PanA { a: self.pa },
+    //                    Op::Gain { m: self.g },
+    //                    Op::Length { m: self.l },
+    //                ],
+    //            }
+    //        }
 }
 
 impl NormalForm {

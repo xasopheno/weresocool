@@ -22,7 +22,6 @@ impl New<OpOrNfTable> for OpOrNfTable {
     }
 }
 
-
 #[derive(Clone, PartialEq, Debug, Hash)]
 pub enum Op {
     AsIs,
@@ -33,11 +32,11 @@ pub enum Op {
     FunctionDef {
         name: String,
         vars: Vec<String>,
-        op_or_nf: Box<OpOrNf>
+        op_or_nf: Box<OpOrNf>,
     },
     FunctionCall {
         name: String,
-        args: Vec<OpOrNf>
+        args: Vec<OpOrNf>,
     },
     //
     Noise,
