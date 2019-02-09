@@ -37,6 +37,19 @@ pub mod normalize {
                     let sub = arg_map.get(&name.clone()).unwrap();
                     sub.clone()
                 },
+                Op::WithLengthRatioOf {
+                    main,
+                    with_length_of,
+                } => {
+                    let main = main.substitute(normal_form, table, arg_map);
+                    let with_length_of = with_length_of.substitute(normal_form, table, arg_map);
+
+                    Op(Op::WithLengthRatioOf {
+                        main: Box::new(main),
+                        with_length_of: Box::new(with_length_of)
+                    })
+                },
+
                 Op::Focus {
                     name,
                     main,

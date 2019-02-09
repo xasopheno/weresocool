@@ -2,16 +2,16 @@
 
 f(a, b, c) = {
     Sequence [
-        -- $b, 
-        -- $c,
+        $b, 
+        $c,
         $a, 
         $a > @foo | Tm 3,
         $a > @foo | Tm 1/2 
     ] 
+    > FitLength Length 3 
 }
 
 main = {
-    Length 1/8 |
     Sequence [
         f(
             Sequence [AsIs, Tm 9/8 | Overlay [AsIs, Tm 2], Tm 5/4] | #foo,
