@@ -1,0 +1,62 @@
+{ f: 300, l: 1, g: 1, p: 0 }
+
+f(  a, b, c, d,
+    e, f, g, h  ) = {
+    Overlay [
+        Sequence [$a, $b, $c, $b, $d, $b, $c, $b],
+        Tm 1/2 | Sequence [$e, $f, $g, $f, $h, $f, $g, $f]
+    ] 
+    | Repeat 2 
+}
+
+main = {
+    Length 1/8 | 
+    Sequence [
+        -- f(
+        --     Tm 2, Tm 6/5, Tm 9/8, Tm 1,
+        --     Tm 1, Tm 3/2, Tm 4/3, Tm 6/5
+        -- ),
+        -- f(
+        --     Tm 8/5, Tm 4/3, Tm 5/4, Tm 1,
+        --     Tm 1, Tm 8/5, Tm 3/2, Tm 4/3 
+        -- ),
+        -- f(
+        --     Tm 15/8, Tm 4/3, Tm 6/5, Tm 9/8,
+        --     Tm 1, Tm 8/5, Tm 3/2, Tm 4/3 
+        -- ),
+        -- f(
+        --     Tm 2, Tm 3/2, Tm 4/3, Tm 6/5,
+        --     Tm 1, Tm 6/5, Tm 9/8, Tm 3/2 
+        -- ),
+        -- -- 5
+        -- f(
+        --     Tm 2, Tm 8/5, Tm 3/2, Tm 6/5,
+        --     Tm 1, Tm 2, Tm 7/4, Tm 8/5 
+        -- ),
+        -- f(
+        --     Tm 9/4, Tm 25/18, Tm 5/4, Tm 9/8,
+        --     Tm 1, Tm 5/3, Tm 3/2, Tm 25/18 
+        -- ),
+        -- f(
+        --     Tm 9/4, Tm 3/2, Tm 25/18, Tm 9/8,
+        --     Tm 7/8, Tm 7/4, Tm 8/5, Tm 3/2, 
+        -- ),
+        -- f(
+        --     Tm 2, Tm 5/4, Tm 9/8, Tm 1, 
+        --     Tm 7/8, Tm 3/2, Tm 4/3, Tm 5/4, 
+        -- ),
+        -- 9
+        f(
+            Tm 2, Tm 4/3, Tm 5/4, Tm 1, 
+            Tm 4/5, Tm 8/5, Tm 3/2, Tm 4/3, 
+        ),
+        f(
+            Tm 8/5, Tm 9/8, Tm 1, Tm 7/8, 
+            Tm 9/8, Tm 4/3, Tm 6/5, Tm 8/5, 
+        ),
+        f(
+            Tm 7/4, Tm 3/2, Tm 4/3, Tm 6/5, 
+            Tm 7/8, Tm 6/5, Tm 9/8, Tm 3/2, 
+        ),
+    ]
+}
