@@ -1,50 +1,54 @@
 { f: 300, l: 1, g: 1, p: 0 }
 
-f(  a, b, c, d,
+g(  a, b, c, d,
     e, f, g, h  ) = {
     Overlay [
         Sequence [$a, $b, $c, $b, $d, $b, $c, $b],
         Tm 1/2 | Sequence [$e, $f, $g, $f, $h, $f, $g, $f]
     ] 
+}
+
+f(  a, b, c, d,
+    e, f, g, h  ) = {
+    g($a, $b, $c, $d, $e, $f, $g, $h)
     | Repeat 2 
 }
 
-main = {
-    Length 1/8 | 
+m1_24 = {
     Sequence [
-        -- f(
-        --     Tm 2, Tm 6/5, Tm 9/8, Tm 1,
-        --     Tm 1, Tm 3/2, Tm 4/3, Tm 6/5
-        -- ),
-        -- f(
-        --     Tm 8/5, Tm 4/3, Tm 5/4, Tm 1,
-        --     Tm 1, Tm 8/5, Tm 3/2, Tm 4/3 
-        -- ),
-        -- f(
-        --     Tm 15/8, Tm 4/3, Tm 6/5, Tm 9/8,
-        --     Tm 1, Tm 8/5, Tm 3/2, Tm 4/3 
-        -- ),
-        -- f(
-        --     Tm 2, Tm 3/2, Tm 4/3, Tm 6/5,
-        --     Tm 1, Tm 6/5, Tm 9/8, Tm 3/2 
-        -- ),
-        -- -- 5
-        -- f(
-        --     Tm 2, Tm 8/5, Tm 3/2, Tm 6/5,
-        --     Tm 1, Tm 2, Tm 7/4, Tm 8/5 
-        -- ),
-        -- f(
-        --     Tm 9/4, Tm 25/18, Tm 5/4, Tm 9/8,
-        --     Tm 1, Tm 5/3, Tm 3/2, Tm 25/18 
-        -- ),
-        -- f(
-        --     Tm 9/4, Tm 3/2, Tm 25/18, Tm 9/8,
-        --     Tm 7/8, Tm 7/4, Tm 8/5, Tm 3/2, 
-        -- ),
-        -- f(
-        --     Tm 2, Tm 5/4, Tm 9/8, Tm 1, 
-        --     Tm 7/8, Tm 3/2, Tm 4/3, Tm 5/4, 
-        -- ),
+        f(
+            Tm 2, Tm 6/5, Tm 9/8, Tm 1,
+            Tm 1, Tm 3/2, Tm 4/3, Tm 6/5
+        ),
+        f(
+            Tm 8/5, Tm 4/3, Tm 5/4, Tm 1,
+            Tm 1, Tm 8/5, Tm 3/2, Tm 4/3 
+        ),
+        f(
+            Tm 15/8, Tm 4/3, Tm 6/5, Tm 9/8,
+            Tm 1, Tm 8/5, Tm 3/2, Tm 4/3 
+        ),
+        f(
+            Tm 2, Tm 3/2, Tm 4/3, Tm 6/5,
+            Tm 1, Tm 6/5, Tm 9/8, Tm 3/2 
+        ),
+        -- 5
+        f(
+            Tm 2, Tm 8/5, Tm 3/2, Tm 6/5,
+            Tm 1, Tm 2, Tm 7/4, Tm 8/5 
+        ),
+        f(
+            Tm 9/4, Tm 25/18, Tm 5/4, Tm 9/8,
+            Tm 1, Tm 5/3, Tm 3/2, Tm 25/18 
+        ),
+        f(
+            Tm 9/4, Tm 3/2, Tm 25/18, Tm 9/8,
+            Tm 7/8, Tm 7/4, Tm 8/5, Tm 3/2, 
+        ),
+        f(
+            Tm 2, Tm 5/4, Tm 9/8, Tm 1, 
+            Tm 7/8, Tm 3/2, Tm 4/3, Tm 5/4, 
+        ),
         -- 9
         f(
             Tm 2, Tm 4/3, Tm 5/4, Tm 1, 
@@ -58,5 +62,132 @@ main = {
             Tm 7/4, Tm 3/2, Tm 4/3, Tm 6/5, 
             Tm 7/8, Tm 6/5, Tm 9/8, Tm 3/2, 
         ),
+        f(
+            Tm 8/5, Tm 3/2, Tm 4/3, Tm 6/5, 
+            Tm 1, Tm 6/5, Tm 9/8, Tm 8/5, 
+        ),
+        -- 13
+        f(
+            Tm 8/5, Tm 9/8, Tm 1, Tm 7/8, 
+            Tm 9/8, Tm 4/3, Tm 6/5, Tm 8/5, 
+        ),
+        f(
+            Tm 3/2, Tm 7/8, Tm 4/5, Tm 6/5, 
+            Tm 6/5, Tm 3/2, Tm 4/3, Tm 8/5, 
+        ),
+        f(
+            Tm 4/3, Tm 1, Tm 7/8, Tm 5/6, 
+            Tm 6/5, Tm 5/3, Tm 3/2, Tm 4/3, 
+        ),
+        f(
+            Tm 4/3, Tm 9/8, Tm 1, Tm 15/16, 
+            Tm 9/8, Tm 4/3, Tm 6/5, Tm 8/5, 
+        ),
+        -- 17
+        f(
+            Tm 4/3, Tm 9/8, Tm 1, Tm 15/16, 
+            Tm 1, Tm 4/3, Tm 5/4, Tm 8/5, 
+        ),
+        f(
+            Tm 6/5, Tm 1, Tm 15/16, Tm 3/4, 
+            Tm 1, Tm 6/5, Tm 9/8, Tm 4/3, 
+        ),
+        f(
+            Tm 2/3, Tm 6/5, Tm 9/8, Tm 4/3, 
+            Tm 4/5, Tm 1, Tm 15/16, Tm 9/8, 
+        ),
+        f(
+            Tm 25/36, Tm 1, Tm 15/16, Tm 6/5, 
+            Tm 5/6, Tm 6/5, Tm 9/8, Tm 1, 
+        ),
+        -- 21
+        f(
+            Tm 6/5, Tm 1, Tm 15/16, Tm 3/4, 
+            Tm 3/4, Tm 6/5, Tm 9/8, Tm 4/3, 
+        ),
+        f(
+            Tm 25/18, Tm 1, Tm 15/16, Tm 5/6, 
+            Tm 3/4, Tm 6/5, Tm 9/8, Tm 1, 
+        ),
+        f(
+            Tm 3/2, Tm 1, Tm 15/16, Tm 9/8, 
+            Tm 3/4, Tm 6/5, Tm 9/8, Tm 4/3, 
+        ),
+        f(
+            Tm 8/5, Tm 1, Tm 15/16, Tm 9/8, 
+            Tm 3/4, Tm 6/5, Tm 9/8, Tm 4/3,
+        ),
+        Overlay [
+            Silence 1/16,
+            Silence 1/16,
+        ]
+    ]
+}
+
+m25_27 = {
+    Tm 1/2 
+    | Sequence [
+        Tm 3/4, Tm 15/16, Tm 9/8, Tm 4/3,
+        Tm 8/5, Tm 4/3, Tm 5/4, Tm 4/3,
+        Tm 15/8, Tm 4/3, Tm 9/4, Tm 15/8, 
+        Tm 8/5, Tm 4/3, Tm 5/4, Tm 4/3,
+        -- 
+        Tm 3/4, Tm 1, Tm 6/5, Tm 3/2,
+        Tm 2, Tm 3/2, Tm 25/18, Tm 3/2,
+        Tm 12/5, Tm 2, Tm 3, Tm 12/5,
+        Tm 2, Tm 8/5, Tm 3/2, Tm 8/5,
+        --
+        Tm 3/4, Tm 5/6, Tm 25/18, Tm 2, 
+        Tm 12/5, Tm 2, Tm 15/8, Tm 2,
+        Tm 25/9, Tm 2, Tm 10/3, Tm 25/9, 
+        Tm 5/2, Tm 2, Tm 15/8, Tm 2 
+    ]
+}
+
+m28 = {
+    Sequence [
+        Overlay [
+            Sequence [
+                Gain 0, Tm 9/4, Tm 2, Tm 9/4,
+                Tm 12/5, Tm 2, Tm 15/8, Tm 2,
+                Tm 5/3, Tm 2, Tm 15/8, Tm 2,
+                Tm 9/4, Tm 15/8, Tm 5/3, Tm 15/8, 
+            ],
+            Tm 3/8 | Repeat 15 
+        ], 
+        g(
+            Tm 3/2, Tm 15/8, Tm 5/3, Tm 2, 
+            Tm 3/4, Tm 9/4, Tm 2, Tm 5/2
+        ),
+        g(
+            Tm 25/18, Tm 5/3, Tm 3/2, Tm 15/8, 
+            Tm 5/3, Tm 2, Tm 15/8, Tm 9/4 
+        ), 
+        g(
+            Tm 9/8, Tm 3, Tm 8/3, Tm 10/3, 
+            Tm 3/2, Tm 15/8, Tm 5/3, Tm 2 
+        ),
+        g(
+            Tm 9/4, Tm 8/3, Tm 12/5, Tm 3, 
+            Tm 4/3, Tm 5/3, Tm 3/2, Tm 15/8 
+        ),
+        g(
+            Tm 2, Tm 12/5, Tm 9/4, Tm 8/3, 
+            Tm 6/5, Tm 3, Tm 8/3, Tm 16/5 
+        ),
+        g(
+            Tm 15/8, Tm 9/4, Tm 2, Tm 12/5, 
+            Tm 9/4, Tm 8/3, Tm 12/5, Tm 3, 
+        ),
+    ]
+}
+
+
+main = {
+    Length 1/8 | 
+    Sequence [
+        m1_24,
+        m25_27, 
+        m28,
     ]
 }
