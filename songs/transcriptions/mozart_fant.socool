@@ -1,0 +1,51 @@
+{ f: 293, l: 1, g: 1, p: 0}
+
+overtones = {
+    O[
+      	(4/1, 0.4, 1/32, 1/3),
+      	(4/1, 0, 1/32, -1/3),
+      	(2/1, -3, 1/16, 1/3),
+      	(2/1, 0, 1/16, -1/3),
+      	(3/2, 0.5, 1/32, 3/4),
+      	(3/2, 0, 1/32, -3/4),
+      	(1/1, 2, 1, 1/2),
+      	(1/1, 0, 1, -1/2),
+  	]
+}
+
+
+intro(a, b, c) = {
+	-- Overlay [AsIs, Noise | Gain 1/150] | 
+	Overlay[
+		#foo | Tm 1 | Length 1/3 | Seq [
+			Gain 0 | Length 4,
+			$b, $c,
+			Tm 2 | $a, $c , Tm 2 | $b, 
+			Tm 2 | $a, $c, $b
+		],
+		Tm 1/2 | Seq [
+			Length 1/3 | Seq [
+				$a, 
+				$b, 
+				$c,	
+			],
+			Tm 2 | $a | Length 3
+		],
+		Tm 1/4 | $a | Length 4
+	] | Seq [AsIs, Gain 1/4]
+}
+
+main = {
+	overtones | 
+	Seq [
+		intro(
+			Tm 1, Tm 6/5, Tm 3/2,
+		),
+		intro(
+			Tm 1, Tm 4/3, Tm 8/5,
+		) > @z | Tm 9/8,
+		intro(
+			Tm 7/8 | #a, Tm 5/4 | #b, Tm 3/2 | #c,
+		) > @foo | (AsIs > @a | Tm 10/7 > @b | Tm 6/5 > @c | Tm 4/3)
+	] 
+}

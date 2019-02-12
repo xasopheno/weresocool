@@ -113,6 +113,7 @@ BaseOperation: OpOrNf = {
     "Gain" <v:Rational> => Op(Gain {m: v}),
     "Choice" "[" <operations: Operations> "]" => Op(Choice { operations: operations }),
     "Sequence" "[" <operations: Operations> "]" => Op(Sequence { operations: operations }),
+    "Seq" "[" <operations: Operations> "]" => Op(Sequence { operations: operations }),
     "Overlay" "[" <operations: Operations> "]" => Op(Overlay { operations: operations }),
     "ModulateBy" "[" <operations: Operations> "]" => Op(ModulateBy { operations: operations }),
     "O" "[" <o: Overtones> "]" => Op(Overlay { operations: o }),
