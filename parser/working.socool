@@ -23,7 +23,7 @@ thing1 = {
     ]
 }
 
-function(a, b) = {
+fn(a, b) = {
     overtones |
     Sequence [
         $a,

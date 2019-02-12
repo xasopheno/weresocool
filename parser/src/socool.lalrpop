@@ -59,7 +59,7 @@ Operation: OpOrNf = {
         })
     },
 
-    <op1: Operation> ">" "@" <name: Name> "|" <op2: ComposeOperation> => {
+    <op1: Operation> ">" "@" <name: Name> <op2: ComposeOperation> => {
         Op(
             Focus {
                 name: name,
