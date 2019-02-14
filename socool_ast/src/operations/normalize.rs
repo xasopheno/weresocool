@@ -61,10 +61,7 @@ pub mod normalize {
                     main,
                     op_to_apply,
                 } => {
-
-
-
-                    let mut nf = NormalForm::init();
+                   let mut nf = NormalForm::init();
                     let m = main.substitute(normal_form, table, arg_map);
                     m.apply_to_normal_form(&mut nf, table);
                     let (named, rest) = nf.partition(name.to_string());
@@ -356,24 +353,7 @@ pub mod normalize {
                     main,
                     op_to_apply,
                 } => {
-
-
-//                    let (named, rest) = nf.partition(name.to_string());
-//
-//                    let mut nf = NormalForm::init();
-//                    let op_to_apply = op_to_apply.substitute(normal_form, table, arg_map);
-//                    op_to_apply.apply_to_normal_form(&mut nf, table);
-//                    let named_applied = nf.clone() * named;
-//                    //
-//                    let mut result = NormalForm::init();
-//
-//                    Op::Overlay {
-//                        operations: vec![Nf(named_applied), Nf(rest)],
-//                    }
-//                        .apply_to_normal_form(&mut result, table);
-
                     main.apply_to_normal_form(input, table);
-
                     let (named, rest) = input.clone().partition(name.to_string());
                     let mut nf = NormalForm::init();
                     op_to_apply.apply_to_normal_form(&mut nf, table);
