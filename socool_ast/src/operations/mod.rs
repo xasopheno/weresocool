@@ -8,6 +8,7 @@ use std::{
 mod get_length_ratio;
 pub mod helpers;
 mod normalize;
+mod substitute;
 pub mod normalize_nf;
 
 #[derive(Debug, Clone, PartialEq, Hash)]
@@ -58,9 +59,9 @@ pub type ArgMap = HashMap<String, OpOrNf>;
 impl Substitute for NormalForm {
     fn substitute(
         &self,
-        normal_form: &mut NormalForm,
-        table: &OpOrNfTable,
-        arg_map: &ArgMap,
+        _normal_form: &mut NormalForm,
+        _table: &OpOrNfTable,
+        _arg_map: &ArgMap,
     ) -> OpOrNf {
         OpOrNf::Nf(self.clone())
     }
