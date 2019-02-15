@@ -1,6 +1,6 @@
 pub mod get_length_ratio {
     use crate::ast::{Op, OpOrNfTable};
-    use crate::operations::{helpers::*, GetLengthRatio};
+    use crate::operations::{helpers::*, NormalForm, Normalize, GetLengthRatio};
     use num_rational::{Ratio, Rational64};
 
     extern crate num_rational;
@@ -20,9 +20,17 @@ pub mod get_length_ratio {
                 | Op::PanM { .. }
                 | Op::Tag(_)
                 | Op::Fid(_)
-                | Op::FunctionDef { .. }
-                | Op::FunctionCall { .. }
                 | Op::Gain { .. } => Ratio::from_integer(1),
+
+                Op::FunctionDef { .. } => {
+                    panic!("Can't get LengthRatio of Function, Don't pass FunctionDef to FitLength")
+                }
+                Op::FunctionCall { .. } => {
+                    let mut nf = NormalForm::init();
+                    self.apply_to_normal_form(&mut nf, table);
+
+                    nf.get_length_ratio(table)
+                }
 
                 Op::Id(id) => handle_id_error(id.to_string(), table).get_length_ratio(table),
 
@@ -54,9 +62,9 @@ pub mod get_length_ratio {
                 Op::ModulateBy { operations: _ } => Ratio::from_integer(1),
 
                 Op::Focus {
-                    name: _,
                     main,
                     op_to_apply,
+                    ..
                 } => main.get_length_ratio(table) * op_to_apply.get_length_ratio(table),
 
                 Op::Overlay { operations } => {
