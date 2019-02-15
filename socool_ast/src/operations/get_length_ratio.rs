@@ -36,7 +36,14 @@ pub mod get_length_ratio {
                     nf.get_length_ratio(table)
                 }
 
-                Op::Id(id) => handle_id_error(id.to_string(), table).get_length_ratio(table),
+                Op::Id(id) => {
+                   let op = handle_id_error(
+                     id.to_string(),
+                        table
+                    );
+//                    println!("{:?}", op);
+                    op.get_length_ratio(table)
+                }
 
                 Op::Length { m } | Op::Silence { m } => *m,
 
@@ -60,8 +67,13 @@ pub mod get_length_ratio {
 
                 Op::WithLengthRatioOf {
                     with_length_of,
-                    main: _,
-                } => with_length_of.get_length_ratio(table),
+                    main,
+                } => {
+                    let m = main.get_length_ratio(table);
+                    let l = with_length_of.get_length_ratio(table);
+
+                    l/m
+                }
 
                 Op::ModulateBy { operations: _ } => Ratio::from_integer(1),
 
