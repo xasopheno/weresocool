@@ -211,11 +211,13 @@ pub mod normalize {
                 } => {
                     main.apply_to_normal_form(input, table);
                     let (named, rest) = input.clone().partition(name.to_string());
+                    
                     let mut nf = NormalForm::init();
                     op_to_apply.apply_to_normal_form(&mut nf, table);
                     let named_applied = nf * named;
 
                     let mut result = NormalForm::init();
+
                     Op::Overlay {
                         operations: vec![Nf(named_applied), Nf(rest)],
                     }
