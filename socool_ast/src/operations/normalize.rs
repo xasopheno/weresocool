@@ -219,7 +219,10 @@ pub mod normalize {
                     let mut result = NormalForm::init();
 
                     Op::Overlay {
-                        operations: vec![Nf(named_applied), Nf(rest)],
+                        operations: vec![
+                            Nf(rest),
+                            Nf(named_applied),
+                        ],
                     }
                     .apply_to_normal_form(&mut result, table);
 

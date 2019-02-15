@@ -1,0 +1,39 @@
+{ f: 220, l: 1, g: 1, p: 0}
+
+thing1 = {
+	Sequence [
+		Silence 1, 
+		AsIs,
+		Tm 9/8,
+		Tm 5/4,
+		Tm 4/3,
+		Tm 3/2,
+		Tm 5/3,
+		Tm 15/8,
+		Tm 2,
+	]
+}
+
+thing2 = {
+	Sequence [
+		thing1	
+	]
+	| Repeat 3
+	> FitLength thing1 | Length 1/4
+}
+
+bug = {
+	Seq [
+		AsIs,
+		Tm 3/2, 
+		Tm 5/4
+	] > FitLength thing2
+}
+
+main = {
+	Overlay [
+		thing2,
+		bug
+	]
+}
+	
