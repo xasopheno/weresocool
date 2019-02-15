@@ -36,7 +36,7 @@ fn(a, b) = {
 
 thing2 = {
     Sequence [
-        function(AsIs, Tm 3/2),
+        fn(AsIs, Tm 3/2),
         Tm 7/4,
         Tm 5/2
     ] | Repeat 2
@@ -52,7 +52,7 @@ main = {
         ]
         | Sequence [
             AsIs,
-            AsIs > @foo | Tm 9/8
+            AsIs > @foo(Tm 9/8)
         ]
     ]
 }

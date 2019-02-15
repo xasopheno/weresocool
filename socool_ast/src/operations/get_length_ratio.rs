@@ -22,8 +22,12 @@ pub mod get_length_ratio {
                 | Op::Fid(_)
                 | Op::Gain { .. } => Ratio::from_integer(1),
 
-                Op::FunctionDef { .. } => {
-                    panic!("Can't get LengthRatio of Function, Don't pass FunctionDef to FitLength")
+                Op::FunctionDef { name, .. } => {
+                    panic!("\
+                        Trying to get LengthRatio of function called, {:?}\
+                        Can't get LengthRatio of Function, Don't pass FunctionDef to FitLength",
+                        name
+                    )
                 }
                 Op::FunctionCall { .. } => {
                     let mut nf = NormalForm::init();

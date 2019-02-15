@@ -379,7 +379,7 @@ pub mod test {
                         ]
                     }),
                     Op(WithLengthRatioOf {
-                        with_length_of: Box::new(Op(Id(vec!["thing".to_string()]))),
+                        with_length_of: Box::new(Op(Id("thing".to_string()))),
                         main: Box::new(Op(Compose {
                             operations: vec![
                                 Op(Sequence {
