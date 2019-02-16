@@ -69,10 +69,10 @@ pub mod get_length_ratio {
                     with_length_of,
                     main,
                 } => {
-                    let m = main.get_length_ratio(table);
-                    let l = with_length_of.get_length_ratio(table);
+                    let target_length = with_length_of.get_length_ratio(table);
+                    let main_length = main.get_length_ratio(table);
 
-                    l/m
+                    target_length/main_length
                 }
 
                 Op::ModulateBy { operations: _ } => Ratio::from_integer(1),
