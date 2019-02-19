@@ -76,6 +76,7 @@ pub fn union_names(b_tree_set: NameSet, left: &NameSet) -> NameSet {
     result
 }
 
+
 impl Mul<NormalForm> for NormalForm {
     type Output = NormalForm;
 

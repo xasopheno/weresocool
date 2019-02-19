@@ -18,7 +18,7 @@ impl Voice {
         } else {
             self.current.frequency
         };
-        let gain = (info.index as f64 * info.g_delta) + self.past.gain;
+        let gain = info.g_delta + self.past.gain;
 
         let rand_range = 0.5;
         let r: f64 = rand::thread_rng().gen_range(-rand_range, rand_range);

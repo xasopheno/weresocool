@@ -35,7 +35,7 @@ impl Oscillator {
         }
     }
 
-    pub fn update(&mut self, basis: Origin, point_op: &PointOp) {
+    pub fn update(&mut self, basis: Origin, point_op: &PointOp, silence_next: bool) {
         let pm = r_to_f64(point_op.pm);
         let pa = r_to_f64(point_op.pa);
         let g = r_to_f64(point_op.g);
@@ -55,8 +55,8 @@ impl Oscillator {
         };
         let (ref mut l_voice, ref mut r_voice) = self.voices;
 
-        l_voice.update((basis.f * fm) + fa, l_gain, point_op.osc_type);
-        r_voice.update((basis.f * fm) + fa, r_gain, point_op.osc_type);
+        l_voice.update((basis.f * fm) + fa, l_gain, point_op.osc_type, silence_next);
+        r_voice.update((basis.f * fm) + fa, r_gain, point_op.osc_type, silence_next);
     }
 
     pub fn generate(&mut self, n_samples_to_generate: f64) -> StereoWaveform {

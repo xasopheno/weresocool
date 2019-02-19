@@ -17,7 +17,7 @@ impl Voice {
             self.current.frequency
         };
 
-        let gain = (info.index as f64 * info.g_delta) + self.past.gain;
+        let gain = (info.g_delta) + self.past.gain;
         let current_phase = ((info.factor * frequency) + self.phase) % tau();
         self.phase = current_phase;
 
