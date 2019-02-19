@@ -113,6 +113,7 @@ pub fn join_sequence(mut l: NormalForm, mut r: NormalForm) -> NormalForm {
     }
 
     let mut result = NormalForm::init_empty();
+
     for (left, right) in l.operations.iter_mut().zip(r.operations.iter_mut()) {
         left.append(right);
 

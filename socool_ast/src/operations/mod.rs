@@ -8,8 +8,8 @@ use std::{
 mod get_length_ratio;
 pub mod helpers;
 mod normalize;
-mod substitute;
 pub mod normalize_nf;
+mod substitute;
 
 #[derive(Debug, Clone, PartialEq, Hash)]
 pub struct NormalForm {

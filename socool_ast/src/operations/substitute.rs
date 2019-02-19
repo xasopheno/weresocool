@@ -80,44 +80,19 @@ impl Substitute for Op {
                 args: substitute_operations(args.to_vec(), normal_form, table, arg_map),
             }),
             Op::Sequence { operations } => OpOrNf::Op(Op::Sequence {
-                operations: substitute_operations(
-                    operations.to_vec(),
-                    normal_form,
-                    table,
-                    arg_map,
-                ),
+                operations: substitute_operations(operations.to_vec(), normal_form, table, arg_map),
             }),
             Op::Overlay { operations } => OpOrNf::Op(Op::Overlay {
-                operations: substitute_operations(
-                    operations.to_vec(),
-                    normal_form,
-                    table,
-                    arg_map,
-                ),
+                operations: substitute_operations(operations.to_vec(), normal_form, table, arg_map),
             }),
             Op::Compose { operations } => OpOrNf::Op(Op::Compose {
-                operations: substitute_operations(
-                    operations.to_vec(),
-                    normal_form,
-                    table,
-                    arg_map,
-                ),
+                operations: substitute_operations(operations.to_vec(), normal_form, table, arg_map),
             }),
             Op::Choice { operations } => OpOrNf::Op(Op::Choice {
-                operations: substitute_operations(
-                    operations.to_vec(),
-                    normal_form,
-                    table,
-                    arg_map,
-                ),
+                operations: substitute_operations(operations.to_vec(), normal_form, table, arg_map),
             }),
             Op::ModulateBy { operations } => OpOrNf::Op(Op::Choice {
-                operations: substitute_operations(
-                    operations.to_vec(),
-                    normal_form,
-                    table,
-                    arg_map,
-                ),
+                operations: substitute_operations(operations.to_vec(), normal_form, table, arg_map),
             }),
             _ => OpOrNf::Op(self.clone()),
         }
@@ -149,4 +124,3 @@ fn substitute_operations(
 
     result
 }
-

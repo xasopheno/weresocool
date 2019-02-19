@@ -1,6 +1,6 @@
 pub mod get_length_ratio {
     use crate::ast::{Op, OpOrNfTable};
-    use crate::operations::{helpers::*, NormalForm, Normalize, GetLengthRatio};
+    use crate::operations::{helpers::*, GetLengthRatio, NormalForm, Normalize};
     use num_rational::{Ratio, Rational64};
 
     extern crate num_rational;
@@ -22,13 +22,12 @@ pub mod get_length_ratio {
                 | Op::Fid(_)
                 | Op::Gain { .. } => Ratio::from_integer(1),
 
-                Op::FunctionDef { name, .. } => {
-                    panic!("\
-                        Trying to get LengthRatio of function called, {:?}\
-                        Can't get LengthRatio of Function, Don't pass FunctionDef to FitLength",
-                        name
-                    )
-                }
+                Op::FunctionDef { name, .. } => panic!(
+                    "\
+                     Trying to get LengthRatio of function called, {:?}\
+                     Can't get LengthRatio of Function, Don't pass FunctionDef to FitLength",
+                    name
+                ),
                 Op::FunctionCall { .. } => {
                     let mut nf = NormalForm::init();
                     self.apply_to_normal_form(&mut nf, table);
@@ -37,11 +36,8 @@ pub mod get_length_ratio {
                 }
 
                 Op::Id(id) => {
-                   let op = handle_id_error(
-                     id.to_string(),
-                        table
-                    );
-//                    println!("{:?}", op);
+                    let op = handle_id_error(id.to_string(), table);
+                    //                    println!("{:?}", op);
                     op.get_length_ratio(table)
                 }
 
@@ -72,15 +68,13 @@ pub mod get_length_ratio {
                     let target_length = with_length_of.get_length_ratio(table);
                     let main_length = main.get_length_ratio(table);
 
-                    target_length/main_length
+                    target_length / main_length
                 }
 
                 Op::ModulateBy { operations: _ } => Ratio::from_integer(1),
 
                 Op::Focus {
-                    main,
-                    op_to_apply,
-                    ..
+                    main, op_to_apply, ..
                 } => main.get_length_ratio(table) * op_to_apply.get_length_ratio(table),
 
                 Op::Overlay { operations } => {

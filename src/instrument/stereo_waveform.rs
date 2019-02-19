@@ -52,7 +52,7 @@ impl Normalize for StereoWaveform {
 
         let mut normalization_ratio = 1.0 / max;
         if normalization_ratio > 1.0 {
-           normalization_ratio = 1.0
+            normalization_ratio = 1.0
         }
 
         if normalization_ratio < 1.0 {
@@ -66,6 +66,5 @@ impl Normalize for StereoWaveform {
                 *sample *= normalization_ratio
             }
         }
-
     }
 }

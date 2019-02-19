@@ -2,12 +2,8 @@ pub mod normalize {
     extern crate num_rational;
     extern crate rand;
     use crate::ast::{Op, OpOrNf, OpOrNf::*, OpOrNfTable, OscType};
-    use crate::{
-        operations::{
-            substitute::get_fn_arg_map,
-            GetLengthRatio, NormalForm, Normalize, Substitute,
-            helpers::*
-        }
+    use crate::operations::{
+        helpers::*, substitute::get_fn_arg_map, GetLengthRatio, NormalForm, Normalize, Substitute,
     };
     use num_rational::Ratio;
     use rand::prelude::*;
@@ -174,7 +170,6 @@ pub mod normalize {
 
                 Op::Sequence { operations } => {
                     let mut result = NormalForm::init_empty();
-
                     for op in operations {
                         let mut input_clone = input.clone();
                         op.apply_to_normal_form(&mut input_clone, table);
@@ -219,10 +214,7 @@ pub mod normalize {
                     let mut result = NormalForm::init();
 
                     Op::Overlay {
-                        operations: vec![
-                            Nf(rest),
-                            Nf(named_applied),
-                        ],
+                        operations: vec![Nf(rest), Nf(named_applied)],
                     }
                     .apply_to_normal_form(&mut result, table);
 
