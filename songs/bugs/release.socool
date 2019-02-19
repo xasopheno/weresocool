@@ -18,7 +18,7 @@ thing1 = {
 		],
 		Seq [
 			Tm 11/8,
-			Tm 8/5,
+			-- Tm 8/5,
 			-- Overlay [
 			-- 	Tm 11/8, 
 			-- 	Tm 5/3,
