@@ -14,17 +14,17 @@ thing1 = {
 		Overlay [
 			AsIs, 
 			Tm 3/2,
-			Tm 5/2,
+			-- Tm 5/2,
 		],
 		Seq [
 			Tm 11/8,
 			Tm 8/5,
-			Overlay [
-				Tm 11/8, 
-				Tm 5/3,
-			],
-			Tm 5/4,
-			Tm 1
+			-- Overlay [
+			-- 	Tm 11/8, 
+			-- 	Tm 5/3,
+			-- ],
+			-- Tm 5/4,
+			-- Tm 1
 		]
 
 	]
