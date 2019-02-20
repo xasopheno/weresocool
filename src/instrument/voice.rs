@@ -20,7 +20,7 @@ pub enum ASR {
     ASR,
     AS,
     S,
-    SR,
+    R,
     Silence
 }
 
@@ -115,23 +115,25 @@ impl Voice {
         self.current.frequency = frequency;
         self.current.gain = gain;
 
+        println!("{:?}, {:?}, {:?}", self.silent(), silence_next, self.asr);
         if self.silent() {
-            match self.asr {
-                ASR::SR | ASR::ASR | ASR::Silence => {
-                    self.asr = ASR::Silence
-                }
-                _ => { self.asr = ASR::SR }
-            }
+            self.asr = ASR::Silence;
         } else {
             match self.asr {
-                ASR::Silence | ASR::AS | ASR::S => {
+                ASR::Silence | ASR::ASR | ASR::R => {
                     if silence_next {
-                        self.asr = ASR::SR;
+                        self.asr = ASR::ASR;
+                    } else {
+                        self.asr = ASR::AS;
+                    }
+                },
+                _ => {
+                    if silence_next {
+                        self.asr = ASR::R;
                     } else {
                         self.asr = ASR::S;
                     }
-                },
-                _ => { self.asr = ASR::AS }
+                }
             }
         }
 //            ASR::Silence => {
@@ -150,7 +152,6 @@ impl Voice {
 //        }
 //        }
 
-        println!("{:?}, {:?}, {:?}", self.silent(), silence_next, self.asr);
     }
 
     fn silent(&self) -> bool {
