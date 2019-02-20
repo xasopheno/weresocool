@@ -116,6 +116,11 @@ impl Voice {
         self.current.gain = gain;
 
         println!("{:?}, {:?}, {:?}", self.silent(), silence_next, self.asr);
+        self.set_asr(silence_next);
+    }
+
+
+    fn set_asr(&mut self, silence_next: bool) {
         if self.silent() {
             self.asr = ASR::Silence;
         } else {
@@ -136,22 +141,6 @@ impl Voice {
                 }
             }
         }
-//            ASR::Silence => {
-//                if silence_next {
-//                    if self.silent() {
-//                        self.asr = ASR::Silence
-//                    } else {
-//                        self.asr = ASR::AS;
-//                    }
-//                } else {
-//                    if self.asr {
-//
-//                    }
-//                }
-//            }
-//        }
-//        }
-
     }
 
     fn silent(&self) -> bool {
