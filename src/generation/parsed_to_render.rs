@@ -78,7 +78,7 @@ pub fn generate_waveforms(
     let pb = create_pb_instance(vec_sequences.len());
 
     let vec_wav = vec_sequences
-        .iter_mut()
+        .par_iter_mut()
         .map(|ref mut vec_point_op: &mut Vec<PointOp>| {
             pb.lock().unwrap().add(1 as u64);
             let mut osc = Oscillator::init(&default_settings());

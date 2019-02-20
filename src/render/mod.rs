@@ -14,8 +14,6 @@ pub trait Render<T> {
 
 impl Render<PointOp> for PointOp {
     fn render(&mut self, origin: &Origin, oscillator: &mut Oscillator, silence_next: bool) -> StereoWaveform {
-        println!("{:?}", self);
-        println!("{:?}", silence_next);
         oscillator.update(origin.clone(), self);
         let n_samples_to_generate = r_to_f64(self.l) * origin.l * 44_100.0;
 

@@ -1,0 +1,67 @@
+{ f: 220, l: 1, g: 1, p: 0}
+
+overtones = {
+    O[
+      	(3/2, 4, 1/4, -1/3),
+      	(3/2, 0, 1/4, 1/3),
+      	(1/1, 2, 1, 1/2),
+      	(1/1, 0, 1, -1/2),
+  	]
+}
+
+thing1 = {
+	overtones |
+	Sequence [
+		AsIs,	
+		Tm 3/2,
+		Tm 5/3,
+		Silence 1,
+	] 
+	| Length 1/4 
+} 
+
+thing2 = {
+	Seq[
+		AsIs, 
+		Tm 3/2 | Repeat 2, 
+		Tm 7/8
+	]
+}
+
+melody = {
+	thing1 | thing2
+}
+
+bass(a, b) = {
+	Seq [
+		#foo | AsIs,
+		$a, 
+		Tm 0,
+		$b,
+	] 
+	| Seq [AsIs, Tm 2]
+	| Tm 1/2 
+}
+
+main = {
+	Overlay [
+		melody,
+		Seq [
+			bass(Tm 5/4, Tm 4/3),
+			bass(Tm 7/4, Tm 6/5)
+		] > FitLength melody
+	] 
+	| ModulateBy [
+		AsIs,
+		Gain 1/2,
+		Seq [
+			PanA -1,
+			PanA 1
+		] | Repeat 2 
+	]
+	| Sequence [
+		AsIs,
+		AsIs > @foo(Overlay [Tm 4, Tm 5, Tm 5 | Ta 3])	
+	]		
+}
+	
