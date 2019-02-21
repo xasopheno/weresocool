@@ -12,7 +12,6 @@ pub struct Voice {
     pub attack: usize,
     pub decay: usize,
     pub asr: ASR,
-    pub counter: usize,
 }
 
 #[derive(Clone, Debug, PartialEq)]
@@ -21,7 +20,7 @@ pub enum ASR {
     AS,
     S,
     R,
-    Silence
+    Silence,
 }
 
 #[derive(Clone, Debug, PartialEq)]
@@ -56,10 +55,9 @@ impl Voice {
             current: VoiceState::init(),
             phase: 0.0,
             osc_type: OscType::Sine,
-            attack: 2000,
-            decay: 2000,
+            attack: 10000,
+            decay: 10000,
             asr: ASR::Silence,
-            counter: 0,
         }
     }
     pub fn generate_waveform(
@@ -69,7 +67,7 @@ impl Voice {
         factor: f64,
     ) {
         let p_delta = self.calculate_portamento_delta(portamento_length);
-//        let g_delta = self.calculate_gain_delta(buffer.len(), silence_next);
+        //        let g_delta = self.calculate_gain_delta(buffer.len(), silence_next);
 
         let buffer_len = buffer.len();
 
@@ -103,22 +101,20 @@ impl Voice {
         let loudness = loudness_normalization(frequency);
         gain *= loudness;
 
-        if self.osc_type == OscType::Sine && osc_type == OscType::Noise {
-            self.past.gain = self.current.gain / 3.0;
-        } else {
-            self.past.gain = self.current.gain
-        }
-
+//        if self.osc_type == OscType::Sine && osc_type == OscType::Noise {
+//            self.past.gain = self.current.gain / 3.0;
+//        } else {
+        self.past.gain = self.current.gain;
+//        }
 
         self.osc_type = osc_type;
         self.past.frequency = self.current.frequency;
         self.current.frequency = frequency;
         self.current.gain = gain;
 
-        println!("{:?}, {:?}, {:?}", self.silent(), silence_next, self.asr);
         self.set_asr(silence_next);
+        println!("{:?}", self.asr);
     }
-
 
     fn set_asr(&mut self, silence_next: bool) {
         if self.silent() {
@@ -131,7 +127,7 @@ impl Voice {
                     } else {
                         self.asr = ASR::AS;
                     }
-                },
+                }
                 _ => {
                     if silence_next {
                         self.asr = ASR::R;
@@ -159,20 +155,72 @@ impl Voice {
         (self.current.frequency - self.past.frequency) / (portamento_length as f64)
     }
 
-    pub fn calculate_gain_delta(
-        &mut self,
-        fade_length: usize,
-        index: usize,
-    ) -> f64 {
-        //        println!("{:?}, {:?}, {:?}, {:?}", self.current.gain, self.past.gain, silence_next, (next) );
-//        if self.silence_to_sound() {
-//            if self.counter < self.attack {
-//                return index as f64 * (self.current.gain - self.past.gain) / self.attack as f64
-//            } else {
-//                return self.current.gain
-//            }
+    pub fn calculate_gain_delta(&mut self, buffer_len: usize, index: usize) -> f64 {
+        let short = buffer_len <= self.attack + self.decay;
+//        if short {
+//            return self.past.gain
+//                + (index as f64 * (self.current.gain - self.past.gain) / buffer_len as f64);
 //        }
-
-        index as f64 * (self.current.gain - self.past.gain) / fade_length as f64
+//        if short {
+//            println!("short {:?}", self.asr);
+//        };
+        match self.asr {
+            ASR::Silence => {
+//                  return index as f64 * (self.current.gain - self.past.gain) / buffer_len as f64
+//                self.phase = 0.0;
+                return 0.0;
+            }
+            ASR::AS => {
+                let len = if short { buffer_len } else { self.attack };
+                if index <= len {
+                    return self.past.gain
+                        + (index as f64 * (self.current.gain - self.past.gain) / len as f64);
+                } else {
+                    return self.current.gain;
+                }
+            }
+            ASR::S => {
+                return self.past.gain
+                    + (index as f64 * (self.current.gain - self.past.gain) / buffer_len as f64);
+            }
+            ASR::ASR => {
+                if short {
+                    return self.past.gain
+                        + (index as f64 * (self.current.gain - self.past.gain) / buffer_len as f64);
+                }
+                if index <= self.attack {
+                    return self.past.gain
+                        + (index as f64 * (self.current.gain - self.past.gain) / self.attack as f64);
+                } else if index > buffer_len - self.decay {
+                    let x = self.current.gain
+                        * ((buffer_len as f64 - (index as f64 + 1.0)) / self.decay as f64);
+                    return x;
+                } else {
+                    return self.current.gain;
+                }
+            }
+            ASR::R => {
+                if short {
+                    let y = buffer_len as f64 - (index as f64 + 1.0);
+                    let x = self.current.gain
+                        * y / (buffer_len as f64);
+                    return x;
+                };
+                let len = buffer_len - self.decay;
+                if index < len {
+                    let x = self.past.gain
+                        + ((self.current.gain - self.past.gain) * (index as f64 / len as f64));
+                    return x;
+                } else {
+                    let y = buffer_len as f64 - (index as f64 + 1.0);
+                    let x = self.current.gain
+                        * y / (self.decay as f64);
+                    return x;
+                }
+            }
+            //            _ => {
+            //                return index as f64 * (self.current.gain - self.past.gain) / buffer_len as f64
+            //            }
+        }
     }
 }
