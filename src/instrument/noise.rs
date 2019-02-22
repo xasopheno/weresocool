@@ -18,12 +18,16 @@ impl Voice {
         } else {
             self.current.frequency
         };
-        let gain = info.g_delta + self.past.gain;
+        let gain = info.gain;
 
         let rand_range = 0.5;
         let r: f64 = rand::thread_rng().gen_range(-rand_range, rand_range);
 
-        let current_phase = ((info.factor * frequency) + self.phase + r) % tau();
+        let mut current_phase = ((info.factor * frequency) + self.phase + r) % tau();
+        if gain == 0.0 {
+            current_phase = 0.0;
+        }
+
         self.phase = current_phase;
 
         current_phase.sin() * gain

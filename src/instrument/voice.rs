@@ -27,7 +27,7 @@ pub enum ASR {
 pub struct SampleInfo {
     pub index: usize,
     pub p_delta: f64,
-    pub g_delta: f64,
+    pub gain: f64,
     pub portamento_length: usize,
     pub factor: f64,
 }
@@ -56,7 +56,7 @@ impl Voice {
             phase: 0.0,
             osc_type: OscType::Sine,
             attack: 10000,
-            decay: 10000,
+            decay: 40000,
             asr: ASR::Silence,
         }
     }
@@ -67,7 +67,6 @@ impl Voice {
         factor: f64,
     ) {
         let p_delta = self.calculate_portamento_delta(portamento_length);
-        //        let g_delta = self.calculate_gain_delta(buffer.len(), silence_next);
 
         let buffer_len = buffer.len();
 
@@ -75,7 +74,7 @@ impl Voice {
             let info = SampleInfo {
                 index,
                 p_delta,
-                g_delta: self.calculate_gain_delta(buffer_len, index),
+                gain: self.calculate_gain(buffer_len, index),
                 portamento_length,
                 factor,
             };
@@ -95,17 +94,17 @@ impl Voice {
         }
 
         let mut gain = if frequency != 0.0 { gain } else { 0.0 };
-        if osc_type != OscType::Sine {
-            gain /= 3.0
-        }
+//        if osc_type != OscType::Sine {
+//            gain /= 3.0
+//        }
         let loudness = loudness_normalization(frequency);
         gain *= loudness;
 
-//        if self.osc_type == OscType::Sine && osc_type == OscType::Noise {
-//            self.past.gain = self.current.gain / 3.0;
-//        } else {
-        self.past.gain = self.current.gain;
-//        }
+        if self.osc_type == OscType::Sine && osc_type == OscType::Noise {
+            self.past.gain = self.current.gain / 3.0;
+        } else {
+            self.past.gain = self.current.gain;
+        }
 
         self.osc_type = osc_type;
         self.past.frequency = self.current.frequency;
@@ -155,72 +154,72 @@ impl Voice {
         (self.current.frequency - self.past.frequency) / (portamento_length as f64)
     }
 
-    pub fn calculate_gain_delta(&mut self, buffer_len: usize, index: usize) -> f64 {
-        let short = buffer_len <= self.attack + self.decay;
-//        if short {
-//            return self.past.gain
-//                + (index as f64 * (self.current.gain - self.past.gain) / buffer_len as f64);
-//        }
-//        if short {
-//            println!("short {:?}", self.asr);
-//        };
+    fn is_short(&self, buffer_len: usize) -> bool {
+        buffer_len <= self.attack + self.decay
+    }
+
+    fn calculate_attack(&self, distance: f64, attack_index: usize, attack_length: usize) -> f64 {
+        self.past.gain + (distance * attack_index as f64 / attack_length as f64)
+    }
+
+    fn calculate_decay(&self, distance: f64, decay_index: usize, decay_length: usize) -> f64 {
+        distance * decay_index as f64 / decay_length as f64
+    }
+
+    fn calculate_gain(&mut self, buffer_len: usize, index: usize) -> f64 {
+        let short = self.is_short(buffer_len);
+
         match self.asr {
             ASR::Silence => {
-//                  return index as f64 * (self.current.gain - self.past.gain) / buffer_len as f64
-//                self.phase = 0.0;
                 return 0.0;
             }
             ASR::AS => {
                 let len = if short { buffer_len } else { self.attack };
+                let distance = self.current.gain - self.past.gain;
                 if index <= len {
-                    return self.past.gain
-                        + (index as f64 * (self.current.gain - self.past.gain) / len as f64);
+                    return self.calculate_attack(distance, index, len)
                 } else {
                     return self.current.gain;
                 }
             }
             ASR::S => {
                 return self.past.gain
-                    + (index as f64 * (self.current.gain - self.past.gain) / buffer_len as f64);
+                    + ((self.current.gain - self.past.gain) * index as f64 / buffer_len as f64);
             }
             ASR::ASR => {
+                let mut attack_length = self.attack;
+                let mut decay_length = self.decay;
+
                 if short {
-                    return self.past.gain
-                        + (index as f64 * (self.current.gain - self.past.gain) / buffer_len as f64);
+                    attack_length = buffer_len / 2;
+                    decay_length = buffer_len / 2;
                 }
-                if index <= self.attack {
-                    return self.past.gain
-                        + (index as f64 * (self.current.gain - self.past.gain) / self.attack as f64);
-                } else if index > buffer_len - self.decay {
-                    let x = self.current.gain
-                        * ((buffer_len as f64 - (index as f64 + 1.0)) / self.decay as f64);
-                    return x;
+                if index <= attack_length {
+                    let distance = self.current.gain - self.past.gain;
+                    return self.calculate_attack(distance, index, attack_length)
+                } else if index > buffer_len - decay_length {
+                    let decay_index = buffer_len - (index + 1);
+                    self.calculate_decay(self.current.gain, decay_index, decay_length)
                 } else {
                     return self.current.gain;
                 }
             }
             ASR::R => {
                 if short {
-                    let y = buffer_len as f64 - (index as f64 + 1.0);
-                    let x = self.current.gain
-                        * y / (buffer_len as f64);
-                    return x;
+                    let decay_index = buffer_len - (index + 1);
+                    return self.calculate_decay(self.past.gain, decay_index, buffer_len)
                 };
-                let len = buffer_len - self.decay;
-                if index < len {
-                    let x = self.past.gain
-                        + ((self.current.gain - self.past.gain) * (index as f64 / len as f64));
-                    return x;
+
+                let sustain_index = buffer_len as f64 - self.decay as f64;
+                if (index as f64) < sustain_index {
+                    let distance = self.current.gain - self.past.gain;
+                    let result = self.past.gain + (distance * (sustain_index / index as f64));
+                    return result;
                 } else {
-                    let y = buffer_len as f64 - (index as f64 + 1.0);
-                    let x = self.current.gain
-                        * y / (self.decay as f64);
-                    return x;
-                }
+                    let decay_index = buffer_len - (index + 1);
+                    return self.calculate_decay(self.current.gain, decay_index, self.decay)
+                };
             }
-            //            _ => {
-            //                return index as f64 * (self.current.gain - self.past.gain) / buffer_len as f64
-            //            }
         }
     }
 }

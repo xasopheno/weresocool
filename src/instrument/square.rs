@@ -1,5 +1,6 @@
 use instrument::voice::{SampleInfo, Voice};
 use std::f64::consts::PI;
+
 fn tau() -> f64 {
     PI * 2.0
 }
@@ -7,7 +8,7 @@ fn tau() -> f64 {
 impl Voice {
     pub fn generate_square_sample(&mut self, info: SampleInfo) -> f64 {
         let frequency = if self.sound_to_silence() {
-            self.past.frequency
+            self.current.frequency
         } else if info.index < info.portamento_length
             && !self.silence_to_sound()
             && !self.sound_to_silence()
@@ -17,12 +18,16 @@ impl Voice {
             self.current.frequency
         };
 
-        let gain = info.g_delta + self.past.gain;
-        let current_phase = ((info.factor * frequency) + self.phase) % tau();
+        let mut current_phase = ((info.factor * frequency) + self.phase) % tau();
+
+        let gain = info.gain;
+        if gain == 0.0 {
+            current_phase = 0.0;
+        }
+
         self.phase = current_phase;
 
         let s = current_phase.sin();
-
         s.signum() * gain
     }
 }

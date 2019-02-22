@@ -26,7 +26,8 @@ pub struct CompositionHashes {
 }
 
 pub fn read_test_table_from_json_file() -> TestTable {
-    let file = File::open("src/testing/hashes.json").unwrap();
+    //    let file = File::open("src/testing/hashes.json").unwrap();
+    let file = File::open("src/testing/oscillator_hashes.json").unwrap();
 
     let mut decoded: TestTable = from_reader(&file).unwrap();
     decoded.sort_by(|a, _b, c, _d| a.partial_cmp(c).unwrap());
@@ -35,7 +36,8 @@ pub fn read_test_table_from_json_file() -> TestTable {
 
 pub fn generate_test_table() -> TestTable {
     let mut test_table: TestTable = IndexMap::new();
-    let paths = fs::read_dir("./songs/test").unwrap();
+    //    let paths = fs::read_dir("./songs/test").unwrap();
+    let paths = fs::read_dir("./songs/test/oscillator").unwrap();
     for path in paths {
         let p = path.unwrap().path().into_os_string().into_string().unwrap();
         if p.ends_with(".socool") {
@@ -50,7 +52,8 @@ pub fn generate_test_table() -> TestTable {
 
 pub fn write_test_table_to_json_file(test_table: &TestTable) {
     let pretty = to_string_pretty(test_table).unwrap();
-    let mut file = File::create("src/testing/hashes.json").unwrap();
+    //    let mut file = File::create("src/testing/hashes.json").unwrap();
+    let mut file = File::create("src/testing/oscillator_hashes.json").unwrap();
     file.write_all(pretty.as_bytes()).unwrap();
 }
 
