@@ -29,6 +29,11 @@
     "normal_form": 15225584443215611175,
     "stereo_waveform": 0.81949424446
   },
+  "./songs/test/fun_simple.socool": {
+    "op": 17420815921855191885,
+    "normal_form": 8110845020784474250,
+    "stereo_waveform": 0.01771635251
+  },
   "./songs/test/gain_test.socool": {
     "op": 16337117796564273071,
     "normal_form": 1133329437140376761,

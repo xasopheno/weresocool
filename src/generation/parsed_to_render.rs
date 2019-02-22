@@ -38,7 +38,7 @@ pub fn render(origin: &Origin, composition: &NormalForm, table: &OpOrNfTable) ->
 }
 
 pub fn render_mic(point_op: &PointOp, origin: Origin, osc: &mut Oscillator) -> StereoWaveform {
-    let result = point_op.clone().render(&origin, osc, false);
+    let result = point_op.clone().render(&origin, osc);
     result
 }
 
@@ -82,7 +82,7 @@ pub fn generate_waveforms(
         .map(|ref mut vec_point_op: &mut Vec<PointOp>| {
             pb.lock().unwrap().add(1 as u64);
             let mut osc = Oscillator::init(&default_settings());
-            vec_point_op.render(&origin, &mut osc, false)
+            vec_point_op.render(&origin, &mut osc)
         })
         .collect();
 
