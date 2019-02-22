@@ -14,6 +14,21 @@
     "normal_form": 11733452466990423779,
     "stereo_waveform": -0.20406305998
   },
+  "./songs/test/fun1.socool": {
+    "op": 7220383398181182918,
+    "normal_form": 2341497590670717061,
+    "stereo_waveform": 36.46929280654
+  },
+  "./songs/test/fun2.socool": {
+    "op": 12036710207361053202,
+    "normal_form": 14744824245296950919,
+    "stereo_waveform": 4.19968224146
+  },
+  "./songs/test/fun_and_focus.socool": {
+    "op": 6918209789728939595,
+    "normal_form": 15225584443215611175,
+    "stereo_waveform": 0.81949424446
+  },
   "./songs/test/gain_test.socool": {
     "op": 16337117796564273071,
     "normal_form": 1133329437140376761,
