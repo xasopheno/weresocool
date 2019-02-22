@@ -37,7 +37,6 @@ pub mod get_length_ratio {
 
                 Op::Id(id) => {
                     let op = handle_id_error(id.to_string(), table);
-                    //                    println!("{:?}", op);
                     op.get_length_ratio(table)
                 }
 
