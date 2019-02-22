@@ -1,5 +1,5 @@
 -- Tests that FitLength
--- works when nested inside
+-- when nested inside
 -- of other FitLength operations
 
 { f: 220, l: 2, g: 1, p: 0}
