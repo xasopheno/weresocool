@@ -1,14 +1,15 @@
 extern crate num_rational;
-use crate::ast::{OpOrNfTable, OscType};
+use crate::ast::{OpOrNf, OpOrNfTable, OscType};
 use num_rational::{Ratio, Rational64};
 use std::{
-    collections::BTreeSet,
+    collections::{BTreeSet, HashMap},
     ops::{Mul, MulAssign},
 };
 mod get_length_ratio;
 pub mod helpers;
 mod normalize;
 pub mod normalize_nf;
+mod substitute;
 
 #[derive(Debug, Clone, PartialEq, Hash)]
 pub struct NormalForm {
@@ -38,9 +39,31 @@ pub trait GetLengthRatio {
     fn get_length_ratio(&self, table: &OpOrNfTable) -> Rational64;
 }
 
+pub trait Substitute {
+    fn substitute(
+        &self,
+        normal_form: &mut NormalForm,
+        table: &OpOrNfTable,
+        arg_map: &ArgMap,
+    ) -> OpOrNf;
+}
+
 impl GetLengthRatio for NormalForm {
     fn get_length_ratio(&self, _table: &OpOrNfTable) -> Rational64 {
         self.length_ratio
+    }
+}
+
+pub type ArgMap = HashMap<String, OpOrNf>;
+
+impl Substitute for NormalForm {
+    fn substitute(
+        &self,
+        _normal_form: &mut NormalForm,
+        _table: &OpOrNfTable,
+        _arg_map: &ArgMap,
+    ) -> OpOrNf {
+        OpOrNf::Nf(self.clone())
     }
 }
 
@@ -85,10 +108,39 @@ impl Mul<NormalForm> for NormalForm {
     }
 }
 
+impl MulAssign<&NormalForm> for NormalForm {
+    fn mul_assign(&mut self, other: &NormalForm) {
+        let mut nf_result = vec![];
+        let mut max_lr = Rational64::new(0, 1);
+        for other_seq in self.operations.iter() {
+            for self_seq in other.operations.iter() {
+                for other_point_op in other_seq.iter() {
+                    let mut seq_result: Vec<PointOp> = vec![];
+                    let mut seq_lr = Rational64::new(0, 1);
+                    for self_point_op in self_seq.iter() {
+                        seq_lr += self_point_op.l * other_point_op.l;
+                        seq_result.push(other_point_op * self_point_op);
+                    }
+
+                    if seq_lr > max_lr {
+                        max_lr = seq_lr
+                    }
+
+                    nf_result.push(seq_result);
+                }
+            }
+        }
+
+        *self = NormalForm {
+            operations: nf_result,
+            length_ratio: max_lr,
+        }
+    }
+}
+
 impl Normalize for NormalForm {
     fn apply_to_normal_form(&self, input: &mut NormalForm, _table: &OpOrNfTable) {
-        let input_clone = input.clone();
-        *input = input_clone * self.clone()
+        *input *= self
     }
 }
 

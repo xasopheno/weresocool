@@ -1,29 +1,63 @@
 pub mod normalize {
     extern crate num_rational;
     extern crate rand;
-    use crate::ast::{Op, OpOrNf::*, OpOrNfTable, OscType};
-    use crate::operations::helpers::*;
-    use crate::operations::{GetLengthRatio, NormalForm, Normalize};
+    use crate::ast::{Op, OpOrNf, OpOrNf::*, OpOrNfTable, OscType};
+    use crate::operations::{
+        helpers::*, substitute::get_fn_arg_map, GetLengthRatio, NormalForm, Normalize, Substitute,
+    };
     use num_rational::Ratio;
-    //    use rand::prelude::*;
+    use rand::prelude::*;
 
     impl Normalize for Op {
         fn apply_to_normal_form(&self, input: &mut NormalForm, table: &OpOrNfTable) {
             match self {
-                Op::Id(id_vec) => {
-                    handle_id_error(id_vec.to_vec(), table).apply_to_normal_form(input, table);
+                Op::AsIs => {}
+
+                Op::Id(id) => {
+                    handle_id_error(id.to_string(), table).apply_to_normal_form(input, table);
+                }
+                //
+                Op::Fid(_) => {}
+                Op::FunctionDef {
+                    name: _,
+                    vars: _,
+                    op_or_nf: _,
+                } => {}
+                Op::FunctionCall { name, args } => {
+                    let f = handle_id_error(name.to_string(), table);
+                    let arg_map = get_fn_arg_map(f.clone(), args);
+
+                    match f {
+                        OpOrNf::Op(fun) => match fun {
+                            Op::FunctionDef {
+                                op_or_nf,
+                                name: _,
+                                vars: _,
+                            } => match *op_or_nf {
+                                OpOrNf::Op(op) => {
+                                    let result_op = op.substitute(input, table, &arg_map);
+                                    result_op.apply_to_normal_form(input, table)
+                                }
+                                OpOrNf::Nf(_) => {
+                                    panic!("Function stored in NormalForm");
+                                }
+                            },
+                            _ => panic!("Function Stored not FunctionDef"),
+                        },
+                        _ => {
+                            panic!("Function stored in NormalForm");
+                        }
+                    }
                 }
 
-                Op::Tag(name_vec) => {
-                    let name = name_vec.join(".").to_string();
+                Op::Tag(name) => {
+                    let name = name.to_string();
                     for seq in input.operations.iter_mut() {
                         for p_op in seq {
                             p_op.names.insert(name.clone());
                         }
                     }
                 }
-
-                Op::AsIs => {}
 
                 Op::FInvert => {
                     for voice in input.operations.iter_mut() {
@@ -129,13 +163,13 @@ pub mod normalize {
                     input.length_ratio = *m;
                 }
 
-                //                Op::Choice { operations } => {
-                //                    let choice = rand::thread_rng().choose(&operations).unwrap();
-                //                    choice.apply_to_normal_form(input, table)
-                //                }
+                Op::Choice { operations } => {
+                    let choice = rand::thread_rng().choose(&operations).unwrap();
+                    choice.apply_to_normal_form(input, table)
+                }
+
                 Op::Sequence { operations } => {
                     let mut result = NormalForm::init_empty();
-
                     for op in operations {
                         let mut input_clone = input.clone();
                         op.apply_to_normal_form(&mut input_clone, table);
@@ -165,6 +199,28 @@ pub mod normalize {
                     input.length_ratio = target_length;
                 }
 
+                Op::Focus {
+                    name,
+                    main,
+                    op_to_apply,
+                } => {
+                    main.apply_to_normal_form(input, table);
+                    let (named, rest) = input.clone().partition(name.to_string());
+
+                    let mut nf = NormalForm::init();
+                    op_to_apply.apply_to_normal_form(&mut nf, table);
+                    let named_applied = nf * named;
+
+                    let mut result = NormalForm::init();
+
+                    Op::Overlay {
+                        operations: vec![Nf(rest), Nf(named_applied)],
+                    }
+                    .apply_to_normal_form(&mut result, table);
+
+                    *input = result
+                }
+
                 Op::ModulateBy { operations } => {
                     let mut modulator = NormalForm::init_empty();
 
@@ -190,27 +246,6 @@ pub mod normalize {
                     }
 
                     result.length_ratio = input.length_ratio;
-                    *input = result
-                }
-
-                Op::Focus {
-                    name,
-                    main: _,
-                    op_to_apply,
-                } => {
-                    let id = name.join(".");
-                    let (named, rest) = input.partition(id.to_string());
-                    let mut nf = NormalForm::init();
-                    op_to_apply.apply_to_normal_form(&mut nf, table);
-                    let named_applied = nf * named;
-
-                    let mut result = NormalForm::init();
-
-                    Op::Overlay {
-                        operations: vec![Nf(named_applied), Nf(rest)],
-                    }
-                    .apply_to_normal_form(&mut result, table);
-
                     *input = result
                 }
 

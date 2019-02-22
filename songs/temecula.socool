@@ -18,6 +18,7 @@ brushes = {
 	| Noise
 	| Sequence [
 		Tm 1/2,
+		Silence 1,
 		AsIs, 
 		Tm 2,
 		Tm 1/2,
@@ -197,4 +198,3 @@ main = {
 		] | Repeat 2
 	]
 }
-	

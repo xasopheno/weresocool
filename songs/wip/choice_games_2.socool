@@ -1,0 +1,68 @@
+{ f: 220, l: 1, g: 1, p: 0}
+
+overtones = {
+    O[
+    	(5/2, 3, 1, 1),
+      	(3/2, 0, 1, -1),
+      	(1/1, 2, 1, 1/2),
+      	(1/1, 0, 1, -1/2),
+  	]
+}
+
+unit = { Length 8 }
+
+choice = {
+		Choice [
+			Gain 1/3 | overtones, 
+			Sequence [AsIs, Tm 9/8, Tm 5/4, Tm 3/2] | Length 1/4,
+			Sequence [Tm 2, Tm 3, Tm 4, Tm 3] | Gain 1/4 | Length 1/4,
+			Sequence [AsIs, Tm 3/2] | Length 1/2, Tm 3/2
+		]
+}
+
+thing1 = {
+	overtones |
+	Sequence [
+		Overlay [
+			Tm 3/2 | choice | Length 1/2 > LazyRepeat 8,
+			choice > LazyRepeat 8,
+			Tm 1/2 | choice | Repeat 2 > LazyRepeat 4 
+		]
+		> LazyRepeat 2
+		> FitLength unit
+	] | Sequence [AsIs, Overlay [AsIs, Ta 1/4] | PanM -1]
+}
+ 
+drums = { Choice[ AsIs, Tm 3/2, Tm 9/4 ] > LazyRepeat 4 }
+piano = { Sequence [AsIs, Tm 5/4, Choice[Tm 6/5, Tm 7/4]] }
+piece = { Overlay[ Length 1/3 | drums | Repeat 3, piano ] }
+wholePiece = { piece > LazyRepeat 5 }
+
+a = {
+	choice > LazyRepeat 2
+}
+
+b = {
+	choice	
+}
+
+c = {
+	( choice | Sequence [ AsIs, Tm 2 ] ) > LazyRepeat 2
+}
+
+d = {
+	( choice | Sequence [AsIs, Tm 2] | Repeat 2)
+}
+
+main = {
+	thing1 | Repeat 4
+	-- wholePiece
+	-- Sequence [
+		-- a,
+		-- b > LazyRepeat 2
+		-- c,
+		-- d,
+	-- ]
+	-- > LazyRepeat 4
+}
+	

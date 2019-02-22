@@ -2,7 +2,6 @@
 
 set -euo pipefail
 
-./format.sh
 echo "Formatted"
 pushd socool_ast; cargo test; popd
 pushd parser; cargo test; popd

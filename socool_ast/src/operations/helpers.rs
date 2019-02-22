@@ -6,22 +6,13 @@ use colored::*;
 use num_rational::{Ratio, Rational64};
 use std::cmp::Ordering::{Equal, Greater, Less};
 
-pub fn handle_id_error(id_vec: Vec<String>, table: &OpOrNfTable) -> OpOrNf {
-    let result = match id_vec.len() {
-        1 => table.get(&id_vec[0]),
-        2 => {
-            let mut name = id_vec[0].clone();
-            name.push('.');
-            name.push_str(&id_vec[1].clone());
-            table.get(&name)
-        }
-        _ => panic!("Only one dot allowed in imports."),
-    };
+pub fn handle_id_error(id: String, table: &OpOrNfTable) -> OpOrNf {
+    let result = table.get(&id);
 
     match result {
         Some(result) => result.clone(),
         None => {
-            let id = id_vec.join(".");
+            let id = id;
             println!("Not able to find {} in let table", id.red().bold());
             panic!("Id Not Found");
         }
@@ -122,6 +113,7 @@ pub fn join_sequence(mut l: NormalForm, mut r: NormalForm) -> NormalForm {
     }
 
     let mut result = NormalForm::init_empty();
+
     for (left, right) in l.operations.iter_mut().zip(r.operations.iter_mut()) {
         left.append(right);
 

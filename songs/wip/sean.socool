@@ -1,0 +1,104 @@
+{ f: 220, l: 1, g: 1, p: 0}
+
+overtones = {
+    O[
+    	(5/2, 11, 1, -1/2),
+    	(5/2, 0, 1, 1/2),
+    	(3/2, 11, 1, -1/2),
+    	(3/2, 0, 1, 1/2),
+    	(5/4, 3, 1, 1),
+      	(9/8, 0, 1, -1),
+      	(1/1, 2, 1, 1/2),
+      	(1/1, 0, 1, -1/2),
+  	]
+}
+
+thing1 = {
+	overtones |
+	Seq [
+		AsIs,
+		Tm 5/4,
+		Tm 3/2, 
+		Silence 1,
+	] 
+	| Length 0.25	
+}
+
+thing2 = {
+	Seq [
+		AsIs | Tm 9/8, 
+		Tm 3/2, 
+	]
+}
+
+thing2(a) = {
+	Seq [
+		$a | Tm 9/8, 
+		Tm 3/2, 
+	]
+}
+
+
+thing3 = {
+	thing1 
+	| Overlay [
+		thing2(
+		Seq[Gain 1/4, Tm 5/4]
+		),
+		thing2(
+		Seq[Gain 1/4, Tm 3/2, Tm 6/5]
+		) 
+		| Gain 1/20 
+		| Tm 3/1 
+		| PanM -1 
+		| Length 2/3 
+		| Reverse 
+		| Overlay [AsIs, Tm 11/8]
+	] 
+	| Seq [
+		AsIs, 
+		Reverse, 
+	] 
+	| Length 1/4
+}
+
+thing4 = {
+	thing3 | Seq [AsIs, Tm 7/8, Tm 4/5]
+}
+
+bass = {
+	Seq [
+		AsIs, 
+		Tm 3/2,
+		Tm 7/8,
+		Tm 4/3, 
+		Tm 9/8
+	] 
+	| Tm 1/2
+	| Seq [AsIs, Tm 7/8, Tm 4/5, Tm 4/3]
+	> FitLength thing4
+}
+
+main = {
+	Overlay [
+		thing4 | Overlay [AsIs, Reverse], 
+		bass | Overlay [AsIs, Reverse]
+	]
+	| ModulateBy [
+		AsIs, 
+		Overlay [AsIs, Tm 3/2, Ta 5], 
+		Overlay [AsIs, Tm 3/2, Ta 11, Ta 3/2 | Ta 11], 
+	]
+	| Seq [
+		AsIs, 
+		Overlay [Tm 9/8, Tm 9/8 | Ta 3], 
+		Overlay [Tm 5/4, Tm 9/8, Tm 15/8]
+	]	
+	| Repeat 2
+}
+	
+
+
+
+
+

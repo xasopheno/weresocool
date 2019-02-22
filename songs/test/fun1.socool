@@ -1,0 +1,49 @@
+{ f: 200, l: 1.0, g: 1.0, p: 0.0 }
+
+f(a, b, c) = {
+    Sequence [
+        Tm 1/2,
+        $a, 
+        $b,
+        $b | Tm 4/3,
+        Tm 3/4,
+        $a | Tm 3/2, 
+        $a | Reverse, 
+        Tm 1/2,
+        $b | Tm 3/2,
+        $c,
+        Tm 3/4,
+    ] 
+}
+
+main = {
+    Sequence [
+        f(
+            Sequence [AsIs, Tm 9/8 | Overlay [AsIs, Tm 2], Tm 5/4],
+            Sequence [Tm 4/3, Tm 3/4, Tm 5/3 | Overlay [AsIs, Tm 2]],
+            Gain 1/4 | Sequence [Tm 1, Tm 2, Tm 3, Tm 4, Tm 5, Tm 6] | Length 1/3 | Sequence [AsIs, Reverse]
+        ),
+        f(
+            Sequence [Tm 15/8 | Overlay [AsIs, Tm 2], Tm 9/4, Tm 5/2],
+            Sequence [Tm 3/2, Tm 1/1 | Overlay [AsIs, Tm 3], Tm 7/8],
+            Tm 9/8 | Gain 1/4 | Sequence [Tm 1, Tm 2, Tm 3, Tm 4, Tm 5, Tm 6] | Length 1/3 | Sequence [AsIs, Reverse],
+        ),
+    ]  
+    | Repeat 2
+    | Length 1/8
+    | Sequence [
+        AsIs,
+        O[
+          (3/2, 7.0, 1/3, 1),
+          (4/3, 0.0, 1/3, -1),
+          (1, 0.0, 1.0, 0.0),
+        ],
+        O[
+          (5/2, 11.0, 1/5, 1),
+          (9/4, -9.0, 1/5, -1),
+          (3/2, 7.0, 1/3, 1),
+          (4/3, 0.0, 1/3, -1),
+          (1, 0.0, 1.0, 0.0),
+        ]
+    ]
+}

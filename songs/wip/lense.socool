@@ -8,16 +8,13 @@ overtones = {
     ]
 }
 
-
-
 huhu = {
     Sequence [
-        Tm 3/2 | Tag(foo),
+        Tm 3/2 | #foo,
         AsIs, 
-        Tm 4/3 | Tag(foo),
+        Tm 4/3 | #foo,
         Tm 2
     ]
-  
 }
 
 mess = {
@@ -30,12 +27,9 @@ mess = {
         ]
         | Sequence [
             AsIs,
-            AsIs 
-            > @foo | Tm 9/8 | PanA 1/2,
-            AsIs 
-            > @foo | Tm 5/4 | PanA -1/2,
-            AsIs 
-            > @foo | Overlay [AsIs, Tm 3/2]
+            AsIs > @foo | Tm 9/8 | PanA 1/2,
+            AsIs > @foo | Tm 5/4 | PanA -1/2,
+            AsIs > @foo | Overlay [AsIs, Tm 3/2]
         ]
         | Sequence [
             AsIs, 
@@ -72,8 +66,8 @@ bass = {
                 (2, 3, 1/2, 0),
                 (1, 0, 1, 0)
             ]
-                | Length 1/80 
-                | Gain 1/2,
+            | Length 1/80 
+            | Gain 1/2,
             Silence 1/10
         ],
         AsIs, 

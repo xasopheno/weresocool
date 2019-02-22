@@ -50,15 +50,21 @@ impl Normalize for StereoWaveform {
             }
         }
 
-        let normalization_ratio = 1.0 / max * 0.85;
-
-        for sample in self.l_buffer.iter_mut() {
-            *sample *= normalization_ratio
+        let mut normalization_ratio = 1.0 / max;
+        if normalization_ratio > 1.0 {
+            normalization_ratio = 1.0
         }
 
-        for sample in self.r_buffer.iter_mut() {
-            *sample *= normalization_ratio
+        println!("Normalized by {:?}", normalization_ratio);
+
+        if normalization_ratio < 1.0 {
+            for sample in self.l_buffer.iter_mut() {
+                *sample *= normalization_ratio
+            }
+
+            for sample in self.r_buffer.iter_mut() {
+                *sample *= normalization_ratio
+            }
         }
-        //        println!("Normalized by {}", normalization_ratio);
     }
 }

@@ -38,8 +38,10 @@ pub fn generate_test_table() -> TestTable {
     let paths = fs::read_dir("./songs/test").unwrap();
     for path in paths {
         let p = path.unwrap().path().into_os_string().into_string().unwrap();
-        let composition_hashes = generate_render_hashes(&p);
-        test_table.insert(p, composition_hashes);
+        if p.ends_with(".socool") {
+            let composition_hashes = generate_render_hashes(&p);
+            test_table.insert(p, composition_hashes);
+        }
     }
 
     test_table.sort_by(|a, _b, c, _d| a.partial_cmp(c).unwrap());

@@ -32,19 +32,19 @@ pub mod normalize_tests {
                 Op(TransposeM {
                     m: Rational64::new(5, 4),
                 }),
-                Op(Tag(vec!["foo".to_string()])),
+                Op(Tag("foo".to_string())),
             ],
         });
 
         let bar = Op(Compose {
             operations: vec![
-                Op(Tag(vec!["bar".to_string()])),
+                Op(Tag("bar".to_string())),
                 Op(Sequence {
                     operations: vec![
                         Op(TransposeM {
                             m: Rational64::new(3, 2),
                         }),
-                        Op(Id(vec!["foo".to_string()])),
+                        Op(Id("foo".to_string())),
                         Op(Length {
                             m: Rational64::new(2, 1),
                         }),
