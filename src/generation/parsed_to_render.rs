@@ -28,7 +28,6 @@ pub fn render(origin: &Origin, composition: &NormalForm, table: &OpOrNfTable) ->
 
     println!("\nGenerating Composition ");
     composition.apply_to_normal_form(&mut normal_form, table);
-    //    println!("{:#?}", normal_form);
 
     let vec_wav = generate_waveforms(&origin, normal_form.operations, true);
     let mut result = sum_all_waveforms(vec_wav);
