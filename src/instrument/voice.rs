@@ -66,7 +66,7 @@ impl Voice {
         portamento_length: usize,
         factor: f64,
     ) {
-//        println!("{:?}", self);
+        //        println!("{:?}", self);
         let p_delta = self.calculate_portamento_delta(portamento_length);
 
         let buffer_len = buffer.len();
@@ -95,9 +95,9 @@ impl Voice {
         }
 
         let mut gain = if frequency != 0.0 { gain } else { 0.0 };
-//        if osc_type != OscType::Sine {
-//            gain /= 3.0
-//        }
+        //        if osc_type != OscType::Sine {
+        //            gain /= 3.0
+        //        }
         let loudness = loudness_normalization(frequency);
         gain *= loudness;
 
@@ -113,7 +113,7 @@ impl Voice {
         self.current.gain = gain;
 
         self.set_asr(silence_next);
-//        println!("{:?}", self.asr);
+        //        println!("{:?}", self.asr);
     }
 
     fn set_asr(&mut self, silence_next: bool) {
@@ -178,7 +178,7 @@ impl Voice {
                 let len = if short { buffer_len } else { self.attack };
                 let distance = self.current.gain - self.past.gain;
                 if index <= len {
-                    return self.calculate_attack(distance, index, len)
+                    return self.calculate_attack(distance, index, len);
                 } else {
                     return self.current.gain;
                 }
@@ -197,7 +197,7 @@ impl Voice {
                 }
                 if index <= attack_length {
                     let distance = self.current.gain - self.past.gain;
-                    return self.calculate_attack(distance, index, attack_length)
+                    return self.calculate_attack(distance, index, attack_length);
                 } else if index > buffer_len - decay_length {
                     let decay_index = buffer_len - (index + 1);
                     self.calculate_decay(self.current.gain, decay_index, decay_length)
@@ -208,7 +208,7 @@ impl Voice {
             ASR::R => {
                 if short {
                     let decay_index = buffer_len - (index + 1);
-                    return self.calculate_decay(self.past.gain, decay_index, buffer_len)
+                    return self.calculate_decay(self.past.gain, decay_index, buffer_len);
                 };
 
                 let len = buffer_len - self.decay;
@@ -218,7 +218,7 @@ impl Voice {
                     return result;
                 } else {
                     let decay_index = buffer_len - (index + 1);
-                    return self.calculate_decay(self.current.gain, decay_index, self.decay)
+                    return self.calculate_decay(self.current.gain, decay_index, self.decay);
                 };
             }
         }

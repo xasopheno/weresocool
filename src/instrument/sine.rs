@@ -8,9 +8,9 @@ fn tau() -> f64 {
 impl Voice {
     pub fn generate_sine_sample(&mut self, info: SampleInfo) -> f64 {
         let frequency = if info.index < info.portamento_length
-//            || self.asr == ASR::S
-//            && !self.silence_to_sound()
-//            && !self.sound_to_silence()
+        //            || self.asr == ASR::S
+        //            && !self.silence_to_sound()
+        //            && !self.sound_to_silence()
         {
             self.past.frequency + (info.index as f64 * info.p_delta)
         } else {

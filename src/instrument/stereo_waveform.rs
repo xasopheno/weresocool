@@ -58,7 +58,6 @@ impl Normalize for StereoWaveform {
 
         println!("Normalized by {:?}", normalization_ratio);
         if normalization_ratio < 1.0 {
-
             for sample in self.l_buffer.iter_mut() {
                 *sample *= normalization_ratio
             }

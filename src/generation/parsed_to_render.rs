@@ -82,7 +82,7 @@ pub fn generate_waveforms(
         .map(|ref mut vec_point_op: &mut Vec<PointOp>| {
             pb.lock().unwrap().add(1 as u64);
             let mut osc = Oscillator::init(&default_settings());
-            vec_point_op.render(&origin, &mut osc,)
+            vec_point_op.render(&origin, &mut osc)
         })
         .collect();
 

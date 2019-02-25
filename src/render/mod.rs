@@ -9,11 +9,7 @@ use num_rational::Rational64;
 use socool_ast::operations::PointOp;
 
 pub trait Render<T> {
-    fn render(
-        &mut self,
-        origin: &Origin,
-        oscillator: &mut Oscillator,
-    ) -> StereoWaveform;
+    fn render(&mut self, origin: &Origin, oscillator: &mut Oscillator) -> StereoWaveform;
 }
 
 pub trait RenderPointOp<T> {
@@ -40,11 +36,7 @@ impl RenderPointOp<PointOp> for PointOp {
 }
 
 impl Render<Vec<PointOp>> for Vec<PointOp> {
-    fn render(
-        &mut self,
-        origin: &Origin,
-        oscillator: &mut Oscillator,
-    ) -> StereoWaveform {
+    fn render(&mut self, origin: &Origin, oscillator: &mut Oscillator) -> StereoWaveform {
         let mut result: StereoWaveform = StereoWaveform::new(0);
         let mut p_ops = self.clone();
         p_ops.push(PointOp::init_silent());
@@ -55,7 +47,7 @@ impl Render<Vec<PointOp>> for Vec<PointOp> {
             let mut next_op = None;
             let peek = iter.peek();
             match peek {
-                Some(p) => { next_op = Some(p.clone().clone()) },
+                Some(p) => next_op = Some(p.clone().clone()),
                 None => {}
             };
 
