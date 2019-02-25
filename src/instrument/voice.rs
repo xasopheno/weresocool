@@ -55,8 +55,8 @@ impl Voice {
             current: VoiceState::init(),
             phase: 0.0,
             osc_type: OscType::Sine,
-            attack: 10000,
-            decay: 10000,
+            attack: 30000,
+            decay: 30000,
             asr: ASR::Silence,
         }
     }
@@ -66,7 +66,7 @@ impl Voice {
         portamento_length: usize,
         factor: f64,
     ) {
-//        println!("{:?}", self);
+        println!("{:?}", self);
         let p_delta = self.calculate_portamento_delta(portamento_length);
 
         let buffer_len = buffer.len();
@@ -113,7 +113,7 @@ impl Voice {
         self.current.gain = gain;
 
         self.set_asr(silence_next);
-//        println!("{:?}", self.asr);
+        println!("{:?}", self.asr);
     }
 
     fn set_asr(&mut self, silence_next: bool) {

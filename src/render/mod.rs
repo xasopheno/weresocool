@@ -13,18 +13,26 @@ pub trait Render<T> {
         &mut self,
         origin: &Origin,
         oscillator: &mut Oscillator,
-        silence_next: bool,
     ) -> StereoWaveform;
 }
 
-impl Render<PointOp> for PointOp {
+pub trait RenderPointOp<T> {
     fn render(
         &mut self,
         origin: &Origin,
         oscillator: &mut Oscillator,
-        silence_next: bool,
+        next_op: Option<PointOp>,
+    ) -> StereoWaveform;
+}
+
+impl RenderPointOp<PointOp> for PointOp {
+    fn render(
+        &mut self,
+        origin: &Origin,
+        oscillator: &mut Oscillator,
+        next_op: Option<PointOp>,
     ) -> StereoWaveform {
-        oscillator.update(origin.clone(), self, silence_next);
+        oscillator.update(origin.clone(), self, next_op);
         let n_samples_to_generate = r_to_f64(self.l) * origin.l * 44_100.0;
 
         oscillator.generate(n_samples_to_generate)
@@ -36,7 +44,6 @@ impl Render<Vec<PointOp>> for Vec<PointOp> {
         &mut self,
         origin: &Origin,
         oscillator: &mut Oscillator,
-        _silence_next: bool,
     ) -> StereoWaveform {
         let mut result: StereoWaveform = StereoWaveform::new(0);
         let mut p_ops = self.clone();
@@ -45,19 +52,14 @@ impl Render<Vec<PointOp>> for Vec<PointOp> {
         let mut iter = p_ops.iter().peekable();
 
         while let Some(p_op) = iter.next() {
-            let pk = iter.peek();
-            let silence_next = match pk {
-                Some(p) => {
-                    if p.g == Rational64::new(0, 1) || p.fm == Rational64::new(0, 1) {
-                        true
-                    } else {
-                        false
-                    }
-                }
-                None => true,
+            let mut next_op = None;
+            let peek = iter.peek();
+            match peek {
+                Some(p) => { next_op = Some(p.clone().clone()) },
+                None => {}
             };
 
-            let stereo_waveform = p_op.clone().render(origin, oscillator, silence_next);
+            let stereo_waveform = p_op.clone().render(origin, oscillator, next_op);
             result.append(stereo_waveform);
         }
 
