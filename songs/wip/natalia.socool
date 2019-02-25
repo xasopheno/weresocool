@@ -1,8 +1,6 @@
-{ f: 200, l: 1.1, g: 1, p: 0}
+{ f: 200, l: 1.2, g: 1, p: 0}
 
 unit = { Length 10 }
--- unit = { Length 3 }
-
 
 highs = {
 	Gain 1/4	
@@ -129,7 +127,7 @@ main = {
 				Tm 7/8 
 				> @drop(
 					Overlay [
-						Tm 8/7, 
+						Tm 8/7,
 						Tm 8/7 | Tm 3/2 | PanA -1/3, 
 						Tm 8/7 | Tm 5/2 | PanA 1/3
 					]
@@ -144,6 +142,5 @@ main = {
 		]
 		| Repeat 2
 	] 
-	| Repeat 2 
+	| Repeat 2
 }
-	

@@ -13,6 +13,32 @@
     "op": 7777850140314174775,
     "normal_form": 11733452466990423779,
     "stereo_waveform": -0.20406305998
+    "stereo_waveform": 2.79708371473
+  },
+  "./songs/test/fit_length_ratio.socool": {
+    "op": 7777850140314174775,
+    "normal_form": 11733452466990423779,
+    "stereo_waveform": -0.20406305998
+  },
+  "./songs/test/fun1.socool": {
+    "op": 7220383398181182918,
+    "normal_form": 2341497590670717061,
+    "stereo_waveform": 36.46929280654
+  },
+  "./songs/test/fun2.socool": {
+    "op": 12036710207361053202,
+    "normal_form": 14744824245296950919,
+    "stereo_waveform": 4.19968224146
+  },
+  "./songs/test/fun_and_focus.socool": {
+    "op": 6918209789728939595,
+    "normal_form": 15225584443215611175,
+    "stereo_waveform": 0.81949424446
+  },
+  "./songs/test/fun_simple.socool": {
+    "op": 17420815921855191885,
+    "normal_form": 8110845020784474250,
+    "stereo_waveform": 0.01771635251
   },
   "./songs/test/gain_test.socool": {
     "op": 16337117796564273071,

@@ -1,4 +1,5 @@
 -- Tests that FitLength
+-- when nested inside
 -- works when nested inside
 -- of other FitLength operations
 
@@ -67,4 +68,3 @@ main = {
 		bug
 	]
 }
-	
