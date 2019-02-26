@@ -1,0 +1,31 @@
+{ f: 80, l: 1, g: 1, p: 0}
+
+-- overtones = {
+--     O[
+--     	(5/4, 3, 1, 1),
+--       	(9/8, 0, 1, -1),
+--       	(1/1, 2, 1, 1/2),
+--       	(1/1, 0, 1, -1/2),
+--   	]
+-- }
+
+unit = { Length 3 }
+
+thing1 = {
+	Sequence [
+		AsIs ,
+		Tm 3/2,
+		Tm 9/4,	
+		Tm 3, 
+	] 
+	| Seq [AsIs, Tm 3/2 | Reverse]
+	| Seq [AsIs, Tm 9/8]
+	
+	> FitLength unit
+}
+
+
+main = {
+	thing1
+}
+	
