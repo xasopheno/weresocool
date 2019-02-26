@@ -74,7 +74,8 @@ impl Voice {
             let info = SampleInfo {
                 index,
                 p_delta,
-                gain: self.calculate_adr_gain(buffer_len, index),
+                gain: self.calculate_asr_gain(buffer_len, index),
+//                gain: self.calculate_auto_gain(buffer_len, index),
                 portamento_length,
                 factor,
             };
@@ -94,9 +95,9 @@ impl Voice {
         }
 
         let mut gain = if frequency != 0.0 { gain } else { 0.0 };
-        //        if osc_type != OscType::Sine {
-        //            gain /= 3.0
-        //        }
+        if osc_type != OscType::Sine {
+            gain /= 3.0
+        }
         let loudness = loudness_normalization(frequency);
         gain *= loudness;
 

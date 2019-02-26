@@ -1,4 +1,4 @@
-mod asd;
+mod asr;
 mod loudness;
 mod noise;
 pub mod oscillator;
