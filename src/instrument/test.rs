@@ -39,7 +39,7 @@ pub mod tests {
             let index = 1;
             let mut voice = Voice::init(index);
             voice.update(200.0, 1.0, OscType::Sine);
-            let g_delta = voice.calculate_gain(10);
+            let g_delta = voice.calculate_adr_gain(10);
             let p_delta = voice.calculate_portamento_delta(10);
 
             assert_eq!(g_delta, 0.06588125800126557);
