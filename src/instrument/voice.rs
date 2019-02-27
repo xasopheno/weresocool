@@ -1,5 +1,8 @@
 extern crate socool_ast;
-use instrument::loudness::loudness_normalization;
+use instrument::{
+    asr::ASR,
+    loudness::loudness_normalization
+};
 use socool_ast::ast::OscType;
 
 #[derive(Clone, Debug, PartialEq)]
@@ -14,14 +17,6 @@ pub struct Voice {
     pub asr: ASR,
 }
 
-#[derive(Clone, Debug, PartialEq)]
-pub enum ASR {
-    ASR,
-    AS,
-    S,
-    R,
-    Silence,
-}
 
 #[derive(Clone, Debug, PartialEq)]
 pub struct SampleInfo {
@@ -74,8 +69,8 @@ impl Voice {
             let info = SampleInfo {
                 index,
                 p_delta,
-                gain: self.calculate_asr_gain(buffer_len, index),
-//                gain: self.calculate_auto_gain(buffer_len, index),
+//                gain: self.calculate_asr_gain(buffer_len, index),
+                gain: self.calculate_auto_gain(buffer_len, index),
                 portamento_length,
                 factor,
             };

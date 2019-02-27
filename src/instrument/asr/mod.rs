@@ -1,6 +1,16 @@
 extern crate socool_ast;
-use instrument::voice::{Voice, VoiceState, ASR};
+use instrument::voice::{Voice, VoiceState};
 use socool_ast::ast::OscType;
+
+#[derive(Clone, Debug, PartialEq)]
+pub enum ASR {
+    ASR,
+    AS,
+    S,
+    SR,
+//    R,
+    Silence,
+}
 
 impl Voice {
     pub fn set_asr(&mut self, silence_next: bool) {
@@ -8,7 +18,7 @@ impl Voice {
             self.asr = ASR::Silence;
         } else {
             match self.asr {
-                ASR::Silence | ASR::ASR | ASR::R => {
+                ASR::Silence | ASR::ASR | ASR::SR => {
                     if silence_next {
                         self.asr = ASR::ASR;
                     } else {
@@ -17,7 +27,7 @@ impl Voice {
                 }
                 _ => {
                     if silence_next {
-                        self.asr = ASR::R;
+                        self.asr = ASR::SR;
                     } else {
                         self.asr = ASR::S;
                     }
@@ -68,7 +78,7 @@ impl Voice {
                     return self.current.gain;
                 }
             }
-            ASR::R => {
+            ASR::SR => {
                 if short {
                     let decay_index = buffer_len - (index + 1);
                     return self.calculate_decay(self.past.gain, decay_index, buffer_len);
