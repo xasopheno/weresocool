@@ -18,22 +18,14 @@ pub mod normalize {
                 }
                 //
                 Op::Fid(_) => {}
-                Op::FunctionDef {
-                    name: _,
-                    vars: _,
-                    op_or_nf: _,
-                } => {}
+                Op::FunctionDef { .. } => {}
                 Op::FunctionCall { name, args } => {
                     let f = handle_id_error(name.to_string(), table);
                     let arg_map = get_fn_arg_map(f.clone(), args);
 
                     match f {
                         OpOrNf::Op(fun) => match fun {
-                            Op::FunctionDef {
-                                op_or_nf,
-                                name: _,
-                                vars: _,
-                            } => match *op_or_nf {
+                            Op::FunctionDef { op_or_nf, .. } => match *op_or_nf {
                                 OpOrNf::Op(op) => {
                                     let result_op = op.substitute(input, table, &arg_map);
                                     result_op.apply_to_normal_form(input, table)
@@ -156,7 +148,7 @@ pub mod normalize {
                             point_op.fm = Ratio::new(0, 1);
                             point_op.fa = Ratio::new(0, 1);
                             point_op.g = Ratio::new(0, 1);
-                            point_op.l = point_op.l * m;
+                            point_op.l *= m;
                         }
                     }
 

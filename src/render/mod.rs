@@ -5,7 +5,6 @@ use instrument::{
     oscillator::{Origin, Oscillator},
     stereo_waveform::StereoWaveform,
 };
-use num_rational::Rational64;
 use socool_ast::operations::PointOp;
 
 pub trait Render<T> {

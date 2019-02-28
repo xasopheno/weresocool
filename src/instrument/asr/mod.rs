@@ -1,6 +1,5 @@
 extern crate socool_ast;
-use instrument::voice::{Voice, VoiceState};
-use socool_ast::ast::OscType;
+use instrument::voice::Voice;
 
 #[derive(Clone, Debug, PartialEq)]
 pub enum ASR {
@@ -8,7 +7,7 @@ pub enum ASR {
     AS,
     S,
     SR,
-//    R,
+    //    R,
     Silence,
 }
 
@@ -37,7 +36,8 @@ impl Voice {
     }
 
     pub fn calculate_lazy_gain(&self, fade_length: usize, index: usize) -> f64 {
-        self.past.gain + (self.current.gain - self.past.gain) * (index as f64) / (fade_length as f64)
+        self.past.gain
+            + (self.current.gain - self.past.gain) * (index as f64) / (fade_length as f64)
     }
 
     pub fn calculate_asr_gain(&mut self, buffer_len: usize, index: usize) -> f64 {

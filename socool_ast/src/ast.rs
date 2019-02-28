@@ -131,9 +131,7 @@ pub fn is_choice_op(op_or_nf: OpOrNf, table: &OpOrNfTable) -> bool {
             Op::WithLengthRatioOf { .. } => false,
 
             Op::Focus {
-                op_to_apply,
-                main,
-                name: _,
+                op_to_apply, main, ..
             } => is_choice_op(*op_to_apply, table) | is_choice_op(*main, table),
 
             Op::Sequence { operations }

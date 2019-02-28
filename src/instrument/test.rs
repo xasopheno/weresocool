@@ -2,11 +2,11 @@ pub mod tests {
     extern crate num_rational;
     extern crate socool_ast;
     use instrument::{
+        asr::ASR,
         loudness::loudness_normalization,
         oscillator::{Origin, Oscillator},
         stereo_waveform::StereoWaveform,
         voice::{Voice, VoiceState},
-        asr::ASR
     };
     use num_rational::Rational64;
     use settings::get_test_settings;
@@ -31,8 +31,8 @@ pub mod tests {
                 phase: 0.0,
                 osc_type: OscType::Sine,
                 asr: ASR::Silence,
-                attack: 20000,
-                decay: 20000
+                attack: 4000,
+                decay: 4000,
             };
 
             assert_eq!(voice, result);
@@ -98,7 +98,7 @@ pub mod tests {
                         osc_type: OscType::Sine,
                         asr: ASR::Silence,
                         attack: 4000,
-                        decay: 4000
+                        decay: 4000,
                     },
                     Voice {
                         index: 1,
@@ -114,7 +114,7 @@ pub mod tests {
                         osc_type: OscType::Sine,
                         asr: ASR::Silence,
                         attack: 4000,
-                        decay: 4000
+                        decay: 4000,
                     },
                 ),
             };

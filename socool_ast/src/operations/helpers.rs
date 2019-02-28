@@ -20,8 +20,8 @@ pub fn handle_id_error(id: String, table: &OpOrNfTable) -> OpOrNf {
 }
 
 pub fn modulate(input: &Vec<PointOp>, modulator: &Vec<PointOp>) -> Vec<PointOp> {
-    let mut m = modulator.clone();
-    let mut i = input.clone();
+    let mut m = modulator.to_owned();
+    let mut i = input.to_owned();
     let mut result = vec![];
     while m.len() > 0 && i.len() > 0 {
         let mut inpu = i[0].clone();
@@ -75,7 +75,7 @@ pub fn pad_length(input: &mut NormalForm, max_len: Rational64, table: &OpOrNfTab
 }
 
 pub fn join_sequence(mut l: NormalForm, mut r: NormalForm) -> NormalForm {
-    if l.operations.len() == 0 {
+    if l.operations.is_empty() {
         return r;
     }
 

@@ -27,7 +27,7 @@ pub struct CompositionHashes {
 
 pub fn read_test_table_from_json_file() -> TestTable {
     //    let file = File::open("src/testing/hashes.json").unwrap();
-    let file = File::open("src/testing/oscillator_hashes.json").unwrap();
+    let file = File::open("src/testing/hashes.json").unwrap();
 
     let mut decoded: TestTable = from_reader(&file).unwrap();
     decoded.sort_by(|a, _b, c, _d| a.partial_cmp(c).unwrap());

@@ -1,16 +1,11 @@
 extern crate rand;
+use instrument::voice::{SampleInfo, Voice};
 use rand::Rng;
-use instrument::{
-    asr::ASR,
-    voice::{SampleInfo, Voice}
-};
 use std::f64::consts::PI;
-use instrument::asr::ASR::Silence;
 
 fn tau() -> f64 {
     PI * 2.0
 }
-
 
 impl Voice {
     pub fn generate_sine_sample(&mut self, info: SampleInfo) -> f64 {
@@ -36,12 +31,9 @@ impl Voice {
     }
 
     pub fn calculate_current_phase(&mut self, info: &SampleInfo, rand: f64) {
-        let frequency = if
-            self.sound_to_silence()
-        {
+        let frequency = if self.sound_to_silence() {
             self.past.frequency
-        } else if
-            info.index < info.portamento_length
+        } else if info.index < info.portamento_length
             && !self.silence_to_sound()
             && !self.sound_to_silence()
         {
@@ -50,16 +42,13 @@ impl Voice {
             self.current.frequency
         };
 
-
         let gain = info.gain;
-        let current_phase =
-            if gain == 0.0 {
-                0.0
-            } else {
-                ((info.factor * frequency) + self.phase + rand) % tau()
+        let current_phase = if gain == 0.0 {
+            0.0
+        } else {
+            ((info.factor * frequency) + self.phase + rand) % tau()
         };
 
         self.phase = current_phase;
     }
 }
-

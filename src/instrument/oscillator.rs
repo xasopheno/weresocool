@@ -1,10 +1,7 @@
 extern crate num_rational;
 extern crate socool_ast;
 use generation::parsed_to_render::r_to_f64;
-use instrument::{
-    asr::ASR,
-    stereo_waveform::StereoWaveform, voice::Voice
-};
+use instrument::{stereo_waveform::StereoWaveform, voice::Voice};
 use settings::Settings;
 use socool_ast::operations::PointOp;
 use std::f64::consts::PI;
