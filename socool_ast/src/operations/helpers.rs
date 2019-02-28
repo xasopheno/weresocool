@@ -19,7 +19,7 @@ pub fn handle_id_error(id: String, table: &OpOrNfTable) -> OpOrNf {
     }
 }
 
-pub fn modulate(input: &Vec<PointOp>, modulator: &Vec<PointOp>) -> Vec<PointOp> {
+pub fn modulate(input: &[PointOp], modulator: &[PointOp]) -> Vec<PointOp> {
     let mut m = modulator.to_owned();
     let mut i = input.to_owned();
     let mut result = vec![];
