@@ -65,8 +65,8 @@ impl Voice {
             let info = SampleInfo {
                 index,
                 p_delta,
-                //                gain: self.calculate_asr_gain(buffer_len, index),
-                gain: self.calculate_lazy_gain(buffer_len, index),
+                gain: self.calculate_asr_gain(buffer_len, index),
+//              gain: self.calculate_lazy_gain(buffer_len, index),
                 portamento_length,
                 factor,
             };

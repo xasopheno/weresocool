@@ -7,7 +7,7 @@ pub enum ASR {
     AS,
     S,
     SR,
-    //    R,
+    R,
     Silence,
 }
 
@@ -16,17 +16,27 @@ impl Voice {
         if self.silent() {
             self.asr = ASR::Silence;
         } else {
+            let long = false;
             match self.asr {
-                ASR::Silence | ASR::ASR | ASR::SR => {
-                    if silence_next {
+                ASR::Silence | ASR::ASR | ASR::SR | ASR::R => {
+                    if silence_next && !long {
                         self.asr = ASR::ASR;
                     } else {
                         self.asr = ASR::AS;
                     }
                 }
+
+                ASR::AS => {
+                    if silence_next && !long {
+                        self.asr = ASR::SR
+                    } else {
+                        self.asr = ASR::S
+                    }
+                }
+
                 _ => {
                     if silence_next {
-                        self.asr = ASR::SR;
+                        self.asr = ASR::SR
                     } else {
                         self.asr = ASR::S;
                     }
@@ -93,7 +103,9 @@ impl Voice {
                     let decay_index = buffer_len - (index + 1);
                     return self.calculate_decay(self.current.gain, decay_index, self.decay);
                 };
-            }
+            },
+
+            ASR::R => self.calculate_lazy_gain(buffer_len, index)
         }
     }
 }
