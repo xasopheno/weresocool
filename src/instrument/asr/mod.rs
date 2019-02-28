@@ -36,7 +36,7 @@ impl Voice {
         }
     }
 
-    pub fn calculate_auto_gain(&self, fade_length: usize, index: usize) -> f64 {
+    pub fn calculate_lazy_gain(&self, fade_length: usize, index: usize) -> f64 {
         self.past.gain + (self.current.gain - self.past.gain) * (index as f64) / (fade_length as f64)
     }
 

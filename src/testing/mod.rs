@@ -37,10 +37,11 @@ pub fn read_test_table_from_json_file() -> TestTable {
 pub fn generate_test_table() -> TestTable {
     let mut test_table: TestTable = IndexMap::new();
     //    let paths = fs::read_dir("./songs/test").unwrap();
-    let paths = fs::read_dir("./songs/test/oscillator").unwrap();
+    let paths = fs::read_dir("./songs/test").unwrap();
     for path in paths {
         let p = path.unwrap().path().into_os_string().into_string().unwrap();
         if p.ends_with(".socool") {
+            println!("{}", p.clone());
             let composition_hashes = generate_render_hashes(&p);
             test_table.insert(p, composition_hashes);
         }
@@ -53,7 +54,7 @@ pub fn generate_test_table() -> TestTable {
 pub fn write_test_table_to_json_file(test_table: &TestTable) {
     let pretty = to_string_pretty(test_table).unwrap();
     //    let mut file = File::create("src/testing/hashes.json").unwrap();
-    let mut file = File::create("src/testing/oscillator_hashes.json").unwrap();
+    let mut file = File::create("src/testing/hashes.json").unwrap();
     file.write_all(pretty.as_bytes()).unwrap();
 }
 

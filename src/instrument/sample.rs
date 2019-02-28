@@ -12,7 +12,6 @@ fn tau() -> f64 {
 }
 
 
-
 impl Voice {
     pub fn generate_sine_sample(&mut self, info: SampleInfo) -> f64 {
         self.calculate_current_phase(&info, 0.0);
