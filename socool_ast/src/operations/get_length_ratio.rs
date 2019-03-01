@@ -10,6 +10,7 @@ pub mod get_length_ratio {
             match self {
                 Op::AsIs {}
                 | Op::Sine {}
+                | Op::AD { .. }
                 | Op::Square {}
                 | Op::Noise {}
                 | Op::FInvert {}

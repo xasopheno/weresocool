@@ -27,8 +27,9 @@ pub struct PointOp {
     pub pa: Rational64,
     pub g: Rational64,
     pub l: Rational64,
-//    pub attack: usize,
-//    pub decay: usize,
+    pub attack: usize,
+    pub decay: usize,
+    pub decay_length: usize,
     pub osc_type: OscType,
     pub names: NameSet,
 }
@@ -159,6 +160,9 @@ impl Mul<PointOp> for PointOp {
             g: self.g * other.g,
             l: self.l * other.l,
             osc_type: other.osc_type,
+            attack: other.attack,
+            decay: other.decay,
+            decay_length: other.decay_length,
             names,
         }
     }
@@ -177,6 +181,9 @@ impl<'a, 'b> Mul<&'b PointOp> for &'a PointOp {
             g: self.g * other.g,
             l: self.l * other.l,
             osc_type: other.osc_type,
+            attack: other.attack,
+            decay: other.decay,
+            decay_length: other.decay_length,
             names,
         }
     }
@@ -193,6 +200,9 @@ impl MulAssign for PointOp {
             g: self.g * other.g,
             l: self.l * other.l,
             osc_type: other.osc_type,
+            attack: other.attack,
+            decay: other.decay,
+            decay_length: other.decay_length,
             names,
         }
     }
@@ -209,6 +219,9 @@ impl PointOp {
             g: self.g * other.g,
             l: self.l,
             osc_type: other.osc_type,
+            attack: other.attack,
+            decay: other.decay,
+            decay_length: other.decay_length,
             names,
         }
     }
@@ -221,6 +234,9 @@ impl PointOp {
             pa: Ratio::new(0, 1),
             g: Ratio::new(1, 1),
             l: Ratio::new(1, 1),
+            attack: 2000,
+            decay: 2000,
+            decay_length: 2,
             osc_type: OscType::Sine,
             names: NameSet::new(),
         }
@@ -233,6 +249,9 @@ impl PointOp {
             pa: Ratio::new(0, 1),
             g: Ratio::new(0, 1),
             l: Ratio::new(1, 1),
+            attack: 2000,
+            decay: 2000,
+            decay_length: 2,
             osc_type: OscType::Sine,
             names: NameSet::new(),
         }

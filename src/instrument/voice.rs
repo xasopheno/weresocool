@@ -1,16 +1,14 @@
 extern crate socool_ast;
 use instrument::{asr::ASR, loudness::loudness_normalization};
 use socool_ast::ast::OscType;
-
-#[derive(Clone, Debug, PartialEq)]
-pub struct Voice {
-    pub index: usize,
+#[derive(Clone, Debug, PartialEq)] pub struct Voice { pub index: usize,
     pub past: VoiceState,
     pub current: VoiceState,
     pub phase: f64,
     pub osc_type: OscType,
     pub attack: usize,
     pub decay: usize,
+    pub decay_length: usize,
     pub asr: ASR,
 }
 
@@ -46,8 +44,9 @@ impl Voice {
             current: VoiceState::init(),
             phase: 0.0,
             osc_type: OscType::Sine,
-            attack: 40000,
-            decay: 40000,
+            attack: 2000,
+            decay: 2000,
+            decay_length: 2,
             asr: ASR::Silence,
         }
     }
@@ -79,7 +78,7 @@ impl Voice {
         }
     }
 
-    pub fn update(&mut self, mut frequency: f64, gain: f64, osc_type: OscType, silence_next: bool) {
+    pub fn update(&mut self, mut frequency: f64, gain: f64, osc_type: OscType, silence_next: bool, decay_length: usize) {
         if frequency < 20.0 {
             frequency = 0.0;
         }
@@ -102,7 +101,9 @@ impl Voice {
         self.current.frequency = frequency;
         self.current.gain = gain;
 
-        self.set_asr(silence_next);
+        self.decay_length = decay_length;
+
+        self.set_asr(silence_next, decay_length);
         //        println!("{:?}", self.asr);
     }
 

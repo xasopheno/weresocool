@@ -42,6 +42,11 @@ pub enum Op {
     Noise,
     Sine,
     Square,
+    AD {
+        attack: usize,
+        decay: usize,
+        length: usize,
+    },
     //
     Reverse,
     FInvert,
@@ -111,6 +116,7 @@ pub fn is_choice_op(op_or_nf: OpOrNf, table: &OpOrNfTable) -> bool {
             | Op::Sine {}
             | Op::Square {}
             | Op::Noise {}
+            | Op::AD { .. }
             | Op::FInvert {}
             | Op::Reverse {}
             | Op::TransposeM { .. }

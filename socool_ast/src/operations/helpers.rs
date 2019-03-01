@@ -66,6 +66,9 @@ pub fn pad_length(input: &mut NormalForm, max_len: Rational64, table: &OpOrNfTab
                 pa: Ratio::new(0, 1),
                 g: Ratio::new(0, 1),
                 l: max_len - input_lr,
+                attack: 2000,
+                decay: 2000,
+                decay_length: 2,
                 osc_type,
                 names: NameSet::new(),
             });
@@ -91,6 +94,9 @@ pub fn join_sequence(mut l: NormalForm, mut r: NormalForm) -> NormalForm {
                     pa: Ratio::new(0, 1),
                     g: Ratio::new(0, 1),
                     l: r.length_ratio,
+                    attack: 200,
+                    decay: 200,
+                    decay_length: 2,
                     osc_type: OscType::Sine,
                     names: NameSet::new(),
                 }])
@@ -105,6 +111,9 @@ pub fn join_sequence(mut l: NormalForm, mut r: NormalForm) -> NormalForm {
                     pa: Ratio::new(0, 1),
                     g: Ratio::new(0, 1),
                     l: l.length_ratio,
+                    attack: 2000,
+                    decay: 2000,
+                    decay_length: 2,
                     osc_type: OscType::Sine,
                     names: NameSet::new(),
                 }])

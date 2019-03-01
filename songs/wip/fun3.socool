@@ -11,6 +11,7 @@ fun(a, b, c) = {
 }
 
 main = {
+    AD(4000, 4000, 2) |
     Length 1/6 |
     Sequence [
         fun(
