@@ -2,7 +2,7 @@ extern crate num_rational;
 extern crate socool_ast;
 use analyze::{Analyze, DetectionResult};
 use generation::parsed_to_render::*;
-use instrument::oscillator::{Origin, Oscillator};
+use instrument::oscillator::{Basis, Oscillator};
 use num_rational::Rational64;
 use portaudio as pa;
 use ring_buffer::RingBuffer;
@@ -22,7 +22,7 @@ impl RealTimeState {
     }
 }
 
-fn process_result(result: &mut DetectionResult) -> Origin {
+fn process_result(result: &mut DetectionResult) -> Basis {
     if result.gain < 0.005 || result.frequency > 1_000.0 {
         result.frequency = 0.0;
         result.gain = 0.0;
@@ -30,11 +30,13 @@ fn process_result(result: &mut DetectionResult) -> Origin {
 
     println!("freq {}, gain {}", result.frequency, result.gain);
 
-    Origin {
+    Basis {
         f: 1.0 * result.frequency as f64,
         l: 1.0,
         g: result.gain as f64,
         p: 0.0,
+        a: 44100.0,
+        d: 44100.0
     }
 }
 

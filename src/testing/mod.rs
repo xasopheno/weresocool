@@ -6,7 +6,7 @@ extern crate term;
 use difference::{Changeset, Difference};
 use generation::parsed_to_render::{generate_waveforms, r_to_f64, sum_all_waveforms};
 use indexmap::IndexMap;
-use instrument::{oscillator::Origin, stereo_waveform::Normalize};
+use instrument::{oscillator::Basis, stereo_waveform::Normalize};
 use serde_json::{from_reader, to_string_pretty};
 use socool_ast::operations::{NormalForm, Normalize as NormalizeOp};
 use socool_parser::parser::*;
@@ -68,11 +68,13 @@ fn generate_render_hashes(p: &String) -> CompositionHashes {
     main_op.apply_to_normal_form(&mut normal_form, &parsed.table);
     let nf_hash = calculate_hash(&normal_form);
 
-    let origin = Origin {
+    let origin = Basis {
         f: r_to_f64(init.f),
         g: r_to_f64(init.g),
         l: r_to_f64(init.l),
         p: r_to_f64(init.p),
+        a: 44100.0,
+        d: 44100.0
     };
 
     let vec_wav = generate_waveforms(&origin, normal_form.operations, false);

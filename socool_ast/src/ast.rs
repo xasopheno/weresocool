@@ -43,8 +43,8 @@ pub enum Op {
     Sine,
     Square,
     AD {
-        attack: usize,
-        decay: usize,
+        attack: Rational64,
+        decay: Rational64,
         length: usize,
     },
     //

@@ -10,7 +10,7 @@ use weresocool::{
     examples::documentation,
     generation::parsed_to_render::r_to_f64,
     generation::parsed_to_render::{render, to_json, to_wav},
-    instrument::oscillator::Origin,
+    instrument::oscillator::Basis,
     portaudio_setup::output::setup_portaudio_output,
     ui::{banner, get_args, no_file_name, were_so_cool_logo},
 };
@@ -39,11 +39,13 @@ fn main() -> Result<(), pa::Error> {
 
     let init = parsed.init;
 
-    let origin = Origin {
+    let origin = Basis {
         f: r_to_f64(init.f),
         g: r_to_f64(init.g),
         l: r_to_f64(init.l),
         p: r_to_f64(init.p),
+        a: 44100.0,
+        d: 44100.0
     };
 
     if args.is_present("print") {

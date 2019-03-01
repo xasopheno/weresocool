@@ -104,7 +104,10 @@ BaseOperation: OpOrNf = {
         }
         Op(Sequence { operations: vec })
     },
-    "AD" "(" <a:Int> "," <d: Int> "," <l: Int> ")" => Op(AD {attack: a as usize, decay: d as usize, length: l as usize}),
+    "AD" "("
+        <attack:Rational> ","
+        <decay: Rational> ","
+        <length: Int> ")" => Op(AD {attack, decay, length: length as usize}),
     "Silence" <v:Rational> => Op(Silence {m: v}),
     "Tm" <v:Rational> => Op(TransposeM {m: v}),
     "Ta" <v:Rational> => Op(TransposeA {a: v}),

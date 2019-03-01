@@ -4,7 +4,7 @@ pub mod tests {
     use instrument::{
         asr::ASR,
         loudness::loudness_normalization,
-        oscillator::{Origin, Oscillator},
+        oscillator::{Basis, Oscillator},
         stereo_waveform::StereoWaveform,
         voice::{Voice, VoiceState},
     };
@@ -125,7 +125,7 @@ pub mod tests {
         fn oscillator_update_test() {
             let mut osc = Oscillator::init(&get_test_settings());
 
-            let origin = Origin {
+            let origin = Basis {
                 f: 100.0,
                 g: 1.0,
                 l: 1.0,
@@ -153,7 +153,7 @@ pub mod tests {
         fn oscillator_generate_sine_test() {
             let mut osc = Oscillator::init(&get_test_settings());
 
-            let origin = Origin {
+            let origin = Basis {
                 f: 300.0,
                 g: 1.0,
                 l: 1.0,

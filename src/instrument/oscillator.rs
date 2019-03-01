@@ -1,7 +1,9 @@
 extern crate num_rational;
 extern crate socool_ast;
 use generation::parsed_to_render::r_to_f64;
-use instrument::{stereo_waveform::StereoWaveform, voice::Voice};
+use instrument::{stereo_waveform::StereoWaveform, voice::{
+    Voice, VoiceUpdate
+}};
 use settings::Settings;
 use socool_ast::operations::PointOp;
 use std::f64::consts::PI;
@@ -18,14 +20,16 @@ pub struct Oscillator {
 }
 
 #[derive(Copy, Clone, Debug, PartialEq)]
-pub struct Origin {
+pub struct Basis {
     pub f: f64,
     pub p: f64,
     pub g: f64,
     pub l: f64,
+    pub a: f64,
+    pub d: f64,
 }
 
-fn point_op_to_gains(point_op: &PointOp, basis: &Origin) -> (f64, f64) {
+fn point_op_to_gains(point_op: &PointOp, basis: &Basis) -> (f64, f64) {
     let pm = r_to_f64(point_op.pm);
     let pa = r_to_f64(point_op.pa);
     let g = r_to_f64(point_op.g);
@@ -55,7 +59,7 @@ impl Oscillator {
         }
     }
 
-    pub fn update(&mut self, basis: Origin, point_op: &PointOp, next_op: Option<PointOp>) {
+    pub fn update(&mut self, basis: Basis, point_op: &PointOp, next_op: Option<PointOp>) {
         let fm = r_to_f64(point_op.fm);
         let fa = r_to_f64(point_op.fa);
 
@@ -82,18 +86,26 @@ impl Oscillator {
         let decay_length = point_op.decay_length;
 
         l_voice.update(
-            (basis.f * fm) + fa,
-            l_gain,
-            point_op.osc_type,
-            silence_next_l,
-            decay_length,
+            VoiceUpdate {
+                frequency: (basis.f * fm) + fa,
+                gain: l_gain,
+                osc_type: point_op.osc_type,
+                silence_next: silence_next_l,
+                attack: basis.attack * point_op.attack,
+                decay: basis.decay * point_op.decay,
+                decay_type: point_op.decay_length
+            }
         );
         r_voice.update(
-            (basis.f * fm) + fa,
-            r_gain,
-            point_op.osc_type,
-            silence_next_r,
-            decay_length,
+            VoiceUpdate {
+                frequency: (basis.f * fm) + fa,
+                gain: r_gain,
+                osc_type: point_op.osc_type,
+                silence_next: silence_next_r,
+                attack: basis.attack * point_op.attack,
+                decay: basis.decay * point_op.decay,
+                decay_type: point_op.decay_length
+            }
         );
     }
 

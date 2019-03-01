@@ -2,19 +2,19 @@ extern crate num_rational;
 extern crate socool_ast;
 use generation::parsed_to_render::r_to_f64;
 use instrument::{
-    oscillator::{Origin, Oscillator},
+    oscillator::{Basis, Oscillator},
     stereo_waveform::StereoWaveform,
 };
 use socool_ast::operations::PointOp;
 
 pub trait Render<T> {
-    fn render(&mut self, origin: &Origin, oscillator: &mut Oscillator) -> StereoWaveform;
+    fn render(&mut self, origin: &Basis, oscillator: &mut Oscillator) -> StereoWaveform;
 }
 
 pub trait RenderPointOp<T> {
     fn render(
         &mut self,
-        origin: &Origin,
+        origin: &Basis,
         oscillator: &mut Oscillator,
         next_op: Option<PointOp>,
     ) -> StereoWaveform;
@@ -23,7 +23,7 @@ pub trait RenderPointOp<T> {
 impl RenderPointOp<PointOp> for PointOp {
     fn render(
         &mut self,
-        origin: &Origin,
+        origin: &Basis,
         oscillator: &mut Oscillator,
         next_op: Option<PointOp>,
     ) -> StereoWaveform {
@@ -35,7 +35,7 @@ impl RenderPointOp<PointOp> for PointOp {
 }
 
 impl Render<Vec<PointOp>> for Vec<PointOp> {
-    fn render(&mut self, origin: &Origin, oscillator: &mut Oscillator) -> StereoWaveform {
+    fn render(&mut self, origin: &Basis, oscillator: &mut Oscillator) -> StereoWaveform {
         let mut result: StereoWaveform = StereoWaveform::new(0);
         let mut p_ops = self.clone();
         p_ops.push(PointOp::init_silent());

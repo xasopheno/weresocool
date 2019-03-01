@@ -319,6 +319,7 @@ after_melody = {
 }
 
 main = {
+	AD(4000, 4000, 1) |
 	Sequence [
 		intro,
 		Silence 1/4,
