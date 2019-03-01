@@ -2,14 +2,14 @@
 
 f(a, b, c) = {
     Sequence [
-        Tm 1/2,
+        Tm 2/3,
         $a, 
         $b,
         $b | Tm 4/3,
         Tm 3/4,
         $a | Tm 3/2, 
         $a | Reverse, 
-        Tm 1/2,
+        Tm 2/3,
         $b | Tm 3/2,
         $c,
         Tm 3/4,
@@ -29,7 +29,7 @@ main = {
             Tm 9/8 | Gain 1/4 | Sequence [Tm 1, Tm 2, Tm 3, Tm 4, Tm 5, Tm 6] | Length 1/3 | Sequence [AsIs, Reverse],
         ),
     ]  
-    | Repeat 2
+    | Sequence [AsIs, Tm 7/8]
     | Length 1/8
     | Sequence [
         AsIs,

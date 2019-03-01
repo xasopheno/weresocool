@@ -27,6 +27,8 @@ pub struct PointOp {
     pub pa: Rational64,
     pub g: Rational64,
     pub l: Rational64,
+//    pub attack: usize,
+//    pub decay: usize,
     pub osc_type: OscType,
     pub names: NameSet,
 }

@@ -3,8 +3,8 @@
 fun(a, b, c) = {
     Sequence [
         $a, 
-        $a > @foo | Tm 3 | PanA -1,
-        $a > @foo | Tm 1/2 | PanA 1,
+        $a > @foo(Tm 3 | PanA -1),
+        $a > @foo(Tm 1/2 | PanA 1),
         $b | Length 3,
         $c | Overlay [AsIs, Invert | Tm 5 | Tm 25/24],
     ] 
@@ -16,7 +16,9 @@ main = {
         fun(
             Sequence [AsIs, Tm 9/8 | Overlay [AsIs, Tm 2] | #foo, Tm 5/4],
             Sequence [Tm 4/3, Tm 3/4, Tm 5/3 | Overlay [AsIs, Tm 2]],
-            Gain 1 | Sequence [Tm 1, Tm 2, Tm 3, Tm 4, Tm 5, Tm 6] | Length 1/2 | Sequence [AsIs, Reverse] 
+            Gain 1/4 
+            | Overlay [Ta 4 | PanA -3/4, PanA 3/4]
+            | Sequence [Tm 1, Tm 2, Tm 3, Tm 4, Tm 5, Tm 6] | Length 1/2 | Sequence [AsIs, Reverse]
         ),
         fun(
             Sequence [AsIs | #foo, Tm 5/4],

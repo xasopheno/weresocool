@@ -43,7 +43,7 @@ pub mod tests {
             let index = 1;
             let mut voice = Voice::init(index);
             voice.update(200.0, 1.0, OscType::Sine, true);
-            let gain = voice.calculate_lazy_gain(10, 2);
+            let gain = voice.calculate_asr_gain(10, 2);
             let p_delta = voice.calculate_portamento_delta(10);
 
             assert_eq!(gain, 0.13176251600253114);

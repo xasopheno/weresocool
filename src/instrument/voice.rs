@@ -46,8 +46,8 @@ impl Voice {
             current: VoiceState::init(),
             phase: 0.0,
             osc_type: OscType::Sine,
-            attack: 4000,
-            decay: 4000,
+            attack: 40000,
+            decay: 40000,
             asr: ASR::Silence,
         }
     }
@@ -66,7 +66,6 @@ impl Voice {
                 index,
                 p_delta,
                 gain: self.calculate_asr_gain(buffer_len, index),
-//              gain: self.calculate_lazy_gain(buffer_len, index),
                 portamento_length,
                 factor,
             };

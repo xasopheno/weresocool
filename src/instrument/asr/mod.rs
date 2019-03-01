@@ -13,10 +13,10 @@ pub enum ASR {
 
 impl Voice {
     pub fn set_asr(&mut self, silence_next: bool) {
-        if self.silent() {
+        let long = true;
+        if self.silent() && !long {
             self.asr = ASR::Silence;
         } else {
-            let long = false;
             match self.asr {
                 ASR::Silence | ASR::ASR | ASR::SR | ASR::R => {
                     if silence_next && !long {
@@ -26,28 +26,25 @@ impl Voice {
                     }
                 }
 
-                ASR::AS => {
-                    if silence_next && !long {
-                        self.asr = ASR::SR
+                ASR::AS | ASR::S => {
+                    if self.sound_to_silence() {
+                        if long {
+                            self.asr = ASR::R
+                        } else {
+                            self.asr = ASR::Silence
+                        }
+                    } else if silence_next {
+                            if long {
+                                self.asr = ASR::S
+                            } else {
+                                self.asr = ASR::SR
+                            }
                     } else {
                         self.asr = ASR::S
                     }
                 }
-
-                _ => {
-                    if silence_next {
-                        self.asr = ASR::SR
-                    } else {
-                        self.asr = ASR::S;
-                    }
-                }
             }
         }
-    }
-
-    pub fn calculate_lazy_gain(&self, fade_length: usize, index: usize) -> f64 {
-        self.past.gain
-            + (self.current.gain - self.past.gain) * (index as f64) / (fade_length as f64)
     }
 
     pub fn calculate_asr_gain(&mut self, buffer_len: usize, index: usize) -> f64 {
@@ -105,7 +102,19 @@ impl Voice {
                 };
             },
 
-            ASR::R => self.calculate_lazy_gain(buffer_len, index)
+            ASR::R => {
+                if short {
+                    let decay_index = buffer_len - (index + 1);
+                    return self.calculate_decay(self.past.gain, decay_index, buffer_len);
+                };
+
+                if index < self.decay {
+                    let decay_index = self.decay - (index + 1);
+                    return self.calculate_decay(self.past.gain, decay_index, self.decay);
+                } else {
+                    return 0.0
+                };
+            },
         }
     }
 }
