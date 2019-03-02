@@ -9,8 +9,8 @@ use num_rational::Rational64;
     pub current: VoiceState,
     pub phase: f64,
     pub osc_type: OscType,
-    pub attack: f64,
-    pub decay: f64,
+    pub attack: usize,
+    pub decay: usize,
     pub decay_length: usize,
     pub asr: ASR,
 }
@@ -113,8 +113,8 @@ impl Voice {
         self.current.frequency = frequency;
         self.current.gain = gain;
 
-        self.attack = info.attack;
-        self.decay = info.decay;
+        self.attack = info.attack.trunc() as usize;
+        self.decay = info.decay.trunc() as usize;
         self.decay_length = info.decay_type;
 
         self.set_asr(info.silence_next, info.decay_type);

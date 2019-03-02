@@ -62,6 +62,8 @@ impl Oscillator {
     pub fn update(&mut self, basis: Basis, point_op: &PointOp, next_op: Option<PointOp>) {
         let fm = r_to_f64(point_op.fm);
         let fa = r_to_f64(point_op.fa);
+        let attack = r_to_f64(point_op.attack);
+        let decay = r_to_f64(point_op.decay);
 
         let (l_gain, r_gain) = point_op_to_gains(&point_op, &basis);
         let mut next_l_gain = 0.0;
@@ -91,8 +93,8 @@ impl Oscillator {
                 gain: l_gain,
                 osc_type: point_op.osc_type,
                 silence_next: silence_next_l,
-                attack: basis.attack * point_op.attack,
-                decay: basis.decay * point_op.decay,
+                attack: basis.a * attack,
+                decay: basis.d * decay,
                 decay_type: point_op.decay_length
             }
         );
@@ -102,8 +104,8 @@ impl Oscillator {
                 gain: r_gain,
                 osc_type: point_op.osc_type,
                 silence_next: silence_next_r,
-                attack: basis.attack * point_op.attack,
-                decay: basis.decay * point_op.decay,
+                attack: basis.a * attack,
+                decay: basis.d * decay,
                 decay_type: point_op.decay_length
             }
         );
