@@ -12,9 +12,8 @@ pub enum ASR {
 }
 
 impl Voice {
-    pub fn set_asr(&mut self, silence_next: bool, decay_length: usize) {
+    pub fn set_asr(&mut self, silence_next: bool, decay_length: usize, silence_now: bool) {
         let long = if self.decay_length == 2 { true } else { false };
-//        let long = false;
         if self.silent() && !long {
             self.asr = ASR::Silence;
         } else {
@@ -23,7 +22,11 @@ impl Voice {
                     if silence_next && !long {
                         self.asr = ASR::ASR;
                     } else {
-                        self.asr = ASR::AS;
+                        if silence_now {
+                            self.asr = ASR::Silence
+                        } else {
+                            self.asr = ASR::AS;
+                        }
                     }
                 }
 
