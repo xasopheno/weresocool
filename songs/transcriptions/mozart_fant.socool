@@ -62,7 +62,7 @@ m1_6 = {
 		) > @upper_structure (
 				AsIs > @a(Tm 10/7) > @b(Tm 6/5) > @c(Tm 4/3)
 			),
-		intro1(Tm 0, Tm 0, Tm 0) | Length 1/100
+		-- intro1(Tm 0, Tm 0, Tm 0) | Length 1/100
 	] 
 }
 
