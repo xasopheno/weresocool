@@ -6,7 +6,7 @@ overtones = {
       	(4/1, 0, 1/128, 3/4),
       	(3/1, 3, 1/32, -1/3),
       	(3/1, 0, 1/32, 1/3),
-      	(2/1, 2, 1/8, -2/3),
+      	(2/1, 0, 1/8, -2/3),
       	(2/1, 0, 1/8, 2/3),
       	(1/1, -1, 1, 1/2),
       	(1/1, 0, 1, 1),
@@ -55,6 +55,19 @@ f6(a, b, c) = {
 		$a, $b, $a,
 		$c, $a, $b | Tm 15/16		
 	] 
+}
+
+f7(a, b, c) = {
+	Seq [
+		$a, $b, $c
+	] | Length 2
+}
+
+f8(a, b) = {
+	Seq [
+		$a, $b,
+		Seq [Tm 0, $b] | Repeat 2
+	]
 }
 
 m1_8 = {
@@ -164,7 +177,7 @@ m25_32 = {
 			Seq [
 				Tm 10/3 | Length 2, 
 				Tm 3 | Length 2, 
-				Tm 25/9 | Length 3	
+				Tm 25/9 | Length 2 
 			]
 		],
 		Seq [
@@ -180,31 +193,131 @@ m25_32 = {
 	]
 }
 
-m33_40 = {
+m33_42 = {
 	Overlay [
 		Seq [
 			f5(Tm 3, Tm 8/3, Tm 5/2),
 			f3(Tm 8/3, Tm 5/2, Tm 9/4),
-			f3(Tm 16/5, Tm 25/9, Tm 5/2)	
+			f3(Tm 16/5, Tm 25/9, Tm 5/2),	
+			f6(Tm 10/3, Tm 16/5, Tm 15/4),	
+			f3(Tm 25/9, Tm 5/2, Tm 9/4),
+			f5(Tm 3, Tm 8/3, Tm 5/2),
+			f5(Tm 8/3, Tm 5/2, Tm 9/4),
+
 		],
 		Seq [
 			f6(Tm 5/4, Tm 6/5, Tm 25/18),
 			f3(Tm 25/24, Tm 15/16, Tm 5/6),
 			f5(Tm 9/8, Tm 1, Tm 15/16),
 			f5(Tm 1, Tm 15/16, Tm 5/6),	
+			f3(Tm 15/16, Tm 5/6, Tm 3/4),	
+			f3(Tm 25/24, Tm 15/16, Tm 5/6),	
+			f6(Tm 9/8, Tm 25/24, Tm 5/4),	
+			f3(Tm 25/24, Tm 15/16, Tm 5/6),	
 		]
 	]	
 }
 
+m43_53 = {
+	Overlay [
+		Seq [
+			f3(Tm 5/2, Tm 9/4, Tm 2),
+			f3(Tm 25/9, Tm 5/2, Tm 9/4),
+			f6(Tm 3, Tm 25/9, Tm 10/3),
+			f3(Tm 5/2, Tm 9/4, Tm 2),
+			f4(Tm 4/3, Tm 8/3),
+			f4(Tm 3/2, Tm 8/3),
+			f4(Tm 5/3, Tm 8/3),
+			f4(Tm 7/4, Tm 8/3),
+			f4(Tm 5/3, Tm 8/3),
+			f4(Tm 3/2, Tm 5/2),
+			f4(Tm 4/3, Tm 8/3),
+			Seq [
+				Tm 8/3 | Length 2, Tm 5/2,
+				Tm 9/4, Tm 2, Tm 9/4,
+			]
+		],
+		Seq [
+			f5(Tm 1, Tm 7/8, Tm 5/6),
+			f5(Tm 7/8, Tm 5/6, Tm 3/4),
+			f1(Tm 5/6, Tm 2/3, Tm 1),
+			f2(Tm 7/8, Tm 2/3),
+			f2(Tm 1, Tm 2/3),
+			f2(Tm 9/8, Tm 2/3),
+			f2(Tm 1, Tm 2/3),
+			f3(Tm 7/8, Tm 5/6, Tm 3/4),
+			f3(Tm 5/6, Tm 3/4, Tm 2/3),
+			Seq [
+				Tm 3/4, Tm 5/6, Tm 3/4,
+				Tm 2/3, Tm 5/8, Tm 9/16,
+			]
+		]
+	]
+}
+
+m54_62 = {
+	Overlay [
+		Seq [
+			f1(Tm 5/2, Tm 2, Tm 3/2),
+			f2(Tm 8/3, Tm 2),
+			f2(Tm 3, Tm 2),
+			f2(Tm 10/3, Tm 2),
+			f2(Tm 3, Tm 2),
+			f3(Tm 8/3, Tm 5/2, Tm 9/4),
+			f3(Tm 5/2, Tm 9/4, Tm 2),
+			Seq [
+				Tm 9/4, Tm 5/2, Tm 9/4, 
+				Tm 2, Tm 15/8, Tm 5/3,
+			]
+		],
+		Seq [
+			f4(Tm 1/2, Tm 1),
+			f4(Tm 9/16, Tm 1),
+			f4(Tm 5/8, Tm 1),
+			f4(Tm 2/3, Tm 1),
+			f4(Tm 5/8, Tm 1),
+			f4(Tm 9/16, Tm 15/16),
+			f4(Tm 1/2, Tm 1),
+			f7(Tm 2/3, Tm 5/8, Tm 9/16)
+		]
+	]	
+}
+
+m63_72 = {
+	Overlay [
+		Seq [
+			f8(Tm 15/8, Tm 3/2) | Repeat 2,
+			f8(Tm 2, Tm 3/2) | Repeat 2,
+			f8(Tm 8/3, Tm 3/2) | Repeat 2,
+			f8(Tm 5/2, Tm 3/2) | Repeat 2,
+			f8(Tm 25/9, Tm 5/3) | Repeat 2,
+			f8(Tm 3, Tm 15/8) | Repeat 2,
+		],
+		Seq [
+			f7(Tm 3/4, Tm 4/3, Tm 9/8) | Repeat 2,
+			f7(Tm 3/4, Tm 5/4, Tm 1) | Repeat 2,
+			f7(Tm 3/4, Tm 9/8, Tm 15/16) | Repeat 2,
+			f7(Tm 3/4, Tm 5/4, Tm 1) | Repeat 2,
+			f7(Tm 3/4, Tm 6/5, Tm 1) | Repeat 2,
+			f7(Tm 3/4, Tm 9/8, Tm 15/16),
+			f7(Tm 2/3, Tm 9/8, Tm 15/16),
+		]
+	]
+}
+
 main = {
 	overtones |
-	AD (1/20, 1/20, 1) |
+	AD (1/4, 1/4, 1) |
 	Seq [
+		-- Overlay [AsIs, Tm 3/2] | Length 12,
 		m1_8,
 		m9_16,
 		m17_24,
 		m25_32,
-		m33_40,
+		m33_42,
+		m43_53,
+		m54_62,
+		m63_72
 	]
 }
 	
