@@ -135,6 +135,12 @@ BaseOperation: OpOrNf = {
         )
     },
     "$"<id: Name> => Op(Fid(id)),
+    <tm: Rational>"^"<length: Rational> => {
+        Op(Compose { operations: vec! [
+            Op(TransposeM { m: tm }),
+            Op(Length { m: length }),
+        ]})
+    }
 };
 
 Overtone: OpOrNf = {
@@ -152,6 +158,7 @@ Overtone: OpOrNf = {
         ]
     })
 }
+
 
 Overtones = Comma<Overtone>;
 
