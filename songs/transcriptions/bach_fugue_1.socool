@@ -1,4 +1,4 @@
-{ f: 210, l: 1/2, g: 1, p: 0}
+{ f: 250, l: 1/2, g: 1, p: 0}
 
 overtones = {
     O[
@@ -167,6 +167,56 @@ m8_9 = {
 
 }
 
+
+m10_11 = {
+	Overlay [
+		#v1 | Seq [
+			3^2, 25/9^2,
+			Length 1/2 | Seq [
+				Tm 3, Tm 8/3, Tm 5/2, Tm 9/4, 
+				Tm 2, Tm 9/4, Tm 2, Tm 15/8,
+				Tm 5/3, Tm 2, Tm 15/8, Tm 5/3,
+			],
+			Tm 3/2, 
+			0^1,
+			Length 1/2 | Seq [
+				0^1, Tm 2, Tm 15/8, Tm 5/3
+			], 
+			Tm 5/3 | Tm 15/16, 
+			Tm 5/2,
+
+		],
+		#v2 | Seq [
+			Tm 5/3, Tm 9/4, 
+			Length 1/2 | Seq [
+				Tm 9/4, Tm 5/2, Tm 9/4, Tm 2,
+			],
+			Tm 15/8, 0^2, Tm 9/8,
+			Tm 5/4, Tm 25/18,
+			3/2^3/2, 5/3^1/4, 3/2^1/4,
+			Tm 25/18, Tm 15/8, 
+			Tm 5/4, Tm 5/3 
+
+		],
+		#v3 | Seq [
+			Length 1/2 | Seq [
+				Tm 1, Tm 5/6, Tm 15/16, Tm 1, 
+				Tm 9/8, Tm 1, Tm 15/16, Tm 5/6,
+			],
+			3/4^2,
+		],
+		#v4 | Seq [
+			0^5,
+			Tm 3/8, Tm 5/12, Tm 15/32,
+			1/2^3/2, 9/16^1/4, 1/2^1/4, 
+			Tm 15/32, Tm 5/8, Tm 5/12, Tm 9/16,
+			Length 1/2 | Seq [
+				Tm 9/16, Tm 5/6 | Tm 3/4, Tm 9/16, Tm 1/2
+			]
+		]
+	]
+}
+
 template = {
 	Overlay [
 		#v1 | Seq [
@@ -181,8 +231,6 @@ template = {
 
 		-- ]
 	]
-
-	
 }
 
 
@@ -190,46 +238,48 @@ template = {
 main = {
 	overtones |
 	AD(1/2, 1/2, 2) |
+	-- Seq [Tm 1 | Repeat 15, Tm 0] | Length 1/16 |
 	Seq [
 	    m1_3,
 		m4_5,
 		m6_7,
 		m8_9,
+		m10_11
 	] 
- --  	| ModulateBy [
- --  		Seq [
- --  			AsIs,
-	--   		PanA -1/4, 
-	--   		PanA -1/2, 
-	--   		PanA -1/4,
-	--   		AsIs, 
- --  			PanA 1/4,
-	--   		PanA 1/2, 
-	--   		PanA 1/4, 
- --  		]
- --  		| Repeat 30 
-	-- ]
+  	| ModulateBy [
+  		Seq [
+  			AsIs,
+	  		PanA -1/4, 
+	  		PanA -1/2, 
+	  		PanA -1/4,
+	  		AsIs, 
+  			PanA 1/4,
+	  		PanA 1/2, 
+	  		PanA 1/4, 
+  		]
+  		| Repeat 8 
+	]
 	> @v1( 
 	AsIs
-	| Overlay [AsIs, Tm 3/2 | Ta 1/4 | Gain 1/20]
+	-- | Overlay [AsIs, Tm 3/2 | Ta 1/4 | Gain 1/20]
 	| PanA -1/3
 	-- | Tm 0
 	)
 	> @v2(
 	AsIs
-	| Overlay [AsIs, Tm 2 | Ta 1/2 | Gain 1/15]
+	-- | Overlay [AsIs, Tm 2 | Ta 1/2 | Gain 1/15]
 	| PanA 1/3
 	-- | Tm 0
 	)
 	> @v3( 
 	AsIs
-	| Overlay [AsIs, Tm 2 | Ta 1/3 | Gain 1/9 ]
+	-- | Overlay [AsIs, Tm 2 | Ta 1/3 | Gain 1/9 ]
 	| PanA 1/4 
 	-- | Tm 0
 	)
 	> @v4(
 	AsIs
-	| Overlay [AsIs, Tm 2 | Ta 1/5 | Gain 1/9 ]
+	-- | Overlay [AsIs, Tm 2 | Ta 1/5 | Gain 1/9 ]
 	| PanA -1/4 
 	-- | Tm 0
 	)  

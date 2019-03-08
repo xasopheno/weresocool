@@ -1,4 +1,4 @@
-{ f: 220, l: 1/8, g: 1, p: 0}
+{ f: 250, l: 1/8, g: 1, p: 0}
 
 overtones = {
     O[
@@ -436,9 +436,10 @@ cadenza = {
 
 
 main = {
-	overtones |
-	AD (1/4, 1/4, 1) |
-	Seq [
+	-- overtones |
+	-- AD (1/2, 1/2, 2) |
+	Seq [Tm 1 | Repeat 6, Tm 0] | Length 1/7
+	| Seq [
 		m1_8,
 		m9_16,
 		m17_24,
