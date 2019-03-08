@@ -1,10 +1,12 @@
 extern crate socool_ast;
-use instrument::{asr::ASR, loudness::loudness_normalization};
 use generation::parsed_to_render::r_to_f64;
-use socool_ast::ast::OscType;
+use instrument::{asr::ASR, loudness::loudness_normalization};
 use num_rational::Rational64;
+use socool_ast::ast::OscType;
 
-#[derive(Clone, Debug, PartialEq)] pub struct Voice { pub index: usize,
+#[derive(Clone, Debug, PartialEq)]
+pub struct Voice {
+    pub index: usize,
     pub past: VoiceState,
     pub current: VoiceState,
     pub phase: f64,
@@ -74,7 +76,8 @@ impl Voice {
         let buffer_len = buffer.len();
 
         for (index, sample) in buffer.iter_mut().enumerate() {
-            let info = SampleInfo { index,
+            let info = SampleInfo {
+                index,
                 p_delta,
                 gain: self.calculate_asr_gain(buffer_len, index),
                 portamento_length,
@@ -93,7 +96,9 @@ impl Voice {
     pub fn update(&mut self, mut info: VoiceUpdate) {
         let frequency = if info.frequency < 20.0 {
             0.0
-        } else { info.frequency };
+        } else {
+            info.frequency
+        };
 
         let mut gain = if frequency != 0.0 { info.gain } else { 0.0 };
         if info.osc_type != OscType::Sine {
@@ -120,7 +125,7 @@ impl Voice {
         let silence_now = gain == 0.0 || frequency == 0.0;
 
         self.set_asr(info.silence_next, info.decay_type, silence_now);
-//        println!("{:?}", self.asr);
+        //        println!("{:?}", self.asr);
     }
 
     pub fn silent(&self) -> bool {

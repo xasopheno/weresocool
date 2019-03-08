@@ -74,7 +74,7 @@ fn generate_render_hashes(p: &String) -> CompositionHashes {
         l: r_to_f64(init.l),
         p: r_to_f64(init.p),
         a: 44100.0,
-        d: 44100.0
+        d: 44100.0,
     };
 
     let vec_wav = generate_waveforms(&origin, normal_form.operations, false);

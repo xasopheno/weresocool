@@ -75,7 +75,11 @@ pub mod normalize {
                     }
                 }
 
-                Op::AD {attack, decay, length} => {
+                Op::AD {
+                    attack,
+                    decay,
+                    length,
+                } => {
                     for voice in input.operations.iter_mut() {
                         for point_op in voice {
                             point_op.attack *= attack;

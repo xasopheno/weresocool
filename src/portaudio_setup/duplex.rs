@@ -36,7 +36,7 @@ fn process_result(result: &mut DetectionResult) -> Basis {
         g: result.gain as f64,
         p: 0.0,
         a: 44100.0,
-        d: 44100.0
+        d: 44100.0,
     }
 }
 

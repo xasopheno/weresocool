@@ -45,7 +45,7 @@ fn main() -> Result<(), pa::Error> {
         l: r_to_f64(init.l),
         p: r_to_f64(init.p),
         a: 44100.0,
-        d: 44100.0
+        d: 44100.0,
     };
 
     if args.is_present("print") {

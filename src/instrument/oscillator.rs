@@ -1,9 +1,10 @@
 extern crate num_rational;
 extern crate socool_ast;
 use generation::parsed_to_render::r_to_f64;
-use instrument::{stereo_waveform::StereoWaveform, voice::{
-    Voice, VoiceUpdate
-}};
+use instrument::{
+    stereo_waveform::StereoWaveform,
+    voice::{Voice, VoiceUpdate},
+};
 use settings::Settings;
 use socool_ast::operations::PointOp;
 use std::f64::consts::PI;
@@ -87,28 +88,24 @@ impl Oscillator {
 
         let decay_length = point_op.decay_length;
 
-        l_voice.update(
-            VoiceUpdate {
-                frequency: (basis.f * fm) + fa,
-                gain: l_gain,
-                osc_type: point_op.osc_type,
-                silence_next: silence_next_l,
-                attack: basis.a * attack,
-                decay: basis.d * decay,
-                decay_type: point_op.decay_length
-            }
-        );
-        r_voice.update(
-            VoiceUpdate {
-                frequency: (basis.f * fm) + fa,
-                gain: r_gain,
-                osc_type: point_op.osc_type,
-                silence_next: silence_next_r,
-                attack: basis.a * attack,
-                decay: basis.d * decay,
-                decay_type: point_op.decay_length
-            }
-        );
+        l_voice.update(VoiceUpdate {
+            frequency: (basis.f * fm) + fa,
+            gain: l_gain,
+            osc_type: point_op.osc_type,
+            silence_next: silence_next_l,
+            attack: basis.a * attack,
+            decay: basis.d * decay,
+            decay_type: point_op.decay_length,
+        });
+        r_voice.update(VoiceUpdate {
+            frequency: (basis.f * fm) + fa,
+            gain: r_gain,
+            osc_type: point_op.osc_type,
+            silence_next: silence_next_r,
+            attack: basis.a * attack,
+            decay: basis.d * decay,
+            decay_type: point_op.decay_length,
+        });
     }
 
     pub fn generate(&mut self, n_samples_to_generate: f64) -> StereoWaveform {

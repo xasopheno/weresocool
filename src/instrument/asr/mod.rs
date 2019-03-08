@@ -38,11 +38,11 @@ impl Voice {
                             self.asr = ASR::Silence
                         }
                     } else if silence_next {
-                            if long {
-                                self.asr = ASR::S
-                            } else {
-                                self.asr = ASR::SR
-                            }
+                        if long {
+                            self.asr = ASR::S
+                        } else {
+                            self.asr = ASR::SR
+                        }
                     } else {
                         self.asr = ASR::S
                     }
@@ -104,7 +104,7 @@ impl Voice {
                     let decay_index = buffer_len - (index + 1);
                     return self.calculate_decay(self.current.gain, decay_index, self.decay);
                 };
-            },
+            }
 
             ASR::R => {
                 if short {
@@ -116,9 +116,9 @@ impl Voice {
                     let decay_index = self.decay - (index + 1);
                     return self.calculate_decay(self.past.gain, decay_index, self.decay);
                 } else {
-                    return 0.0
+                    return 0.0;
                 };
-            },
+            }
         }
     }
 }
