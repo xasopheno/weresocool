@@ -130,7 +130,7 @@ bass = {
 		    	(3/2, 5, 1, 0),
 		    	(3/2, 0, 1, 0),
 		    	(1/1, 5, 1, 0),
-		    	(1/1, 0, 1, 0),
+		    	(1/1, 0, 1/2, 0),
 		    	(1/2, 1, 1/2, -1/3),
 		    	(1/2, 0, 1/2, 1/3),
 		  	]
@@ -310,7 +310,7 @@ section_2_maybe = {
 
 triangle_1 = {
 		chord 
-		| Gain 2/3 
+		| Gain 1/2 
 		| Seq [Tm 1, Tm 0 | Length 1/4, Tm 200/209 | Length 1/4, Tm 0 | Length 1/4] 
 		| Tm 7/4 
 		| Length 1/4
@@ -405,7 +405,10 @@ coda_chord = {
 		      	(7/16, 12, 1/4, 1/2),
 		      	(7/16, 0, 1/4, -1/2),
 			]
-			| Length 11 | Gain 5
+			| Length 1/2 
+			| Seq [AsIs, PanM -1/2, PanM -1, PanM -1/2, AsIs, PanM 1/2] 
+			| Repeat 4 
+			| Gain 5
 		]
 }
 
