@@ -10,6 +10,7 @@ pub mod get_length_ratio {
             match self {
                 Op::AsIs {}
                 | Op::Sine {}
+                | Op::AD { .. }
                 | Op::Square {}
                 | Op::Noise {}
                 | Op::FInvert {}
@@ -70,7 +71,7 @@ pub mod get_length_ratio {
                     target_length / main_length
                 }
 
-                Op::ModulateBy { operations: _ } => Ratio::from_integer(1),
+                Op::ModulateBy { .. } => Ratio::from_integer(1),
 
                 Op::Focus {
                     main, op_to_apply, ..

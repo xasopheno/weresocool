@@ -61,7 +61,8 @@ m1_6 = {
 			Tm 7/8 | #a, Tm 5/4 | #b, Tm 3/2 | #c
 		) > @upper_structure (
 				AsIs > @a(Tm 10/7) > @b(Tm 6/5) > @c(Tm 4/3)
-			)
+			),
+		-- intro1(Tm 0, Tm 0, Tm 0) | Length 1/100
 	] 
 }
 
@@ -81,7 +82,8 @@ intro2(a, b, c, d, e, f) = {
 			$a, $b, $c | Length 4,	
 		],
 		$a 
-		| Tm 1/4 
+		| Seq [Length 9/10, Silence 1/10]
+		| Tm 1/4  
 	] 
 }
 
@@ -166,9 +168,10 @@ mel1 = {
 }
 
 main = {
-	-- Overlay [AsIs, Noise | Gain 1/150] | 
+	Overlay [AsIs, Noise | Gain 1/150] | 
 		Seq [
-			intro | overtones,
+			intro
+			| overtones,
 			Gain 0, 
 			Length 7/6 |
 			Overlay [

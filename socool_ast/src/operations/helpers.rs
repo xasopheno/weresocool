@@ -19,9 +19,9 @@ pub fn handle_id_error(id: String, table: &OpOrNfTable) -> OpOrNf {
     }
 }
 
-pub fn modulate(input: &Vec<PointOp>, modulator: &Vec<PointOp>) -> Vec<PointOp> {
-    let mut m = modulator.clone();
-    let mut i = input.clone();
+pub fn modulate(input: &[PointOp], modulator: &[PointOp]) -> Vec<PointOp> {
+    let mut m = modulator.to_owned();
+    let mut i = input.to_owned();
     let mut result = vec![];
     while m.len() > 0 && i.len() > 0 {
         let mut inpu = i[0].clone();
@@ -66,6 +66,9 @@ pub fn pad_length(input: &mut NormalForm, max_len: Rational64, table: &OpOrNfTab
                 pa: Ratio::new(0, 1),
                 g: Ratio::new(0, 1),
                 l: max_len - input_lr,
+                attack: Ratio::new(1, 1),
+                decay: Ratio::new(1, 1),
+                decay_length: 2,
                 osc_type,
                 names: NameSet::new(),
             });
@@ -75,7 +78,7 @@ pub fn pad_length(input: &mut NormalForm, max_len: Rational64, table: &OpOrNfTab
 }
 
 pub fn join_sequence(mut l: NormalForm, mut r: NormalForm) -> NormalForm {
-    if l.operations.len() == 0 {
+    if l.operations.is_empty() {
         return r;
     }
 
@@ -91,6 +94,9 @@ pub fn join_sequence(mut l: NormalForm, mut r: NormalForm) -> NormalForm {
                     pa: Ratio::new(0, 1),
                     g: Ratio::new(0, 1),
                     l: r.length_ratio,
+                    attack: Ratio::new(1, 1),
+                    decay: Ratio::new(1, 1),
+                    decay_length: 2,
                     osc_type: OscType::Sine,
                     names: NameSet::new(),
                 }])
@@ -105,6 +111,9 @@ pub fn join_sequence(mut l: NormalForm, mut r: NormalForm) -> NormalForm {
                     pa: Ratio::new(0, 1),
                     g: Ratio::new(0, 1),
                     l: l.length_ratio,
+                    attack: Ratio::new(1, 1),
+                    decay: Ratio::new(1, 1),
+                    decay_length: 2,
                     osc_type: OscType::Sine,
                     names: NameSet::new(),
                 }])

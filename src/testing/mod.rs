@@ -6,7 +6,7 @@ extern crate term;
 use difference::{Changeset, Difference};
 use generation::parsed_to_render::{generate_waveforms, r_to_f64, sum_all_waveforms};
 use indexmap::IndexMap;
-use instrument::{oscillator::Origin, stereo_waveform::Normalize};
+use instrument::{oscillator::Basis, stereo_waveform::Normalize};
 use serde_json::{from_reader, to_string_pretty};
 use socool_ast::operations::{NormalForm, Normalize as NormalizeOp};
 use socool_parser::parser::*;
@@ -26,6 +26,7 @@ pub struct CompositionHashes {
 }
 
 pub fn read_test_table_from_json_file() -> TestTable {
+    //    let file = File::open("src/testing/hashes.json").unwrap();
     let file = File::open("src/testing/hashes.json").unwrap();
 
     let mut decoded: TestTable = from_reader(&file).unwrap();
@@ -35,10 +36,12 @@ pub fn read_test_table_from_json_file() -> TestTable {
 
 pub fn generate_test_table() -> TestTable {
     let mut test_table: TestTable = IndexMap::new();
+    //    let paths = fs::read_dir("./songs/test").unwrap();
     let paths = fs::read_dir("./songs/test").unwrap();
     for path in paths {
         let p = path.unwrap().path().into_os_string().into_string().unwrap();
         if p.ends_with(".socool") {
+            println!("{}", p.clone());
             let composition_hashes = generate_render_hashes(&p);
             test_table.insert(p, composition_hashes);
         }
@@ -50,6 +53,7 @@ pub fn generate_test_table() -> TestTable {
 
 pub fn write_test_table_to_json_file(test_table: &TestTable) {
     let pretty = to_string_pretty(test_table).unwrap();
+    //    let mut file = File::create("src/testing/hashes.json").unwrap();
     let mut file = File::create("src/testing/hashes.json").unwrap();
     file.write_all(pretty.as_bytes()).unwrap();
 }
@@ -64,11 +68,13 @@ fn generate_render_hashes(p: &String) -> CompositionHashes {
     main_op.apply_to_normal_form(&mut normal_form, &parsed.table);
     let nf_hash = calculate_hash(&normal_form);
 
-    let origin = Origin {
+    let origin = Basis {
         f: r_to_f64(init.f),
         g: r_to_f64(init.g),
         l: r_to_f64(init.l),
         p: r_to_f64(init.p),
+        a: 44100.0,
+        d: 44100.0,
     };
 
     let vec_wav = generate_waveforms(&origin, normal_form.operations, false);
@@ -77,12 +83,13 @@ fn generate_render_hashes(p: &String) -> CompositionHashes {
     result.normalize();
 
     let render_hash = sum_vec(result.l_buffer) + sum_vec(result.r_buffer);
-    let render_hash = (render_hash * 100_000_000_000.0).round() / 100_000_000_000.0;
+    let render_hash = (render_hash * 1_000_000_000_000.0).ceil() / 1_000_000_000_000.0;
+    let render_hash_string = &render_hash.to_string()[..13];
 
     let hashes = CompositionHashes {
         op: op_hash,
         normal_form: nf_hash,
-        stereo_waveform: render_hash,
+        stereo_waveform: render_hash_string.parse().unwrap(),
     };
 
     hashes

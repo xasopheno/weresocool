@@ -2,15 +2,11 @@ use crate::ast::{Op, OpOrNf, OpOrNf::*, OpOrNfTable};
 use crate::operations::{ArgMap, NormalForm, Normalize, Substitute};
 use std::collections::HashMap;
 
-pub fn get_fn_arg_map(f: OpOrNf, args: &Vec<OpOrNf>) -> ArgMap {
+pub fn get_fn_arg_map(f: OpOrNf, args: &[OpOrNf]) -> ArgMap {
     let mut arg_map: ArgMap = HashMap::new();
     match f {
         OpOrNf::Op(fun) => match fun {
-            Op::FunctionDef {
-                op_or_nf: _,
-                name: _,
-                vars,
-            } => {
+            Op::FunctionDef { vars, .. } => {
                 for (var, arg) in vars.iter().zip(args.iter()) {
                     arg_map.insert(var.to_string(), arg.clone());
                 }

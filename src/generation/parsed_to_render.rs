@@ -4,13 +4,13 @@ extern crate rayon;
 extern crate socool_ast;
 extern crate socool_parser;
 use instrument::{
-    oscillator::{Origin, Oscillator},
+    oscillator::{Basis, Oscillator},
     stereo_waveform::{Normalize, StereoWaveform},
 };
 use num_rational::Rational64;
 use pbr::ProgressBar;
 use rayon::prelude::*;
-use render::Render;
+use render::{Render, RenderPointOp};
 use settings::default_settings;
 use socool_ast::ast::OpOrNfTable;
 use socool_ast::operations::{NormalForm, Normalize as NormalizeOp, PointOp};
@@ -23,7 +23,7 @@ pub fn r_to_f64(r: Rational64) -> f64 {
     *r.numer() as f64 / *r.denom() as f64
 }
 
-pub fn render(origin: &Origin, composition: &NormalForm, table: &OpOrNfTable) -> StereoWaveform {
+pub fn render(origin: &Basis, composition: &NormalForm, table: &OpOrNfTable) -> StereoWaveform {
     let mut normal_form = NormalForm::init();
 
     println!("\nGenerating Composition ");
@@ -37,8 +37,8 @@ pub fn render(origin: &Origin, composition: &NormalForm, table: &OpOrNfTable) ->
     result
 }
 
-pub fn render_mic(point_op: &PointOp, origin: Origin, osc: &mut Oscillator) -> StereoWaveform {
-    let result = point_op.clone().render(&origin, osc);
+pub fn render_mic(point_op: &PointOp, origin: Basis, osc: &mut Oscillator) -> StereoWaveform {
+    let result = point_op.clone().render(&origin, osc, None);
     result
 }
 
@@ -68,7 +68,7 @@ fn create_pb_instance(n: usize) -> Arc<Mutex<ProgressBar<std::io::Stdout>>> {
 }
 
 pub fn generate_waveforms(
-    origin: &Origin,
+    origin: &Basis,
     mut vec_sequences: Vec<Vec<PointOp>>,
     show: bool,
 ) -> Vec<StereoWaveform> {

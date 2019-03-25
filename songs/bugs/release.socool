@@ -11,13 +11,16 @@ overtones = {
 
 thing1 = {
 	Seq [
+		-- overtones |
 		Overlay [
 			AsIs, 
 			Tm 3/2,
 			-- Tm 5/2,
 		],
 		Seq [
-			Tm 11/8,
+			Tm 3/2,
+			Tm 4,
+			-- Tm 5/2,
 			-- Tm 8/5,
 			-- Overlay [
 			-- 	Tm 11/8, 
@@ -33,4 +36,3 @@ thing1 = {
 main = {
 	thing1
 }
-	
