@@ -6,7 +6,7 @@ pub mod tests {
         loudness::loudness_normalization,
         oscillator::{Basis, Oscillator},
         stereo_waveform::StereoWaveform,
-        voice::{Voice, VoiceState},
+        voice::{Voice, VoiceState, VoiceUpdate},
     };
     use num_rational::Rational64;
     use settings::get_test_settings;
@@ -31,8 +31,9 @@ pub mod tests {
                 phase: 0.0,
                 osc_type: OscType::Sine,
                 asr: ASR::Silence,
-                attack: 4000,
-                decay: 4000,
+                attack: 44100,
+                decay: 44100,
+                decay_length: 2,
             };
 
             assert_eq!(voice, result);
@@ -42,7 +43,17 @@ pub mod tests {
         fn test_deltas() {
             let index = 1;
             let mut voice = Voice::init(index);
-            voice.update(200.0, 1.0, OscType::Sine, true);
+            let vu = VoiceUpdate {
+                frequency: 200.0,
+                gain: 1.0,
+                osc_type: OscType::Sine,
+                silence_next: true,
+                attack: 44100.0,
+                decay: 44100.0,
+                decay_type: 2,
+            };
+
+            voice.update(vu);
             let gain = voice.calculate_asr_gain(10, 2);
             let p_delta = voice.calculate_portamento_delta(10);
 
@@ -55,7 +66,16 @@ pub mod tests {
             let index = 1;
             let mut buffer = vec![0.0; 3];
             let mut voice = Voice::init(index);
-            voice.update(100.0, 1.0, OscType::Sine, true);
+            let vu = VoiceUpdate {
+                frequency: 100.0,
+                gain: 1.0,
+                osc_type: OscType::Sine,
+                silence_next: true,
+                attack: 44100.0,
+                decay: 44100.0,
+                decay_type: 2,
+            };
+            voice.update(vu);
             voice.generate_waveform(&mut buffer, 3, 2048.0 / 44_100.0);
             assert_eq!(buffer, [0.0, -0.33255392170798287, 0.09091323479014923]);
         }
@@ -63,14 +83,32 @@ pub mod tests {
         #[test]
         fn test_sound_silence() {
             let mut voice = Voice::init(1);
-            voice.update(100.0, 1.0, OscType::Sine, true);
+            let vu1 = VoiceUpdate {
+                frequency: 100.0,
+                gain: 1.0,
+                osc_type: OscType::Sine,
+                silence_next: true,
+                attack: 44100.0,
+                decay: 44100.0,
+                decay_type: 2,
+            };
+            let vu2 = VoiceUpdate {
+                frequency: 100.0,
+                gain: 1.0,
+                osc_type: OscType::Sine,
+                silence_next: true,
+                attack: 44100.0,
+                decay: 44100.0,
+                decay_type: 2,
+            };
+            voice.update(vu1);
             let silence_to_sound = voice.silence_to_sound();
 
-            voice.update(0.0, 0.0, OscType::Sine, true);
+            voice.update(vu2);
             let sound_to_silence = voice.sound_to_silence();
 
             assert_eq!(silence_to_sound, true);
-            assert_eq!(sound_to_silence, true);
+            assert_eq!(sound_to_silence, false);
         }
     }
 
@@ -97,8 +135,9 @@ pub mod tests {
                         },
                         osc_type: OscType::Sine,
                         asr: ASR::Silence,
-                        attack: 4000,
-                        decay: 4000,
+                        attack: 44100,
+                        decay: 44100,
+                        decay_length: 2,
                     },
                     Voice {
                         index: 1,
@@ -113,8 +152,9 @@ pub mod tests {
                         },
                         osc_type: OscType::Sine,
                         asr: ASR::Silence,
-                        attack: 4000,
-                        decay: 4000,
+                        attack: 44100,
+                        decay: 44100,
+                        decay_length: 2,
                     },
                 ),
             };
@@ -130,6 +170,8 @@ pub mod tests {
                 g: 1.0,
                 l: 1.0,
                 p: 0.0,
+                a: 1.0,
+                d: 1.0,
             };
 
             let mut point_op = PointOp::init();
@@ -158,6 +200,8 @@ pub mod tests {
                 g: 1.0,
                 l: 1.0,
                 p: 0.0,
+                a: 1.0,
+                d: 1.0,
             };
 
             let mut point_op = PointOp::init();
@@ -166,8 +210,8 @@ pub mod tests {
             osc.update(origin, &point_op, Some(PointOp::init()));
 
             let expected = StereoWaveform {
-                l_buffer: vec![0.0, 0.005513338750094087, 0.022033212952692206],
-                r_buffer: vec![0.0, 0.0018377795833646956, 0.007344404317564068],
+                l_buffer: vec![0.0, 0.01654001625028226, 0.033049819429038306],
+                r_buffer: vec![0.0, 0.005513338750094087, 0.011016606476346103],
             };
             assert_eq!(osc.generate(3.0), expected);
         }
