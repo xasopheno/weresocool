@@ -86,7 +86,6 @@ impl Oscillator {
         let silence_next_l = next_fm == 0.0 || next_l_gain == 0.0;
         let silence_next_r = next_fm == 0.0 || next_r_gain == 0.0;
 
-        let decay_length = point_op.decay_length;
 
         l_voice.update(VoiceUpdate {
             frequency: (basis.f * fm) + fa,

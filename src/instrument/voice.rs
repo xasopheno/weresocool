@@ -1,7 +1,5 @@
 extern crate socool_ast;
-use generation::parsed_to_render::r_to_f64;
 use instrument::{asr::ASR, loudness::loudness_normalization};
-use num_rational::Rational64;
 use socool_ast::ast::OscType;
 
 #[derive(Clone, Debug, PartialEq)]
@@ -93,7 +91,7 @@ impl Voice {
         }
     }
 
-    pub fn update(&mut self, mut info: VoiceUpdate) {
+    pub fn update(&mut self, info: VoiceUpdate) {
         let frequency = if info.frequency < 20.0 {
             0.0
         } else {
