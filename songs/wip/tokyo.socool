@@ -389,9 +389,98 @@ triangle_part_2 = {
 	] 
 }
 
+unit = {
+	Length 1/2 
+}
+
+tornado_1 = {
+    O[
+
+    	(5/3, 3, 1, 1),
+    	(5/4, 3, 1, 1),
+      	(1/1, 2, 1, 1/2),
+      	(1/1, 0, 1, -1/2),
+      	(1/2, 0, 1, -1/2),
+  	] |
+	Sequence [
+		AsIs,
+		Tm 9/8,
+		Tm 5/4,
+		Tm 4/3,
+		Tm 3/2,
+		Tm 5/3,
+		Tm 15/8,
+		Tm 2,
+	] > FitLength unit
+}
+
+tornado_2 = {
+    O[
+    	(15/8, 3, 1, -1),
+    	(3/2, 3, 1, -1),
+      	(1/1, 2, 1, -1/2),
+      	(1/1, 0, 1, 1/2),
+      	(1/2, 0, 1, 1),
+  	] |
+	Sequence [
+		AsIs,
+		Tm 9/8,
+		Tm 5/4,
+		Tm 4/3,
+		Tm 3/2,
+		Tm 5/3,
+		Tm 15/8,
+		Tm 2,
+		Tm 9/4, 
+		Tm 5/2, 
+		Tm 8/3, 
+		Tm 3, 
+		Tm 10/3, 
+		Tm 15/4,
+	] 
+	| Tm 9/8
+	> FitLength unit
+}
+
+tornado_full = {
+	Overlay [
+		tornado_1,
+		tornado_2,
+	] 
+	| Seq [Tm 1, PanM -1 | Reverse]
+	| Overlay [AsIs, Tm 3/2 | PanM -1, Tm 9/4, Tm 3 | PanM -1]
+	| Seq [
+		Repeat 4, 
+		Length 7/6, 
+		Gain 7/8, 
+		Length 6/5 | Gain 3/4, 
+		Length 5/4 | Gain 1/2, 
+		Length 4/3 | Gain 1/4 | ModulateBy [AsIs, Gain 1/2, Gain 1/4]
+	]
+}
+
+sweet_melody = {
+	O[
+		(5/2, 0, 1/4, 1/2),
+		(2/1, 0, 1/4, -1/2),
+		(5/4, 0, 1, -1/2),
+		(1, 0, 1, 1/2),
+	] |
+	Seq [
+		Tm 0 | Length 2, 
+		Tm 3/2 | Length 4/3, 
+		Tm 4/3 | Length 3/4, 
+		Tm 5/3 | Length 4/3, 
+		Tm 3/2 | Length 1/2, 
+		Tm 9/4,
+		Tm 15/8 | Gain 4/5,
+		Tm 5/3 | Length 5/4 | Gain 3/5, 
+	] | Length 6/5 
+}
+
 coda_chord = {
-		Seq [
-			triangle_part_2,
+	Seq [
+		Overlay [
 			AD(1, 1/100, 1) |
 			O [
 		    	(15/1, 5, 1/200, 1),
@@ -408,15 +497,30 @@ coda_chord = {
 			| Length 1/2 
 			| Seq [AsIs, PanM -1/2, PanM -1, PanM -1/2, AsIs, PanM 1/2] 
 			| Repeat 4 
-			| Gain 5
+			| Gain 5,
+
+			sweet_melody,
+			Seq [
+				Tm 0 | Length 2,
+				tornado_full 
+				| Gain 1/100 
+				| Seq [
+					AsIs | ModulateBy [AsIs | PanA -1, Tm 25/24 | PanA -1/2, Tm 9/8, Tm 5/4 | PanA 1/2, Tm 4/3, Tm 25/18 | PanA 1]
+				],
+			]
 		]
+	]
 }
 
 main = {
 	Seq [
 		section_1 | Length 4/9 | Tm	7/4, 
 		Seq [
-			section_1 | Repeat 2,
+			section_1,
+			section_1 > @fast(
+				Overlay [AsIs, Ta 3]
+				| Gain 1/2 
+			),
 			section_1 > @fast(
 				Overlay [Tm 5/4 | Reverse, Tm 6/5 | Reverse]
 				| Tm 9/8 
@@ -424,6 +528,7 @@ main = {
 			),
 			triangle_part_1,
 			interlude_thing | Seq [AsIs, Reverse] | Tm 4/3, 
+			triangle_part_2,
 			coda_chord
 		] 
 		| Repeat 2

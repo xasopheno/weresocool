@@ -438,7 +438,7 @@ cadenza = {
 main = {
 	overtones |
 	AD (1/2, 1/2, 2) 
-	-- Seq [Tm 1 | Repeat 6, Tm 0] | Length 1/7
+	-- | Seq [Tm 1 | Repeat 6, Tm 0] | Length 1/7
 	| Seq [
 		m1_8,
 		m9_16,
