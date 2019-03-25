@@ -32,12 +32,12 @@
   "./songs/test/fit_length_ratio.socool": {
     "op": 13228314473056280603,
     "normal_form": 18099558911358468513,
-    "stereo_waveform": -0.23351547246
+    "stereo_waveform": -0.2335154724
   },
   "./songs/test/fun1.socool": {
     "op": 12288583940995574280,
     "normal_form": 8002604668372375279,
-    "stereo_waveform": 37.27103766201
+    "stereo_waveform": 37.271037662
   },
   "./songs/test/fun2.socool": {
     "op": 13138991617564812511,
@@ -47,7 +47,7 @@
   "./songs/test/fun_and_focus.socool": {
     "op": 14258408561584226972,
     "normal_form": 1119932893708895354,
-    "stereo_waveform": -0.59271905267
+    "stereo_waveform": -0.5927190526
   },
   "./songs/test/fun_simple.socool": {
     "op": 12493939285638008979,
@@ -67,7 +67,7 @@
   "./songs/test/length_test.socool": {
     "op": 1338048285582737102,
     "normal_form": 1438482355675097453,
-    "stereo_waveform": -0.37605962258
+    "stereo_waveform": -0.3760596225
   },
   "./songs/test/mod_by_test.socool": {
     "op": 4310757630145624748,
@@ -82,7 +82,7 @@
   "./songs/test/std_test.socool": {
     "op": 16061656181813856214,
     "normal_form": 647356920831454131,
-    "stereo_waveform": -6e-11
+    "stereo_waveform": -0.0
   },
   "./songs/test/ta_test.socool": {
     "op": 4647941549859812500,
@@ -97,6 +97,6 @@
   "./songs/test/tm_test.socool": {
     "op": 2903943560702887074,
     "normal_form": 10719385437994646050,
-    "stereo_waveform": -0.60117047595
+    "stereo_waveform": -0.6011704759
   }
 }

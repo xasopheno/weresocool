@@ -83,12 +83,13 @@ fn generate_render_hashes(p: &String) -> CompositionHashes {
     result.normalize();
 
     let render_hash = sum_vec(result.l_buffer) + sum_vec(result.r_buffer);
-    let render_hash = (render_hash * 100_000_000_000.0).trunc() / 100_000_000_000.0;
+    let render_hash = (render_hash * 1_000_000_000_000.0).ceil() / 1_000_000_000_000.0;
+    let render_hash_string = &render_hash.to_string()[..13];
 
     let hashes = CompositionHashes {
         op: op_hash,
         normal_form: nf_hash,
-        stereo_waveform: render_hash,
+        stereo_waveform: render_hash_string.parse().unwrap(),
     };
 
     hashes
