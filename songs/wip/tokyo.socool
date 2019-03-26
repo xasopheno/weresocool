@@ -455,7 +455,7 @@ tornado_full = {
 		Gain 7/8, 
 		Length 6/5 | Gain 3/4, 
 		Length 5/4 | Gain 1/2, 
-		Length 4/3 | Gain 1/4 | ModulateBy [AsIs, Gain 1/2, Gain 1/4]
+		Length 3/2 | Gain 1/4 | ModulateBy [AsIs, Gain 1/2, Gain 1/4]
 	]
 }
 
@@ -518,7 +518,7 @@ main = {
 		Seq [
 			section_1,
 			section_1 > @fast(
-				Overlay [AsIs, Ta 3]
+				Overlay [AsIs | PanA -4/5, Ta 3 | PanA 4/5]
 				| Gain 1/2 
 			),
 			section_1 > @fast(

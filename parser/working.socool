@@ -46,6 +46,7 @@ thing2 = {
 main = {
     Overlay [
         AD(1/100, 1/1, 2) |
+        Portamento 1/10 |
         Sequence [
             AsIs,
             foo,

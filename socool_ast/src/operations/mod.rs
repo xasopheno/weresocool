@@ -30,6 +30,7 @@ pub struct PointOp {
     pub attack: Rational64,
     pub decay: Rational64,
     pub decay_length: usize,
+    pub portamento: Rational64,
     pub osc_type: OscType,
     pub names: NameSet,
 }
@@ -163,6 +164,7 @@ impl Mul<PointOp> for PointOp {
             attack: self.attack * other.attack,
             decay: self.decay * other.decay,
             decay_length: other.decay_length,
+            portamento: self.portamento * other.portamento,
             names,
         }
     }
@@ -184,6 +186,7 @@ impl<'a, 'b> Mul<&'b PointOp> for &'a PointOp {
             attack: self.attack * other.attack,
             decay: self.decay * other.decay,
             decay_length: other.decay_length,
+            portamento: self.portamento * other.portamento,
             names,
         }
     }
@@ -203,6 +206,7 @@ impl MulAssign for PointOp {
             attack: self.attack * other.attack,
             decay: self.decay * other.decay,
             decay_length: other.decay_length,
+            portamento: self.portamento * other.portamento,
             names,
         }
     }
@@ -222,6 +226,7 @@ impl PointOp {
             attack: self.attack * other.attack,
             decay: self.decay * other.decay,
             decay_length: other.decay_length,
+            portamento: self.portamento * other.portamento,
             names,
         }
     }
@@ -237,6 +242,7 @@ impl PointOp {
             attack: Ratio::new(1, 1),
             decay: Ratio::new(1, 1),
             decay_length: 2,
+            portamento: Ratio::new(1, 1),
             osc_type: OscType::Sine,
             names: NameSet::new(),
         }
@@ -251,6 +257,7 @@ impl PointOp {
             l: Ratio::new(1, 1),
             attack: Ratio::new(1, 1),
             decay: Ratio::new(1, 1),
+            portamento: Ratio::new(1, 1),
             decay_length: 2,
             osc_type: OscType::Sine,
             names: NameSet::new(),
