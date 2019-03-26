@@ -39,7 +39,7 @@ fn main() -> Result<(), pa::Error> {
 
     let init = parsed.init;
 
-    let origin = Basis {
+    let basis = Basis {
         f: r_to_f64(init.f),
         g: r_to_f64(init.g),
         l: r_to_f64(init.l),
@@ -49,12 +49,12 @@ fn main() -> Result<(), pa::Error> {
     };
 
     if args.is_present("print") {
-        let composition = render(&origin, &nf, &parsed.table);
+        let composition = render(&basis, &nf, &parsed.table);
         to_wav(composition, filename.unwrap().to_string());
     } else if args.is_present("json") {
-        to_json(&nf, init, filename.unwrap().to_string());
+        to_json(&basis, &nf, &parsed.table, filename.unwrap().to_string());
     } else {
-        let composition = render(&origin, &nf, &parsed.table);
+        let composition = render(&basis, &nf, &parsed.table);
 
         let pa = pa::PortAudio::new()?;
 

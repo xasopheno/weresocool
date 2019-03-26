@@ -104,7 +104,7 @@ pub enum Op {
     },
 }
 
-#[derive(Copy, Clone, Debug, PartialEq, Serialize, Hash)]
+#[derive(Copy, Clone, Debug, PartialEq, Serialize, Deserialize, Hash)]
 pub enum OscType {
     Sine,
     Noise,

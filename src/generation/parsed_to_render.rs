@@ -48,16 +48,17 @@ pub fn to_wav(composition: StereoWaveform, filename: String) {
     printed("WAV".to_string());
 }
 
-pub fn to_json(_composition: &NormalForm, _init: Init, _filename: String) {
-    println!("to_json is not working right now, sorry. back soon.");
-    //    banner("JSONIFY-ing".to_string(), filename.clone());
-    //        let mut normal_form = NormalForm::init();
-    //
-    //        println!("Generating Composition \n");
-    //        composition.apply_to_normal_form(&mut normal_form);
-    //
-    //        write_composition_to_json(norm_ev, &filename).expect("Writing to JSON failed");
-    //        printed("JSON".to_string());
+pub fn to_json(basis: &Basis, composition: &NormalForm, table: &OpOrNfTable, filename: String) {
+        banner("JSONIFY-ing".to_string(), filename.clone());
+        let mut normal_form = NormalForm::init();
+
+        println!("Generating Composition \n");
+        composition.apply_to_normal_form(&mut normal_form, table);
+
+        println!("{:?}", normal_form);
+
+//      write_composition_to_json(norm_ev, &filename).expect("Writing to JSON failed");
+//      printed("JSON".to_string());
 }
 
 fn create_pb_instance(n: usize) -> Arc<Mutex<ProgressBar<std::io::Stdout>>> {
