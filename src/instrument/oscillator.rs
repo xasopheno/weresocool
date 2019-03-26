@@ -86,7 +86,6 @@ impl Oscillator {
         let silence_next_l = next_fm == 0.0 || next_l_gain == 0.0;
         let silence_next_r = next_fm == 0.0 || next_r_gain == 0.0;
 
-
         l_voice.update(VoiceUpdate {
             frequency: (basis.f * fm) + fa,
             gain: l_gain,
@@ -107,7 +106,11 @@ impl Oscillator {
         });
     }
 
-    pub fn generate(&mut self, n_samples_to_generate: f64) -> StereoWaveform {
+    pub fn generate(
+        &mut self,
+        n_samples_to_generate: f64,
+        portamento_length: f64,
+    ) -> StereoWaveform {
         let total_len = self.sample_phase + n_samples_to_generate;
         let length = total_len.floor() as usize;
         self.sample_phase = total_len.fract();
@@ -116,8 +119,11 @@ impl Oscillator {
         let factor: f64 = tau() / self.settings.sample_rate;
 
         let (ref mut l_voice, ref mut r_voice) = self.voices;
-        l_voice.generate_waveform(&mut l_buffer, self.portamento_length, factor);
-        r_voice.generate_waveform(&mut r_buffer, self.portamento_length, factor);
+
+        let port = (self.portamento_length as f64 * portamento_length).trunc() as usize;
+
+        l_voice.generate_waveform(&mut l_buffer, port, factor);
+        r_voice.generate_waveform(&mut r_buffer, port, factor);
 
         StereoWaveform { l_buffer, r_buffer }
     }

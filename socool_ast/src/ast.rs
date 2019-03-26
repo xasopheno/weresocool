@@ -47,6 +47,9 @@ pub enum Op {
         decay: Rational64,
         length: usize,
     },
+    Portamento {
+        m: Rational64,
+    },
     //
     Reverse,
     FInvert,
@@ -117,6 +120,7 @@ pub fn is_choice_op(op_or_nf: OpOrNf, table: &OpOrNfTable) -> bool {
             | Op::Square {}
             | Op::Noise {}
             | Op::AD { .. }
+            | Op::Portamento { .. }
             | Op::FInvert {}
             | Op::Reverse {}
             | Op::TransposeM { .. }

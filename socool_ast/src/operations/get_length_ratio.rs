@@ -11,6 +11,7 @@ pub mod get_length_ratio {
                 Op::AsIs {}
                 | Op::Sine {}
                 | Op::AD { .. }
+                | Op::Portamento { .. }
                 | Op::Square {}
                 | Op::Noise {}
                 | Op::FInvert {}

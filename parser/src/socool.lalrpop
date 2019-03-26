@@ -108,6 +108,7 @@ BaseOperation: OpOrNf = {
         <attack:Rational> ","
         <decay: Rational> ","
         <length: Int> ")" => Op(AD {attack, decay, length: length as usize}),
+    "Portamento" <v:Rational> => Op(Portamento {m: v}),
     "Silence" <v:Rational> => Op(Silence {m: v}),
     "Tm" <v:Rational> => Op(TransposeM {m: v}),
     "Ta" <v:Rational> => Op(TransposeA {a: v}),

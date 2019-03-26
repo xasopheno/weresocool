@@ -40,6 +40,10 @@ I use `ffmpeg` to convert to `mp3`
 
 https://www.ffmpeg.org/
 
+For files in `songs/*` of type `.socool`
+`./play dir/filename`
+`./print dir/filename`
+
 ## Building a binary
 To build the binary:
 
@@ -67,7 +71,7 @@ ARGS:
 ```
 
 ## Test
-To run tests for both WereSoCool and the WereSoCool parser, run:
+To run tests for WSC, Parser, AST, and the end-to-end tests run:
 
 `./test_all.sh`
 
