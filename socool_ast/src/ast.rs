@@ -48,7 +48,7 @@ pub enum Op {
         length: usize,
     },
     Portamento {
-        m: Rational64
+        m: Rational64,
     },
     //
     Reverse,
