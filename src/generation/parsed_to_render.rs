@@ -1,6 +1,8 @@
 extern crate num_rational;
 extern crate pbr;
 extern crate rayon;
+extern crate serde;
+extern crate serde_json;
 extern crate socool_ast;
 extern crate socool_parser;
 use instrument::{
@@ -11,13 +13,15 @@ use num_rational::Rational64;
 use pbr::ProgressBar;
 use rayon::prelude::*;
 use render::{Render, RenderPointOp};
+use serde::{Deserialize, Serialize};
+use serde_json::to_string;
 use settings::default_settings;
-use socool_ast::ast::OpOrNfTable;
+use socool_ast::ast::{Op::*, OpOrNf::*, OpOrNfTable};
 use socool_ast::operations::{NormalForm, Normalize as NormalizeOp, PointOp};
 use socool_parser::parser::Init;
 use std::sync::{Arc, Mutex};
 use ui::{banner, printed};
-use write::write_composition_to_wav;
+use write::{write_composition_to_json, write_composition_to_wav};
 
 pub fn r_to_f64(r: Rational64) -> f64 {
     *r.numer() as f64 / *r.denom() as f64
@@ -48,17 +52,54 @@ pub fn to_wav(composition: StereoWaveform, filename: String) {
     printed("WAV".to_string());
 }
 
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
+pub struct Op4D {
+    x: f64,
+    y: f64,
+    z: f64,
+    l: f64,
+}
+
+fn point_op_to_4d(point_op: &PointOp, basis: &Basis) -> Op4D {
+    Op4D {
+        x: basis.p * r_to_f64(point_op.pa) + r_to_f64(point_op.pa),
+        y: basis.f * r_to_f64(point_op.fm) + r_to_f64(point_op.fa),
+        z: basis.g * r_to_f64(point_op.g),
+        l: basis.l * r_to_f64(point_op.l),
+    }
+}
+
+fn composition_to_vec_op4d(
+    basis: &Basis,
+    composition: &NormalForm,
+    table: &OpOrNfTable,
+) -> Vec<Vec<Op4D>> {
+    let mut normal_form = NormalForm::init();
+
+    println!("Generating Composition \n");
+    composition.apply_to_normal_form(&mut normal_form, table);
+
+    normal_form
+        .operations
+        .iter()
+        .map(|vec_point_op| {
+            vec_point_op
+                .iter()
+                .map(|p_op| point_op_to_4d(p_op, basis))
+                .collect()
+        })
+        .collect()
+}
+
 pub fn to_json(basis: &Basis, composition: &NormalForm, table: &OpOrNfTable, filename: String) {
-        banner("JSONIFY-ing".to_string(), filename.clone());
-        let mut normal_form = NormalForm::init();
+    banner("JSONIFY-ing".to_string(), filename.clone());
 
-        println!("Generating Composition \n");
-        composition.apply_to_normal_form(&mut normal_form, table);
+    let vec_op4d = composition_to_vec_op4d(basis, composition, table);
 
-        println!("{:?}", normal_form);
-
-//      write_composition_to_json(norm_ev, &filename).expect("Writing to JSON failed");
-//      printed("JSON".to_string());
+    let json = to_string(&vec_op4d).unwrap();
+    //    json
+    write_composition_to_json(&json, &filename).expect("Writing to JSON failed");
+    printed("JSON".to_string());
 }
 
 fn create_pb_instance(n: usize) -> Arc<Mutex<ProgressBar<std::io::Stdout>>> {
@@ -140,4 +181,67 @@ pub mod tests {
         let expected = [2.0, 4.0, 6.0, 2.0];
         assert_eq!(a, expected);
     }
+}
+
+#[test]
+fn to_vec_op4d_test() {
+    let mut normal_form = NormalForm::init();
+    let pt = OpOrNfTable::new();
+    let basis = Basis {
+        f: 100.0,
+        g: 1.0,
+        p: 0.0,
+        l: 1.0,
+        a: 44100.0,
+        d: 44100.0,
+    };
+
+    Sequence {
+        operations: vec![
+            Op(PanA {
+                a: Rational64::new(1, 2),
+            }),
+            Op(TransposeM {
+                m: Rational64::new(2, 1),
+            }),
+            Op(Gain {
+                m: Rational64::new(1, 2),
+            }),
+            Op(Length {
+                m: Rational64::new(2, 1),
+            }),
+        ],
+    }
+    .apply_to_normal_form(&mut normal_form, &pt);
+
+    let result = composition_to_vec_op4d(&basis, &normal_form, &pt);
+    assert_eq!(
+        result,
+        vec![vec![
+            Op4D {
+                x: 0.5,
+                y: 100.0,
+                z: 1.0,
+                l: 1.0
+            },
+            Op4D {
+                x: 0.0,
+                y: 200.0,
+                z: 1.0,
+                l: 1.0
+            },
+            Op4D {
+                x: 0.0,
+                y: 100.0,
+                z: 0.5,
+                l: 1.0
+            },
+            Op4D {
+                x: 0.0,
+                y: 100.0,
+                z: 1.0,
+                l: 2.0
+            },
+        ]]
+    )
 }

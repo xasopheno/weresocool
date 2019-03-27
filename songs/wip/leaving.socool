@@ -59,7 +59,10 @@ thing1 = {
 	] 
 	| Overlay [AsIs, Ta 5, Tm 5/4, Tm 5/4 | Ta 4]
 	-- | Seq [AsIs, Length 1/4 | Seq [AsIs, Tm 5/4 | PanM -1/2, Tm 4/3, Tm 5/4 | PanM -1/2]]
-	| Seq [Portamento 100, Portamento 35 | Tm 15/16, Portamento 70 | PanM -1, Overlay [Tm 9/8, Tm 3/2] | Gain 1/2 | Portamento 20]
+	| Seq [
+		Portamento 100, Portamento 35 | Tm 15/16, Portamento 70 | PanM -1, 
+		Overlay [Tm 9/8, Tm 3/2] | Gain 1/2 | Portamento 20 | Tm 5/6
+	]
 	| Seq [Tm 1] 
 	| Repeat 4
 } 
