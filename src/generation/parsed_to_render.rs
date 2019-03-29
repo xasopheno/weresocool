@@ -51,28 +51,32 @@ pub fn to_wav(composition: StereoWaveform, filename: String) {
     printed("WAV".to_string());
 }
 
-#[derive(Debug, Clone, PartialEq)]
+#[derive(Debug, Clone, Eq, PartialEq, PartialOrd)]
 pub enum EventType {
     On,
     Off
 }
 
-#[derive(Debug, Clone, PartialEq)]
+#[derive(Debug, Clone, Eq, PartialEq, PartialOrd)]
 pub struct Op4D {
-    x: f64,
-    y: f64,
-    z: f64,
-    t: Rational64,
     event_type: EventType,
+    t: Rational64,
     voice: usize,
     event: usize,
+    fm: Rational64,
+    fa: Rational64,
+    pm: Rational64,
+    pa: Rational64,
+    g: Rational64
 }
 
 fn point_op_to_4d(point_op: &PointOp, basis: &Basis, time: &mut Rational64, voice: usize, event: usize) -> (Op4D, Op4D) {
     let on = Op4D {
-        x: basis.p * r_to_f64(point_op.pa) + r_to_f64(point_op.pa),
-        y: basis.f * r_to_f64(point_op.fm) + r_to_f64(point_op.fa),
-        z: basis.g * r_to_f64(point_op.g),
+        fm: PointOp.fm,
+        fa: PointOp.fa,
+        pm: PointOp.pm,
+        pa: PointOp.pa,
+        g: PointOp.pa,
         t: time.clone(),
         event_type: EventType::On,
         voice,
@@ -94,7 +98,7 @@ fn composition_to_vec_op4d(
     basis: &Basis,
     composition: &NormalForm,
     table: &OpOrNfTable,
-) -> Vec<Vec<Op4D>> {
+) -> Vec<Op4D> {
     let mut normal_form = NormalForm::init();
 
     println!("Generating Composition \n");
@@ -104,7 +108,7 @@ fn composition_to_vec_op4d(
         .operations
         .iter()
         .enumerate()
-        .map(|(voice, vec_point_op)| {
+        .flat_map(|(voice, vec_point_op)| {
             let mut time = Rational64::new(0, 1);
             let mut result = vec![];
             vec_point_op
@@ -120,10 +124,16 @@ fn composition_to_vec_op4d(
         .collect()
 }
 
+fn sort_vec_op4d(mut vec_op4d: Vec<Op4D>) -> Vec<Op4D> {
+   vec_op4d
+}
+
 pub fn to_json(basis: &Basis, composition: &NormalForm, table: &OpOrNfTable, filename: String) {
     banner("JSONIFY-ing".to_string(), filename.clone());
 
     let vec_op4d = composition_to_vec_op4d(basis, composition, table);
+
+    let sorted = sort_vec_op4d(vec_op4d);
 
 //    let json = to_string(&vec_op4d).unwrap();
     //    json
@@ -242,32 +252,39 @@ pub mod tests {
             .apply_to_normal_form(&mut normal_form, &pt);
 
         let result = composition_to_vec_op4d(&basis, &normal_form, &pt);
+
         assert_eq!(
             result,
-            vec![vec![
+            vec![
                 Op4D {
-                    x: 0.5,
-                    y: 100.0,
-                    z: 1.0,
-                    t: Rational64::new(0, 1),
+                    fm: Rational64::new(1, 1),
+                    fa:Rational64::new(0, 1),
+                    pm:Rational64::new(1, 2),
+                    pa:Rational64::new(0, 1),
+                    g: Rational64::new(2, 1),
+                    t: Rational64::new(1, 1),
                     event_type: EventType::On,
                     voice: 0,
                     event: 0,
                 },
                 Op4D {
-                    x: 0.5,
-                    y: 100.0,
-                    z: 1.0,
-                    t: Rational64::new(1, 1),
+                    fm: Rational64::new(1, 1),
+                    fa:Rational64::new(0, 1),
+                    pm:Rational64::new(1, 2),
+                    pa:Rational64::new(0, 1),
+                    g: Rational64::new(2, 1),
+                    t: Rational64::new(2, 1),
                     event_type: EventType::Off,
                     voice: 0,
                     event: 0,
                 },
 
                 Op4D {
-                    x: 0.0,
-                    y: 200.0,
-                    z: 1.0,
+                    fm: Rational64::new(2, 1),
+                    fa:Rational64::new(0, 1),
+                    pm:Rational64::new(1, 1),
+                    pa:Rational64::new(0, 1),
+                    g: Rational64::new(2, 1),
                     t: Rational64::new(1, 1),
                     event_type: EventType::On,
                     voice: 0,
@@ -320,7 +337,7 @@ pub mod tests {
                     voice: 0,
                     event: 3,
                 },
-            ]]
+            ]
         )
     }
 }
