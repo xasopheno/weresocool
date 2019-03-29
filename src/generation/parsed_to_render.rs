@@ -68,8 +68,8 @@ pub struct Op4D {
     event: usize,
 }
 
-fn point_op_to_4d(point_op: &PointOp, basis: &Basis, time: &mut Rational64, voice: usize, event: usize) -> Op4D {
-    let result = Op4D {
+fn point_op_to_4d(point_op: &PointOp, basis: &Basis, time: &mut Rational64, voice: usize, event: usize) -> (Op4D, Op4D) {
+    let on = Op4D {
         x: basis.p * r_to_f64(point_op.pa) + r_to_f64(point_op.pa),
         y: basis.f * r_to_f64(point_op.fm) + r_to_f64(point_op.fa),
         z: basis.g * r_to_f64(point_op.g),
@@ -81,7 +81,13 @@ fn point_op_to_4d(point_op: &PointOp, basis: &Basis, time: &mut Rational64, voic
 
     *time += point_op.l;
 
-    result
+    let off = Op4D {
+        t: time.clone(),
+        event_type: EventType::Off,
+        ..on
+    };
+
+    (on, off)
 }
 
 fn composition_to_vec_op4d(
@@ -100,11 +106,16 @@ fn composition_to_vec_op4d(
         .enumerate()
         .map(|(voice, vec_point_op)| {
             let mut time = Rational64::new(0, 1);
+            let mut result = vec![];
             vec_point_op
                 .iter()
                 .enumerate()
-                .map(|(event, p_op)| point_op_to_4d(p_op, basis, &mut time, voice, event))
-                .collect()
+                .for_each(|(event, p_op)| {
+                    let (on, off) = point_op_to_4d(p_op, basis, &mut time, voice, event);
+                    result.push(on);
+                    result.push(off);
+                });
+            result
         })
         .collect()
 }
