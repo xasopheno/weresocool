@@ -71,7 +71,7 @@ pub struct Op4D {
 }
 
 
-fn point_op_to_4d(point_op: &PointOp, basis: &Basis, time: &mut Rational64, voice: usize, event: usize) -> (Op4D, Op4D) {
+fn point_op_to_4d(point_op: &PointOp, _basis: &Basis, time: &mut Rational64, voice: usize, event: usize) -> (Op4D, Op4D) {
     let on = Op4D {
         fm: point_op.fm,
         fa: point_op.fa,
@@ -124,12 +124,12 @@ fn composition_to_vec_op4d(
         })
         .collect();
 
-        result.sort_unstable_by_key((|a| a.t));
+        result.sort_unstable_by_key(|a| a.t);
 
         result
 }
 
-fn sort_vec_op4d(mut vec_op4d: Vec<Op4D>) -> Vec<Op4D> {
+fn sort_vec_op4d(vec_op4d: Vec<Op4D>) -> Vec<Op4D> {
    vec_op4d
 }
 
@@ -138,7 +138,7 @@ pub fn to_json(basis: &Basis, composition: &NormalForm, table: &OpOrNfTable, fil
 
     let vec_op4d = composition_to_vec_op4d(basis, composition, table);
 
-    let sorted = sort_vec_op4d(vec_op4d);
+    let _sorted = sort_vec_op4d(vec_op4d);
 
 //    let json = to_string(&vec_op4d).unwrap();
     //    json
