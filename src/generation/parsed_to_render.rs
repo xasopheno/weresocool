@@ -51,16 +51,16 @@ pub fn to_wav(composition: StereoWaveform, filename: String) {
     printed("WAV".to_string());
 }
 
-#[derive(Debug, Clone, Eq, PartialEq, PartialOrd)]
+#[derive(Debug, Clone, Eq, Ord, PartialEq, PartialOrd)]
 pub enum EventType {
     On,
     Off
 }
 
-#[derive(Debug, Clone, Eq, PartialEq, PartialOrd)]
+#[derive(Debug, Clone, Eq, Ord, PartialEq, PartialOrd)]
 pub struct Op4D {
-    event_type: EventType,
     t: Rational64,
+    event_type: EventType,
     voice: usize,
     event: usize,
     fm: Rational64,
@@ -69,6 +69,7 @@ pub struct Op4D {
     pa: Rational64,
     g: Rational64
 }
+
 
 fn point_op_to_4d(point_op: &PointOp, basis: &Basis, time: &mut Rational64, voice: usize, event: usize) -> (Op4D, Op4D) {
     let on = Op4D {
@@ -104,7 +105,7 @@ fn composition_to_vec_op4d(
     println!("Generating Composition \n");
     composition.apply_to_normal_form(&mut normal_form, table);
 
-    normal_form
+    let mut result: Vec<Op4D> = normal_form
         .operations
         .iter()
         .enumerate()
@@ -121,7 +122,11 @@ fn composition_to_vec_op4d(
                 });
             result
         })
-        .collect()
+        .collect();
+
+        result.sort_unstable_by_key((|a| a.t));
+
+        result
 }
 
 fn sort_vec_op4d(mut vec_op4d: Vec<Op4D>) -> Vec<Op4D> {
@@ -220,6 +225,7 @@ pub mod tests {
         let expected = [2.0, 4.0, 6.0, 2.0];
         assert_eq!(a, expected);
     }
+
     #[test]
     fn to_vec_op4d_test() {
         let mut normal_form = NormalForm::init();
@@ -233,119 +239,120 @@ pub mod tests {
             d: 44100.0,
         };
 
-        Sequence {
+        Overlay {
             operations: vec![
-                Op(PanA {
-                    a: Rational64::new(1, 2),
+                Op(Sequence {
+                    operations: vec![
+                        Op(PanA {
+                            a: Rational64::new(1, 2),
+                        }),
+                        Op(TransposeM {
+                            m: Rational64::new(2, 1),
+                        }),
+                        Op(Gain {
+                            m: Rational64::new(1, 2),
+                        }),
+                        Op(Length {
+                            m: Rational64::new(2, 1),
+                        }),
+                    ],
                 }),
-                Op(TransposeM {
-                    m: Rational64::new(2, 1),
-                }),
-                Op(Gain {
-                    m: Rational64::new(1, 2),
-                }),
-                Op(Length {
-                    m: Rational64::new(2, 1),
-                }),
-            ],
+                Op(Sequence {
+                        operations: vec![
+                            Op(Length {m: Rational64::new(3, 2)})
+                        ]
+                    }
+                )
+            ]
         }
             .apply_to_normal_form(&mut normal_form, &pt);
 
         let result = composition_to_vec_op4d(&basis, &normal_form, &pt);
 
+        let op = Op4D {
+            fm: Rational64::new(1, 1),
+            fa:Rational64::new(0, 1),
+            pm:Rational64::new(1, 1),
+            pa:Rational64::new(0, 1),
+            g: Rational64::new(1, 1),
+            t: Rational64::new(0, 1),
+            event_type: EventType::On,
+            voice: 0,
+            event: 0,
+        };
+
         assert_eq!(
             result,
             vec![
                 Op4D {
-                    fm: Rational64::new(1, 1),
-                    fa:Rational64::new(0, 1),
-                    pm:Rational64::new(1, 1),
                     pa:Rational64::new(1, 2),
-                    g: Rational64::new(1, 1),
-                    t: Rational64::new(0, 1),
                     event_type: EventType::On,
-                    voice: 0,
-                    event: 0,
+                    ..op
                 },
+
+
                 Op4D {
-                    fm: Rational64::new(1, 1),
-                    fa:Rational64::new(0, 1),
-                    pm:Rational64::new(1, 1),
+                    event_type: EventType::On,
+                    voice: 1,
+                    ..op
+                },
+
+                Op4D {
                     pa:Rational64::new(1, 2),
-                    g: Rational64::new(1, 1),
                     t: Rational64::new(1, 1),
                     event_type: EventType::Off,
-                    voice: 0,
-                    event: 0,
+                    ..op
                 },
 
                 Op4D {
                     fm: Rational64::new(2, 1),
-                    fa:Rational64::new(0, 1),
-                    pm:Rational64::new(1, 1),
-                    pa:Rational64::new(0, 1),
-                    g: Rational64::new(1, 1),
                     t: Rational64::new(1, 1),
                     event_type: EventType::On,
-                    voice: 0,
                     event: 1,
+                    ..op
                 },
+
+                Op4D {
+                    t: Rational64::new(3, 2),
+                    event_type: EventType::On,
+                    voice: 1,
+                    ..op
+                },
+
                 Op4D {
                     fm: Rational64::new(2, 1),
-                    fa:Rational64::new(0, 1),
-                    pm:Rational64::new(1, 1),
-                    pa:Rational64::new(0, 1),
-                    g: Rational64::new(1, 1),
                     t: Rational64::new(2, 1),
                     event_type: EventType::Off,
-                    voice: 0,
                     event: 1,
+                    ..op
                 },
 
                 Op4D {
-                    fm: Rational64::new(1, 1),
-                    fa:Rational64::new(0, 1),
-                    pm:Rational64::new(1, 1),
-                    pa:Rational64::new(0, 1),
                     g: Rational64::new(1, 2),
                     t: Rational64::new(2, 1),
                     event_type: EventType::On,
-                    voice: 0,
                     event: 2,
+                    ..op
                 },
                 Op4D {
-                    fm: Rational64::new(1, 1),
-                    fa:Rational64::new(0, 1),
-                    pm:Rational64::new(1, 1),
-                    pa:Rational64::new(0, 1),
                     g: Rational64::new(1, 2),
                     t: Rational64::new(3, 1),
                     event_type: EventType::Off,
-                    voice: 0,
                     event: 2,
+                    ..op
                 },
 
                 Op4D {
-                    fm: Rational64::new(1, 1),
-                    fa:Rational64::new(0, 1),
-                    pm:Rational64::new(1, 1),
-                    pa:Rational64::new(0, 1),
-                    g: Rational64::new(1, 1),
                     t: Rational64::new(3, 1),
                     event_type: EventType::On,
-                    voice: 0,
                     event: 3,
+                    ..op
                 },
                 Op4D {
-                    fm: Rational64::new(1, 1),
-                    fa:Rational64::new(0, 1),
-                    pm:Rational64::new(1, 1),
-                    pa:Rational64::new(0, 1),
-                    g: Rational64::new(1, 1),
                     t: Rational64::new(5, 1),
                     event_type: EventType::Off,
-                    voice: 0,
                     event: 3,
+                    ..op
                 },
             ]
         )
