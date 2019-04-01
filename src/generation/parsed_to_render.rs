@@ -125,20 +125,10 @@ fn point_op_to_timed_op(
 }
 
 fn vec_timed_op_to_vec_op4d(timed_ops: Vec<TimedOp>, basis: &Basis) -> Vec<Op4D> {
-    timed_ops
-        .iter()
-        .map(|t_op| {
-            t_op.to_op_4d(&basis)
-        })
-        .collect()
-
+    timed_ops.iter().map(|t_op| t_op.to_op_4d(&basis)).collect()
 }
 
-
-fn composition_to_vec_timed_op(
-    composition: &NormalForm,
-    table: &OpOrNfTable,
-) -> Vec<TimedOp> {
+fn composition_to_vec_timed_op(composition: &NormalForm, table: &OpOrNfTable) -> Vec<TimedOp> {
     let mut normal_form = NormalForm::init();
 
     println!("Generating Composition \n");
@@ -296,9 +286,9 @@ pub mod tests {
                 }),
             ],
         }
-            .apply_to_normal_form(&mut normal_form, &pt);
+        .apply_to_normal_form(&mut normal_form, &pt);
 
-    let timed_ops = composition_to_vec_timed_op(&normal_form, &pt);
+        let timed_ops = composition_to_vec_timed_op(&normal_form, &pt);
 
         let op = TimedOp {
             fm: Rational64::new(1, 1),
@@ -404,8 +394,7 @@ pub mod tests {
             event: 0,
         };
 
-        let vec_timed_op =
-        vec![
+        let vec_timed_op = vec![
             TimedOp {
                 event_type: EventType::On,
                 ..op
@@ -436,10 +425,8 @@ pub mod tests {
                 x: 0.5,
                 y: 200.0,
                 z: 0.5,
-            }
+            },
         ];
         assert_eq!(result, expected);
     }
 }
-
-
