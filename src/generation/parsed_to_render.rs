@@ -71,6 +71,26 @@ pub struct Op4D {
 }
 
 
+//impl Ord for SomeNum {
+//    fn cmp(&self, other: &Self) -> Ordering {
+//        (self.value, &self.name).cmp(&(other.value, &other.name))
+//    }
+//}
+//
+//impl PartialOrd for SomeNum {
+//    fn partial_cmp(&self, other: &Self) -> Option<Ordering> {
+//        Some(self.cmp(other))
+//    }
+//}
+//
+//impl PartialEq for SomeNum {
+//    fn eq(&self, other: &Self) -> bool {
+//        (self.value, &self.name) == (other.value, &other.name)
+//    }
+//}
+//
+//impl Eq for SomeNum { }
+
 fn point_op_to_4d(point_op: &PointOp, _basis: &Basis, time: &mut Rational64, voice: usize, event: usize) -> (Op4D, Op4D) {
     let on = Op4D {
         fm: point_op.fm,
@@ -109,19 +129,21 @@ fn composition_to_vec_op4d(
         .operations
         .iter()
         .enumerate()
-        .flat_map(|(voice, vec_point_op)| {
+        .map(|(voice, vec_point_op)| {
             let mut time = Rational64::new(0, 1);
             let mut result = vec![];
             vec_point_op
                 .iter()
                 .enumerate()
                 .for_each(|(event, p_op)| {
+                    println!("{:?}\n", p_op);
                     let (on, off) = point_op_to_4d(p_op, basis, &mut time, voice, event);
                     result.push(on);
                     result.push(off);
                 });
             result
         })
+        .flatten()
         .collect();
 
         result.sort_unstable_by_key(|a| a.t);
@@ -259,7 +281,7 @@ pub mod tests {
                 }),
                 Op(Sequence {
                         operations: vec![
-                            Op(Length {m: Rational64::new(3, 2)})
+                            Op(Length {m: Rational64::new(5, 1)})
                         ]
                     }
                 )
@@ -313,13 +335,6 @@ pub mod tests {
                 },
 
                 Op4D {
-                    t: Rational64::new(3, 2),
-                    event_type: EventType::On,
-                    voice: 1,
-                    ..op
-                },
-
-                Op4D {
                     fm: Rational64::new(2, 1),
                     t: Rational64::new(2, 1),
                     event_type: EventType::Off,
@@ -354,6 +369,14 @@ pub mod tests {
                     event: 3,
                     ..op
                 },
+
+                Op4D {
+                    t: Rational64::new(5, 1),
+                    event_type: EventType::Off,
+                    voice: 1,
+                    ..op
+                },
+
             ]
         )
     }
