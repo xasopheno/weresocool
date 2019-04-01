@@ -319,7 +319,7 @@ m38 = {
 
 main = {
     -- overtones |
-    Length 1/8 | 
+    Length 1/10 | 
     -- Seq [Tm 1 | Repeat 6, Tm 0] | Length 1/7 |
     Sequence [
         m1_24,
