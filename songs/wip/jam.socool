@@ -1,0 +1,90 @@
+{ f: 220, l: 1, g: 1, p: 0}
+
+overtones = {
+    O[
+    	(9/1, 3, 1/3, -1/3),
+    	(9/1, 0, 1/3, 1/3),
+    	(8/1, 11, 1, 1/2),
+    	(8/1, 0, 1, -1/2),
+    	(6/1, 7, 1, 1/2),
+    	(6/1, 0, 1, -1/2),
+    	(5/1, 3, 1, 1),
+      	(9/4, 0, 1, -1),
+      	(3/2, 0, 1, -1),
+      	(1/1, 2, 1, 1/2),
+      	(1/1, 0, 1, -1/2),
+      	(1/2, 0, 1, 1/2),
+      	(3/4, 0, 1, -1/2),
+      	(1/4, 0, 1, 1/2),
+  	]
+}
+
+thing1 = {
+	overtones |
+	Sequence [
+		AsIs,
+		Tm 9/8,
+	] 
+	| Length 6
+}
+
+thing2 = {
+    O[
+      	(9/4, 0, 1, -1),
+      	(3/2, 0, 1, -1),
+      	(1/1, 2, 1, 1/2),
+      	(1/1, 0, 1, -1/2),
+  	] |
+	Seq [
+		Tm 5/4, 
+		Tm 15/8, 
+		Tm 9/4, 
+		Tm 10/3,
+		Tm 0 | Length 2,
+		Tm 3/2 | Length 3, 
+	] | Repeat 4 
+	> FitLength thing1
+}
+
+thing3 = {
+	Seq [
+		Tm 7, 
+		Tm 8, 
+		Tm 9, 
+		Tm 10, 
+		Tm 11
+	] | Repeat 10
+	| Seq [Repeat 3, Tm 0 | Length 7]
+	> FitLength thing1
+
+}
+
+thing4 = {
+	Seq [
+		thing2, 
+		thing3
+	] | Tm 3/1
+	> FitLength thing1
+}
+
+main = {
+	Overlay [
+		thing1,
+		thing2, 
+		thing3,
+		thing4 | Gain 1/3
+	] 
+	| Repeat 4
+	| Seq [
+		AsIs, 
+		Tm 7/8, 
+		AsIs, 
+		Tm 4/3, 
+	]
+	| Seq [
+		AsIs, 
+		Length 1/10 | Repeat 2	
+	]
+	| Repeat 2
+}
+	

@@ -1,0 +1,4 @@
+#!/usr/bin/env sh
+
+FILENAME=$1
+cargo run --release --bin wsc songs/$FILENAME.socool --json
