@@ -1,12 +1,12 @@
 use crate::analyze::{Analyze, DetectionResult};
 use crate::generation::parsed_to_render::*;
 use crate::instrument::oscillator::{Basis, Oscillator};
-use num_rational::Rational64;
-use portaudio as pa;
 use crate::ring_buffer::RingBuffer;
 use crate::settings::{default_settings, Settings};
-use socool_ast::operations::PointOp;
 use crate::write::write_output_buffer;
+use num_rational::Rational64;
+use portaudio as pa;
+use socool_ast::operations::PointOp;
 
 struct RealTimeState {
     count: Rational64,
