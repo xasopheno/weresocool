@@ -148,7 +148,7 @@ impl Analyze for Vec<f32> {
 
 #[cfg(test)]
 mod tests {
-    use analyze::*;
+    use super::*;
     #[test]
     fn gain_test() {
         let mut buffer = vec![

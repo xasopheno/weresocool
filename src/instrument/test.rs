@@ -1,15 +1,13 @@
 pub mod tests {
-    extern crate num_rational;
-    extern crate socool_ast;
-    use instrument::{
+    use crate::instrument::{
         asr::ASR,
         loudness::loudness_normalization,
         oscillator::{Basis, Oscillator},
         stereo_waveform::StereoWaveform,
         voice::{Voice, VoiceState, VoiceUpdate},
     };
+    use crate::settings::get_test_settings;
     use num_rational::Rational64;
-    use settings::get_test_settings;
     use socool_ast::{ast::OscType, operations::PointOp};
     pub mod voice {
         use super::*;

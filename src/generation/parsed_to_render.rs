@@ -226,6 +226,7 @@ fn sum_vec(a: &mut Vec<f64>, b: &[f64]) {
 #[cfg(test)]
 pub mod tests {
     use super::*;
+    use socool_ast::ast::{Op::*, OpOrNf::*};
 
     #[test]
     fn render_equal() {
@@ -249,14 +250,6 @@ pub mod tests {
     fn to_vec_timed_op_test() {
         let mut normal_form = NormalForm::init();
         let pt = OpOrNfTable::new();
-        let basis = Basis {
-            f: 100.0,
-            g: 1.0,
-            p: 0.0,
-            l: 1.0,
-            a: 44100.0,
-            d: 44100.0,
-        };
 
         Overlay {
             operations: vec![
