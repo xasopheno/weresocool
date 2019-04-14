@@ -1,6 +1,4 @@
-extern crate clap;
-extern crate colored;
-use self::clap::{App, Arg, ArgMatches};
+use clap::{App, Arg, ArgMatches};
 use colored::*;
 
 pub fn were_so_cool_logo() {

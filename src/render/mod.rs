@@ -1,7 +1,5 @@
-extern crate num_rational;
-extern crate socool_ast;
-use generation::parsed_to_render::r_to_f64;
-use instrument::{
+use crate::generation::parsed_to_render::r_to_f64;
+use crate::instrument::{
     oscillator::{Basis, Oscillator},
     stereo_waveform::StereoWaveform,
 };

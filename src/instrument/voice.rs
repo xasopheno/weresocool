@@ -1,5 +1,4 @@
-extern crate socool_ast;
-use instrument::{asr::ASR, loudness::loudness_normalization};
+use crate::instrument::{asr::ASR, loudness::loudness_normalization};
 use socool_ast::ast::OscType;
 
 #[derive(Clone, Debug, PartialEq)]

@@ -1,7 +1,7 @@
-use instrument::stereo_waveform::StereoWaveform;
+use crate::instrument::stereo_waveform::StereoWaveform;
 use portaudio as pa;
-use settings::{default_settings, Settings};
-use write::write_output_buffer;
+use crate::settings::{default_settings, Settings};
+use crate::write::write_output_buffer;
 
 pub fn setup_portaudio_output(
     mut composition: StereoWaveform,

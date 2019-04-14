@@ -1,4 +1,4 @@
-extern crate socool_ast;
+use socool_ast;
 use instrument::voice::Voice;
 
 #[derive(Clone, Debug, PartialEq)]

@@ -1,26 +1,19 @@
-extern crate num_rational;
-extern crate pbr;
-extern crate rayon;
-extern crate serde;
-extern crate serde_json;
-extern crate socool_ast;
-extern crate socool_parser;
-use instrument::{
+use crate::instrument::{
     oscillator::{Basis, Oscillator},
     stereo_waveform::{Normalize, StereoWaveform},
 };
 use num_rational::Rational64;
 use pbr::ProgressBar;
 use rayon::prelude::*;
-use render::{Render, RenderPointOp};
+use crate::render::{Render, RenderPointOp};
 use serde::{Deserialize, Serialize};
 use serde_json::to_string;
-use settings::default_settings;
+use crate::settings::default_settings;
 use socool_ast::ast::{Op::*, OpOrNf::*, OpOrNfTable};
 use socool_ast::operations::{NormalForm, Normalize as NormalizeOp, PointOp};
 use std::sync::{Arc, Mutex};
-use ui::{banner, printed};
-use write::{write_composition_to_json, write_composition_to_wav};
+use crate::ui::{banner, printed};
+use crate::write::{write_composition_to_json, write_composition_to_wav};
 
 pub fn r_to_f64(r: Rational64) -> f64 {
     *r.numer() as f64 / *r.denom() as f64

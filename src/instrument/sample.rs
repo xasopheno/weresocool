@@ -1,5 +1,4 @@
-extern crate rand;
-use instrument::voice::{SampleInfo, Voice};
+use crate::instrument::voice::{SampleInfo, Voice};
 use rand::Rng;
 use std::f64::consts::PI;
 
