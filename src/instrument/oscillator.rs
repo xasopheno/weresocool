@@ -1,13 +1,12 @@
-extern crate num_rational;
-extern crate socool_ast;
-use generation::parsed_to_render::r_to_f64;
-use instrument::{
+use crate::generation::parsed_to_render::r_to_f64;
+use crate::instrument::{
     stereo_waveform::StereoWaveform,
     voice::{Voice, VoiceUpdate},
 };
-use settings::Settings;
+use crate::settings::Settings;
 use socool_ast::operations::PointOp;
 use std::f64::consts::PI;
+
 fn tau() -> f64 {
     PI * 2.0
 }

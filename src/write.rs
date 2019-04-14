@@ -1,7 +1,4 @@
-extern crate hound;
-extern crate socool_ast;
-use instrument::stereo_waveform::StereoWaveform;
-use socool_ast::operations::NormalForm;
+use crate::instrument::stereo_waveform::StereoWaveform;
 use std::fs::File;
 use std::io::prelude::*;
 

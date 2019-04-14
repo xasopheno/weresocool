@@ -1,7 +1,4 @@
 pub mod test {
-    extern crate num_rational;
-    extern crate socool_ast;
-
     use num_rational::Ratio;
     use socool_ast::ast::{Op, Op::*, OpOrNf::*, OpOrNfTable};
     use socool_parser::imports::{get_filepath_and_import_name, is_as_import, is_import};

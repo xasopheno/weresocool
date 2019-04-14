@@ -1,26 +1,19 @@
-extern crate num_rational;
-extern crate pbr;
-extern crate rayon;
-extern crate serde;
-extern crate serde_json;
-extern crate socool_ast;
-extern crate socool_parser;
-use instrument::{
+use crate::instrument::{
     oscillator::{Basis, Oscillator},
     stereo_waveform::{Normalize, StereoWaveform},
 };
+use crate::render::{Render, RenderPointOp};
+use crate::settings::default_settings;
+use crate::ui::{banner, printed};
+use crate::write::{write_composition_to_json, write_composition_to_wav};
 use num_rational::Rational64;
 use pbr::ProgressBar;
 use rayon::prelude::*;
-use render::{Render, RenderPointOp};
 use serde::{Deserialize, Serialize};
 use serde_json::to_string;
-use settings::default_settings;
-use socool_ast::ast::{Op::*, OpOrNf::*, OpOrNfTable};
+use socool_ast::ast::OpOrNfTable;
 use socool_ast::operations::{NormalForm, Normalize as NormalizeOp, PointOp};
 use std::sync::{Arc, Mutex};
-use ui::{banner, printed};
-use write::{write_composition_to_json, write_composition_to_wav};
 
 pub fn r_to_f64(r: Rational64) -> f64 {
     *r.numer() as f64 / *r.denom() as f64
@@ -68,6 +61,7 @@ pub struct TimedOp {
     pm: Rational64,
     pa: Rational64,
     g: Rational64,
+    l: Rational64,
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize, PartialEq)]
@@ -79,12 +73,14 @@ pub struct Op4D {
     x: f64,
     y: f64,
     z: f64,
+    l: f64,
 }
 
 impl TimedOp {
     fn to_op_4d(&self, basis: &Basis) -> Op4D {
         Op4D {
-            t: r_to_f64(self.t),
+            l: r_to_f64(self.l) * basis.l,
+            t: r_to_f64(self.t) * basis.l,
             x: (basis.p * r_to_f64(self.pm)) + r_to_f64(self.pa),
             y: (basis.f * r_to_f64(self.fm)) + r_to_f64(self.fa),
             z: basis.g * r_to_f64(self.g),
@@ -107,6 +103,7 @@ fn point_op_to_timed_op(
         pm: point_op.pm,
         pa: point_op.pa,
         g: point_op.g,
+        l: point_op.l,
         t: time.clone(),
         event_type: EventType::On,
         voice,
@@ -229,6 +226,7 @@ fn sum_vec(a: &mut Vec<f64>, b: &[f64]) {
 #[cfg(test)]
 pub mod tests {
     use super::*;
+    use socool_ast::ast::{Op::*, OpOrNf::*};
 
     #[test]
     fn render_equal() {
@@ -252,14 +250,6 @@ pub mod tests {
     fn to_vec_timed_op_test() {
         let mut normal_form = NormalForm::init();
         let pt = OpOrNfTable::new();
-        let basis = Basis {
-            f: 100.0,
-            g: 1.0,
-            p: 0.0,
-            l: 1.0,
-            a: 44100.0,
-            d: 44100.0,
-        };
 
         Overlay {
             operations: vec![
@@ -296,6 +286,7 @@ pub mod tests {
             pm: Rational64::new(1, 1),
             pa: Rational64::new(0, 1),
             g: Rational64::new(1, 1),
+            l: Rational64::new(1, 1),
             t: Rational64::new(0, 1),
             event_type: EventType::On,
             voice: 0,
@@ -312,6 +303,7 @@ pub mod tests {
                 },
                 TimedOp {
                     event_type: EventType::On,
+                    l: Rational64::new(5, 1),
                     voice: 1,
                     ..op
                 },
@@ -351,18 +343,21 @@ pub mod tests {
                 },
                 TimedOp {
                     t: Rational64::new(3, 1),
+                    l: Rational64::new(2, 1),
                     event_type: EventType::On,
                     event: 3,
                     ..op
                 },
                 TimedOp {
                     t: Rational64::new(5, 1),
+                    l: Rational64::new(2, 1),
                     event_type: EventType::Off,
                     event: 3,
                     ..op
                 },
                 TimedOp {
                     t: Rational64::new(5, 1),
+                    l: Rational64::new(5, 1),
                     event_type: EventType::Off,
                     voice: 1,
                     ..op
@@ -389,6 +384,7 @@ pub mod tests {
             pa: Rational64::new(1, 2),
             g: Rational64::new(1, 2),
             t: Rational64::new(0, 1),
+            l: Rational64::new(1, 1),
             event_type: EventType::On,
             voice: 0,
             event: 0,
@@ -397,10 +393,12 @@ pub mod tests {
         let vec_timed_op = vec![
             TimedOp {
                 event_type: EventType::On,
+                l: Rational64::new(3, 2),
                 ..op
             },
             TimedOp {
                 event_type: EventType::Off,
+                l: Rational64::new(3, 2),
                 t: Rational64::new(3, 2),
                 ..op
             },
@@ -410,6 +408,7 @@ pub mod tests {
         let expected = vec![
             Op4D {
                 t: 0.0,
+                l: 1.5,
                 event_type: EventType::On,
                 voice: 0,
                 event: 0,
@@ -419,6 +418,7 @@ pub mod tests {
             },
             Op4D {
                 t: 1.5,
+                l: 1.5,
                 event_type: EventType::Off,
                 voice: 0,
                 event: 0,

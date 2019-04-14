@@ -1,14 +1,12 @@
-extern crate num_rational;
-extern crate socool_ast;
-use analyze::{Analyze, DetectionResult};
-use generation::parsed_to_render::*;
-use instrument::oscillator::{Basis, Oscillator};
+use crate::analyze::{Analyze, DetectionResult};
+use crate::generation::parsed_to_render::*;
+use crate::instrument::oscillator::{Basis, Oscillator};
+use crate::ring_buffer::RingBuffer;
+use crate::settings::{default_settings, Settings};
+use crate::write::write_output_buffer;
 use num_rational::Rational64;
 use portaudio as pa;
-use ring_buffer::RingBuffer;
-use settings::{default_settings, Settings};
 use socool_ast::operations::PointOp;
-use write::write_output_buffer;
 
 struct RealTimeState {
     count: Rational64,
@@ -55,7 +53,7 @@ pub fn setup_portaudio_duplex(
 
     for seq in parsed_composition {
         let mut iterator = seq.clone().into_iter().cycle();
-        let mut state = RealTimeState {
+        let state = RealTimeState {
             count: Rational64::new(0, 1),
             inc: Rational64::new(settings.buffer_size as i64, settings.sample_rate as i64),
             current_op: iterator.next().unwrap(),
