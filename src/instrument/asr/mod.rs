@@ -1,5 +1,4 @@
-use socool_ast;
-use instrument::voice::Voice;
+use crate::instrument::voice::Voice;
 
 #[derive(Clone, Debug, PartialEq)]
 pub enum ASR {

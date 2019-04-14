@@ -1,5 +1,4 @@
 use crate::instrument::stereo_waveform::StereoWaveform;
-use socool_ast::operations::NormalForm;
 use std::fs::File;
 use std::io::prelude::*;
 

@@ -9,7 +9,7 @@ use crate::render::{Render, RenderPointOp};
 use serde::{Deserialize, Serialize};
 use serde_json::to_string;
 use crate::settings::default_settings;
-use socool_ast::ast::{Op::*, OpOrNf::*, OpOrNfTable};
+use socool_ast::ast::{OpOrNfTable};
 use socool_ast::operations::{NormalForm, Normalize as NormalizeOp, PointOp};
 use std::sync::{Arc, Mutex};
 use crate::ui::{banner, printed};

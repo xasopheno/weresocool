@@ -53,7 +53,7 @@ pub fn setup_portaudio_duplex(
 
     for seq in parsed_composition {
         let mut iterator = seq.clone().into_iter().cycle();
-        let mut state = RealTimeState {
+        let state = RealTimeState {
             count: Rational64::new(0, 1),
             inc: Rational64::new(settings.buffer_size as i64, settings.sample_rate as i64),
             current_op: iterator.next().unwrap(),
