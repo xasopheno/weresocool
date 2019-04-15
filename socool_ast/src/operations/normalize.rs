@@ -1,6 +1,4 @@
 pub mod normalize {
-    extern crate num_rational;
-    extern crate rand;
     use crate::ast::{Op, OpOrNf, OpOrNf::*, OpOrNfTable, OscType};
     use crate::operations::{
         helpers::*, substitute::get_fn_arg_map, GetLengthRatio, NormalForm, Normalize, Substitute,
