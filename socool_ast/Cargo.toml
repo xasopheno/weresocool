@@ -8,6 +8,6 @@ edition = "2018"
 num-rational = "0.2"
 rand = "0.6.5"
 serde = { version = "1.0.89", features = ["derive"] }
-pretty_assertions = "0.5.1"
+pretty_assertions = "0.6.1"
 indexmap = "1.0.2"
 colored = "1.7.0"
