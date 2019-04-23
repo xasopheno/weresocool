@@ -1,3 +1,6 @@
+use num_complex;
+pub mod fourier;
+
 pub trait Analyze {
     fn yin_pitch_detection(&mut self, sample_rate: f32, threshold: f32) -> (f32, f32);
     fn get_better_tau(&mut self, tau: usize, sample_rate: f32) -> f32;

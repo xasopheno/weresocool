@@ -1,0 +1,15 @@
+{ f: 100, l: 10, g: 1, p: 0}
+
+thing1 = {
+    Overlay [
+	    AsIs,
+	    Tm 3/2,
+	    Tm 5/4,
+	    Tm 2,
+	    Tm 3,
+    ]
+}
+
+main = {
+	thing1
+}
