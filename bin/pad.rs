@@ -50,16 +50,16 @@ use std::fs::File;
 use std::io::Read;
 use std::path::Path;
 
-#[derive(Debug, Deserialize, Clone)]
-type StockValue = HashMap<String, HashMap<String, String>>
 
-fn read_json()
-//    -> Vec<StockValue>
-{
-    let json_file_path = Path::new("msft.json");
+type StockValue = HashMap<String, HashMap<String, String>>;
+
+
+fn read_json(path: &str) -> StockValue {
+    let json_file_path = Path::new(path);
     let json_file = File::open(json_file_path).expect("file not found");
-    let deserialized_camera:  StockValue =
+    let deserialized: StockValue =
         serde_json::from_reader(json_file).expect("error while reading json");
+    deserialized
 }
 
 fn decimal_to_rational (mut n : f64) -> [isize;2] {
@@ -122,12 +122,19 @@ fn generate_sine_wave(p: &String) -> (StereoWaveform, Basis, NormalForm) {
 
 fn vec_vec_freq_to_overlay(vecs: Vec<Vec<f64>>) -> OpOrNf {
     let mut overlay_vec = vec![];
-    for vec in vecs {
+    let num_vecs = vecs.len();
+    for (n, vec) in vecs.iter().enumerate() {
         let mut sequence_vec = vec![];
+        let denom = vec[0].clone();
         for freq in vec {
-            let m = decimal_to_rational(freq / 100.0);
-            let m = Rational64::new(m[0] as i64, m[1] as i64);
-            println!("{:?}", m);
+            let m = decimal_to_rational((*freq as f64/denom));
+            let mut m = Rational64::new(m[0] as i64, m[1] as i64);
+            if m < Rational64::new(1, 1) {
+//                m *= Rational64::new(0, 1)
+            }
+//            else {
+//                m *= Rational64::new(1, 2)
+//            }
             sequence_vec.push(
                 Op(
                     TransposeM {
@@ -136,9 +143,21 @@ fn vec_vec_freq_to_overlay(vecs: Vec<Vec<f64>>) -> OpOrNf {
                 )
             );
         }
-        overlay_vec.push(Op(Sequence {
-            operations: sequence_vec
-        }));
+        let switch: i64 = if n % 2 == 0 {
+            1
+        } else {
+            -1
+        };
+        overlay_vec.push(
+                Op(Compose {
+                        operations: vec![Op(Sequence {
+                            operations: sequence_vec
+                        }
+                    ),
+                    Op(PanA {a: Rational64::new( (switch * (n as i64 + 1)), num_vecs as i64)})
+                ]
+                })
+        );
     }
 
     Op(Overlay { operations: overlay_vec })
@@ -241,20 +260,45 @@ fn main() -> Result<(), pa::Error> {
 //            println!("freq {:?}, magnitude {:?}", freq, bin.mag);
 //        }
 //    });
-    let json = read_json();
-    let freqs = vec![
-        vec![
-            203.0, 300.0, 340.0
-        ],
-        vec![
-            100.0, 200.0, 300.0,
-        ]
-    ];
+
+    let mut freqs = vec![];
+    for filename in &[
+//        "f.json",
+        "msft.json",
+        "goog.json",
+        "nvda.json",
+        "tsla.json"
+    ] {
+        let mut stock_seq = vec![];
+        let json = read_json(filename);
+
+        for (date, data) in json {
+            for (key, value) in data {
+                if key.starts_with("5.") {
+                    let freq: f32 = value.parse().unwrap();
+                    stock_seq.push(freq as f64)
+                }
+            }
+        }
+        freqs.push(stock_seq);
+
+    }
+
+
+
+//    let freqs = vec![
+//        vec![
+//            203.0, 300.0, 340.0
+//        ],
+//        vec![
+//            100.0, 200.0, 300.0,
+//        ]
+//    ];
 
     let basis = Basis {
         f: 200.0,
         g: 1.0,
-        l: 1.0,
+        l: 4.0,
         p: 0.0,
         a: 44100.0,
         d: 44100.0,
