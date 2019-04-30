@@ -296,9 +296,9 @@ fn main() -> Result<(), pa::Error> {
 //    ];
 
     let basis = Basis {
-        f: 200.0,
+        f: 500.0,
         g: 1.0,
-        l: 4.0,
+        l: 3.0,
         p: 0.0,
         a: 44100.0,
         d: 44100.0,

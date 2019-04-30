@@ -1,0 +1,50 @@
+{ f: 400, l: 1, g: 1, p: 0}
+
+overtones = {
+    O[
+    	(5/4, 3, 1, 1),
+      	(9/8, 0, 1, -1),
+      	(1/1, 2, 1, 1/2),
+      	(1/1, 0, 1, -1/2),
+  	]
+}
+
+thing1 = {
+	-- overtones |
+	Overlay [
+		0^1/2, 
+		Tm 5/4,
+		Tm 11/8,
+		Tm 3/2,
+		Tm 5/3,
+		Tm 9/4,
+		Tm 3/1 | PanA 1/2,
+		Tm 3/1 | Ta 4 | PanA -1/2,
+		Tm 5/1 | PanA 1/2, 
+		Tm 5/1 | Ta 3 | PanA -1/2 
+	] 
+	| Seq [
+		Tm 1, 
+		Tm 9/8, 
+		Tm 5/4,
+	]
+	| Overlay [
+		Tm 1/4, 
+		Tm 1/2, 
+		Tm 1 | PanA -1/2, 
+		Ta 3 | PanA 1/2
+	]
+	| ModulateBy [
+		Seq [
+			Tm 1, 
+			Gain 1/2,
+			Gain 1/8,
+		] | Repeat 4 
+	]
+	| Length 2 
+}
+
+main = {
+	thing1
+}
+	
