@@ -2,22 +2,19 @@ use num_complex::Complex;
 use std::f64::consts::E;
 use std::f64::consts::PI;
 
-pub fn vec_f64_to_complex(array: &mut[f64]) -> Vec<Complex<f64>> {
+pub fn vec_f64_to_complex(array: &mut [f64]) -> Vec<Complex<f64>> {
     array
         .iter_mut()
         .map(|x| Complex::new(*x as f64, 0f64))
         .collect::<Vec<_>>()
 }
 
-pub fn magnitude(array: &mut[Complex<f64>]) -> Vec<f64> {
+pub fn magnitude(array: &mut [Complex<f64>]) -> Vec<f64> {
     array
         .iter_mut()
-        .map(|x| {
-            (x.re*x.re+x.im*x.im).sqrt()
-        })
+        .map(|x| (x.re * x.re + x.im * x.im).sqrt())
         .collect::<Vec<_>>()
 }
-
 
 pub trait Fourier {
     fn separate(&mut self);

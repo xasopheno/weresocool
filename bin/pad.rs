@@ -11,25 +11,21 @@
 //use std::collections::BTreeSet;
 //use std::error::Error;
 //use std::hash::{Hash, Hasher};
-use portaudio as pa;
 use num_complex::Complex32;
-use num_rational::{Rational64, Ratio};
+use num_rational::{Ratio, Rational64};
+use portaudio as pa;
 use socool_ast::{
+    ast::{Op::*, OpOrNf::*},
     operations::{NormalForm, Normalize as NormalizeOp, PointOp},
-    ast::{
-        Op::*,
-        OpOrNf::*
-    }
 };
-use socool_parser::{
-    parser::*,
-    float_to_rational::helpers::f32_to_rational
-};
+use socool_parser::{float_to_rational::helpers::f32_to_rational, parser::*};
 use weresocool::portaudio_setup::output::setup_portaudio_output;
 
-use weresocool::analyze::fourier::{vec_f64_to_complex, magnitude, Fourier};
+use weresocool::analyze::fourier::{magnitude, vec_f64_to_complex, Fourier};
 
-use weresocool::generation::parsed_to_render::{render};
+use socool_ast::ast::Op::{Overlay, TransposeM};
+use std::f64::INFINITY;
+use weresocool::generation::parsed_to_render::render;
 use weresocool::{
     generation::parsed_to_render::{generate_waveforms, sum_all_waveforms},
     instrument::{
@@ -37,22 +33,18 @@ use weresocool::{
         stereo_waveform::{Normalize, StereoWaveform},
     },
 };
-use std::f64::INFINITY;
-use socool_ast::ast::Op::{Overlay, TransposeM};
 
-use num::{Integer};
+use num::Integer;
 use rand::Rng;
-use socool_ast::ast::{OpOrNfTable, OpOrNf};
 use serde::Deserialize;
 use serde_json::from_str;
+use socool_ast::ast::{OpOrNf, OpOrNfTable};
 use std::collections::HashMap;
 use std::fs::File;
 use std::io::Read;
 use std::path::Path;
 
-
 type StockValue = HashMap<String, HashMap<String, String>>;
-
 
 fn read_json(path: &str) -> StockValue {
     let json_file_path = Path::new(path);
@@ -62,21 +54,29 @@ fn read_json(path: &str) -> StockValue {
     deserialized
 }
 
-fn decimal_to_rational (mut n : f64) -> [isize;2] {
+fn decimal_to_rational(mut n: f64) -> [isize; 2] {
     //Based on Farey sequences
     assert!(n.is_finite());
-    let flag_neg  = n < 0.0;
-    if flag_neg { n = n*(-1.0) }
-    if n < std::f64::MIN_POSITIVE { return [0,1] }
-    if (n - n.round()).abs() < std::f64::EPSILON { return [n.round() as isize, 1] }
-    let mut a : isize = 0;
-    let mut b : isize = 1;
-    let mut c : isize = n.ceil() as isize;
-    let mut d : isize = 1;
-    let aux1 = isize::max_value()/2;
-    while c < aux1  && d < aux1 {
-        let aux2 : f64 = (a as f64 + c as f64)/(b as f64 + d as f64);
-        if (n - aux2).abs() < std::f64::EPSILON { break }
+    let flag_neg = n < 0.0;
+    if flag_neg {
+        n = n * (-1.0)
+    }
+    if n < std::f64::MIN_POSITIVE {
+        return [0, 1];
+    }
+    if (n - n.round()).abs() < std::f64::EPSILON {
+        return [n.round() as isize, 1];
+    }
+    let mut a: isize = 0;
+    let mut b: isize = 1;
+    let mut c: isize = n.ceil() as isize;
+    let mut d: isize = 1;
+    let aux1 = isize::max_value() / 2;
+    while c < aux1 && d < aux1 {
+        let aux2: f64 = (a as f64 + c as f64) / (b as f64 + d as f64);
+        if (n - aux2).abs() < std::f64::EPSILON {
+            break;
+        }
         if n > aux2 {
             a = a + c;
             b = b + d;
@@ -86,8 +86,12 @@ fn decimal_to_rational (mut n : f64) -> [isize;2] {
         }
     }
     // Make sure that the fraction is irreducible
-    let gcd = (a+c).gcd(&(b+d));
-    if flag_neg { [-(a + c)/gcd, (b + d)/gcd] } else { [(a + c)/gcd, (b + d)/gcd] }
+    let gcd = (a + c).gcd(&(b + d));
+    if flag_neg {
+        [-(a + c) / gcd, (b + d) / gcd]
+    } else {
+        [(a + c) / gcd, (b + d) / gcd]
+    }
 }
 
 pub fn r_to_f64(r: Rational64) -> f64 {
@@ -119,7 +123,6 @@ fn generate_sine_wave(p: &String) -> (StereoWaveform, Basis, NormalForm) {
     (result, basis, normal_form)
 }
 
-
 fn vec_vec_freq_to_overlay(vecs: Vec<Vec<f64>>) -> OpOrNf {
     let mut overlay_vec = vec![];
     let num_vecs = vecs.len();
@@ -127,40 +130,32 @@ fn vec_vec_freq_to_overlay(vecs: Vec<Vec<f64>>) -> OpOrNf {
         let mut sequence_vec = vec![];
         let denom = vec[0].clone();
         for freq in vec {
-            let m = decimal_to_rational((*freq as f64/denom));
+            let m = decimal_to_rational((*freq as f64 / denom));
             let mut m = Rational64::new(m[0] as i64, m[1] as i64);
             if m < Rational64::new(1, 1) {
-//                m *= Rational64::new(0, 1)
+                //                m *= Rational64::new(0, 1)
             }
-//            else {
-//                m *= Rational64::new(1, 2)
-//            }
-            sequence_vec.push(
-                Op(
-                    TransposeM {
-                        m
-                    }
-                )
-            );
+            //            else {
+            //                m *= Rational64::new(1, 2)
+            //            }
+            sequence_vec.push(Op(TransposeM { m }));
         }
-        let switch: i64 = if n % 2 == 0 {
-            1
-        } else {
-            -1
-        };
-        overlay_vec.push(
-                Op(Compose {
-                        operations: vec![Op(Sequence {
-                            operations: sequence_vec
-                        }
-                    ),
-                    Op(PanA {a: Rational64::new( (switch * (n as i64 + 1)), num_vecs as i64)})
-                ]
-                })
-        );
+        let switch: i64 = if n % 2 == 0 { 1 } else { -1 };
+        overlay_vec.push(Op(Compose {
+            operations: vec![
+                Op(Sequence {
+                    operations: sequence_vec,
+                }),
+                Op(PanA {
+                    a: Rational64::new((switch * (n as i64 + 1)), num_vecs as i64),
+                }),
+            ],
+        }));
     }
 
-    Op(Overlay { operations: overlay_vec })
+    Op(Overlay {
+        operations: overlay_vec,
+    })
 }
 
 fn overlay_to_normal_form(overlay: OpOrNf) -> NormalForm {
@@ -171,7 +166,6 @@ fn overlay_to_normal_form(overlay: OpOrNf) -> NormalForm {
     overlay.apply_to_normal_form(&mut nf, &op_or_nf_table);
 
     nf
-
 }
 
 fn vec_bin_to_normalform(bins: Vec<Bin>) -> NormalForm {
@@ -182,17 +176,12 @@ fn vec_bin_to_normalform(bins: Vec<Bin>) -> NormalForm {
         let m = decimal_to_rational(freq / 100.0);
         let m = Rational64::new(m[0] as i64, m[1] as i64);
         println!("{:?}", m);
-        overlay_vec.push(
-            Op(
-                TransposeM {
-                    m
-                }
-            )
-        );
+        overlay_vec.push(Op(TransposeM { m }));
     }
 
-
-    let overlay  = Op(Overlay { operations: overlay_vec });
+    let overlay = Op(Overlay {
+        operations: overlay_vec,
+    });
 
     let mut nf = NormalForm::init();
 
@@ -202,7 +191,6 @@ fn vec_bin_to_normalform(bins: Vec<Bin>) -> NormalForm {
 
     nf
 }
-
 
 #[derive(Debug, Clone)]
 struct Bin {
@@ -222,9 +210,7 @@ fn fft_stuff() {
     println!("\nHello Danny's WereSoCool Scratch Pad");
 
     let (sound, basis, mut nf1) = generate_sine_wave(&"songs/test/a_440.socool".to_string());
-    let a440 = sound
-        .l_buffer
-        .clone();
+    let a440 = sound.l_buffer.clone();
     let start = 5000;
     let buffer_len = 2048;
     let sample_rate = 44100;
@@ -235,39 +221,38 @@ fn fft_stuff() {
     fft.fft();
 
     #[derive(Debug, PartialOrd, PartialEq)]
-        let mag = magnitude(&mut fft);
+    let mag = magnitude(&mut fft);
     let mut indexes = vec![];
-//    let mut min_mag = 150.0;
-    for i in 0..mag.len()/2 {
-//        if mag[i] > min_mag {
+    //    let mut min_mag = 150.0;
+    for i in 0..mag.len() / 2 {
+        //        if mag[i] > min_mag {
         indexes.push(Bin {
             index: i,
-            mag: mag[i]
+            mag: mag[i],
         });
-//        }
+        //        }
     }
 
-//    println!("{:?}", max_mag);
+    //    println!("{:?}", max_mag);
     indexes.sort_by(|a, b| b.mag.partial_cmp(&a.mag).unwrap());
 }
 
 fn main() -> Result<(), pa::Error> {
-
-//    println!("{:?}", indexes);
-//    indexes[0..10].iter().for_each(|bin| {
-//        if bin.mag > indexes[0].mag * 1.0/2.0 {
-//            let freq = bin.index as f64 * sample_rate as f64 / buffer_len as f64;
-//            println!("freq {:?}, magnitude {:?}", freq, bin.mag);
-//        }
-//    });
+    //    println!("{:?}", indexes);
+    //    indexes[0..10].iter().for_each(|bin| {
+    //        if bin.mag > indexes[0].mag * 1.0/2.0 {
+    //            let freq = bin.index as f64 * sample_rate as f64 / buffer_len as f64;
+    //            println!("freq {:?}, magnitude {:?}", freq, bin.mag);
+    //        }
+    //    });
 
     let mut freqs = vec![];
     for filename in &[
-//        "f.json",
+        //        "f.json",
         "msft.json",
         "goog.json",
         "nvda.json",
-        "tsla.json"
+        "tsla.json",
     ] {
         let mut stock_seq = vec![];
         let json = read_json(filename);
@@ -281,19 +266,16 @@ fn main() -> Result<(), pa::Error> {
             }
         }
         freqs.push(stock_seq);
-
     }
 
-
-
-//    let freqs = vec![
-//        vec![
-//            203.0, 300.0, 340.0
-//        ],
-//        vec![
-//            100.0, 200.0, 300.0,
-//        ]
-//    ];
+    //    let freqs = vec![
+    //        vec![
+    //            203.0, 300.0, 340.0
+    //        ],
+    //        vec![
+    //            100.0, 200.0, 300.0,
+    //        ]
+    //    ];
 
     let basis = Basis {
         f: 500.0,
@@ -325,13 +307,13 @@ fn main() -> Result<(), pa::Error> {
 }
 
 #[test]
-fn test_decimal_to_fraction () {
+fn test_decimal_to_fraction() {
     // Test the function with 1_000_000 random decimal numbers
     let mut rng = rand::thread_rng();
     for _i in 1..1_000_000 {
         let number = rng.gen::<f64>();
         let result = decimal_to_rational(number);
-        assert!((number - (result[0] as f64)/(result[1] as f64)).abs() < std::f64::EPSILON);
+        assert!((number - (result[0] as f64) / (result[1] as f64)).abs() < std::f64::EPSILON);
         assert!(result[0].gcd(&result[1]) == 1);
     }
 }
