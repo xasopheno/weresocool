@@ -1,4 +1,9 @@
 {
+  "./songs/test/a_440.socool": {
+    "op": 4898563994669207434,
+    "normal_form": 4948581251071662960,
+    "stereo_waveform": 2e-11
+  },
   "./songs/test/asd_test_4.socool": {
     "op": 315470317312751488,
     "normal_form": 15972240673446720958,
