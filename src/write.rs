@@ -29,7 +29,7 @@ fn wav_to_mp3_in_renders(filename: &str) {
     let filename = format!("renders/{}{}", filename, ".mp3".to_string());
     dbg!(filename.clone());
 
-//  ffmpeg -i composition.wav -codec:a libmp3lame -qscale:a 2 renders/${filename}.mp3
+    //  ffmpeg -i composition.wav -codec:a libmp3lame -qscale:a 2 renders/${filename}.mp3
     Command::new("ffmpeg")
         .args(&[
             "-i",
