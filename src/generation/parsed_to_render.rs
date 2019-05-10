@@ -80,7 +80,7 @@ impl TimedOp {
         Op4D {
             l: r_to_f64(self.l) * basis.l,
             t: r_to_f64(self.t) * basis.l,
-            x: (basis.p * r_to_f64(self.pm)) + r_to_f64(self.pa),
+            x: ((basis.p + r_to_f64(self.pa)) * r_to_f64(self.pm)),
             y: (basis.f * r_to_f64(self.fm)) + r_to_f64(self.fa),
             z: basis.g * r_to_f64(self.g),
             voice: self.voice,

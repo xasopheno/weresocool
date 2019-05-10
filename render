@@ -2,6 +2,10 @@
 
 
 FILENAME=$1
+rm ../wereso_visible/public/songs/${FILENAME##*/}.mp3
+rm ../wereso_visible/public/songs/${FILENAME##*/}.socool.json
+rm renders/${FILENAME##*/}.mp3
+rm renders/${FILENAME##*/}.socool.json
 cargo run --release --bin wsc songs/$FILENAME.socool --print
 cargo run --release --bin wsc songs/$FILENAME.socool --json
 

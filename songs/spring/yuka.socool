@@ -45,8 +45,8 @@ thing2 = {
 		Tm 0, AsIs, Tm 9/8 | PanM -1, Tm 0, 
 		Tm 7/8, Tm 0, Tm 11/8, Tm 0
 	]
-	| Overlay [AsIs, Seq [Tm 0, Seq [PanA -1 | Reverse | Tm 2/3, Tm 0] | Length 2/3]]
-	| Seq [Repeat 1, Tm 0, Repeat 2]
+	| Overlay [AsIs, Seq [Seq [PanA -1 | Reverse | Tm 2/3] | Length 2/3]]
+	| Seq [Repeat 1] 
 }
 
 bass = {
@@ -160,7 +160,7 @@ chords = {
 	  	| Seq [
 	  		AsIs, 
 	  		Ta 10, 
-	  		Ta 20 | Length 3/2
+	  		Ta 20 | Length 1
   		] 
 	  	| Length 3/2,
 	  	Tm 0 | Length 1,
@@ -285,11 +285,93 @@ all_chords = {
 	]
 }
 
+melody = {
+    O[
+      	(2/1, 5, 1, -1),
+      	(2/1, 0, 1, -1),
+      	(3/2, 2, 1, 1),
+    	(1/1, 0, 1, 1),
+  	] |
+	Seq 	[
+		Tm 0 | Length 3,
+		Tm 9/4, 
+		Tm 25/12 | PanM -1, 
+		Tm 12/5, 
+		Tm 5/2,
+		Tm 15/8 | #off
+	]
+}
 
-main = {
-	Overlay [
+gogos = {
+    O[
+      	(4/1, 11, 1/4, 3/4),
+      	(4/1, 0, 1/4, -3/4),
+      	(3/1, 5, 1/4, 3/4),
+      	(3/1, 0, 1/4, -3/4),
+      	(2/1, 5, 1, 3/4),
+      	(2/1, 0, 1, -3/4),
+      	(3/2, 2, 1, 1),
+      	(3/2, 0, 1, -1),
+      	(9/16, 2, 1/2, 3/4),
+      	(9/16, 0, 1/2, -3/4),
+  	] |
+	Seq [
+		Tm 3/2, Tm 4/3, Tm 11/8, Tm 15/8, Tm 8/5,
+		Tm 7/4, Tm 15/8, Tm 7/4, Tm 8/5, Tm 5/3,
+		Tm 4/3, Tm 3/2, Tm 11/8, Tm 3/2,
+	]
+	| Seq [AsIs, Tm 9/8 | Reverse, Tm 5/4, Tm 0, Tm 11/8 | Reverse] | PanA 1
+	| Seq [AsIs, Tm 9/8 | Reverse, Tm 5/4, Tm 11/8 | Reverse] | PanA -1
+	| Seq [AsIs, Tm 9/8 | Reverse, Tm 5/4, Tm 11/8 | Reverse]
+	| ModulateBy [
+		Seq [
+			AsIs 
+			| PanM -1 
+			| Overlay [AsIs, Tm 9/8, Tm 3/2] 
+			| Gain 1/2, 
+			Tm 0 | Length 1/20,
+			AsIs 
+			| Overlay [AsIs, Tm 9/8, Tm 25/24] | Gain 1/2,
+			Tm 0 | Length 1/20,
+		]
+		| Repeat 3
+	]
+	> FitLength all_chords
+	| Seq [AsIs, Reverse]
+}
+
+scene1 = {
+	Gain 6/7 | Overlay [
+		Gain 1/4 | gogos,
 		all_chords | Length 2, 
 	]
+}
 
+scene2 = {
+	Overlay [
+		Gain 1/20 | thing2 > FitLength melody,
+		melody,
+		Seq [
+			chords2,
+			Tm 0 | Length 2
+		]
+	]
+	| Seq [AsIs, AsIs > @off(Tm 0)]
+	| Seq [AsIs, Tm 9/8 | Length 8/9 | PanM -1, Tm 5/4 | Length 4/5]
+	| Seq [Overlay [AsIs, Tm 1/2] | Seq [AsIs, Tm 11/8 | Length 2/3]]
+}
+
+main = {
+	Seq [
+		scene1,
+		Tm 0 | Length 1/20,
+		scene2,
+		Overlay [
+			scene1 
+			| ModulateBy [Gain 1/5, Gain 2/5, Gain 3/5, Gain 4/5, Gain 1]
+			> FitLength scene2, 
+			scene2
+		]
+	]
 }
 	
