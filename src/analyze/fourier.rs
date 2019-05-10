@@ -61,9 +61,6 @@ impl Fourier for Vec<Complex<f64>> {
 #[cfg(test)]
 pub mod tests {
     use super::*;
-    use instrument::oscillator::Oscillator;
-    use ratios::{Pan, R};
-    use settings::get_test_settings;
 
     #[test]
     fn fourier_array_to_complex_test() {
