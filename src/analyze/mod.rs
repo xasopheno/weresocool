@@ -1,4 +1,3 @@
-use num_complex;
 pub mod fourier;
 
 pub trait Analyze {

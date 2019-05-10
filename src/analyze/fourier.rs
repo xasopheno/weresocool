@@ -1,5 +1,4 @@
 use num_complex::Complex;
-use std::f64::consts::E;
 use std::f64::consts::PI;
 
 pub fn vec_f64_to_complex(array: &mut [f64]) -> Vec<Complex<f64>> {

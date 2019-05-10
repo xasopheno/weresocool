@@ -176,7 +176,8 @@ pub mod normalize {
                 }
 
                 Op::Choice { operations } => {
-                    let choice = rand::thread_rng().choose(&operations).unwrap();
+                    let mut rng = thread_rng();
+                    let choice = operations.choose(&mut rng).unwrap();
                     choice.apply_to_normal_form(input, table)
                 }
 
