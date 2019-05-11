@@ -14,6 +14,7 @@ use socool_ast::ast::OpOrNfTable;
 use socool_ast::operations::{NormalForm, Normalize as NormalizeOp, PointOp};
 use std::sync::{Arc, Mutex};
 use crate::generation::video_data_generation::{
+    TimedOp, Op4D, EventType,
     vec_timed_op_to_vec_op4d, composition_to_vec_timed_op,
 };
 
