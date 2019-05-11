@@ -1,6 +1,7 @@
 use crate::instrument::stereo_waveform::StereoWaveform;
 use std::fs::File;
 use std::io::prelude::*;
+use std::process::Command;
 
 pub fn write_output_buffer(out_buffer: &mut [f32], stereo_waveform: StereoWaveform) {
     let mut l_idx = 0;
@@ -16,7 +17,33 @@ pub fn write_output_buffer(out_buffer: &mut [f32], stereo_waveform: StereoWavefo
     }
 }
 
-pub fn write_composition_to_wav(composition: StereoWaveform) {
+pub fn filename_from_string(s: &str) -> &str {
+    let split: Vec<&str> = s.split(".").collect();
+    let filename: Vec<&str> = split[0].split("/").collect();
+    filename[filename.len() - 1]
+}
+
+fn wav_to_mp3_in_renders(filename: &str) {
+    let filename = filename_from_string(filename);
+    let filename = format!("renders/{}{}", filename, ".mp3".to_string());
+    dbg!(filename.clone());
+
+    //  ffmpeg -i composition.wav -codec:a libmp3lame -qscale:a 2 renders/${filename}.mp3
+    let _ = Command::new("ffmpeg")
+        .args(&[
+            "-i",
+            "composition.wav",
+            "-codec:a",
+            "libmp3lame",
+            "-qscale:a",
+            "2",
+            "-y",
+            &filename,
+        ])
+        .spawn();
+}
+
+pub fn write_composition_to_wav(composition: StereoWaveform, filename: &str) {
     let spec = hound::WavSpec {
         channels: 2,
         sample_rate: 44100,
@@ -33,6 +60,8 @@ pub fn write_composition_to_wav(composition: StereoWaveform) {
     for sample in buffer {
         writer.write_sample(sample).unwrap();
     }
+
+    wav_to_mp3_in_renders(filename);
 }
 
 pub fn normalize_waveform(buffer: &mut Vec<f32>) {
@@ -54,7 +83,13 @@ pub fn normalize_waveform(buffer: &mut Vec<f32>) {
 
 pub fn write_composition_to_json(serialized: &String, filename: &String) -> std::io::Result<()> {
     //        let serialized = serde_json::to_string(&composition).unwrap();
-    let mut file = File::create(format!("{}{}", filename, ".json".to_string()))?;
+    let filename = filename_from_string(filename);
+    dbg!(filename);
+    let mut file = File::create(format!(
+        "renders/{}{}",
+        filename,
+        ".socool.json".to_string()
+    ))?;
 
     println!(
         "{}.json was written and has \

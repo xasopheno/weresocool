@@ -11,8 +11,7 @@ pub fn is_import(s: String) -> bool {
 }
 
 pub fn is_as_import(s: String) -> bool {
-    s.trim();
-    s.contains(" as ")
+    s.trim().contains(" as ")
 }
 
 fn get_import_name_from_path(s: String) -> String {

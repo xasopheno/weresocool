@@ -1,0 +1,189 @@
+{ f: 220, l: 1, g: 1, p: 0}
+
+bass_overtones = {
+    O[
+      	(5, 7, 1/2, -3/10),
+      	(5, 0, 1/2, 3/10),
+      	(3/2, 0, 1, -1/2),
+      	(3/2, 4, 1, 1/4),
+      	(1/1, 5, 1, 1/2),
+      	(1/1, 0, 1, 1/2),
+      	(1/2, 2, 1/4, 1/3),
+      	(1/2, 0, 1/4, -1/3),
+      	(1/4, 0, 1/4, 1/2),
+      	(1/4, 1, 1/4, -1/2),
+  	]
+}
+
+bass = {
+	bass_overtones |
+	Sequence [
+		1^3/2,
+		7/8^1,
+		3/4^1,
+		0^1/2,
+		4/3^1/4,
+		3/2^1/4,
+		Tm 7/4 | Length 1/2,
+		Tm 0 | Length 1/2,
+		Tm 3/2,
+		Seq [
+			Tm 3/4,
+			Tm 7/8,
+			Tm 9/8,
+			Tm 4/3,
+			Tm 7/6,
+			Tm 0,
+		] | Length 1/4, 
+	] 
+	| Seq [
+		Tm 1, 
+	] | Length 3/4 
+}
+
+melody = {
+	Seq [
+		Tm 0 | Length 7/2,
+	    O[
+	      	(11/4, 2, 1, -1/3),
+	      	(9/4, 0, 1, 1/2),
+	      	(7/4, 2, 1, -1/3),
+	      	(7/4, 2, 1, -1/3),
+	  	] | Length 1/3,
+	  	Tm 0,
+	    O[
+	      	(11/4, 2, 1, -1/3),
+	      	(9/4, 0, 1, 1/2),
+	      	(7/4, 2, 1, -1/3),
+	      	(5/4, 2, 1, -1/3),
+	  	] | Tm 6/5 | Length 1/3,
+	]	
+}
+
+highs = {
+	Seq [
+		Tm 7, 
+		Tm 9, 
+		Tm 11,
+		Tm 13,
+		Tm 15
+	] 
+	| Seq [
+		AsIs, 
+		Tm 6/5,
+	]
+	| ModulateBy [
+		AsIs, PanA -1/2, PanA 1,	
+	]
+	| Seq [Tm 0 | Length 9, AsIs, Tm 2 | Gain 1/4, Tm 3 | Gain 1/8, Tm 4 | Gain 1/16]
+	| Overlay [AsIs, Tm 3/4, Tm 9/8]
+	| Gain 1/4
+	| Seq [
+		AsIs, PanM -1,
+	] > FitLength bass
+}
+
+scene_1 = {
+	Overlay [
+		Overlay [
+			highs,
+			melody | Seq [
+				Overlay [
+					PanA -1/2, 
+					PanA 1/2 | Ta 2
+				],
+			],
+			bass
+		] 
+		| Repeat 2
+		| Seq [AsIs, Tm 7/8]
+	]
+	| Overlay [
+		AsIs, 
+		Gain 1/6 
+		| Tm 5 | Seq [Repeat 4, Tm 0, Repeat 4] | Length 1/9 | Gain 1/3
+		| ModulateBy [PanA -1/3, PanA 1/4, PanA 4/5, PanA 3/5, PanA -1, PanA -1/2, PanA 4/5]
+		| ModulateBy [Gain 1/2, Gain 2/3, AsIs, Gain 2/3, Gain 1/2]
+		| Overlay [
+			AsIs, 
+			PanM -1/2
+		]
+	] 
+	
+}
+
+bass_2 = {
+    O[
+      	(10, 7, 1/2, -3/10),
+      	(10, 0, 1/2, 3/10),
+      	(5, 7, 1/2, -3/10),
+      	(5, 0, 1/2, 3/10),
+      	(3/2, 0, 1, -1/2),
+      	(3/2, 4, 1, 1/4),
+      	(1/1, 5, 1, 1/2),
+      	(1/1, 0, 1, 1/2),
+      	(1/2, 2, 1, 1/3),
+      	(1/2, 2, 1, -1/3),
+      	(1/4, 0, 1, 1/2),
+      	(1/4, 1, 1, -1/2),
+  	] |
+	Seq [
+		Tm 4/3, 
+		Tm 8/5, 
+		Tm 7/4, 
+		Tm 9/8, 
+		Tm 5/4, 
+		Tm 25/24, 
+		Tm 3/2 | Length 4,
+		Gain 1/4 | Tm 3 
+		| Seq [
+			AsIs, 
+			Tm 9/8, 
+			Tm 5/4, 
+			Tm 11/8, 
+			Tm 7/4, 
+			Tm 25/12,
+			Tm 5/2,
+			Tm 11/4
+		] 
+		| Seq [AsIs, Tm 11/4, Tm 11/4 | Reverse, AsIs, Tm 1/2]
+		| Length 1/7
+		| Overlay [AsIs | PanA -4/5, Ta 7 | Reverse | PanA 4/5],
+		Tm 3/4 
+		| Length 2 
+		| Overlay [AsIs | PanA -4/5, Ta 7 | PanA 4/5, Tm 3 | Gain 1/3 | Ta -5],
+	] 
+	| Tm 1/2	
+	| Length 1/2
+}
+
+main = {
+	Seq [
+		Seq [
+			Gain 1/2 | bass_2,
+			Tm 0 | Length 1/100,
+			scene_1 | ModulateBy [AsIs, AsIs, Gain 4/7 | Overlay [PanA -1/2 | Ta 5, PanA 1/2] | Repeat 2],
+			Tm 0 | Length 1/8,
+		] 
+		| Repeat 2,
+	    O[
+	      	(10, 7, 1/2, -3/10),
+	      	(10, 0, 1/2, 3/10),
+	      	(5, 7, 1/2, -3/10),
+	      	(5, 0, 1/2, 3/10),
+	      	(3/2, 0, 1, -1/2),
+	      	(3/2, 4, 1, 1/4),
+	      	(1/1, 5, 1, 1/2),
+	      	(1/1, 0, 1, 1/2),
+	      	(1/2, 2, 1, 1/3),
+	      	(1/2, 2, 1, -1/3),
+	      	(1/4, 0, 1, 1/2),
+	      	(1/4, 1, 1, -1/2),
+	  	] 
+	  	| Gain 1/4
+	  	| Tm 3/4
+		| Length 10 
+		| Overlay [AsIs | PanA -4/5, Ta 7 | PanA 4/5, Tm 3 | Gain 1/3 | Ta -5],
+	] 
+}
+	

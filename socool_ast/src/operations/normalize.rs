@@ -1,6 +1,4 @@
 pub mod normalize {
-    extern crate num_rational;
-    extern crate rand;
     use crate::ast::{Op, OpOrNf, OpOrNf::*, OpOrNfTable, OscType};
     use crate::operations::{
         helpers::*, substitute::get_fn_arg_map, GetLengthRatio, NormalForm, Normalize, Substitute,
@@ -178,7 +176,8 @@ pub mod normalize {
                 }
 
                 Op::Choice { operations } => {
-                    let choice = rand::thread_rng().choose(&operations).unwrap();
+                    let mut rng = thread_rng();
+                    let choice = operations.choose(&mut rng).unwrap();
                     choice.apply_to_normal_form(input, table)
                 }
 

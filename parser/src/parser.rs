@@ -65,7 +65,7 @@ pub fn parse_file(filename: &str, parse_table: Option<OpOrNfTable>) -> ParsedCom
             let file = BufReader::new(&f);
             for line in file.lines() {
                 let l = line.unwrap();
-                let copy_l = l.trim_left();
+                let copy_l = l.trim_start();
                 if copy_l.starts_with("--") {
                     composition.push_str("\n");
                 } else if is_import(copy_l.to_string()) {

@@ -24,6 +24,8 @@ indexmap = { version = "1", features = ["serde-1"] }
 difference = "2.0.0"
 term = "0.5.1"
 uuid = { version = "0.7.2", features = ["v4"] }
+num-complex = "0.2.1"
+num = "0.2.0"
 
 [[bin]]
 name = "wsc"

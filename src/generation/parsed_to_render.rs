@@ -24,7 +24,6 @@ pub fn render(origin: &Basis, composition: &NormalForm, table: &OpOrNfTable) -> 
 
     println!("\nGenerating Composition ");
     composition.apply_to_normal_form(&mut normal_form, table);
-    //    println!("{:#?}", normal_form);
 
     let vec_wav = generate_waveforms(&origin, normal_form.operations, true);
     let mut result = sum_all_waveforms(vec_wav);
@@ -39,8 +38,8 @@ pub fn render_mic(point_op: &PointOp, origin: Basis, osc: &mut Oscillator) -> St
 }
 
 pub fn to_wav(composition: StereoWaveform, filename: String) {
-    banner("Printing".to_string(), filename);
-    write_composition_to_wav(composition);
+    banner("Printing".to_string(), filename.clone());
+    write_composition_to_wav(composition, &filename);
     printed("WAV".to_string());
 }
 
@@ -81,7 +80,7 @@ impl TimedOp {
         Op4D {
             l: r_to_f64(self.l) * basis.l,
             t: r_to_f64(self.t) * basis.l,
-            x: (basis.p * r_to_f64(self.pm)) + r_to_f64(self.pa),
+            x: ((basis.p + r_to_f64(self.pa)) * r_to_f64(self.pm)),
             y: (basis.f * r_to_f64(self.fm)) + r_to_f64(self.fa),
             z: basis.g * r_to_f64(self.g),
             voice: self.voice,
