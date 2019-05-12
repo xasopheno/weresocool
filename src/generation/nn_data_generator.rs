@@ -27,6 +27,18 @@ pub struct CSVOp {
     t: f64,
 }
 
+impl DataOp {
+    pub fn to_csv_op(&self, time: f64) -> CSVOp {
+        CSVOp {
+            fm: self.fm,
+            fa: self.fa,
+            pm: self.pm,
+            pa: self.pa,
+            g: self.g,
+            t: time,
+        }
+    }
+}
 
 pub type NormalData = Vec<Vec<DataOp>>;
 pub type CSVData = Vec<Vec<CSVOp>>;
@@ -81,9 +93,7 @@ pub fn normal_data_to_csv_data(data: NormalData) -> CSVData {
                 let n_steps_to_push = (op_time + remainder)/subdivision;
                 remainder = n_steps_to_push.fract();
                 for n in 0..n_steps_to_push.floor() as usize {
-                    new_op = CSVOp {
-                        
-                    };
+                    let new_op =  op.to_csv_op(seq_time);
                     result.push(new_op);
                     seq_time += subdivision;
                 }
