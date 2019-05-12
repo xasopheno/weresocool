@@ -14,26 +14,36 @@ pub struct DataOp {
     pm: f64,
     pa: f64,
     g: f64,
+    l: f64,
+}
+
+#[derive(Debug, Clone)]
+pub struct CSVOp {
+    fm: f64,
+    fa: f64,
+    pm: f64,
+    pa: f64,
+    g: f64,
     t: f64,
 }
 
+
 pub type NormalData = Vec<Vec<DataOp>>;
+pub type CSVData = Vec<Vec<CSVOp>>;
 
 pub fn point_op_to_data_op(
     point_op: &PointOp,
-    time: &mut Rational64
-) -> (DataOp, Rational64) {
-    let mut new_length = *time + point_op.l;
+) -> DataOp {
     let result = DataOp {
         fm: r_to_f64(point_op.fm),
         fa: r_to_f64(point_op.fa),
         pm: r_to_f64(point_op.pm),
         pa: r_to_f64(point_op.pa),
         g: r_to_f64(point_op.g),
-        t: r_to_f64(time.clone()),
+        l: r_to_f64(point_op.l),
     };
 
-    (result, new_length)
+    result
 }
 
 pub fn composition_to_normal_data(composition: &NormalForm, table: &OpOrNfTable) -> NormalData {
@@ -45,14 +55,11 @@ pub fn composition_to_normal_data(composition: &NormalForm, table: &OpOrNfTable)
     let result: NormalData = normal_form
         .operations
         .iter()
-        .enumerate()
-        .map(|(voice, vec_point_op)| {
-            let mut time = Rational64::new(0, 1);
+        .map(|vec_point_op| {
             let mut result = vec![];
             for op in vec_point_op {
-                let (data_op, new_time) = point_op_to_data_op(op, &mut time);
+                let data_op = point_op_to_data_op(op);
                 result.push(data_op);
-                time = new_time;
             }
             result
         })
@@ -61,23 +68,22 @@ pub fn composition_to_normal_data(composition: &NormalForm, table: &OpOrNfTable)
     result
 }
 
-pub fn normal_data_to_csv_data(data: NormalData) -> NormalData {
+pub fn normal_data_to_csv_data(data: NormalData) -> CSVData {
     let subdivision = 0.5;
-//    Should be passed length not time
-//    Shouldn't have time yet. :)
-    let result: NormalData = data
+    let result: CSVData = data
         .iter()
         .map(|vec_data_op| {
             let mut remainder = 0.0;
             let mut seq_time = 0.0;
             let mut result = vec![];
             for op in vec_data_op {
-                let op_time = op.t;
+                let op_time = op.l;
                 let n_steps_to_push = (op_time + remainder)/subdivision;
                 remainder = n_steps_to_push.fract();
                 for n in 0..n_steps_to_push.floor() as usize {
-                    let mut new_op = op.clone();
-                    new_op.t = seq_time;
+                    new_op = CSVOp {
+                        
+                    };
                     result.push(new_op);
                     seq_time += subdivision;
                 }
