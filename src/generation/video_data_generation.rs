@@ -1,6 +1,4 @@
-use crate::instrument::{
-    oscillator::{Basis},
-};
+use crate::instrument::oscillator::Basis;
 use num_rational::Rational64;
 use serde::{Deserialize, Serialize};
 use socool_ast::ast::OpOrNfTable;
@@ -12,28 +10,28 @@ pub fn r_to_f64(r: Rational64) -> f64 {
 
 #[derive(Debug, Clone, Eq, Ord, PartialEq, PartialOrd)]
 pub struct TimedOp {
-    t: Rational64,
-    event_type: EventType,
-    voice: usize,
-    event: usize,
-    fm: Rational64,
-    fa: Rational64,
-    pm: Rational64,
-    pa: Rational64,
-    g: Rational64,
-    l: Rational64,
+    pub t: Rational64,
+    pub event_type: EventType,
+    pub voice: usize,
+    pub event: usize,
+    pub fm: Rational64,
+    pub fa: Rational64,
+    pub pm: Rational64,
+    pub pa: Rational64,
+    pub g: Rational64,
+    pub l: Rational64,
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize, PartialEq)]
 pub struct Op4D {
-    t: f64,
-    event_type: EventType,
-    voice: usize,
-    event: usize,
-    x: f64,
-    y: f64,
-    z: f64,
-    l: f64,
+    pub t: f64,
+    pub event_type: EventType,
+    pub voice: usize,
+    pub event: usize,
+    pub x: f64,
+    pub y: f64,
+    pub z: f64,
+    pub l: f64,
 }
 
 #[derive(Debug, Clone, Eq, Ord, PartialEq, PartialOrd, Serialize, Deserialize)]
@@ -41,7 +39,6 @@ pub enum EventType {
     On,
     Off,
 }
-
 
 impl TimedOp {
     pub fn to_op_4d(&self, basis: &Basis) -> Op4D {
@@ -118,4 +115,5 @@ pub fn composition_to_vec_timed_op(composition: &NormalForm, table: &OpOrNfTable
 
     result
 }
+
 

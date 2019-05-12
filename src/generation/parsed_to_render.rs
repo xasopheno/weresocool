@@ -1,3 +1,6 @@
+use crate::generation::video_data_generation::{
+    composition_to_vec_timed_op, vec_timed_op_to_vec_op4d, EventType, Op4D, TimedOp,
+};
 use crate::instrument::{
     oscillator::{Basis, Oscillator},
     stereo_waveform::{Normalize, StereoWaveform},
@@ -13,10 +16,6 @@ use serde_json::to_string;
 use socool_ast::ast::OpOrNfTable;
 use socool_ast::operations::{NormalForm, Normalize as NormalizeOp, PointOp};
 use std::sync::{Arc, Mutex};
-use crate::generation::video_data_generation::{
-    TimedOp, Op4D, EventType,
-    vec_timed_op_to_vec_op4d, composition_to_vec_timed_op,
-};
 
 pub fn r_to_f64(r: Rational64) -> f64 {
     *r.numer() as f64 / *r.denom() as f64
