@@ -1,0 +1,107 @@
+---
+created: "2019-05-12T05:15:22.427057Z"
+creator: insta@0.8.1
+source: src/generation/nn_data_generator.rs
+expression: normal_data_subdivided
+---
+[
+    [
+        DataOp {
+            fm: 2.0,
+            fa: 0.0,
+            pm: 1.0,
+            pa: 0.0,
+            g: 1.0,
+            t: 0.0
+        },
+        DataOp {
+            fm: 2.0,
+            fa: 0.0,
+            pm: 1.0,
+            pa: 0.0,
+            g: 1.0,
+            t: 0.5
+        },
+        DataOp {
+            fm: 1.0,
+            fa: 0.0,
+            pm: 1.0,
+            pa: 0.0,
+            g: 0.5,
+            t: 1.0
+        },
+        DataOp {
+            fm: 1.0,
+            fa: 0.0,
+            pm: 1.0,
+            pa: 0.0,
+            g: 0.5,
+            t: 1.5
+        },
+        DataOp {
+            fm: 1.0,
+            fa: 0.0,
+            pm: 1.0,
+            pa: 0.0,
+            g: 0.5,
+            t: 2.0
+        },
+        DataOp {
+            fm: 1.0,
+            fa: 0.0,
+            pm: 1.0,
+            pa: 0.0,
+            g: 0.5,
+            t: 2.5
+        },
+        DataOp {
+            fm: 1.0,
+            fa: 0.0,
+            pm: 1.0,
+            pa: 0.0,
+            g: 1.0,
+            t: 3.0
+        },
+        DataOp {
+            fm: 1.0,
+            fa: 0.0,
+            pm: 1.0,
+            pa: 0.0,
+            g: 1.0,
+            t: 3.5
+        },
+        DataOp {
+            fm: 1.0,
+            fa: 0.0,
+            pm: 1.0,
+            pa: 0.0,
+            g: 1.0,
+            t: 4.0
+        },
+        DataOp {
+            fm: 1.0,
+            fa: 0.0,
+            pm: 1.0,
+            pa: 0.0,
+            g: 1.0,
+            t: 4.5
+        },
+        DataOp {
+            fm: 1.0,
+            fa: 0.0,
+            pm: 1.0,
+            pa: 0.0,
+            g: 1.0,
+            t: 5.0
+        },
+        DataOp {
+            fm: 1.0,
+            fa: 0.0,
+            pm: 1.0,
+            pa: 0.0,
+            g: 1.0,
+            t: 5.5
+        }
+    ],
+    []
+]

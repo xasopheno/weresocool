@@ -21,7 +21,7 @@ pub type NormalData = Vec<Vec<DataOp>>;
 
 pub fn point_op_to_data_op(
     point_op: &PointOp,
-    mut time: &mut Rational64
+    time: &mut Rational64
 ) -> (DataOp, Rational64) {
     let mut new_length = *time + point_op.l;
     let result = DataOp {
@@ -42,7 +42,7 @@ pub fn composition_to_normal_data(composition: &NormalForm, table: &OpOrNfTable)
     println!("Generating Composition \n");
     composition.apply_to_normal_form(&mut normal_form, table);
 
-    let mut result: NormalData = normal_form
+    let result: NormalData = normal_form
         .operations
         .iter()
         .enumerate()
@@ -53,6 +53,34 @@ pub fn composition_to_normal_data(composition: &NormalForm, table: &OpOrNfTable)
                 let (data_op, new_time) = point_op_to_data_op(op, &mut time);
                 result.push(data_op);
                 time = new_time;
+            }
+            result
+        })
+        .collect();
+
+    result
+}
+
+pub fn normal_data_to_csv_data(data: NormalData) -> NormalData {
+    let subdivision = 0.5;
+//    Should be passed length not time
+//    Shouldn't have time yet. :)
+    let result: NormalData = data
+        .iter()
+        .map(|vec_data_op| {
+            let mut remainder = 0.0;
+            let mut seq_time = 0.0;
+            let mut result = vec![];
+            for op in vec_data_op {
+                let op_time = op.t;
+                let n_steps_to_push = (op_time + remainder)/subdivision;
+                remainder = n_steps_to_push.fract();
+                for n in 0..n_steps_to_push.floor() as usize {
+                    let mut new_op = op.clone();
+                    new_op.t = seq_time;
+                    result.push(new_op);
+                    seq_time += subdivision;
+                }
             }
             result
         })
@@ -93,7 +121,10 @@ fn normal_form_to_normal_data_test() {
     }
         .apply_to_normal_form(&mut normal_form, &pt);
 
-    let result = composition_to_normal_data(&normal_form, &pt);
+    let normal_data = composition_to_normal_data(&normal_form, &pt);
 
-    assert_debug_snapshot_matches!("normal_form_to_normal_data_test", result);
+    assert_debug_snapshot_matches!("normal_form_to_normal_data_test", normal_data);
+
+    let normal_data_subdivided = normal_data_to_csv_data(normal_data);
+    assert_debug_snapshot_matches!("normal_form_to_subdivided_test", normal_data_subdivided);
 }
