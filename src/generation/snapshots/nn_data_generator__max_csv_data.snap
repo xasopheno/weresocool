@@ -1,0 +1,14 @@
+---
+created: "2019-05-12T23:50:24.610804Z"
+creator: insta@0.8.1
+source: src/generation/nn_data_generator.rs
+expression: max
+---
+CSVOp {
+    fm: 2.0,
+    fa: 0.0,
+    pm: 1.0,
+    pa: 0.0,
+    g: 1.0,
+    t: 4.5
+}

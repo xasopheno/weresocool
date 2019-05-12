@@ -1,7 +1,8 @@
-use num_rational::Rational64;
-use socool_ast::ast::{OpOrNf::*, OpOrNfTable, Op::*, Op};
-use socool_ast::operations::{NormalForm, Normalize as NormalizeOp, PointOp};
 use insta::assert_debug_snapshot_matches;
+use num_rational::Rational64;
+use socool_ast::ast::{Op, Op::*, OpOrNf::*, OpOrNfTable};
+use socool_ast::operations::{NormalForm, Normalize as NormalizeOp, PointOp};
+use crate::write::normalize_waveform;
 
 pub fn r_to_f64(r: Rational64) -> f64 {
     *r.numer() as f64 / *r.denom() as f64
@@ -28,7 +29,7 @@ pub struct CSVOp {
 }
 
 impl DataOp {
-    pub fn to_csv_op(&self, time: f64) -> CSVOp {
+    fn to_csv_op(&self, time: f64) -> CSVOp {
         CSVOp {
             fm: self.fm,
             fa: self.fa,
@@ -43,9 +44,7 @@ impl DataOp {
 pub type NormalData = Vec<Vec<DataOp>>;
 pub type CSVData = Vec<Vec<CSVOp>>;
 
-pub fn point_op_to_data_op(
-    point_op: &PointOp,
-) -> DataOp {
+pub fn point_op_to_data_op(point_op: &PointOp) -> DataOp {
     let result = DataOp {
         fm: r_to_f64(point_op.fm),
         fa: r_to_f64(point_op.fa),
@@ -90,10 +89,10 @@ pub fn normal_data_to_csv_data(data: NormalData) -> CSVData {
             let mut result = vec![];
             for op in vec_data_op {
                 let op_time = op.l;
-                let n_steps_to_push = (op_time + remainder)/subdivision;
+                let n_steps_to_push = (op_time + remainder) / subdivision;
                 remainder = n_steps_to_push.fract();
-                for n in 0..n_steps_to_push.floor() as usize {
-                    let new_op =  op.to_csv_op(seq_time);
+                for _n in 0..n_steps_to_push.floor() as usize {
+                    let new_op = op.to_csv_op(seq_time);
                     result.push(new_op);
                     seq_time += subdivision;
                 }
@@ -103,6 +102,46 @@ pub fn normal_data_to_csv_data(data: NormalData) -> CSVData {
         .collect();
 
     result
+}
+
+fn get_min_and_max(csv_data: CSVData) -> (CSVOp, CSVOp) {
+    let mut max_state = CSVOp {
+        fm: 0.0,
+        fa: 0.0,
+        pm: 0.0,
+        pa: 0.0,
+        g: 0.0,
+        t: 0.0,
+    };
+    let mut min_state = CSVOp {
+        fm: 0.0,
+        fa: 0.0,
+        pm: 0.0,
+        pa: 0.0,
+        g: 0.0,
+        t: 0.0,
+    };
+
+    csv_data.iter().flatten().for_each(|csv_op| {
+        max_state = CSVOp {
+            fm: max_state.fm.max(csv_op.fm),
+            fa: max_state.fa.max(csv_op.fa),
+            pm: max_state.pm.max(csv_op.pm),
+            pa: max_state.pa.max(csv_op.pa),
+            g: max_state.g.max(csv_op.g),
+            t: max_state.t.max(csv_op.t),
+        };
+        min_state = CSVOp {
+            fm: min_state.fm.min(csv_op.fm),
+            fa: min_state.fa.min(csv_op.fa),
+            pm: min_state.pm.min(csv_op.pm),
+            pa: min_state.pa.min(csv_op.pa),
+            g: min_state.g.min(csv_op.g),
+            t: min_state.t.min(csv_op.t),
+        };
+    });
+
+        (max_state, min_state)
 }
 
 #[test]
@@ -115,7 +154,7 @@ fn normal_form_to_normal_data_test() {
             Op(Sequence {
                 operations: vec![
                     Op(PanA {
-                         a: Rational64::new(1, 2),
+                        a: Rational64::new(-1, 2),
                     }),
                     Op(TransposeM {
                         m: Rational64::new(2, 1),
@@ -135,12 +174,16 @@ fn normal_form_to_normal_data_test() {
             }),
         ],
     }
-        .apply_to_normal_form(&mut normal_form, &pt);
+    .apply_to_normal_form(&mut normal_form, &pt);
 
     let normal_data = composition_to_normal_data(&normal_form, &pt);
 
     assert_debug_snapshot_matches!("normal_form_to_normal_data_test", normal_data);
 
-    let normal_data_subdivided = normal_data_to_csv_data(normal_data);
-    assert_debug_snapshot_matches!("normal_form_to_subdivided_test", normal_data_subdivided);
+    let csv_data = normal_data_to_csv_data(normal_data);
+    assert_debug_snapshot_matches!("normal_form_to_subdivided_test", csv_data);
+
+    let (max, min) = get_min_and_max(csv_data);
+    assert_debug_snapshot_matches!("max_csv_data", max);
+    assert_debug_snapshot_matches!("min_csv_data", min);
 }

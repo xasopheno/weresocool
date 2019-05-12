@@ -1,8 +1,8 @@
 ---
-created: "2019-05-12T19:36:25.928747Z"
+created: "2019-05-12T23:50:24.560975Z"
 creator: insta@0.8.1
 source: src/generation/nn_data_generator.rs
-expression: normal_data_subdivided
+expression: csv_data
 ---
 [
     [
@@ -10,7 +10,7 @@ expression: normal_data_subdivided
             fm: 1.0,
             fa: 0.0,
             pm: 1.0,
-            pa: 0.5,
+            pa: -0.5,
             g: 1.0,
             t: 0.0
         },
@@ -18,7 +18,7 @@ expression: normal_data_subdivided
             fm: 1.0,
             fa: 0.0,
             pm: 1.0,
-            pa: 0.5,
+            pa: -0.5,
             g: 1.0,
             t: 0.5
         },

@@ -115,5 +115,3 @@ pub fn composition_to_vec_timed_op(composition: &NormalForm, table: &OpOrNfTable
 
     result
 }
-
-
