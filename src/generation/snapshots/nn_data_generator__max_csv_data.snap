@@ -1,5 +1,5 @@
 ---
-created: "2019-05-12T23:50:24.610804Z"
+created: "2019-05-13T22:07:28.849265Z"
 creator: insta@0.8.1
 source: src/generation/nn_data_generator.rs
 expression: max
@@ -10,5 +10,6 @@ CSVOp {
     pm: 1.0,
     pa: 0.0,
     g: 1.0,
-    t: 4.5
+    l: 5.0,
+    v: 1
 }

@@ -1,5 +1,5 @@
 ---
-created: "2019-05-13T05:00:49.293175Z"
+created: "2019-05-13T22:07:31.887680Z"
 creator: insta@0.8.1
 source: src/generation/nn_data_generator.rs
 expression: min_state
@@ -10,5 +10,6 @@ CSVOp {
     pm: -1.0,
     pa: -1.7857142857142858,
     g: 0.0,
-    t: 0.0
+    l: 0.0,
+    v: 0
 }

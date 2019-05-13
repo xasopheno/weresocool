@@ -1,52 +1,168 @@
 ---
-created: "2019-05-12T23:50:24.516500Z"
+created: "2019-05-13T22:07:28.742473Z"
 creator: insta@0.8.1
 source: src/generation/nn_data_generator.rs
 expression: normal_data
 ---
 [
-    [
-        DataOp {
-            fm: 1.0,
-            fa: 0.0,
-            pm: 1.0,
-            pa: -0.5,
-            g: 1.0,
-            l: 1.0
+    TimedOp {
+        t: Ratio {
+            numer: 0,
+            denom: 1
         },
-        DataOp {
-            fm: 2.0,
-            fa: 0.0,
-            pm: 1.0,
-            pa: 0.0,
-            g: 1.0,
-            l: 1.0
+        voice: 0,
+        event: 0,
+        fm: Ratio {
+            numer: 1,
+            denom: 1
         },
-        DataOp {
-            fm: 1.0,
-            fa: 0.0,
-            pm: 1.0,
-            pa: 0.0,
-            g: 0.5,
-            l: 1.0
+        fa: Ratio {
+            numer: 0,
+            denom: 1
         },
-        DataOp {
-            fm: 1.0,
-            fa: 0.0,
-            pm: 1.0,
-            pa: 0.0,
-            g: 1.0,
-            l: 2.0
+        pm: Ratio {
+            numer: 1,
+            denom: 1
+        },
+        pa: Ratio {
+            numer: -1,
+            denom: 2
+        },
+        g: Ratio {
+            numer: 1,
+            denom: 1
+        },
+        l: Ratio {
+            numer: 1,
+            denom: 1
         }
-    ],
-    [
-        DataOp {
-            fm: 1.0,
-            fa: 0.0,
-            pm: 1.0,
-            pa: 0.0,
-            g: 1.0,
-            l: 5.0
+    },
+    TimedOp {
+        t: Ratio {
+            numer: 0,
+            denom: 1
+        },
+        voice: 1,
+        event: 0,
+        fm: Ratio {
+            numer: 1,
+            denom: 1
+        },
+        fa: Ratio {
+            numer: 0,
+            denom: 1
+        },
+        pm: Ratio {
+            numer: 1,
+            denom: 1
+        },
+        pa: Ratio {
+            numer: 0,
+            denom: 1
+        },
+        g: Ratio {
+            numer: 1,
+            denom: 1
+        },
+        l: Ratio {
+            numer: 5,
+            denom: 1
         }
-    ]
+    },
+    TimedOp {
+        t: Ratio {
+            numer: 1,
+            denom: 1
+        },
+        voice: 0,
+        event: 1,
+        fm: Ratio {
+            numer: 2,
+            denom: 1
+        },
+        fa: Ratio {
+            numer: 0,
+            denom: 1
+        },
+        pm: Ratio {
+            numer: 1,
+            denom: 1
+        },
+        pa: Ratio {
+            numer: 0,
+            denom: 1
+        },
+        g: Ratio {
+            numer: 1,
+            denom: 1
+        },
+        l: Ratio {
+            numer: 1,
+            denom: 1
+        }
+    },
+    TimedOp {
+        t: Ratio {
+            numer: 2,
+            denom: 1
+        },
+        voice: 0,
+        event: 2,
+        fm: Ratio {
+            numer: 1,
+            denom: 1
+        },
+        fa: Ratio {
+            numer: 0,
+            denom: 1
+        },
+        pm: Ratio {
+            numer: 1,
+            denom: 1
+        },
+        pa: Ratio {
+            numer: 0,
+            denom: 1
+        },
+        g: Ratio {
+            numer: 1,
+            denom: 2
+        },
+        l: Ratio {
+            numer: 1,
+            denom: 1
+        }
+    },
+    TimedOp {
+        t: Ratio {
+            numer: 3,
+            denom: 1
+        },
+        voice: 0,
+        event: 3,
+        fm: Ratio {
+            numer: 1,
+            denom: 1
+        },
+        fa: Ratio {
+            numer: 0,
+            denom: 1
+        },
+        pm: Ratio {
+            numer: 1,
+            denom: 1
+        },
+        pa: Ratio {
+            numer: 0,
+            denom: 1
+        },
+        g: Ratio {
+            numer: 1,
+            denom: 1
+        },
+        l: Ratio {
+            numer: 2,
+            denom: 1
+        }
+    }
 ]

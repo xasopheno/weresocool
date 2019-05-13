@@ -1,5 +1,5 @@
 use crate::generation::video_data_generation::{
-    composition_to_vec_timed_op, vec_timed_op_to_vec_op4d, EventType, Op4D, TimedOp,
+    composition_to_vec_timed_op, vec_timed_op_to_vec_op4d, Op4D, TimedOp,
 };
 use crate::instrument::{
     oscillator::{Basis, Oscillator},
@@ -181,7 +181,6 @@ pub mod tests {
             g: Rational64::new(1, 1),
             l: Rational64::new(1, 1),
             t: Rational64::new(0, 1),
-            event_type: EventType::On,
             voice: 0,
             event: 0,
         };
@@ -191,68 +190,29 @@ pub mod tests {
             vec![
                 TimedOp {
                     pa: Rational64::new(1, 2),
-                    event_type: EventType::On,
                     ..op
                 },
                 TimedOp {
-                    event_type: EventType::On,
                     l: Rational64::new(5, 1),
                     voice: 1,
                     ..op
                 },
                 TimedOp {
-                    pa: Rational64::new(1, 2),
-                    t: Rational64::new(1, 1),
-                    event_type: EventType::Off,
-                    ..op
-                },
-                TimedOp {
                     fm: Rational64::new(2, 1),
                     t: Rational64::new(1, 1),
-                    event_type: EventType::On,
-                    event: 1,
-                    ..op
-                },
-                TimedOp {
-                    fm: Rational64::new(2, 1),
-                    t: Rational64::new(2, 1),
-                    event_type: EventType::Off,
                     event: 1,
                     ..op
                 },
                 TimedOp {
                     g: Rational64::new(1, 2),
                     t: Rational64::new(2, 1),
-                    event_type: EventType::On,
-                    event: 2,
-                    ..op
-                },
-                TimedOp {
-                    g: Rational64::new(1, 2),
-                    t: Rational64::new(3, 1),
-                    event_type: EventType::Off,
                     event: 2,
                     ..op
                 },
                 TimedOp {
                     t: Rational64::new(3, 1),
                     l: Rational64::new(2, 1),
-                    event_type: EventType::On,
                     event: 3,
-                    ..op
-                },
-                TimedOp {
-                    t: Rational64::new(5, 1),
-                    l: Rational64::new(2, 1),
-                    event_type: EventType::Off,
-                    event: 3,
-                    ..op
-                },
-                TimedOp {
-                    t: Rational64::new(5, 1),
-                    l: Rational64::new(5, 1),
-                    event_type: EventType::Off,
-                    voice: 1,
                     ..op
                 },
             ]
@@ -278,21 +238,13 @@ pub mod tests {
             g: Rational64::new(1, 2),
             t: Rational64::new(0, 1),
             l: Rational64::new(1, 1),
-            event_type: EventType::On,
             voice: 0,
             event: 0,
         };
 
         let vec_timed_op = vec![
             TimedOp {
-                event_type: EventType::On,
                 l: Rational64::new(3, 2),
-                ..op
-            },
-            TimedOp {
-                event_type: EventType::Off,
-                l: Rational64::new(3, 2),
-                t: Rational64::new(3, 2),
                 ..op
             },
         ];
@@ -302,17 +254,6 @@ pub mod tests {
             Op4D {
                 t: 0.0,
                 l: 1.5,
-                event_type: EventType::On,
-                voice: 0,
-                event: 0,
-                x: 0.5,
-                y: 200.0,
-                z: 0.5,
-            },
-            Op4D {
-                t: 1.5,
-                l: 1.5,
-                event_type: EventType::Off,
                 voice: 0,
                 event: 0,
                 x: 0.5,
