@@ -2,8 +2,8 @@ use crate::{generation::parsed_to_render::r_to_f64, instrument::oscillator::Basi
 use insta::assert_debug_snapshot_matches;
 use num_rational::Rational64;
 use socool_ast::ast::OpOrNf;
-use socool_ast::ast::{Op, Op::*, OpOrNf::*, OpOrNfTable, OscType};
 use socool_ast::operations::{NormalForm, Normalize as NormalizeOp, PointOp};
+use socool_ast::ast::{Op, Op::*, OpOrNf::*, OpOrNfTable, OscType};
 use socool_parser::parser::*;
 use crate::generation::video_data_generation::{composition_to_vec_timed_op, TimedOp};
 use walkdir::WalkDir;
@@ -20,11 +20,39 @@ pub struct CSVOp {
     pub v: usize,
 }
 
+pub struct Normalizer {
+    pub fm: (Rational64, Rational64),
+    pub fa: (Rational64, Rational64),
+    pub pm: (Rational64, Rational64),
+    pub pa: (Rational64, Rational64),
+    pub g: (Rational64, Rational64),
+    pub l: (Rational64, Rational64),
+    pub v: (Rational64, Rational64),
+}
+
 pub type CSVData = Vec<CSVOp>;
 
 pub fn vec_timed_op_to_vec_csv_data(timed_ops: Vec<TimedOp>) -> CSVData {
     timed_ops.iter().map(|t_op| t_op.to_csv_op()).collect()
 }
+
+pub fn normalized_csv_data(timed_ops: Vec<TimedOp>) -> CSVData {
+    timed_ops.iter().map(|t_op| t_op.to_normalized_csv_op()).collect()
+}
+
+//pub fn csv_data_to_normalized_csv_data(data: CSVData, ) {
+//
+//    let max__state = CSVOp {
+//        fm: 70.0,
+//        fa: 33.0,
+//        pm: 1.0,
+//        pa: 1.7857142857142858,
+//        g: 1.0,
+//        l: 576.0,
+//        v: 191
+//    }
+//
+//}
 
 fn get_max_min_csv_data(csv_data: CSVData) -> (CSVOp, CSVOp) {
     let mut max_state = CSVOp {

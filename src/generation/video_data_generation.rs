@@ -3,7 +3,7 @@ use num_rational::Rational64;
 use serde::{Deserialize, Serialize};
 use socool_ast::ast::OpOrNfTable;
 use socool_ast::operations::{NormalForm, Normalize as NormalizeOp, PointOp};
-use crate::generation::nn_data_generator::CSVOp;
+use crate::generation::nn_data_generator::{CSVOp, Normalizer};
 
 pub fn r_to_f64(r: Rational64) -> f64 {
     *r.numer() as f64 / *r.denom() as f64
@@ -40,6 +40,10 @@ pub struct Op4D {
 //    Off,
 //}
 
+fn normalize_value(value: Rational64, min: Rational64, max: Rational64) -> f64 {
+    r_to_f64((value - min) / max)
+}
+
 impl TimedOp {
     pub fn to_op_4d(&self, basis: &Basis) -> Op4D {
         Op4D {
@@ -62,6 +66,18 @@ impl TimedOp {
             g: r_to_f64(self.g),
             l: r_to_f64(self.l),
             v: self.voice
+        }
+    }
+
+    pub fn to_normalized_csv_op(&self, normalizer: Normalizer) -> CSVOp {
+        CSVOp {
+            fm: normalize_value(self.fm, normalizer.fm.0, normalizer.fm.1),
+            fa: normalize_value(self.fa, normalizer.fa.0, normalizer.fa.1),
+            pm: normalize_value(self.pm, normalizer.pm.0, normalizer.pm.1),
+            pa: normalize_value(self.pa, normalizer.pa.0, normalizer.pa.1),
+            g: normalize_value(self.g, normalizer.g.0, normalizer.g.1),
+            l: normalize_value(self.l, normalizer.l.0, normalizer.l.1),
+            v: normalize_value(self.v, normalizer.v.0, normalizer.v.1) as usize,
         }
     }
 }
