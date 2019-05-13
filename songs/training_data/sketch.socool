@@ -1,0 +1,79 @@
+{ f: 200, l: 0.12, g: 1.0, p: 0.0}
+
+overtones = {
+    O[
+    	(5/4, 3.0, 1.0, 1.0),
+      	(9/8, 0.0, 1.0, -1.0),
+      	(1/1, 2.0, 1.0, 0.5),
+      	(1/1, 0.0, 1.0, -0.5),
+  	]
+}
+
+sub_seq = {
+	Sequence [
+		Tm 9/8,
+		Tm 11/8,
+		Tm 5/4,
+		Tm 7/8,
+	]	
+}
+
+thing1 = {
+	Sequence [
+		Sequence [
+			Tm 9/8,
+			Tm 4/3,
+			Tm 3/2,
+			Tm 5/3,
+		] | Tm 0.5 
+		| Sequence[AsIs, Tm 7/8],
+		sub_seq | Sequence [AsIs, Reverse],
+		sub_seq | Reverse | Sequence [Tm 5/4, Tm 3/2, Tm 5/3] | Length 1/2,
+		Silence 0.5,
+		Tm 2 | Length 3
+	]
+}
+
+bass = {
+	O[
+    	(6, 0.0, 0.05, 0.0),
+    	(6, 5.0, 0.05, 0.0),
+    	(3/2, 0.0, 0.3, 0.0),
+      	(1/1, 0.2, 1.0, 0.0),
+      	(1/1, 0.0, 1.0, 0.0),
+  	] |
+	Sequence [
+		Tm 3/2,
+		Tm 5/4,
+		Tm 4/3,
+		Tm 5/4,
+		Tm 9/8,
+		Silence 1,
+	]
+	> FitLength thing1 | Repeat 2
+}
+
+
+two_ears = {
+	Sequence [
+		Overlay [
+			thing1 | PanA 1.0 | Sequence[AsIs, Reverse],
+			bass | PanA -1.0
+		],
+		Overlay [
+			thing1 | PanA -1.0 | Sequence[AsIs, Reverse],
+			bass | PanA 1.0
+		]
+	]
+}
+
+main = {
+	Sequence [
+		Overlay [
+			two_ears
+			| Sequence [AsIs, Tm 3/5]
+			| Repeat 1
+		],
+	
+	] | Repeat 4
+}

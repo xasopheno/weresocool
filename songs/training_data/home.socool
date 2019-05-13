@@ -1,0 +1,331 @@
+{ f: 220, l: 1.2, g: 1, p: 0}
+
+overtones = {
+    O[
+    	(3/1, 7.0, 0.01, -0.2),
+      	(3/1, 0.0, 0.01, 0.2),
+      	(1/1, 2.0, 1.0, 0.5),
+      	(1/1, 0.0, 1.0, -0.5),
+  	]
+}
+
+thing1 = {
+	overtones |
+	Overlay [
+		Sequence [
+			Sequence [
+				Tm 5/4 | Length 2,
+			] | Overlay [AsIs, Invert],
+			Sequence [
+				Silence 1,
+				Tm 3/2,
+				Tm 11/8, 
+				Tm 5/4, 
+				Tm 9/8
+			] 
+			| Length 1/5
+			| Sequence [AsIs, Reverse, Tm 7/8],
+			Overlay [
+				AsIs, 
+				Tm 3/2 
+			] | Length 3 
+		],
+		Sequence [
+			Silence 1,
+			Tm 2, 
+			Tm 3/2,
+			Sequence [
+				Tm 3/2,
+				Tm 11/8, 
+				Tm 5/4, 
+				Tm 9/8
+			] | Tm 3/2 | Length 1/6
+			| Sequence [ AsIs, Tm 9/8 | Reverse ],	
+			Overlay [Tm 2, Ta 3] | Length 3/2 
+		]
+	] | Length 1/2
+}
+
+modulator = {
+	Overlay [
+		Sequence [
+			AsIs, 
+			Tm 25/24,
+			AsIs, 
+			Tm 9/8
+		],
+		Sequence [
+			Tm 3/4,
+			Tm 1/2
+		],
+		Overlay [
+			Sequence [ AsIs, Tm 1/2 ],
+			Sequence [ AsIs, Tm 15/8 ]
+		]
+	]
+}
+
+bass = {
+	Sequence [
+		Silence 3,
+		overtones |
+		Overlay [
+			Tm 1/2,
+			Tm 3/4
+		] | Length 5
+	]
+}
+
+intro = {
+	Overlay [
+		Sequence [
+			Gain 3/4 
+			| Tm 4/3
+			| thing1 
+			| ModulateBy [modulator]
+			| Overlay [AsIs, Tm 3/2],
+			Silence 1,
+			Overlay [
+				Length 0.65
+				| Sequence [
+					Silence 2.5,
+					Gain 1/2 | Tm 5 | 
+					O[
+						(3/1, 11.0, 0.02, -0.2),
+				      	(3/1, 0.0, 0.02, 0.2),
+				      	(5/4, 2.0, 1.0, 0.5),
+				      	(9/8, 0.0, 1.0, -0.5),
+				      	(1/1, 0.0, 1.0, -0.5),
+					]
+					| Sequence [
+						AsIs | Length 2, 
+						Tm 9/8, 
+						Tm 4/3,
+						Tm 5/4, 
+						Tm 3/2,
+						Tm 5/4,
+						Tm 4/3, 
+					] | Length 1/9
+					| Sequence [
+						AsIs, 
+						Tm 7/8 | Gain 1/2 | PanA 0.5, 
+						PanA -0.5 | Gain 1/3,
+						PanA -0.75 | Gain 1/4 | Tm 3/2,
+						PanA -0.5 | Gain 1/20 | Tm 5/4	,
+					    Gain 1/30 | Tm 3,
+					],
+				],
+				Gain 3/4
+				| overtones 
+				| Sequence [Tm 3/2, Tm 9/8, Tm 4/3 | Length 1/2, Tm 9/8, Tm 5/4]
+				| Overlay [
+					Tm 1/2 | ModulateBy [Gain 1/10, Gain 1/20] | Gain 1/30,
+					AsIs, 
+					Tm 3/2 
+						| ModulateBy [
+							Gain 1/3 | Length 2, 
+							Gain 1/3 | Overlay [AsIs, Tm 9/8, Tm 5/4, Tm 3/2, Tm 15/8]
+						] 
+						| Length 4/3,
+					Tm 2 | ModulateBy [Gain 1/3, AsIs] | Length 5/4,
+					Tm 5/4 | ModulateBy [Gain 1/3, AsIs] | Length 6/5
+				] | ModulateBy [AsIs, PanA 0.5, PanA 0.75],
+				Length 5 | PanA 0.75 | overtones | Tm 3/2 | Overlay [AsIs, Tm 9/8, Tm 5/4, Tm 3/2]
+				| ModulateBy [Repeat 3, Gain 2 | Length 4]
+			]
+		],
+		bass
+	]
+}
+
+next_overtones = {
+	O[
+    	(4/1, 7.0, 0.01, -0.2),
+    	(4/1, 7.0, 0.01, -0.2),
+    	(3/1, 7.0, 0.01, -0.2),
+      	(3/1, 0.0, 0.01, 0.2),
+      	(1/1, 2.0, 1.0, 0.5),
+      	(1/1, 0.0, 1.0, -0.5),
+      	(1/2, 0.0, 1.0, 0.0),
+  	]
+}
+
+next = {
+	Sequence [
+		next_overtones |
+		Overlay [
+			Sequence [
+				AsIs, 
+				Tm 3/2,
+				Tm 11/8, 
+				Tm 5/4, 
+				Tm 6/5,
+				Tm 7/6,
+				Tm 5/4,
+				Tm 4/3,
+				Tm 3/2, 
+				Tm 8/5, 
+				Tm 15/8, 
+				Tm 5/3,
+				Tm 2, 
+				Tm 8/5, 
+				Tm 25/12
+				| Sequence [
+					AsIs, 
+					Tm 9/8,
+					Tm 5/4, 
+					Tm 11/8,
+					Tm 3/2,
+					Tm 5/4, 
+				] 
+				| Sequence [
+					AsIs, 
+					Tm 4/5 | Sequence [AsIs, Tm 4/5]],
+			]
+		] 
+		| Overlay [AsIs | PanA 1, Tm 9/8 | Reverse | Length 4/5 | PanA -1]
+		| Length 1/10
+		| ModulateBy [
+			Overlay [
+				Sequence [AsIs, Tm 2], 
+				Sequence [Tm 5/4, Tm 5/4 | Ta 8],
+				Sequence [Tm 3/2, Tm 3/2 | Ta 5]
+			]
+		],
+		O[
+	      	(3/1, 0.0, 1.0, 0.0),
+	      	(1/1, 2.0, 1.0, 0.5),
+	      	(1/1, 0.0, 1.0, -0.5),
+      	] |
+      	Overlay [
+			Sequence [
+				AsIs, 
+				Tm 5/4, 
+				Tm 3/2,
+				Tm 15/8, 
+				Tm 9/4, 
+				Tm 7/4, 
+				Tm 2 | Length 2,
+			] | ModulateBy [ 
+				Overlay [
+					Sequence [AsIs | PanA -1, Overlay [Tm 1/2, Tm 3/4, Tm 7/8]],
+					Sequence [Tm 9/8 | PanA -1, Tm 9/8 | PanA 1],
+					Sequence [Tm 5/4 | PanA -1, Tm 5/4 | PanA 1],
+					Sequence [Tm 3/2 | PanA -1, Tm 3/2 | PanA 1],
+					Sequence [Tm 2/3 | PanA -1, Tm 2/3 | PanA 1],
+					Sequence [Tm 1/2 | PanA -1, Tm 1/2 | PanA 1]
+				]
+			],
+			Gain 1/6 |
+			O[
+		    	(5/4, 3.0, 0.5, -0.2),
+		    	(5/2, 0.0, 0.25, 0.8),
+		    	(9/4, 3.0, 0.1, -0.8),
+		      	(9/8, 0.0, 0.6, 0.2),
+		      	(1/1, 2.0, 1.0, 0.5),
+		      	(1/1, 0.0, 1.0, -0.5),
+	      	] |
+			Sequence [
+				Silence 2,
+				Tm 3/2 | Length 6,
+				Silence 1/5
+			] 
+			| ModulateBy [
+				Sequence [AsIs, Tm 3/2, Tm 2, Tm 3/2] 
+				| Sequence [
+					Repeat 15, 
+					Gain 1/2 | PanA -0.4 | Repeat 8, 
+					Gain 1/4 | PanA -1 | Repeat 7]
+				]
+		]
+	]	
+}
+
+after_left_overtones = {
+    O[
+    	(2/1, 0.0, 1/2, 0),
+    	(3/2, 0.0, 1/2, 0),
+      	(5/8, 0.0, 1/2, 0),
+      	(9/8, 2.0, 1, 0),
+      	(1/1, 0.0, 1, 0),
+      	(1/2, 0.0, 1, 0),
+      	(1/2, 0.0, 1, 0),
+      	(1/4, 0.0, 1, 0),
+  	]
+}
+
+after = {
+	after_left_overtones |	
+	Sequence [
+		Tm 2, 
+		Tm 15/8, 
+		Tm 8/5, 
+		Tm 3/2, 
+		-- Tm 4/3, 
+		Tm 5/4, 
+		Tm 25/24,
+		AsIs,
+		Tm 2/3 | Length 3, 
+		Tm 3/4 | Length 3,
+		AsIs | Length 6,
+	] 
+	| Sequence [
+		Tm 2, 
+		Tm 4/3,
+		Tm 7/4
+	] | Length 1/11
+	| Overlay [
+		AsIs | PanA -1, 
+		Sequence [Silence 1/12, Tm 5/4] | PanA 1,
+	]
+	| Sequence [
+		AsIs, 
+		Tm 7/8 | Length 4/5 | PanM -1,
+		Tm 6/5 | Length 1/2 | Reverse | Sequence [AsIs | Gain 1/2 | PanM -1, Tm 3/2, Gain 1/4] 
+	]
+}
+
+after_melody = {
+    O[
+      	(4/1, 0.0, 1/8, 0.0),
+    	(3/1, 7.0, 1/4, -0.2),
+      	(3/1, 0.0, 1/4, 0.2),
+      	(1/1, 2.0, 1, 0.5),
+      	(1/1, 0.0, 1, -0.5),
+  	] |
+	Sequence [
+		AsIs, 
+		Tm 5/4, 
+		Tm 3/2,
+		Tm 4/3, 
+		Tm 5/4, 
+		Tm 9/8, 
+		Tm 15/16,
+		Tm 5/6, 
+		Tm 15/16,
+		AsIs, 
+		Tm 5/4 | Length 2,
+		Tm 3/4,
+		Tm 15/16,
+		Tm 9/8,
+		Tm 4/3,
+		Tm 5/4, 
+		Tm 9/8,
+		AsIs | Length 6 
+	] | Tm 2 
+	| ModulateBy [Sequence [AsIs, Gain 2/3, Gain 1/3] | Repeat 6]
+	| Sequence [Repeat 2, Overlay [AsIs, Tm 1/2] | Repeat 2, AsIs] 
+	> FitLength after
+}
+
+main = {
+	Sequence [
+		intro,
+		Silence 1/4,
+		Gain 2/3 | Tm 6/5 | next,
+		Gain 2 | Overlay [
+			after | Gain 1/6,
+			Sequence [Silence 1, after_melody]
+		]
+	]
+}

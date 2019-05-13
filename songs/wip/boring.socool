@@ -1,77 +1,77 @@
-import songs/lee.socool
+-- import songs/lee.socool
 
 { f: 300, l: 1, g: 1, p: 0}
 
-overtones = {
-    O[
-      	(3/2, 0, 1, -1),
-      	(5/3, 0, 1, 0),
-      	(5/4, 0, 1, 0),
-      	(1/1, 2, 1, 1/2),
-      	(1/1, 0, 1, -1/2),
-      	(1/2, 0, 1, 0),
-  	]
-}
+-- overtones = {
+--     O[
+--       	(3/2, 0, 1, -1),
+--       	(5/3, 0, 1, 0),
+--       	(5/4, 0, 1, 0),
+--       	(1/1, 2, 1, 1/2),
+--       	(1/1, 0, 1, -1/2),
+--       	(1/2, 0, 1, 0),
+--   	]
+-- }
 
-unit = { 
-	Length 6 
-}
+-- unit = { 
+-- 	Length 6 
+-- }
 
-thing1 = {
-	Sequence [
-		AsIs,
-		Tm 5/4,
-		Silence 1, 
-		Tm 9/8,
-		Silence 3,
-	]
-}
+-- thing1 = {
+-- 	Sequence [
+-- 		AsIs,
+-- 		Tm 5/4,
+-- 		Silence 1, 
+-- 		Tm 9/8,
+-- 		Silence 3,
+-- 	]
+-- }
 
-thing2 = {
-	Sequence [
-		AsIs,
-		Silence 1,
-		Tm 3/2, 
-		Tm 4/3
-	]
-}
+-- thing2 = {
+-- 	Sequence [
+-- 		AsIs,
+-- 		Silence 1,
+-- 		Tm 3/2, 
+-- 		Tm 4/3
+-- 	]
+-- }
 
-thing3 = {
-	Sequence [
-		AsIs, 
-		Tm 7/8, 
-		Tm 4/5
-	]	
-}
+-- thing3 = {
+-- 	Sequence [
+-- 		AsIs, 
+-- 		Tm 7/8, 
+-- 		Tm 4/5
+-- 	]	
+-- }
 
-bass = {
-    O[
-      	(5/1, 8, 1/2, -1/2),
-      	(5/1, 0, 1/2, 1/2),
-      	(1/1, 2, 1, 1/2),
-      	(1/1, 0, 1, -1/2),
-  	]
-	| Sequence [
-		AsIs, 
-		Tm 3/2, 
-	]
-	| Tm 1/2
-	| Sequence [
-		AsIs, 
-		Tm 7/8, 
-		Tm 3/4
-	]
-}
+-- bass = {
+--     O[
+--       	(5/1, 8, 1/2, -1/2),
+--       	(5/1, 0, 1/2, 1/2),
+--       	(1/1, 2, 1, 1/2),
+--       	(1/1, 0, 1, -1/2),
+--   	]
+-- 	| Sequence [
+-- 		AsIs, 
+-- 		Tm 3/2, 
+-- 	]
+-- 	| Tm 1/2
+-- 	| Sequence [
+-- 		AsIs, 
+-- 		Tm 7/8, 
+-- 		Tm 3/4
+-- 	]
+-- }
 
-toddler_maria = {
-	Sequence [
-		AsIs, 
-		Tm 3/2, 
-		AsIs, 
-		Tm 2 | Length 1/2,
-		Silence 1/2
-	]	
-}
+-- toddler_maria = {
+-- 	Sequence [
+-- 		AsIs, 
+-- 		Tm 3/2, 
+-- 		AsIs, 
+-- 		Tm 2 | Length 1/2,
+-- 		Silence 1/2
+-- 	]	
+-- }
 
 main = {
 	-- Overlay [
@@ -85,6 +85,7 @@ main = {
 	-- ] 
 	-- | ModulateBy [toddler_maria]
 	-- | Repeat 2 
-	lee.melody1
+	-- lee.melody1
+	AsIs
 }
 	

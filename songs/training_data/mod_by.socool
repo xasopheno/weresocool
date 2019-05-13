@@ -1,0 +1,69 @@
+{ f: 220, l: 1.3, g: 1.0, p: 0.0}
+
+instrument = {
+    O[
+      	(8/1, 5.0, 0.005, -0.4),
+      	(8/1, 0.0, 0.005, 0.4),
+      	(6/1, 11.0, 0.01, 0.2),
+      	(6/1, 0.0, 0.01, -0.2),
+      	(1/1, 3.0, 1.0, 0.5),
+      	(1/1, 0.0, 1.0, -0.5),
+      	(1/2, 0.0, 0.04, 0.0),
+  	]
+}
+
+thing1 = {
+	-- instrument |
+	Sequence [
+		AsIs,
+		Tm 9/8,
+		Tm 5/4 
+	]
+}
+
+modulator = {
+	Overlay [
+		Sequence [
+			Gain 1/1, 
+			Gain 1/2 | Tm 3/2,
+			Overlay [
+				AsIs, 
+				Tm 2
+			],
+			Sequence[
+				AsIs,
+				Tm 3/2,	
+			]
+		],
+		Sequence [
+			Tm 1/2, 
+			Tm 3/4,
+			Overlay [
+				AsIs,
+				Tm 3/2 | Length 3,
+			]
+		],
+		Sequence [
+			Tm 2,
+			Tm 3,
+		] 
+		| Sequence [Tm 7/8, Silence 3, AsIs] | Gain 1/12
+		> FitLength Length 3
+	]
+}
+
+gain_expr = {
+	Sequence [Gain 5/5, Gain 4/5, Gain 3/5, Gain 4/5, Gain 5/5]
+}
+
+main = {
+	Overlay [
+		thing1
+		| ModulateBy [modulator] 
+		| ModulateBy [modulator | Repeat 3] 
+		| ModulateBy [gain_expr]
+	]
+	| Sequence [Repeat 2, Tm 9/8]
+	| ModulateBy [gain_expr | Repeat 2]
+	| Repeat 4
+}

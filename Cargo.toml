@@ -27,6 +27,7 @@ uuid = { version = "0.7.2", features = ["v4"] }
 num-complex = "0.2.1"
 num = "0.2.0"
 insta = "0.8.1"
+walkdir = "2.2.7"
 
 [[bin]]
 name = "wsc"

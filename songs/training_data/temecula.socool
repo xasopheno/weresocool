@@ -1,0 +1,200 @@
+{ f: 220, l: 1, g: 1, p: 0}
+
+overtones = {
+    O[
+    	(5/4, 3, 1, 1),
+      	(9/8, 0, 1, -1),
+      	(1/1, 2, 1, 1/2),
+      	(1/1, 0, 1, -1/2),
+  	]
+}
+
+unit = {
+	Length 5/2 
+}
+
+brushes = {
+	Sequence [AsIs, Silence 4]
+	| Noise
+	| Sequence [
+		Tm 1/2,
+		Silence 1,
+		AsIs, 
+		Tm 2,
+		Tm 1/2,
+		AsIs | Repeat 2 | Length 1/2,
+		Tm 2,
+
+	]
+	| Length 1/40	 
+	| Repeat 3 
+	> FitLength unit
+}
+
+next = {
+	O[
+    	(3/2, 3, 1, 1),
+    	(3/2, 3, 1, 1),
+    	(6/5, 3, 1, 1),
+      	(9/8, 0, 1, -1),
+      	(1/1, 2, 1, 1/2),
+      	(1/1, 0, 1, -1/2),
+  	] | Gain 1/2
+	| Sequence [
+		AsIs, 
+		Tm 15/8, 
+		Tm 8/5,
+		Tm 3/2 | Length 7/4, 
+		Tm 4/3 | Length 3/2 
+	] > FitLength unit
+}
+
+drone = {
+	O[
+    	(10/1, 5, 1/8, -1),
+    	(10/1, 0, 1/8, -1),
+    	(9/1, 8, 1/8, 1),
+    	(9/1, 0, 1/8, 1),
+    	(3/2, 3, 1, 1),
+    	(3/2, 3, 1, -1),
+    	(6/5, 3, 1, 1),
+      	(9/8, 0, 1, -1),
+      	(1/1, 2, 1, 1/2),
+      	(1/1, 0, 1, -1/2),
+  	] | Gain 1/3
+	| Sequence [
+		Length 10/4,
+		Ta -5, 
+		Ta 5,
+		AsIs
+	] | Tm 1/2 > FitLength unit	
+}
+
+high = {
+	O[
+      	(9/4, 0, 1, 0),
+      	(2/1, 0, 1, 0),
+      	(3/2, 0, 1, 0),
+      	(4/3, 0, 1, 0),
+      	(1/1, 3, 1, 0),
+  	] | Gain 1/2
+	| Sequence [
+		Silence 3/2,
+		Tm 9/8,
+		Tm 3/2,
+		Tm 5/3, 
+		Tm 15/8, 
+		Tm 3/2,
+		Tm 2,
+		Tm 9/4, 
+		Tm 12/5 | Length 3,
+		Tm 3/2,
+		Silence 3 
+	] 
+	| Sequence [Silence 2, AsIs]
+	| Tm 9/4 
+	> FitLength unit	
+}
+
+clave_base = {
+	Sequence [
+		Silence 2,
+		Tm 9/8,
+		Tm 4/3, 
+		Tm 6/5,
+		Tm 3/2,
+		Tm 4/3 | Length 3,
+		Silence 4,
+	] 
+}
+
+clave_overtones = {
+	O[
+      	(9/2, 8, 1/8, 1/2),
+      	(9/2, 0, 1/8, 1/2),
+      	(6/1, 0, 1/8, 0),
+      	(3/2, 1, 1, 0),
+     	(3/2, 0, 1, 0),
+      	(4/3, 0, 1, 0),
+      	(1/1, 3, 1, 0),
+      	(1/2, 3, 1, 0),
+  	] | Gain 1/9
+}
+
+clave = {
+	clave_overtones
+	| Sequence [
+		clave_base,
+		Overlay [
+			Tm 9/4,
+			Tm 3/2,
+			AsIs,
+			Tm 1/2, 
+		] | Tm 9/8 | Gain 1/2 | Length 2
+	] 
+	| Overlay [
+		AsIs, 
+		Invert
+	] 
+	| Tm 5 
+	| Sequence [
+		Silence 11/5, AsIs
+	]
+	> FitLength unit
+}
+
+clave2 = {
+	clave_overtones
+	| clave_base
+	| Overlay [
+		AsIs, 
+		Invert
+	] 
+	| Tm 5 
+	| Sequence [
+		Silence 11/5, AsIs
+	]
+	> FitLength unit
+}
+
+claves = {
+		Overlay [
+			clave | Sequence [AsIs, Silence 1],
+			clave2 
+			| Sequence [Silence 1, Tm 7/2 | PanA 1/2, Silence 1] 
+			| Gain 1/3
+			| Length 1/3,
+			clave2 
+			| Sequence [Silence 5/2, Tm 9/2 | PanA -1/2] 
+			| Gain 1/3
+			| Length 1/3
+		] 
+}
+
+piece = {
+	Overlay [
+		claves | Repeat 2,
+		Gain 1/4 | Tm 3/2 | claves | Repeat 2 | Reverse,
+		Gain 3/4 | brushes | Sequence [
+			AsIs | Repeat 3, 
+			Reverse,
+			-- AsIs | Repeat 2,
+			-- Silence 1,
+			-- Reverse | Length 1/2,
+			-- Reverse | Length 1/2
+		] | Repeat 2,		 
+		next | Sequence [AsIs, Overlay [AsIs, Tm 3/2]] | Repeat 4,
+		drone | Repeat 2,
+		high | Sequence [Silence 1, AsIs] | Repeat 2,
+	]
+}
+
+
+main = {
+	Sequence [
+		piece | Sequence [
+			Length 5/3,
+			Length 2
+		] | Repeat 2
+	]
+}

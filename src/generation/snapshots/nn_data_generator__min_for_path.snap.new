@@ -1,0 +1,14 @@
+---
+created: "2019-05-13T05:00:49.293175Z"
+creator: insta@0.8.1
+source: src/generation/nn_data_generator.rs
+expression: min_state
+---
+CSVOp {
+    fm: 0.0,
+    fa: -10.2,
+    pm: -1.0,
+    pa: -1.7857142857142858,
+    g: 0.0,
+    t: 0.0
+}

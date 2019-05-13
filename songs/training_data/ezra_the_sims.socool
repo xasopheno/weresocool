@@ -1,0 +1,106 @@
+{ f: 180, l: 1.12, g: 1.0, p: 0.0}
+
+overtones = {
+    Sequence [
+        O[
+        	(5/2, 0.0, 1.0, 0.7),
+        	(5/2, 4.0, 1.0, -0.7),
+        	(2/1, 4.0, 1.0, 1.0),
+        	(2/1, 0.0, 1.0, -1.0),
+        	(3/2, 3.0, 1.0, 0.0),
+          	(3/2, 0.0, 1.0, 0.0),
+          	(1, 0.0, 1.0, 0.0)
+      	],
+    ]
+}
+
+thing1 = {
+    overtones |
+    Sequence [
+    	Silence 0.5,
+        AsIs,
+        Tm 9/8,
+        Tm 5/4,
+        -- Tm 3/2,
+        -- Tm 5/4,
+        Tm 4/3,
+    ]
+}
+
+thing2 = {
+    Sequence [
+    	Silence 0.5,
+        Tm 7/8
+        | Length 0.2
+        | Gain 0.3, 
+        Tm 7/4,
+        Tm 3/2,
+    ] 
+    | Tm 0.5
+    | Sequence [AsIs, Tm 2/3, Tm 9/8, Tm 2/3]
+    > FitLength thing1
+}
+
+thing3 = {
+	O[
+		(3/2, 0.0, 1.0, 0.0),
+      	(1, 0.0, 1.0, 0.0)
+	] |
+	Sequence [
+		AsIs,
+		Tm 3/2,
+		Tm 9/8,
+		Tm 11/4,
+		Tm 6/5,
+		Tm 5/4,
+	] 
+	| Tm 4
+	| Gain 0.2
+	| Sequence [Silence 1, AsIs, Reverse | Tm 3/2 | Length 1.5 | Gain 0.4]
+	| Repeat 3
+	> FitLength thing1
+}
+
+bass = {
+	O[
+		(24/1, 11.0, 0.15, 0.6),
+		(24/1, 0.0, 0.15, -0.6),
+    	(20/1, 1.0, 0.1, 0.0),
+    	(20/1, -5.0, 0.1, 0.0),
+    	(20/1, 0.0, 0.2, 0.0),
+      	(1, 0.0, 1.0, 0.0)
+  	] |
+		Sequence [Tm 5/6, Tm 1]
+			| Tm 0.25 | Gain 0.8
+	> FitLength thing1
+}
+
+thing3s = { 
+	Overlay [
+		thing3 | Gain 0.5,
+		thing3 | Tm 5/4 | Gain 0.5,
+		thing3 | Tm 0.5 | Gain 0.5,
+	]
+}
+
+main = {
+	Sequence [
+	    Overlay [
+	        thing1
+	        	| Gain 0.5,
+	        thing2,
+	        thing1 | Tm 6 | Gain 0.2 | 
+	        	Sequence [Silence 2, Tm 7/8, Silence 1, Tm 3/4, Tm 1/2] | 
+	        		Sequence[Silence 0.25, AsIs, Silence 0.25, Reverse] 
+    		> FitLength thing1,
+	 		thing3s,
+	    	bass
+	    ]
+	    | Repeat 2,
+	    overtones
+    ] 
+    | Sequence [AsIs, Reverse]
+    | Sequence [AsIs, Length 0.5 | Tm 7/8, Length 0.25 | Tm 4/5 | Repeat 2]
+    | Sequence [AsIs, Tm 7/8]
+    | Sequence [AsIs, Tm 9/8]
+}

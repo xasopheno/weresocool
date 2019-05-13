@@ -1,12 +1,14 @@
 use insta::assert_debug_snapshot_matches;
 use num_rational::Rational64;
-use socool_ast::ast::{Op, Op::*, OpOrNf::*, OpOrNfTable};
+use socool_ast::ast::{Op, Op::*, OpOrNf::*, OpOrNfTable, OscType};
+use socool_parser::parser::*;
 use socool_ast::operations::{NormalForm, Normalize as NormalizeOp, PointOp};
-use crate::write::normalize_waveform;
-
-pub fn r_to_f64(r: Rational64) -> f64 {
-    *r.numer() as f64 / *r.denom() as f64
-}
+use walkdir::WalkDir;
+use socool_ast::ast::OpOrNf;
+use crate::{
+    generation::parsed_to_render::r_to_f64,
+    instrument::oscillator::Basis,
+};
 
 #[derive(Debug, Clone)]
 pub struct DataOp {
@@ -20,12 +22,12 @@ pub struct DataOp {
 
 #[derive(Debug, Clone)]
 pub struct CSVOp {
-    fm: f64,
-    fa: f64,
-    pm: f64,
-    pa: f64,
-    g: f64,
-    t: f64,
+    pub fm: f64,
+    pub fa: f64,
+    pub pm: f64,
+    pub pa: f64,
+    pub g: f64,
+    pub t: f64,
 }
 
 impl DataOp {
@@ -45,15 +47,27 @@ pub type NormalData = Vec<Vec<DataOp>>;
 pub type CSVData = Vec<Vec<CSVOp>>;
 
 pub fn point_op_to_data_op(point_op: &PointOp) -> DataOp {
-    let result = DataOp {
-        fm: r_to_f64(point_op.fm),
-        fa: r_to_f64(point_op.fa),
-        pm: r_to_f64(point_op.pm),
-        pa: r_to_f64(point_op.pa),
-        g: r_to_f64(point_op.g),
-        l: r_to_f64(point_op.l),
-    };
-
+    let mut result;
+    let fm = r_to_f64(point_op.fm);
+    if point_op.osc_type == OscType::Sine && fm < 150.0 {
+        result = DataOp {
+            fm: fm,
+            fa: r_to_f64(point_op.fa),
+            pm: r_to_f64(point_op.pm),
+            pa: r_to_f64(point_op.pa),
+            g: r_to_f64(point_op.g),
+            l: r_to_f64(point_op.l),
+        };
+    } else {
+        result = DataOp {
+            fm: 0.0,
+            fa: 0.0,
+            pm: 0.0,
+            pa: 0.0,
+            g: 0.0,
+            l: r_to_f64(point_op.l),
+        };
+    }
     result
 }
 
@@ -104,7 +118,7 @@ pub fn normal_data_to_csv_data(data: NormalData) -> CSVData {
     result
 }
 
-fn get_min_and_max(csv_data: CSVData) -> (CSVOp, CSVOp) {
+fn get_max_min_csv_data(csv_data: CSVData) -> (CSVOp, CSVOp) {
     let mut max_state = CSVOp {
         fm: 0.0,
         fa: 0.0,
@@ -142,6 +156,22 @@ fn get_min_and_max(csv_data: CSVData) -> (CSVOp, CSVOp) {
     });
 
         (max_state, min_state)
+}
+
+pub fn get_min_max_for_path(filename: String) -> (CSVOp, CSVOp){
+    let parsed = parse_file(&filename.to_string(), None);
+    let parsed_main = parsed.table.get("main").unwrap();
+
+    let nf = match parsed_main {
+        OpOrNf::Nf(nf) => nf,
+        OpOrNf::Op(_) => panic!("main is Not in Normal Form for some terrible reason."),
+    };
+
+    let normal_data = composition_to_normal_data(nf, &parsed.table);
+    let csv_data = normal_data_to_csv_data(normal_data);
+    let (max, min) = get_max_min_csv_data(csv_data);
+
+    (max, min)
 }
 
 #[test]
@@ -183,7 +213,61 @@ fn normal_form_to_normal_data_test() {
     let csv_data = normal_data_to_csv_data(normal_data);
     assert_debug_snapshot_matches!("normal_form_to_subdivided_test", csv_data);
 
-    let (max, min) = get_min_and_max(csv_data);
+    let (max, min) = get_max_min_csv_data(csv_data);
     assert_debug_snapshot_matches!("max_csv_data", max);
     assert_debug_snapshot_matches!("min_csv_data", min);
 }
+
+#[test]
+fn test_csv_of_file() {
+    let mut max_state = CSVOp {
+        fm: 0.0,
+        fa: 0.0,
+        pm: 0.0,
+        pa: 0.0,
+        g: 0.0,
+        t: 0.0,
+    };
+    let mut min_state = CSVOp {
+        fm: 0.0,
+        fa: 0.0,
+        pm: 0.0,
+        pa: 0.0,
+        g: 0.0,
+        t: 0.0,
+    };
+
+
+    for entry in WalkDir::new("./songs/spring")
+        .follow_links(true)
+        .into_iter()
+        .filter_map(|e| e.ok()) {
+        let f_name = entry.path().to_string_lossy();
+
+        if f_name.ends_with(".socool") && !f_name.contains("import") {
+            let (song_max, song_min) = get_min_max_for_path(f_name.to_string());
+            println!("{}", f_name);
+            max_state = CSVOp {
+                fm: max_state.fm.max(song_max.fm),
+                fa: max_state.fa.max(song_max.fa),
+                pm: max_state.pm.max(song_max.pm),
+                pa: max_state.pa.max(song_max.pa),
+                g: max_state.g.max(song_max.g),
+                t: max_state.t.max(song_max.t),
+            };
+            min_state = CSVOp {
+                fm: min_state.fm.min(song_min.fm),
+                fa: min_state.fa.min(song_min.fa),
+                pm: min_state.pm.min(song_min.pm),
+                pa: min_state.pa.min(song_min.pa),
+                g: min_state.g.min(song_min.g),
+                t: min_state.t.min(song_min.t),
+            };
+        }
+    };
+
+    assert_debug_snapshot_matches!("max_for_path", max_state);
+    assert_debug_snapshot_matches!("min_for_path", min_state);
+}
+
+

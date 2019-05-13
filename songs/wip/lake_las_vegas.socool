@@ -75,10 +75,10 @@ thing1 = {
 	overtones |
 	Sequence [
 		Overlay [
-			Tm 3/2 | choice | Length 2 > Repeat 4,
-			Tm 1/2 | choice | Length 3/2 > Repeat 6
+			Tm 3/2 | choice | Length 2 | Repeat 4,
+			Tm 1/2 | choice | Length 3/2 | Repeat 6
 		]
-		> Repeat 2 
+		| Repeat 2 
 		> FitLength (unit | Length 1)
 	] | Sequence [
 		-- AsIs | Length 1/8,

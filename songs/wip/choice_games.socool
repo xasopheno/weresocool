@@ -24,11 +24,11 @@ thing1 = {
 	overtones |
 	Sequence [
 		Overlay [
-			Tm 3/2 | choice | Length 1/2 > Repeat 8,
-			choice > Repeat 8,
-			Tm 1/2 | choice | Repeat 2 > Repeat 4 
+			Tm 3/2 | choice | Length 1/2 | Repeat 8,
+			choice | Repeat 8,
+			Tm 1/2 | choice | Repeat 2 | Repeat 4 
 		]
-		> Repeat 2
+		| Repeat 2
 		> FitLength unit
 	] | Sequence [AsIs, Overlay [AsIs, Ta 1/4] | PanM -1]
 }
