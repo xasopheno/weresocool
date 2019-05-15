@@ -41,7 +41,8 @@ pub struct Op4D {
 //}
 
 fn normalize_value(value: Rational64, min: Rational64, max: Rational64) -> f64 {
-    r_to_f64((value - min) / max)
+    let result = (value - min) / (max - min);
+    r_to_f64(result)
 }
 
 impl TimedOp {
@@ -77,7 +78,7 @@ impl TimedOp {
             pa: normalize_value(self.pa, normalizer.pa.0, normalizer.pa.1),
             g: normalize_value(self.g, normalizer.g.0, normalizer.g.1),
             l: normalize_value(self.l, normalizer.l.0, normalizer.l.1),
-            v: normalize_value(self.v, normalizer.v.0, normalizer.v.1) as usize,
+            v: normalize_value(Rational64::new(self.voice as i64, 1), normalizer.v.0, normalizer.v.1) as usize,
         }
     }
 }

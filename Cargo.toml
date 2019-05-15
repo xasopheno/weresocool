@@ -29,6 +29,9 @@ num = "0.2.0"
 insta = "0.8.1"
 walkdir = "2.2.7"
 
+[dev-dependencies]
+insta = "0.8.1"
+
 [[bin]]
 name = "wsc"
 path = "bin/wsc.rs"
@@ -45,5 +48,3 @@ path = "bin/pad.rs"
 name = "snapshot"
 path = "bin/snapshot.rs"
 
-[dev-dependencies]
-insta = "0.8.1"
