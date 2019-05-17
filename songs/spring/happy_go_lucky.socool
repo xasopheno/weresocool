@@ -2,10 +2,10 @@
 
 overtones = {
     O[
-    	(3/2, 2, 1, -1),
-    	(3/2, 0, 1, -1),
-      	(1/1, 1, 1, 1),
-      	(1/1, 0, 1, 1),
+    	(3/2, 2, 1, -1/2),
+    	(3/2, 0, 1, -1/2),
+      	(1/1, 1, 1, 1/2),
+      	(1/1, 0, 1, 1/2),
   	]
 }
 
@@ -103,13 +103,22 @@ inter = {
 		      	(1/1, 0, 1, 1),
 		  	] | Tm 7/8
 		  	| Seq [
-		  		AsIs, Tm 9/8, Tm 5/4, Tm 6/5, Tm 25/24, 
+		  		AsIs, Tm 9/8, Tm 5/4, Tm 6/5, Tm 25/24, Tm 15/16, Tm 9/8, 
 		  		Seq [
-		  			Tm 5/4, Tm 11/8, Tm 5/3, Tm 15/8, Tm 9/4, Tm 3, Tm 4,
+		  			Tm 5/4, Tm 11/8, Tm 5/3, Tm 15/8, Tm 9/4, Tm 3, Tm 4, Tm 5, Tm 6, Tm 7, Tm 8
 		  		] 
+		  		| Overlay [AsIs, Invert | Tm 3]
+		  		| Gain 1/8
 		  		| Length 1/4 
-			] 
-			| Length 1/5,
+		  		| ModulateBy [PanA -3/4, PanA 3/4]
+
+			]
+			| Length 1/5
+			| Seq [
+				AsIs, 
+				Length 1/4 | Gain 1/4 | Tm 8/5
+			], 
+
 			Tm 0 | Length 1/100,
 		]
 	]
@@ -131,6 +140,8 @@ main = {
 				> FitLength inter
 			]
 		] 
+			| Overlay [AsIs, Tm 3/2]
+			| Overlay [PanA -1, PanA 1 | Ta 1/2, Tm 4 | Gain 1/8 | PanM -1/2]
 		| Seq [AsIs, PanM -1]
 		| Repeat 2
 	]
