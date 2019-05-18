@@ -1,7 +1,7 @@
 extern crate colored;
 extern crate socool_ast;
 use colored::*;
-use socool_ast::ast::{OpOrNf, OpOrNfTable};
+use socool_ast::api::{OpOrNf, OpOrNfTable};
 use std::cmp;
 use std::sync::{Arc, Mutex};
 

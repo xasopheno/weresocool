@@ -1,4 +1,6 @@
-use socool_ast::operations::{NormalForm, Normalize};
+use socool_ast::api::{
+    NormalForm, Normalize
+};
 use socool_parser::parser::parse_file;
 use weresocool::{
     examples::documentation,

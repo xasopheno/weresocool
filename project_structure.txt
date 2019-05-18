@@ -1,4 +1,4 @@
-1 ast
+ast
 analyze
 data_gen
 helpers

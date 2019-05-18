@@ -1,5 +1,5 @@
 use crate::instrument::{asr::ASR, loudness::loudness_normalization};
-use socool_ast::ast::OscType;
+use socool_ast::api::OscType;
 
 #[derive(Clone, Debug, PartialEq)]
 pub struct Voice {

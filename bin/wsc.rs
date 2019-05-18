@@ -4,7 +4,7 @@ extern crate socool_ast;
 extern crate socool_parser;
 extern crate weresocool;
 use portaudio as pa;
-use socool_ast::ast::OpOrNf;
+use socool_ast::api::OpOrNf;
 use socool_parser::parser::*;
 use weresocool::{
     examples::documentation,

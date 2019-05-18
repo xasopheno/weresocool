@@ -6,7 +6,7 @@ use crate::settings::{default_settings, Settings};
 use crate::write::write_output_buffer;
 use num_rational::Rational64;
 use portaudio as pa;
-use socool_ast::operations::PointOp;
+use socool_ast::api::PointOp;
 
 struct RealTimeState {
     count: Rational64,

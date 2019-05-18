@@ -11,8 +11,7 @@ use pbr::ProgressBar;
 use rayon::prelude::*;
 use serde::{Deserialize, Serialize};
 use serde_json::to_string;
-use socool_ast::ast::OpOrNfTable;
-use socool_ast::operations::{NormalForm, Normalize as NormalizeOp, PointOp};
+use socool_ast::api::{NormalForm, Normalize as NormalizeOp, OpOrNfTable, PointOp};
 use std::sync::{Arc, Mutex};
 
 pub fn r_to_f64(r: Rational64) -> f64 {
@@ -225,7 +224,7 @@ fn sum_vec(a: &mut Vec<f64>, b: &[f64]) {
 #[cfg(test)]
 pub mod tests {
     use super::*;
-    use socool_ast::ast::{Op::*, OpOrNf::*};
+    use socool_ast::st::{Op::*, OpOrNf::*};
 
     #[test]
     fn render_equal() {

@@ -4,7 +4,7 @@ use crate::instrument::{
     voice::{Voice, VoiceUpdate},
 };
 use crate::settings::Settings;
-use socool_ast::operations::PointOp;
+use socool_ast::api::PointOp;
 use std::f64::consts::PI;
 
 fn tau() -> f64 {
