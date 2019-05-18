@@ -2,7 +2,7 @@
 //    extern crate socool_parser;
 //    #[test]
 //    fn import_test() {
-//        use socool_parser::parser::parse_file;
+//        use socool_parser::parse_file;
 //        let filename = &"songs/test/import_test.socool".to_string();
 //        let parsed = parse_file(filename, None);
 //        let mut result: Vec<String> = parsed

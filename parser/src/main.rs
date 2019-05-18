@@ -1,7 +1,5 @@
-extern crate colored;
-extern crate socool_parser;
 use colored::*;
-use socool_parser::parser::*;
+use socool_parser::*;
 use std::env;
 
 fn main() {

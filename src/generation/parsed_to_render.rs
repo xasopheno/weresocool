@@ -224,7 +224,7 @@ fn sum_vec(a: &mut Vec<f64>, b: &[f64]) {
 #[cfg(test)]
 pub mod tests {
     use super::*;
-    use socool_ast::st::{Op::*, OpOrNf::*};
+    use socool_ast::api::{Op::*, OpOrNf::*};
 
     #[test]
     fn render_equal() {

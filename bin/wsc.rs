@@ -1,11 +1,6 @@
-extern crate portaudio;
-extern crate rayon;
-extern crate socool_ast;
-extern crate socool_parser;
-extern crate weresocool;
 use portaudio as pa;
 use socool_ast::api::OpOrNf;
-use socool_parser::parser::*;
+use socool_parser::*;
 use weresocool::{
     examples::documentation,
     generation::parsed_to_render::r_to_f64,

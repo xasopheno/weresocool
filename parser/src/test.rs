@@ -1,8 +1,10 @@
 pub mod test {
     use num_rational::Ratio;
-    use socool_ast::api::{Op, Op::*, OpOrNf::*, OpOrNfTable};
-    use socool_parser::imports::{get_filepath_and_import_name, is_as_import, is_import};
-    use socool_parser::parser::*;
+    use socool_ast::ast::{Op, Op::*, OpOrNf::*, OpOrNfTable};
+    use crate::{
+        imports::{get_filepath_and_import_name, is_as_import, is_import},
+        parser::*
+    };
 
     fn mock_init() -> (String) {
         "{ f: 200, l: 1.0, g: 1.0, p: 0.0 }

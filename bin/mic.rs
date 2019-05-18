@@ -1,7 +1,7 @@
 use socool_ast::api::{
     NormalForm, Normalize
 };
-use socool_parser::parser::parse_file;
+use socool_parser::parse_file;
 use weresocool::{
     examples::documentation,
     portaudio_setup::duplex::setup_portaudio_duplex,

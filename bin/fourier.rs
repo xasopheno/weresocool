@@ -3,7 +3,7 @@
 ////    ast::{Op, OpOrNf},
 ////    operations::{NormalForm, Normalize as NormalizeOp, PointOp},
 ////};
-////use socool_parser::parser::*;
+////use socool_parser::*;
 ////use uuid::Uuid;
 ////
 ////use indexmap::IndexMap;
