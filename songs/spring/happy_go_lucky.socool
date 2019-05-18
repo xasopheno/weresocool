@@ -110,15 +110,16 @@ inter = {
 		  		| Overlay [AsIs, Invert | Tm 3]
 		  		| Gain 1/8
 		  		| Length 1/4 
-		  		| ModulateBy [PanA -3/4, PanA 3/4]
+		  		| ModulateBy [PanA -1/2, PanA 1/2]
 
 			]
 			| Length 1/5
 			| Seq [
 				AsIs, 
-				Length 1/4 | Gain 1/4 | Tm 8/5
+				Length 1/4 | Gain 1/4 | Tm 8/5,
+				Length 2/5 | Gain 1/6 | Tm 6/5 | PanA -1,
+				Length 1/5 | Gain 1/8 | Tm 11/4 | Reverse,
 			], 
-
 			Tm 0 | Length 1/100,
 		]
 	]
