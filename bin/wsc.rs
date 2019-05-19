@@ -3,7 +3,7 @@ use socool_ast::OpOrNf;
 use socool_parser::*;
 use weresocool::{
     examples::documentation,
-    generation::parsed_to_render::{r_to_f64, render, to_json, to_wav},
+    generation::{r_to_f64, render, to_json, to_wav},
     instrument::Basis,
     portaudio::output_setup,
     ui::{banner, get_args, no_file_name, were_so_cool_logo},

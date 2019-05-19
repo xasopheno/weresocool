@@ -1,7 +1,7 @@
 #[cfg(test)]
 pub mod tests {
     use crate::{
-        generation::parsed_to_render::{
+        generation::{
             composition_to_vec_timed_op, sum_vec, vec_timed_op_to_vec_op4d, EventType, Op4D,
             TimedOp,
         },
