@@ -2,7 +2,7 @@ use socool_ast::{NormalForm, Normalize};
 use socool_parser::parse_file;
 use weresocool::{
     examples::documentation,
-    portaudio_setup::setup_portaudio_duplex,
+    portaudio::duplex_setup,
     ui::{get_args, no_file_name, were_so_cool_logo},
 };
 
@@ -43,7 +43,7 @@ fn run() -> Result<(), pa::Error> {
 
     let pa = pa::PortAudio::new()?;
 
-    let mut duplex_stream = setup_portaudio_duplex(normal_form.operations, &pa)?;
+    let mut duplex_stream = duplex_setup(normal_form.operations, &pa)?;
     duplex_stream.start()?;
 
     while let true = duplex_stream.is_active()? {}

@@ -19,7 +19,7 @@
 //    operations::{NormalForm, Normalize as NormalizeOp, PointOp},
 //};
 //use socool_parser::{float_to_rational::helpers::f32_to_rational, parser::*};
-//use weresocool::portaudio_setup::setup_portaudio_output;
+//use weresocool::portaudio::setup_portaudio_output;
 //
 //use weresocool::analyze::fourier::{magnitude, vec_f64_to_complex, Fourier};
 //

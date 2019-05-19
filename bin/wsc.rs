@@ -5,7 +5,7 @@ use weresocool::{
     examples::documentation,
     generation::parsed_to_render::{r_to_f64, render, to_json, to_wav},
     instrument::Basis,
-    portaudio_setup::setup_portaudio_output,
+    portaudio::output_setup,
     ui::{banner, get_args, no_file_name, were_so_cool_logo},
 };
 
@@ -52,7 +52,7 @@ fn main() -> Result<(), pa::Error> {
 
         let pa = pa::PortAudio::new()?;
 
-        let mut output_stream = setup_portaudio_output(composition, &pa)?;
+        let mut output_stream = output_setup(composition, &pa)?;
 
         banner("Now Playing".to_string(), filename.unwrap().to_string());
 
