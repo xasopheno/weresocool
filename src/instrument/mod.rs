@@ -7,11 +7,5 @@ pub mod stereo_waveform;
 mod test;
 pub mod voice;
 
-pub use crate::instrument::oscillator::{
-    Oscillator,
-    Basis,
-};
-pub use crate::instrument::stereo_waveform::{
-    StereoWaveform,
-    Normalize,
-};
+pub use crate::instrument::oscillator::{Basis, Oscillator};
+pub use crate::instrument::stereo_waveform::{Normalize, StereoWaveform};

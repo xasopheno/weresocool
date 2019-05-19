@@ -1,7 +1,4 @@
-use crate::instrument::{
-    Basis, Oscillator,
-    Normalize, StereoWaveform,
-};
+use crate::instrument::{Basis, Normalize, Oscillator, StereoWaveform};
 use crate::render::{Render, RenderPointOp};
 use crate::settings::default_settings;
 use crate::ui::{banner, printed};
@@ -128,7 +125,6 @@ fn composition_to_vec_timed_op(composition: &NormalForm, table: &OpOrNfTable) ->
 
     println!("Generating Composition \n");
     composition.apply_to_normal_form(&mut normal_form, table);
-
 
     let mut result: Vec<TimedOp> = normal_form
         .operations
