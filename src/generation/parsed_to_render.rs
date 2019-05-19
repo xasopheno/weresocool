@@ -1,6 +1,6 @@
 use crate::instrument::{
-    oscillator::{Basis, Oscillator},
-    stereo_waveform::{Normalize, StereoWaveform},
+    Basis, Oscillator,
+    Normalize, StereoWaveform,
 };
 use crate::render::{Render, RenderPointOp};
 use crate::settings::default_settings;
@@ -11,7 +11,7 @@ use pbr::ProgressBar;
 use rayon::prelude::*;
 use serde::{Deserialize, Serialize};
 use serde_json::to_string;
-use socool_ast::api::{NormalForm, Normalize as NormalizeOp, OpOrNfTable, PointOp};
+use socool_ast::{NormalForm, Normalize as NormalizeOp, OpOrNfTable, PointOp};
 use std::sync::{Arc, Mutex};
 
 pub fn r_to_f64(r: Rational64) -> f64 {
@@ -129,6 +129,7 @@ fn composition_to_vec_timed_op(composition: &NormalForm, table: &OpOrNfTable) ->
     println!("Generating Composition \n");
     composition.apply_to_normal_form(&mut normal_form, table);
 
+
     let mut result: Vec<TimedOp> = normal_form
         .operations
         .iter()
@@ -224,7 +225,7 @@ fn sum_vec(a: &mut Vec<f64>, b: &[f64]) {
 #[cfg(test)]
 pub mod tests {
     use super::*;
-    use socool_ast::api::{Op::*, OpOrNf::*};
+    use socool_ast::{Op::*, OpOrNf::*};
 
     #[test]
     fn render_equal() {

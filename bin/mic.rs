@@ -1,10 +1,10 @@
-use socool_ast::api::{
+use socool_ast::{
     NormalForm, Normalize
 };
 use socool_parser::parse_file;
 use weresocool::{
     examples::documentation,
-    portaudio_setup::duplex::setup_portaudio_duplex,
+    portaudio_setup::setup_portaudio_duplex,
     ui::{get_args, no_file_name, were_so_cool_logo},
 };
 

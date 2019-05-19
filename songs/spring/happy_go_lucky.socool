@@ -118,7 +118,6 @@ inter = {
 				AsIs, 
 				Length 1/4 | Gain 1/4 | Tm 8/5,
 				Length 2/5 | Gain 1/6 | Tm 6/5 | PanA -1,
-				Length 1/5 | Gain 1/8 | Tm 11/4 | Reverse,
 			], 
 			Tm 0 | Length 1/100,
 		]
@@ -141,10 +140,10 @@ main = {
 				> FitLength inter
 			]
 		] 
-			| Overlay [AsIs, Tm 3/2]
-			| Overlay [PanA -1, PanA 1 | Ta 1/2, Tm 4 | Gain 1/8 | PanM -1/2]
+		| Overlay [AsIs, Tm 3/2]
+		| Overlay [PanA -1, PanA 1 | Ta 1/2, Tm 4 | Gain 1/8 | PanM -1/2]
+		| Seq [AsIs, Tm 25/24]
 		| Seq [AsIs, PanM -1]
-		| Repeat 2
 	]
 }
 	

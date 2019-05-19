@@ -1,4 +1,4 @@
-use crate::instrument::stereo_waveform::StereoWaveform;
+use crate::instrument::StereoWaveform;
 use crate::settings::{default_settings, Settings};
 use crate::write::write_output_buffer;
 use portaudio as pa;

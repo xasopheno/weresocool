@@ -10,7 +10,7 @@ use compositions::brahms::{
     horns::horns::horns1, violas::violas::violas1, violins::violins::violins1,
 };
 use event::{Event, Render};
-use instrument::{oscillator::Oscillator, stereo_waveform::StereoWaveform};
+use instrument::{Oscillator, StereoWaveform};
 use operations::{Apply, Op};
 use settings::get_default_app_settings;
 

@@ -1,12 +1,11 @@
 use portaudio as pa;
-use socool_ast::api::OpOrNf;
+use socool_ast::OpOrNf;
 use socool_parser::*;
 use weresocool::{
     examples::documentation,
-    generation::parsed_to_render::r_to_f64,
-    generation::parsed_to_render::{render, to_json, to_wav},
-    instrument::oscillator::Basis,
-    portaudio_setup::output::setup_portaudio_output,
+    generation::parsed_to_render::{r_to_f64, render, to_json, to_wav},
+    instrument::Basis,
+    portaudio_setup::setup_portaudio_output,
     ui::{banner, get_args, no_file_name, were_so_cool_logo},
 };
 
