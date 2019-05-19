@@ -38,7 +38,7 @@ fn process_result(result: &mut DetectionResult) -> Basis {
     }
 }
 
-pub fn duplex_setup(
+pub fn setup_output(
     parsed_composition: Vec<Vec<PointOp>>,
     ref pa: &pa::PortAudio,
 ) -> Result<pa::Stream<pa::NonBlocking, pa::Duplex<f32, f32>>, pa::Error> {

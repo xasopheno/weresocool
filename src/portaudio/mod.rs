@@ -1,4 +1,4 @@
 pub mod duplex;
 pub mod output;
 
-pub use self::{duplex::duplex_setup, output::output_setup};
+pub use self::{duplex::setup_output, output::setup_output};
