@@ -3,7 +3,7 @@ use crate::settings::{default_settings, Settings};
 use crate::write::write_output_buffer;
 use portaudio as pa;
 
-pub fn setup_output(
+pub fn output_setup(
     mut composition: StereoWaveform,
     ref pa: &pa::PortAudio,
 ) -> Result<pa::Stream<pa::NonBlocking, pa::Output<f32>>, pa::Error> {

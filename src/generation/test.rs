@@ -1,3 +1,218 @@
+#[cfg(test)]
+pub mod tests {
+    use crate::{
+        generation::parsed_to_render::{
+            composition_to_vec_timed_op, sum_vec, vec_timed_op_to_vec_op4d, EventType, Op4D,
+            TimedOp,
+        },
+        instrument::Basis,
+    };
+    use num_rational::Rational64;
+    use socool_ast::{NormalForm, Normalize, Op::*, OpOrNf::*, OpOrNfTable};
+
+    #[test]
+    fn render_equal() {
+        let mut a = vec![1.0, 2.0, 3.0];
+        let b = vec![1.0, 2.0, 3.0];
+        sum_vec(&mut a, &b[..]);
+        let expected = [2.0, 4.0, 6.0];
+        assert_eq!(a, expected);
+    }
+
+    #[test]
+    fn render_left() {
+        let mut a = vec![1.0, 2.0, 3.0, 2.0];
+        let b = vec![1.0, 2.0, 3.0];
+        sum_vec(&mut a, &b[..]);
+        let expected = [2.0, 4.0, 6.0, 2.0];
+        assert_eq!(a, expected);
+    }
+
+    #[test]
+    fn to_vec_timed_op_test() {
+        let mut normal_form = NormalForm::init();
+        let pt = OpOrNfTable::new();
+
+        Overlay {
+            operations: vec![
+                Op(Sequence {
+                    operations: vec![
+                        Op(PanA {
+                            a: Rational64::new(1, 2),
+                        }),
+                        Op(TransposeM {
+                            m: Rational64::new(2, 1),
+                        }),
+                        Op(Gain {
+                            m: Rational64::new(1, 2),
+                        }),
+                        Op(Length {
+                            m: Rational64::new(2, 1),
+                        }),
+                    ],
+                }),
+                Op(Sequence {
+                    operations: vec![Op(Length {
+                        m: Rational64::new(5, 1),
+                    })],
+                }),
+            ],
+        }
+        .apply_to_normal_form(&mut normal_form, &pt);
+
+        let timed_ops = composition_to_vec_timed_op(&normal_form, &pt);
+
+        let op = TimedOp {
+            fm: Rational64::new(1, 1),
+            fa: Rational64::new(0, 1),
+            pm: Rational64::new(1, 1),
+            pa: Rational64::new(0, 1),
+            g: Rational64::new(1, 1),
+            l: Rational64::new(1, 1),
+            t: Rational64::new(0, 1),
+            event_type: EventType::On,
+            voice: 0,
+            event: 0,
+        };
+
+        assert_eq!(
+            timed_ops,
+            vec![
+                TimedOp {
+                    pa: Rational64::new(1, 2),
+                    event_type: EventType::On,
+                    ..op
+                },
+                TimedOp {
+                    event_type: EventType::On,
+                    l: Rational64::new(5, 1),
+                    voice: 1,
+                    ..op
+                },
+                TimedOp {
+                    pa: Rational64::new(1, 2),
+                    t: Rational64::new(1, 1),
+                    event_type: EventType::Off,
+                    ..op
+                },
+                TimedOp {
+                    fm: Rational64::new(2, 1),
+                    t: Rational64::new(1, 1),
+                    event_type: EventType::On,
+                    event: 1,
+                    ..op
+                },
+                TimedOp {
+                    fm: Rational64::new(2, 1),
+                    t: Rational64::new(2, 1),
+                    event_type: EventType::Off,
+                    event: 1,
+                    ..op
+                },
+                TimedOp {
+                    g: Rational64::new(1, 2),
+                    t: Rational64::new(2, 1),
+                    event_type: EventType::On,
+                    event: 2,
+                    ..op
+                },
+                TimedOp {
+                    g: Rational64::new(1, 2),
+                    t: Rational64::new(3, 1),
+                    event_type: EventType::Off,
+                    event: 2,
+                    ..op
+                },
+                TimedOp {
+                    t: Rational64::new(3, 1),
+                    l: Rational64::new(2, 1),
+                    event_type: EventType::On,
+                    event: 3,
+                    ..op
+                },
+                TimedOp {
+                    t: Rational64::new(5, 1),
+                    l: Rational64::new(2, 1),
+                    event_type: EventType::Off,
+                    event: 3,
+                    ..op
+                },
+                TimedOp {
+                    t: Rational64::new(5, 1),
+                    l: Rational64::new(5, 1),
+                    event_type: EventType::Off,
+                    voice: 1,
+                    ..op
+                },
+            ]
+        );
+    }
+
+    #[test]
+    fn to_vec_op4d_test() {
+        let basis = Basis {
+            f: 100.0,
+            g: 1.0,
+            p: 0.0,
+            l: 1.0,
+            a: 44100.0,
+            d: 44100.0,
+        };
+
+        let op = TimedOp {
+            fm: Rational64::new(2, 1),
+            fa: Rational64::new(0, 1),
+            pm: Rational64::new(1, 1),
+            pa: Rational64::new(1, 2),
+            g: Rational64::new(1, 2),
+            t: Rational64::new(0, 1),
+            l: Rational64::new(1, 1),
+            event_type: EventType::On,
+            voice: 0,
+            event: 0,
+        };
+
+        let vec_timed_op = vec![
+            TimedOp {
+                event_type: EventType::On,
+                l: Rational64::new(3, 2),
+                ..op
+            },
+            TimedOp {
+                event_type: EventType::Off,
+                l: Rational64::new(3, 2),
+                t: Rational64::new(3, 2),
+                ..op
+            },
+        ];
+
+        let result = vec_timed_op_to_vec_op4d(vec_timed_op, &basis);
+        let expected = vec![
+            Op4D {
+                t: 0.0,
+                l: 1.5,
+                event_type: EventType::On,
+                voice: 0,
+                event: 0,
+                x: 0.5,
+                y: 200.0,
+                z: 0.5,
+            },
+            Op4D {
+                t: 1.5,
+                l: 1.5,
+                event_type: EventType::Off,
+                voice: 0,
+                event: 0,
+                x: 0.5,
+                y: 200.0,
+                z: 0.5,
+            },
+        ];
+        assert_eq!(result, expected);
+    }
+}
+
 //mod parse_tests {
 //    extern crate socool_parser;
 //    #[test]
