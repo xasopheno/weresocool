@@ -1,10 +1,7 @@
 use portaudio as pa;
-use socool_ast::OpOrNf;
-use socool_parser::*;
 use weresocool::{
     examples::documentation,
-    generation::{r_to_f64, render, to_json, to_wav},
-    instrument::Basis,
+    generation::{filename_to_render, RenderReturn, RenderType},
     portaudio::output_setup,
     ui::{banner, get_args, no_file_name, were_so_cool_logo},
 };
@@ -23,43 +20,22 @@ fn main() -> Result<(), pa::Error> {
         _ => no_file_name(),
     }
 
-    let parsed = parse_file(&filename.unwrap().to_string(), None);
-    let parsed_main = parsed.table.get("main").unwrap();
-
-    let nf = match parsed_main {
-        OpOrNf::Nf(nf) => nf,
-        OpOrNf::Op(_) => panic!("main is Not in Normal Form for some terrible reason."),
-    };
-
-    let init = parsed.init;
-
-    let basis = Basis {
-        f: r_to_f64(init.f),
-        g: r_to_f64(init.g),
-        l: r_to_f64(init.l),
-        p: r_to_f64(init.p),
-        a: 44100.0,
-        d: 44100.0,
-    };
-
     if args.is_present("print") {
-        let composition = render(&basis, &nf, &parsed.table);
-        to_wav(composition, filename.unwrap().to_string());
+        filename_to_render(filename.unwrap(), RenderType::Wav);
     } else if args.is_present("json") {
-        to_json(&basis, &nf, &parsed.table, filename.unwrap().to_string());
+        filename_to_render(filename.unwrap(), RenderType::Json4d);
     } else {
-        let composition = render(&basis, &nf, &parsed.table);
+        let stereo_waveform =
+            match filename_to_render(filename.unwrap(), RenderType::StereoWaveform) {
+                RenderReturn::StereoWaveform(sw) => sw,
+                _ => panic!("Error. Unable to return StereoWaveform"),
+            };
 
-        let pa = pa::PortAudio::new()?;
-
-        let mut output_stream = output_setup(composition, &pa)?;
-
+        let mut output_stream = output_setup(stereo_waveform)?;
         banner("Now Playing".to_string(), filename.unwrap().to_string());
 
         output_stream.start()?;
-
         while let true = output_stream.is_active()? {}
-
         output_stream.stop()?;
     }
 

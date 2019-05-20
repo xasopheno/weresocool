@@ -1,3 +1,5 @@
+use crate::generation::parsed_to_render::RenderType::NfAndBasis;
+use crate::generation::to_json;
 use crate::instrument::{Basis, Normalize, Oscillator, StereoWaveform};
 use crate::render::{Render, RenderPointOp};
 use crate::settings::default_settings;
@@ -6,11 +8,58 @@ use crate::write::write_composition_to_wav;
 use num_rational::Rational64;
 use pbr::ProgressBar;
 use rayon::prelude::*;
-use socool_ast::{NormalForm, Normalize as NormalizeOp, OpOrNfTable, PointOp};
+use socool_ast::{NormalForm, Normalize as NormalizeOp, OpOrNf, OpOrNfTable, PointOp};
+use socool_parser::parse_file;
+use std::net::Shutdown::Read;
 use std::sync::{Arc, Mutex};
+
+#[derive(Clone, PartialEq, Debug)]
+pub enum RenderType {
+    Json4d,
+    NfAndBasis,
+    StereoWaveform,
+    Wav,
+}
+
+#[derive(Clone, PartialEq, Debug)]
+pub enum RenderReturn {
+    Json4d(String),
+    StereoWaveform(StereoWaveform),
+    NfAndBasis(NormalForm, Basis),
+    Wav(String),
+}
 
 pub fn r_to_f64(r: Rational64) -> f64 {
     *r.numer() as f64 / *r.denom() as f64
+}
+
+pub fn filename_to_render(filename: &str, r_type: RenderType) -> RenderReturn {
+    let parsed = parse_file(&filename.to_string(), None);
+    let parsed_main = parsed.table.get("main").unwrap();
+
+    let nf = match parsed_main {
+        OpOrNf::Nf(nf) => nf,
+        OpOrNf::Op(_) => panic!("main is not in Normal Form for some terrible reason."),
+    };
+
+    let basis = Basis::from(parsed.init);
+
+    match r_type {
+        RenderType::NfAndBasis => RenderReturn::NfAndBasis(nf.clone(), basis),
+        RenderType::Json4d => {
+            to_json(&basis, &nf, &parsed.table.clone(), filename.to_string());
+            RenderReturn::Json4d("json".to_string())
+        }
+        RenderType::StereoWaveform | RenderType::Wav => {
+            let stereo_waveform = render(&basis, &nf, &parsed.table);
+            if r_type == RenderType::StereoWaveform {
+                RenderReturn::StereoWaveform(stereo_waveform)
+            } else {
+                let result = to_wav(stereo_waveform, filename.to_string());
+                return RenderReturn::Wav(result);
+            }
+        }
+    }
 }
 
 pub fn render(origin: &Basis, composition: &NormalForm, table: &OpOrNfTable) -> StereoWaveform {
@@ -31,10 +80,11 @@ pub fn render_mic(point_op: &PointOp, origin: Basis, osc: &mut Oscillator) -> St
     result
 }
 
-pub fn to_wav(composition: StereoWaveform, filename: String) {
+pub fn to_wav(composition: StereoWaveform, filename: String) -> String {
     banner("Printing".to_string(), filename.clone());
     write_composition_to_wav(composition, &filename);
     printed("WAV".to_string());
+    "composition.wav".to_string()
 }
 
 fn create_pb_instance(n: usize) -> Arc<Mutex<ProgressBar<std::io::Stdout>>> {

@@ -4,5 +4,5 @@ mod test;
 
 pub use self::{
     json::to_json,
-    parsed_to_render::{r_to_f64, render, to_wav},
+    parsed_to_render::{filename_to_render, r_to_f64, render, to_wav, RenderReturn, RenderType},
 };
