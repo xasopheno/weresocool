@@ -1,4 +1,3 @@
-use crate::generation::parsed_to_render::RenderType::NfAndBasis;
 use crate::generation::to_json;
 use crate::instrument::{Basis, Normalize, Oscillator, StereoWaveform};
 use crate::render::{Render, RenderPointOp};
@@ -10,7 +9,6 @@ use pbr::ProgressBar;
 use rayon::prelude::*;
 use socool_ast::{NormalForm, Normalize as NormalizeOp, OpOrNf, OpOrNfTable, PointOp};
 use socool_parser::parse_file;
-use std::net::Shutdown::Read;
 use std::sync::{Arc, Mutex};
 
 #[derive(Clone, PartialEq, Debug)]
