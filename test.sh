@@ -3,7 +3,7 @@
 set -euo pipefail
 
 echo "Formatted"
-pushd socool_ast; cargo test; popd
+pushd ast; cargo test; popd
 pushd parser; cargo test; popd
 pushd parser; ./parser_test.sh; popd
 cargo test
