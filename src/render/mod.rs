@@ -3,7 +3,7 @@ use crate::instrument::{
     oscillator::{Basis, Oscillator},
     stereo_waveform::StereoWaveform,
 };
-use socool_ast::operations::PointOp;
+use socool_ast::PointOp;
 
 pub trait Render<T> {
     fn render(&mut self, origin: &Basis, oscillator: &mut Oscillator) -> StereoWaveform;

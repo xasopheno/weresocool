@@ -8,3 +8,5 @@ pub mod float_to_rational;
 pub mod imports;
 #[allow(clippy::all)]
 pub mod parser;
+
+pub use self::parser::{parse_file, Init, ParsedComposition};

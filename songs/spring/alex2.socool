@@ -1,0 +1,78 @@
+{ f: 220, l: 2.2, g: 1.0, p: 0.0}
+
+overtones = {
+    O[
+          (5/4, 0.0, 1.0, 2.0),
+          (1/1, 0.0, 1.0, 0.0),
+          (1/2, 0.0, 1.0, -2.0),
+      ]
+}
+
+alt_overtones = {
+    O[
+          (5/4, 0.0, 1.0, 0.0),
+          (3/4, 0.0, 1.0, 0.0),
+          (3/8, 0.0, 1.0, 0.0),
+      ]
+}
+
+melody_overtones = {
+  O [
+    (1/1, 0.0, 1.0, 0.0),
+    (2/1, 0.0, 1.0, 0.0),
+    (5/2, 0.0, 1.0, 0.0),
+  ]
+}
+
+background = {
+  Sequence [
+    overtones | AsIs,
+    overtones | Tm 9/8,
+    overtones | Tm 5/4 | Length 1/6,
+    overtones | Tm 11/8 | Length 1/6,
+    overtones | Tm 5/4 | Length 2/3,
+    overtones | AsIs | Length 1/2,
+    overtones | Tm 3/4 | Length 1/2,
+    overtones | AsIs,
+    overtones | Tm 9/8,
+    overtones | Tm 3/4,
+    alt_overtones | Length 1/2,
+    overtones | Tm 3/4 | Length 1/2,
+  ]
+}
+
+melody_1 = {
+  melody_overtones | Sequence [
+    Tm 6/4,
+    Tm 3/4,
+    Tm 4/4,
+    Tm 1/4,
+    Tm 3/4,
+    Tm 1/4,
+    Tm 5/4,
+    Tm 6/4,
+    Tm 4/4,
+    Tm 3/4,
+    Tm 1/4,
+    Tm 4/4,
+    Tm 1/4,
+    Tm 3/4,
+    Tm 1/4,
+    Tm 5/4 | Length 2,
+    Tm 3/4,
+    Tm 4/4,
+    Tm 1/4,
+    Tm 5/4 | Length 2,
+  ] | Length 1/6
+}
+
+
+main = {
+  Sequence [
+    background,
+    Overlay [
+      background,
+      melody_1,
+    ] | Repeat 2
+  ] | Length 1/2
+}

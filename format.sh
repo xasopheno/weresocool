@@ -4,4 +4,4 @@ set -euo pipefail
 
 cargo fmt
 pushd parser && cargo fmt && popd
-pushd socool_ast && cargo fmt && popd
+pushd ast && cargo fmt && popd

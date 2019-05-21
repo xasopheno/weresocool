@@ -1,11 +1,11 @@
 use crate::generation::parsed_to_render::{generate_waveforms, r_to_f64, sum_all_waveforms};
-use crate::instrument::{oscillator::Basis, stereo_waveform::Normalize};
+use crate::instrument::{Basis, Normalize};
 use difference::{Changeset, Difference};
 use indexmap::IndexMap;
 use serde::{Deserialize, Serialize};
 use serde_json::{from_reader, to_string_pretty};
-use socool_ast::operations::{NormalForm, Normalize as NormalizeOp};
-use socool_parser::parser::*;
+use socool_ast::{NormalForm, Normalize as NormalizeOp};
+use socool_parser::*;
 use std::collections::hash_map::DefaultHasher;
 use std::fs;
 use std::fs::File;

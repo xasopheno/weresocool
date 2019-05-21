@@ -1,12 +1,12 @@
-use crate::instrument::stereo_waveform::StereoWaveform;
+use crate::instrument::StereoWaveform;
 use crate::settings::{default_settings, Settings};
 use crate::write::write_output_buffer;
 use portaudio as pa;
 
-pub fn setup_portaudio_output(
+pub fn output_setup(
     mut composition: StereoWaveform,
-    ref pa: &pa::PortAudio,
 ) -> Result<pa::Stream<pa::NonBlocking, pa::Output<f32>>, pa::Error> {
+    let pa = pa::PortAudio::new()?;
     let settings = default_settings();
     let output_settings = get_output_settings(&pa, &settings)?;
     let mut index = 0;

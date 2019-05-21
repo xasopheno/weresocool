@@ -1,4 +1,4 @@
-use crate::instrument::stereo_waveform::StereoWaveform;
+use crate::instrument::StereoWaveform;
 use std::fs::File;
 use std::io::prelude::*;
 use std::process::Command;

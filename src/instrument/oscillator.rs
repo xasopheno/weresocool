@@ -4,7 +4,8 @@ use crate::instrument::{
     voice::{Voice, VoiceUpdate},
 };
 use crate::settings::Settings;
-use socool_ast::operations::PointOp;
+use socool_ast::PointOp;
+use socool_parser::Init;
 use std::f64::consts::PI;
 
 fn tau() -> f64 {
@@ -27,6 +28,19 @@ pub struct Basis {
     pub l: f64,
     pub a: f64,
     pub d: f64,
+}
+
+impl From<Init> for Basis {
+    fn from(init: Init) -> Basis {
+        Basis {
+            f: r_to_f64(init.f),
+            g: r_to_f64(init.g),
+            l: r_to_f64(init.l),
+            p: r_to_f64(init.p),
+            a: 44100.0,
+            d: 44100.0,
+        }
+    }
 }
 
 fn point_op_to_gains(point_op: &PointOp, basis: &Basis) -> (f64, f64) {

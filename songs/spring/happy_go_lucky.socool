@@ -1,0 +1,149 @@
+{ f: 220, l: 1, g: 1, p: 0}
+
+overtones = {
+    O[
+    	(3/2, 2, 1, -1/2),
+    	(3/2, 0, 1, -1/2),
+      	(1/1, 1, 1, 1/2),
+      	(1/1, 0, 1, 1/2),
+  	]
+}
+
+thing1 = {
+	overtones |
+	Sequence [
+		Tm 9/8,
+		Tm 3/2,
+		Tm 15/8,
+		Tm 5/3,
+		Tm 11/8,
+		Tm 6/5,
+		Tm 9/8 | Length 1,
+		Seq [
+			Tm 5/4 | Length 1/2,
+			Tm 9/8 | Length 1,
+		] 
+		| Repeat 4
+	] 
+}
+
+thing2 = {
+	overtones |
+	Sequence [
+		Tm 2,
+		Tm 5/2,
+		Tm 3,
+		Tm 5/2,
+		Tm 11/4 | Length 3,
+		Tm 5/2, 
+		Tm 9/4,
+		Tm 2, 
+		Tm 7/4, 
+		Tm 8/5, 
+		Tm 15/8, 
+		Seq [
+			Tm 3/2 | Length 3/4,
+			Tm 5/3 | Length 1/4,
+			Tm 3/2 | Length 3/4,
+			Tm 7/4 | Length 1/4,
+			Tm 5/3,
+		] 
+		| Repeat 4 
+	] 
+	| Length 1/2
+	| PanM -1 
+}
+
+bass = {
+    O[
+    	(1/1, 5/2, 1, 1/4),
+      	(1/1, 0, 1, -1/4),
+  	] |
+	Seq [
+		Tm 3/4, 
+		Tm 2/3, 
+		Tm 1, 
+		Tm 0 | Length 1/100,
+		Seq [
+			Tm 3/2, 
+			Tm 9/8,
+		] 
+		| Seq [
+			AsIs, Length 1/2
+		]
+	    | O[
+	    	(12/1, 0, 1/4, 0),
+	      	(1/1, 0, 1, 0),
+	  	] 
+	] 
+	| Tm 1/2
+	| Length 2
+}
+
+melody1 = {
+	Overlay [
+		thing1,
+		thing2 | Gain 3/4,
+		bass,
+	]
+}
+
+inter = {
+	Overlay [
+		Seq [
+			Tm 0 | Length 1/100,
+		    O[
+		      	(9/4, 0, 1, -9/10),
+		    	(9/4, 5, 1, 9/10),
+		      	(5/2, 0, 1, -7/10),
+		    	(5/2, 5, 1, 7/10),
+		      	(3/2, 0, 1, -8/10),
+		    	(3/2, 5, 1, 8/10),
+		      	(1/1, 0, 1, -1),
+		      	(1/1, 0, 1, 1),
+		  	] | Tm 7/8
+		  	| Seq [
+		  		AsIs, Tm 9/8, Tm 5/4, Tm 6/5, Tm 25/24, Tm 15/16, Tm 9/8, 
+		  		Seq [
+		  			Tm 5/4, Tm 11/8, Tm 5/3, Tm 15/8, Tm 9/4, Tm 3, Tm 4, Tm 5, Tm 6, Tm 7, Tm 8
+		  		] 
+		  		| Overlay [AsIs, Invert | Tm 3]
+		  		| Gain 1/8
+		  		| Length 1/4 
+		  		| ModulateBy [PanA -1/2, PanA 1/2]
+
+			]
+			| Length 1/5
+			| Seq [
+				AsIs, 
+				Length 1/4 | Gain 1/4 | Tm 8/5,
+				Length 2/5 | Gain 1/6 | Tm 6/5 | PanA -1,
+			], 
+			Tm 0 | Length 1/100,
+		]
+	]
+}
+
+main = {
+	Overlay [
+		Seq [
+			melody1,
+			Overlay [
+				inter, 
+			    O[
+			      	(5, 11, 1/2, -1/3),
+			    	(5, 0,  1/2, 1/3),
+			      	(9/2, 11, 1/2, -1/3),
+			    	(9/2, 0,  1/2, 1/3),
+			      	(1/3, 0, 1, 0),
+			  	]
+				> FitLength inter
+			]
+		] 
+		| Overlay [AsIs, Tm 3/2]
+		| Overlay [PanA -1, PanA 1 | Ta 1/2, Tm 4 | Gain 1/8 | PanM -1/2]
+		| Seq [AsIs, Tm 25/24]
+		| Seq [AsIs, PanM -1]
+	]
+}
+	

@@ -1,0 +1,85 @@
+{ f: 220, l: 1, g: 1, p: 0}
+
+overtones = {
+    O[
+    	(6, 3, 1/10, 1/3),
+    	(6, 11, 1/10, -1/3),
+    	(2, 3, 1, 1/3),
+    	(2, 0, 1, -1/3),
+    	(3/2, 3, 1, 1/3),
+    	(3/2, 0, 1, -1/3),
+      	(1/1, 4, 1, 1/2),
+      	(1/1, 0, 1, -1/2),
+  	]
+}
+
+major_scale = {
+	overtones |
+	Seq [
+		Sequence [
+			AsIs,
+			Tm 9/8,
+			Tm 5/4,
+			Tm 3/2,
+		] 
+		| Seq [ 
+			AsIs, 
+			Tm 7/8, 
+			Tm 4/5	
+		],
+		Seq [
+			Tm 3/2, Tm 5/3, Tm 3/2, 
+			Tm 5/4 | Length 4, Tm 9/8 | Length 5
+		]
+	]
+	| Repeat 2
+	| Length 1/6 
+}
+
+bass = {
+    O[
+      	(11/1, 4, 1/20,  1/2),
+      	(11/1, 0, 1/20, -1/2),
+      	(9/1, 4, 1/20,  1/2),
+      	(9/1, 0, 1/20, -1/2),
+      	(7/1, 4, 1/20,  1/2),
+      	(7/1, 0, 1/20, -1/2),
+      	(1/2, 0, 1, 1/2),
+      	(1/2, 0, 1, -1/2),
+  	]
+	| Seq [
+		Tm 1, Tm 9/8, Tm 0, Tm 5/4, Tm 3/2, Tm 5/3, Tm 3/2, Tm 25/24
+	]
+	| Seq [AsIs, Tm 7/8]
+	> FitLength major_scale
+}
+
+fasts = {
+	Seq [
+		Tm 3, Tm 4, Tm 5, Tm 6, Tm 7, Tm 8, 
+	] 
+	| Seq [AsIs, Tm 7/8, Tm 4/5, Tm 3/4]
+	| Seq [AsIs, Tm 9/8, Tm 5/4, Tm 11/8]
+	| ModulateBy [
+		AsIs, Tm 3/2 | Overlay [AsIs, Tm 9/8, Tm 5/4] | Gain 1/2
+	]
+	| Seq [
+		AsIs, Tm 0 | Length 2, AsIs
+	]
+	> FitLength major_scale
+}
+
+
+main = {
+	Overlay [
+		major_scale,
+		bass,
+		fasts | Gain 1/2
+	] 
+	| Overlay [
+		PanA -1, PanA 1 | Tm 3/2
+	]
+	| Seq [AsIs, PanM -1]
+	| Repeat 2
+}
+	

@@ -1,8 +1,7 @@
-use socool_ast::operations::{NormalForm, Normalize};
-use socool_parser::parser::parse_file;
 use weresocool::{
     examples::documentation,
-    portaudio_setup::duplex::setup_portaudio_duplex,
+    generation::{filename_to_render, RenderReturn, RenderType},
+    portaudio::duplex_setup,
     ui::{get_args, no_file_name, were_so_cool_logo},
 };
 
@@ -33,17 +32,13 @@ fn run() -> Result<(), pa::Error> {
         _ => no_file_name(),
     }
 
-    let parsed = parse_file(&filename.unwrap().to_string(), None);
-    let main = parsed.table.get("main").unwrap();
-
-    let mut normal_form = NormalForm::init();
+    let normal_form = match filename_to_render(filename.unwrap(), RenderType::NfAndBasis) {
+        RenderReturn::NfAndBasis(nf, _) => nf,
+        _ => panic!("Error. Unable to generate NormalForm"),
+    };
 
     println!("\nGenerating Composition ");
-    main.apply_to_normal_form(&mut normal_form, &parsed.table);
-
-    let pa = pa::PortAudio::new()?;
-
-    let mut duplex_stream = setup_portaudio_duplex(normal_form.operations, &pa)?;
+    let mut duplex_stream = duplex_setup(normal_form.operations)?;
     duplex_stream.start()?;
 
     while let true = duplex_stream.is_active()? {}
