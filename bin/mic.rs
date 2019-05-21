@@ -1,5 +1,3 @@
-use socool_ast::{NormalForm, Normalize};
-use socool_parser::parse_file;
 use weresocool::{
     examples::documentation,
     generation::{filename_to_render, RenderReturn, RenderType},
@@ -34,14 +32,12 @@ fn run() -> Result<(), pa::Error> {
         _ => no_file_name(),
     }
 
-    let mut normal_form = match filename_to_render(filename.unwrap(), RenderType::NfAndBasis) {
-        RenderReturn::NfAndBasis(nf, basis) => nf,
+    let normal_form = match filename_to_render(filename.unwrap(), RenderType::NfAndBasis) {
+        RenderReturn::NfAndBasis(nf, _) => nf,
         _ => panic!("Error. Unable to generate NormalForm"),
     };
 
     println!("\nGenerating Composition ");
-    main.apply_to_normal_form(&mut normal_form, &parsed.table);
-
     let mut duplex_stream = duplex_setup(normal_form.operations)?;
     duplex_stream.start()?;
 
