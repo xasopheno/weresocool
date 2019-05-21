@@ -41,9 +41,7 @@ fn run() -> Result<(), pa::Error> {
     println!("\nGenerating Composition ");
     main.apply_to_normal_form(&mut normal_form, &parsed.table);
 
-    let pa = pa::PortAudio::new()?;
-
-    let mut duplex_stream = duplex_setup(normal_form.operations, &pa)?;
+    let mut duplex_stream = duplex_setup(normal_form.operations)?;
     duplex_stream.start()?;
 
     while let true = duplex_stream.is_active()? {}
