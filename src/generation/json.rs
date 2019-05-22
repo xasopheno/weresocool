@@ -1,4 +1,5 @@
 use crate::{
+    generation::nn_data_generation::{CSVOp, Normalizer},
     instrument::Basis,
     ui::{banner, printed},
     write::write_composition_to_json,
