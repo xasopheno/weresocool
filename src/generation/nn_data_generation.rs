@@ -1,4 +1,4 @@
-use crate::generation::video_data_generation::{composition_to_vec_timed_op, TimedOp};
+use crate::generation::{composition_to_vec_timed_op, TimedOp};
 use crate::{generation::parsed_to_render::r_to_f64, instrument::oscillator::Basis};
 use insta::assert_debug_snapshot_matches;
 use num_rational::Rational64;
