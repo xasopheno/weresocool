@@ -5,7 +5,7 @@ mod test;
 
 pub use self::{
     json::{
-        composition_to_vec_timed_op, to_json, vec_timed_op_to_vec_op4d, EventType, Op4D, TimedOp,
+        normalform_to_vec_timed_op_1d, to_json, vec_timed_op_to_vec_op4d, EventType, Op4D, TimedOp,
     },
     nn_data_generation::*,
     parsed_to_render::{

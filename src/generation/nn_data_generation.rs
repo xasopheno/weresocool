@@ -1,12 +1,8 @@
-use crate::generation::{composition_to_vec_timed_op, TimedOp};
-use crate::{generation::parsed_to_render::r_to_f64, instrument::oscillator::Basis};
+use crate::generation::{normalform_to_vec_timed_op_1d, TimedOp};
 use insta::assert_debug_snapshot_matches;
 use num_rational::Rational64;
 use socool_ast::ast::OpOrNf;
-use socool_ast::ast::{Op, Op::*, OpOrNf::*, OpOrNfTable, OscType};
-use socool_ast::operations::{NormalForm, Normalize as NormalizeOp, PointOp};
 use socool_parser::parser::*;
-use walkdir::WalkDir;
 
 #[derive(Debug, Clone)]
 pub struct CSVOp {
@@ -36,7 +32,7 @@ pub fn vec_timed_op_to_vec_csv_data(timed_ops: Vec<TimedOp>) -> CSVData {
     timed_ops.iter().map(|t_op| t_op.to_csv_op()).collect()
 }
 
-pub fn vec_timed_op_to_normalize_csv_data(timed_ops: Vec<TimedOp>) -> CSVData {
+pub fn vec_timed_op_1d_to_normalize_csv_data_1d(timed_ops: Vec<TimedOp>) -> Vec<CSVOp> {
     let normalizer = Normalizer {
         fm: (Rational64::new(0, 1), Rational64::new(65, 1)),
         fa: (Rational64::new(-20, 1), Rational64::new(35, 1)),
@@ -50,6 +46,28 @@ pub fn vec_timed_op_to_normalize_csv_data(timed_ops: Vec<TimedOp>) -> CSVData {
         .iter()
         .map(|t_op| t_op.to_normalized_csv_op(normalizer.clone()))
         .collect()
+}
+
+pub fn vec_timed_op_2d_to_normalize_csv_data_2d(timed_ops: Vec<Vec<TimedOp>>) -> Vec<Vec<CSVOp>> {
+    let normalizer = Normalizer {
+        fm: (Rational64::new(0, 1), Rational64::new(65, 1)),
+        fa: (Rational64::new(-20, 1), Rational64::new(35, 1)),
+        pm: (Rational64::new(-1, 1), Rational64::new(1, 1)),
+        pa: (Rational64::new(-2, 1), Rational64::new(2, 1)),
+        g: (Rational64::new(0, 1), Rational64::new(1, 1)),
+        l: (Rational64::new(0, 1), Rational64::new(600, 1)),
+        v: (Rational64::new(0, 1), Rational64::new(200, 1)),
+    };
+    let result: Vec<Vec<CSVOp>> = timed_ops
+        .iter()
+        .map(|vec_t_op| {
+            vec_t_op
+                .iter()
+                .map(|t_op| t_op.to_normalized_csv_op(normalizer.clone()))
+                .collect()
+        })
+        .collect();
+    result
 }
 
 //pub fn csv_data_to_normalized_csv_data(data: CSVData, ) {
@@ -119,9 +137,9 @@ pub fn get_min_max_for_path(filename: String) -> (CSVOp, CSVOp, usize) {
         OpOrNf::Op(_) => panic!("main is Not in Normal Form for some terrible reason."),
     };
 
-    let timed_ops = composition_to_vec_timed_op(nf, &parsed.table);
+    let timed_ops = normalform_to_vec_timed_op_1d(nf, &parsed.table);
     let n_voices = timed_ops.len();
-    let csv_data = vec_timed_op_to_normalize_csv_data(timed_ops);
+    let csv_data = vec_timed_op_1d_to_normalize_csv_data_1d(timed_ops);
     let (max, min) = get_max_min_csv_data(csv_data);
 
     (max, min, n_voices)
@@ -159,7 +177,7 @@ fn normal_form_to_normal_data_test() {
     }
     .apply_to_normal_form(&mut normal_form, &pt);
 
-    let normal_data = composition_to_vec_timed_op(&normal_form, &pt);
+    let normal_data = normalform_to_vec_timed_op_1d(&normal_form, &pt);
 
     assert_debug_snapshot_matches!("normal_form_to_normal_data_test", normal_data);
 

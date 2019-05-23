@@ -1,5 +1,5 @@
 use walkdir::WalkDir;
-use weresocool::generation::{get_min_max_for_path, CSVData, CSVOp};
+use weresocool::generation::{get_min_max_for_path, CSVOp};
 
 fn main() {
     println!("Hello WereSoCool Scratch Pad");

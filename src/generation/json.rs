@@ -127,11 +127,11 @@ pub fn vec_timed_op_to_vec_op4d(timed_ops: Vec<TimedOp>, basis: &Basis) -> Vec<O
     timed_ops.iter().map(|t_op| t_op.to_op_4d(&basis)).collect()
 }
 
-pub fn composition_to_vec_timed_op(composition: &NormalForm, table: &OpOrNfTable) -> Vec<TimedOp> {
+pub fn normalform_to_vec_timed_op_1d(normalform: &NormalForm, table: &OpOrNfTable) -> Vec<TimedOp> {
     let mut normal_form = NormalForm::init();
 
     println!("Generating Composition \n");
-    composition.apply_to_normal_form(&mut normal_form, table);
+    normalform.apply_to_normal_form(&mut normal_form, table);
 
     let mut result: Vec<TimedOp> = normal_form
         .operations
@@ -154,10 +154,37 @@ pub fn composition_to_vec_timed_op(composition: &NormalForm, table: &OpOrNfTable
     result
 }
 
+pub fn normalform_to_vec_timed_op_2d(
+    normalform: &NormalForm,
+    table: &OpOrNfTable,
+) -> Vec<Vec<TimedOp>> {
+    let mut normal_form = NormalForm::init();
+
+    println!("Generating Composition \n");
+    normalform.apply_to_normal_form(&mut normal_form, table);
+
+    let result: Vec<Vec<TimedOp>> = normal_form
+        .operations
+        .iter()
+        .enumerate()
+        .map(|(voice, vec_point_op)| {
+            let mut time = Rational64::new(0, 1);
+            let mut result = vec![];
+            vec_point_op.iter().enumerate().for_each(|(event, p_op)| {
+                let (on, _) = point_op_to_timed_op(p_op, &mut time, voice, event);
+                result.push(on);
+            });
+            result
+        })
+        .collect();
+
+    result
+}
+
 pub fn to_json(basis: &Basis, composition: &NormalForm, table: &OpOrNfTable, filename: String) {
     banner("JSONIFY-ing".to_string(), filename.clone());
 
-    let vec_timed_op = composition_to_vec_timed_op(composition, table);
+    let vec_timed_op = normalform_to_vec_timed_op_1d(composition, table);
     let vec_op4d = vec_timed_op_to_vec_op4d(vec_timed_op, basis);
 
     let json = to_string(&vec_op4d).unwrap();
