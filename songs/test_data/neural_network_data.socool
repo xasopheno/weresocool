@@ -1,0 +1,28 @@
+{ f: 220, l: 1, g: 1, p: 0}
+
+overtones = {
+    O[
+      	(1/1, 0, 1, -1/2),
+  	]
+}
+
+thing1 = {
+	overtones |
+	Sequence [
+		AsIs,
+		Tm 9/8,
+		Tm 5/4,
+		Tm 0,
+		Tm 3/2 | Gain 1/10,
+		Tm 5/3,
+		Tm 15/8 | PanA 1/2,
+		Tm 2,
+	]
+	| Seq [
+		AsIs, Overlay [Tm 1/2 | PanA -1/2, Tm 2 | PanA 1/2
+	]
+}
+
+main = {
+	thing1
+}

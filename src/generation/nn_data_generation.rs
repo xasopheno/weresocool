@@ -1,7 +1,7 @@
 use crate::generation::{normalform_to_vec_timed_op_1d, TimedOp};
 use insta::assert_debug_snapshot_matches;
 use num_rational::Rational64;
-use socool_ast::ast::OpOrNf;
+use socool_ast::OpOrNf;
 use socool_parser::parser::*;
 
 #[derive(Debug, Clone)]
@@ -145,102 +145,110 @@ pub fn get_min_max_for_path(filename: String) -> (CSVOp, CSVOp, usize) {
     (max, min, n_voices)
 }
 
-#[test]
-fn normal_form_to_normal_data_test() {
-    let mut normal_form = NormalForm::init();
-    let pt = OpOrNfTable::new();
+#[cfg(test)]
+mod nn_data_test {
+    use super::*;
+    use socool_ast::{NormalForm, Normalize, Op::*, OpOrNf::*, OpOrNfTable, PointOp};
+    use walkdir::WalkDir;
 
-    Overlay {
-        operations: vec![
-            Op(Sequence {
-                operations: vec![
-                    Op(PanA {
-                        a: Rational64::new(-1, 2),
-                    }),
-                    Op(TransposeM {
-                        m: Rational64::new(2, 1),
-                    }),
-                    Op(Gain {
-                        m: Rational64::new(1, 2),
-                    }),
-                    Op(Length {
-                        m: Rational64::new(2, 1),
-                    }),
-                ],
-            }),
-            Op(Sequence {
-                operations: vec![Op(Length {
-                    m: Rational64::new(5, 1),
-                })],
-            }),
-        ],
-    }
-    .apply_to_normal_form(&mut normal_form, &pt);
+    #[test]
+    fn normal_form_to_normal_data_test() {
+        let mut normal_form = NormalForm::init();
+        let pt = OpOrNfTable::new();
 
-    let normal_data = normalform_to_vec_timed_op_1d(&normal_form, &pt);
-
-    assert_debug_snapshot_matches!("normal_form_to_normal_data_test", normal_data);
-
-    let csv_data = vec_timed_op_to_vec_csv_data(normal_data);
-    assert_debug_snapshot_matches!("normal_form_to_subdivided_test", csv_data);
-
-    let (max, min) = get_max_min_csv_data(csv_data);
-    assert_debug_snapshot_matches!("max_csv_data", max);
-    assert_debug_snapshot_matches!("min_csv_data", min);
-}
-
-#[test]
-fn test_csv_of_file() {
-    let mut max_state = CSVOp {
-        fm: 0.0,
-        fa: 0.0,
-        pm: 0.0,
-        pa: 0.0,
-        g: 0.0,
-        l: 0.0,
-        v: 0,
-    };
-    let mut min_state = CSVOp {
-        fm: 0.0,
-        fa: 0.0,
-        pm: 0.0,
-        pa: 0.0,
-        g: 0.0,
-        l: 0.0,
-        v: 0,
-    };
-
-    for entry in WalkDir::new("./songs/spring")
-        .follow_links(true)
-        .into_iter()
-        .filter_map(|e| e.ok())
-    {
-        let f_name = entry.path().to_string_lossy();
-
-        if f_name.ends_with(".socool") && !f_name.contains("import") {
-            let (song_max, song_min, n_events) = get_min_max_for_path(f_name.to_string());
-            println!("{}", f_name);
-            max_state = CSVOp {
-                fm: max_state.fm.max(song_max.fm),
-                fa: max_state.fa.max(song_max.fa),
-                pm: max_state.pm.max(song_max.pm),
-                pa: max_state.pa.max(song_max.pa),
-                g: max_state.g.max(song_max.g),
-                l: max_state.l.max(song_max.l),
-                v: max_state.v.max(song_max.v),
-            };
-            min_state = CSVOp {
-                fm: min_state.fm.min(song_min.fm),
-                fa: min_state.fa.min(song_min.fa),
-                pm: min_state.pm.min(song_min.pm),
-                pa: min_state.pa.min(song_min.pa),
-                g: min_state.g.min(song_min.g),
-                l: min_state.l.min(song_min.l),
-                v: min_state.v.min(song_min.v),
-            };
+        Overlay {
+            operations: vec![
+                Op(Sequence {
+                    operations: vec![
+                        Op(PanA {
+                            a: Rational64::new(-1, 2),
+                        }),
+                        Op(TransposeM {
+                            m: Rational64::new(2, 1),
+                        }),
+                        Op(Gain {
+                            m: Rational64::new(1, 2),
+                        }),
+                        Op(Length {
+                            m: Rational64::new(2, 1),
+                        }),
+                    ],
+                }),
+                Op(Sequence {
+                    operations: vec![Op(Length {
+                        m: Rational64::new(5, 1),
+                    })],
+                }),
+            ],
         }
+        .apply_to_normal_form(&mut normal_form, &pt);
+
+        let normal_data = normalform_to_vec_timed_op_1d(&normal_form, &pt);
+
+        assert_debug_snapshot_matches!("normal_form_to_normal_data_test", normal_data);
+
+        let csv_data = vec_timed_op_to_vec_csv_data(normal_data);
+        assert_debug_snapshot_matches!("normal_form_to_subdivided_test", csv_data);
+
+        let (max, min) = get_max_min_csv_data(csv_data);
+        assert_debug_snapshot_matches!("max_csv_data", max);
+        assert_debug_snapshot_matches!("min_csv_data", min);
     }
 
-    assert_debug_snapshot_matches!("max_for_path", max_state);
-    assert_debug_snapshot_matches!("min_for_path", min_state);
+    #[test]
+    fn test_csv_of_file() {
+        let mut max_state = CSVOp {
+            fm: 0.0,
+            fa: 0.0,
+            pm: 0.0,
+            pa: 0.0,
+            g: 0.0,
+            l: 0.0,
+            v: 0,
+        };
+        let mut min_state = CSVOp {
+            fm: 0.0,
+            fa: 0.0,
+            pm: 0.0,
+            pa: 0.0,
+            g: 0.0,
+            l: 0.0,
+            v: 0,
+        };
+
+        for entry in WalkDir::new("./songs/spring")
+            .follow_links(true)
+            .into_iter()
+            .filter_map(|e| e.ok())
+        {
+            let f_name = entry.path().to_string_lossy();
+
+            if f_name.ends_with(".socool") && !f_name.contains("import") {
+                let (song_max, song_min, n_events) = get_min_max_for_path(f_name.to_string());
+                println!("{}", f_name);
+                max_state = CSVOp {
+                    fm: max_state.fm.max(song_max.fm),
+                    fa: max_state.fa.max(song_max.fa),
+                    pm: max_state.pm.max(song_max.pm),
+                    pa: max_state.pa.max(song_max.pa),
+                    g: max_state.g.max(song_max.g),
+                    l: max_state.l.max(song_max.l),
+                    v: max_state.v.max(song_max.v),
+                };
+                min_state = CSVOp {
+                    fm: min_state.fm.min(song_min.fm),
+                    fa: min_state.fa.min(song_min.fa),
+                    pm: min_state.pm.min(song_min.pm),
+                    pa: min_state.pa.min(song_min.pa),
+                    g: min_state.g.min(song_min.g),
+                    l: min_state.l.min(song_min.l),
+                    v: min_state.v.min(song_min.v),
+                };
+            }
+        }
+
+        assert_debug_snapshot_matches!("max_for_path", max_state);
+        assert_debug_snapshot_matches!("min_for_path", min_state);
+    }
+
 }
