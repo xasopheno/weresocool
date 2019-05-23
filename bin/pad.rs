@@ -2,7 +2,8 @@ use walkdir::WalkDir;
 use weresocool::generation::{get_min_max_for_path, CSVData, CSVOp};
 
 fn main() {
-    println!("Hello Scratch Pad");
+    println!("Hello WereSoCool Scratch Pad");
+
     let mut max_state = CSVOp {
         fm: 0.0,
         fa: 0.0,
