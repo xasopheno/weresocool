@@ -46,38 +46,55 @@ impl TimedOp {
         }
     }
 
-    pub fn to_csv_op(&self) -> CSVOp {
-        CSVOp {
-            fm: r_to_f64(self.fm),
-            fa: r_to_f64(self.fa),
-            pm: r_to_f64(self.pm),
-            pa: r_to_f64(self.pa),
-            g: r_to_f64(self.g),
-            l: r_to_f64(self.l),
-            v: self.voice,
-        }
-    }
+    //    pub fn to_csv_op(&self) -> CSVOp {
+    //        CSVOp {
+    //            fm: r_to_f64(self.fm),
+    //            fa: r_to_f64(self.fa),
+    //            pm: r_to_f64(self.pm),
+    //            pa: r_to_f64(self.pa),
+    //            g: r_to_f64(self.g),
+    //            l: r_to_f64(self.l),
+    //            v: self.voice,
+    //        }
+    //    }
 
-    pub fn to_normalized_csv_op(&self, normalizer: Normalizer) -> CSVOp {
+    pub fn to_csv_op(&self) -> CSVOp {
         let zero = Rational64::new(0, 1);
         let is_silent = self.fm == Rational64::new(0, 1) || self.g == Rational64::new(0, 1);
         let fm = if is_silent { zero } else { self.fm };
         let g = if is_silent { zero } else { self.g };
 
         CSVOp {
-            fm: normalize_value(fm, normalizer.fm.0, normalizer.fm.1),
-            fa: normalize_value(self.fa, normalizer.fa.0, normalizer.fa.1),
-            pm: normalize_value(self.pm, normalizer.pm.0, normalizer.pm.1),
-            pa: normalize_value(self.pa, normalizer.pa.0, normalizer.pa.1),
-            g: normalize_value(g, normalizer.g.0, normalizer.g.1),
-            l: normalize_value(self.l, normalizer.l.0, normalizer.l.1),
-            v: normalize_value(
-                Rational64::new(self.voice as i64, 1),
-                normalizer.v.0,
-                normalizer.v.1,
-            ) as usize,
+            fm: r_to_f64(fm),
+            fa: r_to_f64(self.fa),
+            pm: r_to_f64(self.pm),
+            pa: r_to_f64(self.pa),
+            g: r_to_f64(g),
+            l: r_to_f64(self.l),
+            v: self.voice as usize,
         }
     }
+
+    //    pub fn to_normalized_csv_op(&self, normalizer: Normalizer) -> CSVOp {
+    //        let zero = Rational64::new(0, 1);
+    //        let is_silent = self.fm == Rational64::new(0, 1) || self.g == Rational64::new(0, 1);
+    //        let fm = if is_silent { zero } else { self.fm };
+    //        let g = if is_silent { zero } else { self.g };
+    //
+    //        CSVOp {
+    //            fm: normalize_value(fm, normalizer.fm.0, normalizer.fm.1),
+    //            fa: normalize_value(self.fa, normalizer.fa.0, normalizer.fa.1),
+    //            pm: normalize_value(self.pm, normalizer.pm.0, normalizer.pm.1),
+    //            pa: normalize_value(self.pa, normalizer.pa.0, normalizer.pa.1),
+    //            g: normalize_value(g, normalizer.g.0, normalizer.g.1),
+    //            l: normalize_value(self.l, normalizer.l.0, normalizer.l.1),
+    //            v: normalize_value(
+    //                Rational64::new(self.voice as i64, 1),
+    //                normalizer.v.0,
+    //                normalizer.v.1,
+    //            ) as usize,
+    //        }
+    //    }
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize, PartialEq)]

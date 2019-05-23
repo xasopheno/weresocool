@@ -2,7 +2,7 @@
 
 overtones = {
     O[
-      	(1/1, 0, 1, -1/2),
+      	(1/1, 0, 1, 0)
   	]
 }
 
@@ -19,7 +19,7 @@ thing1 = {
 		Tm 2,
 	]
 	| Seq [
-		AsIs, Overlay [Tm 1/2 | PanA -1/2, Tm 2 | PanA 1/2
+		AsIs, Overlay [Tm 1/2 | PanA -1/2, Tm 2 | PanA 1/2]
 	]
 }
 

@@ -1,0 +1,53 @@
+---
+created: "2019-05-23T04:15:56.687417Z"
+creator: insta@0.8.1
+source: src/generation/nn_data_generation.rs
+expression: csv_data
+---
+[
+    CSVOp {
+        fm: 1.0,
+        fa: 0.0,
+        pm: 1.0,
+        pa: -0.5,
+        g: 1.0,
+        l: 1.0,
+        v: 0
+    },
+    CSVOp {
+        fm: 1.0,
+        fa: 0.0,
+        pm: 1.0,
+        pa: 0.0,
+        g: 1.0,
+        l: 5.0,
+        v: 1
+    },
+    CSVOp {
+        fm: 2.0,
+        fa: 0.0,
+        pm: 1.0,
+        pa: 0.0,
+        g: 1.0,
+        l: 1.0,
+        v: 0
+    },
+    CSVOp {
+        fm: 1.0,
+        fa: 0.0,
+        pm: 1.0,
+        pa: 0.0,
+        g: 0.5,
+        l: 1.0,
+        v: 0
+    },
+    CSVOp {
+        fm: 1.0,
+        fa: 0.0,
+        pm: 1.0,
+        pa: 0.0,
+        g: 1.0,
+        l: 2.0,
+        v: 0
+    }
+]

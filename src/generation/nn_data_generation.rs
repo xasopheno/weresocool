@@ -32,40 +32,14 @@ pub fn vec_timed_op_to_vec_csv_data(timed_ops: Vec<TimedOp>) -> CSVData {
     timed_ops.iter().map(|t_op| t_op.to_csv_op()).collect()
 }
 
-pub fn vec_timed_op_1d_to_normalize_csv_data_1d(timed_ops: Vec<TimedOp>) -> Vec<CSVOp> {
-    let normalizer = Normalizer {
-        fm: (Rational64::new(0, 1), Rational64::new(65, 1)),
-        fa: (Rational64::new(-20, 1), Rational64::new(35, 1)),
-        pm: (Rational64::new(-1, 1), Rational64::new(1, 1)),
-        pa: (Rational64::new(-2, 1), Rational64::new(2, 1)),
-        g: (Rational64::new(0, 1), Rational64::new(1, 1)),
-        l: (Rational64::new(0, 1), Rational64::new(600, 1)),
-        v: (Rational64::new(0, 1), Rational64::new(200, 1)),
-    };
-    timed_ops
-        .iter()
-        .map(|t_op| t_op.to_normalized_csv_op(normalizer.clone()))
-        .collect()
+pub fn vec_timed_op_1d_to_csv_data_1d(timed_ops: Vec<TimedOp>) -> Vec<CSVOp> {
+    timed_ops.iter().map(|t_op| t_op.to_csv_op()).collect()
 }
 
-pub fn vec_timed_op_2d_to_normalize_csv_data_2d(timed_ops: Vec<Vec<TimedOp>>) -> Vec<Vec<CSVOp>> {
-    let normalizer = Normalizer {
-        fm: (Rational64::new(0, 1), Rational64::new(65, 1)),
-        fa: (Rational64::new(-20, 1), Rational64::new(35, 1)),
-        pm: (Rational64::new(-1, 1), Rational64::new(1, 1)),
-        pa: (Rational64::new(-2, 1), Rational64::new(2, 1)),
-        g: (Rational64::new(0, 1), Rational64::new(1, 1)),
-        l: (Rational64::new(0, 1), Rational64::new(600, 1)),
-        v: (Rational64::new(0, 1), Rational64::new(200, 1)),
-    };
+pub fn vec_timed_op_2d_to_csv_data_2d(timed_ops: Vec<Vec<TimedOp>>) -> Vec<Vec<CSVOp>> {
     let result: Vec<Vec<CSVOp>> = timed_ops
         .iter()
-        .map(|vec_t_op| {
-            vec_t_op
-                .iter()
-                .map(|t_op| t_op.to_normalized_csv_op(normalizer.clone()))
-                .collect()
-        })
+        .map(|vec_t_op| vec_t_op.iter().map(|t_op| t_op.to_csv_op()).collect())
         .collect();
     result
 }
@@ -139,7 +113,7 @@ pub fn get_min_max_for_path(filename: String) -> (CSVOp, CSVOp, usize) {
 
     let timed_ops = normalform_to_vec_timed_op_1d(nf, &parsed.table);
     let n_voices = timed_ops.len();
-    let csv_data = vec_timed_op_1d_to_normalize_csv_data_1d(timed_ops);
+    let csv_data = vec_timed_op_1d_to_csv_data_1d(timed_ops);
     let (max, min) = get_max_min_csv_data(csv_data);
 
     (max, min, n_voices)
@@ -216,7 +190,7 @@ mod nn_data_test {
             v: 0,
         };
 
-        for entry in WalkDir::new("./songs/spring")
+        for entry in WalkDir::new("./songs/test_data/")
             .follow_links(true)
             .into_iter()
             .filter_map(|e| e.ok())
@@ -247,8 +221,8 @@ mod nn_data_test {
             }
         }
 
-        assert_debug_snapshot_matches!("max_for_path", max_state);
-        assert_debug_snapshot_matches!("min_for_path", min_state);
+        assert_debug_snapshot_matches!("test_csv_of_file_max_for_path", max_state);
+        assert_debug_snapshot_matches!("test_csv_of_file_min_for_path", min_state);
     }
 
 }
