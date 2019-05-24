@@ -1,3 +1,6 @@
+use serde_json::{from_reader, to_string_pretty};
+use std::fs::File;
+use std::io::{BufReader, Read, Write};
 use walkdir::WalkDir;
 use weresocool::generation::{get_min_max_for_path, CSVOp};
 
@@ -56,23 +59,44 @@ fn main() {
 
             max_seq_length = max_seq_length.max(n_voices);
 
-            println!("{:#?}", n_voices)
+            println!("{:#?}", n_voices);
         }
     }
 
     println!(
         "MAX {:#?}\nMIN {:#?}\nMAX_SEQ_LENGTH {:?}",
         max_state, min_state, max_seq_length
-    )
+    );
+
+    min_max_to_json(min_state, max_state);
+
+    let (min, max) = min_max_from_json();
+    dbg!(min);
+    dbg!(max);
 }
 
-use serde_json::{from_reader, to_string_pretty};
-use std::fs::File;
-use std::io::Write;
 fn min_max_to_json(min: CSVOp, max: CSVOp) {
     let pretty = to_string_pretty(&min).unwrap();
-    let mut file = File::create("src/songs/training_data/min.json").unwrap();
+    let mut file = File::create("songs/training_data/min.json").unwrap();
     file.write_all(pretty.as_bytes()).unwrap();
+
+    let pretty = to_string_pretty(&max).unwrap();
+    let mut file = File::create("songs/training_data/max.json").unwrap();
+    file.write_all(pretty.as_bytes()).unwrap();
+}
+
+fn min_max_from_json() -> (CSVOp, CSVOp) {
+    let path = "songs/training_data/min.json";
+    let file = File::open(path).unwrap();
+    let reader = BufReader::new(file);
+    let min: CSVOp = serde_json::from_reader(reader).unwrap();
+
+    let path = "songs/training_data/max.json";
+    let file = File::open(path).unwrap();
+    let reader = BufReader::new(file);
+    let max: CSVOp = serde_json::from_reader(reader).unwrap();
+
+    (min, max)
 }
 
 #[test]
