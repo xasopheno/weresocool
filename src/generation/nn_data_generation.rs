@@ -113,7 +113,6 @@ pub fn get_min_max_for_path(filename: String) -> (CSVOp, CSVOp, usize) {
     let timed_ops = normalform_to_vec_timed_op_1d(nf, &parsed.table);
     let n_voices = timed_ops.len();
     let csv_data = vec_timed_op_1d_to_csv_data_1d(timed_ops);
-    dbg!(csv_data.clone());
     let (max, min) = get_max_min_csv_data(csv_data);
 
     (max, min, n_voices)
