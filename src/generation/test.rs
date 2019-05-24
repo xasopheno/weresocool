@@ -89,12 +89,12 @@ pub mod tests {
                     voice: 1,
                     ..op
                 },
-                TimedOp {
-                    pa: Rational64::new(1, 2),
-                    t: Rational64::new(1, 1),
-                    event_type: EventType::Off,
-                    ..op
-                },
+                //                TimedOp {
+                //                    pa: Rational64::new(1, 2),
+                //                    t: Rational64::new(1, 1),
+                //                    event_type: EventType::Off,
+                //                    ..op
+                //                },
                 TimedOp {
                     fm: Rational64::new(2, 1),
                     t: Rational64::new(1, 1),
@@ -102,13 +102,13 @@ pub mod tests {
                     event: 1,
                     ..op
                 },
-                TimedOp {
-                    fm: Rational64::new(2, 1),
-                    t: Rational64::new(2, 1),
-                    event_type: EventType::Off,
-                    event: 1,
-                    ..op
-                },
+                //                TimedOp {
+                //                    fm: Rational64::new(2, 1),
+                //                    t: Rational64::new(2, 1),
+                //                    event_type: EventType::Off,
+                //                    event: 1,
+                //                    ..op
+                //                },
                 TimedOp {
                     g: Rational64::new(1, 2),
                     t: Rational64::new(2, 1),
@@ -116,13 +116,13 @@ pub mod tests {
                     event: 2,
                     ..op
                 },
-                TimedOp {
-                    g: Rational64::new(1, 2),
-                    t: Rational64::new(3, 1),
-                    event_type: EventType::Off,
-                    event: 2,
-                    ..op
-                },
+                //                TimedOp {
+                //                    g: Rational64::new(1, 2),
+                //                    t: Rational64::new(3, 1),
+                //                    event_type: EventType::Off,
+                //                    event: 2,
+                //                    ..op
+                //                },
                 TimedOp {
                     t: Rational64::new(3, 1),
                     l: Rational64::new(2, 1),
@@ -130,20 +130,20 @@ pub mod tests {
                     event: 3,
                     ..op
                 },
-                TimedOp {
-                    t: Rational64::new(5, 1),
-                    l: Rational64::new(2, 1),
-                    event_type: EventType::Off,
-                    event: 3,
-                    ..op
-                },
-                TimedOp {
-                    t: Rational64::new(5, 1),
-                    l: Rational64::new(5, 1),
-                    event_type: EventType::Off,
-                    voice: 1,
-                    ..op
-                },
+                //                TimedOp {
+                //                    t: Rational64::new(5, 1),
+                //                    l: Rational64::new(2, 1),
+                //                    event_type: EventType::Off,
+                //                    event: 3,
+                //                    ..op
+                //                },
+                //                TimedOp {
+                //                    t: Rational64::new(5, 1),
+                //                    l: Rational64::new(5, 1),
+                //                    event_type: EventType::Off,
+                //                    voice: 1,
+                //                    ..op
+                //                },
             ]
         );
     }

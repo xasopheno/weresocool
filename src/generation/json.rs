@@ -163,9 +163,9 @@ pub fn normalform_to_vec_timed_op_1d(normalform: &NormalForm, table: &OpOrNfTabl
             let mut time = Rational64::new(0, 1);
             let mut result = vec![];
             vec_point_op.iter().enumerate().for_each(|(event, p_op)| {
-                let (on, off) = point_op_to_timed_op(p_op, &mut time, voice, event);
+                let (on, _off) = point_op_to_timed_op(p_op, &mut time, voice, event);
                 result.push(on);
-                result.push(off);
+                //                result.push(off);
             });
             result
         })

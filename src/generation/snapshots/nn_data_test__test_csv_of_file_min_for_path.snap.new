@@ -1,8 +1,8 @@
 ---
-created: "2019-05-23T04:12:41.077119Z"
+created: "2019-05-24T00:44:22.956227Z"
 creator: insta@0.8.1
 source: src/generation/nn_data_generation.rs
-expression: min
+expression: min_state
 ---
 CSVOp {
     fm: 0.0,
