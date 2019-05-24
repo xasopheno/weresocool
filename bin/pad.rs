@@ -19,6 +19,7 @@ fn main() {
         l: 0.0,
         v: 0,
     };
+
     let mut min_state = CSVOp {
         fm: 0.0,
         fa: 0.0,
@@ -94,8 +95,7 @@ fn filename_to_nn_csv_1d(filename: String) {
             "{}, {}, {}, {}, {}, {}, {}\n",
             op.fm, op.fa, op.pm, op.pa, op.g, op.l, op.v as f32
         );
-        println!("{}", line);
-        //        file.write(t!("\n"))
+        file.write_all(line.as_bytes()).unwrap();
     }
 
     //    file.write_all(pretty.as_bytes()).unwrap();

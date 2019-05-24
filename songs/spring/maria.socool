@@ -10,7 +10,7 @@ overtones = {
 }
 
 thing1 = {
-	overtones |
+overtones |
 	Seq [
 		Sequence [
 			AsIs,

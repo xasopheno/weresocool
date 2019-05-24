@@ -18,13 +18,27 @@ pub struct CSVOp {
 
 #[derive(Debug, Clone)]
 pub struct Normalizer {
-    pub fm: (Rational64, Rational64),
-    pub fa: (Rational64, Rational64),
-    pub pm: (Rational64, Rational64),
-    pub pa: (Rational64, Rational64),
-    pub g: (Rational64, Rational64),
-    pub l: (Rational64, Rational64),
-    pub v: (Rational64, Rational64),
+    pub fm: (f64, f64),
+    pub fa: (f64, f64),
+    pub pm: (f64, f64),
+    pub pa: (f64, f64),
+    pub g: (f64, f64),
+    pub l: (f64, f64),
+    pub v: (f64, f64),
+}
+
+impl Normalizer {
+    fn from_min_max(min: CSVOp, max: CSVOp) -> Normalizer {
+        Normalizer {
+            fm: (min.fm, max.fm),
+            fa: (min.fa, max.fa),
+            pm: (min.pm, max.pm),
+            pa: (min.pa, max.pa),
+            g: (min.g, max.g),
+            l: (min.l, max.l),
+            v: (min.v as f64, max.v as f64),
+        }
+    }
 }
 
 pub type CSVData = Vec<CSVOp>;
