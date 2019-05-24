@@ -124,49 +124,49 @@ mod nn_data_test {
     use socool_ast::{NormalForm, Normalize, Op::*, OpOrNf::*, OpOrNfTable, PointOp};
     use walkdir::WalkDir;
 
-    //    #[test]
-    //    fn normal_form_to_normal_data_test() {
-    //        let mut normal_form = NormalForm::init();
-    //        let pt = OpOrNfTable::new();
-    //
-    //        Overlay {
-    //            operations: vec![
-    //                Op(Sequence {
-    //                    operations: vec![
-    //                        Op(PanA {
-    //                            a: Rational64::new(-1, 2),
-    //                        }),
-    //                        Op(TransposeM {
-    //                            m: Rational64::new(2, 1),
-    //                        }),
-    //                        Op(Gain {
-    //                            m: Rational64::new(1, 2),
-    //                        }),
-    //                        Op(Length {
-    //                            m: Rational64::new(2, 1),
-    //                        }),
-    //                    ],
-    //                }),
-    //                Op(Sequence {
-    //                    operations: vec![Op(Length {
-    //                        m: Rational64::new(5, 1),
-    //                    })],
-    //                }),
-    //            ],
-    //        }
-    //        .apply_to_normal_form(&mut normal_form, &pt);
-    //
-    //        let normal_data = normalform_to_vec_timed_op_1d(&normal_form, &pt);
-    //
-    //        assert_debug_snapshot_matches!("normal_form_to_normal_data_test", normal_data);
-    //
-    //        let csv_data = vec_timed_op_to_vec_csv_data(normal_data);
-    //        assert_debug_snapshot_matches!("normal_form_to_subdivided_test", csv_data);
-    //
-    //        let (max, min) = get_max_min_csv_data(csv_data);
-    //        assert_debug_snapshot_matches!("max_csv_data", max);
-    //        assert_debug_snapshot_matches!("min_csv_data", min);
-    //    }
+    #[test]
+    fn normal_form_to_normal_data_test() {
+        let mut normal_form = NormalForm::init();
+        let pt = OpOrNfTable::new();
+
+        Overlay {
+            operations: vec![
+                Op(Sequence {
+                    operations: vec![
+                        Op(PanA {
+                            a: Rational64::new(-1, 2),
+                        }),
+                        Op(TransposeM {
+                            m: Rational64::new(2, 1),
+                        }),
+                        Op(Gain {
+                            m: Rational64::new(1, 2),
+                        }),
+                        Op(Length {
+                            m: Rational64::new(2, 1),
+                        }),
+                    ],
+                }),
+                Op(Sequence {
+                    operations: vec![Op(Length {
+                        m: Rational64::new(5, 1),
+                    })],
+                }),
+            ],
+        }
+        .apply_to_normal_form(&mut normal_form, &pt);
+
+        let normal_data = normalform_to_vec_timed_op_1d(&normal_form, &pt);
+
+        assert_debug_snapshot_matches!("normal_form_to_normal_data_test", normal_data);
+
+        let csv_data = vec_timed_op_to_vec_csv_data(normal_data);
+        assert_debug_snapshot_matches!("normal_form_to_subdivided_test", csv_data);
+
+        let (max, min) = get_max_min_csv_data(csv_data);
+        assert_debug_snapshot_matches!("max_csv_data", max);
+        assert_debug_snapshot_matches!("min_csv_data", min);
+    }
 
     #[test]
     fn test_csv_of_file() {
