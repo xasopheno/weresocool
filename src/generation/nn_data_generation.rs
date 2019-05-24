@@ -1,4 +1,4 @@
-use crate::generation::{normalform_to_vec_timed_op_1d, TimedOp};
+use crate::generation::{normalform_to_timed_op_1d, normalform_to_timed_op_2d, TimedOp};
 use insta::assert_debug_snapshot_matches;
 use num_rational::Rational64;
 use serde::{Deserialize, Serialize};
@@ -33,30 +33,17 @@ pub fn vec_timed_op_to_vec_csv_data(timed_ops: Vec<TimedOp>) -> CSVData {
     timed_ops.iter().map(|t_op| t_op.to_csv_op()).collect()
 }
 
-pub fn vec_timed_op_1d_to_csv_data_1d(timed_ops: Vec<TimedOp>) -> Vec<CSVOp> {
+pub fn timed_op_1d_to_csv_data_1d(timed_ops: Vec<TimedOp>) -> Vec<CSVOp> {
     timed_ops.iter().map(|t_op| t_op.to_csv_op()).collect()
 }
 
-pub fn vec_timed_op_2d_to_csv_data_2d(timed_ops: Vec<Vec<TimedOp>>) -> Vec<Vec<CSVOp>> {
+pub fn timed_op_2d_to_csv_data_2d(timed_ops: Vec<Vec<TimedOp>>) -> Vec<Vec<CSVOp>> {
     let result: Vec<Vec<CSVOp>> = timed_ops
         .iter()
         .map(|vec_t_op| vec_t_op.iter().map(|t_op| t_op.to_csv_op()).collect())
         .collect();
     result
 }
-
-//pub fn csv_data_to_normalized_csv_data(data: CSVData, ) {
-//    let max__state = CSVOp {
-//        fm: 70.0,
-//        fa: 33.0,
-//        pm: 1.0,
-//        pa: 1.7857142857142858,
-//        g: 1.0,
-//        l: 576.0,
-//        v: 191
-//    }
-//
-//}
 
 fn get_max_min_csv_data(csv_data: CSVData) -> (CSVOp, CSVOp) {
     let mut max_state = CSVOp {
@@ -101,8 +88,7 @@ fn get_max_min_csv_data(csv_data: CSVData) -> (CSVOp, CSVOp) {
 
     (max_state, min_state)
 }
-
-pub fn get_min_max_for_path(filename: String) -> (CSVOp, CSVOp, usize) {
+pub fn filename_to_timed_op_1d(filename: String) -> Vec<TimedOp> {
     let parsed = parse_file(&filename.to_string(), None);
     let parsed_main = parsed.table.get("main").unwrap();
 
@@ -111,9 +97,26 @@ pub fn get_min_max_for_path(filename: String) -> (CSVOp, CSVOp, usize) {
         OpOrNf::Op(_) => panic!("main is Not in Normal Form for some terrible reason."),
     };
 
-    let timed_ops = normalform_to_vec_timed_op_1d(nf, &parsed.table);
+    let timed_ops = normalform_to_timed_op_1d(nf, &parsed.table);
+    timed_ops
+}
+
+pub fn filename_to_timed_op_2d(filename: String) -> Vec<Vec<TimedOp>> {
+    let parsed = parse_file(&filename.to_string(), None);
+    let parsed_main = parsed.table.get("main").unwrap();
+
+    let nf = match parsed_main {
+        OpOrNf::Nf(nf) => nf,
+        OpOrNf::Op(_) => panic!("main is Not in Normal Form for some terrible reason."),
+    };
+
+    normalform_to_timed_op_2d(nf, &parsed.table)
+}
+
+pub fn get_min_max_for_path(filename: String) -> (CSVOp, CSVOp, usize) {
+    let timed_ops = filename_to_timed_op_1d(filename);
     let n_voices = timed_ops.len();
-    let csv_data = vec_timed_op_1d_to_csv_data_1d(timed_ops);
+    let csv_data = timed_op_1d_to_csv_data_1d(timed_ops);
     let (max, min) = get_max_min_csv_data(csv_data);
 
     (max, min, n_voices)
@@ -157,7 +160,7 @@ mod nn_data_test {
         }
         .apply_to_normal_form(&mut normal_form, &pt);
 
-        let normal_data = normalform_to_vec_timed_op_1d(&normal_form, &pt);
+        let normal_data = normalform_to_timed_op_1d(&normal_form, &pt);
 
         assert_debug_snapshot_matches!("normal_form_to_normal_data_test", normal_data);
 
@@ -224,5 +227,4 @@ mod nn_data_test {
         assert_debug_snapshot_matches!("test_csv_of_file_max_for_path", max_state);
         assert_debug_snapshot_matches!("test_csv_of_file_min_for_path", min_state);
     }
-
 }

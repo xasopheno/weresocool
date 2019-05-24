@@ -1,8 +1,11 @@
-use serde_json::{from_reader, to_string_pretty};
+use serde_json::{from_reader, to_string, to_string_pretty};
 use std::fs::File;
 use std::io::{BufReader, Read, Write};
 use walkdir::WalkDir;
-use weresocool::generation::{get_min_max_for_path, CSVOp};
+use weresocool::generation::{
+    filename_to_timed_op_1d, filename_to_timed_op_2d, get_min_max_for_path,
+    timed_op_1d_to_csv_data_1d, timed_op_2d_to_csv_data_2d, CSVOp,
+};
 
 fn main() {
     println!("Hello WereSoCool Scratch Pad");
@@ -63,16 +66,48 @@ fn main() {
         }
     }
 
-    println!(
-        "MAX {:#?}\nMIN {:#?}\nMAX_SEQ_LENGTH {:?}",
-        max_state, min_state, max_seq_length
-    );
-
     min_max_to_json(min_state, max_state);
 
     let (min, max) = min_max_from_json();
-    dbg!(min);
-    dbg!(max);
+    dbg!(min.clone());
+    dbg!(max.clone());
+
+    filename_to_nn_csv_1d("songs/test_data/nn1.socool".to_string());
+}
+
+fn filename_to_nn_json_1d(filename: String) {
+    let timed_1d = filename_to_timed_op_1d(filename);
+    let csv_1d = timed_op_1d_to_csv_data_1d(timed_1d);
+
+    let pretty = to_string(&csv_1d).unwrap();
+    let mut file = File::create("songs/training_data/data_1d.json").unwrap();
+    file.write_all(pretty.as_bytes()).unwrap();
+}
+
+fn filename_to_nn_csv_1d(filename: String) {
+    let mut file = File::create("songs/training_data/data_1d.json").unwrap();
+    let timed_1d = filename_to_timed_op_1d(filename);
+    let csv_1d = timed_op_1d_to_csv_data_1d(timed_1d);
+
+    for op in csv_1d {
+        let line = format!(
+            "{}, {}, {}, {}, {}, {}, {}\n",
+            op.fm, op.fa, op.pm, op.pa, op.g, op.l, op.v as f32
+        );
+        println!("{}", line);
+        //        file.write(t!("\n"))
+    }
+
+    //    file.write_all(pretty.as_bytes()).unwrap();
+}
+
+fn filename_to_nn_json_2d(filename: String) {
+    let timed_2d = filename_to_timed_op_2d(filename);
+    let csv_2d = timed_op_2d_to_csv_data_2d(timed_2d);
+
+    let pretty = to_string(&csv_2d).unwrap();
+    let mut file = File::create("songs/training_data/data.json").unwrap();
+    file.write_all(pretty.as_bytes()).unwrap();
 }
 
 fn min_max_to_json(min: CSVOp, max: CSVOp) {
