@@ -4,7 +4,7 @@ use std::io::{BufReader, Read, Write};
 use walkdir::WalkDir;
 use weresocool::generation::{
     filename_to_timed_op_1d, filename_to_timed_op_2d, get_min_max_for_path,
-    timed_op_1d_to_csv_data_1d, timed_op_2d_to_csv_data_2d, CSVOp,
+    timed_op_1d_to_csv_data_1d, timed_op_2d_to_csv_data_2d, CSVOp, Normalizer,
 };
 
 fn main() {
@@ -17,7 +17,7 @@ fn main() {
         pa: 0.0,
         g: 0.0,
         l: 0.0,
-        v: 0,
+        v: 0.0,
     };
 
     let mut min_state = CSVOp {
@@ -27,7 +27,7 @@ fn main() {
         pa: 0.0,
         g: 0.0,
         l: 0.0,
-        v: 0,
+        v: 0.0,
     };
 
     let mut max_seq_length = 0;
@@ -73,7 +73,9 @@ fn main() {
     dbg!(min.clone());
     dbg!(max.clone());
 
-    filename_to_nn_csv_1d("songs/test_data/nn1.socool".to_string());
+    let normalizer = Normalizer::from_min_max(min, max);
+
+    filename_to_nn_csv_1d("songs/test_data/nn1.socool".to_string(), normalizer);
 }
 
 fn filename_to_nn_json_1d(filename: String) {
@@ -85,15 +87,16 @@ fn filename_to_nn_json_1d(filename: String) {
     file.write_all(pretty.as_bytes()).unwrap();
 }
 
-fn filename_to_nn_csv_1d(filename: String) {
-    let mut file = File::create("songs/training_data/data_1d.json").unwrap();
+fn filename_to_nn_csv_1d(filename: String, normalizer: Normalizer) {
+    let mut file = File::create("songs/training_data/data_1d.csv").unwrap();
     let timed_1d = filename_to_timed_op_1d(filename);
     let csv_1d = timed_op_1d_to_csv_data_1d(timed_1d);
 
-    for op in csv_1d {
+    for mut op in csv_1d {
+        op.normalize(&normalizer);
         let line = format!(
             "{}, {}, {}, {}, {}, {}, {}\n",
-            op.fm, op.fa, op.pm, op.pa, op.g, op.l, op.v as f32
+            op.fm, op.fa, op.pm, op.pa, op.g, op.l, op.v
         );
         file.write_all(line.as_bytes()).unwrap();
     }

@@ -71,7 +71,7 @@ impl TimedOp {
             pa: r_to_f64(self.pa),
             g: r_to_f64(g),
             l: r_to_f64(self.l),
-            v: self.voice as usize,
+            v: self.voice as f64,
         }
     }
 
@@ -165,7 +165,6 @@ pub fn normalform_to_timed_op_1d(normalform: &NormalForm, table: &OpOrNfTable) -
             vec_point_op.iter().enumerate().for_each(|(event, p_op)| {
                 let (on, _off) = point_op_to_timed_op(p_op, &mut time, voice, event);
                 result.push(on);
-                //                result.push(off);
             });
             result
         })

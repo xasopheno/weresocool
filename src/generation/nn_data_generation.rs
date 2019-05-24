@@ -13,7 +13,7 @@ pub struct CSVOp {
     pub pa: f64,
     pub g: f64,
     pub l: f64,
-    pub v: usize,
+    pub v: f64,
 }
 
 #[derive(Debug, Clone)]
@@ -28,7 +28,7 @@ pub struct Normalizer {
 }
 
 impl Normalizer {
-    fn from_min_max(min: CSVOp, max: CSVOp) -> Normalizer {
+    pub fn from_min_max(min: CSVOp, max: CSVOp) -> Normalizer {
         Normalizer {
             fm: (min.fm, max.fm),
             fa: (min.fa, max.fa),
@@ -39,6 +39,26 @@ impl Normalizer {
             v: (min.v as f64, max.v as f64),
         }
     }
+}
+
+impl CSVOp {
+    pub fn normalize(&mut self, normalizer: &Normalizer) {
+        let is_silent = self.fm == 0.0 || self.g == 0.0;
+        let fm = if is_silent { 0.0 } else { self.fm };
+        let g = if is_silent { 0.0 } else { self.g };
+
+        self.fm = normalize_value(fm, normalizer.fm.0, normalizer.fm.1);
+        self.fa = normalize_value(self.fa, normalizer.fa.0, normalizer.fa.1);
+        self.pm = normalize_value(self.pm, normalizer.pm.0, normalizer.pm.1);
+        self.pa = normalize_value(self.pa, normalizer.pa.0, normalizer.pa.1);
+        self.g = normalize_value(g, normalizer.g.0, normalizer.g.1);
+        self.l = normalize_value(self.l, normalizer.l.0, normalizer.l.1);
+        self.v = normalize_value(self.v as f64, normalizer.v.0, normalizer.v.1) as f64;
+    }
+}
+
+fn normalize_value(value: f64, min: f64, max: f64) -> f64 {
+    (value - min) / (max - min)
 }
 
 pub type CSVData = Vec<CSVOp>;
@@ -67,7 +87,7 @@ fn get_max_min_csv_data(csv_data: CSVData) -> (CSVOp, CSVOp) {
         pa: 0.0,
         g: 0.0,
         l: 0.0,
-        v: 0,
+        v: 0.0,
     };
     let mut min_state = CSVOp {
         fm: 0.0,
@@ -76,7 +96,7 @@ fn get_max_min_csv_data(csv_data: CSVData) -> (CSVOp, CSVOp) {
         pa: 0.0,
         g: 0.0,
         l: 0.0,
-        v: 0,
+        v: 0.0,
     };
 
     csv_data.iter().for_each(|csv_op| {
@@ -102,6 +122,7 @@ fn get_max_min_csv_data(csv_data: CSVData) -> (CSVOp, CSVOp) {
 
     (max_state, min_state)
 }
+
 pub fn filename_to_timed_op_1d(filename: String) -> Vec<TimedOp> {
     let parsed = parse_file(&filename.to_string(), None);
     let parsed_main = parsed.table.get("main").unwrap();
