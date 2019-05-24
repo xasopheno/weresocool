@@ -66,6 +66,15 @@ fn main() {
     )
 }
 
+use serde_json::{from_reader, to_string_pretty};
+use std::fs::File;
+use std::io::Write;
+fn min_max_to_json(min: CSVOp, max: CSVOp) {
+    let pretty = to_string_pretty(&min).unwrap();
+    let mut file = File::create("src/songs/training_data/min.json").unwrap();
+    file.write_all(pretty.as_bytes()).unwrap();
+}
+
 #[test]
 fn test_test() {
     assert!(true, true);

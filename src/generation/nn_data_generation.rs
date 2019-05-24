@@ -1,10 +1,11 @@
 use crate::generation::{normalform_to_vec_timed_op_1d, TimedOp};
 use insta::assert_debug_snapshot_matches;
 use num_rational::Rational64;
+use serde::{Deserialize, Serialize};
 use socool_ast::OpOrNf;
 use socool_parser::parser::*;
 
-#[derive(Debug, Clone)]
+#[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct CSVOp {
     pub fm: f64,
     pub fa: f64,
