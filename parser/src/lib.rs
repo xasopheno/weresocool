@@ -9,4 +9,5 @@ pub mod imports;
 #[allow(clippy::all)]
 pub mod parser;
 
+pub use self::float_to_rational::helpers::f32_to_rational;
 pub use self::parser::{parse_file, Init, ParsedComposition};

@@ -1,6 +1,8 @@
 use serde_json::{from_reader, to_string, to_string_pretty};
+use socool_ast::{Op::*, OpOrNf, OpOrNf::*};
+use socool_parser::f32_to_rational;
 use std::fs::File;
-use std::io::{BufReader, Read, Write};
+use std::io::{BufRead, BufReader, Read, Write};
 use walkdir::WalkDir;
 use weresocool::generation::{
     filename_to_timed_op_1d, filename_to_timed_op_2d, get_min_max_for_path,
@@ -67,7 +69,7 @@ fn main() {
         }
     }
 
-    min_max_to_json(min_state, max_state);
+    //    min_max_to_json(min_state, max_state);
 
     let (min, max) = min_max_from_json();
     dbg!(min.clone());
@@ -75,7 +77,55 @@ fn main() {
 
     let normalizer = Normalizer::from_min_max(min, max);
 
-    filename_to_nn_csv_1d("songs/test_data/nn1.socool".to_string(), normalizer);
+    //    filename_to_nn_csv_1d("songs/test_data/nn1.socool".to_string(), normalizer);
+    csv_1d_to_normalform();
+}
+
+fn csv_to_point_op(csv: Vec<str>) {
+    let fm = csv[0].clone();
+    let fa = csv[1].clone();
+    let pm = csv[2].clone();
+    let pa = csv[3].clone();
+    let g = csv[4].clone();
+    let l = csv[5].clone();
+    let v = csv[6].clone();
+
+    dbg!(v);
+
+    let op = Op(Compose {
+        operations: vec![
+            Op(TransposeM {
+                m: f32_to_rational(fm),
+            }),
+            Op(TransposeA {
+                a: f32_to_rational(fa),
+            }),
+            Op(PanM {
+                m: f32_to_rational(pm),
+            }),
+            Op(PanA {
+                a: f32_to_rational(pa),
+            }),
+            Op(Gain {
+                m: f32_to_rational(g),
+            }),
+            Op(Length {
+                m: f32_to_rational(l),
+            }),
+        ],
+    });
+    dbg!(op);
+}
+
+fn csv_1d_to_normalform() {
+    let f = File::open("songs/training_data/data_1d.csv").unwrap();
+    let file = BufReader::new(&f);
+    for (num, line) in file.lines().enumerate() {
+        let l = line.unwrap();
+        let split = l.split(",");
+        let values: Vec<&str> = split.collect();
+        println!("{:?}", values);
+    }
 }
 
 fn filename_to_nn_json_1d(filename: String) {
@@ -100,8 +150,6 @@ fn filename_to_nn_csv_1d(filename: String, normalizer: Normalizer) {
         );
         file.write_all(line.as_bytes()).unwrap();
     }
-
-    //    file.write_all(pretty.as_bytes()).unwrap();
 }
 
 fn filename_to_nn_json_2d(filename: String) {
