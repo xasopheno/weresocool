@@ -53,6 +53,29 @@ pub struct Op4D {
     pub l: f64,
 }
 
+pub struct Normalizer {
+    x: MinMax,
+    y: MinMax,
+    z: MinMax,
+}
+
+pub struct MinMax {
+    min: f64,
+    max: f64,
+}
+
+impl Op4D {
+    pub fn normalize(&mut self, normalizer: &Normalizer) {
+        let is_silent = self.y == 0.0 || self.z == 0.0;
+        let y = if is_silent { 0.0 } else { self.y };
+        let z = if is_silent { 0.0 } else { self.z };
+
+        self.x = normalize_value(self.x, normalizer.x.min, normalizer.x.max);
+        self.y = normalize_value(y, normalizer.y.min, normalizer.z.max);
+        self.z = normalize_value(z, normalizer.z.min, normalizer.z.max);
+    }
+}
+
 #[derive(Debug, Clone, Eq, Ord, PartialEq, PartialOrd, Serialize, Deserialize)]
 pub enum EventType {
     On,

@@ -1,28 +1,8 @@
 use weresocool::generation::{
-    composition_to_vec_timed_op, filename_to_render, vec_timed_op_to_vec_op4d, EventType, Op4D,
-    RenderReturn, RenderType,
+    composition_to_vec_timed_op, filename_to_render,
+    json::{MinMax, Normalizer},
+    vec_timed_op_to_vec_op4d, EventType, Op4D, RenderReturn, RenderType,
 };
-
-struct Normalizer {
-    t: MinMaxF,
-    event: MinMaxU,
-    event_type: EventType,
-    voice: MinMaxU,
-    x: MinMaxF,
-    y: MinMaxF,
-    z: MinMaxF,
-    l: MinMaxF,
-}
-
-struct MinMaxF {
-    min: f64,
-    max: f64,
-}
-
-struct MinMaxU {
-    min: usize,
-    max: usize,
-}
 
 fn main() {
     println!("Hello Scratch Pad");
@@ -38,7 +18,7 @@ fn main() {
     let vec_op4d = vec_timed_op_to_vec_op4d(vec_timed_op, &basis);
 }
 
-fn get_min_max_op4d_1d(vec_op4d: Vec<Op4D>) {
+fn get_min_max_op4d_1d(vec_op4d: Vec<Op4D>) -> Normalizer {
     let mut max_state = Op4D {
         t: 0.0,
         event: 0,
@@ -85,6 +65,21 @@ fn get_min_max_op4d_1d(vec_op4d: Vec<Op4D>) {
     }
     dbg!(max_state);
     dbg!(min_state);
+
+    Normalizer {
+        x: MinMax {
+            min: min_state.x,
+            max: max_state.x,
+        },
+        y: MinMax {
+            min: min_state.y,
+            max: max_state.y,
+        },
+        z: MinMax {
+            min: min_state.z,
+            max: max_state.z,
+        },
+    }
 }
 
 #[test]
