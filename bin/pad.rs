@@ -15,10 +15,16 @@ fn main() {
     };
 
     let vec_timed_op = composition_to_vec_timed_op(&normal_form, &table);
-    let vec_op4d = vec_timed_op_to_vec_op4d(vec_timed_op, &basis);
+    let mut op4d_1d = vec_timed_op_to_vec_op4d(vec_timed_op, &basis);
 
-    let normalizer = get_min_max_op4d_1d(&vec_op4d);
-    dbg!(normalizer);
+    let normalizer = get_min_max_op4d_1d(&op4d_1d);
+    let normalized_op4_1d = normalized_op4d_1d(&mut op4d_1d, normalizer);
+}
+
+fn normalized_op4d_1d(op4d_1d: &mut Vec<Op4D>, n: Normalizer) {
+    op4d_1d.iter_mut().for_each(|op| {
+        op.normalize(&n);
+    })
 }
 
 fn get_min_max_op4d_1d(vec_op4d: &Vec<Op4D>) -> Normalizer {
