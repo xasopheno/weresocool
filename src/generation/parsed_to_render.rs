@@ -14,7 +14,7 @@ use std::sync::{Arc, Mutex};
 #[derive(Clone, PartialEq, Debug)]
 pub enum RenderType {
     Json4d,
-    NfAndBasis,
+    NfBasisAndTable,
     StereoWaveform,
     Wav,
 }
@@ -23,7 +23,7 @@ pub enum RenderType {
 pub enum RenderReturn {
     Json4d(String),
     StereoWaveform(StereoWaveform),
-    NfAndBasis(NormalForm, Basis),
+    NfAndBasis(NormalForm, Basis, OpOrNfTable),
     Wav(String),
 }
 
@@ -43,7 +43,7 @@ pub fn filename_to_render(filename: &str, r_type: RenderType) -> RenderReturn {
     let basis = Basis::from(parsed.init);
 
     match r_type {
-        RenderType::NfAndBasis => RenderReturn::NfAndBasis(nf.clone(), basis),
+        RenderType::NfBasisAndTable => RenderReturn::NfAndBasis(nf.clone(), basis, parsed.table),
         RenderType::Json4d => {
             to_json(&basis, &nf, &parsed.table.clone(), filename.to_string());
             RenderReturn::Json4d("json".to_string())

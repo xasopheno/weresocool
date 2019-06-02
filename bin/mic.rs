@@ -32,8 +32,8 @@ fn run() -> Result<(), pa::Error> {
         _ => no_file_name(),
     }
 
-    let normal_form = match filename_to_render(filename.unwrap(), RenderType::NfAndBasis) {
-        RenderReturn::NfAndBasis(nf, _) => nf,
+    let normal_form = match filename_to_render(filename.unwrap(), RenderType::NfBasisAndTable) {
+        RenderReturn::NfAndBasis(nf, _, _) => nf,
         _ => panic!("Error. Unable to generate NormalForm"),
     };
 
