@@ -76,6 +76,8 @@ impl Op4D {
     }
 }
 
+fn normalize_value(value: f64, min: f64, max: f64) -> f64 {}
+
 #[derive(Debug, Clone, Eq, Ord, PartialEq, PartialOrd, Serialize, Deserialize)]
 pub enum EventType {
     On,
