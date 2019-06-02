@@ -16,9 +16,12 @@ fn main() {
 
     let vec_timed_op = composition_to_vec_timed_op(&normal_form, &table);
     let vec_op4d = vec_timed_op_to_vec_op4d(vec_timed_op, &basis);
+
+    let normalizer = get_min_max_op4d_1d(&vec_op4d);
+    dbg!(normalizer);
 }
 
-fn get_min_max_op4d_1d(vec_op4d: Vec<Op4D>) -> Normalizer {
+fn get_min_max_op4d_1d(vec_op4d: &Vec<Op4D>) -> Normalizer {
     let mut max_state = Op4D {
         t: 0.0,
         event: 0,
@@ -63,8 +66,6 @@ fn get_min_max_op4d_1d(vec_op4d: Vec<Op4D>) -> Normalizer {
             event_type: EventType::On,
         };
     }
-    dbg!(max_state);
-    dbg!(min_state);
 
     Normalizer {
         x: MinMax {

@@ -53,15 +53,17 @@ pub struct Op4D {
     pub l: f64,
 }
 
+#[derive(Debug, Clone)]
 pub struct Normalizer {
-    x: MinMax,
-    y: MinMax,
-    z: MinMax,
+    pub x: MinMax,
+    pub y: MinMax,
+    pub z: MinMax,
 }
 
+#[derive(Debug, Clone)]
 pub struct MinMax {
-    min: f64,
-    max: f64,
+    pub min: f64,
+    pub max: f64,
 }
 
 impl Op4D {
@@ -76,7 +78,9 @@ impl Op4D {
     }
 }
 
-fn normalize_value(value: f64, min: f64, max: f64) -> f64 {}
+fn normalize_value(value: f64, min: f64, max: f64) -> f64 {
+    (value - min) / (max - min)
+}
 
 #[derive(Debug, Clone, Eq, Ord, PartialEq, PartialOrd, Serialize, Deserialize)]
 pub enum EventType {
