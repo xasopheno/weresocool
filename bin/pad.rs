@@ -3,8 +3,42 @@ use weresocool::generation::{
     RenderReturn, RenderType,
 };
 
+struct Normalizer {
+    t: MinMaxF,
+    event: MinMaxU,
+    event_type: EventType,
+    voice: MinMaxU,
+    x: MinMaxF,
+    y: MinMaxF,
+    z: MinMaxF,
+    l: MinMaxF,
+}
+
+struct MinMaxF {
+    min: f64,
+    max: f64,
+}
+
+struct MinMaxU {
+    min: usize,
+    max: usize,
+}
+
 fn main() {
     println!("Hello Scratch Pad");
+    let (normal_form, basis, table) = match filename_to_render(
+        &"songs/spring/silly_day.socool".to_string(),
+        RenderType::NfBasisAndTable,
+    ) {
+        RenderReturn::NfAndBasis(nf, basis, table) => (nf, basis, table),
+        _ => panic!("Error. Unable to generate NormalForm"),
+    };
+
+    let vec_timed_op = composition_to_vec_timed_op(&normal_form, &table);
+    let vec_op4d = vec_timed_op_to_vec_op4d(vec_timed_op, &basis);
+}
+
+fn get_min_max_op4d_1d(vec_op4d: Vec<Op4D>) {
     let mut max_state = Op4D {
         t: 0.0,
         event: 0,
@@ -26,17 +60,6 @@ fn main() {
         z: 0.0,
         l: 0.0,
     };
-
-    let (normal_form, basis, table) = match filename_to_render(
-        &"songs/spring/silly_day.socool".to_string(),
-        RenderType::NfBasisAndTable,
-    ) {
-        RenderReturn::NfAndBasis(nf, basis, table) => (nf, basis, table),
-        _ => panic!("Error. Unable to generate NormalForm"),
-    };
-
-    let vec_timed_op = composition_to_vec_timed_op(&normal_form, &table);
-    let vec_op4d = vec_timed_op_to_vec_op4d(vec_timed_op, &basis);
 
     for op in vec_op4d {
         max_state = Op4D {
