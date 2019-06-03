@@ -69,17 +69,88 @@ pub struct MinMax {
 impl Op4D {
     pub fn normalize(&mut self, normalizer: &Normalizer) {
         let is_silent = self.y == 0.0 || self.z == 0.0;
-        let y = if is_silent { 0.0 } else { self.y };
+        //        let y = if is_silent { 0.0 } else { self.y };
         let z = if is_silent { 0.0 } else { self.z };
 
-        self.x = normalize_value(self.x, normalizer.x.min, normalizer.x.max);
-        self.y = normalize_value(y, normalizer.y.min, normalizer.z.max);
+        self.x = normalize_value(self.x, normalizer.x.min, normalizer.x.max) - 0.5;
+        //        dbg!(normalize_value(self.x, normalizer.x.min, normalizer.x.max) - 0.5);
+        //        self.y = normalize_value(y, normalizer.y.min, normalizer.z.max);
         self.z = normalize_value(z, normalizer.z.min, normalizer.z.max);
     }
 }
 
 fn normalize_value(value: f64, min: f64, max: f64) -> f64 {
     (value - min) / (max - min)
+}
+
+fn normalize_op4d_1d(op4d_1d: &mut Vec<Op4D>, n: Normalizer) {
+    op4d_1d.iter_mut().for_each(|op| {
+        op.normalize(&n);
+    })
+}
+
+fn get_min_max_op4d_1d(vec_op4d: &Vec<Op4D>) -> Normalizer {
+    let mut max_state = Op4D {
+        t: 0.0,
+        event: 0,
+        event_type: EventType::On,
+        voice: 0,
+        x: 0.0,
+        y: 0.0,
+        z: 0.0,
+        l: 0.0,
+    };
+
+    let mut min_state = Op4D {
+        t: 0.0,
+        event: 0,
+        event_type: EventType::On,
+        voice: 0,
+        x: 0.0,
+        y: 0.0,
+        z: 0.0,
+        l: 0.0,
+    };
+
+    for op in vec_op4d {
+        max_state = Op4D {
+            x: max_state.x.max((op.x).abs()),
+            y: max_state.y.max(op.y),
+            z: max_state.z.max(op.z),
+            l: max_state.l.max(op.l),
+            t: max_state.t.max(op.t),
+            event: max_state.event.max(op.event),
+            voice: max_state.voice.max(op.voice),
+            event_type: EventType::On,
+        };
+        min_state = Op4D {
+            x: min_state.x.min(-(op.x).abs()),
+            y: min_state.y.min(op.y),
+            z: min_state.z.min(op.z),
+            l: min_state.l.min(op.l),
+            t: min_state.t.min(op.t),
+            event: min_state.event.min(op.event),
+            voice: min_state.voice.min(op.voice),
+            event_type: EventType::On,
+        };
+    }
+
+    let n = Normalizer {
+        x: MinMax {
+            min: min_state.x,
+            max: max_state.x,
+        },
+        y: MinMax {
+            min: min_state.y,
+            max: max_state.y,
+        },
+        z: MinMax {
+            min: min_state.z,
+            max: max_state.z,
+        },
+    };
+
+    n
 }
 
 #[derive(Debug, Clone, Eq, Ord, PartialEq, PartialOrd, Serialize, Deserialize)]
@@ -153,9 +224,12 @@ pub fn to_json(basis: &Basis, composition: &NormalForm, table: &OpOrNfTable, fil
     banner("JSONIFY-ing".to_string(), filename.clone());
 
     let vec_timed_op = composition_to_vec_timed_op(composition, table);
-    let vec_op4d = vec_timed_op_to_vec_op4d(vec_timed_op, basis);
+    let mut op4d_1d = vec_timed_op_to_vec_op4d(vec_timed_op, basis);
 
-    let json = to_string(&vec_op4d).unwrap();
+    let normalizer = get_min_max_op4d_1d(&op4d_1d);
+    normalize_op4d_1d(&mut op4d_1d, normalizer);
+
+    let json = to_string(&op4d_1d).unwrap();
 
     write_composition_to_json(&json, &filename).expect("Writing to JSON failed");
     printed("JSON".to_string());
