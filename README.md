@@ -78,3 +78,5 @@ To run tests for WSC, Parser, AST, and the end-to-end tests run:
 Copyright (C) 2018 - Danny Meyer
 
 This program is free software, licensed under the GPLv3 (see LICENSE).
+
+![WereSoCool](https://raw.githubusercontent.com/xasopheno/weresocool/master/cover.png)
