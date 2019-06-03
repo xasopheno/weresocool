@@ -68,14 +68,9 @@ pub struct MinMax {
 
 impl Op4D {
     pub fn normalize(&mut self, normalizer: &Normalizer) {
-        let is_silent = self.y == 0.0 || self.z == 0.0;
-        //        let y = if is_silent { 0.0 } else { self.y };
-        let z = if is_silent { 0.0 } else { self.z };
-
         self.x = normalize_value(self.x, normalizer.x.min, normalizer.x.max) - 0.5;
-        //        dbg!(normalize_value(self.x, normalizer.x.min, normalizer.x.max) - 0.5);
-        //        self.y = normalize_value(y, normalizer.y.min, normalizer.z.max);
-        self.z = normalize_value(z, normalizer.z.min, normalizer.z.max);
+        self.y = normalize_value(self.y, normalizer.y.min, normalizer.y.max);
+        //        self.z = normalize_value(z, normalizer.z.min, normalizer.z.max);
     }
 }
 
@@ -84,6 +79,10 @@ fn normalize_value(value: f64, min: f64, max: f64) -> f64 {
 }
 
 fn normalize_op4d_1d(op4d_1d: &mut Vec<Op4D>, n: Normalizer) {
+    op4d_1d.retain(|op| {
+        let is_silent = op.y < 20.0 || op.z == 0.0 || op.event_type == EventType::Off;
+        !is_silent
+    });
     op4d_1d.iter_mut().for_each(|op| {
         op.normalize(&n);
     })
@@ -149,7 +148,7 @@ fn get_min_max_op4d_1d(vec_op4d: &Vec<Op4D>) -> Normalizer {
             max: max_state.z,
         },
     };
-
+    dbg!(n.clone());
     n
 }
 
