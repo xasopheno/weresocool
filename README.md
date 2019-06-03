@@ -75,7 +75,7 @@ To run tests for WSC, Parser, AST, and the end-to-end tests run:
 
 `./test_all.sh`
 
-Copyright (C) 2018 - Danny Meyer
+Copyright (C) 2019 - Danny Meyer
 
 This program is free software, licensed under the GPLv3 (see LICENSE).
 
