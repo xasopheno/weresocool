@@ -28,12 +28,24 @@ pub struct TimedOp {
 
 impl TimedOp {
     fn to_op_4d(&self, basis: &Basis) -> Op4D {
+        let zero = Rational64::new(0, 1);
+        let is_silent = (self.fm == zero && self.fa < Rational64::new(40, 1)) || self.g == zero;
+        let y = if is_silent {
+            0.0
+        } else {
+            (basis.f * r_to_f64(self.fm)) + r_to_f64(self.fa)
+        };
+        let z = if is_silent {
+            0.0
+        } else {
+            basis.g * r_to_f64(self.g)
+        };
         Op4D {
             l: r_to_f64(self.l) * basis.l,
             t: r_to_f64(self.t) * basis.l,
             x: ((basis.p + r_to_f64(self.pa)) * r_to_f64(self.pm)),
-            y: (basis.f * r_to_f64(self.fm)) + r_to_f64(self.fa),
-            z: basis.g * r_to_f64(self.g),
+            y,
+            z,
             voice: self.voice,
             event: self.event,
             event_type: self.event_type.clone(),
@@ -79,10 +91,6 @@ fn normalize_value(value: f64, min: f64, max: f64) -> f64 {
 }
 
 fn normalize_op4d_1d(op4d_1d: &mut Vec<Op4D>, n: Normalizer) {
-    op4d_1d.retain(|op| {
-        let is_silent = op.y < 20.0 || op.z == 0.0 || op.event_type == EventType::Off;
-        !is_silent
-    });
     op4d_1d.iter_mut().for_each(|op| {
         op.normalize(&n);
     })
@@ -102,13 +110,13 @@ fn get_min_max_op4d_1d(vec_op4d: &Vec<Op4D>) -> Normalizer {
 
     let mut min_state = Op4D {
         t: 0.0,
-        event: 0,
+        event: 10,
         event_type: EventType::On,
-        voice: 0,
+        voice: 10,
         x: 0.0,
-        y: 0.0,
-        z: 0.0,
-        l: 0.0,
+        y: 10_000.0,
+        z: 1.0,
+        l: 1.0,
     };
 
     for op in vec_op4d {
@@ -122,6 +130,7 @@ fn get_min_max_op4d_1d(vec_op4d: &Vec<Op4D>) -> Normalizer {
             voice: max_state.voice.max(op.voice),
             event_type: EventType::On,
         };
+
         min_state = Op4D {
             x: min_state.x.min(-(op.x).abs()),
             y: min_state.y.min(op.y),
@@ -206,9 +215,8 @@ pub fn composition_to_vec_timed_op(composition: &NormalForm, table: &OpOrNfTable
             let mut time = Rational64::new(0, 1);
             let mut result = vec![];
             vec_point_op.iter().enumerate().for_each(|(event, p_op)| {
-                let (on, off) = point_op_to_timed_op(p_op, &mut time, voice, event);
+                let (on, _off) = point_op_to_timed_op(p_op, &mut time, voice, event);
                 result.push(on);
-                result.push(off);
             });
             result
         })
@@ -225,7 +233,13 @@ pub fn to_json(basis: &Basis, composition: &NormalForm, table: &OpOrNfTable, fil
     let vec_timed_op = composition_to_vec_timed_op(composition, table);
     let mut op4d_1d = vec_timed_op_to_vec_op4d(vec_timed_op, basis);
 
+    op4d_1d.retain(|op| {
+        let is_silent = op.y == 0.0 || op.z == 0.0;
+        !is_silent
+    });
+
     let normalizer = get_min_max_op4d_1d(&op4d_1d);
+
     normalize_op4d_1d(&mut op4d_1d, normalizer);
 
     let json = to_string(&op4d_1d).unwrap();
