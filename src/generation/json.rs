@@ -44,7 +44,7 @@ impl TimedOp {
             l: r_to_f64(self.l) * basis.l,
             t: r_to_f64(self.t) * basis.l,
             x: ((basis.p + r_to_f64(self.pa)) * r_to_f64(self.pm)),
-            y,
+            y: y.log10(),
             z,
             voice: self.voice,
             event: self.event,
@@ -80,7 +80,7 @@ pub struct MinMax {
 
 impl Op4D {
     pub fn normalize(&mut self, normalizer: &Normalizer) {
-        self.x = normalize_value(self.x, normalizer.x.min, normalizer.x.max) - 0.5;
+        self.x = 2.0 * normalize_value(self.x, normalizer.x.min, normalizer.x.max) - 1.0;
         self.y = normalize_value(self.y, normalizer.y.min, normalizer.y.max);
         //        self.z = normalize_value(z, normalizer.z.min, normalizer.z.max);
     }
@@ -234,7 +234,7 @@ pub fn to_json(basis: &Basis, composition: &NormalForm, table: &OpOrNfTable, fil
     let mut op4d_1d = vec_timed_op_to_vec_op4d(vec_timed_op, basis);
 
     op4d_1d.retain(|op| {
-        let is_silent = op.y == 0.0 || op.z == 0.0;
+        let is_silent = op.y == 0.0 || op.z <= 0.0;
         !is_silent
     });
 
