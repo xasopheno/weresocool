@@ -13,7 +13,7 @@ pub fn r_to_f64(r: Rational64) -> f64 {
 }
 
 #[derive(Debug, Clone, Eq, Ord, PartialEq, PartialOrd)]
-pub struct TimedOp {
+    pub struct TimedOp {
     pub t: Rational64,
     pub event_type: EventType,
     pub voice: usize,
@@ -119,7 +119,11 @@ fn get_min_max_op4d_1d(vec_op4d: &Vec<Op4D>) -> Normalizer {
         l: 1.0,
     };
 
+    let mut max_len: f64 = 0.0;
+    // let max_op = min_state;
     for op in vec_op4d {
+        max_len = max_len.max(op.t + op.l);
+
         max_state = Op4D {
             x: max_state.x.max((op.x).abs()),
             y: max_state.y.max(op.y),
@@ -158,6 +162,7 @@ fn get_min_max_op4d_1d(vec_op4d: &Vec<Op4D>) -> Normalizer {
         },
     };
     dbg!(n.clone());
+    dbg!(max_len);
     n
 }
 
@@ -241,6 +246,7 @@ pub fn to_json(basis: &Basis, composition: &NormalForm, table: &OpOrNfTable, fil
     let normalizer = get_min_max_op4d_1d(&op4d_1d);
 
     normalize_op4d_1d(&mut op4d_1d, normalizer);
+    let normalizer_2 = get_min_max_op4d_1d(&op4d_1d);
 
     let json = to_string(&op4d_1d).unwrap();
 
