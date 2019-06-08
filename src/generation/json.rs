@@ -3,6 +3,7 @@ use crate::{
     ui::{banner, printed},
     write::write_composition_to_json,
 };
+
 use num_rational::Rational64;
 use serde::{Deserialize, Serialize};
 use serde_json::to_string;
@@ -13,7 +14,7 @@ pub fn r_to_f64(r: Rational64) -> f64 {
 }
 
 #[derive(Debug, Clone, Eq, Ord, PartialEq, PartialOrd)]
-    pub struct TimedOp {
+pub struct TimedOp {
     pub t: Rational64,
     pub event_type: EventType,
     pub voice: usize,
@@ -96,7 +97,7 @@ fn normalize_op4d_1d(op4d_1d: &mut Vec<Op4D>, n: Normalizer) {
     })
 }
 
-fn get_min_max_op4d_1d(vec_op4d: &Vec<Op4D>) -> Normalizer {
+fn get_min_max_op4d_1d(vec_op4d: &Vec<Op4D>) -> (Normalizer, f64) {
     let mut max_state = Op4D {
         t: 0.0,
         event: 0,
@@ -163,7 +164,7 @@ fn get_min_max_op4d_1d(vec_op4d: &Vec<Op4D>) -> Normalizer {
     };
     dbg!(n.clone());
     dbg!(max_len);
-    n
+    (n, max_len)
 }
 
 #[derive(Debug, Clone, Eq, Ord, PartialEq, PartialOrd, Serialize, Deserialize)]
