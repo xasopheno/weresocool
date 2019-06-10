@@ -83,7 +83,7 @@ impl Op4D {
     pub fn normalize(&mut self, normalizer: &Normalizer) {
         self.x = 2.0 * normalize_value(self.x, normalizer.x.min, normalizer.x.max) - 1.0;
         self.y = normalize_value(self.y, normalizer.y.min, normalizer.y.max);
-        //        self.z = normalize_value(z, normalizer.z.min, normalizer.z.max);
+        self.z = normalize_value(self.z, normalizer.z.min, normalizer.z.max);
     }
 }
 
@@ -121,7 +121,6 @@ fn get_min_max_op4d_1d(vec_op4d: &Vec<Op4D>) -> (Normalizer, f64) {
     };
 
     let mut max_len: f64 = 0.0;
-    // let max_op = min_state;
     for op in vec_op4d {
         max_len = max_len.max(op.t + op.l);
 
@@ -233,6 +232,12 @@ pub fn composition_to_vec_timed_op(composition: &NormalForm, table: &OpOrNfTable
     result
 }
 
+#[derive(Debug, Clone, Serialize, Deserialize)]
+struct Json1d {
+    ops: Vec<Op4D>,
+    length: f64,
+}
+
 pub fn to_json(basis: &Basis, composition: &NormalForm, table: &OpOrNfTable, filename: String) {
     banner("JSONIFY-ing".to_string(), filename.clone());
 
@@ -244,12 +249,15 @@ pub fn to_json(basis: &Basis, composition: &NormalForm, table: &OpOrNfTable, fil
         !is_silent
     });
 
-    let normalizer = get_min_max_op4d_1d(&op4d_1d);
+    let (normalizer, max_len) = get_min_max_op4d_1d(&op4d_1d);
 
     normalize_op4d_1d(&mut op4d_1d, normalizer);
-    let normalizer_2 = get_min_max_op4d_1d(&op4d_1d);
 
-    let json = to_string(&op4d_1d).unwrap();
+    let json = to_string(&Json1d {
+        ops: op4d_1d,
+        length: max_len,
+    })
+    .unwrap();
 
     write_composition_to_json(&json, &filename).expect("Writing to JSON failed");
     printed("JSON".to_string());

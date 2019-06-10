@@ -46,7 +46,7 @@ melody2 = {
 		Tm 5/2, 
 	] 
 	| Seq [
-		Tm 1, 
+	-- Tm 1, 
 		Tm 4/3 | Length 1/2, 
 		Tm 7/8
 	]

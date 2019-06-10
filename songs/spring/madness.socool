@@ -19,7 +19,7 @@ melody1 = {
 		Tm 1,
 		Tm 4/5,
 		Tm 25/24 | Length 2,
-		Tm 6/5 | Length 3/22
+		Tm 6/5 | Length 3/22,
 		Tm 25/24 | Length 1/2,
 		Tm 1 | Length 2,
 	] 
