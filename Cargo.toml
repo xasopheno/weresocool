@@ -19,7 +19,7 @@ socool_parser = { path = "parser" }
 socool_ast = { path = "ast" }
 clap = "2.32.0"
 num-rational = "0.2"
-rayon = "1.0"
+rayon = "1.1"
 indexmap = { version = "1", features = ["serde-1"] }
 difference = "2.0.0"
 term = "0.5.1"
