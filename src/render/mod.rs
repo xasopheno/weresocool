@@ -4,7 +4,6 @@ use crate::instrument::{
     stereo_waveform::StereoWaveform,
 };
 
-
 use socool_ast::PointOp;
 
 pub trait Render<T> {
