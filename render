@@ -4,4 +4,4 @@ FILENAME=$1
 cargo run --release --bin wsc songs/$FILENAME.socool --print
 cargo run --release --bin wsc songs/$FILENAME.socool --json
 
-
+../ws/client/target/release/client

@@ -1,0 +1,102 @@
+{ f: 340, l: 1, g: 1, p: 0}
+
+overtones = {
+    O[
+    	(3/2, -3, 1, 1),
+    	(5/4, 0, 1, 1),
+    	(1/1, 11, 1, 1),
+    	(1/2, 3, 1, 1),
+  	]
+}
+
+thing1 = {
+	overtones |
+	Sequence [
+		Tm 1, 
+		Tm 7/8,
+		Tm 15/16,
+		Tm 25/24,
+		Tm 7/8, 
+		Tm 1, 
+		Tm 9/8,
+		Tm 6/5, 
+		Tm 5/6,
+		Tm 15/16, 
+		Tm 7/8,
+		Tm 25/24, 
+		Tm 1, 
+		Tm 9/8,
+	] 
+	| Seq [AsIs, Reverse, Invert, Invert | Reverse]
+	| Seq [AsIs, Reverse]
+	| Seq [AsIs, Tm 0 | Length 1/10, AsIs]
+	| Overlay [AsIs, PanM 1/2 | Tm 3/2, PanM 1/4 | Tm 5/2]
+	| PanA 1/2
+	| Length 1/10
+}
+
+thing2 = {
+    O[
+    	(9/4, -3, 1, -3/9),
+    	(9/4, -3, 1, -3/9),
+    	(7/4, -3, 1, -7/9),
+    	(7/4, 0, 1, -3/4),
+    	(3/2, 0, 1, -2/3),
+    	(4/3, 0, 1, -1/3),
+    	(5/4, 0, 1, -7/8),
+      	(1/1, 0, 1, -4/5),
+      	(1/2, 0, 1, -8/9),
+      	(1/3, 0, 1, -8/9),
+  	]
+	| Seq [
+		Tm 2,
+		Tm 5/3, 
+		Tm 5/4,
+		Tm 0, 
+		Tm 6/5, 
+		Tm 4/3, 
+		Tm 3/2, 
+		Tm 5/3,
+		Tm 7/4,
+		Tm 9/4, 
+		Tm 25/12,
+		Tm 5/2,
+		Tm 15/8, 
+		Tm 7/4, 
+		Tm 2, 
+		Tm 5/3, 
+		Tm 3/2,
+		Tm 4/3, 
+		Tm 8/5, 
+		Tm 11/8, 
+		Tm 3/2,
+	] 
+	| Seq [Tm 0, AsIs, Tm 6/5, Tm 4/3, Tm 0 | Length 2]
+	| Seq [Tm 1 | Reverse, Tm 9/8]
+	| Overlay [AsIs, PanM 1/2]
+	| PanA -1/2
+	> FitLength thing1
+}
+
+bass = {
+    O[
+      	(1/2, 4, 1, 1/9),
+      	(1/2, 0, 1, -1/9),
+      	(1/3, 5, 1, 1/9),
+      	(1/3, 0, 1, -1/9),
+  	]
+  	| Seq [Tm 0, Tm 1, Tm 0, Tm 1, Tm 0, Tm 0, Tm 1, Tm 0, Tm 1, Tm 0, Tm 0, Tm 1, Tm 0]
+  	| Repeat 10 
+  	| Seq [Tm 0, AsIs]
+  	> FitLength thing1
+}
+
+main = {
+	Overlay [
+		thing1,
+		thing2,
+		bass
+	]
+	| Seq [AsIs, PanM -1]
+}
+	
