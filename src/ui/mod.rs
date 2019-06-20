@@ -60,6 +60,12 @@ pub fn get_args() -> ArgMatches<'static> {
                 .long("json"),
         )
         .arg(
+            Arg::with_name("csv")
+                .help("Prints file to .csv")
+                .short("c")
+                .long("csv"),
+        )
+        .arg(
             Arg::with_name("doc")
                 .help("Prints some documentation")
                 .short("d")

@@ -4,6 +4,11 @@ use crate::{
     write::write_composition_to_json,
 };
 
+use std::path::Path;
+
+use std::error::Error;
+use csv::Writer;
+
 use num_rational::Rational64;
 use serde::{Deserialize, Serialize};
 use serde_json::to_string;
@@ -66,6 +71,20 @@ pub struct Op4D {
     pub l: f64,
 }
 
+
+
+#[derive(Debug, Clone, Serialize, Deserialize, PartialEq)]
+pub struct Op_CSV_1D {
+    time: f64, 
+    length: f64, 
+    frequency: f64,
+    pan: f64,
+    gain: f64, 
+    voice: usize,
+}
+
+
+
 #[derive(Debug, Clone)]
 pub struct Normalizer {
     pub x: MinMax,
@@ -85,6 +104,18 @@ impl Op4D {
         self.y = normalize_value(self.y, normalizer.y.min, normalizer.y.max);
         self.z = normalize_value(self.z, normalizer.z.min, normalizer.z.max);
     }
+
+    pub fn to_op_csv_1d(&self) -> Op_CSV_1D {
+        Op_CSV_1D {
+            time: self.t,
+            length: self.l, 
+            frequency: self.y,
+            pan: self.x,
+            gain: self.z, 
+            voice: self.voice,
+    }
+}
+
 }
 
 fn normalize_value(value: f64, min: f64, max: f64) -> f64 {
@@ -212,11 +243,7 @@ pub fn composition_to_vec_timed_op(composition: &NormalForm, table: &OpOrNfTable
     println!("Generating Composition \n");
     composition.apply_to_normal_form(&mut normal_form, table);
 
-    let mut result: Vec<TimedOp> = normal_form
-        .operations
-        .iter()
-        .enumerate()
-        .flat_map(|(voice, vec_point_op)| {
+    let mut result: Vec<TimedOp> = normal_form .operations .iter() .enumerate() .flat_map(|(voice, vec_point_op)| {
             let mut time = Rational64::new(0, 1);
             let mut result = vec![];
             vec_point_op.iter().enumerate().for_each(|(event, p_op)| {
@@ -261,4 +288,31 @@ pub fn to_json(basis: &Basis, composition: &NormalForm, table: &OpOrNfTable, fil
 
     write_composition_to_json(&json, &filename).expect("Writing to JSON failed");
     printed("JSON".to_string());
+}
+
+pub fn write_composition_csv(ops: &mut Vec<Op4D>, filename: &str) {
+    let path = Path::new("test.csv");
+    let mut writer = Writer::from_path(&path).unwrap();
+    for op in ops {
+        writer.serialize(
+            op.to_op_csv_1d()).ok().expect("CSV writer error");
+    }
+}
+
+pub fn to_csv(basis: &Basis, composition: &NormalForm, table: &OpOrNfTable, filename: String) {
+    banner("CSV-ing".to_string(), filename.clone());
+
+    let vec_timed_op = composition_to_vec_timed_op(composition, table);
+    let mut op4d_1d = vec_timed_op_to_vec_op4d(vec_timed_op, basis);
+
+    op4d_1d.retain(|op| {
+        let is_silent = op.y == 0.0 || op.z <= 0.0;
+        !is_silent
+    });
+
+    let (normalizer, max_len) = get_min_max_op4d_1d(&op4d_1d);
+
+    normalize_op4d_1d(&mut op4d_1d, normalizer);
+
+    write_composition_csv(&mut op4d_1d, &filename);
 }
