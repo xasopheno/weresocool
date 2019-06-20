@@ -81,6 +81,7 @@ pub struct Op_CSV_1D {
     pan: f64,
     gain: f64, 
     voice: usize,
+    event: usize
 }
 
 
@@ -113,6 +114,7 @@ impl Op4D {
             pan: self.x,
             gain: self.z, 
             voice: self.voice,
+            event: self.event,
     }
 }
 
