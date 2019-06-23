@@ -25,7 +25,7 @@ fn main() -> Result<(), pa::Error> {
     } else if args.is_present("json") {
         filename_to_render(filename.unwrap(), RenderType::Json4d);
     } else if args.is_present("csv") {
-        filename_to_render(filename.unwrap(), RenderType::CSV_1D);
+        filename_to_render(filename.unwrap(), RenderType::Csv1d);
     } else {
         let stereo_waveform =
             match filename_to_render(filename.unwrap(), RenderType::StereoWaveform) {

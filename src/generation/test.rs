@@ -90,22 +90,9 @@ pub mod tests {
                     ..op
                 },
                 TimedOp {
-                    pa: Rational64::new(1, 2),
-                    t: Rational64::new(1, 1),
-                    event_type: EventType::Off,
-                    ..op
-                },
-                TimedOp {
                     fm: Rational64::new(2, 1),
                     t: Rational64::new(1, 1),
                     event_type: EventType::On,
-                    event: 1,
-                    ..op
-                },
-                TimedOp {
-                    fm: Rational64::new(2, 1),
-                    t: Rational64::new(2, 1),
-                    event_type: EventType::Off,
                     event: 1,
                     ..op
                 },
@@ -117,31 +104,10 @@ pub mod tests {
                     ..op
                 },
                 TimedOp {
-                    g: Rational64::new(1, 2),
-                    t: Rational64::new(3, 1),
-                    event_type: EventType::Off,
-                    event: 2,
-                    ..op
-                },
-                TimedOp {
                     t: Rational64::new(3, 1),
                     l: Rational64::new(2, 1),
                     event_type: EventType::On,
                     event: 3,
-                    ..op
-                },
-                TimedOp {
-                    t: Rational64::new(5, 1),
-                    l: Rational64::new(2, 1),
-                    event_type: EventType::Off,
-                    event: 3,
-                    ..op
-                },
-                TimedOp {
-                    t: Rational64::new(5, 1),
-                    l: Rational64::new(5, 1),
-                    event_type: EventType::Off,
-                    voice: 1,
                     ..op
                 },
             ]
@@ -194,8 +160,8 @@ pub mod tests {
                 event_type: EventType::On,
                 voice: 0,
                 event: 0,
+                y: 2.3010299956639813,
                 x: 0.5,
-                y: 200.0,
                 z: 0.5,
             },
             Op4D {
@@ -205,7 +171,7 @@ pub mod tests {
                 voice: 0,
                 event: 0,
                 x: 0.5,
-                y: 200.0,
+                y: 2.3010299956639813,
                 z: 0.5,
             },
         ];

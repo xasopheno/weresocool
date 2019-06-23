@@ -4,11 +4,6 @@ use crate::{
     write::{write_composition_to_csv, write_composition_to_json},
 };
 
-use std::path::Path;
-
-use csv::Writer;
-use std::error::Error;
-
 use num_rational::Rational64;
 use serde::{Deserialize, Serialize};
 use serde_json::to_string;
@@ -72,7 +67,7 @@ pub struct Op4D {
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize, PartialEq)]
-pub struct Op_CSV_1D {
+pub struct OpCsv1d {
     time: f64,
     length: f64,
     frequency: f64,
@@ -102,8 +97,8 @@ impl Op4D {
         self.z = normalize_value(self.z, normalizer.z.min, normalizer.z.max);
     }
 
-    pub fn to_op_csv_1d(&self) -> Op_CSV_1D {
-        Op_CSV_1D {
+    pub fn to_op_csv_1d(&self) -> OpCsv1d {
+        OpCsv1d {
             time: self.t,
             length: self.l,
             frequency: self.y,
