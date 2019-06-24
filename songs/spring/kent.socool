@@ -1,0 +1,78 @@
+{ f: 220, l: 1, g: 1, p: 0}
+
+overtones = {
+    O[
+    	(7/4, 4, 1, 1/3),
+    	(7/4, 0, 1, -1/3),
+    	(3/2, 4, 1, 1/2),
+    	(3/2, 0, 1, -1/2),
+    	(1/1, 0, 1, 1/2),
+      	(1/1, 0, 1, -1/2),
+  	]
+}
+
+thing1 = {
+	PanA 1 |
+	overtones |
+	Seq [
+		Tm 0,
+		AsIs,
+		Tm 5/4, 
+		Tm 3/2, 
+		Tm 0,
+		Tm 15/8,
+		Tm 9/4,
+	]
+	| Length 1/7 
+	| Seq [
+		AsIs, 
+		Tm 9/8
+	]
+	| Seq [
+		AsIs, 
+		Tm 7/8, 
+		Tm 4/5
+	] 
+	| ModulateBy [PanA 1/4, PanA -1/4]
+}
+
+bass = {
+	PanA -1 |
+    O[
+    	(5/1, 9, 1/2, 1/4),
+    	(5/1, 0, 1/2, -1/4),
+    	(4/1, 0, 1, -1/2),
+    	(4/1, 0, 1, 1/2),
+      	(1/2, 5, 1, -1/2),
+      	(1/2, 0, 1, 1/2),
+  	]
+	| Seq [
+		AsIs, 
+		Tm 3/2,
+		Tm 9/4
+	]
+	| Seq [
+		AsIs, 
+		Tm 9/8 | Length 3/2, 
+		AsIs, 
+		Tm 7/8 | Length 1/2 
+		| Seq [AsIs, Tm 7/8]
+	]
+	> FitLength thing1
+
+}
+
+main = {
+	Overlay [
+		thing1,
+		bass
+	]
+	| Repeat 2
+	| Overlay [
+		AsIs, 
+		Tm 3 | Length 1/3 | Repeat 3 | Gain 1/40 | PanM 7/10,
+		Tm 6 | Length 1/5 | Repeat 5 | Gain 1/70 | PanM 9/10
+	]
+	| Repeat 3	
+}
+	

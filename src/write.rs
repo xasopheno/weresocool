@@ -2,6 +2,9 @@ use crate::instrument::StereoWaveform;
 use std::fs::File;
 use std::io::prelude::*;
 use std::process::Command;
+use csv::Writer;
+use crate::generation::Op4D;
+use std::path::Path;
 
 pub fn write_output_buffer(out_buffer: &mut [f32], stereo_waveform: StereoWaveform) {
     let mut l_idx = 0;
@@ -101,3 +104,25 @@ pub fn write_composition_to_json(serialized: &String, filename: &String) -> std:
     file.write_all(serialized.as_bytes())?;
     Ok(())
 }
+
+pub fn write_composition_to_csv(ops: &mut Vec<Op4D>, filename: &str) {
+    let filename = filename_from_string(filename);
+    dbg!(filename);
+
+    let filename = 
+        &format!(
+        "renders/{}{}",
+        filename,
+        ".socool.csv".to_string()
+    );
+    let path = Path::new(filename);
+    let mut writer = Writer::from_path(&path).unwrap();
+    for op in ops {
+        writer
+            .serialize(op.to_op_csv_1d())
+            .ok()
+            .expect("CSV writer error");
+    }
+}
+
+

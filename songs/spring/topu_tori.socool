@@ -1,0 +1,83 @@
+{ f: 220, l: 1, g: 1, p: 0}
+
+-- overtones = {
+--     O[
+--     	(3/2, 0, 1, 1),
+--       	(1/1, 0, 1, -1),
+--   	]
+-- }
+
+melody1 = {
+	-- overtones |
+	Sequence [
+		Tm 1,
+		Tm 9/8,
+		Tm 5/4,
+		Tm 4/3,
+		Tm 3/2,
+		Tm 5/3,
+		Tm 15/8,
+		Tm 2,
+	]
+	| Length 1/10
+	| Sequence [
+		Tm 1, 
+		Tm 9/8 | Length 1/2,  
+		Tm 5/4,
+	] 
+	| Sequence [
+		AsIs, 
+		Reverse, 
+	]
+}
+
+melody2 = {
+    O[
+    	(3/2, 3, 1, 1/2),
+      	(3/2, 0, 1, -1/2),
+    	(1/1, 2, 1, 1/2),
+      	(1/1, 0, 1, -1/2),
+  	]
+	| Tm 2 
+	| Sequence [
+		AsIs, 
+		Tm 3/2, 
+		Tm 9/4, 
+		Tm 5/2, 
+	] 
+	| Seq [
+	-- Tm 1, 
+		Tm 4/3 | Length 1/2, 
+		Tm 7/8
+	]
+	> FitLength melody1
+}
+
+main = {
+	Overlay [
+		melody1,
+		melody2,
+	    O[
+	    	(3/2, 3, 1, 1/2),
+	      	(3/2, 0, 1, -1/2),
+	    	(1/1, 2, 1, 1/2),
+	      	(1/1, 0, 1, -1/2),
+	  	] > FitLength melody1
+	] 
+	| ModulateBy [
+		Tm 1, 
+		Tm 7/8, 
+		Tm 4/5 
+	]
+	| Overlay [
+		AsIs, 
+	] 
+	| Repeat 2
+	| Seq [
+		AsIs, 
+		AsIs 
+		| ModulateBy [Seq [Tm 1, Tm 0, Tm 1] | Repeat 7 
+		]
+	]
+}
+	

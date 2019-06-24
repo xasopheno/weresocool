@@ -1,8 +1,9 @@
 use crate::{
     instrument::Basis,
     ui::{banner, printed},
-    write::write_composition_to_json,
+    write::{write_composition_to_csv, write_composition_to_json},
 };
+
 use num_rational::Rational64;
 use serde::{Deserialize, Serialize};
 use serde_json::to_string;
@@ -28,12 +29,24 @@ pub struct TimedOp {
 
 impl TimedOp {
     fn to_op_4d(&self, basis: &Basis) -> Op4D {
+        let zero = Rational64::new(0, 1);
+        let is_silent = (self.fm == zero && self.fa < Rational64::new(40, 1)) || self.g == zero;
+        let y = if is_silent {
+            0.0
+        } else {
+            (basis.f * r_to_f64(self.fm)) + r_to_f64(self.fa)
+        };
+        let z = if is_silent {
+            0.0
+        } else {
+            basis.g * r_to_f64(self.g)
+        };
         Op4D {
             l: r_to_f64(self.l) * basis.l,
             t: r_to_f64(self.t) * basis.l,
             x: ((basis.p + r_to_f64(self.pa)) * r_to_f64(self.pm)),
-            y: (basis.f * r_to_f64(self.fm)) + r_to_f64(self.fa),
-            z: basis.g * r_to_f64(self.g),
+            y: y.log10(),
+            z,
             voice: self.voice,
             event: self.event,
             event_type: self.event_type.clone(),
@@ -51,6 +64,129 @@ pub struct Op4D {
     pub y: f64,
     pub z: f64,
     pub l: f64,
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize, PartialEq)]
+pub struct OpCsv1d {
+    time: f64,
+    length: f64,
+    frequency: f64,
+    pan: f64,
+    gain: f64,
+    voice: usize,
+    event: usize,
+}
+
+#[derive(Debug, Clone)]
+pub struct Normalizer {
+    pub x: MinMax,
+    pub y: MinMax,
+    pub z: MinMax,
+}
+
+#[derive(Debug, Clone)]
+pub struct MinMax {
+    pub min: f64,
+    pub max: f64,
+}
+
+impl Op4D {
+    pub fn normalize(&mut self, normalizer: &Normalizer) {
+        self.x = 2.0 * normalize_value(self.x, normalizer.x.min, normalizer.x.max) - 1.0;
+        self.y = normalize_value(self.y, normalizer.y.min, normalizer.y.max);
+        self.z = normalize_value(self.z, normalizer.z.min, normalizer.z.max);
+    }
+
+    pub fn to_op_csv_1d(&self) -> OpCsv1d {
+        OpCsv1d {
+            time: self.t,
+            length: self.l,
+            frequency: self.y,
+            pan: self.x,
+            gain: self.z,
+            voice: self.voice,
+            event: self.event,
+        }
+    }
+}
+
+fn normalize_value(value: f64, min: f64, max: f64) -> f64 {
+    (value - min) / (max - min)
+}
+
+fn normalize_op4d_1d(op4d_1d: &mut Vec<Op4D>, n: Normalizer) {
+    op4d_1d.iter_mut().for_each(|op| {
+        op.normalize(&n);
+    })
+}
+
+fn get_min_max_op4d_1d(vec_op4d: &Vec<Op4D>) -> (Normalizer, f64) {
+    let mut max_state = Op4D {
+        t: 0.0,
+        event: 0,
+        event_type: EventType::On,
+        voice: 0,
+        x: 0.0,
+        y: 0.0,
+        z: 0.0,
+        l: 0.0,
+    };
+
+    let mut min_state = Op4D {
+        t: 0.0,
+        event: 10,
+        event_type: EventType::On,
+        voice: 10,
+        x: 0.0,
+        y: 10_000.0,
+        z: 1.0,
+        l: 1.0,
+    };
+
+    let mut max_len: f64 = 0.0;
+    for op in vec_op4d {
+        max_len = max_len.max(op.t + op.l);
+
+        max_state = Op4D {
+            x: max_state.x.max((op.x).abs()),
+            y: max_state.y.max(op.y),
+            z: max_state.z.max(op.z),
+            l: max_state.l.max(op.l),
+            t: max_state.t.max(op.t),
+            event: max_state.event.max(op.event),
+            voice: max_state.voice.max(op.voice),
+            event_type: EventType::On,
+        };
+
+        min_state = Op4D {
+            x: min_state.x.min(-(op.x).abs()),
+            y: min_state.y.min(op.y),
+            z: min_state.z.min(op.z),
+            l: min_state.l.min(op.l),
+            t: min_state.t.min(op.t),
+            event: min_state.event.min(op.event),
+            voice: min_state.voice.min(op.voice),
+            event_type: EventType::On,
+        };
+    }
+
+    let n = Normalizer {
+        x: MinMax {
+            min: min_state.x,
+            max: max_state.x,
+        },
+        y: MinMax {
+            min: min_state.y,
+            max: max_state.y,
+        },
+        z: MinMax {
+            min: min_state.z,
+            max: max_state.z,
+        },
+    };
+    dbg!(n.clone());
+    dbg!(max_len);
+    (n, max_len)
 }
 
 #[derive(Debug, Clone, Eq, Ord, PartialEq, PartialOrd, Serialize, Deserialize)]
@@ -107,9 +243,8 @@ pub fn composition_to_vec_timed_op(composition: &NormalForm, table: &OpOrNfTable
             let mut time = Rational64::new(0, 1);
             let mut result = vec![];
             vec_point_op.iter().enumerate().for_each(|(event, p_op)| {
-                let (on, off) = point_op_to_timed_op(p_op, &mut time, voice, event);
+                let (on, _off) = point_op_to_timed_op(p_op, &mut time, voice, event);
                 result.push(on);
-                result.push(off);
             });
             result
         })
@@ -120,14 +255,51 @@ pub fn composition_to_vec_timed_op(composition: &NormalForm, table: &OpOrNfTable
     result
 }
 
+#[derive(Debug, Clone, Serialize, Deserialize)]
+struct Json1d {
+    ops: Vec<Op4D>,
+    length: f64,
+}
+
 pub fn to_json(basis: &Basis, composition: &NormalForm, table: &OpOrNfTable, filename: String) {
     banner("JSONIFY-ing".to_string(), filename.clone());
 
     let vec_timed_op = composition_to_vec_timed_op(composition, table);
-    let vec_op4d = vec_timed_op_to_vec_op4d(vec_timed_op, basis);
+    let mut op4d_1d = vec_timed_op_to_vec_op4d(vec_timed_op, basis);
 
-    let json = to_string(&vec_op4d).unwrap();
+    op4d_1d.retain(|op| {
+        let is_silent = op.y == 0.0 || op.z <= 0.0;
+        !is_silent
+    });
+
+    let (normalizer, max_len) = get_min_max_op4d_1d(&op4d_1d);
+
+    normalize_op4d_1d(&mut op4d_1d, normalizer);
+
+    let json = to_string(&Json1d {
+        ops: op4d_1d,
+        length: max_len,
+    })
+    .unwrap();
 
     write_composition_to_json(&json, &filename).expect("Writing to JSON failed");
     printed("JSON".to_string());
+}
+
+pub fn to_csv(basis: &Basis, composition: &NormalForm, table: &OpOrNfTable, filename: String) {
+    banner("CSV-ing".to_string(), filename.clone());
+
+    let vec_timed_op = composition_to_vec_timed_op(composition, table);
+    let mut op4d_1d = vec_timed_op_to_vec_op4d(vec_timed_op, basis);
+
+    op4d_1d.retain(|op| {
+        let is_silent = op.y == 0.0 || op.z <= 0.0;
+        !is_silent
+    });
+
+    let (normalizer, _max_len) = get_min_max_op4d_1d(&op4d_1d);
+
+    normalize_op4d_1d(&mut op4d_1d, normalizer);
+
+    write_composition_to_csv(&mut op4d_1d, &filename);
 }

@@ -64,14 +64,14 @@ bass = {
       	(1/1, 1, 1, 1),
       	(1/1, 0, 1, -1),
   	] | 
-	Seq [Tm 0, Length 5] |
+	Seq [Tm 0 | Ta 0, Length 5] |
 	Seq [
 		Tm 6/5, Tm 4/3, Tm 6/5, Tm 4/3,
-		Tm 1, Tm 0, Tm 1, Tm 0,
+		Tm 1, Tm 0 | Ta 0, Tm 1, Tm 0 | Ta 0,
 		Tm 3/2 | Length 4, 
 		Tm 7/8, Tm 1, Tm 7/8, Tm 1,
-		Tm 0, Tm 4/3, Tm 4/3, Tm 0,
-		Tm 5/3, Tm 3/2, Tm 4/3, Tm 0,
+		Tm 0 | Ta 0, Tm 4/3, Tm 4/3, Tm 0 | Ta 0,
+		Tm 5/3, Tm 3/2, Tm 4/3, Tm 0 | Ta 0,
 	]
 	| Seq [AsIs, Reverse | Tm 9/8]	
 	| Seq [
@@ -98,7 +98,7 @@ drone = {
       	(1/2, 0, 1, -1/4),
   	]
   	| Seq [
-  		Tm 1,
+  		AsIs,
   		Tm 9/8, 
   		Tm 4/3,
   		Tm 3/2, 
@@ -142,7 +142,7 @@ highs = {
 	]
 	| ModulateBy [Seq [PanA -1/2, PanA 1/2, PanA 1/2, PanA -1/2, PanA 1/3, PanA -1/3] | Repeat 5]
 	| Tm 2	
-	| Seq [Tm 0 | Repeat 4, Tm 1]
+	| Seq [Ta 0 | Tm 0 | Repeat 4, Tm 1]
 	> FitLength thing1
 }
 
@@ -160,7 +160,7 @@ main = {
 		      	(1/1, 3, 1, -1/7),
 		      	(1/1, 0, 1, 1/7),
 			]
-		] | PanM 1/2
+		]
 	]
 }
 	

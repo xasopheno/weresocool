@@ -1,0 +1,54 @@
+{ f: 220, l: 1, g: 1, p: 0}
+
+overtones = {
+    O[
+    	(3/2, 2, 1, 1/2),
+      	(3/2, 0, 1, -1/2),
+    	(1/1, 2, 1, 1/2),
+      	(1/1, 0, 1, -1/2),
+  	]
+}
+
+thing1 = {
+	Seq [
+		AsIs, 
+		Tm 2, 
+		Tm 3/2, 
+		Tm 5/4, 
+		Tm 15/8, 
+	]
+	| Length 1/4
+	| Seq [
+		AsIs, 
+		Tm 9/8, 
+		Tm 5/4
+	]
+}
+
+thing2 = {
+	Seq [
+		Tm 1,
+		Tm 7/8, 
+		Tm 2/3 
+	]
+	> FitLength thing1
+}
+
+main = {
+	overtones |
+	Overlay [
+		thing1,
+		thing2,
+	]
+	| Length 1/2
+	| Seq [
+		AsIs, 
+		Overlay [
+			AsIs, Tm 3/2
+		],
+	]
+	| ModulateBy [
+		AsIs, Tm 3/2, Tm 9/4
+	]
+}
+	

@@ -1,0 +1,104 @@
+{ f: 220, l: 1, g: 1, p: 0}
+
+overtones = {
+    O[
+    	(3/2, 3, 1, -1/2),
+    	(3/2, 0, 1, 1/2),
+      	(1/1, 2, 1, -1/2),
+      	(1/1, 0, 1, 1/2),
+  	]
+}
+
+thing1 = {
+	Seq [
+		AsIs, 
+		Tm 9/8, 
+		Tm 5/4,
+		Tm 7/8
+	]	
+}
+
+thing2 = {
+    O[
+    	(3, 3, 1/4, -1/2),
+    	(3, 0, 1/4, 1/2),
+      	(1/1, 2, 1, -1/2),
+      	(1/1, 0, 1, 1/2),
+  	]
+	| Tm 1/2
+	| Seq [
+		AsIs,
+		Tm 2,
+	] 
+	| Length 1/5
+	| Repeat 4
+	| thing1
+}
+
+melody = {
+	overtones 
+	| Seq [
+		Tm 5/4, 
+		Tm 9/8, 
+		Tm 1, 
+		Tm 5/4, 
+		Tm 3/2 | Length 4
+	]	
+	> FitLength thing2
+}
+
+accomp = {
+	Overlay [
+		melody,
+		thing2
+	] 
+	| ModulateBy [
+		Seq [PanA -1, PanA 1 | Tm 2] | Repeat 8
+	]
+	| Seq [PanM -1, PanM 1]
+	| ModulateBy [AsIs | Length 20, Tm 0, Seq [Tm 1, Tm 7/8, Tm 4/5 | PanM -1, Tm 3/4 | PanM -1, Tm 2/3] | Length 1/5]
+}
+
+main_melody = {
+    O[
+    	(5/2, 7, 1/4, 1/8),
+    	(5/2, 0, 1/4, -1/8),
+    	(3/2, 3, 1/4, 1/8),
+    	(3/2, 0, 1/4, -1/8),
+      	(1/1, 4, 1, 1/8),
+      	(1/1, 0, 1, -1/8),
+  	]
+	| Seq [
+		Tm 3/2, 
+		Tm 9/4,
+		Tm 2, 
+		Tm 9/4 | Length 4, 
+		Tm 5/2 | Length 1/4, 
+		Tm 3 | Length 4,
+		Seq [
+			Tm 5/2 | Length 1/4, 
+			Tm 3 | Length 2
+		] 
+		| Gain 1/3
+	    | O[
+	      	(2/1, 4, 1, 1/8),
+	      	(2/1, 0, 1, -1/8),
+	      	(1/1, 4, 1, 1/8),
+	      	(1/1, 0, 1, -1/8),
+	  	],
+		Tm 0 | Length 1/100
+	] 
+	> FitLength accomp
+}
+
+
+
+
+main = {
+	Overlay [
+		main_melody,
+		accomp | Gain 1/2,
+	] | Repeat 2
+
+}
+	

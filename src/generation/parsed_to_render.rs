@@ -1,4 +1,4 @@
-use crate::generation::to_json;
+use crate::generation::{to_json, to_csv};
 use crate::instrument::{Basis, Normalize, Oscillator, StereoWaveform};
 use crate::render::{Render, RenderPointOp};
 use crate::settings::default_settings;
@@ -14,7 +14,8 @@ use std::sync::{Arc, Mutex};
 #[derive(Clone, PartialEq, Debug)]
 pub enum RenderType {
     Json4d,
-    NfAndBasis,
+    Csv1d,
+    NfBasisAndTable,
     StereoWaveform,
     Wav,
 }
@@ -22,8 +23,9 @@ pub enum RenderType {
 #[derive(Clone, PartialEq, Debug)]
 pub enum RenderReturn {
     Json4d(String),
+    Csv1d(String),
     StereoWaveform(StereoWaveform),
-    NfAndBasis(NormalForm, Basis),
+    NfAndBasis(NormalForm, Basis, OpOrNfTable),
     Wav(String),
 }
 
@@ -43,10 +45,14 @@ pub fn filename_to_render(filename: &str, r_type: RenderType) -> RenderReturn {
     let basis = Basis::from(parsed.init);
 
     match r_type {
-        RenderType::NfAndBasis => RenderReturn::NfAndBasis(nf.clone(), basis),
+        RenderType::NfBasisAndTable => RenderReturn::NfAndBasis(nf.clone(), basis, parsed.table),
         RenderType::Json4d => {
             to_json(&basis, &nf, &parsed.table.clone(), filename.to_string());
             RenderReturn::Json4d("json".to_string())
+        }
+        RenderType::Csv1d => {
+            to_csv(&basis, &nf, &parsed.table.clone(), filename.to_string());
+            RenderReturn::Csv1d("json".to_string())
         }
         RenderType::StereoWaveform | RenderType::Wav => {
             let stereo_waveform = render(&basis, &nf, &parsed.table);
