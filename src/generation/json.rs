@@ -2,13 +2,7 @@ use crate::{
     instrument::Basis,
     ui::{banner, printed},
     write::{write_composition_to_csv, write_composition_to_json},
-};
-
-use num_rational::Rational64;
-use serde::{Deserialize, Serialize};
-use serde_json::to_string;
-use socool_ast::{NormalForm, Normalize, OpOrNfTable, PointOp};
-
+}; use num_rational::Rational64; use serde::{Deserialize, Serialize}; use serde_json::to_string; use socool_ast::{NormalForm, Normalize, OpOrNfTable, PointOp}; 
 pub fn r_to_f64(r: Rational64) -> f64 {
     *r.numer() as f64 / *r.denom() as f64
 }
@@ -77,14 +71,14 @@ pub struct OpCsv1d {
     event: usize,
 }
 
-#[derive(Debug, Clone)]
+#[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct Normalizer {
     pub x: MinMax,
     pub y: MinMax,
     pub z: MinMax,
 }
 
-#[derive(Debug, Clone)]
+#[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct MinMax {
     pub min: f64,
     pub max: f64,
@@ -257,8 +251,15 @@ pub fn composition_to_vec_timed_op(composition: &NormalForm, table: &OpOrNfTable
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
 struct Json1d {
+    filename: String,
     ops: Vec<Op4D>,
     length: f64,
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize)]
+struct NormalizerJson {
+    filename: String,
+    normalizer: Normalizer
 }
 
 pub fn to_json(basis: &Basis, composition: &NormalForm, table: &OpOrNfTable, filename: String) {
@@ -274,9 +275,17 @@ pub fn to_json(basis: &Basis, composition: &NormalForm, table: &OpOrNfTable, fil
 
     let (normalizer, max_len) = get_min_max_op4d_1d(&op4d_1d);
 
-    normalize_op4d_1d(&mut op4d_1d, normalizer);
+    normalize_op4d_1d(&mut op4d_1d, normalizer.clone());
+
+    let normalizer_string = to_string(&NormalizerJson {
+        filename: filename.clone(),
+        normalizer: normalizer,
+    })
+    .unwrap();
+
 
     let json = to_string(&Json1d {
+        filename: filename.clone(),
         ops: op4d_1d,
         length: max_len,
     })
@@ -286,10 +295,7 @@ pub fn to_json(basis: &Basis, composition: &NormalForm, table: &OpOrNfTable, fil
     printed("JSON".to_string());
 }
 
-pub fn to_csv(basis: &Basis, composition: &NormalForm, table: &OpOrNfTable, filename: String) {
-    banner("CSV-ing".to_string(), filename.clone());
-
-    let vec_timed_op = composition_to_vec_timed_op(composition, table);
+pub fn to_csv(basis: &Basis, composition: &NormalForm, table: &OpOrNfTable, filename: String) { banner("CSV-ing".to_string(), filename.clone()); let vec_timed_op = composition_to_vec_timed_op(composition, table);
     let mut op4d_1d = vec_timed_op_to_vec_op4d(vec_timed_op, basis);
 
     op4d_1d.retain(|op| {

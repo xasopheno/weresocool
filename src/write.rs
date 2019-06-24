@@ -1,9 +1,14 @@
-use crate::instrument::StereoWaveform;
 use std::fs::File;
 use std::io::prelude::*;
 use std::process::Command;
 use csv::Writer;
-use crate::generation::Op4D;
+use crate::{
+    generation::{
+        Op4D,
+        json::Normalizer
+    },
+    instrument::StereoWaveform
+};
 use std::path::Path;
 
 pub fn write_output_buffer(out_buffer: &mut [f32], stereo_waveform: StereoWaveform) {
@@ -125,4 +130,22 @@ pub fn write_composition_to_csv(ops: &mut Vec<Op4D>, filename: &str) {
     }
 }
 
+pub fn write_normlalizer_to_json(serialized: &String, filename: &str) {
+    let filename = filename_from_string(filename);
+    dbg!(filename);
+    let mut file = File::create(format!(
+        "renders/{}{}",
+        filename,
+        ".socool.json".to_string()
+    )).expect("Error writing normalizer to json");
+
+    println!(
+        "{}.normalizer was written and has \
+         {} render stream(s).\
+         ",
+        filename, 1
+    );
+
+    file.write_all(serialized.as_bytes()).expect("error writing normalizer to json");
+}
 
