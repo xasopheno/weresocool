@@ -11,7 +11,6 @@ fn main() {
         let values: Vec<&str> = point.split(",").collect();
         println!("{:?}", values);
     }
-
 }
 
 #[test]

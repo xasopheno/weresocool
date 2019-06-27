@@ -1,7 +1,7 @@
 use crate::{
     instrument::Basis,
     ui::{banner, printed},
-    write::{write_composition_to_csv, write_composition_to_json},
+    write::{write_composition_to_csv, write_composition_to_json, write_normalizer_to_json},
 }; use num_rational::Rational64; use serde::{Deserialize, Serialize}; use serde_json::to_string; use socool_ast::{NormalForm, Normalize, OpOrNfTable, PointOp}; 
 pub fn r_to_f64(r: Rational64) -> f64 {
     *r.numer() as f64 / *r.denom() as f64
@@ -277,12 +277,8 @@ pub fn to_json(basis: &Basis, composition: &NormalForm, table: &OpOrNfTable, fil
 
     normalize_op4d_1d(&mut op4d_1d, normalizer.clone());
 
-    let normalizer_string = to_string(&NormalizerJson {
-        filename: filename.clone(),
-        normalizer: normalizer,
-    })
-    .unwrap();
 
+    
 
     let json = to_string(&Json1d {
         filename: filename.clone(),
@@ -304,6 +300,14 @@ pub fn to_csv(basis: &Basis, composition: &NormalForm, table: &OpOrNfTable, file
     });
 
     let (normalizer, _max_len) = get_min_max_op4d_1d(&op4d_1d);
+
+    let normalizer_string = to_string(&NormalizerJson {
+        filename: filename.clone(),
+        normalizer: normalizer.clone(),
+    })
+    .unwrap();
+
+    write_normalizer_to_json(&normalizer_string, &filename.clone());
 
     normalize_op4d_1d(&mut op4d_1d, normalizer);
 
