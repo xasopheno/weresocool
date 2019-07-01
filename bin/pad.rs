@@ -1,12 +1,15 @@
 use weresocool::generation::{
+    OpCsv1d,
     Op4D,
     NormalizerJson,
 };
 use std::{
     fs::{File},
-    io::{BufRead, BufReader} 
+    io::{BufRead, BufReader},
 };
 use serde_json::from_reader;
+use serde::Deserialize;
+use csv;
 
 fn main() {
     let file = File::open("renders/alex.socool.csv").unwrap();
@@ -14,11 +17,12 @@ fn main() {
         .unwrap();
     let normalizer: NormalizerJson = from_reader(&normalizer).unwrap();
     println!("{:?}", normalizer);
-    for line in BufReader::new(file).lines() {
-        let point = line.unwrap();
-        let values: Vec<&str> = point.split(",").collect();
+    
+    let mut rdr = csv::Reader::from_reader(file);
+    for result in rdr.deserialize() {
+        let op: OpCsv1d = result.unwrap();
 
-        println!("{:?}", values);
+        println!("{:?}", op);
     }
 }
 
