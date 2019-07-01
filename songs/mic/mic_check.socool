@@ -42,5 +42,6 @@ main = {
 		thing2,
 		thing3, 
 	]
+    | Tm 1/5
 }
 	

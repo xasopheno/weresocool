@@ -71,6 +71,28 @@ pub struct OpCsv1d {
     event: usize,
 }
 
+impl OpCsv1d {
+    //pub fn normalize(&mut self, normalizer: &Normalizer) {
+        //self.x = 2.0 * normalize_value(self.x, normalizer.x.min, normalizer.x.max) - 1.0;
+        //self.y = normalize_value(self.y, normalizer.y.min, normalizer.y.max);
+        //self.z = normalize_value(self.z, normalizer.z.min, normalizer.z.max);
+    //}
+
+    pub fn to_op4d(&self, normalizer: NormalizerJson) -> Op4D {
+        dbg!(normalizer);
+        Op4D {
+            t: self.time,
+            event_type: EventType::On,
+            voice: self.voice,
+            event: self.event,
+            x: self.pan,
+            y: self.frequency,
+            z: self.gain,
+            l: self.length,
+        }
+    }
+}
+
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct Normalizer {
     pub x: MinMax,
@@ -104,6 +126,7 @@ impl Op4D {
     }
 }
 
+
 fn normalize_value(value: f64, min: f64, max: f64) -> f64 {
     (value - min) / (max - min)
 }
@@ -133,8 +156,7 @@ fn get_min_max_op4d_1d(vec_op4d: &Vec<Op4D>) -> (Normalizer, f64) {
         voice: 10,
         x: 0.0,
         y: 10_000.0,
-        z: 1.0,
-        l: 1.0,
+        z: 1.0, l: 1.0,
     };
 
     let mut max_len: f64 = 0.0;
@@ -257,7 +279,7 @@ struct Json1d {
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
-struct NormalizerJson {
+pub struct NormalizerJson {
     filename: String,
     normalizer: Normalizer
 }
@@ -277,9 +299,6 @@ pub fn to_json(basis: &Basis, composition: &NormalForm, table: &OpOrNfTable, fil
 
     normalize_op4d_1d(&mut op4d_1d, normalizer.clone());
 
-
-    
-
     let json = to_string(&Json1d {
         filename: filename.clone(),
         ops: op4d_1d,
@@ -291,7 +310,9 @@ pub fn to_json(basis: &Basis, composition: &NormalForm, table: &OpOrNfTable, fil
     printed("JSON".to_string());
 }
 
-pub fn to_csv(basis: &Basis, composition: &NormalForm, table: &OpOrNfTable, filename: String) { banner("CSV-ing".to_string(), filename.clone()); let vec_timed_op = composition_to_vec_timed_op(composition, table);
+pub fn to_csv(basis: &Basis, composition: &NormalForm, table: &OpOrNfTable, filename: String) { 
+    banner("CSV-ing".to_string(), filename.clone()); 
+    let vec_timed_op = composition_to_vec_timed_op(composition, table);
     let mut op4d_1d = vec_timed_op_to_vec_op4d(vec_timed_op, basis);
 
     op4d_1d.retain(|op| {

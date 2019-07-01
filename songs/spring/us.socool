@@ -1,12 +1,12 @@
 { f: 220, l: 1, g: 1, p: 0}
 
 overtones = {
-    O[
-    	(3/2, 3, 1, -1/2),
-    	(3/2, 0, 1, 1/2),
-      	(1/1, 2, 1, -1/2),
-      	(1/1, 0, 1, 1/2),
-  	]
+  O[
+    (3/2, 3, 1, -1/2),
+    (3/2, 0, 1, 1/2),
+    (1/1, 2, 1, -1/2),
+    (1/1, 0, 1, 1/2),
+  ]
 }
 
 thing1 = {
@@ -19,12 +19,12 @@ thing1 = {
 }
 
 thing2 = {
-    O[
-    	(3, 3, 1/4, -1/2),
-    	(3, 0, 1/4, 1/2),
-      	(1/1, 2, 1, -1/2),
-      	(1/1, 0, 1, 1/2),
-  	]
+  O[
+    (3, 3, 1/4, -1/2),
+    (3, 0, 1/4, 1/2),
+    (1/1, 2, 1, -1/2),
+    (1/1, 0, 1, 1/2),
+  ]
 	| Tm 1/2
 	| Seq [
 		AsIs,
@@ -56,7 +56,18 @@ accomp = {
 		Seq [PanA -1, PanA 1 | Tm 2] | Repeat 8
 	]
 	| Seq [PanM -1, PanM 1]
-	| ModulateBy [AsIs | Length 20, Tm 0, Seq [Tm 1, Tm 7/8, Tm 4/5 | PanM -1, Tm 3/4 | PanM -1, Tm 2/3] | Length 1/5]
+	| ModulateBy [
+    AsIs | Length 20, 
+    Tm 0, 
+    Seq [
+      Tm 1, 
+      Tm 7/8, 
+      Tm 4/5 | PanM -1, 
+      Tm 3/4 | PanM -1, 
+      Tm 2/3
+    ] 
+    | Length 1/5
+  ]
 }
 
 main_melody = {
@@ -91,14 +102,10 @@ main_melody = {
 	> FitLength accomp
 }
 
-
-
-
 main = {
 	Overlay [
 		main_melody,
 		accomp | Gain 1/2,
 	] | Repeat 2
-
 }
 	

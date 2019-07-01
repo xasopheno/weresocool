@@ -1,6 +1,5 @@
 use crate::analyze::{Analyze, DetectionResult};
-use crate::generation::parsed_to_render::*;
-use crate::instrument::{Basis, Oscillator};
+use crate::generation::parsed_to_render::*; use crate::instrument::{Basis, Oscillator};
 use crate::ring_buffer::RingBuffer;
 use crate::settings::{default_settings, Settings};
 use crate::write::write_output_buffer;
@@ -31,7 +30,7 @@ fn process_result(result: &mut DetectionResult) -> Basis {
     Basis {
         f: 2.0 * result.frequency as f64,
         l: 1.0,
-        g: result.gain as f64,
+        g: 4.0 * result.gain as f64,
         p: 0.0,
         a: 44100.0,
         d: 44100.0,
