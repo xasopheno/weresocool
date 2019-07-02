@@ -6,9 +6,7 @@ use crate::{
 pub fn r_to_f64(r: Rational64) -> f64 {
     *r.numer() as f64 / *r.denom() as f64
 }
-
-#[derive(Debug, Clone, Eq, Ord, PartialEq, PartialOrd)]
-pub struct TimedOp {
+#[derive(Debug, Clone, Eq, Ord, PartialEq, PartialOrd)] pub struct TimedOp {
     pub t: Rational64,
     pub event_type: EventType,
     pub voice: usize,
@@ -78,7 +76,7 @@ impl OpCsv1d {
         //self.z = normalize_value(self.z, normalizer.z.min, normalizer.z.max);
     //}
 
-    pub fn to_op4d(&self, normalizer: NormalizerJson) -> Op4D {
+    pub fn to_op4d(&self, normalizer: &NormalizerJson) -> Op4D {
         dbg!(normalizer);
         Op4D {
             t: self.time,
