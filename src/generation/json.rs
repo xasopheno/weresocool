@@ -65,13 +65,13 @@ pub struct Op4D {
 
 #[derive(Debug, Clone, Serialize, Deserialize, PartialEq)]
 pub struct OpCsv1d {
-    time: f64,
-    length: f64,
-    frequency: f64,
-    pan: f64,
-    gain: f64,
-    voice: usize,
-    event: usize,
+    pub time: f64,
+    pub length: f64,
+    pub frequency: f64,
+    pub pan: f64,
+    pub gain: f64,
+    pub voice: usize,
+    pub event: usize,
 }
 
 impl OpCsv1d {
@@ -90,7 +90,7 @@ impl OpCsv1d {
 
     pub fn denormalize(&mut self, normalizer: &NormalizerJson) {
         let n = &normalizer.normalizer;
-        self.pan = (denormalize_value(self.pan, n.x.min, n.x.max) / 2.0) - 1.0;
+        self.pan = 0.5 * denormalize_value(self.pan, n.x.min, n.x.max) + 1.0;
         self.frequency = denormalize_value(self.frequency, n.y.min, n.y.max);
         self.gain = denormalize_value(self.gain, n.z.min, n.z.max);
     }
@@ -134,7 +134,7 @@ fn normalize_value(value: f64, min: f64, max: f64) -> f64 {
 }
 
 fn denormalize_value(value: f64, min: f64, max: f64) -> f64 {
-    (value + min) * (max - min)
+    value * (max - min) + min
 }
 
 fn normalize_op4d_1d(op4d_1d: &mut Vec<Op4D>, n: Normalizer) {
@@ -289,6 +289,7 @@ struct Json1d {
 pub struct NormalizerJson {
     filename: String,
     normalizer: Normalizer,
+    basis: Basis,
 }
 
 pub fn to_json(basis: &Basis, composition: &NormalForm, table: &OpOrNfTable, filename: String) {
@@ -332,6 +333,7 @@ pub fn to_csv(basis: &Basis, composition: &NormalForm, table: &OpOrNfTable, file
     let normalizer_string = to_string(&NormalizerJson {
         filename: filename.clone(),
         normalizer: normalizer.clone(),
+        basis: basis.clone(),
     })
     .unwrap();
 

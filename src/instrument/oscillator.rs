@@ -4,6 +4,7 @@ use crate::instrument::{
     voice::{Voice, VoiceUpdate},
 };
 use crate::settings::Settings;
+use serde::{Deserialize, Serialize};
 use socool_ast::PointOp;
 use socool_parser::Init;
 use std::f64::consts::PI;
@@ -20,7 +21,7 @@ pub struct Oscillator {
     pub sample_phase: f64,
 }
 
-#[derive(Copy, Clone, Debug, PartialEq)]
+#[derive(Copy, Clone, Debug, PartialEq, Serialize, Deserialize)]
 pub struct Basis {
     pub f: f64,
     pub p: f64,
