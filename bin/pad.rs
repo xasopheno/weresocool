@@ -13,8 +13,8 @@ fn main() {
 
     let mut rdr = csv::Reader::from_reader(file);
     for result in rdr.deserialize() {
-        let op: OpCsv1d = result.unwrap();
-        let op: Op4D = op.to_op4d(&normalizer_json);
+        let mut op: OpCsv1d = result.unwrap();
+        op.denormalize(&normalizer_json);
 
         println!("{:?}", op);
     }

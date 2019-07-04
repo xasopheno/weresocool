@@ -2,11 +2,16 @@ use crate::{
     instrument::Basis,
     ui::{banner, printed},
     write::{write_composition_to_csv, write_composition_to_json, write_normalizer_to_json},
-}; use num_rational::Rational64; use serde::{Deserialize, Serialize}; use serde_json::to_string; use socool_ast::{NormalForm, Normalize, OpOrNfTable, PointOp}; 
+};
+use num_rational::Rational64;
+use serde::{Deserialize, Serialize};
+use serde_json::to_string;
+use socool_ast::{NormalForm, Normalize, OpOrNfTable, PointOp};
 pub fn r_to_f64(r: Rational64) -> f64 {
     *r.numer() as f64 / *r.denom() as f64
 }
-#[derive(Debug, Clone, Eq, Ord, PartialEq, PartialOrd)] pub struct TimedOp {
+#[derive(Debug, Clone, Eq, Ord, PartialEq, PartialOrd)]
+pub struct TimedOp {
     pub t: Rational64,
     pub event_type: EventType,
     pub voice: usize,
@@ -70,14 +75,7 @@ pub struct OpCsv1d {
 }
 
 impl OpCsv1d {
-    //pub fn normalize(&mut self, normalizer: &Normalizer) {
-        //self.x = 2.0 * normalize_value(self.x, normalizer.x.min, normalizer.x.max) - 1.0;
-        //self.y = normalize_value(self.y, normalizer.y.min, normalizer.y.max);
-        //self.z = normalize_value(self.z, normalizer.z.min, normalizer.z.max);
-    //}
-
-    pub fn to_op4d(&self, normalizer: &NormalizerJson) -> Op4D {
-        dbg!(normalizer);
+    pub fn to_op4d(&self) -> Op4D {
         Op4D {
             t: self.time,
             event_type: EventType::On,
@@ -88,6 +86,13 @@ impl OpCsv1d {
             z: self.gain,
             l: self.length,
         }
+    }
+
+    pub fn denormalize(&mut self, normalizer: &NormalizerJson) {
+        let n = &normalizer.normalizer;
+        self.pan = (denormalize_value(self.pan, n.x.min, n.x.max) / 2.0) - 1.0;
+        self.frequency = denormalize_value(self.frequency, n.y.min, n.y.max);
+        self.gain = denormalize_value(self.gain, n.z.min, n.z.max);
     }
 }
 
@@ -124,9 +129,12 @@ impl Op4D {
     }
 }
 
-
 fn normalize_value(value: f64, min: f64, max: f64) -> f64 {
     (value - min) / (max - min)
+}
+
+fn denormalize_value(value: f64, min: f64, max: f64) -> f64 {
+    (value + min) * (max - min)
 }
 
 fn normalize_op4d_1d(op4d_1d: &mut Vec<Op4D>, n: Normalizer) {
@@ -154,7 +162,8 @@ fn get_min_max_op4d_1d(vec_op4d: &Vec<Op4D>) -> (Normalizer, f64) {
         voice: 10,
         x: 0.0,
         y: 10_000.0,
-        z: 1.0, l: 1.0,
+        z: 1.0,
+        l: 1.0,
     };
 
     let mut max_len: f64 = 0.0;
@@ -279,7 +288,7 @@ struct Json1d {
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct NormalizerJson {
     filename: String,
-    normalizer: Normalizer
+    normalizer: Normalizer,
 }
 
 pub fn to_json(basis: &Basis, composition: &NormalForm, table: &OpOrNfTable, filename: String) {
@@ -308,8 +317,8 @@ pub fn to_json(basis: &Basis, composition: &NormalForm, table: &OpOrNfTable, fil
     printed("JSON".to_string());
 }
 
-pub fn to_csv(basis: &Basis, composition: &NormalForm, table: &OpOrNfTable, filename: String) { 
-    banner("CSV-ing".to_string(), filename.clone()); 
+pub fn to_csv(basis: &Basis, composition: &NormalForm, table: &OpOrNfTable, filename: String) {
+    banner("CSV-ing".to_string(), filename.clone());
     let vec_timed_op = composition_to_vec_timed_op(composition, table);
     let mut op4d_1d = vec_timed_op_to_vec_op4d(vec_timed_op, basis);
 
