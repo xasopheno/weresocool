@@ -17,9 +17,9 @@ fn main() {
         let mut op: OpCsv1d = result.unwrap();
         op.denormalize(&normalizer_json);
 
-        if op.frequency > 3.962 {
-            println!("{:?}", op.frequency);
-        }
+        //if (op.pan > 1.4 && op.pan < 0.0) || op.pan < -1.4 && op.pan > 0.0 {
+        println!("{:?}", op.frequency);
+        //}
     }
 }
 

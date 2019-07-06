@@ -1,1 +1,1 @@
-{"filename":"songs/transcriptions/bach_prelude_2.socool","normalizer":{"x":{"min":-0.0,"max":0.0},"y":{"min":1.8145805160103186,"max":2.9395192526186187},"z":{"min":1.0,"max":1.0}},"basis":{"f":261.0,"p":0.0,"g":1.0,"l":1.0,"a":44100.0,"d":44100.0}}
+{"filename":"songs/transcriptions/bach_prelude_2.socool","normalizer":{"x":{"min":-0.0,"max":0.0},"y":{"min":0.0,"max":2.9395192526186187},"z":{"min":0.0,"max":1.0}},"basis":{"f":261.0,"p":0.0,"g":1.0,"l":1.0,"a":44100.0,"d":44100.0}}

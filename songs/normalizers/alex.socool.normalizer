@@ -1,1 +1,1 @@
-{"filename":"songs/spring/alex.socool","normalizer":{"x":{"min":-1.5,"max":1.5},"y":{"min":1.9834007381805383,"max":3.962448262427513},"z":{"min":0.015625,"max":1.0}},"basis":{"f":220.0,"p":0.0,"g":1.0,"l":1.0,"a":44100.0,"d":44100.0}}
+{"filename":"songs/spring/alex.socool","normalizer":{"x":{"min":-1.5,"max":1.5},"y":{"min":0.0,"max":3.962448262427513},"z":{"min":0.0,"max":1.0}},"basis":{"f":220.0,"p":0.0,"g":1.0,"l":1.0,"a":44100.0,"d":44100.0}}

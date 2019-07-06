@@ -90,9 +90,9 @@ impl OpCsv1d {
 
     pub fn denormalize(&mut self, normalizer: &NormalizerJson) {
         let n = &normalizer.normalizer;
-        self.pan = 0.5 * denormalize_value(self.pan, n.x.min, n.x.max) + 1.0;
-        self.frequency = denormalize_value(self.frequency, n.y.min, n.y.max);
-        self.gain = denormalize_value(self.gain, n.z.min, n.z.max);
+        self.pan = denormalize_value(self.pan, -1.0, 1.0, n.x.min, n.x.max);
+        self.frequency = denormalize_value(self.frequency, 0.0, 1.0, n.y.min, n.y.max);
+        self.gain = denormalize_value(self.gain, 0.0, 1.0, n.z.min, n.z.max);
     }
 }
 
@@ -133,8 +133,9 @@ fn normalize_value(value: f64, min: f64, max: f64) -> f64 {
     (value - min) / (max - min)
 }
 
-fn denormalize_value(value: f64, min: f64, max: f64) -> f64 {
-    value * (max - min) + min
+fn denormalize_value(value: f64, min: f64, max: f64, goal_min: f64, goal_max: f64) -> f64 {
+    (goal_max - goal_min) / (max - min) * (value - max) + goal_max
+    //value * (max - min) + min
 }
 
 fn normalize_op4d_1d(op4d_1d: &mut Vec<Op4D>, n: Normalizer) {
@@ -323,9 +324,13 @@ pub fn to_csv(basis: &Basis, composition: &NormalForm, table: &OpOrNfTable, file
     let vec_timed_op = composition_to_vec_timed_op(composition, table);
     let mut op4d_1d = vec_timed_op_to_vec_op4d(vec_timed_op, basis);
 
-    op4d_1d.retain(|op| {
+    op4d_1d.iter_mut().for_each(|op| {
         let is_silent = op.y == 0.0 || op.z <= 0.0;
-        !is_silent
+
+        if is_silent {
+            op.y = 0.0;
+            op.z = 0.0;
+        };
     });
 
     let (normalizer, _max_len) = get_min_max_op4d_1d(&op4d_1d);
