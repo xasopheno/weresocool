@@ -1,14 +1,37 @@
-use crate::{
-    instrument::Basis,
-    ui::{banner, printed},
-    write::{write_composition_to_csv, write_composition_to_json, write_normalizer_to_json},
-};
+use crate::instrument::Basis;
 use num_rational::Rational64;
 use serde::{Deserialize, Serialize};
-use serde_json::to_string;
-use socool_ast::{NormalForm, Normalize, OpOrNfTable, PointOp};
 pub fn r_to_f64(r: Rational64) -> f64 {
     *r.numer() as f64 / *r.denom() as f64
+}
+
+fn normalize_value(value: f64, min: f64, max: f64) -> f64 {
+    (value - min) / (max - min)
+}
+
+fn denormalize_value(value: f64, min: f64, max: f64, goal_min: f64, goal_max: f64) -> f64 {
+    (goal_max - goal_min) / (max - min) * (value - max) + goal_max
+    //value * (max - min) + min
+}
+
+#[derive(Debug, Clone, Eq, Ord, PartialEq, PartialOrd, Serialize, Deserialize)]
+pub enum EventType {
+    On,
+    Off,
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize)]
+struct Json1d {
+    pub filename: String,
+    pub ops: Vec<Op4D>,
+    pub length: f64,
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct NormalizerJson {
+    pub filename: String,
+    pub normalizer: Normalizer,
+    pub basis: Basis,
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize, PartialEq)]
@@ -91,7 +114,7 @@ pub struct TimedOp {
 }
 
 impl TimedOp {
-    fn to_op_4d(&self, basis: &Basis) -> Op4D {
+    pub fn to_op_4d(&self, basis: &Basis) -> Op4D {
         let zero = Rational64::new(0, 1);
         let is_silent = (self.fm == zero && self.fa < Rational64::new(40, 1)) || self.g == zero;
         let y = if is_silent {
