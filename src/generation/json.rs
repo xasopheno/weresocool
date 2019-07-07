@@ -1,11 +1,10 @@
 use crate::{
-    generation::{EventType, MinMax, Normalizer, NormalizerJson, Op4D, TimedOp},
+    generation::{EventType, Json1d, MinMax, Normalizer, NormalizerJson, Op4D, TimedOp},
     instrument::Basis,
     ui::{banner, printed},
     write::{write_composition_to_csv, write_composition_to_json, write_normalizer_to_json},
 };
 use num_rational::Rational64;
-use serde::{Deserialize, Serialize};
 use serde_json::to_string;
 use socool_ast::{NormalForm, Normalize, OpOrNfTable, PointOp};
 pub fn r_to_f64(r: Rational64) -> f64 {
@@ -145,13 +144,6 @@ pub fn composition_to_vec_timed_op(composition: &NormalForm, table: &OpOrNfTable
     result.sort_unstable_by_key(|a| a.t);
 
     result
-}
-
-#[derive(Debug, Clone, Serialize, Deserialize)]
-struct Json1d {
-    filename: String,
-    ops: Vec<Op4D>,
-    length: f64,
 }
 
 pub fn to_json(basis: &Basis, composition: &NormalForm, table: &OpOrNfTable, filename: String) {
