@@ -5,10 +5,6 @@ pub fn r_to_f64(r: Rational64) -> f64 {
     *r.numer() as f64 / *r.denom() as f64
 }
 
-//fn normalize_value(value: f64, min: f64, max: f64) -> f64 {
-//(value - min) / (max - min)
-//}
-
 fn normalize_value(value: f64, min: f64, max: f64, goal_min: f64, goal_max: f64) -> f64 {
     (goal_max - goal_min) / (max - min) * (value - max) + goal_max
 }
@@ -225,4 +221,11 @@ fn test_normalize_denormalize_value() {
 
     let result_denorm = normalize_value(result_norm, 0.0, 1.0, 0.0, 10.0);
     assert_eq!(result_denorm, 5.0);
+
+    let input = 2.5;
+    let result_norm = normalize_value(input, -5.0, 5.0, 0.0, 1.0);
+    assert_eq!(result_norm, 0.75);
+
+    let result_denorm = normalize_value(result_norm, 0.0, 1.0, -5.0, 5.0);
+    assert_eq!(result_denorm, 2.5);
 }
