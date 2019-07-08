@@ -35,7 +35,7 @@ fn main() {
         if v < nf.len() {
             nf[v].push(thing);
         } else {
-            for i in 0..(v - nf.len() + 1) {
+            for _ in 0..(v - nf.len() + 1) {
                 nf.push(vec![]);
             }
             nf[v].push(thing);
