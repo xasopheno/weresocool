@@ -1,8 +1,9 @@
 /target
 **/*.rs.bk
 *.makam-cache
-socool_ast/target
-parser/ast
+socool_ast/target/
+parser/target/
+parser/release/
 *.iml
 composition.wav
 

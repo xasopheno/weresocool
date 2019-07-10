@@ -1,6 +1,8 @@
 use crate::instrument::Basis;
 use num_rational::Rational64;
 use serde::{Deserialize, Serialize};
+use socool_ast::{NormalForm, Op, OpOrNf, PointOp, NameSet, OscType};
+
 pub fn r_to_f64(r: Rational64) -> f64 {
     *r.numer() as f64 / *r.denom() as f64
 }
@@ -83,6 +85,27 @@ impl OpCsv1d {
             y: self.frequency,
             z: self.gain,
             l: self.length,
+        }
+    }
+
+    pub fn to_point_op(&self) -> PointOp {
+        let fm = Rational64::approximate_float(self.frequency).unwrap();
+        let pa = Rational64::approximate_float(self.pan).unwrap();
+        let g = Rational64::approximate_float(self.gain).unwrap();
+        let l = Rational64::approximate_float(self.length).unwrap();
+        PointOp {
+            fm,
+            fa: Rational64::new(0, 1),
+            pm: Rational64::new(0, 1),
+            pa,
+            g,
+            l,
+            attack: Rational64::new(1, 1),
+            decay: Rational64::new(1, 1),
+            decay_length: 2,
+            portamento: Rational64::new(1, 1),
+            osc_type: OscType::Sine,
+            names: NameSet::new(),
         }
     }
 
