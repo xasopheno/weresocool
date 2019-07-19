@@ -1,6 +1,5 @@
 use crate::{
-    generation::{EventType, Json1d, MinMax, Normalizer, NormalizerJson, Op4D, TimedOp},
-    instrument::Basis,
+    generation::{NNInput, EventType, Json1d, MinMax, Normalizer, NormalizerJson, Op4D, TimedOp}, instrument::Basis,
     ui::{banner, printed},
     write::{write_composition_to_csv, write_composition_to_json, write_normalizer_to_json},
 };
@@ -16,6 +15,81 @@ fn normalize_op4d_1d(op4d_1d: &mut Vec<Op4D>, n: Normalizer) {
         op.normalize(&n);
     })
 }
+
+//fn get_min_max_timed_op_1d(vec_timed_op: &Vec<TimedOp>) -> (Normalizer, f64) {
+    //let mut max_state = TimedOp {
+        //fm: Rational64::new(0,1),
+        //fa: Rational64::new(0,1),
+        //pm: Rational64::new(0,1),
+        //pa: Rational64::new(0,1),
+        //g: Rational64::new(0,1),
+        //l: Rational64::new(0,1),
+        //t: Rational64::new(0,1),
+        //event_type: EventType::On,
+        //voice: 0,
+        //event: 0,
+    //}
+
+    //let mut min_state = TimedOp {
+        //fm: Rational64::new(0,1),
+        //fa: Rational64::new(0,1),
+        //pm: Rational64::new(0,1),
+        //pa: Rational64::new(0,1),
+        //g: Rational64::new(0,1),
+        //l: Rational64::new(0,1),
+        //t: Rational64::new(0,1),
+        //event_type: EventType::On,
+        //voice: 0,
+        //event: 0,
+    //}
+
+    //let mut max_len: f64 = 0.0;
+
+    //for op in vec_timed_op {
+        //max_len = max_len.max(op.t + op.l);
+
+        //max_state = TimedOp {
+            //fm: max_state.fm.max((op.fm).abs()),
+            //fa: max_state.fa.max((op.fa).abs()),
+            //pm: max_state.pm.max((op.pm).abs()),
+            //pa: max_state.pa.max((op.pa).abs()),
+            //g: max_state.g.max((op.g).abs()),
+            //l: max_state.l.max((op.l).abs()),
+            //event: max_state.event.max(op.event),
+            //voice: max_state.voice.max(op.voice),
+            //event_type: EventType::On,
+        //};
+
+        //min_state = Op4D {
+            //x: min_state.x.min(-(op.x).abs()),
+            //y: min_state.y.min(op.y),
+            //z: min_state.z.min(op.z),
+            //l: min_state.l.min(op.l),
+            //t: min_state.t.min(op.t),
+            //event: min_state.event.min(op.event),
+            //voice: min_state.voice.min(op.voice),
+            //event_type: EventType::On,
+        //};
+    //}
+
+    ////let n = Normalizer {
+        ////x: MinMax {
+            ////min: min_state.x,
+            ////max: max_state.x,
+        ////},
+        ////y: MinMax {
+            ////min: min_state.y,
+            ////max: max_state.y,
+        ////},
+        ////z: MinMax {
+            ////min: min_state.z,
+            ////max: max_state.z,
+        ////},
+    ////};
+    //dbg!(n.clone());
+    //dbg!(max_len);
+    //(n, max_len)
+//}
 
 fn get_min_max_op4d_1d(vec_op4d: &Vec<Op4D>) -> (Normalizer, f64) {
     let mut max_state = Op4D {
@@ -120,6 +194,10 @@ pub fn vec_timed_op_to_vec_op4d(timed_ops: Vec<TimedOp>, basis: &Basis) -> Vec<O
     timed_ops.iter().map(|t_op| t_op.to_op_4d(&basis)).collect()
 }
 
+pub fn vec_timed_op_to_vec_nninput(timed_ops: Vec<TimedOp>) -> Vec<NNInput> {
+    timed_ops.iter().map(|t_op| t_op.to_nninput()).collect()
+}
+
 pub fn composition_to_vec_timed_op(composition: &NormalForm, table: &OpOrNfTable) -> Vec<TimedOp> {
     let mut normal_form = NormalForm::init();
 
@@ -134,7 +212,7 @@ pub fn composition_to_vec_timed_op(composition: &NormalForm, table: &OpOrNfTable
             let mut time = Rational64::new(0, 1);
             let mut result = vec![];
             vec_point_op.iter().enumerate().for_each(|(event, p_op)| {
-                let (on, _off) = point_op_to_timed_op(p_op, &mut time, voice, event);
+                let (on, _) = point_op_to_timed_op(p_op, &mut time, voice, event);
                 result.push(on);
             });
             result

@@ -8,5 +8,5 @@ pub use self::{
     parsed_to_render::{
         filename_to_render, r_to_f64, render, sum_vec, to_wav, RenderReturn, RenderType,
     },
-    types::{EventType, Json1d, MinMax, Normalizer, NormalizerJson, Op4D, OpCsv1d, TimedOp},
+    types::{NNInput, EventType, Json1d, MinMax, Normalizer, NormalizerJson, Op4D, OpCsv1d, TimedOp},
 };

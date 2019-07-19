@@ -8,62 +8,31 @@ use std::fs::File;
 use csv;
 use serde_json::from_reader;
 
+fn main() {
+    let file = File::open("renders/template.socool.csv").expect("No Csv File");
+    let normalizer_cache =
+        File::open("songs/normalizers/template.socool.normalizer").expect("No Normalizer found");
+    let normalizer_json: NormalizerJson =
+        from_reader(&normalizer_cache).expect("Cant read normalizer_json");
+    dbg!(normalizer_json.clone());
 
-fn blowup_1d_to_nf() {
-    #[derive(Debug, Clone)]
-    struct Thing {
-        val: u32,
-        voice: usize,
-    };
+    let mut rdr = csv::Reader::from_reader(file);
+    let mut nf: Vec<Vec<PointOp>> = vec![vec![]];
 
-    let things = vec![
-        Thing { val: 1, voice: 0 },
-        Thing { val: 2, voice: 1 },
-        Thing { val: 3, voice: 0 },
-        Thing { val: 4, voice: 0 },
-        Thing { val: 5, voice: 2 },
-    ];
-
-    let mut nf: Vec<Vec<Thing>> = vec![vec![]];
-
-    for thing in things {
-        let v = thing.voice;
+    for csv_line in rdr.deserialize() {
+        let mut op: OpCsv1d = csv_line.expect("Couldn't convert float into rational");
+        op.denormalize(&normalizer_json);
+        let v = op.voice;
+        let op = op.to_point_op();
         if v < nf.len() {
-            nf[v].push(thing);
+            nf[v].push(op);
         } else {
             for _ in 0..(v - nf.len() + 1) {
                 nf.push(vec![]);
             }
-            nf[v].push(thing);
-        }
+            nf[v].push(op);
+        };
     }
-
-    dbg!(nf);
-}
-
-fn main() {
-    let file = File::open("renders/alex.socool.csv").unwrap();
-    let normalizer_cache = File::open("songs/normalizers/alex.socool.normalizer").unwrap();
-    let normalizer_json: NormalizerJson = from_reader(&normalizer_cache).unwrap();
-    dbg!(normalizer_json.clone());
-
-    let mut rdr = csv::Reader::from_reader(file);
-
-    //let nf = OpOrNf::Nf(NormalForm {operations: vec![op]});
-    //let mut nf: Vec<Vec<Thing>> = vec![vec![]];
-    for csv_line in rdr.deserialize() {
-        let mut op: OpCsv1d = csv_line.unwrap();
-        op.denormalize(&normalizer_json);
-        //println!("{:?}", float_to_rational(op.gain));
-        println!("{:?}", op.to_point_op());
-        //println!("pm {:?}", pm);
-        //println!("g {:?}", g);
-        //println!("{:?}", float_to_rational(op.pan));
-        //println!("{:?}", float_to_rational(op.frequency));
-    }
-}
-
-#[test]
-fn test_decimal_to_fraction() {
-    assert!(true, true);
+    println!("nf {:?}", nf);
+    println!("done");
 }

@@ -1,0 +1,110 @@
+{ f: 200, l: 1, g: 1, p: 0}
+
+overtones = {
+    O[
+    	(7/1, 0, 1/10, 1),
+    	(7/1, 8, 1/10, 1),
+    	(5/1, 0, 1/10, 1),
+    	(5/1, 8, 1/10, 1),
+    	(9/4, 0, 1/2, 0),
+    	(9/4, 0, 1/2, 0),
+        (15/4, 0, 1/2, 0),
+    	(2/1, 0, 1, 1),
+    	(6/5, 0, 1/2, 0),
+      	(1/1, 0, 1, -1),
+      	(3/4, 0, 1, 1),
+      	(1/2, 4, 1/2, -1),
+      	(1/2, 0, 1/2, -1/2),
+  	]
+}
+
+thing1 = {
+	overtones
+    | Seq [AsIs, Tm 3/2, Tm 7/8]
+	| Sequence [
+        5/6^1,
+		1^1,
+        4/3^1,
+        5/4^3/4,
+        9/8^1/4,
+        25/24^1/8,
+        15/16^1/16
+	] 
+    | ModulateBy [Seq [PanM 2, PanM -2 | Gain 1/4] | Repeat 10]
+    | ModulateBy [Seq [Length 4, Tm 0 | Length 2, Length 3] | Repeat 3]
+}
+
+thing2 = {
+    O[
+    	(3/1, 0, 1, 1),
+    	(3/1, -5, 1, 1),
+    	(2/1, 8, 1, 1),
+    	(3/2, 0, 1, 1),
+    	(1/1, 3, 1, 1),
+  	]
+    | Seq [
+        0^1,
+        4/3^1,
+        15/8^1,
+        2/1^1,
+        3/2^1,
+        0^1
+    ]
+    | Seq [AsIs, Tm 4/3, Tm 0, Tm 11/8, Tm 0, Tm 25/24, Tm 9/8 | Length 3/2]
+    | Seq [AsIs, Tm 9/8 | Length 4/5]
+    | ModulateBy [Seq [PanM 1/2, PanM -1/2 | Gain 1/2] | Repeat 3] 
+    > FitLength thing1
+}
+
+thing3 = {
+    O[
+    	(5/2, 0, 1, 1/4),
+    	(2/2, -5, 1, -1/4),
+    	(3/1, 0, 1, 1/4),
+    	(3/1, -5, 1, -1/4),
+    	(2/1, 8, 1, 1/8),
+    	(3/2, 0, 1, 1/8),
+    	(1/1, 3, 1, -1/8),
+    	(1/1, 3, 1, 1/8),
+  	]
+    | Tm 2
+    | Seq [
+        Tm 0, 
+        Tm 1, 
+        Tm 0, 
+        Tm 0, 
+        Tm 1,
+    ]    
+    | Seq [
+        Tm 0,
+        Tm 3/2, 
+        Tm 5/4, 
+        Tm 4/3, 
+        Tm 0,
+        Tm 3/2, 
+        Tm 5/3,
+        Tm 0,
+        Tm 3/2,
+        Tm 5/4, 
+        Tm 0, 
+        Tm 1/1, 
+        Tm 2/1, 
+        Tm 0,
+        Tm 2/1, 
+        Tm 0,
+    ]
+    | Seq [AsIs, Tm 0, AsIs]
+    > FitLength thing1
+}
+
+main = {
+    Overlay [
+	    thing1 | Gain 1/2,
+        thing2 | Gain 3/4,
+        thing3
+
+    ]
+    | Seq [Length 3/2]
+    | Seq [AsIs, Tm 7/8 | Length 8/7, Tm 9/8 | Length 8/9, Tm 5/4 | Length 4/5]
+    | Repeat 2
+}

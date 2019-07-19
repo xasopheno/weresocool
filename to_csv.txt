@@ -9,3 +9,4 @@ spring/wonder_ball
 spring/maya
 wip/hilbert
 wip/tokyo
+template

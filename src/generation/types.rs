@@ -1,7 +1,7 @@
 use crate::instrument::Basis;
 use num_rational::Rational64;
 use serde::{Deserialize, Serialize};
-use socool_ast::{NormalForm, Op, OpOrNf, PointOp, NameSet, OscType};
+use socool_ast::{NameSet, NormalForm, Op, OpOrNf, OscType, PointOp};
 
 pub fn r_to_f64(r: Rational64) -> f64 {
     *r.numer() as f64 / *r.denom() as f64
@@ -16,6 +16,37 @@ pub enum EventType {
     On,
     Off,
 }
+
+pub struct NNInput {
+    fm: Rational64,
+    fa: Rational64,
+    pm: Rational64,
+    pa: Rational64,
+    g: Rational64,
+    l: Rational64,
+}
+
+//pub fn point_op_to_nninput(point_op: PointOp) -> NNInput {
+    //NNInput {
+        //fm: point_op.fm,
+        //fa: point_op.fm,
+        //pm: point_op.fm,
+        //pa: point_op.fm,
+        //g: point_op.fm,
+        //l: point_op.fm,
+    //}
+//}
+
+//impl NNInput {
+    //pub fn normalize(&mut self, normalizer: &Normalizer) {
+        //self.fm = normalize_value(self.x, normalizer.x.min, normalizer.x.max, 0.0, 1.0);
+        //self.fa = normalize_value(self.y, normalizer.y.min, normalizer.y.max, 0.0, 1.0);
+        //self.pm = normalize_value(self.z, normalizer.z.min, normalizer.z.max, 0.0, 1.0);
+        //self.pa = normalize_value(self.z, normalizer.z.min, normalizer.z.max, 0.0, 1.0);
+        //self.g = normalize_value(self.z, normalizer.z.min, normalizer.z.max, 0.0, 1.0);
+        //self.l = normalize_value(self.z, normalizer.z.min, normalizer.z.max, 0.0, 1.0);
+    //}
+//}
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct Json1d {
@@ -45,7 +76,7 @@ pub struct Op4D {
 
 impl Op4D {
     pub fn normalize(&mut self, normalizer: &Normalizer) {
-        self.x = normalize_value(self.x, normalizer.x.min, normalizer.x.max, 0.0, 1.0);
+        self.x = normalize_value(self.x, normalizer.x.min, normalizer.x.max, -1.0, 1.0);
         self.y = normalize_value(self.y, normalizer.y.min, normalizer.y.max, 0.0, 1.0);
         self.z = normalize_value(self.z, normalizer.z.min, normalizer.z.max, 0.0, 1.0);
     }
@@ -89,10 +120,12 @@ impl OpCsv1d {
     }
 
     pub fn to_point_op(&self) -> PointOp {
-        let fm = Rational64::approximate_float(self.frequency).unwrap();
-        let pa = Rational64::approximate_float(self.pan).unwrap();
-        let g = Rational64::approximate_float(self.gain).unwrap();
-        let l = Rational64::approximate_float(self.length).unwrap();
+        let zero = Rational64::new(0, 1);
+        dbg!(self);
+        let fm = Rational64::approximate_float(self.frequency).unwrap_or(zero);
+        let pa = Rational64::approximate_float(self.pan).unwrap_or(zero);
+        let g = Rational64::approximate_float(self.gain).unwrap_or(zero);
+        let l = Rational64::approximate_float(self.length).unwrap_or(zero);
         PointOp {
             fm,
             fa: Rational64::new(0, 1),
@@ -154,6 +187,33 @@ impl TimedOp {
             voice: self.voice,
             event: self.event,
             event_type: self.event_type.clone(),
+        }
+    }
+    pub fn to_nninput(&self) -> NNInput {
+        let zero = Rational64::new(0, 1);
+        let is_silent = (self.fm == zero && self.fa < Rational64::new(20, 1)) || self.g == zero;
+        let fm = if is_silent {
+           zero
+        } else {
+            self.fm
+        };
+        let fa = if is_silent {
+           zero
+        } else {
+            self.fa
+        };
+        let g = if is_silent {
+            zero
+        } else {
+            self.g
+        };
+        NNInput {
+            fm, 
+            fa, 
+            g,
+            pm: self.pm,
+            pa: self.pa,
+            l: self.l
         }
     }
 }

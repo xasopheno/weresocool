@@ -2,7 +2,7 @@
 
 overtones = {
     O[
-    	(1/1, 1, 1, 1),
+    	(2/1, 0, 1, 1),
       	(1/1, 0, 1, -1),
   	]
 }
@@ -10,7 +10,7 @@ overtones = {
 thing1 = {
 	overtones |
 	Sequence [
-		Tm 1
+		Tm 1,
 	] 
 }
 

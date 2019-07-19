@@ -1,3 +1,32 @@
+NNInput {
+    fm: f64,
+    fa: f64, 
+    pm: f64, 
+    pa: f64, 
+    g: f64, 
+    l: f64,
+}
+
+input = NNInput {
+    fm: 3.53432sd ,
+    fa: 0.0, 
+    pm: 0.0, 
+    pa: 1.5, 
+    g: 1.0, 
+    l: 1.0,
+}
+
+output = NNInput {
+    fm: 0.4539863,
+    fa: 0.0, 
+    pm: 0.0, 
+    pa: 0.5, 
+    g: 1.0, 
+    l: 1.0,
+}
+
+
+
 ast
 analyze
 data_gen
