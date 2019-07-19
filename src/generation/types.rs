@@ -18,12 +18,12 @@ pub enum EventType {
 }
 
 pub struct NNInput {
-    fm: Rational64,
-    fa: Rational64,
-    pm: Rational64,
-    pa: Rational64,
-    g: Rational64,
-    l: Rational64,
+    pub fm: Rational64,
+    pub fa: Rational64,
+    pub pm: Rational64,
+    pub pa: Rational64,
+    pub g: Rational64,
+    pub l: Rational64,
 }
 
 //pub fn point_op_to_nninput(point_op: PointOp) -> NNInput {

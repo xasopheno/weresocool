@@ -4,6 +4,7 @@ use crate::{
     write::{write_composition_to_csv, write_composition_to_json, write_normalizer_to_json},
 };
 use num_rational::Rational64;
+//use serde::{Serialize, Deserialize};
 use serde_json::to_string;
 use socool_ast::{NormalForm, Normalize, OpOrNfTable, PointOp};
 pub fn r_to_f64(r: Rational64) -> f64 {
@@ -16,32 +17,40 @@ fn normalize_op4d_1d(op4d_1d: &mut Vec<Op4D>, n: Normalizer) {
     })
 }
 
-//fn get_min_max_timed_op_1d(vec_timed_op: &Vec<TimedOp>) -> (Normalizer, f64) {
-    //let mut max_state = TimedOp {
-        //fm: Rational64::new(0,1),
-        //fa: Rational64::new(0,1),
-        //pm: Rational64::new(0,1),
-        //pa: Rational64::new(0,1),
-        //g: Rational64::new(0,1),
-        //l: Rational64::new(0,1),
-        //t: Rational64::new(0,1),
-        //event_type: EventType::On,
-        //voice: 0,
-        //event: 0,
-    //}
+#[derive(Debug, Clone, Eq, Ord, PartialEq, PartialOrd)]
+pub struct NNNormalizer {
+   pub fm: NNMinMax, 
+   pub fa: NNMinMax, 
+   pub pm: NNMinMax, 
+   pub pa: NNMinMax, 
+   pub g: NNMinMax, 
+   pub l: NNMinMax, 
+}
 
-    //let mut min_state = TimedOp {
-        //fm: Rational64::new(0,1),
-        //fa: Rational64::new(0,1),
-        //pm: Rational64::new(0,1),
-        //pa: Rational64::new(0,1),
-        //g: Rational64::new(0,1),
-        //l: Rational64::new(0,1),
-        //t: Rational64::new(0,1),
-        //event_type: EventType::On,
-        //voice: 0,
-        //event: 0,
-    //}
+#[derive(Debug, Clone, Eq, Ord, PartialEq, PartialOrd)]
+pub struct NNMinMax {
+    pub max: Rational64,
+    pub min: Rational64
+}
+
+fn get_min_max_nninput_1d(vec_timed_op: &Vec<NNInput>) -> (NNNormalizer) {
+    let mut max_state = NNInput {
+        fm: Rational64::new(0,1),
+        fa: Rational64::new(0,1),
+        pm: Rational64::new(0,1),
+        pa: Rational64::new(0,1),
+        g: Rational64::new(0,1),
+        l: Rational64::new(0,1),
+    };
+
+    let mut min_state = NNInput {
+        fm: Rational64::new(0,1),
+        fa: Rational64::new(0,1),
+        pm: Rational64::new(0,1),
+        pa: Rational64::new(0,1),
+        g: Rational64::new(0,1),
+        l: Rational64::new(0,1),
+    };
 
     //let mut max_len: f64 = 0.0;
 
@@ -72,24 +81,35 @@ fn normalize_op4d_1d(op4d_1d: &mut Vec<Op4D>, n: Normalizer) {
         //};
     //}
 
-    ////let n = Normalizer {
-        ////x: MinMax {
-            ////min: min_state.x,
-            ////max: max_state.x,
-        ////},
-        ////y: MinMax {
-            ////min: min_state.y,
-            ////max: max_state.y,
-        ////},
-        ////z: MinMax {
-            ////min: min_state.z,
-            ////max: max_state.z,
-        ////},
-    ////};
-    //dbg!(n.clone());
-    //dbg!(max_len);
-    //(n, max_len)
-//}
+    let n = NNNormalizer {
+        fm: NNMinMax {
+            min: min_state.fm,
+            max: max_state.fm,
+        },
+        fa: NNMinMax {
+            min: min_state.fa,
+            max: max_state.fa,
+        },
+        pm: NNMinMax {
+            min: min_state.pm,
+            max: max_state.pm,
+        },
+        pa: NNMinMax {
+            min: min_state.pa,
+            max: max_state.pa,
+        },
+        g: NNMinMax {
+            min: min_state.g,
+            max: max_state.g,
+        },
+        l: NNMinMax {
+            min: min_state.l,
+            max: max_state.l,
+        },
+    };
+    dbg!(n.clone());
+    n
+}
 
 fn get_min_max_op4d_1d(vec_op4d: &Vec<Op4D>) -> (Normalizer, f64) {
     let mut max_state = Op4D {
