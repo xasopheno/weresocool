@@ -33,7 +33,7 @@ pub struct NNMinMax {
     pub min: Rational64
 }
 
-fn get_min_max_nninput_1d(vec_timed_op: &Vec<NNInput>) -> (NNNormalizer) {
+fn get_min_max_nninput_1d(vec_nn_input: &Vec<NNInput>) -> (NNNormalizer) {
     let mut max_state = NNInput {
         fm: Rational64::new(0,1),
         fa: Rational64::new(0,1),
@@ -41,6 +41,7 @@ fn get_min_max_nninput_1d(vec_timed_op: &Vec<NNInput>) -> (NNNormalizer) {
         pa: Rational64::new(0,1),
         g: Rational64::new(0,1),
         l: Rational64::new(0,1),
+        voice: 0
     };
 
     let mut min_state = NNInput {
@@ -50,36 +51,32 @@ fn get_min_max_nninput_1d(vec_timed_op: &Vec<NNInput>) -> (NNNormalizer) {
         pa: Rational64::new(0,1),
         g: Rational64::new(0,1),
         l: Rational64::new(0,1),
+        voice: 0
     };
 
-    //let mut max_len: f64 = 0.0;
 
-    //for op in vec_timed_op {
-        //max_len = max_len.max(op.t + op.l);
+    for op in vec_nn_input {
 
-        //max_state = TimedOp {
-            //fm: max_state.fm.max((op.fm).abs()),
-            //fa: max_state.fa.max((op.fa).abs()),
-            //pm: max_state.pm.max((op.pm).abs()),
-            //pa: max_state.pa.max((op.pa).abs()),
-            //g: max_state.g.max((op.g).abs()),
-            //l: max_state.l.max((op.l).abs()),
-            //event: max_state.event.max(op.event),
-            //voice: max_state.voice.max(op.voice),
-            //event_type: EventType::On,
-        //};
+        max_state = NNInput {
+            fm: max_state.fm.max(op.fm),
+            fa: max_state.fa.max(op.fa),
+            pm: max_state.pm.max(op.pm),
+            pa: max_state.pa.max(op.pa),
+            g: max_state.g.max(op.g),
+            l: max_state.l.max(op.l),
+            voice: max_state.voice.max(op.voice),
+        };
 
-        //min_state = Op4D {
-            //x: min_state.x.min(-(op.x).abs()),
-            //y: min_state.y.min(op.y),
-            //z: min_state.z.min(op.z),
-            //l: min_state.l.min(op.l),
-            //t: min_state.t.min(op.t),
-            //event: min_state.event.min(op.event),
-            //voice: min_state.voice.min(op.voice),
-            //event_type: EventType::On,
-        //};
-    //}
+        max_state = NNInput {
+            fm: min_state.fm.min(op.fm),
+            fa: min_state.fa.min(op.fa),
+            pm: min_state.pm.min(op.pm),
+            pa: min_state.pa.min(op.pa),
+            g: min_state.g.min(op.g),
+            l: min_state.l.min(op.l),
+            voice: min_state.voice.min(op.voice),
+        };
+    }
 
     let n = NNNormalizer {
         fm: NNMinMax {

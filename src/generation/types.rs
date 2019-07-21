@@ -17,6 +17,7 @@ pub enum EventType {
     Off,
 }
 
+#[derive(Debug, Clone, Eq, Ord, PartialEq, PartialOrd)]
 pub struct NNInput {
     pub fm: Rational64,
     pub fa: Rational64,
@@ -24,6 +25,7 @@ pub struct NNInput {
     pub pa: Rational64,
     pub g: Rational64,
     pub l: Rational64,
+    pub voice: usize,
 }
 
 //pub fn point_op_to_nninput(point_op: PointOp) -> NNInput {
@@ -213,7 +215,8 @@ impl TimedOp {
             g,
             pm: self.pm,
             pa: self.pa,
-            l: self.l
+            l: self.l,
+            voice: self.voice
         }
     }
 }
