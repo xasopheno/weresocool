@@ -1,4 +1,4 @@
-use crate::generation::{to_json, to_csv};
+use crate::generation::{to_json, to_csv, to_nn_csv};
 use crate::instrument::{Basis, Normalize, Oscillator, StereoWaveform};
 use crate::render::{Render, RenderPointOp};
 use crate::settings::default_settings;
@@ -51,7 +51,7 @@ pub fn filename_to_render(filename: &str, r_type: RenderType) -> RenderReturn {
             RenderReturn::Json4d("json".to_string())
         }
         RenderType::Csv1d => {
-            to_csv(&basis, &nf, &parsed.table.clone(), filename.to_string());
+            to_nn_csv(&nf, &parsed.table.clone(), filename.to_string());
             RenderReturn::Csv1d("json".to_string())
         }
         RenderType::StereoWaveform | RenderType::Wav => {

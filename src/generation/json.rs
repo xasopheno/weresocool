@@ -1,10 +1,9 @@
 use crate::{
-    generation::{NNInput, EventType, Json1d, MinMax, Normalizer, NormalizerJson, Op4D, TimedOp}, instrument::Basis,
+    generation::{NNInput, EventType, Json1d, MinMax, Normalizer, NormalizerJson, Op4D, TimedOp, NNNormalizer, NNMinMax}, instrument::Basis,
     ui::{banner, printed},
     write::{write_composition_to_csv, write_composition_to_json, write_normalizer_to_json},
 };
 use num_rational::Rational64;
-//use serde::{Serialize, Deserialize};
 use serde_json::to_string;
 use socool_ast::{NormalForm, Normalize, OpOrNfTable, PointOp};
 pub fn r_to_f64(r: Rational64) -> f64 {
@@ -17,46 +16,37 @@ fn normalize_op4d_1d(op4d_1d: &mut Vec<Op4D>, n: Normalizer) {
     })
 }
 
-#[derive(Debug, Clone, Eq, Ord, PartialEq, PartialOrd)]
-pub struct NNNormalizer {
-   pub fm: NNMinMax, 
-   pub fa: NNMinMax, 
-   pub pm: NNMinMax, 
-   pub pa: NNMinMax, 
-   pub g: NNMinMax, 
-   pub l: NNMinMax, 
+fn normalize_nn_input_1d(nn_1d: &mut Vec<NNInput>, n: NNNormalizer) {
+    nn_1d.iter_mut().for_each(|op| {
+        op.normalize(&n);
+    })
 }
 
-#[derive(Debug, Clone, Eq, Ord, PartialEq, PartialOrd)]
-pub struct NNMinMax {
-    pub max: Rational64,
-    pub min: Rational64
-}
+
 
 fn get_min_max_nninput_1d(vec_nn_input: &Vec<NNInput>) -> (NNNormalizer) {
     let mut max_state = NNInput {
-        fm: Rational64::new(0,1),
-        fa: Rational64::new(0,1),
-        pm: Rational64::new(0,1),
-        pa: Rational64::new(0,1),
-        g: Rational64::new(0,1),
-        l: Rational64::new(0,1),
-        voice: 0
+        fm: 0.0,
+        fa: 0.0,
+        pm: 0.0,
+        pa: 0.0,
+        g: 0.0,
+        l: 0.0,
+        voice: 0.0
     };
 
     let mut min_state = NNInput {
-        fm: Rational64::new(0,1),
-        fa: Rational64::new(0,1),
-        pm: Rational64::new(0,1),
-        pa: Rational64::new(0,1),
-        g: Rational64::new(0,1),
-        l: Rational64::new(0,1),
-        voice: 0
+        fm: 0.0,
+        fa: 0.0,
+        pm: 0.0,
+        pa: 0.0,
+        g: 0.0,
+        l: 0.0,
+        voice: 0.0
     };
 
 
     for op in vec_nn_input {
-
         max_state = NNInput {
             fm: max_state.fm.max(op.fm),
             fa: max_state.fa.max(op.fa),
@@ -67,7 +57,7 @@ fn get_min_max_nninput_1d(vec_nn_input: &Vec<NNInput>) -> (NNNormalizer) {
             voice: max_state.voice.max(op.voice),
         };
 
-        max_state = NNInput {
+        min_state = NNInput {
             fm: min_state.fm.min(op.fm),
             fa: min_state.fa.min(op.fa),
             pm: min_state.pm.min(op.pm),
@@ -102,6 +92,10 @@ fn get_min_max_nninput_1d(vec_nn_input: &Vec<NNInput>) -> (NNNormalizer) {
         l: NNMinMax {
             min: min_state.l,
             max: max_state.l,
+        },
+        voice: NNMinMax {
+            min: min_state.voice,
+            max: max_state.voice,
         },
     };
     dbg!(n.clone());
@@ -295,4 +289,19 @@ pub fn to_csv(basis: &Basis, composition: &NormalForm, table: &OpOrNfTable, file
     normalize_op4d_1d(&mut op4d_1d, normalizer);
 
     write_composition_to_csv(&mut op4d_1d, &filename);
+}
+
+pub fn to_nn_csv(composition: &NormalForm, table: &OpOrNfTable, filename: String) {
+    banner("CSV-ing".to_string(), filename.clone());
+    let vec_timed_op = composition_to_vec_timed_op(composition, table);
+    let mut nn_1d = vec_timed_op_to_vec_nninput(vec_timed_op);
+
+    let normalizer = get_min_max_nninput_1d(&nn_1d);
+    let normalizer_string = to_string(&normalizer).unwrap();
+
+    write_normalizer_to_json(&normalizer_string, &filename.clone());
+
+    normalize_nn_input_1d(&mut nn_1d, normalizer);
+
+    //write_composition_to_csv(&mut op4d_1d, &filename);
 }

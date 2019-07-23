@@ -17,38 +17,29 @@ pub enum EventType {
     Off,
 }
 
-#[derive(Debug, Clone, Eq, Ord, PartialEq, PartialOrd)]
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
 pub struct NNInput {
-    pub fm: Rational64,
-    pub fa: Rational64,
-    pub pm: Rational64,
-    pub pa: Rational64,
-    pub g: Rational64,
-    pub l: Rational64,
-    pub voice: usize,
+    pub fm: f64,
+    pub fa: f64,
+    pub pm: f64,
+    pub pa: f64,
+    pub g: f64,
+    pub l: f64,
+    pub voice: f64,
 }
 
-//pub fn point_op_to_nninput(point_op: PointOp) -> NNInput {
-    //NNInput {
-        //fm: point_op.fm,
-        //fa: point_op.fm,
-        //pm: point_op.fm,
-        //pa: point_op.fm,
-        //g: point_op.fm,
-        //l: point_op.fm,
-    //}
-//}
 
-//impl NNInput {
-    //pub fn normalize(&mut self, normalizer: &Normalizer) {
-        //self.fm = normalize_value(self.x, normalizer.x.min, normalizer.x.max, 0.0, 1.0);
-        //self.fa = normalize_value(self.y, normalizer.y.min, normalizer.y.max, 0.0, 1.0);
-        //self.pm = normalize_value(self.z, normalizer.z.min, normalizer.z.max, 0.0, 1.0);
-        //self.pa = normalize_value(self.z, normalizer.z.min, normalizer.z.max, 0.0, 1.0);
-        //self.g = normalize_value(self.z, normalizer.z.min, normalizer.z.max, 0.0, 1.0);
-        //self.l = normalize_value(self.z, normalizer.z.min, normalizer.z.max, 0.0, 1.0);
-    //}
-//}
+impl NNInput {
+    pub fn normalize(&mut self, normalizer: &NNNormalizer) {
+        self.fm = normalize_value(self.fm, normalizer.fm.min, normalizer.fm.max, 0.0, 1.0);
+        self.fa = normalize_value(self.fa, normalizer.fa.min, normalizer.fa.max, 0.0, 1.0);
+        self.pm = normalize_value(self.pm, normalizer.pm.min, normalizer.pm.max, 0.0, 1.0);
+        self.pa = normalize_value(self.pa, normalizer.pa.min, normalizer.pa.max, 0.0, 1.0);
+        self.g = normalize_value(self.g, normalizer.g.min, normalizer.g.max, 0.0, 1.0);
+        self.l = normalize_value(self.l, normalizer.l.min, normalizer.l.max, 0.0, 1.0);
+        self.voice = normalize_value(self.voice, normalizer.voice.min, normalizer.voice.max, 0.0, 1.0);
+    }
+}
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct Json1d {
@@ -210,15 +201,31 @@ impl TimedOp {
             self.g
         };
         NNInput {
-            fm, 
-            fa, 
-            g,
-            pm: self.pm,
-            pa: self.pa,
-            l: self.l,
-            voice: self.voice
+            fm: r_to_f64(fm), 
+            fa: r_to_f64(fa), 
+            g: r_to_f64(g),
+            pm: r_to_f64(self.pm),
+            pa: r_to_f64(self.pa),
+            l: r_to_f64(self.l),
+            voice: self.voice as f64
         }
     }
+}
+
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
+pub struct NNNormalizer {
+   pub fm: NNMinMax, 
+   pub fa: NNMinMax, 
+   pub pm: NNMinMax, 
+   pub pa: NNMinMax, 
+   pub g: NNMinMax, 
+   pub l: NNMinMax, 
+   pub voice: NNMinMax,
+}
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
+pub struct NNMinMax {
+    pub max: f64,
+    pub min: f64
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
