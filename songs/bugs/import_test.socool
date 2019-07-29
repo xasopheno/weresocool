@@ -1,5 +1,5 @@
 import songs/bugs/import_test_2.socool
---import songs/test/std_test.socool as standard
+import songs/test/std_test.socool as standard
 
 { f: 220, l: 1, g: 1, p: 0 }
 
@@ -9,11 +9,10 @@ thing = {
         AsIs,
         Tm 2,
     ] 
-    --| ModulateBy [standard.fade_out] 
+    | ModulateBy [standard.fade_out] 
 }
 
 main = {
-    import_test_2.thing
-	--thing
+	thing
 }
 	

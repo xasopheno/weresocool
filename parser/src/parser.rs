@@ -33,7 +33,6 @@ fn process_op_table(ot: OpOrNfTable) -> OpOrNfTable {
     let mut result = OpOrNfTable::new();
 
     for (name, op_or_nf) in ot.iter() {
-        dbg!(name, op_or_nf);
         match op_or_nf {
             Nf(nf) => {
                 result.insert(name.to_string(), Nf(nf.clone()));
@@ -87,11 +86,9 @@ pub fn parse_file(filename: &str, parse_table: Option<OpOrNfTable>) -> ParsedCom
             panic!("File not found");
         }
     }
-    dbg!(&imports_needed);
 
     for import in imports_needed {
         let (filepath, import_name) = get_filepath_and_import_name(import);
-        dbg!(&filepath, &import_name);
         let parsed_composition = parse_file(&filepath.to_string(), Some(table.clone()));
 
         for (key, val) in parsed_composition.table {
@@ -100,10 +97,6 @@ pub fn parse_file(filename: &str, parse_table: Option<OpOrNfTable>) -> ParsedCom
             name.push_str(&key);
             table.insert(name, val);
         }
-    }
-
-    for value in table.iter() {
-    	dbg!(value.0);
     }
 
     let init = socool::SoCoolParser::new().parse(&mut table, &composition);

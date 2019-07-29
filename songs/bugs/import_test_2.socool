@@ -4,7 +4,7 @@ import    songs/test/std_test.socool
 
 thing = {
        Sequence [	 
-           AsIs, Tm 3/2
+        AsIs, Tm 3/2
       ] 
       | ModulateBy [std_test.fade_out]
 }
