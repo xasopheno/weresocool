@@ -1,16 +1,19 @@
-import songs/test/import_test_2.socool
-import songs/test/std_test.socool as standard
+import songs/bugs/import_test_2.socool
+--import songs/test/std_test.socool as standard
 
-{ f: 220, l: 1, g: 1, p: 0}
+{ f: 220, l: 1, g: 1, p: 0 }
 
-thing = { import_test_2.thing |
-	Sequence [
-		AsIs,
-		Tm 2,
-	] | ModulateBy [standard.fade_out] 
+thing = { 
+    import_test_2.thing |
+    Sequence [
+        AsIs,
+        Tm 2,
+    ] 
+    --| ModulateBy [standard.fade_out] 
 }
 
 main = {
-	thing
+    import_test_2.thing
+	--thing
 }
 	

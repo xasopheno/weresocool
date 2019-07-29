@@ -204,6 +204,6 @@ Rational: Rational64 = {
     <n: Int> "/" <d:Int> => Rational64::new(n, d),
 };
 
-Name: String = <s:r"[a-z_][a-zA-Z_0-9]*"> => s.to_string();
+Name: String = <s:r"[a-z_][a-zA-Z_0-9.]*"> => s.to_string();
 Float: String = <s:r"-?(0|([1-9]\d*))\.\d+"> => s.to_string();
 Int: i64 = <s:r"-?[0-9]+"> => i64::from_str(s).unwrap();

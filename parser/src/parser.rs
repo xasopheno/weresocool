@@ -3,7 +3,7 @@ extern crate colored;
 extern crate num_rational;
 extern crate socool_ast;
 use crate::error_handling::handle_parse_error;
-use crate::imports::is_import;
+use crate::imports::{get_filepath_and_import_name, is_import};
 use colored::*;
 use num_rational::Rational64;
 use socool_ast::{
@@ -33,6 +33,7 @@ fn process_op_table(ot: OpOrNfTable) -> OpOrNfTable {
     let mut result = OpOrNfTable::new();
 
     for (name, op_or_nf) in ot.iter() {
+        dbg!(name, op_or_nf);
         match op_or_nf {
             Nf(nf) => {
                 result.insert(name.to_string(), Nf(nf.clone()));
@@ -86,18 +87,24 @@ pub fn parse_file(filename: &str, parse_table: Option<OpOrNfTable>) -> ParsedCom
             panic!("File not found");
         }
     }
+    dbg!(&imports_needed);
 
-    //    for import in imports_needed {
-    //        let (filepath, import_name) = get_filepath_and_import_name(import);
-    //        let parsed_composition = parse_file(&filepath.to_string(), Some(table.clone()));
-    //
-    //        for (key, val) in parsed_composition.table {
-    //            let mut name = import_name.clone();
-    //            name.push('.');
-    //            name.push_str(&key);
-    //            table.insert(name, val);
-    //        }
-    //    }
+    for import in imports_needed {
+        let (filepath, import_name) = get_filepath_and_import_name(import);
+        dbg!(&filepath, &import_name);
+        let parsed_composition = parse_file(&filepath.to_string(), Some(table.clone()));
+
+        for (key, val) in parsed_composition.table {
+            let mut name = import_name.clone();
+            name.push('.');
+            name.push_str(&key);
+            table.insert(name, val);
+        }
+    }
+
+    for value in table.iter() {
+    	dbg!(value.0);
+    }
 
     let init = socool::SoCoolParser::new().parse(&mut table, &composition);
 

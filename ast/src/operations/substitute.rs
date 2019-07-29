@@ -105,16 +105,10 @@ fn substitute_operations(
     for op_or_nf in operations {
         match op_or_nf {
             OpOrNf::Nf(nf) => result.push(OpOrNf::Nf(nf)),
-            OpOrNf::Op(op) => match op.clone() {
-                Op::Fid(_) => {
+            OpOrNf::Op(op) => {
                     let subbed = op.substitute(normal_form, table, arg_map);
                     result.push(subbed)
-                }
-                _ => {
-                    let subbed = op.substitute(normal_form, table, arg_map);
-                    result.push(subbed)
-                }
-            },
+            }
         }
     }
 
