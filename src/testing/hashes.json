@@ -64,6 +64,16 @@
     "normal_form": 7885064472203959088,
     "stereo_waveform": 0.89788150492
   },
+  "./songs/test/import_test.socool": {
+    "op": 15728224113709049610,
+    "normal_form": 7497906279765409717,
+    "stereo_waveform": -0.0941808311
+  },
+  "./songs/test/import_test_2.socool": {
+    "op": 18078236834182475662,
+    "normal_form": 9302080227113338950,
+    "stereo_waveform": -0.0
+  },
   "./songs/test/lee_test.socool": {
     "op": 15628150807005094598,
     "normal_form": 17952907585914765966,
