@@ -1,0 +1,15 @@
+import    songs/test/std_test.socool	 
+
+{ f: 220, l: 1, g: 1, p: 0}
+
+thing = {
+       Sequence [	 
+        AsIs, Tm 3/2
+      ] 
+      | ModulateBy [std_test.fade_out]
+}
+
+main = {
+	AsIs	
+}
+	
