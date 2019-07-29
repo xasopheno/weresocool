@@ -106,8 +106,8 @@ fn substitute_operations(
         match op_or_nf {
             OpOrNf::Nf(nf) => result.push(OpOrNf::Nf(nf)),
             OpOrNf::Op(op) => {
-                    let subbed = op.substitute(normal_form, table, arg_map);
-                    result.push(subbed)
+                let subbed = op.substitute(normal_form, table, arg_map);
+                result.push(subbed)
             }
         }
     }

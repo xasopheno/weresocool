@@ -1,4 +1,4 @@
-use crate::generation::{to_json, to_csv};
+use crate::generation::{to_csv, to_json};
 use crate::instrument::{Basis, Normalize, Oscillator, StereoWaveform};
 use crate::render::{Render, RenderPointOp};
 use crate::settings::default_settings;
