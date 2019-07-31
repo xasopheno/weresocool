@@ -3,7 +3,7 @@ extern crate colored;
 extern crate num_rational;
 extern crate socool_ast;
 use crate::error_handling::handle_parse_error;
-use crate::imports::is_import;
+use crate::imports::{get_filepath_and_import_name, is_import};
 use colored::*;
 use num_rational::Rational64;
 use socool_ast::{
@@ -87,17 +87,17 @@ pub fn parse_file(filename: &str, parse_table: Option<OpOrNfTable>) -> ParsedCom
         }
     }
 
-    //    for import in imports_needed {
-    //        let (filepath, import_name) = get_filepath_and_import_name(import);
-    //        let parsed_composition = parse_file(&filepath.to_string(), Some(table.clone()));
-    //
-    //        for (key, val) in parsed_composition.table {
-    //            let mut name = import_name.clone();
-    //            name.push('.');
-    //            name.push_str(&key);
-    //            table.insert(name, val);
-    //        }
-    //    }
+    for import in imports_needed {
+        let (filepath, import_name) = get_filepath_and_import_name(import);
+        let parsed_composition = parse_file(&filepath.to_string(), Some(table.clone()));
+
+        for (key, val) in parsed_composition.table {
+            let mut name = import_name.clone();
+            name.push('.');
+            name.push_str(&key);
+            table.insert(name, val);
+        }
+    }
 
     let init = socool::SoCoolParser::new().parse(&mut table, &composition);
 
