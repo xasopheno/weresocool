@@ -1,0 +1,5 @@
+FILENAME=$1
+
+cp songs/template.socool songs/$FILENAME.socool
+
+./play $FILENAME
