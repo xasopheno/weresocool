@@ -155,8 +155,8 @@ ado_melody = {
 
 main = {
     Seq [
-        --us.main | Repeat 2,
-        --0^1/100,
+        us.main | Repeat 2,
+        0^1/100,
         Overlay [
             ado_melody,
             Overlay [
