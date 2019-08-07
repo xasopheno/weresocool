@@ -17,6 +17,15 @@ pub struct DetectionResult {
     pub gain: f32,
 }
 
+impl DetectionResult {
+    pub fn normalize(&mut self) {
+        if self.gain < 0.005 || self.frequency > 1_000.0 {
+            self.frequency = 0.0;
+            self.gain = 0.0;
+        }
+    }
+}
+
 impl Analyze for Vec<f32> {
     fn analyze(&mut self, sample_rate: f32, threshold: f32) -> DetectionResult {
         let gain = self.gain();

@@ -1,0 +1,57 @@
+import songs/mic_input.socool
+
+{ f: 340, l: 1, g: 1, p: 0 }
+
+sung = {
+    Seq [
+        mic_input.main
+    ] 
+    | Length 1/50
+    | Tm 2 
+}
+
+rest = {
+    Seq [
+        Tm 9/8, Tm 5/4, Tm 7/8 | Length 8 
+    ] 
+    | Gain 1/2
+    | Tm 1/2
+    | Tm 4/3
+} 
+
+thing = {
+    O [
+        (20/4, 4, 1, 0),
+        (20/4, 0, 1, 0),
+        (16/4, 4, 1, 0),
+        (16/4, 0, 1, 0),
+        (12/4, 1, 1, 0),
+        (12/4, 0, 1, 0),
+        (10/4, 1, 1, 0),
+        (10/4, 0, 1, 0),
+        (9/4, 3, 1, 0),
+        (9/4, 0, 1, 0),
+        (3/2, 7, 1, 0),
+        (3/2, 0, 1, 0),
+        (1/1, 0, 1, 0),
+        (1/2, 0, 1, 0),
+        (1/2, 0, 1, 0),
+    ]
+    | Gain 1/4
+    | Seq [
+        sung,
+        rest | Length 1/8
+    ] 
+    | Seq [
+        AsIs, Tm 5/4, Tm 7/6 
+    ]
+     
+}
+
+main = {
+    Tm 2 | Overlay [
+        --thing,
+        sung | Seq [AsIs, Tm 5/4 | Length 2/3]
+    ]
+    | Repeat 2
+}
