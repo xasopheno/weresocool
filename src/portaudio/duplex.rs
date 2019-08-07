@@ -6,7 +6,9 @@ use crate::settings::{default_settings, Settings};
 use crate::write::write_output_buffer;
 use num_rational::Rational64;
 use portaudio as pa;
-use socool_ast::PointOp;
+use socool_ast::{PointOp};
+use std::fs::File;
+use std::io::{BufRead, BufReader, Write};
 
 struct RealTimeState {
     count: Rational64,
@@ -38,6 +40,33 @@ fn process_result(result: &mut DetectionResult) -> Basis {
     }
 }
 
+fn process_pointop(result: &mut DetectionResult, home: f32) -> (f32, f32) {
+    if result.gain < 0.005 || result.frequency > 1_000.0 {
+        result.frequency = 0.0;
+        result.gain = 0.0;
+    }
+
+    (result.frequency / home, result.gain / home)
+}
+
+fn prepare_file() -> File {
+    let in_path = "songs/mic_input.socool";
+    let out_path = "test.socool";
+
+    let mut output = File::create(out_path).unwrap();
+
+    let input = File::open(in_path).unwrap();
+    let buffered = BufReader::new(input);
+
+    for (i, line) in buffered.lines().enumerate() {
+        if i < 4 {
+            write!(output, "{}\n", line.unwrap()).unwrap();
+        }
+    }
+
+    output
+}
+
 pub fn duplex_setup(
     parsed_composition: Vec<Vec<PointOp>>,
 ) -> Result<pa::Stream<pa::NonBlocking, pa::Duplex<f32, f32>>, pa::Error> {
@@ -48,6 +77,8 @@ pub fn duplex_setup(
     let mut input_buffer: RingBuffer<f32> = RingBuffer::<f32>::new(settings.yin_buffer_size);
 
     let mut count = 0;
+    let home = 120.0;
+    let mut file = prepare_file();
 
     let mut nf_iterators = vec![];
 
@@ -61,7 +92,6 @@ pub fn duplex_setup(
 
         nf_iterators.push((Oscillator::init(&default_settings()), iterator, state))
     }
-    //
 
     let duplex_stream = pa.open_non_blocking_stream(
         duplex_stream_settings,
@@ -83,6 +113,10 @@ pub fn duplex_setup(
                     .analyze(settings.sample_rate as f32, settings.probability_threshold);
 
                 let origin = process_result(&mut result);
+
+                let (tm, gain) = process_pointop(&mut result, home);
+                let op = format!("Tm {:?} | Gain {:?},\n", tm, gain * 1000.0);
+                write!(file, "{}", op).expect("Couldn't write to file");
 
                 let mut result = vec![];
 
