@@ -89,11 +89,11 @@ pub fn duplex_setup(
 
     let duplex_stream = pa.open_non_blocking_stream(
         duplex_stream_settings,
-        move |pa::DuplexStreamCallbackArgs {
+        move | pa::DuplexStreamCallbackArgs {
                   in_buffer,
                   mut out_buffer,
                   ..
-              }| {
+              } | {
             if count < 20 {
                 count += 1;
                 if count == 20 {
@@ -114,8 +114,7 @@ pub fn duplex_setup(
 
                 let mut result = vec![];
 
-                for (ref mut oscillator, ref mut iterator, ref mut state) in nf_iterators.iter_mut()
-                {
+                for (ref mut oscillator, ref mut iterator, ref mut state) in nf_iterators.iter_mut() {
                     if state.count >= state.current_op.l {
                         state.count = Rational64::new(0, 1);
                         state.current_op = iterator.next().unwrap()
@@ -135,8 +134,7 @@ pub fn duplex_setup(
 
                 pa::Continue
             }
-        },
-    )?;
+        })?;
 
     Ok(duplex_stream)
 }
