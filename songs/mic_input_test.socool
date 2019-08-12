@@ -3,9 +3,7 @@ import songs/mic_input.socool
 { f: 340, l: 1, g: 1, p: 0 }
 
 sung = {
-    Seq [
-        mic_input.main
-    ] 
+    Overlay [ mic_melody.main, <mic_melody2> ] | <mic_melody3>
     | Length 1/50
     | Tm 2 
 }

@@ -1,0 +1,14 @@
+#!/usr/bin/env bash
+
+if [[ -z $1 ]]; then
+    echo "Usage: $0 <filename>.socool"
+    exit 1
+fi
+
+if ( grep --quiet -E "<[a-zA-Z0-9_]+>" ); then
+   
+mic-capture-and-replace $1.socool
+else
+    render $1.socool
+fi
+'

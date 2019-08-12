@@ -9,6 +9,7 @@ use portaudio as pa;
 use socool_ast::PointOp;
 use std::fs::File;
 use std::io::{BufRead, BufReader, Write};
+use std::sync::{Arc, Mutex};
 
 struct RealTimeState {
     count: Rational64,
@@ -24,8 +25,6 @@ impl RealTimeState {
 
 fn process_result(result: &mut DetectionResult) -> Basis {
     result.normalize();
-
-    println!("freq {}, gain {}", result.frequency, result.gain);
 
     Basis {
         f: 2.0 * result.frequency as f64,
@@ -43,13 +42,20 @@ fn process_pointop(result: &mut DetectionResult, home: f32) -> (f32, f32) {
     (result.frequency / home, result.gain / home)
 }
 
+fn file_start() -> &'static [u8] {
+    "{ f: 340, l: 0.05, g: 1, p: 0}\n
+    \n
+    main = {\n
+        Seq [\n"
+        .as_bytes()
+}
+
 fn prepare_file() -> File {
-    let in_path = "songs/mic_input.socool";
     let out_path = "test.socool";
 
     let mut output_file = File::create(out_path).unwrap();
 
-    let input_file = File::open(in_path).unwrap();
+    let input_file = file_start();
     let buffered_input = BufReader::new(input_file);
 
     for (i, line) in buffered_input.lines().enumerate() {
@@ -62,6 +68,7 @@ fn prepare_file() -> File {
 }
 
 pub fn duplex_setup(
+    x: Arc<Mutex<String>>,
     parsed_composition: Vec<Vec<PointOp>>,
 ) -> Result<pa::Stream<pa::NonBlocking, pa::Duplex<f32, f32>>, pa::Error> {
     let pa = pa::PortAudio::new()?;
@@ -86,14 +93,15 @@ pub fn duplex_setup(
 
         nf_iterators.push((Oscillator::init(&default_settings()), iterator, state))
     }
-
+    let mut recording = true;
+    let mut i = 0;
     let duplex_stream = pa.open_non_blocking_stream(
         duplex_stream_settings,
-        move | pa::DuplexStreamCallbackArgs {
+        move |pa::DuplexStreamCallbackArgs {
                   in_buffer,
                   mut out_buffer,
                   ..
-              } | {
+              }| {
             if count < 20 {
                 count += 1;
                 if count == 20 {
@@ -105,16 +113,25 @@ pub fn duplex_setup(
                 let mut result: DetectionResult = input_buffer
                     .to_vec()
                     .analyze(settings.sample_rate as f32, settings.probability_threshold);
+                i += 1;
 
                 let origin = process_result(&mut result);
 
                 let (tm, gain) = process_pointop(&mut result, home);
-                let op = format!("Tm {:?} | Gain {:?},\n", tm, gain * 1000.0);
-                write!(file, "\t{}", op).expect("Couldn't write to file");
+                {
+                    let shared = x.lock().unwrap();
+                    println!("freq {}, gain {}, state {}", result.frequency, result.gain, shared);
+                }
+
+                if recording {
+                    let op = format!("Tm {:?} | Gain {:?},\n", tm * 2.0, gain * 1000.0);
+                    write!(file, "\t{}", op).expect("Couldn't write to file");
+                }
 
                 let mut result = vec![];
 
-                for (ref mut oscillator, ref mut iterator, ref mut state) in nf_iterators.iter_mut() {
+                for (ref mut oscillator, ref mut iterator, ref mut state) in nf_iterators.iter_mut()
+                {
                     if state.count >= state.current_op.l {
                         state.count = Rational64::new(0, 1);
                         state.current_op = iterator.next().unwrap()
@@ -134,7 +151,8 @@ pub fn duplex_setup(
 
                 pa::Continue
             }
-        })?;
+        },
+    )?;
 
     Ok(duplex_stream)
 }
