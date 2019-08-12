@@ -69,7 +69,7 @@ fn prepare_file() -> File {
 }
 
 pub fn duplex_setup(
-    x: Arc<Mutex<MicState>>,
+    state: Arc<Mutex<MicState>>,
     parsed_composition: Vec<Vec<PointOp>>,
 ) -> Result<pa::Stream<pa::NonBlocking, pa::Duplex<f32, f32>>, pa::Error> {
     let pa = pa::PortAudio::new()?;
@@ -94,7 +94,7 @@ pub fn duplex_setup(
 
         nf_iterators.push((Oscillator::init(&default_settings()), iterator, state))
     }
-    let mut recording = true;
+
     let mut i = 0;
     let duplex_stream = pa.open_non_blocking_stream(
         duplex_stream_settings,
@@ -119,18 +119,17 @@ pub fn duplex_setup(
                 let origin = process_result(&mut result);
 
                 let (tm, gain) = process_pointop(&mut result, home);
+
                 {
-                    let shared = x.lock().unwrap();
+                    let shared = state.lock().unwrap();
                     println!(
                         "freq {}, gain {}, state {:?}",
                         result.frequency, result.gain, shared
                     );
                 }
 
-                if recording {
-                    let op = format!("Tm {:?} | Gain {:?},\n", tm * 2.0, gain * 1000.0);
-                    write!(file, "\t{}", op).expect("Couldn't write to file");
-                }
+                let op = format!("Tm {:?} | Gain {:?},\n", tm * 2.0, gain * 1000.0);
+                write!(file, "\t{}", op).expect("Couldn't write to file");
 
                 let mut result = vec![];
 

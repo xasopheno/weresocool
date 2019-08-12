@@ -11,6 +11,20 @@ pub enum MicState {
     Stop, 
 }
 
+pub trait StateInterface {
+    fn update(&self, new_state: MicState);
+    //fn get(& self) -> MicState;
+}
+
+impl StateInterface for Arc<Mutex<MicState>> {
+    fn update(&self, new_state: MicState) {
+        *self.lock().unwrap() = new_state;
+    }
+    //fn get(&self) {
+     
+    //}
+}
+
 pub fn setup_control() -> Arc<Mutex<MicState>> {
     let state: Arc<Mutex<MicState>> = Arc::new(Mutex::new(MicState::Stop));
 
@@ -20,7 +34,7 @@ pub fn setup_control() -> Arc<Mutex<MicState>> {
         let b = stdin.next();
         match b {
             Some(Ok(b'r')) => {
-                *state.lock().unwrap() = MicState::Record;
+                state.update(MicState::Record);
             }
             Some(Ok(b'q')) => {
                 *state.lock().unwrap() = MicState::Stop;
