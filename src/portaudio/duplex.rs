@@ -4,6 +4,7 @@ use crate::instrument::{Basis, Oscillator};
 use crate::ring_buffer::RingBuffer;
 use crate::settings::{default_settings, Settings};
 use crate::write::write_output_buffer;
+use crate::control::MicState;
 use num_rational::Rational64;
 use portaudio as pa;
 use socool_ast::PointOp;
@@ -68,7 +69,7 @@ fn prepare_file() -> File {
 }
 
 pub fn duplex_setup(
-    x: Arc<Mutex<String>>,
+    x: Arc<Mutex<MicState>>,
     parsed_composition: Vec<Vec<PointOp>>,
 ) -> Result<pa::Stream<pa::NonBlocking, pa::Duplex<f32, f32>>, pa::Error> {
     let pa = pa::PortAudio::new()?;
@@ -120,7 +121,10 @@ pub fn duplex_setup(
                 let (tm, gain) = process_pointop(&mut result, home);
                 {
                     let shared = x.lock().unwrap();
-                    println!("freq {}, gain {}, state {}", result.frequency, result.gain, shared);
+                    println!(
+                        "freq {}, gain {}, state {:?}",
+                        result.frequency, result.gain, shared
+                    );
                 }
 
                 if recording {
