@@ -13,16 +13,16 @@ pub enum MicState {
 
 pub trait StateInterface {
     fn update(&self, new_state: MicState);
-    //fn get(& self) -> MicState;
+    fn get(&self) -> MicState;
 }
 
 impl StateInterface for Arc<Mutex<MicState>> {
     fn update(&self, new_state: MicState) {
         *self.lock().unwrap() = new_state;
     }
-    //fn get(&self) {
-     
-    //}
+    fn get(&self) -> MicState {
+        self.lock().unwrap().clone()
+    }
 }
 
 pub fn setup_control() -> Arc<Mutex<MicState>> {
@@ -37,7 +37,7 @@ pub fn setup_control() -> Arc<Mutex<MicState>> {
                 state.update(MicState::Record);
             }
             Some(Ok(b'q')) => {
-                *state.lock().unwrap() = MicState::Stop;
+                state.update(MicState::Stop);
             }
             //Some(Ok(b)) => {
                 //*state.lock().unwrap() = b.to_string();

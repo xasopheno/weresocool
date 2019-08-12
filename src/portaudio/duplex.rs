@@ -4,7 +4,7 @@ use crate::instrument::{Basis, Oscillator};
 use crate::ring_buffer::RingBuffer;
 use crate::settings::{default_settings, Settings};
 use crate::write::write_output_buffer;
-use crate::control::MicState;
+use crate::control::{MicState, StateInterface};
 use num_rational::Rational64;
 use portaudio as pa;
 use socool_ast::PointOp;
@@ -121,7 +121,7 @@ pub fn duplex_setup(
                 let (tm, gain) = process_pointop(&mut result, home);
 
                 {
-                    let shared = state.lock().unwrap();
+                    let shared = state.get();
                     println!(
                         "freq {}, gain {}, state {:?}",
                         result.frequency, result.gain, shared
