@@ -1,0 +1,72 @@
+import songs/spring/hao.socool
+
+{ f: 220, l: 3/4, g: 1, p: 0}
+
+haoism = {
+    Seq [
+        Overlay [
+            hao.top,
+            hao.thing2 | Gain 3/4, 
+            hao.bass
+        ] | Repeat 2,
+        0^1/4,
+        Overlay [
+            hao.thing3,
+            hao.upwards
+        ],
+        0^1/100,
+    ]
+    | Repeat 2
+} 
+
+newism = {
+    Seq [
+        0^1/2, 3/2^3/2, 5/3^1/4, 3/2^1, 
+        4/3^1/4, 5/4^2,
+        Seq [11/8^1/8, 4/3^1/8, 6/5^1/8, 5/4^1/8]
+        | Seq [
+            1^1, 3/2^1, 25/24^1, 
+        ]
+        | Length 1/2
+        | Seq [AsIs, Tm 3/2 | Gain 1/4, Tm 9/4 | Gain 1/8],
+
+        0^1/100,
+        0^12
+    ]
+    | Gain 1/3
+    | Repeat 2
+    > FitLength haoism
+}
+
+main = {
+    Overlay [
+        haoism
+        | ModulateBy [
+            Seq [PanA 2 | Gain 1/4, AsIs] | Repeat 2
+        ],
+        O[
+            (17/4, 8, 1, 0),
+            (17/8, 0, 1, 0),
+            (15/4, -4, 1, 0),
+            (15/4, 0, 1, 0),
+            (3/2, 3, 1, 0),
+            (3/2, 0, 1, 0),
+            (1/1, 2, 1, 0),
+            (1/1, 0, 1, 0),
+        ]
+        | newism 
+        | PanA -2
+    ]
+    --| ModulateBy [
+        --Seq [
+            --PanA 1, 
+            --PanA 1/2, 
+            --AsIs, 
+            --PanA -1/2, 
+            --PanA -1 
+        --] 
+        --| Seq [AsIs, Reverse] 
+        --| Repeat 6
+    --]    
+}
+	
