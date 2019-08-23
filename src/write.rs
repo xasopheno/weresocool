@@ -28,7 +28,7 @@ pub fn filename_from_string(s: &str) -> &str {
 
 fn wav_to_mp3_in_renders(filename: &str) {
     let filename = filename_from_string(filename);
-    let filename = format!("../renders/{}{}", filename, ".mp3".to_string());
+    let filename = format!("renders/{}{}", filename, ".mp3".to_string());
     dbg!(filename.clone());
 
     //  ffmpeg -i composition.wav -codec:a libmp3lame -qscale:a 2 renders/${filename}.mp3
@@ -93,7 +93,7 @@ pub fn write_composition_to_json(serialized: &String, filename: &String) -> std:
     let filename = filename_from_string(filename);
     dbg!(filename);
     let mut file = File::create(format!(
-        "../renders/{}{}",
+        "renders/{}{}",
         filename,
         ".socool.json".to_string()
     ))?;
@@ -113,7 +113,7 @@ pub fn write_composition_to_csv(ops: &mut Vec<Op4D>, filename: &str) {
     let filename = filename_from_string(filename);
     dbg!(filename);
 
-    let filename = &format!("../renders/{}{}", filename, ".socool.csv".to_string());
+    let filename = &format!("renders/{}{}", filename, ".socool.csv".to_string());
     let path = Path::new(filename);
     let mut writer = Writer::from_path(&path).unwrap();
     for op in ops {
