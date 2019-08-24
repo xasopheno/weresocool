@@ -44,8 +44,10 @@ fn wav_to_mp3_in_renders(filename: &str) {
             &filename,
         ])
         .spawn();
-    let ecode = child.expect("ffmpeg failed to encode mp3").wait()
-                    .expect("failed to wait on child");
+    let ecode = child
+        .expect("ffmpeg failed to encode mp3")
+        .wait()
+        .expect("failed to wait on child");
 
     assert!(ecode.success());
 }
