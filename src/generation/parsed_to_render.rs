@@ -1,4 +1,3 @@
-use crate::error::Error;
 use crate::generation::{to_csv, to_json};
 use crate::instrument::{Basis, Normalize, Oscillator, StereoWaveform};
 use crate::render::{Render, RenderPointOp};
@@ -7,6 +6,7 @@ use crate::ui::{banner, printed};
 use crate::write::write_composition_to_wav;
 use num_rational::Rational64;
 use pbr::ProgressBar;
+use error::Error;
 use rayon::prelude::*;
 use socool_ast::{NormalForm, Normalize as NormalizeOp, OpOrNf, OpOrNfTable, PointOp};
 use socool_parser::parse_file;
@@ -46,12 +46,9 @@ pub fn filename_to_render(filename: &str, r_type: RenderType) -> Result<RenderRe
     let basis = Basis::from(parsed.init);
 
     match r_type {
-        RenderType::NfBasisAndTable => {
-            Ok(RenderReturn::NfAndBasis(nf.clone(), basis, parsed.table))
-        }
+        RenderType::NfBasisAndTable => Ok(RenderReturn::NfAndBasis(nf.clone(), basis, parsed.table)),
         RenderType::Json4d => {
             to_json(&basis, &nf, &parsed.table.clone(), filename.to_string())?;
-            //.expect("Could not render JSON");
             Ok(RenderReturn::Json4d("json".to_string()))
         }
         RenderType::Csv1d => {

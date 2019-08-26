@@ -1,7 +1,7 @@
-use crate::error::Error;
 use crate::instrument::StereoWaveform;
 use crate::settings::{default_settings, Settings};
 use crate::write::write_output_buffer;
+use error::Error;
 use portaudio as pa;
 
 pub fn output_setup(

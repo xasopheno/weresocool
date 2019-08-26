@@ -1,10 +1,11 @@
 use weresocool::{
-    error::Error,
+    //error::Error,
     examples::documentation,
     generation::{filename_to_render, RenderReturn, RenderType},
     portaudio::output_setup,
     ui::{banner, get_args, no_file_name, were_so_cool_logo},
 };
+use error::Error;
 
 fn main() -> Result<(), Error> {
     were_so_cool_logo();

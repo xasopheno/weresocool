@@ -1,7 +1,7 @@
-use crate::error::Error;
 use crate::generation::Op4D;
 use crate::instrument::StereoWaveform;
 use csv::Writer;
+use error::Error;
 use std::fs::File;
 use std::io::prelude::*;
 use std::path::Path;

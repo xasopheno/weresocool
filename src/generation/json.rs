@@ -1,11 +1,11 @@
 use crate::{
-    error::Error,
     instrument::Basis,
     ui::{banner, printed},
     write::{write_composition_to_csv, write_composition_to_json},
 };
 
 use num_rational::Rational64;
+use error::Error;
 use serde::{Deserialize, Serialize};
 use serde_json::to_string;
 use socool_ast::{NormalForm, Normalize, OpOrNfTable, PointOp};

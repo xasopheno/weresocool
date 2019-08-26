@@ -17,6 +17,7 @@ colored = "1.7.0"
 pbr = "1.0.1"
 socool_parser = { path = "parser" }
 socool_ast = { path = "ast" }
+error = { path = "error" } 
 clap = "2.32.0"
 num-rational = "0.2"
 rayon = "1.1"
@@ -34,7 +35,8 @@ failure_derive = "0.1.5"
 [workspace]
 members = [
     "ast",
-    "parser"
+    "parser",
+    "error",
 ]
 
 [[bin]]
