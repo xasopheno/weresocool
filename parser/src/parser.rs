@@ -57,7 +57,7 @@ pub fn parse_file(filename: &str, parse_table: Option<OpOrNfTable>) -> ParsedCom
         OpOrNfTable::new()
     };
     
-    let (imports_needed, composition) = handle_white_space_and_imports(filename);
+    let (imports_needed, composition) = handle_white_space_and_imports(filename).expect("Whitespace and imports parsing error");
     
     for import in imports_needed {
         let (filepath, import_name) = get_filepath_and_import_name(import);
@@ -87,7 +87,7 @@ pub fn parse_file(filename: &str, parse_table: Option<OpOrNfTable>) -> ParsedCom
     }
 }
 
-fn handle_white_space_and_imports(filename: &str) -> (Vec<String>, String) {
+fn handle_white_space_and_imports(filename: &str) -> Result<(Vec<String>, String), Error> {
     let f = File::open(filename);
     let mut composition = String::new();
     let mut imports_needed = vec![];
@@ -95,7 +95,7 @@ fn handle_white_space_and_imports(filename: &str) -> (Vec<String>, String) {
         Ok(f) => {
             let file = BufReader::new(&f);
             for line in file.lines() {
-                let l = line.unwrap();
+                let l = line?;
                 let copy_l = l.trim_start();
                 if copy_l.starts_with("--") {
                     composition.push_str("\n");
@@ -118,6 +118,6 @@ fn handle_white_space_and_imports(filename: &str) -> (Vec<String>, String) {
         }
     };
 
-    (imports_needed, composition)
+    Ok((imports_needed, composition))
 }
 
