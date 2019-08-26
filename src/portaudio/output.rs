@@ -1,8 +1,8 @@
+use crate::error::Error;
 use crate::instrument::StereoWaveform;
 use crate::settings::{default_settings, Settings};
 use crate::write::write_output_buffer;
 use portaudio as pa;
-use crate::error::Error;
 
 pub fn output_setup(
     mut composition: StereoWaveform,

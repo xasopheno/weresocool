@@ -1,6 +1,6 @@
+use crate::error::Error;
 use crate::generation::Op4D;
 use crate::instrument::StereoWaveform;
-use crate::error::Error;
 use csv::Writer;
 use std::fs::File;
 use std::io::prelude::*;
@@ -69,7 +69,9 @@ pub fn write_composition_to_wav(composition: StereoWaveform, filename: &str) {
 
     let mut writer = hound::WavWriter::create("composition.wav", spec).unwrap();
     for sample in buffer {
-        writer.write_sample(sample).expect("Error writing wave file.");
+        writer
+            .write_sample(sample)
+            .expect("Error writing wave file.");
     }
 
     wav_to_mp3_in_renders(filename);
@@ -113,7 +115,7 @@ pub fn write_composition_to_json(serialized: &String, filename: &String) -> std:
     Ok(())
 }
 
-pub fn write_composition_to_csv(ops: &mut Vec<Op4D>, filename: &str) -> Result<(), Error>{
+pub fn write_composition_to_csv(ops: &mut Vec<Op4D>, filename: &str) -> Result<(), Error> {
     let filename = filename_from_string(filename);
     dbg!(filename);
 

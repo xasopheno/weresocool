@@ -21,14 +21,14 @@ fn main() -> Result<(), Error> {
     }
 
     if args.is_present("print") {
-        filename_to_render(filename.unwrap(), RenderType::Wav);
+        filename_to_render(filename.unwrap(), RenderType::Wav)?;
     } else if args.is_present("json") {
-        filename_to_render(filename.unwrap(), RenderType::Json4d);
+        filename_to_render(filename.unwrap(), RenderType::Json4d)?;
     } else if args.is_present("csv") {
-        filename_to_render(filename.unwrap(), RenderType::Csv1d);
+        filename_to_render(filename.unwrap(), RenderType::Csv1d)?;
     } else {
         let stereo_waveform =
-            match filename_to_render(filename.unwrap(), RenderType::StereoWaveform) {
+            match filename_to_render(filename.unwrap(), RenderType::StereoWaveform)? {
                 RenderReturn::StereoWaveform(sw) => sw,
                 _ => panic!("Error. Unable to return StereoWaveform"),
             };

@@ -270,7 +270,12 @@ fn vec_op4d_1d_fix_silences(op4d_1d: &mut Vec<Op4D>) {
     });
 }
 
-pub fn to_json(basis: &Basis, composition: &NormalForm, table: &OpOrNfTable, filename: String) -> Result<(), Error> {
+pub fn to_json(
+    basis: &Basis,
+    composition: &NormalForm,
+    table: &OpOrNfTable,
+    filename: String,
+) -> Result<(), Error> {
     banner("JSONIFY-ing".to_string(), filename.clone());
 
     let vec_timed_op = composition_to_vec_timed_op(composition, table);
@@ -296,7 +301,12 @@ pub fn to_json(basis: &Basis, composition: &NormalForm, table: &OpOrNfTable, fil
     Ok(())
 }
 
-pub fn to_csv(basis: &Basis, composition: &NormalForm, table: &OpOrNfTable, filename: String) -> Result<(), Error>{
+pub fn to_csv(
+    basis: &Basis,
+    composition: &NormalForm,
+    table: &OpOrNfTable,
+    filename: String,
+) -> Result<(), Error> {
     banner("CSV-ing".to_string(), filename.clone());
 
     let vec_timed_op = composition_to_vec_timed_op(composition, table);
@@ -313,5 +323,5 @@ pub fn to_csv(basis: &Basis, composition: &NormalForm, table: &OpOrNfTable, file
 
     write_composition_to_csv(&mut op4d_1d, &filename)?;
 
-    Ok(())    
+    Ok(())
 }

@@ -1,7 +1,7 @@
+use crate::error::Error;
 use crate::generation::{to_csv, to_json};
 use crate::instrument::{Basis, Normalize, Oscillator, StereoWaveform};
 use crate::render::{Render, RenderPointOp};
-use crate::error::Error;
 use crate::settings::default_settings;
 use crate::ui::{banner, printed};
 use crate::write::write_composition_to_wav;
@@ -34,7 +34,7 @@ pub fn r_to_f64(r: Rational64) -> f64 {
     *r.numer() as f64 / *r.denom() as f64
 }
 
-pub fn filename_to_render(filename: &str, r_type: RenderType) -> RenderReturn {
+pub fn filename_to_render(filename: &str, r_type: RenderType) -> Result<RenderReturn, Error> {
     let parsed = parse_file(&filename.to_string(), None);
     let parsed_main = parsed.table.get("main").unwrap();
 
@@ -46,22 +46,25 @@ pub fn filename_to_render(filename: &str, r_type: RenderType) -> RenderReturn {
     let basis = Basis::from(parsed.init);
 
     match r_type {
-        RenderType::NfBasisAndTable => RenderReturn::NfAndBasis(nf.clone(), basis, parsed.table),
+        RenderType::NfBasisAndTable => {
+            Ok(RenderReturn::NfAndBasis(nf.clone(), basis, parsed.table))
+        }
         RenderType::Json4d => {
-            to_json(&basis, &nf, &parsed.table.clone(), filename.to_string()).expect("Could not render JSON");
-            RenderReturn::Json4d("json".to_string())
+            to_json(&basis, &nf, &parsed.table.clone(), filename.to_string())?;
+            //.expect("Could not render JSON");
+            Ok(RenderReturn::Json4d("json".to_string()))
         }
         RenderType::Csv1d => {
-            to_csv(&basis, &nf, &parsed.table.clone(), filename.to_string());
-            RenderReturn::Csv1d("json".to_string())
+            to_csv(&basis, &nf, &parsed.table.clone(), filename.to_string())?;
+            Ok(RenderReturn::Csv1d("json".to_string()))
         }
         RenderType::StereoWaveform | RenderType::Wav => {
             let stereo_waveform = render(&basis, &nf, &parsed.table);
             if r_type == RenderType::StereoWaveform {
-                RenderReturn::StereoWaveform(stereo_waveform)
+                Ok(RenderReturn::StereoWaveform(stereo_waveform))
             } else {
                 let result = to_wav(stereo_waveform, filename.to_string());
-                return RenderReturn::Wav(result);
+                return Ok(RenderReturn::Wav(result));
             }
         }
     }

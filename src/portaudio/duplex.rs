@@ -1,7 +1,7 @@
 use crate::analyze::{Analyze, DetectionResult};
+use crate::error::Error;
 use crate::generation::parsed_to_render::*;
 use crate::instrument::{Basis, Oscillator};
-use crate::error::Error;
 use crate::ring_buffer::RingBuffer;
 use crate::settings::{default_settings, Settings};
 use crate::write::write_output_buffer;

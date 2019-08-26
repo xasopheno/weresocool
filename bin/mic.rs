@@ -1,6 +1,6 @@
 use weresocool::{
-    examples::documentation,
     error::Error,
+    examples::documentation,
     generation::{filename_to_render, RenderReturn, RenderType},
     portaudio::duplex_setup,
     ui::{get_args, no_file_name, were_so_cool_logo},
@@ -36,7 +36,7 @@ fn run() -> Result<(), Error> {
         _ => no_file_name(),
     }
 
-    let normal_form = match filename_to_render(filename.unwrap(), RenderType::NfBasisAndTable) {
+    let normal_form = match filename_to_render(filename.unwrap(), RenderType::NfBasisAndTable)? {
         RenderReturn::NfAndBasis(nf, _, _) => nf,
         _ => panic!("Error. Unable to generate NormalForm"),
     };
