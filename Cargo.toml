@@ -28,6 +28,8 @@ num-complex = "0.2.3"
 num = "0.2.0"
 csv = "1.1.1"
 watch = "0.1.0"
+failure = "0.1.5"
+failure_derive = "0.1.5"
 
 [[bin]]
 name = "wsc"

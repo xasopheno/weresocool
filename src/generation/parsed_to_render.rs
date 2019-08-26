@@ -1,6 +1,7 @@
 use crate::generation::{to_csv, to_json};
 use crate::instrument::{Basis, Normalize, Oscillator, StereoWaveform};
 use crate::render::{Render, RenderPointOp};
+use crate::error::Error;
 use crate::settings::default_settings;
 use crate::ui::{banner, printed};
 use crate::write::write_composition_to_wav;
@@ -47,7 +48,7 @@ pub fn filename_to_render(filename: &str, r_type: RenderType) -> RenderReturn {
     match r_type {
         RenderType::NfBasisAndTable => RenderReturn::NfAndBasis(nf.clone(), basis, parsed.table),
         RenderType::Json4d => {
-            to_json(&basis, &nf, &parsed.table.clone(), filename.to_string());
+            to_json(&basis, &nf, &parsed.table.clone(), filename.to_string()).expect("Could not render JSON");
             RenderReturn::Json4d("json".to_string())
         }
         RenderType::Csv1d => {

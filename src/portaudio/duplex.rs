@@ -1,6 +1,7 @@
 use crate::analyze::{Analyze, DetectionResult};
 use crate::generation::parsed_to_render::*;
 use crate::instrument::{Basis, Oscillator};
+use crate::error::Error;
 use crate::ring_buffer::RingBuffer;
 use crate::settings::{default_settings, Settings};
 use crate::write::write_output_buffer;
@@ -40,7 +41,7 @@ fn process_result(result: &mut DetectionResult) -> Basis {
 
 pub fn duplex_setup(
     parsed_composition: Vec<Vec<PointOp>>,
-) -> Result<pa::Stream<pa::NonBlocking, pa::Duplex<f32, f32>>, pa::Error> {
+) -> Result<pa::Stream<pa::NonBlocking, pa::Duplex<f32, f32>>, Error> {
     let pa = pa::PortAudio::new()?;
     let settings = default_settings();
     let duplex_stream_settings = get_duplex_settings(&pa, &settings)?;
@@ -116,7 +117,7 @@ pub fn duplex_setup(
 fn get_duplex_settings(
     ref pa: &pa::PortAudio,
     ref settings: &Settings,
-) -> Result<pa::stream::DuplexSettings<f32, f32>, pa::Error> {
+) -> Result<pa::stream::DuplexSettings<f32, f32>, Error> {
     let def_input = pa.default_input_device()?;
     let input_info = pa.device_info(def_input)?;
     //    println!("Default input device info: {:#?}", &input_info);

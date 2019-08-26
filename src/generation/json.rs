@@ -1,4 +1,5 @@
 use crate::{
+    error::Error,
     instrument::Basis,
     ui::{banner, printed},
     write::{write_composition_to_csv, write_composition_to_json},
@@ -261,7 +262,15 @@ struct Json1d {
     length: f64,
 }
 
-pub fn to_json(basis: &Basis, composition: &NormalForm, table: &OpOrNfTable, filename: String) {
+//TODO: Write test and pull out
+fn vec_op4d_1d_fix_silences(op4d_1d: &mut Vec<Op4D>) {
+    op4d_1d.retain(|op| {
+        let is_silent = op.y == 0.0 || op.z <= 0.0;
+        !is_silent
+    });
+}
+
+pub fn to_json(basis: &Basis, composition: &NormalForm, table: &OpOrNfTable, filename: String) -> Result<(), Error> {
     banner("JSONIFY-ing".to_string(), filename.clone());
 
     let vec_timed_op = composition_to_vec_timed_op(composition, table);
@@ -279,14 +288,15 @@ pub fn to_json(basis: &Basis, composition: &NormalForm, table: &OpOrNfTable, fil
     let json = to_string(&Json1d {
         ops: op4d_1d,
         length: max_len,
-    })
-    .unwrap();
+    })?;
 
-    write_composition_to_json(&json, &filename).expect("Writing to JSON failed");
+    write_composition_to_json(&json, &filename)?;
     printed("JSON".to_string());
+
+    Ok(())
 }
 
-pub fn to_csv(basis: &Basis, composition: &NormalForm, table: &OpOrNfTable, filename: String) {
+pub fn to_csv(basis: &Basis, composition: &NormalForm, table: &OpOrNfTable, filename: String) -> Result<(), Error>{
     banner("CSV-ing".to_string(), filename.clone());
 
     let vec_timed_op = composition_to_vec_timed_op(composition, table);
@@ -301,5 +311,7 @@ pub fn to_csv(basis: &Basis, composition: &NormalForm, table: &OpOrNfTable, file
 
     normalize_op4d_1d(&mut op4d_1d, normalizer);
 
-    write_composition_to_csv(&mut op4d_1d, &filename);
+    write_composition_to_csv(&mut op4d_1d, &filename)?;
+
+    Ok(())    
 }

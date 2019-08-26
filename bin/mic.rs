@@ -1,22 +1,26 @@
 use weresocool::{
     examples::documentation,
+    error::Error,
     generation::{filename_to_render, RenderReturn, RenderType},
     portaudio::duplex_setup,
     ui::{get_args, no_file_name, were_so_cool_logo},
 };
 
-use portaudio as pa;
+use failure::Fail;
 
 fn main() {
     match run() {
         Ok(_) => {}
         e => {
-            eprintln!("Failed with the following error: {:?}", e);
+            //eprintln!("Failed with the following error: {:?}", e);
+            for cause in Fail::iter_causes(&e.unwrap_err()) {
+                println!("caused by: {}", cause);
+            }
         }
     }
 }
 
-fn run() -> Result<(), pa::Error> {
+fn run() -> Result<(), Error> {
     were_so_cool_logo();
     println!("{}", "       )))***=== MICROPHONE ===***(((  \n ");
 
