@@ -13,9 +13,8 @@ fn main() {
     match run() {
         Ok(_) => {}
         e => {
-            //eprintln!("Failed with the following error: {:?}", e);
             for cause in Fail::iter_causes(&e.unwrap_err()) {
-                println!("caused by: {}", cause);
+                println!("Failure caused by: {}", cause);
             }
         }
     }

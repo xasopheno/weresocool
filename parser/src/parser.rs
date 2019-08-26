@@ -14,6 +14,7 @@ use std::fs::File;
 use std::io::prelude::*;
 use std::io::BufReader;
 use std::sync::{Arc, Mutex};
+use error::Error;
 
 #[derive(Clone, PartialEq, Debug)]
 pub struct Init {
@@ -55,38 +56,9 @@ pub fn parse_file(filename: &str, parse_table: Option<OpOrNfTable>) -> ParsedCom
     } else {
         OpOrNfTable::new()
     };
-
-    let f = File::open(filename);
-    let mut composition = String::new();
-    let mut imports_needed = vec![];
-
-    match f {
-        Ok(f) => {
-            let file = BufReader::new(&f);
-            for line in file.lines() {
-                let l = line.unwrap();
-                let copy_l = l.trim_start();
-                if copy_l.starts_with("--") {
-                    composition.push_str("\n");
-                } else if is_import(copy_l.to_string()) {
-                    imports_needed.push(copy_l.to_owned());
-                    composition.push_str("\n");
-                } else {
-                    composition.push_str("\n");
-                    composition.push_str(&l);
-                }
-            }
-        }
-        _ => {
-            println!(
-                "{} {}\n",
-                "\n        File not found:".red().bold(),
-                filename.red().bold()
-            );
-            panic!("File not found");
-        }
-    }
-
+    
+    let (imports_needed, composition) = handle_white_space_and_imports(filename);
+    
     for import in imports_needed {
         let (filepath, import_name) = get_filepath_and_import_name(import);
         let parsed_composition = parse_file(&filepath.to_string(), Some(table.clone()));
@@ -114,3 +86,38 @@ pub fn parse_file(filename: &str, parse_table: Option<OpOrNfTable>) -> ParsedCom
         }
     }
 }
+
+fn handle_white_space_and_imports(filename: &str) -> (Vec<String>, String) {
+    let f = File::open(filename);
+    let mut composition = String::new();
+    let mut imports_needed = vec![];
+    match f {
+        Ok(f) => {
+            let file = BufReader::new(&f);
+            for line in file.lines() {
+                let l = line.unwrap();
+                let copy_l = l.trim_start();
+                if copy_l.starts_with("--") {
+                    composition.push_str("\n");
+                } else if is_import(copy_l.to_string()) {
+                    imports_needed.push(copy_l.to_owned());
+                    composition.push_str("\n");
+                } else {
+                    composition.push_str("\n");
+                    composition.push_str(&l);
+                }
+            }
+        }
+        _ => {
+            println!(
+                "{} {}\n",
+                "\n        File not found:".red().bold(),
+                filename.red().bold()
+            );
+            panic!("File not found");
+        }
+    };
+
+    (imports_needed, composition)
+}
+
