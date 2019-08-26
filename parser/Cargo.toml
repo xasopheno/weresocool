@@ -6,7 +6,7 @@ edition = "2018"
 build = "build.rs" # LALRPOP preprocessing
 
 [build-dependencies]
-lalrpop = "0.17.1"
+lalrpop = "0.17.2"
 
 [dependencies]
 lalrpop-util = "0.17.2"
