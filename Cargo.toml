@@ -31,6 +31,12 @@ watch = "0.1.0"
 failure = "0.1.5"
 failure_derive = "0.1.5"
 
+[workspace]
+members = [
+    "ast",
+    "parser"
+]
+
 [[bin]]
 name = "wsc"
 path = "bin/wsc.rs"
