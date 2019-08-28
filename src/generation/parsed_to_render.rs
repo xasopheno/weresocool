@@ -4,9 +4,9 @@ use crate::render::{Render, RenderPointOp};
 use crate::settings::default_settings;
 use crate::ui::{banner, printed};
 use crate::write::write_composition_to_wav;
+use error::Error;
 use num_rational::Rational64;
 use pbr::ProgressBar;
-use error::Error;
 use rayon::prelude::*;
 use socool_ast::{NormalForm, Normalize as NormalizeOp, OpOrNf, OpOrNfTable, PointOp};
 use socool_parser::parse_file;
@@ -46,7 +46,9 @@ pub fn filename_to_render(filename: &str, r_type: RenderType) -> Result<RenderRe
     let basis = Basis::from(parsed.init);
 
     match r_type {
-        RenderType::NfBasisAndTable => Ok(RenderReturn::NfAndBasis(nf.clone(), basis, parsed.table)),
+        RenderType::NfBasisAndTable => {
+            Ok(RenderReturn::NfAndBasis(nf.clone(), basis, parsed.table))
+        }
         RenderType::Json4d => {
             to_json(&basis, &nf, &parsed.table.clone(), filename.to_string())?;
             Ok(RenderReturn::Json4d("json".to_string()))

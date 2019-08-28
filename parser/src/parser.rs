@@ -5,6 +5,7 @@ extern crate socool_ast;
 use crate::error_handling::handle_parse_error;
 use crate::imports::{get_filepath_and_import_name, is_import};
 use colored::*;
+use error::Error;
 use num_rational::Rational64;
 use socool_ast::{
     ast::{OpOrNf::*, OpOrNfTable},
@@ -14,7 +15,6 @@ use std::fs::File;
 use std::io::prelude::*;
 use std::io::BufReader;
 use std::sync::{Arc, Mutex};
-use error::Error;
 
 #[derive(Clone, PartialEq, Debug)]
 pub struct Init {
@@ -56,9 +56,10 @@ pub fn parse_file(filename: &str, parse_table: Option<OpOrNfTable>) -> ParsedCom
     } else {
         OpOrNfTable::new()
     };
-    
-    let (imports_needed, composition) = handle_white_space_and_imports(filename).expect("Whitespace and imports parsing error");
-    
+
+    let (imports_needed, composition) =
+        handle_white_space_and_imports(filename).expect("Whitespace and imports parsing error");
+
     for import in imports_needed {
         let (filepath, import_name) = get_filepath_and_import_name(import);
         let parsed_composition = parse_file(&filepath.to_string(), Some(table.clone()));
@@ -114,10 +115,10 @@ fn handle_white_space_and_imports(filename: &str) -> Result<(Vec<String>, String
                 "\n        File not found:".red().bold(),
                 filename.red().bold()
             );
+
             panic!("File not found");
         }
     };
 
     Ok((imports_needed, composition))
 }
-

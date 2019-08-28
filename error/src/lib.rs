@@ -1,9 +1,8 @@
 use std::fmt;
 use std::io;
-use std::str::FromStr;
 
-use portaudio;
 use failure::Fail;
+use portaudio;
 
 #[derive(Debug)]
 pub struct Error {
@@ -73,7 +72,7 @@ impl From<portaudio::error::Error> for Error {
             inner: Box::new(ErrorInner::PortAudio(e)),
         }
     }
-} 
+}
 
 impl From<serde_json::error::Error> for Error {
     fn from(e: serde_json::error::Error) -> Error {
@@ -81,7 +80,7 @@ impl From<serde_json::error::Error> for Error {
             inner: Box::new(ErrorInner::SerdeJson(e)),
         }
     }
-} 
+}
 
 impl From<csv::Error> for Error {
     fn from(e: csv::Error) -> Error {
@@ -89,12 +88,10 @@ impl From<csv::Error> for Error {
             inner: Box::new(ErrorInner::CSVError(e)),
         }
     }
-} 
-   
+}
 
 #[test]
 fn size_of_error_is_one_word() {
     use std::mem;
     assert_eq!(mem::size_of::<Error>(), mem::size_of::<usize>());
 }
-

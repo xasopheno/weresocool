@@ -4,8 +4,8 @@ use crate::{
     write::{write_composition_to_csv, write_composition_to_json},
 };
 
-use num_rational::Rational64;
 use error::Error;
+use num_rational::Rational64;
 use serde::{Deserialize, Serialize};
 use serde_json::to_string;
 use socool_ast::{NormalForm, Normalize, OpOrNfTable, PointOp};
@@ -262,14 +262,6 @@ struct Json1d {
     length: f64,
 }
 
-//TODO: Write test and pull out
-fn vec_op4d_1d_fix_silences(op4d_1d: &mut Vec<Op4D>) {
-    op4d_1d.retain(|op| {
-        let is_silent = op.y == 0.0 || op.z <= 0.0;
-        !is_silent
-    });
-}
-
 pub fn to_json(
     basis: &Basis,
     composition: &NormalForm,
@@ -281,6 +273,7 @@ pub fn to_json(
     let vec_timed_op = composition_to_vec_timed_op(composition, table);
     let mut op4d_1d = vec_timed_op_to_vec_op4d(vec_timed_op, basis);
 
+    //TODO: Factor out
     op4d_1d.retain(|op| {
         let is_silent = op.y == 0.0 || op.z <= 0.0;
         !is_silent
