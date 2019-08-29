@@ -8,8 +8,10 @@ use error::Error;
 use num_rational::Rational64;
 use portaudio as pa;
 use socool_ast::PointOp;
+use std::iter::Cycle;
+use std::vec::IntoIter;
 
-struct RealTimeState {
+pub struct RealTimeState {
     count: Rational64,
     inc: Rational64,
     current_op: PointOp,
@@ -39,6 +41,28 @@ fn process_result(result: &mut DetectionResult) -> Basis {
     }
 }
 
+pub fn setup_iterators(
+    parsed_composition: Vec<Vec<PointOp>>,
+    settings: &Settings,
+) -> Vec<(Oscillator, Cycle<IntoIter<PointOp>>, RealTimeState)> {
+    let mut nf_iterators = vec![];
+
+    for seq in parsed_composition {
+        let mut iterator = seq.clone().into_iter().cycle();
+        let state = RealTimeState {
+            count: Rational64::new(0, 1),
+            inc: Rational64::new(settings.buffer_size as i64, settings.sample_rate as i64),
+            current_op: iterator
+                .next()
+                .expect("Empty iterator in cycle in mic. Empty?"),
+        };
+
+        nf_iterators.push((Oscillator::init(&default_settings()), iterator, state))
+    }
+
+    nf_iterators
+}
+
 pub fn duplex_setup(
     parsed_composition: Vec<Vec<PointOp>>,
 ) -> Result<pa::Stream<pa::NonBlocking, pa::Duplex<f32, f32>>, Error> {
@@ -47,22 +71,9 @@ pub fn duplex_setup(
     let duplex_stream_settings = get_duplex_settings(&pa, &settings)?;
 
     let mut input_buffer: RingBuffer<f32> = RingBuffer::<f32>::new(settings.yin_buffer_size);
+    let mut nf_iterators = setup_iterators(parsed_composition, &settings);
 
     let mut count = 0;
-
-    let mut nf_iterators = vec![];
-
-    for seq in parsed_composition {
-        let mut iterator = seq.clone().into_iter().cycle();
-        let state = RealTimeState {
-            count: Rational64::new(0, 1),
-            inc: Rational64::new(settings.buffer_size as i64, settings.sample_rate as i64),
-            current_op: iterator.next().unwrap(),
-        };
-
-        nf_iterators.push((Oscillator::init(&default_settings()), iterator, state))
-    }
-    //
 
     let duplex_stream = pa.open_non_blocking_stream(
         duplex_stream_settings,
@@ -74,11 +85,13 @@ pub fn duplex_setup(
             if count < 20 {
                 count += 1;
                 if count == 20 {
-                    println!("{}", "* * * * * ready * * * * *");
+                    println!("* * * * * ready * * * * *");
                 }
+
                 pa::Continue
             } else {
                 input_buffer.push_vec(in_buffer.to_vec());
+
                 let mut result: DetectionResult = input_buffer
                     .to_vec()
                     .analyze(settings.sample_rate as f32, settings.probability_threshold);
