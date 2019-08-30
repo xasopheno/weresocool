@@ -4,11 +4,14 @@ use crate::instrument::{Basis, Oscillator};
 use crate::ring_buffer::RingBuffer;
 use crate::settings::{default_settings, Settings};
 use crate::write::write_output_buffer;
+use error::Error;
 use num_rational::Rational64;
 use portaudio as pa;
 use socool_ast::PointOp;
+use std::iter::Cycle;
+use std::vec::IntoIter;
 
-struct RealTimeState {
+pub struct RealTimeState {
     count: Rational64,
     inc: Rational64,
     current_op: PointOp,
@@ -38,17 +41,10 @@ fn process_result(result: &mut DetectionResult) -> Basis {
     }
 }
 
-pub fn duplex_setup(
+pub fn setup_iterators(
     parsed_composition: Vec<Vec<PointOp>>,
-) -> Result<pa::Stream<pa::NonBlocking, pa::Duplex<f32, f32>>, pa::Error> {
-    let pa = pa::PortAudio::new()?;
-    let settings = default_settings();
-    let duplex_stream_settings = get_duplex_settings(&pa, &settings)?;
-
-    let mut input_buffer: RingBuffer<f32> = RingBuffer::<f32>::new(settings.yin_buffer_size);
-
-    let mut count = 0;
-
+    settings: &Settings,
+) -> Vec<(Oscillator, Cycle<IntoIter<PointOp>>, RealTimeState)> {
     let mut nf_iterators = vec![];
 
     for seq in parsed_composition {
@@ -56,12 +52,28 @@ pub fn duplex_setup(
         let state = RealTimeState {
             count: Rational64::new(0, 1),
             inc: Rational64::new(settings.buffer_size as i64, settings.sample_rate as i64),
-            current_op: iterator.next().unwrap(),
+            current_op: iterator
+                .next()
+                .expect("Empty iterator in cycle in mic. Empty?"),
         };
 
         nf_iterators.push((Oscillator::init(&default_settings()), iterator, state))
     }
-    //
+
+    nf_iterators
+}
+
+pub fn duplex_setup(
+    parsed_composition: Vec<Vec<PointOp>>,
+) -> Result<pa::Stream<pa::NonBlocking, pa::Duplex<f32, f32>>, Error> {
+    let pa = pa::PortAudio::new()?;
+    let settings = default_settings();
+    let duplex_stream_settings = get_duplex_settings(&pa, &settings)?;
+
+    let mut input_buffer: RingBuffer<f32> = RingBuffer::<f32>::new(settings.yin_buffer_size);
+    let mut nf_iterators = setup_iterators(parsed_composition, &settings);
+
+    let mut count = 0;
 
     let duplex_stream = pa.open_non_blocking_stream(
         duplex_stream_settings,
@@ -73,11 +85,13 @@ pub fn duplex_setup(
             if count < 20 {
                 count += 1;
                 if count == 20 {
-                    println!("{}", "* * * * * ready * * * * *");
+                    println!("* * * * * ready * * * * *");
                 }
+
                 pa::Continue
             } else {
                 input_buffer.push_vec(in_buffer.to_vec());
+
                 let mut result: DetectionResult = input_buffer
                     .to_vec()
                     .analyze(settings.sample_rate as f32, settings.probability_threshold);
@@ -116,7 +130,7 @@ pub fn duplex_setup(
 fn get_duplex_settings(
     ref pa: &pa::PortAudio,
     ref settings: &Settings,
-) -> Result<pa::stream::DuplexSettings<f32, f32>, pa::Error> {
+) -> Result<pa::stream::DuplexSettings<f32, f32>, Error> {
     let def_input = pa.default_input_device()?;
     let input_info = pa.device_info(def_input)?;
     //    println!("Default input device info: {:#?}", &input_info);

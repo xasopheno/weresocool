@@ -5,6 +5,7 @@ extern crate socool_ast;
 use crate::error_handling::handle_parse_error;
 use crate::imports::{get_filepath_and_import_name, is_import};
 use colored::*;
+use error::Error;
 use num_rational::Rational64;
 use socool_ast::{
     ast::{OpOrNf::*, OpOrNfTable},
@@ -56,36 +57,8 @@ pub fn parse_file(filename: &str, parse_table: Option<OpOrNfTable>) -> ParsedCom
         OpOrNfTable::new()
     };
 
-    let f = File::open(filename);
-    let mut composition = String::new();
-    let mut imports_needed = vec![];
-
-    match f {
-        Ok(f) => {
-            let file = BufReader::new(&f);
-            for line in file.lines() {
-                let l = line.unwrap();
-                let copy_l = l.trim_start();
-                if copy_l.starts_with("--") {
-                    composition.push_str("\n");
-                } else if is_import(copy_l.to_string()) {
-                    imports_needed.push(copy_l.to_owned());
-                    composition.push_str("\n");
-                } else {
-                    composition.push_str("\n");
-                    composition.push_str(&l);
-                }
-            }
-        }
-        _ => {
-            println!(
-                "{} {}\n",
-                "\n        File not found:".red().bold(),
-                filename.red().bold()
-            );
-            panic!("File not found");
-        }
-    }
+    let (imports_needed, composition) =
+        handle_white_space_and_imports(filename).expect("Whitespace and imports parsing error");
 
     for import in imports_needed {
         let (filepath, import_name) = get_filepath_and_import_name(import);
@@ -113,4 +86,39 @@ pub fn parse_file(filename: &str, parse_table: Option<OpOrNfTable>) -> ParsedCom
             panic!("Unexpected Token")
         }
     }
+}
+
+fn handle_white_space_and_imports(filename: &str) -> Result<(Vec<String>, String), Error> {
+    let f = File::open(filename);
+    let mut composition = String::new();
+    let mut imports_needed = vec![];
+    match f {
+        Ok(f) => {
+            let file = BufReader::new(&f);
+            for line in file.lines() {
+                let l = line?;
+                let copy_l = l.trim_start();
+                if copy_l.starts_with("--") {
+                    composition.push_str("\n");
+                } else if is_import(copy_l.to_string()) {
+                    imports_needed.push(copy_l.to_owned());
+                    composition.push_str("\n");
+                } else {
+                    composition.push_str("\n");
+                    composition.push_str(&l);
+                }
+            }
+        }
+        _ => {
+            println!(
+                "{} {}\n",
+                "\n        File not found:".red().bold(),
+                filename.red().bold()
+            );
+
+            panic!("File not found");
+        }
+    };
+
+    Ok((imports_needed, composition))
 }

@@ -15,3 +15,4 @@ colored = "1.8"
 num-rational = "0.2"
 socool_ast = { path = "../ast" }
 indexmap = "1.1.0"
+error = { path = "../error" }
