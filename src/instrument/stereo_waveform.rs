@@ -37,7 +37,7 @@ impl StereoWaveform {
 
 impl Normalize for StereoWaveform {
     fn normalize(&mut self) {
-        let mut max = 0.0;
+        let mut max = std::f64::MIN;
         for sample in self.l_buffer.iter() {
             if (*sample).abs() > max {
                 max = *sample;
