@@ -15,6 +15,17 @@ fade_out = {
 	] 
 }
 
+fade_in = {
+    fade_out | Reverse    
+}
+
+melt = {
+    Seq [
+        Ta -1, Ta -2, Ta -3, Ta -4, Ta -5,
+        Ta -6, Ta -7, Ta -8, Ta -9 
+    ] 
+}
+
 main = {
 	AsIs
 }
