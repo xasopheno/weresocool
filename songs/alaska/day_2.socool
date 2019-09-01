@@ -125,7 +125,12 @@ shine = {
             Ta -80, Ta -100, Ta -120, Ta -140
         ]
     ]
-    | ModulateBy [Seq [PanA 1/2, PanA 0, PanA -1/2, PanA -1, PanA -1/2, PanA 0, PanA 1/2, PanA 1] | Repeat 3]
+    | ModulateBy [
+        Seq [
+            PanA 1/2, PanA 0, PanA -1/2, PanA -1, 
+            PanA -1/2, PanA 0, PanA 1/2, PanA 1
+        ] | Repeat 3
+    ]
     > FitLength bass
 }
 
