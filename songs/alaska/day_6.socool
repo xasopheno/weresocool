@@ -1,4 +1,5 @@
 import songs/std.socool
+import songs/alaska/day_6_2.socool
 { f: 340, l: 3/2, g: 1, p: 0}
 
 overtones = {
@@ -104,7 +105,14 @@ thing3 = {
 
 main = {
     Seq [
-        thing1,
+        --Overlay [
+            --thing1,
+            --day_6_2.main 
+            --| Seq [
+                --Repeat 4, Length 7/8 | Repeat 4
+            --] 
+            --> FitLength thing1     
+        --],
         Overlay [
             thing1 
             | Gain 2/3 
@@ -122,11 +130,18 @@ main = {
                 ] 
                 | Seq [AsIs, Reverse]
             ],
+            day_6_2.main 
+            | Seq [
+                Repeat 4, Length 7/8 | Repeat 4
+            ] 
+            | Repeat 2
+            > FitLength thing1,
             thing2
         ]
-        | ModulateBy [
-            Length 40, std.fade_out
-        ],
+        | Repeat 2
+        --| ModulateBy [
+            --Length 40, std.fade_out
+        --],
     ]
 }
 	

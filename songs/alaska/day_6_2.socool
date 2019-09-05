@@ -76,7 +76,7 @@ drums = {
 
 main = {
     Overlay [
-	    thing1 | Gain 1/7, 
+		--thing1 | Gain 1/7, 
         drums,
     ]
     --| Repeat 8
