@@ -1,3 +1,4 @@
+import songs/std.socool
 { f: 340, l: 3/2, g: 1, p: 0}
 
 overtones = {
@@ -116,17 +117,16 @@ main = {
                         Tm 0 | Length 2, Tm 0,
                         Seq [Tm 1, Tm 0, Tm 1, Tm 15/16, Tm 1] | Gain 2/3,
                         Length 5, Tm 0, Tm 1, Tm 0 | Length 2,
-                        Seq [Tm 1, 0^1/2, 1^1, 0^1/2, 1^1, Tm 1] | Seq [AsIs, Reverse] 
+                        Seq [Tm 1, 0^1, 1^1, 0^1, 1^1, Tm 1] | Seq [AsIs, Reverse] 
                     ]
                 ] 
                 | Seq [AsIs, Reverse]
-                | Repeat 3
-            ] 
-            | Repeat 2,
-            thing2,
+            ],
+            thing2
+        ]
+        | ModulateBy [
+            Length 40, std.fade_out
         ],
-        thing1
-
     ]
 }
 	
