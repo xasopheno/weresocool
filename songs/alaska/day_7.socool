@@ -122,6 +122,11 @@ main = {
                 thing2,
                 thing5
             ],
+            Overlay [
+                bass,
+                thing2,
+                thing4
+            ],
             Tm 3/4 |
             O[
                 (3, -7, 1, -1/2),
