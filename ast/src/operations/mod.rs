@@ -1,5 +1,3 @@
-extern crate num_rational;
-/**/
 use crate::ast::{OpOrNf, OpOrNfTable, OscType};
 use num_rational::{Ratio, Rational64};
 use std::{
