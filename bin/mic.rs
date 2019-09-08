@@ -36,7 +36,7 @@ fn run() -> Result<(), Error> {
     }
 
     let normal_form = match filename_to_render(filename.unwrap(), RenderType::NfBasisAndTable)? {
-        RenderReturn::NfAndBasis(nf, _, _) => nf,
+        RenderReturn::NfBasisAndTable(nf, _, _) => nf,
         _ => panic!("Error. Unable to generate NormalForm"),
     };
 

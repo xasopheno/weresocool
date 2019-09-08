@@ -26,7 +26,7 @@ pub enum RenderReturn {
     Json4d(String),
     Csv1d(String),
     StereoWaveform(StereoWaveform),
-    NfAndBasis(NormalForm, Basis, OpOrNfTable),
+    NfBasisAndTable(NormalForm, Basis, OpOrNfTable),
     Wav(String),
 }
 
@@ -47,7 +47,7 @@ pub fn filename_to_render(filename: &str, r_type: RenderType) -> Result<RenderRe
 
     match r_type {
         RenderType::NfBasisAndTable => {
-            Ok(RenderReturn::NfAndBasis(nf.clone(), basis, parsed.table))
+            Ok(RenderReturn::NfBasisAndTable(nf.clone(), basis, parsed.table))
         }
         RenderType::Json4d => {
             to_json(&basis, &nf, &parsed.table.clone(), filename.to_string())?;
