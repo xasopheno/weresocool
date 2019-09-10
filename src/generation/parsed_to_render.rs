@@ -46,9 +46,11 @@ pub fn filename_to_render(filename: &str, r_type: RenderType) -> Result<RenderRe
     let basis = Basis::from(parsed.init);
 
     match r_type {
-        RenderType::NfBasisAndTable => {
-            Ok(RenderReturn::NfBasisAndTable(nf.clone(), basis, parsed.table))
-        }
+        RenderType::NfBasisAndTable => Ok(RenderReturn::NfBasisAndTable(
+            nf.clone(),
+            basis,
+            parsed.table,
+        )),
         RenderType::Json4d => {
             to_json(&basis, &nf, &parsed.table.clone(), filename.to_string())?;
             Ok(RenderReturn::Json4d("json".to_string()))
