@@ -1,0 +1,18 @@
+--import songs/alaska/day_1_b.socool
+import songs/alaska/day_1_c.socool
+{ f: 340, l: 1, g: 1, p: 0}
+
+overtones = {
+    O[
+    	(1/1, 1, 1, 1),
+      	(1/1, 0, 1, -1),
+  	]
+}
+
+
+main = {
+    Seq [
+        day_1_c.main
+    ] 
+}
+	
