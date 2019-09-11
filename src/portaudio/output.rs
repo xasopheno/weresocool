@@ -24,7 +24,7 @@ fn output_callback(
     args: pa::OutputStreamCallbackArgs<f32>,
     buffer_size: usize,
     composition: &mut StereoWaveform,
-    index: usize
+    index: usize,
 ) -> pa::stream::CallbackResult {
     let buffer_to_write = composition.get_buffer(index, buffer_size);
     match buffer_to_write {
