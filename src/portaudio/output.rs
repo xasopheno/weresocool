@@ -14,7 +14,7 @@ pub fn output_setup(
     let output_stream = pa.open_non_blocking_stream(
         output_settings,
         move |args| {
-            let result = output_callback(args, settings.buffer_size, &mut composition, index);
+            let result = output_callback(args, settings.buffer_size, &mut composition);
             index += 1;
             result
         }
@@ -23,7 +23,7 @@ pub fn output_setup(
     Ok(output_stream)
 }
 
-fn output_callback(args: pa::OutputStreamCallbackArgs<f32>, buffer_size: usize, composition: &mut StereoWaveform, index: usize) -> pa::stream::CallbackResult {
+fn output_callback(args: pa::OutputStreamCallbackArgs<f32>, buffer_size: usize, composition: &mut StereoWaveform) -> pa::stream::CallbackResult {
         let buffer_to_write = composition.get_buffer(index, buffer_size);
         match buffer_to_write {
             Some(result) => {
