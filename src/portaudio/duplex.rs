@@ -41,7 +41,7 @@ fn process_result(result: &mut DetectionResult) -> Basis {
     }
 }
 
-pub struct VoiceState {
+pub struct DuplexVoiceState {
     oscillator: Oscillator,
     state: RealTimeState,
     iterator: Cycle<IntoIter<PointOp>>,
@@ -50,7 +50,7 @@ pub struct VoiceState {
 pub fn setup_iterators(
     parsed_composition: Vec<Vec<PointOp>>,
     settings: &Settings,
-) -> Vec<VoiceState> {
+) -> Vec<DuplexVoiceState> {
     let mut nf_iterators = vec![];
 
     for seq in parsed_composition {
@@ -63,7 +63,7 @@ pub fn setup_iterators(
                 .expect("Empty iterator in cycle in mic. Empty?"),
         };
 
-        nf_iterators.push(VoiceState {
+        nf_iterators.push(DuplexVoiceState {
             oscillator: Oscillator::init(&default_settings()),
             iterator,
             state,
@@ -76,7 +76,7 @@ pub fn setup_iterators(
 fn sing_along_callback(
     args: pa::DuplexStreamCallbackArgs<f32, f32>,
     input_buffer: &mut RingBuffer<f32>,
-    nf_iterators: &mut Vec<VoiceState>,
+    nf_iterators: &mut Vec<DuplexVoiceState>,
     settings: &Settings,
 ) {
     input_buffer.push_vec(args.in_buffer.to_vec());
@@ -96,7 +96,7 @@ fn sing_along_callback(
     write_output_buffer(args.out_buffer, stereo_waveform);
 }
 
-fn generate_voice_sw(voice: &mut VoiceState, settings: &Settings, origin: Basis) -> StereoWaveform {
+fn generate_voice_sw(voice: &mut DuplexVoiceState, settings: &Settings, origin: Basis) -> StereoWaveform {
     if voice.state.count >= voice.state.current_op.l {
         voice.state.count = Rational64::new(0, 1);
         voice.state.current_op = voice.iterator.next().unwrap()
@@ -128,7 +128,6 @@ pub fn duplex_setup(
             if count == 20 {
                 println!("* * * * * ready * * * * *");
             }
-
             pa::Continue
         } else {
             sing_along_callback(args, &mut input_buffer, &mut nf_iterators, &settings);
