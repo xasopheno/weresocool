@@ -31,7 +31,6 @@ impl StereoWaveform {
             })
         } else {
             None
-            //StereoWaveform::new(buffer_size)
         }
     }
 }

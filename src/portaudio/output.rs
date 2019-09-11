@@ -30,6 +30,9 @@ fn output_callback(args: pa::OutputStreamCallbackArgs<f32>, buffer_size: usize, 
                 write_output_buffer(args.buffer, result);
                 pa::Continue
             },
+            None => {
+                pa::Complete
+            }
         }
 }
 
