@@ -11,29 +11,28 @@ pub fn output_setup(
     let settings = default_settings();
     let output_settings = get_output_settings(&pa, &settings)?;
     let mut index = 0;
-    let output_stream = pa.open_non_blocking_stream(
-        output_settings,
-        move |args| {
-            let result = output_callback(args, settings.buffer_size, &mut composition);
-            index += 1;
-            result
-        }
-    )?;
+    let output_stream = pa.open_non_blocking_stream(output_settings, move |args| {
+        let result = output_callback(args, settings.buffer_size, &mut composition);
+        index += 1;
+        result
+    })?;
 
     Ok(output_stream)
 }
 
-fn output_callback(args: pa::OutputStreamCallbackArgs<f32>, buffer_size: usize, composition: &mut StereoWaveform) -> pa::stream::CallbackResult {
-        let buffer_to_write = composition.get_buffer(index, buffer_size);
-        match buffer_to_write {
-            Some(result) => {
-                write_output_buffer(args.buffer, result);
-                pa::Continue
-            },
-            None => {
-                pa::Complete
-            }
+fn output_callback(
+    args: pa::OutputStreamCallbackArgs<f32>,
+    buffer_size: usize,
+    composition: &mut StereoWaveform,
+) -> pa::stream::CallbackResult {
+    let buffer_to_write = composition.get_buffer(index, buffer_size);
+    match buffer_to_write {
+        Some(result) => {
+            write_output_buffer(args.buffer, result);
+            pa::Continue
         }
+        None => pa::Complete,
+    }
 }
 
 pub fn get_output_settings(
