@@ -13,15 +13,24 @@ pub fn output_setup(
     let mut index = 0;
     let output_stream = pa.open_non_blocking_stream(
         output_settings,
-        move |pa::OutputStreamCallbackArgs { mut buffer, .. }| {
-            let buffer_to_write = composition.get_buffer(index, settings.buffer_size);
-            write_output_buffer(&mut buffer, buffer_to_write);
+        move |args| {
+            let result = output_callback(args, settings.buffer_size, &mut composition, index);
             index += 1;
-            pa::Continue
-        },
+            result
+        }
     )?;
 
     Ok(output_stream)
+}
+
+fn output_callback(args: pa::OutputStreamCallbackArgs<f32>, buffer_size: usize, composition: &mut StereoWaveform, index: usize) -> pa::stream::CallbackResult {
+        let buffer_to_write = composition.get_buffer(index, buffer_size);
+        match buffer_to_write {
+            Some(result) => {
+                write_output_buffer(args.buffer, result);
+                pa::Continue
+            },
+        }
 }
 
 pub fn get_output_settings(
