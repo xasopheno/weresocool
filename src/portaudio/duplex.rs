@@ -41,10 +41,12 @@ fn process_result(result: &mut DetectionResult) -> Basis {
     }
 }
 
+type SongIterators = Vec<(Oscillator, Cycle<IntoIter<PointOp>>, RealTimeState)>;
+
 pub fn setup_iterators(
     parsed_composition: Vec<Vec<PointOp>>,
     settings: &Settings,
-) -> Vec<(Oscillator, Cycle<IntoIter<PointOp>>, RealTimeState)> {
+) -> SongIterators {
     let mut nf_iterators = vec![];
 
     for seq in parsed_composition {
@@ -57,10 +59,42 @@ pub fn setup_iterators(
                 .expect("Empty iterator in cycle in mic. Empty?"),
         };
 
-        nf_iterators.push((Oscillator::init(&default_settings()), iterator, state))
+        nf_iterators.push((Oscillator::init(&default_settings()), iterator, state));
     }
 
     nf_iterators
+}
+
+fn duplex_callback(args: pa::DuplexStreamCallbackArgs<f32, f32>, input_buffer: &mut RingBuffer<f32>, nf_iterators: &mut SongIterators, settings: &Settings) {
+    input_buffer.push_vec(args.in_buffer.to_vec());
+
+    let mut result: DetectionResult = input_buffer
+        .to_vec()
+        .analyze(settings.sample_rate as f32, settings.probability_threshold);
+
+    let origin = process_result(&mut result);
+
+    let mut result = vec![];
+
+    for (ref mut oscillator, ref mut iterator, ref mut state) in nf_iterators.iter_mut()
+    {
+        if state.count >= state.current_op.l {
+            state.count = Rational64::new(0, 1);
+            state.current_op = iterator.next().unwrap()
+        }
+
+        let mut current_point_op = state.current_op.clone();
+
+        current_point_op.l =
+            Rational64::new(settings.buffer_size as i64, settings.sample_rate as i64);
+        let stereo_waveform = render_mic(&current_point_op, origin, oscillator);
+        result.push(stereo_waveform);
+        state.inc();
+    }
+
+    let stereo_waveform = sum_all_waveforms(result);
+    write_output_buffer(args.out_buffer, stereo_waveform);
+
 }
 
 pub fn duplex_setup(
@@ -77,11 +111,7 @@ pub fn duplex_setup(
 
     let duplex_stream = pa.open_non_blocking_stream(
         duplex_stream_settings,
-        move |pa::DuplexStreamCallbackArgs {
-                  in_buffer,
-                  mut out_buffer,
-                  ..
-              }| {
+        move |args| {
             if count < 20 {
                 count += 1;
                 if count == 20 {
@@ -90,35 +120,7 @@ pub fn duplex_setup(
 
                 pa::Continue
             } else {
-                input_buffer.push_vec(in_buffer.to_vec());
-
-                let mut result: DetectionResult = input_buffer
-                    .to_vec()
-                    .analyze(settings.sample_rate as f32, settings.probability_threshold);
-
-                let origin = process_result(&mut result);
-
-                let mut result = vec![];
-
-                for (ref mut oscillator, ref mut iterator, ref mut state) in nf_iterators.iter_mut()
-                {
-                    if state.count >= state.current_op.l {
-                        state.count = Rational64::new(0, 1);
-                        state.current_op = iterator.next().unwrap()
-                    }
-
-                    let mut current_point_op = state.current_op.clone();
-
-                    current_point_op.l =
-                        Rational64::new(settings.buffer_size as i64, settings.sample_rate as i64);
-                    let stereo_waveform = render_mic(&current_point_op, origin, oscillator);
-                    result.push(stereo_waveform);
-                    state.inc();
-                }
-
-                let stereo_waveform = sum_all_waveforms(result);
-                write_output_buffer(&mut out_buffer, stereo_waveform);
-
+                duplex_callback(args, &mut input_buffer, &mut nf_iterators, &settings);
                 pa::Continue
             }
         },
