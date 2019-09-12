@@ -21,16 +21,16 @@ impl StereoWaveform {
         self.r_buffer.append(&mut stereo_waveform.r_buffer);
     }
 
-    pub fn get_buffer(&mut self, index: usize, buffer_size: usize) -> StereoWaveform {
+    pub fn get_buffer(&mut self, index: usize, buffer_size: usize) -> Option<StereoWaveform> {
         if (index + 1) * buffer_size < self.l_buffer.len() {
             let l_buffer = &self.l_buffer[index * buffer_size..(index + 1) * buffer_size];
             let r_buffer = &self.r_buffer[index * buffer_size..(index + 1) * buffer_size];
-            StereoWaveform {
+            Some(StereoWaveform {
                 l_buffer: l_buffer.to_vec(),
                 r_buffer: r_buffer.to_vec(),
-            }
+            })
         } else {
-            StereoWaveform::new(2048)
+            None
         }
     }
 }

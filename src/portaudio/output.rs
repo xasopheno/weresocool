@@ -11,17 +11,29 @@ pub fn output_setup(
     let settings = default_settings();
     let output_settings = get_output_settings(&pa, &settings)?;
     let mut index = 0;
-    let output_stream = pa.open_non_blocking_stream(
-        output_settings,
-        move |pa::OutputStreamCallbackArgs { mut buffer, .. }| {
-            let buffer_to_write = composition.get_buffer(index, settings.buffer_size);
-            write_output_buffer(&mut buffer, buffer_to_write);
-            index += 1;
-            pa::Continue
-        },
-    )?;
+    let output_stream = pa.open_non_blocking_stream(output_settings, move |args| {
+        let result = output_callback(args, settings.buffer_size, &mut composition, index);
+        index += 1;
+        result
+    })?;
 
     Ok(output_stream)
+}
+
+fn output_callback(
+    args: pa::OutputStreamCallbackArgs<f32>,
+    buffer_size: usize,
+    composition: &mut StereoWaveform,
+    index: usize,
+) -> pa::stream::CallbackResult {
+    let buffer_to_write = composition.get_buffer(index, buffer_size);
+    match buffer_to_write {
+        Some(result) => {
+            write_output_buffer(args.buffer, result);
+            pa::Continue
+        }
+        None => pa::Complete,
+    }
 }
 
 pub fn get_output_settings(
@@ -30,7 +42,7 @@ pub fn get_output_settings(
 ) -> Result<pa::stream::OutputSettings<f32>, Error> {
     let def_output = pa.default_output_device()?;
     let output_info = pa.device_info(def_output)?;
-    //        println!("Default output device info: {:#?}", &output_info);
+    // println!("Default output device info: {:#?}", &output_info);
 
     let latency = output_info.default_low_output_latency;
     let output_params =

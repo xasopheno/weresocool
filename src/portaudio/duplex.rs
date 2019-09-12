@@ -1,6 +1,6 @@
 use crate::analyze::{Analyze, DetectionResult};
 use crate::generation::parsed_to_render::*;
-use crate::instrument::{Basis, Oscillator};
+use crate::instrument::{Basis, Oscillator, StereoWaveform};
 use crate::ring_buffer::RingBuffer;
 use crate::settings::{default_settings, Settings};
 use crate::write::write_output_buffer;
@@ -23,7 +23,7 @@ impl RealTimeState {
     }
 }
 
-fn process_result(result: &mut DetectionResult) -> Basis {
+fn process_detection_result(result: &mut DetectionResult) -> Basis {
     if result.gain < 0.005 || result.frequency > 1_000.0 {
         result.frequency = 0.0;
         result.gain = 0.0;
@@ -41,11 +41,17 @@ fn process_result(result: &mut DetectionResult) -> Basis {
     }
 }
 
+pub struct NfVoiceState {
+    oscillator: Oscillator,
+    state: RealTimeState,
+    iterator: Cycle<IntoIter<PointOp>>,
+}
+
 pub fn setup_iterators(
     parsed_composition: Vec<Vec<PointOp>>,
     settings: &Settings,
-) -> Vec<(Oscillator, Cycle<IntoIter<PointOp>>, RealTimeState)> {
-    let mut nf_iterators = vec![];
+) -> Vec<NfVoiceState> {
+    let mut nf_voice_cycles = vec![];
 
     for seq in parsed_composition {
         let mut iterator = seq.clone().into_iter().cycle();
@@ -57,10 +63,56 @@ pub fn setup_iterators(
                 .expect("Empty iterator in cycle in mic. Empty?"),
         };
 
-        nf_iterators.push((Oscillator::init(&default_settings()), iterator, state))
+        nf_voice_cycles.push(NfVoiceState {
+            oscillator: Oscillator::init(&default_settings()),
+            iterator,
+            state,
+        });
     }
 
-    nf_iterators
+    nf_voice_cycles
+}
+
+fn sing_along_callback(
+    args: pa::DuplexStreamCallbackArgs<f32, f32>,
+    input_buffer: &mut RingBuffer<f32>,
+    nf_voice_cycles: &mut Vec<NfVoiceState>,
+    settings: &Settings,
+) {
+    input_buffer.push_vec(args.in_buffer.to_vec());
+
+    let mut detection_result: DetectionResult = input_buffer
+        .to_vec()
+        .analyze(settings.sample_rate as f32, settings.probability_threshold);
+
+    let origin = process_detection_result(&mut detection_result);
+
+    let result: Vec<StereoWaveform> = nf_voice_cycles
+        .iter_mut()
+        .map(|voice| generate_voice_sw(voice, settings, origin))
+        .collect();
+
+    let stereo_waveform = sum_all_waveforms(result);
+    write_output_buffer(args.out_buffer, stereo_waveform);
+}
+
+fn generate_voice_sw(
+    voice: &mut NfVoiceState,
+    settings: &Settings,
+    origin: Basis,
+) -> StereoWaveform {
+    if voice.state.count >= voice.state.current_op.l {
+        voice.state.count = Rational64::new(0, 1);
+        voice.state.current_op = voice.iterator.next().unwrap()
+    }
+
+    let mut current_point_op = voice.state.current_op.clone();
+
+    current_point_op.l = Rational64::new(settings.buffer_size as i64, settings.sample_rate as i64);
+
+    let stereo_waveform = render_mic(&current_point_op, origin, &mut voice.oscillator);
+    voice.state.inc();
+    stereo_waveform
 }
 
 pub fn duplex_setup(
@@ -71,58 +123,22 @@ pub fn duplex_setup(
     let duplex_stream_settings = get_duplex_settings(&pa, &settings)?;
 
     let mut input_buffer: RingBuffer<f32> = RingBuffer::<f32>::new(settings.yin_buffer_size);
-    let mut nf_iterators = setup_iterators(parsed_composition, &settings);
+    let mut nf_voice_cycles = setup_iterators(parsed_composition, &settings);
 
     let mut count = 0;
 
-    let duplex_stream = pa.open_non_blocking_stream(
-        duplex_stream_settings,
-        move |pa::DuplexStreamCallbackArgs {
-                  in_buffer,
-                  mut out_buffer,
-                  ..
-              }| {
-            if count < 20 {
-                count += 1;
-                if count == 20 {
-                    println!("* * * * * ready * * * * *");
-                }
-
-                pa::Continue
-            } else {
-                input_buffer.push_vec(in_buffer.to_vec());
-
-                let mut result: DetectionResult = input_buffer
-                    .to_vec()
-                    .analyze(settings.sample_rate as f32, settings.probability_threshold);
-
-                let origin = process_result(&mut result);
-
-                let mut result = vec![];
-
-                for (ref mut oscillator, ref mut iterator, ref mut state) in nf_iterators.iter_mut()
-                {
-                    if state.count >= state.current_op.l {
-                        state.count = Rational64::new(0, 1);
-                        state.current_op = iterator.next().unwrap()
-                    }
-
-                    let mut current_point_op = state.current_op.clone();
-
-                    current_point_op.l =
-                        Rational64::new(settings.buffer_size as i64, settings.sample_rate as i64);
-                    let stereo_waveform = render_mic(&current_point_op, origin, oscillator);
-                    result.push(stereo_waveform);
-                    state.inc();
-                }
-
-                let stereo_waveform = sum_all_waveforms(result);
-                write_output_buffer(&mut out_buffer, stereo_waveform);
-
-                pa::Continue
+    let duplex_stream = pa.open_non_blocking_stream(duplex_stream_settings, move |args| {
+        if count < 20 {
+            count += 1;
+            if count == 20 {
+                println!("* * * * * ready * * * * *");
             }
-        },
-    )?;
+            pa::Continue
+        } else {
+            sing_along_callback(args, &mut input_buffer, &mut nf_voice_cycles, &settings);
+            pa::Continue
+        }
+    })?;
 
     Ok(duplex_stream)
 }
