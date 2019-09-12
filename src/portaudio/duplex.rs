@@ -23,7 +23,7 @@ impl RealTimeState {
     }
 }
 
-fn process_result(result: &mut DetectionResult) -> Basis {
+fn process_detection_result(result: &mut DetectionResult) -> Basis {
     if result.gain < 0.005 || result.frequency > 1_000.0 {
         result.frequency = 0.0;
         result.gain = 0.0;
@@ -41,7 +41,7 @@ fn process_result(result: &mut DetectionResult) -> Basis {
     }
 }
 
-pub struct DuplexVoiceState {
+pub struct NfVoiceState {
     oscillator: Oscillator,
     state: RealTimeState,
     iterator: Cycle<IntoIter<PointOp>>,
@@ -50,8 +50,8 @@ pub struct DuplexVoiceState {
 pub fn setup_iterators(
     parsed_composition: Vec<Vec<PointOp>>,
     settings: &Settings,
-) -> Vec<DuplexVoiceState> {
-    let mut nf_iterators = vec![];
+) -> Vec<NfVoiceState> {
+    let mut nf_voice_cycles = vec![];
 
     for seq in parsed_composition {
         let mut iterator = seq.clone().into_iter().cycle();
@@ -63,31 +63,31 @@ pub fn setup_iterators(
                 .expect("Empty iterator in cycle in mic. Empty?"),
         };
 
-        nf_iterators.push(DuplexVoiceState {
+        nf_voice_cycles.push(NfVoiceState {
             oscillator: Oscillator::init(&default_settings()),
             iterator,
             state,
         });
     }
 
-    nf_iterators
+    nf_voice_cycles
 }
 
 fn sing_along_callback(
     args: pa::DuplexStreamCallbackArgs<f32, f32>,
     input_buffer: &mut RingBuffer<f32>,
-    nf_iterators: &mut Vec<DuplexVoiceState>,
+    nf_voice_cycles: &mut Vec<NfVoiceState>,
     settings: &Settings,
 ) {
     input_buffer.push_vec(args.in_buffer.to_vec());
 
-    let mut result: DetectionResult = input_buffer
+    let mut detection_result: DetectionResult = input_buffer
         .to_vec()
         .analyze(settings.sample_rate as f32, settings.probability_threshold);
 
-    let origin = process_result(&mut result);
+    let origin = process_detection_result(&mut detection_result);
 
-    let result: Vec<StereoWaveform> = nf_iterators
+    let result: Vec<StereoWaveform> = nf_voice_cycles
         .iter_mut()
         .map(|voice| generate_voice_sw(voice, settings, origin))
         .collect();
@@ -96,7 +96,7 @@ fn sing_along_callback(
     write_output_buffer(args.out_buffer, stereo_waveform);
 }
 
-fn generate_voice_sw(voice: &mut DuplexVoiceState, settings: &Settings, origin: Basis) -> StereoWaveform {
+fn generate_voice_sw(voice: &mut NfVoiceState, settings: &Settings, origin: Basis) -> StereoWaveform {
     if voice.state.count >= voice.state.current_op.l {
         voice.state.count = Rational64::new(0, 1);
         voice.state.current_op = voice.iterator.next().unwrap()
@@ -105,6 +105,7 @@ fn generate_voice_sw(voice: &mut DuplexVoiceState, settings: &Settings, origin: 
     let mut current_point_op = voice.state.current_op.clone();
 
     current_point_op.l = Rational64::new(settings.buffer_size as i64, settings.sample_rate as i64);
+
     let stereo_waveform = render_mic(&current_point_op, origin, &mut voice.oscillator);
     voice.state.inc();
     stereo_waveform
@@ -118,7 +119,7 @@ pub fn duplex_setup(
     let duplex_stream_settings = get_duplex_settings(&pa, &settings)?;
 
     let mut input_buffer: RingBuffer<f32> = RingBuffer::<f32>::new(settings.yin_buffer_size);
-    let mut nf_iterators = setup_iterators(parsed_composition, &settings);
+    let mut nf_voice_cycles = setup_iterators(parsed_composition, &settings);
 
     let mut count = 0;
 
@@ -130,7 +131,7 @@ pub fn duplex_setup(
             }
             pa::Continue
         } else {
-            sing_along_callback(args, &mut input_buffer, &mut nf_iterators, &settings);
+            sing_along_callback(args, &mut input_buffer, &mut nf_voice_cycles, &settings);
             pa::Continue
         }
     })?;
