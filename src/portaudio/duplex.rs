@@ -96,7 +96,11 @@ fn sing_along_callback(
     write_output_buffer(args.out_buffer, stereo_waveform);
 }
 
-fn generate_voice_sw(voice: &mut NfVoiceState, settings: &Settings, origin: Basis) -> StereoWaveform {
+fn generate_voice_sw(
+    voice: &mut NfVoiceState,
+    settings: &Settings,
+    origin: Basis,
+) -> StereoWaveform {
     if voice.state.count >= voice.state.current_op.l {
         voice.state.count = Rational64::new(0, 1);
         voice.state.current_op = voice.iterator.next().unwrap()
