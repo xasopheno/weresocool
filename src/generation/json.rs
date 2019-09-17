@@ -8,7 +8,7 @@ use error::Error;
 use num_rational::Rational64;
 use serde::{Deserialize, Serialize};
 use serde_json::to_string;
-use socool_ast::{NormalForm, Normalize, OpOrNfTable, PointOp};
+use socool_ast::{NormalForm, Normalize, OpOrNfTable, PointOp, OscType};
 
 pub fn r_to_f64(r: Rational64) -> f64 {
     *r.numer() as f64 / *r.denom() as f64
@@ -20,6 +20,11 @@ pub struct TimedOp {
     pub event_type: EventType,
     pub voice: usize,
     pub event: usize,
+    pub attack: Rational64,
+    pub decay: Rational64,
+    pub decay_length: usize,
+    pub portamento: Rational64,
+    pub osc_type: OscType,
     pub fm: Rational64,
     pub fa: Rational64,
     pub pm: Rational64,
@@ -201,12 +206,17 @@ fn point_op_to_timed_op(
     time: &mut Rational64,
     voice: usize,
     event: usize,
-) -> (TimedOp, TimedOp) {
+) -> TimedOp {
     let on = TimedOp {
         fm: point_op.fm,
         fa: point_op.fa,
         pm: point_op.pm,
         pa: point_op.pa,
+        attack: point_op.attack,
+        osc_type: point_op.osc_type,
+        decay: point_op.decay,
+        decay_length: point_op.decay_length,
+        portamento: point_op.portamento,
         g: point_op.g,
         l: point_op.l,
         t: time.clone(),
@@ -217,13 +227,7 @@ fn point_op_to_timed_op(
 
     *time += point_op.l;
 
-    let off = TimedOp {
-        t: time.clone(),
-        event_type: EventType::Off,
-        ..on
-    };
-
-    (on, off)
+    on
 }
 
 pub fn vec_timed_op_to_vec_op4d(timed_ops: Vec<TimedOp>, basis: &Basis) -> Vec<Op4D> {
@@ -244,8 +248,8 @@ pub fn composition_to_vec_timed_op(composition: &NormalForm, table: &OpOrNfTable
             let mut time = Rational64::new(0, 1);
             let mut result = vec![];
             vec_point_op.iter().enumerate().for_each(|(event, p_op)| {
-                let (on, _off) = point_op_to_timed_op(p_op, &mut time, voice, event);
-                result.push(on);
+                let op = point_op_to_timed_op(p_op, &mut time, voice, event);
+                result.push(op);
             });
             result
         })
