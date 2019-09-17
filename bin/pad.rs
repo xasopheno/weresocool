@@ -1,6 +1,6 @@
 use weresocool::{
     examples::documentation,
-    generation::{filename_to_render, RenderReturn, RenderType},
+    generation::{filename_to_render, RenderReturn, RenderType, TimedOp},
     portaudio::live::{live_setup, State, Voice},
     instrument::{Basis, Oscillator},
     ui::{get_args, no_file_name, were_so_cool_logo},
@@ -11,13 +11,13 @@ use socool_ast::{PointOp, NormalForm};
 use error::Error;
 use failure::Fail;
 
+
 fn main() {
     match run() {
         Ok(_) => {}
         e => {
             for cause in Fail::iter_causes(&e.unwrap_err()) {
-                println!("Failure caused by: {}", cause);
-            }
+                println!("Failure caused by: {}", cause); }
         }
     }
 }
@@ -49,10 +49,11 @@ fn run() -> Result<(), Error> {
         _ => no_file_name(),
     }
 
-    let (normal_form, basis) = match filename_to_render(filename.unwrap(), RenderType::NfBasisAndTable)? {
-        RenderReturn::NfAndBasis(nf, basis, _) => (nf, basis),
+    let (normal_form, basis, table) = match filename_to_render(filename.unwrap(), RenderType::NfBasisAndTable)? {
+        RenderReturn::NfAndBasis(nf, basis, table) => (nf, basis, table),
         _ => panic!("Error. Unable to generate NormalForm"),
     };
+
 
     println!("\nGenerating Composition ");
     let mut live_stream = live_setup(normal_form.operations, basis.clone())?;
