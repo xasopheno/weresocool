@@ -20,7 +20,7 @@ pub struct NormalForm {
 
 pub type NameSet = BTreeSet<String>;
 
-#[derive(Debug, Clone, PartialEq, Hash)]
+#[derive(Debug, Clone, Hash, Eq, Ord, PartialEq, PartialOrd)]
 pub struct PointOp {
     pub fm: Rational64,
     pub fa: Rational64,
@@ -214,6 +214,11 @@ impl MulAssign for PointOp {
 }
 
 impl PointOp {
+    pub fn silent(&self) -> bool {
+        let zero = Rational64::new(0, 1);
+        self.fm == zero && self.fa < Rational64::new(40, 1) || self.g == zero
+    }
+
     pub fn mod_by(&mut self, other: PointOp) {
         let names = union_names(self.names.clone(), &other.names);
         *self = PointOp {

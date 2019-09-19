@@ -1,10 +1,9 @@
 use weresocool::{
     examples::documentation,
-    generation::{filename_to_render, RenderReturn, RenderType, TimedOp},
+    generation::{filename_to_render, RenderReturn, RenderType, TimedOp, composition_to_vec_timed_op},
     portaudio::live::{live_setup, State, Voice},
     instrument::{Basis, Oscillator},
-    ui::{get_args, no_file_name, were_so_cool_logo},
-    settings::{default_settings, Settings},
+    ui::{get_args, no_file_name, were_so_cool_logo}, settings::{default_settings, Settings},
 };
 use socool_ast::{PointOp, NormalForm};
 
@@ -54,13 +53,13 @@ fn run() -> Result<(), Error> {
         _ => panic!("Error. Unable to generate NormalForm"),
     };
 
+    let vec_timed_op = composition_to_vec_timed_op(&normal_form, &table);
 
-    println!("\nGenerating Composition ");
-    let mut live_stream = live_setup(normal_form.operations, basis.clone())?;
-    live_stream.start()?;
+    //let mut live_stream = live_setup(normal_form.operations, basis.clone())?;
+    //live_stream.start()?;
 
-    while let true = live_stream.is_active()? {}
+    //while let true = live_stream.is_active()? {}
 
-    live_stream.stop()?;
+    //live_stream.stop()?;
     Ok(())
 }

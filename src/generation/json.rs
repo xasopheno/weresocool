@@ -31,6 +31,7 @@ pub struct TimedOp {
     pub pa: Rational64,
     pub g: Rational64,
     pub l: Rational64,
+    pub next_event: Option<PointOp>
 }
 
 impl TimedOp {
@@ -47,12 +48,13 @@ impl TimedOp {
         } else {
             basis.g * r_to_f64(self.g)
         };
+        dbg!(&z);
         Op4D {
             l: r_to_f64(self.l) * basis.l,
             t: r_to_f64(self.t) * basis.l,
             x: ((basis.p + r_to_f64(self.pa)) * r_to_f64(self.pm)),
             y: y.log10(),
-            z,
+            z: z,
             voice: self.voice,
             event: self.event,
             event_type: self.event_type.clone(),
@@ -117,7 +119,8 @@ impl Op4D {
 }
 
 fn normalize_value(value: f64, min: f64, max: f64) -> f64 {
-    (value - min) / (max - min)
+    let d = if max == min {1.0} else {max - min};
+    (value - min) / d
 }
 
 fn normalize_op4d_1d(op4d_1d: &mut Vec<Op4D>, n: Normalizer) {
@@ -206,8 +209,9 @@ fn point_op_to_timed_op(
     time: &mut Rational64,
     voice: usize,
     event: usize,
+    next_event: Option<PointOp>
 ) -> TimedOp {
-    let on = TimedOp {
+    let timed_op = TimedOp {
         fm: point_op.fm,
         fa: point_op.fa,
         pm: point_op.pm,
@@ -223,11 +227,12 @@ fn point_op_to_timed_op(
         event_type: EventType::On,
         voice,
         event,
+        next_event
     };
 
     *time += point_op.l;
 
-    on
+    timed_op
 }
 
 pub fn vec_timed_op_to_vec_op4d(timed_ops: Vec<TimedOp>, basis: &Basis) -> Vec<Op4D> {
@@ -247,16 +252,23 @@ pub fn composition_to_vec_timed_op(composition: &NormalForm, table: &OpOrNfTable
         .flat_map(|(voice, vec_point_op)| {
             let mut time = Rational64::new(0, 1);
             let mut result = vec![];
-            vec_point_op.iter().enumerate().for_each(|(event, p_op)| {
-                let op = point_op_to_timed_op(p_op, &mut time, voice, event);
+            let mut iter = vec_point_op.iter();
+            for (event, p_op) in iter.enumerate() {
+                    let mut next_e = event;
+                    if event == vec_point_op.len() {
+                        next_e = 0;
+                    };
+                    
+                let op = point_op_to_timed_op(p_op, &mut time, voice, event, Some(vec_point_op[next_e].clone()));
                 result.push(op);
-            });
+            };
             result
         })
         .collect();
 
     result.sort_unstable_by_key(|a| a.t);
 
+    //dbg!(&result);
     result
 }
 
