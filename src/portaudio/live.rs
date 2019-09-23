@@ -15,27 +15,51 @@ use crate::portaudio::output::{get_output_settings};
 
 fn live_callback(
     args: pa::OutputStreamCallbackArgs<f32>,
-    //state: State,
+    //state: LiveState,
     basis: Basis,
     settings: &Settings,
 ) {}
 
-pub struct State {
+pub struct LiveState {
     pub ops: Vec<TimedOp>,
     pub basis: Basis,
     pub index: usize,
     pub n_voices: usize,
-    pub time: Rational64
+    pub time: Rational64,
 }
 
-impl State {
-    pub fn get_batch(&mut self) -> Vec<TimedOp> {
-        let mut result: Vec<TimedOp> = vec![];
+
+
+impl LiveState {
+    pub fn new(vec_timed_op: Vec<TimedOp>, n_voices: usize, basis: Basis, settings: &Settings) -> LiveState {
+        let mut oscillators: Vec<Oscillator> = vec![];
+        for i in 0..n_voices {
+            oscillators.push(Oscillator::init(&settings))   
+        };
+
+        LiveState {
+            ops: vec_timed_op,
+            basis,
+            n_voices,
+            time: Rational64::new(0, 1),
+            index: 0,
+        }
+    }
+
+    pub fn get_batch(&mut self) -> Vec<Vec<TimedOp>> {
+        let mut result: Vec<Vec<TimedOp>> = vec![];
+        for n in 0..self.n_voices {
+            result.push(vec![]);
+        }
         let mut remainders: Vec<TimedOp> = vec![];
         let mut search = true;
 
         self.time += Rational64::new(1,1);
         while search {
+            if self.index == self.ops.len() {
+                self.index = 0;
+                self.time = Rational64::new(0, 1);
+            };
             let op = &self.ops[self.index];
             if op.t < self.time {
                 let op_end = op.t + op.l;
@@ -49,24 +73,24 @@ impl State {
                     remainder.t = self.time; 
                     shortened.next_event = Some(remainder.to_point_op());
 
-                    result.push(shortened);
+                    result[shortened.voice].push(shortened);
                     remainders.push(remainder);
                     self.index += 1;
                 } else {
-                    result.push(op.clone());
+                    result[op.voice].push(op.clone());
                     self.index += 1;
                 }
             } else {
                 search = false; 
             }
         };
-        dbg!(remainders);
+        self.ops = [&remainders[..], &self.ops[..]].concat();
         result
     }
 
     pub fn generate_waveform(
         &mut self,
-        origin: Basis,
+        basis: Basis,
     ) -> StereoWaveform {
         //if voice.state.count >= voice.state.current_op.l {
             //voice.state.count = Rational64::new(0, 1);
@@ -77,7 +101,7 @@ impl State {
 
         //current_point_op.l = Rational64::new(settings.buffer_size as i64, settings.sample_rate as i64);
 
-        //let stereo_waveform = render_mic(&current_point_op, origin, &mut voice.oscillator);
+        //let stereo_waveform = render_mic(&current_point_op, basis, &mut voice.oscillator);
         //voice.state.inc();
         //stereo_waveform
         StereoWaveform::new(2048)

@@ -1,6 +1,14 @@
 { f: 220, l: 1, g: 1, p: 0}
 
+overtones = {
+    O[
+        (1, 1, 1, 0),
+        (1, 0, 1, 0),
+    ]
+}
+
 thing1 = {
+    overtones |
 	Sequence [
 		AsIs,
 		Tm 9/8,
@@ -14,4 +22,3 @@ thing1 = {
 main = {
 	thing1
 }
-	

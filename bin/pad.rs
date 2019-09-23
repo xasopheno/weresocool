@@ -1,9 +1,10 @@
 use weresocool::{
     examples::documentation,
     generation::{filename_to_render, RenderReturn, RenderType, TimedOp, composition_to_vec_timed_op},
-    portaudio::live::{live_setup, State},
+    portaudio::live::{live_setup, LiveState},
     instrument::{Basis, Oscillator},
-    ui::{get_args, no_file_name, were_so_cool_logo}, settings::{default_settings, Settings},
+    ui::{get_args, no_file_name, were_so_cool_logo}, 
+    settings::{default_settings, Settings},
 };
 use socool_ast::{PointOp, NormalForm};
 
@@ -37,13 +38,8 @@ fn run() -> Result<(), Error> {
     };
 
     let (vec_timed_op, n_voices) = composition_to_vec_timed_op(&normal_form, &table);
-    let mut state = State {
-        ops: vec_timed_op,
-        basis,
-        n_voices,
-        time: Rational64::new(0, 1),
-        index: 0,
-    };
+    let settings = default_settings();
+    let mut state = LiveState::new(vec_timed_op, n_voices, basis, &settings);
 
     dbg!(state.get_batch());
     //let mut live_stream = live_setup(normal_form.operations, basis.clone())?;
