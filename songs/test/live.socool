@@ -1,0 +1,17 @@
+{ f: 220, l: 1, g: 1, p: 0}
+
+thing1 = {
+	Sequence [
+		AsIs,
+		Tm 9/8,
+		Tm 5/4,
+		Tm 4/3,
+		Tm 3/2,
+	] 
+    | Length 9/10 
+}
+
+main = {
+	thing1
+}
+	

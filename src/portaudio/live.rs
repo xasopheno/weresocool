@@ -1,18 +1,17 @@
-use crate::analyze::{DetectionResult};
-use crate::generation::parsed_to_render::*;
+//use crate::analyze::{DetectionResult};
+//use crate::generation::parsed_to_render::*;
 use crate::generation::TimedOp;
 use crate::instrument::{Basis, Oscillator, StereoWaveform};
-use crate::ring_buffer::RingBuffer;
+//use crate::ring_buffer::RingBuffer;
 use crate::settings::{default_settings, Settings};
-use crate::write::write_output_buffer;
+//use crate::write::write_output_buffer;
 use error::Error;
 use num_rational::Rational64;
 use portaudio as pa;
 use socool_ast::PointOp;
-use std::iter::Cycle;
-use std::vec::IntoIter;
+//use std::iter::Cycle;
+//use std::vec::IntoIter;
 use crate::portaudio::output::{get_output_settings};
-use std::collections::HashMap;
 
 fn live_callback(
     args: pa::OutputStreamCallbackArgs<f32>,
@@ -32,17 +31,36 @@ pub struct State {
 impl State {
     pub fn get_batch(&mut self) -> Vec<TimedOp> {
         let mut result: Vec<TimedOp> = vec![];
+        let mut remainders: Vec<TimedOp> = vec![];
         let mut search = true;
+
         self.time += Rational64::new(1,1);
         while search {
             let op = &self.ops[self.index];
             if op.t < self.time {
-                result.push(op.clone());
-                self.index += 1;
+                let op_end = op.t + op.l;
+
+                if op_end > self.time {
+                    let mut shortened = op.clone();
+                    let mut remainder = op.clone();
+
+                    shortened.l = self.time - op.t; 
+                    remainder.l = op_end - self.time; 
+                    remainder.t = self.time; 
+                    shortened.next_event = Some(remainder.to_point_op());
+
+                    result.push(shortened);
+                    remainders.push(remainder);
+                    self.index += 1;
+                } else {
+                    result.push(op.clone());
+                    self.index += 1;
+                }
             } else {
                 search = false; 
             }
         };
+        dbg!(remainders);
         result
     }
 
