@@ -1,7 +1,7 @@
 use weresocool::{
     examples::documentation,
     generation::{filename_to_render, RenderReturn, RenderType, TimedOp, composition_to_vec_timed_op},
-    portaudio::live::{live_setup, State, Voice},
+    portaudio::live::{live_setup, State},
     instrument::{Basis, Oscillator},
     ui::{get_args, no_file_name, were_so_cool_logo}, settings::{default_settings, Settings},
 };
@@ -9,6 +9,7 @@ use socool_ast::{PointOp, NormalForm};
 
 use error::Error;
 use failure::Fail;
+use num_rational::Rational64;
 
 
 fn main() {
@@ -19,24 +20,6 @@ fn main() {
                 println!("Failure caused by: {}", cause); }
         }
     }
-}
-
-
-fn make_state(nf: NormalForm, basis: Basis) -> State {
-    let settings = default_settings();
-    let voices: Vec<Voice> = nf.operations.iter().map(|events| {
-            Voice {
-                events: events.to_vec(),
-                remainder: None,
-                oscillator: Oscillator::init(&settings),
-                index: 0,
-            }
-    }).collect();
-         
-    State {
-        voices, 
-        basis
-    } 
 }
 
 fn run() -> Result<(), Error> {
@@ -53,8 +36,16 @@ fn run() -> Result<(), Error> {
         _ => panic!("Error. Unable to generate NormalForm"),
     };
 
-    let vec_timed_op = composition_to_vec_timed_op(&normal_form, &table);
+    let (vec_timed_op, n_voices) = composition_to_vec_timed_op(&normal_form, &table);
+    let mut state = State {
+        ops: vec_timed_op,
+        basis,
+        n_voices,
+        time: Rational64::new(0, 1),
+        index: 0,
+    };
 
+    dbg!(state.get_batch());
     //let mut live_stream = live_setup(normal_form.operations, basis.clone())?;
     //live_stream.start()?;
 

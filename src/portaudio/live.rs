@@ -1,5 +1,6 @@
 use crate::analyze::{DetectionResult};
 use crate::generation::parsed_to_render::*;
+use crate::generation::TimedOp;
 use crate::instrument::{Basis, Oscillator, StereoWaveform};
 use crate::ring_buffer::RingBuffer;
 use crate::settings::{default_settings, Settings};
@@ -11,6 +12,7 @@ use socool_ast::PointOp;
 use std::iter::Cycle;
 use std::vec::IntoIter;
 use crate::portaudio::output::{get_output_settings};
+use std::collections::HashMap;
 
 fn live_callback(
     args: pa::OutputStreamCallbackArgs<f32>,
@@ -20,26 +22,31 @@ fn live_callback(
 ) {}
 
 pub struct State {
-    pub voices: Vec<Voice>,
+    pub ops: Vec<TimedOp>,
     pub basis: Basis,
-}
-
-pub struct Voice {
-    pub events: Vec<PointOp>,
     pub index: usize,
-    pub oscillator: Oscillator,
-    pub remainder: Option<PointOp>
+    pub n_voices: usize,
+    pub time: Rational64
 }
 
-impl Voice {
-    pub fn inc(&mut self) {
-        if self.index < self.events.len() - 1 {
-            self.index +=  1;
-        } else {
-            self.index = 0;
-        }
+impl State {
+    pub fn get_batch(&mut self) -> Vec<TimedOp> {
+        let mut result: Vec<TimedOp> = vec![];
+        let mut search = true;
+        self.time += Rational64::new(1,1);
+        while search {
+            let op = &self.ops[self.index];
+            if op.t < self.time {
+                result.push(op.clone());
+                self.index += 1;
+            } else {
+                search = false; 
+            }
+        };
+        result
     }
-    fn generate_waveform(
+
+    pub fn generate_waveform(
         &mut self,
         origin: Basis,
     ) -> StereoWaveform {
