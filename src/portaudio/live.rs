@@ -13,13 +13,6 @@ use socool_ast::{PointOp, OpOrNfTable};
 //use std::vec::IntoIter;
 use crate::portaudio::output::{get_output_settings};
 
-fn live_callback(
-    args: pa::OutputStreamCallbackArgs<f32>,
-    state: LiveState,
-    basis: Basis,
-    settings: &Settings,
-) {}
-
 pub struct LiveState {
     pub ops: Vec<TimedOp>,
     pub basis: Basis,
@@ -30,7 +23,14 @@ pub struct LiveState {
 
 pub struct LiveRender {
     timed_ops: Vec<Vec<TimedOp>>,
-    stereo_waveform: StereoWaveform
+    stereo_waveform: StereoWaveform,
+    index: usize
+}
+
+impl LiveRender {
+    fn render_all(&mut self) {
+    
+    }
 }
 
 impl LiveState {
@@ -62,7 +62,8 @@ impl LiveState {
 
         LiveRender {
             timed_ops, 
-            stereo_waveform
+            stereo_waveform,
+            index: 0,
         } 
     }
 
@@ -110,14 +111,20 @@ impl LiveState {
 }
 
 pub fn live_setup(
-    live_state: LiveState,
+    mut state: LiveState,
 ) -> Result<pa::Stream<pa::NonBlocking, pa::Output<f32>>, Error> {
     let pa = pa::PortAudio::new()?;
     let settings = default_settings();
     let output_settings = get_output_settings(&pa, &settings)?;
 
+    let mut result: Vec<StereoWaveform> = vec![];
+    for i in 0..30 {
+        let rendered = state.render_batch();
+        result.push(rendered.stereo_waveform);
+
+    }
+    //live_callback(args, state basis.clone(), &settings);
     let live_stream = pa.open_non_blocking_stream(output_settings, move |args| {
-        //live_callback(args, state basis.clone(), &settings);
         pa::Continue
     })?;
 
