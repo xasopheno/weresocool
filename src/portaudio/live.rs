@@ -15,7 +15,7 @@ use crate::portaudio::output::{get_output_settings};
 
 fn live_callback(
     args: pa::OutputStreamCallbackArgs<f32>,
-    //state: LiveState,
+    state: LiveState,
     basis: Basis,
     settings: &Settings,
 ) {}
@@ -110,17 +110,14 @@ impl LiveState {
 }
 
 pub fn live_setup(
-    parsed_composition: Vec<Vec<PointOp>>,
-    basis: Basis,
+    live_state: LiveState,
 ) -> Result<pa::Stream<pa::NonBlocking, pa::Output<f32>>, Error> {
     let pa = pa::PortAudio::new()?;
     let settings = default_settings();
     let output_settings = get_output_settings(&pa, &settings)?;
 
-    //let mut nf_voice_cycles = setup_iterators(parsed_composition, &settings);
-
     let live_stream = pa.open_non_blocking_stream(output_settings, move |args| {
-        live_callback(args, basis.clone(), &settings);
+        //live_callback(args, state basis.clone(), &settings);
         pa::Continue
     })?;
 
