@@ -1,9 +1,13 @@
-use crate::generation::parsed_to_render::r_to_f64;
-use crate::instrument::{
-    oscillator::{Basis, Oscillator},
-    stereo_waveform::StereoWaveform,
+use crate::{
+    generation::{
+        TimedOp,
+        parsed_to_render::{r_to_f64},
+    },
+    instrument::{
+        oscillator::{Basis, Oscillator},
+        stereo_waveform::StereoWaveform,
+    }
 };
-
 use socool_ast::PointOp;
 
 pub trait Render<T> {

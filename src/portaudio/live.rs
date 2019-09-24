@@ -1,6 +1,6 @@
 //use crate::analyze::{DetectionResult};
 //use crate::generation::parsed_to_render::*;
-use crate::generation::TimedOp;
+use crate::generation::{TimedOp, sum_all_waveforms, generate_waveforms};
 use crate::instrument::{Basis, Oscillator, StereoWaveform};
 //use crate::ring_buffer::RingBuffer;
 use crate::settings::{default_settings, Settings};
@@ -8,7 +8,7 @@ use crate::settings::{default_settings, Settings};
 use error::Error;
 use num_rational::Rational64;
 use portaudio as pa;
-use socool_ast::PointOp;
+use socool_ast::{PointOp, OpOrNfTable};
 //use std::iter::Cycle;
 //use std::vec::IntoIter;
 use crate::portaudio::output::{get_output_settings};
@@ -28,7 +28,10 @@ pub struct LiveState {
     pub time: Rational64,
 }
 
-
+pub struct LiveRender {
+    timed_ops: Vec<Vec<TimedOp>>,
+    stereo_waveform: StereoWaveform
+}
 
 impl LiveState {
     pub fn new(vec_timed_op: Vec<TimedOp>, n_voices: usize, basis: Basis, settings: &Settings) -> LiveState {
@@ -44,6 +47,23 @@ impl LiveState {
             time: Rational64::new(0, 1),
             index: 0,
         }
+    }
+    pub fn render_batch(&mut self) -> LiveRender {
+        let timed_ops = self.get_batch();
+
+        let point_ops: Vec<Vec<PointOp>> = timed_ops.iter().map(|vec| {
+            vec.iter().map(|op| {
+                op.to_point_op()
+            }).collect()
+        }).collect();
+
+        let vec_wav = generate_waveforms(&self.basis, point_ops, false);
+        let stereo_waveform = sum_all_waveforms(vec_wav);
+
+        LiveRender {
+            timed_ops, 
+            stereo_waveform
+        } 
     }
 
     pub fn get_batch(&mut self) -> Vec<Vec<TimedOp>> {
@@ -86,25 +106,6 @@ impl LiveState {
         };
         self.ops = [&remainders[..], &self.ops[..]].concat();
         result
-    }
-
-    pub fn generate_waveform(
-        &mut self,
-        basis: Basis,
-    ) -> StereoWaveform {
-        //if voice.state.count >= voice.state.current_op.l {
-            //voice.state.count = Rational64::new(0, 1);
-            //voice.state.current_op = voice.iterator.next().unwrap()
-        //}
-
-        //let mut current_point_op = voice.state.current_op.clone();
-
-        //current_point_op.l = Rational64::new(settings.buffer_size as i64, settings.sample_rate as i64);
-
-        //let stereo_waveform = render_mic(&current_point_op, basis, &mut voice.oscillator);
-        //voice.state.inc();
-        //stereo_waveform
-        StereoWaveform::new(2048)
     }
 }
 

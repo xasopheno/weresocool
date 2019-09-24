@@ -42,6 +42,9 @@ fn run() -> Result<(), Error> {
     let mut state = LiveState::new(vec_timed_op, n_voices, basis, &settings);
 
     dbg!(state.get_batch());
+    loop {
+        state.render_batch();
+    };
     //let mut live_stream = live_setup(normal_form.operations, basis.clone())?;
     //live_stream.start()?;
 
