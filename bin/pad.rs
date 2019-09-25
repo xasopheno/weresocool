@@ -43,10 +43,10 @@ fn run() -> Result<(), Error> {
 
     live_state.render_batch();
     let mut live_stream = live_setup(live_state)?;
-    //live_stream.start()?;
+    live_stream.start()?;
 
-    //while let true = live_stream.is_active()? {}
+    while let true = live_stream.is_active()? {}
 
-    //live_stream.stop()?;
+    live_stream.stop()?;
     Ok(())
 }

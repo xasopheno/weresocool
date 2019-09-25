@@ -8,7 +8,7 @@ overtones = {
 }
 
 thing1 = {
-    overtones |
+    --overtones |
 	Sequence [
 		AsIs,
 		Tm 9/8,
@@ -16,7 +16,7 @@ thing1 = {
 		Tm 4/3,
 		Tm 3/2,
 	] 
-    | Length 9/10 
+    --| Length 9/10 
 }
 
 main = {

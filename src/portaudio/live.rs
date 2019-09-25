@@ -4,6 +4,7 @@ use crate::generation::{TimedOp, sum_all_waveforms, generate_waveforms};
 use crate::instrument::{Basis, Oscillator, StereoWaveform};
 //use crate::ring_buffer::RingBuffer;
 use crate::settings::{default_settings, Settings};
+use crate::write::write_output_buffer;
 //use crate::write::write_output_buffer;
 use error::Error;
 use num_rational::Rational64;
@@ -59,6 +60,7 @@ impl LiveState {
 
         let vec_wav = generate_waveforms(&self.basis, point_ops, false);
         let stereo_waveform = sum_all_waveforms(vec_wav);
+        dbg!(stereo_waveform.r_buffer.len());
 
         LiveRender {
             timed_ops, 
@@ -78,8 +80,9 @@ impl LiveState {
         self.time += Rational64::new(1,1);
         while search {
             if self.index == self.ops.len() {
-                self.index = 0;
-                self.time = Rational64::new(0, 1);
+                break
+                //self.index = 0;
+                //self.time = Rational64::new(0, 1);
             };
             let op = &self.ops[self.index];
             if op.t < self.time {
@@ -117,15 +120,22 @@ pub fn live_setup(
     let settings = default_settings();
     let output_settings = get_output_settings(&pa, &settings)?;
 
-    let mut result: Vec<StereoWaveform> = vec![];
-    for i in 0..30 {
-        let rendered = state.render_batch();
-        result.push(rendered.stereo_waveform);
+    let mut result: Vec<LiveRender> = vec![];
+    for i in 0..50 {
+        let live_render = state.render_batch();
+        result.push(live_render);
 
     }
-    //live_callback(args, state basis.clone(), &settings);
+    let mut buffer_to_write = result.into_iter();
     let live_stream = pa.open_non_blocking_stream(output_settings, move |args| {
-        pa::Continue
+        match buffer_to_write.next() {
+            Some(result) => {
+
+                write_output_buffer(args.buffer, result.stereo_waveform.clone());
+                pa::Continue
+            }
+            None => pa::Complete,
+        }
     })?;
 
     Ok(live_stream)
