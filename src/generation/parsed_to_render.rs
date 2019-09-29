@@ -1,6 +1,6 @@
 use crate::generation::{to_csv, to_json};
 use crate::instrument::{Basis, Normalize, Oscillator, StereoWaveform};
-use crate::render::{Render, RenderPointOp};
+use crate::render::{Render, RenderOp};
 use crate::settings::default_settings;
 use crate::ui::{banner, printed};
 use crate::write::write_composition_to_wav;

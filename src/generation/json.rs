@@ -8,7 +8,7 @@ use error::Error;
 use num_rational::Rational64;
 use serde::{Deserialize, Serialize};
 use serde_json::to_string;
-use socool_ast::{NormalForm, Normalize, OpOrNfTable, PointOp, OscType, NameSet};
+use socool_ast::{NameSet, NormalForm, Normalize, OpOrNfTable, OscType, PointOp};
 
 pub fn r_to_f64(r: Rational64) -> f64 {
     *r.numer() as f64 / *r.denom() as f64
@@ -31,7 +31,7 @@ pub struct TimedOp {
     pub pa: Rational64,
     pub g: Rational64,
     pub l: Rational64,
-    pub next_event: Option<PointOp>
+    pub next_event: Option<PointOp>,
 }
 
 impl TimedOp {
@@ -75,7 +75,6 @@ impl TimedOp {
             osc_type: self.osc_type,
             names: NameSet::new(),
         }
-        
     }
 }
 
@@ -136,7 +135,7 @@ impl Op4D {
 }
 
 fn normalize_value(value: f64, min: f64, max: f64) -> f64 {
-    let d = if max == min {1.0} else {max - min};
+    let d = if max == min { 1.0 } else { max - min };
     (value - min) / d
 }
 
@@ -226,7 +225,7 @@ fn point_op_to_timed_op(
     time: &mut Rational64,
     voice: usize,
     event: usize,
-    next_event: Option<PointOp>
+    next_event: Option<PointOp>,
 ) -> TimedOp {
     let timed_op = TimedOp {
         fm: point_op.fm,
@@ -244,7 +243,7 @@ fn point_op_to_timed_op(
         event_type: EventType::On,
         voice,
         event,
-        next_event
+        next_event,
     };
 
     *time += point_op.l;
@@ -256,7 +255,10 @@ pub fn vec_timed_op_to_vec_op4d(timed_ops: Vec<TimedOp>, basis: &Basis) -> Vec<O
     timed_ops.iter().map(|t_op| t_op.to_op_4d(&basis)).collect()
 }
 
-pub fn composition_to_vec_timed_op(composition: &NormalForm, table: &OpOrNfTable) -> (Vec<TimedOp>, usize) {
+pub fn composition_to_vec_timed_op(
+    composition: &NormalForm,
+    table: &OpOrNfTable,
+) -> (Vec<TimedOp>, usize) {
     let mut normal_form = NormalForm::init();
 
     println!("Generating Composition \n");
@@ -272,14 +274,20 @@ pub fn composition_to_vec_timed_op(composition: &NormalForm, table: &OpOrNfTable
             let mut result = vec![];
             let mut iter = vec_point_op.iter();
             for (event, p_op) in iter.enumerate() {
-                    let mut next_e = event;
-                    if event == vec_point_op.len() {
-                        next_e = 0;
-                    };
-                    
-                let op = point_op_to_timed_op(p_op, &mut time, voice, event, Some(vec_point_op[next_e].clone()));
+                let mut next_e = event;
+                if event == vec_point_op.len() {
+                    next_e = 0;
+                };
+
+                let op = point_op_to_timed_op(
+                    p_op,
+                    &mut time,
+                    voice,
+                    event,
+                    Some(vec_point_op[next_e].clone()),
+                );
                 result.push(op);
-            };
+            }
             result
         })
         .collect();

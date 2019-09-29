@@ -1,24 +1,26 @@
+use socool_ast::{NormalForm, PointOp};
 use weresocool::{
     examples::documentation,
-    generation::{filename_to_render, RenderReturn, RenderType, TimedOp, composition_to_vec_timed_op},
-    portaudio::live::{live_setup, LiveState},
+    generation::{
+        composition_to_vec_timed_op, filename_to_render, RenderReturn, RenderType, TimedOp,
+    },
     instrument::{Basis, Oscillator},
-    ui::{get_args, no_file_name, were_so_cool_logo}, 
+    portaudio::live::{live_setup, LiveState},
     settings::{default_settings, Settings},
+    ui::{get_args, no_file_name, were_so_cool_logo},
 };
-use socool_ast::{PointOp, NormalForm};
 
 use error::Error;
 use failure::Fail;
 use num_rational::Rational64;
-
 
 fn main() {
     match run() {
         Ok(_) => {}
         e => {
             for cause in Fail::iter_causes(&e.unwrap_err()) {
-                println!("Failure caused by: {}", cause); }
+                println!("Failure caused by: {}", cause);
+            }
         }
     }
 }
@@ -32,10 +34,11 @@ fn run() -> Result<(), Error> {
         _ => no_file_name(),
     }
 
-    let (normal_form, basis, table) = match filename_to_render(filename.unwrap(), RenderType::NfBasisAndTable)? {
-        RenderReturn::NfAndBasis(nf, basis, table) => (nf, basis, table),
-        _ => panic!("Error. Unable to generate NormalForm"),
-    };
+    let (normal_form, basis, table) =
+        match filename_to_render(filename.unwrap(), RenderType::NfBasisAndTable)? {
+            RenderReturn::NfAndBasis(nf, basis, table) => (nf, basis, table),
+            _ => panic!("Error. Unable to generate NormalForm"),
+        };
 
     let (vec_timed_op, n_voices) = composition_to_vec_timed_op(&normal_form, &table);
     let settings = default_settings();

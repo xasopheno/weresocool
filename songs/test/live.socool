@@ -11,12 +11,12 @@ thing1 = {
     --overtones |
 	Sequence [
 		AsIs,
-		Tm 9/8,
-		Tm 5/4,
-		Tm 4/3,
-		Tm 3/2,
+		AsIs,
+        --Tm 9/8,
+        --Tm 5/4,
+        --Tm 4/3,
+        --Tm 3/2,
 	] 
-    --| Length 9/10 
 }
 
 main = {

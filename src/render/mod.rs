@@ -1,12 +1,9 @@
 use crate::{
-    generation::{
-        TimedOp,
-        parsed_to_render::{r_to_f64},
-    },
+    generation::{parsed_to_render::r_to_f64, TimedOp},
     instrument::{
         oscillator::{Basis, Oscillator},
         stereo_waveform::StereoWaveform,
-    }
+    },
 };
 use socool_ast::PointOp;
 
@@ -14,7 +11,7 @@ pub trait Render<T> {
     fn render(&mut self, origin: &Basis, oscillator: &mut Oscillator) -> StereoWaveform;
 }
 
-pub trait RenderPointOp<T> {
+pub trait RenderOp<T> {
     fn render(
         &mut self,
         origin: &Basis,
@@ -23,7 +20,7 @@ pub trait RenderPointOp<T> {
     ) -> StereoWaveform;
 }
 
-impl RenderPointOp<PointOp> for PointOp {
+impl RenderOp<PointOp> for PointOp {
     fn render(
         &mut self,
         origin: &Basis,

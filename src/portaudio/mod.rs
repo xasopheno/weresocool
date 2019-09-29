@@ -1,5 +1,5 @@
 pub mod duplex;
-pub mod output;
 pub mod live;
+pub mod output;
 
-pub use self::{duplex::duplex_setup, output::output_setup, live::live_setup};
+pub use self::{duplex::duplex_setup, live::live_setup, output::output_setup};
