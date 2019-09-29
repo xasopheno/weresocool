@@ -6,12 +6,12 @@ use crate::instrument::{Basis, Oscillator, StereoWaveform};
 use crate::settings::{default_settings, Settings};
 use crate::write::write_output_buffer;
 //use crate::write::write_output_buffer;
+use crate::render::Render;
 use error::Error;
 use num_rational::Rational64;
 use portaudio as pa;
-use socool_ast::{OpOrNfTable, PointOp};
-use crate::render::Render;
 use rayon::prelude::*;
+use socool_ast::{OpOrNfTable, PointOp};
 //use std::iter::Cycle;
 //use std::vec::IntoIter;
 use crate::portaudio::output::get_output_settings;
@@ -86,7 +86,11 @@ impl LiveState {
         }
     }
 
-    fn render_vec_timed_op(t_ops: Vec<TimedOp>, origin: &Basis, oscillator: &mut Oscillator) -> StereoWaveform {
+    fn render_vec_timed_op(
+        t_ops: Vec<TimedOp>,
+        origin: &Basis,
+        oscillator: &mut Oscillator,
+    ) -> StereoWaveform {
         let mut result: StereoWaveform = StereoWaveform::new(0);
         let mut t_ops = t_ops.clone();
         //t_ops.push(PointOp::init_silent());
@@ -110,19 +114,19 @@ impl LiveState {
     }
 
     //fn render_timed_op(
-        //&mut self,
-        //origin: &Basis,
-        //oscillator: &mut Oscillator,
-        //next_op: Option<PointOp>,
+    //&mut self,
+    //origin: &Basis,
+    //oscillator: &mut Oscillator,
+    //next_op: Option<PointOp>,
     //) -> StereoWaveform {
-        //oscillator.update(origin.clone(), self, next_op);
+    //oscillator.update(origin.clone(), self, next_op);
 
-        //let n_samples_to_generate = r_to_f64(self.l) * origin.l * 44_100.0;
-        //let portamento_length = r_to_f64(self.portamento);
+    //let n_samples_to_generate = r_to_f64(self.l) * origin.l * 44_100.0;
+    //let portamento_length = r_to_f64(self.portamento);
 
-        //oscillator.generate(n_samples_to_generate, portamento_length)
+    //oscillator.generate(n_samples_to_generate, portamento_length)
     //}
-
+    //
 
     pub fn get_batch(&mut self) -> Vec<Vec<TimedOp>> {
         let mut result: Vec<Vec<TimedOp>> = vec![];
@@ -138,12 +142,12 @@ impl LiveState {
         );
 
         while search {
-            if self.index == self.ops.len() { 
-                break
+            if self.index == self.ops.len() {
+                break;
                 //self.index = 0;
                 //self.time = Rational64::new(
-                    //self.settings.buffer_size as i64,
-                    //self.settings.sample_rate as i64,
+                //self.settings.buffer_size as i64,
+                //self.settings.sample_rate as i64,
                 //);
             };
             let op = &self.ops[self.index];
@@ -177,9 +181,12 @@ impl LiveState {
             }
         }
         //self.ops = [&remainders[..], &self.ops[..]].concat();
-        let x: Vec<TimedOp> = self.ops.splice(self.index..self.index, remainders).collect();
+        let x: Vec<TimedOp> = self
+            .ops
+            .splice(self.index..self.index, remainders)
+            .collect();
         //for (i, op) in remainders.iter().enumerate() {
-            //self.ops.insert(self.index + i - 1, op.clone());
+        //self.ops.insert(self.index + i - 1, op.clone());
         //}
         result
     }
