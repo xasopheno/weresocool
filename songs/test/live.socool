@@ -11,14 +11,19 @@ thing1 = {
     --overtones |
 	Sequence [
 		AsIs,
-		AsIs,
-        --Tm 9/8,
-        --Tm 5/4,
-        --Tm 4/3,
-        --Tm 3/2,
+        Tm 9/8,
+        Tm 5/4,
+        Tm 4/3,
+        Tm 3/2,
 	] 
+    | Length 1/4
 }
 
 main = {
-	thing1
+    Overlay [
+	    thing1,
+        thing1 | Tm 5/3 | Reverse,
+        --thing1 | Tm 9/8 | Seq [AsIs, Tm 9/8] | Length 1/2
+    ]
+    --| Seq [AsIs, Tm 9/8]
 }
