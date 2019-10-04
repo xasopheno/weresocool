@@ -1,0 +1,39 @@
+PointOp {
+    fm: Rational64,
+    fa: Rational64,
+    pm: Rational64,
+    pa: Rational64,
+    g: Rational64,
+    l: Rational64,
+    attack: Rational64,
+    decay: Rational64,
+    decay_length: usize,
+    portamento: Rational64,
+    osc_type: OscType,
+}
+
+TimedOp {
+    fm: Rational64,
+    t: Rational64,
+    n_samples: usize,
+    fa: Rational64,
+    pm: Rational64,
+    pa: Rational64,
+    g: Rational64,
+    l: Rational64,
+    attack: Rational64,
+    decay: Rational64,
+    decay_length: usize,
+    portamento: Rational64,
+    osc_type: OscType,
+}
+
+OscUpdate {
+   basis: Basis, 
+   point_op: PointOp,
+   
+}
+
+OscRender {
+
+}

@@ -99,13 +99,13 @@ impl Voice {
 
         let mut gain = if frequency != 0.0 { info.gain } else { 0.0 };
         if info.osc_type != OscType::Sine {
-            gain /= 3.0
+            gain /= 4.0
         }
         let loudness = loudness_normalization(frequency);
         gain *= loudness;
 
         if self.osc_type == OscType::Sine && info.osc_type == OscType::Noise {
-            self.past.gain = self.current.gain / 3.0;
+            self.past.gain = self.current.gain / 4.0;
         } else {
             self.past.gain = self.current.gain;
         }
