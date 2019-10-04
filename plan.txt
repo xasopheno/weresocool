@@ -28,12 +28,32 @@ TimedOp {
     osc_type: OscType,
 }
 
+OscState {
+    voices: (Voice, Voice),
+    portamento_length: usize,
+    settings: Settings,
+    sample_phase: f64,
+}
+
 OscUpdate {
-   basis: Basis, 
-   point_op: PointOp,
-   
+    basis: Basis, 
+    point_op: PointOp, 
+    next_op: PointOp
 }
 
 OscRender {
+    n_samples_to_generate: f64, 
+    portamento_length: f64,
+}
 
+pub struct Voice {
+    index: usize,
+    past: VoiceState,
+    current: VoiceState,
+    phase: f64,
+    osc_type: OscType,
+    attack: usize,
+    decay: usize,
+    decay_length: usize,
+    asr: ASR,
 }
