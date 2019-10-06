@@ -88,6 +88,7 @@ impl Voice {
                     return self.current.gain;
                 }
             }
+
             ASR::SR => {
                 if short {
                     let decay_index = buffer_len - (index + 1);

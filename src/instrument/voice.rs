@@ -122,7 +122,7 @@ impl Voice {
         let silence_now = gain == 0.0 || frequency == 0.0;
 
         self.set_asr(info.silence_next, info.decay_type, silence_now);
-        //        println!("{:?}", self.asr);
+        //  println!("{:?}", self.asr);
     }
 
     pub fn silent(&self) -> bool {
