@@ -10,8 +10,8 @@ use socool_ast::PointOp;
 pub trait Renderable<T> {
     fn render(
         &mut self,
-        origin: &Basis,
-        oscillator: &mut Oscillator,
+        basis: &Basis,
+        oscillator: &mut Vec<Oscillator>,
         next: Option<T>,
     ) -> StereoWaveform;
 }
