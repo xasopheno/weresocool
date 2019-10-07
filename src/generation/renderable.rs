@@ -70,6 +70,7 @@ pub struct RenderOp {
 //});
 //}
 
+#[allow(dead_code)]
 fn pointop_to_renderop(
     point_op: &PointOp,
     time: &mut Rational64,
@@ -78,15 +79,24 @@ fn pointop_to_renderop(
     basis: &Basis,
     next: Option<PointOp>,
 ) -> RenderOp {
-    //match next {
-    //Some(op) => {
-    //let (l, r) = point_op_to_gains(&op, &basis);
-    //next_l_gain = l;
-    //next_r_gain = r;
-    //next_fm = r_to_f64(op.fm);
-    //}
-    //None => {}
-    //}
+    let (l_gain, r_gain) = point_op_to_gains(&point_op, &basis);
+    let mut next_l_gain = 0.0;
+    let mut next_r_gain = 0.0;
+    let mut next_silent = false;
+
+    match next {
+        Some(op) => {
+            let (l, r) = point_op_to_gains(&op, &basis);
+            next_l_gain = l;
+            next_r_gain = r;
+            next_silent = op.is_silent();
+        }
+        None => {}
+    }
+
+    let next_l_silent = next_silent || next_l_gain == 0.0;
+    let next_l_silent = next_silent || next_r_gain == 0.0;
+
     let render_op = RenderOp {
         f: r_to_f64(basis.f * point_op.fm) + r_to_f64(point_op.fa),
         p: r_to_f64(basis.p * point_op.pm) + r_to_f64(point_op.pa),
@@ -101,8 +111,8 @@ fn pointop_to_renderop(
         portamento: r_to_f64(point_op.portamento),
         voice,
         event,
-        next_l_silent: unimplemented!(),
-        next_r_silent: unimplemented!(),
+        next_l_silent,
+        next_r_silent,
     };
 
     *time += point_op.l;
