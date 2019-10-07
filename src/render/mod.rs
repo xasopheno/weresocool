@@ -29,7 +29,7 @@ impl RenderOp<PointOp> for PointOp {
     ) -> StereoWaveform {
         oscillator.update(origin.clone(), self, next_op);
 
-        let n_samples_to_generate = r_to_f64(self.l) * origin.l * 44_100.0;
+        let n_samples_to_generate = r_to_f64(self.l) * r_to_f64(origin.l) * 44_100.0;
         let portamento_length = r_to_f64(self.portamento);
 
         oscillator.generate(n_samples_to_generate, portamento_length)

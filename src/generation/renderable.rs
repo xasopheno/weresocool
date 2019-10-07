@@ -1,13 +1,12 @@
-use socool_ast::{OscType, PointOp, OpOrNfTable, NormalForm, Normalize};
-use crate::instrument::{StereoWaveform, Oscillator};
-use crate::instrument::oscillator::Basis;
-use crate::generation::{parsed_to_render::r_to_f64};
+use crate::generation::parsed_to_render::r_to_f64;
+use crate::instrument::oscillator::{point_op_to_gains, Basis};
+use crate::instrument::{Oscillator, StereoWaveform};
 use num_rational::Rational64;
-
+use socool_ast::{NormalForm, Normalize, OpOrNfTable, OscType, PointOp};
 
 #[derive(Debug, Clone)]
 pub struct RenderOp {
-    //TODO: Should be f, p. All values should already reflect basis. 
+    //TODO: Should be f, p. All values should already reflect basis.
     pub t: f64,
     pub samples: usize,
     pub voice: usize,
@@ -17,14 +16,59 @@ pub struct RenderOp {
     pub decay_length: usize,
     pub portamento: f64,
     pub osc_type: OscType,
-    pub fm: f64,
-    pub fa: f64,
-    pub pm: f64,
-    pub pa: f64,
+    pub f: f64,
+    pub p: f64,
     pub g: f64,
     pub l: f64,
-    pub next: Option<PointOp>,
+    pub next_l_silent: bool,
+    pub next_r_silent: bool,
 }
+
+//pub fn update(basis: Basis, point_op: &PointOp, next_op: Option<PointOp>) {
+//let fm = r_to_f64(point_op.fm);
+//let fa = r_to_f64(point_op.fa);
+//let attack = r_to_f64(point_op.attack);
+//let decay = r_to_f64(point_op.decay);
+
+//let (l_gain, r_gain) = point_op_to_gains(&point_op, &basis);
+//let mut next_l_gain = 0.0;
+//let mut next_r_gain = 0.0;
+//let mut next_fm = 0.0;
+
+//match next_op {
+//Some(op) => {
+//let (l, r) = point_op_to_gains(&op, &basis);
+//next_l_gain = l;
+//next_r_gain = r;
+//next_fm = r_to_f64(op.fm);
+//}
+//None => {}
+//}
+
+//let (ref mut l_voice, ref mut r_voice) = self.voices;
+
+//let silence_next_l = next_fm == 0.0 || next_l_gain == 0.0;
+//let silence_next_r = next_fm == 0.0 || next_r_gain == 0.0;
+
+//l_voice.update(VoiceUpdate {
+//frequency: (r_to_f64(basis.f) * fm) + fa,
+//gain: l_gain,
+//osc_type: point_op.osc_type,
+//silence_next: silence_next_l,
+//attack: basis.a * attack,
+//decay: basis.d * decay,
+//decay_type: point_op.decay_length,
+//});
+//r_voice.update(VoiceUpdate {
+//frequency: (r_to_f64(basis.f) * fm) + fa,
+//gain: r_gain,
+//osc_type: point_op.osc_type,
+//silence_next: silence_next_r,
+//attack: basis.a * attack,
+//decay: basis.d * decay,
+//decay_type: point_op.decay_length,
+//});
+//}
 
 fn pointop_to_renderop(
     point_op: &PointOp,
@@ -34,23 +78,31 @@ fn pointop_to_renderop(
     basis: &Basis,
     next: Option<PointOp>,
 ) -> RenderOp {
+    //match next {
+    //Some(op) => {
+    //let (l, r) = point_op_to_gains(&op, &basis);
+    //next_l_gain = l;
+    //next_r_gain = r;
+    //next_fm = r_to_f64(op.fm);
+    //}
+    //None => {}
+    //}
     let render_op = RenderOp {
-        fm: r_to_f64(point_op.fm),
-        fa: r_to_f64(point_op.fa),
-        pm: r_to_f64(point_op.pm),
-        pa: r_to_f64(point_op.pa),
+        f: r_to_f64(basis.f * point_op.fm) + r_to_f64(point_op.fa),
+        p: r_to_f64(basis.p * point_op.pm) + r_to_f64(point_op.pa),
+        g: r_to_f64(point_op.g * basis.g),
+        l: r_to_f64(point_op.l * basis.l),
+        t: r_to_f64(time.clone()),
         samples: (r_to_f64(point_op.l) * 44_100.0).round() as usize,
-        attack: r_to_f64(point_op.attack),
+        attack: r_to_f64(point_op.attack) * basis.a,
         osc_type: point_op.osc_type,
-        decay: r_to_f64(point_op.decay),
+        decay: r_to_f64(point_op.decay) * basis.a,
         decay_length: point_op.decay_length,
         portamento: r_to_f64(point_op.portamento),
-        g: r_to_f64(point_op.g),
-        l: r_to_f64(point_op.l),
-        t: r_to_f64(time.clone()),
         voice,
         event,
-        next: next
+        next_l_silent: unimplemented!(),
+        next_r_silent: unimplemented!(),
     };
 
     *time += point_op.l;
@@ -120,5 +172,3 @@ impl Renderable<RenderOp> for RenderOp {
         StereoWaveform::new(1024)
     }
 }
-
-

@@ -4,6 +4,7 @@ use crate::instrument::{
     voice::{Voice, VoiceUpdate},
 };
 use crate::settings::Settings;
+use num_rational::Rational64;
 use socool_ast::PointOp;
 use socool_parser::Init;
 use std::f64::consts::PI;
@@ -22,10 +23,10 @@ pub struct Oscillator {
 
 #[derive(Copy, Clone, Debug, PartialEq)]
 pub struct Basis {
-    pub f: f64,
-    pub p: f64,
-    pub g: f64,
-    pub l: f64,
+    pub f: Rational64,
+    pub p: Rational64,
+    pub g: Rational64,
+    pub l: Rational64,
     pub a: f64,
     pub d: f64,
 }
@@ -33,17 +34,17 @@ pub struct Basis {
 impl From<Init> for Basis {
     fn from(init: Init) -> Basis {
         Basis {
-            f: r_to_f64(init.f),
-            g: r_to_f64(init.g),
-            l: r_to_f64(init.l),
-            p: r_to_f64(init.p),
+            f: init.f,
+            g: init.g,
+            l: init.l,
+            p: init.p,
             a: 44100.0,
             d: 44100.0,
         }
     }
 }
 
-fn point_op_to_gains(point_op: &PointOp, basis: &Basis) -> (f64, f64) {
+pub fn point_op_to_gains(point_op: &PointOp, basis: &Basis) -> (f64, f64) {
     let pm = r_to_f64(point_op.pm);
     let pa = r_to_f64(point_op.pa);
     let g = r_to_f64(point_op.g);
@@ -51,13 +52,13 @@ fn point_op_to_gains(point_op: &PointOp, basis: &Basis) -> (f64, f64) {
     let l_gain = if *point_op.g.numer() == 0 {
         0.0
     } else {
-        g * (((1.0 + pa * pm) + basis.p) / 2.0) * basis.g
+        g * (((1.0 + pa * pm) + r_to_f64(basis.p)) / 2.0) * r_to_f64(basis.g)
     };
 
     let r_gain = if *point_op.g.numer() == 0 {
         0.0
     } else {
-        g * (((-1.0 + pa * pm) + basis.p) / -2.0) * basis.g
+        g * (((-1.0 + pa * pm) + r_to_f64(basis.p)) / -2.0) * r_to_f64(basis.g)
     };
 
     (l_gain, r_gain)
@@ -100,7 +101,7 @@ impl Oscillator {
         let silence_next_r = next_fm == 0.0 || next_r_gain == 0.0;
 
         l_voice.update(VoiceUpdate {
-            frequency: (basis.f * fm) + fa,
+            frequency: (r_to_f64(basis.f) * fm) + fa,
             gain: l_gain,
             osc_type: point_op.osc_type,
             silence_next: silence_next_l,
@@ -109,7 +110,7 @@ impl Oscillator {
             decay_type: point_op.decay_length,
         });
         r_voice.update(VoiceUpdate {
-            frequency: (basis.f * fm) + fa,
+            frequency: (r_to_f64(basis.f) * fm) + fa,
             gain: r_gain,
             osc_type: point_op.osc_type,
             silence_next: silence_next_r,

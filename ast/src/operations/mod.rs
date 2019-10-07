@@ -214,7 +214,7 @@ impl MulAssign for PointOp {
 }
 
 impl PointOp {
-    pub fn silent(&self) -> bool {
+    pub fn is_silent(&self) -> bool {
         let zero = Rational64::new(0, 1);
         self.fm == zero && self.fa < Rational64::new(40, 1) || self.g == zero
     }

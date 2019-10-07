@@ -41,18 +41,18 @@ impl TimedOp {
         let y = if is_silent {
             0.0
         } else {
-            (basis.f * r_to_f64(self.fm)) + r_to_f64(self.fa)
+            (r_to_f64(basis.f) * r_to_f64(self.fm)) + r_to_f64(self.fa)
         };
         let z = if is_silent {
             0.0
         } else {
-            basis.g * r_to_f64(self.g)
+            r_to_f64(basis.g) * r_to_f64(self.g)
         };
         dbg!(&z);
         Op4D {
-            l: r_to_f64(self.l) * basis.l,
-            t: r_to_f64(self.t) * basis.l,
-            x: ((basis.p + r_to_f64(self.pa)) * r_to_f64(self.pm)),
+            l: r_to_f64(self.l) * r_to_f64(basis.l),
+            t: r_to_f64(self.t) * r_to_f64(basis.l),
+            x: ((r_to_f64(basis.p) + r_to_f64(self.pa)) * r_to_f64(self.pm)),
             y: y.log10(),
             z: z,
             voice: self.voice,

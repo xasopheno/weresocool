@@ -65,10 +65,10 @@ fn generate_render_hashes(p: &String) -> CompositionHashes {
     let nf_hash = calculate_hash(&normal_form);
 
     let origin = Basis {
-        f: r_to_f64(init.f),
-        g: r_to_f64(init.g),
-        l: r_to_f64(init.l),
-        p: r_to_f64(init.p),
+        f: init.f,
+        g: init.g,
+        l: init.l,
+        p: init.p,
         a: 44100.0,
         d: 44100.0,
     };
