@@ -7,15 +7,6 @@ use crate::{
 };
 use socool_ast::PointOp;
 
-pub trait Renderable<T> {
-    fn render(
-        &mut self,
-        basis: &Basis,
-        oscillator: &mut Vec<Oscillator>,
-        next: Option<T>,
-    ) -> StereoWaveform;
-}
-
 pub trait Render<T> {
     fn render(&mut self, origin: &Basis, oscillator: &mut Oscillator) -> StereoWaveform;
 }
