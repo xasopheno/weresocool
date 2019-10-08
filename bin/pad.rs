@@ -30,15 +30,15 @@ fn run() -> Result<(), Error> {
 
     //let filename = args.value_of("filename");
     //match filename {
-        //Some(_filename) => {}
-        //_ => no_file_name(),
+    //Some(_filename) => {}
+    //_ => no_file_name(),
     //}
 
     //let (normal_form, basis, table) =
-        //match filename_to_render(filename.unwrap(), RenderType::NfBasisAndTable)? {
-            //RenderReturn::NfAndBasis(nf, basis, table) => (nf, basis, table),
-            //_ => panic!("Error. Unable to generate NormalForm"),
-        //};
+    //match filename_to_render(filename.unwrap(), RenderType::NfBasisAndTable)? {
+    //RenderReturn::NfAndBasis(nf, basis, table) => (nf, basis, table),
+    //_ => panic!("Error. Unable to generate NormalForm"),
+    //};
 
     //let (vec_timed_op, n_voices) = composition_to_vec_timed_op(&normal_form, &table);
     //let settings = default_settings();
@@ -51,5 +51,5 @@ fn run() -> Result<(), Error> {
     //while let true = live_stream.is_active()? {}
 
     //live_stream.stop()?;
-    //Ok(())
+    Ok(())
 }

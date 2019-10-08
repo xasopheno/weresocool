@@ -94,16 +94,17 @@ fn pointop_to_renderop(
         None => {}
     }
 
+    let l = r_to_f64(point_op.l * basis.l);
     let next_l_silent = next_silent || next_l_gain == 0.0;
-    let next_l_silent = next_silent || next_r_gain == 0.0;
+    let next_r_silent = next_silent || next_r_gain == 0.0;
 
     let render_op = RenderOp {
         f: r_to_f64(basis.f * point_op.fm) + r_to_f64(point_op.fa),
         p: r_to_f64(basis.p * point_op.pm) + r_to_f64(point_op.pa),
         g: r_to_f64(point_op.g * basis.g),
-        l: r_to_f64(point_op.l * basis.l),
+        l,
         t: r_to_f64(time.clone()),
-        samples: (r_to_f64(point_op.l) * 44_100.0).round() as usize,
+        samples: (l * 44_100.0).round() as usize,
         attack: r_to_f64(point_op.attack) * basis.a,
         osc_type: point_op.osc_type,
         decay: r_to_f64(point_op.decay) * basis.a,
@@ -129,14 +130,14 @@ pub fn nf_to_vec_renderable(
     composition.apply_to_normal_form(&mut normal_form, table);
 
     let n_voices = normal_form.operations.len();
-    let mut result: Vec<Vec<RenderOp>> = normal_form
+    let result: Vec<Vec<RenderOp>> = normal_form
         .operations
         .iter()
         .enumerate()
         .map(|(voice, vec_point_op)| {
             let mut time = Rational64::new(0, 1);
             let mut result: Vec<RenderOp> = vec![];
-            let mut iter = vec_point_op.iter();
+            let iter = vec_point_op.iter();
             for (event, p_op) in iter.enumerate() {
                 let mut next_e = event;
                 if event == vec_point_op.len() {
