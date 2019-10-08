@@ -94,16 +94,26 @@ fn pointop_to_renderop(
         None => {}
     }
 
+    let f = if point_op.is_silent() {
+        0.0
+    } else {
+        r_to_f64(basis.f * point_op.fm) + r_to_f64(point_op.fa)
+    };
+    let g = if point_op.is_silent() {
+        0.0
+    } else {
+        r_to_f64(point_op.g * basis.g)
+    };
     let l = r_to_f64(point_op.l * basis.l);
     let next_l_silent = next_silent || next_l_gain == 0.0;
     let next_r_silent = next_silent || next_r_gain == 0.0;
 
     let render_op = RenderOp {
-        f: r_to_f64(basis.f * point_op.fm) + r_to_f64(point_op.fa),
+        f,
+        g,
         p: r_to_f64(basis.p * point_op.pm) + r_to_f64(point_op.pa),
-        g: r_to_f64(point_op.g * basis.g),
         l,
-        t: r_to_f64(time.clone()),
+        t: r_to_f64(*time),
         samples: (l * 44_100.0).round() as usize,
         attack: r_to_f64(point_op.attack) * basis.a,
         osc_type: point_op.osc_type,
@@ -116,11 +126,12 @@ fn pointop_to_renderop(
         next_r_silent,
     };
 
-    *time += point_op.l;
+    *time += point_op.l * basis.l;
 
     render_op
 }
 
+#[allow(dead_code)]
 pub fn nf_to_vec_renderable(
     composition: &NormalForm,
     table: &OpOrNfTable,
@@ -180,6 +191,6 @@ impl Renderable<RenderOp> for RenderOp {
         oscillator: &mut Vec<Oscillator>,
         next: Option<RenderOp>,
     ) -> StereoWaveform {
-        StereoWaveform::new(1024)
+        unimplemented!();
     }
 }
