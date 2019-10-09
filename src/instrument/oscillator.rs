@@ -27,8 +27,8 @@ pub struct Basis {
     pub p: Rational64,
     pub g: Rational64,
     pub l: Rational64,
-    pub a: f64,
-    pub d: f64,
+    pub a: Rational64,
+    pub d: Rational64,
 }
 
 impl From<Init> for Basis {
@@ -38,8 +38,8 @@ impl From<Init> for Basis {
             g: init.g,
             l: init.l,
             p: init.p,
-            a: 44100.0,
-            d: 44100.0,
+            a: Rational64::new(1, 1),
+            d: Rational64::new(1, 1),
         }
     }
 }
@@ -105,8 +105,8 @@ impl Oscillator {
             gain: l_gain,
             osc_type: point_op.osc_type,
             silence_next: silence_next_l,
-            attack: basis.a * attack,
-            decay: basis.d * decay,
+            attack: 44_100.0 * r_to_f64(basis.a) * attack,
+            decay: 44_100.0 * r_to_f64(basis.d) * decay,
             decay_type: point_op.decay_length,
         });
         r_voice.update(VoiceUpdate {
@@ -114,8 +114,8 @@ impl Oscillator {
             gain: r_gain,
             osc_type: point_op.osc_type,
             silence_next: silence_next_r,
-            attack: basis.a * attack,
-            decay: basis.d * decay,
+            attack: 44_100.0 * r_to_f64(basis.a) * attack,
+            decay: 44_100.0 * r_to_f64(basis.d) * decay,
             decay_type: point_op.decay_length,
         });
     }

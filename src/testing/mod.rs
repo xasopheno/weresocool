@@ -2,6 +2,7 @@ use crate::generation::parsed_to_render::{generate_waveforms, r_to_f64, sum_all_
 use crate::instrument::{Basis, Normalize};
 use difference::{Changeset, Difference};
 use indexmap::IndexMap;
+use num_rational::Rational64;
 use serde::{Deserialize, Serialize};
 use serde_json::{from_reader, to_string_pretty};
 use socool_ast::{NormalForm, Normalize as NormalizeOp};
@@ -69,8 +70,8 @@ fn generate_render_hashes(p: &String) -> CompositionHashes {
         g: init.g,
         l: init.l,
         p: init.p,
-        a: 44100.0,
-        d: 44100.0,
+        a: Rational64::new(1, 1),
+        d: Rational64::new(1, 1),
     };
 
     let vec_wav = generate_waveforms(&origin, normal_form.operations, false);
