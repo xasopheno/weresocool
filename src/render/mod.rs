@@ -1,5 +1,5 @@
 use crate::{
-    generation::{parsed_to_render::r_to_f64, TimedOp},
+    generation::parsed_to_render::r_to_f64,
     instrument::{
         oscillator::{Basis, Oscillator},
         stereo_waveform::StereoWaveform,

@@ -94,24 +94,15 @@ fn pointop_to_renderop(
         None => {}
     }
 
-    let f = if point_op.is_silent() {
-        0.0
-    } else {
-        r_to_f64(basis.f * point_op.fm) + r_to_f64(point_op.fa)
-    };
-    let g = if point_op.is_silent() {
-        0.0
-    } else {
-        r_to_f64(point_op.g * basis.g)
-    };
-    let l = r_to_f64(point_op.l * basis.l);
     let next_l_silent = next_silent || next_l_gain == 0.0;
     let next_r_silent = next_silent || next_r_gain == 0.0;
+
+    let (f, g, p, l) = calculate_fgpl(basis, point_op);
 
     let render_op = RenderOp {
         f,
         g,
-        p: r_to_f64(basis.p * point_op.pm) + r_to_f64(point_op.pa),
+        p,
         l,
         t: r_to_f64(*time),
         samples: (l * 44_100.0).round() as usize,
@@ -129,6 +120,25 @@ fn pointop_to_renderop(
     *time += point_op.l * basis.l;
 
     render_op
+}
+
+fn m_a_and_basis_to_f64(basis: Rational64, m: Rational64, a: Rational64) -> f64 {
+    r_to_f64(basis * m) + r_to_f64(a)
+}
+
+fn calculate_fgpl(basis: &Basis, point_op: &PointOp) -> (f64, f64, f64, f64) {
+    let (f, g) = if point_op.is_silent() {
+        (0.0, 0.0)
+    } else {
+        (
+            m_a_and_basis_to_f64(basis.f, point_op.fm, point_op.fa),
+            r_to_f64(point_op.g * basis.g),
+        )
+    };
+    let p = m_a_and_basis_to_f64(basis.p, point_op.pm, point_op.pa);
+    let l = r_to_f64(point_op.l * basis.l);
+
+    (f, g, p, l)
 }
 
 #[allow(dead_code)]
@@ -173,6 +183,16 @@ pub fn nf_to_vec_renderable(
 
     //dbg!(&result);
     result
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn test_renderable() {
+        assert_eq!(1, 2);
+    }
 }
 
 pub trait Renderable<T> {

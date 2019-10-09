@@ -272,7 +272,7 @@ pub fn composition_to_vec_timed_op(
         .flat_map(|(voice, vec_point_op)| {
             let mut time = Rational64::new(0, 1);
             let mut result = vec![];
-            let mut iter = vec_point_op.iter();
+            let iter = vec_point_op.iter();
             for (event, p_op) in iter.enumerate() {
                 let mut next_e = event;
                 if event == vec_point_op.len() {

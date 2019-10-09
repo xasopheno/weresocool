@@ -164,10 +164,10 @@ pub mod tests {
             let mut osc = Oscillator::init(&get_test_settings());
 
             let origin = Basis {
-                f: 100.0,
-                g: 1.0,
-                l: 1.0,
-                p: 0.0,
+                f: Rational64::new(100, 1),
+                g: Rational64::new(1, 1),
+                l: Rational64::new(1, 1),
+                p: Rational64::new(0, 1),
                 a: 1.0,
                 d: 1.0,
             };
@@ -194,10 +194,10 @@ pub mod tests {
             let mut osc = Oscillator::init(&get_test_settings());
 
             let origin = Basis {
-                f: 300.0,
-                g: 1.0,
-                l: 1.0,
-                p: 0.0,
+                f: Rational64::new(300, 1),
+                g: Rational64::new(1, 1),
+                l: Rational64::new(1, 1),
+                p: Rational64::new(0, 1),
                 a: 1.0,
                 d: 1.0,
             };
