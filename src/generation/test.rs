@@ -130,8 +130,8 @@ pub mod tests {
             g: Rational64::new(1, 1),
             p: Rational64::new(0, 1),
             l: Rational64::new(1, 1),
-            a: 44100.0,
-            d: 44100.0,
+            a: Rational64::new(1, 1),
+            d: Rational64::new(1, 1),
         };
 
         let op = TimedOp {

@@ -168,8 +168,8 @@ pub mod tests {
                 g: Rational64::new(1, 1),
                 l: Rational64::new(1, 1),
                 p: Rational64::new(0, 1),
-                a: 1.0,
-                d: 1.0,
+                a: Rational64::new(1, 1),
+                d: Rational64::new(1, 1),
             };
 
             let mut point_op = PointOp::init();
@@ -198,8 +198,8 @@ pub mod tests {
                 g: Rational64::new(1, 1),
                 l: Rational64::new(1, 1),
                 p: Rational64::new(0, 1),
-                a: 1.0,
-                d: 1.0,
+                a: Rational64::new(1, 1),
+                d: Rational64::new(1, 1),
             };
 
             let mut point_op = PointOp::init();
@@ -208,8 +208,10 @@ pub mod tests {
             osc.update(origin, &point_op, Some(PointOp::init()));
 
             let expected = StereoWaveform {
-                l_buffer: vec![0.0, 0.01654001625028226, 0.033049819429038306],
-                r_buffer: vec![0.0, 0.005513338750094087, 0.011016606476346103],
+                //l_buffer: vec![0.0, 0.01654001625028226, 0.033049819429038306],
+                //r_buffer: vec![0.0, 0.005513338750094087, 0.011016606476346103],
+                l_buffer: vec![0.0, 0.005513338750094087, 0.022033212952692206],
+                r_buffer: vec![0.0, 0.0018377795833646956, 0.007344404317564068],
             };
             assert_eq!(osc.generate(3.0, 1.0), expected);
         }

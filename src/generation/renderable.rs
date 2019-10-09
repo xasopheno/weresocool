@@ -6,69 +6,22 @@ use socool_ast::{NormalForm, Normalize, OpOrNfTable, OscType, PointOp};
 
 #[derive(Debug, Clone)]
 pub struct RenderOp {
-    //TODO: Should be f, p. All values should already reflect basis.
-    pub t: f64,
-    pub samples: usize,
-    pub voice: usize,
-    pub event: usize,
-    pub attack: f64,
-    pub decay: f64,
-    pub decay_length: usize,
-    pub portamento: f64,
-    pub osc_type: OscType,
     pub f: f64,
     pub p: f64,
     pub g: f64,
     pub l: f64,
+    pub t: f64,
+    pub attack: f64,
+    pub decay: f64,
+    pub decay_length: usize,
+    pub samples: usize,
+    pub voice: usize,
+    pub event: usize,
+    pub portamento: f64,
+    pub osc_type: OscType,
     pub next_l_silent: bool,
     pub next_r_silent: bool,
 }
-
-//pub fn update(basis: Basis, point_op: &PointOp, next_op: Option<PointOp>) {
-//let fm = r_to_f64(point_op.fm);
-//let fa = r_to_f64(point_op.fa);
-//let attack = r_to_f64(point_op.attack);
-//let decay = r_to_f64(point_op.decay);
-
-//let (l_gain, r_gain) = point_op_to_gains(&point_op, &basis);
-//let mut next_l_gain = 0.0;
-//let mut next_r_gain = 0.0;
-//let mut next_fm = 0.0;
-
-//match next_op {
-//Some(op) => {
-//let (l, r) = point_op_to_gains(&op, &basis);
-//next_l_gain = l;
-//next_r_gain = r;
-//next_fm = r_to_f64(op.fm);
-//}
-//None => {}
-//}
-
-//let (ref mut l_voice, ref mut r_voice) = self.voices;
-
-//let silence_next_l = next_fm == 0.0 || next_l_gain == 0.0;
-//let silence_next_r = next_fm == 0.0 || next_r_gain == 0.0;
-
-//l_voice.update(VoiceUpdate {
-//frequency: (r_to_f64(basis.f) * fm) + fa,
-//gain: l_gain,
-//osc_type: point_op.osc_type,
-//silence_next: silence_next_l,
-//attack: basis.a * attack,
-//decay: basis.d * decay,
-//decay_type: point_op.decay_length,
-//});
-//r_voice.update(VoiceUpdate {
-//frequency: (r_to_f64(basis.f) * fm) + fa,
-//gain: r_gain,
-//osc_type: point_op.osc_type,
-//silence_next: silence_next_r,
-//attack: basis.a * attack,
-//decay: basis.d * decay,
-//decay_type: point_op.decay_length,
-//});
-//}
 
 #[allow(dead_code)]
 fn pointop_to_renderop(
@@ -106,9 +59,9 @@ fn pointop_to_renderop(
         l,
         t: r_to_f64(*time),
         samples: (l * 44_100.0).round() as usize,
-        attack: r_to_f64(point_op.attack * basis.a) * 44_100.0,
+        attack: r_to_f64(point_op.attack * basis.a),
         osc_type: point_op.osc_type,
-        decay: r_to_f64(point_op.decay * basis.a) * 44_100.0,
+        decay: r_to_f64(point_op.decay * basis.a),
         decay_length: point_op.decay_length,
         portamento: r_to_f64(point_op.portamento),
         voice,
@@ -139,6 +92,38 @@ fn calculate_fgpl(basis: &Basis, point_op: &PointOp) -> (f64, f64, f64, f64) {
     let l = r_to_f64(point_op.l * basis.l);
 
     (f, g, p, l)
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn test_calculate_fgpl() {
+        let basis = Basis {
+            f: Rational64::new(2, 1),
+            g: Rational64::new(1, 1),
+            p: Rational64::new(0, 1),
+            l: Rational64::new(1, 1),
+            a: Rational64::new(1, 1),
+            d: Rational64::new(1, 1),
+        };
+        let point_op = PointOp::init();
+        let result = calculate_fgpl(&basis, &point_op);
+        let expected = (2.0, 1.0, 0.0, 1.0);
+        assert_eq!(result, expected);
+    }
+
+    #[test]
+    fn test_m_a_and_basis_to_f64() {
+        let result = m_a_and_basis_to_f64(
+            Rational64::new(2, 1),
+            Rational64::new(300, 1),
+            Rational64::new(4, 1),
+        );
+        let expected = 604.0;
+        assert_eq!(result, expected);
+    }
 }
 
 #[allow(dead_code)]
@@ -183,16 +168,6 @@ pub fn nf_to_vec_renderable(
 
     //dbg!(&result);
     result
-}
-
-#[cfg(test)]
-mod tests {
-    use super::*;
-
-    #[test]
-    fn test_renderable() {
-        assert_eq!(1, 2);
-    }
 }
 
 pub trait Renderable<T> {
