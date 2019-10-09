@@ -1,4 +1,5 @@
 use crate::generation::parsed_to_render::r_to_f64;
+use crate::generation::{filename_to_render, RenderReturn, RenderType};
 use crate::instrument::oscillator::{point_op_to_gains, Basis};
 use crate::instrument::{Oscillator, StereoWaveform};
 use num_rational::Rational64;
@@ -123,6 +124,27 @@ mod tests {
         );
         let expected = 604.0;
         assert_eq!(result, expected);
+    }
+
+    #[test]
+    fn nf_to_vec_renderable() {
+        let mut nf = NormalForm::init();
+        let (nf, basis, table) = match filename_to_render(
+            &"songs/test/render_op.socool".to_string(),
+            RenderType::NfBasisAndTable,
+        )
+        .unwrap()
+        {
+            RenderReturn::NfBasisAndTable(nf, basis, table) => (nf, basis, table),
+            _ => {
+                panic!("missing render_op.socool");
+            }
+        };
+        //dbg!(nf);
+        dbg!(basis);
+        //dbg!(table);
+
+        assert_eq!(true, false);
     }
 }
 
