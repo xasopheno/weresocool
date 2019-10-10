@@ -5,7 +5,7 @@ use crate::instrument::{Oscillator, StereoWaveform};
 use num_rational::Rational64;
 use socool_ast::{NormalForm, Normalize, OpOrNfTable, OscType, PointOp};
 
-#[derive(Debug, Clone)]
+#[derive(Debug, Clone, PartialEq)]
 pub struct RenderOp {
     pub f: f64,
     pub p: f64,
@@ -127,7 +127,7 @@ mod tests {
     }
 
     #[test]
-    fn nf_to_vec_renderable() {
+    fn test_nf_to_vec_renderable() {
         let mut nf = NormalForm::init();
         let (nf, basis, table) = match filename_to_render(
             &"songs/test/render_op.socool".to_string(),
@@ -137,14 +137,29 @@ mod tests {
         {
             RenderReturn::NfBasisAndTable(nf, basis, table) => (nf, basis, table),
             _ => {
-                panic!("missing render_op.socool");
+                panic!("missing songs/tests/render_op.socool");
             }
         };
         //dbg!(nf);
-        dbg!(basis);
-        //dbg!(table);
-
-        assert_eq!(true, false);
+        let result = nf_to_vec_renderable(&nf, &table, &basis);
+        let expected: Vec<Vec<RenderOp>> = vec![vec![RenderOp {
+            f: 220.0,
+            p: 0.0,
+            g: 1.0,
+            l: 1.0,
+            t: 0.0,
+            attack: 1.0,
+            decay: 1.0,
+            decay_length: 2,
+            samples: 44100,
+            voice: 0,
+            event: 0,
+            portamento: 1.0,
+            osc_type: OscType::Sine,
+            next_l_silent: false,
+            next_r_silent: false,
+        }]];
+        assert_eq!(result, expected);
     }
 }
 
