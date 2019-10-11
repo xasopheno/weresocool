@@ -24,6 +24,47 @@ pub struct RenderOp {
     pub next_r_silent: bool,
 }
 
+pub trait Renderable<T> {
+    fn render(&mut self, oscillator: &mut Oscillator) -> StereoWaveform;
+}
+
+impl Renderable<RenderOp> for RenderOp {
+    fn render(&mut self, oscillator: &mut Oscillator) -> StereoWaveform {
+        //oscillator.update(origin.clone(), self, next_op);
+
+        //let n_samples_to_generate = r_to_f64(self.l) * r_to_f64(origin.l) * 44_100.0;
+        //let portamento_length = r_to_f64(self.portamento);
+
+        //oscillator.generate(n_samples_to_generate, portamento_length)
+        unimplemented!()
+    }
+}
+
+impl Renderable<Vec<RenderOp>> for Vec<RenderOp> {
+    fn render(&mut self, oscillator: &mut Oscillator) -> StereoWaveform {
+        //let mut result: StereoWaveform = StereoWaveform::new(0);
+        //let mut p_ops = self.clone();
+        //p_ops.push(PointOp::init_silent());
+
+        //let mut iter = p_ops.iter().peekable();
+
+        //while let Some(p_op) = iter.next() {
+        //let mut next_op = None;
+        //let peek = iter.peek();
+        //match peek {
+        //Some(p) => next_op = Some(p.clone().clone()),
+        //None => {}
+        //};
+
+        //let stereo_waveform = p_op.clone().render(origin, oscillator, next_op);
+        //result.append(stereo_waveform);
+        //}
+
+        //result
+        unimplemented!()
+    }
+}
+
 #[allow(dead_code)]
 fn pointop_to_renderop(
     point_op: &PointOp,
@@ -139,22 +180,3 @@ pub fn nf_to_vec_renderable(
     result
 }
 
-pub trait Renderable<T> {
-    fn render<R: Renderable<R>>(
-        &mut self,
-        basis: &Basis,
-        oscillator: &mut Vec<Oscillator>,
-        next: Option<R>,
-    ) -> StereoWaveform;
-}
-
-impl Renderable<RenderOp> for RenderOp {
-    fn render<RenderOp>(
-        &mut self,
-        basis: &Basis,
-        oscillator: &mut Vec<Oscillator>,
-        next: Option<RenderOp>,
-    ) -> StereoWaveform {
-        unimplemented!();
-    }
-}
