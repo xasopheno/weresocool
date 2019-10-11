@@ -1,7 +1,8 @@
 pub mod json;
 pub mod parsed_to_render;
-mod test;
 mod renderable;
+mod renderable_tests;
+mod test;
 
 pub use self::{
     json::{
