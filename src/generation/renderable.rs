@@ -24,6 +24,47 @@ pub struct RenderOp {
     pub next_r_silent: bool,
 }
 
+impl RenderOp {
+    pub fn init_f(f: f64, g: :f64, l: f64, p: f64) -> RenderOp {
+        RenderOp {
+            f,
+            p,
+            g,
+            l,
+            t: 0.0,
+            attack: 1.0,
+            decay: 1.0,
+            decay_length: 2,
+            samples: 44100,
+            voice: 0,
+            event: 0,
+            portamento: 1.0,
+            osc_type: OscType::Sine,
+            next_l_silent: false,
+            next_r_silent: false,
+        }
+    }
+    pub fn init_silent_with_length(l: f64) -> RenderOp {
+        RenderOp {
+            f: 0.0,
+            g: 0.0,
+            p: 0.0,
+            l,
+            t: 0.0,
+            attack: 1.0,
+            decay: 1.0,
+            decay_length: 2,
+            samples: 44100,
+            voice: 0,
+            event: 0,
+            portamento: 1.0,
+            osc_type: OscType::Sine,
+            next_l_silent: false,
+            next_r_silent: false,
+        }
+    }
+}
+
 pub trait Renderable<T> {
     fn render(&mut self, oscillator: &mut Oscillator) -> StereoWaveform;
 }
@@ -42,26 +83,18 @@ impl Renderable<RenderOp> for RenderOp {
 
 impl Renderable<Vec<RenderOp>> for Vec<RenderOp> {
     fn render(&mut self, oscillator: &mut Oscillator) -> StereoWaveform {
-        //let mut result: StereoWaveform = StereoWaveform::new(0);
-        //let mut p_ops = self.clone();
-        //p_ops.push(PointOp::init_silent());
+        let mut result: StereoWaveform = StereoWaveform::new(0);
+        let mut ops = self.clone();
+        ops.push(RenderOp::init_silent_with_length(1.0));
 
-        //let mut iter = p_ops.iter().peekable();
+        let mut iter = ops.iter();
 
-        //while let Some(p_op) = iter.next() {
-        //let mut next_op = None;
-        //let peek = iter.peek();
-        //match peek {
-        //Some(p) => next_op = Some(p.clone().clone()),
-        //None => {}
-        //};
+        while let Some(op) = iter.next() {
+            let stereo_waveform = op.render(oscillator);
+            result.append(stereo_waveform);
+        }
 
-        //let stereo_waveform = p_op.clone().render(origin, oscillator, next_op);
-        //result.append(stereo_waveform);
-        //}
-
-        //result
-        unimplemented!()
+        result
     }
 }
 
