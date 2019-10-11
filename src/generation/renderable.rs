@@ -3,7 +3,7 @@ use crate::generation::{filename_to_render, RenderReturn, RenderType};
 use crate::instrument::oscillator::{point_op_to_gains, Basis};
 use crate::instrument::{Oscillator, StereoWaveform};
 use num_rational::Rational64;
-use socool_ast::{NormalForm, Normalize, OpOrNfTable, OscType, PointOp};
+use socool_ast::{NormalForm, Normalize, OpOrNfTable, OscType, OscType::Sine, PointOp};
 
 #[derive(Debug, Clone, PartialEq)]
 pub struct RenderOp {
@@ -142,23 +142,42 @@ mod tests {
         };
         //dbg!(nf);
         let result = nf_to_vec_renderable(&nf, &table, &basis);
-        let expected: Vec<Vec<RenderOp>> = vec![vec![RenderOp {
-            f: 220.0,
-            p: 0.0,
-            g: 1.0,
-            l: 1.0,
-            t: 0.0,
-            attack: 1.0,
-            decay: 1.0,
-            decay_length: 2,
-            samples: 44100,
-            voice: 0,
-            event: 0,
-            portamento: 1.0,
-            osc_type: OscType::Sine,
-            next_l_silent: false,
-            next_r_silent: false,
-        }]];
+        let expected: Vec<Vec<RenderOp>> = vec![
+            vec![RenderOp {
+                f: 220.0,
+                p: 0.0,
+                g: 1.0,
+                l: 1.0,
+                t: 0.0,
+                attack: 1.0,
+                decay: 1.0,
+                decay_length: 2,
+                samples: 44100,
+                voice: 0,
+                event: 0,
+                portamento: 1.0,
+                osc_type: Sine,
+                next_l_silent: false,
+                next_r_silent: false,
+            }],
+            vec![RenderOp {
+                f: 330.0,
+                p: 0.4,
+                g: 1.0,
+                l: 1.0,
+                t: 0.0,
+                attack: 1.0,
+                decay: 1.0,
+                decay_length: 2,
+                samples: 44100,
+                voice: 1,
+                event: 0,
+                portamento: 1.0,
+                osc_type: Sine,
+                next_l_silent: false,
+                next_r_silent: false,
+            }],
+        ];
         assert_eq!(result, expected);
     }
 }
