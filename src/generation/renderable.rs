@@ -32,8 +32,8 @@ impl RenderOp {
             g,
             l,
             t: 0.0,
-            attack: 1.0,
-            decay: 1.0,
+            attack: 44_100.0,
+            decay: 44_100.0,
             decay_length: 2,
             samples: 44100,
             voice: 0,
@@ -51,8 +51,8 @@ impl RenderOp {
             p: 0.0,
             l,
             t: 0.0,
-            attack: 1.0,
-            decay: 1.0,
+            attack: 44_100.0,
+            decay: 44_100.0,
             decay_length: 2,
             samples: 44100,
             voice: 0,
@@ -113,7 +113,7 @@ fn pointop_to_renderop(
             next_r_gain = r;
             next_silent = op.is_silent();
         }
-        None => {}
+        None => next_silent = true,
     }
 
     let next_l_silent = next_silent || next_l_gain == 0.0;
