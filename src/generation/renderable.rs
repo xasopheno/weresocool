@@ -59,8 +59,8 @@ impl RenderOp {
             event: 0,
             portamento: 1.0,
             osc_type: OscType::Sine,
-            next_l_silent: false,
-            next_r_silent: false,
+            next_l_silent: true,
+            next_r_silent: true,
         }
     }
 }
@@ -72,7 +72,6 @@ pub trait Renderable<T> {
 impl Renderable<RenderOp> for RenderOp {
     fn render(&mut self, oscillator: &mut Oscillator) -> StereoWaveform {
         oscillator.update(self);
-
         oscillator.generate(self.samples as f64, self.portamento as f64)
     }
 }

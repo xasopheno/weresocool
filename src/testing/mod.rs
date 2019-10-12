@@ -1,4 +1,5 @@
 use crate::generation::parsed_to_render::{generate_waveforms, r_to_f64, sum_all_waveforms};
+use crate::generation::renderable::{nf_to_vec_renderable, RenderOp, Renderable};
 use crate::instrument::{Basis, Normalize};
 use difference::{Changeset, Difference};
 use indexmap::IndexMap;
@@ -74,7 +75,9 @@ fn generate_render_hashes(p: &String) -> CompositionHashes {
         d: Rational64::new(1, 1),
     };
 
-    let vec_wav = generate_waveforms(&origin, normal_form.operations, false);
+    let renderable = nf_to_vec_renderable(&normal_form, &parsed.table, &origin);
+
+    let vec_wav = generate_waveforms(renderable, false);
     let mut result = sum_all_waveforms(vec_wav);
 
     result.normalize();

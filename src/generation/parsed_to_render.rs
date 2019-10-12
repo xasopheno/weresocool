@@ -1,6 +1,7 @@
 use crate::generation::{to_csv, to_json};
 use crate::instrument::{Basis, Normalize, Oscillator, StereoWaveform};
-use crate::render::{Render, RenderOp};
+//use crate::render::{Render, RenderOp};
+use crate::generation::renderable::{nf_to_vec_renderable, RenderOp, Renderable};
 use crate::settings::default_settings;
 use crate::ui::{banner, printed};
 use crate::write::write_composition_to_wav;
@@ -71,23 +72,24 @@ pub fn filename_to_render(filename: &str, r_type: RenderType) -> Result<RenderRe
     }
 }
 
-pub fn render(origin: &Basis, composition: &NormalForm, table: &OpOrNfTable) -> StereoWaveform {
+pub fn render(basis: &Basis, composition: &NormalForm, table: &OpOrNfTable) -> StereoWaveform {
     let mut normal_form = NormalForm::init();
 
     println!("\nGenerating Composition ");
     composition.apply_to_normal_form(&mut normal_form, table);
+    let render_ops = nf_to_vec_renderable(composition, table, basis);
 
-    let vec_wav = generate_waveforms(&origin, normal_form.operations, true);
+    let vec_wav = generate_waveforms(render_ops, true);
     let mut result = sum_all_waveforms(vec_wav);
     result.normalize();
 
     result
 }
 
-pub fn render_mic(point_op: &PointOp, origin: Basis, osc: &mut Oscillator) -> StereoWaveform {
-    let result = point_op.clone().render(&origin, osc, None);
-    result
-}
+//pub fn render_mic(point_op: &PointOp, origin: Basis, osc: &mut Oscillator) -> StereoWaveform {
+//let result = point_op.clone().render(&origin, osc, None);
+//result
+//}
 
 pub fn to_wav(composition: StereoWaveform, filename: String) -> String {
     banner("Printing".to_string(), filename.clone());
@@ -104,8 +106,7 @@ fn create_pb_instance(n: usize) -> Arc<Mutex<ProgressBar<std::io::Stdout>>> {
 }
 
 pub fn generate_waveforms(
-    origin: &Basis,
-    mut vec_sequences: Vec<Vec<PointOp>>,
+    mut vec_sequences: Vec<Vec<RenderOp>>,
     show: bool,
 ) -> Vec<StereoWaveform> {
     if show {
@@ -115,10 +116,10 @@ pub fn generate_waveforms(
 
     let vec_wav = vec_sequences
         .par_iter_mut()
-        .map(|ref mut vec_point_op: &mut Vec<PointOp>| {
+        .map(|ref mut vec_render_op: &mut Vec<RenderOp>| {
             pb.lock().unwrap().add(1 as u64);
             let mut osc = Oscillator::init(&default_settings());
-            vec_point_op.render(&origin, &mut osc)
+            vec_render_op.render(&mut osc)
         })
         .collect();
 
