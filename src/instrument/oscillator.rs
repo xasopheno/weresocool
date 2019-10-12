@@ -82,8 +82,8 @@ impl Oscillator {
             gain: op.g.0,
             osc_type: op.osc_type,
             silence_next: op.next_l_silent,
-            attack: 44_100.0 * op.attack,
-            decay: 44_100.0 * op.decay,
+            attack: op.attack,
+            decay: op.decay,
             decay_type: op.decay_length,
         });
         r_voice.update(VoiceUpdate {
@@ -91,8 +91,8 @@ impl Oscillator {
             gain: op.g.1,
             osc_type: op.osc_type,
             silence_next: op.next_r_silent,
-            attack: 44_100.0 * op.attack,
-            decay: 44_100.0 * op.attack,
+            attack: op.attack,
+            decay: op.attack,
             decay_type: op.decay_length,
         });
     }

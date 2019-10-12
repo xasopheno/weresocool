@@ -71,13 +71,9 @@ pub trait Renderable<T> {
 
 impl Renderable<RenderOp> for RenderOp {
     fn render(&mut self, oscillator: &mut Oscillator) -> StereoWaveform {
-        //oscillator.update(self);
+        oscillator.update(self);
 
-        //let n_samples_to_generate = r_to_f64(self.l) * r_to_f64(origin.l) * 44_100.0;
-        //let portamento_length = r_to_f64(self.portamento);
-
-        //oscillator.generate(n_samples_to_generate, portamento_length)
-        unimplemented!()
+        oscillator.generate(self.samples as f64, self.portamento as f64)
     }
 }
 
@@ -133,9 +129,9 @@ fn pointop_to_renderop(
         l,
         t: r_to_f64(*time),
         samples: (l * 44_100.0).round() as usize,
-        attack: r_to_f64(point_op.attack * basis.a),
+        attack: r_to_f64(point_op.attack * basis.a) * 44_100.0,
+        decay: r_to_f64(point_op.decay * basis.d) * 44_100.0,
         osc_type: point_op.osc_type,
-        decay: r_to_f64(point_op.decay * basis.a),
         decay_length: point_op.decay_length,
         portamento: r_to_f64(point_op.portamento),
         voice,
