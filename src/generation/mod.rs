@@ -1,6 +1,6 @@
 pub mod json;
 pub mod parsed_to_render;
-mod renderable;
+pub mod renderable;
 mod renderable_tests;
 mod test;
 

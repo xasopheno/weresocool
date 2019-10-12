@@ -1,4 +1,4 @@
-use crate::generation::parsed_to_render::r_to_f64;
+use crate::generation::{parsed_to_render::r_to_f64, renderable::RenderOp};
 use crate::instrument::{
     stereo_waveform::StereoWaveform,
     voice::{Voice, VoiceUpdate},
@@ -74,49 +74,26 @@ impl Oscillator {
         }
     }
 
-    pub fn update(&mut self, basis: Basis, point_op: &PointOp, next_op: Option<PointOp>) {
-        let fm = r_to_f64(point_op.fm);
-        let fa = r_to_f64(point_op.fa);
-        let attack = r_to_f64(point_op.attack);
-        let decay = r_to_f64(point_op.decay);
-
-        let (l_gain, r_gain) = point_op_to_gains(&point_op, &basis);
-        let mut next_l_gain = 0.0;
-        let mut next_r_gain = 0.0;
-        let mut next_fm = 0.0;
-
-        match next_op {
-            Some(op) => {
-                let (l, r) = point_op_to_gains(&op, &basis);
-                next_l_gain = l;
-                next_r_gain = r;
-                next_fm = r_to_f64(op.fm);
-            }
-            None => {}
-        }
-
+    pub fn update(&mut self, op: &RenderOp) {
         let (ref mut l_voice, ref mut r_voice) = self.voices;
 
-        let silence_next_l = next_fm == 0.0 || next_l_gain == 0.0;
-        let silence_next_r = next_fm == 0.0 || next_r_gain == 0.0;
-
         l_voice.update(VoiceUpdate {
-            frequency: (r_to_f64(basis.f) * fm) + fa,
-            gain: l_gain,
-            osc_type: point_op.osc_type,
-            silence_next: silence_next_l,
-            attack: 44_100.0 * r_to_f64(basis.a) * attack,
-            decay: 44_100.0 * r_to_f64(basis.d) * decay,
-            decay_type: point_op.decay_length,
+            frequency: op.f,
+            gain: op.g.0,
+            osc_type: op.osc_type,
+            silence_next: op.next_l_silent,
+            attack: 44_100.0 * op.attack,
+            decay: 44_100.0 * op.decay,
+            decay_type: op.decay_length,
         });
         r_voice.update(VoiceUpdate {
-            frequency: (r_to_f64(basis.f) * fm) + fa,
-            gain: r_gain,
-            osc_type: point_op.osc_type,
-            silence_next: silence_next_r,
-            attack: 44_100.0 * r_to_f64(basis.a) * attack,
-            decay: 44_100.0 * r_to_f64(basis.d) * decay,
-            decay_type: point_op.decay_length,
+            frequency: op.f,
+            gain: op.g.1,
+            osc_type: op.osc_type,
+            silence_next: op.next_r_silent,
+            attack: 44_100.0 * op.attack,
+            decay: 44_100.0 * op.attack,
+            decay_type: op.decay_length,
         });
     }
 

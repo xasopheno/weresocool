@@ -22,7 +22,7 @@ mod tests {
         };
         let point_op = PointOp::init();
         let result = calculate_fgpl(&basis, &point_op);
-        let expected = (2.0, 1.0, 0.0, 1.0);
+        let expected = (2.0, (0.5, 0.5), 0.0, 1.0);
         assert_eq!(result, expected);
     }
 
@@ -57,7 +57,7 @@ mod tests {
             vec![RenderOp {
                 f: 220.0,
                 p: 0.0,
-                g: 1.0,
+                g: (0.5, 0.5),
                 l: 1.0,
                 t: 0.0,
                 attack: 1.0,
@@ -74,8 +74,8 @@ mod tests {
             vec![RenderOp {
                 f: 330.0,
                 p: 0.4,
-                g: 1.0,
                 l: 1.0,
+                g: (0.7, 0.3),
                 t: 0.0,
                 attack: 1.0,
                 decay: 1.0,

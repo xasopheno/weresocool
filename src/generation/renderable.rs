@@ -9,8 +9,8 @@ use socool_ast::{NormalForm, Normalize, OpOrNfTable, OscType, OscType::Sine, Poi
 pub struct RenderOp {
     pub f: f64,
     pub p: f64,
-    pub g: f64,
     pub l: f64,
+    pub g: (f64, f64),
     pub t: f64,
     pub attack: f64,
     pub decay: f64,
@@ -25,7 +25,7 @@ pub struct RenderOp {
 }
 
 impl RenderOp {
-    pub fn init_f(f: f64, g: :f64, l: f64, p: f64) -> RenderOp {
+    pub fn init_f(f: f64, g: (f64, f64), l: f64, p: f64) -> RenderOp {
         RenderOp {
             f,
             p,
@@ -47,7 +47,7 @@ impl RenderOp {
     pub fn init_silent_with_length(l: f64) -> RenderOp {
         RenderOp {
             f: 0.0,
-            g: 0.0,
+            g: (0.0, 0.0),
             p: 0.0,
             l,
             t: 0.0,
@@ -71,7 +71,7 @@ pub trait Renderable<T> {
 
 impl Renderable<RenderOp> for RenderOp {
     fn render(&mut self, oscillator: &mut Oscillator) -> StereoWaveform {
-        //oscillator.update(origin.clone(), self, next_op);
+        //oscillator.update(self);
 
         //let n_samples_to_generate = r_to_f64(self.l) * r_to_f64(origin.l) * 44_100.0;
         //let portamento_length = r_to_f64(self.portamento);
@@ -90,7 +90,7 @@ impl Renderable<Vec<RenderOp>> for Vec<RenderOp> {
         let mut iter = ops.iter();
 
         while let Some(op) = iter.next() {
-            let stereo_waveform = op.render(oscillator);
+            let stereo_waveform = op.clone().render(oscillator);
             result.append(stereo_waveform);
         }
 
@@ -98,7 +98,6 @@ impl Renderable<Vec<RenderOp>> for Vec<RenderOp> {
     }
 }
 
-#[allow(dead_code)]
 fn pointop_to_renderop(
     point_op: &PointOp,
     time: &mut Rational64,
@@ -154,14 +153,12 @@ pub fn m_a_and_basis_to_f64(basis: Rational64, m: Rational64, a: Rational64) -> 
     r_to_f64(basis * m) + r_to_f64(a)
 }
 
-pub fn calculate_fgpl(basis: &Basis, point_op: &PointOp) -> (f64, f64, f64, f64) {
+pub fn calculate_fgpl(basis: &Basis, point_op: &PointOp) -> (f64, (f64, f64), f64, f64) {
     let (f, g) = if point_op.is_silent() {
-        (0.0, 0.0)
+        (0.0, (0.0, 0.0))
     } else {
-        (
-            m_a_and_basis_to_f64(basis.f, point_op.fm, point_op.fa),
-            r_to_f64(point_op.g * basis.g),
-        )
+        let g = point_op_to_gains(point_op, basis);
+        (m_a_and_basis_to_f64(basis.f, point_op.fm, point_op.fa), g)
     };
     let p = m_a_and_basis_to_f64(basis.p, point_op.pm, point_op.pa);
     let l = r_to_f64(point_op.l * basis.l);
@@ -177,7 +174,6 @@ pub fn nf_to_vec_renderable(
 ) -> Vec<Vec<RenderOp>> {
     let mut normal_form = NormalForm::init();
     composition.apply_to_normal_form(&mut normal_form, table);
-
     let n_voices = normal_form.operations.len();
     let result: Vec<Vec<RenderOp>> = normal_form
         .operations
