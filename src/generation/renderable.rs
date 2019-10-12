@@ -25,7 +25,7 @@ pub struct RenderOp {
 }
 
 impl RenderOp {
-    pub fn init_f(f: f64, g: (f64, f64), l: f64, p: f64) -> RenderOp {
+    pub fn init_fglp(f: f64, g: (f64, f64), l: f64, p: f64) -> RenderOp {
         RenderOp {
             f,
             p,
