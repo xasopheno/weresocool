@@ -1,63 +1,57 @@
 use crate::analyze::{Analyze, DetectionResult};
-use crate::generation::parsed_to_render::*;
+use crate::generation::{
+    parsed_to_render::{render_mic, sum_all_waveforms},
+    renderable::{nf_to_vec_renderable, RenderOp, Renderable},
+};
 use crate::instrument::{Basis, Oscillator, StereoWaveform};
 use crate::ring_buffer::RingBuffer;
 use crate::settings::{default_settings, Settings};
 use crate::write::write_output_buffer;
 use error::Error;
-use num_rational::Rational64;
 use portaudio as pa;
-use socool_ast::PointOp;
 use std::iter::Cycle;
 use std::vec::IntoIter;
 
 pub struct RealTimeState {
-    count: Rational64,
-    inc: Rational64,
-    current_op: PointOp,
+    count: f64,
+    inc: f64,
+    current_op: RenderOp,
 }
 
 impl RealTimeState {
     fn inc(&mut self) {
-        self.count += self.inc * Rational64::new(1, 1)
+        self.count += self.inc
     }
 }
 
-fn process_detection_result(result: &mut DetectionResult) -> Basis {
+fn process_detection_result(result: &mut DetectionResult) -> (f64, f64) {
     if result.gain < 0.005 || result.frequency > 1_000.0 {
         result.frequency = 0.0;
         result.gain = 0.0;
     }
 
     println!("freq {}, gain {}", result.frequency, result.gain);
-
-    Basis {
-        f: 2.0 * result.frequency as f64,
-        l: 1.0,
-        g: result.gain as f64,
-        p: 0.0,
-        a: 44100.0,
-        d: 44100.0,
-    }
+    (result.frequency as f64, result.gain as f64)
 }
 
 pub struct NfVoiceState {
     oscillator: Oscillator,
     state: RealTimeState,
-    iterator: Cycle<IntoIter<PointOp>>,
+    iterator: Cycle<IntoIter<RenderOp>>,
 }
 
 pub fn setup_iterators(
-    parsed_composition: Vec<Vec<PointOp>>,
+    parsed_composition: Vec<Vec<RenderOp>>,
     settings: &Settings,
 ) -> Vec<NfVoiceState> {
+    //let renderables = nf_to_vec_renderable(composition: &NormalForm, table: &OpOrNfTable, basis: &Basis)
     let mut nf_voice_cycles = vec![];
 
     for seq in parsed_composition {
         let mut iterator = seq.clone().into_iter().cycle();
         let state = RealTimeState {
-            count: Rational64::new(0, 1),
-            inc: Rational64::new(settings.buffer_size as i64, settings.sample_rate as i64),
+            count: 0.0,
+            inc: settings.buffer_size as f64 / settings.sample_rate as f64,
             current_op: iterator
                 .next()
                 .expect("Empty iterator in cycle in mic. Empty?"),
@@ -85,11 +79,11 @@ fn sing_along_callback(
         .to_vec()
         .analyze(settings.sample_rate as f32, settings.probability_threshold);
 
-    let origin = process_detection_result(&mut detection_result);
+    let (freq, gain) = process_detection_result(&mut detection_result);
 
     let result: Vec<StereoWaveform> = nf_voice_cycles
         .iter_mut()
-        .map(|voice| generate_voice_sw(voice, settings, origin))
+        .map(|voice| generate_voice_sw(voice, settings, freq, gain))
         .collect();
 
     let stereo_waveform = sum_all_waveforms(result);
@@ -99,24 +93,27 @@ fn sing_along_callback(
 fn generate_voice_sw(
     voice: &mut NfVoiceState,
     settings: &Settings,
-    origin: Basis,
+    freq: f64,
+    gain: f64,
 ) -> StereoWaveform {
     if voice.state.count >= voice.state.current_op.l {
-        voice.state.count = Rational64::new(0, 1);
+        voice.state.count = 0.0;
         voice.state.current_op = voice.iterator.next().unwrap()
     }
 
-    let mut current_point_op = voice.state.current_op.clone();
+    let mut current_op = voice.state.current_op.clone();
+    current_op.f = freq;
+    current_op.g = (gain / 2.0, gain / 2.0);
 
-    current_point_op.l = Rational64::new(settings.buffer_size as i64, settings.sample_rate as i64);
+    current_op.l = settings.buffer_size as f64 / settings.sample_rate as f64;
 
-    let stereo_waveform = render_mic(&current_point_op, origin, &mut voice.oscillator);
+    let stereo_waveform = render_mic(&current_op, &mut voice.oscillator);
     voice.state.inc();
     stereo_waveform
 }
 
 pub fn duplex_setup(
-    parsed_composition: Vec<Vec<PointOp>>,
+    parsed_composition: Vec<Vec<RenderOp>>,
 ) -> Result<pa::Stream<pa::NonBlocking, pa::Duplex<f32, f32>>, Error> {
     let pa = pa::PortAudio::new()?;
     let settings = default_settings();
