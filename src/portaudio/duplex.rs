@@ -44,7 +44,6 @@ pub fn setup_iterators(
     parsed_composition: Vec<Vec<RenderOp>>,
     settings: &Settings,
 ) -> Vec<NfVoiceState> {
-    //let renderables = nf_to_vec_renderable(composition: &NormalForm, table: &OpOrNfTable, basis: &Basis)
     let mut nf_voice_cycles = vec![];
 
     for seq in parsed_composition {
@@ -71,6 +70,7 @@ fn sing_along_callback(
     args: pa::DuplexStreamCallbackArgs<f32, f32>,
     input_buffer: &mut RingBuffer<f32>,
     nf_voice_cycles: &mut Vec<NfVoiceState>,
+    basis_f: f64,
     settings: &Settings,
 ) {
     input_buffer.push_vec(args.in_buffer.to_vec());
@@ -80,6 +80,7 @@ fn sing_along_callback(
         .analyze(settings.sample_rate as f32, settings.probability_threshold);
 
     let (freq, gain) = process_detection_result(&mut detection_result);
+    let freq_ratio = freq / basis_f;
 
     let result: Vec<StereoWaveform> = nf_voice_cycles
         .iter_mut()
@@ -93,7 +94,7 @@ fn sing_along_callback(
 fn generate_voice_sw(
     voice: &mut NfVoiceState,
     settings: &Settings,
-    freq: f64,
+    freq_ratio: f64,
     gain: f64,
 ) -> StereoWaveform {
     if voice.state.count >= voice.state.current_op.l {
@@ -102,8 +103,8 @@ fn generate_voice_sw(
     }
 
     let mut current_op = voice.state.current_op.clone();
-    current_op.f = freq;
-    current_op.g = (gain / 2.0, gain / 2.0);
+    current_op.f *= freq_ratio;
+    current_op.g = (current_op.g.0 * gain / 2.0, current_op.g.1 * gain / 2.0);
 
     current_op.l = settings.buffer_size as f64 / settings.sample_rate as f64;
 
@@ -114,6 +115,7 @@ fn generate_voice_sw(
 
 pub fn duplex_setup(
     parsed_composition: Vec<Vec<RenderOp>>,
+    basis_f: f64,
 ) -> Result<pa::Stream<pa::NonBlocking, pa::Duplex<f32, f32>>, Error> {
     let pa = pa::PortAudio::new()?;
     let settings = default_settings();
@@ -132,7 +134,13 @@ pub fn duplex_setup(
             }
             pa::Continue
         } else {
-            sing_along_callback(args, &mut input_buffer, &mut nf_voice_cycles, &settings);
+            sing_along_callback(
+                args,
+                &mut input_buffer,
+                &mut nf_voice_cycles,
+                basis_f,
+                &settings,
+            );
             pa::Continue
         }
     })?;
