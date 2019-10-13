@@ -84,7 +84,7 @@ fn sing_along_callback(
 
     let result: Vec<StereoWaveform> = nf_voice_cycles
         .iter_mut()
-        .map(|voice| generate_voice_sw(voice, settings, freq, gain))
+        .map(|voice| generate_voice_sw(voice, settings, freq_ratio, gain))
         .collect();
 
     let stereo_waveform = sum_all_waveforms(result);
