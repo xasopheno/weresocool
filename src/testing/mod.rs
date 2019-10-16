@@ -1,6 +1,8 @@
-use crate::generation::parsed_to_render::{generate_waveforms, sum_all_waveforms};
-use crate::generation::renderable::nf_to_vec_renderable;
-use crate::instrument::{Basis, Normalize};
+use crate::{
+    generation::parsed_to_render::{generate_waveforms, sum_all_waveforms},
+    instrument::{Basis, Normalize},
+    renderable::nf_to_vec_renderable,
+};
 use difference::{Changeset, Difference};
 use indexmap::IndexMap;
 use num_rational::Rational64;

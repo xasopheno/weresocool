@@ -1,10 +1,11 @@
 use weresocool::{
     examples::documentation,
     generation::{
-        filename_to_render, parsed_to_render::r_to_f64, renderable::nf_to_vec_renderable,
-        RenderReturn, RenderType,
+        filename_to_render,
+        parsed_to_render::{r_to_f64, RenderReturn, RenderType},
     },
     portaudio::duplex_setup,
+    renderable::nf_to_vec_renderable,
     ui::{get_args, no_file_name, were_so_cool_logo},
 };
 

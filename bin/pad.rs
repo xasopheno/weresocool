@@ -1,12 +1,9 @@
 use error::Error;
 use failure::Fail;
 use weresocool::{
-    generation::{
-        filename_to_render,
-        renderable::{nf_to_vec_renderable, RenderOp},
-        RenderReturn, RenderType,
-    },
+    generation::{filename_to_render, RenderReturn, RenderType},
     instrument::{Oscillator, StereoWaveform},
+    renderable::{nf_to_vec_renderable, RenderOp},
     settings::default_settings,
 };
 

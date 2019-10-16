@@ -1,10 +1,11 @@
-use crate::generation::{to_csv, to_json};
-use crate::instrument::{Basis, Normalize, Oscillator, StereoWaveform};
-//use crate::render::{Render, RenderOp};
-use crate::generation::renderable::{nf_to_vec_renderable, RenderOp, Renderable};
-use crate::settings::default_settings;
-use crate::ui::{banner, printed};
-use crate::write::write_composition_to_wav;
+use crate::{
+    generation::{to_csv, to_json},
+    instrument::{Basis, Normalize, Oscillator, StereoWaveform},
+    renderable::{nf_to_vec_renderable, RenderOp, Renderable},
+    settings::default_settings,
+    ui::{banner, printed},
+    write::write_composition_to_wav,
+};
 use error::Error;
 use num_rational::Rational64;
 use pbr::ProgressBar;

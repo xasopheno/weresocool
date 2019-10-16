@@ -1,12 +1,12 @@
-use crate::analyze::{Analyze, DetectionResult};
-use crate::generation::{
-    parsed_to_render::{render_mic, sum_all_waveforms},
+use crate::{
+    analyze::{Analyze, DetectionResult},
+    generation::parsed_to_render::{render_mic, sum_all_waveforms},
+    instrument::{Oscillator, StereoWaveform},
     renderable::RenderOp,
+    ring_buffer::RingBuffer,
+    settings::{default_settings, Settings},
+    write::write_output_buffer,
 };
-use crate::instrument::{Oscillator, StereoWaveform};
-use crate::ring_buffer::RingBuffer;
-use crate::settings::{default_settings, Settings};
-use crate::write::write_output_buffer;
 use error::Error;
 use portaudio as pa;
 use std::iter::Cycle;

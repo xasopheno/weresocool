@@ -1,7 +1,5 @@
 pub mod json;
 pub mod parsed_to_render;
-pub mod renderable;
-mod renderable_tests;
 mod test;
 
 pub use self::{

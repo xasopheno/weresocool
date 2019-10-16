@@ -1,5 +1,4 @@
 pub mod tests {
-    use crate::generation::renderable::RenderOp;
     use crate::instrument::{
         asr::ASR,
         loudness::loudness_normalization,
@@ -7,6 +6,7 @@ pub mod tests {
         stereo_waveform::StereoWaveform,
         voice::{Voice, VoiceState, VoiceUpdate},
     };
+    use crate::renderable::RenderOp;
     use crate::settings::get_test_settings;
     use socool_ast::ast::OscType;
     pub mod voice {
