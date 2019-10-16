@@ -53,7 +53,6 @@ impl RenderVoice {
         };
 
         let current_op = &self.ops[self.op_index];
-        dbg!(self.sample_index, current_op.samples);
 
         if (current_op.samples - self.sample_index) > samples_left_in_batch {
             result.push(RenderOp {
@@ -70,6 +69,9 @@ impl RenderVoice {
                 ..*current_op
             });
             self.op_index += 1;
+            if self.op_index > self.ops.len() - 1 {
+                self.op_index = 0;
+            }
             self.sample_index = 0;
 
             return self.get_batch(samples_left_in_batch - n_samples, Some(result));
@@ -105,16 +107,29 @@ fn test_get_batch() {
     let renderables = nf_to_vec_renderable(&nf, &table, &basis);
     let voices = renderables_to_render_voices(renderables);
     let mut voice = voices[0].clone();
+    //Two ops each with 44_100 samples
+    //Use everything but the last 100 samples of the first op
     let batch = voice.get_batch(44_000, None);
+    assert_eq!(batch.len(), 1);
+    //Use the rest of the first op and start the second op;
     let batch = voice.get_batch(200, None);
+    assert_eq!(batch.len(), 2);
+
     assert_eq!(batch[0].samples, 100);
     assert_eq!(batch[0].index, 44_000);
     assert_eq!(batch[0].f, 220.0);
+
     assert_eq!(batch[1].samples, 100);
     assert_eq!(batch[1].index, 0);
     assert_eq!(batch[1].f, 247.5);
 
-    dbg!(batch);
+    let batch = voice.get_batch(44_000, None);
+    let batch = voice.get_batch(200, None);
+
+    //Expect the voice to wrap around when it runs out of ops
+    assert_eq!(batch[0].samples, 200);
+    assert_eq!(batch[0].index, 0);
+    assert_eq!(batch[0].f, 220.0);
 }
 
 #[allow(unused_variables)]
