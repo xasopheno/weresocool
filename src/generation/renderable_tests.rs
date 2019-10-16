@@ -1,14 +1,12 @@
 #[cfg(test)]
 mod tests {
-    use crate::generation::{filename_to_render, RenderReturn, RenderType};
-    use crate::generation::{
-        parsed_to_render::r_to_f64,
-        renderable::{calculate_fgpl, m_a_and_basis_to_f64, nf_to_vec_renderable, RenderOp},
+    use crate::generation::renderable::{
+        calculate_fgpl, m_a_and_basis_to_f64, nf_to_vec_renderable, RenderOp,
     };
-    use crate::instrument::oscillator::{point_op_to_gains, Basis};
-    use crate::instrument::{Oscillator, StereoWaveform};
+    use crate::generation::{filename_to_render, RenderReturn, RenderType};
+    use crate::instrument::oscillator::Basis;
     use num_rational::Rational64;
-    use socool_ast::{NormalForm, Normalize, OpOrNfTable, OscType, OscType::Sine, PointOp};
+    use socool_ast::{OscType, PointOp};
 
     #[test]
     fn test_calculate_fgpl() {
@@ -39,7 +37,6 @@ mod tests {
 
     #[test]
     fn test_nf_to_vec_renderable() {
-        let mut nf = NormalForm::init();
         let (nf, basis, table) = match filename_to_render(
             &"songs/test/render_op.socool".to_string(),
             RenderType::NfBasisAndTable,
@@ -68,7 +65,7 @@ mod tests {
                 voice: 0,
                 event: 0,
                 portamento: 1.0,
-                osc_type: Sine,
+                osc_type: OscType::Sine,
                 next_l_silent: false,
                 next_r_silent: false,
             }],
@@ -86,7 +83,7 @@ mod tests {
                 voice: 1,
                 event: 0,
                 portamento: 1.0,
-                osc_type: Sine,
+                osc_type: OscType::Sine,
                 next_l_silent: false,
                 next_r_silent: false,
             }],

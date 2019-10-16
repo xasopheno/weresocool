@@ -9,7 +9,7 @@ use error::Error;
 use num_rational::Rational64;
 use pbr::ProgressBar;
 use rayon::prelude::*;
-use socool_ast::{NormalForm, Normalize as NormalizeOp, OpOrNf, OpOrNfTable, PointOp};
+use socool_ast::{NormalForm, Normalize as NormalizeOp, OpOrNf, OpOrNfTable};
 use socool_parser::parse_file;
 use std::sync::{Arc, Mutex};
 

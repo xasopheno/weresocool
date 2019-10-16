@@ -3,13 +3,12 @@ pub mod tests {
     use crate::instrument::{
         asr::ASR,
         loudness::loudness_normalization,
-        oscillator::{Basis, Oscillator},
+        oscillator::Oscillator,
         stereo_waveform::StereoWaveform,
         voice::{Voice, VoiceState, VoiceUpdate},
     };
     use crate::settings::get_test_settings;
-    use num_rational::Rational64;
-    use socool_ast::{ast::OscType, operations::PointOp};
+    use socool_ast::ast::OscType;
     pub mod voice {
         use super::*;
         #[test]
@@ -183,15 +182,6 @@ pub mod tests {
         #[test]
         fn oscillator_generate_sine_test() {
             let mut osc = Oscillator::init(&get_test_settings());
-
-            let origin = Basis {
-                f: Rational64::new(300, 1),
-                g: Rational64::new(1, 1),
-                l: Rational64::new(1, 1),
-                p: Rational64::new(0, 1),
-                a: Rational64::new(1, 1),
-                d: Rational64::new(1, 1),
-            };
 
             let render_op = RenderOp::init_fglp(100.0, (0.75, 0.25), 1.0, 0.0);
 

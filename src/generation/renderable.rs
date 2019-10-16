@@ -1,9 +1,8 @@
 use crate::generation::parsed_to_render::r_to_f64;
-use crate::generation::{filename_to_render, RenderReturn, RenderType};
 use crate::instrument::oscillator::{point_op_to_gains, Basis};
 use crate::instrument::{Oscillator, StereoWaveform};
 use num_rational::Rational64;
-use socool_ast::{NormalForm, Normalize, OpOrNfTable, OscType, OscType::Sine, PointOp};
+use socool_ast::{NormalForm, Normalize, OpOrNfTable, OscType, PointOp};
 
 #[derive(Debug, Clone, PartialEq)]
 pub struct RenderOp {
@@ -113,7 +112,7 @@ fn pointop_to_renderop(
 ) -> RenderOp {
     let mut next_l_gain = 0.0;
     let mut next_r_gain = 0.0;
-    let mut next_silent;
+    let next_silent;
 
     match next {
         Some(op) => {

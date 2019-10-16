@@ -1,9 +1,9 @@
 use crate::analyze::{Analyze, DetectionResult};
 use crate::generation::{
     parsed_to_render::{render_mic, sum_all_waveforms},
-    renderable::{nf_to_vec_renderable, RenderOp, Renderable},
+    renderable::RenderOp,
 };
-use crate::instrument::{Basis, Oscillator, StereoWaveform};
+use crate::instrument::{Oscillator, StereoWaveform};
 use crate::ring_buffer::RingBuffer;
 use crate::settings::{default_settings, Settings};
 use crate::write::write_output_buffer;

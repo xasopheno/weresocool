@@ -1,14 +1,11 @@
 #[cfg(test)]
 pub mod tests {
     use crate::{
-        generation::{
-            composition_to_vec_timed_op, sum_vec, vec_timed_op_to_vec_op4d, EventType, Op4D,
-            TimedOp,
-        },
+        generation::{sum_vec, vec_timed_op_to_vec_op4d, EventType, Op4D, TimedOp},
         instrument::Basis,
     };
     use num_rational::Rational64;
-    use socool_ast::{NormalForm, Normalize, Op::*, OpOrNf::*, OpOrNfTable, OscType};
+    use socool_ast::OscType;
 
     #[test]
     fn render_equal() {

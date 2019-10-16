@@ -1,5 +1,5 @@
-use crate::generation::parsed_to_render::{generate_waveforms, r_to_f64, sum_all_waveforms};
-use crate::generation::renderable::{nf_to_vec_renderable, RenderOp, Renderable};
+use crate::generation::parsed_to_render::{generate_waveforms, sum_all_waveforms};
+use crate::generation::renderable::nf_to_vec_renderable;
 use crate::instrument::{Basis, Normalize};
 use difference::{Changeset, Difference};
 use indexmap::IndexMap;
