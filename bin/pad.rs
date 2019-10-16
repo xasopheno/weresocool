@@ -3,7 +3,7 @@ use failure::Fail;
 use weresocool::{
     generation::{filename_to_render, RenderReturn, RenderType},
     instrument::{Oscillator, StereoWaveform},
-    renderable::{nf_to_vec_renderable, RenderOp},
+    renderable::{nf_to_vec_renderable, RenderOp, Renderable},
     settings::default_settings,
 };
 
@@ -62,10 +62,12 @@ impl RenderVoice {
                 index: self.sample_index,
                 ..*current_op
             });
+
             self.op_index += 1;
             if self.op_index > self.ops.len() - 1 {
                 self.op_index = 0;
             }
+
             self.sample_index = 0;
 
             return self.get_batch(samples_left_in_batch - n_samples, Some(result));
@@ -74,9 +76,9 @@ impl RenderVoice {
         result
     }
 
-    pub fn render_batch(&mut self, _n_samples: usize) -> StereoWaveform {
-        //let batch = self.get_batch(n_samples, None);
-        unimplemented!()
+    pub fn render_batch(&mut self, n_samples: usize) -> StereoWaveform {
+        let mut batch = self.get_batch(n_samples, None);
+        batch.render(&mut self.oscillator)
     }
 }
 
