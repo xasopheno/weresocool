@@ -72,8 +72,6 @@ impl Voice {
     ) {
         let p_delta = self.calculate_portamento_delta(portamento_length);
 
-        let buffer_len = buffer.len();
-
         for (index, sample) in buffer.iter_mut().enumerate() {
             let info = SampleInfo {
                 index,

@@ -74,7 +74,9 @@ pub trait Renderable<T> {
 
 impl Renderable<RenderOp> for RenderOp {
     fn render(&mut self, oscillator: &mut Oscillator) -> StereoWaveform {
-        oscillator.update(self);
+        if self.index == 0 {
+            oscillator.update(self);
+        }
         oscillator.generate(
             self.samples as f64,
             self.portamento as f64,
@@ -109,10 +111,9 @@ fn pointop_to_renderop(
     basis: &Basis,
     next: Option<PointOp>,
 ) -> RenderOp {
-    let (l_gain, r_gain) = point_op_to_gains(&point_op, &basis);
     let mut next_l_gain = 0.0;
     let mut next_r_gain = 0.0;
-    let mut next_silent = false;
+    let mut next_silent;
 
     match next {
         Some(op) => {
@@ -171,7 +172,6 @@ pub fn calculate_fgpl(basis: &Basis, point_op: &PointOp) -> (f64, (f64, f64), f6
     (f, g, p, l)
 }
 
-#[allow(dead_code)]
 pub fn nf_to_vec_renderable(
     composition: &NormalForm,
     table: &OpOrNfTable,
@@ -179,7 +179,7 @@ pub fn nf_to_vec_renderable(
 ) -> Vec<Vec<RenderOp>> {
     let mut normal_form = NormalForm::init();
     composition.apply_to_normal_form(&mut normal_form, table);
-    let n_voices = normal_form.operations.len();
+
     let result: Vec<Vec<RenderOp>> = normal_form
         .operations
         .iter()
@@ -208,8 +208,5 @@ pub fn nf_to_vec_renderable(
         })
         .collect();
 
-    //result.sort_unstable_by_key(|a| a.t);
-
-    //dbg!(&result);
     result
 }
