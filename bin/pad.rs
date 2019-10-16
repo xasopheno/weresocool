@@ -1,13 +1,14 @@
 use error::Error;
 use failure::Fail;
 //use num_rational::Rational64;
-use socool_ast::{NormalForm, PointOp};
+//use socool_ast::NormalForm;
 use weresocool::{
     generation::{
         filename_to_render,
-        parsed_to_render::r_to_f64,
+        //parsed_to_render::r_to_f64,
         renderable::{nf_to_vec_renderable, RenderOp},
-        RenderReturn, RenderType,
+        RenderReturn,
+        RenderType,
     },
     instrument::{Oscillator, StereoWaveform},
     settings::default_settings,
@@ -80,8 +81,8 @@ impl RenderVoice {
         result
     }
 
-    pub fn render_batch(&mut self, n_samples: usize) -> StereoWaveform {
-        let batch = self.get_batch(n_samples, None);
+    pub fn render_batch(&mut self, _n_samples: usize) -> StereoWaveform {
+        //let batch = self.get_batch(n_samples, None);
         unimplemented!()
     }
 }
@@ -95,7 +96,6 @@ pub fn renderables_to_render_voices(renderables: Vec<Vec<RenderOp>>) -> Vec<Rend
 
 #[test]
 fn test_get_batch() {
-    let mut nf = NormalForm::init();
     let filename = "songs/test/render_op_get_batch.socool".to_string();
     let (nf, basis, table) =
         match filename_to_render(&filename, RenderType::NfBasisAndTable).unwrap() {
@@ -123,7 +123,7 @@ fn test_get_batch() {
     assert_eq!(batch[1].index, 0);
     assert_eq!(batch[1].f, 247.5);
 
-    let batch = voice.get_batch(44_000, None);
+    let _batch = voice.get_batch(44_000, None);
     let batch = voice.get_batch(200, None);
 
     //Expect the voice to wrap around when it runs out of ops
