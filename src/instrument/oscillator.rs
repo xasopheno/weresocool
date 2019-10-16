@@ -101,6 +101,8 @@ impl Oscillator {
         &mut self,
         n_samples_to_generate: f64,
         portamento_length: f64,
+        index: usize,
+        total_samples: usize,
     ) -> StereoWaveform {
         let total_len = self.sample_phase + n_samples_to_generate;
         let length = total_len.floor() as usize;

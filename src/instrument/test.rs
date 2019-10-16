@@ -201,7 +201,7 @@ pub mod tests {
                 l_buffer: vec![0.0, 0.0035617759267757834, 0.014245657695422482],
                 r_buffer: vec![0.0, 0.0011872586422585945, 0.004748552565140827],
             };
-            assert_eq!(osc.generate(3.0, 1.0), expected);
+            assert_eq!(osc.generate(3.0, 1.0, 0, 3), expected);
         }
     }
 

@@ -75,7 +75,12 @@ pub trait Renderable<T> {
 impl Renderable<RenderOp> for RenderOp {
     fn render(&mut self, oscillator: &mut Oscillator) -> StereoWaveform {
         oscillator.update(self);
-        oscillator.generate(self.samples as f64, self.portamento as f64)
+        oscillator.generate(
+            self.samples as f64,
+            self.portamento as f64,
+            self.index,
+            self.samples,
+        )
     }
 }
 
