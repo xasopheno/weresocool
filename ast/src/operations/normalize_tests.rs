@@ -1164,5 +1164,4 @@ pub mod normalize_tests {
 
         assert_eq!(input, expected);
     }
-
 }

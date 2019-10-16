@@ -64,6 +64,7 @@ mod tests {
                 decay: 44_100.0,
                 decay_length: 2,
                 samples: 44100,
+                index: 0,
                 voice: 0,
                 event: 0,
                 portamento: 1.0,
@@ -81,6 +82,7 @@ mod tests {
                 decay: 44_100.0,
                 decay_length: 2,
                 samples: 44100,
+                index: 0,
                 voice: 1,
                 event: 0,
                 portamento: 1.0,
@@ -92,4 +94,3 @@ mod tests {
         assert_eq!(result, expected);
     }
 }
-

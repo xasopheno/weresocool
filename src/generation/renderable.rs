@@ -16,6 +16,7 @@ pub struct RenderOp {
     pub decay: f64,
     pub decay_length: usize,
     pub samples: usize,
+    pub index: usize,
     pub voice: usize,
     pub event: usize,
     pub portamento: f64,
@@ -36,6 +37,7 @@ impl RenderOp {
             decay: 44_100.0,
             decay_length: 2,
             samples: 44100,
+            index: 0,
             voice: 0,
             event: 0,
             portamento: 1.0,
@@ -55,6 +57,7 @@ impl RenderOp {
             decay: 44_100.0,
             decay_length: 2,
             samples: 44100,
+            index: 0,
             voice: 0,
             event: 0,
             portamento: 1.0,
@@ -113,6 +116,7 @@ fn pointop_to_renderop(
             next_r_gain = r;
             next_silent = op.is_silent();
         }
+
         None => next_silent = true,
     }
 
@@ -128,6 +132,7 @@ fn pointop_to_renderop(
         l,
         t: r_to_f64(*time),
         samples: (l * 44_100.0).round() as usize,
+        index: 0,
         attack: r_to_f64(point_op.attack * basis.a) * 44_100.0,
         decay: r_to_f64(point_op.decay * basis.d) * 44_100.0,
         osc_type: point_op.osc_type,
@@ -203,4 +208,3 @@ pub fn nf_to_vec_renderable(
     //dbg!(&result);
     result
 }
-
