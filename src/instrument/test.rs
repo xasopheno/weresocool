@@ -75,7 +75,7 @@ pub mod tests {
                 decay_type: 2,
             };
             voice.update(vu);
-            voice.generate_waveform(&mut buffer, 3, 2048.0 / 44_100.0);
+            voice.generate_waveform(&mut buffer, 3, 2048.0 / 44_100.0, 0, 3);
             assert_eq!(buffer, [0.0, -0.33255392170798287, 0.09091323479014923]);
         }
 

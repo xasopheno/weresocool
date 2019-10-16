@@ -67,6 +67,8 @@ impl Voice {
         buffer: &mut Vec<f64>,
         portamento_length: usize,
         factor: f64,
+        starting_index: usize,
+        total_samples: usize,
     ) {
         let p_delta = self.calculate_portamento_delta(portamento_length);
 
@@ -76,7 +78,7 @@ impl Voice {
             let info = SampleInfo {
                 index,
                 p_delta,
-                gain: self.calculate_asr_gain(buffer_len, index),
+                gain: self.calculate_asr_gain(total_samples, starting_index + index),
                 portamento_length,
                 factor,
             };
