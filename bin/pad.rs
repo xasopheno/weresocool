@@ -1,14 +1,10 @@
 use error::Error;
 use failure::Fail;
-//use num_rational::Rational64;
-//use socool_ast::NormalForm;
 use weresocool::{
     generation::{
         filename_to_render,
-        //parsed_to_render::r_to_f64,
         renderable::{nf_to_vec_renderable, RenderOp},
-        RenderReturn,
-        RenderType,
+        RenderReturn, RenderType,
     },
     instrument::{Oscillator, StereoWaveform},
     settings::default_settings,

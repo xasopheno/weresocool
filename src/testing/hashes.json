@@ -12,7 +12,7 @@
   "./songs/test/asr_test.socool": {
     "op": 13167725843577488218,
     "normal_form": 6236619567200219618,
-    "stereo_waveform": 0.33729013209
+    "stereo_waveform": 0.56500156157
   },
   "./songs/test/asr_test_2.socool": {
     "op": 315470317312751488,
@@ -32,7 +32,7 @@
   "./songs/test/drew_test.socool": {
     "op": 15028047124372454203,
     "normal_form": 7560062489724597901,
-    "stereo_waveform": 2.81436203831
+    "stereo_waveform": 2.85881056745
   },
   "./songs/test/fit_length_ratio.socool": {
     "op": 5914789700254043584,
@@ -42,12 +42,12 @@
   "./songs/test/fun1.socool": {
     "op": 14991097842356034358,
     "normal_form": 17578326093752812669,
-    "stereo_waveform": 37.271037662
+    "stereo_waveform": -231.10793829
   },
   "./songs/test/fun2.socool": {
     "op": 2937525666828582379,
     "normal_form": 704009208245969597,
-    "stereo_waveform": 8.92904854856
+    "stereo_waveform": 8.57989852754
   },
   "./songs/test/fun_and_focus.socool": {
     "op": 14094026531620717708,
@@ -77,22 +77,37 @@
   "./songs/test/lee_test.socool": {
     "op": 15628150807005094598,
     "normal_form": 17952907585914765966,
-    "stereo_waveform": 0.07393607964
+    "stereo_waveform": 0.07397957502
   },
   "./songs/test/length_test.socool": {
     "op": 1409440661964008162,
     "normal_form": 14637940936870133711,
-    "stereo_waveform": -0.3760596225
+    "stereo_waveform": -0.4137512051
+  },
+  "./songs/test/live.socool": {
+    "op": 17903468990350570353,
+    "normal_form": 16959982543199190346,
+    "stereo_waveform": -0.0060278522
   },
   "./songs/test/mod_by_test.socool": {
     "op": 924027443975004724,
     "normal_form": 9117557441121727866,
-    "stereo_waveform": 7.15167940537
+    "stereo_waveform": 7.14988688369
   },
   "./songs/test/pan_test.socool": {
     "op": 11776980173880166096,
     "normal_form": 5458283555757519233,
     "stereo_waveform": 1.7e-10
+  },
+  "./songs/test/render_op.socool": {
+    "op": 6542908328750433214,
+    "normal_form": 2420794085155112425,
+    "stereo_waveform": -1e-10
+  },
+  "./songs/test/render_op_get_batch.socool": {
+    "op": 6331161228439538920,
+    "normal_form": 13283646393531822302,
+    "stereo_waveform": -0.0089768533
   },
   "./songs/test/std_test.socool": {
     "op": 18078236834182475662,
@@ -112,6 +127,6 @@
   "./songs/test/tm_test.socool": {
     "op": 6888868047151523890,
     "normal_form": 15093353787103556080,
-    "stereo_waveform": -0.6011704759
+    "stereo_waveform": -0.4205564551
   }
 }
