@@ -67,7 +67,7 @@ pub fn setup_iterators(
 }
 
 fn sing_along_callback(
-    args: pa::DuplexStreamCallbackArgs<f32, f32>,
+    args: pa::DuplexStreamCallbackArgs<'_, f32, f32>,
     input_buffer: &mut RingBuffer<f32>,
     nf_voice_cycles: &mut Vec<NfVoiceState>,
     basis_f: f64,

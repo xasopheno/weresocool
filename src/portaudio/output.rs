@@ -21,7 +21,7 @@ pub fn output_setup(
 }
 
 fn output_callback(
-    args: pa::OutputStreamCallbackArgs<f32>,
+    args: pa::OutputStreamCallbackArgs<'_, f32>,
     buffer_size: usize,
     composition: &mut StereoWaveform,
     index: usize,
