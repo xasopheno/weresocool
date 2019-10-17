@@ -5,6 +5,7 @@ use num_rational::Rational64;
 use socool_ast::{NormalForm, Normalize, OpOrNfTable, OscType, PointOp};
 pub mod render_voice;
 mod test;
+pub use render_voice::{renderables_to_render_voices, RenderVoice};
 
 #[derive(Debug, Clone, PartialEq)]
 pub struct RenderOp {
