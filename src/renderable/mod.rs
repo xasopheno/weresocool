@@ -42,7 +42,7 @@ impl RenderOp {
             index: 0,
             voice: 0,
             event: 0,
-            portamento: 1.0,
+            portamento: 44_100.0,
             osc_type: OscType::Sine,
             next_l_silent: false,
             next_r_silent: false,
@@ -62,7 +62,7 @@ impl RenderOp {
             index: 0,
             voice: 0,
             event: 0,
-            portamento: 1.0,
+            portamento: 44_100.0,
             osc_type: OscType::Sine,
             next_l_silent: true,
             next_r_silent: true,
@@ -77,8 +77,10 @@ pub trait Renderable<T> {
 impl Renderable<RenderOp> for RenderOp {
     fn render(&mut self, oscillator: &mut Oscillator) -> StereoWaveform {
         if self.index == 0 {
+            dbg!(self.clone());
             oscillator.update(self);
         }
+
         oscillator.generate(
             self.samples as f64,
             self.portamento as f64,
@@ -92,7 +94,7 @@ impl Renderable<Vec<RenderOp>> for Vec<RenderOp> {
     fn render(&mut self, oscillator: &mut Oscillator) -> StereoWaveform {
         let mut result: StereoWaveform = StereoWaveform::new(0);
         let mut ops = self.clone();
-        ops.push(RenderOp::init_silent_with_length(1.0));
+        //ops.push(RenderOp::init_silent_with_length(1.0));
 
         let mut iter = ops.iter();
 
@@ -145,7 +147,7 @@ fn pointop_to_renderop(
         decay: r_to_f64(point_op.decay * basis.d) * 44_100.0,
         osc_type: point_op.osc_type,
         decay_length: point_op.decay_length,
-        portamento: r_to_f64(point_op.portamento),
+        portamento: r_to_f64(point_op.portamento) * 44_100.0,
         voice,
         event,
         next_l_silent,

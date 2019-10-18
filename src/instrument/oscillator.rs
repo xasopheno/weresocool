@@ -95,7 +95,7 @@ impl Oscillator {
             osc_type: op.osc_type,
             silence_next: op.next_r_silent,
             attack: op.attack,
-            decay: op.attack,
+            decay: op.decay,
             decay_type: op.decay_length,
         });
     }
@@ -117,6 +117,7 @@ impl Oscillator {
         let (ref mut l_voice, ref mut r_voice) = self.voices;
 
         let port = (self.portamento_length as f64 * portamento_length).trunc() as usize;
+        dbg!(port);
 
         l_voice.generate_waveform(&mut l_buffer, port, factor, starting_index, total_samples);
         r_voice.generate_waveform(&mut r_buffer, port, factor, starting_index, total_samples);

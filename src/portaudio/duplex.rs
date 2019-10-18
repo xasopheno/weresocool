@@ -27,19 +27,19 @@ fn process_detection_result(result: &mut DetectionResult) -> (f64, f64) {
 
 fn sing_along_callback(
     args: pa::DuplexStreamCallbackArgs<'_, f32, f32>,
-    input_buffer: &mut RingBuffer<f32>,
+    //input_buffer: &mut RingBuffer<f32>,
     voices: &mut Vec<RenderVoice>,
-    basis_f: f64,
-    settings: &Settings,
+    //basis_f: f64,
+    //settings: &Settings,
 ) {
-    input_buffer.push_vec(args.in_buffer.to_vec());
+    //input_buffer.push_vec(args.in_buffer.to_vec());
 
-    let mut detection_result: DetectionResult = input_buffer
-        .to_vec()
-        .analyze(settings.sample_rate as f32, settings.probability_threshold);
+    //let mut detection_result: DetectionResult = input_buffer
+    //.to_vec()
+    //.analyze(settings.sample_rate as f32, settings.probability_threshold);
 
-    let (freq, gain) = process_detection_result(&mut detection_result);
-    let freq_ratio = freq / basis_f;
+    //let (freq, gain) = process_detection_result(&mut detection_result);
+    //let freq_ratio = freq / basis_f;
 
     let result: Vec<StereoWaveform> = voices
         .iter_mut()
@@ -57,23 +57,23 @@ pub fn duplex_setup(
     let pa = pa::PortAudio::new()?;
     let settings = default_settings();
     let duplex_stream_settings = get_duplex_settings(&pa, &settings)?;
-    let voices = renderables_to_render_voices(renderables);
+    let mut voices = renderables_to_render_voices(renderables);
 
-    let mut input_buffer: RingBuffer<f32> = RingBuffer::<f32>::new(settings.yin_buffer_size);
+    //let mut input_buffer: RingBuffer<f32> = RingBuffer::<f32>::new(settings.yin_buffer_size);
 
     let mut count = 0;
 
     let duplex_stream = pa.open_non_blocking_stream(duplex_stream_settings, move |args| {
-        if count < 20 {
-            count += 1;
-            if count == 20 {
-                println!("* * * * * ready * * * * *");
-            }
-            pa::Continue
-        } else {
-            sing_along_callback(args, &mut input_buffer, &mut voices, basis_f, &settings);
-            pa::Continue
-        }
+        //if count < 20 {
+        //count += 1;
+        //if count == 20 {
+        //println!("* * * * * ready * * * * *");
+        //}
+        //pa::Continue
+        //} else {
+        sing_along_callback(args, &mut voices);
+        pa::Continue
+        //}
     })?;
 
     Ok(duplex_stream)

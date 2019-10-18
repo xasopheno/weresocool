@@ -1,4 +1,5 @@
 use crate::{
+    generation::{filename_to_render, RenderReturn, RenderType},
     instrument::{Oscillator, StereoWaveform},
     renderable::{RenderOp, Renderable},
     settings::default_settings,
@@ -39,6 +40,10 @@ impl RenderVoice {
             None => vec![],
         };
 
+        if self.op_index > self.ops.len() - 1 {
+            return result;
+        }
+
         let current_op = &self.ops[self.op_index];
 
         if (current_op.samples - self.sample_index) > samples_left_in_batch {
@@ -57,7 +62,8 @@ impl RenderVoice {
             });
 
             self.op_index += 1;
-            if self.op_index > self.ops.len() - 1 {
+
+            if self.op_index >= self.ops.len() {
                 self.op_index = 0;
             }
 
@@ -66,6 +72,7 @@ impl RenderVoice {
             return self.get_batch(samples_left_in_batch - n_samples, Some(result));
         }
 
+        dbg!(result.len());
         result
     }
 
