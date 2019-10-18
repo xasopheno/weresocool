@@ -24,7 +24,7 @@ rayon = "1.2"
 indexmap = { version = "1", features = ["serde-1"] }
 difference = "2.0.0"
 term = "0.6.1"
-uuid = { version = "0.7.2", features = ["v4"] }
+uuid = { version = "0.8.0", features = ["v4"] }
 num-complex = "0.2.3"
 num = "0.2.0"
 csv = "1.1.1"
