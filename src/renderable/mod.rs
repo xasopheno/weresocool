@@ -19,6 +19,7 @@ pub struct RenderOp {
     pub decay_length: usize,
     pub samples: usize,
     pub index: usize,
+    pub total_samples: usize,
     pub voice: usize,
     pub event: usize,
     pub portamento: f64,
@@ -38,11 +39,12 @@ impl RenderOp {
             attack: 44_100.0,
             decay: 44_100.0,
             decay_length: 2,
-            samples: 44100,
+            samples: 44_100,
+            total_samples: 44_100,
             index: 0,
             voice: 0,
             event: 0,
-            portamento: 44_100.0,
+            portamento: 1.0,
             osc_type: OscType::Sine,
             next_l_silent: false,
             next_r_silent: false,
@@ -58,11 +60,12 @@ impl RenderOp {
             attack: 44_100.0,
             decay: 44_100.0,
             decay_length: 2,
-            samples: 44100,
+            samples: 44_100,
+            total_samples: 44_100,
             index: 0,
             voice: 0,
             event: 0,
-            portamento: 44_100.0,
+            portamento: 1.0,
             osc_type: OscType::Sine,
             next_l_silent: true,
             next_r_silent: true,
@@ -77,15 +80,14 @@ pub trait Renderable<T> {
 impl Renderable<RenderOp> for RenderOp {
     fn render(&mut self, oscillator: &mut Oscillator) -> StereoWaveform {
         if self.index == 0 {
-            dbg!(self.clone());
-            oscillator.update(self);
+            oscillator.update(self, self.index == 0);
         }
 
         oscillator.generate(
             self.samples as f64,
             self.portamento as f64,
             self.index,
-            self.samples,
+            self.total_samples,
         )
     }
 }
@@ -142,12 +144,13 @@ fn pointop_to_renderop(
         l,
         t: r_to_f64(*time),
         samples: (l * 44_100.0).round() as usize,
+        total_samples: (l * 44_100.0).round() as usize,
         index: 0,
         attack: r_to_f64(point_op.attack * basis.a) * 44_100.0,
         decay: r_to_f64(point_op.decay * basis.d) * 44_100.0,
         osc_type: point_op.osc_type,
         decay_length: point_op.decay_length,
-        portamento: r_to_f64(point_op.portamento) * 44_100.0,
+        portamento: r_to_f64(point_op.portamento),
         voice,
         event,
         next_l_silent,

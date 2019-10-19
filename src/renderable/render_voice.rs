@@ -72,7 +72,6 @@ impl RenderVoice {
             return self.get_batch(samples_left_in_batch - n_samples, Some(result));
         }
 
-        dbg!(result.len());
         result
     }
 

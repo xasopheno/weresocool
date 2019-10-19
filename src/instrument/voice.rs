@@ -71,12 +71,16 @@ impl Voice {
         total_samples: usize,
     ) {
         let p_delta = self.calculate_portamento_delta(portamento_length);
-
         for (index, sample) in buffer.iter_mut().enumerate() {
+            //if index == 3 {
+            //panic!()
+            //}
+            let gain = self.calculate_asr_gain(total_samples, starting_index + index);
+            //dbg!(total_samples, starting_index + index);
             let info = SampleInfo {
-                index,
+                index: index + starting_index,
                 p_delta,
-                gain: self.calculate_asr_gain(total_samples, starting_index + index),
+                gain,
                 portamento_length,
                 factor,
             };
@@ -90,7 +94,7 @@ impl Voice {
         }
     }
 
-    pub fn update(&mut self, info: VoiceUpdate) {
+    pub fn update(&mut self, info: VoiceUpdate, start: bool) {
         let frequency = if info.frequency < 20.0 {
             0.0
         } else {
@@ -99,13 +103,13 @@ impl Voice {
 
         let mut gain = if frequency != 0.0 { info.gain } else { 0.0 };
         if info.osc_type != OscType::Sine {
-            gain /= 4.0
+            gain /= 3.0
         }
         let loudness = loudness_normalization(frequency);
         gain *= loudness;
 
         if self.osc_type == OscType::Sine && info.osc_type == OscType::Noise {
-            self.past.gain = self.current.gain / 4.0;
+            self.past.gain = self.current.gain / 3.0;
         } else {
             self.past.gain = self.current.gain;
         }
@@ -122,7 +126,7 @@ impl Voice {
         let silence_now = gain == 0.0 || frequency == 0.0;
 
         self.set_asr(info.silence_next, info.decay_type, silence_now);
-        //  println!("{:?}", self.asr);
+        //println!("{:?}", self.asr);
     }
 
     pub fn silent(&self) -> bool {
