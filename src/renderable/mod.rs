@@ -73,6 +73,11 @@ impl RenderOp {
     }
 }
 
+//pub struct Offset {
+//freq: f64,
+//gain: f64,
+//}
+
 pub trait Renderable<T> {
     fn render(&mut self, oscillator: &mut Oscillator) -> StereoWaveform;
 }
@@ -80,7 +85,7 @@ pub trait Renderable<T> {
 impl Renderable<RenderOp> for RenderOp {
     fn render(&mut self, oscillator: &mut Oscillator) -> StereoWaveform {
         if self.index == 0 {
-            oscillator.update(self, self.index == 0);
+            oscillator.update(self);
         }
 
         oscillator.generate(
@@ -95,10 +100,8 @@ impl Renderable<RenderOp> for RenderOp {
 impl Renderable<Vec<RenderOp>> for Vec<RenderOp> {
     fn render(&mut self, oscillator: &mut Oscillator) -> StereoWaveform {
         let mut result: StereoWaveform = StereoWaveform::new(0);
-        let mut ops = self.clone();
-        //ops.push(RenderOp::init_silent_with_length(1.0));
 
-        let mut iter = ops.iter();
+        let mut iter = self.iter();
 
         while let Some(op) = iter.next() {
             let stereo_waveform = op.clone().render(oscillator);

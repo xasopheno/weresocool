@@ -11,9 +11,6 @@ use crate::{
 };
 use error::Error;
 use portaudio as pa;
-use socool_ast::PointOp;
-use std::iter::Cycle;
-use std::vec::IntoIter;
 
 fn process_detection_result(result: &mut DetectionResult) -> (f64, f64) {
     if result.gain < 0.005 || result.frequency > 1_000.0 {
@@ -27,10 +24,10 @@ fn process_detection_result(result: &mut DetectionResult) -> (f64, f64) {
 
 fn sing_along_callback(
     args: pa::DuplexStreamCallbackArgs<'_, f32, f32>,
-    //input_buffer: &mut RingBuffer<f32>,
+    _input_buffer: &mut RingBuffer<f32>,
     voices: &mut Vec<RenderVoice>,
     //basis_f: f64,
-    //settings: &Settings,
+    _settings: &Settings,
 ) {
     //input_buffer.push_vec(args.in_buffer.to_vec());
 
@@ -52,26 +49,17 @@ fn sing_along_callback(
 
 pub fn duplex_setup(
     renderables: Vec<Vec<RenderOp>>,
-    basis_f: f64,
+    _basis_f: f64,
 ) -> Result<pa::Stream<pa::NonBlocking, pa::Duplex<f32, f32>>, Error> {
     let pa = pa::PortAudio::new()?;
     let settings = default_settings();
     let duplex_stream_settings = get_duplex_settings(&pa, &settings)?;
     let mut voices = renderables_to_render_voices(renderables);
 
-    //let mut input_buffer: RingBuffer<f32> = RingBuffer::<f32>::new(settings.yin_buffer_size);
-
-    let mut count = 0;
+    let mut input_buffer: RingBuffer<f32> = RingBuffer::<f32>::new(settings.yin_buffer_size);
 
     let duplex_stream = pa.open_non_blocking_stream(duplex_stream_settings, move |args| {
-        //if count < 20 {
-        //count += 1;
-        //if count == 20 {
-        //println!("* * * * * ready * * * * *");
-        //}
-        //pa::Continue
-        //} else {
-        sing_along_callback(args, &mut voices);
+        sing_along_callback(args, &mut input_buffer, &mut voices, &settings);
         pa::Continue
         //}
     })?;

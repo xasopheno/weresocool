@@ -94,7 +94,7 @@ impl Voice {
         }
     }
 
-    pub fn update(&mut self, info: VoiceUpdate, start: bool) {
+    pub fn update(&mut self, info: VoiceUpdate) {
         let frequency = if info.frequency < 20.0 {
             0.0
         } else {

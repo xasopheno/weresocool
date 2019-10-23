@@ -1,5 +1,5 @@
 use crate::{
-    generation::{filename_to_render, RenderReturn, RenderType},
+    generation::{RenderReturn, RenderType},
     instrument::{Oscillator, StereoWaveform},
     renderable::{RenderOp, Renderable},
     settings::default_settings,
@@ -26,9 +26,9 @@ impl RenderVoice {
     /// Recursive function to prepare a batch of RenderOps for rendering
     /// Initially pass in None as result
     /// ```
-    /// let voice =
-    /// RenderVoice::init(&vec![RenderOp::init_silent_with_length(1)]);
-    /// batch = voice.get_batch(n_samples, None)
+    /// # use weresocool::renderable::{RenderOp, RenderVoice};
+    /// let mut voice = RenderVoice::init(&vec![RenderOp::init_silent_with_length(1.0)]);
+    /// let batch = voice.get_batch(1024, None);
     /// ```
     pub fn get_batch(
         &mut self,
@@ -40,13 +40,15 @@ impl RenderVoice {
             None => vec![],
         };
 
+        if false {
+            if self.op_index >= self.ops.len() {
+                self.op_index = 0;
+            }
+        }
+
         if self.op_index > self.ops.len() - 1 {
             return vec![RenderOp::init_silent_with_length(1.0)];
         }
-
-        //if self.op_index >= self.ops.len() {
-        //self.op_index = 0;
-        //}
 
         let current_op = &self.ops[self.op_index];
 
