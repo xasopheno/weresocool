@@ -41,8 +41,12 @@ impl RenderVoice {
         };
 
         if self.op_index > self.ops.len() - 1 {
-            return result;
+            return vec![RenderOp::init_silent_with_length(1.0)];
         }
+
+        //if self.op_index >= self.ops.len() {
+        //self.op_index = 0;
+        //}
 
         let current_op = &self.ops[self.op_index];
 
@@ -62,10 +66,6 @@ impl RenderVoice {
             });
 
             self.op_index += 1;
-
-            if self.op_index >= self.ops.len() {
-                self.op_index = 0;
-            }
 
             self.sample_index = 0;
 
