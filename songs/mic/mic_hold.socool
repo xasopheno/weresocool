@@ -2,7 +2,15 @@
  
 main = {
 	Seq [
-        AsIs | Length 1,
+        Overlay [
+            Tm 1 | Length 1,
+            --Seq [
+                --Tm 3/2 | Length 1/2,
+                --Tm 5/3 | Length 1/2,
+            --],
+
+
+        ],
         Tm 0 | Length 1
 	]
 }
