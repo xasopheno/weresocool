@@ -1,5 +1,4 @@
 use crate::{
-    generation::{RenderReturn, RenderType},
     instrument::{Oscillator, StereoWaveform},
     renderable::{RenderOp, Renderable},
     settings::default_settings,
@@ -79,6 +78,9 @@ impl RenderVoice {
 
     pub fn render_batch(&mut self, n_samples: usize) -> StereoWaveform {
         let mut batch = self.get_batch(n_samples, None);
+        if batch.len() > 2 {
+            dbg!(batch.len());
+        }
         batch.render(&mut self.oscillator)
     }
 }

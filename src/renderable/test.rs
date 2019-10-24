@@ -1,11 +1,12 @@
 #[cfg(test)]
 mod tests {
     use crate::{
+        generation::parsed_to_render::sum_all_waveforms,
         generation::{filename_to_render, RenderReturn, RenderType},
-        instrument::oscillator::Basis,
+        instrument::{oscillator::Basis, StereoWaveform},
         renderable::{
             calculate_fgpl, m_a_and_basis_to_f64, nf_to_vec_renderable,
-            render_voice::renderables_to_render_voices, render_voice::RenderVoice, RenderOp,
+            render_voice::renderables_to_render_voices, RenderOp, RenderVoice,
         },
     };
     use num_rational::Rational64;
@@ -132,5 +133,49 @@ mod tests {
         //assert_eq!(batch[0].samples, 200);
         //assert_eq!(batch[0].index, 0);
         //assert_eq!(batch[0].f, 220.0);
+    }
+
+    #[test]
+    fn test_small_and_large_render_batch_same_result() {
+        let filename = "songs/wip/tokyo.socool".to_string();
+        let (nf, basis, table) =
+            match filename_to_render(&filename, RenderType::NfBasisAndTable).unwrap() {
+                RenderReturn::NfBasisAndTable(nf, basis, table) => (nf, basis, table),
+                _ => {
+                    panic!();
+                }
+            };
+        let renderables = nf_to_vec_renderable(&nf, &table, &basis);
+        let voices = renderables_to_render_voices(renderables);
+
+        let mut short_r = vec![];
+        let mut short_l = vec![];
+
+        for i in 0..2 {
+            let r: Vec<StereoWaveform> = voices
+                .clone()
+                .iter_mut()
+                .map(|voice| voice.render_batch(2))
+                .collect();
+
+            let r = sum_all_waveforms(r);
+            short_r.push(r.r_buffer);
+            short_l.push(r.l_buffer);
+        }
+
+        let r_buffer: Vec<f64> = short_r.iter().flatten().cloned().collect();
+        let l_buffer: Vec<f64> = short_l.iter().flatten().cloned().collect();
+        let short = StereoWaveform {
+            r_buffer: r_buffer,
+            l_buffer: l_buffer,
+        };
+
+        let long: Vec<StereoWaveform> = voices
+            .clone()
+            .iter_mut()
+            .map(|voice| voice.render_batch(4))
+            .collect();
+        let long = sum_all_waveforms(long);
+        assert_eq!(short, long)
     }
 }

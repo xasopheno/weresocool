@@ -6,7 +6,6 @@ pub mod examples;
 pub mod generation;
 pub mod instrument;
 pub mod portaudio;
-pub mod render;
 pub mod renderable;
 pub mod ring_buffer;
 pub mod settings;

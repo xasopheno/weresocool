@@ -11,6 +11,7 @@ use crate::{
 };
 use error::Error;
 use portaudio as pa;
+use rayon::prelude::*;
 
 fn process_detection_result(result: &mut DetectionResult) -> (f64, f64) {
     if result.gain < 0.005 || result.frequency > 1_000.0 {
@@ -39,10 +40,9 @@ fn sing_along_callback(
     //let freq_ratio = freq / basis_f;
 
     let result: Vec<StereoWaveform> = voices
-        .iter_mut()
+        .par_iter_mut()
         .map(|voice| voice.render_batch(1024))
         .collect();
-
     let stereo_waveform = sum_all_waveforms(result);
     write_output_buffer(args.out_buffer, stereo_waveform);
 }
