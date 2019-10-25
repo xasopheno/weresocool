@@ -146,16 +146,16 @@ mod tests {
                 }
             };
         let renderables = nf_to_vec_renderable(&nf, &table, &basis);
-        let voices = renderables_to_render_voices(renderables);
+        let mut voices1 = renderables_to_render_voices(renderables);
+        let mut voices2 = voices1.clone();
 
         let mut short_r = vec![];
         let mut short_l = vec![];
 
-        for i in 0..2 {
-            let r: Vec<StereoWaveform> = voices
-                .clone()
+        for _ in 0..20 {
+            let r: Vec<StereoWaveform> = voices1
                 .iter_mut()
-                .map(|voice| voice.render_batch(2))
+                .map(|voice| voice.render_batch(1024))
                 .collect();
 
             let r = sum_all_waveforms(r);
@@ -170,10 +170,10 @@ mod tests {
             l_buffer: l_buffer,
         };
 
-        let long: Vec<StereoWaveform> = voices
+        let long: Vec<StereoWaveform> = voices2
             .clone()
             .iter_mut()
-            .map(|voice| voice.render_batch(4))
+            .map(|voice| voice.render_batch(20480))
             .collect();
         let long = sum_all_waveforms(long);
         assert_eq!(short, long)
