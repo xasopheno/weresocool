@@ -87,11 +87,6 @@ pub fn render(basis: &Basis, composition: &NormalForm, table: &OpOrNfTable) -> S
     result
 }
 
-pub fn render_mic(op: &RenderOp, osc: &mut Oscillator) -> StereoWaveform {
-    let result = op.clone().render(osc, None);
-    result
-}
-
 pub fn to_wav(composition: StereoWaveform, filename: String) -> String {
     banner("Printing".to_string(), filename.clone());
     write_composition_to_wav(composition, &filename);

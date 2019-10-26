@@ -1,11 +1,8 @@
 use crate::{
     analyze::{Analyze, DetectionResult},
-    generation::parsed_to_render::{render_mic, sum_all_waveforms},
-    instrument::{Oscillator, StereoWaveform},
-    renderable::{
-        nf_to_vec_renderable, renderables_to_render_voices, Offset, RenderOp, RenderVoice,
-        Renderable,
-    },
+    generation::parsed_to_render::sum_all_waveforms,
+    instrument::StereoWaveform,
+    renderable::{renderables_to_render_voices, Offset, RenderOp, RenderVoice},
     ring_buffer::RingBuffer,
     settings::{default_settings, Settings},
     write::write_output_buffer,
@@ -26,23 +23,27 @@ fn process_detection_result(result: &mut DetectionResult) -> (f64, f64) {
 
 fn sing_along_callback(
     args: pa::DuplexStreamCallbackArgs<'_, f32, f32>,
-    _input_buffer: &mut RingBuffer<f32>,
+    input_buffer: &mut RingBuffer<f32>,
     voices: &mut Vec<RenderVoice>,
-    //basis_f: f64,
-    _settings: &Settings,
+    settings: &Settings,
 ) {
-    //input_buffer.push_vec(args.in_buffer.to_vec());
+    input_buffer.push_vec(args.in_buffer.to_vec());
 
-    //let mut detection_result: DetectionResult = input_buffer
-    //.to_vec()
-    //.analyze(settings.sample_rate as f32, settings.probability_threshold);
+    let mut detection_result: DetectionResult = input_buffer
+        .to_vec()
+        .analyze(settings.sample_rate as f32, settings.probability_threshold);
 
-    //let (freq, gain) = process_detection_result(&mut detection_result);
-    //let freq_ratio = freq / basis_f;
+    let (freq, gain) = process_detection_result(&mut detection_result);
+    let freq_ratio = freq / 100.0;
+
+    let offset = Offset {
+        freq: freq_ratio,
+        gain,
+    };
 
     let result: Vec<StereoWaveform> = voices
         .par_iter_mut()
-        .map(|voice| voice.render_batch(1024))
+        .map(|voice| voice.render_batch(1024, Some(&offset)))
         .collect();
     let stereo_waveform = sum_all_waveforms(result);
     write_output_buffer(args.out_buffer, stereo_waveform);
@@ -50,7 +51,6 @@ fn sing_along_callback(
 
 pub fn duplex_setup(
     renderables: Vec<Vec<RenderOp>>,
-    _basis_f: f64,
 ) -> Result<pa::Stream<pa::NonBlocking, pa::Duplex<f32, f32>>, Error> {
     let pa = pa::PortAudio::new()?;
     let settings = default_settings();
