@@ -4,7 +4,7 @@ main = {
 	Seq [
         Overlay [
             Tm 1 | Length 2,
-            Tm 3/2 | Length 2,
+            --Tm 3/2 | Length 2,
             --Seq [
                 --Tm 3/2 | Length 1/2,
                 --Tm 5/3 | Length 1/2,
@@ -12,7 +12,7 @@ main = {
 
 
         ],
-        Tm 0 | Length 1/10
+        --Tm 0 | Length 1/10
 	]
 }
 	
