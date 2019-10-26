@@ -34,12 +34,8 @@ fn sing_along_callback(
         .analyze(settings.sample_rate as f32, settings.probability_threshold);
 
     let (freq, gain) = process_detection_result(&mut detection_result);
-    let freq_ratio = freq / 100.0;
 
-    let offset = Offset {
-        freq: freq_ratio,
-        gain,
-    };
+    let offset = Offset { freq, gain };
 
     let result: Vec<StereoWaveform> = voices
         .par_iter_mut()

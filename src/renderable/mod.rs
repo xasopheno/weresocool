@@ -72,11 +72,12 @@ impl RenderOp {
         }
     }
     pub fn apply_offset(&mut self, offset: &Offset) {
-        self.f = self.f * offset.freq;
+        self.f = offset.freq * 4.0;
         self.g = (self.g.0 * offset.gain, self.g.1 * offset.gain);
     }
 }
 
+#[derive(Debug)]
 pub struct Offset {
     pub freq: f64,
     pub gain: f64,
