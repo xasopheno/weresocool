@@ -3,7 +3,8 @@ use crate::{
     generation::parsed_to_render::{render_mic, sum_all_waveforms},
     instrument::{Oscillator, StereoWaveform},
     renderable::{
-        nf_to_vec_renderable, renderables_to_render_voices, RenderOp, RenderVoice, Renderable,
+        nf_to_vec_renderable, renderables_to_render_voices, Offset, RenderOp, RenderVoice,
+        Renderable,
     },
     ring_buffer::RingBuffer,
     settings::{default_settings, Settings},

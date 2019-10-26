@@ -1,6 +1,6 @@
 use crate::{
     instrument::{Oscillator, StereoWaveform},
-    renderable::{RenderOp, Renderable},
+    renderable::{Offset, RenderOp, Renderable},
     settings::default_settings,
 };
 
@@ -76,9 +76,10 @@ impl RenderVoice {
         result
     }
 
-    pub fn render_batch(&mut self, n_samples: usize) -> StereoWaveform {
+    pub fn render_batch(&mut self, n_samples: usize, offset: Option<&Offset>) -> StereoWaveform {
         let mut batch = self.get_batch(n_samples, None);
-        batch.render(&mut self.oscillator)
+
+        batch.render(&mut self.oscillator, offset)
     }
 }
 
@@ -88,4 +89,3 @@ pub fn renderables_to_render_voices(renderables: Vec<Vec<RenderOp>>) -> Vec<Rend
         .map(|voice| RenderVoice::init(voice))
         .collect::<Vec<RenderVoice>>()
 }
-
