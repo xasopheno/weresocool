@@ -6,7 +6,7 @@ mod tests {
         instrument::{oscillator::Basis, StereoWaveform},
         renderable::{
             calculate_fgpl, m_a_and_basis_to_f64, nf_to_vec_renderable,
-            render_voice::renderables_to_render_voices, RenderOp, RenderVoice,
+            render_voice::renderables_to_render_voices, RenderOp,
         },
     };
     use num_rational::Rational64;
@@ -147,7 +147,7 @@ mod tests {
             };
         let renderables = nf_to_vec_renderable(&nf, &table, &basis);
         let mut voices1 = renderables_to_render_voices(renderables);
-        let mut voices2 = voices1.clone();
+        let voices2 = voices1.clone();
 
         let mut short_r = vec![];
         let mut short_l = vec![];
@@ -155,7 +155,7 @@ mod tests {
         for _ in 0..20 {
             let r: Vec<StereoWaveform> = voices1
                 .iter_mut()
-                .map(|voice| voice.render_batch(1024))
+                .map(|voice| voice.render_batch(1024, None))
                 .collect();
 
             let r = sum_all_waveforms(r);
@@ -173,7 +173,7 @@ mod tests {
         let long: Vec<StereoWaveform> = voices2
             .clone()
             .iter_mut()
-            .map(|voice| voice.render_batch(20480))
+            .map(|voice| voice.render_batch(20480, None))
             .collect();
         let long = sum_all_waveforms(long);
         assert_eq!(short, long)
