@@ -77,7 +77,7 @@ impl RenderVoice {
     }
 
     pub fn render_batch(&mut self, n_samples: usize, offset: Option<&Offset>) -> StereoWaveform {
-        let mut batch = self.get_batch(n_samples, None);
+        let mut batch = self.get_batch(n_samples, Some(vec![]));
 
         batch.render(&mut self.oscillator, offset)
     }

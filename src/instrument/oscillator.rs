@@ -124,8 +124,8 @@ impl Oscillator {
 
         let port = (self.portamento_length as f64 * portamento_length).trunc() as usize;
 
-        l_voice.generate_waveform(&mut l_buffer, port, factor, 0, 1024);
-        r_voice.generate_waveform(&mut r_buffer, port, factor, 0, 1024);
+        l_voice.generate_waveform(&mut l_buffer, port, factor, starting_index, total_samples);
+        r_voice.generate_waveform(&mut r_buffer, port, factor, starting_index, total_samples);
 
         StereoWaveform { l_buffer, r_buffer }
     }

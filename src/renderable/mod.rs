@@ -72,8 +72,13 @@ impl RenderOp {
         }
     }
     pub fn apply_offset(&mut self, offset: &Offset) {
-        self.f = offset.freq * 4.0;
-        self.g = (self.g.0 * offset.gain, self.g.1 * offset.gain);
+        //self.f = offset.freq * 4.0;
+        //self.g = (self.g.0 * offset.gain, self.g.1 * offset.gain);
+        //self.portamento = 1024.0;
+        //self.attack = 1024.0;
+        //self.decay = 1024.0;
+        //self.next_r_silent = false;
+        //self.next_l_silent = false;
     }
 }
 
