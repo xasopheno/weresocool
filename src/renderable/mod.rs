@@ -99,9 +99,9 @@ impl Renderable<RenderOp> for RenderOp {
             None => {}
         }
 
-        //if self.index == 0 {
-        oscillator.update(self, self.index == 0);
-        //}
+        if self.index == 0 {
+            oscillator.update(self, self.index == 0);
+        }
 
         oscillator.generate(
             self.samples as f64,
