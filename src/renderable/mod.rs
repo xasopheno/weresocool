@@ -72,11 +72,8 @@ impl RenderOp {
         }
     }
     pub fn apply_offset(&mut self, offset: &Offset) {
-        self.f = offset.freq * 3.0;
-        //self.g = (self.g.0 * offset.gain, self.g.1 * offset.gain);
-        //self.attack = 1024.0;
-        //self.decay = 1024.0;
-        //self.portamento = 1024.0;
+        self.f = offset.freq * 4.0;
+        self.g = (self.g.0 * offset.gain, self.g.1 * offset.gain);
     }
 }
 
@@ -98,7 +95,7 @@ impl Renderable<RenderOp> for RenderOp {
         }
 
         //if self.index == 0 {
-        oscillator.update(self);
+        oscillator.update(self, self.index == 0);
         //}
 
         oscillator.generate(
@@ -159,9 +156,9 @@ fn pointop_to_renderop(
         p,
         l,
         t: r_to_f64(*time),
+        index: 0,
         samples: (l * 44_100.0).round() as usize,
         total_samples: (l * 44_100.0).round() as usize,
-        index: 0,
         attack: r_to_f64(point_op.attack * basis.a) * 44_100.0,
         decay: r_to_f64(point_op.decay * basis.d) * 44_100.0,
         osc_type: point_op.osc_type,

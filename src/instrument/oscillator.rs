@@ -77,27 +77,33 @@ impl Oscillator {
         }
     }
 
-    pub fn update(&mut self, op: &RenderOp) {
+    pub fn update(&mut self, op: &RenderOp, start: bool) {
         let (ref mut l_voice, ref mut r_voice) = self.voices;
 
-        l_voice.update(VoiceUpdate {
-            frequency: op.f,
-            gain: op.g.0,
-            osc_type: op.osc_type,
-            silence_next: op.next_l_silent,
-            attack: op.attack,
-            decay: op.decay,
-            decay_type: op.decay_length,
-        });
-        r_voice.update(VoiceUpdate {
-            frequency: op.f,
-            gain: op.g.1,
-            osc_type: op.osc_type,
-            silence_next: op.next_r_silent,
-            attack: op.attack,
-            decay: op.decay,
-            decay_type: op.decay_length,
-        });
+        l_voice.update(
+            VoiceUpdate {
+                frequency: op.f,
+                gain: op.g.0,
+                osc_type: op.osc_type,
+                silence_next: op.next_l_silent,
+                attack: op.attack,
+                decay: op.decay,
+                decay_type: op.decay_length,
+            },
+            start,
+        );
+        r_voice.update(
+            VoiceUpdate {
+                frequency: op.f,
+                gain: op.g.1,
+                osc_type: op.osc_type,
+                silence_next: op.next_r_silent,
+                attack: op.attack,
+                decay: op.decay,
+                decay_type: op.decay_length,
+            },
+            start,
+        );
     }
 
     pub fn generate(
@@ -118,8 +124,8 @@ impl Oscillator {
 
         let port = (self.portamento_length as f64 * portamento_length).trunc() as usize;
 
-        l_voice.generate_waveform(&mut l_buffer, port, factor, starting_index, total_samples);
-        r_voice.generate_waveform(&mut r_buffer, port, factor, starting_index, total_samples);
+        l_voice.generate_waveform(&mut l_buffer, port, factor, 0, 1024);
+        r_voice.generate_waveform(&mut r_buffer, port, factor, 0, 1024);
 
         StereoWaveform { l_buffer, r_buffer }
     }
