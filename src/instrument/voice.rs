@@ -38,6 +38,7 @@ impl VoiceState {
     }
 }
 
+#[derive(Clone, Debug)]
 pub struct VoiceUpdate {
     pub frequency: f64,
     pub gain: f64,
@@ -72,9 +73,7 @@ impl Voice {
     ) {
         let p_delta = self.calculate_portamento_delta(portamento_length);
         for (index, sample) in buffer.iter_mut().enumerate() {
-            //if index == 3 { panic!() }
             let gain = self.calculate_asr_gain(total_samples, starting_index + index);
-            //dbg!(total_samples, starting_index + index);
             let info = SampleInfo {
                 index: index + starting_index,
                 p_delta,
@@ -98,7 +97,6 @@ impl Voice {
         } else {
             info.frequency
         };
-
         let mut gain = if frequency != 0.0 { info.gain } else { 0.0 };
         if info.osc_type != OscType::Sine {
             gain /= 3.0
@@ -122,8 +120,8 @@ impl Voice {
         self.decay_length = info.decay_type;
 
         let silence_now = gain == 0.0 || frequency == 0.0;
-
         self.set_asr(info.silence_next, info.decay_type, silence_now);
+
         //println!("{:?}", self.asr);
     }
 

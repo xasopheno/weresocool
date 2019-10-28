@@ -4,7 +4,7 @@ use crate::{
         stereo_waveform::StereoWaveform,
         voice::{Voice, VoiceUpdate},
     },
-    renderable::RenderOp,
+    renderable::{Offset, RenderOp},
     settings::Settings,
 };
 use num_rational::Rational64;

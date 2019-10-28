@@ -72,13 +72,16 @@ impl RenderOp {
         }
     }
     pub fn apply_offset(&mut self, offset: &Offset) {
-        //self.f = offset.freq * 4.0;
-        //self.g = (self.g.0 * offset.gain, self.g.1 * offset.gain);
+        self.f = offset.freq * 4.0;
+        self.g = (self.g.0 * offset.gain, self.g.1 * offset.gain);
         //self.portamento = 1024.0;
-        //self.attack = 1024.0;
-        //self.decay = 1024.0;
-        //self.next_r_silent = false;
-        //self.next_l_silent = false;
+        //self.samples = 1024;
+        //self.total_samples = 1024;
+        //self.index = 0;
+        //self.attack = 512.0;
+        //self.decay = 512.0;
+        //self.next_r_silent = true;
+        //self.next_l_silent = true;
     }
 }
 
@@ -95,13 +98,15 @@ pub trait Renderable<T> {
 impl Renderable<RenderOp> for RenderOp {
     fn render(&mut self, oscillator: &mut Oscillator, offset: Option<&Offset>) -> StereoWaveform {
         match offset {
-            Some(o) => self.apply_offset(o),
+            Some(o) => self.apply_offset(o.clone()),
             None => {}
         }
 
-        if self.index == 0 {
-            oscillator.update(self, self.index == 0);
-        }
+        //if self.index == 0 {
+        //dbg!(&self);
+        oscillator.update(self, self.index == 0);
+        //}
+        dbg!(&self);
 
         oscillator.generate(
             self.samples as f64,
@@ -111,7 +116,6 @@ impl Renderable<RenderOp> for RenderOp {
         )
     }
 }
-
 impl Renderable<Vec<RenderOp>> for Vec<RenderOp> {
     fn render(&mut self, oscillator: &mut Oscillator, offset: Option<&Offset>) -> StereoWaveform {
         let mut result: StereoWaveform = StereoWaveform::new(0);
@@ -164,11 +168,11 @@ fn pointop_to_renderop(
         index: 0,
         samples: (l * 44_100.0).round() as usize,
         total_samples: (l * 44_100.0).round() as usize,
-        attack: r_to_f64(point_op.attack * basis.a) * 44_100.0,
-        decay: r_to_f64(point_op.decay * basis.d) * 44_100.0,
+        attack: r_to_f64(point_op.attack * basis.a) * 1024.0,
+        decay: r_to_f64(point_op.decay * basis.d) * 1024.0,
         osc_type: point_op.osc_type,
         decay_length: point_op.decay_length,
-        portamento: r_to_f64(point_op.portamento),
+        portamento: r_to_f64(point_op.portamento) * 1024.0,
         voice,
         event,
         next_l_silent,
