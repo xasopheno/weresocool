@@ -37,7 +37,7 @@ pub struct TimedOp {
 impl TimedOp {
     fn to_op_4d(&self, basis: &Basis) -> Op4D {
         let zero = Rational64::new(0, 1);
-        let is_silent = (self.fm == zero && self.fa < Rational64::new(40, 1)) || self.g == zero;
+        let is_silent = (self.fm == zero && self.fa < Rational64::new(20, 1)) || self.g == zero;
         let y = if is_silent {
             0.0
         } else {
