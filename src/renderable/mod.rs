@@ -74,15 +74,15 @@ impl RenderOp {
     pub fn apply_offset(&mut self, offset: &Offset) {
         //dbg!(self.f, self.g);
         //self.f = offset.freq * 4.0;
-        self.g = (self.g.0 * 0.25, self.g.1 * 0.25);
+        //self.g = (self.g.0 * 0.25, self.g.1 * 0.25);
         //self.portamento = 1024.0;
         //self.samples = 1024;
         //self.total_samples = 1024;
         //self.index = 0;
         //self.attack = 512.0;
         //self.decay = 512.0;
-        //self.next_r_silent = false;
-        //self.next_l_silent = false;
+        self.next_r_silent = true;
+        self.next_l_silent = true;
     }
 }
 
