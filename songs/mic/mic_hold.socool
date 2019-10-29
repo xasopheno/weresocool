@@ -3,9 +3,8 @@
 main = {
 	Seq [
         Tm 1,
-        Tm 0
 	] 
     | Repeat 10 
-    | Length 1/2
+    | Length 1
 }
 	
