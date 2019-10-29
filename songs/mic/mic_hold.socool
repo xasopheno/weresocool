@@ -4,7 +4,6 @@ main = {
 	Seq [
         Tm 1,
 	] 
-    | Repeat 10 
     | Length 1
 }
 	

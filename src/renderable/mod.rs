@@ -74,14 +74,11 @@ impl RenderOp {
     pub fn apply_offset(&mut self, offset: &Offset) {
         self.f = offset.freq * 4.0;
         self.g = (self.g.0 * offset.gain, self.g.1 * offset.gain);
-        //self.portamento = 1024.0;
         self.total_samples = self.samples;
-        //self.total_samples = 1024;
+
         self.index = 0;
-        //self.attack = 512.0;
-        //self.decay = 512.0;
-        //self.next_r_silent = true;
-        //self.next_l_silent = true;
+        self.next_r_silent = true;
+        self.next_l_silent = true;
     }
 }
 
@@ -97,15 +94,19 @@ pub trait Renderable<T> {
 
 impl Renderable<RenderOp> for RenderOp {
     fn render(&mut self, oscillator: &mut Oscillator, offset: Option<&Offset>) -> StereoWaveform {
+        let mut has_offset = false;
         match offset {
-            Some(o) => self.apply_offset(o.clone()),
+            Some(o) => {
+                self.apply_offset(o.clone());
+                has_offset = true;
+            }
             None => {}
-        }
+        };
 
-        //if self.index == 0 {
-        //dbg!(&self);
-        oscillator.update(self, self.index == 0);
-        //}
+        if self.index == 0 || has_offset {
+            //dbg!(&self);
+            oscillator.update(self, self.index == 0);
+        }
         oscillator.generate(
             self.samples as f64,
             self.portamento as f64,
