@@ -72,16 +72,17 @@ impl RenderOp {
         }
     }
     pub fn apply_offset(&mut self, offset: &Offset) {
-        self.f = offset.freq * 4.0;
-        self.g = (self.g.0 * offset.gain, self.g.1 * offset.gain);
+        //dbg!(self.f, self.g);
+        //self.f = offset.freq * 4.0;
+        self.g = (self.g.0 * 0.25, self.g.1 * 0.25);
         //self.portamento = 1024.0;
         //self.samples = 1024;
         //self.total_samples = 1024;
         //self.index = 0;
         //self.attack = 512.0;
         //self.decay = 512.0;
-        //self.next_r_silent = true;
-        //self.next_l_silent = true;
+        //self.next_r_silent = false;
+        //self.next_l_silent = false;
     }
 }
 
@@ -106,8 +107,6 @@ impl Renderable<RenderOp> for RenderOp {
         //dbg!(&self);
         oscillator.update(self, self.index == 0);
         //}
-        dbg!(&self);
-
         oscillator.generate(
             self.samples as f64,
             self.portamento as f64,

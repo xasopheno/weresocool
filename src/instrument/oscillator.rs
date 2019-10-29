@@ -115,14 +115,16 @@ impl Oscillator {
     ) -> StereoWaveform {
         let total_len = self.sample_phase + n_samples_to_generate;
         let length = total_len.floor() as usize;
-        self.sample_phase = total_len.fract();
+
+        //self.sample_phase = total_len.fract();
         let mut l_buffer: Vec<f64> = vec![0.0; length];
         let mut r_buffer: Vec<f64> = vec![0.0; length];
         let factor: f64 = tau() / self.settings.sample_rate;
 
         let (ref mut l_voice, ref mut r_voice) = self.voices;
 
-        let port = (self.portamento_length as f64 * portamento_length).trunc() as usize;
+        //let port = (self.portamento_length as f64 * portamento_length).trunc() as usize;
+        let port = 1024;
 
         l_voice.generate_waveform(&mut l_buffer, port, factor, starting_index, total_samples);
         r_voice.generate_waveform(&mut r_buffer, port, factor, starting_index, total_samples);
