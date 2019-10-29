@@ -14,6 +14,7 @@ use std::vec::IntoIter;
 pub struct RealTimeState {
     count: Rational64,
     inc: Rational64,
+    phase: Rational64,
     current_op: PointOp,
 }
 
@@ -29,7 +30,7 @@ fn process_detection_result(result: &mut DetectionResult) -> Basis {
         result.gain = 0.0;
     }
 
-    println!("freq {}, gain {}", result.frequency, result.gain);
+    //println!("freq {}, gain {}", result.frequency, result.gain);
 
     Basis {
         f: 2.0 * result.frequency as f64,
@@ -57,6 +58,7 @@ pub fn setup_iterators(
         let mut iterator = seq.clone().into_iter().cycle();
         let state = RealTimeState {
             count: Rational64::new(0, 1),
+            phase: Rational64::new(0, 1),
             inc: Rational64::new(settings.buffer_size as i64, settings.sample_rate as i64),
             current_op: iterator
                 .next()
