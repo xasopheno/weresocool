@@ -15,7 +15,7 @@ pub trait RenderPointOp<T> {
         &mut self,
         origin: &Basis,
         oscillator: &mut Oscillator,
-        next_op: Option<PointOp>,
+        next_op: Option<T>,
     ) -> StereoWaveform;
 }
 
@@ -26,7 +26,7 @@ impl RenderPointOp<PointOp> for PointOp {
         oscillator: &mut Oscillator,
         next_op: Option<PointOp>,
     ) -> StereoWaveform {
-        oscillator.update(origin.clone(), self, next_op);
+        oscillator.update(&origin, self, next_op);
 
         let n_samples_to_generate = r_to_f64(self.l) * origin.l * 44_100.0;
         let portamento_length = r_to_f64(self.portamento);
@@ -38,10 +38,9 @@ impl RenderPointOp<PointOp> for PointOp {
 impl Render<Vec<PointOp>> for Vec<PointOp> {
     fn render(&mut self, origin: &Basis, oscillator: &mut Oscillator) -> StereoWaveform {
         let mut result: StereoWaveform = StereoWaveform::new(0);
-        let mut p_ops = self.clone();
-        p_ops.push(PointOp::init_silent());
+        self.push(PointOp::init_silent());
 
-        let mut iter = p_ops.iter().peekable();
+        let mut iter = self.iter().peekable();
 
         while let Some(p_op) = iter.next() {
             let mut next_op = None;

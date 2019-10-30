@@ -73,20 +73,20 @@ impl Oscillator {
         }
     }
 
-    pub fn update(&mut self, basis: Basis, point_op: &PointOp, next_op: Option<PointOp>) {
+    pub fn update(&mut self, basis: &Basis, point_op: &PointOp, next_op: Option<PointOp>) {
         let fm = r_to_f64(point_op.fm);
         let fa = r_to_f64(point_op.fa);
         let attack = r_to_f64(point_op.attack);
         let decay = r_to_f64(point_op.decay);
 
-        let (l_gain, r_gain) = point_op_to_gains(&point_op, &basis);
+        let (l_gain, r_gain) = point_op_to_gains(&point_op, basis);
         let mut next_l_gain = 0.0;
         let mut next_r_gain = 0.0;
         let mut next_fm = 0.0;
 
         match next_op {
             Some(op) => {
-                let (l, r) = point_op_to_gains(&op, &basis);
+                let (l, r) = point_op_to_gains(&op, basis);
                 next_l_gain = l;
                 next_r_gain = r;
                 next_fm = r_to_f64(op.fm);
