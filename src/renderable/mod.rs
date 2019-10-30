@@ -149,7 +149,7 @@ fn pointop_to_renderop(
         decay: r_to_f64(point_op.decay * basis.d) * 44_100.0,
         osc_type: point_op.osc_type,
         decay_length: point_op.decay_length,
-        portamento: r_to_f64(point_op.portamento),
+        portamento: r_to_f64(point_op.portamento) * 1024.0,
         voice,
         event,
         next_l_silent,

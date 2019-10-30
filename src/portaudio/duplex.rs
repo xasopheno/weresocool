@@ -26,22 +26,22 @@ fn process_detection_result(result: &mut DetectionResult) -> (f64, f64) {
 
 fn sing_along_callback(
     args: pa::DuplexStreamCallbackArgs<'_, f32, f32>,
-    input_buffer: &mut RingBuffer<f32>,
+    _input_buffer: &mut RingBuffer<f32>,
     voices: &mut Vec<RenderVoice>,
-    settings: &Settings,
+    _settings: &Settings,
 ) {
-    input_buffer.push_vec(args.in_buffer.to_vec());
+    //input_buffer.push_vec(args.in_buffer.to_vec());
 
-    let mut detection_result: DetectionResult = input_buffer
-        .to_vec()
-        .analyze(settings.sample_rate as f32, settings.probability_threshold);
+    //let mut detection_result: DetectionResult = input_buffer
+    //.to_vec()
+    //.analyze(settings.sample_rate as f32, settings.probability_threshold);
 
-    let (freq, gain) = process_detection_result(&mut detection_result);
-    let offset = Offset { freq, gain };
+    //let (freq, gain) = process_detection_result(&mut detection_result);
+    //let offset = Offset { freq, gain };
 
     let result: Vec<StereoWaveform> = voices
         .iter_mut()
-        .map(|voice| voice.render_batch(1024, Some(&offset)))
+        .map(|voice| voice.render_batch(1024, None))
         .collect();
     let stereo_waveform = sum_all_waveforms(result);
     write_output_buffer(args.out_buffer, stereo_waveform);
