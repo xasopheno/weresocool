@@ -1,5 +1,10 @@
 use crate::instrument::{asr::ASR, loudness::loudness_normalization};
 use socool_ast::OscType;
+use std::f64::consts::PI;
+
+fn tau() -> f64 {
+    PI * 2.0
+}
 
 #[derive(Clone, Debug, PartialEq)]
 pub struct Voice {
@@ -66,17 +71,13 @@ impl Voice {
         &mut self,
         buffer: &mut Vec<f64>,
         portamento_length: usize,
-        factor: f64,
         starting_index: usize,
         total_samples: usize,
     ) {
         let p_delta = self.calculate_portamento_delta(portamento_length);
+        let factor: f64 = tau() / 44_100.0;
         for (index, sample) in buffer.iter_mut().enumerate() {
-            //if index == 3 {
-            //panic!()
-            //}
             let gain = self.calculate_asr_gain(total_samples, starting_index + index);
-            //dbg!(total_samples, starting_index + index);
             let info = SampleInfo {
                 index: index + starting_index,
                 p_delta,

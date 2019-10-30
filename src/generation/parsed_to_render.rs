@@ -88,7 +88,7 @@ pub fn render(basis: &Basis, composition: &NormalForm, table: &OpOrNfTable) -> S
 }
 
 pub fn render_mic(op: &RenderOp, osc: &mut Oscillator) -> StereoWaveform {
-    let result = op.clone().render(osc);
+    let result = op.clone().render(osc, None);
     result
 }
 
@@ -120,7 +120,7 @@ pub fn generate_waveforms(
         .map(|ref mut vec_render_op: &mut Vec<RenderOp>| {
             pb.lock().unwrap().add(1 as u64);
             let mut osc = Oscillator::init(&default_settings());
-            vec_render_op.render(&mut osc)
+            vec_render_op.render(&mut osc, None)
         })
         .collect();
 
