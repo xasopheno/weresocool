@@ -3,6 +3,7 @@
 main = {
 	Seq [
         Tm 1,
+        Tm 0,
 	] 
     | Length 1
 }
