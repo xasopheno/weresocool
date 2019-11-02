@@ -22,7 +22,7 @@ pub struct RenderOp {
     pub total_samples: usize,
     pub voice: usize,
     pub event: usize,
-    pub portamento: f64,
+    pub portamento: usize,
     pub osc_type: OscType,
     pub next_l_silent: bool,
     pub next_r_silent: bool,
@@ -44,7 +44,7 @@ impl RenderOp {
             index: 0,
             voice: 0,
             event: 0,
-            portamento: 1.0,
+            portamento: 1024,
             osc_type: OscType::Sine,
             next_l_silent: false,
             next_r_silent: false,
@@ -65,13 +65,13 @@ impl RenderOp {
             index: 0,
             voice: 0,
             event: 0,
-            portamento: 1.0,
+            portamento: 1024,
             osc_type: OscType::Sine,
             next_l_silent: true,
             next_r_silent: true,
         }
     }
-    pub fn apply_offset(&mut self, offset: &Offset) {
+    pub fn apply_offset(&mut self, _offset: &Offset) {
         //self.f = offset.freq * 4.0;
         //self.g = (self.g.0 * offset.gain, self.g.1 * offset.gain);
         self.total_samples = self.samples;
@@ -95,24 +95,18 @@ pub trait Renderable<T> {
 impl Renderable<RenderOp> for RenderOp {
     fn render(&mut self, oscillator: &mut Oscillator, offset: Option<&Offset>) -> StereoWaveform {
         let mut has_offset = false;
-        match offset {
-            Some(o) => {
-                self.apply_offset(o.clone());
-                has_offset = true;
-            }
-            None => {}
-        };
+        //match offset {
+        //Some(o) => {
+        //self.apply_offset(o.clone());
+        //has_offset = true;
+        //}
+        //None => {}
+        //};
 
         if self.index == 0 || has_offset {
-            //dbg!(&self);
-            oscillator.update(self, self.index == 0);
+            oscillator.update(self);
         }
-        oscillator.generate(
-            self.samples as f64,
-            self.portamento as f64,
-            self.index,
-            self.total_samples,
-        )
+        oscillator.generate(&self)
     }
 }
 impl Renderable<Vec<RenderOp>> for Vec<RenderOp> {
@@ -167,11 +161,11 @@ fn pointop_to_renderop(
         index: 0,
         samples: (l * 44_100.0).round() as usize,
         total_samples: (l * 44_100.0).round() as usize,
-        attack: r_to_f64(point_op.attack * basis.a) * 1024.0,
-        decay: r_to_f64(point_op.decay * basis.d) * 1024.0,
+        attack: r_to_f64(point_op.attack * basis.a) * 44_100.0,
+        decay: r_to_f64(point_op.decay * basis.d) * 44_100.0,
         osc_type: point_op.osc_type,
         decay_length: point_op.decay_length,
-        portamento: r_to_f64(point_op.portamento) * 1024.0,
+        portamento: r_to_f64(point_op.portamento) as usize,
         voice,
         event,
         next_l_silent,

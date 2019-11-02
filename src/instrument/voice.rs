@@ -1,5 +1,10 @@
 use crate::instrument::{asr::ASR, loudness::loudness_normalization};
 use socool_ast::OscType;
+use std::f64::consts::PI;
+
+fn tau() -> f64 {
+    PI * 2.0
+}
 
 #[derive(Clone, Debug, PartialEq)]
 pub struct Voice {
@@ -57,8 +62,8 @@ impl Voice {
             current: VoiceState::init(),
             phase: 0.0,
             osc_type: OscType::Sine,
-            attack: 44100,
-            decay: 44100,
+            attack: 44_100,
+            decay: 44_100,
             decay_length: 2,
             asr: ASR::Silence,
         }
@@ -67,10 +72,10 @@ impl Voice {
         &mut self,
         buffer: &mut Vec<f64>,
         portamento_length: usize,
-        factor: f64,
         starting_index: usize,
         total_samples: usize,
     ) {
+        let factor: f64 = tau() / 44_100.0;
         let p_delta = self.calculate_portamento_delta(portamento_length);
         for (index, sample) in buffer.iter_mut().enumerate() {
             let gain = self.calculate_asr_gain(total_samples, starting_index + index);
@@ -91,7 +96,7 @@ impl Voice {
         }
     }
 
-    pub fn update(&mut self, info: VoiceUpdate, start: bool) {
+    pub fn update(&mut self, info: VoiceUpdate) {
         let frequency = if info.frequency < 20.0 {
             0.0
         } else {
@@ -120,7 +125,12 @@ impl Voice {
         self.decay_length = info.decay_type;
 
         let silence_now = gain == 0.0 || frequency == 0.0;
-        self.set_asr(info.silence_next, info.decay_type, silence_now);
+        self.set_asr(
+            info.silence_next,
+            silence_now,
+            info.attack as usize,
+            info.decay as usize,
+        );
 
         //println!("{:?}", self.asr);
     }

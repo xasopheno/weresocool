@@ -10,16 +10,10 @@ use crate::{
 use num_rational::Rational64;
 use socool_ast::PointOp;
 use socool_parser::Init;
-use std::f64::consts::PI;
-
-fn tau() -> f64 {
-    PI * 2.0
-}
 
 #[derive(Clone, Debug, PartialEq)]
 pub struct Oscillator {
     pub voices: (Voice, Voice),
-    pub portamento_length: usize,
     pub settings: Settings,
     pub sample_phase: f64,
 }
@@ -71,63 +65,42 @@ impl Oscillator {
     pub fn init(settings: &Settings) -> Oscillator {
         Oscillator {
             voices: (Voice::init(0), Voice::init(1)),
-            portamento_length: settings.buffer_size,
             settings: settings.clone(),
             sample_phase: 0.0,
         }
     }
 
-    pub fn update(&mut self, op: &RenderOp, start: bool) {
+    pub fn update(&mut self, op: &RenderOp) {
         let (ref mut l_voice, ref mut r_voice) = self.voices;
 
-        l_voice.update(
-            VoiceUpdate {
-                frequency: op.f,
-                gain: op.g.0,
-                osc_type: op.osc_type,
-                silence_next: op.next_l_silent,
-                attack: op.attack,
-                decay: op.decay,
-                decay_type: op.decay_length,
-            },
-            start,
-        );
-        r_voice.update(
-            VoiceUpdate {
-                frequency: op.f,
-                gain: op.g.1,
-                osc_type: op.osc_type,
-                silence_next: op.next_r_silent,
-                attack: op.attack,
-                decay: op.decay,
-                decay_type: op.decay_length,
-            },
-            start,
-        );
+        l_voice.update(VoiceUpdate {
+            frequency: op.f,
+            gain: op.g.0,
+            osc_type: op.osc_type,
+            silence_next: op.next_l_silent,
+            attack: op.attack,
+            decay: op.decay,
+            decay_type: op.decay_length,
+        });
+        r_voice.update(VoiceUpdate {
+            frequency: op.f,
+            gain: op.g.1,
+            osc_type: op.osc_type,
+            silence_next: op.next_r_silent,
+            attack: op.attack,
+            decay: op.decay,
+            decay_type: op.decay_length,
+        });
     }
 
-    pub fn generate(
-        &mut self,
-        n_samples_to_generate: f64,
-        portamento_length: f64,
-        starting_index: usize,
-        total_samples: usize,
-    ) -> StereoWaveform {
-        let total_len = self.sample_phase + n_samples_to_generate;
-        let length = total_len.floor() as usize;
-
-        //self.sample_phase = total_len.fract();
-        let mut l_buffer: Vec<f64> = vec![0.0; length];
-        let mut r_buffer: Vec<f64> = vec![0.0; length];
-        let factor: f64 = tau() / self.settings.sample_rate;
+    pub fn generate(&mut self, op: &RenderOp) -> StereoWaveform {
+        let mut l_buffer: Vec<f64> = vec![0.0; op.samples];
+        let mut r_buffer: Vec<f64> = vec![0.0; op.samples];
 
         let (ref mut l_voice, ref mut r_voice) = self.voices;
 
-        //let port = (self.portamento_length as f64 * portamento_length).trunc() as usize;
-        let port = 1024;
-
-        l_voice.generate_waveform(&mut l_buffer, port, factor, starting_index, total_samples);
-        r_voice.generate_waveform(&mut r_buffer, port, factor, starting_index, total_samples);
+        l_voice.generate_waveform(&mut l_buffer, op.portamento, op.index, op.total_samples);
+        r_voice.generate_waveform(&mut r_buffer, op.portamento, op.index, op.total_samples);
 
         StereoWaveform { l_buffer, r_buffer }
     }

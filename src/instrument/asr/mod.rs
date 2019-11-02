@@ -9,16 +9,42 @@ pub enum ASR {
     R,
     Silence,
 }
-
 impl Voice {
-    pub fn set_asr(&mut self, silence_next: bool, _decay_length: usize, silence_now: bool) {
+    pub fn set_asr(&mut self, silence_next: bool, silence_now: bool, attack: usize, decay: usize) {
         let long = if self.decay_length == 2 { true } else { false };
-        if self.silent() && !long {
+        if long {
+            self.long_asr(silence_next, silence_now, attack, decay)
+        } else {
+            self.short_asr(silence_next, silence_now, attack, decay)
+        }
+    }
+    fn long_asr(&mut self, silence_next: bool, silence_now: bool, attack: usize, decay: usize) {
+        match self.asr {
+            ASR::Silence | ASR::ASR | ASR::SR | ASR::R => {
+                if silence_now {
+                    self.asr = ASR::Silence
+                } else {
+                    self.asr = ASR::AS;
+                }
+            }
+
+            ASR::AS | ASR::S => {
+                if self.sound_to_silence() {
+                    self.asr = ASR::R
+                } else {
+                    self.asr = ASR::S
+                }
+            }
+        }
+    }
+
+    fn short_asr(&mut self, silence_next: bool, silence_now: bool, attack: usize, decay: usize) {
+        if self.silent() {
             self.asr = ASR::Silence;
         } else {
             match self.asr {
                 ASR::Silence | ASR::ASR | ASR::SR | ASR::R => {
-                    if silence_next && !long {
+                    if silence_next {
                         self.asr = ASR::ASR;
                     } else {
                         if silence_now {
@@ -31,17 +57,9 @@ impl Voice {
 
                 ASR::AS | ASR::S => {
                     if self.sound_to_silence() {
-                        if long {
-                            self.asr = ASR::R
-                        } else {
-                            self.asr = ASR::Silence
-                        }
+                        self.asr = ASR::Silence
                     } else if silence_next {
-                        if long {
-                            self.asr = ASR::S
-                        } else {
-                            self.asr = ASR::SR
-                        }
+                        self.asr = ASR::SR
                     } else {
                         self.asr = ASR::S
                     }
@@ -122,3 +140,4 @@ impl Voice {
         }
     }
 }
+
