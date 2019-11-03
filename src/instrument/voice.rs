@@ -96,7 +96,7 @@ impl Voice {
         }
     }
 
-    pub fn update(&mut self, info: VoiceUpdate) {
+    pub fn update(&mut self, info: VoiceUpdate, start: bool) {
         let frequency = if info.frequency < 20.0 {
             0.0
         } else {
@@ -115,14 +115,14 @@ impl Voice {
             self.past.gain = self.current.gain;
         }
 
-        self.osc_type = info.osc_type;
+        self.current.gain = gain;
         self.past.frequency = self.current.frequency;
         self.current.frequency = frequency;
-        self.current.gain = gain;
 
         self.attack = info.attack.trunc() as usize;
         self.decay = info.decay.trunc() as usize;
         self.decay_length = info.decay_type;
+        self.osc_type = info.osc_type;
 
         let silence_now = gain == 0.0 || frequency == 0.0;
         self.set_asr(

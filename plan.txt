@@ -13,6 +13,25 @@ if index > decay:
 else:
   gain
 
+  RenderOp {
+      f: 220.0,
+      p: 0.0,
+      g: (0.5, 0.5),
+      l: 1.0,
+      osc_type: OscType::Sine,
+      attack: 44_100.0,
+      decay: 44_100.0,
+      portamento: 1024.0,
+      index: 0,
+      samples: 86,
+      total_samples: 44100,
+      next_l_silent: false,
+      next_r_silent: false,
+      voice: 0,
+      event: 0,
+      t: 0.0,
+      decay_length: 2,
+  },
 
 
 vec![

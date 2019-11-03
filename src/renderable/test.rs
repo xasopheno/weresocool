@@ -13,6 +13,69 @@ mod tests {
     use socool_ast::{OscType, PointOp};
 
     #[test]
+    fn test_short_renderop() {
+        let seq1 = vec![
+            RenderOp {
+                f: 220.0,
+                p: 0.0,
+                g: (0.5, 0.5),
+                l: 1.0,
+                index: 0,
+                samples: 1000,
+                total_samples: 1024,
+                osc_type: OscType::Sine,
+                attack: 44_100.0,
+                decay: 44_100.0,
+                portamento: 1024,
+                next_l_silent: false,
+                next_r_silent: false,
+                voice: 0,
+                event: 0,
+                t: 0.0,
+                decay_length: 2,
+            },
+            RenderOp {
+                f: 220.0,
+                p: 0.0,
+                g: (0.5, 0.5),
+                l: 1.0,
+                index: 0,
+                samples: 24,
+                total_samples: 44_100,
+                osc_type: OscType::Sine,
+                attack: 44_100.0,
+                decay: 44_100.0,
+                portamento: 1024,
+                next_l_silent: false,
+                next_r_silent: false,
+                voice: 0,
+                event: 0,
+                t: 0.0,
+                decay_length: 2,
+            },
+        ];
+        let seq2 = vec![RenderOp {
+            f: 220.0,
+            p: 0.0,
+            g: (0.5, 0.5),
+            l: 1.0,
+            index: 0,
+            samples: 1024,
+            total_samples: 44_100,
+            osc_type: OscType::Sine,
+            attack: 44_100.0,
+            decay: 44_100.0,
+            portamento: 1024,
+            next_l_silent: false,
+            next_r_silent: false,
+            voice: 0,
+            event: 0,
+            t: 0.0,
+            decay_length: 2,
+        }];
+    }
+
+    #[test]
     fn test_calculate_fgpl() {
         let basis = Basis {
             f: Rational64::new(2, 1),
@@ -64,12 +127,12 @@ mod tests {
                 attack: 44_100.0,
                 decay: 44_100.0,
                 decay_length: 2,
-                samples: 44100,
+                samples: 44_100,
                 total_samples: 44100,
                 index: 0,
                 voice: 0,
                 event: 0,
-                portamento: 1.0,
+                portamento: 44100,
                 osc_type: OscType::Sine,
                 next_l_silent: false,
                 next_r_silent: false,
@@ -88,7 +151,7 @@ mod tests {
                 index: 0,
                 voice: 1,
                 event: 0,
-                portamento: 1.0,
+                portamento: 44100,
                 osc_type: OscType::Sine,
                 next_l_silent: false,
                 next_r_silent: false,
