@@ -15,7 +15,6 @@ use socool_parser::Init;
 pub struct Oscillator {
     pub voices: (Voice, Voice),
     pub settings: Settings,
-    pub sample_phase: f64,
 }
 
 #[derive(Copy, Clone, Debug, PartialEq)]
@@ -66,7 +65,6 @@ impl Oscillator {
         Oscillator {
             voices: (Voice::init(0), Voice::init(1)),
             settings: settings.clone(),
-            sample_phase: 0.0,
         }
     }
 

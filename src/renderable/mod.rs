@@ -72,10 +72,11 @@ impl RenderOp {
         }
     }
     pub fn apply_offset(&mut self, offset: &Offset) {
-        self.f = offset.freq * 4.0;
+        //self.f = offset.freq * 3.0;
         //self.g = (self.g.0 * offset.gain, self.g.1 * offset.gain);
-        self.total_samples = self.samples;
+        //self.g = (self.g.0 * 0.5, self.g.1 * 0.5);
 
+        self.total_samples = self.samples;
         self.index = 0;
         self.next_r_silent = true;
         self.next_l_silent = true;
@@ -95,13 +96,13 @@ pub trait Renderable<T> {
 impl Renderable<RenderOp> for RenderOp {
     fn render(&mut self, oscillator: &mut Oscillator, offset: Option<&Offset>) -> StereoWaveform {
         let mut has_offset = false;
-        match offset {
-            Some(o) => {
-                self.apply_offset(o.clone());
-                has_offset = true;
-            }
-            None => {}
-        };
+        //match offset {
+        //Some(o) => {
+        //self.apply_offset(o.clone());
+        //has_offset = true;
+        //}
+        //None => {}
+        //};
 
         if self.index == 0 || has_offset {
             oscillator.update(self, self.index == 0);
@@ -165,7 +166,7 @@ fn pointop_to_renderop(
         decay: r_to_f64(point_op.decay * basis.d) * 44_100.0,
         osc_type: point_op.osc_type,
         decay_length: point_op.decay_length,
-        portamento: (r_to_f64(point_op.portamento) * 44_100.0) as usize,
+        portamento: (r_to_f64(point_op.portamento) * 1024.0) as usize,
         voice,
         event,
         next_l_silent,
@@ -182,7 +183,7 @@ pub fn m_a_and_basis_to_f64(basis: Rational64, m: Rational64, a: Rational64) -> 
 }
 
 pub fn calculate_fgpl(basis: &Basis, point_op: &PointOp) -> (f64, (f64, f64), f64, f64) {
-    let (f, g) = if point_op.is_silent() {
+    let (mut f, mut g) = if point_op.is_silent() {
         (0.0, (0.0, 0.0))
     } else {
         let g = point_op_to_gains(point_op, basis);
@@ -190,6 +191,10 @@ pub fn calculate_fgpl(basis: &Basis, point_op: &PointOp) -> (f64, (f64, f64), f6
     };
     let p = m_a_and_basis_to_f64(basis.p, point_op.pm, point_op.pa);
     let l = r_to_f64(point_op.l * basis.l);
+    if f < 20.0 {
+        f = 0.0;
+        g = (0.0, 0.0);
+    };
 
     (f, g, p, l)
 }

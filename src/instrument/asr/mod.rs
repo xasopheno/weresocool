@@ -13,12 +13,12 @@ impl Voice {
     pub fn set_asr(&mut self, silence_next: bool, silence_now: bool, attack: usize, decay: usize) {
         let long = if self.decay_length == 2 { true } else { false };
         if long {
-            self.long_asr(silence_next, silence_now, attack, decay)
+            self.long_asr(silence_now, attack, decay)
         } else {
             self.short_asr(silence_next, silence_now, attack, decay)
         }
     }
-    fn long_asr(&mut self, silence_next: bool, silence_now: bool, attack: usize, decay: usize) {
+    fn long_asr(&mut self, silence_now: bool, attack: usize, decay: usize) {
         match self.asr {
             ASR::Silence | ASR::ASR | ASR::SR | ASR::R => {
                 if silence_now {

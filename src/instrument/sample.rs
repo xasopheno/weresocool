@@ -26,7 +26,7 @@ impl Voice {
 
         self.calculate_current_phase(&info, r);
 
-        self.phase.sin() * info.gain
+        self.phase.sin() * info.gain / 3.0
     }
 
     pub fn calculate_current_phase(&mut self, info: &SampleInfo, rand: f64) {

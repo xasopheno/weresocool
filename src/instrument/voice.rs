@@ -97,24 +97,12 @@ impl Voice {
     }
 
     pub fn update(&mut self, info: VoiceUpdate, start: bool) {
-        let frequency = if info.frequency < 20.0 {
-            0.0
-        } else {
-            info.frequency
-        };
-        let mut gain = if frequency != 0.0 { info.gain } else { 0.0 };
-        if info.osc_type != OscType::Sine {
-            gain /= 3.0
-        }
+        let frequency = info.frequency;
+        let mut gain = info.gain;
         let loudness = loudness_normalization(frequency);
         gain *= loudness;
 
-        if self.osc_type == OscType::Sine && info.osc_type == OscType::Noise {
-            self.past.gain = self.current.gain / 3.0;
-        } else {
-            self.past.gain = self.current.gain;
-        }
-
+        self.past.gain = self.current.gain;
         self.current.gain = gain;
         self.past.frequency = self.current.frequency;
         self.current.frequency = frequency;

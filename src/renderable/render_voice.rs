@@ -39,14 +39,15 @@ impl RenderVoice {
             None => vec![],
         };
 
-        if true {
+        if false {
             if self.op_index >= self.ops.len() {
                 self.op_index = 0;
             }
         }
 
         if self.op_index > self.ops.len() - 1 {
-            return vec![RenderOp::init_silent_with_length(1.0)];
+            result.push(RenderOp::init_silent_with_length(1.0));
+            return result;
         }
 
         let current_op = &self.ops[self.op_index];
