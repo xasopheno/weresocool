@@ -206,28 +206,28 @@ section_1 = {
 chord = {
 	AD(1/100, 1/100, 1) |
     O[
-    	(19/1, 8, 1/16, 1),
-    	(19/1, 0, 1/16, -1),
-    	(17/1, 0, 1/16, 0),
-    	(15/1, 0, 1/16, -1),
-    	(13/1, 9, 1/16, 1),
-    	(11/1, 0, 1/16, 0),
-    	(9/1, 0, 1/16, 1),
-    	(8/1, 0, 1/16, -1),
-    	(8/1, 5, 1/16, 0),
-    	(4/1, 0, 1/16, 1),
-    	(2/1, 0, 1/32, 0),
-    	(2/1, 8, 1/32, -1),
-    	(11/4, 3, 1, 1),
-    	(12/5, 3, 1, 0),
-    	(9/4, 3, 1, 1),
-      	(5/3, 0, 1, -1),
-      	(1/1, 2, 1, 1/2),
-      	(1/1, 0, 1, -1/2),
-      	(1/2, 0, 1, -1/2),
-      	(1/2, 7, 1, 1/2),
-      	(1/4, 0, 1, -1/2),
-      	(1/4, 7, 1, 1/2),
+        --(19/1, 8, 1/16, 1),
+        --(19/1, 0, 1/16, -1),
+        --(17/1, 0, 1/16, 0),
+        --(15/1, 0, 1/16, -1),
+        --(13/1, 9, 1/16, 1),
+        --(11/1, 0, 1/16, 0),
+        --(9/1, 0, 1/16, 1),
+        --(8/1, 0, 1/16, -1),
+        --(8/1, 5, 1/16, 0),
+        --(4/1, 0, 1/16, 1),
+        --(2/1, 0, 1/32, 0),
+        --(2/1, 8, 1/32, -1),
+        --(11/4, 3, 1, 1),
+        (12/5, 3, 1, 0),
+        (9/4, 3, 1, 1),
+          (5/3, 0, 1, -1),
+          (1/1, 2, 1, 1/2),
+          --(1/1, 0, 1, -1/2),
+          --(1/2, 0, 1, -1/2),
+          --(1/2, 7, 1, 1/2),
+          --(1/4, 0, 1, -1/2),
+          --(1/4, 7, 1, 1/2),
   	]
 }
 
@@ -337,7 +337,12 @@ triangle_part_1 = {
 triangle_2 = {
 		chord 
 		| Gain 4/5 
-		| Seq [Tm 1, Tm 0 | Length 1/4, Tm 103/100 | Length 1/2, Tm 0 | Length 1/4] 
+		| Seq [
+            Tm 1, 
+            Tm 0 | Length 1/4, 
+            --Tm 103/100 | Length 1/2, 
+            --Tm 0 | Length 1/4
+        ] 
 		| Tm 7/4 
 		| Length 1/4
 }
@@ -345,47 +350,47 @@ triangle_2 = {
 triangle_part_2 = {
 	Overlay [
 		triangle_2,
-		O [
-	    	(3/2, 0, 1/2, 1/2),
-	      	(3/2, 0, 1/2, -1/2),
-	      	(1/1, 0, 1/2, 1/2),
-	      	(1/1, 0, 1/2, -1/2),
-		] |
-		Tm 3
-		| Gain 2/3
-		| Seq [
-			Tm 2,
-			Tm 3, 
-			Tm 4, 
-			Tm 5,
-			Tm 6, 
-			Tm 7,
-			Overlay [
-				Tm 7,
-				Tm 8,
-			] | Gain 1/2,
-			Overlay [
-				Tm 7 | PanA -1/2,
-				Tm 8,
-				Tm 9 | PanA 1/2
-			] | Gain 1/3,
-			Overlay [
-				Tm 7 | PanA 1/2,
-				Tm 8 | PanA -1/2,
-				Tm 9 | PanA 1,
-				Tm 10 | PanA -1,
-			] | Gain 1/4,
-			Overlay [
-				Tm 7 | PanA 1/2,
-				Tm 8 | PanA -1/2,
-				Tm 9 | PanA 1,
-				Tm 10 | PanA -1,
-				Tm 11 | Ta 5,
-				Tm 11,
-				Tm 12 | PanA -1/2 | Ta 10,
-				Tm 12 | PanA 1/2,
-			] | Gain 1/7,
-		] > FitLength triangle_2
+		--O [
+			--(3/2, 0, 1/2, 1/2),
+			  --(3/2, 0, 1/2, -1/2),
+			  --(1/1, 0, 1/2, 1/2),
+			  --(1/1, 0, 1/2, -1/2),
+		--] |
+		--Tm 3
+		--| Gain 2/3
+		--| Seq [
+			--Tm 2,
+			--Tm 3, 
+			--Tm 4, 
+			--Tm 5,
+			--Tm 6, 
+			--Tm 7,
+			--Overlay [
+				--Tm 7,
+				--Tm 8,
+			--] | Gain 1/2,
+			--Overlay [
+				--Tm 7 | PanA -1/2,
+				--Tm 8,
+				--Tm 9 | PanA 1/2
+			--] | Gain 1/3,
+			--Overlay [
+				--Tm 7 | PanA 1/2,
+				--Tm 8 | PanA -1/2,
+				--Tm 9 | PanA 1,
+				--Tm 10 | PanA -1,
+			--] | Gain 1/4,
+			--Overlay [
+				--Tm 7 | PanA 1/2,
+				--Tm 8 | PanA -1/2,
+				--Tm 9 | PanA 1,
+				--Tm 10 | PanA -1,
+				--Tm 11 | Ta 5,
+				--Tm 11,
+				--Tm 12 | PanA -1/2 | Ta 10,
+				--Tm 12 | PanA 1/2,
+			--] | Gain 1/7,
+		--] > FitLength triangle_2
 	] 
 }
 
@@ -516,22 +521,22 @@ coda_chord = {
 
 main = {
 	Seq [
-		section_1 | Length 4/9 | Tm	7/4, 
+		--section_1 | Length 4/9 | Tm	7/4, 
 		Seq [
-			section_1,
-			section_1 > @fast(
-				Overlay [AsIs | PanA -4/5, Ta 3 | PanA 4/5]
-				| Gain 1/2 
-			),
-			section_1 > @fast(
-				Overlay [Tm 5/4 | Reverse, Tm 6/5 | Reverse]
-				| Tm 9/8 
-				| Gain 2/3
-			),
-			triangle_part_1,
-			interlude_thing | Seq [AsIs, Reverse] | Tm 4/3, 
-			triangle_part_2,
-			coda_chord
+			--section_1,
+			--section_1 > @fast(
+				--Overlay [AsIs | PanA -4/5, Ta 3 | PanA 4/5]
+				--| Gain 1/2 
+			--),
+			--section_1 > @fast(
+				--Overlay [Tm 5/4 | Reverse, Tm 6/5 | Reverse]
+				--| Tm 9/8 
+				--| Gain 2/3
+			--),
+			--triangle_part_1,
+			--interlude_thing | Seq [AsIs, Reverse] | Tm 4/3, 
+            triangle_part_2,
+			--coda_chord
 		] 
 		-- | Repeat 2
 	]

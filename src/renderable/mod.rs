@@ -76,10 +76,10 @@ impl RenderOp {
         //self.g = (self.g.0 * offset.gain, self.g.1 * offset.gain);
         //self.g = (self.g.0 * 0.5, self.g.1 * 0.5);
 
-        self.total_samples = self.samples;
-        self.index = 0;
-        self.next_r_silent = true;
-        self.next_l_silent = true;
+        //self.total_samples = self.samples;
+        //self.index = 0;
+        //self.next_r_silent = true;
+        //self.next_l_silent = true;
     }
 }
 
@@ -231,6 +231,7 @@ pub fn nf_to_vec_renderable(
                 );
                 result.push(op);
             }
+            result.push(RenderOp::init_silent_with_length(2.0));
             result
         })
         .collect();

@@ -102,11 +102,11 @@ impl Voice {
         let loudness = loudness_normalization(frequency);
         gain *= loudness;
 
-        self.past.gain = self.current.gain;
-        self.current.gain = gain;
         self.past.frequency = self.current.frequency;
         self.current.frequency = frequency;
 
+        self.past.gain = self.current.gain;
+        self.current.gain = gain;
         self.attack = info.attack.trunc() as usize;
         self.decay = info.decay.trunc() as usize;
         self.decay_length = info.decay_type;

@@ -45,8 +45,9 @@ impl RenderVoice {
             }
         }
 
-        if self.op_index > self.ops.len() - 1 {
-            result.push(RenderOp::init_silent_with_length(1.0));
+        if self.op_index >= self.ops.len() {
+            let mut op = RenderOp::init_silent_with_length(1.0);
+            result.push(op);
             return result;
         }
 
