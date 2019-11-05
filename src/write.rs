@@ -67,7 +67,7 @@ pub fn write_composition_to_wav(composition: StereoWaveform, filename: &str) {
     write_output_buffer(&mut buffer, composition);
     normalize_waveform(&mut buffer);
 
-    let mut writer = hound::WavWriter::create("composition.wav", spec).unwrap();
+    let mut writer = hound::WavWriter::create(filename, spec).unwrap();
     for sample in buffer {
         writer
             .write_sample(sample)
