@@ -4,8 +4,10 @@ attack,
 decay,
 
 
+// this should happen in create_render_op
 if total_samples < attack + decay:
   attack, decay = total_samples/2
+
 if index < attack:
   gain = gain * attack_gain(index, distance)
 if index > decay:

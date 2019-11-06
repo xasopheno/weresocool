@@ -116,7 +116,6 @@ pub mod tests {
         fn oscillator_init_test() {
             let osc = Oscillator::init(&get_test_settings());
             let expected = Oscillator {
-                sample_phase: 0.0,
                 settings: get_test_settings(),
                 voices: (
                     Voice {
