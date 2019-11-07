@@ -1,5 +1,3 @@
-
-
 use weresocool::{
     testing::{
         generate_test_table, read_test_table_from_json_file, show_difference,

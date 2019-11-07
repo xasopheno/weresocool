@@ -92,13 +92,8 @@ impl Voice {
                 silent_next,
                 silence_now,
                 starting_index + index,
-                //1024,
-                //1024,
-                44_100,
-                44_100,
-                //std::cmp::min(44100, total_samples / 2),
-
-                //std::cmp::min(44100, total_samples / 2),
+                self.attack,
+                self.decay,
                 total_samples,
             );
             let info = SampleInfo {
@@ -135,14 +130,6 @@ impl Voice {
         self.osc_type = info.osc_type;
 
         let silence_now = gain == 0.0 || frequency == 0.0;
-        //self.set_asr(
-        //info.silence_next,
-        //silence_now,
-        //info.attack as usize,
-        //info.decay as usize,
-        //);
-
-        //println!("{:?}", self.asr);
     }
 
     pub fn silent(&self) -> bool {
