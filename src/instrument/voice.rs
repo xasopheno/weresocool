@@ -1,5 +1,8 @@
 use crate::instrument::{
-    asr::{asr2::calculate_gain, ASR},
+    asr::{
+        asr2::{calculate_gain, calculate_long_gain},
+        ASR,
+    },
     loudness::loudness_normalization,
 };
 use socool_ast::OscType;
@@ -81,11 +84,13 @@ impl Voice {
     ) {
         let factor: f64 = tau() / 44_100.0;
         let p_delta = self.calculate_portamento_delta(portamento_length);
+        let silence_now = self.current.gain == 0.0 || self.current.frequency == 0.0;
         for (index, sample) in buffer.iter_mut().enumerate() {
-            let gain = calculate_gain(
+            let gain = calculate_long_gain(
                 self.past.gain,
                 self.current.gain,
                 silent_next,
+                silence_now,
                 starting_index + index,
                 1024,
                 1024,

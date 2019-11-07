@@ -1,4 +1,3 @@
-#[allow(dead_code)]
 pub fn calculate_attack_gain(
     past_gain: f64,
     current_gain: f64,
@@ -9,13 +8,11 @@ pub fn calculate_attack_gain(
     past_gain + (distance * attack_index as f64 / attack_length as f64)
 }
 
-#[allow(dead_code)]
 pub fn calculate_decay_gain(current_gain: f64, decay_index: usize, decay_length: usize) -> f64 {
     let distance = -current_gain;
     current_gain + (distance * decay_index as f64 / decay_length as f64)
 }
 
-#[allow(dead_code)]
 pub fn calculate_gain(
     past_gain: f64,
     current_gain: f64,
@@ -29,6 +26,24 @@ pub fn calculate_gain(
     if index < attack_length {
         calculate_attack_gain(past_gain, current_gain, index, attack_length)
     } else if index > total_length - decay_length && silence_next {
+        calculate_decay_gain(current_gain, total_length - index, attack_length)
+    } else {
+        current_gain
+    }
+}
+pub fn calculate_long_gain(
+    past_gain: f64,
+    current_gain: f64,
+    silence_now: bool,
+    silence_next: bool,
+    index: usize,
+    attack_length: usize,
+    decay_length: usize,
+    total_length: usize,
+) -> f64 {
+    if index < attack_length {
+        calculate_attack_gain(past_gain, current_gain, index, attack_length)
+    } else if index < decay_length && silence_now {
         calculate_decay_gain(current_gain, total_length - index, attack_length)
     } else {
         current_gain
