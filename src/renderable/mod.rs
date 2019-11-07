@@ -117,8 +117,10 @@ impl Renderable<Vec<RenderOp>> for Vec<RenderOp> {
         let mut iter = self.iter();
 
         while let Some(op) = iter.next() {
-            let stereo_waveform = op.clone().render(oscillator, offset);
-            result.append(stereo_waveform);
+            if op.samples > 0 {
+                let stereo_waveform = op.clone().render(oscillator, offset);
+                result.append(stereo_waveform);
+            }
         }
 
         result

@@ -71,6 +71,9 @@ impl Oscillator {
     pub fn update(&mut self, op: &RenderOp, start: bool) {
         let (ref mut l_voice, ref mut r_voice) = self.voices;
 
+        if op.samples == 0 {
+            dbg!(op.samples, op.total_samples);
+        }
         l_voice.update(
             VoiceUpdate {
                 frequency: op.f,

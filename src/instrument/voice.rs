@@ -92,8 +92,13 @@ impl Voice {
                 silent_next,
                 silence_now,
                 starting_index + index,
-                std::cmp::min(44100, total_samples / 2),
-                std::cmp::min(44100, total_samples / 2),
+                //1024,
+                //1024,
+                44_100,
+                44_100,
+                //std::cmp::min(44100, total_samples / 2),
+
+                //std::cmp::min(44100, total_samples / 2),
                 total_samples,
             );
             let info = SampleInfo {

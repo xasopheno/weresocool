@@ -13,6 +13,7 @@ pub fn calculate_decay_gain(current_gain: f64, decay_index: usize, decay_length:
     current_gain + (distance * decay_index as f64 / decay_length as f64)
 }
 
+#[allow(dead_code)]
 pub fn calculate_gain(
     past_gain: f64,
     current_gain: f64,
@@ -31,6 +32,7 @@ pub fn calculate_gain(
         current_gain
     }
 }
+#[allow(dead_code)]
 pub fn calculate_long_gain(
     past_gain: f64,
     current_gain: f64,
@@ -41,13 +43,19 @@ pub fn calculate_long_gain(
     decay_length: usize,
     total_length: usize,
 ) -> f64 {
-    if index < attack_length {
-        calculate_attack_gain(past_gain, current_gain, index, attack_length)
-    } else if index < decay_length && silence_now {
-        calculate_decay_gain(current_gain, index, attack_length)
+    let short = is_short(total_length, attack_length);
+    let len = if short { total_length } else { attack_length };
+    if index < len {
+        calculate_attack_gain(past_gain, current_gain, index, len)
+    } else if index < len && silence_now {
+        calculate_decay_gain(current_gain, index, len)
     } else {
         current_gain
     }
+}
+
+pub fn is_short(total_length: usize, attack_length: usize) -> bool {
+    total_length <= attack_length
 }
 
 #[test]

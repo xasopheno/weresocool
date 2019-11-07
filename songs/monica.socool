@@ -113,22 +113,22 @@ melody = {
 
 main = {
 	Sequence [
-		Overlay [
-			highs, 
-			chords,
-			bass
-		] | Repeat 2,
-		Overlay [
-			highs2, 
-			chords,
-			bass,
-			melody,
-		],
-		Overlay [ 
-			highs | Tm 3/2, 
-			chords,
-			bass
-		],
+        Overlay [
+            highs, 
+            chords,
+            bass
+        ] | Repeat 2,
+        Overlay [
+            highs2, 
+            chords,
+            bass,
+            melody,
+        ],
+        Overlay [ 
+            highs | Tm 3/2, 
+            chords,
+            bass
+        ],
 	]
 	| Repeat 8
 }
