@@ -26,10 +26,9 @@ pub fn calculate_gain(
     total_length: usize,
 ) -> f64 {
     // short gain
-    let decay = true;
     if index < attack_length {
         calculate_attack_gain(past_gain, current_gain, index, attack_length)
-    } else if decay {
+    } else if index > total_length - decay_length && silence_next {
         calculate_decay_gain(current_gain, total_length - index, attack_length)
     } else {
         current_gain
@@ -65,6 +64,17 @@ fn test_calculate_attack() {
         total_length,
     );
     assert_eq!(gain, 0.75);
+
+    let gain = calculate_gain(
+        past_gain,
+        current_gain,
+        silence_next,
+        11,
+        attack_length,
+        decay_length,
+        total_length,
+    );
+    assert_eq!(gain, 1.0);
 
     let gain = calculate_gain(
         past_gain,

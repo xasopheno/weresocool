@@ -103,8 +103,20 @@ impl Oscillator {
 
         let (ref mut l_voice, ref mut r_voice) = self.voices;
 
-        l_voice.generate_waveform(&mut l_buffer, op.portamento, op.index, op.total_samples);
-        r_voice.generate_waveform(&mut r_buffer, op.portamento, op.index, op.total_samples);
+        l_voice.generate_waveform(
+            &mut l_buffer,
+            op.portamento,
+            op.index,
+            op.total_samples,
+            op.next_l_silent,
+        );
+        r_voice.generate_waveform(
+            &mut r_buffer,
+            op.portamento,
+            op.index,
+            op.total_samples,
+            op.next_r_silent,
+        );
 
         StereoWaveform { l_buffer, r_buffer }
     }

@@ -1,4 +1,7 @@
-use crate::instrument::{asr::ASR, loudness::loudness_normalization};
+use crate::instrument::{
+    asr::{asr2::calculate_gain, ASR},
+    loudness::loudness_normalization,
+};
 use socool_ast::OscType;
 use std::f64::consts::PI;
 
@@ -74,11 +77,20 @@ impl Voice {
         portamento_length: usize,
         starting_index: usize,
         total_samples: usize,
+        silent_next: bool,
     ) {
         let factor: f64 = tau() / 44_100.0;
         let p_delta = self.calculate_portamento_delta(portamento_length);
         for (index, sample) in buffer.iter_mut().enumerate() {
-            let gain = self.calculate_asr_gain(total_samples, starting_index + index);
+            let gain = calculate_gain(
+                self.past.gain,
+                self.current.gain,
+                silent_next,
+                starting_index + index,
+                1024,
+                1024,
+                total_samples,
+            );
             let info = SampleInfo {
                 index: index + starting_index,
                 p_delta,
@@ -113,12 +125,12 @@ impl Voice {
         self.osc_type = info.osc_type;
 
         let silence_now = gain == 0.0 || frequency == 0.0;
-        self.set_asr(
-            info.silence_next,
-            silence_now,
-            info.attack as usize,
-            info.decay as usize,
-        );
+        //self.set_asr(
+        //info.silence_next,
+        //silence_now,
+        //info.attack as usize,
+        //info.decay as usize,
+        //);
 
         //println!("{:?}", self.asr);
     }

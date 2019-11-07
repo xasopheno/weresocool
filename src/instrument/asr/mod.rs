@@ -1,4 +1,4 @@
-mod asr2;
+pub mod asr2;
 use crate::instrument::voice::Voice;
 
 #[derive(Clone, Debug, PartialEq)]
