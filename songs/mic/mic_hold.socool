@@ -1,5 +1,4 @@
-{ f: 220, l: 1, g: 1, p: 0 }
- 
+{ f: 220, l: 9/8, g: 1, p: 0 }
 
 thing1 = {
     Overlay [
@@ -12,8 +11,10 @@ thing1 = {
             (1/1, 0, 1/2, 1),
         ]
         | Seq [
-            Tm 1 | Length 3/4,
-            Ta 4 | Length 1/4,
+            Tm 0 | Length 1/4, 
+            Tm 1 | Length 1/2,
+            Ta 3 | Length 1/8,
+            Ta -6 | Length 1/8 | Gain 1/4,
             Tm 0 
         ]
         | Repeat 5 
@@ -32,19 +33,28 @@ thing2 = {
     ]
     |
     Seq [
-        Tm 1/6 | Length 9/10 | Gain 3/2,
+        Tm 1/6 | Length 9/10,
         Tm 0 | Length 1/10,
 
         Tm 4/3, 
         Tm 9/4,
-        Tm 1/6 | Length 9/10 | Gain 3/2,
+        Tm 1/6 | Length 9/10,
         Tm 0 | Length 1/10,
 
         Tm 5/4,
         Tm 4/3, 
         Tm 9/4,
-
-        Tm 1/6 | Length 9/10 | Gain 3/2,
+        O[
+            (9/1, 0, 1, 0),
+            (6/1, 0, 1, 0),
+            (6/1, 0, 1, 8),
+            (5/1, 0, 1, 0),
+            (5/1, 0, 1, 9),
+            (3/1, 0, 1, 0),
+            (2/1, 0, 1, 0),
+        ]
+        | Gain 1/2
+        | Tm 1/6 | Length 9/10,
         Tm 0 | Length 1/10,
     ] 
     > FitLength thing1
@@ -52,15 +62,22 @@ thing2 = {
 
 thing3 ={ 
     O[
-        (5/1, 3, 1/2, -1/4),
+        (9/1, 1, 1/16, -1/4),
+        (2/1, 0, 1/16, -1/4),
+        (5/1, 7, 1/2, -1/4),
         (5/1, 0, 1/2, -1/4),
-        (4/1, 3, 1/2, 1/4),
+        (4/1, 6, 1/2, 1/4),
         (4/1, 0, 1/2, 1/4),
     ] 
     | Seq [
-        Tm 4/3, Tm 15/9, Tm 3/2, Tm 7/6,
+        Tm 4/3, Tm 11/8, Tm 3/2,
+        Seq [Tm 5/3, Tm 5/4, Tm 7/6, Tm 5/4, Tm 3/2]
+        | Length 1/5,
         Seq [
-            Tm 11/8, Tm 3/2, Tm 11/8, Tm 8/5, 
+            Tm 11/8, Tm 5/4, Tm 4/3, Tm 3/2, Tm 
+            4/3 
+            | Tm 8/7 
+            | Length 2
         ] 
         | Length 1/5
     ]
@@ -70,8 +87,16 @@ thing3 ={
 }
 
 main = {
-    Overlay [
+    O[
+        (1/1, 1, 1/16, -1/4),
+        (1/1, 0, 1/16, -1/4),
+        (1/1, 7, 1/2, -1/4),
+        (1/1, 0, 1/2, -1/4),
+        (1/1, 0, 1/2, 1/4),
+    ] 
+    | Overlay [
         thing3,
+        --| Seq [Tm 0, Tm 1],
         Overlay [
             thing2,
             thing1,
@@ -79,11 +104,12 @@ main = {
         | Seq [
             Tm 1, 
             Tm 9/8,
-            Tm 5/4,
+            Tm 6/5,
             Tm 7/8, 
         ]
+        | Repeat 2,
     ]
-    | Repeat 4
-
+    | Repeat 1
+    | Gain 3/4 
 }
 
