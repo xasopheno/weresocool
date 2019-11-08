@@ -7,7 +7,7 @@ edition = "2018"
 [dependencies]
 num-rational = "0.2"
 rand = "0.7.2"
-serde = { version = "1.0.100", features = ["derive"] }
+serde = { version = "1.0.102", features = ["derive"] }
 pretty_assertions = "0.6.1"
 indexmap = "1.2.0"
 colored = "1.8.0"
