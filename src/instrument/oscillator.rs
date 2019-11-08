@@ -4,7 +4,7 @@ use crate::{
         stereo_waveform::StereoWaveform,
         voice::{Voice, VoiceUpdate},
     },
-    renderable::{Offset, RenderOp},
+    renderable::RenderOp,
     settings::Settings,
 };
 use num_rational::Rational64;
@@ -68,36 +68,26 @@ impl Oscillator {
         }
     }
 
-    pub fn update(&mut self, op: &RenderOp, start: bool) {
+    pub fn update(&mut self, op: &RenderOp) {
         let (ref mut l_voice, ref mut r_voice) = self.voices;
-
-        if op.samples == 0 {
-            dbg!(op.samples, op.total_samples);
-        }
-        l_voice.update(
-            VoiceUpdate {
-                frequency: op.f,
-                gain: op.g.0,
-                osc_type: op.osc_type,
-                silence_next: op.next_l_silent,
-                attack: op.attack,
-                decay: op.decay,
-                decay_type: op.decay_length,
-            },
-            start,
-        );
-        r_voice.update(
-            VoiceUpdate {
-                frequency: op.f,
-                gain: op.g.1,
-                osc_type: op.osc_type,
-                silence_next: op.next_r_silent,
-                attack: op.attack,
-                decay: op.decay,
-                decay_type: op.decay_length,
-            },
-            start,
-        );
+        l_voice.update(VoiceUpdate {
+            frequency: op.f,
+            gain: op.g.0,
+            osc_type: op.osc_type,
+            silence_next: op.next_l_silent,
+            attack: op.attack,
+            decay: op.decay,
+            decay_type: op.decay_length,
+        });
+        r_voice.update(VoiceUpdate {
+            frequency: op.f,
+            gain: op.g.1,
+            osc_type: op.osc_type,
+            silence_next: op.next_r_silent,
+            attack: op.attack,
+            decay: op.decay,
+            decay_type: op.decay_length,
+        });
     }
 
     pub fn generate(&mut self, op: &RenderOp) -> StereoWaveform {

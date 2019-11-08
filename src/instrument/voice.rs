@@ -1,10 +1,4 @@
-use crate::instrument::{
-    asr::{
-        asr2::{calculate_gain, calculate_long_gain},
-        ASR,
-    },
-    loudness::loudness_normalization,
-};
+use crate::instrument::{asr::asr2::calculate_gain, loudness::loudness_normalization};
 use socool_ast::OscType;
 use std::f64::consts::PI;
 
@@ -22,7 +16,6 @@ pub struct Voice {
     pub attack: usize,
     pub decay: usize,
     pub decay_length: usize,
-    pub asr: ASR,
 }
 
 #[derive(Clone, Debug, PartialEq)]
@@ -71,7 +64,6 @@ impl Voice {
             attack: 44_100,
             decay: 44_100,
             decay_length: 2,
-            asr: ASR::Silence,
         }
     }
     pub fn generate_waveform(
@@ -114,23 +106,19 @@ impl Voice {
         }
     }
 
-    pub fn update(&mut self, info: VoiceUpdate, start: bool) {
-        let frequency = info.frequency;
-        let mut gain = info.gain;
-        let loudness = loudness_normalization(frequency);
-        gain *= loudness;
-
+    pub fn update(&mut self, info: VoiceUpdate) {
         self.past.frequency = self.current.frequency;
-        self.current.frequency = frequency;
+        self.current.frequency = info.frequency;
 
         self.past.gain = self.current.gain;
-        self.current.gain = gain;
-        self.attack = info.attack.trunc() as usize;
-        self.decay = info.decay.trunc() as usize;
-        self.decay_length = info.decay_type;
+        self.current.gain = info.gain * loudness_normalization(info.frequency);
+
         self.osc_type = info.osc_type;
 
-        let silence_now = gain == 0.0 || frequency == 0.0;
+        self.attack = info.attack.trunc() as usize;
+        self.decay = info.decay.trunc() as usize;
+
+        self.decay_length = info.decay_type;
     }
 
     pub fn silent(&self) -> bool {
