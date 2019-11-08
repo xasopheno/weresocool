@@ -60,7 +60,6 @@ pub fn calculate_short_gain(
     total_length: usize,
 ) -> f64 {
     let short = is_short(total_length, attack_length, decay_length);
-    let mut len = total_length;
     if short {
         attack_length = total_length / 2;
         decay_length = total_length / 2;
@@ -69,9 +68,6 @@ pub fn calculate_short_gain(
     if index < attack_length {
         calculate_attack_gain(past_gain, current_gain, index, attack_length)
     } else if index > total_length - decay_length && silence_next {
-        if short {
-            len = decay_length;
-        };
         calculate_decay_gain(current_gain, total_length - index, attack_length)
     } else {
         current_gain
@@ -84,16 +80,21 @@ pub fn calculate_long_gain(
     silence_now: bool,
     silence_next: bool,
     index: usize,
-    attack_length: usize,
-    decay_length: usize,
+    mut attack_length: usize,
+    mut decay_length: usize,
     total_length: usize,
 ) -> f64 {
+    //let short = is_short(total_length, attack_length, decay_length);
+    //let len = if short { total_length } else { attack_length };
     let short = is_short(total_length, attack_length, decay_length);
-    let len = if short { total_length } else { attack_length };
-    if index < len {
-        calculate_attack_gain(past_gain, current_gain, index, len)
-    } else if index < len && silence_now {
-        calculate_decay_gain(current_gain, index, len)
+    if short {
+        attack_length = total_length / 2;
+        decay_length = total_length / 2;
+    };
+    if index < attack_length {
+        calculate_attack_gain(past_gain, current_gain, index, attack_length)
+    } else if index < decay_length && silence_now {
+        calculate_decay_gain(current_gain, index, decay_length)
     } else {
         current_gain
     }
