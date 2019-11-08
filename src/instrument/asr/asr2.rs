@@ -84,12 +84,10 @@ pub fn calculate_long_gain(
     mut decay_length: usize,
     total_length: usize,
 ) -> f64 {
-    //let short = is_short(total_length, attack_length, decay_length);
-    //let len = if short { total_length } else { attack_length };
     let short = is_short(total_length, attack_length, decay_length);
     if short {
-        attack_length = total_length / 2;
-        decay_length = total_length / 2;
+        attack_length = total_length;
+        decay_length = total_length;
     };
     if index < attack_length {
         calculate_attack_gain(past_gain, current_gain, index, attack_length)
