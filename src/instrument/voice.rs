@@ -86,7 +86,7 @@ impl Voice {
         let p_delta = self.calculate_portamento_delta(portamento_length);
         let silence_now = self.current.gain == 0.0 || self.current.frequency == 0.0;
         for (index, sample) in buffer.iter_mut().enumerate() {
-            let gain = calculate_long_gain(
+            let gain = calculate_gain(
                 self.past.gain,
                 self.current.gain,
                 silent_next,
@@ -95,6 +95,7 @@ impl Voice {
                 self.attack,
                 self.decay,
                 total_samples,
+                self.decay_length,
             );
             let info = SampleInfo {
                 index: index + starting_index,

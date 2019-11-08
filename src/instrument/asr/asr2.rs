@@ -12,21 +12,66 @@ pub fn calculate_decay_gain(current_gain: f64, decay_index: usize, decay_length:
     let distance = -current_gain;
     current_gain + (distance * decay_index as f64 / decay_length as f64)
 }
-
 #[allow(dead_code)]
 pub fn calculate_gain(
     past_gain: f64,
     current_gain: f64,
+    silence_now: bool,
     silence_next: bool,
     index: usize,
     attack_length: usize,
     decay_length: usize,
     total_length: usize,
+    decay_type: usize,
 ) -> f64 {
-    // short gain
+    if decay_type == 2 {
+        calculate_long_gain(
+            past_gain,
+            current_gain,
+            silence_now,
+            silence_next,
+            index,
+            attack_length,
+            decay_length,
+            total_length,
+        )
+    } else {
+        calculate_short_gain(
+            past_gain,
+            current_gain,
+            silence_next,
+            index,
+            attack_length,
+            decay_length,
+            //1024,
+            //1024,
+            total_length,
+        )
+    }
+}
+
+pub fn calculate_short_gain(
+    past_gain: f64,
+    current_gain: f64,
+    silence_next: bool,
+    index: usize,
+    mut attack_length: usize,
+    mut decay_length: usize,
+    total_length: usize,
+) -> f64 {
+    let short = is_short(total_length, attack_length, decay_length);
+    let mut len = total_length;
+    if short {
+        attack_length = total_length / 2;
+        decay_length = total_length / 2;
+    };
+
     if index < attack_length {
         calculate_attack_gain(past_gain, current_gain, index, attack_length)
     } else if index > total_length - decay_length && silence_next {
+        if short {
+            len = decay_length;
+        };
         calculate_decay_gain(current_gain, total_length - index, attack_length)
     } else {
         current_gain
@@ -43,7 +88,7 @@ pub fn calculate_long_gain(
     decay_length: usize,
     total_length: usize,
 ) -> f64 {
-    let short = is_short(total_length, attack_length);
+    let short = is_short(total_length, attack_length, decay_length);
     let len = if short { total_length } else { attack_length };
     if index < len {
         calculate_attack_gain(past_gain, current_gain, index, len)
@@ -54,8 +99,8 @@ pub fn calculate_long_gain(
     }
 }
 
-pub fn is_short(total_length: usize, attack_length: usize) -> bool {
-    total_length <= attack_length
+pub fn is_short(total_length: usize, attack_length: usize, decay_length: usize) -> bool {
+    total_length <= attack_length + decay_length
 }
 
 #[test]
