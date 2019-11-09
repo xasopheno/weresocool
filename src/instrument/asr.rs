@@ -99,15 +99,15 @@ pub fn is_short(total_length: usize, attack_length: usize, decay_length: usize) 
 }
 
 #[test]
-fn test_calculate_attack() {
+fn test_calculate_short_attack() {
     let past_gain = 0.5;
     let current_gain = 1.0;
-    let silence_next = false;
+    let silence_next = true;
     let attack_length = 10;
     let decay_length = 10;
     let total_length = 30;
 
-    let gain = calculate_gain(
+    let gain = calculate_short_gain(
         past_gain,
         current_gain,
         silence_next,
@@ -117,7 +117,7 @@ fn test_calculate_attack() {
         total_length,
     );
     assert_eq!(gain, 0.5);
-    let gain = calculate_gain(
+    let gain = calculate_short_gain(
         past_gain,
         current_gain,
         silence_next,
@@ -128,7 +128,7 @@ fn test_calculate_attack() {
     );
     assert_eq!(gain, 0.75);
 
-    let gain = calculate_gain(
+    let gain = calculate_short_gain(
         past_gain,
         current_gain,
         silence_next,
@@ -139,7 +139,7 @@ fn test_calculate_attack() {
     );
     assert_eq!(gain, 1.0);
 
-    let gain = calculate_gain(
+    let gain = calculate_short_gain(
         past_gain,
         current_gain,
         silence_next,

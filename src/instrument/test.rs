@@ -1,6 +1,5 @@
 pub mod tests {
     use crate::instrument::{
-        asr::ASR,
         loudness::loudness_normalization,
         oscillator::Oscillator,
         stereo_waveform::StereoWaveform,
@@ -28,7 +27,6 @@ pub mod tests {
                 },
                 phase: 0.0,
                 osc_type: OscType::Sine,
-                asr: ASR::Silence,
                 attack: 44100,
                 decay: 44100,
                 decay_length: 2,
@@ -51,12 +49,10 @@ pub mod tests {
                 decay_type: 2,
             };
 
-            voice.update(vu, true);
-            let gain = voice.calculate_asr_gain(10, 2);
+            voice.update(vu);
             let p_delta = voice.calculate_portamento_delta(10);
 
-            //assert_eq!(gain, 0.13176251600253114);
-            //assert_eq!(p_delta, 20.0);
+            assert_eq!(p_delta, 20.0);
         }
 
         #[test]
@@ -73,9 +69,12 @@ pub mod tests {
                 decay: 44100.0,
                 decay_type: 2,
             };
-            voice.update(vu, true);
-            //voice.generate_waveform(&mut buffer, 3, 0, 44_100);
-            //assert_eq!(buffer, [0.0, -0.33255392170798287, 0.09091323479014923]);
+            voice.update(vu);
+            voice.generate_waveform(&mut buffer, 3, 0, 44_100, true);
+            assert_eq!(
+                buffer,
+                [0.0, 0.00000032306357612478763, 0.000001292123146977096]
+            );
         }
 
         #[test]
@@ -99,10 +98,10 @@ pub mod tests {
                 decay: 44100.0,
                 decay_type: 2,
             };
-            voice.update(vu1, true);
+            voice.update(vu1);
             let silence_to_sound = voice.silence_to_sound();
 
-            voice.update(vu2, true);
+            voice.update(vu2);
             let sound_to_silence = voice.sound_to_silence();
 
             assert_eq!(silence_to_sound, true);
@@ -130,7 +129,6 @@ pub mod tests {
                             gain: 0.0,
                         },
                         osc_type: OscType::Sine,
-                        asr: ASR::Silence,
                         attack: 44100,
                         decay: 44100,
                         decay_length: 2,
@@ -147,7 +145,6 @@ pub mod tests {
                             gain: 0.0,
                         },
                         osc_type: OscType::Sine,
-                        asr: ASR::Silence,
                         attack: 44100,
                         decay: 44100,
                         decay_length: 2,
@@ -163,7 +160,7 @@ pub mod tests {
 
             let render_op = RenderOp::init_fglp(100.0, (0.75, 0.25), 1.0, 0.0);
 
-            osc.update(&render_op, true);
+            osc.update(&render_op);
 
             assert_eq!(osc.voices.0.past.frequency, 0.0);
             assert_eq!(osc.voices.0.past.gain, 0.0);
@@ -187,13 +184,13 @@ pub mod tests {
             render_op.samples = 3;
             render_op.total_samples = 44_100;
 
-            osc.update(&render_op, true);
+            osc.update(&render_op);
 
             let expected = StereoWaveform {
-                l_buffer: vec![0.0, 0.0035617759267757834, 0.014245657695422482],
-                r_buffer: vec![0.0, 0.0011872586422585945, 0.004748552565140827],
+                l_buffer: vec![0.0, 0.0000002422976820935907, 0.0000009690923602328218],
+                r_buffer: vec![0.0, 0.00000008076589403119691, 0.000000323030786744274],
             };
-            //assert_eq!(osc.generate(&render_op), expected);
+            assert_eq!(osc.generate(&render_op), expected);
         }
     }
 
