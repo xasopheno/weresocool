@@ -7,7 +7,7 @@ pub mod tests {
     };
     use crate::renderable::RenderOp;
     use crate::settings::get_test_settings;
-    use socool_ast::ast::OscType;
+    use socool_ast::ast::{OscType, ASR};
     pub mod voice {
         use super::*;
         #[test]
@@ -29,7 +29,7 @@ pub mod tests {
                 osc_type: OscType::Sine,
                 attack: 44100,
                 decay: 44100,
-                decay_length: 2,
+                asr: ASR::Long,
             };
 
             assert_eq!(voice, result);
@@ -46,7 +46,7 @@ pub mod tests {
                 silence_next: true,
                 attack: 44100.0,
                 decay: 44100.0,
-                decay_type: 2,
+                asr: ASR::Long,
             };
 
             voice.update(vu);
@@ -67,7 +67,7 @@ pub mod tests {
                 silence_next: true,
                 attack: 44100.0,
                 decay: 44100.0,
-                decay_type: 2,
+                asr: ASR::Long,
             };
             voice.update(vu);
             voice.generate_waveform(&mut buffer, 3, 0, 44_100, true);
@@ -87,7 +87,7 @@ pub mod tests {
                 silence_next: true,
                 attack: 44100.0,
                 decay: 44100.0,
-                decay_type: 2,
+                asr: ASR::Long,
             };
             let vu2 = VoiceUpdate {
                 frequency: 100.0,
@@ -96,7 +96,7 @@ pub mod tests {
                 silence_next: true,
                 attack: 44100.0,
                 decay: 44100.0,
-                decay_type: 2,
+                asr: ASR::Long,
             };
             voice.update(vu1);
             let silence_to_sound = voice.silence_to_sound();
@@ -131,7 +131,7 @@ pub mod tests {
                         osc_type: OscType::Sine,
                         attack: 44100,
                         decay: 44100,
-                        decay_length: 2,
+                        asr: ASR::Long,
                     },
                     Voice {
                         index: 1,
@@ -147,7 +147,7 @@ pub mod tests {
                         osc_type: OscType::Sine,
                         attack: 44100,
                         decay: 44100,
-                        decay_length: 2,
+                        asr: ASR::Long,
                     },
                 ),
             };

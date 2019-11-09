@@ -2,7 +2,7 @@ use crate::generation::parsed_to_render::r_to_f64;
 use crate::instrument::oscillator::{point_op_to_gains, Basis};
 use crate::instrument::{Oscillator, StereoWaveform};
 use num_rational::Rational64;
-use socool_ast::{NormalForm, Normalize, OpOrNfTable, OscType, PointOp};
+use socool_ast::{NormalForm, Normalize, OpOrNfTable, OscType, PointOp, ASR};
 pub mod render_voice;
 mod test;
 pub use render_voice::{renderables_to_render_voices, RenderVoice};
@@ -16,7 +16,7 @@ pub struct RenderOp {
     pub t: f64,
     pub attack: f64,
     pub decay: f64,
-    pub decay_length: usize,
+    pub asr: ASR,
     pub samples: usize,
     pub index: usize,
     pub total_samples: usize,
@@ -38,7 +38,7 @@ impl RenderOp {
             t: 0.0,
             attack: 44_100.0,
             decay: 44_100.0,
-            decay_length: 2,
+            asr: ASR::Long,
             samples: 44_100,
             total_samples: 44_100,
             index: 0,
@@ -59,7 +59,7 @@ impl RenderOp {
             t: 0.0,
             attack: 44_100.0,
             decay: 44_100.0,
-            decay_length: 2,
+            asr: ASR::Long,
             samples: 44_100,
             total_samples: 44_100,
             index: 0,
@@ -167,7 +167,7 @@ fn pointop_to_renderop(
         attack: r_to_f64(point_op.attack * basis.a) * 44_100.0,
         decay: r_to_f64(point_op.decay * basis.d) * 44_100.0,
         osc_type: point_op.osc_type,
-        decay_length: point_op.decay_length,
+        asr: point_op.asr,
         portamento: (r_to_f64(point_op.portamento) * 1024.0) as usize,
         voice,
         event,

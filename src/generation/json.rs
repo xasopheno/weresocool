@@ -8,7 +8,7 @@ use error::Error;
 use num_rational::Rational64;
 use serde::{Deserialize, Serialize};
 use serde_json::to_string;
-use socool_ast::{NameSet, NormalForm, Normalize, OpOrNfTable, OscType, PointOp};
+use socool_ast::{NameSet, NormalForm, Normalize, OpOrNfTable, OscType, PointOp, ASR};
 
 pub fn r_to_f64(r: Rational64) -> f64 {
     *r.numer() as f64 / *r.denom() as f64
@@ -22,7 +22,7 @@ pub struct TimedOp {
     pub event: usize,
     pub attack: Rational64,
     pub decay: Rational64,
-    pub decay_length: usize,
+    pub asr: ASR,
     pub portamento: Rational64,
     pub osc_type: OscType,
     pub fm: Rational64,
@@ -70,7 +70,7 @@ impl TimedOp {
             l: self.l,
             attack: self.decay,
             decay: self.decay,
-            decay_length: self.decay_length,
+            asr: self.asr,
             portamento: self.portamento,
             osc_type: self.osc_type,
             names: NameSet::new(),
@@ -235,7 +235,7 @@ fn point_op_to_timed_op(
         attack: point_op.attack,
         osc_type: point_op.osc_type,
         decay: point_op.decay,
-        decay_length: point_op.decay_length,
+        asr: point_op.asr,
         portamento: point_op.portamento,
         g: point_op.g,
         l: point_op.l,

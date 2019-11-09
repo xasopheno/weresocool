@@ -1,6 +1,6 @@
 extern crate num_rational;
 /**/
-use crate::ast::{OpOrNf, OpOrNfTable, OscType};
+use crate::ast::{OpOrNf, OpOrNfTable, OscType, ASR};
 use num_rational::{Ratio, Rational64};
 use std::{
     collections::{BTreeSet, HashMap},
@@ -30,7 +30,7 @@ pub struct PointOp {
     pub l: Rational64,
     pub attack: Rational64,
     pub decay: Rational64,
-    pub decay_length: usize,
+    pub asr: ASR,
     pub portamento: Rational64,
     pub osc_type: OscType,
     pub names: NameSet,
@@ -164,7 +164,7 @@ impl Mul<PointOp> for PointOp {
             osc_type: other.osc_type,
             attack: self.attack * other.attack,
             decay: self.decay * other.decay,
-            decay_length: other.decay_length,
+            asr: other.asr,
             portamento: self.portamento * other.portamento,
             names,
         }
@@ -186,7 +186,7 @@ impl<'a, 'b> Mul<&'b PointOp> for &'a PointOp {
             osc_type: other.osc_type,
             attack: self.attack * other.attack,
             decay: self.decay * other.decay,
-            decay_length: other.decay_length,
+            asr: other.asr,
             portamento: self.portamento * other.portamento,
             names,
         }
@@ -206,7 +206,7 @@ impl MulAssign for PointOp {
             osc_type: other.osc_type,
             attack: self.attack * other.attack,
             decay: self.decay * other.decay,
-            decay_length: other.decay_length,
+            asr: other.asr,
             portamento: self.portamento * other.portamento,
             names,
         }
@@ -231,7 +231,7 @@ impl PointOp {
             osc_type: other.osc_type,
             attack: self.attack * other.attack,
             decay: self.decay * other.decay,
-            decay_length: other.decay_length,
+            asr: other.asr,
             portamento: self.portamento * other.portamento,
             names,
         }
@@ -247,7 +247,7 @@ impl PointOp {
             l: Ratio::new(1, 1),
             attack: Ratio::new(1, 1),
             decay: Ratio::new(1, 1),
-            decay_length: 2,
+            asr: ASR::Long,
             portamento: Ratio::new(1, 1),
             osc_type: OscType::Sine,
             names: NameSet::new(),
@@ -264,7 +264,7 @@ impl PointOp {
             attack: Ratio::new(1, 1),
             decay: Ratio::new(1, 1),
             portamento: Ratio::new(1, 1),
-            decay_length: 2,
+            asr: ASR::Long,
             osc_type: OscType::Sine,
             names: NameSet::new(),
         }

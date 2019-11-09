@@ -1,5 +1,5 @@
 use crate::instrument::{asr::calculate_gain, loudness::loudness_normalization};
-use socool_ast::OscType;
+use socool_ast::{OscType, ASR};
 use std::f64::consts::PI;
 
 fn tau() -> f64 {
@@ -15,7 +15,7 @@ pub struct Voice {
     pub osc_type: OscType,
     pub attack: usize,
     pub decay: usize,
-    pub decay_length: usize,
+    pub asr: ASR,
 }
 
 #[derive(Clone, Debug, PartialEq)]
@@ -50,7 +50,7 @@ pub struct VoiceUpdate {
     pub silence_next: bool,
     pub attack: f64,
     pub decay: f64,
-    pub decay_type: usize,
+    pub asr: ASR,
 }
 
 impl Voice {
@@ -63,7 +63,7 @@ impl Voice {
             osc_type: OscType::Sine,
             attack: 44_100,
             decay: 44_100,
-            decay_length: 2,
+            asr: ASR::Long,
         }
     }
     pub fn generate_waveform(
@@ -87,7 +87,7 @@ impl Voice {
                 self.attack,
                 self.decay,
                 total_samples,
-                self.decay_length,
+                self.asr,
             );
             let info = SampleInfo {
                 index: index + starting_index,
@@ -118,7 +118,7 @@ impl Voice {
         self.attack = info.attack.trunc() as usize;
         self.decay = info.decay.trunc() as usize;
 
-        self.decay_length = info.decay_type;
+        self.asr = info.asr;
     }
 
     pub fn silent(&self) -> bool {

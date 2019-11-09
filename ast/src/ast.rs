@@ -45,7 +45,7 @@ pub enum Op {
     AD {
         attack: Rational64,
         decay: Rational64,
-        length: usize,
+        asr: ASR,
     },
     Portamento {
         m: Rational64,
@@ -109,6 +109,12 @@ pub enum OscType {
     Sine,
     Noise,
     Square,
+}
+
+#[derive(Copy, Clone, Debug, PartialEq, Serialize, Deserialize, Ord, PartialOrd, Hash, Eq)]
+pub enum ASR {
+    Short,
+    Long,
 }
 
 pub fn is_choice_op(op_or_nf: OpOrNf, table: &OpOrNfTable) -> bool {

@@ -77,7 +77,7 @@ impl Oscillator {
             silence_next: op.next_l_silent,
             attack: op.attack,
             decay: op.decay,
-            decay_type: op.decay_length,
+            asr: op.asr,
         });
         r_voice.update(VoiceUpdate {
             frequency: op.f,
@@ -86,7 +86,7 @@ impl Oscillator {
             silence_next: op.next_r_silent,
             attack: op.attack,
             decay: op.decay,
-            decay_type: op.decay_length,
+            asr: op.asr,
         });
     }
 

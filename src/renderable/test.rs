@@ -10,7 +10,7 @@ mod tests {
         },
     };
     use num_rational::Rational64;
-    use socool_ast::{OscType, PointOp};
+    use socool_ast::{OscType, PointOp, ASR};
 
     #[test]
     fn test_short_renderop() {
@@ -32,7 +32,7 @@ mod tests {
                 voice: 0,
                 event: 0,
                 t: 0.0,
-                decay_length: 2,
+                asr: ASR::Long,
             },
             RenderOp {
                 f: 220.0,
@@ -51,7 +51,7 @@ mod tests {
                 voice: 0,
                 event: 0,
                 t: 0.0,
-                decay_length: 2,
+                asr: ASR::Long,
             },
         ];
         let seq2 = vec![RenderOp {
@@ -71,7 +71,7 @@ mod tests {
             voice: 0,
             event: 0,
             t: 0.0,
-            decay_length: 2,
+            asr: ASR::Long,
         }];
     }
 
@@ -126,7 +126,7 @@ mod tests {
                 t: 0.0,
                 attack: 44_100.0,
                 decay: 44_100.0,
-                decay_length: 2,
+                asr: ASR::Long,
                 samples: 44_100,
                 total_samples: 44100,
                 index: 0,
@@ -145,7 +145,7 @@ mod tests {
                 t: 0.0,
                 attack: 44_100.0,
                 decay: 44_100.0,
-                decay_length: 2,
+                asr: ASR::Long,
                 samples: 44100,
                 total_samples: 44100,
                 index: 0,

@@ -5,7 +5,7 @@ pub mod tests {
         instrument::Basis,
     };
     use num_rational::Rational64;
-    use socool_ast::OscType;
+    use socool_ast::{OscType, ASR};
 
     #[test]
     fn render_equal() {
@@ -144,7 +144,7 @@ pub mod tests {
             event: 0,
             attack: Rational64::new(1, 1),
             decay: Rational64::new(1, 1),
-            decay_length: 1,
+            asr: ASR::Short,
             next_event: None,
             portamento: Rational64::new(1, 1),
             osc_type: OscType::Sine,

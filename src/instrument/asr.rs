@@ -1,3 +1,4 @@
+use socool_ast::ASR;
 pub fn calculate_attack_gain(
     past_gain: f64,
     current_gain: f64,
@@ -22,9 +23,9 @@ pub fn calculate_gain(
     attack_length: usize,
     decay_length: usize,
     total_length: usize,
-    decay_type: usize,
+    asr: ASR,
 ) -> f64 {
-    if decay_type == 2 {
+    if asr == ASR::Long {
         calculate_long_gain(
             past_gain,
             current_gain,
