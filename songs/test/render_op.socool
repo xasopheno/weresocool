@@ -4,11 +4,8 @@
 thing1 = {
 	Sequence [
 		AsIs,
-	] 
-    | Overlay [
-        AsIs, 
         Tm 3/2 | PanA 0.4
-    ]
+	] 
 }
 
 main = {

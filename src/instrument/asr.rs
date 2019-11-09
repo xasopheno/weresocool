@@ -48,6 +48,7 @@ pub fn calculate_gain(
     }
 }
 
+/// Calculate gain when decay happens during current op
 pub fn calculate_short_gain(
     past_gain: f64,
     current_gain: f64,
@@ -71,7 +72,7 @@ pub fn calculate_short_gain(
         current_gain
     }
 }
-#[allow(dead_code)]
+/// Calculate gain when decay happens during next op
 pub fn calculate_long_gain(
     past_gain: f64,
     current_gain: f64,
