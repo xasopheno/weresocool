@@ -98,55 +98,47 @@ pub fn is_short(total_length: usize, attack_length: usize, decay_length: usize) 
     total_length <= attack_length + decay_length
 }
 
-#[test]
-fn test_calculate_short_attack() {
-    let past_gain = 0.5;
-    let current_gain = 1.0;
-    let silence_next = true;
-    let attack_length = 10;
-    let decay_length = 10;
-    let total_length = 30;
+#[cfg(test)]
+pub mod tests {
+    use super::*;
+    fn gain_at_index(index: usize, decay_type: usize) -> f64 {
+        let past_gain = 0.5;
+        let current_gain = 1.0;
+        let silence_next = true;
+        let silence_now = false;
+        let attack_length = 10;
+        let decay_length = 10;
+        let total_length = 30;
 
-    let gain = calculate_short_gain(
-        past_gain,
-        current_gain,
-        silence_next,
-        0,
-        attack_length,
-        decay_length,
-        total_length,
-    );
-    assert_eq!(gain, 0.5);
-    let gain = calculate_short_gain(
-        past_gain,
-        current_gain,
-        silence_next,
-        5,
-        attack_length,
-        decay_length,
-        total_length,
-    );
-    assert_eq!(gain, 0.75);
+        if decay_type == 1 {
+            calculate_short_gain(
+                past_gain,
+                current_gain,
+                silence_next,
+                index,
+                attack_length,
+                decay_length,
+                total_length,
+            )
+        } else {
+            calculate_long_gain(
+                past_gain,
+                current_gain,
+                silence_now,
+                index,
+                attack_length,
+                decay_length,
+                total_length,
+            )
+        }
+    }
+    #[test]
+    fn test_calculate_short_attack() {
+        assert_eq!(gain_at_index(0, 1), 0.5);
+        assert_eq!(gain_at_index(5, 1), 0.75);
+        assert_eq!(gain_at_index(11, 1), 1.0);
+        assert_eq!(gain_at_index(25, 1), 0.5);
 
-    let gain = calculate_short_gain(
-        past_gain,
-        current_gain,
-        silence_next,
-        11,
-        attack_length,
-        decay_length,
-        total_length,
-    );
-    assert_eq!(gain, 1.0);
-
-    let gain = calculate_short_gain(
-        past_gain,
-        current_gain,
-        silence_next,
-        25,
-        attack_length,
-        decay_length,
-        total_length,
-    );
-    assert_eq!(gain, 0.5);
+        assert_eq!(gain_at_index(25, 2), 1.0);
+    }
 }
