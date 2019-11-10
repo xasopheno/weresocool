@@ -1,5 +1,4 @@
 use crate::{
-    generation::parsed_to_render::r_to_f64,
     instrument::{
         stereo_waveform::StereoWaveform,
         voice::{Voice, VoiceUpdate},
@@ -8,7 +7,6 @@ use crate::{
     settings::Settings,
 };
 use num_rational::Rational64;
-use socool_ast::PointOp;
 use socool_parser::Init;
 
 #[derive(Clone, Debug, PartialEq)]
