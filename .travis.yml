@@ -2,9 +2,9 @@ language: rust
 cache: cargo
 rust:
   - stable
-#  - nightly
 before_script:
-  - travis_wait rustup component add rustfmt
+  - cargo build --verbose --all
+  - rustup component add rustfmt
 script:
-  - travis_wait./format_ci.sh
-  - travis_wait ./test.sh
+  - ./format_ci.sh
+  - ./test.sh
