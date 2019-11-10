@@ -1,11 +1,20 @@
 #[cfg(test)]
 pub mod tests {
     use crate::{
-        generation::{sum_vec, vec_timed_op_to_vec_op4d, EventType, Op4D, TimedOp},
+        generation::{
+            composition_to_vec_timed_op, sum_vec, vec_timed_op_to_vec_op4d, EventType, Op4D,
+            TimedOp,
+        },
         instrument::Basis,
     };
     use num_rational::Rational64;
-    use socool_ast::{OscType, ASR};
+    use pretty_assertions::assert_eq;
+    use socool_ast::{
+        NormalForm, Normalize,
+        Op::*,
+        OpOrNf::{Nf, Op},
+        OpOrNfTable, OscType, ASR,
+    };
 
     #[test]
     fn render_equal() {
@@ -25,100 +34,99 @@ pub mod tests {
         assert_eq!(a, expected);
     }
 
-    //#[test]
-    //fn to_vec_timed_op_test() {
-    //let mut normal_form = NormalForm::init();
-    //let pt = OpOrNfTable::new();
+    #[test]
+    fn to_vec_timed_op_test() {
+        let mut normal_form = NormalForm::init();
+        let pt = OpOrNfTable::new();
 
-    //Overlay {
-    //operations: vec![
-    //Op(Sequence {
-    //operations: vec![
-    //Op(PanA {
-    //a: Rational64::new(1, 2),
-    //}),
-    //Op(TransposeM {
-    //m: Rational64::new(2, 1),
-    //}),
-    //Op(Gain {
-    //m: Rational64::new(1, 2),
-    //}),
-    //Op(Length {
-    //m: Rational64::new(2, 1),
-    //}),
-    //],
-    //}),
-    //Op(Sequence {
-    //operations: vec![Op(Length {
-    //m: Rational64::new(5, 1),
-    //})],
-    //}),
-    //],
-    //}
-    //.apply_to_normal_form(&mut normal_form, &pt);
+        Overlay {
+            operations: vec![
+                Op(Sequence {
+                    operations: vec![
+                        Op(PanA {
+                            a: Rational64::new(1, 2),
+                        }),
+                        Op(TransposeM {
+                            m: Rational64::new(2, 1),
+                        }),
+                        Op(Gain {
+                            m: Rational64::new(1, 2),
+                        }),
+                        Op(Length {
+                            m: Rational64::new(2, 1),
+                        }),
+                    ],
+                }),
+                Op(Sequence {
+                    operations: vec![Op(Length {
+                        m: Rational64::new(5, 1),
+                    })],
+                }),
+            ],
+        }
+        .apply_to_normal_form(&mut normal_form, &pt);
 
-    //let timed_ops = composition_to_vec_timed_op(&normal_form, &pt);
+        let timed_ops = composition_to_vec_timed_op(&normal_form, &pt);
 
-    //let op = TimedOp {
-    //fm: Rational64::new(1, 1),
-    //fa: Rational64::new(0, 1),
-    //pm: Rational64::new(1, 1),
-    //pa: Rational64::new(0, 1),
-    //g: Rational64::new(1, 1),
-    //l: Rational64::new(1, 1),
-    //t: Rational64::new(0, 1),
-    //event_type: EventType::On,
-    //voice: 0,
-    //event: 0,
-    //attack: Rational64::new(1, 1),
-    //decay: Rational64::new(1, 1),
-    //decay_length: 1,
-    //next_event: None,
-    //portamento: Rational64::new(1, 1),
-    //osc_type: OscType::Sine,
-    //};
+        let op = TimedOp {
+            fm: Rational64::new(1, 1),
+            fa: Rational64::new(0, 1),
+            pm: Rational64::new(1, 1),
+            pa: Rational64::new(0, 1),
+            g: Rational64::new(1, 1),
+            l: Rational64::new(1, 1),
+            t: Rational64::new(0, 1),
+            event_type: EventType::On,
+            voice: 0,
+            event: 0,
+            attack: Rational64::new(1, 1),
+            decay: Rational64::new(1, 1),
+            asr: ASR::Long,
+            portamento: Rational64::new(1, 1),
+            osc_type: OscType::Sine,
+        };
 
-    //assert_eq!(
-    //timed_ops,
-    //(
-    //vec![
-    //TimedOp {
-    //pa: Rational64::new(1, 2),
-    //event_type: EventType::On,
-    //..op.clone()
-    //},
-    //TimedOp {
-    //event_type: EventType::On,
-    //l: Rational64::new(5, 1),
-    //voice: 1,
-    //..op.clone()
-    //},
-    //TimedOp {
-    //fm: Rational64::new(2, 1),
-    //t: Rational64::new(1, 1),
-    //event_type: EventType::On,
-    //event: 1,
-    //..op.clone()
-    //},
-    //TimedOp {
-    //g: Rational64::new(1, 2),
-    //t: Rational64::new(2, 1),
-    //event_type: EventType::On,
-    //event: 2,
-    //..op.clone()
-    //},
-    //TimedOp {
-    //t: Rational64::new(3, 1),
-    //l: Rational64::new(2, 1),
-    //event_type: EventType::On,
-    //event: 3,
-    //..op.clone()
-    //},
-    //],
-    //1
-    //)
-    //);
-    //}
+        assert_eq!(
+            timed_ops,
+            (
+                vec![
+                    TimedOp {
+                        pa: Rational64::new(1, 2),
+                        event_type: EventType::On,
+                        ..op.clone()
+                    },
+                    TimedOp {
+                        event_type: EventType::On,
+                        l: Rational64::new(5, 1),
+                        voice: 1,
+                        ..op.clone()
+                    },
+                    TimedOp {
+                        fm: Rational64::new(2, 1),
+                        t: Rational64::new(1, 1),
+                        event_type: EventType::On,
+                        event: 1,
+                        ..op.clone()
+                    },
+                    TimedOp {
+                        g: Rational64::new(1, 2),
+                        t: Rational64::new(2, 1),
+                        event_type: EventType::On,
+                        event: 2,
+                        ..op.clone()
+                    },
+                    TimedOp {
+                        t: Rational64::new(3, 1),
+                        l: Rational64::new(2, 1),
+                        event_type: EventType::On,
+                        event: 3,
+                        ..op.clone()
+                    },
+                ],
+                2
+            )
+        );
+    }
 
     #[test]
     fn to_vec_op4d_test() {
@@ -145,7 +153,6 @@ pub mod tests {
             attack: Rational64::new(1, 1),
             decay: Rational64::new(1, 1),
             asr: ASR::Short,
-            next_event: None,
             portamento: Rational64::new(1, 1),
             osc_type: OscType::Sine,
         };

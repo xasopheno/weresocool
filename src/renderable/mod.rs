@@ -1,5 +1,5 @@
 use crate::generation::parsed_to_render::r_to_f64;
-use crate::instrument::oscillator::{point_op_to_gains, Basis};
+use crate::instrument::oscillator::Basis;
 use crate::instrument::{Oscillator, StereoWaveform};
 use num_rational::Rational64;
 use socool_ast::{NormalForm, Normalize, OpOrNfTable, OscType, PointOp, ASR};
@@ -178,6 +178,26 @@ fn pointop_to_renderop(
     *time += point_op.l * basis.l;
 
     render_op
+}
+
+pub fn point_op_to_gains(point_op: &PointOp, basis: &Basis) -> (f64, f64) {
+    let pm = r_to_f64(point_op.pm);
+    let pa = r_to_f64(point_op.pa);
+    let g = r_to_f64(point_op.g);
+
+    let l_gain = if *point_op.g.numer() == 0 {
+        0.0
+    } else {
+        g * (((1.0 + pa * pm) + r_to_f64(basis.p)) / 2.0) * r_to_f64(basis.g)
+    };
+
+    let r_gain = if *point_op.g.numer() == 0 {
+        0.0
+    } else {
+        g * (((-1.0 + pa * pm) + r_to_f64(basis.p)) / -2.0) * r_to_f64(basis.g)
+    };
+
+    (l_gain, r_gain)
 }
 
 pub fn m_a_and_basis_to_f64(basis: Rational64, m: Rational64, a: Rational64) -> f64 {

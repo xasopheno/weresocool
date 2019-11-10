@@ -40,26 +40,6 @@ impl From<Init> for Basis {
     }
 }
 
-pub fn point_op_to_gains(point_op: &PointOp, basis: &Basis) -> (f64, f64) {
-    let pm = r_to_f64(point_op.pm);
-    let pa = r_to_f64(point_op.pa);
-    let g = r_to_f64(point_op.g);
-
-    let l_gain = if *point_op.g.numer() == 0 {
-        0.0
-    } else {
-        g * (((1.0 + pa * pm) + r_to_f64(basis.p)) / 2.0) * r_to_f64(basis.g)
-    };
-
-    let r_gain = if *point_op.g.numer() == 0 {
-        0.0
-    } else {
-        g * (((-1.0 + pa * pm) + r_to_f64(basis.p)) / -2.0) * r_to_f64(basis.g)
-    };
-
-    (l_gain, r_gain)
-}
-
 impl Oscillator {
     pub fn init(settings: &Settings) -> Oscillator {
         Oscillator {

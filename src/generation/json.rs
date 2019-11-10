@@ -31,7 +31,6 @@ pub struct TimedOp {
     pub pa: Rational64,
     pub g: Rational64,
     pub l: Rational64,
-    pub next_event: Option<PointOp>,
 }
 
 impl TimedOp {
@@ -225,7 +224,6 @@ fn point_op_to_timed_op(
     time: &mut Rational64,
     voice: usize,
     event: usize,
-    next_event: Option<PointOp>,
 ) -> TimedOp {
     let timed_op = TimedOp {
         fm: point_op.fm,
@@ -243,7 +241,6 @@ fn point_op_to_timed_op(
         event_type: EventType::On,
         voice,
         event,
-        next_event,
     };
 
     *time += point_op.l;
@@ -274,18 +271,7 @@ pub fn composition_to_vec_timed_op(
             let mut result = vec![];
             let iter = vec_point_op.iter();
             for (event, p_op) in iter.enumerate() {
-                let mut next_e = event;
-                if event == vec_point_op.len() {
-                    next_e = 0;
-                };
-
-                let op = point_op_to_timed_op(
-                    p_op,
-                    &mut time,
-                    voice,
-                    event,
-                    Some(vec_point_op[next_e].clone()),
-                );
+                let op = point_op_to_timed_op(p_op, &mut time, voice, event);
                 result.push(op);
             }
             result
@@ -294,7 +280,6 @@ pub fn composition_to_vec_timed_op(
 
     result.sort_unstable_by_key(|a| a.t);
 
-    //dbg!(&result);
     (result, n_voices)
 }
 
