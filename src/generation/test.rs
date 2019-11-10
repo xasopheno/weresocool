@@ -8,7 +8,8 @@ pub mod tests {
         instrument::Basis,
     };
     use num_rational::Rational64;
-    use socool_ast::{NormalForm, Normalize, Op::*, OpOrNf::*, OpOrNfTable};
+    use pretty_assertions::assert_eq;
+    use socool_ast::{NormalForm, Normalize, Op::*, OpOrNf::Op, OpOrNfTable, OscType, ASR};
 
     #[test]
     fn render_equal() {
@@ -73,56 +74,64 @@ pub mod tests {
             event_type: EventType::On,
             voice: 0,
             event: 0,
+            attack: Rational64::new(1, 1),
+            decay: Rational64::new(1, 1),
+            asr: ASR::Long,
+            portamento: Rational64::new(1, 1),
+            osc_type: OscType::Sine,
         };
 
         assert_eq!(
             timed_ops,
-            vec![
-                TimedOp {
-                    pa: Rational64::new(1, 2),
-                    event_type: EventType::On,
-                    ..op
-                },
-                TimedOp {
-                    event_type: EventType::On,
-                    l: Rational64::new(5, 1),
-                    voice: 1,
-                    ..op
-                },
-                TimedOp {
-                    fm: Rational64::new(2, 1),
-                    t: Rational64::new(1, 1),
-                    event_type: EventType::On,
-                    event: 1,
-                    ..op
-                },
-                TimedOp {
-                    g: Rational64::new(1, 2),
-                    t: Rational64::new(2, 1),
-                    event_type: EventType::On,
-                    event: 2,
-                    ..op
-                },
-                TimedOp {
-                    t: Rational64::new(3, 1),
-                    l: Rational64::new(2, 1),
-                    event_type: EventType::On,
-                    event: 3,
-                    ..op
-                },
-            ]
+            (
+                vec![
+                    TimedOp {
+                        pa: Rational64::new(1, 2),
+                        event_type: EventType::On,
+                        ..op.clone()
+                    },
+                    TimedOp {
+                        event_type: EventType::On,
+                        l: Rational64::new(5, 1),
+                        voice: 1,
+                        ..op.clone()
+                    },
+                    TimedOp {
+                        fm: Rational64::new(2, 1),
+                        t: Rational64::new(1, 1),
+                        event_type: EventType::On,
+                        event: 1,
+                        ..op.clone()
+                    },
+                    TimedOp {
+                        g: Rational64::new(1, 2),
+                        t: Rational64::new(2, 1),
+                        event_type: EventType::On,
+                        event: 2,
+                        ..op.clone()
+                    },
+                    TimedOp {
+                        t: Rational64::new(3, 1),
+                        l: Rational64::new(2, 1),
+                        event_type: EventType::On,
+                        event: 3,
+                        ..op.clone()
+                    },
+                ],
+                2
+            )
         );
     }
 
     #[test]
     fn to_vec_op4d_test() {
         let basis = Basis {
-            f: 100.0,
-            g: 1.0,
-            p: 0.0,
-            l: 1.0,
-            a: 44100.0,
-            d: 44100.0,
+            f: Rational64::new(100, 1),
+            g: Rational64::new(1, 1),
+            p: Rational64::new(0, 1),
+            l: Rational64::new(1, 1),
+            a: Rational64::new(1, 1),
+            d: Rational64::new(1, 1),
         };
 
         let op = TimedOp {
@@ -136,19 +145,24 @@ pub mod tests {
             event_type: EventType::On,
             voice: 0,
             event: 0,
+            attack: Rational64::new(1, 1),
+            decay: Rational64::new(1, 1),
+            asr: ASR::Short,
+            portamento: Rational64::new(1, 1),
+            osc_type: OscType::Sine,
         };
 
         let vec_timed_op = vec![
             TimedOp {
                 event_type: EventType::On,
                 l: Rational64::new(3, 2),
-                ..op
+                ..op.clone()
             },
             TimedOp {
                 event_type: EventType::Off,
                 l: Rational64::new(3, 2),
                 t: Rational64::new(3, 2),
-                ..op
+                ..op.clone()
             },
         ];
 

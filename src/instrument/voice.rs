@@ -1,5 +1,10 @@
-use crate::instrument::{asr::ASR, loudness::loudness_normalization};
-use socool_ast::OscType;
+use crate::instrument::{asr::calculate_gain, loudness::loudness_normalization};
+use socool_ast::{OscType, ASR};
+use std::f64::consts::PI;
+
+fn tau() -> f64 {
+    PI * 2.0
+}
 
 #[derive(Clone, Debug, PartialEq)]
 pub struct Voice {
@@ -10,7 +15,6 @@ pub struct Voice {
     pub osc_type: OscType,
     pub attack: usize,
     pub decay: usize,
-    pub decay_length: usize,
     pub asr: ASR,
 }
 
@@ -38,6 +42,7 @@ impl VoiceState {
     }
 }
 
+#[derive(Clone, Debug)]
 pub struct VoiceUpdate {
     pub frequency: f64,
     pub gain: f64,
@@ -45,7 +50,7 @@ pub struct VoiceUpdate {
     pub silence_next: bool,
     pub attack: f64,
     pub decay: f64,
-    pub decay_type: usize,
+    pub asr: ASR,
 }
 
 impl Voice {
@@ -56,27 +61,38 @@ impl Voice {
             current: VoiceState::init(),
             phase: 0.0,
             osc_type: OscType::Sine,
-            attack: 44100,
-            decay: 44100,
-            decay_length: 2,
-            asr: ASR::Silence,
+            attack: 44_100,
+            decay: 44_100,
+            asr: ASR::Long,
         }
     }
     pub fn generate_waveform(
         &mut self,
         buffer: &mut Vec<f64>,
         portamento_length: usize,
-        factor: f64,
+        starting_index: usize,
+        total_samples: usize,
+        silent_next: bool,
     ) {
+        let factor: f64 = tau() / 44_100.0;
         let p_delta = self.calculate_portamento_delta(portamento_length);
-
-        let buffer_len = buffer.len();
-
+        let silence_now = self.current.gain == 0.0 || self.current.frequency == 0.0;
         for (index, sample) in buffer.iter_mut().enumerate() {
+            let gain = calculate_gain(
+                self.past.gain,
+                self.current.gain,
+                silent_next,
+                silence_now,
+                starting_index + index,
+                self.attack,
+                self.decay,
+                total_samples,
+                self.asr,
+            );
             let info = SampleInfo {
-                index,
+                index: index + starting_index,
                 p_delta,
-                gain: self.calculate_asr_gain(buffer_len, index),
+                gain,
                 portamento_length,
                 factor,
             };
@@ -91,38 +107,18 @@ impl Voice {
     }
 
     pub fn update(&mut self, info: VoiceUpdate) {
-        let frequency = if info.frequency < 20.0 {
-            0.0
-        } else {
-            info.frequency
-        };
+        self.past.frequency = self.current.frequency;
+        self.current.frequency = info.frequency;
 
-        let mut gain = if frequency != 0.0 { info.gain } else { 0.0 };
-        if info.osc_type != OscType::Sine {
-            gain /= 3.0
-        }
-        let loudness = loudness_normalization(frequency);
-        gain *= loudness;
-
-        if self.osc_type == OscType::Sine && info.osc_type == OscType::Noise {
-            self.past.gain = self.current.gain / 3.0;
-        } else {
-            self.past.gain = self.current.gain;
-        }
+        self.past.gain = self.current.gain;
+        self.current.gain = info.gain * loudness_normalization(info.frequency);
 
         self.osc_type = info.osc_type;
-        self.past.frequency = self.current.frequency;
-        self.current.frequency = frequency;
-        self.current.gain = gain;
 
         self.attack = info.attack.trunc() as usize;
         self.decay = info.decay.trunc() as usize;
-        self.decay_length = info.decay_type;
 
-        let silence_now = gain == 0.0 || frequency == 0.0;
-
-        self.set_asr(info.silence_next, info.decay_type, silence_now);
-        //        println!("{:?}", self.asr);
+        self.asr = info.asr;
     }
 
     pub fn silent(&self) -> bool {

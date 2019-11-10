@@ -1,5 +1,5 @@
 pub mod normalize {
-    use crate::ast::{Op, OpOrNf, OpOrNf::*, OpOrNfTable, OscType};
+    use crate::ast::{Op, OpOrNf, OpOrNf::*, OpOrNfTable, OscType, ASR};
     use crate::operations::{
         helpers::*, substitute::get_fn_arg_map, GetLengthRatio, NormalForm, Normalize, Substitute,
     };
@@ -73,16 +73,12 @@ pub mod normalize {
                     }
                 }
 
-                Op::AD {
-                    attack,
-                    decay,
-                    length,
-                } => {
+                Op::AD { attack, decay, asr } => {
                     for voice in input.operations.iter_mut() {
                         for point_op in voice {
                             point_op.attack *= attack;
                             point_op.decay *= decay;
-                            point_op.decay_length = *length;
+                            point_op.asr = *asr;
                         }
                     }
                 }

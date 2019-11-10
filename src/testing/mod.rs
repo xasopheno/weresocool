@@ -1,7 +1,11 @@
-use crate::generation::parsed_to_render::{generate_waveforms, r_to_f64, sum_all_waveforms};
-use crate::instrument::{Basis, Normalize};
+use crate::{
+    generation::parsed_to_render::{generate_waveforms, sum_all_waveforms},
+    instrument::{Basis, Normalize},
+    renderable::nf_to_vec_renderable,
+};
 use difference::{Changeset, Difference};
 use indexmap::IndexMap;
+use num_rational::Rational64;
 use serde::{Deserialize, Serialize};
 use serde_json::{from_reader, to_string_pretty};
 use socool_ast::{NormalForm, Normalize as NormalizeOp};
@@ -65,21 +69,23 @@ fn generate_render_hashes(p: &String) -> CompositionHashes {
     let nf_hash = calculate_hash(&normal_form);
 
     let origin = Basis {
-        f: r_to_f64(init.f),
-        g: r_to_f64(init.g),
-        l: r_to_f64(init.l),
-        p: r_to_f64(init.p),
-        a: 44100.0,
-        d: 44100.0,
+        f: init.f,
+        g: init.g,
+        l: init.l,
+        p: init.p,
+        a: Rational64::new(1, 1),
+        d: Rational64::new(1, 1),
     };
 
-    let vec_wav = generate_waveforms(&origin, normal_form.operations, false);
+    let renderable = nf_to_vec_renderable(&normal_form, &parsed.table, &origin);
+
+    let vec_wav = generate_waveforms(renderable, false);
     let mut result = sum_all_waveforms(vec_wav);
 
     result.normalize();
 
     let render_hash = sum_vec(result.l_buffer) + sum_vec(result.r_buffer);
-    let render_hash = (render_hash * 1_000_000_000_000.0).ceil() / 1_000_000_000_000.0;
+    let render_hash = (render_hash * 10_000_000_000_000.0).ceil() / 10_000_000_000_000.0;
     let render_hash_string = &render_hash.to_string()[..13];
 
     let hashes = CompositionHashes {

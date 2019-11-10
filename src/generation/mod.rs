@@ -1,6 +1,6 @@
 pub mod json;
 pub mod parsed_to_render;
-mod test;
+pub mod test;
 
 pub use self::{
     json::{
@@ -8,6 +8,7 @@ pub use self::{
         TimedOp,
     },
     parsed_to_render::{
-        filename_to_render, r_to_f64, render, sum_vec, to_wav, RenderReturn, RenderType,
+        filename_to_render, generate_waveforms, r_to_f64, render, sum_all_waveforms, sum_vec,
+        to_wav, RenderReturn, RenderType,
     },
 };
