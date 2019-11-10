@@ -1,6 +1,5 @@
 #[cfg(test)]
 pub mod tests {
-    use super::*;
     use crate::instrument::asr::*;
     fn short_gain_at_index(index: usize, silence_next: bool) -> f64 {
         let past_gain = 0.5;
