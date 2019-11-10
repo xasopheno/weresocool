@@ -44,8 +44,8 @@ name = "wsc"
 path = "bin/wsc.rs"
 
 [[bin]]
-name = "mic"
-path = "bin/mic.rs"
+name = "real_time"
+path = "bin/real_time.rs"
 
 [[bin]]
 name = "scratch"

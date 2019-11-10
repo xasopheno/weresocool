@@ -58,7 +58,6 @@ pub fn duplex_setup(
     let duplex_stream = pa.open_non_blocking_stream(duplex_stream_settings, move |args| {
         sing_along_callback(args, &mut input_buffer, &mut voices, &settings);
         pa::Continue
-        //}
     })?;
 
     Ok(duplex_stream)
