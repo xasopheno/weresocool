@@ -1,4 +1,5 @@
 use crate::instrument::{asr::calculate_gain, loudness::loudness_normalization};
+use crate::renderable::Offset;
 use socool_ast::{OscType, ASR};
 use std::f64::consts::PI;
 
@@ -69,6 +70,7 @@ impl Voice {
     pub fn generate_waveform(
         &mut self,
         buffer: &mut Vec<f64>,
+        offset: Option<&Offset>,
         portamento_length: usize,
         starting_index: usize,
         total_samples: usize,

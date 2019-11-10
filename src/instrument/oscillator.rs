@@ -3,7 +3,7 @@ use crate::{
         stereo_waveform::StereoWaveform,
         voice::{Voice, VoiceUpdate},
     },
-    renderable::RenderOp,
+    renderable::{Offset, RenderOp},
     settings::Settings,
 };
 use num_rational::Rational64;
@@ -68,7 +68,7 @@ impl Oscillator {
         });
     }
 
-    pub fn generate(&mut self, op: &RenderOp) -> StereoWaveform {
+    pub fn generate(&mut self, op: &RenderOp, offset: Option<&Offset>) -> StereoWaveform {
         let mut l_buffer: Vec<f64> = vec![0.0; op.samples];
         let mut r_buffer: Vec<f64> = vec![0.0; op.samples];
 
@@ -76,6 +76,7 @@ impl Oscillator {
 
         l_voice.generate_waveform(
             &mut l_buffer,
+            offset,
             op.portamento,
             op.index,
             op.total_samples,
@@ -83,6 +84,7 @@ impl Oscillator {
         );
         r_voice.generate_waveform(
             &mut r_buffer,
+            offset,
             op.portamento,
             op.index,
             op.total_samples,

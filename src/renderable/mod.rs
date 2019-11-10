@@ -5,6 +5,7 @@ use num_rational::Rational64;
 use socool_ast::{NormalForm, Normalize, OpOrNfTable, OscType, PointOp, ASR};
 pub mod render_voice;
 mod test;
+use rand::Rng;
 pub use render_voice::{renderables_to_render_voices, RenderVoice};
 
 #[derive(Debug, Clone, PartialEq)]
@@ -71,8 +72,10 @@ impl RenderOp {
             next_r_silent: true,
         }
     }
-    pub fn _apply_offset(&mut self, _offset: &Offset) {
-        //self.f = offset.freq * 3.0;
+    pub fn apply_offset(&mut self, _offset: &Offset) {
+        let mut rng = rand::thread_rng();
+        let r = rng.gen_range(-20.0, 20.0);
+        self.f = self.f + r;
         //self.g = (self.g.0 * offset.gain, self.g.1 * offset.gain);
         //self.g = (self.g.0 * 0.5, self.g.1 * 0.5);
 
@@ -94,20 +97,12 @@ pub trait Renderable<T> {
 }
 
 impl Renderable<RenderOp> for RenderOp {
-    fn render(&mut self, oscillator: &mut Oscillator, _offset: Option<&Offset>) -> StereoWaveform {
-        //let mut has_offset = false;
-        //match offset {
-        //Some(o) => {
-        //self.apply_offset(o.clone());
-        //has_offset = true;
-        //}
-        //None => {}
-        //};
-
+    fn render(&mut self, oscillator: &mut Oscillator, offset: Option<&Offset>) -> StereoWaveform {
         if self.index == 0 {
             oscillator.update(self);
         }
-        oscillator.generate(&self)
+
+        oscillator.generate(&self, offset)
     }
 }
 impl Renderable<Vec<RenderOp>> for Vec<RenderOp> {
