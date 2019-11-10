@@ -4,8 +4,7 @@ rust:
   - stable
 #  - nightly
 before_script:
-  - rustup component add rustfmt
+  - travis_wait rustup component add rustfmt
 script:
-  - ./format_ci.sh
-  - ./test.sh
-
+  - travis_wait./format_ci.sh
+  - travis_wait ./test.sh
