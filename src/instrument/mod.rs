@@ -3,9 +3,12 @@ mod loudness;
 pub mod oscillator;
 mod sample;
 pub mod stereo_waveform;
+pub mod voice;
+
 #[cfg(test)]
 mod test;
-pub mod voice;
+#[cfg(test)]
+mod test_asr;
 
 pub use self::{
     oscillator::{Basis, Oscillator},
