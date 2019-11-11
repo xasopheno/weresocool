@@ -1,11 +1,10 @@
 language: rust
-cache: cargo
+#cache: cargo
 rust:
   - stable
-#  - nightly
 before_script:
+  - cargo build --verbose --all
   - rustup component add rustfmt
 script:
   - ./format_ci.sh
   - ./test.sh
-

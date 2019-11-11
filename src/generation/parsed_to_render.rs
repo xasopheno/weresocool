@@ -1,14 +1,16 @@
-use crate::generation::{to_csv, to_json};
-use crate::instrument::{Basis, Normalize, Oscillator, StereoWaveform};
-use crate::render::{Render, RenderPointOp};
-use crate::settings::default_settings;
-use crate::ui::{banner, printed};
-use crate::write::write_composition_to_wav;
+use crate::{
+    generation::{to_csv, to_json},
+    instrument::{Basis, Normalize, Oscillator, StereoWaveform},
+    renderable::{nf_to_vec_renderable, RenderOp, Renderable},
+    settings::default_settings,
+    ui::{banner, printed},
+    write::write_composition_to_wav,
+};
 use error::Error;
 use num_rational::Rational64;
 use pbr::ProgressBar;
 use rayon::prelude::*;
-use socool_ast::{NormalForm, Normalize as NormalizeOp, OpOrNf, OpOrNfTable, PointOp};
+use socool_ast::{NormalForm, Normalize as NormalizeOp, OpOrNf, OpOrNfTable};
 use socool_parser::parse_file;
 use std::sync::{Arc, Mutex};
 
@@ -26,7 +28,7 @@ pub enum RenderReturn {
     Json4d(String),
     Csv1d(String),
     StereoWaveform(StereoWaveform),
-    NfAndBasis(NormalForm, Basis, OpOrNfTable),
+    NfBasisAndTable(NormalForm, Basis, OpOrNfTable),
     Wav(String),
 }
 
@@ -46,9 +48,11 @@ pub fn filename_to_render(filename: &str, r_type: RenderType) -> Result<RenderRe
     let basis = Basis::from(parsed.init);
 
     match r_type {
-        RenderType::NfBasisAndTable => {
-            Ok(RenderReturn::NfAndBasis(nf.clone(), basis, parsed.table))
-        }
+        RenderType::NfBasisAndTable => Ok(RenderReturn::NfBasisAndTable(
+            nf.clone(),
+            basis,
+            parsed.table,
+        )),
         RenderType::Json4d => {
             to_json(&basis, &nf, &parsed.table.clone(), filename.to_string())?;
             Ok(RenderReturn::Json4d("json".to_string()))
@@ -69,21 +73,17 @@ pub fn filename_to_render(filename: &str, r_type: RenderType) -> Result<RenderRe
     }
 }
 
-pub fn render(origin: &Basis, composition: &NormalForm, table: &OpOrNfTable) -> StereoWaveform {
+pub fn render(basis: &Basis, composition: &NormalForm, table: &OpOrNfTable) -> StereoWaveform {
     let mut normal_form = NormalForm::init();
 
     println!("\nGenerating Composition ");
     composition.apply_to_normal_form(&mut normal_form, table);
+    let render_ops = nf_to_vec_renderable(composition, table, basis);
 
-    let vec_wav = generate_waveforms(&origin, normal_form.operations, true);
+    let vec_wav = generate_waveforms(render_ops, true);
     let mut result = sum_all_waveforms(vec_wav);
     result.normalize();
 
-    result
-}
-
-pub fn render_mic(point_op: &PointOp, origin: Basis, osc: &mut Oscillator) -> StereoWaveform {
-    let result = point_op.clone().render(&origin, osc, None);
     result
 }
 
@@ -102,8 +102,7 @@ fn create_pb_instance(n: usize) -> Arc<Mutex<ProgressBar<std::io::Stdout>>> {
 }
 
 pub fn generate_waveforms(
-    origin: &Basis,
-    mut vec_sequences: Vec<Vec<PointOp>>,
+    mut vec_sequences: Vec<Vec<RenderOp>>,
     show: bool,
 ) -> Vec<StereoWaveform> {
     if show {
@@ -113,10 +112,10 @@ pub fn generate_waveforms(
 
     let vec_wav = vec_sequences
         .par_iter_mut()
-        .map(|ref mut vec_point_op: &mut Vec<PointOp>| {
+        .map(|ref mut vec_render_op: &mut Vec<RenderOp>| {
             pb.lock().unwrap().add(1 as u64);
             let mut osc = Oscillator::init(&default_settings());
-            vec_point_op.render(&origin, &mut osc)
+            vec_render_op.render(&mut osc, None)
         })
         .collect();
 

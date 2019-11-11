@@ -44,8 +44,8 @@ name = "wsc"
 path = "bin/wsc.rs"
 
 [[bin]]
-name = "mic"
-path = "bin/mic.rs"
+name = "real_time"
+path = "bin/real_time.rs"
 
 [[bin]]
 name = "scratch"
@@ -54,3 +54,6 @@ path = "bin/pad.rs"
 [[bin]]
 name = "snapshot"
 path = "bin/snapshot.rs"
+
+[dev-dependencies]
+pretty_assertions = "0.6.1"

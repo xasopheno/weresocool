@@ -1,0 +1,14 @@
+{ f: 220, l: 1, g: 1, p: 0}
+
+
+thing1 = {
+	Sequence [
+		AsIs,
+        Tm 3/2 | PanA 0.4
+	] 
+}
+
+main = {
+	thing1
+}
+	

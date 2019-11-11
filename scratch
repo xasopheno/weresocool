@@ -1,1 +1,1 @@
-fd | entr -crs "echo | cargo run --release --bin scratch"
+cargo watch --exec "run --release --bin scratch"

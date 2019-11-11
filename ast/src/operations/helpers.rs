@@ -1,6 +1,6 @@
 extern crate colored;
 extern crate num_rational;
-use crate::ast::{OpOrNf, OpOrNfTable, OscType};
+use crate::ast::{OpOrNf, OpOrNfTable, OscType, ASR};
 use crate::operations::{GetLengthRatio, NameSet, NormalForm, PointOp};
 use colored::*;
 use num_rational::{Ratio, Rational64};
@@ -68,7 +68,7 @@ pub fn pad_length(input: &mut NormalForm, max_len: Rational64, table: &OpOrNfTab
                 l: max_len - input_lr,
                 attack: Ratio::new(1, 1),
                 decay: Ratio::new(1, 1),
-                decay_length: 2,
+                asr: ASR::Long,
                 portamento: Ratio::new(1, 1),
                 osc_type,
                 names: NameSet::new(),
@@ -97,7 +97,7 @@ pub fn join_sequence(mut l: NormalForm, mut r: NormalForm) -> NormalForm {
                     l: r.length_ratio,
                     attack: Ratio::new(1, 1),
                     decay: Ratio::new(1, 1),
-                    decay_length: 2,
+                    asr: ASR::Long,
                     portamento: Ratio::new(1, 1),
                     osc_type: OscType::Sine,
                     names: NameSet::new(),
@@ -115,7 +115,7 @@ pub fn join_sequence(mut l: NormalForm, mut r: NormalForm) -> NormalForm {
                     l: l.length_ratio,
                     attack: Ratio::new(1, 1),
                     decay: Ratio::new(1, 1),
-                    decay_length: 2,
+                    asr: ASR::Long,
                     portamento: Ratio::new(1, 1),
                     osc_type: OscType::Sine,
                     names: NameSet::new(),

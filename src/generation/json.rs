@@ -8,7 +8,7 @@ use error::Error;
 use num_rational::Rational64;
 use serde::{Deserialize, Serialize};
 use serde_json::to_string;
-use socool_ast::{NormalForm, Normalize, OpOrNfTable, PointOp};
+use socool_ast::{NameSet, NormalForm, Normalize, OpOrNfTable, OscType, PointOp, ASR};
 
 pub fn r_to_f64(r: Rational64) -> f64 {
     *r.numer() as f64 / *r.denom() as f64
@@ -20,6 +20,11 @@ pub struct TimedOp {
     pub event_type: EventType,
     pub voice: usize,
     pub event: usize,
+    pub attack: Rational64,
+    pub decay: Rational64,
+    pub asr: ASR,
+    pub portamento: Rational64,
+    pub osc_type: OscType,
     pub fm: Rational64,
     pub fa: Rational64,
     pub pm: Rational64,
@@ -31,26 +36,43 @@ pub struct TimedOp {
 impl TimedOp {
     fn to_op_4d(&self, basis: &Basis) -> Op4D {
         let zero = Rational64::new(0, 1);
-        let is_silent = (self.fm == zero && self.fa < Rational64::new(40, 1)) || self.g == zero;
+        let is_silent = (self.fm == zero && self.fa < Rational64::new(20, 1)) || self.g == zero;
         let y = if is_silent {
             0.0
         } else {
-            (basis.f * r_to_f64(self.fm)) + r_to_f64(self.fa)
+            (r_to_f64(basis.f) * r_to_f64(self.fm)) + r_to_f64(self.fa)
         };
         let z = if is_silent {
             0.0
         } else {
-            basis.g * r_to_f64(self.g)
+            r_to_f64(basis.g) * r_to_f64(self.g)
         };
+        dbg!(&z);
         Op4D {
-            l: r_to_f64(self.l) * basis.l,
-            t: r_to_f64(self.t) * basis.l,
-            x: ((basis.p + r_to_f64(self.pa)) * r_to_f64(self.pm)),
+            l: r_to_f64(self.l) * r_to_f64(basis.l),
+            t: r_to_f64(self.t) * r_to_f64(basis.l),
+            x: ((r_to_f64(basis.p) + r_to_f64(self.pa)) * r_to_f64(self.pm)),
             y: y.log10(),
-            z,
+            z: z,
             voice: self.voice,
             event: self.event,
             event_type: self.event_type.clone(),
+        }
+    }
+    pub fn to_point_op(&self) -> PointOp {
+        PointOp {
+            fm: self.fm,
+            fa: self.fa,
+            pm: self.pm,
+            pa: self.pa,
+            g: self.g,
+            l: self.l,
+            attack: self.decay,
+            decay: self.decay,
+            asr: self.asr,
+            portamento: self.portamento,
+            osc_type: self.osc_type,
+            names: NameSet::new(),
         }
     }
 }
@@ -112,7 +134,8 @@ impl Op4D {
 }
 
 fn normalize_value(value: f64, min: f64, max: f64) -> f64 {
-    (value - min) / (max - min)
+    let d = if max == min { 1.0 } else { max - min };
+    (value - min) / d
 }
 
 fn normalize_op4d_1d(op4d_1d: &mut Vec<Op4D>, n: Normalizer) {
@@ -201,12 +224,17 @@ fn point_op_to_timed_op(
     time: &mut Rational64,
     voice: usize,
     event: usize,
-) -> (TimedOp, TimedOp) {
-    let on = TimedOp {
+) -> TimedOp {
+    let timed_op = TimedOp {
         fm: point_op.fm,
         fa: point_op.fa,
         pm: point_op.pm,
         pa: point_op.pa,
+        attack: point_op.attack,
+        osc_type: point_op.osc_type,
+        decay: point_op.decay,
+        asr: point_op.asr,
+        portamento: point_op.portamento,
         g: point_op.g,
         l: point_op.l,
         t: time.clone(),
@@ -217,25 +245,23 @@ fn point_op_to_timed_op(
 
     *time += point_op.l;
 
-    let off = TimedOp {
-        t: time.clone(),
-        event_type: EventType::Off,
-        ..on
-    };
-
-    (on, off)
+    timed_op
 }
 
 pub fn vec_timed_op_to_vec_op4d(timed_ops: Vec<TimedOp>, basis: &Basis) -> Vec<Op4D> {
     timed_ops.iter().map(|t_op| t_op.to_op_4d(&basis)).collect()
 }
 
-pub fn composition_to_vec_timed_op(composition: &NormalForm, table: &OpOrNfTable) -> Vec<TimedOp> {
+pub fn composition_to_vec_timed_op(
+    composition: &NormalForm,
+    table: &OpOrNfTable,
+) -> (Vec<TimedOp>, usize) {
     let mut normal_form = NormalForm::init();
 
     println!("Generating Composition \n");
     composition.apply_to_normal_form(&mut normal_form, table);
 
+    let n_voices = normal_form.operations.len();
     let mut result: Vec<TimedOp> = normal_form
         .operations
         .iter()
@@ -243,17 +269,18 @@ pub fn composition_to_vec_timed_op(composition: &NormalForm, table: &OpOrNfTable
         .flat_map(|(voice, vec_point_op)| {
             let mut time = Rational64::new(0, 1);
             let mut result = vec![];
-            vec_point_op.iter().enumerate().for_each(|(event, p_op)| {
-                let (on, _off) = point_op_to_timed_op(p_op, &mut time, voice, event);
-                result.push(on);
-            });
+            let iter = vec_point_op.iter();
+            for (event, p_op) in iter.enumerate() {
+                let op = point_op_to_timed_op(p_op, &mut time, voice, event);
+                result.push(op);
+            }
             result
         })
         .collect();
 
     result.sort_unstable_by_key(|a| a.t);
 
-    result
+    (result, n_voices)
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
@@ -270,7 +297,7 @@ pub fn to_json(
 ) -> Result<(), Error> {
     banner("JSONIFY-ing".to_string(), filename.clone());
 
-    let vec_timed_op = composition_to_vec_timed_op(composition, table);
+    let (vec_timed_op, _) = composition_to_vec_timed_op(composition, table);
     let mut op4d_1d = vec_timed_op_to_vec_op4d(vec_timed_op, basis);
 
     //TODO: Factor out
@@ -302,7 +329,7 @@ pub fn to_csv(
 ) -> Result<(), Error> {
     banner("CSV-ing".to_string(), filename.clone());
 
-    let vec_timed_op = composition_to_vec_timed_op(composition, table);
+    let (vec_timed_op, _) = composition_to_vec_timed_op(composition, table);
     let mut op4d_1d = vec_timed_op_to_vec_op4d(vec_timed_op, basis);
 
     op4d_1d.retain(|op| {
