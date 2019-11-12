@@ -1,0 +1,150 @@
+{ f: 220, l: 1, g: 1, p: 0 }
+
+overtones = {
+    O[
+        (5/2, 0, 1, -1/2),
+        (5/2, 0, 1, 1/2),
+        (3/2, 0, 1, -1/2),
+        (3/2, 0, 1, 1/2),
+        (1, 0, 1, 1),
+        (1, 0, 1, -1),
+    ]
+}
+
+thing1 = {
+    overtones
+    | Seq [
+        Tm 1, 
+        Tm 2, 
+        Tm 3, 
+        Tm 4, 
+        Tm 5, 
+        Tm 6,
+        Tm 7, 
+        Tm 8, 
+        Tm 9, 
+        Tm 10, 
+        Tm 11, 
+        Tm 12,
+        Tm 13, 
+        Tm 14, 
+        Tm 15, 
+        Tm 16, 
+    ] 
+    | Length 1/7
+    | Seq [
+        AsIs, 
+        Reverse,
+        Reverse | Invert | Tm 16,
+        Invert | Tm 16
+    ]
+    | Repeat 6
+}
+
+major_scale = {
+    Seq [
+        Tm 1, 
+        Tm 9/8, 
+        Tm 5/4, 
+        Tm 4/3, 
+        Tm 3/2,
+        Tm 5/3,
+        Tm 15/8,
+        Tm 2
+    ]
+}
+
+thing2 = {
+    O[
+        --(2, 5, 1, 1),
+        --(2, 0, 1, -1),
+        --(3/2, 7, 1, 1),
+        --(3/2, 0, 1, -1),
+        (1, 0, 1, 1),
+        (1, 0, 1, -1),
+    ]
+    | Seq [
+        Tm 5/4, 
+        Tm 3/2, 
+        Tm 2,
+    ] 
+    | Seq [
+        Tm 1, 
+        Tm 9/8, 
+        Tm 5/4, 
+        Tm 9/8 | Reverse,
+    ] 
+    | Repeat 3
+    
+    | Length 1/4
+
+}
+
+thing3 = {
+    Seq [
+        O[
+            (8, 0, 1, 1/8),
+            (8, 0, 1, -1/8),
+            (1, 0, 1, 1/8),
+            (1, 0, 1, -1/8),
+            (1/2, 1, 1, -1/8),
+            (1/2, 0, 1, 1/8),
+        ]
+        | Seq [
+            Tm 1, 
+            Tm 9/8, 
+            Tm 5/4, 
+            Tm 9/8, 
+        ]
+    ]
+    > FitLength thing2
+}
+
+thing4 = {
+    O[
+        (2, 0, 1, 1/4),
+        (2, 0, 1, -1/4),
+        (1, 0, 1, 1/4),
+        (1, 0, 1, -1/4),
+    ]
+    | Seq [
+        Tm 1, 
+        Tm 3/2, 
+        Tm 1,
+        Tm 2
+    ]
+    --| Seq [
+        --Tm 1, 
+        --Tm 3/2, 
+        --Tm 2, 
+        --Tm 9/4, 
+        --Tm 15/8, 
+        --Tm 5/3, 
+    --]
+    --| Seq [
+        --Tm 1, Tm 1
+    --]
+    | Seq [
+        Tm 1, 
+        Tm 9/8, 
+        Tm 1,
+        Tm 5/4,
+        Tm 0, 
+        --Tm 9/8 | Reverse
+    ] 
+    --| Seq [
+        --Tm 1, Tm 0
+    --]
+    | Repeat 6
+    > FitLength thing2
+}
+
+main = {
+    Overlay [
+        thing2,
+	    thing3,
+        thing4
+    ]
+    | Repeat 2
+}
+	

@@ -1,0 +1,49 @@
+{ f: 110, l: 1, g: 1, p: 0}
+
+overtones = {
+    O[
+    	(5/2, 0, 1, 0),
+    	(3/2, 0, 1, 1/2),
+    	(3/2, 0, 1, -1/2),
+    	(1/1, 0, 1, 1),
+      	(1/1, 0, 1, -1),
+  	]
+}
+
+thing1 = {
+	overtones |
+    Seq [
+		Tm 1, 
+        Tm 2, 
+        Tm 3, 
+        Tm 4,
+        Tm 5, 
+        Tm 6, 
+        Tm 7, 
+        Tm 8, 
+        Tm 9, 
+        Tm 10, 
+        Tm 11,
+        Tm 12, 
+        Tm 13, 
+        Tm 14, 
+        Tm 15, 
+        Tm 16,
+    ] 
+    | Length 1/5
+    | Seq [
+        Invert | Tm 16, 
+        AsIs, 
+        Reverse,
+        Reverse | Invert | Tm 16, 
+    ]
+    | Seq [
+        Tm 1, 
+        Tm 7/8
+    ]
+    | Repeat 2
+}   
+
+main = {
+	thing1
+}
