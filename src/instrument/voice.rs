@@ -15,6 +15,7 @@ pub struct Voice {
     pub osc_type: OscType,
     pub attack: usize,
     pub decay: usize,
+    pub portamento_index: usize,
     pub asr: ASR,
 }
 
@@ -63,6 +64,7 @@ impl Voice {
             osc_type: OscType::Sine,
             attack: 44_100,
             decay: 44_100,
+            portamento_index: 0,
             asr: ASR::Long,
         }
     }
@@ -101,12 +103,14 @@ impl Voice {
                 OscType::Square => self.generate_square_sample(info),
                 OscType::Noise => self.generate_random_sample(info),
             };
+            self.portamento_index += 1;
 
             *sample += new_sample
         }
     }
 
     pub fn update(&mut self, info: VoiceUpdate) {
+        self.portamento_index = 0;
         self.past.frequency = self.current.frequency;
         self.current.frequency = info.frequency;
 

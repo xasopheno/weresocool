@@ -32,7 +32,7 @@ impl Voice {
     pub fn calculate_current_phase(&mut self, info: &SampleInfo, rand: f64) {
         let frequency = if self.sound_to_silence() {
             self.past.frequency
-        } else if info.index < info.portamento_length
+        } else if self.portamento_index < info.portamento_length
             && !self.silence_to_sound()
             && !self.sound_to_silence()
         {
