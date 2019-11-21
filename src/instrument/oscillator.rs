@@ -1,8 +1,5 @@
 use crate::{
-    instrument::{
-        stereo_waveform::StereoWaveform,
-        voice::{Voice, VoiceUpdate},
-    },
+    instrument::{stereo_waveform::StereoWaveform, voice::Voice},
     renderable::RenderOp,
     settings::Settings,
 };
@@ -48,24 +45,8 @@ impl Oscillator {
 
     pub fn update(&mut self, op: &RenderOp) {
         let (ref mut l_voice, ref mut r_voice) = self.voices;
-        l_voice.update(VoiceUpdate {
-            frequency: op.f,
-            gain: op.g.0,
-            osc_type: op.osc_type,
-            silence_next: op.next_l_silent,
-            attack: op.attack,
-            decay: op.decay,
-            asr: op.asr,
-        });
-        r_voice.update(VoiceUpdate {
-            frequency: op.f,
-            gain: op.g.1,
-            osc_type: op.osc_type,
-            silence_next: op.next_r_silent,
-            attack: op.attack,
-            decay: op.decay,
-            asr: op.asr,
-        });
+        l_voice.update(op);
+        r_voice.update(op);
     }
 
     pub fn generate(&mut self, op: &RenderOp) -> StereoWaveform {
