@@ -58,14 +58,7 @@ impl Voice {
             asr: ASR::Long,
         }
     }
-    pub fn generate_waveform(
-        &mut self,
-        op: &RenderOp, //buffer: &mut Vec<f64>,
-                       //portamento_length: usize,
-                       //starting_index: usize,
-                       //total_samples: usize,
-                       //silent_next: bool
-    ) -> Vec<f64> {
+    pub fn generate_waveform(&mut self, op: &RenderOp) -> Vec<f64> {
         let mut buffer: Vec<f64> = vec![0.0; op.samples];
 
         let factor: f64 = tau() / 44_100.0;
