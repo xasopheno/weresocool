@@ -51,12 +51,11 @@ pub mod tests {
         #[test]
         fn test_generate_waveform() {
             let index = 1;
-            let mut buffer = vec![0.0; 3];
             let mut voice = Voice::init(index);
             let mut op = RenderOp::init_fglp(100.0, (0.5, 0.5), 1.0, 0.0);
             op.samples = 3;
             voice.update(&op);
-            voice.generate_waveform(&mut buffer, 3, 0, 44_100, true);
+            let buffer = voice.generate_waveform(&op);
             assert_eq!(
                 buffer,
                 [0.0, 0.00000016153178806239382, 0.000000646061573488548]

@@ -50,25 +50,10 @@ impl Oscillator {
     }
 
     pub fn generate(&mut self, op: &RenderOp) -> StereoWaveform {
-        let mut l_buffer: Vec<f64> = vec![0.0; op.samples];
-        let mut r_buffer: Vec<f64> = vec![0.0; op.samples];
-
         let (ref mut l_voice, ref mut r_voice) = self.voices;
 
-        l_voice.generate_waveform(
-            &mut l_buffer,
-            op.portamento,
-            op.index,
-            op.total_samples,
-            op.next_l_silent,
-        );
-        r_voice.generate_waveform(
-            &mut r_buffer,
-            op.portamento,
-            op.index,
-            op.total_samples,
-            op.next_r_silent,
-        );
+        let l_buffer = l_voice.generate_waveform(&op);
+        let r_buffer = r_voice.generate_waveform(&op);
 
         StereoWaveform { l_buffer, r_buffer }
     }
