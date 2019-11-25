@@ -35,6 +35,7 @@ pub fn generate_waveform(
     };
 
     for (index, sample) in buffer.iter_mut().enumerate() {
+        let frequency = self.calculate_gain(silent_next, silence_now, op.index + index, op.total_samples);
         let gain =
             self.calculate_gain(silent_next, silence_now, op.index + index, op.total_samples);
         let info = SampleInfo {
@@ -53,6 +54,7 @@ pub fn generate_waveform(
 
         *sample += new_sample
     }
+
     buffer
 }
 

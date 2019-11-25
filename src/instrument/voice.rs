@@ -27,6 +27,7 @@ pub struct SampleInfo {
     pub gain: f64,
     pub portamento_length: usize,
     pub factor: f64,
+    pub frequency: f64,
 }
 
 #[derive(Clone, Debug, PartialEq)]
@@ -71,6 +72,16 @@ impl Voice {
         };
 
         for (index, sample) in buffer.iter_mut().enumerate() {
+            let frequency = if self.sound_to_silence() {
+                self.past.frequency
+            } else if self.portamento_index < op.portamento
+                && !self.silence_to_sound()
+                && !self.sound_to_silence()
+            {
+                self.past.frequency + (op.index as f64 * p_delta)
+            } else {
+                self.current.frequency
+            };
             let gain =
                 self.calculate_gain(silent_next, silence_now, op.index + index, op.total_samples);
             let info = SampleInfo {
@@ -79,6 +90,7 @@ impl Voice {
                 gain,
                 portamento_length: op.portamento,
                 factor,
+                frequency,
             };
             let new_sample = match self.osc_type {
                 OscType::Sine => self.generate_sine_sample(info),
