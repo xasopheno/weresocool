@@ -11,7 +11,7 @@ autobins = false
 portaudio = "0.7.0"
 rand = "0.7.2"
 hound = "3.4.0"
-serde = { version = "1.0.100", features = ["derive"] }
+serde = { version = "1.0.103", features = ["derive"] }
 serde_json = "1.0.42"
 colored = "1.9.0"
 pbr = "1.0.2"
