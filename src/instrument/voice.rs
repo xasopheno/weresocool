@@ -23,7 +23,6 @@ pub struct Voice {
 #[derive(Clone, Debug, PartialEq)]
 pub struct SampleInfo {
     pub index: usize,
-    pub p_delta: f64,
     pub gain: f64,
     pub portamento_length: usize,
     pub factor: f64,
@@ -78,15 +77,16 @@ impl Voice {
                 && !self.silence_to_sound()
                 && !self.sound_to_silence()
             {
-                self.past.frequency + (op.index as f64 * p_delta)
+                self.past.frequency + ((index + op.index) as f64 * p_delta)
             } else {
                 self.current.frequency
             };
+
             let gain =
                 self.calculate_gain(silent_next, silence_now, op.index + index, op.total_samples);
+
             let info = SampleInfo {
                 index: op.index + index,
-                p_delta,
                 gain,
                 portamento_length: op.portamento,
                 factor,
