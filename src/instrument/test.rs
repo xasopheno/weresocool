@@ -3,7 +3,7 @@ pub mod tests {
         loudness::loudness_normalization,
         oscillator::Oscillator,
         stereo_waveform::StereoWaveform,
-        voice::{Voice, VoiceState, VoiceUpdate},
+        voice::{Voice, VoiceState},
     };
     use crate::renderable::RenderOp;
     use crate::settings::get_test_settings;
@@ -17,6 +17,7 @@ pub mod tests {
 
             let result = Voice {
                 index,
+                portamento_index: 0,
                 past: VoiceState {
                     frequency: 0.0,
                     gain: 0.0,
@@ -39,17 +40,9 @@ pub mod tests {
         fn test_deltas() {
             let index = 1;
             let mut voice = Voice::init(index);
-            let vu = VoiceUpdate {
-                frequency: 200.0,
-                gain: 1.0,
-                osc_type: OscType::Sine,
-                silence_next: true,
-                attack: 44100.0,
-                decay: 44100.0,
-                asr: ASR::Long,
-            };
+            let op = RenderOp::init_fglp(200.0, (0.5, 0.5), 1.0, 0.0);
 
-            voice.update(vu);
+            voice.update(&op);
             let p_delta = voice.calculate_portamento_delta(10);
 
             assert_eq!(p_delta, 20.0);
@@ -58,50 +51,26 @@ pub mod tests {
         #[test]
         fn test_generate_waveform() {
             let index = 1;
-            let mut buffer = vec![0.0; 3];
             let mut voice = Voice::init(index);
-            let vu = VoiceUpdate {
-                frequency: 100.0,
-                gain: 1.0,
-                osc_type: OscType::Sine,
-                silence_next: true,
-                attack: 44100.0,
-                decay: 44100.0,
-                asr: ASR::Long,
-            };
-            voice.update(vu);
-            voice.generate_waveform(&mut buffer, 3, 0, 44_100, true);
+            let mut op = RenderOp::init_fglp(100.0, (0.5, 0.5), 1.0, 0.0);
+            op.samples = 3;
+            voice.update(&op);
+            let buffer = voice.generate_waveform(&op);
             assert_eq!(
                 buffer,
-                [0.0, 0.00000032306357612478763, 0.000001292123146977096]
+                [0.0, 0.00000016153178806239382, 0.000000646061573488548]
             );
         }
 
         #[test]
         fn test_sound_silence() {
             let mut voice = Voice::init(1);
-            let vu1 = VoiceUpdate {
-                frequency: 100.0,
-                gain: 1.0,
-                osc_type: OscType::Sine,
-                silence_next: true,
-                attack: 44100.0,
-                decay: 44100.0,
-                asr: ASR::Long,
-            };
-            let vu2 = VoiceUpdate {
-                frequency: 100.0,
-                gain: 1.0,
-                osc_type: OscType::Sine,
-                silence_next: true,
-                attack: 44100.0,
-                decay: 44100.0,
-                asr: ASR::Long,
-            };
-            voice.update(vu1);
+            let op1 = RenderOp::init_fglp(100.0, (0.5, 0.5), 1.0, 0.0);
+            let op2 = RenderOp::init_fglp(100.0, (0.5, 0.5), 1.0, 0.0);
+            voice.update(&op1);
             let silence_to_sound = voice.silence_to_sound();
 
-            voice.update(vu2);
+            voice.update(&op2);
             let sound_to_silence = voice.sound_to_silence();
 
             assert_eq!(silence_to_sound, true);
@@ -120,6 +89,7 @@ pub mod tests {
                     Voice {
                         index: 0,
                         phase: 0.0,
+                        portamento_index: 0,
                         past: VoiceState {
                             frequency: 0.0,
                             gain: 0.0,
@@ -136,6 +106,7 @@ pub mod tests {
                     Voice {
                         index: 1,
                         phase: 0.0,
+                        portamento_index: 0,
                         past: VoiceState {
                             frequency: 0.0,
                             gain: 0.0,

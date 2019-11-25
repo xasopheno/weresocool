@@ -1,4 +1,5 @@
-use crate::instrument::{asr::calculate_gain, loudness::loudness_normalization};
+use crate::instrument::loudness::loudness_normalization;
+use crate::renderable::RenderOp;
 use socool_ast::{OscType, ASR};
 use std::f64::consts::PI;
 
@@ -15,6 +16,7 @@ pub struct Voice {
     pub osc_type: OscType,
     pub attack: usize,
     pub decay: usize,
+    pub portamento_index: usize,
     pub asr: ASR,
 }
 
@@ -42,17 +44,6 @@ impl VoiceState {
     }
 }
 
-#[derive(Clone, Debug)]
-pub struct VoiceUpdate {
-    pub frequency: f64,
-    pub gain: f64,
-    pub osc_type: OscType,
-    pub silence_next: bool,
-    pub attack: f64,
-    pub decay: f64,
-    pub asr: ASR,
-}
-
 impl Voice {
     pub fn init(index: usize) -> Voice {
         Voice {
@@ -63,37 +54,30 @@ impl Voice {
             osc_type: OscType::Sine,
             attack: 44_100,
             decay: 44_100,
+            portamento_index: 0,
             asr: ASR::Long,
         }
     }
-    pub fn generate_waveform(
-        &mut self,
-        buffer: &mut Vec<f64>,
-        portamento_length: usize,
-        starting_index: usize,
-        total_samples: usize,
-        silent_next: bool,
-    ) {
+    pub fn generate_waveform(&mut self, op: &RenderOp) -> Vec<f64> {
+        let mut buffer: Vec<f64> = vec![0.0; op.samples];
+
         let factor: f64 = tau() / 44_100.0;
-        let p_delta = self.calculate_portamento_delta(portamento_length);
+        let p_delta = self.calculate_portamento_delta(op.portamento);
         let silence_now = self.current.gain == 0.0 || self.current.frequency == 0.0;
+
+        let silent_next = match self.index {
+            0 => op.next_l_silent,
+            _ => op.next_r_silent,
+        };
+
         for (index, sample) in buffer.iter_mut().enumerate() {
-            let gain = calculate_gain(
-                self.past.gain,
-                self.current.gain,
-                silent_next,
-                silence_now,
-                starting_index + index,
-                self.attack,
-                self.decay,
-                total_samples,
-                self.asr,
-            );
+            let gain =
+                self.calculate_gain(silent_next, silence_now, op.index + index, op.total_samples);
             let info = SampleInfo {
-                index: index + starting_index,
+                index: op.index + index,
                 p_delta,
                 gain,
-                portamento_length,
+                portamento_length: op.portamento,
                 factor,
             };
             let new_sample = match self.osc_type {
@@ -101,24 +85,31 @@ impl Voice {
                 OscType::Square => self.generate_square_sample(info),
                 OscType::Noise => self.generate_random_sample(info),
             };
+            self.portamento_index += 1;
 
             *sample += new_sample
         }
+        buffer
     }
 
-    pub fn update(&mut self, info: VoiceUpdate) {
+    pub fn update(&mut self, op: &RenderOp) {
+        self.portamento_index = 0;
         self.past.frequency = self.current.frequency;
-        self.current.frequency = info.frequency;
+        self.current.frequency = op.f;
 
         self.past.gain = self.current.gain;
-        self.current.gain = info.gain * loudness_normalization(info.frequency);
 
-        self.osc_type = info.osc_type;
+        self.current.gain = match self.index {
+            0 => op.g.0 * loudness_normalization(op.f),
+            _ => op.g.1 * loudness_normalization(op.f),
+        };
 
-        self.attack = info.attack.trunc() as usize;
-        self.decay = info.decay.trunc() as usize;
+        self.osc_type = op.osc_type;
 
-        self.asr = info.asr;
+        self.attack = op.attack.trunc() as usize;
+        self.decay = op.decay.trunc() as usize;
+
+        self.asr = op.asr;
     }
 
     pub fn silent(&self) -> bool {

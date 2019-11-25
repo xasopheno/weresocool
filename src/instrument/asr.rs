@@ -1,3 +1,4 @@
+use crate::instrument::voice::Voice;
 use socool_ast::ASR;
 pub fn calculate_attack_gain(
     past_gain: f64,
@@ -14,37 +15,35 @@ pub fn calculate_decay_gain(current_gain: f64, decay_index: usize, decay_length:
     current_gain + (distance * decay_index as f64 / decay_length as f64)
 }
 
-pub fn calculate_gain(
-    past_gain: f64,
-    current_gain: f64,
-    silence_now: bool,
-    silence_next: bool,
-    index: usize,
-    attack_length: usize,
-    decay_length: usize,
-    total_length: usize,
-    asr: ASR,
-) -> f64 {
-    if asr == ASR::Long {
-        calculate_long_gain(
-            past_gain,
-            current_gain,
-            silence_now,
-            index,
-            attack_length,
-            decay_length,
-            total_length,
-        )
-    } else {
-        calculate_short_gain(
-            past_gain,
-            current_gain,
-            silence_next,
-            index,
-            attack_length,
-            decay_length,
-            total_length,
-        )
+impl Voice {
+    pub fn calculate_gain(
+        &mut self,
+        silence_now: bool,
+        silence_next: bool,
+        index: usize,
+        total_length: usize,
+    ) -> f64 {
+        if self.asr == ASR::Long {
+            calculate_long_gain(
+                self.past.gain,
+                self.current.gain,
+                silence_now,
+                index,
+                self.attack,
+                self.decay,
+                total_length,
+            )
+        } else {
+            calculate_short_gain(
+                self.past.gain,
+                self.current.gain,
+                silence_next,
+                index,
+                self.attack,
+                self.decay,
+                total_length,
+            )
+        }
     }
 }
 
