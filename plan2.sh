@@ -55,3 +55,29 @@ pub fn generate_waveform(
     }
     buffer
 }
+
+pub fn calculate_current_phase(&mut self, info: &SampleInfo, rand: f64) {
+    let frequency = if self.sound_to_silence() {
+        self.past.frequency
+    } else if self.portamento_index < info.portamento_length
+        && !self.silence_to_sound()
+        && !self.sound_to_silence()
+    {
+        self.past.frequency + (info.index as f64 * info.p_delta)
+    } else {
+        self.current.frequency
+    };
+
+    let gain = info.gain;
+    let current_phase = if gain == 0.0 {
+        0.0
+    } else {
+        ((info.factor * frequency) + self.phase + rand) % tau()
+    };
+
+    self.phase = current_phase;
+}
+
+self.calculate_current_phase(&info, 0.0);
+
+self.phase.sin() * info.gain
