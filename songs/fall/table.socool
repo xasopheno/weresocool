@@ -1,4 +1,4 @@
-{ f: 220, l: 1, g: 1, p: 0}
+{ f: 220, l: 1, g: 1, p: 0 }
 
 overtones = {
     O[
@@ -85,7 +85,7 @@ bass = {
 
 drums = {
    Seq [
-        Gain 3/2 | noise | Seq [
+        Gain 9/5 | noise | Seq [
             AsIs,  
             Seq [
                 Length 1/2, Length 1/2 | Tm 2
@@ -105,6 +105,7 @@ drums = {
 
 melody = {
     Tm 2
+    | Gain 7/6 
     | O[
         (1/1, 0, 1, 1),
         (1/1, 1, 1, -1),
