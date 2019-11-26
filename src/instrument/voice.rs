@@ -1,11 +1,6 @@
 use crate::instrument::loudness::loudness_normalization;
 use crate::renderable::RenderOp;
 use socool_ast::{OscType, ASR};
-use std::f64::consts::PI;
-
-fn tau() -> f64 {
-    PI * 2.0
-}
 
 #[derive(Clone, Debug, PartialEq)]
 pub struct Voice {
@@ -25,7 +20,6 @@ pub struct SampleInfo {
     pub index: usize,
     pub gain: f64,
     pub portamento_length: usize,
-    pub factor: f64,
     pub frequency: f64,
 }
 
@@ -61,7 +55,6 @@ impl Voice {
     pub fn generate_waveform(&mut self, op: &RenderOp) -> Vec<f64> {
         let mut buffer: Vec<f64> = vec![0.0; op.samples];
 
-        let factor: f64 = tau() / 44_100.0;
         let p_delta = self.calculate_portamento_delta(op.portamento);
         let silence_now = self.current.gain == 0.0 || self.current.frequency == 0.0;
 
@@ -86,10 +79,9 @@ impl Voice {
                 self.calculate_gain(silent_next, silence_now, op.index + index, op.total_samples);
 
             let info = SampleInfo {
+                portamento_length: op.portamento,
                 index: op.index + index,
                 gain,
-                portamento_length: op.portamento,
-                factor,
                 frequency,
             };
             let new_sample = match self.osc_type {

@@ -31,10 +31,11 @@ impl Voice {
     }
 
     pub fn calculate_current_phase(&mut self, info: &SampleInfo, rand: f64) {
+        let factor: f64 = tau() / 44_100.0;
         let current_phase = if info.gain == 0.0 {
             0.0
         } else {
-            ((info.factor * info.frequency) + self.phase + rand) % tau()
+            ((factor * info.frequency) + self.phase + rand) % tau()
         };
 
         self.phase = current_phase;
