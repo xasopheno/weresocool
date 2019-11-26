@@ -85,7 +85,7 @@ bass = {
 
 drums = {
    Seq [
-        Gain 2 | noise | Seq [
+        Gain 11/5 | noise | Seq [
             AsIs,  
             Seq [
                 Length 1/2, Length 1/2 | Tm 2

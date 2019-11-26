@@ -1,5 +1,5 @@
 use crate::instrument::loudness::loudness_normalization;
-use crate::renderable::RenderOp;
+use crate::renderable::{Offset, RenderOp};
 use socool_ast::{OscType, ASR};
 
 #[derive(Clone, Debug, PartialEq)]
@@ -52,7 +52,8 @@ impl Voice {
             asr: ASR::Long,
         }
     }
-    pub fn generate_waveform(&mut self, op: &RenderOp) -> Vec<f64> {
+    pub fn generate_waveform(&mut self, op: &RenderOp, offset: &Offset) -> Vec<f64> {
+        //println!("freq {}, gain {}", offset.freq, offset.gain);
         let mut buffer: Vec<f64> = vec![0.0; op.samples];
 
         let p_delta = self.calculate_portamento_delta(op.portamento);
@@ -64,19 +65,18 @@ impl Voice {
         };
 
         for (index, sample) in buffer.iter_mut().enumerate() {
-            let frequency = if self.sound_to_silence() {
-                self.past.frequency
-            } else if self.portamento_index < op.portamento
-                && !self.silence_to_sound()
-                && !self.sound_to_silence()
-            {
-                self.past.frequency + ((index + op.index) as f64 * p_delta)
-            } else {
-                self.current.frequency
-            };
+            let frequency = self.calculate_frequency(index + op.index, op.portamento, p_delta);
 
-            let gain =
-                self.calculate_gain(silent_next, silence_now, op.index + index, op.total_samples);
+            let gain = self.calculate_gain(
+                self.past.gain,
+                self.current.gain,
+                self.attack,
+                self.decay,
+                silent_next,
+                silence_now,
+                op.index + index,
+                op.total_samples,
+            );
 
             let info = SampleInfo {
                 portamento_length: op.portamento,
@@ -94,6 +94,19 @@ impl Voice {
             *sample += new_sample
         }
         buffer
+    }
+
+    fn calculate_frequency(&self, index: usize, portamento: usize, p_delta: f64) -> f64 {
+        if self.sound_to_silence() {
+            return self.past.frequency;
+        } else if self.portamento_index < portamento
+            && !self.silence_to_sound()
+            && !self.sound_to_silence()
+        {
+            return self.past.frequency + index as f64 * p_delta;
+        } else {
+            return self.current.frequency;
+        };
     }
 
     pub fn update(&mut self, op: &RenderOp) {

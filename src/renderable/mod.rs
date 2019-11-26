@@ -94,7 +94,7 @@ pub trait Renderable<T> {
 }
 
 impl Renderable<RenderOp> for RenderOp {
-    fn render(&mut self, oscillator: &mut Oscillator, _offset: Option<&Offset>) -> StereoWaveform {
+    fn render(&mut self, oscillator: &mut Oscillator, offset: Option<&Offset>) -> StereoWaveform {
         //let mut has_offset = false;
         //match offset {
         //Some(o) => {
@@ -103,11 +103,12 @@ impl Renderable<RenderOp> for RenderOp {
         //}
         //None => {}
         //};
+        let offset = offset.unwrap();
 
         if self.index == 0 {
             oscillator.update(self);
         }
-        oscillator.generate(&self)
+        oscillator.generate(&self, offset)
     }
 }
 impl Renderable<Vec<RenderOp>> for Vec<RenderOp> {

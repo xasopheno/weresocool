@@ -17,7 +17,7 @@ fn process_detection_result(result: &mut DetectionResult) -> (f64, f64) {
         result.gain = 0.0;
     }
 
-    //println!("freq {}, gain {}", result.frequency, result.gain);
+    println!("freq {}, gain {}", result.frequency, result.gain);
     (result.frequency as f64, result.gain as f64)
 }
 
