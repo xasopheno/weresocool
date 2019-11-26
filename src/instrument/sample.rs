@@ -12,8 +12,7 @@ fn random_offset() -> f64 {
 
 impl Voice {
     pub fn generate_sine_sample(&mut self, info: SampleInfo) -> f64 {
-        self.calculate_current_phase(&info, 0.0);
-
+        self.phase = self.calculate_current_phase(&info, 0.0);
         self.phase.sin() * info.gain
     }
 
@@ -30,14 +29,12 @@ impl Voice {
         self.phase.sin() * info.gain
     }
 
-    pub fn calculate_current_phase(&mut self, info: &SampleInfo, rand: f64) {
+    pub fn calculate_current_phase(&mut self, info: &SampleInfo, rand: f64) -> f64 {
         let factor: f64 = tau() / 44_100.0;
-        let current_phase = if info.gain == 0.0 {
-            0.0
+        if info.gain == 0.0 {
+            return 0.0;
         } else {
-            ((factor * info.frequency) + self.phase + rand) % tau()
+            return ((factor * info.frequency) + self.phase + rand) % tau();
         };
-
-        self.phase = current_phase;
     }
 }
