@@ -17,14 +17,14 @@ impl Voice {
     }
 
     pub fn generate_square_sample(&mut self, info: SampleInfo) -> f64 {
-        self.calculate_current_phase(&info, 0.0);
+        self.phase = self.calculate_current_phase(&info, 0.0);
 
         let s = self.phase.sin();
         s.signum() * info.gain
     }
 
     pub fn generate_random_sample(&mut self, info: SampleInfo) -> f64 {
-        self.calculate_current_phase(&info, random_offset());
+        self.phase = self.calculate_current_phase(&info, random_offset());
 
         self.phase.sin() * info.gain
     }
