@@ -134,11 +134,11 @@ impl Voice {
         }
         self.mic_past.frequency = self.mic.frequency;
         self.mic.frequency = if self.sound_to_silence() {
-            self.past.frequency * offset.freq / 220.0
-        //self.past.frequency * thread_rng().gen_range(0.9, 1.1)
+            //self.past.frequency * offset.freq / 220.0
+            self.past.frequency * thread_rng().gen_range(0.99, 1.01)
         } else {
-            self.current.frequency * offset.freq / 220.0
-            //self.current.frequency * thread_rng().gen_range(0.9, 1.1)
+            //self.current.frequency * offset.freq / 220.0
+            self.current.frequency * thread_rng().gen_range(0.99, 1.01)
         }
     }
 

@@ -77,5 +77,4 @@ main = {
         --thing4, 
         --thing5
     ]
-    | Repeat 3
 }

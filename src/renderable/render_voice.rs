@@ -39,7 +39,7 @@ impl RenderVoice {
             None => vec![],
         };
 
-        if true {
+        if false {
             if self.op_index >= self.ops.len() {
                 self.op_index = 0;
             }
