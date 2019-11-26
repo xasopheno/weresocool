@@ -5,7 +5,7 @@ pub mod tests {
         stereo_waveform::StereoWaveform,
         voice::{Voice, VoiceState},
     };
-    use crate::renderable::RenderOp;
+    use crate::renderable::{Offset, RenderOp};
     use crate::settings::get_test_settings;
     use socool_ast::ast::{OscType, ASR};
     pub mod voice {
@@ -55,7 +55,7 @@ pub mod tests {
             let mut op = RenderOp::init_fglp(100.0, (0.5, 0.5), 1.0, 0.0);
             op.samples = 3;
             voice.update(&op);
-            let buffer = voice.generate_waveform(&op);
+            let buffer = voice.generate_waveform(&op, &Offset::identity());
             assert_eq!(
                 buffer,
                 [0.0, 0.00000016153178806239382, 0.000000646061573488548]
@@ -161,7 +161,7 @@ pub mod tests {
                 l_buffer: vec![0.0, 0.0000002422976820935907, 0.0000009690923602328218],
                 r_buffer: vec![0.0, 0.00000008076589403119691, 0.000000323030786744274],
             };
-            assert_eq!(osc.generate(&render_op), expected);
+            assert_eq!(osc.generate(&render_op, &Offset::identity()), expected);
         }
     }
 

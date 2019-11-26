@@ -88,6 +88,14 @@ pub struct Offset {
     pub freq: f64,
     pub gain: f64,
 }
+impl Offset {
+    pub fn identity() -> Offset {
+        Offset {
+            freq: 1.0,
+            gain: 1.0,
+        }
+    }
+}
 
 pub trait Renderable<T> {
     fn render(&mut self, oscillator: &mut Oscillator, _offset: Option<&Offset>) -> StereoWaveform;
@@ -95,20 +103,18 @@ pub trait Renderable<T> {
 
 impl Renderable<RenderOp> for RenderOp {
     fn render(&mut self, oscillator: &mut Oscillator, offset: Option<&Offset>) -> StereoWaveform {
-        //let mut has_offset = false;
-        //match offset {
-        //Some(o) => {
-        //self.apply_offset(o.clone());
-        //has_offset = true;
-        //}
-        //None => {}
-        //};
-        let offset = offset.unwrap();
+        let o = match offset {
+            Some(o) => Offset {
+                freq: o.freq,
+                gain: o.gain,
+            },
+            None => Offset::identity(),
+        };
 
         if self.index == 0 {
             oscillator.update(self);
         }
-        oscillator.generate(&self, offset)
+        oscillator.generate(&self, &o)
     }
 }
 impl Renderable<Vec<RenderOp>> for Vec<RenderOp> {

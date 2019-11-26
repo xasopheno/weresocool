@@ -190,6 +190,7 @@ mod tests {
                     panic!();
                 }
             };
+
         let renderables = nf_to_vec_renderable(&nf, &table, &basis);
         let mut voices1 = renderables_to_render_voices(renderables);
         let voices2 = voices1.clone();
