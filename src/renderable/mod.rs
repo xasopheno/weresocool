@@ -111,10 +111,10 @@ impl Renderable<RenderOp> for RenderOp {
             None => Offset::identity(),
         };
 
-        if self.index == 0 {
-            oscillator.update(self);
-        }
-        oscillator.generate(&self, &o)
+        //if self.index == 0 {
+        oscillator.update(self, &o);
+        //}
+        oscillator.generate(&self)
     }
 }
 impl Renderable<Vec<RenderOp>> for Vec<RenderOp> {
