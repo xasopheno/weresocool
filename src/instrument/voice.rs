@@ -106,15 +106,12 @@ impl Voice {
 
     pub fn update(&mut self, op: &RenderOp) {
         self.portamento_index = 0;
+
         self.past.frequency = self.current.frequency;
         self.current.frequency = op.f;
 
-        self.past.gain = self.current.gain;
-
-        self.current.gain = match self.index {
-            0 => op.g.0 * loudness_normalization(op.f),
-            _ => op.g.1 * loudness_normalization(op.f),
-        };
+        self.past.gain = self.calculate_past_gain(op);
+        self.current.gain = self.calculate_current_gain(op);
 
         self.osc_type = op.osc_type;
 
@@ -122,6 +119,28 @@ impl Voice {
         self.decay = op.decay.trunc() as usize;
 
         self.asr = op.asr;
+    }
+
+    fn calculate_past_gain(&self, op: &RenderOp) -> f64 {
+        if self.osc_type == OscType::Sine && op.osc_type != OscType::Sine {
+            return self.current.gain / 3.0;
+        } else {
+            return self.current.gain;
+        }
+    }
+
+    fn calculate_current_gain(&self, op: &RenderOp) -> f64 {
+        let mut gain = if op.f != 0.0 { op.g } else { (0., 0.) };
+        gain = if op.osc_type == OscType::Sine {
+            gain
+        } else {
+            (gain.0 / 3.0, gain.1 / 3.0)
+        };
+
+        match self.index {
+            0 => return gain.0 * loudness_normalization(op.f),
+            _ => return gain.1 * loudness_normalization(op.f),
+        };
     }
 
     pub fn silent(&self) -> bool {
