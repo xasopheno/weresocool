@@ -1,7 +1,7 @@
 # ***** WereSoCool __!Now In Stereo!__ ******
 [![Build Status](https://travis-ci.org/xasopheno/WereSoCool.svg?branch=master)](https://travis-ci.org/xasopheno/WereSoCool)
 
-Make cool sounds. Impress your friends. 
+*** Make cool sounds. Impress your friends/pets/plants ***
 
 A language for binaural, microtonal composition built in Rust
 
