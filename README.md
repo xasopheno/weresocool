@@ -2,6 +2,7 @@
 [![Build Status](https://travis-ci.org/xasopheno/WereSoCool.svg?branch=master)](https://travis-ci.org/xasopheno/WereSoCool)
 
 A language for binaural, microtonal composition built in Rust.
+
 Make cool sounds. Impress your friends/pets/plants.
 
 ## Install
