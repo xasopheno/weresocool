@@ -1,11 +1,6 @@
 use crate::instrument::loudness::loudness_normalization;
-use crate::renderable::RenderOp;
+use crate::renderable::{Offset, RenderOp};
 use socool_ast::{OscType, ASR};
-use std::f64::consts::PI;
-
-fn tau() -> f64 {
-    PI * 2.0
-}
 
 #[derive(Clone, Debug, PartialEq)]
 pub struct Voice {
@@ -23,10 +18,9 @@ pub struct Voice {
 #[derive(Clone, Debug, PartialEq)]
 pub struct SampleInfo {
     pub index: usize,
-    pub p_delta: f64,
     pub gain: f64,
     pub portamento_length: usize,
-    pub factor: f64,
+    pub frequency: f64,
 }
 
 #[derive(Clone, Debug, PartialEq)]
@@ -58,10 +52,10 @@ impl Voice {
             asr: ASR::Long,
         }
     }
-    pub fn generate_waveform(&mut self, op: &RenderOp) -> Vec<f64> {
+    pub fn generate_waveform(&mut self, op: &RenderOp, offset: &Offset) -> Vec<f64> {
+        //println!("freq {}, gain {}", offset.freq, offset.gain);
         let mut buffer: Vec<f64> = vec![0.0; op.samples];
 
-        let factor: f64 = tau() / 44_100.0;
         let p_delta = self.calculate_portamento_delta(op.portamento);
         let silence_now = self.current.gain == 0.0 || self.current.frequency == 0.0;
 
@@ -71,14 +65,24 @@ impl Voice {
         };
 
         for (index, sample) in buffer.iter_mut().enumerate() {
-            let gain =
-                self.calculate_gain(silent_next, silence_now, op.index + index, op.total_samples);
+            let frequency = self.calculate_frequency(index + op.index, op.portamento, p_delta);
+
+            let gain = self.calculate_gain(
+                self.past.gain,
+                self.current.gain,
+                self.attack,
+                self.decay,
+                silent_next,
+                silence_now,
+                op.index + index,
+                op.total_samples,
+            );
+
             let info = SampleInfo {
-                index: op.index + index,
-                p_delta,
-                gain,
                 portamento_length: op.portamento,
-                factor,
+                index: op.index + index,
+                gain,
+                frequency,
             };
             let new_sample = match self.osc_type {
                 OscType::Sine => self.generate_sine_sample(info),
@@ -92,17 +96,27 @@ impl Voice {
         buffer
     }
 
+    fn calculate_frequency(&self, index: usize, portamento: usize, p_delta: f64) -> f64 {
+        if self.sound_to_silence() {
+            return self.past.frequency;
+        } else if self.portamento_index < portamento
+            && !self.silence_to_sound()
+            && !self.sound_to_silence()
+        {
+            return self.past.frequency + index as f64 * p_delta;
+        } else {
+            return self.current.frequency;
+        };
+    }
+
     pub fn update(&mut self, op: &RenderOp) {
         self.portamento_index = 0;
+
         self.past.frequency = self.current.frequency;
         self.current.frequency = op.f;
 
-        self.past.gain = self.current.gain;
-
-        self.current.gain = match self.index {
-            0 => op.g.0 * loudness_normalization(op.f),
-            _ => op.g.1 * loudness_normalization(op.f),
-        };
+        self.past.gain = self.calculate_past_gain(op);
+        self.current.gain = self.calculate_current_gain(op);
 
         self.osc_type = op.osc_type;
 
@@ -110,6 +124,28 @@ impl Voice {
         self.decay = op.decay.trunc() as usize;
 
         self.asr = op.asr;
+    }
+
+    fn calculate_past_gain(&self, op: &RenderOp) -> f64 {
+        if self.osc_type == OscType::Sine && op.osc_type != OscType::Sine {
+            return self.current.gain / 3.0;
+        } else {
+            return self.current.gain;
+        }
+    }
+
+    fn calculate_current_gain(&self, op: &RenderOp) -> f64 {
+        let mut gain = if op.f != 0.0 { op.g } else { (0., 0.) };
+        gain = if op.osc_type == OscType::Sine {
+            gain
+        } else {
+            (gain.0 / 3.0, gain.1 / 3.0)
+        };
+
+        match self.index {
+            0 => return gain.0 * loudness_normalization(op.f),
+            _ => return gain.1 * loudness_normalization(op.f),
+        };
     }
 
     pub fn silent(&self) -> bool {

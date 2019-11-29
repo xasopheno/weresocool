@@ -1,5 +1,5 @@
 pub mod normalize {
-    use crate::ast::{Op, OpOrNf, OpOrNf::*, OpOrNfTable, OscType, ASR};
+    use crate::ast::{Op, OpOrNf, OpOrNf::*, OpOrNfTable, OscType};
     use crate::operations::{
         helpers::*, substitute::get_fn_arg_map, GetLengthRatio, NormalForm, Normalize, Substitute,
     };

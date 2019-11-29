@@ -1,53 +1,40 @@
 use crate::instrument::voice::{SampleInfo, Voice};
-use rand::Rng;
+use rand::{thread_rng, Rng};
 use std::f64::consts::PI;
 
 fn tau() -> f64 {
     PI * 2.0
 }
 
+fn random_offset() -> f64 {
+    thread_rng().gen_range(-0.5, 0.5)
+}
+
 impl Voice {
     pub fn generate_sine_sample(&mut self, info: SampleInfo) -> f64 {
-        self.calculate_current_phase(&info, 0.0);
-
+        self.phase = self.calculate_current_phase(&info, 0.0);
         self.phase.sin() * info.gain
     }
 
     pub fn generate_square_sample(&mut self, info: SampleInfo) -> f64 {
-        self.calculate_current_phase(&info, 0.0);
+        self.phase = self.calculate_current_phase(&info, 0.0);
 
         let s = self.phase.sin();
         s.signum() * info.gain
     }
 
     pub fn generate_random_sample(&mut self, info: SampleInfo) -> f64 {
-        let rand_range = 0.5;
-        let r: f64 = rand::thread_rng().gen_range(-rand_range, rand_range);
+        self.phase = self.calculate_current_phase(&info, random_offset());
 
-        self.calculate_current_phase(&info, r);
-
-        self.phase.sin() * info.gain / 3.0
+        self.phase.sin() * info.gain
     }
 
-    pub fn calculate_current_phase(&mut self, info: &SampleInfo, rand: f64) {
-        let frequency = if self.sound_to_silence() {
-            self.past.frequency
-        } else if self.portamento_index < info.portamento_length
-            && !self.silence_to_sound()
-            && !self.sound_to_silence()
-        {
-            self.past.frequency + (info.index as f64 * info.p_delta)
+    pub fn calculate_current_phase(&mut self, info: &SampleInfo, rand: f64) -> f64 {
+        let factor: f64 = tau() / 44_100.0;
+        if info.gain == 0.0 {
+            return 0.0;
         } else {
-            self.current.frequency
+            return ((factor * info.frequency) + self.phase + rand) % tau();
         };
-
-        let gain = info.gain;
-        let current_phase = if gain == 0.0 {
-            0.0
-        } else {
-            ((info.factor * frequency) + self.phase + rand) % tau()
-        };
-
-        self.phase = current_phase;
     }
 }

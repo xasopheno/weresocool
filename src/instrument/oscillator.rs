@@ -1,6 +1,6 @@
 use crate::{
     instrument::{stereo_waveform::StereoWaveform, voice::Voice},
-    renderable::RenderOp,
+    renderable::{Offset, RenderOp},
     settings::Settings,
 };
 use num_rational::Rational64;
@@ -49,11 +49,11 @@ impl Oscillator {
         r_voice.update(op);
     }
 
-    pub fn generate(&mut self, op: &RenderOp) -> StereoWaveform {
+    pub fn generate(&mut self, op: &RenderOp, offset: &Offset) -> StereoWaveform {
         let (ref mut l_voice, ref mut r_voice) = self.voices;
 
-        let l_buffer = l_voice.generate_waveform(&op);
-        let r_buffer = r_voice.generate_waveform(&op);
+        let l_buffer = l_voice.generate_waveform(&op, offset);
+        let r_buffer = r_voice.generate_waveform(&op, offset);
 
         StereoWaveform { l_buffer, r_buffer }
     }

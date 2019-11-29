@@ -18,6 +18,10 @@ pub fn calculate_decay_gain(current_gain: f64, decay_index: usize, decay_length:
 impl Voice {
     pub fn calculate_gain(
         &mut self,
+        past_gain: f64,
+        current_gain: f64,
+        attack: usize,
+        decay: usize,
         silence_now: bool,
         silence_next: bool,
         index: usize,
@@ -25,22 +29,22 @@ impl Voice {
     ) -> f64 {
         if self.asr == ASR::Long {
             calculate_long_gain(
-                self.past.gain,
-                self.current.gain,
+                past_gain,
+                current_gain,
                 silence_now,
                 index,
-                self.attack,
-                self.decay,
+                attack,
+                decay,
                 total_length,
             )
         } else {
             calculate_short_gain(
-                self.past.gain,
-                self.current.gain,
+                past_gain,
+                current_gain,
                 silence_next,
                 index,
-                self.attack,
-                self.decay,
+                attack,
+                decay,
                 total_length,
             )
         }

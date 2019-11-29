@@ -70,7 +70,7 @@ hh = {
 drums = {
     Overlay [
         bd, 
-        hh
+        hh | Gain 6/5 
     ]
     > FitLength thing1
 }
