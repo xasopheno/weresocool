@@ -14,7 +14,7 @@ thing1 = {
 		Tm 1,
         Tm 0
 	] 
-    | Repeat 3
+    --| Repeat 3
     | Length 1
 }
 
@@ -69,7 +69,7 @@ thing5 = {
 
 main = {
     Tm 2 |
-    overtones |
+    --overtones |
     Overlay [
 	    thing1,
         --thing2,

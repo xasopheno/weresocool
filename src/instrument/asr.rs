@@ -93,6 +93,7 @@ pub fn calculate_long_gain(
     if index < attack_length {
         calculate_attack_gain(past_gain, current_gain, index, attack_length)
     } else if index < decay_length && silence_now {
+        dbg!(index);
         calculate_decay_gain(current_gain, index, decay_length)
     } else {
         current_gain

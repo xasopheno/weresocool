@@ -114,7 +114,7 @@ impl Renderable<RenderOp> for RenderOp {
         //if self.index == 0 {
         oscillator.update(self, &o);
         //}
-        oscillator.generate(&self)
+        oscillator.generate(&self, &o)
     }
 }
 impl Renderable<Vec<RenderOp>> for Vec<RenderOp> {

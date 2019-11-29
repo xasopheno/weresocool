@@ -1,15 +1,32 @@
 use crate::instrument::loudness::loudness_normalization;
 use crate::renderable::{Offset, RenderOp};
+use rand::seq::SliceRandom;
 use rand::{thread_rng, Rng};
 use socool_ast::{OscType, ASR};
+
+fn rand_offset() -> f64 {
+    let samples = vec![
+        //0.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0,
+        //1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0,
+        0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0,
+        0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0,
+        1.0,
+    ];
+    //let samples = vec![1.0];
+    let sample: Vec<_> = samples
+        .choose_multiple(&mut rand::thread_rng(), 1)
+        .collect();
+    *sample[0]
+    //thread_rng().gen_range(0.99, 1.01)
+}
 
 #[derive(Clone, Debug, PartialEq)]
 pub struct Voice {
     pub index: usize,
     pub past: VoiceState,
     pub current: VoiceState,
-    pub mic: VoiceState,
-    pub mic_past: VoiceState,
+    pub rt_current: VoiceState,
+    pub rt_past: VoiceState,
     pub phase: f64,
     pub osc_type: OscType,
     pub attack: usize,
@@ -39,6 +56,9 @@ impl VoiceState {
             gain: 0.0,
         }
     }
+    fn silent(&self) -> bool {
+        self.frequency < 20.0 || self.gain == 0.0
+    }
 }
 
 impl Voice {
@@ -47,8 +67,8 @@ impl Voice {
             index,
             past: VoiceState::init(),
             current: VoiceState::init(),
-            mic: VoiceState::init(),
-            mic_past: VoiceState::init(),
+            rt_current: VoiceState::init(),
+            rt_past: VoiceState::init(),
             phase: 0.0,
             osc_type: OscType::Sine,
             attack: 44_100,
@@ -57,7 +77,7 @@ impl Voice {
             asr: ASR::Long,
         }
     }
-    pub fn generate_waveform(&mut self, op: &RenderOp) -> Vec<f64> {
+    pub fn generate_waveform(&mut self, op: &RenderOp, _offset: &Offset) -> Vec<f64> {
         let mut buffer: Vec<f64> = vec![0.0; op.samples];
 
         let p_delta = self.calculate_portamento_delta(op.portamento);
@@ -88,6 +108,7 @@ impl Voice {
                 gain,
                 frequency,
             };
+
             let new_sample = match self.osc_type {
                 OscType::Sine => self.generate_sine_sample(info),
                 OscType::Square => self.generate_square_sample(info),
@@ -103,14 +124,14 @@ impl Voice {
 
     fn calculate_frequency(&self, index: usize, portamento: usize, p_delta: f64) -> f64 {
         if self.sound_to_silence() {
-            return self.mic.frequency;
+            return self.rt_current.frequency;
         } else if self.portamento_index < portamento
             && !self.silence_to_sound()
             && !self.sound_to_silence()
         {
-            return self.mic_past.frequency + index as f64 * p_delta;
+            return self.rt_past.frequency + index as f64 * p_delta;
         } else {
-            return self.mic.frequency;
+            return self.rt_current.frequency;
         };
     }
 
@@ -132,14 +153,17 @@ impl Voice {
 
             self.asr = op.asr;
         }
-        self.mic_past.frequency = self.mic.frequency;
-        self.mic.frequency = if self.sound_to_silence() {
+        let off = rand_offset();
+        self.rt_past.frequency = self.rt_current.frequency;
+        self.rt_current.frequency = if self.sound_to_silence() {
             //self.past.frequency * offset.freq / 220.0
-            self.past.frequency * thread_rng().gen_range(0.99, 1.01)
+            self.past.frequency * off
         } else {
             //self.current.frequency * offset.freq / 220.0
-            self.current.frequency * thread_rng().gen_range(0.99, 1.01)
-        }
+            self.current.frequency * off
+        };
+        self.rt_past.gain = self.rt_current.gain;
+        //self.rt_current.gain = self.current.gain * thread_rng().gen_range(0.0, 1.0);
     }
 
     fn calculate_past_gain(&self, op: &RenderOp) -> f64 {
@@ -170,14 +194,16 @@ impl Voice {
 
     pub fn silence_to_sound(&self) -> bool {
         self.past.frequency == 0.0 && self.current.frequency != 0.0
+            || self.rt_past.silent() && !self.rt_current.silent()
     }
 
     pub fn sound_to_silence(&self) -> bool {
         self.past.frequency != 0.0 && self.current.frequency == 0.0
+            || !self.rt_past.silent() && self.rt_current.silent()
     }
 
     pub fn calculate_portamento_delta(&self, portamento_length: usize) -> f64 {
-        (self.mic.frequency - self.mic_past.frequency) / (portamento_length as f64)
+        (self.rt_current.frequency - self.rt_past.frequency) / (portamento_length as f64)
     }
 
     pub fn is_short(&self, buffer_len: usize) -> bool {
