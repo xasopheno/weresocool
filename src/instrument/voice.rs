@@ -36,6 +36,9 @@ impl VoiceState {
             gain: 0.0,
         }
     }
+    fn silent(&self) -> bool {
+        self.frequency < 20.0 || self.gain == 0.0
+    }
 }
 
 impl Voice {
@@ -148,16 +151,12 @@ impl Voice {
         };
     }
 
-    pub fn silent(&self) -> bool {
-        self.current.frequency == 0.0 || self.current.gain == 0.0
-    }
-
     pub fn silence_to_sound(&self) -> bool {
-        self.past.frequency == 0.0 && self.current.frequency != 0.0
+        self.past.silent() && !self.current.silent()
     }
 
     pub fn sound_to_silence(&self) -> bool {
-        self.past.frequency != 0.0 && self.current.frequency == 0.0
+        !self.past.silent() && self.current.silent()
     }
 
     pub fn calculate_portamento_delta(&self, portamento_length: usize) -> f64 {
