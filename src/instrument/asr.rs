@@ -56,7 +56,7 @@ pub fn calculate_short_gain(
     if index < attack_length {
         gain_at_index(past_gain, current_gain, index, attack_length)
     } else if index > total_length - decay_length && silence_next {
-        gain_at_index(past_gain, current_gain, total_length - index, decay_length)
+        gain_at_index(current_gain, 0.0, total_length - index, decay_length)
     } else {
         current_gain
     }
@@ -79,7 +79,7 @@ pub fn calculate_long_gain(
     if index < attack_length {
         gain_at_index(past_gain, current_gain, index, attack_length)
     } else if index < decay_length && silence_now {
-        gain_at_index(past_gain, current_gain, index, decay_length)
+        gain_at_index(current_gain, 0.0, index, decay_length)
     } else {
         current_gain
     }
