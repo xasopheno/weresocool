@@ -1,6 +1,7 @@
 use crate::instrument::loudness::loudness_normalization;
 use crate::renderable::{Offset, RenderOp};
 use socool_ast::{OscType, ASR};
+use std::cmp::min;
 
 #[derive(Clone, Debug, PartialEq)]
 pub struct Voice {
@@ -103,13 +104,13 @@ impl Voice {
     fn calculate_frequency(&self, index: usize, portamento: usize, p_delta: f64) -> f64 {
         if self.sound_to_silence() {
             return self.past.frequency;
-        } else if self.portamento_index < portamento
-            && !self.silence_to_sound()
-            && !self.sound_to_silence()
-        {
-            return self.past.frequency + index as f64 * p_delta;
-        } else {
-            return self.current.frequency;
+        }
+        //} else if self.portamento_index < portamento
+        //&& !self.silence_to_sound()
+        //&& !self.sound_to_silence()
+        //{
+        else {
+            return self.past.frequency + min(portamento, self.portamento_index) as f64 * p_delta;
         };
     }
 
