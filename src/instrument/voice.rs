@@ -69,7 +69,7 @@ impl Voice {
         };
 
         for (index, sample) in buffer.iter_mut().enumerate() {
-            let frequency = self.calculate_frequency(index + op.index, op.portamento, p_delta);
+            let frequency = self.calculate_frequency(op.portamento, p_delta);
 
             let gain = self.calculate_gain(
                 self.past.gain,
@@ -101,17 +101,12 @@ impl Voice {
         buffer
     }
 
-    fn calculate_frequency(&self, index: usize, portamento: usize, p_delta: f64) -> f64 {
+    fn calculate_frequency(&self, portamento_length: usize, p_delta: f64) -> f64 {
         if self.sound_to_silence() {
-            return self.past.frequency;
+            self.past.frequency
+        } else {
+            self.past.frequency + min(portamento_length, self.portamento_index) as f64 * p_delta
         }
-        //} else if self.portamento_index < portamento
-        //&& !self.silence_to_sound()
-        //&& !self.sound_to_silence()
-        //{
-        else {
-            return self.past.frequency + min(portamento, self.portamento_index) as f64 * p_delta;
-        };
     }
 
     pub fn update(&mut self, op: &RenderOp) {
@@ -141,6 +136,7 @@ impl Voice {
 
     fn calculate_current_gain(&self, op: &RenderOp) -> f64 {
         let mut gain = if op.f != 0.0 { op.g } else { (0., 0.) };
+
         gain = if op.osc_type == OscType::Sine {
             gain
         } else {
@@ -153,7 +149,7 @@ impl Voice {
         };
     }
 
-    pub fn silence_to_sound(&self) -> bool {
+    pub fn silencj_to_sound(&self) -> bool {
         self.past.silent() && !self.current.silent()
     }
 
