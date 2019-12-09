@@ -84,7 +84,6 @@ pub fn calculate_long_gain(
         current_gain
     }
 }
-
 pub fn gain_at_index(past_gain: f64, current_gain: f64, index: usize, length: usize) -> f64 {
     let distance = current_gain - past_gain;
     past_gain + (distance * index as f64 / length as f64)
