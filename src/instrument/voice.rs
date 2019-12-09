@@ -96,6 +96,7 @@ impl Voice {
 
             *sample += new_sample
         }
+
         buffer
     }
 
