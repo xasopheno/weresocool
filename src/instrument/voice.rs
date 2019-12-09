@@ -56,7 +56,7 @@ impl Voice {
             asr: ASR::Long,
         }
     }
-    pub fn generate_waveform(&mut self, op: &RenderOp, offset: &Offset) -> Vec<f64> {
+    pub fn generate_waveform(&mut self, op: &RenderOp, _offset: &Offset) -> Vec<f64> {
         //println!("freq {}, gain {}", offset.freq, offset.gain);
         let mut buffer: Vec<f64> = vec![0.0; op.samples];
 
@@ -101,22 +101,14 @@ impl Voice {
         buffer
     }
 
-    fn calculate_frequency(&self, portamento_length: usize, p_delta: f64) -> f64 {
-        if self.sound_to_silence() {
-            self.past.frequency
-        } else {
-            self.past.frequency + min(portamento_length, self.portamento_index) as f64 * p_delta
-        }
-    }
-
     pub fn update(&mut self, op: &RenderOp) {
         self.portamento_index = 0;
 
         self.past.frequency = self.current.frequency;
         self.current.frequency = op.f;
 
-        self.past.gain = self.calculate_past_gain(op);
-        self.current.gain = self.calculate_current_gain(op);
+        self.past.gain = self.past_gain_from_op(op);
+        self.current.gain = self.current_gain_from_op(op);
 
         self.osc_type = op.osc_type;
 
@@ -126,7 +118,15 @@ impl Voice {
         self.asr = op.asr;
     }
 
-    fn calculate_past_gain(&self, op: &RenderOp) -> f64 {
+    fn calculate_frequency(&self, portamento_length: usize, p_delta: f64) -> f64 {
+        if self.sound_to_silence() {
+            self.past.frequency
+        } else {
+            self.past.frequency + min(portamento_length, self.portamento_index) as f64 * p_delta
+        }
+    }
+
+    fn past_gain_from_op(&self, op: &RenderOp) -> f64 {
         if self.osc_type == OscType::Sine && op.osc_type != OscType::Sine {
             return self.current.gain / 3.0;
         } else {
@@ -134,7 +134,7 @@ impl Voice {
         }
     }
 
-    fn calculate_current_gain(&self, op: &RenderOp) -> f64 {
+    fn current_gain_from_op(&self, op: &RenderOp) -> f64 {
         let mut gain = if op.f != 0.0 { op.g } else { (0., 0.) };
 
         gain = if op.osc_type == OscType::Sine {
@@ -149,7 +149,7 @@ impl Voice {
         };
     }
 
-    pub fn silencj_to_sound(&self) -> bool {
+    pub fn silence_to_sound(&self) -> bool {
         self.past.silent() && !self.current.silent()
     }
 
@@ -158,23 +158,9 @@ impl Voice {
     }
 
     pub fn calculate_portamento_delta(&self, portamento_length: usize) -> f64 {
+        // TODO: shouldn't take self. should be functional
+        // Also should be moved to portamento.rs.
+        // gain.rs and portamento.rs - not asr...
         (self.current.frequency - self.past.frequency) / (portamento_length as f64)
-    }
-
-    pub fn is_short(&self, buffer_len: usize) -> bool {
-        buffer_len <= self.attack + self.decay
-    }
-
-    pub fn calculate_attack(
-        &self,
-        distance: f64,
-        attack_index: usize,
-        attack_length: usize,
-    ) -> f64 {
-        self.past.gain + (distance * attack_index as f64 / attack_length as f64)
-    }
-
-    pub fn calculate_decay(&self, distance: f64, decay_index: usize, decay_length: usize) -> f64 {
-        distance * decay_index as f64 / decay_length as f64
     }
 }
