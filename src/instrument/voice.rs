@@ -37,7 +37,7 @@ impl VoiceState {
         }
     }
     fn silent(&self) -> bool {
-        self.frequency < 20.0 || self.gain == 0.0
+        self.frequency == 0.0
     }
 }
 
@@ -129,6 +129,7 @@ impl Voice {
             return self.current.frequency;
         };
     }
+
     fn past_gain_from_op(&self, op: &RenderOp) -> f64 {
         if self.osc_type == OscType::Sine && op.osc_type != OscType::Sine {
             return self.current.gain / 3.0;
@@ -153,10 +154,12 @@ impl Voice {
     }
 
     pub fn silence_to_sound(&self) -> bool {
+        //self.past.frequency == 0.0 && self.current.frequency != 0.0
         self.past.silent() && !self.current.silent()
     }
 
     pub fn sound_to_silence(&self) -> bool {
+        //self.past.frequency != 0.0 && self.current.frequency == 0.0
         !self.past.silent() && self.current.silent()
     }
 
