@@ -122,7 +122,7 @@ impl Voice {
         if self.sound_to_silence() {
             self.past.frequency
         } else {
-            self.past.frequency + min(portamento_length, self.portamento_index) as f64 * p_delta
+            self.past.frequency + (min(portamento_length, self.portamento_index) as f64 * p_delta)
         }
     }
 
