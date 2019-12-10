@@ -1,7 +1,6 @@
 use crate::instrument::loudness::loudness_normalization;
 use crate::renderable::{Offset, RenderOp};
 use socool_ast::{OscType, ASR};
-use std::cmp::min;
 
 #[derive(Clone, Debug, PartialEq)]
 pub struct Voice {
@@ -69,7 +68,7 @@ impl Voice {
         };
 
         for (index, sample) in buffer.iter_mut().enumerate() {
-            let frequency = self.calculate_frequency(op.portamento, p_delta);
+            let frequency = self.calculate_frequency(index + op.index, op.portamento, p_delta);
 
             let gain = self.calculate_gain(
                 self.past.gain,
@@ -118,14 +117,18 @@ impl Voice {
         self.asr = op.asr;
     }
 
-    fn calculate_frequency(&self, portamento_length: usize, p_delta: f64) -> f64 {
+    fn calculate_frequency(&self, index: usize, portamento: usize, p_delta: f64) -> f64 {
         if self.sound_to_silence() {
-            self.past.frequency
+            return self.past.frequency;
+        } else if self.portamento_index < portamento
+            && !self.silence_to_sound()
+            && !self.sound_to_silence()
+        {
+            return self.past.frequency + index as f64 * p_delta;
         } else {
-            self.past.frequency + (min(portamento_length, self.portamento_index) as f64 * p_delta)
-        }
+            return self.current.frequency;
+        };
     }
-
     fn past_gain_from_op(&self, op: &RenderOp) -> f64 {
         if self.osc_type == OscType::Sine && op.osc_type != OscType::Sine {
             return self.current.gain / 3.0;
