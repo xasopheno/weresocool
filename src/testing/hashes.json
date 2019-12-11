@@ -22,7 +22,7 @@
   "./songs/test/asr_test_3.socool": {
     "op": 14615961130460457936,
     "normal_form": 10222706999861690806,
-    "stereo_waveform": 0.00040827954
+    "stereo_waveform": 0.00073240753
   },
   "./songs/test/drew_test.socool": {
     "op": 5503422663636347691,
@@ -37,7 +37,7 @@
   "./songs/test/fun1.socool": {
     "op": 4631760111733645982,
     "normal_form": 7435717670500907399,
-    "stereo_waveform": -231.09960512
+    "stereo_waveform": -231.51218711
   },
   "./songs/test/fun2.socool": {
     "op": 6278450776801735145,
@@ -47,7 +47,7 @@
   "./songs/test/fun_and_focus.socool": {
     "op": 7391746218633350490,
     "normal_form": 1926569014755898204,
-    "stereo_waveform": -0.5924664303
+    "stereo_waveform": -0.5970051331
   },
   "./songs/test/fun_simple.socool": {
     "op": 2550069847479477618,

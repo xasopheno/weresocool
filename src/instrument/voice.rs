@@ -117,10 +117,10 @@ impl Voice {
         self.asr = op.asr;
     }
 
-    fn calculate_frequency(&self, index: usize, portamento: usize, p_delta: f64) -> f64 {
+    fn calculate_frequency(&self, index: usize, portamento_length: usize, p_delta: f64) -> f64 {
         if self.sound_to_silence() {
             return self.past.frequency;
-        } else if self.portamento_index < portamento
+        } else if self.portamento_index < portamento_length
             && !self.silence_to_sound()
             && !self.sound_to_silence()
         {
@@ -154,12 +154,10 @@ impl Voice {
     }
 
     pub fn silence_to_sound(&self) -> bool {
-        //self.past.frequency == 0.0 && self.current.frequency != 0.0
         self.past.silent() && !self.current.silent()
     }
 
     pub fn sound_to_silence(&self) -> bool {
-        //self.past.frequency != 0.0 && self.current.frequency == 0.0
         !self.past.silent() && self.current.silent()
     }
 
