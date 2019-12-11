@@ -11,5 +11,5 @@ else
   pushd parser; ./parser_test.sh; popd
   cargo test
   pwd
-  cargo run --bin snapshot
+  cargo run --release --bin snapshot
 fi

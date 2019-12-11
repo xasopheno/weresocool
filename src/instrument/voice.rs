@@ -37,7 +37,7 @@ impl VoiceState {
         }
     }
     fn silent(&self) -> bool {
-        self.frequency == 0.0
+        self.frequency < 20.0 || self.gain == 0.0
     }
 }
 
