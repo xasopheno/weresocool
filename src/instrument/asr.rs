@@ -1,19 +1,5 @@
 use crate::instrument::voice::Voice;
 use socool_ast::ASR;
-pub fn calculate_attack_gain(
-    past_gain: f64,
-    current_gain: f64,
-    attack_index: usize,
-    attack_length: usize,
-) -> f64 {
-    let distance = current_gain - past_gain;
-    past_gain + (distance * attack_index as f64 / attack_length as f64)
-}
-
-pub fn calculate_decay_gain(current_gain: f64, decay_index: usize, decay_length: usize) -> f64 {
-    let distance = -current_gain;
-    current_gain + (distance * decay_index as f64 / decay_length as f64)
-}
 
 impl Voice {
     pub fn calculate_gain(
@@ -68,9 +54,14 @@ pub fn calculate_short_gain(
     };
 
     if index < attack_length {
-        calculate_attack_gain(past_gain, current_gain, index, attack_length)
+        gain_at_index(past_gain, current_gain - past_gain, index, attack_length)
     } else if index > total_length - decay_length && silence_next {
-        calculate_decay_gain(current_gain, total_length - index, attack_length)
+        gain_at_index(
+            current_gain,
+            -current_gain,
+            total_length - index,
+            decay_length,
+        )
     } else {
         current_gain
     }
@@ -91,12 +82,15 @@ pub fn calculate_long_gain(
         decay_length = total_length;
     };
     if index < attack_length {
-        calculate_attack_gain(past_gain, current_gain, index, attack_length)
+        gain_at_index(past_gain, current_gain - past_gain, index, attack_length)
     } else if index < decay_length && silence_now {
-        calculate_decay_gain(current_gain, index, decay_length)
+        gain_at_index(current_gain, -current_gain, index, decay_length)
     } else {
         current_gain
     }
+}
+pub fn gain_at_index(start: f64, distance: f64, index: usize, length: usize) -> f64 {
+    start + (distance * index as f64 / length as f64)
 }
 
 pub fn is_short(total_length: usize, attack_length: usize, decay_length: usize) -> bool {
