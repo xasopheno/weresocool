@@ -43,7 +43,7 @@ pub mod tests {
             let op = RenderOp::init_fglp(200.0, (0.5, 0.5), 1.0, 0.0);
 
             voice.update(&op);
-            let p_delta = voice.calculate_portamento_delta(10);
+            let p_delta = voice.calculate_portamento_delta(10, voice.past.frequency, voice.current.frequency);
 
             assert_eq!(p_delta, 20.0);
         }
