@@ -59,7 +59,11 @@ impl Voice {
         //println!("freq {}, gain {}", offset.freq, offset.gain);
         let mut buffer: Vec<f64> = vec![0.0; op.samples];
 
-        let p_delta = self.calculate_portamento_delta(op.portamento);
+        let p_delta = self.calculate_portamento_delta(
+            op.portamento,
+            self.past.frequency,
+            self.current.frequency,
+        );
         let silence_now = self.current.gain == 0.0 || self.current.frequency == 0.0;
 
         let silent_next = match self.index {
@@ -161,10 +165,15 @@ impl Voice {
         !self.past.silent() && self.current.silent()
     }
 
-    pub fn calculate_portamento_delta(&self, portamento_length: usize) -> f64 {
+    pub fn calculate_portamento_delta(
+        &self,
+        portamento_length: usize,
+        start: f64,
+        target: f64,
+    ) -> f64 {
         // TODO: shouldn't take self. should be functional
         // Also should be moved to portamento.rs.
         // gain.rs and portamento.rs - not asr...
-        (self.current.frequency - self.past.frequency) / (portamento_length as f64)
+        (target - start) / (portamento_length as f64)
     }
 }
