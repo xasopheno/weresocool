@@ -1,6 +1,6 @@
 use crate::instrument::loudness::loudness_normalization;
 use crate::renderable::{Offset, RenderOp};
-use rand::{thread_rng, Rng};
+//use rand::{thread_rng, Rng};
 use socool_ast::{OscType, ASR};
 
 #[derive(Clone, Debug, PartialEq)]
@@ -84,6 +84,8 @@ impl Voice {
                 p_delta,
                 self.past.frequency,
                 self.current.frequency,
+                self.sound_to_silence(),
+                self.silence_to_sound(),
             );
 
             let gain = self.calculate_gain(
@@ -150,13 +152,12 @@ impl Voice {
         p_delta: f64,
         start: f64,
         target: f64,
+        sound_to_silence: bool,
+        silence_to_sound: bool,
     ) -> f64 {
-        if self.sound_to_silence() {
+        if sound_to_silence {
             return start;
-        } else if portamento_index < portamento_length
-            && !self.silence_to_sound()
-            && !self.sound_to_silence()
-        {
+        } else if portamento_index < portamento_length && !silence_to_sound && !sound_to_silence {
             return start + index as f64 * p_delta;
         } else {
             return target;
