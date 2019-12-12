@@ -1,5 +1,6 @@
 use crate::instrument::loudness::loudness_normalization;
 use crate::renderable::{Offset, RenderOp};
+use rand::{thread_rng, Rng};
 use socool_ast::{OscType, ASR};
 
 #[derive(Clone, Debug, PartialEq)]
@@ -7,6 +8,8 @@ pub struct Voice {
     pub index: usize,
     pub past: VoiceState,
     pub current: VoiceState,
+    pub mic_past: VoiceState,
+    pub mic_current: VoiceState,
     pub phase: f64,
     pub osc_type: OscType,
     pub attack: usize,
@@ -47,6 +50,8 @@ impl Voice {
             index,
             past: VoiceState::init(),
             current: VoiceState::init(),
+            mic_past: VoiceState::init(),
+            mic_current: VoiceState::init(),
             phase: 0.0,
             osc_type: OscType::Sine,
             attack: 44_100,
@@ -72,7 +77,14 @@ impl Voice {
         };
 
         for (index, sample) in buffer.iter_mut().enumerate() {
-            let frequency = self.calculate_frequency(index + op.index, op.portamento, p_delta);
+            let frequency = self.calculate_frequency(
+                index + op.index,
+                self.portamento_index,
+                op.portamento,
+                p_delta,
+                self.past.frequency,
+                self.current.frequency,
+            );
 
             let gain = self.calculate_gain(
                 self.past.gain,
@@ -104,33 +116,50 @@ impl Voice {
         buffer
     }
 
-    pub fn update(&mut self, op: &RenderOp) {
-        self.portamento_index = 0;
+    pub fn update(&mut self, op: &RenderOp, _offset: &Offset) {
+        if op.index == 0 {
+            self.portamento_index = 0;
 
-        self.past.frequency = self.current.frequency;
-        self.current.frequency = op.f;
+            self.past.frequency = self.current.frequency;
+            self.current.frequency = op.f;
 
-        self.past.gain = self.past_gain_from_op(op);
-        self.current.gain = self.current_gain_from_op(op);
+            self.past.gain = self.past_gain_from_op(op);
+            self.current.gain = self.current_gain_from_op(op);
 
-        self.osc_type = op.osc_type;
+            self.osc_type = op.osc_type;
 
-        self.attack = op.attack.trunc() as usize;
-        self.decay = op.decay.trunc() as usize;
+            self.attack = op.attack.trunc() as usize;
+            self.decay = op.decay.trunc() as usize;
 
-        self.asr = op.asr;
+            self.asr = op.asr;
+        };
+        //self.mic_past.frequency = self.mic_current.frequency;
+        //self.mic_current.frequency = if self.sound_to_silence() {
+        ////self.past.frequency * offset.freq / 220.0
+        //self.past.frequency * thread_rng().gen_range(0.9, 1.1)
+        //} else {
+        ////self.current.frequency * offset.freq / 220.0
+        //self.current.frequency * thread_rng().gen_range(0.9, 1.1)
+        //}
     }
-
-    fn calculate_frequency(&self, index: usize, portamento_length: usize, p_delta: f64) -> f64 {
+    fn calculate_frequency(
+        &self,
+        index: usize,
+        portamento_index: usize,
+        portamento_length: usize,
+        p_delta: f64,
+        start: f64,
+        target: f64,
+    ) -> f64 {
         if self.sound_to_silence() {
-            return self.past.frequency;
-        } else if self.portamento_index < portamento_length
+            return start;
+        } else if portamento_index < portamento_length
             && !self.silence_to_sound()
             && !self.sound_to_silence()
         {
-            return self.past.frequency + index as f64 * p_delta;
+            return start + index as f64 * p_delta;
         } else {
-            return self.current.frequency;
+            return target;
         };
     }
 
@@ -171,9 +200,6 @@ impl Voice {
         start: f64,
         target: f64,
     ) -> f64 {
-        // TODO: shouldn't take self. should be functional
-        // Also should be moved to portamento.rs.
-        // gain.rs and portamento.rs - not asr...
         (target - start) / (portamento_length as f64)
     }
 }

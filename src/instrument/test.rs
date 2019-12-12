@@ -26,6 +26,14 @@ pub mod tests {
                     frequency: 0.0,
                     gain: 0.0,
                 },
+                mic_past: VoiceState {
+                    frequency: 0.0,
+                    gain: 0.0,
+                },
+                mic_current: VoiceState {
+                    frequency: 0.0,
+                    gain: 0.0,
+                },
                 phase: 0.0,
                 osc_type: OscType::Sine,
                 attack: 44100,
@@ -42,8 +50,9 @@ pub mod tests {
             let mut voice = Voice::init(index);
             let op = RenderOp::init_fglp(200.0, (0.5, 0.5), 1.0, 0.0);
 
-            voice.update(&op);
-            let p_delta = voice.calculate_portamento_delta(10, voice.past.frequency, voice.current.frequency);
+            voice.update(&op, &Offset::identity());
+            let p_delta =
+                voice.calculate_portamento_delta(10, voice.past.frequency, voice.current.frequency);
 
             assert_eq!(p_delta, 20.0);
         }
@@ -54,7 +63,7 @@ pub mod tests {
             let mut voice = Voice::init(index);
             let mut op = RenderOp::init_fglp(100.0, (0.5, 0.5), 1.0, 0.0);
             op.samples = 3;
-            voice.update(&op);
+            voice.update(&op, &Offset::identity());
             let buffer = voice.generate_waveform(&op, &Offset::identity());
             assert_eq!(
                 buffer,
@@ -67,10 +76,10 @@ pub mod tests {
             let mut voice = Voice::init(1);
             let op1 = RenderOp::init_fglp(100.0, (0.5, 0.5), 1.0, 0.0);
             let op2 = RenderOp::init_fglp(100.0, (0.5, 0.5), 1.0, 0.0);
-            voice.update(&op1);
+            voice.update(&op1, &Offset::identity());
             let silence_to_sound = voice.silence_to_sound();
 
-            voice.update(&op2);
+            voice.update(&op2, &Offset::identity());
             let sound_to_silence = voice.sound_to_silence();
 
             assert_eq!(silence_to_sound, true);
@@ -98,6 +107,14 @@ pub mod tests {
                             frequency: 0.0,
                             gain: 0.0,
                         },
+                        mic_past: VoiceState {
+                            frequency: 0.0,
+                            gain: 0.0,
+                        },
+                        mic_current: VoiceState {
+                            frequency: 0.0,
+                            gain: 0.0,
+                        },
                         osc_type: OscType::Sine,
                         attack: 44100,
                         decay: 44100,
@@ -112,6 +129,14 @@ pub mod tests {
                             gain: 0.0,
                         },
                         current: VoiceState {
+                            frequency: 0.0,
+                            gain: 0.0,
+                        },
+                        mic_past: VoiceState {
+                            frequency: 0.0,
+                            gain: 0.0,
+                        },
+                        mic_current: VoiceState {
                             frequency: 0.0,
                             gain: 0.0,
                         },
@@ -131,7 +156,7 @@ pub mod tests {
 
             let render_op = RenderOp::init_fglp(100.0, (0.75, 0.25), 1.0, 0.0);
 
-            osc.update(&render_op);
+            osc.update(&render_op, &Offset::identity());
 
             assert_eq!(osc.voices.0.past.frequency, 0.0);
             assert_eq!(osc.voices.0.past.gain, 0.0);
@@ -155,7 +180,7 @@ pub mod tests {
             render_op.samples = 3;
             render_op.total_samples = 44_100;
 
-            osc.update(&render_op);
+            osc.update(&render_op, &Offset::identity());
 
             let expected = StereoWaveform {
                 l_buffer: vec![0.0, 0.0000002422976820935907, 0.0000009690923602328218],

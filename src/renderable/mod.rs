@@ -112,7 +112,7 @@ impl Renderable<RenderOp> for RenderOp {
         };
 
         if self.index == 0 {
-            oscillator.update(self);
+            oscillator.update(self, &o);
         }
         oscillator.generate(&self, &o)
     }
