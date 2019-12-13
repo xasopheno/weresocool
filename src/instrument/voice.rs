@@ -82,7 +82,7 @@ impl Voice {
 
         for (index, sample) in buffer.iter_mut().enumerate() {
             let frequency = self.calculate_frequency(
-                index + op.index,
+                index,
                 self.portamento_index,
                 op.portamento,
                 p_delta,
@@ -130,7 +130,6 @@ impl Voice {
 
     pub fn update(&mut self, op: &RenderOp, offset: &Offset) {
         self.portamento_index = 0;
-
         if op.index == 0 {
             self.past.frequency = self.current.frequency;
             self.current.frequency = op.f;
@@ -147,11 +146,11 @@ impl Voice {
         };
         self.mic_past.frequency = self.mic_current.frequency;
         self.mic_current.frequency = if self.sound_to_silence() {
-            self.past.frequency * offset.freq
-        //self.past.frequency * thread_rng().gen_range(0.9, 1.1)
+            //self.past.frequency * offset.freq
+            self.past.frequency * thread_rng().gen_range(0.9, 1.1)
         } else {
-            self.current.frequency * offset.freq
-            //self.current.frequency * thread_rng().gen_range(0.9, 1.1)
+            //self.current.frequency * offset.freq
+            self.current.frequency * thread_rng().gen_range(0.9, 1.1)
         }
     }
     fn calculate_frequency(
