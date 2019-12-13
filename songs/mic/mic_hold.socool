@@ -1,4 +1,4 @@
-{ f: 220, l: 1, g: 1, p: 0 }
+{ f: 320, l: 1, g: 1, p: 0 }
 
 overtones = {
     O[
@@ -18,5 +18,5 @@ thing1 = {
 
 main = {
 	thing1
-    | Gain 1/8
+    | Gain 1/2
 }

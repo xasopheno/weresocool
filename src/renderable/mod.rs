@@ -104,28 +104,27 @@ pub trait Renderable<T> {
 impl Renderable<RenderOp> for RenderOp {
     fn render(&mut self, oscillator: &mut Oscillator, offset: Option<&Offset>) -> StereoWaveform {
         let o = match offset {
-            Some(o) => Offset {
-                freq: o.freq,
-                gain: o.gain,
-            },
+            Some(o) => Offset::identity(),
+            //Offset {
+            //freq: o.freq,
+            //gain: o.gain,
+            //},
             None => Offset::identity(),
         };
 
-        //if self.index == 0 {
         oscillator.update(self, &o);
-        //}
         oscillator.generate(&self, &o)
     }
 }
 impl Renderable<Vec<RenderOp>> for Vec<RenderOp> {
-    fn render(&mut self, oscillator: &mut Oscillator, _offset: Option<&Offset>) -> StereoWaveform {
+    fn render(&mut self, oscillator: &mut Oscillator, offset: Option<&Offset>) -> StereoWaveform {
         let mut result: StereoWaveform = StereoWaveform::new(0);
 
         let mut iter = self.iter();
 
         while let Some(op) = iter.next() {
             if op.samples > 0 {
-                let stereo_waveform = op.clone().render(oscillator, _offset);
+                let stereo_waveform = op.clone().render(oscillator, offset);
                 result.append(stereo_waveform);
             }
         }
