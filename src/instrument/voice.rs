@@ -77,9 +77,24 @@ impl Voice {
             1 => op.next_r_silent,
             _ => unimplemented!(),
         };
-        let rand = thread_rng().gen_range(0.5, 1.0);
-        let rand = 1.0;
 
+        let rand = thread_rng().gen_range(0.5, 1.0);
+        //let rand = 1.0;
+        let op_gain = self.calculate_gain(
+            self.past.gain,
+            self.current.gain,
+            self.attack,
+            self.decay,
+            silent_next,
+            silence_now,
+            op.index + op.samples,
+            op.total_samples,
+        );
+
+        self.mic_past.gain = self.mic_current.gain;
+        self.mic_current.gain = op_gain * rand;
+
+        let mut f = 0.0;
         for (index, sample) in buffer.iter_mut().enumerate() {
             let frequency = self.calculate_frequency(
                 index,
@@ -91,23 +106,20 @@ impl Voice {
                 self.sound_to_silence(),
                 self.silence_to_sound(),
             );
+            f = frequency;
 
-            let gain = self.calculate_gain(
-                self.past.gain,
-                self.current.gain,
-                self.attack,
-                self.decay,
-                silent_next,
-                silence_now,
-                op.index + index,
-                op.total_samples,
-            );
-
-            //self.mic_past.gain = self.mic_current.gain;
-            //self.mic_current.gain = op_gain * rand;
-
-            //let gain = self.mic_past.gain
-            //+ (self.mic_current.gain - self.mic_past.gain) * index as f64 / 1024 as f64;
+            let gain = self.mic_past.gain
+                + (self.mic_current.gain - self.mic_past.gain) * index as f64 / op.samples as f64;
+            //let gain = self.calculate_gain(
+            //self.past.gain,
+            //self.current.gain,
+            //self.attack,
+            //self.decay,
+            //silent_next,
+            //silence_now,
+            //op.index + index,
+            //op.total_samples,
+            //);
 
             let info = SampleInfo {
                 portamento_length: op.portamento,
@@ -115,6 +127,7 @@ impl Voice {
                 gain,
                 frequency,
             };
+
             let new_sample = match self.osc_type {
                 OscType::Sine => self.generate_sine_sample(info),
                 OscType::Square => self.generate_square_sample(info),
@@ -124,12 +137,14 @@ impl Voice {
 
             *sample += new_sample
         }
+        self.mic_current.frequency = f;
 
         buffer
     }
 
     pub fn update(&mut self, op: &RenderOp, offset: &Offset) {
         self.portamento_index = 0;
+
         if op.index == 0 {
             self.past.frequency = self.current.frequency;
             self.current.frequency = op.f;
@@ -146,11 +161,11 @@ impl Voice {
         };
         self.mic_past.frequency = self.mic_current.frequency;
         self.mic_current.frequency = if self.sound_to_silence() {
-            //self.past.frequency * offset.freq
-            self.past.frequency * thread_rng().gen_range(0.9, 1.1)
+            self.past.frequency * offset.freq
+        //self.past.frequency * thread_rng().gen_range(0.9, 1.1)
         } else {
-            //self.current.frequency * offset.freq
-            self.current.frequency * thread_rng().gen_range(0.9, 1.1)
+            self.current.frequency * offset.freq
+            //self.current.frequency * thread_rng().gen_range(0.9, 1.1)
         }
     }
     fn calculate_frequency(
