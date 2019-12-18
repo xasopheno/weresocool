@@ -78,8 +78,6 @@ impl Voice {
             _ => unimplemented!(),
         };
 
-        let rand = thread_rng().gen_range(0.5, 1.0);
-        //let rand = 1.0;
         let op_gain = self.calculate_gain(
             self.past.gain,
             self.current.gain,
@@ -91,14 +89,18 @@ impl Voice {
             op.total_samples,
         );
 
+        let rand = thread_rng().gen_range(0.5, 1.0);
+        //let rand = 1.0;
+
         self.mic_past.gain = self.mic_current.gain;
         self.mic_current.gain = op_gain * rand;
 
         let mut f = 0.0;
+        let mut g = 0.0;
+
         for (index, sample) in buffer.iter_mut().enumerate() {
             let frequency = self.calculate_frequency(
                 index,
-                self.portamento_index,
                 op.portamento,
                 p_delta,
                 self.mic_past.frequency,
@@ -106,20 +108,17 @@ impl Voice {
                 self.sound_to_silence(),
                 self.silence_to_sound(),
             );
-            f = frequency;
 
-            let gain = self.mic_past.gain
-                + (self.mic_current.gain - self.mic_past.gain) * index as f64 / op.samples as f64;
-            //let gain = self.calculate_gain(
-            //self.past.gain,
-            //self.current.gain,
-            //self.attack,
-            //self.decay,
-            //silent_next,
-            //silence_now,
-            //op.index + index,
-            //op.total_samples,
-            //);
+            f = frequency;
+            let l = if op.samples > 250 {
+                op.samples as f64
+            } else {
+                250.0
+            };
+
+            let gain =
+                self.mic_past.gain + (op_gain * rand - self.mic_past.gain) * index as f64 / l;
+            g = gain;
 
             let info = SampleInfo {
                 portamento_length: op.portamento,
@@ -138,6 +137,7 @@ impl Voice {
             *sample += new_sample
         }
         self.mic_current.frequency = f;
+        self.mic_current.gain = g;
 
         buffer
     }
@@ -171,7 +171,6 @@ impl Voice {
     fn calculate_frequency(
         &self,
         index: usize,
-        portamento_index: usize,
         portamento_length: usize,
         p_delta: f64,
         start: f64,
@@ -181,7 +180,7 @@ impl Voice {
     ) -> f64 {
         if sound_to_silence {
             return start;
-        } else if portamento_index < portamento_length && !silence_to_sound && !sound_to_silence {
+        } else if index < portamento_length && !silence_to_sound && !sound_to_silence {
             return start + index as f64 * p_delta;
         } else {
             return target;

@@ -1,4 +1,4 @@
-{ f: 320, l: 1, g: 1, p: 0 }
+{ f: 320, l: 9/8, g: 1, p: 0 }
 
 overtones = {
     O[
@@ -15,7 +15,7 @@ overtones = {
 thing1 = {
     overtones|
 	Sequence [
-		Tm 1,
+		Tm 1 | Length 1/100,
         Tm 0
 	] 
     | Repeat 3

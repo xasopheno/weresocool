@@ -2,4 +2,4 @@
 
 FILENAME=$1
 
-fd | entr -crs "echo | cargo run --release --bin real_time songs/$FILENAME.socool"
+fd | entr -crs "echo | cargo run --release --bin real_time $FILENAME"
