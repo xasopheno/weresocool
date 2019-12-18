@@ -5,6 +5,7 @@ use num_rational::Rational64;
 use socool_ast::{NormalForm, Normalize, OpOrNfTable, OscType, PointOp, ASR};
 pub mod render_voice;
 mod test;
+use rand::{thread_rng, Rng};
 pub use render_voice::{renderables_to_render_voices, RenderVoice};
 
 #[derive(Debug, Clone, PartialEq)]
@@ -99,6 +100,10 @@ impl Renderable<RenderOp> for RenderOp {
             //freq: o.freq,
             //gain: o.gain,
             //},
+            Some(o) => Offset {
+                freq: thread_rng().gen_range(0.9, 1.1),
+                gain: thread_rng().gen_range(0.8, 1.0),
+            },
             None => Offset::identity(),
         };
 

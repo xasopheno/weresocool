@@ -25,11 +25,11 @@ pub mod tests {
                     frequency: 0.0,
                     gain: 0.0,
                 },
-                mic_past: VoiceState {
+                offset_past: VoiceState {
                     frequency: 0.0,
                     gain: 0.0,
                 },
-                mic_current: VoiceState {
+                offset_current: VoiceState {
                     frequency: 0.0,
                     gain: 0.0,
                 },
@@ -105,11 +105,11 @@ pub mod tests {
                             frequency: 0.0,
                             gain: 0.0,
                         },
-                        mic_past: VoiceState {
+                        offset_past: VoiceState {
                             frequency: 0.0,
                             gain: 0.0,
                         },
-                        mic_current: VoiceState {
+                        offset_current: VoiceState {
                             frequency: 0.0,
                             gain: 0.0,
                         },
@@ -129,11 +129,11 @@ pub mod tests {
                             frequency: 0.0,
                             gain: 0.0,
                         },
-                        mic_past: VoiceState {
+                        offset_past: VoiceState {
                             frequency: 0.0,
                             gain: 0.0,
                         },
-                        mic_current: VoiceState {
+                        offset_current: VoiceState {
                             frequency: 0.0,
                             gain: 0.0,
                         },
