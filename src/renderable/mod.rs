@@ -101,8 +101,8 @@ impl Renderable<RenderOp> for RenderOp {
             //gain: o.gain,
             //},
             //Some(o) => Offset {
-            //freq: thread_rng().gen_range(0.9, 1.1),
-            //gain: thread_rng().gen_range(0.8, 1.0),
+            //freq: thread_rng().gen_range(0.95, 1.05),
+            //gain: thread_rng().gen_range(0.95, 1.0),
             //},
             None => Offset::identity(),
         };
