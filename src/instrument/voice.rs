@@ -20,9 +20,7 @@ pub struct Voice {
 
 #[derive(Clone, Debug, PartialEq)]
 pub struct SampleInfo {
-    pub index: usize,
     pub gain: f64,
-    pub portamento_length: usize,
     pub frequency: f64,
 }
 
@@ -85,7 +83,7 @@ impl Voice {
             silence_now,
             op.index + op.samples,
             op.total_samples,
-        );
+        ) * loudness_normalization(self.offset_current.frequency);
 
         for (index, sample) in buffer.iter_mut().enumerate() {
             let frequency = self.calculate_frequency(
@@ -100,17 +98,12 @@ impl Voice {
 
             let gain = gain_at_index(
                 self.offset_past.gain,
-                op_gain * offset.gain - self.offset_past.gain,
+                op_gain * offset.gain,
                 index,
                 if op.samples > 250 { op.samples } else { 250 },
             );
 
-            let info = SampleInfo {
-                portamento_length: op.portamento,
-                index: op.index + index,
-                gain,
-                frequency,
-            };
+            let info = SampleInfo { gain, frequency };
 
             let new_sample = match self.osc_type {
                 OscType::Sine => self.generate_sine_sample(info),
@@ -189,8 +182,8 @@ impl Voice {
         };
 
         match self.index {
-            0 => return gain.0 * loudness_normalization(op.f),
-            _ => return gain.1 * loudness_normalization(op.f),
+            0 => return gain.0,
+            _ => return gain.1,
         };
     }
 
