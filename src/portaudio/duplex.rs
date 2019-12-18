@@ -22,6 +22,7 @@ fn process_detection_result(result: &mut DetectionResult) -> (f64, f64) {
 }
 
 fn sing_along_callback(
+    basis_f: f64,
     args: pa::DuplexStreamCallbackArgs<'_, f32, f32>,
     input_buffer: &mut RingBuffer<f32>,
     voices: &mut Vec<RenderVoice>,
@@ -35,7 +36,10 @@ fn sing_along_callback(
 
     let (freq, gain) = process_detection_result(&mut detection_result);
 
-    let offset = Offset { freq, gain };
+    let offset = Offset {
+        freq: freq / basis_f,
+        gain,
+    };
 
     let result: Vec<StereoWaveform> = voices
         .par_iter_mut()
@@ -46,6 +50,7 @@ fn sing_along_callback(
 }
 
 pub fn duplex_setup(
+    basis_f: f64,
     renderables: Vec<Vec<RenderOp>>,
 ) -> Result<pa::Stream<pa::NonBlocking, pa::Duplex<f32, f32>>, Error> {
     let pa = pa::PortAudio::new()?;
@@ -56,7 +61,7 @@ pub fn duplex_setup(
     let mut input_buffer: RingBuffer<f32> = RingBuffer::<f32>::new(settings.yin_buffer_size);
 
     let duplex_stream = pa.open_non_blocking_stream(duplex_stream_settings, move |args| {
-        sing_along_callback(args, &mut input_buffer, &mut voices, &settings);
+        sing_along_callback(basis_f, args, &mut input_buffer, &mut voices, &settings);
         pa::Continue
     })?;
 

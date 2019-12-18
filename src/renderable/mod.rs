@@ -71,16 +71,6 @@ impl RenderOp {
             next_r_silent: true,
         }
     }
-    pub fn _apply_offset(&mut self, _offset: &Offset) {
-        //self.f = offset.freq * 3.0;
-        //self.g = (self.g.0 * offset.gain, self.g.1 * offset.gain);
-        //self.g = (self.g.0 * 0.5, self.g.1 * 0.5);
-
-        //self.total_samples = self.samples;
-        //self.index = 0;
-        //self.next_r_silent = true;
-        //self.next_l_silent = true;
-    }
 }
 
 #[derive(Debug)]
@@ -104,11 +94,11 @@ pub trait Renderable<T> {
 impl Renderable<RenderOp> for RenderOp {
     fn render(&mut self, oscillator: &mut Oscillator, offset: Option<&Offset>) -> StereoWaveform {
         let o = match offset {
-            Some(o) => Offset::identity(),
-            //Offset {
-            //freq: o.freq,
-            //gain: o.gain,
-            //},
+            //Some(o) => Offset::identity(),
+            Some(o) => Offset {
+                freq: o.freq,
+                gain: o.gain,
+            },
             None => Offset::identity(),
         };
 

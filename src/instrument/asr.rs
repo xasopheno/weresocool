@@ -90,6 +90,7 @@ pub fn calculate_long_gain(
     }
 }
 pub fn gain_at_index(start: f64, distance: f64, index: usize, length: usize) -> f64 {
+    //TODO: target rather than distance
     start + (distance * index as f64 / length as f64)
 }
 

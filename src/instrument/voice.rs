@@ -2,7 +2,6 @@ use crate::{
     instrument::{asr::gain_at_index, loudness::loudness_normalization},
     renderable::{Offset, RenderOp},
 };
-use rand::{thread_rng, Rng};
 use socool_ast::{OscType, ASR};
 
 #[derive(Clone, Debug, PartialEq)]
@@ -10,8 +9,8 @@ pub struct Voice {
     pub index: usize,
     pub past: VoiceState,
     pub current: VoiceState,
-    pub mic_past: VoiceState,
-    pub mic_current: VoiceState,
+    pub offset_past: VoiceState,
+    pub offset_current: VoiceState,
     pub phase: f64,
     pub osc_type: OscType,
     pub attack: usize,
@@ -51,8 +50,8 @@ impl Voice {
             index,
             past: VoiceState::init(),
             current: VoiceState::init(),
-            mic_past: VoiceState::init(),
-            mic_current: VoiceState::init(),
+            offset_past: VoiceState::init(),
+            offset_current: VoiceState::init(),
             phase: 0.0,
             osc_type: OscType::Sine,
             attack: 44_100,
@@ -65,8 +64,8 @@ impl Voice {
 
         let p_delta = self.calculate_portamento_delta(
             op.portamento,
-            self.mic_past.frequency,
-            self.mic_current.frequency,
+            self.offset_past.frequency,
+            self.offset_current.frequency,
         );
 
         let silence_now = self.current.gain == 0.0 || self.current.frequency == 0.0;
@@ -93,15 +92,15 @@ impl Voice {
                 index,
                 op.portamento,
                 p_delta,
-                self.mic_past.frequency,
-                self.mic_current.frequency,
+                self.offset_past.frequency,
+                self.offset_current.frequency,
                 self.sound_to_silence(),
                 self.silence_to_sound(),
             );
 
             let gain = gain_at_index(
-                self.mic_past.gain,
-                op_gain * offset.gain - self.mic_past.gain,
+                self.offset_past.gain,
+                op_gain * offset.gain - self.offset_past.gain,
                 index,
                 if op.samples > 250 { op.samples } else { 250 },
             );
@@ -120,8 +119,8 @@ impl Voice {
             };
 
             if index == op.samples - 1 {
-                self.mic_current.frequency = frequency;
-                self.mic_current.gain = gain;
+                self.offset_current.frequency = frequency;
+                self.offset_current.gain = gain;
             };
             *sample += new_sample
         }
@@ -144,10 +143,10 @@ impl Voice {
 
             self.asr = op.asr;
         };
-        self.mic_past.gain = self.mic_current.gain;
-        self.mic_past.frequency = self.mic_current.frequency;
+        self.offset_past.gain = self.offset_current.gain;
+        self.offset_past.frequency = self.offset_current.frequency;
 
-        self.mic_current.frequency = if self.sound_to_silence() {
+        self.offset_current.frequency = if self.sound_to_silence() {
             self.past.frequency * offset.freq
         } else {
             self.current.frequency * offset.freq
@@ -204,12 +203,10 @@ impl Voice {
 
     pub fn silence_to_sound(&self) -> bool {
         self.past.silent() && !self.current.silent()
-        //self.mic_past.frequency == 0.0 && self.mic_current.frequency != 0.0
     }
 
     pub fn sound_to_silence(&self) -> bool {
         !self.past.silent() && self.current.silent()
-        //self.mic_past.frequency != 0.0 && self.mic_current.frequency == 0.0
     }
 
     pub fn calculate_portamento_delta(
