@@ -97,7 +97,7 @@ impl Renderable<RenderOp> for RenderOp {
         let o = match offset {
             Some(_o) => Offset::identity(),
             //Some(o) => Offset {
-            //freq: o.freq * 2.0,
+            //freq: o.freq * 4.0,
             //gain: o.gain,
             //},
             //Some(o) => Offset {
@@ -254,7 +254,7 @@ pub fn nf_to_vec_renderable(
                 );
                 result.push(op);
             }
-            result.push(RenderOp::init_silent_with_length(1.0));
+            //result.push(RenderOp::init_silent_with_length(1.0));
             result
         })
         .collect();

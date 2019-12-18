@@ -101,13 +101,10 @@ fn generate_render_hashes(p: &String) -> CompositionHashes {
 }
 
 fn pop_check(stereo_waveform: &StereoWaveform) -> bool {
-    let len = stereo_waveform.l_buffer.len();
-
     let mut max_d = 0.0;
 
     for i in 1..stereo_waveform.r_buffer.len() {
         let d = &stereo_waveform.r_buffer[i] - &stereo_waveform.r_buffer[i - 1];
-        let v = &stereo_waveform.r_buffer[i - 1];
         if d.abs() > max_d {
             max_d = d.abs();
         }

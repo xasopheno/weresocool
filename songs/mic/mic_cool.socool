@@ -1,0 +1,81 @@
+{ f: 220, l: 1, g: 1, p: 0 }
+
+overtones = {
+    O[
+    	(2/1, 5, 1, 1),
+      	(2/1, 0, 1, -1),
+    	(1/1, 1, 1, 1),
+      	(1/1, 0, 1, -1),
+  	]
+}
+
+thing1 = {
+	Sequence [
+		Tm 1,
+        Tm 0
+	] 
+    | Repeat 3
+    | Length 1
+}
+
+thing2 = {
+	Sequence [
+        Tm 0,
+		Tm 3/2,
+        Tm 0,
+
+	] 
+    | Repeat 3
+    | Length 1
+    > FitLength thing1
+}
+
+thing3 = {
+	Sequence [
+        Tm 0,
+		Tm 9/4,
+        Tm 0,
+		Tm 1/2,
+
+	] 
+    | Repeat 5
+    | Length 1
+    > FitLength thing1
+}
+
+thing4 = {
+	Sequence [
+        Tm 0,
+		Tm 5/2,
+        Tm 0,
+		Tm 3/2 | Gain 1/2,
+
+	] 
+    | Repeat 5
+    | Length 1
+    > FitLength thing1
+}
+
+thing5 = {
+    O[
+        (8/1, 1, 1/2, 1),
+        (8/1, 0, 1/2, -1),
+        (1/1, 1, 1/2, 1),
+        (1/1, 0, 1/2, -1),
+    ]
+    | Gain 1/2
+    > FitLength thing1
+}
+
+main = {
+    Tm 1/2 |
+    overtones |
+    Overlay [
+	    thing1,
+        thing2,
+        thing3,
+        thing4, 
+        thing5
+    ]
+    | Repeat 3
+}

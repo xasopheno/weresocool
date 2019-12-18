@@ -180,9 +180,9 @@ mod tests {
         //assert_eq!(batch[0].f, 220.0);
     }
 
-    //#[test]
+    #[test]
     fn test_small_and_large_render_batch_same_result() {
-        let filename = "songs/wip/tokyo.socool".to_string();
+        let filename = "songs/lee.socool".to_string();
         let (nf, basis, table) =
             match filename_to_render(&filename, RenderType::NfBasisAndTable).unwrap() {
                 RenderReturn::NfBasisAndTable(nf, basis, table) => (nf, basis, table),
@@ -222,6 +222,7 @@ mod tests {
             .map(|voice| voice.render_batch(20480, None))
             .collect();
         let long = sum_all_waveforms(long);
-        //assert_eq!(short, long)
+        dbg!(short.l_buffer.len(), long.l_buffer.len());
+        assert_eq!(short, long);
     }
 }

@@ -66,7 +66,7 @@ pub mod tests {
             let buffer = voice.generate_waveform(&op, &Offset::identity());
             assert_eq!(
                 buffer,
-                [0.0, 0.00000016153178806239382, 0.000000646061573488548]
+                [0.0, 0.0000000019383814567487256, 0.000000007752738881862574]
             );
         }
 
@@ -180,8 +180,8 @@ pub mod tests {
             osc.update(&render_op, &Offset::identity());
 
             let expected = StereoWaveform {
-                l_buffer: vec![0.0, 0.0000002422976820935907, 0.0000009690923602328218],
-                r_buffer: vec![0.0, 0.00000008076589403119691, 0.000000323030786744274],
+                l_buffer: vec![0.0, 0.000000002907572185123089, 0.000000011629108322793864],
+                r_buffer: vec![0.0, 0.0000000009691907283743628, 0.000000003876369440931287],
             };
             assert_eq!(osc.generate(&render_op, &Offset::identity()), expected);
         }
