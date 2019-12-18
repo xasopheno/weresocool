@@ -19,7 +19,7 @@ fn main() {
 #[allow(unused_variables)]
 fn run() -> Result<(), Error> {
     let stereo_waveform =
-        match filename_to_render("songs/fall/table.socool", RenderType::StereoWaveform)? {
+        match filename_to_render("songs/alaska/day_6.socool", RenderType::StereoWaveform)? {
             RenderReturn::StereoWaveform(sw) => sw,
             _ => panic!("Error. Unable to return StereoWaveform"),
         };
