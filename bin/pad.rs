@@ -26,7 +26,6 @@ fn run() -> Result<(), Error> {
     let len = &stereo_waveform.l_buffer.len();
 
     let mut max_d = 0.0;
-    let mut max_v = 0.0;
 
     for (i, sample) in stereo_waveform.r_buffer.clone().iter_mut().enumerate() {
         if i > 0 {
@@ -35,16 +34,10 @@ fn run() -> Result<(), Error> {
             if d.abs() > max_d {
                 max_d = d.abs();
             }
-            if v.abs() > max_v {
-                max_v = v.abs();
-            }
         }
     }
     dbg!(&len);
     dbg!(max_d);
-    dbg!(max_v);
-    //TODO: Seems like any max distance over ~0.2 is an error.
-    //let mut output_stream = output_setup(stereo_waveform)?;
 
     //output_stream.start()?;
     //while let true = output_stream.is_active()? {}

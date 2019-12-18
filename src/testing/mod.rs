@@ -1,6 +1,6 @@
 use crate::{
     generation::parsed_to_render::{generate_waveforms, sum_all_waveforms},
-    instrument::{Basis, Normalize},
+    instrument::{Basis, Normalize, StereoWaveform},
     renderable::nf_to_vec_renderable,
 };
 use difference::{Changeset, Difference};
@@ -23,6 +23,7 @@ pub struct CompositionHashes {
     op: u64,
     normal_form: u64,
     stereo_waveform: f64,
+    pop_check: bool,
 }
 
 pub fn read_test_table_from_json_file() -> TestTable {
@@ -81,6 +82,7 @@ fn generate_render_hashes(p: &String) -> CompositionHashes {
 
     let vec_wav = generate_waveforms(renderable, false);
     let mut result = sum_all_waveforms(vec_wav);
+    let pop_check = pop_check(&result);
 
     result.normalize();
 
@@ -92,9 +94,29 @@ fn generate_render_hashes(p: &String) -> CompositionHashes {
         op: op_hash,
         normal_form: nf_hash,
         stereo_waveform: render_hash_string.parse().unwrap(),
+        pop_check,
     };
 
     hashes
+}
+
+fn pop_check(stereo_waveform: &StereoWaveform) -> bool {
+    let len = stereo_waveform.l_buffer.len();
+
+    let mut max_d = 0.0;
+
+    for i in 1..stereo_waveform.r_buffer.len() {
+        let d = &stereo_waveform.r_buffer[i] - &stereo_waveform.r_buffer[i - 1];
+        let v = &stereo_waveform.r_buffer[i - 1];
+        if d.abs() > max_d {
+            max_d = d.abs();
+        }
+    }
+    if max_d > 0.20 {
+        false
+    } else {
+        true
+    }
 }
 
 fn sum_vec(vec: Vec<f64>) -> f64 {
