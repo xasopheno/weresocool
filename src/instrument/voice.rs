@@ -1,5 +1,7 @@
-use crate::instrument::loudness::loudness_normalization;
-use crate::renderable::{Offset, RenderOp};
+use crate::{
+    instrument::{asr::gain_at_index, loudness::loudness_normalization},
+    renderable::{Offset, RenderOp},
+};
 use rand::{thread_rng, Rng};
 use socool_ast::{OscType, ASR};
 
@@ -14,7 +16,6 @@ pub struct Voice {
     pub osc_type: OscType,
     pub attack: usize,
     pub decay: usize,
-    pub portamento_index: usize,
     pub asr: ASR,
 }
 
@@ -56,20 +57,18 @@ impl Voice {
             osc_type: OscType::Sine,
             attack: 44_100,
             decay: 44_100,
-            portamento_index: 0,
             asr: ASR::Long,
         }
     }
     pub fn generate_waveform(&mut self, op: &RenderOp, offset: &Offset) -> Vec<f64> {
-        //println!("freq {}, gain {}", offset.freq, offset.gain);
         let mut buffer: Vec<f64> = vec![0.0; op.samples];
-        //println!("{}, {}", self.current.gain, self.mic_current.gain);
 
         let p_delta = self.calculate_portamento_delta(
             op.portamento,
             self.mic_past.frequency,
             self.mic_current.frequency,
         );
+
         let silence_now = self.current.gain == 0.0 || self.current.frequency == 0.0;
 
         let silent_next = match self.index {
@@ -89,15 +88,6 @@ impl Voice {
             op.total_samples,
         );
 
-        let rand = thread_rng().gen_range(0.5, 1.0);
-        //let rand = 1.0;
-
-        self.mic_past.gain = self.mic_current.gain;
-        self.mic_current.gain = op_gain * rand;
-
-        let mut f = 0.0;
-        let mut g = 0.0;
-
         for (index, sample) in buffer.iter_mut().enumerate() {
             let frequency = self.calculate_frequency(
                 index,
@@ -109,16 +99,14 @@ impl Voice {
                 self.silence_to_sound(),
             );
 
-            f = frequency;
-            let l = if op.samples > 250 {
-                op.samples as f64
-            } else {
-                250.0
-            };
+            let l = if op.samples > 250 { op.samples } else { 250 };
 
-            let gain =
-                self.mic_past.gain + (op_gain * rand - self.mic_past.gain) * index as f64 / l;
-            g = gain;
+            let gain = gain_at_index(
+                self.mic_past.gain,
+                op_gain * offset.gain - self.mic_past.gain,
+                index,
+                l,
+            );
 
             let info = SampleInfo {
                 portamento_length: op.portamento,
@@ -132,19 +120,18 @@ impl Voice {
                 OscType::Square => self.generate_square_sample(info),
                 OscType::Noise => self.generate_random_sample(info),
             };
-            self.portamento_index += 1;
 
+            if index == op.samples - 1 {
+                self.mic_current.frequency = frequency;
+                self.mic_current.gain = gain;
+            };
             *sample += new_sample
         }
-        self.mic_current.frequency = f;
-        self.mic_current.gain = g;
 
         buffer
     }
 
     pub fn update(&mut self, op: &RenderOp, offset: &Offset) {
-        self.portamento_index = 0;
-
         if op.index == 0 {
             self.past.frequency = self.current.frequency;
             self.current.frequency = op.f;
@@ -159,13 +146,13 @@ impl Voice {
 
             self.asr = op.asr;
         };
+        self.mic_past.gain = self.mic_current.gain;
         self.mic_past.frequency = self.mic_current.frequency;
+
         self.mic_current.frequency = if self.sound_to_silence() {
             self.past.frequency * offset.freq
-        //self.past.frequency * thread_rng().gen_range(0.9, 1.1)
         } else {
             self.current.frequency * offset.freq
-            //self.current.frequency * thread_rng().gen_range(0.9, 1.1)
         }
     }
     fn calculate_frequency(

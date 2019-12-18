@@ -17,7 +17,6 @@ pub mod tests {
 
             let result = Voice {
                 index,
-                portamento_index: 0,
                 past: VoiceState {
                     frequency: 0.0,
                     gain: 0.0,
@@ -98,7 +97,6 @@ pub mod tests {
                     Voice {
                         index: 0,
                         phase: 0.0,
-                        portamento_index: 0,
                         past: VoiceState {
                             frequency: 0.0,
                             gain: 0.0,
@@ -123,7 +121,6 @@ pub mod tests {
                     Voice {
                         index: 1,
                         phase: 0.0,
-                        portamento_index: 0,
                         past: VoiceState {
                             frequency: 0.0,
                             gain: 0.0,
