@@ -94,11 +94,11 @@ pub trait Renderable<T> {
 impl Renderable<RenderOp> for RenderOp {
     fn render(&mut self, oscillator: &mut Oscillator, offset: Option<&Offset>) -> StereoWaveform {
         let o = match offset {
-            //Some(o) => Offset::identity(),
-            Some(o) => Offset {
-                freq: o.freq,
-                gain: o.gain,
-            },
+            Some(o) => Offset::identity(),
+            //Some(o) => Offset {
+            //freq: o.freq,
+            //gain: o.gain,
+            //},
             None => Offset::identity(),
         };
 
