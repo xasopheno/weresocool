@@ -99,13 +99,11 @@ impl Voice {
                 self.silence_to_sound(),
             );
 
-            let l = if op.samples > 250 { op.samples } else { 250 };
-
             let gain = gain_at_index(
                 self.mic_past.gain,
                 op_gain * offset.gain - self.mic_past.gain,
                 index,
-                l,
+                if op.samples > 250 { op.samples } else { 250 },
             );
 
             let info = SampleInfo {
