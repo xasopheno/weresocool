@@ -254,7 +254,7 @@ pub fn nf_to_vec_renderable(
                 );
                 result.push(op);
             }
-            //result.push(RenderOp::init_silent_with_length(1.0));
+            result.push(RenderOp::init_silent_with_length(1.0));
             result
         })
         .collect();

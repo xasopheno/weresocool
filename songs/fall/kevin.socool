@@ -1,0 +1,167 @@
+{ f: 220, l: 1, g: 1, p: 0 }
+
+overtones = {
+  O[
+    (1/1, 0, 1, 0), 
+    (3/4, 0, 1, 0),
+    (1/2, 0, 1, 0),
+  ]
+}
+
+thing1 = {
+    overtones | 
+    Seq [
+        1^6/10, 
+        0^4/10,
+    ]
+    | Sequence [
+        Tm 1,
+        Tm 2,
+        Tm 3, 
+        Tm 4, 
+        Tm 5, 
+        Tm 6, 
+        Tm 7, 
+        Tm 8, 
+        Tm 9, 
+        Tm 0,
+    ] 
+    | Length 1/3
+}
+thing2 = {
+    O[ 
+        (15/8, 0, 1, 1/2), 
+        (15/8, 3, 1, -1/2),
+        (1/1, 0, 1, 1/2), 
+        (1/1, 3, 1, -1/2),
+    ] | 
+    Seq [
+        0^3/10,
+        1^7/10, 
+        0^5/10, 
+        1^2/10, 
+    ]
+    | Tm 2 | 
+    Sequence [
+        Tm 1,
+        Tm 3/2,
+    ]
+    | Seq [
+        Tm 1,
+        Tm 9/8, 
+        Tm 4/3, 
+        Tm 3/2,
+    ]
+    | Seq [Tm 1, Tm 9/8, Tm 3/2]
+    | Overlay [AsIs, Tm 9/8 | Length 1/3, Tm 5/4 | Length 2/3]
+    | Length 1/4
+    > FitLength thing1
+}
+
+thing3 = {
+    Tm 1/2 
+    | O[
+        (4/1, -1/7, 1/10, 1/2), 
+        (4/1, 0, 1/10, -1/2),
+        --(3/2, -1/5, 1, 1/2), 
+        --(3/2, 0, 1, -1/2),
+        (1/1, 1/10, 1, 1/2), 
+        (1/1, 0, 1, -1/2),
+        (1/2, 1/10, 1/4, 1/2), 
+        (1/2, 0, 1/4, -1/2),
+    ] 
+    | Seq [Tm 1, Tm 2]
+    | Seq [
+        Tm 1, 
+        Tm 6/5,
+        Tm 3/2, 
+        Tm 7/8
+    ]
+    | Seq [Tm 1, Tm 7/8]
+    | Gain 1/3
+    | Length 1/3
+}
+
+snare = {
+    Noise |
+      O[
+        (4/1, 0, 1, 1/9), 
+        (4/1, 0, 1, -1/9),
+        (1/1, 0, 1, 1/7), 
+        (1/1, 0, 1, -1/7),
+        (1/4, 0, 1, 1/7), 
+        (1/4, 0, 1, -1/7),
+      ] | 
+      Seq [Tm 1 | Gain 2, Tm 0, Tm 1,]
+      | Seq [
+        Tm 0, Tm 1 | Length 1/20, Tm 0 | Length 1/20, Tm 0 | Length 19/20
+    ]
+    | Gain 2/3
+    | Seq [AsIs, Repeat 3 | Length 1/3, Repeat 16 | Length 1/16, Seq [PanA -1/3 | Repeat 4, PanA 1/2 | Repeat 4] | Length 1/8]
+    > FitLength thing3
+}
+
+bass = {
+    O[
+        (1/1, 0, 1, 2/7), 
+        (1/1, 0, 1, -3/8),
+    ] | 
+    Seq [
+        Tm 4/1 | Length 1/100, Tm 0 | Length 1/10, Tm 0 | Length 1
+    ]
+    | Seq [Tm 1, Tm 0, Tm 1, Tm 0]
+    | Seq [1^1, 5/3^1/5 | Repeat 2, 3/2^2/5 | Repeat 3]
+    | ModulateBy [
+        Tm 1 | Length 2, Ta -10, Ta -20 | PanA -1/2, Ta -40 | PanA 1/2
+    ]
+    > FitLength thing3
+}
+
+bass2 = {
+    O[
+        (1/1, 0, 1, 5/7), 
+        (1/1, 0, 1, -1/8),
+    ] | 
+    Tm 3/2 | 
+    Seq [
+        Tm 4/1 | Length 1/100, Tm 0 | Length 1/10, Tm 0 | Length 1
+    ]
+    | Seq [Tm 1, Tm 0, Tm 1, Tm 0]
+    | Seq [1^1, 5/3^1/5 | Repeat 2, 3/2^2/5 | Repeat 2 | Tm 2 | Repeat 7]
+    | ModulateBy [
+        Tm 1 | Length 2, Ta -10, Ta -20 | PanA -1/2, Ta -40 | PanA 1/2
+    ]
+    > FitLength thing3
+}
+
+bass3 = {
+    Tm 2 | 
+    Seq [
+        Tm 4/1 | Length 1/100, Tm 0 | Length 1/10, Tm 0 | Length 1
+    ]
+    | Seq [Tm 0, Tm 0, Tm 1, Tm 1]
+    | Seq [Tm 0, Length 1/5 | Seq [AsIs, Tm 9/8, Tm 5/4, Tm 11/8, Tm 15/8] | Tm 3/2]
+    > FitLength thing3
+}
+
+main = {
+    Seq [
+        thing2 | Gain 1/4,
+        0^1/100,
+        Overlay [
+            snare | Gain 1/3,
+            bass | Gain 2,
+            bass2 | Gain 2,
+            bass3 | Gain 2,
+        ],
+        Overlay [
+            thing3 | Gain 1,
+            snare | Gain 1/3,
+            bass | Gain 2,
+            bass2 | Gain 2,
+            bass3 | Gain 2,
+        ]
+        | Repeat 8
+    ]
+}
+	
