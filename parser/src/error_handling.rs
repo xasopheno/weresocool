@@ -49,7 +49,7 @@ pub fn handle_parse_error(location: Arc<Mutex<Vec<usize>>>, composition: &str) {
     }
     let mut lines = 0;
     let mut n_c = 0;
-    for c in composition.clone().chars() {
+    for c in composition.chars() {
         n_c += 1;
         if n_c > start {
             break;

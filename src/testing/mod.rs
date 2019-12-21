@@ -109,11 +109,8 @@ fn pop_check(stereo_waveform: &StereoWaveform) -> bool {
             max_d = d.abs();
         }
     }
-    if max_d > 0.20 {
-        false
-    } else {
-        true
-    }
+
+    max_d < 0.20
 }
 
 fn sum_vec(vec: Vec<f64>) -> f64 {

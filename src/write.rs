@@ -22,8 +22,8 @@ pub fn write_output_buffer(out_buffer: &mut [f32], stereo_waveform: StereoWavefo
 }
 
 pub fn filename_from_string(s: &str) -> &str {
-    let split: Vec<&str> = s.split(".").collect();
-    let filename: Vec<&str> = split[0].split("/").collect();
+    let split: Vec<&str> = s.split('.').collect();
+    let filename: Vec<&str> = split[0].split('/').collect();
     filename[filename.len() - 1]
 }
 
@@ -94,7 +94,7 @@ pub fn normalize_waveform(buffer: &mut Vec<f32>) {
     println!("Normalized by {}", normalization_ratio);
 }
 
-pub fn write_composition_to_json(serialized: &String, filename: &String) -> std::io::Result<()> {
+pub fn write_composition_to_json(serialized: &str, filename: &str) -> std::io::Result<()> {
     let filename = filename_from_string(filename);
     dbg!(filename);
     let mut file = File::create(format!(
@@ -125,7 +125,6 @@ pub fn write_composition_to_csv(ops: &mut Vec<Op4D>, filename: &str) -> Result<(
     for op in ops {
         writer
             .serialize(op.to_op_csv_1d())
-            .ok()
             .expect("CSV writer error");
     }
 
