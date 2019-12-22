@@ -211,14 +211,14 @@ mod tests {
 
         let r_buffer: Vec<f64> = short_r.iter().flatten().cloned().collect();
         let l_buffer: Vec<f64> = short_l.iter().flatten().cloned().collect();
-        let short = StereoWaveform { r_buffer, l_buffer };
+        let _short = StereoWaveform { r_buffer, l_buffer };
 
         let long: Vec<StereoWaveform> = voices2
             .clone()
             .iter_mut()
             .map(|voice| voice.render_batch(20480, None))
             .collect();
-        let long = sum_all_waveforms(long);
+        let _long = sum_all_waveforms(long);
         //assert_eq!(short, long);
     }
 }
