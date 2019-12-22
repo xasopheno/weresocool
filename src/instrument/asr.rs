@@ -1,27 +1,38 @@
-use crate::instrument::voice::{GainInput, Voice};
+use crate::instrument::voice::Voice;
 use socool_ast::ASR;
 
 impl Voice {
-    pub fn calculate_gain(&mut self, gi: GainInput) -> f64 {
+    #[allow(clippy::too_many_arguments)]
+    pub fn calculate_gain(
+        &mut self,
+        past_gain: f64,
+        current_gain: f64,
+        attack: usize,
+        decay: usize,
+        silence_now: bool,
+        silence_next: bool,
+        index: usize,
+        total_length: usize,
+    ) -> f64 {
         if self.asr == ASR::Long {
             calculate_long_gain(
-                gi.past_gain,
-                gi.current_gain,
-                gi.silence_now,
-                gi.index,
-                gi.attack_length,
-                gi.decay_length,
-                gi.total_samples,
+                past_gain,
+                current_gain,
+                silence_now,
+                index,
+                attack,
+                decay,
+                total_length,
             )
         } else {
             calculate_short_gain(
-                gi.past_gain,
-                gi.current_gain,
-                gi.silent_next,
-                gi.index,
-                gi.attack_length,
-                gi.decay_length,
-                gi.total_samples,
+                past_gain,
+                current_gain,
+                silence_next,
+                index,
+                attack,
+                decay,
+                total_length,
             )
         }
     }

@@ -42,27 +42,6 @@ impl VoiceState {
     }
 }
 
-pub struct GainInput {
-    pub past_gain: f64,
-    pub current_gain: f64,
-    pub attack_length: usize,
-    pub decay_length: usize,
-    pub silent_next: bool,
-    pub silence_now: bool,
-    pub index: usize,
-    pub total_samples: usize,
-}
-
-struct FrequencyInput {
-    index: usize,
-    portamento_length: usize,
-    p_delta: f64,
-    start: f64,
-    target: f64,
-    sound_to_silence: bool,
-    silence_to_sound: bool,
-}
-
 impl Voice {
     pub fn init(index: usize) -> Voice {
         Voice {
@@ -95,27 +74,27 @@ impl Voice {
             _ => unimplemented!(),
         };
 
-        let op_gain = self.calculate_gain(GainInput {
-            past_gain: self.past.gain,
-            current_gain: self.current.gain,
-            attack_length: self.attack,
-            decay_length: self.decay,
+        let op_gain = self.calculate_gain(
+            self.past.gain,
+            self.current.gain,
+            self.attack,
+            self.decay,
             silent_next,
             silence_now,
-            index: op.index + op.samples,
-            total_samples: op.total_samples,
-        }) * loudness_normalization(self.offset_current.frequency);
+            op.index + op.samples,
+            op.total_samples,
+        ) * loudness_normalization(self.offset_current.frequency);
 
         for (index, sample) in buffer.iter_mut().enumerate() {
-            let frequency = self.calculate_frequency(FrequencyInput {
+            let frequency = self.calculate_frequency(
                 index,
-                portamento_length: op.portamento,
+                op.portamento,
                 p_delta,
-                start: self.offset_past.frequency,
-                target: self.offset_current.frequency,
-                sound_to_silence: self.sound_to_silence(),
-                silence_to_sound: self.silence_to_sound(),
-            });
+                self.offset_past.frequency,
+                self.offset_current.frequency,
+                self.sound_to_silence(),
+                self.silence_to_sound(),
+            );
 
             let gain = gain_at_index(
                 self.offset_past.gain,
@@ -166,22 +145,24 @@ impl Voice {
             self.current.frequency * offset.freq
         }
     }
+
+    #[allow(clippy::too_many_arguments)]
     fn calculate_frequency(
         &self,
-        fi: FrequencyInput, //index: usize,
-                            //portamento_length: usize,
-                            //p_delta: f64,
-                            //start: f64,
-                            //target: f64,
-                            //sound_to_silence: bool,
-                            //silence_to_sound: bool
+        index: usize,
+        portamento_length: usize,
+        p_delta: f64,
+        start: f64,
+        target: f64,
+        sound_to_silence: bool,
+        silence_to_sound: bool,
     ) -> f64 {
-        if fi.sound_to_silence {
-            fi.start
-        } else if fi.index < fi.portamento_length && !fi.silence_to_sound && !fi.sound_to_silence {
-            fi.start + fi.index as f64 * fi.p_delta
+        if sound_to_silence {
+            start
+        } else if index < portamento_length && !silence_to_sound && !sound_to_silence {
+            start + index as f64 * p_delta
         } else {
-            fi.target
+            target
         }
     }
 
@@ -206,13 +187,6 @@ impl Voice {
             0 => gain.0,
             _ => gain.1,
         }
-    }
-
-    pub fn mic_silence_to_sound(&self) -> bool {
-        unimplemented!()
-    }
-    pub fn mic_sound_to_silence(&self) -> bool {
-        unimplemented!()
     }
 
     pub fn silence_to_sound(&self) -> bool {
