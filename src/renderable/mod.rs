@@ -5,7 +5,7 @@ use num_rational::Rational64;
 use socool_ast::{NormalForm, Normalize, OpOrNfTable, OscType, PointOp, ASR};
 pub mod render_voice;
 mod test;
-use rand::{thread_rng, Rng};
+//use rand::{thread_rng, Rng};
 pub use render_voice::{renderables_to_render_voices, RenderVoice};
 
 #[derive(Debug, Clone, PartialEq)]

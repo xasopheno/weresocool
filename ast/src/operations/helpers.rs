@@ -23,7 +23,7 @@ pub fn modulate(input: &[PointOp], modulator: &[PointOp]) -> Vec<PointOp> {
     let mut m = modulator.to_owned();
     let mut i = input.to_owned();
     let mut result = vec![];
-    while m.len() > 0 && !i.is_empty() {
+    while !m.is_empty() && !i.is_empty() {
         let mut inpu = i[0].clone();
         let mut modu = m[0].clone();
         let modu_l = modu.l;
