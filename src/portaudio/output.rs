@@ -37,8 +37,8 @@ fn output_callback(
 }
 
 pub fn get_output_settings(
-    ref pa: &pa::PortAudio,
-    ref settings: &Settings,
+    pa: &pa::PortAudio,
+    settings: &Settings,
 ) -> Result<pa::stream::OutputSettings<f32>, Error> {
     let def_output = pa.default_output_device()?;
     let output_info = pa.device_info(def_output)?;

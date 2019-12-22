@@ -25,7 +25,7 @@ fn main() {
 
 fn run() -> Result<(), Error> {
     were_so_cool_logo();
-    println!("{}", "       )))***=== MICROPHONE ===***(((  \n ");
+    println!("       )))***=== MICROPHONE ===***(((  \n ");
 
     let args = get_args();
 

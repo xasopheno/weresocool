@@ -69,8 +69,8 @@ pub fn duplex_setup(
 }
 
 fn get_duplex_settings(
-    ref pa: &pa::PortAudio,
-    ref settings: &Settings,
+    pa: &pa::PortAudio,
+    settings: &Settings,
 ) -> Result<pa::stream::DuplexSettings<f32, f32>, Error> {
     let def_input = pa.default_input_device()?;
     let input_info = pa.device_info(def_input)?;

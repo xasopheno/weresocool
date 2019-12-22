@@ -10,12 +10,12 @@ use std::process::Command;
 pub fn write_output_buffer(out_buffer: &mut [f32], stereo_waveform: StereoWaveform) {
     let mut l_idx = 0;
     let mut r_idx = 0;
-    for n in 0..out_buffer.len() {
+    for (n, sample) in out_buffer.iter_mut().enumerate() {
         if n % 2 == 0 {
-            out_buffer[n] = stereo_waveform.l_buffer[l_idx] as f32;
+            *sample = stereo_waveform.l_buffer[l_idx] as f32;
             l_idx += 1
         } else {
-            out_buffer[n] = stereo_waveform.r_buffer[r_idx] as f32;
+            *sample = stereo_waveform.r_buffer[r_idx] as f32;
             r_idx += 1
         }
     }
@@ -105,9 +105,9 @@ pub fn write_composition_to_json(serialized: &str, filename: &str) -> std::io::R
 
     println!(
         "{}.json was written and has \
-         {} render stream(s).\
+         1 render stream(s).\
          ",
-        filename, 1
+        filename
     );
 
     file.write_all(serialized.as_bytes())?;

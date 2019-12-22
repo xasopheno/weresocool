@@ -7,6 +7,7 @@ pub mod normalize {
     use rand::prelude::*;
 
     impl Normalize for Op {
+        #[allow(clippy::cognitive_complexity)]
         fn apply_to_normal_form(&self, input: &mut NormalForm, table: &OpOrNfTable) {
             match self {
                 Op::AsIs => {}
@@ -161,14 +162,13 @@ pub mod normalize {
                     for voice in input.operations.iter_mut() {
                         for mut point_op in voice {
                             point_op.fm = Ratio::new(0, 1);
-                            point_op.fm = Ratio::new(0, 1);
                             point_op.fa = Ratio::new(0, 1);
                             point_op.g = Ratio::new(0, 1);
                             point_op.l *= m;
                         }
                     }
 
-                    input.length_ratio = *m;
+                    input.length_ratio *= m;
                 }
 
                 Op::Choice { operations } => {

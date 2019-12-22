@@ -53,7 +53,7 @@ impl TimedOp {
             t: r_to_f64(self.t) * r_to_f64(basis.l),
             x: ((r_to_f64(basis.p) + r_to_f64(self.pa)) * r_to_f64(self.pm)),
             y: y.log10(),
-            z: z,
+            z,
             voice: self.voice,
             event: self.event,
             event_type: self.event_type.clone(),
@@ -134,7 +134,12 @@ impl Op4D {
 }
 
 fn normalize_value(value: f64, min: f64, max: f64) -> f64 {
-    let d = if max == min { 1.0 } else { max - min };
+    // equivilance check for floats. max == min.
+    let d = if (max - min).abs() < std::f64::EPSILON {
+        1.0
+    } else {
+        max - min
+    };
     (value - min) / d
 }
 
@@ -144,7 +149,7 @@ fn normalize_op4d_1d(op4d_1d: &mut Vec<Op4D>, n: Normalizer) {
     })
 }
 
-fn get_min_max_op4d_1d(vec_op4d: &Vec<Op4D>) -> (Normalizer, f64) {
+fn get_min_max_op4d_1d(vec_op4d: &[Op4D]) -> (Normalizer, f64) {
     let mut max_state = Op4D {
         t: 0.0,
         event: 0,
@@ -237,7 +242,7 @@ fn point_op_to_timed_op(
         portamento: point_op.portamento,
         g: point_op.g,
         l: point_op.l,
-        t: time.clone(),
+        t: *time,
         event_type: EventType::On,
         voice,
         event,
