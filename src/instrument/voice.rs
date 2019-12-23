@@ -100,6 +100,7 @@ impl Voice {
                 self.offset_current.frequency = frequency;
                 self.offset_current.gain = gain;
             };
+
             *sample += new_sample
         }
 

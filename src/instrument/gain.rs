@@ -16,7 +16,7 @@ impl Voice {
     }
 
     pub fn current_gain_from_op(&self, op: &RenderOp) -> f64 {
-        let mut gain = if op.f != 0.0 { op.g } else { (0., 0.) };
+        let mut gain = if op.f > 20.0 { op.g } else { (0., 0.) };
 
         gain = if op.osc_type == OscType::Sine {
             gain
@@ -54,6 +54,43 @@ impl Voice {
 #[cfg(test)]
 mod tests {
     use super::*;
+
+    #[test]
+    fn test_get_current_gain_from_op() {
+        let mut v = Voice::init(0);
+        let mut op = RenderOp::init_fglp(200.0, (1.0, 1.0), 1.0, 0.0);
+        op.osc_type = OscType::Noise;
+
+        v.current.gain = 0.9;
+
+        let result = v.current_gain_from_op(&op);
+        //assert_eq!();
+        //let mut gain = if op.f > 20.0 { op.g } else { (0., 0.) };
+
+        //gain = if op.osc_type == OscType::Sine {
+        //gain
+        //} else {
+        //(gain.0 / 3.0, gain.1 / 3.0)
+        //};
+
+        //match self.index {
+        //0 => gain.0,
+        //_ => gain.1,
+        //}
+    }
+
+    #[test]
+    fn test_get_past_gain_from_op() {
+        let mut v = Voice::init(0);
+        let mut op = RenderOp::init_fglp(200.0, (1.0, 1.0), 1.0, 0.0);
+        op.osc_type = OscType::Noise;
+
+        v.current.gain = 0.9;
+
+        let result = v.past_gain_from_op(&op);
+
+        assert_eq!(result, 0.3);
+    }
 
     #[test]
     fn test_silence_next() {
