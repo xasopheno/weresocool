@@ -30,16 +30,16 @@ impl Voice {
         }
     }
 
-    pub fn silence_now(&self) -> bool {
-        self.current.silent()
-    }
-
     pub fn silence_next(&self, op: &RenderOp) -> bool {
         match self.index {
             0 => op.next_l_silent,
             1 => op.next_r_silent,
             _ => unimplemented!(),
         }
+    }
+
+    pub fn silence_now(&self) -> bool {
+        self.current.silent()
     }
 
     pub fn silence_to_sound(&self) -> bool {
