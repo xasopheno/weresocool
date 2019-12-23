@@ -1,4 +1,6 @@
 mod asr;
+mod frequency;
+mod gain;
 mod loudness;
 pub mod oscillator;
 mod sample;

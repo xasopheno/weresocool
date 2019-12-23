@@ -1,5 +1,5 @@
 use crate::{
-    instrument::{asr::gain_at_index, loudness::loudness_normalization},
+    instrument::{gain::gain_at_index, loudness::loudness_normalization},
     renderable::{Offset, RenderOp},
 };
 use socool_ast::{OscType, ASR};
@@ -20,8 +20,8 @@ pub struct Voice {
 
 #[derive(Clone, Debug, PartialEq)]
 pub struct SampleInfo {
-    pub gain: f64,
     pub frequency: f64,
+    pub gain: f64,
 }
 
 #[derive(Clone, Debug, PartialEq)]
@@ -29,15 +29,14 @@ pub struct VoiceState {
     pub frequency: f64,
     pub gain: f64,
 }
-
 impl VoiceState {
-    fn init() -> VoiceState {
+    pub fn init() -> VoiceState {
         VoiceState {
             frequency: 0.0,
             gain: 0.0,
         }
     }
-    fn silent(&self) -> bool {
+    pub fn silent(&self) -> bool {
         self.frequency < 20.0 || self.gain == 0.0
     }
 }
@@ -66,21 +65,9 @@ impl Voice {
             self.offset_current.frequency,
         );
 
-        let silence_now = self.current.gain == 0.0 || self.current.frequency == 0.0;
-
-        let silent_next = match self.index {
-            0 => op.next_l_silent,
-            1 => op.next_r_silent,
-            _ => unimplemented!(),
-        };
-
-        let op_gain = self.calculate_gain(
-            self.past.gain,
-            self.current.gain,
-            self.attack,
-            self.decay,
-            silent_next,
-            silence_now,
+        let op_gain = self.calculate_op_gain(
+            self.silence_now(),
+            self.silence_next(op),
             op.index + op.samples,
             op.total_samples,
         ) * loudness_normalization(self.offset_current.frequency);
@@ -92,8 +79,6 @@ impl Voice {
                 p_delta,
                 self.offset_past.frequency,
                 self.offset_current.frequency,
-                self.sound_to_silence(),
-                self.silence_to_sound(),
             );
 
             let gain = gain_at_index(
@@ -144,65 +129,5 @@ impl Voice {
         } else {
             self.current.frequency * offset.freq
         }
-    }
-
-    #[allow(clippy::too_many_arguments)]
-    fn calculate_frequency(
-        &self,
-        index: usize,
-        portamento_length: usize,
-        p_delta: f64,
-        start: f64,
-        target: f64,
-        sound_to_silence: bool,
-        silence_to_sound: bool,
-    ) -> f64 {
-        if sound_to_silence {
-            start
-        } else if index < portamento_length && !silence_to_sound && !sound_to_silence {
-            start + index as f64 * p_delta
-        } else {
-            target
-        }
-    }
-
-    fn past_gain_from_op(&self, op: &RenderOp) -> f64 {
-        if self.osc_type == OscType::Sine && op.osc_type != OscType::Sine {
-            self.current.gain / 3.0
-        } else {
-            self.current.gain
-        }
-    }
-
-    fn current_gain_from_op(&self, op: &RenderOp) -> f64 {
-        let mut gain = if op.f != 0.0 { op.g } else { (0., 0.) };
-
-        gain = if op.osc_type == OscType::Sine {
-            gain
-        } else {
-            (gain.0 / 3.0, gain.1 / 3.0)
-        };
-
-        match self.index {
-            0 => gain.0,
-            _ => gain.1,
-        }
-    }
-
-    pub fn silence_to_sound(&self) -> bool {
-        self.past.silent() && !self.current.silent()
-    }
-
-    pub fn sound_to_silence(&self) -> bool {
-        !self.past.silent() && self.current.silent()
-    }
-
-    pub fn calculate_portamento_delta(
-        &self,
-        portamento_length: usize,
-        start: f64,
-        target: f64,
-    ) -> f64 {
-        (target - start) / (portamento_length as f64)
     }
 }
