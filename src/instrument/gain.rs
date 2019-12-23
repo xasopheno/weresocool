@@ -50,3 +50,76 @@ impl Voice {
         !self.past.silent() && self.current.silent()
     }
 }
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn test_silence_next() {
+        let mut op = RenderOp::init_silent_with_length(1.0);
+        op.next_r_silent = false;
+        op.next_l_silent = true;
+        let v1 = Voice::init(0);
+        let result = v1.silence_next(&op);
+        assert!(result);
+
+        let v2 = Voice::init(1);
+        let result = v2.silence_next(&op);
+        assert!(!result);
+    }
+
+    #[test]
+    fn test_gain_from_index() {
+        let g = gain_at_index(0.0, 1.0, 5, 10);
+        assert_eq!(g, 0.5);
+
+        let g = gain_at_index(1.0, 0.0, 5, 10);
+        assert_eq!(g, 0.5);
+
+        let g = gain_at_index(0.9, 1.0, 2, 10);
+        assert_eq!(g, 0.92);
+    }
+    #[test]
+    fn test_silence_now() {
+        let mut v = Voice::init(0);
+        v.current.frequency = 0.0;
+        v.current.gain = 1.0;
+        assert!(v.silence_now());
+        v.current.frequency = 19.0;
+        v.current.gain = 1.0;
+        assert!(v.silence_now());
+
+        v.current.frequency = 100.0;
+        v.current.gain = 0.0;
+        assert!(v.silence_now());
+
+        v.current.frequency = 20.0;
+        v.current.gain = 1.0;
+        assert!(!v.silence_now());
+    }
+    #[test]
+    fn test_silence_to_sound() {
+        let mut v = Voice::init(0);
+        v.past.frequency = 0.0;
+        v.current.frequency = 100.0;
+        v.past.gain = 1.0;
+        v.current.gain = 1.0;
+        assert!(v.silence_to_sound());
+        assert!(!v.sound_to_silence());
+
+        v.past.frequency = 0.0;
+        v.current.frequency = 100.0;
+        v.past.gain = 0.0;
+        v.current.gain = 1.0;
+        assert!(v.silence_to_sound());
+        assert!(!v.sound_to_silence());
+
+        v.past.frequency = 0.0;
+        v.current.frequency = 100.0;
+        v.past.gain = 0.0;
+        v.current.gain = 0.0;
+        assert!(!v.silence_to_sound());
+        assert!(!v.sound_to_silence());
+    }
+}
