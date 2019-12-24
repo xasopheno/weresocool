@@ -1,10 +1,9 @@
-{ f: 300, l: 1, g: 1, p: 0}
+{ f: 440, l: 2, g: 1, p: 0 }
 
 thing1 = {
     Overlay [
-	    AsIs,
-	    Tm 3/2,
-	    Tm 9/4,
+        Tm 0 | Length 1/5,
+	    Tm 1/5,
     ]
 }
 

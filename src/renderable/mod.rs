@@ -1,11 +1,16 @@
-use crate::generation::parsed_to_render::r_to_f64;
-use crate::instrument::oscillator::Basis;
-use crate::instrument::{Oscillator, StereoWaveform};
+use crate::{
+    generation::parsed_to_render::r_to_f64,
+    instrument::{oscillator::Basis, Oscillator, StereoWaveform},
+};
 use num_rational::Rational64;
+pub use render_voice::{renderables_to_render_voices, RenderVoice};
 use socool_ast::{NormalForm, Normalize, OpOrNfTable, OscType, PointOp, ASR};
 pub mod render_voice;
 mod test;
-pub use render_voice::{renderables_to_render_voices, RenderVoice};
+use rand::{thread_rng, Rng};
+
+use crate::settings::{default_settings, Settings};
+const SETTINGS: Settings = default_settings();
 
 #[derive(Debug, Clone, PartialEq)]
 pub struct RenderOp {
@@ -36,15 +41,15 @@ impl RenderOp {
             g,
             l,
             t: 0.0,
-            attack: 44_100.0,
-            decay: 44_100.0,
+            attack: SETTINGS.sample_rate,
+            decay: SETTINGS.sample_rate,
             asr: ASR::Long,
-            samples: 44_100,
-            total_samples: 44_100,
+            samples: SETTINGS.sample_rate as usize,
+            total_samples: SETTINGS.sample_rate as usize,
             index: 0,
             voice: 0,
             event: 0,
-            portamento: 1024,
+            portamento: SETTINGS.buffer_size,
             osc_type: OscType::Sine,
             next_l_silent: false,
             next_r_silent: false,
@@ -57,29 +62,19 @@ impl RenderOp {
             p: 0.0,
             l,
             t: 0.0,
-            attack: 44_100.0,
-            decay: 44_100.0,
+            attack: SETTINGS.sample_rate,
+            decay: SETTINGS.sample_rate,
             asr: ASR::Long,
-            samples: 44_100,
-            total_samples: 44_100,
+            samples: SETTINGS.sample_rate as usize,
+            total_samples: SETTINGS.sample_rate as usize,
             index: 0,
             voice: 0,
             event: 0,
-            portamento: 1024,
+            portamento: SETTINGS.buffer_size,
             osc_type: OscType::Sine,
             next_l_silent: true,
             next_r_silent: true,
         }
-    }
-    pub fn _apply_offset(&mut self, _offset: &Offset) {
-        //self.f = offset.freq * 3.0;
-        //self.g = (self.g.0 * offset.gain, self.g.1 * offset.gain);
-        //self.g = (self.g.0 * 0.5, self.g.1 * 0.5);
-
-        //self.total_samples = self.samples;
-        //self.index = 0;
-        //self.next_r_silent = true;
-        //self.next_l_silent = true;
     }
 }
 
@@ -95,6 +90,12 @@ impl Offset {
             gain: 1.0,
         }
     }
+    pub fn random() -> Offset {
+        Offset {
+            freq: thread_rng().gen_range(0.95, 1.05),
+            gain: 1.0,
+        }
+    }
 }
 
 pub trait Renderable<T> {
@@ -105,27 +106,23 @@ impl Renderable<RenderOp> for RenderOp {
     fn render(&mut self, oscillator: &mut Oscillator, offset: Option<&Offset>) -> StereoWaveform {
         let o = match offset {
             Some(o) => Offset {
-                freq: o.freq,
+                freq: o.freq * 2.0,
                 gain: o.gain,
             },
             None => Offset::identity(),
         };
 
-        if self.index == 0 {
-            oscillator.update(self);
-        }
-        oscillator.generate(&self, &o)
+        oscillator.update(self, &o);
+        oscillator.generate(self, &o)
     }
 }
 impl Renderable<Vec<RenderOp>> for Vec<RenderOp> {
-    fn render(&mut self, oscillator: &mut Oscillator, _offset: Option<&Offset>) -> StereoWaveform {
+    fn render(&mut self, oscillator: &mut Oscillator, offset: Option<&Offset>) -> StereoWaveform {
         let mut result: StereoWaveform = StereoWaveform::new(0);
 
-        let mut iter = self.iter();
-
-        while let Some(op) = iter.next() {
+        for op in self.iter() {
             if op.samples > 0 {
-                let stereo_waveform = op.clone().render(oscillator, _offset);
+                let stereo_waveform = op.clone().render(oscillator, offset);
                 result.append(stereo_waveform);
             }
         }
@@ -169,13 +166,13 @@ fn pointop_to_renderop(
         l,
         t: r_to_f64(*time),
         index: 0,
-        samples: (l * 44_100.0).round() as usize,
-        total_samples: (l * 44_100.0).round() as usize,
-        attack: r_to_f64(point_op.attack * basis.a) * 44_100.0,
-        decay: r_to_f64(point_op.decay * basis.d) * 44_100.0,
+        samples: (l * SETTINGS.sample_rate).round() as usize,
+        total_samples: (l * SETTINGS.sample_rate).round() as usize,
+        attack: r_to_f64(point_op.attack * basis.a) * SETTINGS.sample_rate,
+        decay: r_to_f64(point_op.decay * basis.d) * SETTINGS.sample_rate,
         osc_type: point_op.osc_type,
         asr: point_op.asr,
-        portamento: (r_to_f64(point_op.portamento) * 1024.0) as usize,
+        portamento: (r_to_f64(point_op.portamento) * SETTINGS.buffer_size as f64) as usize,
         voice,
         event,
         next_l_silent,
@@ -220,7 +217,7 @@ pub fn calculate_fgpl(basis: &Basis, point_op: &PointOp) -> (f64, (f64, f64), f6
     };
     let p = m_a_and_basis_to_f64(basis.p, point_op.pm, point_op.pa);
     let l = r_to_f64(point_op.l * basis.l);
-    if f < 20.0 {
+    if f < SETTINGS.min_freq {
         f = 0.0;
         g = (0.0, 0.0);
     };
@@ -260,7 +257,9 @@ pub fn nf_to_vec_renderable(
                 );
                 result.push(op);
             }
-            result.push(RenderOp::init_silent_with_length(1.0));
+            if default_settings().pad_end {
+                result.push(RenderOp::init_silent_with_length(1.0));
+            }
             result
         })
         .collect();

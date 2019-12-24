@@ -84,10 +84,11 @@ impl<T: Sized + Copy + Clone + std::default::Default> RingBuffer<T> {
             return self.buffer.clone();
         };
         let mut new_vec = vec![T::default(); self.capacity];
-        for idx in 0..self.buffer.len() {
-            let ring_buffer_index = (idx + self.head) % self.capacity;
-            new_vec[idx] = self.buffer[ring_buffer_index];
+
+        for (idx, sample) in new_vec.iter_mut().enumerate().take(self.buffer.len()) {
+            *sample = self.buffer[(idx + self.head) % self.capacity];
         }
+
         new_vec
     }
 }

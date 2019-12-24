@@ -67,7 +67,7 @@ pub fn filename_to_render(filename: &str, r_type: RenderType) -> Result<RenderRe
                 Ok(RenderReturn::StereoWaveform(stereo_waveform))
             } else {
                 let result = to_wav(stereo_waveform, filename.to_string());
-                return Ok(RenderReturn::Wav(result));
+                Ok(RenderReturn::Wav(result))
             }
         }
     }

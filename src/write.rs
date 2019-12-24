@@ -1,5 +1,6 @@
 use crate::generation::Op4D;
 use crate::instrument::StereoWaveform;
+use crate::settings::{default_settings, Settings};
 use csv::Writer;
 use error::Error;
 use std::fs::File;
@@ -7,23 +8,25 @@ use std::io::prelude::*;
 use std::path::Path;
 use std::process::Command;
 
+const SETTINGS: Settings = default_settings();
+
 pub fn write_output_buffer(out_buffer: &mut [f32], stereo_waveform: StereoWaveform) {
     let mut l_idx = 0;
     let mut r_idx = 0;
-    for n in 0..out_buffer.len() {
+    for (n, sample) in out_buffer.iter_mut().enumerate() {
         if n % 2 == 0 {
-            out_buffer[n] = stereo_waveform.l_buffer[l_idx] as f32;
+            *sample = stereo_waveform.l_buffer[l_idx] as f32;
             l_idx += 1
         } else {
-            out_buffer[n] = stereo_waveform.r_buffer[r_idx] as f32;
+            *sample = stereo_waveform.r_buffer[r_idx] as f32;
             r_idx += 1
         }
     }
 }
 
 pub fn filename_from_string(s: &str) -> &str {
-    let split: Vec<&str> = s.split(".").collect();
-    let filename: Vec<&str> = split[0].split("/").collect();
+    let split: Vec<&str> = s.split('.').collect();
+    let filename: Vec<&str> = split[0].split('/').collect();
     filename[filename.len() - 1]
 }
 
@@ -56,8 +59,8 @@ fn wav_to_mp3_in_renders(filename: &str) {
 
 pub fn write_composition_to_wav(composition: StereoWaveform, filename: &str) {
     let spec = hound::WavSpec {
-        channels: 2,
-        sample_rate: 44100,
+        channels: SETTINGS.channels as u16,
+        sample_rate: SETTINGS.sample_rate as u32,
         bits_per_sample: 32,
         sample_format: hound::SampleFormat::Float,
     };
@@ -94,7 +97,7 @@ pub fn normalize_waveform(buffer: &mut Vec<f32>) {
     println!("Normalized by {}", normalization_ratio);
 }
 
-pub fn write_composition_to_json(serialized: &String, filename: &String) -> std::io::Result<()> {
+pub fn write_composition_to_json(serialized: &str, filename: &str) -> std::io::Result<()> {
     let filename = filename_from_string(filename);
     dbg!(filename);
     let mut file = File::create(format!(
@@ -105,9 +108,9 @@ pub fn write_composition_to_json(serialized: &String, filename: &String) -> std:
 
     println!(
         "{}.json was written and has \
-         {} render stream(s).\
+         1 render stream(s).\
          ",
-        filename, 1
+        filename
     );
 
     file.write_all(serialized.as_bytes())?;
@@ -125,7 +128,6 @@ pub fn write_composition_to_csv(ops: &mut Vec<Op4D>, filename: &str) -> Result<(
     for op in ops {
         writer
             .serialize(op.to_op_csv_1d())
-            .ok()
             .expect("CSV writer error");
     }
 

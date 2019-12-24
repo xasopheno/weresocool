@@ -62,8 +62,7 @@ impl Analyze for Vec<f32> {
 
     fn get_better_tau(&mut self, tau: usize, sample_rate: f32) -> f32 {
         let better_tau = self.yin_parabolic_interpolation(tau);
-        let pitch_in_hertz = sample_rate / better_tau;
-        pitch_in_hertz
+        sample_rate / better_tau
     }
 
     fn yin_difference(&mut self) {
@@ -84,9 +83,9 @@ impl Analyze for Vec<f32> {
         let buffer_size = self.len();
         let mut running_sum: f32 = 0.0;
 
-        for tau in 1..buffer_size {
-            running_sum += self[tau];
-            self[tau] *= tau as f32 / running_sum;
+        for (tau, sample) in self.iter_mut().enumerate().take(buffer_size).skip(1) {
+            running_sum += *sample;
+            *sample *= tau as f32 / running_sum;
         }
     }
 

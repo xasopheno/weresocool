@@ -2,7 +2,7 @@ use weresocool::{
     examples::documentation,
     generation::{
         filename_to_render,
-        parsed_to_render::{RenderReturn, RenderType},
+        parsed_to_render::{r_to_f64, RenderReturn, RenderType},
     },
     portaudio::duplex_setup,
     renderable::nf_to_vec_renderable,
@@ -25,7 +25,7 @@ fn main() {
 
 fn run() -> Result<(), Error> {
     were_so_cool_logo();
-    println!("{}", "       )))***=== MICROPHONE ===***(((  \n ");
+    println!("       )))***=== MICROPHONE ===***(((  \n ");
 
     let args = get_args();
 
@@ -47,7 +47,7 @@ fn run() -> Result<(), Error> {
     let renderables = nf_to_vec_renderable(&nf, &table, &basis);
 
     println!("\nGenerating Composition ");
-    let mut duplex_stream = duplex_setup(renderables)?;
+    let mut duplex_stream = duplex_setup(r_to_f64(basis.f), renderables)?;
     duplex_stream.start()?;
 
     while let true = duplex_stream.is_active()? {}

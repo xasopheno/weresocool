@@ -73,7 +73,7 @@ impl Substitute for NormalForm {
 }
 
 pub fn union_names(b_tree_set: NameSet, left: &NameSet) -> NameSet {
-    let mut result = b_tree_set.clone();
+    let mut result = b_tree_set;
     for val in left {
         result.insert(val.clone());
     }
@@ -149,6 +149,7 @@ impl Normalize for NormalForm {
     }
 }
 
+#[allow(clippy::suspicious_arithmetic_impl)]
 impl Mul<PointOp> for PointOp {
     type Output = PointOp;
 
@@ -171,6 +172,7 @@ impl Mul<PointOp> for PointOp {
     }
 }
 
+#[allow(clippy::suspicious_arithmetic_impl)]
 impl<'a, 'b> Mul<&'b PointOp> for &'a PointOp {
     type Output = PointOp;
 
@@ -193,6 +195,7 @@ impl<'a, 'b> Mul<&'b PointOp> for &'a PointOp {
     }
 }
 
+#[allow(clippy::suspicious_op_assign_impl)]
 impl MulAssign for PointOp {
     fn mul_assign(&mut self, other: PointOp) {
         let names = union_names(self.names.clone(), &other.names);

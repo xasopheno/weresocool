@@ -1,13 +1,9 @@
-use crate::instrument::voice::Voice;
+use crate::instrument::{gain::gain_at_index, voice::Voice};
 use socool_ast::ASR;
 
 impl Voice {
-    pub fn calculate_gain(
+    pub fn calculate_op_gain(
         &mut self,
-        past_gain: f64,
-        current_gain: f64,
-        attack: usize,
-        decay: usize,
         silence_now: bool,
         silence_next: bool,
         index: usize,
@@ -15,22 +11,22 @@ impl Voice {
     ) -> f64 {
         if self.asr == ASR::Long {
             calculate_long_gain(
-                past_gain,
-                current_gain,
+                self.past.gain,
+                self.current.gain,
                 silence_now,
                 index,
-                attack,
-                decay,
+                self.attack,
+                self.decay,
                 total_length,
             )
         } else {
             calculate_short_gain(
-                past_gain,
-                current_gain,
+                self.past.gain,
+                self.current.gain,
                 silence_next,
                 index,
-                attack,
-                decay,
+                self.attack,
+                self.decay,
                 total_length,
             )
         }
@@ -54,14 +50,9 @@ pub fn calculate_short_gain(
     };
 
     if index < attack_length {
-        gain_at_index(past_gain, current_gain - past_gain, index, attack_length)
+        gain_at_index(past_gain, current_gain, index, attack_length)
     } else if index > total_length - decay_length && silence_next {
-        gain_at_index(
-            current_gain,
-            -current_gain,
-            total_length - index,
-            decay_length,
-        )
+        gain_at_index(current_gain, 0.0, total_length - index, decay_length)
     } else {
         current_gain
     }
@@ -82,15 +73,12 @@ pub fn calculate_long_gain(
         decay_length = total_length;
     };
     if index < attack_length {
-        gain_at_index(past_gain, current_gain - past_gain, index, attack_length)
+        gain_at_index(past_gain, current_gain, index, attack_length)
     } else if index < decay_length && silence_now {
-        gain_at_index(current_gain, -current_gain, index, decay_length)
+        gain_at_index(current_gain, 0.0, index, decay_length)
     } else {
         current_gain
     }
-}
-pub fn gain_at_index(start: f64, distance: f64, index: usize, length: usize) -> f64 {
-    start + (distance * index as f64 / length as f64)
 }
 
 pub fn is_short(total_length: usize, attack_length: usize, decay_length: usize) -> bool {

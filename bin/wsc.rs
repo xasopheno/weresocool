@@ -1,6 +1,5 @@
 use error::Error;
 use weresocool::{
-    //error::Error,
     examples::documentation,
     generation::{filename_to_render, RenderReturn, RenderType},
     portaudio::output_setup,

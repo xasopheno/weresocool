@@ -43,10 +43,10 @@ impl Oscillator {
         }
     }
 
-    pub fn update(&mut self, op: &RenderOp) {
+    pub fn update(&mut self, op: &RenderOp, offset: &Offset) {
         let (ref mut l_voice, ref mut r_voice) = self.voices;
-        l_voice.update(op);
-        r_voice.update(op);
+        l_voice.update(op, offset);
+        r_voice.update(op, offset);
     }
 
     pub fn generate(&mut self, op: &RenderOp, offset: &Offset) -> StereoWaveform {

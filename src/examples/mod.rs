@@ -1,6 +1,5 @@
 pub fn documentation() {
     println!(
-        "{}",
         "
         ___ Base Operations ___
         + addition
@@ -28,26 +27,26 @@ pub fn documentation() {
         ]
 
         ___ Variables ___
-        thing = {
+        thing = {{
             Sequence [AsIs, Tm 3/2]
-        }
+        }}
 
         ___ Compose ___
-        thing2 = {
+        thing2 = {{
             thing1
             | Tm 5/4
             | Sequence [AsIs, Tm 3/2]
             | Gain 0.75
-        }
+        }}
         ___ Fit ___
-        main = {
+        main = {{
             Overlay [
                 thing1,
                 thing2
                 | PanA 0.5
                 > FitLength thing1
             ]
-        }
+        }}
     "
     )
 }

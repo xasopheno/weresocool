@@ -34,12 +34,10 @@ pub fn handle_parse_error(location: Arc<Mutex<Vec<usize>>>, composition: &str) {
     let end = cmp_len;
 
     let arg_len = location.lock().unwrap().len();
-    match arg_len {
-        2 => {
-            let _end = location.lock().unwrap()[1];
-        }
-        _ => {}
+    if arg_len == 2 {
+        let _end = location.lock().unwrap()[1];
     }
+
     let start = location.lock().unwrap()[0];
 
     let feed_start = cmp::max(0, start as isize - start_offset) as usize;
@@ -48,9 +46,7 @@ pub fn handle_parse_error(location: Arc<Mutex<Vec<usize>>>, composition: &str) {
         feed_end = feed_start + 300
     }
     let mut lines = 0;
-    let mut n_c = 0;
-    for c in composition.clone().chars() {
-        n_c += 1;
+    for (n_c, c) in composition.chars().enumerate() {
         if n_c > start {
             break;
         }

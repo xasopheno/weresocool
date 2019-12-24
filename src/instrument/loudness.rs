@@ -1,6 +1,10 @@
+use crate::settings::{default_settings, Settings};
+
+const SETTINGS: Settings = default_settings();
+
 pub fn freq_to_sones(frequency: f64) -> f64 {
     // http://www.ukintpress-conferences.com/conf/08txeu_conf/pdf/day_1/01-06-garcia.pdf
-    if frequency < 20.0 {
+    if frequency < SETTINGS.min_freq {
         0.0
     } else {
         1.0 / 2.0_f64.powf(((20.0 * (frequency).log10()) - 40.0) / 10.0)
