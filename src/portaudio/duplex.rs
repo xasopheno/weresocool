@@ -36,14 +36,18 @@ fn sing_along_callback(
 
     let (freq, gain) = process_detection_result(&mut detection_result);
 
-    let offset = Offset {
-        freq: freq / basis_f,
-        gain,
+    let offset = if settings.mic {
+        Some(Offset {
+            freq: freq / basis_f,
+            gain,
+        })
+    } else {
+        None
     };
 
     let result: Vec<StereoWaveform> = voices
         .par_iter_mut()
-        .map(|voice| voice.render_batch(1024, Some(&offset)))
+        .map(|voice| voice.render_batch(1024, offset.as_ref()))
         .collect();
     let stereo_waveform = sum_all_waveforms(result);
     write_output_buffer(args.out_buffer, stereo_waveform);

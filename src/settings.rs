@@ -1,5 +1,6 @@
 #[derive(Clone, Debug, PartialEq)]
 pub struct Settings {
+    pub mic: bool,
     pub sample_rate: f64,
     pub yin_buffer_size: usize,
     pub buffer_size: usize,
@@ -13,6 +14,7 @@ pub struct Settings {
 
 pub fn default_settings() -> Settings {
     Settings {
+        mic: false,
         sample_rate: 44_100.0,
         yin_buffer_size: 2048,
         buffer_size: 1024,
