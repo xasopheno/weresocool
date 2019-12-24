@@ -20,7 +20,7 @@ fn criterion_benchmark(c: &mut Criterion) {
     let mut voices1 = renderables_to_render_voices(renderables);
     c.bench_function("render_batch", |b| {
         b.iter(|| {
-            let r: Vec<StereoWaveform> = voices1
+            let _r: Vec<StereoWaveform> = voices1
                 .iter_mut()
                 .map(|voice| voice.render_batch(black_box(1024), None))
                 .collect();
