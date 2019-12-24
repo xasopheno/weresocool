@@ -88,7 +88,7 @@ fn generate_render_hashes(p: &str) -> CompositionHashes {
 
     let render_hash = sum_vec(result.l_buffer) + sum_vec(result.r_buffer);
     let render_hash = (render_hash * 10_000_000_000_000.0).ceil() / 10_000_000_000_000.0;
-    let render_hash_string = &render_hash.to_string()[..13];
+    let render_hash_string = &render_hash.to_string()[..12];
 
     CompositionHashes {
         op: op_hash,
