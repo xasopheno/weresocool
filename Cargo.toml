@@ -31,6 +31,16 @@ csv = "1.1.1"
 watch = "0.1.0"
 failure = "0.1.6"
 failure_derive = "0.1.6"
+bencher = "0.1.5"
+criterion = "0.3.0"
+
+[dev-dependencies]
+pretty_assertions = "0.6.1"
+criterion = "0.3"
+
+[[bench]]
+name = "render_batch_bench"
+harness = false
 
 [workspace]
 members = [
@@ -55,5 +65,3 @@ path = "bin/pad.rs"
 name = "snapshot"
 path = "bin/snapshot.rs"
 
-[dev-dependencies]
-pretty_assertions = "0.6.1"
