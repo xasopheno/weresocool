@@ -102,13 +102,13 @@ mod tests {
 
     #[test]
     fn test_gain_from_index() {
-        let g = gain_at_index(0.0, 1.0, 5, 10);
+        let mut g = gain_at_index(0.0, 1.0, 5, 10);
         assert_eq!(g, 0.5);
 
-        let g = gain_at_index(1.0, 0.0, 5, 10);
+        g = gain_at_index(1.0, 0.0, 5, 10);
         assert_eq!(g, 0.5);
 
-        let g = gain_at_index(0.9, 1.0, 2, 10);
+        g = gain_at_index(0.9, 1.0, 2, 10);
         assert_eq!(g, 0.92);
     }
     #[test]

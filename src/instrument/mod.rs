@@ -8,9 +8,9 @@ pub mod stereo_waveform;
 pub mod voice;
 
 #[cfg(test)]
-mod test;
+mod asr_test;
 #[cfg(test)]
-mod test_asr;
+mod test;
 
 pub use self::{
     oscillator::{Basis, Oscillator},

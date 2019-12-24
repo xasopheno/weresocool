@@ -182,7 +182,7 @@ mod tests {
 
     #[test]
     fn test_small_and_large_render_batch_same_result() {
-        let filename = "songs/lee.socool".to_string();
+        let filename = "songs/test/render_op_get_batch.socool".to_string();
         let (nf, basis, table) =
             match filename_to_render(&filename, RenderType::NfBasisAndTable).unwrap() {
                 RenderReturn::NfBasisAndTable(nf, basis, table) => (nf, basis, table),
@@ -211,14 +211,17 @@ mod tests {
 
         let r_buffer: Vec<f64> = short_r.iter().flatten().cloned().collect();
         let l_buffer: Vec<f64> = short_l.iter().flatten().cloned().collect();
-        let _short = StereoWaveform { r_buffer, l_buffer };
+        let short = StereoWaveform { r_buffer, l_buffer };
 
         let long: Vec<StereoWaveform> = voices2
             .clone()
             .iter_mut()
             .map(|voice| voice.render_batch(20480, None))
             .collect();
-        let _long = sum_all_waveforms(long);
-        //assert_eq!(short, long);
+        let long = sum_all_waveforms(long);
+        for (a, b) in short.l_buffer.iter().zip(&long.l_buffer) {
+            dbg!(a - b);
+            assert!(a - b < 0.00001);
+        }
     }
 }
