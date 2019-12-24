@@ -1,12 +1,15 @@
-use crate::generation::parsed_to_render::r_to_f64;
-use crate::instrument::oscillator::Basis;
-use crate::instrument::{Oscillator, StereoWaveform};
+use crate::{
+    generation::parsed_to_render::r_to_f64,
+    instrument::{oscillator::Basis, Oscillator, StereoWaveform},
+};
 use num_rational::Rational64;
 use socool_ast::{NormalForm, Normalize, OpOrNfTable, OscType, PointOp, ASR};
 pub mod render_voice;
-mod test;
-//use rand::{thread_rng, Rng};
+
+#[allow(unused_imports)]
+use rand::{thread_rng, Rng};
 pub use render_voice::{renderables_to_render_voices, RenderVoice};
+mod test;
 
 #[derive(Debug, Clone, PartialEq)]
 pub struct RenderOp {
@@ -101,13 +104,14 @@ impl Renderable<RenderOp> for RenderOp {
             },
             //Some(o) => Offset {
             //freq: thread_rng().gen_range(0.95, 1.05),
-            //gain: thread_rng().gen_range(0.95, 1.0),
+            //gain: 1.0,
+            ////gain: thread_rng().gen_range(0.95, 1.0),
             //},
             None => Offset::identity(),
         };
 
         oscillator.update(self, &o);
-        oscillator.generate(&self, &o)
+        oscillator.generate(self, &o)
     }
 }
 impl Renderable<Vec<RenderOp>> for Vec<RenderOp> {
