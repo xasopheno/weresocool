@@ -10,11 +10,11 @@ pub struct Settings {
     pub gain_threshold_min: f32,
     pub channels: i32,
     pub interleaved: bool,
-    pub max_freq: f32,
-    pub min_freq: f32,
+    pub max_freq: f64,
+    pub min_freq: f64,
 }
 
-pub fn default_settings() -> Settings {
+pub const fn default_settings() -> Settings {
     Settings {
         loop_play: true,
         pad_end: true,

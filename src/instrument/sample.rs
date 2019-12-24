@@ -1,10 +1,11 @@
 use crate::instrument::voice::{SampleInfo, Voice};
+use crate::settings::{default_settings, Settings};
 use rand::{thread_rng, Rng};
 use std::f64::consts::PI;
 
-fn tau() -> f64 {
-    PI * 2.0
-}
+const SETTINGS: Settings = default_settings();
+const TAU: f64 = PI * 2.0;
+const FACTOR: f64 = TAU / SETTINGS.sample_rate;
 
 fn random_offset() -> f64 {
     thread_rng().gen_range(-0.5, 0.5)
@@ -30,11 +31,10 @@ impl Voice {
     }
 
     pub fn calculate_current_phase(&mut self, info: &SampleInfo, rand: f64) -> f64 {
-        let factor: f64 = tau() / 44_100.0;
         if info.gain == 0.0 {
             0.0
         } else {
-            ((factor * info.frequency) + self.phase + rand) % tau()
+            ((FACTOR * info.frequency) + self.phase + rand) % TAU
         }
     }
 }

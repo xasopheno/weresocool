@@ -4,6 +4,9 @@ use crate::{
 };
 use socool_ast::{OscType, ASR};
 
+use crate::settings::{default_settings, Settings};
+const SETTINGS: Settings = default_settings();
+
 #[derive(Clone, Debug, PartialEq)]
 pub struct Voice {
     pub index: usize,
@@ -37,7 +40,7 @@ impl VoiceState {
         }
     }
     pub fn silent(&self) -> bool {
-        self.frequency < 20.0 || self.gain == 0.0
+        self.frequency < SETTINGS.min_freq || self.gain == 0.0
     }
 }
 
@@ -51,8 +54,8 @@ impl Voice {
             offset_current: VoiceState::init(),
             phase: 0.0,
             osc_type: OscType::Sine,
-            attack: 44_100,
-            decay: 44_100,
+            attack: SETTINGS.sample_rate as usize,
+            decay: SETTINGS.sample_rate as usize,
             asr: ASR::Long,
         }
     }

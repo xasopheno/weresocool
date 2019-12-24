@@ -1,15 +1,16 @@
 use crate::{
     generation::parsed_to_render::r_to_f64,
     instrument::{oscillator::Basis, Oscillator, StereoWaveform},
-    settings::default_settings,
 };
 use num_rational::Rational64;
 pub use render_voice::{renderables_to_render_voices, RenderVoice};
 use socool_ast::{NormalForm, Normalize, OpOrNfTable, OscType, PointOp, ASR};
 pub mod render_voice;
 mod test;
-
 use rand::{thread_rng, Rng};
+
+use crate::settings::{default_settings, Settings};
+const SETTINGS: Settings = default_settings();
 
 #[derive(Debug, Clone, PartialEq)]
 pub struct RenderOp {
@@ -40,15 +41,15 @@ impl RenderOp {
             g,
             l,
             t: 0.0,
-            attack: 44_100.0,
-            decay: 44_100.0,
+            attack: SETTINGS.sample_rate,
+            decay: SETTINGS.sample_rate,
             asr: ASR::Long,
-            samples: 44_100,
-            total_samples: 44_100,
+            samples: SETTINGS.sample_rate as usize,
+            total_samples: SETTINGS.sample_rate as usize,
             index: 0,
             voice: 0,
             event: 0,
-            portamento: 1024,
+            portamento: SETTINGS.buffer_size,
             osc_type: OscType::Sine,
             next_l_silent: false,
             next_r_silent: false,
@@ -61,15 +62,15 @@ impl RenderOp {
             p: 0.0,
             l,
             t: 0.0,
-            attack: 44_100.0,
-            decay: 44_100.0,
+            attack: SETTINGS.sample_rate,
+            decay: SETTINGS.sample_rate,
             asr: ASR::Long,
-            samples: 44_100,
-            total_samples: 44_100,
+            samples: SETTINGS.sample_rate as usize,
+            total_samples: SETTINGS.sample_rate as usize,
             index: 0,
             voice: 0,
             event: 0,
-            portamento: 1024,
+            portamento: SETTINGS.buffer_size,
             osc_type: OscType::Sine,
             next_l_silent: true,
             next_r_silent: true,
@@ -165,13 +166,13 @@ fn pointop_to_renderop(
         l,
         t: r_to_f64(*time),
         index: 0,
-        samples: (l * 44_100.0).round() as usize,
-        total_samples: (l * 44_100.0).round() as usize,
-        attack: r_to_f64(point_op.attack * basis.a) * 44_100.0,
-        decay: r_to_f64(point_op.decay * basis.d) * 44_100.0,
+        samples: (l * SETTINGS.sample_rate).round() as usize,
+        total_samples: (l * SETTINGS.sample_rate).round() as usize,
+        attack: r_to_f64(point_op.attack * basis.a) * SETTINGS.sample_rate,
+        decay: r_to_f64(point_op.decay * basis.d) * SETTINGS.sample_rate,
         osc_type: point_op.osc_type,
         asr: point_op.asr,
-        portamento: (r_to_f64(point_op.portamento) * 1024.0) as usize,
+        portamento: (r_to_f64(point_op.portamento) * SETTINGS.buffer_size as f64) as usize,
         voice,
         event,
         next_l_silent,
@@ -216,7 +217,7 @@ pub fn calculate_fgpl(basis: &Basis, point_op: &PointOp) -> (f64, (f64, f64), f6
     };
     let p = m_a_and_basis_to_f64(basis.p, point_op.pm, point_op.pa);
     let l = r_to_f64(point_op.l * basis.l);
-    if f < 20.0 {
+    if f < SETTINGS.min_freq {
         f = 0.0;
         g = (0.0, 0.0);
     };

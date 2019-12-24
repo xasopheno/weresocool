@@ -1,11 +1,14 @@
 use crate::generation::Op4D;
 use crate::instrument::StereoWaveform;
+use crate::settings::{default_settings, Settings};
 use csv::Writer;
 use error::Error;
 use std::fs::File;
 use std::io::prelude::*;
 use std::path::Path;
 use std::process::Command;
+
+const SETTINGS: Settings = default_settings();
 
 pub fn write_output_buffer(out_buffer: &mut [f32], stereo_waveform: StereoWaveform) {
     let mut l_idx = 0;
@@ -56,8 +59,8 @@ fn wav_to_mp3_in_renders(filename: &str) {
 
 pub fn write_composition_to_wav(composition: StereoWaveform, filename: &str) {
     let spec = hound::WavSpec {
-        channels: 2,
-        sample_rate: 44100,
+        channels: SETTINGS.channels as u16,
+        sample_rate: SETTINGS.sample_rate as u32,
         bits_per_sample: 32,
         sample_format: hound::SampleFormat::Float,
     };
