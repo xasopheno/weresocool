@@ -57,26 +57,20 @@ mod tests {
 
     #[test]
     fn test_get_current_gain_from_op() {
-        let mut v = Voice::init(0);
-        let mut op = RenderOp::init_fglp(200.0, (1.0, 1.0), 1.0, 0.0);
+        let v = Voice::init(0);
+        let mut op = RenderOp::init_fglp(200.0, (0.9, 0.9), 1.0, 0.0);
         op.osc_type = OscType::Noise;
 
-        v.current.gain = 0.9;
-
         let result = v.current_gain_from_op(&op);
-        //assert_eq!();
-        //let mut gain = if op.f > 20.0 { op.g } else { (0., 0.) };
+        assert_eq!(result, 0.3);
 
-        //gain = if op.osc_type == OscType::Sine {
-        //gain
-        //} else {
-        //(gain.0 / 3.0, gain.1 / 3.0)
-        //};
+        op.osc_type = OscType::Sine;
+        let result = v.current_gain_from_op(&op);
+        assert_eq!(result, 0.9);
 
-        //match self.index {
-        //0 => gain.0,
-        //_ => gain.1,
-        //}
+        op.f = 0.0;
+        let result = v.current_gain_from_op(&op);
+        assert_eq!(result, 0.0);
     }
 
     #[test]
