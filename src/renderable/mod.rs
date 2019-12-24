@@ -1,11 +1,12 @@
 use crate::{
     generation::parsed_to_render::r_to_f64,
     instrument::{oscillator::Basis, Oscillator, StereoWaveform},
+    settings::default_settings,
 };
 use num_rational::Rational64;
+pub use render_voice::{renderables_to_render_voices, RenderVoice};
 use socool_ast::{NormalForm, Normalize, OpOrNfTable, OscType, PointOp, ASR};
 pub mod render_voice;
-pub use render_voice::{renderables_to_render_voices, RenderVoice};
 mod test;
 
 use rand::{thread_rng, Rng};
@@ -255,7 +256,9 @@ pub fn nf_to_vec_renderable(
                 );
                 result.push(op);
             }
-            result.push(RenderOp::init_silent_with_length(1.0));
+            if default_settings().pad_end {
+                result.push(RenderOp::init_silent_with_length(1.0));
+            }
             result
         })
         .collect();

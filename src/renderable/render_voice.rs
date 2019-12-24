@@ -40,7 +40,7 @@ impl RenderVoice {
             None => vec![],
         };
 
-        if true {
+        if default_settings().loop_play {
             if self.op_index >= self.ops.len() {
                 self.op_index = 0;
             }
