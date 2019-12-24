@@ -5,11 +5,10 @@ use crate::{
 use num_rational::Rational64;
 use socool_ast::{NormalForm, Normalize, OpOrNfTable, OscType, PointOp, ASR};
 pub mod render_voice;
-
-#[allow(unused_imports)]
-use rand::{thread_rng, Rng};
 pub use render_voice::{renderables_to_render_voices, RenderVoice};
 mod test;
+
+use rand::{thread_rng, Rng};
 
 #[derive(Debug, Clone, PartialEq)]
 pub struct RenderOp {
@@ -89,6 +88,12 @@ impl Offset {
             gain: 1.0,
         }
     }
+    pub fn random() -> Offset {
+        Offset {
+            freq: thread_rng().gen_range(0.95, 1.05),
+            gain: 1.0,
+        }
+    }
 }
 
 pub trait Renderable<T> {
@@ -102,11 +107,6 @@ impl Renderable<RenderOp> for RenderOp {
                 freq: o.freq * 2.0,
                 gain: o.gain,
             },
-            //Some(o) => Offset {
-            //freq: thread_rng().gen_range(0.95, 1.05),
-            //gain: 1.0,
-            ////gain: thread_rng().gen_range(0.95, 1.0),
-            //},
             None => Offset::identity(),
         };
 
