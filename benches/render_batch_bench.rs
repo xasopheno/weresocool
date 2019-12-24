@@ -1,16 +1,9 @@
 use criterion::{black_box, criterion_group, criterion_main, Criterion};
 
-use num_rational::Rational64;
-use pretty_assertions::assert_eq;
-use socool_ast::{OscType, PointOp, ASR};
 use weresocool::{
-    generation::parsed_to_render::sum_all_waveforms,
     generation::{filename_to_render, RenderReturn, RenderType},
-    instrument::{oscillator::Basis, StereoWaveform},
-    renderable::{
-        calculate_fgpl, m_a_and_basis_to_f64, nf_to_vec_renderable,
-        render_voice::renderables_to_render_voices, RenderOp,
-    },
+    instrument::StereoWaveform,
+    renderable::{nf_to_vec_renderable, render_voice::renderables_to_render_voices},
 };
 
 fn criterion_benchmark(c: &mut Criterion) {
