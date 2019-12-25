@@ -6,7 +6,7 @@ use weresocool::{
     renderable::{nf_to_vec_renderable, render_voice::renderables_to_render_voices},
 };
 
-fn criterion_benchmark(c: &mut Criterion) {
+fn render_batch_bench(c: &mut Criterion) {
     let filename = "songs/test/render_op_get_batch.socool".to_string();
     let (nf, basis, table) =
         match filename_to_render(&filename, RenderType::NfBasisAndTable).unwrap() {
@@ -28,5 +28,5 @@ fn criterion_benchmark(c: &mut Criterion) {
     });
 }
 
-criterion_group!(benches, criterion_benchmark);
+criterion_group!(benches, render_batch_bench);
 criterion_main!(benches);

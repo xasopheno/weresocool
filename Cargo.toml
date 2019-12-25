@@ -39,6 +39,9 @@ criterion = "0.3"
 [[bench]]
 name = "render_batch_bench"
 harness = false
+[[bench]]
+name = "nf_to_vec_renderable_bench"
+harness = false
 
 [workspace]
 members = [
