@@ -32,6 +32,17 @@ watch = "0.1.0"
 failure = "0.1.6"
 failure_derive = "0.1.6"
 
+[dev-dependencies]
+pretty_assertions = "0.6.1"
+criterion = "0.3"
+
+[[bench]]
+name = "render_batch_bench"
+harness = false
+[[bench]]
+name = "nf_to_vec_renderable_bench"
+harness = false
+
 [workspace]
 members = [
     "ast",
@@ -55,5 +66,3 @@ path = "bin/pad.rs"
 name = "snapshot"
 path = "bin/snapshot.rs"
 
-[dev-dependencies]
-pretty_assertions = "0.6.1"
