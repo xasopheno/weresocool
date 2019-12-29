@@ -29,7 +29,6 @@ impl RenderVoice {
     /// let mut voice = RenderVoice::init(&vec![RenderOp::init_silent_with_length(1.0)]);
     /// let batch = voice.get_batch(1024, None);
     /// ```
-    #[allow(clippy::collapsible_if)]
     pub fn get_batch(
         &mut self,
         samples_left_in_batch: usize,
@@ -40,10 +39,8 @@ impl RenderVoice {
             None => vec![],
         };
 
-        if default_settings().loop_play {
-            if self.op_index >= self.ops.len() {
-                self.op_index = 0;
-            }
+        if default_settings().loop_play && self.op_index >= self.ops.len() {
+            self.op_index = 0;
         }
 
         if self.op_index >= self.ops.len() {
