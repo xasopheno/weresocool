@@ -1,8 +1,10 @@
 use crate::{
     instrument::{Oscillator, StereoWaveform},
     renderable::{Offset, RenderOp, Renderable},
-    settings::default_settings,
+    settings::{default_settings, Settings},
 };
+
+const SETTINGS: Settings = default_settings();
 
 #[derive(Debug, Clone)]
 pub struct RenderVoice {
@@ -18,7 +20,7 @@ impl RenderVoice {
             sample_index: 0,
             op_index: 0,
             ops: ops.to_vec(),
-            oscillator: Oscillator::init(&default_settings()),
+            oscillator: Oscillator::init(&SETTINGS),
         }
     }
 
@@ -39,7 +41,7 @@ impl RenderVoice {
             None => vec![],
         };
 
-        if default_settings().loop_play && self.op_index >= self.ops.len() {
+        if SETTINGS.loop_play && self.op_index >= self.ops.len() {
             self.op_index = 0;
         }
 
