@@ -1,24 +1,25 @@
-use error::Error;
-use failure::Fail;
-use weresocool::control::setup_control;
+//use error::Error;
+//use failure::Fail;
+//use weresocool::control::setup_control;
+fn main() {}
 
-fn main() {
-    match run() {
-        Ok(_) => {}
-        e => {
-            for cause in Fail::iter_causes(&e.unwrap_err()) {
-                println!("Failure caused by: {}", cause);
-            }
-        }
-    }
-}
+//fn main() {
+//match run() {
+//Ok(_) => {}
+//e => {
+//for cause in Fail::iter_causes(&e.unwrap_err()) {
+//println!("Failure caused by: {}", cause);
+//}
+//}
+//}
+//}
 
-#[allow(unused_variables)]
-fn run() -> Result<(), Error> {
-    let state = setup_control();
-    while true {
-        let shared = state.get();
-        dbg!(shared);
-    }
-    Ok(())
-}
+//#[allow(unused_variables)]
+//fn run() -> Result<(), Error> {
+//let state = setup_control();
+//while true {
+//let shared = state.get();
+//dbg!(shared);
+//}
+//Ok(())
+//}
