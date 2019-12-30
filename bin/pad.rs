@@ -1,9 +1,6 @@
 use error::Error;
 use failure::Fail;
-//use weresocool::{
-//generation::{filename_to_render, RenderReturn, RenderType},
-//portaudio::output::output_setup,
-//};
+use weresocool::control::setup_control;
 
 fn main() {
     match run() {
@@ -18,5 +15,10 @@ fn main() {
 
 #[allow(unused_variables)]
 fn run() -> Result<(), Error> {
+    let state = setup_control();
+    while true {
+        let shared = state.get();
+        dbg!(shared);
+    }
     Ok(())
 }
