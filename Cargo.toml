@@ -4,7 +4,7 @@ version = "0.5.0"
 edition = "2018"
 authors = ["Danny Meyer <Danny.Meyer@gmail.com>"]
 description = "***** WereSoCool __!Now In Stereo!__ ****** Make cool sounds. Impress your friends."
-license = "MIT" 
+license = "GPL-3.0" 
 autobins = false
 
 [dependencies]
