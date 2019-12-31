@@ -16,9 +16,9 @@ fn main() {
 #[allow(unused_variables)]
 fn run() -> Result<(), Error> {
     let state = setup_control();
-    while true {
+    loop {
         let shared = state.get();
-        dbg!(shared);
+        //dbg!(shared);
     }
     Ok(())
 }

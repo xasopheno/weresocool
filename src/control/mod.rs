@@ -37,6 +37,7 @@ pub fn setup_control() -> Arc<Mutex<MicState>> {
     let mut stdin = async_stdin().bytes();
     thread::spawn(move || loop {
         let b = stdin.next();
+        dbg!(&b);
         match b {
             Some(Ok(b'r')) => {
                 state.update(MicState::Record);
