@@ -57,7 +57,12 @@ fn wav_to_mp3_in_renders(filename: &str) {
     assert!(ecode.success());
 }
 
-pub fn write_composition_to_wav(composition: StereoWaveform, filename: &str) {
+pub fn write_composition_to_wav(
+    composition: StereoWaveform,
+    filename: &str,
+    mp3: bool,
+    normalize: bool,
+) {
     let spec = hound::WavSpec {
         channels: SETTINGS.channels as u16,
         sample_rate: SETTINGS.sample_rate as u32,
@@ -68,7 +73,9 @@ pub fn write_composition_to_wav(composition: StereoWaveform, filename: &str) {
     let mut buffer = vec![0.0; composition.r_buffer.len() * 2];
 
     write_output_buffer(&mut buffer, composition);
-    normalize_waveform(&mut buffer);
+    if normalize {
+        normalize_waveform(&mut buffer);
+    }
 
     let mut writer = hound::WavWriter::create(filename, spec).unwrap();
     for sample in buffer {
@@ -77,7 +84,9 @@ pub fn write_composition_to_wav(composition: StereoWaveform, filename: &str) {
             .expect("Error writing wave file.");
     }
 
-    wav_to_mp3_in_renders(filename);
+    if mp3 {
+        wav_to_mp3_in_renders(filename);
+    }
 }
 
 pub fn normalize_waveform(buffer: &mut Vec<f32>) {

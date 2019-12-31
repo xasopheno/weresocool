@@ -2,4 +2,4 @@
 
 FILENAME=$1
 
-fd | entr -crs "echo | cargo run --release --bin stems $FILENAME"
+cargo run --release --bin stems $FILENAME
