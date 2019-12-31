@@ -10,4 +10,4 @@ rand = "0.7.2"
 serde = { version = "1.0.103", features = ["derive"] }
 pretty_assertions = "0.6.1"
 indexmap = "1.2.0"
-colored = "1.9.0"
+colored = "1.9.1"
