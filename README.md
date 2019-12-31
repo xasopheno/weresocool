@@ -27,12 +27,12 @@ https://github.com/xasopheno/weresocool-parser/blob/master/src/socool.lalrpop
 ## Run
 Listen to something created with the framework
 
-`cargo run --release --bin wsc songs/wallace.socool`
+`cargo run --release --bin wsc songs/fall/table.socool`
 
 
 Run with `-p` flag to print a wav file.
 
-`cargo run --release --bin wsc songs/wallace.socool -p`
+`cargo run --release --bin wsc songs/fall/table.socool -p`
 
 I use `ffmpeg` to convert to `mp3`
 
@@ -51,7 +51,7 @@ To build the binary:
 
 and then you can parse and play files without having to build the binary each time.
 
-`./target/release/wsc songs/wallace.socool -p`
+`./target/release/wsc songs/fall/table.socool -p`
 
 ## Usage
 
@@ -73,7 +73,7 @@ ARGS:
 ## Test
 To run tests for WSC, Parser, AST, and the end-to-end tests run:
 
-`./test_all.sh`
+`./test.sh`
 
 Copyright (C) 2019 - Danny Meyer
 

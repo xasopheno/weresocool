@@ -1,0 +1,5 @@
+#!/usr/bin/env sh
+
+FILENAME=$1
+
+cargo run --release --bin stems $FILENAME
