@@ -49,7 +49,7 @@ pub fn setup_control() -> Arc<Mutex<MicState>> {
             //}
             _ => {}
         };
-        //thread::sleep(std::time::Duration::from_millis(25));
+        thread::sleep(std::time::Duration::from_millis(25));
     });
     Arc::clone(&state_clone)
 }
