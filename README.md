@@ -73,7 +73,7 @@ ARGS:
 ## Test
 To run tests for WSC, Parser, AST, and the end-to-end tests run:
 
-`./test_all.sh`
+`./test.sh`
 
 Copyright (C) 2019 - Danny Meyer
 
