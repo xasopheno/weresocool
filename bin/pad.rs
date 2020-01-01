@@ -1,6 +1,5 @@
 use error::Error;
 use failure::Fail;
-use weresocool::control::{setup_control, StateInterface};
 
 fn main() {
     match run() {
@@ -15,10 +14,5 @@ fn main() {
 
 #[allow(unused_variables)]
 fn run() -> Result<(), Error> {
-    let state = setup_control();
-    loop {
-        let shared = state.get();
-        //dbg!(shared);
-    }
     Ok(())
 }
