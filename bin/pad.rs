@@ -1,9 +1,5 @@
 use error::Error;
 use failure::Fail;
-//use weresocool::{
-//generation::{filename_to_render, RenderReturn, RenderType},
-//portaudio::output::output_setup,
-//};
 
 fn main() {
     match run() {

@@ -1,8 +1,10 @@
 use crate::{
     instrument::{Oscillator, StereoWaveform},
     renderable::{Offset, RenderOp, Renderable},
-    settings::default_settings,
+    settings::{default_settings, Settings},
 };
+
+const SETTINGS: Settings = default_settings();
 
 #[derive(Debug, Clone)]
 pub struct RenderVoice {
@@ -18,7 +20,7 @@ impl RenderVoice {
             sample_index: 0,
             op_index: 0,
             ops: ops.to_vec(),
-            oscillator: Oscillator::init(&default_settings()),
+            oscillator: Oscillator::init(&SETTINGS),
         }
     }
 
@@ -29,7 +31,6 @@ impl RenderVoice {
     /// let mut voice = RenderVoice::init(&vec![RenderOp::init_silent_with_length(1.0)]);
     /// let batch = voice.get_batch(1024, None);
     /// ```
-    #[allow(clippy::collapsible_if)]
     pub fn get_batch(
         &mut self,
         samples_left_in_batch: usize,
@@ -40,10 +41,8 @@ impl RenderVoice {
             None => vec![],
         };
 
-        if default_settings().loop_play {
-            if self.op_index >= self.ops.len() {
-                self.op_index = 0;
-            }
+        if SETTINGS.loop_play && self.op_index >= self.ops.len() {
+            self.op_index = 0;
         }
 
         if self.op_index >= self.ops.len() {
