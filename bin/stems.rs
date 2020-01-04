@@ -26,7 +26,7 @@ fn main() -> Result<(), Error> {
     let vec_wav = generate_waveforms(renderables, true);
     for (i, w) in vec_wav.iter().enumerate() {
         let f = format!("{}_{}.wav", &filename.clone().unwrap(), i);
-        let f = f.split("/").collect::<Vec<&str>>();
+        let f = f.split('/').collect::<Vec<&str>>();
         let f = f[f.len() - 1];
         println!("{}", &f);
 
