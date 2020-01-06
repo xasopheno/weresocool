@@ -34,7 +34,7 @@ fn language_to_vec_string(language: &str) -> Vec<String> {
 fn run() -> Result<(), Error> {
     let filename = "songs/test/template.socool";
     let mut language = "".to_string();
-    let f = File::open(filename)?;
+    let f = File::open(filename).expect("couldn't open song/test/template.socool");
     let file = BufReader::new(&f);
     file.lines().for_each(|line| {
         let l = line.expect("Could not parse line");
