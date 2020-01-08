@@ -50,6 +50,21 @@ fn process_op_table(ot: OpOrNfTable) -> OpOrNfTable {
     result
 }
 
+fn filename_to_vec_string(filename: &str) -> Vec<String> {
+    let f = File::open(filename).expect("could open file");
+    let file = BufReader::new(&f);
+    file.lines()
+        .map(|line| {
+            let l = line.expect("Could not parse line");
+            l
+        })
+        .collect()
+}
+
+fn language_to_vec_string(language: &str) -> Vec<String> {
+    language.split("\n").map(|l| l.to_string()).collect()
+}
+
 pub fn parse_file(filename: &str, parse_table: Option<OpOrNfTable>) -> ParsedComposition {
     let mut table = if parse_table.is_some() {
         parse_table.unwrap()
@@ -122,3 +137,27 @@ fn handle_white_space_and_imports(filename: &str) -> Result<(Vec<String>, String
 
     Ok((imports_needed, composition))
 }
+
+mod tests {
+    #[test]
+    fn import_test() {
+        use super::*;
+        let filename = "./working.socool";
+        let mut language = "".to_string();
+        let f = File::open(filename).expect("couldn't open ./working.socool");
+        let file = BufReader::new(&f);
+        file.lines().for_each(|line| {
+            let l = line.expect("Could not parse line");
+            language.push_str(&l);
+            language.push_str("\n");
+        });
+
+        let from_filename = filename_to_vec_string(filename);
+        let from_language = language_to_vec_string(language.as_str());
+
+        for (a, b) in from_filename.iter().zip(&from_language) {
+            assert_eq!(a, b);
+        }
+    }
+}
+
