@@ -46,6 +46,10 @@ fn run() -> Result<(), Error> {
     let from_language = language_to_vec_string(language.as_str());
 
     for (a, b) in from_filename.iter().zip(&from_language) {
+        let copy_a = a.trim_start();
+        if copy_a.starts_with("--") {
+            dbg!(1234);
+        };
         assert_eq!(a, b);
     }
 

@@ -14,8 +14,8 @@ thing1 = {
 	Sequence [
 		AsIs,
 		Tm 9/8,
-		Tm 5/4,
-		Tm 4/3,
+		--Tm 5/4,
+		--Tm 4/3,
 		Tm 3/2,
 		Tm 5/3,
 		Tm 15/8,
