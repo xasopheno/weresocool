@@ -1,4 +1,4 @@
-use crate::generation::{RenderReturn, RenderType};
+use crate::generation::{parsed_to_render, RenderReturn, RenderType};
 use socool_parser::parser::{filename_to_vec_string, language_to_vec_string, parse_file};
 
 pub enum InputType<'a> {
@@ -11,19 +11,13 @@ pub trait Interpretable {
 }
 
 impl Interpretable for InputType<'_> {
-    fn make(&self, _target: RenderType) -> RenderReturn {
-        match &self {
-            InputType::Filename(filename) => {
-                let vec_string = filename_to_vec_string(filename);
-                let parsed_composition = parse_file(vec_string, None);
-                unimplemented!();
-            }
-            InputType::Language(language) => {
-                let vec_string = language_to_vec_string(language);
-                let parsed_composition = parse_file(vec_string, None);
-                unimplemented!();
-            }
-        }
+    fn make(&self, target: RenderType) -> RenderReturn {
+        let (filename, vec_string) = match &self {
+            InputType::Filename(filename) => (filename, filename_to_vec_string(filename)),
+            InputType::Language(language) => (&"Language", language_to_vec_string(language)),
+        };
+        let parsed_composition = parse_file(vec_string, None);
+        parsed_to_render(filename, parsed_composition, target).unwrap()
     }
 }
 
