@@ -11,7 +11,7 @@ use num_rational::Rational64;
 use pbr::ProgressBar;
 use rayon::prelude::*;
 use socool_ast::{NormalForm, Normalize as NormalizeOp, OpOrNf, OpOrNfTable};
-use socool_parser::parse_file;
+use socool_parser::{filename_to_vec_string, parse_file};
 use std::sync::{Arc, Mutex};
 
 #[derive(Clone, PartialEq, Debug)]
@@ -37,7 +37,8 @@ pub fn r_to_f64(r: Rational64) -> f64 {
 }
 
 pub fn filename_to_render(filename: &str, r_type: RenderType) -> Result<RenderReturn, Error> {
-    let parsed = parse_file(&filename.to_string(), None);
+    let vec_string = filename_to_vec_string(&filename.to_string());
+    let parsed = parse_file(vec_string, None);
     let parsed_main = parsed.table.get("main").unwrap();
 
     let nf = match parsed_main {

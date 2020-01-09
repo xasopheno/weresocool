@@ -15,7 +15,7 @@ fn main() {
         panic!("Wrong number of arguments.")
     }
 
-    let vec_string = filename_to_vec_string(filename).unwrap();
+    let vec_string = filename_to_vec_string(filename);
     let parsed = parse_file(vec_string, None);
 
     for (key, _val) in parsed.table.iter() {
