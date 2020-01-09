@@ -1,11 +1,11 @@
 use error::Error;
 use weresocool::{
-    generation::{filename_to_render, generate_waveforms, RenderReturn, RenderType},
+    generation::{interpretable::{InputType::Filename, Interpretable}, generate_waveforms, RenderReturn, RenderType},
     renderable::nf_to_vec_renderable,
-    ui::get_args,
-    ui::{no_file_name, were_so_cool_logo},
+    ui::{no_file_name, were_so_cool_logo, get_args},
     write::write_composition_to_wav,
 };
+
 
 fn main() -> Result<(), Error> {
     were_so_cool_logo();
@@ -17,7 +17,8 @@ fn main() -> Result<(), Error> {
         _ => no_file_name(),
     }
 
-    let render_return = filename_to_render(filename.unwrap(), RenderType::NfBasisAndTable)?;
+    let render_return = 
+        Filename(filename.unwrap()).make(RenderType::NfBasisAndTable)?;
     let (nf, basis, table) = match render_return {
         RenderReturn::NfBasisAndTable(nf, basis, table) => (nf, basis, table),
         _ => panic!("huh"),

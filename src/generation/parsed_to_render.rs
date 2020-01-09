@@ -11,7 +11,7 @@ use num_rational::Rational64;
 use pbr::ProgressBar;
 use rayon::prelude::*;
 use socool_ast::{NormalForm, Normalize as NormalizeOp, OpOrNf, OpOrNfTable};
-use socool_parser::{filename_to_vec_string, parse_file, ParsedComposition};
+use socool_parser::ParsedComposition;
 use std::sync::{Arc, Mutex};
 
 #[derive(Clone, PartialEq, Debug)]
