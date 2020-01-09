@@ -1,4 +1,5 @@
 use colored::*;
+use socool_parser::parser::filename_to_vec_string;
 use socool_parser::*;
 use std::env;
 
@@ -14,7 +15,8 @@ fn main() {
         panic!("Wrong number of arguments.")
     }
 
-    let parsed = parse_file(filename, None);
+    let vec_string = filename_to_vec_string(filename).unwrap();
+    let parsed = parse_file(vec_string, None);
 
     for (key, _val) in parsed.table.iter() {
         println!("\n Name: {:?}", key);

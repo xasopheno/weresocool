@@ -36,7 +36,7 @@ fn process_op_table(ot: OpOrNfTable) -> OpOrNfTable {
     for (name, op_or_nf) in ot.iter() {
         match op_or_nf {
             Nf(nf) => {
-                result.insert(name.to_string(), Nf(nf.clone()));
+                result.insert(name.to_string(), Nf(nf.to_owned()));
             }
             Op(op) => {
                 let mut nf = NormalForm::init();
@@ -65,20 +65,20 @@ pub fn read_file(filename: &str) -> File {
     };
 }
 
-pub fn filename_to_vec_string(filename: &str) -> Result<Vec<String>, Error> {
+pub fn filename_to_vec_string(filename: &str) -> Vec<String> {
     let file = read_file(filename);
     let reader = BufReader::new(&file);
-    Ok(reader
+    reader
         .lines()
         .map(|line| line.expect("Could not parse line"))
-        .collect())
+        .collect()
 }
 
 pub fn language_to_vec_string(language: &str) -> Vec<String> {
     language.split("\n").map(|l| l.to_string()).collect()
 }
 
-pub fn parse_file(filename: &str, parse_table: Option<OpOrNfTable>) -> ParsedComposition {
+pub fn parse_file(vec_string: Vec<String>, parse_table: Option<OpOrNfTable>) -> ParsedComposition {
     let mut table = if parse_table.is_some() {
         parse_table.unwrap()
     } else {
@@ -86,12 +86,12 @@ pub fn parse_file(filename: &str, parse_table: Option<OpOrNfTable>) -> ParsedCom
     };
 
     let (imports_needed, composition) =
-        handle_white_space_and_imports(filename).expect("Whitespace and imports parsing error");
+        handle_whitespace_and_imports(vec_string).expect("Whitespace and imports parsing error");
 
     for import in imports_needed {
         let (filepath, import_name) = get_filepath_and_import_name(import);
         let vec_string = filename_to_vec_string(&filepath.to_string());
-        let parsed_composition = parse_file(&filepath.to_string(), Some(table.clone()));
+        let parsed_composition = parse_file(vec_string, Some(table.clone()));
 
         for (key, val) in parsed_composition.table {
             let mut name = import_name.clone();
@@ -103,7 +103,7 @@ pub fn parse_file(filename: &str, parse_table: Option<OpOrNfTable>) -> ParsedCom
 
     let init = socool::SoCoolParser::new().parse(&mut table, &composition);
 
-    match init.clone() {
+    match init {
         Ok(init) => {
             let table = process_op_table(table);
             ParsedComposition { init, table }
@@ -117,34 +117,11 @@ pub fn parse_file(filename: &str, parse_table: Option<OpOrNfTable>) -> ParsedCom
     }
 }
 
-fn handle_whitespace_and_imports_new(lines: Vec<String>) -> Result<(Vec<String>, String), Error> {
+fn handle_whitespace_and_imports(lines: Vec<String>) -> Result<(Vec<String>, String), Error> {
     let mut composition = String::new();
     let mut imports_needed: Vec<String> = vec![];
     for line in lines {
         let l = line;
-        let copy_l = l.trim_start();
-        if copy_l.starts_with("--") {
-            composition.push_str("\n");
-        } else if is_import(copy_l.to_string()) {
-            imports_needed.push(copy_l.to_owned());
-            composition.push_str("\n");
-        } else {
-            composition.push_str("\n");
-            composition.push_str(&l);
-        }
-    }
-
-    Ok((imports_needed, composition))
-}
-
-fn handle_white_space_and_imports(filename: &str) -> Result<(Vec<String>, String), Error> {
-    let file = read_file(filename);
-    let reader = BufReader::new(&file);
-    let mut composition = String::new();
-    let mut imports_needed = vec![];
-
-    for line in reader.lines() {
-        let l = line?;
         let copy_l = l.trim_start();
         if copy_l.starts_with("--") {
             composition.push_str("\n");
@@ -174,7 +151,7 @@ mod tests {
             language.push_str("\n");
         });
 
-        let from_filename = filename_to_vec_string(filename).unwrap();
+        let from_filename = filename_to_vec_string(filename);
         let from_language = language_to_vec_string(language.as_str());
 
         for (a, b) in from_filename.iter().zip(&from_language) {
