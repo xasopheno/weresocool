@@ -49,19 +49,32 @@ fn process_op_table(ot: OpOrNfTable) -> OpOrNfTable {
 
     result
 }
+pub fn read_file(filename: &str) -> File {
+    let f = File::open(filename);
+    match f {
+        Ok(f) => return f,
+        _ => {
+            println!(
+                "{} {}\n",
+                "\n        File not found:".red().bold(),
+                filename.red().bold()
+            );
 
-fn filename_to_vec_string(filename: &str) -> Vec<String> {
-    let f = File::open(filename).expect("could open file");
-    let file = BufReader::new(&f);
-    file.lines()
-        .map(|line| {
-            let l = line.expect("Could not parse line");
-            l
-        })
-        .collect()
+            panic!("File not found");
+        }
+    };
 }
 
-fn language_to_vec_string(language: &str) -> Vec<String> {
+pub fn filename_to_vec_string(filename: &str) -> Result<Vec<String>, Error> {
+    let file = read_file(filename);
+    let reader = BufReader::new(&file);
+    Ok(reader
+        .lines()
+        .map(|line| line.expect("Could not parse line"))
+        .collect())
+}
+
+pub fn language_to_vec_string(language: &str) -> Vec<String> {
     language.split("\n").map(|l| l.to_string()).collect()
 }
 
@@ -77,6 +90,7 @@ pub fn parse_file(filename: &str, parse_table: Option<OpOrNfTable>) -> ParsedCom
 
     for import in imports_needed {
         let (filepath, import_name) = get_filepath_and_import_name(import);
+        let vec_string = filename_to_vec_string(&filepath.to_string());
         let parsed_composition = parse_file(&filepath.to_string(), Some(table.clone()));
 
         for (key, val) in parsed_composition.table {
@@ -103,44 +117,52 @@ pub fn parse_file(filename: &str, parse_table: Option<OpOrNfTable>) -> ParsedCom
     }
 }
 
+fn handle_whitespace_and_imports_new(lines: Vec<String>) -> Result<(Vec<String>, String), Error> {
+    let mut composition = String::new();
+    let mut imports_needed: Vec<String> = vec![];
+    for line in lines {
+        let l = line;
+        let copy_l = l.trim_start();
+        if copy_l.starts_with("--") {
+            composition.push_str("\n");
+        } else if is_import(copy_l.to_string()) {
+            imports_needed.push(copy_l.to_owned());
+            composition.push_str("\n");
+        } else {
+            composition.push_str("\n");
+            composition.push_str(&l);
+        }
+    }
+
+    Ok((imports_needed, composition))
+}
+
 fn handle_white_space_and_imports(filename: &str) -> Result<(Vec<String>, String), Error> {
-    let f = File::open(filename);
+    let file = read_file(filename);
+    let reader = BufReader::new(&file);
     let mut composition = String::new();
     let mut imports_needed = vec![];
-    match f {
-        Ok(f) => {
-            let file = BufReader::new(&f);
-            for line in file.lines() {
-                let l = line?;
-                let copy_l = l.trim_start();
-                if copy_l.starts_with("--") {
-                    composition.push_str("\n");
-                } else if is_import(copy_l.to_string()) {
-                    imports_needed.push(copy_l.to_owned());
-                    composition.push_str("\n");
-                } else {
-                    composition.push_str("\n");
-                    composition.push_str(&l);
-                }
-            }
-        }
-        _ => {
-            println!(
-                "{} {}\n",
-                "\n        File not found:".red().bold(),
-                filename.red().bold()
-            );
 
-            panic!("File not found");
+    for line in reader.lines() {
+        let l = line?;
+        let copy_l = l.trim_start();
+        if copy_l.starts_with("--") {
+            composition.push_str("\n");
+        } else if is_import(copy_l.to_string()) {
+            imports_needed.push(copy_l.to_owned());
+            composition.push_str("\n");
+        } else {
+            composition.push_str("\n");
+            composition.push_str(&l);
         }
-    };
+    }
 
     Ok((imports_needed, composition))
 }
 
 mod tests {
     #[test]
-    fn import_test() {
+    fn filename_and_language_to_vec_string() {
         use super::*;
         let filename = "./working.socool";
         let mut language = "".to_string();
@@ -152,7 +174,7 @@ mod tests {
             language.push_str("\n");
         });
 
-        let from_filename = filename_to_vec_string(filename);
+        let from_filename = filename_to_vec_string(filename).unwrap();
         let from_language = language_to_vec_string(language.as_str());
 
         for (a, b) in from_filename.iter().zip(&from_language) {
