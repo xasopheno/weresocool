@@ -1,11 +1,9 @@
 use criterion::{black_box, criterion_group, criterion_main, Criterion};
 
 use weresocool::{
-    generation::{
-        interpretable::{InputType::Filename, Interpretable},
-        RenderReturn, RenderType,
-    },
+    generation::{RenderReturn, RenderType},
     instrument::StereoWaveform,
+    interpretable::{InputType::Filename, Interpretable},
     renderable::{nf_to_vec_renderable, render_voice::renderables_to_render_voices},
 };
 

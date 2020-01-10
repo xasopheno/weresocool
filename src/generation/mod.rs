@@ -1,4 +1,3 @@
-pub mod interpretable;
 pub mod json;
 pub mod parsed_to_render;
 pub mod test;

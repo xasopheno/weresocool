@@ -1,8 +1,8 @@
 use error::Error;
 use weresocool::{
     examples::documentation,
-    generation::interpretable::{InputType::Filename, Interpretable},
     generation::{RenderReturn, RenderType},
+    interpretable::{InputType::Filename, Interpretable},
     portaudio::output_setup,
     ui::{banner, get_args, no_file_name, were_so_cool_logo},
 };

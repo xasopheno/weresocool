@@ -1,12 +1,9 @@
 #[cfg(test)]
 mod tests {
     use crate::{
-        generation::parsed_to_render::sum_all_waveforms,
-        generation::{
-            interpretable::{InputType::Filename, Interpretable},
-            RenderReturn, RenderType,
-        },
+        generation::{sum_all_waveforms, RenderReturn, RenderType},
         instrument::{oscillator::Basis, StereoWaveform},
+        interpretable::{InputType::Filename, Interpretable},
         renderable::{
             calculate_fgpl, m_a_and_basis_to_f64, nf_to_vec_renderable,
             render_voice::renderables_to_render_voices, RenderOp,

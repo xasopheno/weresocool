@@ -1,10 +1,8 @@
 use criterion::{criterion_group, criterion_main, Criterion};
 
 use weresocool::{
-    generation::{
-        interpretable::{InputType::Filename, Interpretable},
-        RenderReturn, RenderType,
-    },
+    generation::{RenderReturn, RenderType},
+    interpretable::{InputType::Filename, Interpretable},
     renderable::nf_to_vec_renderable,
 };
 

@@ -1,9 +1,7 @@
 use weresocool::{
     examples::documentation,
-    generation::{
-        interpretable::{InputType::Filename, Interpretable},
-        parsed_to_render::{r_to_f64, RenderReturn, RenderType},
-    },
+    generation::parsed_to_render::{r_to_f64, RenderReturn, RenderType},
+    interpretable::{InputType::Filename, Interpretable},
     portaudio::duplex_setup,
     renderable::nf_to_vec_renderable,
     ui::{get_args, no_file_name, were_so_cool_logo},
