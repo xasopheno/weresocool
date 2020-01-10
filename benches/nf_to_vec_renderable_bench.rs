@@ -1,19 +1,24 @@
 use criterion::{criterion_group, criterion_main, Criterion};
 
 use weresocool::{
-    generation::{filename_to_render, RenderReturn, RenderType},
+    generation::{
+        interpretable::{InputType::Filename, Interpretable},
+        RenderReturn, RenderType,
+    },
     renderable::nf_to_vec_renderable,
 };
 
 fn nf_to_vec_renderable_bench(c: &mut Criterion) {
     let filename = "songs/test/render_op_get_batch.socool".to_string();
-    let (nf, basis, table) =
-        match filename_to_render(&filename, RenderType::NfBasisAndTable).unwrap() {
-            RenderReturn::NfBasisAndTable(nf, basis, table) => (nf, basis, table),
-            _ => {
-                panic!();
-            }
-        };
+    let (nf, basis, table) = match Filename(&filename)
+        .make(RenderType::NfBasisAndTable)
+        .unwrap()
+    {
+        RenderReturn::NfBasisAndTable(nf, basis, table) => (nf, basis, table),
+        _ => {
+            panic!();
+        }
+    };
 
     c.bench_function("nf_to_vec_renderable_bench", |b| {
         b.iter(|| {
