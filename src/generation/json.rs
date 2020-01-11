@@ -40,7 +40,7 @@ impl TimedOp {
         let y = if is_silent {
             0.0
         } else {
-            (r_to_f64(basis.f) * r_to_f64(self.fm)) + r_to_f64(self.fa)
+            r_to_f64(basis.f).mul_add(r_to_f64(self.fm), r_to_f64(self.fa))
         };
         let z = if is_silent {
             0.0
@@ -120,7 +120,7 @@ impl Op4D {
         self.z = normalize_value(self.z, normalizer.z.min, normalizer.z.max);
     }
 
-    pub fn to_op_csv_1d(&self) -> OpCsv1d {
+    pub const fn to_op_csv_1d(&self) -> OpCsv1d {
         OpCsv1d {
             time: self.t,
             length: self.l,
@@ -254,7 +254,7 @@ fn point_op_to_timed_op(
 }
 
 pub fn vec_timed_op_to_vec_op4d(timed_ops: Vec<TimedOp>, basis: &Basis) -> Vec<Op4D> {
-    timed_ops.iter().map(|t_op| t_op.to_op_4d(&basis)).collect()
+    timed_ops.iter().map(|t_op| t_op.to_op_4d(basis)).collect()
 }
 
 pub fn composition_to_vec_timed_op(

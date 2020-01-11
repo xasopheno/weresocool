@@ -22,7 +22,7 @@ impl Voice {
             start
         } else if index < portamento_length && !self.silence_to_sound() && !self.sound_to_silence()
         {
-            start + index as f64 * p_delta
+            (index as f64).mul_add(p_delta, start)
         } else {
             target
         }

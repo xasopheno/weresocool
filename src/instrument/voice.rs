@@ -33,7 +33,7 @@ pub struct VoiceState {
     pub gain: f64,
 }
 impl VoiceState {
-    pub fn init() -> VoiceState {
+    pub const fn init() -> VoiceState {
         VoiceState {
             frequency: 0.0,
             gain: 0.0,
@@ -45,7 +45,7 @@ impl VoiceState {
 }
 
 impl Voice {
-    pub fn init(index: usize) -> Voice {
+    pub const fn init(index: usize) -> Voice {
         Voice {
             index,
             past: VoiceState::init(),

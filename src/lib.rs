@@ -1,3 +1,9 @@
+#![warn(
+    clippy::nursery,
+    //clippy::restriction,
+    //clippy::pedantic,
+    //clippy::cargo
+)]
 pub mod analyze;
 pub mod compositions;
 pub mod examples;

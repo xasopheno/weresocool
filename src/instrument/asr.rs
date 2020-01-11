@@ -81,6 +81,6 @@ pub fn calculate_long_gain(
     }
 }
 
-pub fn is_short(total_length: usize, attack_length: usize, decay_length: usize) -> bool {
+pub const fn is_short(total_length: usize, attack_length: usize, decay_length: usize) -> bool {
     total_length <= attack_length + decay_length
 }

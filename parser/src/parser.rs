@@ -75,12 +75,12 @@ pub fn filename_to_vec_string(filename: &str) -> Vec<String> {
 }
 
 pub fn language_to_vec_string(language: &str) -> Vec<String> {
-    language.split("\n").map(|l| l.to_string()).collect()
+    language.split('\n').map(|l| l.to_string()).collect()
 }
 
 pub fn parse_file(vec_string: Vec<String>, parse_table: Option<OpOrNfTable>) -> ParsedComposition {
-    let mut table = if parse_table.is_some() {
-        parse_table.unwrap()
+    let mut table = if let Some(table) = parse_table {
+        table
     } else {
         OpOrNfTable::new()
     };
@@ -159,4 +159,3 @@ mod tests {
         }
     }
 }
-
