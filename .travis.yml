@@ -5,6 +5,7 @@ rust:
 before_script:
   - cargo build --verbose --all
   - rustup component add rustfmt
+  - rustup component add clippy
 script:
   - ./format_ci.sh
   - cargo clippy -- -D warnings
