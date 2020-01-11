@@ -34,7 +34,7 @@ impl Voice {
         if info.gain == 0.0 {
             0.0
         } else {
-            ((FACTOR * info.frequency) + self.phase + rand) % TAU
+            (FACTOR.mul_add(info.frequency, self.phase) + rand) % TAU
         }
     }
 }

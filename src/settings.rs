@@ -31,7 +31,7 @@ pub const fn default_settings() -> Settings {
     }
 }
 
-pub fn get_test_settings() -> Settings {
+pub const fn get_test_settings() -> Settings {
     Settings {
         buffer_size: 10,
         ..default_settings()

@@ -1,9 +1,7 @@
 use weresocool::{
     examples::documentation,
-    generation::{
-        filename_to_render,
-        parsed_to_render::{r_to_f64, RenderReturn, RenderType},
-    },
+    generation::parsed_to_render::{r_to_f64, RenderReturn, RenderType},
+    interpretable::{InputType::Filename, Interpretable},
     portaudio::duplex_setup,
     renderable::nf_to_vec_renderable,
     ui::{get_args, no_file_name, were_so_cool_logo},
@@ -39,11 +37,10 @@ fn run() -> Result<(), Error> {
         _ => no_file_name(),
     }
 
-    let (nf, basis, table) =
-        match filename_to_render(filename.unwrap(), RenderType::NfBasisAndTable)? {
-            RenderReturn::NfBasisAndTable(nf, basis, table) => (nf, basis, table),
-            _ => panic!("Error. Unable to generate NormalForm"),
-        };
+    let (nf, basis, table) = match Filename(filename.unwrap()).make(RenderType::NfBasisAndTable)? {
+        RenderReturn::NfBasisAndTable(nf, basis, table) => (nf, basis, table),
+        _ => panic!("Error. Unable to generate NormalForm"),
+    };
     let renderables = nf_to_vec_renderable(&nf, &table, &basis);
 
     println!("\nGenerating Composition ");

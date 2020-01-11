@@ -11,7 +11,7 @@ use num_rational::Rational64;
 use pbr::ProgressBar;
 use rayon::prelude::*;
 use socool_ast::{NormalForm, Normalize as NormalizeOp, OpOrNf, OpOrNfTable};
-use socool_parser::parse_file;
+use socool_parser::ParsedComposition;
 use std::sync::{Arc, Mutex};
 
 #[derive(Clone, PartialEq, Debug)]
@@ -36,34 +36,47 @@ pub fn r_to_f64(r: Rational64) -> f64 {
     *r.numer() as f64 / *r.denom() as f64
 }
 
-pub fn filename_to_render(filename: &str, r_type: RenderType) -> Result<RenderReturn, Error> {
-    let parsed = parse_file(&filename.to_string(), None);
-    let parsed_main = parsed.table.get("main").unwrap();
+pub fn parsed_to_render(
+    filename: &str,
+    parsed_composition: ParsedComposition,
+    return_type: RenderType,
+) -> Result<RenderReturn, Error> {
+    let parsed_main = parsed_composition.table.get("main").unwrap();
 
     let nf = match parsed_main {
         OpOrNf::Nf(nf) => nf,
         OpOrNf::Op(_) => panic!("main is not in Normal Form for some terrible reason."),
     };
 
-    let basis = Basis::from(parsed.init);
+    let basis = Basis::from(parsed_composition.init);
 
-    match r_type {
+    match return_type {
         RenderType::NfBasisAndTable => Ok(RenderReturn::NfBasisAndTable(
             nf.clone(),
             basis,
-            parsed.table,
+            parsed_composition.table,
         )),
         RenderType::Json4d => {
-            to_json(&basis, &nf, &parsed.table.clone(), filename.to_string())?;
+            to_json(
+                &basis,
+                nf,
+                &parsed_composition.table.clone(),
+                filename.to_string(),
+            )?;
             Ok(RenderReturn::Json4d("json".to_string()))
         }
         RenderType::Csv1d => {
-            to_csv(&basis, &nf, &parsed.table.clone(), filename.to_string())?;
+            to_csv(
+                &basis,
+                nf,
+                &parsed_composition.table.clone(),
+                filename.to_string(),
+            )?;
             Ok(RenderReturn::Csv1d("json".to_string()))
         }
         RenderType::StereoWaveform | RenderType::Wav => {
-            let stereo_waveform = render(&basis, &nf, &parsed.table);
-            if r_type == RenderType::StereoWaveform {
+            let stereo_waveform = render(&basis, nf, &parsed_composition.table);
+            if return_type == RenderType::StereoWaveform {
                 Ok(RenderReturn::StereoWaveform(stereo_waveform))
             } else {
                 let result = to_wav(stereo_waveform, filename.to_string());
@@ -88,7 +101,7 @@ pub fn render(basis: &Basis, composition: &NormalForm, table: &OpOrNfTable) -> S
 }
 
 pub fn to_wav(composition: StereoWaveform, filename: String) -> String {
-    banner("Printing".to_string(), filename.clone());
+    banner("Printing".to_string(), filename);
     write_composition_to_wav(composition, "composition.wav", true, true);
     printed("WAV".to_string());
     "composition.wav".to_string()

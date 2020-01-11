@@ -1,20 +1,23 @@
 use criterion::{black_box, criterion_group, criterion_main, Criterion};
 
 use weresocool::{
-    generation::{filename_to_render, RenderReturn, RenderType},
+    generation::{RenderReturn, RenderType},
     instrument::StereoWaveform,
+    interpretable::{InputType::Filename, Interpretable},
     renderable::{nf_to_vec_renderable, render_voice::renderables_to_render_voices},
 };
 
 fn render_batch_bench(c: &mut Criterion) {
     let filename = "songs/test/render_op_get_batch.socool".to_string();
-    let (nf, basis, table) =
-        match filename_to_render(&filename, RenderType::NfBasisAndTable).unwrap() {
-            RenderReturn::NfBasisAndTable(nf, basis, table) => (nf, basis, table),
-            _ => {
-                panic!();
-            }
-        };
+    let (nf, basis, table) = match Filename(&filename)
+        .make(RenderType::NfBasisAndTable)
+        .unwrap()
+    {
+        RenderReturn::NfBasisAndTable(nf, basis, table) => (nf, basis, table),
+        _ => {
+            panic!();
+        }
+    };
 
     let renderables = nf_to_vec_renderable(&nf, &table, &basis);
     let mut voices1 = renderables_to_render_voices(renderables);

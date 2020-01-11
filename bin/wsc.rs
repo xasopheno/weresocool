@@ -1,7 +1,8 @@
 use error::Error;
 use weresocool::{
     examples::documentation,
-    generation::{filename_to_render, RenderReturn, RenderType},
+    generation::{RenderReturn, RenderType},
+    interpretable::{InputType::Filename, Interpretable},
     portaudio::output_setup,
     ui::{banner, get_args, no_file_name, were_so_cool_logo},
 };
@@ -21,17 +22,16 @@ fn main() -> Result<(), Error> {
     }
 
     if args.is_present("print") {
-        filename_to_render(filename.unwrap(), RenderType::Wav)?;
+        Filename(filename.unwrap()).make(RenderType::Wav)?;
     } else if args.is_present("json") {
-        filename_to_render(filename.unwrap(), RenderType::Json4d)?;
+        Filename(filename.unwrap()).make(RenderType::Json4d)?;
     } else if args.is_present("csv") {
-        filename_to_render(filename.unwrap(), RenderType::Csv1d)?;
+        Filename(filename.unwrap()).make(RenderType::Csv1d)?;
     } else {
-        let stereo_waveform =
-            match filename_to_render(filename.unwrap(), RenderType::StereoWaveform)? {
-                RenderReturn::StereoWaveform(sw) => sw,
-                _ => panic!("Error. Unable to return StereoWaveform"),
-            };
+        let stereo_waveform = match Filename(filename.unwrap()).make(RenderType::StereoWaveform)? {
+            RenderReturn::StereoWaveform(sw) => sw,
+            _ => panic!("Error. Unable to return StereoWaveform"),
+        };
 
         let mut output_stream = output_setup(stereo_waveform)?;
         banner("Now Playing".to_string(), filename.unwrap().to_string());

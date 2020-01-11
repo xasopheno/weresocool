@@ -34,7 +34,7 @@ pub struct RenderOp {
 }
 
 impl RenderOp {
-    pub fn init_fglp(f: f64, g: (f64, f64), l: f64, p: f64) -> RenderOp {
+    pub const fn init_fglp(f: f64, g: (f64, f64), l: f64, p: f64) -> RenderOp {
         RenderOp {
             f,
             p,
@@ -55,7 +55,7 @@ impl RenderOp {
             next_r_silent: false,
         }
     }
-    pub fn init_silent_with_length(l: f64) -> RenderOp {
+    pub const fn init_silent_with_length(l: f64) -> RenderOp {
         RenderOp {
             f: 0.0,
             g: (0.0, 0.0),
@@ -84,7 +84,7 @@ pub struct Offset {
     pub gain: f64,
 }
 impl Offset {
-    pub fn identity() -> Offset {
+    pub const fn identity() -> Offset {
         Offset {
             freq: 1.0,
             gain: 1.0,
@@ -145,7 +145,7 @@ fn pointop_to_renderop(
 
     match next {
         Some(op) => {
-            let (l, r) = point_op_to_gains(&op, &basis);
+            let (l, r) = point_op_to_gains(&op, basis);
             next_l_gain = l;
             next_r_gain = r;
             next_silent = op.is_silent();
@@ -192,13 +192,13 @@ pub fn point_op_to_gains(point_op: &PointOp, basis: &Basis) -> (f64, f64) {
     let l_gain = if *point_op.g.numer() == 0 {
         0.0
     } else {
-        g * (((1.0 + pa * pm) + r_to_f64(basis.p)) / 2.0) * r_to_f64(basis.g)
+        g * (((pa.mul_add(pm, 1.0)) + r_to_f64(basis.p)) / 2.0) * r_to_f64(basis.g)
     };
 
     let r_gain = if *point_op.g.numer() == 0 {
         0.0
     } else {
-        g * (((-1.0 + pa * pm) + r_to_f64(basis.p)) / -2.0) * r_to_f64(basis.g)
+        g * (((pa.mul_add(pm, -1.0)) + r_to_f64(basis.p)) / -2.0) * r_to_f64(basis.g)
     };
 
     (l_gain, r_gain)

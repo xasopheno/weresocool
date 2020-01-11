@@ -60,7 +60,8 @@ pub fn write_test_table_to_json_file(test_table: &TestTable) {
 }
 
 fn generate_render_hashes(p: &str) -> CompositionHashes {
-    let parsed = parse_file(p, None);
+    let vec_string = filename_to_vec_string(&p.to_string());
+    let parsed = parse_file(vec_string, None);
     let main_op = parsed.table.get("main").unwrap();
     let init = parsed.init;
     let op_hash = calculate_hash(main_op);
