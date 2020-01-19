@@ -17,7 +17,7 @@ pub struct Settings {
 pub const fn default_settings() -> Settings {
     Settings {
         loop_play: true,
-        pad_end: true,
+        pad_end: false,
         mic: false,
         sample_rate: 44_100.0,
         yin_buffer_size: 2048,
