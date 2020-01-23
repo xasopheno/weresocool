@@ -101,8 +101,8 @@ pub fn render(basis: &Basis, composition: &NormalForm, table: &OpOrNfTable) -> S
 }
 
 pub fn to_wav(composition: StereoWaveform, filename: String) -> String {
-    banner("Printing".to_string(), filename);
-    write_composition_to_wav(composition, "composition.wav", true, true);
+    banner("Printing".to_string(), filename.clone());
+    write_composition_to_wav(composition, filename.as_str(), true, true);
     printed("WAV".to_string());
     "composition.wav".to_string()
 }
