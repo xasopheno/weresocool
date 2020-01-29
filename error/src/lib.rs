@@ -35,6 +35,22 @@ impl Error {
 }
 
 #[derive(Debug, Fail)]
+struct ParseError {
+    thing: usize,
+}
+
+impl fmt::Display for ParseError {
+    // This trait requires `fmt` with this exact signature.
+    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+        // Write strictly the first element into the supplied output
+        // stream: `f`. Returns `fmt::Result` which indicates whether the
+        // operation succeeded or failed. Note that `write!` uses syntax which
+        // is very similar to `println!`.
+        write!(f, "{}", self.thing)
+    }
+}
+
+#[derive(Debug, Fail)]
 enum ErrorInner {
     #[fail(display = "{}", _0)]
     Msg(String),
@@ -50,6 +66,9 @@ enum ErrorInner {
 
     #[fail(display = "CSV error: {}", _0)]
     CSVError(#[cause] csv::Error),
+
+    #[fail(display = "Parse error: {}", _0)]
+    ParseError(#[cause] ParseError),
 }
 
 impl<'a> From<&'a str> for Error {

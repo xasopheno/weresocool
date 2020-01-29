@@ -33,12 +33,12 @@ uuid = { version = "0.8.1", features = ["v4"] }
 num-complex = "0.2.3"
 num = "0.2.0"
 csv = "1.1.2"
+failure = "0.1.6"
+failure_derive = "0.1.6"
 
 [dev-dependencies]
 pretty_assertions = "0.6.1"
 criterion = "0.3"
-failure = "0.1.6"
-failure_derive = "0.1.6"
 watch = "0.1.0"
 
 [[bench]]
