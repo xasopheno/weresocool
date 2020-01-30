@@ -110,6 +110,14 @@ impl From<csv::Error> for Error {
     }
 }
 
+impl From<ParseError> for Error {
+    fn from(e: ParseError) -> Error {
+        Error {
+            inner: Box::new(ErrorInner::ParseError(e)),
+        }
+    }
+}
+
 #[test]
 fn size_of_error_is_one_word() {
     use std::mem;
