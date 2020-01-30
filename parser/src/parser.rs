@@ -5,7 +5,7 @@ extern crate socool_ast;
 use crate::error_handling::handle_parse_error;
 use crate::imports::{get_filepath_and_import_name, is_import};
 use colored::*;
-use error::Error;
+use error::{Error, ParseError};
 use num_rational::Rational64;
 use socool_ast::{
     ast::{OpOrNf::*, OpOrNfTable},
@@ -78,7 +78,10 @@ pub fn language_to_vec_string(language: &str) -> Vec<String> {
     language.split('\n').map(|l| l.to_string()).collect()
 }
 
-pub fn parse_file(vec_string: Vec<String>, parse_table: Option<OpOrNfTable>) -> ParsedComposition {
+pub fn parse_file(
+    vec_string: Vec<String>,
+    parse_table: Option<OpOrNfTable>,
+) -> Result<ParsedComposition, ParseError> {
     let mut table = if let Some(table) = parse_table {
         table
     } else {
@@ -91,7 +94,7 @@ pub fn parse_file(vec_string: Vec<String>, parse_table: Option<OpOrNfTable>) -> 
     for import in imports_needed {
         let (filepath, import_name) = get_filepath_and_import_name(import);
         let vec_string = filename_to_vec_string(&filepath.to_string());
-        let parsed_composition = parse_file(vec_string, Some(table.clone()));
+        let parsed_composition = parse_file(vec_string, Some(table.clone()))?;
 
         for (key, val) in parsed_composition.table {
             let mut name = import_name.clone();
@@ -106,13 +109,20 @@ pub fn parse_file(vec_string: Vec<String>, parse_table: Option<OpOrNfTable>) -> 
     match init {
         Ok(init) => {
             let table = process_op_table(table);
-            ParsedComposition { init, table }
+            Ok(ParsedComposition { init, table })
         }
         Err(error) => {
             let location = Arc::new(Mutex::new(Vec::new()));
             error.map_location(|l| location.lock().unwrap().push(l));
-            handle_parse_error(location, &composition);
-            panic!("Unexpected Token")
+            dbg!(&location);
+            let (line, column) = handle_parse_error(location, &composition);
+            dbg!(line, column);
+            Err(ParseError {
+                message: "Unexpected Token".to_string(),
+                line,
+                column,
+            })
+            //panic!("Unexpected Token")
         }
     }
 }

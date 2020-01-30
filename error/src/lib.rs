@@ -35,18 +35,19 @@ impl Error {
 }
 
 #[derive(Debug, Fail)]
-struct ParseError {
-    thing: usize,
+pub struct ParseError {
+    pub message: String,
+    pub line: usize,
+    pub column: usize,
 }
 
 impl fmt::Display for ParseError {
-    // This trait requires `fmt` with this exact signature.
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
-        // Write strictly the first element into the supplied output
-        // stream: `f`. Returns `fmt::Result` which indicates whether the
-        // operation succeeded or failed. Note that `write!` uses syntax which
-        // is very similar to `println!`.
-        write!(f, "{}", self.thing)
+        write!(
+            f,
+            "message: {}, line: {}, column: {}",
+            self.message, self.line, self.column
+        )
     }
 }
 
