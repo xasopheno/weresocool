@@ -3,10 +3,11 @@ use std::io;
 
 use failure::Fail;
 use portaudio;
+use serde::{Deserialize, Serialize};
 
 #[derive(Debug)]
 pub struct Error {
-    inner: Box<ErrorInner>,
+    pub inner: Box<ErrorInner>,
 }
 
 impl fmt::Display for Error {
@@ -34,7 +35,7 @@ impl Error {
     }
 }
 
-#[derive(Debug, Fail)]
+#[derive(Debug, Fail, Serialize, Deserialize)]
 pub struct ParseError {
     pub message: String,
     pub line: usize,
@@ -52,7 +53,7 @@ impl fmt::Display for ParseError {
 }
 
 #[derive(Debug, Fail)]
-enum ErrorInner {
+pub enum ErrorInner {
     #[fail(display = "{}", _0)]
     Msg(String),
 
