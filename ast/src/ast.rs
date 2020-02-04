@@ -77,7 +77,7 @@ pub enum Op {
     },
     //
     Sequence {
-        operations: Vec<OpOrNf>,
+        operations: ListTerm,
     },
     Overlay {
         operations: Vec<OpOrNf>,

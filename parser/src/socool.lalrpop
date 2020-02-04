@@ -33,22 +33,63 @@ Point: Init = {
     "}" ";"? => Init { f, l, g, p }
 }
 
+
+table = Map<String, Definition>
+
+
+Op =
+  Seq of ListOp
+| Overlay of List<Op>
+| Compose of Op, Op
+| ...
+
+ListOp =
+  StandardList of List<Op>
+| IndexInto of ListOp, List<Indices>
+| ET of Int
+| ListVar of String
+
+Indices =
+| IntWithOp of Int, Op
+
+Term =
+  Op of Op
+| Nf of Nf
+| Lop of ListOp
+| LNf of List<Nf>
+| FunDef of FunctionDef
+
+Definition =
+  TermDef of Term
+
+list melody (scale) = scale @ [ 1, 2, 3, 4, 5, 4, 5]
+
+melody (ET12)
+
+melody (ET17)
+
+
+
 LetDefs = Lets<LetDef>;
 LetDef: () = {
     <s: Name> "(" <vars: Comma<Name>>  ")" "=" "{" <o: Operation> "}" => {
          table.insert(
              s.clone(),
-             Op(FunctionDef {
+             FunctionDef {
                  name: s,
                  vars: vars,
                  op_or_nf: Box::new(o)
-             })
+             }
          );
         ()
     },
 
     <s: Name> "=" "{" <o: Operation> "}" => {
         table.insert(s.clone(), o); ()
+    }
+    
+    "list" <s: Name> "=" <lop: ListOperation> => {
+      table.insert(s.clone(), 
     }
 };
 
@@ -121,8 +162,8 @@ BaseOperation: OpOrNf = {
     "Length" <v:Rational> => Op(Length {m: v}),
     "Gain" <v:Rational> => Op(Gain {m: v}),
     "Choice" "[" <operations: Operations> "]" => Op(Choice { operations: operations }),
-    "Sequence" "[" <operations: Operations> "]" => Op(Sequence { operations: operations }),
-    "Seq" "[" <operations: Operations> "]" => Op(Sequence { operations: operations }),
+    "Sequence" <operations: ListOperations> => Op(Sequence { operations: operations }),
+    "Seq" <operations: ListOperations> => Op(Sequence { operations: operations }),
     "Overlay" "[" <operations: Operations> "]" => Op(Overlay { operations: operations }),
     "ModulateBy" "[" <operations: Operations> "]" => Op(ModulateBy { operations: operations }),
     "O" "[" <o: Overtones> "]" => Op(Overlay { operations: o }),
@@ -147,6 +188,18 @@ BaseOperation: OpOrNf = {
         ]})
     }
 };
+
+
+Seq [ Tm 1, Tm 2, Tm 3 ]
+
+[Tm 1, Tm 2, Tm 3] ~~> JustVector(vector![Tm 1, ...])
+[Tm 1, Tm 2, Tm 3] @ [1, 1, 1, 2, 3] ~~> IndexThing(vector![Tm 1, ...], vector![1, 1, 2, 3])
+x @ [1, 1, 2, 3] ~~>
+
+ListlanguageOperations: ListOp = {
+  "[" operations:List<Operations> "]" => JustList(operations),
+  l:ListlanguageOperations "@" indices:List<Int> => IndexIntoList(l, indices)
+}
 
 Overtone: OpOrNf = {
     "("
