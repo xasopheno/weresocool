@@ -12,9 +12,9 @@ categories = ["multimedia::audio"]
 readme = "README.md"
 
 [dependencies]
-socool_parser = { path = "parser" }
-socool_ast = { path = "ast" }
-error = { path = "error" } 
+socool_parser = { path = "parser", version = "0.5.0" }
+socool_ast = { path = "ast", version = "0.5.0" }
+error = { path = "error", version = "0.1.0" } 
 portaudio = "0.7.0"
 rand = "0.7.3"
 hound = "3.4.0"
