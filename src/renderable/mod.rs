@@ -34,8 +34,8 @@ pub struct RenderOp {
 }
 
 impl RenderOp {
-    pub const fn init_fglp(f: f64, g: (f64, f64), l: f64, p: f64) -> RenderOp {
-        RenderOp {
+    pub const fn init_fglp(f: f64, g: (f64, f64), l: f64, p: f64) -> Self {
+        Self {
             f,
             p,
             g,
@@ -55,8 +55,8 @@ impl RenderOp {
             next_r_silent: false,
         }
     }
-    pub const fn init_silent_with_length(l: f64) -> RenderOp {
-        RenderOp {
+    pub const fn init_silent_with_length(l: f64) -> Self {
+        Self {
             f: 0.0,
             g: (0.0, 0.0),
             p: 0.0,
@@ -84,14 +84,14 @@ pub struct Offset {
     pub gain: f64,
 }
 impl Offset {
-    pub const fn identity() -> Offset {
-        Offset {
+    pub const fn identity() -> Self {
+        Self {
             freq: 1.0,
             gain: 1.0,
         }
     }
-    pub fn random() -> Offset {
-        Offset {
+    pub fn random() -> Self {
+        Self {
             freq: thread_rng().gen_range(0.95, 1.05),
             gain: 1.0,
         }

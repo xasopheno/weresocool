@@ -15,8 +15,8 @@ pub struct RenderVoice {
 }
 
 impl RenderVoice {
-    pub fn init(ops: &[RenderOp]) -> RenderVoice {
-        RenderVoice {
+    pub fn init(ops: &[RenderOp]) -> Self {
+        Self {
             sample_index: 0,
             op_index: 0,
             ops: ops.to_vec(),

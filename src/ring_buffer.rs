@@ -23,16 +23,16 @@ impl RingBuffer<f32> {
 }
 
 impl<T: Sized + Copy + Clone + std::default::Default> RingBuffer<T> {
-    pub fn new(capacity: usize) -> RingBuffer<T> {
-        RingBuffer {
+    pub fn new(capacity: usize) -> Self {
+        Self {
             buffer: vec![],
             head: 0,
             tail: 0,
             capacity,
         }
     }
-    pub fn new_full(capacity: usize) -> RingBuffer<T> {
-        RingBuffer {
+    pub fn new_full(capacity: usize) -> Self {
+        Self {
             buffer: vec![T::default(); capacity],
             head: 0,
             tail: capacity - 1,

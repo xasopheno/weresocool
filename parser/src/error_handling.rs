@@ -75,5 +75,5 @@ pub fn handle_parse_error(location: Arc<Mutex<Vec<usize>>>, composition: &str) -
         "broken".red().underline(),
     );
 
-    return (lines, columns - 2);
+    (lines, columns - 2)
 }
