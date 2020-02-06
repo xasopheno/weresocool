@@ -1581,14 +1581,28 @@ dependencies = [
  "term 0.6.1",
  "uuid",
  "watch",
- "weresocool_ast",
- "weresocool_error",
+ "weresocool_ast 0.5.0",
+ "weresocool_error 0.1.0",
  "weresocool_parser",
 ]
 
 [[package]]
 name = "weresocool_ast"
 version = "0.5.0"
+dependencies = [
+ "colored",
+ "indexmap",
+ "num-rational",
+ "pretty_assertions",
+ "rand 0.7.3",
+ "serde",
+]
+
+[[package]]
+name = "weresocool_ast"
+version = "0.5.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "0493f9b77b7c7ab151ed04eafc3040b9b5dbd04a4a44f217da24c7e04a5c342f"
 dependencies = [
  "colored",
  "indexmap",
@@ -1612,6 +1626,21 @@ dependencies = [
 ]
 
 [[package]]
+name = "weresocool_error"
+version = "0.1.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "6292bd1d2327b614f7b6e106a4aab7257e46a83bd1e2f5f638a473ba6c385de5"
+dependencies = [
+ "csv",
+ "failure",
+ "failure_derive",
+ "hound",
+ "portaudio",
+ "serde",
+ "serde_json",
+]
+
+[[package]]
 name = "weresocool_parser"
 version = "0.5.0"
 dependencies = [
@@ -1621,8 +1650,8 @@ dependencies = [
  "lalrpop-util",
  "num-rational",
  "regex",
- "weresocool_ast",
- "weresocool_error",
+ "weresocool_ast 0.5.0 (registry+https://github.com/rust-lang/crates.io-index)",
+ "weresocool_error 0.1.0 (registry+https://github.com/rust-lang/crates.io-index)",
 ]
 
 [[package]]
