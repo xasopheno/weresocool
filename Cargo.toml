@@ -51,12 +51,12 @@ harness = false
 name = "nf_to_vec_renderable_bench"
 harness = false
 
-[workspace]
-members = [
-    "ast",
-    "parser",
-    "error",
-]
+#[workspace]
+#members = [
+    #"ast",
+    #"parser",
+    #"error",
+#]
 
 [[bin]]
 name = "wsc"
