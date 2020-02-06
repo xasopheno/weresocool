@@ -7,7 +7,7 @@ description = "***** WereSoCool __!Now In Stereo!__ ****** Make cool sounds. Imp
 license = "GPL-3.0" 
 autobins = false
 repository = "https://github.com/xasopheno/WereSoCool"
-keywords = ["microtonal", "binaural", "composition", "audio", "synth", "music"]
+keywords = ["microtonal", "binaural", "composition",  "audio", "music"]
 categories = ["multimedia::audio"]
 readme = "README.md"
 
