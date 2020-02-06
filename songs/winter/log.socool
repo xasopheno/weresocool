@@ -1,0 +1,49 @@
+{ f: 340, l: 1, g: 1, p: 0 }
+
+overtones = {
+    O[
+    	(5/2, 10, 1/2, 0),
+    	(5/2, 0, 1/2, 0),
+    	(3/2, 1, 1, 1),
+    	(3/2, 0, 1, -1),
+    	(9/8, 0, 1/2, 1/2),
+    	(9/8, 1/2, 1/2, 1/2),
+      	(1/1, 3, 1, 1),
+      	(1/1, 0, 1, -1),
+  	]
+}
+
+cell = {
+	Seq [
+		Tm 1, Tm 25/24, Tm 4/5, Tm 15/16 
+	] 
+}
+
+thing1 = {
+	overtones | cell
+}
+
+thing2 = {
+    Tm 1/3
+    | O[
+    	(1/1, 3, 1, 1),
+      	(1/1, 0, 1, -1),
+  	]
+    | Seq [Tm 1 | Gain 3/2, Tm 3/2 | Length 2, Tm 5/2 | Length 2]
+    | Gain 2/3
+    | cell
+    > FitLength thing1
+}
+
+main = {
+    Overlay [
+        thing1,
+        thing2,
+    ]
+    | Seq [
+        AsIs,
+        Reverse
+    ]
+    | Repeat 2
+}
+	
