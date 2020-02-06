@@ -1,4 +1,3 @@
-use error::Error;
 use weresocool::{
     generation::{generate_waveforms, RenderReturn, RenderType},
     interpretable::{InputType::Filename, Interpretable},
@@ -6,6 +5,7 @@ use weresocool::{
     ui::{get_args, no_file_name, were_so_cool_logo},
     write::write_composition_to_wav,
 };
+use weresocool_error::Error;
 
 fn main() -> Result<(), Error> {
     were_so_cool_logo();

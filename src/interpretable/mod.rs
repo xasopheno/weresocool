@@ -1,6 +1,6 @@
 use crate::generation::{parsed_to_render, RenderReturn, RenderType};
-use error::Error;
-use socool_parser::parser::{filename_to_vec_string, language_to_vec_string, parse_file};
+use weresocool_error::Error;
+use weresocool_parser::parser::{filename_to_vec_string, language_to_vec_string, parse_file};
 
 pub enum InputType<'a> {
     Filename(&'a str),

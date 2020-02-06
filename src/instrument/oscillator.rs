@@ -4,7 +4,7 @@ use crate::{
     settings::Settings,
 };
 use num_rational::Rational64;
-use socool_parser::Init;
+use weresocool_parser::Init;
 
 #[derive(Clone, Debug, PartialEq)]
 pub struct Oscillator {

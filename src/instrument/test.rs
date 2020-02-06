@@ -7,7 +7,7 @@ pub mod tests {
     };
     use crate::renderable::{Offset, RenderOp};
     use crate::settings::get_test_settings;
-    use socool_ast::ast::{OscType, ASR};
+    use weresocool_ast::ast::{OscType, ASR};
     pub mod voice {
         use super::*;
         #[test]

@@ -1,9 +1,7 @@
-extern crate colored;
-extern crate socool_ast;
 use colored::*;
-use socool_ast::{OpOrNf, OpOrNfTable};
 use std::cmp;
 use std::sync::{Arc, Mutex};
+use weresocool_ast::{OpOrNf, OpOrNfTable};
 
 pub fn handle_id_error(id_vec: Vec<String>, table: &OpOrNfTable) -> OpOrNf {
     let result = match id_vec.len() {

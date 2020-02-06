@@ -4,7 +4,7 @@ use crate::{
 };
 use num_rational::Rational64;
 pub use render_voice::{renderables_to_render_voices, RenderVoice};
-use socool_ast::{NormalForm, Normalize, OpOrNfTable, OscType, PointOp, ASR};
+use weresocool_ast::{NormalForm, Normalize, OpOrNfTable, OscType, PointOp, ASR};
 pub mod render_voice;
 mod test;
 use rand::{thread_rng, Rng};

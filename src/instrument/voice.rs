@@ -2,7 +2,7 @@ use crate::{
     instrument::{gain::gain_at_index, loudness::loudness_normalization},
     renderable::{Offset, RenderOp},
 };
-use socool_ast::{OscType, ASR};
+use weresocool_ast::{OscType, ASR};
 
 use crate::settings::{default_settings, Settings};
 const SETTINGS: Settings = default_settings();

@@ -9,7 +9,7 @@ pub mod tests {
     };
     use num_rational::Rational64;
     use pretty_assertions::assert_eq;
-    use socool_ast::{NormalForm, Normalize, Op::*, OpOrNf::Op, OpOrNfTable, OscType, ASR};
+    use weresocool_ast::{NormalForm, Normalize, Op::*, OpOrNf::Op, OpOrNfTable, OscType, ASR};
 
     #[test]
     fn render_equal() {

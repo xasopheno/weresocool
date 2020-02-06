@@ -1,20 +1,17 @@
 lalrpop_mod!(pub socool);
-extern crate colored;
-extern crate num_rational;
-extern crate socool_ast;
 use crate::error_handling::handle_parse_error;
 use crate::imports::{get_filepath_and_import_name, is_import};
 use colored::*;
-use error::{Error, ParseError};
 use num_rational::Rational64;
-use socool_ast::{
-    ast::{OpOrNf::*, OpOrNfTable},
-    operations::{NormalForm, Normalize},
-};
 use std::fs::File;
 use std::io::prelude::*;
 use std::io::BufReader;
 use std::sync::{Arc, Mutex};
+use weresocool_ast::{
+    ast::{OpOrNf::*, OpOrNfTable},
+    operations::{NormalForm, Normalize},
+};
+use weresocool_error::{Error, ParseError};
 
 #[derive(Clone, PartialEq, Debug)]
 pub struct Init {

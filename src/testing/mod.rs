@@ -8,13 +8,13 @@ use indexmap::IndexMap;
 use num_rational::Rational64;
 use serde::{Deserialize, Serialize};
 use serde_json::{from_reader, to_string_pretty};
-use socool_ast::{NormalForm, Normalize as NormalizeOp};
-use socool_parser::*;
 use std::collections::hash_map::DefaultHasher;
 use std::fs;
 use std::fs::File;
 use std::hash::{Hash, Hasher};
 use std::io::Write;
+use weresocool_ast::{NormalForm, Normalize as NormalizeOp};
+use weresocool_parser::*;
 
 type TestTable = IndexMap<String, CompositionHashes>;
 

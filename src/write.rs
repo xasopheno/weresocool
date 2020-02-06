@@ -2,11 +2,11 @@ use crate::generation::Op4D;
 use crate::instrument::StereoWaveform;
 use crate::settings::{default_settings, Settings};
 use csv::Writer;
-use error::Error;
 use std::fs::File;
 use std::io::prelude::*;
 use std::path::Path;
 use std::process::Command;
+use weresocool_error::Error;
 
 const SETTINGS: Settings = default_settings();
 

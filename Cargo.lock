@@ -450,19 +450,6 @@ dependencies = [
 ]
 
 [[package]]
-name = "error"
-version = "0.1.0"
-dependencies = [
- "csv",
- "failure",
- "failure_derive",
- "hound",
- "portaudio",
- "serde",
- "serde_json",
-]
-
-[[package]]
 name = "failure"
 version = "0.1.6"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -1256,32 +1243,6 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "0b8de496cf83d4ed58b6be86c3a275b8602f6ffe98d3024a869e124147a9a3ac"
 
 [[package]]
-name = "socool_ast"
-version = "0.5.0"
-dependencies = [
- "colored",
- "indexmap",
- "num-rational",
- "pretty_assertions",
- "rand 0.7.3",
- "serde",
-]
-
-[[package]]
-name = "socool_parser"
-version = "0.5.0"
-dependencies = [
- "colored",
- "error",
- "indexmap",
- "lalrpop",
- "lalrpop-util",
- "num-rational",
- "regex",
- "socool_ast",
-]
-
-[[package]]
 name = "sourcefile"
 version = "0.1.4"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -1603,7 +1564,6 @@ dependencies = [
  "criterion",
  "csv",
  "difference",
- "error",
  "failure",
  "failure_derive",
  "hound",
@@ -1618,11 +1578,51 @@ dependencies = [
  "rayon",
  "serde",
  "serde_json",
- "socool_ast",
- "socool_parser",
  "term 0.6.1",
  "uuid",
  "watch",
+ "weresocool_ast",
+ "weresocool_error",
+ "weresocool_parser",
+]
+
+[[package]]
+name = "weresocool_ast"
+version = "0.5.0"
+dependencies = [
+ "colored",
+ "indexmap",
+ "num-rational",
+ "pretty_assertions",
+ "rand 0.7.3",
+ "serde",
+]
+
+[[package]]
+name = "weresocool_error"
+version = "0.1.0"
+dependencies = [
+ "csv",
+ "failure",
+ "failure_derive",
+ "hound",
+ "portaudio",
+ "serde",
+ "serde_json",
+]
+
+[[package]]
+name = "weresocool_parser"
+version = "0.5.0"
+dependencies = [
+ "colored",
+ "indexmap",
+ "lalrpop",
+ "lalrpop-util",
+ "num-rational",
+ "regex",
+ "weresocool_ast",
+ "weresocool_error",
 ]
 
 [[package]]

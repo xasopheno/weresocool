@@ -6,13 +6,13 @@ use crate::{
     ui::{banner, printed},
     write::write_composition_to_wav,
 };
-use error::Error;
 use num_rational::Rational64;
 use pbr::ProgressBar;
 use rayon::prelude::*;
-use socool_ast::{NormalForm, Normalize as NormalizeOp, OpOrNf, OpOrNfTable};
-use socool_parser::ParsedComposition;
 use std::sync::{Arc, Mutex};
+use weresocool_ast::{NormalForm, Normalize as NormalizeOp, OpOrNf, OpOrNfTable};
+use weresocool_error::Error;
+use weresocool_parser::ParsedComposition;
 
 #[derive(Clone, PartialEq, Debug)]
 pub enum RenderType {

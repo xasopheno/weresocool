@@ -11,7 +11,7 @@ mod tests {
     };
     use num_rational::Rational64;
     use pretty_assertions::assert_eq;
-    use socool_ast::{OscType, PointOp, ASR};
+    use weresocool_ast::{OscType, PointOp, ASR};
 
     #[test]
     fn test_calculate_fgpl() {
