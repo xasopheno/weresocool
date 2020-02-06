@@ -3,6 +3,8 @@ name = "weresocool_error"
 version = "0.1.0"
 authors = ["Danny Meyer <Danny.Meyer@gmail.com>"]
 edition = "2018"
+description = "Errors for WereSoCool"
+license = "MIT"
 
 [dependencies]
 portaudio = "0.7.0"
