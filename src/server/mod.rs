@@ -63,7 +63,7 @@ pub async fn server() -> std::io::Result<()> {
             .route("/play/{filename:.*}", web::get().to(single_page_app))
             .default_service(Files::new("/", "./src/server/build").index_file("index.html"))
     })
-    .bind("127.0.0.1:4599")?
+    .bind("127.0.0.1:8080")?
     .run()
     .await
 }
