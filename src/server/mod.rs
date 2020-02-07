@@ -5,6 +5,7 @@ use crate::server::types::{Language, RenderError, RenderSuccess};
 use actix_cors::Cors;
 use actix_files::{Files, NamedFile};
 use actix_web::{http::StatusCode, web, App, HttpRequest, HttpResponse, HttpServer};
+use std::env;
 use std::path::PathBuf;
 use weresocool_error::ErrorInner;
 
@@ -51,6 +52,11 @@ async fn render(req: web::Json<Language>) -> HttpResponse {
 //}
 
 pub async fn server() -> std::io::Result<()> {
+    let port = env::var("PORT")
+        .unwrap_or_else(|_| "4599".to_string())
+        .parse()
+        .expect("PORT must be a number");
+    println!("Listening on {}", &port);
     HttpServer::new(|| {
         App::new()
             .wrap(Cors::new().finish())
@@ -63,7 +69,7 @@ pub async fn server() -> std::io::Result<()> {
             .route("/play/{filename:.*}", web::get().to(single_page_app))
             .default_service(Files::new("/", "./src/server/build").index_file("index.html"))
     })
-    .bind("0.0.0.0:8000")?
+    .bind(("0.0.0.0", port))?
     .run()
     .await
 }
