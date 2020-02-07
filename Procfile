@@ -1,1 +1,1 @@
-web: ./target/release/wereso_server
+web: ./target/release/server

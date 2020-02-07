@@ -13,6 +13,7 @@ pub mod interpretable;
 pub mod portaudio;
 pub mod renderable;
 pub mod ring_buffer;
+pub mod server;
 pub mod settings;
 pub mod testing;
 pub mod ui;
