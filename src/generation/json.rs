@@ -47,7 +47,6 @@ impl TimedOp {
         } else {
             r_to_f64(basis.g) * r_to_f64(self.g)
         };
-        dbg!(&z);
         Op4D {
             l: r_to_f64(self.l) * r_to_f64(basis.l),
             t: r_to_f64(self.t) * r_to_f64(basis.l),

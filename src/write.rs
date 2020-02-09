@@ -112,7 +112,7 @@ pub fn write_composition_to_json(serialized: &str, filename: &str) -> std::io::R
     let filename = filename_from_string(filename);
     dbg!(filename);
     let mut file = File::create(format!(
-        "../wereso_server/songs/{}{}",
+        "./renders/{}{}",
         filename,
         ".socool.json".to_string()
     ))?;
