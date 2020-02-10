@@ -20,8 +20,8 @@ pub struct RenderSuccess {
 }
 
 impl RenderSuccess {
-    pub fn new(buffers: StereoWaveform) -> RenderSuccess {
-        RenderSuccess {
+    pub const fn new(buffers: StereoWaveform) -> Self {
+        Self {
             response_type: RenderResponse::RenderSuccess,
             buffers,
         }
@@ -35,8 +35,8 @@ pub struct RenderError {
 }
 
 impl RenderError {
-    pub fn new(error: ParseError) -> RenderError {
-        RenderError {
+    pub const fn new(error: ParseError) -> Self {
+        Self {
             response_type: RenderResponse::RenderError,
             error,
         }
