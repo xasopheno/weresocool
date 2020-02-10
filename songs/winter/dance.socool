@@ -1,8 +1,10 @@
+import songs/winter/dance_2.socool
+
 { f: 200, l: 0.8, g: 1, p: 0 }
 
 overtones = {
   O[
-    (3/2, 0, 1/16, 0),
+    (3/2, -0.3, 1/16, 0),
     (1/1, 0, 1, 0),
   ] 
 }
@@ -63,8 +65,7 @@ main = {
             chord | Tm 1/1 | PanM -1/8 | Gain 2,
             chord | Tm 1/2 | PanM -1/2 | Tm 9/8,
         ] 
-        | Length 50 
-        | Gain 3,
+        | Length 50,
         Tm 0 | Length 1/100,
         Overlay [
             Seq [
@@ -85,6 +86,29 @@ main = {
             | Tm 1/2
             | ModulateBy [Length 5, Tm 11/10 | Gain 10]
         ]
-        | Seq [Tm 1, PanM -1]
+        | Seq [Tm 1, PanM -1],
+        Tm 0 | Length 3,
+
+        Overlay [
+            Seq [
+                Tm 0 | Length 20,
+                Overlay [
+                    chord | Tm 11/8 | PanM 1/2,
+                    chord | Tm 1/1 | PanM -1/8 | Gain 2,
+                    chord | Tm 1/2 | PanM -1/2 | Tm 9/8,
+                ]
+                > FitLength dance_2.main, 
+            ],
+            Seq [
+                dance_2.main | Tm 7/4 | Length 5/4 | Gain 1/3,
+                dance_2.main | Tm 7/4 | Length 1/10
+                | Gain 1/8
+                | ModulateBy [
+                    Tm 11/4, Tm 3, Tm 7/2, Tm 25/6, Tm 10
+                ]
+                | Overlay [AsIs, Invert | Tm 4 | Length 5/4]
+            ]
+        ]
+        | Gain 9/10
     ]
 }
