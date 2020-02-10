@@ -4,11 +4,11 @@ use crate::{
     write::{write_composition_to_csv, write_composition_to_json},
 };
 
-use error::Error;
 use num_rational::Rational64;
 use serde::{Deserialize, Serialize};
 use serde_json::to_string;
-use socool_ast::{NameSet, NormalForm, Normalize, OpOrNfTable, OscType, PointOp, ASR};
+use weresocool_ast::{NameSet, NormalForm, Normalize, OpOrNfTable, OscType, PointOp, ASR};
+use weresocool_error::Error;
 
 pub fn r_to_f64(r: Rational64) -> f64 {
     *r.numer() as f64 / *r.denom() as f64
@@ -47,7 +47,6 @@ impl TimedOp {
         } else {
             r_to_f64(basis.g) * r_to_f64(self.g)
         };
-        dbg!(&z);
         Op4D {
             l: r_to_f64(self.l) * r_to_f64(basis.l),
             t: r_to_f64(self.t) * r_to_f64(basis.l),

@@ -1,9 +1,7 @@
-extern crate colored;
-extern crate socool_ast;
 use colored::*;
-use socool_ast::{OpOrNf, OpOrNfTable};
 use std::cmp;
 use std::sync::{Arc, Mutex};
+use weresocool_ast::{OpOrNf, OpOrNfTable};
 
 pub fn handle_id_error(id_vec: Vec<String>, table: &OpOrNfTable) -> OpOrNf {
     let result = match id_vec.len() {
@@ -27,7 +25,7 @@ pub fn handle_id_error(id_vec: Vec<String>, table: &OpOrNfTable) -> OpOrNf {
     }
 }
 
-pub fn handle_parse_error(location: Arc<Mutex<Vec<usize>>>, composition: &str) {
+pub fn handle_parse_error(location: Arc<Mutex<Vec<usize>>>, composition: &str) -> (usize, usize) {
     let start_offset = 125;
     let end_offset = 50;
     let cmp_len = &composition.len();
@@ -46,14 +44,17 @@ pub fn handle_parse_error(location: Arc<Mutex<Vec<usize>>>, composition: &str) {
         feed_end = feed_start + 300
     }
     let mut lines = 0;
+    let mut columns = 0;
     for (n_c, c) in composition.chars().enumerate() {
         if n_c > start {
             break;
         }
-
         if c == '\n' {
-            lines += 1
+            lines += 1;
+            columns = 0;
         }
+
+        columns += 1;
     }
     println!(
         "{}{}",
@@ -71,4 +72,6 @@ pub fn handle_parse_error(location: Arc<Mutex<Vec<usize>>>, composition: &str) {
         lines.to_string().red().bold(),
         "broken".red().underline(),
     );
+
+    (lines, columns - 2)
 }

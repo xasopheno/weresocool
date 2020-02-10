@@ -1,4 +1,6 @@
-#[derive(Clone, Debug, PartialEq)]
+use serde::{Deserialize, Serialize};
+
+#[derive(Clone, Debug, PartialEq, Serialize, Deserialize)]
 pub struct StereoWaveform {
     pub l_buffer: Vec<f64>,
     pub r_buffer: Vec<f64>,
@@ -9,23 +11,23 @@ pub trait Normalize {
 }
 
 impl StereoWaveform {
-    pub fn new(buffer_size: usize) -> StereoWaveform {
-        StereoWaveform {
+    pub fn new(buffer_size: usize) -> Self {
+        Self {
             l_buffer: vec![0.0; buffer_size],
             r_buffer: vec![0.0; buffer_size],
         }
     }
 
-    pub fn append(&mut self, mut stereo_waveform: StereoWaveform) {
+    pub fn append(&mut self, mut stereo_waveform: Self) {
         self.l_buffer.append(&mut stereo_waveform.l_buffer);
         self.r_buffer.append(&mut stereo_waveform.r_buffer);
     }
 
-    pub fn get_buffer(&mut self, index: usize, buffer_size: usize) -> Option<StereoWaveform> {
+    pub fn get_buffer(&mut self, index: usize, buffer_size: usize) -> Option<Self> {
         if (index + 1) * buffer_size < self.l_buffer.len() {
             let l_buffer = &self.l_buffer[index * buffer_size..(index + 1) * buffer_size];
             let r_buffer = &self.r_buffer[index * buffer_size..(index + 1) * buffer_size];
-            Some(StereoWaveform {
+            Some(Self {
                 l_buffer: l_buffer.to_vec(),
                 r_buffer: r_buffer.to_vec(),
             })

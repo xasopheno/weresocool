@@ -6,13 +6,13 @@ use crate::{
     ui::{banner, printed},
     write::write_composition_to_wav,
 };
-use error::Error;
 use num_rational::Rational64;
 use pbr::ProgressBar;
 use rayon::prelude::*;
-use socool_ast::{NormalForm, Normalize as NormalizeOp, OpOrNf, OpOrNfTable};
-use socool_parser::ParsedComposition;
 use std::sync::{Arc, Mutex};
+use weresocool_ast::{NormalForm, Normalize as NormalizeOp, OpOrNf, OpOrNfTable};
+use weresocool_error::Error;
+use weresocool_parser::ParsedComposition;
 
 #[derive(Clone, PartialEq, Debug)]
 pub enum RenderType {
@@ -101,8 +101,8 @@ pub fn render(basis: &Basis, composition: &NormalForm, table: &OpOrNfTable) -> S
 }
 
 pub fn to_wav(composition: StereoWaveform, filename: String) -> String {
-    banner("Printing".to_string(), filename);
-    write_composition_to_wav(composition, "composition.wav", true, true);
+    banner("Printing".to_string(), filename.clone());
+    write_composition_to_wav(composition, filename.as_str(), true, true);
     printed("WAV".to_string());
     "composition.wav".to_string()
 }

@@ -1,8 +1,10 @@
 [package]
-name = "error"
+name = "weresocool_error"
 version = "0.1.0"
 authors = ["Danny Meyer <Danny.Meyer@gmail.com>"]
 edition = "2018"
+description = "Errors for WereSoCool"
+license = "MIT"
 
 [dependencies]
 portaudio = "0.7.0"
@@ -11,3 +13,4 @@ serde_json = "1.0.45"
 csv = "1.1.3"
 failure = "0.1.5"
 failure_derive = "0.1.5"
+serde = { version = "1.0.104", features = ["derive"] }

@@ -7,8 +7,8 @@ use weresocool::{
     ui::{get_args, no_file_name, were_so_cool_logo},
 };
 
-use error::Error;
 use failure::Fail;
+use weresocool_error::Error;
 
 fn main() {
     match run() {

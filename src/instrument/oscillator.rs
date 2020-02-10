@@ -4,7 +4,7 @@ use crate::{
     settings::Settings,
 };
 use num_rational::Rational64;
-use socool_parser::Init;
+use weresocool_parser::Init;
 
 #[derive(Clone, Debug, PartialEq)]
 pub struct Oscillator {
@@ -23,8 +23,8 @@ pub struct Basis {
 }
 
 impl From<Init> for Basis {
-    fn from(init: Init) -> Basis {
-        Basis {
+    fn from(init: Init) -> Self {
+        Self {
             f: init.f,
             g: init.g,
             l: init.l,
@@ -36,8 +36,8 @@ impl From<Init> for Basis {
 }
 
 impl Oscillator {
-    pub fn init(settings: &Settings) -> Oscillator {
-        Oscillator {
+    pub fn init(settings: &Settings) -> Self {
+        Self {
             voices: (Voice::init(0), Voice::init(1)),
             settings: settings.clone(),
         }

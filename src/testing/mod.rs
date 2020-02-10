@@ -8,13 +8,13 @@ use indexmap::IndexMap;
 use num_rational::Rational64;
 use serde::{Deserialize, Serialize};
 use serde_json::{from_reader, to_string_pretty};
-use socool_ast::{NormalForm, Normalize as NormalizeOp};
-use socool_parser::*;
 use std::collections::hash_map::DefaultHasher;
 use std::fs;
 use std::fs::File;
 use std::hash::{Hash, Hasher};
 use std::io::Write;
+use weresocool_ast::{NormalForm, Normalize as NormalizeOp};
+use weresocool_parser::*;
 
 type TestTable = IndexMap<String, CompositionHashes>;
 
@@ -61,7 +61,7 @@ pub fn write_test_table_to_json_file(test_table: &TestTable) {
 
 fn generate_render_hashes(p: &str) -> CompositionHashes {
     let vec_string = filename_to_vec_string(&p.to_string());
-    let parsed = parse_file(vec_string, None);
+    let parsed = parse_file(vec_string, None).unwrap();
     let main_op = parsed.table.get("main").unwrap();
     let init = parsed.init;
     let op_hash = calculate_hash(main_op);

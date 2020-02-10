@@ -1,6 +1,6 @@
 use crate::generation::{parsed_to_render, RenderReturn, RenderType};
-use error::Error;
-use socool_parser::parser::{filename_to_vec_string, language_to_vec_string, parse_file};
+use weresocool_error::Error;
+use weresocool_parser::parser::{filename_to_vec_string, language_to_vec_string, parse_file};
 
 pub enum InputType<'a> {
     Filename(&'a str),
@@ -17,7 +17,7 @@ impl Interpretable for InputType<'_> {
             InputType::Filename(filename) => (filename, filename_to_vec_string(filename)),
             InputType::Language(language) => (&"Language", language_to_vec_string(language)),
         };
-        let parsed_composition = parse_file(vec_string, None);
+        let parsed_composition = parse_file(vec_string, None)?;
         parsed_to_render(filename, parsed_composition, target)
     }
 }

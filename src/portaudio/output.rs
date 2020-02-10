@@ -1,8 +1,8 @@
 use crate::instrument::StereoWaveform;
 use crate::settings::{default_settings, Settings};
 use crate::write::write_output_buffer;
-use error::Error;
 use portaudio as pa;
+use weresocool_error::Error;
 
 const SETTINGS: Settings = default_settings();
 

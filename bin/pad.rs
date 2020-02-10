@@ -1,5 +1,5 @@
-use error::Error;
 use failure::Fail;
+use weresocool_error::Error;
 
 fn main() {
     match run() {

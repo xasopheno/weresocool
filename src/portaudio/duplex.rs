@@ -7,9 +7,9 @@ use crate::{
     settings::{default_settings, Settings},
     write::write_output_buffer,
 };
-use error::Error;
 use portaudio as pa;
 use rayon::prelude::*;
+use weresocool_error::Error;
 
 const SETTINGS: Settings = default_settings();
 

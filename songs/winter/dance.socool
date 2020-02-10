@@ -1,0 +1,114 @@
+import songs/winter/dance_2.socool
+
+{ f: 200, l: 0.8, g: 1, p: 0 }
+
+overtones = {
+  O[
+    (3/2, -0.3, 1/16, 0),
+    (1/1, 0, 1, 0),
+  ] 
+}
+
+thing1 = {
+      Seq [
+        Tm 1, Tm 9/8, Tm 7/6
+      ]
+}
+
+thing2 = {
+  Overlay [
+    O[
+      (1/1, 0, 1, -1),
+    ] 
+    | thing1,
+    O[
+      (1/1, 5, 1, 1),
+    ] 
+    | Seq [
+      Tm 9/8, Tm 15/8, Tm 5/3, Tm 3/2, Tm 4/5  
+    ] > FitLength thing1
+  ]
+}
+
+melody = {
+  overtones
+  | thing2
+  | Seq [AsIs, Reverse | Repeat 2]
+  | Repeat 5
+}
+
+chord = {
+      Overlay [
+        Tm 3,
+        Tm 2
+      ]
+      | O[
+        (6, 1, 1/11, -1/2),
+        (6, 1, 1/11, 1/2),
+        (4, -3, 1/5, -1/2),
+        (4, 5, 1/5, 1/2),
+        (11/8, 2, 1, 1),
+        (4/3, 2, 1, -1),
+
+        (7/6, 2, 1, 1),
+        (6/5, 2, 1, -1),
+        (4/7, 2, 1, -1/3),
+        (1/1, 1, 1, -1/3),
+        (1/1, 0, 1, 1/3),
+      ] | Gain 1/32
+}
+
+main = {
+    Seq [
+        Overlay [
+            chord | Tm 11/8 | PanM 1/2,
+            chord | Tm 1/1 | PanM -1/8 | Gain 2,
+            chord | Tm 1/2 | PanM -1/2 | Tm 9/8,
+        ] 
+        | Length 50,
+        Tm 0 | Length 1/100,
+        Overlay [
+            Seq [
+                 Seq [melody | Length 2/3, melody | Length 1/3]
+                 | Tm 4/3,
+                 Overlay [
+                     Tm 15/16 | melody, 
+                     chord | Tm 11/4 | PanM 1/2 
+                     > FitLength melody,
+                 --Tm 15/16 | melody | Ta 1, 
+                 ]
+            ] 
+            | Length 9/10
+            | Gain 1/2,
+            chord > FitLength melody
+            | Seq [Tm 1, PanM -3/2]
+            | Length 9/8
+            | Tm 1/2
+            | ModulateBy [Length 5, Tm 11/10 | Gain 10]
+        ]
+        | Seq [Tm 1, PanM -1],
+        Tm 0 | Length 3,
+
+        Overlay [
+            Seq [
+                Tm 0 | Length 20,
+                Overlay [
+                    chord | Tm 11/8 | PanM 1/2,
+                    chord | Tm 1/1 | PanM -1/8 | Gain 2,
+                    chord | Tm 1/2 | PanM -1/2 | Tm 9/8,
+                ]
+                > FitLength dance_2.main, 
+            ],
+            Seq [
+                dance_2.main | Tm 7/4 | Length 5/4 | Gain 1/3,
+                dance_2.main | Tm 7/4 | Length 1/10
+                | Gain 1/8
+                | ModulateBy [
+                    Tm 11/4, Tm 3, Tm 7/2, Tm 25/6, Tm 10
+                ]
+                | Overlay [AsIs, Invert | Tm 4 | Length 5/4]
+            ]
+        ]
+        | Gain 9/10
+    ]
+}

@@ -3,10 +3,11 @@ use std::io;
 
 use failure::Fail;
 use portaudio;
+use serde::{Deserialize, Serialize};
 
 #[derive(Debug)]
 pub struct Error {
-    inner: Box<ErrorInner>,
+    pub inner: Box<ErrorInner>,
 }
 
 impl fmt::Display for Error {
@@ -34,8 +35,25 @@ impl Error {
     }
 }
 
+#[derive(Debug, Fail, Serialize, Deserialize)]
+pub struct ParseError {
+    pub message: String,
+    pub line: usize,
+    pub column: usize,
+}
+
+impl fmt::Display for ParseError {
+    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+        write!(
+            f,
+            "message: {}, line: {}, column: {}",
+            self.message, self.line, self.column
+        )
+    }
+}
+
 #[derive(Debug, Fail)]
-enum ErrorInner {
+pub enum ErrorInner {
     #[fail(display = "{}", _0)]
     Msg(String),
 
@@ -50,6 +68,9 @@ enum ErrorInner {
 
     #[fail(display = "CSV error: {}", _0)]
     CSVError(#[cause] csv::Error),
+
+    #[fail(display = "Parse error: {}", _0)]
+    ParseError(#[cause] ParseError),
 }
 
 impl<'a> From<&'a str> for Error {
@@ -86,6 +107,14 @@ impl From<csv::Error> for Error {
     fn from(e: csv::Error) -> Error {
         Error {
             inner: Box::new(ErrorInner::CSVError(e)),
+        }
+    }
+}
+
+impl From<ParseError> for Error {
+    fn from(e: ParseError) -> Error {
+        Error {
+            inner: Box::new(ErrorInner::ParseError(e)),
         }
     }
 }

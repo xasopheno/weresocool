@@ -1,5 +1,5 @@
 use crate::{instrument::voice::Voice, renderable::RenderOp};
-use socool_ast::OscType;
+use weresocool_ast::OscType;
 
 pub fn gain_at_index(start: f64, target: f64, index: usize, length: usize) -> f64 {
     let distance = target - start;

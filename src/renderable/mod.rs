@@ -4,7 +4,7 @@ use crate::{
 };
 use num_rational::Rational64;
 pub use render_voice::{renderables_to_render_voices, RenderVoice};
-use socool_ast::{NormalForm, Normalize, OpOrNfTable, OscType, PointOp, ASR};
+use weresocool_ast::{NormalForm, Normalize, OpOrNfTable, OscType, PointOp, ASR};
 pub mod render_voice;
 mod test;
 use rand::{thread_rng, Rng};
@@ -34,8 +34,8 @@ pub struct RenderOp {
 }
 
 impl RenderOp {
-    pub const fn init_fglp(f: f64, g: (f64, f64), l: f64, p: f64) -> RenderOp {
-        RenderOp {
+    pub const fn init_fglp(f: f64, g: (f64, f64), l: f64, p: f64) -> Self {
+        Self {
             f,
             p,
             g,
@@ -55,8 +55,8 @@ impl RenderOp {
             next_r_silent: false,
         }
     }
-    pub const fn init_silent_with_length(l: f64) -> RenderOp {
-        RenderOp {
+    pub const fn init_silent_with_length(l: f64) -> Self {
+        Self {
             f: 0.0,
             g: (0.0, 0.0),
             p: 0.0,
@@ -84,14 +84,14 @@ pub struct Offset {
     pub gain: f64,
 }
 impl Offset {
-    pub const fn identity() -> Offset {
-        Offset {
+    pub const fn identity() -> Self {
+        Self {
             freq: 1.0,
             gain: 1.0,
         }
     }
-    pub fn random() -> Offset {
-        Offset {
+    pub fn random() -> Self {
+        Self {
             freq: thread_rng().gen_range(0.95, 1.05),
             gain: 1.0,
         }

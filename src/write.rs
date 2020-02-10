@@ -2,11 +2,11 @@ use crate::generation::Op4D;
 use crate::instrument::StereoWaveform;
 use crate::settings::{default_settings, Settings};
 use csv::Writer;
-use error::Error;
 use std::fs::File;
 use std::io::prelude::*;
 use std::path::Path;
 use std::process::Command;
+use weresocool_error::Error;
 
 const SETTINGS: Settings = default_settings();
 
@@ -32,12 +32,13 @@ pub fn filename_from_string(s: &str) -> &str {
 
 fn wav_to_mp3_in_renders(filename: &str) {
     let filename = filename_from_string(filename);
-    let filename = format!("renders/{}{}", filename, ".mp3".to_string());
-    dbg!(filename.clone());
+    let filename = format!("./renders/{}{}", filename, ".mp3".to_string());
 
     //  ffmpeg -i composition.wav -codec:a libmp3lame -qscale:a 2 renders/${filename}.mp3
     let child = Command::new("ffmpeg")
         .args(&[
+            "-v",
+            "panic",
             "-i",
             "composition.wav",
             "-codec:a",
@@ -55,6 +56,7 @@ fn wav_to_mp3_in_renders(filename: &str) {
         .expect("failed to wait on child");
 
     assert!(ecode.success());
+    println!("Successful mp3 encoding.");
 }
 
 pub fn write_composition_to_wav(
@@ -77,7 +79,7 @@ pub fn write_composition_to_wav(
         normalize_waveform(&mut buffer);
     }
 
-    let mut writer = hound::WavWriter::create(filename, spec).unwrap();
+    let mut writer = hound::WavWriter::create("composition.wav", spec).unwrap();
     for sample in buffer {
         writer
             .write_sample(sample)
@@ -110,7 +112,7 @@ pub fn write_composition_to_json(serialized: &str, filename: &str) -> std::io::R
     let filename = filename_from_string(filename);
     dbg!(filename);
     let mut file = File::create(format!(
-        "renders/{}{}",
+        "./renders/{}{}",
         filename,
         ".socool.json".to_string()
     ))?;
