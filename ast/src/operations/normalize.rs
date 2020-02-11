@@ -1,4 +1,4 @@
-use crate::ast::{Op, OpOrNf, OpOrNf::*, OpOrNfTable, OscType};
+use crate::ast::{Op, OpOrNfTable, OscType, Term, Term::*};
 use crate::operations::{
     helpers::*, substitute::get_fn_arg_map, GetLengthRatio, NormalForm, Normalize, Substitute,
 };
@@ -22,13 +22,13 @@ impl Normalize for Op {
                 let arg_map = get_fn_arg_map(f.clone(), args);
 
                 match f {
-                    OpOrNf::Op(fun) => match fun {
+                    Term::Op(fun) => match fun {
                         Op::FunctionDef { op_or_nf, .. } => match *op_or_nf {
-                            OpOrNf::Op(op) => {
+                            Term::Op(op) => {
                                 let result_op = op.substitute(input, table, &arg_map);
                                 result_op.apply_to_normal_form(input, table)
                             }
-                            OpOrNf::Nf(_) => {
+                            Term::Nf(_) => {
                                 panic!("Function stored in NormalForm");
                             }
                         },

@@ -8,7 +8,7 @@ use std::io::prelude::*;
 use std::io::BufReader;
 use std::sync::{Arc, Mutex};
 use weresocool_ast::{
-    ast::{OpOrNf::*, OpOrNfTable},
+    ast::{OpOrNfTable, Term::*},
     operations::{NormalForm, Normalize},
 };
 use weresocool_error::{Error, ParseError};

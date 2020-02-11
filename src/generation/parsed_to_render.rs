@@ -10,7 +10,7 @@ use num_rational::Rational64;
 use pbr::ProgressBar;
 use rayon::prelude::*;
 use std::sync::{Arc, Mutex};
-use weresocool_ast::{NormalForm, Normalize as NormalizeOp, OpOrNf, OpOrNfTable};
+use weresocool_ast::{NormalForm, Normalize as NormalizeOp, OpOrNfTable, Term};
 use weresocool_error::Error;
 use weresocool_parser::ParsedComposition;
 
@@ -44,8 +44,8 @@ pub fn parsed_to_render(
     let parsed_main = parsed_composition.table.get("main").unwrap();
 
     let nf = match parsed_main {
-        OpOrNf::Nf(nf) => nf,
-        OpOrNf::Op(_) => panic!("main is not in Normal Form for some terrible reason."),
+        Term::Nf(nf) => nf,
+        Term::Op(_) => panic!("main is not in Normal Form for some terrible reason."),
     };
 
     let basis = Basis::from(parsed_composition.init);

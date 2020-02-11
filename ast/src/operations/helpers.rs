@@ -1,12 +1,12 @@
 extern crate colored;
 extern crate num_rational;
-use crate::ast::{OpOrNf, OpOrNfTable, OscType, ASR};
+use crate::ast::{OpOrNfTable, OscType, Term, ASR};
 use crate::operations::{GetLengthRatio, NameSet, NormalForm, PointOp};
 use colored::*;
 use num_rational::{Ratio, Rational64};
 use std::cmp::Ordering::{Equal, Greater, Less};
 
-pub fn handle_id_error(id: String, table: &OpOrNfTable) -> OpOrNf {
+pub fn handle_id_error(id: String, table: &OpOrNfTable) -> Term {
     let result = table.get(&id);
 
     match result {

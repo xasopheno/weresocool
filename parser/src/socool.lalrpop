@@ -6,8 +6,8 @@ use weresocool_ast::{
         OpOrNfTable,
         Op,
         Op::*,
-        OpOrNf,
-        OpOrNf::*,
+        Term,
+        Term::*,
         is_choice_op,
         ASR,
     },
@@ -52,9 +52,9 @@ LetDef: () = {
     }
 };
 
-Operation: OpOrNf = {
+Operation: Term = {
     <op1: Operation> ">" "FitLength" <op2: ComposeOperation> => {
-        OpOrNf::Op(
+        Term::Op(
             Op::Compose { operations:
             vec![op1.clone(), Op(WithLengthRatioOf { with_length_of: Box::new(op2), main: Box::new(op1) })]
         })
@@ -85,12 +85,12 @@ Operation: OpOrNf = {
       <op: ComposeOperation> => op,
 }
 
-ComposeOperation: OpOrNf = {
+ComposeOperation: Term = {
     <ops: Pipe<BaseOperation>> => Op(Compose { operations: ops }),
     <o: BaseOperation> => o,
 }
 
-BaseOperation: OpOrNf = {
+BaseOperation: Term = {
     "(" <o: Operation> ")" => o,
     "AsIs" => Op(AsIs {}),
     "Sine" => Op(Sine {}),
@@ -148,7 +148,7 @@ BaseOperation: OpOrNf = {
     }
 };
 
-Overtone: OpOrNf = {
+Overtone: Term = {
     "("
         <fm:Rational> ","
         <fa:Rational> ","

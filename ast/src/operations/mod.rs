@@ -1,6 +1,6 @@
 extern crate num_rational;
 /**/
-use crate::ast::{OpOrNf, OpOrNfTable, OscType, ASR};
+use crate::ast::{OpOrNfTable, OscType, Term, ASR};
 use num_rational::{Ratio, Rational64};
 use std::{
     collections::{BTreeSet, HashMap},
@@ -50,7 +50,7 @@ pub trait Substitute {
         normal_form: &mut NormalForm,
         table: &OpOrNfTable,
         arg_map: &ArgMap,
-    ) -> OpOrNf;
+    ) -> Term;
 }
 
 impl GetLengthRatio for NormalForm {
@@ -59,7 +59,7 @@ impl GetLengthRatio for NormalForm {
     }
 }
 
-pub type ArgMap = HashMap<String, OpOrNf>;
+pub type ArgMap = HashMap<String, Term>;
 
 impl Substitute for NormalForm {
     fn substitute(
@@ -67,8 +67,8 @@ impl Substitute for NormalForm {
         _normal_form: &mut NormalForm,
         _table: &OpOrNfTable,
         _arg_map: &ArgMap,
-    ) -> OpOrNf {
-        OpOrNf::Nf(self.clone())
+    ) -> Term {
+        Term::Nf(self.clone())
     }
 }
 
