@@ -10,14 +10,14 @@ pub enum Term {
     Nf(NormalForm),
 }
 
-pub type OpOrNfTable = IndexMap<String, Term>;
+pub type TermTable = IndexMap<String, Term>;
 
 trait New<T> {
     fn new() -> T;
 }
 
-impl New<OpOrNfTable> for OpOrNfTable {
-    fn new() -> OpOrNfTable {
+impl New<TermTable> for TermTable {
+    fn new() -> TermTable {
         IndexMap::new()
     }
 }
@@ -117,7 +117,7 @@ pub enum ASR {
     Long,
 }
 
-pub fn is_choice_op(op_or_nf: Term, table: &OpOrNfTable) -> bool {
+pub fn is_choice_op(op_or_nf: Term, table: &TermTable) -> bool {
     match op_or_nf {
         Term::Nf(_) => false,
         Term::Op(op) => match op {

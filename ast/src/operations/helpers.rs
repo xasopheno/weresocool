@@ -1,12 +1,12 @@
 extern crate colored;
 extern crate num_rational;
-use crate::ast::{OpOrNfTable, OscType, Term, ASR};
+use crate::ast::{OscType, Term, TermTable, ASR};
 use crate::operations::{GetLengthRatio, NameSet, NormalForm, PointOp};
 use colored::*;
 use num_rational::{Ratio, Rational64};
 use std::cmp::Ordering::{Equal, Greater, Less};
 
-pub fn handle_id_error(id: String, table: &OpOrNfTable) -> Term {
+pub fn handle_id_error(id: String, table: &TermTable) -> Term {
     let result = table.get(&id);
 
     match result {
@@ -54,7 +54,7 @@ pub fn modulate(input: &[PointOp], modulator: &[PointOp]) -> Vec<PointOp> {
     result
 }
 
-pub fn pad_length(input: &mut NormalForm, max_len: Rational64, table: &OpOrNfTable) {
+pub fn pad_length(input: &mut NormalForm, max_len: Rational64, table: &TermTable) {
     let input_lr = input.get_length_ratio(table);
     if max_len > Rational64::new(0, 1) && input_lr < max_len {
         for voice in input.operations.iter_mut() {

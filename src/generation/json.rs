@@ -7,7 +7,7 @@ use crate::{
 use num_rational::Rational64;
 use serde::{Deserialize, Serialize};
 use serde_json::to_string;
-use weresocool_ast::{NameSet, NormalForm, Normalize, OpOrNfTable, OscType, PointOp, ASR};
+use weresocool_ast::{NameSet, NormalForm, Normalize, OscType, PointOp, TermTable, ASR};
 use weresocool_error::Error;
 
 pub fn r_to_f64(r: Rational64) -> f64 {
@@ -258,7 +258,7 @@ pub fn vec_timed_op_to_vec_op4d(timed_ops: Vec<TimedOp>, basis: &Basis) -> Vec<O
 
 pub fn composition_to_vec_timed_op(
     composition: &NormalForm,
-    table: &OpOrNfTable,
+    table: &TermTable,
 ) -> (Vec<TimedOp>, usize) {
     let mut normal_form = NormalForm::init();
 
@@ -296,7 +296,7 @@ struct Json1d {
 pub fn to_json(
     basis: &Basis,
     composition: &NormalForm,
-    table: &OpOrNfTable,
+    table: &TermTable,
     filename: String,
 ) -> Result<(), Error> {
     banner("JSONIFY-ing".to_string(), filename.clone());
@@ -328,7 +328,7 @@ pub fn to_json(
 pub fn to_csv(
     basis: &Basis,
     composition: &NormalForm,
-    table: &OpOrNfTable,
+    table: &TermTable,
     filename: String,
 ) -> Result<(), Error> {
     banner("CSV-ing".to_string(), filename.clone());

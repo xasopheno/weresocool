@@ -1,4 +1,4 @@
-use crate::ast::{Op, OpOrNfTable, Term, Term::*};
+use crate::ast::{Op, Term, Term::*, TermTable};
 use crate::operations::{ArgMap, NormalForm, Normalize, Substitute};
 use std::collections::HashMap;
 
@@ -25,7 +25,7 @@ impl Substitute for Op {
     fn substitute(
         &self,
         normal_form: &mut NormalForm,
-        table: &OpOrNfTable,
+        table: &TermTable,
         arg_map: &ArgMap,
     ) -> Term {
         match self {
@@ -98,7 +98,7 @@ impl Substitute for Op {
 fn substitute_operations(
     operations: Vec<Term>,
     normal_form: &mut NormalForm,
-    table: &OpOrNfTable,
+    table: &TermTable,
     arg_map: &ArgMap,
 ) -> Vec<Term> {
     let mut result = vec![];

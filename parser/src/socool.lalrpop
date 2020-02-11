@@ -3,7 +3,7 @@ use std::str::FromStr;
 use std::string::String;
 use weresocool_ast::{
     ast::{
-        OpOrNfTable,
+        TermTable,
         Op,
         Op::*,
         Term,
@@ -16,7 +16,7 @@ use crate::parser::Init;
 use crate::float_to_rational::helpers::*;
 
 grammar<'table, 'err>(
-    table: &'table mut OpOrNfTable,
+    table: &'table mut TermTable,
 );
 
 pub SoCool: Init = {

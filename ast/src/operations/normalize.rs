@@ -1,4 +1,4 @@
-use crate::ast::{Op, OpOrNfTable, OscType, Term, Term::*};
+use crate::ast::{Op, OscType, Term, Term::*, TermTable};
 use crate::operations::{
     helpers::*, substitute::get_fn_arg_map, GetLengthRatio, NormalForm, Normalize, Substitute,
 };
@@ -7,7 +7,7 @@ use rand::prelude::*;
 
 impl Normalize for Op {
     #[allow(clippy::cognitive_complexity)]
-    fn apply_to_normal_form(&self, input: &mut NormalForm, table: &OpOrNfTable) {
+    fn apply_to_normal_form(&self, input: &mut NormalForm, table: &TermTable) {
         match self {
             Op::AsIs => {}
 

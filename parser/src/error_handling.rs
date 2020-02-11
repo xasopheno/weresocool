@@ -1,9 +1,9 @@
 use colored::*;
 use std::cmp;
 use std::sync::{Arc, Mutex};
-use weresocool_ast::{OpOrNfTable, Term};
+use weresocool_ast::{Term, TermTable};
 
-pub fn handle_id_error(id_vec: Vec<String>, table: &OpOrNfTable) -> Term {
+pub fn handle_id_error(id_vec: Vec<String>, table: &TermTable) -> Term {
     let result = match id_vec.len() {
         1 => table.get(&id_vec[0]),
         2 => {

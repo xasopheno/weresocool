@@ -8,7 +8,7 @@ use std::io::prelude::*;
 use std::io::BufReader;
 use std::sync::{Arc, Mutex};
 use weresocool_ast::{
-    ast::{OpOrNfTable, Term::*},
+    ast::{Term::*, TermTable},
     operations::{NormalForm, Normalize},
 };
 use weresocool_error::{Error, ParseError};
@@ -24,11 +24,11 @@ pub struct Init {
 #[derive(Clone, PartialEq, Debug)]
 pub struct ParsedComposition {
     pub init: Init,
-    pub table: OpOrNfTable,
+    pub table: TermTable,
 }
 
-fn process_op_table(ot: OpOrNfTable) -> OpOrNfTable {
-    let mut result = OpOrNfTable::new();
+fn process_op_table(ot: TermTable) -> TermTable {
+    let mut result = TermTable::new();
 
     for (name, op_or_nf) in ot.iter() {
         match op_or_nf {
@@ -77,12 +77,12 @@ pub fn language_to_vec_string(language: &str) -> Vec<String> {
 
 pub fn parse_file(
     vec_string: Vec<String>,
-    parse_table: Option<OpOrNfTable>,
+    parse_table: Option<TermTable>,
 ) -> Result<ParsedComposition, ParseError> {
     let mut table = if let Some(table) = parse_table {
         table
     } else {
-        OpOrNfTable::new()
+        TermTable::new()
     };
 
     let (imports_needed, composition) =
