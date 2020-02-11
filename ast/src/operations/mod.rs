@@ -1,6 +1,6 @@
 extern crate num_rational;
 /**/
-use crate::ast::{OpOrNf, OpOrNfTable, OscType, ASR};
+use crate::ast::{OscType, Term, TermTable, ASR};
 use num_rational::{Ratio, Rational64};
 use std::{
     collections::{BTreeSet, HashMap},
@@ -37,38 +37,34 @@ pub struct PointOp {
 }
 
 pub trait Normalize {
-    fn apply_to_normal_form(&self, normal_form: &mut NormalForm, table: &OpOrNfTable);
+    fn apply_to_normal_form(&self, normal_form: &mut NormalForm, table: &TermTable);
 }
 
 pub trait GetLengthRatio {
-    fn get_length_ratio(&self, table: &OpOrNfTable) -> Rational64;
+    fn get_length_ratio(&self, table: &TermTable) -> Rational64;
 }
 
 pub trait Substitute {
-    fn substitute(
-        &self,
-        normal_form: &mut NormalForm,
-        table: &OpOrNfTable,
-        arg_map: &ArgMap,
-    ) -> OpOrNf;
+    fn substitute(&self, normal_form: &mut NormalForm, table: &TermTable, arg_map: &ArgMap)
+        -> Term;
 }
 
 impl GetLengthRatio for NormalForm {
-    fn get_length_ratio(&self, _table: &OpOrNfTable) -> Rational64 {
+    fn get_length_ratio(&self, _table: &TermTable) -> Rational64 {
         self.length_ratio
     }
 }
 
-pub type ArgMap = HashMap<String, OpOrNf>;
+pub type ArgMap = HashMap<String, Term>;
 
 impl Substitute for NormalForm {
     fn substitute(
         &self,
         _normal_form: &mut NormalForm,
-        _table: &OpOrNfTable,
+        _table: &TermTable,
         _arg_map: &ArgMap,
-    ) -> OpOrNf {
-        OpOrNf::Nf(self.clone())
+    ) -> Term {
+        Term::Nf(self.clone())
     }
 }
 
@@ -144,7 +140,7 @@ impl MulAssign<&NormalForm> for NormalForm {
 }
 
 impl Normalize for NormalForm {
-    fn apply_to_normal_form(&self, input: &mut NormalForm, _table: &OpOrNfTable) {
+    fn apply_to_normal_form(&self, input: &mut NormalForm, _table: &TermTable) {
         *input *= self
     }
 }

@@ -1,9 +1,9 @@
-use crate::ast::{Op, OpOrNfTable};
+use crate::ast::{Op, TermTable};
 use crate::operations::{helpers::*, GetLengthRatio, NormalForm, Normalize};
 use num_rational::{Ratio, Rational64};
 
 impl GetLengthRatio for Op {
-    fn get_length_ratio(&self, table: &OpOrNfTable) -> Rational64 {
+    fn get_length_ratio(&self, table: &TermTable) -> Rational64 {
         match self {
             Op::AsIs {}
             | Op::Sine {}

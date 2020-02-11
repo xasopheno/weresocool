@@ -44,13 +44,6 @@ async fn render(req: web::Json<Language>) -> HttpResponse {
     }
 }
 
-//#[actix_rt::main]
-//pub async fn run() -> std::io::Result<()> {
-//std::env::set_var("RUST_LOG", "socool_server=info,actix_web=info");
-//env_logger::init();
-//server().await
-//}
-
 pub async fn server() -> std::io::Result<()> {
     let port = env::var("PORT")
         .unwrap_or_else(|_| "4599".to_string())

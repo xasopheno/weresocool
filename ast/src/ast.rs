@@ -5,19 +5,19 @@ use indexmap::IndexMap;
 use num_rational::Rational64;
 
 #[derive(Clone, PartialEq, Debug, Hash)]
-pub enum OpOrNf {
+pub enum Term {
     Op(Op),
     Nf(NormalForm),
 }
 
-pub type OpOrNfTable = IndexMap<String, OpOrNf>;
+pub type TermTable = IndexMap<String, Term>;
 
 trait New<T> {
     fn new() -> T;
 }
 
-impl New<OpOrNfTable> for OpOrNfTable {
-    fn new() -> OpOrNfTable {
+impl New<TermTable> for TermTable {
+    fn new() -> TermTable {
         IndexMap::new()
     }
 }
@@ -32,11 +32,11 @@ pub enum Op {
     FunctionDef {
         name: String,
         vars: Vec<String>,
-        op_or_nf: Box<OpOrNf>,
+        op_or_nf: Box<Term>,
     },
     FunctionCall {
         name: String,
-        args: Vec<OpOrNf>,
+        args: Vec<Term>,
     },
     //
     Noise,
@@ -77,30 +77,30 @@ pub enum Op {
     },
     //
     Sequence {
-        operations: Vec<OpOrNf>,
+        operations: Vec<Term>,
     },
     Overlay {
-        operations: Vec<OpOrNf>,
+        operations: Vec<Term>,
     },
     Compose {
-        operations: Vec<OpOrNf>,
+        operations: Vec<Term>,
     },
     Choice {
-        operations: Vec<OpOrNf>,
+        operations: Vec<Term>,
     },
     ModulateBy {
-        operations: Vec<OpOrNf>,
+        operations: Vec<Term>,
     },
     //
     WithLengthRatioOf {
-        with_length_of: Box<OpOrNf>,
-        main: Box<OpOrNf>,
+        with_length_of: Box<Term>,
+        main: Box<Term>,
     },
 
     Focus {
         name: String,
-        main: Box<OpOrNf>,
-        op_to_apply: Box<OpOrNf>,
+        main: Box<Term>,
+        op_to_apply: Box<Term>,
     },
 }
 
@@ -117,10 +117,10 @@ pub enum ASR {
     Long,
 }
 
-pub fn is_choice_op(op_or_nf: OpOrNf, table: &OpOrNfTable) -> bool {
+pub fn is_choice_op(op_or_nf: Term, table: &TermTable) -> bool {
     match op_or_nf {
-        OpOrNf::Nf(_) => false,
-        OpOrNf::Op(op) => match op {
+        Term::Nf(_) => false,
+        Term::Op(op) => match op {
             Op::AsIs {}
             | Op::Sine {}
             | Op::Square {}

@@ -10,7 +10,7 @@ use num_rational::Rational64;
 use pbr::ProgressBar;
 use rayon::prelude::*;
 use std::sync::{Arc, Mutex};
-use weresocool_ast::{NormalForm, Normalize as NormalizeOp, OpOrNf, OpOrNfTable};
+use weresocool_ast::{NormalForm, Normalize as NormalizeOp, Term, TermTable};
 use weresocool_error::Error;
 use weresocool_parser::ParsedComposition;
 
@@ -28,7 +28,7 @@ pub enum RenderReturn {
     Json4d(String),
     Csv1d(String),
     StereoWaveform(StereoWaveform),
-    NfBasisAndTable(NormalForm, Basis, OpOrNfTable),
+    NfBasisAndTable(NormalForm, Basis, TermTable),
     Wav(String),
 }
 
@@ -44,8 +44,8 @@ pub fn parsed_to_render(
     let parsed_main = parsed_composition.table.get("main").unwrap();
 
     let nf = match parsed_main {
-        OpOrNf::Nf(nf) => nf,
-        OpOrNf::Op(_) => panic!("main is not in Normal Form for some terrible reason."),
+        Term::Nf(nf) => nf,
+        Term::Op(_) => panic!("main is not in Normal Form for some terrible reason."),
     };
 
     let basis = Basis::from(parsed_composition.init);
@@ -86,7 +86,7 @@ pub fn parsed_to_render(
     }
 }
 
-pub fn render(basis: &Basis, composition: &NormalForm, table: &OpOrNfTable) -> StereoWaveform {
+pub fn render(basis: &Basis, composition: &NormalForm, table: &TermTable) -> StereoWaveform {
     let mut normal_form = NormalForm::init();
 
     println!("\nGenerating Composition ");
