@@ -3,13 +3,13 @@ pub mod normalize_tests {
     extern crate num_rational;
     extern crate pretty_assertions;
     use crate::{
-        ast::{Op::*, OpOrNf::*, OpOrNfTable, OscType, ASR},
+        ast::{Op::*, OscType, Term::*, TermTable, ASR},
         operations::{NameSet, NormalForm, Normalize, PointOp},
     };
     use num_rational::{Ratio, Rational64};
 
-    fn make_parse_table() -> OpOrNfTable {
-        OpOrNfTable::new()
+    fn make_parse_table() -> TermTable {
+        TermTable::new()
     }
 
     fn mock_names() -> (NameSet, NameSet) {
