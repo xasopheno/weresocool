@@ -109,10 +109,8 @@ fn substitute_operations(
                 let subbed = op.substitute(normal_form, table, arg_map);
                 result.push(subbed)
             }
-            Term::FunDef(fundef) => {
+            Term::FunDef(_fun) => {
                 unimplemented!();
-                //let subbed = op.substitute(normal_form, table, arg_map);
-                //result.push(subbed)
             }
         }
     }
