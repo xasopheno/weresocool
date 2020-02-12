@@ -30,8 +30,8 @@ pub struct ParsedComposition {
 fn process_op_table(ot: TermTable) -> TermTable {
     let mut result = TermTable::new();
 
-    for (name, op_or_nf) in ot.iter() {
-        match op_or_nf {
+    for (name, term) in ot.iter() {
+        match term {
             Nf(nf) => {
                 result.insert(name.to_string(), Nf(nf.to_owned()));
             }
@@ -40,6 +40,9 @@ fn process_op_table(ot: TermTable) -> TermTable {
                 op.apply_to_normal_form(&mut nf, &ot);
 
                 result.insert(name.to_string(), Nf(nf));
+            }
+            FunDef(_fun) => {
+                unimplemented!();
             }
         }
     }

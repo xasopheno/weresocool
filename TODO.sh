@@ -1,3 +1,7 @@
+[x] OpOrNf => Term
+[x] OpOrNfTable => TermTable
+[x] Op::FunctionDef => Term::FunDef
+
 Op =
   Seq of ListOp
 | Overlay of List<Op>

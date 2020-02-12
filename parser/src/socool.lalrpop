@@ -7,9 +7,9 @@ use weresocool_ast::{
         Op,
         Op::*,
         Term,
-        Term::*,
         is_choice_op,
         ASR,
+        FunDef
     },
 };
 use crate::parser::Init;
@@ -38,10 +38,10 @@ LetDef: () = {
     <s: Name> "(" <vars: Comma<Name>>  ")" "=" "{" <o: Operation> "}" => {
          table.insert(
              s.clone(),
-             Op(FunctionDef {
+             Term::FunDef(FunDef {
                  name: s,
                  vars: vars,
-                 op_or_nf: Box::new(o)
+                 term: Box::new(o)
              })
          );
         ()
@@ -56,12 +56,12 @@ Operation: Term = {
     <op1: Operation> ">" "FitLength" <op2: ComposeOperation> => {
         Term::Op(
             Op::Compose { operations:
-            vec![op1.clone(), Op(WithLengthRatioOf { with_length_of: Box::new(op2), main: Box::new(op1) })]
+            vec![op1.clone(), Term::Op(WithLengthRatioOf { with_length_of: Box::new(op2), main: Box::new(op1) })]
         })
     },
 
     <op1: Operation> ">" "@" <name: Name> <op2: ComposeOperation> => {
-        Op(
+        Term::Op(
             Focus {
                 name: name,
                 main: Box::new(op1.clone()),
@@ -71,7 +71,7 @@ Operation: Term = {
     },
 
     <op1: Operation> ">" "LazyRepeat" <i: Int> => {
-            let mut op = Op(AsIs);
+            let mut op = Term::Op(AsIs);
             if is_choice_op(op1.clone(), table) {
                 op = op1
             }
@@ -79,71 +79,71 @@ Operation: Term = {
             for x in 0..i {
                 vec.push(op.clone())
             }
-            Op(Sequence { operations: vec })
+            Term::Op(Sequence { operations: vec })
         },
 
       <op: ComposeOperation> => op,
 }
 
 ComposeOperation: Term = {
-    <ops: Pipe<BaseOperation>> => Op(Compose { operations: ops }),
+    <ops: Pipe<BaseOperation>> => Term::Op(Compose { operations: ops }),
     <o: BaseOperation> => o,
 }
 
 BaseOperation: Term = {
     "(" <o: Operation> ")" => o,
-    "AsIs" => Op(AsIs {}),
-    "Sine" => Op(Sine {}),
-    "Square" => Op(Square {}),
-    "Noise" => Op(Noise {}),
-    "Reverse" => Op(Reverse {}),
-    "Invert" => Op(FInvert),
+    "AsIs" => Term::Op(AsIs {}),
+    "Sine" => Term::Op(Sine {}),
+    "Square" => Term::Op(Square {}),
+    "Noise" => Term::Op(Noise {}),
+    "Reverse" => Term::Op(Reverse {}),
+    "Invert" => Term::Op(FInvert),
     "Repeat" <i: Int> => {
         let mut vec = Vec::new();
         for x in 0..i {
-            vec.push(Op(AsIs))
+            vec.push(Term::Op(AsIs))
         }
-        Op(Sequence { operations: vec })
+        Term::Op(Sequence { operations: vec })
     },
     "AD" "("
         <attack:Rational> ","
         <decay: Rational> ","
         <decay_type: Int> ")" => { 
           let asr = if decay_type == 2 {ASR::Long} else {ASR::Short};
-          Op(AD {attack, decay, asr})
+          Term::Op(AD {attack, decay, asr})
         },
-    "Portamento" <v:Rational> => Op(Portamento {m: v}),
-    "Silence" <v:Rational> => Op(Silence {m: v}),
-    "Tm" <v:Rational> => Op(TransposeM {m: v}),
-    "Ta" <v:Rational> => Op(TransposeA {a: v}),
-    "PanM" <v:Rational> => Op(PanM {m: v}),
-    "PanA" <v:Rational> => Op(PanA {a: v}),
-    "Length" <v:Rational> => Op(Length {m: v}),
-    "Gain" <v:Rational> => Op(Gain {m: v}),
-    "Choice" "[" <operations: Operations> "]" => Op(Choice { operations: operations }),
-    "Sequence" "[" <operations: Operations> "]" => Op(Sequence { operations: operations }),
-    "Seq" "[" <operations: Operations> "]" => Op(Sequence { operations: operations }),
-    "Overlay" "[" <operations: Operations> "]" => Op(Overlay { operations: operations }),
-    "ModulateBy" "[" <operations: Operations> "]" => Op(ModulateBy { operations: operations }),
-    "O" "[" <o: Overtones> "]" => Op(Overlay { operations: o }),
+    "Portamento" <v:Rational> => Term::Op(Portamento {m: v}),
+    "Silence" <v:Rational> => Term::Op(Silence {m: v}),
+    "Tm" <v:Rational> => Term::Op(TransposeM {m: v}),
+    "Ta" <v:Rational> => Term::Op(TransposeA {a: v}),
+    "PanM" <v:Rational> => Term::Op(PanM {m: v}),
+    "PanA" <v:Rational> => Term::Op(PanA {a: v}),
+    "Length" <v:Rational> => Term::Op(Length {m: v}),
+    "Gain" <v:Rational> => Term::Op(Gain {m: v}),
+    "Choice" "[" <operations: Operations> "]" => Term::Op(Choice { operations: operations }),
+    "Sequence" "[" <operations: Operations> "]" => Term::Op(Sequence { operations: operations }),
+    "Seq" "[" <operations: Operations> "]" => Term::Op(Sequence { operations: operations }),
+    "Overlay" "[" <operations: Operations> "]" => Term::Op(Overlay { operations: operations }),
+    "ModulateBy" "[" <operations: Operations> "]" => Term::Op(ModulateBy { operations: operations }),
+    "O" "[" <o: Overtones> "]" => Term::Op(Overlay { operations: o }),
     <id: Name> => {
-        Op(Id(id))
+        Term::Op(Id(id))
     },
-    "#"<name: Name> => Op(Tag(name)),
+    "#"<name: Name> => Term::Op(Tag(name)),
     //
     <name: Name> "(" <args: Comma<Operation>>  ")" => {
-        Op(
+        Term::Op(
             FunctionCall {
                 name,
                 args
             }
         )
     },
-    "$"<id: Name> => Op(Fid(id)),
+    "$"<id: Name> => Term::Op(Fid(id)),
     <tm: Rational>"^"<length: Rational> => {
-        Op(Compose { operations: vec! [
-            Op(TransposeM { m: tm }),
-            Op(Length { m: length }),
+        Term::Op(Compose { operations: vec! [
+            Term::Op(TransposeM { m: tm }),
+            Term::Op(Length { m: length }),
         ]})
     }
 };
@@ -155,11 +155,11 @@ Overtone: Term = {
         <g:Rational> ","
         <p:Rational>
     ")"
-    => Op(Compose { operations: vec! [
-            Op(TransposeM { m: fm }),
-            Op(TransposeA { a: fa }),
-            Op(Gain { m: g }),
-            Op(PanA { a: p }),
+    => Term::Op(Compose { operations: vec! [
+            Term::Op(TransposeM { m: fm }),
+            Term::Op(TransposeA { a: fa }),
+            Term::Op(Gain { m: g }),
+            Term::Op(PanA { a: p }),
         ]
     })
 }
