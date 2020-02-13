@@ -35,9 +35,9 @@ melody = {
 bass(a, b) = {
 	Seq [
 		#foo | AsIs,
-		$a, 
+		a, 
 		Tm 0,
-		$b,
+		b,
 	] 
 	| Seq [AsIs, Tm 2]
 	| Tm 1/2 

@@ -1,4 +1,4 @@
-use crate::ast::{Op, OscType, Term, Term::*, TermTable};
+use crate::ast::{FunDef, Op, OscType, Term, Term::*, TermTable};
 use crate::operations::{
     helpers::*, substitute::get_fn_arg_map, GetLengthRatio, NormalForm, Normalize, Substitute,
 };
@@ -15,24 +15,24 @@ impl Normalize for Op {
                 handle_id_error(id.to_string(), table).apply_to_normal_form(input, table);
             }
             //
-            Op::Fid(_) => {}
-            Op::FunctionDef { .. } => {}
             Op::FunctionCall { name, args } => {
                 let f = handle_id_error(name.to_string(), table);
                 let arg_map = get_fn_arg_map(f.clone(), args);
 
                 match f {
-                    Term::Op(fun) => match fun {
-                        Op::FunctionDef { op_or_nf, .. } => match *op_or_nf {
+                    Term::FunDef(fun) => match fun {
+                        FunDef { term, .. } => match *term {
                             Term::Op(op) => {
                                 let result_op = op.substitute(input, table, &arg_map);
                                 result_op.apply_to_normal_form(input, table)
                             }
                             Term::Nf(_) => {
-                                panic!("Function stored in NormalForm");
+                                panic!("Function Op stored in NormalForm");
+                            }
+                            Term::FunDef(_) => {
+                                panic!("Function Op stored in FunDef");
                             }
                         },
-                        _ => panic!("Function Stored not FunctionDef"),
                     },
                     _ => {
                         panic!("Function stored in NormalForm");

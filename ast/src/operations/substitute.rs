@@ -1,17 +1,16 @@
-use crate::ast::{Op, Term, Term::*, TermTable};
-use crate::operations::{ArgMap, NormalForm, Normalize, Substitute};
+use crate::ast::{FunDef, Op, Term, TermTable};
+use crate::operations::{helpers::handle_id_error, ArgMap, NormalForm, Normalize, Substitute};
 use std::collections::HashMap;
 
 pub fn get_fn_arg_map(f: Term, args: &[Term]) -> ArgMap {
     let mut arg_map: ArgMap = HashMap::new();
     match f {
-        Term::Op(fun) => match fun {
-            Op::FunctionDef { vars, .. } => {
+        Term::FunDef(fun) => match fun {
+            FunDef { vars, .. } => {
                 for (var, arg) in vars.iter().zip(args.iter()) {
                     arg_map.insert(var.to_string(), arg.clone());
                 }
             }
-            _ => panic!("Function Stored not FunctionDef"),
         },
         _ => {
             panic!("Function stored in NormalForm");
@@ -29,10 +28,14 @@ impl Substitute for Op {
         arg_map: &ArgMap,
     ) -> Term {
         match self {
-            Op::Fid(name) => {
-                let sub = arg_map.get(&name.clone()).unwrap();
-                sub.clone()
+            Op::Id(id) => {
+                let value = arg_map.get(&id.clone());
+                match value {
+                    Some(sub) => sub.clone(),
+                    None => handle_id_error(id.to_string(), table),
+                }
             }
+
             Op::WithLengthRatioOf {
                 main,
                 with_length_of,
@@ -40,7 +43,7 @@ impl Substitute for Op {
                 let main = main.substitute(normal_form, table, arg_map);
                 let with_length_of = with_length_of.substitute(normal_form, table, arg_map);
 
-                Op(Op::WithLengthRatioOf {
+                Term::Op(Op::WithLengthRatioOf {
                     main: Box::new(main),
                     with_length_of: Box::new(with_length_of),
                 })
@@ -65,11 +68,11 @@ impl Substitute for Op {
                 let mut result = NormalForm::init();
 
                 Op::Overlay {
-                    operations: vec![Nf(named_applied), Nf(rest)],
+                    operations: vec![Term::Nf(named_applied), Term::Nf(rest)],
                 }
                 .apply_to_normal_form(&mut result, table);
 
-                Nf(result)
+                Term::Nf(result)
             }
             Op::FunctionCall { name, args } => Term::Op(Op::FunctionCall {
                 name: name.to_string(),
@@ -102,12 +105,15 @@ fn substitute_operations(
     arg_map: &ArgMap,
 ) -> Vec<Term> {
     let mut result = vec![];
-    for op_or_nf in operations {
-        match op_or_nf {
+    for term in operations {
+        match term {
             Term::Nf(nf) => result.push(Term::Nf(nf)),
             Term::Op(op) => {
                 let subbed = op.substitute(normal_form, table, arg_map);
                 result.push(subbed)
+            }
+            Term::FunDef(_fun) => {
+                unimplemented!();
             }
         }
     }

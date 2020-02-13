@@ -2,11 +2,11 @@
 
 f(a, b) = {
 	Sequence [
-		a, b,
+	    a, b,
 	] 
 }
 
 main = {
-	f(Overlay [AsIs, Tm 3/2], Overlay [Tm 9/8, Tm 4/3])	
+	f(AsIs, Tm 9/8)	
 }
-	
+

@@ -8,6 +8,14 @@ use num_rational::Rational64;
 pub enum Term {
     Op(Op),
     Nf(NormalForm),
+    FunDef(FunDef),
+}
+
+#[derive(Debug, Clone, PartialEq, Hash)]
+pub struct FunDef {
+    pub name: String,
+    pub vars: Vec<String>,
+    pub term: Box<Term>,
 }
 
 pub type TermTable = IndexMap<String, Term>;
@@ -28,12 +36,6 @@ pub enum Op {
     Id(String),
     Tag(String),
     //
-    Fid(String),
-    FunctionDef {
-        name: String,
-        vars: Vec<String>,
-        op_or_nf: Box<Term>,
-    },
     FunctionCall {
         name: String,
         args: Vec<Term>,
@@ -117,8 +119,9 @@ pub enum ASR {
     Long,
 }
 
-pub fn is_choice_op(op_or_nf: Term, table: &TermTable) -> bool {
-    match op_or_nf {
+pub fn is_choice_op(term: Term, table: &TermTable) -> bool {
+    match term {
+        Term::FunDef(_) => unimplemented!(),
         Term::Nf(_) => false,
         Term::Op(op) => match op {
             Op::AsIs {}
@@ -136,8 +139,6 @@ pub fn is_choice_op(op_or_nf: Term, table: &TermTable) -> bool {
             | Op::Gain { .. }
             | Op::Length { .. }
             | Op::Tag { .. }
-            | Op::Fid { .. }
-            | Op::FunctionDef { .. }
             | Op::FunctionCall { .. }
             | Op::Silence { .. } => false,
 

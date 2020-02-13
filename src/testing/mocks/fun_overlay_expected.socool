@@ -1,0 +1,8 @@
+{ f: 220, l: 1, g: 1, p: 0}
+
+main = {
+	Seq [ 
+        Overlay [AsIs, Tm 3/2], 
+        Overlay [Tm 9/8, Tm 4/3] 
+    ]
+}

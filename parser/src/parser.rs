@@ -8,7 +8,7 @@ use std::io::prelude::*;
 use std::io::BufReader;
 use std::sync::{Arc, Mutex};
 use weresocool_ast::{
-    ast::{Term::*, TermTable},
+    ast::{Term, TermTable},
     operations::{NormalForm, Normalize},
 };
 use weresocool_error::{Error, ParseError};
@@ -30,18 +30,21 @@ pub struct ParsedComposition {
 fn process_op_table(ot: TermTable) -> TermTable {
     let mut result = TermTable::new();
 
-    for (name, op_or_nf) in ot.iter() {
-        match op_or_nf {
-            Nf(nf) => {
-                result.insert(name.to_string(), Nf(nf.to_owned()));
+    for (name, term) in ot.iter() {
+        match term {
+            Term::Nf(nf) => {
+                result.insert(name.to_string(), Term::Nf(nf.to_owned()));
             }
-            Op(op) => {
+            Term::Op(op) => {
                 let mut nf = NormalForm::init();
                 op.apply_to_normal_form(&mut nf, &ot);
 
-                result.insert(name.to_string(), Nf(nf));
+                result.insert(name.to_string(), Term::Nf(nf));
             }
-        }
+            Term::FunDef(fun) => {
+                result.insert(name.to_string(), Term::FunDef(fun.to_owned()));
+            }
+        };
     }
 
     result
@@ -111,9 +114,7 @@ pub fn parse_file(
         Err(error) => {
             let location = Arc::new(Mutex::new(Vec::new()));
             error.map_location(|l| location.lock().unwrap().push(l));
-            dbg!(&location);
             let (line, column) = handle_parse_error(location, &composition);
-            dbg!(line, column);
             Err(ParseError {
                 message: "Unexpected Token".to_string(),
                 line,

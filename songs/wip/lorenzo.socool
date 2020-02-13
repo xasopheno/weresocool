@@ -17,7 +17,7 @@ overtones = {
 
 thing1(a, b, c, d) = {
 	Sequence [
-		$a, $b, $c, $d, $d | Reverse
+		a, b, c, d, d | Reverse
 	]  
 }
 

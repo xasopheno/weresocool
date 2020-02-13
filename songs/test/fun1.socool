@@ -3,15 +3,15 @@
 f(a, b, c) = {
     Sequence [
         Tm 1/2,
-        $a, 
-        $b,
-        $b | Tm 4/3,
+        a, 
+        b,
+        b | Tm 4/3,
         Tm 3/4,
-        $a | Tm 3/2, 
-        $a | Reverse, 
+        a | Tm 3/2, 
+        a | Reverse, 
         Tm 1/2,
-        $b | Tm 3/2,
-        $c,
+        b | Tm 3/2,
+        c,
         Tm 3/4,
     ] 
 }

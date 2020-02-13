@@ -26,8 +26,8 @@ thing1 = {
 fn(a, b) = {
     overtones |
     Sequence [
-        $a,
-        $b,
+        a,
+        b,
         AsIs,
         foo,
         Tm 3/2 | Length 2.0
