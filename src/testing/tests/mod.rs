@@ -1,14 +1,20 @@
-use crate::testing::expect::expect_eq;
-
 #[cfg(test)]
 mod expect_tests {
-    use super::*;
+    use crate::testing::expect::expect_eq;
 
     #[test]
-    fn test_expect_function() {
+    fn function() {
         let _should_match = expect_eq(
             "src/testing/mocks/simple_fun.socool",
             "src/testing/mocks/simple.socool",
+        );
+    }
+
+    #[test]
+    fn function_overlay() {
+        let _should_match = expect_eq(
+            "src/testing/mocks/fun_overlay.socool",
+            "src/testing/mocks/fun_overlay_expected.socool",
         );
     }
 }

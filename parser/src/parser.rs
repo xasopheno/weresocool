@@ -8,7 +8,7 @@ use std::io::prelude::*;
 use std::io::BufReader;
 use std::sync::{Arc, Mutex};
 use weresocool_ast::{
-    ast::{Term::*, TermTable},
+    ast::{Term, TermTable},
     operations::{NormalForm, Normalize},
 };
 use weresocool_error::{Error, ParseError};
@@ -32,19 +32,20 @@ fn process_op_table(ot: TermTable) -> TermTable {
 
     for (name, term) in ot.iter() {
         match term {
-            Nf(nf) => {
-                result.insert(name.to_string(), Nf(nf.to_owned()));
+            Term::Nf(nf) => {
+                result.insert(name.to_string(), Term::Nf(nf.to_owned()));
             }
-            Op(op) => {
+            Term::Op(op) => {
                 let mut nf = NormalForm::init();
                 op.apply_to_normal_form(&mut nf, &ot);
 
-                result.insert(name.to_string(), Nf(nf));
+                result.insert(name.to_string(), Term::Nf(nf));
             }
-            FunDef(_fun) => {
-                unimplemented!();
+            Term::FunDef(fun) => {
+                result.insert(name.to_string(), Term::FunDef(fun.to_owned()));
             }
-        }
+            _ => unimplemented!(),
+        };
     }
 
     result
