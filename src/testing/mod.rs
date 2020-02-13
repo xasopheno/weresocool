@@ -15,6 +15,7 @@ use std::hash::{Hash, Hasher};
 use std::io::Write;
 use weresocool_ast::{NormalForm, Normalize as NormalizeOp};
 use weresocool_parser::*;
+pub mod expect;
 
 type TestTable = IndexMap<String, CompositionHashes>;
 
@@ -27,7 +28,6 @@ pub struct CompositionHashes {
 }
 
 pub fn read_test_table_from_json_file() -> TestTable {
-    //    let file = File::open("src/testing/hashes.json").unwrap();
     let file = File::open("src/testing/hashes.json").unwrap();
 
     let mut decoded: TestTable = from_reader(&file).unwrap();
@@ -37,7 +37,6 @@ pub fn read_test_table_from_json_file() -> TestTable {
 
 pub fn generate_test_table() -> TestTable {
     let mut test_table: TestTable = IndexMap::new();
-    //    let paths = fs::read_dir("./songs/test").unwrap();
     let paths = fs::read_dir("./songs/test").unwrap();
     for path in paths {
         let p = path.unwrap().path().into_os_string().into_string().unwrap();
