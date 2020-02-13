@@ -38,7 +38,7 @@ mod tests {
 
     #[test]
     fn test_expect_eq() {
-        let _ = expect_eq(
+        let _should_match = expect_eq(
             "src/testing/mocks/simple.socool",
             "src/testing/mocks/simple.socool",
         );
@@ -47,6 +47,6 @@ mod tests {
     #[test]
     #[should_panic]
     fn test_expect_fail() {
-        let _ = expect_eq("./mocks/simple.socool", "./mocks/simple.socool");
+        let _should_not_match = expect_eq("./mocks/simple.socool", "./mocks/simple.socool");
     }
 }
