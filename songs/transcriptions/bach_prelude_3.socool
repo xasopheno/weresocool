@@ -15,57 +15,57 @@ overtones = {
 
 f1(a, b, c) = {
 	Sequence [
-		$a, $b, $c,
-		$b, $a, $b		
+		a, b, c,
+		b, a, b		
 	] 
 }
 
 f2(a, b) = {
 	Seq [
-		$a, $b
+		a, b
 	] | Repeat 3
 }
 
 f3(a, b, c) = {
 	Sequence [
-		$a, $b, $c,
-		$b, $a, $c		
+		a, b, c,
+		b, a, c		
 	] 
 }
 
 f4(a, b) = {
 	Seq [
-		$a | Length 4, 
-		$b | Length 2
+		a | Length 4, 
+		b | Length 2
 	]	
 }
 
 f5(a, b, c) = {
 	Seq [
-		$a, 
-		Tm 1/2 | $a,
-		Length 2 | $a,
-		$b, $c
+		a, 
+		Tm 1/2 | a,
+		Length 2 | a,
+		b, c
 	] | Length 2
 }
 
 f6(a, b, c) = {
 	Sequence [
-		$a, $b, $a,
-		$c, $a, $b | Tm 15/16		
+		a, b, a,
+		c, a, b | Tm 15/16		
 	] 
 }
 
 f7(a, b, c) = {
 	Seq [
-		$a, $b, $c
+		a, b, c
 	] | Length 2
 }
 
 f8(a, b) = {
 	Seq [
-		$a, $b,
-		Seq [Tm 0, $b] | Repeat 2
+		a, b,
+		Seq [Tm 0, b] | Repeat 2
 	]
 }
 
@@ -306,17 +306,17 @@ m63_74 = {
 
 f9(a, b, c, d) = {
 	Seq [
-		$a, $b,
-		Seq [Tm 0, $c],
-		Seq [Tm 0, $d]
+		a, b,
+		Seq [Tm 0, c],
+		Seq [Tm 0, d]
 	]
 }
 
 f10(a, b, c) = {
 	Seq [
-		Seq [Tm 0, $a],
-		Seq [Tm 0, $b],
-		Seq [Tm 0, $c]
+		Seq [Tm 0, a],
+		Seq [Tm 0, b],
+		Seq [Tm 0, c]
 	]
 }
 

@@ -139,7 +139,6 @@ BaseOperation: Term = {
             }
         )
     },
-    "$"<id: Name> => Term::Op(Fid(id)),
     <tm: Rational>"^"<length: Rational> => {
         Term::Op(Compose { operations: vec! [
             Term::Op(TransposeM { m: tm }),

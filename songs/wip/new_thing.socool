@@ -25,13 +25,13 @@ unit = { Length 2 }
 unit2 = { Length 24  }
 
 f1(a, b, c, d, e) = {
-	$a |
+	a |
 	Seq [
-		$b, $c
+		b, c
 	]
 	| Seq [Gain 1, Gain 3/4, Gain 1/2]
 	| Overlay [
-		$d, $e
+		d, e
 	] > FitLength unit 
 }
 

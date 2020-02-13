@@ -2,7 +2,7 @@
 
 f(a, b) = {
 	Sequence [
-		$a, $b,
+	    a, b,
 	] 
 }
 

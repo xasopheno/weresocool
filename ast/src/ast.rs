@@ -36,7 +36,6 @@ pub enum Op {
     Id(String),
     Tag(String),
     //
-    Fid(String),
     FunctionCall {
         name: String,
         args: Vec<Term>,
@@ -140,7 +139,6 @@ pub fn is_choice_op(term: Term, table: &TermTable) -> bool {
             | Op::Gain { .. }
             | Op::Length { .. }
             | Op::Tag { .. }
-            | Op::Fid { .. }
             | Op::FunctionCall { .. }
             | Op::Silence { .. } => false,
 

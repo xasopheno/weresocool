@@ -3,12 +3,12 @@
 f(a, b, c) = {
     Sequence [
         Sequence [
-            $a, $b, $c,
+            a, b, c,
         ] | Sequence [AsIs, Tm 7/8], 
         Overlay [
-            $a | Tm 11/8, 
-            $b | Tm 4/3,
-            $c
+            a | Tm 11/8, 
+            b | Tm 4/3,
+            c
         ] | Sequence [AsIs, Tm 7/6, Tm 5/4] | Length 4/3,
     ] 
 }

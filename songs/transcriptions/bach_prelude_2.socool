@@ -4,14 +4,14 @@
 g(  a, b, c, d,
     e, f, g, h  ) = {
     Overlay [
-        Sequence [$a, $b, $c, $b, $d, $b, $c, $b],
-        Tm 1/2 | Sequence [$e, $f, $g, $f, $h, $f, $g, $f],
+        Sequence [a, b, c, b, d, b, c, b],
+        Tm 1/2 | Sequence [e, f, g, f, h, f, g, f],
     ] 
 }
 
 f(  a, b, c, d,
     e, f, g, h  ) = {
-    g($a, $b, $c, $d, $e, $f, $g, $h)
+    g(a, b, c, d, e, f, g, h)
     | Repeat 2 
 }
 

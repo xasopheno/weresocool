@@ -115,9 +115,7 @@ pub fn parse_file(
         Err(error) => {
             let location = Arc::new(Mutex::new(Vec::new()));
             error.map_location(|l| location.lock().unwrap().push(l));
-            dbg!(&location);
             let (line, column) = handle_parse_error(location, &composition);
-            dbg!(line, column);
             Err(ParseError {
                 message: "Unexpected Token".to_string(),
                 line,

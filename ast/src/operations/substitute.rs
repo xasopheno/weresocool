@@ -1,5 +1,5 @@
 use crate::ast::{FunDef, Op, Term, TermTable};
-use crate::operations::{ArgMap, NormalForm, Normalize, Substitute};
+use crate::operations::{helpers::handle_id_error, ArgMap, NormalForm, Normalize, Substitute};
 use std::collections::HashMap;
 
 pub fn get_fn_arg_map(f: Term, args: &[Term]) -> ArgMap {
@@ -29,10 +29,16 @@ impl Substitute for Op {
         arg_map: &ArgMap,
     ) -> Term {
         match self {
-            Op::Fid(name) => {
-                let sub = arg_map.get(&name.clone()).unwrap();
-                sub.clone()
+            Op::Id(id) => {
+                let value = arg_map.get(&id.clone());
+                let result = match value {
+                    Some(sub) => sub.clone(),
+                    None => handle_id_error(id.to_string(), table),
+                };
+
+                result
             }
+
             Op::WithLengthRatioOf {
                 main,
                 with_length_of,

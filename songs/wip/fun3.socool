@@ -2,11 +2,11 @@
 
 fun(a, b, c) = {
     Sequence [
-        $a, 
-        $a > @foo(Tm 3 | PanA -1),
-        $a > @foo(Tm 1/2 | PanA 1),
-        $b | Length 3,
-        $c | Overlay [AsIs, Invert | Tm 5 | Tm 25/24],
+        a, 
+        a > @foo(Tm 3 | PanA -1),
+        a > @foo(Tm 1/2 | PanA 1),
+        b | Length 3,
+        c | Overlay [AsIs, Invert | Tm 5 | Tm 25/24],
     ] 
 }
 

@@ -19,10 +19,10 @@ bum = {
 bum_fun(a, b, c, d) = {
 		Overlay [
 			Seq [
-				bum | $a, 0^1/2 | PanM -1/2,
+				bum | a, 0^1/2 | PanM -1/2,
 			],
 			Seq [
-				0^1/2, $b, $c, $d | Length 1/2, 0^1/4,
+				0^1/2, b, c, d | Length 1/2, 0^1/4,
 			]	
 		]
 

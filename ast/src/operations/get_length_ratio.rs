@@ -18,15 +18,8 @@ impl GetLengthRatio for Op {
             | Op::PanA { .. }
             | Op::PanM { .. }
             | Op::Tag(_)
-            | Op::Fid(_)
             | Op::Gain { .. } => Ratio::from_integer(1),
 
-            //Op::FunctionDef { name, .. } => panic!(
-            //"\
-            //Trying to get LengthRatio of function called, {:?}\
-            //Can't get LengthRatio of Function, Don't pass FunctionDef to FitLength",
-            //name
-            //),
             Op::FunctionCall { .. } => {
                 let mut nf = NormalForm::init();
                 self.apply_to_normal_form(&mut nf, table);

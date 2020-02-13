@@ -21,17 +21,17 @@ l(
 	Overlay [
 		Tm 1/2 | Sequence [
 			Overlay [
-				$a, 
+				a, 
 			],
 			Gain 1/2 | Overlay [
-				$b, 
-				$c, 
-				$d,
+				b, 
+				c, 
+				d,
 			] | Sequence [AsIs, Gain 0 | Length 2] > FitLength unit,
 			Gain 1/2 | Overlay [
-				$e, 
-				$f, 
-				$g,
+				e, 
+				f, 
+				g,
 			] | Sequence [AsIs, Gain 0 | Length 2] > FitLength unit,
 
 		],

@@ -15,7 +15,7 @@ use weresocool_error::Error;
 ///     );
 /// }
 /// ```
-pub fn expect_eq(input: &str, expected: &str) -> Result<(), Error> {
+fn expect_eq_internal(input: &str, expected: &str) -> Result<(), Error> {
     let input_render_return = Filename(input).make(RenderType::NfBasisAndTable)?;
     let expected_render_return = Filename(expected).make(RenderType::NfBasisAndTable)?;
 
@@ -30,6 +30,14 @@ pub fn expect_eq(input: &str, expected: &str) -> Result<(), Error> {
 
     assert_eq!(nf_i, nf_e);
     Ok(())
+}
+
+pub fn expect_eq(input: &str, expected: &str) {
+    let result = expect_eq_internal(input, expected);
+    match result {
+        Ok(_) => {}
+        _ => panic!(),
+    }
 }
 
 #[cfg(test)]
@@ -47,6 +55,6 @@ mod tests {
     #[test]
     #[should_panic]
     fn test_expect_fail() {
-        let _should_not_match = expect_eq("./mocks/simple.socool", "./mocks/simple.socool");
+        let _should_not_match = expect_eq("./mocks/simple.socool", "./mocks/simple_fail.socool");
     }
 }

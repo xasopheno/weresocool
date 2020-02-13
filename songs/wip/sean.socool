@@ -33,7 +33,7 @@ thing2 = {
 
 thing2(a) = {
 	Seq [
-		$a | Tm 9/8, 
+		a | Tm 9/8, 
 		Tm 3/2, 
 	]
 }

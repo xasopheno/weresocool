@@ -15,7 +15,6 @@ impl Normalize for Op {
                 handle_id_error(id.to_string(), table).apply_to_normal_form(input, table);
             }
             //
-            Op::Fid(_) => {}
             Op::FunctionCall { name, args } => {
                 let f = handle_id_error(name.to_string(), table);
                 let arg_map = get_fn_arg_map(f.clone(), args);
