@@ -16,6 +16,7 @@ use std::io::Write;
 use weresocool_ast::{NormalForm, Normalize as NormalizeOp};
 use weresocool_parser::*;
 pub mod expect;
+mod tests;
 
 type TestTable = IndexMap<String, CompositionHashes>;
 
