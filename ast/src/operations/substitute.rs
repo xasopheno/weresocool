@@ -10,7 +10,7 @@ pub fn get_fn_arg_map(f: Term, args: &[Term]) -> ArgMap {
                 for (var, arg) in vars.iter().zip(args.iter()) {
                     arg_map.insert(var.to_string(), arg.clone());
                 }
-            } //_ => panic!("Function Stored not FunctionDef"),
+            }
         },
         _ => {
             panic!("Function stored in NormalForm");
@@ -30,12 +30,10 @@ impl Substitute for Op {
         match self {
             Op::Id(id) => {
                 let value = arg_map.get(&id.clone());
-                let result = match value {
+                match value {
                     Some(sub) => sub.clone(),
                     None => handle_id_error(id.to_string(), table),
-                };
-
-                result
+                }
             }
 
             Op::WithLengthRatioOf {
