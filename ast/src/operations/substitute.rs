@@ -10,8 +10,7 @@ pub fn get_fn_arg_map(f: Term, args: &[Term]) -> ArgMap {
                 for (var, arg) in vars.iter().zip(args.iter()) {
                     arg_map.insert(var.to_string(), arg.clone());
                 }
-            }
-            _ => panic!("Function Stored not FunctionDef"),
+            } //_ => panic!("Function Stored not FunctionDef"),
         },
         _ => {
             panic!("Function stored in NormalForm");

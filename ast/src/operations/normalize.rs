@@ -33,7 +33,6 @@ impl Normalize for Op {
                                 panic!("Function Op stored in FunDef");
                             }
                         },
-                        _ => panic!("Function Stored not FunctionDef"),
                     },
                     _ => {
                         panic!("Function stored in NormalForm");
