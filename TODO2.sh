@@ -66,4 +66,10 @@ Term =
 #| ListDef(List(Nf))
 
 
-     
+Lop =
+  List<Op>
+| List<Op> [ List<Indices> ]
+| ET(Int)
+
+list major = [Tm 1, Tm 9/8, Tm 5/4, Tm 4/3, Tm 3/2, Tm 5/3, Tm 15/8]
+
