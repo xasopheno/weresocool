@@ -71,5 +71,9 @@ Lop =
 | List<Op> [ List<Indices> ]
 | ET(Int)
 
-list major = [Tm 1, Tm 9/8, Tm 5/4, Tm 4/3, Tm 3/2, Tm 5/3, Tm 15/8]
+list l = [Tm 1, Tm 9/8, Tm 5/4, Tm 4/3, Tm 3/2, Tm 5/3, Tm 15/8]
+list x = l[3, 2, 7, 9, 11]
+list et12 = ET(12)
+
+Seq [x[2, 4, 3, 3, 4, 1], Tm 9/8]
 
