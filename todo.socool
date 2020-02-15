@@ -9,6 +9,10 @@ melody.apply_to_normal_form() => Seq [Tm 5/4, Tm 9/8, Tm 1, Tm 15/8, Tm 3/2, Tm 
 List et12 = ET(12)
 
 list = { 
+    List [Tm 1, Tm 2]
+}
+
+list = { 
     melody
 }
 
@@ -47,7 +51,7 @@ Lop =
 | ET(Int)
 
 Index =
-| Int
+  Int
 | IntWithTerm(Int, Term)
 | Random(Int)
 
