@@ -9,6 +9,12 @@ pub enum Term {
     Op(Op),
     Nf(NormalForm),
     FunDef(FunDef),
+    Lop(ListOp),
+}
+
+#[derive(Clone, PartialEq, Debug, Hash)]
+pub enum ListOp {
+    List(Vec<Term>),
 }
 
 #[derive(Debug, Clone, PartialEq, Hash)]
@@ -122,6 +128,7 @@ pub enum ASR {
 pub fn is_choice_op(term: Term, table: &TermTable) -> bool {
     match term {
         Term::FunDef(_) => unimplemented!(),
+        Term::Lop(_) => unimplemented!(),
         Term::Nf(_) => false,
         Term::Op(op) => match op {
             Op::AsIs {}

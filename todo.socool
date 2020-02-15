@@ -12,7 +12,7 @@ list = {
     List [Tm 1, Tm 2]
 }
 
-list = { 
+named_list = { 
     melody
 }
 

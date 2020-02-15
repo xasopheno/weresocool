@@ -44,6 +44,7 @@ fn process_op_table(ot: TermTable) -> TermTable {
             Term::FunDef(fun) => {
                 result.insert(name.to_string(), Term::FunDef(fun.to_owned()));
             }
+            Term::Lop(_lop) => unimplemented!(),
         };
     }
 

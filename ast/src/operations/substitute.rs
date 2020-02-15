@@ -115,6 +115,9 @@ fn substitute_operations(
             Term::FunDef(_fun) => {
                 unimplemented!();
             }
+            Term::Lop(_lop) => {
+                unimplemented!();
+            }
         }
     }
 

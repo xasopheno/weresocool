@@ -32,6 +32,7 @@ impl Normalize for Op {
                             Term::FunDef(_) => {
                                 panic!("Function Op stored in FunDef");
                             }
+                            Term::Lop(_lop) => unimplemented!(),
                         },
                     },
                     _ => {

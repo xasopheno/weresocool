@@ -7,6 +7,7 @@ impl Normalize for Term {
         match self {
             Term::Op(op) => op.apply_to_normal_form(input, table),
             Term::Nf(nf) => nf.apply_to_normal_form(input, table),
+            Term::Lop(_lop) => unimplemented!(),
             Term::FunDef(_fun) => unimplemented!(),
         }
     }
@@ -22,6 +23,7 @@ impl Substitute for Term {
         match self {
             Term::Op(op) => op.substitute(normal_form, table, arg_map),
             Term::Nf(nf) => nf.substitute(normal_form, table, arg_map),
+            Term::Lop(_lop) => unimplemented!(),
             Term::FunDef(_fun) => unimplemented!(),
         }
     }
@@ -32,6 +34,7 @@ impl GetLengthRatio for Term {
         match self {
             Term::Op(op) => op.get_length_ratio(table),
             Term::Nf(nf) => nf.get_length_ratio(table),
+            Term::Lop(_lop) => unimplemented!(),
             Term::FunDef(_fun) => unimplemented!(),
         }
     }
