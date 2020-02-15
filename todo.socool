@@ -1,12 +1,12 @@
 { f: 310, l: 1, g: 1, p: 0 }
 
-major = List[Tm 1, Tm 9/8, Tm 5/4, Tm 4/3, Tm 3/2, Tm 5/3, Tm 15/8]
+List major = Tm 1, Tm 9/8, Tm 5/4, Tm 4/3, Tm 3/2, Tm 5/3, Tm 15/8]
 major.apply_to_normal_form() => Seq [Tm 1, Tm 9/8, Tm 5/4, Tm 4/3, Tm 3/2, Tm 5/3, Tm 15/8]
 
-melody = major[3, 2, 1, 7, 5, 1]
+List melody = major[3, 2, 1, 7, 5, 1]
 melody.apply_to_normal_form() => Seq [Tm 5/4, Tm 9/8, Tm 1, Tm 15/8, Tm 3/2, Tm 1]
 
-et12 = ET(12)
+List et12 = ET(12)
 
 thing2 = { 
     Seq [melody, Tm 9/8]
@@ -20,19 +20,22 @@ thing3 = {
     et12[0, 5, 11, 23, -4, -10, 3]
 }
 
+thing3 = { 
+    ET(12)[0, 5, 11, 23, -4, -10, 3]
+}
 
-thing4 = { 
+thing5 = { 
     et12[0, /11, /10, /7, /4, 5, 3, 2, /11, 7, \2]
 }
 
 Lop =
-  List
+  List(Vec<Term>)
 | IndexInto(List, Vec<Index>)
 | ET(Int)
 
 Index =
 | Int
-| IntWithOp(Int, Op)
+| IntWithTerm(Int, Term)
 
 ET(d: Int) => { 
     result = List[]
