@@ -9,7 +9,7 @@ pub mod tests {
     };
     use num_rational::Rational64;
     use pretty_assertions::assert_eq;
-    use weresocool_ast::{NormalForm, Normalize, Op::*, OscType, Term::Op, TermTable, ASR};
+    use weresocool_ast::{Defs, NormalForm, Normalize, Op::*, OscType, Term::Op, ASR};
 
     #[test]
     fn render_equal() {
@@ -32,7 +32,7 @@ pub mod tests {
     #[test]
     fn to_vec_timed_op_test() {
         let mut normal_form = NormalForm::init();
-        let pt = TermTable::new();
+        let pt = Defs::new();
 
         Overlay {
             operations: vec![

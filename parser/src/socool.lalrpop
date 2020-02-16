@@ -52,7 +52,9 @@ LetDef: () = {
         defs.terms.insert(s.clone(), o); ()
     },
 
-    <name: Name> "=" <list: List> => ()
+    <name: Name> "=" <list: List> => {
+        defs.lists.insert(name.clone(), list); ()
+    }
 };
 
 

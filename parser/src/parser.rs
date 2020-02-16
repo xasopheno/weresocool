@@ -51,7 +51,7 @@ fn process_op_table(defs: Defs) -> Defs {
             Term::Lop(lop) => {
                 let mut nf = NormalForm::init();
                 lop.apply_to_normal_form(&mut nf, &defs);
-                result.lists.insert(name.to_string(), Term::Nf(nf));
+                result.terms.insert(name.to_string(), Term::Nf(nf));
             }
             Term::Lnf(_lnf) => unimplemented!(),
         };

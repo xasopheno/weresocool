@@ -8,7 +8,7 @@ impl Normalize for Term {
             Term::Op(op) => op.apply_to_normal_form(input, defs),
             Term::Nf(nf) => nf.apply_to_normal_form(input, defs),
             Term::FunDef(_fun) => unimplemented!(),
-            Term::Lop(_lop) => unimplemented!(),
+            Term::Lop(lop) => lop.apply_to_normal_form(input, defs),
             Term::Lnf(_lnf) => unimplemented!(),
         }
     }
