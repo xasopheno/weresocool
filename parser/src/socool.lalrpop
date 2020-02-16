@@ -77,16 +77,16 @@ Operation: Term = {
     },
 
     <op1: Operation> ">" "LazyRepeat" <i: Int> => {
-            let mut op = Term::Op(AsIs);
-            if is_choice_op(op1.clone(), defs) {
-                op = op1
-            }
-            let mut vec = Vec::new();
-            for x in 0..i {
-                vec.push(op.clone())
-            }
-            Term::Op(Sequence { operations: vec })
-        },
+        let mut op = Term::Op(AsIs);
+        if is_choice_op(op1.clone(), defs) {
+            op = op1
+        }
+        let mut vec = Vec::new();
+        for x in 0..i {
+            vec.push(op.clone())
+        }
+        Term::Op(Sequence { operations: vec })
+    },
 
     <op: ComposeOperation> => op,
 
@@ -94,9 +94,13 @@ Operation: Term = {
 }
 
 List: Term = {
+  "List" "[" <terms: Operations> "]" "@" "[" <indicies: Ints> "]"=> {
+    Term::Lop(ListOp::IndexedList {terms, indicies})
+  },
+
   "List" "[" <operations: Operations> "]" => {
     Term::Lop(ListOp::List(operations))
-  }
+  },
 }
 
 ComposeOperation: Term = {
@@ -215,6 +219,8 @@ Pipe<T>: Vec<T> = {
 Compose = Pipe<Operation>;
 
 Operations = Comma<Operation>;
+
+Ints = Comma<Int>;
 
 Rational: Rational64 = {
     <n: Float> => f32_to_rational(n),

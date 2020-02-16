@@ -14,6 +14,26 @@ impl Normalize for ListOp {
 
                 *input = result
             }
+            ListOp::IndexedList { terms, indicies } => {
+                let mut list_nf = vec![];
+                for term in terms {
+                    let mut nf = input.clone();
+                    term.apply_to_normal_form(&mut nf, defs);
+                    list_nf.push(nf)
+                }
+
+                let mut indexed = vec![];
+                for index in indicies {
+                    indexed.push(list_nf[*index as usize].clone())
+                }
+
+                let mut result = NormalForm::init_empty();
+                for nf in indexed {
+                    result = join_sequence(result, nf);
+                }
+
+                *input = result
+            }
         }
     }
 }

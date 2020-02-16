@@ -12,5 +12,7 @@ mod expect_tests {
     fn test_lists() {
         expect("src/testing/mocks/simple_list.socool");
         expect("src/testing/mocks/list_id.socool");
+        expect("src/testing/mocks/list_with_indicies.socool");
+        //expect("src/testing/mocks/list_composed_with_op.socool");
     }
 }

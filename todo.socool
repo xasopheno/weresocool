@@ -8,15 +8,15 @@ melody.apply_to_normal_form() => Seq [Tm 5/4, Tm 9/8, Tm 1, Tm 15/8, Tm 3/2, Tm 
 
 et12 = ET(12)
 
-list = { 
+[x] list = { 
     List [Tm 1, Tm 2]
 }
 
-named_list = { 
+[x] named_list = { 
     melody
 }
 
-op_composed_with_list = { 
+[] op_composed_with_list = { 
     Tm 9/8 | melody
 }
 

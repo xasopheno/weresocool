@@ -16,6 +16,10 @@ pub enum Term {
 #[derive(Clone, PartialEq, Debug, Hash)]
 pub enum ListOp {
     List(Vec<Term>),
+    IndexedList {
+        terms: Vec<Term>,
+        indicies: Vec<i64>,
+    },
 }
 
 #[derive(Clone, PartialEq, Debug, Hash)]
