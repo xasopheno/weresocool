@@ -1,9 +1,9 @@
-use crate::ast::{Op, TermTable};
+use crate::ast::{Defs, Op};
 use crate::operations::{helpers::*, GetLengthRatio, NormalForm, Normalize};
 use num_rational::{Ratio, Rational64};
 
 impl GetLengthRatio for Op {
-    fn get_length_ratio(&self, table: &TermTable) -> Rational64 {
+    fn get_length_ratio(&self, defs: &Defs) -> Rational64 {
         match self {
             Op::AsIs {}
             | Op::Sine {}
@@ -22,14 +22,14 @@ impl GetLengthRatio for Op {
 
             Op::FunctionCall { .. } => {
                 let mut nf = NormalForm::init();
-                self.apply_to_normal_form(&mut nf, table);
+                self.apply_to_normal_form(&mut nf, defs);
 
-                nf.get_length_ratio(table)
+                nf.get_length_ratio(defs)
             }
 
             Op::Id(id) => {
-                let op = handle_id_error(id.to_string(), table);
-                op.get_length_ratio(table)
+                let op = handle_id_error(id.to_string(), defs);
+                op.get_length_ratio(defs)
             }
 
             Op::Length { m } | Op::Silence { m } => *m,
@@ -37,7 +37,7 @@ impl GetLengthRatio for Op {
             Op::Sequence { operations } => {
                 let mut new_total = Ratio::from_integer(0);
                 for operation in operations {
-                    new_total += operation.get_length_ratio(table);
+                    new_total += operation.get_length_ratio(defs);
                 }
                 new_total
             }
@@ -45,19 +45,19 @@ impl GetLengthRatio for Op {
             Op::Compose { operations } => {
                 let mut new_total = Ratio::from_integer(1);
                 for operation in operations {
-                    new_total *= operation.get_length_ratio(table);
+                    new_total *= operation.get_length_ratio(defs);
                 }
                 new_total
             }
 
-            Op::Choice { operations } => operations[0].get_length_ratio(table),
+            Op::Choice { operations } => operations[0].get_length_ratio(defs),
 
             Op::WithLengthRatioOf {
                 with_length_of,
                 main,
             } => {
-                let target_length = with_length_of.get_length_ratio(table);
-                let main_length = main.get_length_ratio(table);
+                let target_length = with_length_of.get_length_ratio(defs);
+                let main_length = main.get_length_ratio(defs);
 
                 target_length / main_length
             }
@@ -66,12 +66,12 @@ impl GetLengthRatio for Op {
 
             Op::Focus {
                 main, op_to_apply, ..
-            } => main.get_length_ratio(table) * op_to_apply.get_length_ratio(table),
+            } => main.get_length_ratio(defs) * op_to_apply.get_length_ratio(defs),
 
             Op::Overlay { operations } => {
                 let mut max = Ratio::new(0, 1);
                 for op in operations {
-                    let next = op.get_length_ratio(table);
+                    let next = op.get_length_ratio(defs);
                     if next > max {
                         max = next;
                     }

@@ -30,20 +30,18 @@ pub struct FunDef {
     pub term: Box<Term>,
 }
 
-pub struct DefTable {
-    term_table: IndexMap<String, Term>,
-    list_table: IndexMap<String, Term>,
+#[derive(Debug, Clone, PartialEq)]
+pub struct Defs {
+    pub terms: IndexMap<String, Term>,
+    pub lists: IndexMap<String, Term>,
 }
 
-pub type TermTable = IndexMap<String, Term>;
-
-trait New<T> {
-    fn new() -> T;
-}
-
-impl New<TermTable> for TermTable {
-    fn new() -> TermTable {
-        IndexMap::new()
+impl Defs {
+    pub fn new() -> Self {
+        Self {
+            terms: IndexMap::new(),
+            lists: IndexMap::new(),
+        }
     }
 }
 
@@ -136,7 +134,7 @@ pub enum ASR {
     Long,
 }
 
-pub fn is_choice_op(term: Term, table: &TermTable) -> bool {
+pub fn is_choice_op(term: Term, defs: &Defs) -> bool {
     match term {
         Term::FunDef(_) => unimplemented!(),
         Term::Lop(_) => unimplemented!(),
@@ -163,19 +161,19 @@ pub fn is_choice_op(term: Term, table: &TermTable) -> bool {
 
             Op::Choice { .. } => true,
 
-            Op::Id(id) => is_choice_op(handle_id_error(id, table), table),
+            Op::Id(id) => is_choice_op(handle_id_error(id, defs), defs),
             Op::WithLengthRatioOf { .. } => false,
 
             Op::Focus {
                 op_to_apply, main, ..
-            } => is_choice_op(*op_to_apply, table) | is_choice_op(*main, table),
+            } => is_choice_op(*op_to_apply, defs) | is_choice_op(*main, defs),
 
             Op::Sequence { operations }
             | Op::ModulateBy { operations }
             | Op::Compose { operations }
             | Op::Overlay { operations } => {
                 for operation in operations {
-                    if is_choice_op(operation, table) {
+                    if is_choice_op(operation, defs) {
                         return true;
                     }
                 }

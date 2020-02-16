@@ -8,7 +8,7 @@ use std::io::prelude::*;
 use std::io::BufReader;
 use std::sync::{Arc, Mutex};
 use weresocool_ast::{
-    ast::{Term, TermTable},
+    ast::{Defs, Term},
     operations::{NormalForm, Normalize},
 };
 use weresocool_error::{Error, ParseError};
@@ -24,30 +24,34 @@ pub struct Init {
 #[derive(Clone, PartialEq, Debug)]
 pub struct ParsedComposition {
     pub init: Init,
-    pub table: TermTable,
+    pub defs: Defs,
 }
 
-fn process_op_table(ot: TermTable) -> TermTable {
-    let mut result = TermTable::new();
+fn process_op_table(defs: Defs) -> Defs {
+    let mut result = Defs::new();
 
-    for (name, term) in ot.iter() {
+    for (name, term) in defs.terms.iter() {
         match term {
             Term::Nf(nf) => {
-                result.insert(name.to_string(), Term::Nf(nf.to_owned()));
+                result
+                    .terms
+                    .insert(name.to_string(), Term::Nf(nf.to_owned()));
             }
             Term::Op(op) => {
                 let mut nf = NormalForm::init();
-                op.apply_to_normal_form(&mut nf, &ot);
+                op.apply_to_normal_form(&mut nf, &defs);
 
-                result.insert(name.to_string(), Term::Nf(nf));
+                result.terms.insert(name.to_string(), Term::Nf(nf));
             }
             Term::FunDef(fun) => {
-                result.insert(name.to_string(), Term::FunDef(fun.to_owned()));
+                result
+                    .terms
+                    .insert(name.to_string(), Term::FunDef(fun.to_owned()));
             }
             Term::Lop(lop) => {
                 let mut nf = NormalForm::init();
-                lop.apply_to_normal_form(&mut nf, &ot);
-                result.insert(name.to_string(), Term::Nf(nf));
+                lop.apply_to_normal_form(&mut nf, &defs);
+                result.lists.insert(name.to_string(), Term::Nf(nf));
             }
             Term::Lnf(_lnf) => unimplemented!(),
         };
@@ -86,12 +90,12 @@ pub fn language_to_vec_string(language: &str) -> Vec<String> {
 
 pub fn parse_file(
     vec_string: Vec<String>,
-    parse_table: Option<TermTable>,
+    prev_defs: Option<Defs>,
 ) -> Result<ParsedComposition, ParseError> {
-    let mut table = if let Some(table) = parse_table {
-        table
+    let mut defs = if let Some(defs) = prev_defs {
+        defs
     } else {
-        TermTable::new()
+        Defs::new()
     };
 
     let (imports_needed, composition) =
@@ -100,22 +104,29 @@ pub fn parse_file(
     for import in imports_needed {
         let (filepath, import_name) = get_filepath_and_import_name(import);
         let vec_string = filename_to_vec_string(&filepath.to_string());
-        let parsed_composition = parse_file(vec_string, Some(table.clone()))?;
+        let parsed_composition = parse_file(vec_string, Some(defs.clone()))?;
 
-        for (key, val) in parsed_composition.table {
+        for (key, val) in parsed_composition.defs.terms {
             let mut name = import_name.clone();
             name.push('.');
             name.push_str(&key);
-            table.insert(name, val);
+            defs.terms.insert(name, val);
+        }
+
+        for (key, val) in parsed_composition.defs.lists {
+            let mut name = import_name.clone();
+            name.push('.');
+            name.push_str(&key);
+            defs.lists.insert(name, val);
         }
     }
 
-    let init = socool::SoCoolParser::new().parse(&mut table, &composition);
+    let init = socool::SoCoolParser::new().parse(&mut defs, &composition);
 
     match init {
         Ok(init) => {
-            let table = process_op_table(table);
-            Ok(ParsedComposition { init, table })
+            let defs = process_op_table(defs);
+            Ok(ParsedComposition { init, defs })
         }
         Err(error) => {
             let location = Arc::new(Mutex::new(Vec::new()));

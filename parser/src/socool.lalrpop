@@ -3,7 +3,7 @@ use std::str::FromStr;
 use std::string::String;
 use weresocool_ast::{
     ast::{
-        TermTable,
+        Defs,
         Op,
         Op::*,
         Term,
@@ -16,8 +16,8 @@ use weresocool_ast::{
 use crate::parser::Init;
 use crate::float_to_rational::helpers::*;
 
-grammar<'table, 'err>(
-    table: &'table mut TermTable,
+grammar<'defs, 'err>(
+    defs: &'defs mut Defs,
 );
 
 pub SoCool: Init = {
@@ -37,7 +37,7 @@ Point: Init = {
 LetDefs = Lets<LetDef>;
 LetDef: () = {
     <s: Name> "(" <vars: Comma<Name>>  ")" "=" "{" <o: Operation> "}" => {
-         table.insert(
+         defs.terms.insert(
              s.clone(),
              Term::FunDef(FunDef {
                  name: s,
@@ -49,7 +49,7 @@ LetDef: () = {
     },
 
     <s: Name> "=" "{" <o: Operation> "}" => {
-        table.insert(s.clone(), o); ()
+        defs.terms.insert(s.clone(), o); ()
     },
 
     <name: Name> "=" <list: List> => ()
@@ -76,7 +76,7 @@ Operation: Term = {
 
     <op1: Operation> ">" "LazyRepeat" <i: Int> => {
             let mut op = Term::Op(AsIs);
-            if is_choice_op(op1.clone(), table) {
+            if is_choice_op(op1.clone(), defs) {
                 op = op1
             }
             let mut vec = Vec::new();

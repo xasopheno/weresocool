@@ -1,19 +1,19 @@
 extern crate colored;
 extern crate num_rational;
-use crate::ast::{OscType, Term, TermTable, ASR};
+use crate::ast::{Defs, OscType, Term, ASR};
 use crate::operations::{GetLengthRatio, NameSet, NormalForm, PointOp};
 use colored::*;
 use num_rational::{Ratio, Rational64};
 use std::cmp::Ordering::{Equal, Greater, Less};
 
-pub fn handle_id_error(id: String, table: &TermTable) -> Term {
-    let result = table.get(&id);
+pub fn handle_id_error(id: String, defs: &Defs) -> Term {
+    let result = defs.terms.get(&id).or_else(|| defs.lists.get(&id));
 
     match result {
         Some(result) => result.clone(),
         None => {
             let id = id;
-            println!("Not able to find {} in let table", id.red().bold());
+            println!("Not able to find {} in let defs", id.red().bold());
             panic!("Id Not Found");
         }
     }
@@ -54,8 +54,8 @@ pub fn modulate(input: &[PointOp], modulator: &[PointOp]) -> Vec<PointOp> {
     result
 }
 
-pub fn pad_length(input: &mut NormalForm, max_len: Rational64, table: &TermTable) {
-    let input_lr = input.get_length_ratio(table);
+pub fn pad_length(input: &mut NormalForm, max_len: Rational64, defs: &Defs) {
+    let input_lr = input.get_length_ratio(defs);
     if max_len > Rational64::new(0, 1) && input_lr < max_len {
         for voice in input.operations.iter_mut() {
             let osc_type = voice.clone().last().unwrap().osc_type;
