@@ -95,7 +95,11 @@ Operation: Term = {
 
 List: Term = {
   "List" "[" <terms: Operations> "]" "@" "[" <indicies: Ints> "]"=> {
-    Term::Lop(ListOp::IndexedList {terms, indicies})
+    Term::Lop(ListOp::IndexedList { terms, indicies })
+  },
+
+  <name: Name> "@" "[" <indicies: Ints> "]"=> {
+    Term::Lop(ListOp::IndexedNamedList { terms, indicies })
   },
 
   "List" "[" <operations: Operations> "]" => {

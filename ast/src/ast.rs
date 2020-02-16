@@ -20,6 +20,10 @@ pub enum ListOp {
         terms: Vec<Term>,
         indicies: Vec<i64>,
     },
+    IndexedNamedList {
+        name: String,
+        indicies: Vec<i64>,
+    },
 }
 
 #[derive(Clone, PartialEq, Debug, Hash)]
