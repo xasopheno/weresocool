@@ -44,7 +44,12 @@ fn process_op_table(ot: TermTable) -> TermTable {
             Term::FunDef(fun) => {
                 result.insert(name.to_string(), Term::FunDef(fun.to_owned()));
             }
-            Term::Lop(_lop) => unimplemented!(),
+            Term::Lop(lop) => {
+                let mut nf = NormalForm::init();
+                lop.apply_to_normal_form(&mut nf, &ot);
+                result.insert(name.to_string(), Term::Nf(nf));
+            }
+            Term::Lnf(_lnf) => unimplemented!(),
         };
     }
 

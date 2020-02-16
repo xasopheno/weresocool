@@ -7,6 +7,7 @@ use std::{
 mod get_length_ratio;
 pub mod helpers;
 mod normalize;
+pub mod normalize_listop;
 pub mod normalize_nf;
 mod substitute;
 

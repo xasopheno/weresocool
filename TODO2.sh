@@ -22,7 +22,7 @@ pub enum Term {
     FunDef(FunDef),
 }
 
-p10.1.2.93ub struct FunDef {
+pub struct FunDef {
     pub name: String,
     pub vars: Vec<String>,
     pub term: Box<Term>,

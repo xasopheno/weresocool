@@ -9,7 +9,8 @@ use weresocool_ast::{
         Term,
         is_choice_op,
         ASR,
-        FunDef
+        FunDef,
+        ListOp
     },
 };
 use crate::parser::Init;
@@ -49,8 +50,11 @@ LetDef: () = {
 
     <s: Name> "=" "{" <o: Operation> "}" => {
         table.insert(s.clone(), o); ()
-    }
+    },
+
+    <name: Name> "=" <list: List> => ()
 };
+
 
 Operation: Term = {
     <op1: Operation> ">" "FitLength" <op2: ComposeOperation> => {
@@ -82,7 +86,15 @@ Operation: Term = {
             Term::Op(Sequence { operations: vec })
         },
 
-      <op: ComposeOperation> => op,
+    <op: ComposeOperation> => op,
+
+    <list: List> => list
+}
+
+List: Term = {
+  "List" "[" <operations: Operations> "]" => {
+    Term::Lop(ListOp::List(operations))
+  }
 }
 
 ComposeOperation: Term = {
@@ -196,6 +208,7 @@ Pipe<T>: Vec<T> = {
         }
     }
 };
+
 
 Compose = Pipe<Operation>;
 

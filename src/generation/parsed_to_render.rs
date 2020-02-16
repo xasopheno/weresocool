@@ -48,6 +48,7 @@ pub fn parsed_to_render(
         Term::Op(_) => panic!("main is not in Normal Form for some terrible reason."),
         Term::FunDef(_) => unimplemented!(),
         Term::Lop(_) => unimplemented!(),
+        Term::Lnf(_) => unimplemented!(),
     };
 
     let basis = Basis::from(parsed_composition.init);

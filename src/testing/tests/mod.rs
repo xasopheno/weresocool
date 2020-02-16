@@ -17,4 +17,12 @@ mod expect_tests {
             "src/testing/mocks/fun_nested_expected.socool",
         );
     }
+
+    #[test]
+    fn test_simple_list() {
+        let _should_match = expect_eq(
+            "src/testing/mocks/simple_list.socool",
+            "src/testing/mocks/simple_list_expected.socool",
+        );
+    }
 }

@@ -10,11 +10,17 @@ pub enum Term {
     Nf(NormalForm),
     FunDef(FunDef),
     Lop(ListOp),
+    Lnf(ListNf),
 }
 
 #[derive(Clone, PartialEq, Debug, Hash)]
 pub enum ListOp {
     List(Vec<Term>),
+}
+
+#[derive(Clone, PartialEq, Debug, Hash)]
+pub struct ListNf {
+    operations: Vec<NormalForm>,
 }
 
 #[derive(Debug, Clone, PartialEq, Hash)]
@@ -23,6 +29,11 @@ pub struct FunDef {
     pub vars: Vec<String>,
     pub term: Box<Term>,
 }
+
+//pub struct DefTable {
+//term_table: IndexMap<String, Term>,
+//list_table: IndexMap<String, Term>,
+//}
 
 pub type TermTable = IndexMap<String, Term>;
 
@@ -129,6 +140,7 @@ pub fn is_choice_op(term: Term, table: &TermTable) -> bool {
     match term {
         Term::FunDef(_) => unimplemented!(),
         Term::Lop(_) => unimplemented!(),
+        Term::Lnf(_) => unimplemented!(),
         Term::Nf(_) => false,
         Term::Op(op) => match op {
             Op::AsIs {}

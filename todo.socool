@@ -1,12 +1,12 @@
 { f: 310, l: 1, g: 1, p: 0 }
 
-List major = Tm 1, Tm 9/8, Tm 5/4, Tm 4/3, Tm 3/2, Tm 5/3, Tm 15/8]
+major = List [Tm 1, Tm 9/8, Tm 5/4, Tm 4/3, Tm 3/2, Tm 5/3, Tm 15/8]
 major.apply_to_normal_form() => Seq [Tm 1, Tm 9/8, Tm 5/4, Tm 4/3, Tm 3/2, Tm 5/3, Tm 15/8]
 
-List melody = major[3, 2, 1, 7, 5, 1]
+melody = List major[3, 2, 1, 7, 5, 1]
 melody.apply_to_normal_form() => Seq [Tm 5/4, Tm 9/8, Tm 1, Tm 15/8, Tm 3/2, Tm 1]
 
-List et12 = ET(12)
+et12 = ET(12)
 
 list = { 
     List [Tm 1, Tm 2]
@@ -63,4 +63,30 @@ ET(d: Int) => {
         )
     }
 }
+
+
+list = { 
+    List [Tm 1, Tm 9/8]
+}
+.normalize()
+=> Lop(ListOp(Vec<Op>))
+.normalize()
+=> Lop(ListNf(Vec<NormalForm>)
+.normalize()
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 

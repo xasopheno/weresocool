@@ -118,6 +118,9 @@ fn substitute_operations(
             Term::Lop(_lop) => {
                 unimplemented!();
             }
+            Term::Lnf(_lnf) => {
+                unimplemented!();
+            }
         }
     }
 

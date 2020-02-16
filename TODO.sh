@@ -24,6 +24,7 @@ Term =
 | Lop of ListOp
 | LNf of List<Nf>
 | FunDef of FunctionDef
+| ListDef of ListDef
 
 Definition =
   TermDef of Term
