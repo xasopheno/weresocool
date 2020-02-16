@@ -7,7 +7,7 @@ use crate::{
 use num_rational::Rational64;
 use serde::{Deserialize, Serialize};
 use serde_json::to_string;
-use weresocool_ast::{NameSet, NormalForm, Normalize, OscType, PointOp, TermTable, ASR};
+use weresocool_ast::{Defs, NameSet, NormalForm, Normalize, OscType, PointOp, ASR};
 use weresocool_error::Error;
 
 pub fn r_to_f64(r: Rational64) -> f64 {
@@ -256,14 +256,11 @@ pub fn vec_timed_op_to_vec_op4d(timed_ops: Vec<TimedOp>, basis: &Basis) -> Vec<O
     timed_ops.iter().map(|t_op| t_op.to_op_4d(basis)).collect()
 }
 
-pub fn composition_to_vec_timed_op(
-    composition: &NormalForm,
-    table: &TermTable,
-) -> (Vec<TimedOp>, usize) {
+pub fn composition_to_vec_timed_op(composition: &NormalForm, defs: &Defs) -> (Vec<TimedOp>, usize) {
     let mut normal_form = NormalForm::init();
 
     println!("Generating Composition \n");
-    composition.apply_to_normal_form(&mut normal_form, table);
+    composition.apply_to_normal_form(&mut normal_form, defs);
 
     let n_voices = normal_form.operations.len();
     let mut result: Vec<TimedOp> = normal_form
@@ -296,12 +293,12 @@ struct Json1d {
 pub fn to_json(
     basis: &Basis,
     composition: &NormalForm,
-    table: &TermTable,
+    defs: &Defs,
     filename: String,
 ) -> Result<(), Error> {
     banner("JSONIFY-ing".to_string(), filename.clone());
 
-    let (vec_timed_op, _) = composition_to_vec_timed_op(composition, table);
+    let (vec_timed_op, _) = composition_to_vec_timed_op(composition, defs);
     let mut op4d_1d = vec_timed_op_to_vec_op4d(vec_timed_op, basis);
 
     //TODO: Factor out
@@ -328,12 +325,12 @@ pub fn to_json(
 pub fn to_csv(
     basis: &Basis,
     composition: &NormalForm,
-    table: &TermTable,
+    defs: &Defs,
     filename: String,
 ) -> Result<(), Error> {
     banner("CSV-ing".to_string(), filename.clone());
 
-    let (vec_timed_op, _) = composition_to_vec_timed_op(composition, table);
+    let (vec_timed_op, _) = composition_to_vec_timed_op(composition, defs);
     let mut op4d_1d = vec_timed_op_to_vec_op4d(vec_timed_op, basis);
 
     op4d_1d.retain(|op| {

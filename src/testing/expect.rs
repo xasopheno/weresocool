@@ -12,15 +12,17 @@ use weresocool_error::Error;
 ///     expect("mocks/input.socool");
 /// }
 /// ```
+
 fn expect_eq_internal(input: &str) -> Result<(), Error> {
     let input_render_return = Filename(input).make(RenderType::NfBasisAndTable)?;
 
-    let (nf, _basis, table) = match input_render_return {
-        RenderReturn::NfBasisAndTable(nf, basis, table) => (nf, basis, table),
+    let (nf, _basis, defs) = match input_render_return {
+        RenderReturn::NfBasisAndTable(nf, basis, defs) => (nf, basis, defs),
         _ => panic!(),
     };
 
-    let expect_term = table
+    let expect_term = defs
+        .terms
         .get("expect")
         .expect(format!("\n\n  No expect in: \n  {}\n\n", input).as_str());
 

@@ -4,7 +4,7 @@ use crate::{
 };
 use num_rational::Rational64;
 pub use render_voice::{renderables_to_render_voices, RenderVoice};
-use weresocool_ast::{NormalForm, Normalize, OscType, PointOp, TermTable, ASR};
+use weresocool_ast::{Defs, NormalForm, Normalize, OscType, PointOp, ASR};
 pub mod render_voice;
 mod test;
 use rand::{thread_rng, Rng};
@@ -227,11 +227,11 @@ pub fn calculate_fgpl(basis: &Basis, point_op: &PointOp) -> (f64, (f64, f64), f6
 
 pub fn nf_to_vec_renderable(
     composition: &NormalForm,
-    table: &TermTable,
+    defs: &Defs,
     basis: &Basis,
 ) -> Vec<Vec<RenderOp>> {
     let mut normal_form = NormalForm::init();
-    composition.apply_to_normal_form(&mut normal_form, table);
+    composition.apply_to_normal_form(&mut normal_form, defs);
 
     let result: Vec<Vec<RenderOp>> = normal_form
         .operations
