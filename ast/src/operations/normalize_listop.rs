@@ -19,6 +19,16 @@ impl Normalize for ListOp {
                 let indexed = get_indexed(list_nf, indicies);
                 let joined = join_list_nf(indexed);
                 *input = joined
+                //unimplemented!();
+            }
+
+            ListOp::IndexedNamedList { name, indicies } => {
+                //let lop = handle_id_error(&name);
+                //let list_nf = normalize_list_terms(input, &terms, defs);
+                //let indexed = get_indexed(list_nf, indicies);
+                //let joined = join_list_nf(indexed);
+                //*input = joined
+                unimplemented!()
             }
         }
     }

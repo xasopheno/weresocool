@@ -16,8 +16,6 @@ main = {
 => Normalform
 
 
-
-
 things = { 
     Seq [
         List [Tm 1, Tm 9/8] @ [1, 2, 1]
@@ -25,7 +23,6 @@ things = {
         ET(12) @ [3, 2, 4, 3, 4]
     ]
 }
-
 
 Lop =
   List(Vec<Term>)

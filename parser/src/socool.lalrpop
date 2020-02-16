@@ -99,7 +99,7 @@ List: Term = {
   },
 
   <name: Name> "@" "[" <indicies: Ints> "]"=> {
-    Term::Lop(ListOp::IndexedNamedList { terms, indicies })
+    Term::Lop(ListOp::IndexedNamedList { name, indicies })
   },
 
   "List" "[" <operations: Operations> "]" => {
