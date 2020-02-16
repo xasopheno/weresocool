@@ -1,5 +1,8 @@
 use crate::ast::{Defs, ListOp, Term};
-use crate::operations::{helpers::join_sequence, NormalForm, Normalize};
+use crate::operations::{
+    helpers::{handle_id_error, join_sequence},
+    NormalForm, Normalize,
+};
 
 impl Normalize for ListOp {
     fn apply_to_normal_form(&self, input: &mut NormalForm, defs: &Defs) {
@@ -23,12 +26,19 @@ impl Normalize for ListOp {
             }
 
             ListOp::IndexedNamedList { name, indicies } => {
-                //let lop = handle_id_error(&name);
-                //let list_nf = normalize_list_terms(input, &terms, defs);
-                //let indexed = get_indexed(list_nf, indicies);
-                //let joined = join_list_nf(indexed);
-                //*input = joined
-                unimplemented!()
+                let lop = handle_id_error(name.to_string(), defs);
+                match lop {
+                    Term::Lop(list_op) => match list_op {
+                        ListOp::List(terms) => {
+                            let list_nf = normalize_list_terms(input, &terms, defs);
+                            let indexed = get_indexed(list_nf, indicies);
+                            let joined = join_list_nf(indexed);
+                            *input = joined
+                        }
+                        _ => unimplemented!(),
+                    },
+                    _ => unimplemented!(),
+                }
             }
         }
     }
