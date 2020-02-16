@@ -10,3 +10,6 @@ main = {
 	f(AsIs, Tm 9/8)	
 }
 
+expect = {
+    Seq [AsIs, Tm 9/8]
+}

@@ -1,4 +1,4 @@
-{ f: 220, l: 1, g: 1, p: 0}
+{ f: 220, l: 1, g: 1, p: 0 }
 
 f(a, b) = {
 	Sequence [
@@ -16,3 +16,10 @@ main = {
 	g(f(AsIs, Tm 3/2), f(Tm 9/8, Tm 4/3))	
 }
 	
+
+expect = {
+    Seq [
+        AsIs, Tm 3/2, 
+        Tm 9/8, Tm 4/3,
+    ]	
+}

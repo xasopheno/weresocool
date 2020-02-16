@@ -3,3 +3,7 @@
 main = {
 	Seq [Tm 3]
 }
+
+expect = {
+    Seq [Tm 3, Tm 2]
+}

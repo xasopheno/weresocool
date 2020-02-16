@@ -30,10 +30,10 @@ pub struct FunDef {
     pub term: Box<Term>,
 }
 
-//pub struct DefTable {
-//term_table: IndexMap<String, Term>,
-//list_table: IndexMap<String, Term>,
-//}
+pub struct DefTable {
+    term_table: IndexMap<String, Term>,
+    list_table: IndexMap<String, Term>,
+}
 
 pub type TermTable = IndexMap<String, Term>;
 

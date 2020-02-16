@@ -1,28 +1,16 @@
 #[cfg(test)]
 mod expect_tests {
-    use crate::testing::expect::expect_eq;
+    use crate::testing::expect::expect;
 
     #[test]
-    fn test_function() {
-        let _should_match = expect_eq(
-            "src/testing/mocks/simple_fun.socool",
-            "src/testing/mocks/simple.socool",
-        );
+    fn test_functions() {
+        expect("src/testing/mocks/simple_fun.socool");
+        expect("src/testing/mocks/fun_nested.socool");
     }
 
     #[test]
-    fn test_function_overlay() {
-        let _should_match = expect_eq(
-            "src/testing/mocks/fun_nested.socool",
-            "src/testing/mocks/fun_nested_expected.socool",
-        );
-    }
-
-    #[test]
-    fn test_simple_list() {
-        let _should_match = expect_eq(
-            "src/testing/mocks/simple_list.socool",
-            "src/testing/mocks/simple_list_expected.socool",
-        );
+    fn test_lists() {
+        expect("src/testing/mocks/simple_list.socool");
+        expect("src/testing/mocks/list_id.socool");
     }
 }
