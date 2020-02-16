@@ -24,18 +24,26 @@ et12 = ET(12)
     list_def @ [0, 1, 0]
 }
 
-list_in_seq = { 
-    Seq [melody, Tm 9/8]
+[x] op_composed_with_list = { 
+    Tm 9/8 | melody
+}
+
+[x] indexed_named_list = { 
+    list_def @ [0, 1, 0]
+}
+
+list_fit_length = { 
+    Seq [melody, Tm 9/8] > FitLength other_melody
 }
 
 inplace_et = { 
     ET(12)[0, 5, 11, 23, -4, -10, 3]
 }
 
-op_composed_with_list = { 
-    Tm 9/8 | melody
-}
 
+limit = {
+    Limit(5)[1, 2, 3, 4]
+}
 
 random = {
     ET(12)[Random(9)]

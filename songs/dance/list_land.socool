@@ -41,22 +41,22 @@ thing2 = {
     ]
     | scale @ [
        3, 5, 4, 0, 4, 0, 3, 0, 2, 1, 5, 
-       2, 4, 3, 5, 4, 7, 7, 5, 7 
+       2, 4, 3, 5, 4, 7, 7, 5, 7, 0,  
     ]
 }
 
 main = {
     Seq [
         Overlay [
-            thing1 
-            | Length 1/6,
+            thing1,
             thing2 
             | Tm 3/2 
-            | Length 1/4
+            > FitLength thing1
         ]
         | Seq [
-            Tm 1, Tm 9/8, Tm 25/24, Tm 6/5 | Reverse
+            Tm 1, Tm 9/8, Tm 6/5 | Reverse
         ]
+        | Length 1/6
         | Repeat 2
     ]
 }

@@ -32,8 +32,9 @@ impl GetLengthRatio for Term {
             Term::Op(op) => op.get_length_ratio(defs),
             Term::Nf(nf) => nf.get_length_ratio(defs),
             Term::FunDef(_fun) => unimplemented!(),
-            Term::Lop(_lop) => unimplemented!(),
+            Term::Lop(lop) => lop.get_length_ratio(defs),
             Term::Lnf(_lnf) => unimplemented!(),
         }
     }
 }
+

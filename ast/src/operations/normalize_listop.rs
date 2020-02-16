@@ -1,8 +1,46 @@
 use crate::ast::{Defs, ListOp, Term};
 use crate::operations::{
     helpers::{handle_id_error, join_sequence},
-    NormalForm, Normalize,
+    GetLengthRatio, NormalForm, Normalize,
 };
+use num_rational::Rational64;
+
+impl GetLengthRatio for ListOp {
+    fn get_length_ratio(&self, defs: &Defs) -> Rational64 {
+        match self {
+            ListOp::List(terms) => {
+                let mut new_total = Rational64::from_integer(0);
+                for term in terms {
+                    new_total += term.get_length_ratio(defs);
+                }
+                new_total
+            }
+            ListOp::IndexedNamedList { name, indicies } => {
+                let lop = handle_id_error(name.to_string(), defs);
+                match lop {
+                    Term::Lop(list_op) => match list_op {
+                        ListOp::List(terms) => {
+                            let mut new_total = Rational64::from_integer(0);
+                            let nf = NormalForm::init();
+
+                            let list_nf = normalize_list_terms(&nf, &terms, defs);
+                            let indexed = get_indexed(list_nf, indicies);
+
+                            for term in indexed {
+                                new_total += term.get_length_ratio(defs);
+                            }
+
+                            new_total
+                        }
+                        _ => unimplemented!(),
+                    },
+                    _ => unimplemented!(),
+                }
+            }
+            _ => unimplemented!(),
+        }
+    }
+}
 
 impl Normalize for ListOp {
     fn apply_to_normal_form(&self, input: &mut NormalForm, defs: &Defs) {
