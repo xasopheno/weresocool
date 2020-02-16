@@ -14,6 +14,6 @@ mod expect_tests {
         expect("src/testing/mocks/list_id.socool");
         expect("src/testing/mocks/list_with_indicies.socool");
         expect("src/testing/mocks/list_named_with_indicies.socool");
-        //expect("src/testing/mocks/list_composed_with_op.socool");
+        expect("src/testing/mocks/list_composed_with_op.socool");
     }
 }

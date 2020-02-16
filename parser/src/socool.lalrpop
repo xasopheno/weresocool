@@ -108,8 +108,13 @@ List: Term = {
 }
 
 ComposeOperation: Term = {
-    <ops: Pipe<BaseOperation>> => Term::Op(Compose { operations: ops }),
+    <ops: Pipe<Composeable>> => Term::Op(Compose { operations: ops }),
     <o: BaseOperation> => o,
+}
+
+Composeable: Term = {
+  <base_operation: BaseOperation> => base_operation,
+  <list: List> => list,
 }
 
 BaseOperation: Term = {
@@ -166,7 +171,7 @@ BaseOperation: Term = {
             Term::Op(TransposeM { m: tm }),
             Term::Op(Length { m: length }),
         ]})
-    }
+    },
 };
 
 Overtone: Term = {
