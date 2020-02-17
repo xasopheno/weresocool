@@ -1,6 +1,7 @@
 #[macro_use]
 extern crate lalrpop_util;
 pub mod error_handling;
+pub mod et;
 pub mod float_to_rational;
 pub mod imports;
 #[allow(clippy::all)]

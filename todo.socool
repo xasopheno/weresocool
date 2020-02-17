@@ -32,21 +32,22 @@ et12 = ET(12)
     list_def @ [0, 1, 0]
 }
 
-list_fit_length = { 
-    Seq [melody, Tm 9/8] > FitLength other_melody
+[x] list_fit_length = { 
+    List [Tm 1, Tm 9/8] @ [0, 1, 0] > FitLength other_list
+    List [Tm 1, Tm 9/8] > FitLength other_list
+    list > FitLength other_list
 }
 
-inplace_et = { 
-    ET(12)[0, 5, 11, 23, -4, -10, 3]
-}
-
-
-limit = {
-    Limit(5)[1, 2, 3, 4]
+et = { 
+    ET(12) @ [0, 5, 11, 23, -4, -10, 3]
 }
 
 random = {
     ET(12)[Random(9)]
+}
+
+limit = {
+    Limit(5)[1, 2, 3, 4]
 }
 
 indexed_transposed_list = { 

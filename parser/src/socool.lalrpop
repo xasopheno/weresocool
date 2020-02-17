@@ -14,6 +14,7 @@ use weresocool_ast::{
     },
 };
 use crate::parser::Init;
+use crate::et::et;
 use crate::float_to_rational::helpers::*;
 
 grammar<'defs, 'err>(
@@ -105,6 +106,8 @@ List: Term = {
   "List" "[" <operations: Operations> "]" => {
     Term::Lop(ListOp::List(operations))
   },
+
+  "ET" "(" <int: Int> ")" => Term::Lop(et(int))
 }
 
 ComposeOperation: Term = {

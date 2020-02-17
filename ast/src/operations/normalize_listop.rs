@@ -15,6 +15,19 @@ impl GetLengthRatio for ListOp {
                 }
                 new_total
             }
+            ListOp::IndexedList { terms, indicies } => {
+                let mut new_total = Rational64::from_integer(0);
+                let nf = NormalForm::init();
+
+                let list_nf = normalize_list_terms(&nf, &terms, defs);
+                let indexed = get_indexed(list_nf, indicies);
+
+                for term in indexed {
+                    new_total += term.get_length_ratio(defs);
+                }
+
+                new_total
+            }
             ListOp::IndexedNamedList { name, indicies } => {
                 let lop = handle_id_error(name.to_string(), defs);
                 match lop {
@@ -37,7 +50,6 @@ impl GetLengthRatio for ListOp {
                     _ => unimplemented!(),
                 }
             }
-            _ => unimplemented!(),
         }
     }
 }
