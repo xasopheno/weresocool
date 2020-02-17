@@ -24,6 +24,7 @@ pub enum RenderType {
 }
 
 #[derive(Clone, PartialEq, Debug)]
+#[allow(clippy::large_enum_variant)]
 pub enum RenderReturn {
     Json4d(String),
     Csv1d(String),
@@ -62,7 +63,7 @@ pub fn parsed_to_render(
         RenderType::Json4d => {
             to_json(
                 &basis,
-                &nf,
+                nf,
                 &parsed_composition.defs.clone(),
                 filename.to_string(),
             )?;
@@ -71,14 +72,14 @@ pub fn parsed_to_render(
         RenderType::Csv1d => {
             to_csv(
                 &basis,
-                &nf,
+                nf,
                 &parsed_composition.defs.clone(),
                 filename.to_string(),
             )?;
             Ok(RenderReturn::Csv1d("json".to_string()))
         }
         RenderType::StereoWaveform | RenderType::Wav => {
-            let stereo_waveform = render(&basis, &nf, &parsed_composition.defs);
+            let stereo_waveform = render(&basis, nf, &parsed_composition.defs);
             if return_type == RenderType::StereoWaveform {
                 Ok(RenderReturn::StereoWaveform(stereo_waveform))
             } else {
