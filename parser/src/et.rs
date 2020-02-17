@@ -1,8 +1,8 @@
 use crate::float_to_rational::helpers::f32_to_rational;
 use num_rational::Rational64;
-use weresocool_ast::{ListOp, Op, Term};
+use weresocool_ast::{Op, Term};
 
-pub fn et(d: i64) -> ListOp {
+pub fn et(d: i64) -> Vec<Term> {
     let mut ops = vec![];
     ops.push(Term::Op(Op::TransposeM {
         m: Rational64::from_integer(1),
@@ -14,5 +14,5 @@ pub fn et(d: i64) -> ListOp {
         }))
     }
 
-    ListOp::List(ops)
+    ops
 }

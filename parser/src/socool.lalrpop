@@ -99,15 +99,21 @@ List: Term = {
     Term::Lop(ListOp::IndexedList { terms, indicies })
   },
 
-  <name: Name> "@" "[" <indicies: Ints> "]"=> {
-    Term::Lop(ListOp::IndexedNamedList { name, indicies })
-  },
-
   "List" "[" <operations: Operations> "]" => {
     Term::Lop(ListOp::List(operations))
   },
 
-  "ET" "(" <int: Int> ")" => Term::Lop(et(int))
+  <name: Name> "@" "[" <indicies: Ints> "]"=> {
+    Term::Lop(ListOp::IndexedNamedList { name, indicies })
+  },
+
+
+  "ET" "(" <int: Int> ")" => Term::Lop(ListOp::List(et(int))),
+
+  "ET" "(" <int: Int> ")" "@" "[" <indicies: Ints> "]"=> {
+    Term::Lop(ListOp::IndexedList { terms: et(int), indicies })
+  },
+
 }
 
 ComposeOperation: Term = {
