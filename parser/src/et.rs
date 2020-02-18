@@ -5,6 +5,9 @@ use weresocool_ast::{Op, Term};
 pub fn et(d: i64) -> Vec<Term> {
     let mut ops = vec![];
     ops.push(Term::Op(Op::TransposeM {
+        m: Rational64::from_integer(0),
+    }));
+    ops.push(Term::Op(Op::TransposeM {
         m: Rational64::from_integer(1),
     }));
     for i in 1..d as usize {

@@ -26,6 +26,16 @@ pub enum ListOp {
     },
 }
 
+pub enum Indices {
+    IndexList(Vec<Index>),
+    Random(i64),
+}
+
+pub enum Index {
+    Index(i64),
+    //IndexAndTerm { index: i64, term: Term },
+}
+
 #[derive(Clone, PartialEq, Debug, Hash)]
 pub struct ListNf {
     operations: Vec<NormalForm>,

@@ -25,7 +25,6 @@ fn expect_eq_internal(input: &str) -> Result<(), Error> {
         .terms
         .get("expect")
         .unwrap_or_else(|| panic!("\n\n  No expect in: \n  {}\n\n", input));
-    //.expect(format!("\n\n  No expect in: \n  {}\n\n", input).as_str());
 
     let expected = match expect_term {
         Term::Nf(nf) => nf,
