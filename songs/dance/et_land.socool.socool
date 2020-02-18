@@ -20,7 +20,7 @@ thing1 = {
         ET(8) @ [3, 6, 4, 0, 1, 0, 4, 5, 2, 6, 7, 0, 3, 2, 1, 0, 7, 7],
         Tm 0,
     ]
-    | Seq [Invert | Tm 3/2, Tm 1, Reverse, Invert | Reverse | Tm 3/2]
+
     | Length 1/7
 }
 
@@ -35,19 +35,74 @@ thing2 = {
         ET(17),
         ET(72),
     ]
+}
 
+melody = {
+    O[
+    	(3/2, 0, 1/2, 0),
+      	(1/1, 0, 1/2, -1/2),
+      	(1/1, -4, 1/2, 1/2),
+  	]
+    | Seq [
+        Tm 3/4 | ET(5) @ [Random(10)],
+        Tm 7/8 | ET(3) @ [Random(10)] 
+    ] 
+    | Repeat 4
+}
 
+random_line = {
+    Tm 1/2 | ET(17) @ [Random(64)]
+}
+
+thing3 = {
+    O[
+    	(2/1, 0, 1/2, 1/2),
+      	(1/1, 0, 1, -1/2),
+  	]
+    | Seq [
+        melody,
+        
+        Tm 0, 
+
+        random_line,
+
+        Tm 0, 
+
+        --Seq [Tm 15/16, Tm 5/6, Tm 3/4, Tm 1/2]
+        --| List [Tm 1, Tm 9/8, Tm 5/4, Tm 3/4, Tm 0] @ [Random(24)],
+         
+        --Tm 0, 
+        
+        melody,
+
+        Tm 0, 
+
+        Overlay [
+            O[
+                (25/24, 0, 1/3, 1/2),
+                (1/1, 0, 1/3, -1/2),
+                (1/2, 0, 1/4, -1/2),
+                (1/2, 0, 1/4, 1/8),
+            ]
+            | Tm 5/6 | ET(9) @ [Random(72)] | Length 4/5,
+        ],
+
+        Tm 0,
+    ]
+    | Length 1/10
+    | Length 8/7 
 }
 
 main = {
-    Overlay [
-        thing1 
-        | Tm 3/4
-        | overtones,
-        --Gain 2 | Tm 1 > FitLength thing1
+    Seq [
+        thing3 | Repeat 2,
+        --Gain 1/2 | Overlay [
+            --thing1
+            --| Tm 3/4
+            --| overtones,
+            ----Gain 2 | Tm 1 > FitLength thing1
+        --]
+        --| Length 3/4,
     ]
-    --| Seq [Tm 7/6, Tm 7/8, Tm 9/8, Tm 1]
-    | Length 3/4
-    | Repeat 3
 }
 	

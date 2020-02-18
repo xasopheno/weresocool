@@ -31,6 +31,7 @@ fn expect_eq_internal(input: &str) -> Result<(), Error> {
         _ => unimplemented!(),
     };
 
+    println!("\n\n\t{}\n\n", input);
     assert_eq!(nf, *expected);
     Ok(())
 }

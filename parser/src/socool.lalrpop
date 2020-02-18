@@ -10,7 +10,10 @@ use weresocool_ast::{
         is_choice_op,
         ASR,
         FunDef,
-        ListOp
+        ListOp,
+        Indices, 
+        Index,
+        IndexList 
     },
 };
 use crate::parser::Init;
@@ -95,26 +98,50 @@ Operation: Term = {
 }
 
 List: Term = {
-  "List" "[" <terms: Operations> "]" "@" "[" <indicies: Ints> "]"=> {
-    Term::Lop(ListOp::IndexedList { terms, indicies })
+  "List" "[" <terms: Operations> "]" "@" "[" <indices: Indices> "]"=> {
+    Term::Lop(
+      ListOp::IndexedList { 
+        terms, 
+        indices
+      }
+    )
   },
 
   "List" "[" <operations: Operations> "]" => {
     Term::Lop(ListOp::List(operations))
   },
 
-  <name: Name> "@" "[" <indicies: Ints> "]"=> {
-    Term::Lop(ListOp::IndexedNamedList { name, indicies })
+  <name: Name> "@" "[" <indices: Indices> "]"=> {
+    Term::Lop(
+      ListOp::IndexedNamedList { 
+        name, 
+        indices
+      }
+    )
   },
 
 
   "ET" "(" <int: Int> ")" => Term::Lop(ListOp::List(et(int))),
 
-  "ET" "(" <int: Int> ")" "@" "[" <indicies: Ints> "]"=> {
-    Term::Lop(ListOp::IndexedList { terms: et(int), indicies })
+  "ET" "(" <int: Int> ")" "@" "[" <indices: Indices> "]"=> {
+    Term::Lop(
+      ListOp::IndexedList { 
+        terms: et(int), 
+        indices  
+      }
+    )
   },
 
 }
+
+Indices: Indices = {
+  <indices: Comma<Index>> => Indices::IndexList(IndexList::new(indices)),
+  "Random" "(" <int: Int> ")" => Indices::Random(int)
+};
+
+Index: Index = {
+  <int: Int> => Index::Index(int),
+} 
 
 ComposeOperation: Term = {
     <ops: Pipe<Composeable>> => Term::Op(Compose { operations: ops }),
