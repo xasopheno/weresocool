@@ -35,8 +35,8 @@
     ET(12) @ [0, 5, 11, 23, -4, -10, 3]
 }
 
-random = {
-    ET(12)[Random(9)]
+[x] random = {
+    ET(12)[Random(9, 0)]
 }
 
 limit = {

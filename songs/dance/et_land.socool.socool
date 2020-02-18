@@ -60,6 +60,11 @@ thing3 = {
       	(1/1, 0, 1, -1/2),
   	]
     | Seq [
+        Seq [Tm 15/16, Tm 5/6, Tm 3/4, Tm 1/2]
+        | List [Tm 1, Tm 9/8, Tm 5/4, Tm 3/4, Tm 0] @ [Random(24)],
+         
+        Tm 0, 
+
         melody,
         
         Tm 0, 
@@ -67,11 +72,6 @@ thing3 = {
         random_line,
 
         Tm 0, 
-
-        --Seq [Tm 15/16, Tm 5/6, Tm 3/4, Tm 1/2]
-        --| List [Tm 1, Tm 9/8, Tm 5/4, Tm 3/4, Tm 0] @ [Random(24)],
-         
-        --Tm 0, 
         
         melody,
 
