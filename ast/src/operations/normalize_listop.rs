@@ -4,7 +4,7 @@ use crate::operations::{
     GetLengthRatio, NormalForm, Normalize,
 };
 use num_rational::Rational64;
-use rand::{thread_rng, Rng};
+use rand::{rngs::StdRng, thread_rng, Rng, SeedableRng};
 
 impl GetLengthRatio for ListOp {
     fn get_length_ratio(&self, defs: &Defs) -> Rational64 {
@@ -113,12 +113,23 @@ fn get_indexed(list_nf: Vec<NormalForm>, indices: &Indices) -> Vec<NormalForm> {
                 }
             }
         }
-        Indices::Random(n) => {
-            let mut rng = thread_rng();
-            for _ in 0..*n {
-                let n: usize = rng.gen_range(0, list_nf.len());
-                indexed.push(list_nf[n].clone());
-            }
+        Indices::Random(n, seed) => {
+            match seed {
+                Some(s) => {
+                    let mut rng: StdRng = SeedableRng::seed_from_u64(*s as u64);
+                    for _ in 0..*n {
+                        let n: usize = rng.gen_range(0, list_nf.len());
+                        indexed.push(list_nf[n].clone());
+                    }
+                }
+                None => {
+                    let mut rng = thread_rng();
+                    for _ in 0..*n {
+                        let n: usize = rng.gen_range(0, list_nf.len());
+                        indexed.push(list_nf[n].clone());
+                    }
+                }
+            };
         }
     }
 

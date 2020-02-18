@@ -136,7 +136,8 @@ List: Term = {
 
 Indices: Indices = {
   <indices: Comma<Index>> => Indices::IndexList(IndexList::new(indices)),
-  "Random" "(" <int: Int> ")" => Indices::Random(int)
+  "Random" "(" <int: Int> ")" => Indices::Random(int, None),
+  "Random" "(" <int: Int> "," <seed: Int> ")" => Indices::Random(int, Some(seed))
 };
 
 Index: Index = {

@@ -23,7 +23,7 @@ pub enum ListOp {
 #[derive(Clone, PartialEq, Debug, Hash)]
 pub enum Indices {
     IndexList(IndexList),
-    Random(i64),
+    Random(i64, Option<i64>),
 }
 
 #[derive(Clone, PartialEq, Debug, Hash)]
