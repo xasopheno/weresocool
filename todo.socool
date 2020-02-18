@@ -39,6 +39,11 @@
     ET(12)[Random(9, 0)]
 }
 
+[x] index_with_op = { 
+    List [Tm 1, Tm 2] @ [0, 1 | Length 1/2, 0]
+}
+
+
 limit = {
     Limit(5)[1, 2, 3, 4]
 }
@@ -47,11 +52,6 @@ indexed_transposed_list = {
     et12[0, /11, /10, /7, /4, 5, 3, 2, /11, 7, \2]
 }
 
-
-Lop =
-  List(Vec<Term>)
-| IndexedList(List, Indicies: Vec<Index>)
-| ET(Int)
 
 Index =
   Int
