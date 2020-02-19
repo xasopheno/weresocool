@@ -1,0 +1,11 @@
+/Users/danny/Documents/dev/WereSoCool/sound/e2e_tests/target/rls/debug/deps/futures_task-d675fc4192c9150d.rmeta: /Users/danny/.cargo/registry/src/github.com-1ecc6299db9ec823/futures-task-0.3.3/src/lib.rs /Users/danny/.cargo/registry/src/github.com-1ecc6299db9ec823/futures-task-0.3.3/src/spawn.rs /Users/danny/.cargo/registry/src/github.com-1ecc6299db9ec823/futures-task-0.3.3/src/future_obj.rs /Users/danny/.cargo/registry/src/github.com-1ecc6299db9ec823/futures-task-0.3.3/src/noop_waker.rs /Users/danny/.cargo/registry/src/github.com-1ecc6299db9ec823/futures-task-0.3.3/src/arc_wake.rs /Users/danny/.cargo/registry/src/github.com-1ecc6299db9ec823/futures-task-0.3.3/src/waker.rs /Users/danny/.cargo/registry/src/github.com-1ecc6299db9ec823/futures-task-0.3.3/src/waker_ref.rs
+
+/Users/danny/Documents/dev/WereSoCool/sound/e2e_tests/target/rls/debug/deps/futures_task-d675fc4192c9150d.d: /Users/danny/.cargo/registry/src/github.com-1ecc6299db9ec823/futures-task-0.3.3/src/lib.rs /Users/danny/.cargo/registry/src/github.com-1ecc6299db9ec823/futures-task-0.3.3/src/spawn.rs /Users/danny/.cargo/registry/src/github.com-1ecc6299db9ec823/futures-task-0.3.3/src/future_obj.rs /Users/danny/.cargo/registry/src/github.com-1ecc6299db9ec823/futures-task-0.3.3/src/noop_waker.rs /Users/danny/.cargo/registry/src/github.com-1ecc6299db9ec823/futures-task-0.3.3/src/arc_wake.rs /Users/danny/.cargo/registry/src/github.com-1ecc6299db9ec823/futures-task-0.3.3/src/waker.rs /Users/danny/.cargo/registry/src/github.com-1ecc6299db9ec823/futures-task-0.3.3/src/waker_ref.rs
+
+/Users/danny/.cargo/registry/src/github.com-1ecc6299db9ec823/futures-task-0.3.3/src/lib.rs:
+/Users/danny/.cargo/registry/src/github.com-1ecc6299db9ec823/futures-task-0.3.3/src/spawn.rs:
+/Users/danny/.cargo/registry/src/github.com-1ecc6299db9ec823/futures-task-0.3.3/src/future_obj.rs:
+/Users/danny/.cargo/registry/src/github.com-1ecc6299db9ec823/futures-task-0.3.3/src/noop_waker.rs:
+/Users/danny/.cargo/registry/src/github.com-1ecc6299db9ec823/futures-task-0.3.3/src/arc_wake.rs:
+/Users/danny/.cargo/registry/src/github.com-1ecc6299db9ec823/futures-task-0.3.3/src/waker.rs:
+/Users/danny/.cargo/registry/src/github.com-1ecc6299db9ec823/futures-task-0.3.3/src/waker_ref.rs:

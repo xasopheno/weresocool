@@ -1,0 +1,13 @@
+{ f: 220, l: 1, g: 1, p: 0 } 
+
+unit = { Length 1 }
+
+main = {
+    List [Tm 1, Tm 9/8]  
+    > FitLength unit
+}
+
+expect = {
+    Seq [Tm 1, Tm 9/8] | Length 1/2
+}
+

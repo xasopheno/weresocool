@@ -1,0 +1,10 @@
+{ f: 220, l: 1, g: 1, p: 0 } 
+
+main = {
+    List [Tm 1, Tm 9/8] @ [0, 1 | Length 1/2, 0]
+}
+
+expect = {
+    Seq [Tm 1, Tm 9/8 | Length 1/2, Tm 1]
+}
+

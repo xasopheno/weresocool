@@ -1,0 +1,11 @@
+/Users/danny/Documents/dev/WereSoCool/sound/e2e_tests/target/rls/debug/deps/regex_automata-ceea3ec71f7fda89.rmeta: /Users/danny/.cargo/registry/src/github.com-1ecc6299db9ec823/regex-automata-0.1.8/src/lib.rs /Users/danny/.cargo/registry/src/github.com-1ecc6299db9ec823/regex-automata-0.1.8/src/classes.rs /Users/danny/.cargo/registry/src/github.com-1ecc6299db9ec823/regex-automata-0.1.8/src/dense.rs /Users/danny/.cargo/registry/src/github.com-1ecc6299db9ec823/regex-automata-0.1.8/src/dfa.rs /Users/danny/.cargo/registry/src/github.com-1ecc6299db9ec823/regex-automata-0.1.8/src/regex.rs /Users/danny/.cargo/registry/src/github.com-1ecc6299db9ec823/regex-automata-0.1.8/src/sparse.rs /Users/danny/.cargo/registry/src/github.com-1ecc6299db9ec823/regex-automata-0.1.8/src/state_id.rs
+
+/Users/danny/Documents/dev/WereSoCool/sound/e2e_tests/target/rls/debug/deps/regex_automata-ceea3ec71f7fda89.d: /Users/danny/.cargo/registry/src/github.com-1ecc6299db9ec823/regex-automata-0.1.8/src/lib.rs /Users/danny/.cargo/registry/src/github.com-1ecc6299db9ec823/regex-automata-0.1.8/src/classes.rs /Users/danny/.cargo/registry/src/github.com-1ecc6299db9ec823/regex-automata-0.1.8/src/dense.rs /Users/danny/.cargo/registry/src/github.com-1ecc6299db9ec823/regex-automata-0.1.8/src/dfa.rs /Users/danny/.cargo/registry/src/github.com-1ecc6299db9ec823/regex-automata-0.1.8/src/regex.rs /Users/danny/.cargo/registry/src/github.com-1ecc6299db9ec823/regex-automata-0.1.8/src/sparse.rs /Users/danny/.cargo/registry/src/github.com-1ecc6299db9ec823/regex-automata-0.1.8/src/state_id.rs
+
+/Users/danny/.cargo/registry/src/github.com-1ecc6299db9ec823/regex-automata-0.1.8/src/lib.rs:
+/Users/danny/.cargo/registry/src/github.com-1ecc6299db9ec823/regex-automata-0.1.8/src/classes.rs:
+/Users/danny/.cargo/registry/src/github.com-1ecc6299db9ec823/regex-automata-0.1.8/src/dense.rs:
+/Users/danny/.cargo/registry/src/github.com-1ecc6299db9ec823/regex-automata-0.1.8/src/dfa.rs:
+/Users/danny/.cargo/registry/src/github.com-1ecc6299db9ec823/regex-automata-0.1.8/src/regex.rs:
+/Users/danny/.cargo/registry/src/github.com-1ecc6299db9ec823/regex-automata-0.1.8/src/sparse.rs:
+/Users/danny/.cargo/registry/src/github.com-1ecc6299db9ec823/regex-automata-0.1.8/src/state_id.rs:

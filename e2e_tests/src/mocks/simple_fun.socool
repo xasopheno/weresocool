@@ -1,0 +1,15 @@
+{ f: 220, l: 1, g: 1, p: 0}
+
+f(a, b) = {
+	Sequence [
+	    a, b,
+	] 
+}
+
+main = {
+	f(AsIs, Tm 9/8)	
+}
+
+expect = {
+    Seq [AsIs, Tm 9/8]
+}

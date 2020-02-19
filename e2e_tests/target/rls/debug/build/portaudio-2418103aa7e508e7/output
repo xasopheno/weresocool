@@ -1,0 +1,6 @@
+cargo:rustc-link-search=native=/usr/local/Cellar/portaudio/19.6.0/lib
+cargo:rustc-link-lib=portaudio
+cargo:rustc-link-lib=framework=CoreAudio
+cargo:rustc-link-lib=framework=AudioToolbox
+cargo:rustc-link-lib=framework=AudioUnit
+cargo:rustc-link-lib=framework=Carbon

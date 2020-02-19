@@ -1,0 +1,2 @@
+cargo:rustc-cfg=memoffset_maybe_uninit
+cargo:rustc-cfg=memoffset_doctests

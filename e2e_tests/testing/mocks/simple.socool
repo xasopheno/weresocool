@@ -1,0 +1,9 @@
+{ f: 220, l: 1, g: 1, p: 0}
+
+main = {
+	Seq [AsIs, Tm 9/8]
+}
+
+expect = {
+    Seq [AsIs, Tm 9/8]
+}

@@ -69,6 +69,7 @@ members = [
     "ast",
     "parser",
     "error",
+    "e2e_tests"
 ]
 
 [[bin]]

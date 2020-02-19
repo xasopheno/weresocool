@@ -1,0 +1,10 @@
+/Users/danny/Documents/dev/WereSoCool/sound/e2e_tests/target/rls/debug/deps/futures_channel-c543c9012f8d2a96.rmeta: /Users/danny/.cargo/registry/src/github.com-1ecc6299db9ec823/futures-channel-0.3.3/src/lib.rs /Users/danny/.cargo/registry/src/github.com-1ecc6299db9ec823/futures-channel-0.3.3/src/lock.rs /Users/danny/.cargo/registry/src/github.com-1ecc6299db9ec823/futures-channel-0.3.3/src/mpsc/mod.rs /Users/danny/.cargo/registry/src/github.com-1ecc6299db9ec823/futures-channel-0.3.3/src/mpsc/queue.rs /Users/danny/.cargo/registry/src/github.com-1ecc6299db9ec823/futures-channel-0.3.3/src/mpsc/sink_impl.rs /Users/danny/.cargo/registry/src/github.com-1ecc6299db9ec823/futures-channel-0.3.3/src/oneshot.rs
+
+/Users/danny/Documents/dev/WereSoCool/sound/e2e_tests/target/rls/debug/deps/futures_channel-c543c9012f8d2a96.d: /Users/danny/.cargo/registry/src/github.com-1ecc6299db9ec823/futures-channel-0.3.3/src/lib.rs /Users/danny/.cargo/registry/src/github.com-1ecc6299db9ec823/futures-channel-0.3.3/src/lock.rs /Users/danny/.cargo/registry/src/github.com-1ecc6299db9ec823/futures-channel-0.3.3/src/mpsc/mod.rs /Users/danny/.cargo/registry/src/github.com-1ecc6299db9ec823/futures-channel-0.3.3/src/mpsc/queue.rs /Users/danny/.cargo/registry/src/github.com-1ecc6299db9ec823/futures-channel-0.3.3/src/mpsc/sink_impl.rs /Users/danny/.cargo/registry/src/github.com-1ecc6299db9ec823/futures-channel-0.3.3/src/oneshot.rs
+
+/Users/danny/.cargo/registry/src/github.com-1ecc6299db9ec823/futures-channel-0.3.3/src/lib.rs:
+/Users/danny/.cargo/registry/src/github.com-1ecc6299db9ec823/futures-channel-0.3.3/src/lock.rs:
+/Users/danny/.cargo/registry/src/github.com-1ecc6299db9ec823/futures-channel-0.3.3/src/mpsc/mod.rs:
+/Users/danny/.cargo/registry/src/github.com-1ecc6299db9ec823/futures-channel-0.3.3/src/mpsc/queue.rs:
+/Users/danny/.cargo/registry/src/github.com-1ecc6299db9ec823/futures-channel-0.3.3/src/mpsc/sink_impl.rs:
+/Users/danny/.cargo/registry/src/github.com-1ecc6299db9ec823/futures-channel-0.3.3/src/oneshot.rs:

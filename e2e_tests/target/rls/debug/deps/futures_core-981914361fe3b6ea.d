@@ -1,0 +1,11 @@
+/Users/danny/Documents/dev/WereSoCool/sound/e2e_tests/target/rls/debug/deps/futures_core-981914361fe3b6ea.rmeta: /Users/danny/.cargo/registry/src/github.com-1ecc6299db9ec823/futures-core-0.3.3/src/lib.rs /Users/danny/.cargo/registry/src/github.com-1ecc6299db9ec823/futures-core-0.3.3/src/future.rs /Users/danny/.cargo/registry/src/github.com-1ecc6299db9ec823/futures-core-0.3.3/src/stream.rs /Users/danny/.cargo/registry/src/github.com-1ecc6299db9ec823/futures-core-0.3.3/src/task/mod.rs /Users/danny/.cargo/registry/src/github.com-1ecc6299db9ec823/futures-core-0.3.3/src/task/poll.rs /Users/danny/.cargo/registry/src/github.com-1ecc6299db9ec823/futures-core-0.3.3/src/task/__internal/mod.rs /Users/danny/.cargo/registry/src/github.com-1ecc6299db9ec823/futures-core-0.3.3/src/task/__internal/atomic_waker.rs
+
+/Users/danny/Documents/dev/WereSoCool/sound/e2e_tests/target/rls/debug/deps/futures_core-981914361fe3b6ea.d: /Users/danny/.cargo/registry/src/github.com-1ecc6299db9ec823/futures-core-0.3.3/src/lib.rs /Users/danny/.cargo/registry/src/github.com-1ecc6299db9ec823/futures-core-0.3.3/src/future.rs /Users/danny/.cargo/registry/src/github.com-1ecc6299db9ec823/futures-core-0.3.3/src/stream.rs /Users/danny/.cargo/registry/src/github.com-1ecc6299db9ec823/futures-core-0.3.3/src/task/mod.rs /Users/danny/.cargo/registry/src/github.com-1ecc6299db9ec823/futures-core-0.3.3/src/task/poll.rs /Users/danny/.cargo/registry/src/github.com-1ecc6299db9ec823/futures-core-0.3.3/src/task/__internal/mod.rs /Users/danny/.cargo/registry/src/github.com-1ecc6299db9ec823/futures-core-0.3.3/src/task/__internal/atomic_waker.rs
+
+/Users/danny/.cargo/registry/src/github.com-1ecc6299db9ec823/futures-core-0.3.3/src/lib.rs:
+/Users/danny/.cargo/registry/src/github.com-1ecc6299db9ec823/futures-core-0.3.3/src/future.rs:
+/Users/danny/.cargo/registry/src/github.com-1ecc6299db9ec823/futures-core-0.3.3/src/stream.rs:
+/Users/danny/.cargo/registry/src/github.com-1ecc6299db9ec823/futures-core-0.3.3/src/task/mod.rs:
+/Users/danny/.cargo/registry/src/github.com-1ecc6299db9ec823/futures-core-0.3.3/src/task/poll.rs:
+/Users/danny/.cargo/registry/src/github.com-1ecc6299db9ec823/futures-core-0.3.3/src/task/__internal/mod.rs:
+/Users/danny/.cargo/registry/src/github.com-1ecc6299db9ec823/futures-core-0.3.3/src/task/__internal/atomic_waker.rs:
