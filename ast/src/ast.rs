@@ -35,8 +35,11 @@ impl IndexList {
         let mut result = vec![];
         for index in indices {
             match index {
-                Index::Index(int) => result.push(Index::Index(int)),
-                Index::Random(int, seed) => result.push(Index::Random(int, seed)),
+                Index::Index(index) => result.push(Index::Index(index)),
+                Index::Random(index, seed) => result.push(Index::Random(index, seed)),
+                Index::IndexAndTerm { index, term } => {
+                    result.push(Index::IndexAndTerm { index, term })
+                }
             }
         }
         Self { indices: result }
@@ -47,7 +50,7 @@ impl IndexList {
 pub enum Index {
     Index(i64),
     Random(i64, Option<i64>),
-    //IndexAndTerm { index: i64, term: Term },
+    IndexAndTerm { index: i64, term: Term },
 }
 
 #[derive(Clone, PartialEq, Debug, Hash)]

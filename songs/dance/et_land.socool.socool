@@ -39,10 +39,16 @@ thing2 = {
 
 melody = {
     O[
+      	(2/1, 0, 1/2, -1/2),
+      	(2/1, -4, 1/2, 1/2),
+    	(3/2, 0, 1/2, 0),
     	(3/2, 0, 1/2, 0),
       	(1/1, 0, 1/2, -1/2),
       	(1/1, -4, 1/2, 1/2),
+    	(3/4, 0, 1/2, 0),
+    	(3/4, 0, 1/2, 0),
   	]
+    | Gain 3/5 
     | Seq [
         Tm 3/4 | ET(5) @ [Random(10)],
         Tm 7/8 | ET(3) @ [Random(10)] 
@@ -56,26 +62,20 @@ random_line = {
 
 thing3 = {
     O[
-    	(2/1, 0, 1/2, 1/2),
-      	(1/1, 0, 1, -1/2),
+    	(2/1, 0.2, 1/2, 1/2),
+      	(1/1, -0.3, 1, -1/2),
+      	(1/1, 0.1, 1, 0),
   	]
     | Seq [
-        Seq [Tm 15/16, Tm 5/6, Tm 3/4, Tm 1/2]
-        | List [Tm 1, Tm 9/8, Tm 5/4, Tm 3/4, Tm 0] @ [Random(24)],
+        Seq [Tm 15/16, Tm 5/6, Tm 3/4 | Gain 3/4, Tm 1/2]
+        | List [Tm 1, Tm 9/8 | PanA 1/8, Tm 5/4 | PanA -1/8, Tm 3/4, Tm 0] 
+        @ [Random(24)],
          
         Tm 0, 
 
-        melody,
-        
-        Tm 0, 
-
-        random_line,
-
-        Tm 0, 
-        
-        melody,
-
-        Tm 0, 
+        melody, Tm 0, 
+        random_line, Tm 0, 
+        melody, Tm 0, 
 
         Overlay [
             O[

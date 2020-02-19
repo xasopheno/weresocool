@@ -21,7 +21,7 @@ impl GetLengthRatio for ListOp {
                 let nf = NormalForm::init();
 
                 let list_nf = normalize_list_terms(&nf, &terms, defs);
-                let indexed = get_indexed(list_nf, indices);
+                let indexed = get_indexed(list_nf, indices, defs);
 
                 for term in indexed {
                     new_total += term.get_length_ratio(defs);
@@ -38,7 +38,7 @@ impl GetLengthRatio for ListOp {
                             let nf = NormalForm::init();
 
                             let list_nf = normalize_list_terms(&nf, &terms, defs);
-                            let indexed = get_indexed(list_nf, indices);
+                            let indexed = get_indexed(list_nf, indices, defs);
 
                             for term in indexed {
                                 new_total += term.get_length_ratio(defs);
@@ -70,7 +70,7 @@ impl Normalize for ListOp {
             }
             ListOp::IndexedList { terms, indices } => {
                 let list_nf = normalize_list_terms(input, &terms, defs);
-                let indexed = get_indexed(list_nf, indices);
+                let indexed = get_indexed(list_nf, indices, defs);
                 let joined = join_list_nf(indexed);
                 *input = joined
             }
@@ -81,7 +81,7 @@ impl Normalize for ListOp {
                     Term::Lop(list_op) => match list_op {
                         ListOp::List(terms) => {
                             let list_nf = normalize_list_terms(input, &terms, defs);
-                            let indexed = get_indexed(list_nf, indices);
+                            let indexed = get_indexed(list_nf, indices, defs);
                             let joined = join_list_nf(indexed);
                             *input = joined
                         }
@@ -103,7 +103,7 @@ fn join_list_nf(indexed: Vec<NormalForm>) -> NormalForm {
     return result;
 }
 
-fn get_indexed(list_nf: Vec<NormalForm>, indices: &Indices) -> Vec<NormalForm> {
+fn get_indexed(list_nf: Vec<NormalForm>, indices: &Indices, defs: &Defs) -> Vec<NormalForm> {
     let mut indexed = vec![];
     match indices {
         Indices::IndexList(index_list) => {
@@ -125,6 +125,11 @@ fn get_indexed(list_nf: Vec<NormalForm>, indices: &Indices) -> Vec<NormalForm> {
                         }
                     }
                     Index::Index(int) => indexed.push(list_nf[*int as usize].clone()),
+                    Index::IndexAndTerm { index, term } => {
+                        let mut nf = list_nf[*index as usize].clone();
+                        term.apply_to_normal_form(&mut nf, defs);
+                        indexed.push(nf);
+                    }
                 }
             }
         }
