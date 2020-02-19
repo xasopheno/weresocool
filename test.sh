@@ -6,7 +6,7 @@ if [[ $* == *--rehash* ]]
 then
   cargo run --release --bin snapshot -- --rehash
 else
-  cargo test --workspace
+  cargo test --workspace --release
   pwd
   cargo run --release --bin snapshot
 fi
