@@ -100,7 +100,7 @@ fn join_list_nf(indexed: Vec<NormalForm>) -> NormalForm {
         result = join_sequence(result, nf);
     }
 
-    return result;
+    result
 }
 
 fn get_indexed(list_nf: Vec<NormalForm>, indices: &Indices, defs: &Defs) -> Vec<NormalForm> {
@@ -138,7 +138,7 @@ fn get_indexed(list_nf: Vec<NormalForm>, indices: &Indices, defs: &Defs) -> Vec<
     indexed
 }
 
-fn normalize_list_terms(nf: &NormalForm, terms: &Vec<Term>, defs: &Defs) -> Vec<NormalForm> {
+fn normalize_list_terms(nf: &NormalForm, terms: &[Term], defs: &Defs) -> Vec<NormalForm> {
     let mut list_nf = vec![];
     for term in terms {
         let mut nf = nf.clone();

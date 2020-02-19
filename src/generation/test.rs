@@ -32,7 +32,7 @@ pub mod tests {
     #[test]
     fn to_vec_timed_op_test() {
         let mut normal_form = NormalForm::init();
-        let pt = Defs::new();
+        let pt: Defs = Default::default();
 
         Overlay {
             operations: vec![

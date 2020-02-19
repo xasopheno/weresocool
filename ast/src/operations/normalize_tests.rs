@@ -9,7 +9,7 @@ pub mod normalize_tests {
     use num_rational::{Ratio, Rational64};
 
     fn make_parse_table() -> Defs {
-        Defs::new()
+        Default::default()
     }
 
     fn mock_names() -> (NameSet, NameSet) {

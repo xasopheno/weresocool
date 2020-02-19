@@ -1,5 +1,3 @@
-extern crate indexmap;
-extern crate num_rational;
 use crate::operations::{helpers::handle_id_error, NormalForm};
 use indexmap::IndexMap;
 use num_rational::Rational64;
@@ -65,19 +63,10 @@ pub struct FunDef {
     pub term: Box<Term>,
 }
 
-#[derive(Debug, Clone, PartialEq)]
+#[derive(Debug, Clone, PartialEq, Default)]
 pub struct Defs {
     pub terms: IndexMap<String, Term>,
     pub lists: IndexMap<String, Term>,
-}
-
-impl Defs {
-    pub fn new() -> Self {
-        Self {
-            terms: IndexMap::new(),
-            lists: IndexMap::new(),
-        }
-    }
 }
 
 #[derive(Clone, PartialEq, Debug, Hash)]

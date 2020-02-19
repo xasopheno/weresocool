@@ -13,7 +13,7 @@ pub mod test {
     }
 
     fn test_parsed_operation(mut parse_str: String, expected: Op) {
-        let mut defs = Defs::new();
+        let mut defs: Defs = Default::default();
 
         parse_str.push_str("}");
 
@@ -76,7 +76,7 @@ pub mod test {
     #[test]
     fn init_test() {
         let mut parse_str = mock_init();
-        let mut defs = Defs::new();
+        let mut defs: Defs = Default::default();
         parse_str.push_str("AsIs }");
         let init = socool::SoCoolParser::new()
             .parse(&mut defs, &parse_str)
@@ -278,7 +278,7 @@ pub mod test {
 
     #[test]
     fn let_insert() {
-        let mut defs = Defs::new();
+        let mut defs: Defs = Default::default();
         socool::SoCoolParser::new()
             .parse(
                 &mut defs,
@@ -310,7 +310,7 @@ pub mod test {
 
     //        #[test]
     //        fn let_get() {
-    //            let mut defs = Defs::new();
+    //            let mut defs: Defs = Default::default();
     //            socool::SoCoolParser::new()
     //                .parse(
     //                    &mut defs,
@@ -330,7 +330,7 @@ pub mod test {
 
     #[test]
     fn fit_length_test() {
-        let mut defs = Defs::new();
+        let mut defs: Defs = Default::default();
 
         let _result = socool::SoCoolParser::new().parse(
             &mut defs,

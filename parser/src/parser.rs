@@ -28,7 +28,7 @@ pub struct ParsedComposition {
 }
 
 fn process_op_table(defs: Defs) -> Defs {
-    let mut result = Defs::new();
+    let mut result: Defs = Default::default();
 
     for (name, term) in defs.terms.iter() {
         match term {
@@ -92,10 +92,10 @@ pub fn parse_file(
     vec_string: Vec<String>,
     prev_defs: Option<Defs>,
 ) -> Result<ParsedComposition, ParseError> {
-    let mut defs = if let Some(defs) = prev_defs {
+    let mut defs: Defs = if let Some(defs) = prev_defs {
         defs
     } else {
-        Defs::new()
+        Default::default()
     };
 
     let (imports_needed, composition) =
