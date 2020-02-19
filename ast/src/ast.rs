@@ -23,7 +23,6 @@ pub enum ListOp {
 #[derive(Clone, PartialEq, Debug, Hash)]
 pub enum Indices {
     IndexList(IndexList),
-    Random(i64, Option<i64>),
 }
 
 #[derive(Clone, PartialEq, Debug, Hash)]
@@ -37,6 +36,7 @@ impl IndexList {
         for index in indices {
             match index {
                 Index::Index(int) => result.push(Index::Index(int)),
+                Index::Random(int, seed) => result.push(Index::Random(int, seed)),
             }
         }
         Self { indices: result }
@@ -46,6 +46,7 @@ impl IndexList {
 #[derive(Clone, PartialEq, Debug, Hash)]
 pub enum Index {
     Index(i64),
+    Random(i64, Option<i64>),
     //IndexAndTerm { index: i64, term: Term },
 }
 

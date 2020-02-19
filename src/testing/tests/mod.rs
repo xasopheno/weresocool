@@ -20,5 +20,7 @@ mod expect_tests {
         expect("src/testing/mocks/list_indexed_fit_length.socool");
         expect("src/testing/mocks/et_list.socool");
         expect("src/testing/mocks/list_with_random.socool");
+        expect("src/testing/mocks/list_with_random_and_index.socool");
+        expect("src/testing/mocks/index_with_term.socool");
     }
 }

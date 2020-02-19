@@ -109,23 +109,23 @@ fn get_indexed(list_nf: Vec<NormalForm>, indices: &Indices) -> Vec<NormalForm> {
         Indices::IndexList(index_list) => {
             for index in index_list.indices.iter() {
                 match index {
+                    Index::Random(n, seed) => {
+                        let mut rng: StdRng = match seed {
+                            Some(s) => SeedableRng::seed_from_u64(*s as u64),
+                            None => {
+                                let mut rng = thread_rng();
+                                let s = rng.gen::<u64>();
+                                //println!("seed: {}", s);
+                                SeedableRng::seed_from_u64(s as u64)
+                            }
+                        };
+                        for _ in 0..*n {
+                            let n: usize = rng.gen_range(0, list_nf.len());
+                            indexed.push(list_nf[n].clone());
+                        }
+                    }
                     Index::Index(int) => indexed.push(list_nf[*int as usize].clone()),
                 }
-            }
-        }
-        Indices::Random(n, seed) => {
-            let mut rng: StdRng = match seed {
-                Some(s) => SeedableRng::seed_from_u64(*s as u64),
-                None => {
-                    let mut rng = thread_rng();
-                    let s = rng.gen::<u64>();
-                    //println!("seed: {}", s);
-                    SeedableRng::seed_from_u64(s as u64)
-                }
-            };
-            for _ in 0..*n {
-                let n: usize = rng.gen_range(0, list_nf.len());
-                indexed.push(list_nf[n].clone());
             }
         }
     }
