@@ -56,6 +56,6 @@ mod expect_eq_tests {
     #[test]
     #[should_panic]
     fn test_expect_fail() {
-        expect("./mocks/simple_fail.socool");
+        expect("./fail_mocks/simple_fail.socool");
     }
 }

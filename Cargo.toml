@@ -15,10 +15,6 @@ readme = "README.md"
 weresocool_parser = { path = "parser" }
 weresocool_ast = { path = "ast" }
 weresocool_error = { path = "error" } 
-#weresocool_server = { path = "server", version = "0.1.0" } 
-#weresocool_parser = { version = "0.5.0" }
-#weresocool_ast = { version = "0.5.0" }
-#weresocool_error = { version = "0.1.0" } 
 portaudio = "0.7.0"
 rand = "0.7.3"
 hound = "3.4.0"
@@ -51,6 +47,7 @@ futures = "0.3.3"
 serde_derive = "1.0.104"
 bytes = "0.5.4"
 env_logger = "0.7.1"
+test-generator = "0.3.0"
 
 [dev-dependencies]
 pretty_assertions = "0.6.1"
