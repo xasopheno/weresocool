@@ -13,7 +13,7 @@ pub fn handle_id_error(id_vec: Vec<String>, defs: &Defs) -> Term {
             let mut name = id_vec[0].clone();
             name.push('.');
             name.push_str(&id_vec[1].clone());
-            defs.lists.get(&name).or_else(|| defs.lists.get(&name))
+            defs.terms.get(&name).or_else(|| defs.lists.get(&name))
         }
         _ => panic!("Only one dot allowed in imports."),
     };
