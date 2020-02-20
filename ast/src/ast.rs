@@ -8,7 +8,7 @@ pub enum Term {
     Nf(NormalForm),
     FunDef(FunDef),
     Lop(ListOp),
-    Lnf(ListNf),
+    Lnf(Vec<NormalForm>),
 }
 
 #[derive(Clone, PartialEq, Debug, Hash)]
@@ -49,11 +49,6 @@ pub enum Index {
     Index(i64),
     Random(i64, Option<i64>),
     IndexAndTerm { index: i64, term: Term },
-}
-
-#[derive(Clone, PartialEq, Debug, Hash)]
-pub struct ListNf {
-    operations: Vec<NormalForm>,
 }
 
 #[derive(Debug, Clone, PartialEq, Hash)]
