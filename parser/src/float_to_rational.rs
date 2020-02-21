@@ -1,5 +1,4 @@
 pub mod helpers {
-    extern crate num_rational;
     use num_rational::{Ratio, Rational64};
     use std::str::FromStr;
 

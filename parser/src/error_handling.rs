@@ -1,16 +1,19 @@
 use colored::*;
 use std::cmp;
 use std::sync::{Arc, Mutex};
-use weresocool_ast::{Term, TermTable};
+use weresocool_ast::{Defs, Term};
 
-pub fn handle_id_error(id_vec: Vec<String>, table: &TermTable) -> Term {
+pub fn handle_id_error(id_vec: Vec<String>, defs: &Defs) -> Term {
     let result = match id_vec.len() {
-        1 => table.get(&id_vec[0]),
+        1 => defs
+            .terms
+            .get(&id_vec[0])
+            .or_else(|| defs.lists.get(&id_vec[0])),
         2 => {
             let mut name = id_vec[0].clone();
             name.push('.');
             name.push_str(&id_vec[1].clone());
-            table.get(&name)
+            defs.terms.get(&name).or_else(|| defs.lists.get(&name))
         }
         _ => panic!("Only one dot allowed in imports."),
     };
@@ -19,7 +22,7 @@ pub fn handle_id_error(id_vec: Vec<String>, table: &TermTable) -> Term {
         Some(result) => result.clone(),
         None => {
             let id = id_vec.join(".");
-            println!("Not able to find {} in let table", id.red().bold());
+            println!("Not able to find {} in let defs", id.red().bold());
             panic!("Id Not Found");
         }
     }

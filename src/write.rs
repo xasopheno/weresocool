@@ -34,7 +34,6 @@ fn wav_to_mp3_in_renders(filename: &str) {
     let filename = filename_from_string(filename);
     let filename = format!("./renders/{}{}", filename, ".mp3".to_string());
 
-    //  ffmpeg -i composition.wav -codec:a libmp3lame -qscale:a 2 renders/${filename}.mp3
     let child = Command::new("ffmpeg")
         .args(&[
             "-v",

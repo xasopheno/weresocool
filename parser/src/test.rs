@@ -4,7 +4,7 @@ pub mod test {
         parser::*,
     };
     use num_rational::Ratio;
-    use weresocool_ast::ast::{Op, Op::*, Term::*, TermTable};
+    use weresocool_ast::ast::{Defs, Op, Op::*, Term::*};
 
     fn mock_init() -> String {
         "{ f: 200, l: 1.0, g: 1.0, p: 0.0 }
@@ -13,13 +13,13 @@ pub mod test {
     }
 
     fn test_parsed_operation(mut parse_str: String, expected: Op) {
-        let mut table = TermTable::new();
+        let mut defs: Defs = Default::default();
 
         parse_str.push_str("}");
 
-        let _result = socool::SoCoolParser::new().parse(&mut table, &parse_str);
+        let _result = socool::SoCoolParser::new().parse(&mut defs, &parse_str);
 
-        let main = table.get(&"main".to_string()).unwrap();
+        let main = defs.terms.get(&"main".to_string()).unwrap();
         assert_eq!(*main, Op(expected));
     }
 
@@ -76,10 +76,10 @@ pub mod test {
     #[test]
     fn init_test() {
         let mut parse_str = mock_init();
-        let mut table = TermTable::new();
+        let mut defs: Defs = Default::default();
         parse_str.push_str("AsIs }");
         let init = socool::SoCoolParser::new()
-            .parse(&mut table, &parse_str)
+            .parse(&mut defs, &parse_str)
             .unwrap();
         assert_eq!(
             init,
@@ -278,10 +278,10 @@ pub mod test {
 
     #[test]
     fn let_insert() {
-        let mut table = TermTable::new();
+        let mut defs: Defs = Default::default();
         socool::SoCoolParser::new()
             .parse(
-                &mut table,
+                &mut defs,
                 "
                     { f: 200, l: 1.0, g: 1.0, p: 0.0 }
 
@@ -292,7 +292,7 @@ pub mod test {
                     ",
             )
             .unwrap();
-        let thing = table.get(&"thing".to_string()).unwrap();
+        let thing = defs.terms.get(&"thing".to_string()).unwrap();
         assert_eq!(
             *thing,
             Op(Compose {
@@ -310,10 +310,10 @@ pub mod test {
 
     //        #[test]
     //        fn let_get() {
-    //            let mut table = TermTable::new();
+    //            let mut defs: Defs = Default::default();
     //            socool::SoCoolParser::new()
     //                .parse(
-    //                    &mut table,
+    //                    &mut defs,
     //                    "
     //                        { f: 200, l: 1.0, g: 1.0, p: 0.0 }
     //
@@ -330,10 +330,10 @@ pub mod test {
 
     #[test]
     fn fit_length_test() {
-        let mut table = TermTable::new();
+        let mut defs: Defs = Default::default();
 
         let _result = socool::SoCoolParser::new().parse(
-            &mut table,
+            &mut defs,
             "
                             { f: 200, l: 1.0, g: 1.0, p: 0.0 }
 
@@ -355,7 +355,7 @@ pub mod test {
                             }
                         ",
         );
-        let thing = table.get(&"main".to_string()).unwrap();
+        let thing = defs.terms.get(&"main".to_string()).unwrap();
         assert_eq!(
             *thing,
             Op(Compose {

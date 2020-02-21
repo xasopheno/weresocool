@@ -18,7 +18,7 @@ fn main() {
     let vec_string = filename_to_vec_string(filename);
     let parsed = parse_file(vec_string, None);
 
-    for (key, _val) in parsed.unwrap().table.iter() {
+    for (key, _val) in parsed.unwrap().defs.terms.iter() {
         println!("\n Name: {:?}", key);
     }
 }

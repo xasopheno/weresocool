@@ -2,4 +2,4 @@
 
 FILENAME=$1
 
-cargo run --release --bin wsc songs/$FILENAME.socool -p
+cargo run --release --bin wsc $FILENAME -p

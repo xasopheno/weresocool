@@ -3,6 +3,6 @@ extern crate serde;
 pub mod ast;
 pub mod operations;
 pub use crate::{
-    ast::{FunDef, Op, Op::*, OscType, Term, TermTable, ASR},
+    ast::{Defs, FunDef, ListOp, Op, Op::*, OscType, Term, ASR},
     operations::{GetLengthRatio, NameSet, NormalForm, Normalize, PointOp, Substitute},
 };
