@@ -20,6 +20,18 @@ pub fn get_fn_arg_map(f: Term, args: &[Term]) -> ArgMap {
     arg_map
 }
 
+//impl Substitute for ListOp {
+//fn substitute(&self, normal_form: &mut NormalForm, defs: &Defs, arg_map: &ArgMap) -> Term {
+//match self {
+//ListOp::List(terms) => {
+//let ops = substitute_operations(terms.to_vec(), normal_form, defs, arg_map);
+//Term::Lop(ListOp::List(ops))
+//}
+//_ => unimplemented!(),
+//}
+//}
+//}
+
 impl Substitute for Op {
     fn substitute(&self, normal_form: &mut NormalForm, defs: &Defs, arg_map: &ArgMap) -> Term {
         match self {

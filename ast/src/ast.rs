@@ -8,8 +8,11 @@ pub enum Term {
     Nf(NormalForm),
     FunDef(FunDef),
     Lop(ListOp),
-    Lnf(Vec<NormalForm>),
+    Lnf(ListNf),
 }
+
+#[derive(Clone, PartialEq, Debug, Hash)]
+pub struct ListNf(pub Vec<NormalForm>);
 
 #[derive(Clone, PartialEq, Debug, Hash)]
 pub enum ListOp {

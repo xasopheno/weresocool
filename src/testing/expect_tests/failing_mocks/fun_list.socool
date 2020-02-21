@@ -1,0 +1,17 @@
+{ f: 220, l: 1, g: 1, p: 0 }
+
+f(list) = {
+    list @ [0, 1, 0]
+}
+
+
+main = {
+    f(List [Tm 1, Tm 9/8])
+}
+	
+
+expect = {
+    Seq [
+        Tm 1, Tm 9/8, Tm 1
+    ]	
+}

@@ -1,4 +1,4 @@
-use crate::ast::{Defs, Index, Indices, ListOp, Term};
+use crate::ast::{Defs, Index, Indices, ListNf, ListOp, Term};
 use crate::operations::{
     helpers::{handle_id_error, join_sequence},
     GetLengthRatio, NormalForm, Normalize,
@@ -55,24 +55,24 @@ impl GetLengthRatio for ListOp {
     }
 }
 
-impl Normalize for ListOp {
-    fn apply_to_normal_form(&self, input: &mut NormalForm, defs: &Defs) {
+impl ListOp {
+    pub fn to_list_nf(&self, input: &mut NormalForm, defs: &Defs) -> ListNf {
         match self {
             ListOp::List(operations) => {
-                let mut result = NormalForm::init_empty();
+                let mut result: Vec<NormalForm> = vec![];
                 for op in operations {
                     let mut input_clone = input.clone();
                     op.apply_to_normal_form(&mut input_clone, defs);
-                    result = join_sequence(result, input_clone);
+                    result.push(input_clone);
+                    //result = join_sequence(result, input_clone);
                 }
 
-                *input = result
+                ListNf(result)
             }
             ListOp::IndexedList { terms, indices } => {
                 let list_nf = normalize_list_terms(input, &terms, defs);
                 let indexed = get_indexed(list_nf, indices, defs);
-                let joined = join_list_nf(indexed);
-                *input = joined
+                ListNf(indexed)
             }
 
             ListOp::IndexedNamedList { name, indices } => {
@@ -82,8 +82,7 @@ impl Normalize for ListOp {
                         ListOp::List(terms) => {
                             let list_nf = normalize_list_terms(input, &terms, defs);
                             let indexed = get_indexed(list_nf, indices, defs);
-                            let joined = join_list_nf(indexed);
-                            *input = joined
+                            ListNf(indexed)
                         }
                         _ => unimplemented!(),
                     },
@@ -91,6 +90,17 @@ impl Normalize for ListOp {
                 }
             }
         }
+    }
+}
+
+impl Normalize for ListOp {
+    fn apply_to_normal_form(&self, input: &mut NormalForm, defs: &Defs) {
+        let list_nf = self.to_list_nf(input, defs);
+        //match list_nf {
+        //ListNf(list_nf) => {
+        *input = join_list_nf(list_nf.0);
+        //}
+        //}
     }
 }
 
