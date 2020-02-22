@@ -1,4 +1,4 @@
-use crate::ast::{Defs, FunDef, Op, Term};
+use crate::ast::{Defs, FunDef, ListOp, Op, Term};
 use crate::operations::{helpers::handle_id_error, ArgMap, NormalForm, Normalize, Substitute};
 use std::collections::HashMap;
 
@@ -20,17 +20,15 @@ pub fn get_fn_arg_map(f: Term, args: &[Term]) -> ArgMap {
     arg_map
 }
 
-//impl Substitute for ListOp {
-//fn substitute(&self, normal_form: &mut NormalForm, defs: &Defs, arg_map: &ArgMap) -> Term {
-//match self {
-//ListOp::List(terms) => {
-//let ops = substitute_operations(terms.to_vec(), normal_form, defs, arg_map);
-//Term::Lop(ListOp::List(ops))
-//}
-//_ => unimplemented!(),
-//}
-//}
-//}
+impl Substitute for ListOp {
+    fn substitute(&self, normal_form: &mut NormalForm, defs: &Defs, arg_map: &ArgMap) -> Term {
+        dbg!(&self);
+        let vec_nf = self.to_list_nf(normal_form, defs);
+        let vec_terms = vec_nf.iter().map(|t| Term::Nf(t.clone())).collect();
+        let terms = substitute_operations(vec_terms, normal_form, defs, arg_map);
+        Term::Lop(ListOp::List(terms))
+    }
+}
 
 impl Substitute for Op {
     fn substitute(&self, normal_form: &mut NormalForm, defs: &Defs, arg_map: &ArgMap) -> Term {
