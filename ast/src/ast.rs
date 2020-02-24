@@ -1,15 +1,6 @@
-use crate::{operations::helpers::handle_id_error, ListNf, ListOp, NormalForm};
+use crate::{operations::helpers::handle_id_error, Term};
 use indexmap::IndexMap;
 use num_rational::Rational64;
-
-#[derive(Clone, PartialEq, Debug, Hash)]
-pub enum Term {
-    Op(Op),
-    Nf(NormalForm),
-    FunDef(FunDef),
-    Lop(ListOp),
-    Lnf(ListNf),
-}
 
 #[derive(Debug, Clone, PartialEq, Hash)]
 pub struct FunDef {

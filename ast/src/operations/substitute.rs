@@ -22,15 +22,14 @@ pub fn get_fn_arg_map(f: Term, args: &[Term]) -> ArgMap {
 
 impl Substitute for ListOp {
     fn substitute(&self, normal_form: &mut NormalForm, defs: &Defs, arg_map: &ArgMap) -> Term {
-        dbg!(&self);
         match self {
             ListOp::IndexedNamedList { name, indices } => {
                 let value = arg_map.get(&name.clone());
-                let lop = match value {
+                let term = match value {
                     Some(sub) => sub.clone(),
                     None => handle_id_error(name.to_string(), defs),
                 };
-                match lop {
+                match term {
                     Term::Lop(list_op) => match list_op {
                         ListOp::List(list) => {
                             let new_lop = ListOp::IndexedList {

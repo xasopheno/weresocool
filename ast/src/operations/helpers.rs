@@ -1,7 +1,7 @@
 extern crate colored;
 extern crate num_rational;
-use crate::ast::{Defs, OscType, Term, ASR};
 use crate::operations::{GetLengthRatio, NameSet, NormalForm, PointOp};
+use crate::{Defs, OscType, Term, ASR};
 use colored::*;
 use num_rational::{Ratio, Rational64};
 use std::cmp::Ordering::{Equal, Greater, Less};

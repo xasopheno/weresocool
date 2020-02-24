@@ -7,10 +7,7 @@ use std::fs::File;
 use std::io::prelude::*;
 use std::io::BufReader;
 use std::sync::{Arc, Mutex};
-use weresocool_ast::{
-    ast::{Defs, Term},
-    operations::{NormalForm, Normalize},
-};
+use weresocool_ast::{Defs, NormalForm, Normalize, Term};
 use weresocool_error::{Error, ParseError};
 
 #[derive(Clone, PartialEq, Debug)]

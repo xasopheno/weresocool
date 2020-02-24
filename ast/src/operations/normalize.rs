@@ -1,7 +1,7 @@
-use crate::ast::{Defs, FunDef, Op, OscType, Term, Term::*};
 use crate::operations::{
     helpers::*, substitute::get_fn_arg_map, GetLengthRatio, NormalForm, Normalize, Substitute,
 };
+use crate::{Defs, FunDef, Op, OscType, Term, Term::*};
 use num_rational::Ratio;
 use rand::prelude::*;
 

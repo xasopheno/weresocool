@@ -1,6 +1,17 @@
-use crate::ast::{Defs, Term};
-use crate::operations::{ArgMap, GetLengthRatio, NormalForm, Normalize, Substitute};
+use crate::Defs;
+use crate::{
+    ArgMap, FunDef, GetLengthRatio, ListNf, ListOp, NormalForm, Normalize, Op, Substitute,
+};
 use num_rational::Rational64;
+
+#[derive(Clone, PartialEq, Debug, Hash)]
+pub enum Term {
+    Op(Op),
+    Nf(NormalForm),
+    FunDef(FunDef),
+    Lop(ListOp),
+    Lnf(ListNf),
+}
 
 impl Normalize for Term {
     fn apply_to_normal_form(&self, input: &mut NormalForm, defs: &Defs) {

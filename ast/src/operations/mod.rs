@@ -1,4 +1,4 @@
-use crate::ast::{Defs, OscType, Term, ASR};
+use crate::{Defs, OscType, Term, ASR};
 use num_rational::{Ratio, Rational64};
 use std::{
     collections::{BTreeSet, HashMap},
@@ -8,7 +8,6 @@ mod get_length_ratio;
 pub mod helpers;
 mod normalize;
 pub mod normalize_listop;
-pub mod normalize_term;
 mod substitute;
 
 #[derive(Debug, Clone, PartialEq, Hash)]
