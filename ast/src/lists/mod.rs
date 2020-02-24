@@ -1,3 +1,6 @@
+pub mod normalize_listop;
+pub mod substitute_list;
+
 use crate::{NormalForm, Term};
 
 #[derive(Clone, PartialEq, Debug, Hash)]

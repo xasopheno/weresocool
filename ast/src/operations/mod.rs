@@ -7,8 +7,7 @@ use std::{
 mod get_length_ratio;
 pub mod helpers;
 mod normalize;
-pub mod normalize_listop;
-mod substitute;
+pub mod substitute;
 
 #[derive(Debug, Clone, PartialEq, Hash)]
 pub struct NormalForm {
