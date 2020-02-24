@@ -140,7 +140,8 @@ Index: Index = {
   <index: Int> => Index::Index(index),
   <index: Int> "|" <term: Composeable> => Index::IndexAndTerm {index, term},
   "Random" "(" <index: Int> ")" => Index::Random(index, None),
-  "Random" "(" <index: Int> "," <seed: Int> ")" => Index::Random(index, Some(seed))
+  "Random" "(" <index: Int> "," <seed: Int> ")" => Index::Random(index, Some(seed)),
+  "Random" "(" <n: Int> "," <seed: Int> ")" "|" <term: Composeable> => Index::RandomAndTerm { n, seed: Some(seed), term }
 } 
 
 ComposeOperation: Term = {

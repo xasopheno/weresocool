@@ -111,6 +111,7 @@ fn get_indexed(list_nf: Vec<NormalForm>, indices: &Indices, defs: &Defs) -> Vec<
         Indices::IndexList(index_list) => {
             for index in index_list.indices.iter() {
                 match index {
+                    Index::RandomAndTerm { n, seed, term } => unimplemented!(),
                     Index::Random(n, seed) => {
                         let mut rng: StdRng = match seed {
                             Some(s) => SeedableRng::seed_from_u64(*s as u64),
