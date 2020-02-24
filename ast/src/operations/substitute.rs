@@ -1,5 +1,5 @@
-use crate::ast::{Defs, FunDef, ListOp, Op, Term};
 use crate::operations::{helpers::handle_id_error, ArgMap, NormalForm, Normalize, Substitute};
+use crate::{Defs, FunDef, ListOp, Op, Term};
 use std::collections::HashMap;
 
 pub fn get_fn_arg_map(f: Term, args: &[Term]) -> ArgMap {

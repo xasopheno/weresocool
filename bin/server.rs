@@ -1,4 +1,5 @@
 //use weresocool::server::server;
+pub fn main() {}
 
 //#[actix_rt::main]
 //pub async fn main() -> std::io::Result<()> {

@@ -8,7 +8,7 @@ mod get_length_ratio;
 pub mod helpers;
 mod normalize;
 pub mod normalize_listop;
-pub mod normalize_nf;
+pub mod normalize_term;
 mod substitute;
 
 #[derive(Debug, Clone, PartialEq, Hash)]

@@ -2,7 +2,6 @@ use num_rational::{Rational64};
 use std::str::FromStr;
 use std::string::String;
 use weresocool_ast::{
-    ast::{
         Defs,
         Op,
         Op::*,
@@ -14,7 +13,6 @@ use weresocool_ast::{
         Indices, 
         Index,
         IndexList 
-    },
 };
 use crate::parser::Init;
 use crate::et::et;
