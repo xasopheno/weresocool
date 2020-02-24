@@ -43,5 +43,6 @@ impl IndexList {
 pub enum Index {
     Index(i64),
     Random(i64, Option<i64>),
+    //RandomAndTerm { index: i64, term: Term },
     IndexAndTerm { index: i64, term: Term },
 }
