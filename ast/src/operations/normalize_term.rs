@@ -20,7 +20,7 @@ impl Substitute for Term {
             Term::Op(op) => op.substitute(normal_form, defs, arg_map),
             Term::Nf(nf) => nf.substitute(normal_form, defs, arg_map),
             Term::FunDef(_fun) => unimplemented!(),
-            Term::Lop(_lop) => unimplemented!(),
+            Term::Lop(lop) => lop.substitute(normal_form, defs, arg_map),
             Term::Lnf(_lnf) => unimplemented!(),
         }
     }

@@ -1,7 +1,5 @@
-use crate::{
-    Defs, Index, Indices, GetLengthRatio, NormalForm, Normalize, ListOp, Term
-};
-use crate::operations::{helpers::{handle_id_error, join_sequence}};
+use crate::operations::helpers::{handle_id_error, join_sequence};
+use crate::{Defs, GetLengthRatio, Index, Indices, ListOp, NormalForm, Normalize, Term};
 use num_rational::Rational64;
 use rand::{rngs::StdRng, thread_rng, Rng, SeedableRng};
 
