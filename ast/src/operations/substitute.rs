@@ -110,8 +110,9 @@ pub fn substitute_operations(
             Term::FunDef(_fun) => {
                 unimplemented!();
             }
-            Term::Lop(_lop) => {
-                unimplemented!();
+            Term::Lop(lop) => {
+                let subbed = lop.substitute(normal_form, defs, arg_map);
+                result.push(subbed)
             }
             Term::Lnf(_lnf) => {
                 unimplemented!();
