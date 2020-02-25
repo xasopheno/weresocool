@@ -100,15 +100,21 @@ List: Term = {
     Term::Lop(ListOp::Const(operations))
   },
 
-  <name: Name> => {
+  <name: > "@" <indices: IndexList> => {
     Term::Lop(
-      ListOp::NamedList { 
-        name 
+      ListOp::IndexedList { 
+        name, indices 
       }
     )
   },
 
-
+  <name: > "@" <indices: IndexList> => {
+    Term::Lop(
+      ListOp::IndexedList { 
+        name, indices 
+      }
+    )
+  },
 }
 
 Indices: Indices = {
