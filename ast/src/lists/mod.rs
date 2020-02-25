@@ -9,7 +9,7 @@ pub struct ListNf(pub Vec<NormalForm>);
 #[derive(Clone, PartialEq, Debug, Hash)]
 pub enum ListOp {
     Const(Vec<Term>),
-    //NamedList { name: String, indices: Indices },
+    //NamedIndexed { name: String, indices: Indices },
     //IndexedList { list: Box<ListOp>, indices: Indices },
 }
 
@@ -43,10 +43,10 @@ impl IndexList {
 pub enum Index {
     Index(i64),
     Random(i64, Option<i64>),
+    IndexAndTerm { index: i64, term: Term },
     //RandomAndTerm {
     //n: i64,
     //seed: Option<i64>,
     //term: Term,
     //},
-    IndexAndTerm { index: i64, term: Term },
 }

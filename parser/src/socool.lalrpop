@@ -78,42 +78,15 @@ Operation: Term = {
         )
     },
 
-    <op1: Operation> ">" "LazyRepeat" <i: Int> => {
-        let mut op = Term::Op(AsIs);
-        if is_choice_op(op1.clone(), defs) {
-            op = op1
-        }
-        let mut vec = Vec::new();
-        for x in 0..i {
-            vec.push(op.clone())
-        }
-        Term::Op(Sequence { operations: vec })
-    },
-
     <op: ComposeOperation> => op,
 
-    <list: List> => list
+    <list: List> => list,
+
 }
 
 List: Term = {
   "List" "[" <operations: Operations> "]" => {
     Term::Lop(ListOp::Const(operations))
-  },
-
-  <name: > "@" <indices: IndexList> => {
-    Term::Lop(
-      ListOp::IndexedList { 
-        name, indices 
-      }
-    )
-  },
-
-  <name: > "@" <indices: IndexList> => {
-    Term::Lop(
-      ListOp::IndexedList { 
-        name, indices 
-      }
-    )
   },
 }
 
