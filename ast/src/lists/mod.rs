@@ -8,9 +8,9 @@ pub struct ListNf(pub Vec<NormalForm>);
 
 #[derive(Clone, PartialEq, Debug, Hash)]
 pub enum ListOp {
-    List(Vec<Term>),
-    IndexedList { terms: Vec<Term>, indices: Indices },
-    IndexedNamedList { name: String, indices: Indices },
+    Const(Vec<Term>),
+    //NamedList { name: String, indices: Indices },
+    //IndexedList { list: Box<ListOp>, indices: Indices },
 }
 
 #[derive(Clone, PartialEq, Debug, Hash)]
@@ -32,8 +32,7 @@ impl IndexList {
                 Index::Random(index, seed) => result.push(Index::Random(index, seed)),
                 Index::IndexAndTerm { index, term } => {
                     result.push(Index::IndexAndTerm { index, term })
-                }
-                Index::RandomAndTerm { n, seed, term } => unimplemented!(),
+                } //Index::RandomAndTerm { n, seed, term } => unimplemented!(),
             }
         }
         Self { indices: result }
@@ -44,13 +43,10 @@ impl IndexList {
 pub enum Index {
     Index(i64),
     Random(i64, Option<i64>),
-    RandomAndTerm {
-        n: i64,
-        seed: Option<i64>,
-        term: Term,
-    },
-    IndexAndTerm {
-        index: i64,
-        term: Term,
-    },
+    //RandomAndTerm {
+    //n: i64,
+    //seed: Option<i64>,
+    //term: Term,
+    //},
+    IndexAndTerm { index: i64, term: Term },
 }

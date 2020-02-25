@@ -96,18 +96,39 @@ Operation: Term = {
 }
 
 List: Term = {
-  "List" "[" <operations: Operations> "]" => {
-    Term::Lop(ListOp::Const(operations))
-  },
-
-  <name: Name> => {
+  "List" "[" <terms: Operations> "]" "@" "[" <indices: Indices> "]"=> {
     Term::Lop(
-      ListOp::NamedList { 
-        name 
+      ListOp::IndexedList { 
+        terms, 
+        indices
       }
     )
   },
 
+  "List" "[" <operations: Operations> "]" => {
+    Term::Lop(ListOp::List(operations))
+  },
+
+  <name: Name> "@" "[" <indices: Indices> "]"=> {
+    Term::Lop(
+      ListOp::IndexedNamedList { 
+        name, 
+        indices
+      }
+    )
+  },
+
+
+  "ET" "(" <int: Int> ")" => Term::Lop(ListOp::List(et(int))),
+
+  "ET" "(" <int: Int> ")" "@" "[" <indices: Indices> "]"=> {
+    Term::Lop(
+      ListOp::IndexedList { 
+        terms: et(int), 
+        indices  
+      }
+    )
+  },
 
 }
 
