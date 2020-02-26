@@ -1,0 +1,11 @@
+listop ::= [ term.. ] | [ term.. ] @ [ index.. ] | named @ [ index.. ] | ET(n) | ET(n) @ [ index ...]
+
+
+list ::= [ term.. ] 
+            | name
+
+listop ::= list 
+            | list @ [ index.. ]
+            | Box<listop> 
+            | [ index.. ] 
+
