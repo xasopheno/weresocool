@@ -9,6 +9,7 @@ pub struct ListNf(pub Vec<NormalForm>);
 #[derive(Clone, PartialEq, Debug, Hash)]
 pub enum ListOp {
     Const(Vec<Term>),
+    Named(String),
     //NamedIndexed { name: String, indices: Indices },
     //IndexedList { list: Box<ListOp>, indices: Indices },
 }

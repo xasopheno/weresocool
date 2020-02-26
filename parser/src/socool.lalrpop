@@ -88,6 +88,10 @@ List: Term = {
   "List" "[" <operations: Operations> "]" => {
     Term::Lop(ListOp::Const(operations))
   },
+
+  <name: Name> => {
+    Term::Lop(ListOp::Named(name))
+  },
 }
 
 Indices: Indices = {
