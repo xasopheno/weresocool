@@ -12,41 +12,45 @@ impl GetLengthRatio for ListOp {
                     new_total += term.get_length_ratio(defs);
                 }
                 new_total
-            } //ListOp::IndexedList { terms, indices } => {
-              //let mut new_total = Rational64::from_integer(0);
-              //let nf = NormalForm::init();
+            }
+            _ => unimplemented!(),
+            //ListOp::NamedIndexed { name, indices } => unimplemented!(),
+            //ListOp::ListOpIndexed { listop, indices } => unimplemented!(),
+            //ListOp::IndexedList { terms, indices } => {
+            //let mut new_total = Rational64::from_integer(0);
+            //let nf = NormalForm::init();
 
-              //let list_nf = normalize_list_terms(&nf, &terms, defs);
-              //let indexed = get_indexed(list_nf, indices, defs);
+            //let list_nf = normalize_list_terms(&nf, &terms, defs);
+            //let indexed = get_indexed(list_nf, indices, defs);
 
-              //for term in indexed {
-              //new_total += term.get_length_ratio(defs);
-              //}
+            //for term in indexed {
+            //new_total += term.get_length_ratio(defs);
+            //}
 
-              //new_total
-              //}
-              //ListOp::IndexedNamedList { name, indices } => {
-              //let lop = handle_id_error(name.to_string(), defs);
-              //match lop {
-              //Term::Lop(list_op) => match list_op {
-              //ListOp::List(terms) => {
-              //let mut new_total = Rational64::from_integer(0);
-              //let nf = NormalForm::init();
+            //new_total
+            //}
+            //ListOp::IndexedNamedList { name, indices } => {
+            //let lop = handle_id_error(name.to_string(), defs);
+            //match lop {
+            //Term::Lop(list_op) => match list_op {
+            //ListOp::List(terms) => {
+            //let mut new_total = Rational64::from_integer(0);
+            //let nf = NormalForm::init();
 
-              //let list_nf = normalize_list_terms(&nf, &terms, defs);
-              //let indexed = get_indexed(list_nf, indices, defs);
+            //let list_nf = normalize_list_terms(&nf, &terms, defs);
+            //let indexed = get_indexed(list_nf, indices, defs);
 
-              //for term in indexed {
-              //new_total += term.get_length_ratio(defs);
-              //}
+            //for term in indexed {
+            //new_total += term.get_length_ratio(defs);
+            //}
 
-              //new_total
-              //}
-              //_ => unimplemented!(),
-              //},
-              //_ => unimplemented!(),
-              //}
-              //}
+            //new_total
+            //}
+            //_ => unimplemented!(),
+            //},
+            //_ => unimplemented!(),
+            //}
+            //}
         }
     }
 }
@@ -63,26 +67,26 @@ impl ListOp {
                 }
 
                 result
-            } //ListOp::IndexedList { terms, indices } => {
-              //let list_nf = normalize_list_terms(input, &terms, defs);
-              //let indexed = get_indexed(list_nf, indices, defs);
-              //indexed
-              //}
-
-              //ListOp::IndexedNamedList { name, indices } => {
-              //let lop = handle_id_error(name.to_string(), defs);
-              //match lop {
-              //Term::Lop(list_op) => match list_op {
-              //ListOp::Const(terms) => {
-              //let list_nf = normalize_list_terms(input, &terms, defs);
-              //let indexed = get_indexed(list_nf, indices, defs);
-              //indexed
-              //}
-              //_ => unimplemented!(),
-              //},
-              //_ => unimplemented!(),
-              //}
-              //}
+            }
+            ListOp::NamedIndexed { name, indices } => {
+                let term = handle_id_error(name.to_string(), defs);
+                match term {
+                    Term::Lop(lop) => {
+                        let list_nf = lop.to_list_nf(input, defs);
+                        get_indexed(list_nf, indices, defs)
+                    }
+                    _ => panic!("Indexing into something other than a list"),
+                }
+            }
+            ListOp::ListOpIndexed { list_op, indices } => {
+                let list_nf = list_op.to_list_nf(input, defs);
+                get_indexed(list_nf, indices, defs)
+            }
+            _ => unimplemented!(),
+            //},
+            //_ => unimplemented!(),
+            //}
+            //}
         }
     }
 }

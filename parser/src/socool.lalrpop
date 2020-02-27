@@ -55,7 +55,7 @@ LetDef: () = {
     },
 
     <name: Name> "=" <list: List> => {
-        defs.lists.insert(name.clone(), list); ()
+        defs.lists.insert(name.clone(), Term::Lop(list)); ()
     }
 };
 
@@ -80,17 +80,25 @@ Operation: Term = {
 
     <op: ComposeOperation> => op,
 
-    <list: List> => list,
+    <list: List> => Term::Lop(list),
 
 }
 
-List: Term = {
+List: ListOp = {
   "List" "[" <operations: Operations> "]" => {
-    Term::Lop(ListOp::Const(operations))
+    ListOp::Const(operations)
   },
 
-  <name: Name> => {
-    Term::Lop(ListOp::Named(name))
+  "ET" "(" <n: Int> ")" => {
+    ListOp::Const(et(n))
+  },
+
+  <name: Name> "@" "[" <indices: Indices> "]" => {
+    ListOp::NamedIndexed {name, indices} 
+  },
+
+  <listop: List> "@" "[" <indices: Indices> "]" => {
+    ListOp::ListOpIndexed { list_op: Box::new(listop), indices} 
   },
 }
 
@@ -112,7 +120,7 @@ ComposeOperation: Term = {
 
 Composeable: Term = {
   <base_operation: BaseOperation> => base_operation,
-  <list: List> => list,
+  <list: List> => Term::Lop(list),
 }
 
 BaseOperation: Term = {

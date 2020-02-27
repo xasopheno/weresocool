@@ -1,11 +1,14 @@
-listop ::= [ term.. ] | [ term.. ] @ [ index.. ] | named @ [ index.. ] | ET(n) | ET(n) @ [ index ...]
+listop ::= [ term.. ] 
+            | [ term.. ] @ [ index.. ] 
+            | named @ [ index.. ] 
+            | ET(n) 
+            | ET(n) @ [ index ...]
 
 
-list ::= [ term.. ] 
-            | name
 
-listop ::= list 
-            | list @ [ index.. ]
-            | Box<listop> 
-            | [ index.. ] 
+listop ::= list
+            | ET(n)
+            | name @ [ index.. ]
+            | listop @ [ index.. ]
 
+list_op => list_nf
