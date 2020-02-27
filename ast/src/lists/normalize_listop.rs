@@ -15,6 +15,7 @@ impl GetLengthRatio for ListOp {
             }
             ListOp::NamedIndexed { name, indices } => {
                 let term = handle_id_error(name.to_string(), defs);
+                match term {}
                 term.get_length_ratio(defs)
             }
             _ => unimplemented!(),
