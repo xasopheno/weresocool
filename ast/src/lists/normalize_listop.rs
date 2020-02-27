@@ -13,8 +13,11 @@ impl GetLengthRatio for ListOp {
                 }
                 new_total
             }
+            ListOp::NamedIndexed { name, indices } => {
+                let term = handle_id_error(name.to_string(), defs);
+                term.get_length_ratio(defs)
+            }
             _ => unimplemented!(),
-            //ListOp::NamedIndexed { name, indices } => unimplemented!(),
             //ListOp::ListOpIndexed { listop, indices } => unimplemented!(),
             //ListOp::IndexedList { terms, indices } => {
             //let mut new_total = Rational64::from_integer(0);
@@ -71,22 +74,14 @@ impl ListOp {
             ListOp::NamedIndexed { name, indices } => {
                 let term = handle_id_error(name.to_string(), defs);
                 match term {
-                    Term::Lop(lop) => {
-                        let list_nf = lop.to_list_nf(input, defs);
-                        get_indexed(list_nf, indices, defs)
-                    }
+                    Term::Lop(lop) => get_indexed(&lop, input, indices, defs),
                     _ => panic!("Indexing into something other than a list"),
                 }
             }
             ListOp::ListOpIndexed { list_op, indices } => {
-                let list_nf = list_op.to_list_nf(input, defs);
-                get_indexed(list_nf, indices, defs)
+                get_indexed(list_op, input, indices, defs)
             }
             _ => unimplemented!(),
-            //},
-            //_ => unimplemented!(),
-            //}
-            //}
         }
     }
 }
@@ -107,7 +102,14 @@ fn join_list_nf(indexed: Vec<NormalForm>) -> NormalForm {
     result
 }
 
-fn get_indexed(list_nf: Vec<NormalForm>, indices: &Indices, defs: &Defs) -> Vec<NormalForm> {
+fn get_indexed(
+    list_op: &ListOp,
+    input: &mut NormalForm,
+    indices: &Indices,
+    defs: &Defs,
+) -> Vec<NormalForm> {
+    let list_nf = list_op.to_list_nf(input, defs);
+
     let mut indexed = vec![];
     match indices {
         Indices::IndexList(index_list) => {
