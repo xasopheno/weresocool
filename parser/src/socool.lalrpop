@@ -89,12 +89,12 @@ List: ListOp = {
     ListOp::Const(operations)
   },
 
-  "ET" "(" <n: Int> ")" => {
-    ListOp::Const(et(n))
+  "List" <name: Name> => {
+    ListOp::Named(name)
   },
 
-  <name: Name> "@" "[" <indices: Indices> "]" => {
-    ListOp::NamedIndexed {name, indices} 
+  "ET" "(" <n: Int> ")" => {
+    ListOp::Const(et(n))
   },
 
   <listop: List> "@" "[" <indices: Indices> "]" => {

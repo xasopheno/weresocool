@@ -13,10 +13,12 @@ impl GetLengthRatio for ListOp {
                 }
                 new_total
             }
-            ListOp::NamedIndexed { name, indices } => {
+            ListOp::Named(name) => {
                 let term = handle_id_error(name.to_string(), defs);
-                match term {}
-                term.get_length_ratio(defs)
+                match term {
+                    Term::Lop(lop) => lop.get_length_ratio(defs),
+                    _ => unimplemented!(),
+                }
             }
             _ => unimplemented!(),
             //ListOp::ListOpIndexed { listop, indices } => unimplemented!(),
@@ -25,7 +27,6 @@ impl GetLengthRatio for ListOp {
             //let nf = NormalForm::init();
 
             //let list_nf = normalize_list_terms(&nf, &terms, defs);
-            //let indexed = get_indexed(list_nf, indices, defs);
 
             //for term in indexed {
             //new_total += term.get_length_ratio(defs);
@@ -72,11 +73,11 @@ impl ListOp {
 
                 result
             }
-            ListOp::NamedIndexed { name, indices } => {
+            ListOp::Named(name) => {
                 let term = handle_id_error(name.to_string(), defs);
                 match term {
-                    Term::Lop(lop) => get_indexed(&lop, input, indices, defs),
-                    _ => panic!("Indexing into something other than a list"),
+                    Term::Lop(lop) => lop.to_list_nf(input, defs),
+                    _ => panic!("Using non-list as list."),
                 }
             }
             ListOp::ListOpIndexed { list_op, indices } => {
