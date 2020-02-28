@@ -1,0 +1,39 @@
+{ f: 340, l: 1, g: 1, p: 0 }
+
+overtones = {
+    O[
+    	(2/1, 5, 1, 1),
+      	(2/1, 0, 1, -1),
+    	(3/2, 3, 1, 1),
+      	(3/2, 0, 1, -1),
+    	(1/1, 1, 1, 1),
+      	(1/1, 0, 1, -1),
+  	]
+}
+
+thing1 = {
+    Seq [
+        ET(5) @ [Random(5)],
+        ET(4) @ [Random(5)],
+    ]
+}
+
+main = {
+    overtones |
+    Overlay [
+        Seq [
+            Seq [
+                thing1,
+            ] | Repeat 4,
+            Seq [
+                ET(72) @ [Random(12)],
+            ] | Repeat 4,
+        ],
+    ]
+    | ModulateBy [Seq [Tm 9/8, Tm 1] | Repeat 24]
+    | Repeat 8 
+    | Length 1/5
+
+
+}
+	
