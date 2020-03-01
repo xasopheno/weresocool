@@ -17,36 +17,33 @@ pub enum ListOp {
 }
 
 #[derive(Clone, PartialEq, Debug, Hash)]
-pub enum Indices {
-    IndexList(IndexList),
+pub struct Indices(Vec<Index>);
+pub struct IndexVector {
+    indices: Vec<i64>,
+    terms: Vec<Term>,
 }
 
-#[derive(Clone, PartialEq, Debug, Hash)]
-pub struct IndexList {
-    pub indices: Vec<Index>,
-}
-
-impl IndexList {
+impl Indices {
     pub fn new(indices: Vec<Index>) -> Self {
         let mut result = vec![];
         for index in indices {
             match index {
-                Index::Index(index) => result.push(Index::Index(index)),
+                Index::Const(index) => result.push(Index::Const(index)),
                 Index::Random(index, seed) => result.push(Index::Random(index, seed)),
                 Index::IndexAndTerm { index, term } => {
                     result.push(Index::IndexAndTerm { index, term })
                 } //Index::RandomAndTerm { n, seed, term } => unimplemented!(),
             }
         }
-        Self { indices: result }
+        Self(result)
     }
 }
 
 #[derive(Clone, PartialEq, Debug, Hash)]
 pub enum Index {
-    Index(i64),
+    Const(i64),
     Random(i64, Option<i64>),
-    IndexAndTerm { index: i64, term: Term },
+    IndexAndTerm { index: Box<Index>, term: Term },
     //RandomAndTerm {
     //n: i64,
     //seed: Option<i64>,

@@ -12,7 +12,6 @@ use weresocool_ast::{
         ListOp,
         Indices, 
         Index,
-        IndexList 
 };
 use crate::parser::Init;
 use crate::et::et;
@@ -103,14 +102,14 @@ List: ListOp = {
 }
 
 Indices: Indices = {
-  <indices: Comma<Index>> => Indices::IndexList(IndexList::new(indices)),
+  <indices: Comma<Index>> => Indices::new(indices),
 };
 
 Index: Index = {
-  <index: Int> => Index::Index(index),
-  <index: Int> "|" <term: Composeable> => Index::IndexAndTerm {index, term},
+  <index: Int> => Index::Const(index),
   "Random" "(" <index: Int> ")" => Index::Random(index, None),
   "Random" "(" <index: Int> "," <seed: Int> ")" => Index::Random(index, Some(seed)),
+  <index: Index> "|" <term: Composeable> => Index::IndexAndTerm {index: Box::new(index), term},
 } 
 
 ComposeOperation: Term = {

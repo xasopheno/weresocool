@@ -1,7 +1,77 @@
 use crate::operations::helpers::{handle_id_error, join_sequence};
-use crate::{Defs, GetLengthRatio, Index, Indices, ListOp, NormalForm, Normalize, Term};
+use crate::{
+    Defs, GetLengthRatio, Index, IndexVector, Indices, ListOp, NormalForm, Normalize, Term,
+};
 use num_rational::Rational64;
 use rand::{rngs::StdRng, thread_rng, Rng, SeedableRng};
+
+impl ListOp {
+    fn terms(&self, defs: &Defs) -> Vec<Term> {
+        match self {
+            ListOp::Const(terms) => terms.to_vec(),
+            ListOp::Named(name) => {
+                let term = handle_id_error(name.to_string(), defs);
+                match term {
+                    Term::Lop(lop) => lop.terms(defs),
+                    _ => unimplemented!(),
+                }
+            }
+            ListOp::ListOpIndexed { list_op, indices } => unimplemented!(),
+        }
+    }
+}
+
+impl Indices {
+    pub fn get_length_ratio(&self, terms: Vec<Term>, defs: &Defs) -> Rational64 {
+        self.0.iter().fold(Rational64::new(1, 1), |sum, index| {
+            //sum + index.get_length_ratio(&terms, defs)
+
+            unimplemented!()
+        })
+    }
+    pub fn vectorize(&self) -> Vec<IndexVector> {
+        self.0
+            .iter()
+            .map(|index| index.vectorize(self.0.len()))
+            .collect()
+    }
+}
+
+impl Index {
+    pub fn vectorize(&self, list_len: usize) -> IndexVector {
+        match self {
+            Index::Const(n) => IndexVector {
+                indices: vec![*n],
+                terms: vec![],
+            },
+            Index::Random(n, seed) => {
+                let mut indices = vec![];
+                let mut rng: StdRng = match seed {
+                    Some(s) => SeedableRng::seed_from_u64(*s as u64),
+                    None => {
+                        let mut rng = thread_rng();
+                        let s = rng.gen::<u64>();
+                        //println!("seed: {}", s);
+                        SeedableRng::seed_from_u64(s as u64)
+                    }
+                };
+                for _ in 0..*n {
+                    let r: usize = rng.gen_range(0, list_len);
+                    indices.push(r as i64);
+                }
+                IndexVector {
+                    indices,
+                    terms: vec![],
+                }
+            }
+            Index::IndexAndTerm { index, term } => {
+                let mut vectorized = index.vectorize(list_len);
+                vectorized.terms.push(term.clone());
+                vectorized
+            }
+        }
+    }
+}
 
 impl GetLengthRatio for ListOp {
     fn get_length_ratio(&self, defs: &Defs) -> Rational64 {
@@ -20,42 +90,45 @@ impl GetLengthRatio for ListOp {
                     _ => unimplemented!(),
                 }
             }
-            _ => unimplemented!(),
-            //ListOp::ListOpIndexed { listop, indices } => unimplemented!(),
-            //ListOp::IndexedList { terms, indices } => {
-            //let mut new_total = Rational64::from_integer(0);
-            //let nf = NormalForm::init();
+            ListOp::ListOpIndexed { list_op, indices } => {
+                let terms = list_op.terms(defs);
+                indices.get_length_ratio(terms, defs)
+            } //
+              //ListOp::ListOpIndexed { listop, indices } => unimplemented!(),
+              //ListOp::IndexedList { terms, indices } => {
+              //let mut new_total = Rational64::from_integer(0);
+              //let nf = NormalForm::init();
 
-            //let list_nf = normalize_list_terms(&nf, &terms, defs);
+              //let list_nf = normalize_list_terms(&nf, &terms, defs);
 
-            //for term in indexed {
-            //new_total += term.get_length_ratio(defs);
-            //}
+              //for term in indexed {
+              //new_total += term.get_length_ratio(defs);
+              //}
 
-            //new_total
-            //}
-            //ListOp::IndexedNamedList { name, indices } => {
-            //let lop = handle_id_error(name.to_string(), defs);
-            //match lop {
-            //Term::Lop(list_op) => match list_op {
-            //ListOp::List(terms) => {
-            //let mut new_total = Rational64::from_integer(0);
-            //let nf = NormalForm::init();
+              //new_total
+              //}
+              //ListOp::IndexedNamedList { name, indices } => {
+              //let lop = handle_id_error(name.to_string(), defs);
+              //match lop {
+              //Term::Lop(list_op) => match list_op {
+              //ListOp::List(terms) => {
+              //let mut new_total = Rational64::from_integer(0);
+              //let nf = NormalForm::init();
 
-            //let list_nf = normalize_list_terms(&nf, &terms, defs);
-            //let indexed = get_indexed(list_nf, indices, defs);
+              //let list_nf = normalize_list_terms(&nf, &terms, defs);
+              //let indexed = get_indexed(list_nf, indices, defs);
 
-            //for term in indexed {
-            //new_total += term.get_length_ratio(defs);
-            //}
+              //for term in indexed {
+              //new_total += term.get_length_ratio(defs);
+              //}
 
-            //new_total
-            //}
-            //_ => unimplemented!(),
-            //},
-            //_ => unimplemented!(),
-            //}
-            //}
+              //new_total
+              //}
+              //_ => unimplemented!(),
+              //},
+              //_ => unimplemented!(),
+              //}
+              //}
         }
     }
 }
@@ -81,9 +154,23 @@ impl ListOp {
                 }
             }
             ListOp::ListOpIndexed { list_op, indices } => {
-                get_indexed(list_op, input, indices, defs)
+                let list_op_terms = list_op.terms(defs);
+                let index_vectors = indices.vectorize();
+                let mut result = vec![];
+                for iv in index_vectors {
+                    for index in iv.indices {
+                        let mut nf = input.clone();
+                        let list_op_term = &list_op_terms[index as usize];
+                        list_op_term.apply_to_normal_form(&mut nf, defs);
+                        for term in &iv.terms {
+                            term.apply_to_normal_form(&mut nf, defs);
+                        }
+                        result.push(nf);
+                    }
+                }
+
+                result
             }
-            _ => unimplemented!(),
         }
     }
 }
@@ -113,33 +200,30 @@ fn get_indexed(
     let list_nf = list_op.to_list_nf(input, defs);
 
     let mut indexed = vec![];
-    match indices {
-        Indices::IndexList(index_list) => {
-            for index in index_list.indices.iter() {
-                match index {
-                    //Index::RandomAndTerm { n, seed, term } => unimplemented!(),
-                    Index::Random(n, seed) => {
-                        let mut rng: StdRng = match seed {
-                            Some(s) => SeedableRng::seed_from_u64(*s as u64),
-                            None => {
-                                let mut rng = thread_rng();
-                                let s = rng.gen::<u64>();
-                                //println!("seed: {}", s);
-                                SeedableRng::seed_from_u64(s as u64)
-                            }
-                        };
-                        for _ in 0..*n {
-                            let n: usize = rng.gen_range(0, list_nf.len());
-                            indexed.push(list_nf[n].clone());
-                        }
+    for index in indices.0.iter() {
+        match index {
+            //Index::RandomAndTerm { n, seed, term } => unimplemented!(),
+            Index::Random(n, seed) => {
+                let mut rng: StdRng = match seed {
+                    Some(s) => SeedableRng::seed_from_u64(*s as u64),
+                    None => {
+                        let mut rng = thread_rng();
+                        let s = rng.gen::<u64>();
+                        //println!("seed: {}", s);
+                        SeedableRng::seed_from_u64(s as u64)
                     }
-                    Index::Index(int) => indexed.push(list_nf[*int as usize].clone()),
-                    Index::IndexAndTerm { index, term } => {
-                        let mut nf = list_nf[*index as usize].clone();
-                        term.apply_to_normal_form(&mut nf, defs);
-                        indexed.push(nf);
-                    }
+                };
+                for _ in 0..*n {
+                    let n: usize = rng.gen_range(0, list_nf.len());
+                    indexed.push(list_nf[n].clone());
                 }
+            }
+            Index::Const(int) => indexed.push(list_nf[*int as usize].clone()),
+            Index::IndexAndTerm { index, term } => {
+                unimplemented!()
+                //let mut nf = list_nf[*index as usize].clone();
+                //term.apply_to_normal_form(&mut nf, defs);
+                //indexed.push(nf);
             }
         }
     }

@@ -12,3 +12,22 @@ listop ::= list
             | listop @ [ index.. ]
 
 list_op => list_nf
+
+indices ::= [[index]..] => [Term]
+
+index ::= const(n) => [term]
+            | random(i64, Option<i64>) => [term .. ]
+            | index | term => [term ..] | term => [term]
+
+index.normalize()
+
+pub enum Index {
+    Index(i64),
+    Random(i64, Option<i64>),
+    IndexAndTerm { index: i64, term: Term },
+    RandomAndTerm {
+        n: i64,
+        term: Term,
+        seed: Option<i64>,
+    },
+}
