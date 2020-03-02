@@ -108,7 +108,6 @@ pub fn is_choice_op(term: Term, defs: &Defs) -> bool {
     match term {
         Term::FunDef(_) => unimplemented!(),
         Term::Lop(_) => unimplemented!(),
-        Term::Lnf(_) => unimplemented!(),
         Term::Nf(_) => false,
         Term::Op(op) => match op {
             Op::AsIs {}

@@ -1,7 +1,5 @@
 use crate::Defs;
-use crate::{
-    ArgMap, FunDef, GetLengthRatio, ListNf, ListOp, NormalForm, Normalize, Op, Substitute,
-};
+use crate::{ArgMap, FunDef, GetLengthRatio, ListOp, NormalForm, Normalize, Op, Substitute};
 use num_rational::Rational64;
 
 #[derive(Clone, PartialEq, Debug, Hash)]
@@ -10,7 +8,6 @@ pub enum Term {
     Nf(NormalForm),
     FunDef(FunDef),
     Lop(ListOp),
-    Lnf(ListNf),
 }
 
 impl Normalize for Term {
@@ -20,7 +17,6 @@ impl Normalize for Term {
             Term::Nf(nf) => nf.apply_to_normal_form(input, defs),
             Term::FunDef(_fun) => unimplemented!(),
             Term::Lop(lop) => lop.apply_to_normal_form(input, defs),
-            Term::Lnf(_lnf) => unimplemented!(),
         }
     }
 }
@@ -32,7 +28,6 @@ impl Substitute for Term {
             Term::Nf(nf) => nf.substitute(normal_form, defs, arg_map),
             Term::FunDef(_fun) => unimplemented!(),
             Term::Lop(lop) => lop.substitute(normal_form, defs, arg_map),
-            Term::Lnf(_lnf) => unimplemented!(),
         }
     }
 }
@@ -44,8 +39,6 @@ impl GetLengthRatio for Term {
             Term::Nf(nf) => nf.get_length_ratio(defs),
             Term::FunDef(_fun) => unimplemented!(),
             Term::Lop(lop) => lop.get_length_ratio(defs),
-            Term::Lnf(_lnf) => unimplemented!(),
         }
     }
 }
-

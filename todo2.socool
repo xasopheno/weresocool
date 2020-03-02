@@ -19,7 +19,6 @@ index ::= const(n) => [term]
             | random(i64, Option<i64>) => [term .. ]
             | index | term => [term ..] | term => [term]
 
-index.normalize()
 
 pub enum Index {
     Index(i64),

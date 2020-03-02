@@ -12,6 +12,7 @@ use weresocool_ast::{
         ListOp,
         Indices, 
         Index,
+        ListTerm
 };
 use crate::parser::Init;
 use crate::et::et;
@@ -85,19 +86,19 @@ Operation: Term = {
 
 List: ListOp = {
   "List" "[" <operations: Operations> "]" => {
-    ListOp::Const(operations)
+    ListOp::ListTerm(ListTerm::Const(operations))
   },
 
   "List" <name: Name> => {
-    ListOp::Named(name)
+    ListOp::ListTerm(ListTerm::Named(name))
   },
 
   "ET" "(" <n: Int> ")" => {
-    ListOp::Const(et(n))
+    ListOp::ListTerm(ListTerm::Const(et(n)))
   },
 
   <listop: List> "@" "[" <indices: Indices> "]" => {
-    ListOp::ListOpIndexed { list_op: Box::new(listop), indices} 
+    ListOp::ListTerm(ListTerm::ListOpIndexed { list_op: Box::new(listop), indices})
   },
 }
 

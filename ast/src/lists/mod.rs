@@ -4,10 +4,13 @@ pub mod substitute_list;
 use crate::{NormalForm, Term};
 
 #[derive(Clone, PartialEq, Debug, Hash)]
-pub struct ListNf(pub Vec<NormalForm>);
+pub enum ListOp {
+    ListNf(Vec<NormalForm>),
+    ListTerm(ListTerm),
+}
 
 #[derive(Clone, PartialEq, Debug, Hash)]
-pub enum ListOp {
+pub enum ListTerm {
     Const(Vec<Term>),
     Named(String),
     ListOpIndexed {
@@ -18,6 +21,7 @@ pub enum ListOp {
 
 #[derive(Clone, PartialEq, Debug, Hash)]
 pub struct Indices(Vec<Index>);
+#[derive(Clone, PartialEq, Debug, Hash)]
 pub struct IndexVector {
     indices: Vec<i64>,
     terms: Vec<Term>,

@@ -1,38 +1,42 @@
 use crate::operations::helpers::{handle_id_error, join_sequence};
 use crate::{
-    Defs, GetLengthRatio, Index, IndexVector, Indices, ListOp, NormalForm, Normalize, Term,
+    Defs, GetLengthRatio, Index, IndexVector, Indices, ListOp, ListTerm, NormalForm, Normalize,
+    Term,
 };
 use num_rational::Rational64;
 use rand::{rngs::StdRng, thread_rng, Rng, SeedableRng};
 
-impl ListOp {
-    fn terms(&self, defs: &Defs) -> Vec<Term> {
-        match self {
-            ListOp::Const(terms) => terms.to_vec(),
-            ListOp::Named(name) => {
-                let term = handle_id_error(name.to_string(), defs);
-                match term {
-                    Term::Lop(lop) => lop.terms(defs),
-                    _ => unimplemented!(),
-                }
-            }
-            ListOp::ListOpIndexed { list_op, indices } => unimplemented!(),
-        }
-    }
-}
+//impl ListOp {
+//fn terms(&self, defs: &Defs) -> Vec<Term> {
+//match self {
+//ListOp::ListNf(vec_nf) => vec_nf.to_vec(),
+//ListOp::ListTerm(list_term) => match list_term {
+//ListTerm::Const(terms) => terms.to_vec(),
+//ListTerm::Named(name) => {
+//let term = handle_id_error(name.to_string(), defs);
+//match term {
+//Term::Lop(lop) => lop.terms(defs),
+//_ => unimplemented!(),
+//}
+//}
+//ListTerm::ListOpIndexed { list_op, indices } => unimplemented!(),
+//},
+//}
+//}
+//}
 
 impl Indices {
-    pub fn get_length_ratio(&self, terms: Vec<Term>, defs: &Defs) -> Rational64 {
-        let vectorized = self.vectorize();
-        vectorized.iter().fold(Rational64::new(1, 1), |sum, index| {
-            sum + index.get_length_ratio(&terms, defs)
-        })
-    }
     pub fn vectorize(&self) -> Vec<IndexVector> {
         self.0
             .iter()
             .map(|index| index.vectorize(self.0.len()))
             .collect()
+    }
+    pub fn get_length_ratio(&self, terms: Vec<Term>, defs: &Defs) -> Rational64 {
+        let vectorized = self.vectorize();
+        vectorized.iter().fold(Rational64::new(1, 1), |sum, index| {
+            sum + index.get_length_ratio(&terms, defs)
+        })
     }
 }
 
@@ -87,102 +91,109 @@ impl IndexVector {
 
 impl GetLengthRatio for ListOp {
     fn get_length_ratio(&self, defs: &Defs) -> Rational64 {
-        match self {
-            ListOp::Const(terms) => {
-                let mut new_total = Rational64::from_integer(0);
-                for term in terms {
-                    new_total += term.get_length_ratio(defs);
-                }
-                new_total
-            }
-            ListOp::Named(name) => {
-                let term = handle_id_error(name.to_string(), defs);
-                match term {
-                    Term::Lop(lop) => lop.get_length_ratio(defs),
-                    _ => unimplemented!(),
-                }
-            }
-            ListOp::ListOpIndexed { list_op, indices } => {
-                let terms = list_op.terms(defs);
-                indices.get_length_ratio(terms, defs)
-            } //
-              //ListOp::ListOpIndexed { listop, indices } => unimplemented!(),
-              //ListOp::IndexedList { terms, indices } => {
-              //let mut new_total = Rational64::from_integer(0);
-              //let nf = NormalForm::init();
+        unimplemented!()
+        //match self {
+        //ListOp::ListNf(_) => unimplemented!(),
+        //ListOp::ListTerm(list_term) => match list_term {
+        //ListTerm::Const(terms) => {
+        //let mut new_total = Rational64::from_integer(0);
+        //for term in terms {
+        //new_total += term.get_length_ratio(defs);
+        //}
+        //new_total
+        //}
+        //ListTerm::Named(name) => {
+        //let term = handle_id_error(name.to_string(), defs);
+        //match term {
+        //Term::Lop(lop) => lop.get_length_ratio(defs),
+        //_ => unimplemented!(),
+        //}
+        //}
+        //ListTerm::ListOpIndexed { list_op, indices } => {
+        //let terms = list_op.terms(defs);
+        //indices.get_length_ratio(terms, defs)
+        //}
+        //}, //
+        //ListOp::ListOpIndexed { listop, indices } => unimplemented!(),
+        //ListOp::IndexedList { terms, indices } => {
+        //let mut new_total = Rational64::from_integer(0);
+        //let nf = NormalForm::init();
 
-              //let list_nf = normalize_list_terms(&nf, &terms, defs);
+        //let list_nf = normalize_list_terms(&nf, &terms, defs);
 
-              //for term in indexed {
-              //new_total += term.get_length_ratio(defs);
-              //}
+        //for term in indexed {
+        //new_total += term.get_length_ratio(defs);
+        //}
 
-              //new_total
-              //}
-              //ListOp::IndexedNamedList { name, indices } => {
-              //let lop = handle_id_error(name.to_string(), defs);
-              //match lop {
-              //Term::Lop(list_op) => match list_op {
-              //ListOp::List(terms) => {
-              //let mut new_total = Rational64::from_integer(0);
-              //let nf = NormalForm::init();
+        //new_total
+        //}
+        //ListOp::IndexedNamedList { name, indices } => {
+        //let lop = handle_id_error(name.to_string(), defs);
+        //match lop {
+        //Term::Lop(list_op) => match list_op {
+        //ListOp::List(terms) => {
+        //let mut new_total = Rational64::from_integer(0);
+        //let nf = NormalForm::init();
 
-              //let list_nf = normalize_list_terms(&nf, &terms, defs);
-              //let indexed = get_indexed(list_nf, indices, defs);
+        //let list_nf = normalize_list_terms(&nf, &terms, defs);
+        //let indexed = get_indexed(list_nf, indices, defs);
 
-              //for term in indexed {
-              //new_total += term.get_length_ratio(defs);
-              //}
+        //for term in indexed {
+        //new_total += term.get_length_ratio(defs);
+        //}
 
-              //new_total
-              //}
-              //_ => unimplemented!(),
-              //},
-              //_ => unimplemented!(),
-              //}
-              //}
-        }
+        //new_total
+        //}
+        //_ => unimplemented!(),
+        //},
+        //_ => unimplemented!(),
+        //}
+        //}
     }
 }
 
 impl ListOp {
     pub fn to_list_nf(&self, input: &mut NormalForm, defs: &Defs) -> Vec<NormalForm> {
         match self {
-            ListOp::Const(operations) => {
-                let mut result: Vec<NormalForm> = vec![];
-                for op in operations {
-                    let mut input_clone = input.clone();
-                    op.apply_to_normal_form(&mut input_clone, defs);
-                    result.push(input_clone);
-                }
+            ListOp::ListNf(vec_nf) => vec_nf.to_vec(),
+            ListOp::ListTerm(list_term) => match list_term {
+                ListTerm::Const(operations) => {
+                    let mut result: Vec<NormalForm> = vec![];
+                    for op in operations {
+                        let mut input_clone = input.clone();
+                        op.apply_to_normal_form(&mut input_clone, defs);
+                        result.push(input_clone);
+                    }
 
-                result
-            }
-            ListOp::Named(name) => {
-                let term = handle_id_error(name.to_string(), defs);
-                match term {
-                    Term::Lop(lop) => lop.to_list_nf(input, defs),
-                    _ => panic!("Using non-list as list."),
+                    result
                 }
-            }
-            ListOp::ListOpIndexed { list_op, indices } => {
-                let list_op_terms = list_op.terms(defs);
-                let index_vectors = indices.vectorize();
-                let mut result = vec![];
-                for iv in index_vectors {
-                    for index in iv.indices {
-                        let mut nf = input.clone();
-                        let list_op_term = &list_op_terms[index as usize];
-                        list_op_term.apply_to_normal_form(&mut nf, defs);
-                        for term in &iv.terms {
-                            term.apply_to_normal_form(&mut nf, defs);
-                        }
-                        result.push(nf);
+                ListTerm::Named(name) => {
+                    let term = handle_id_error(name.to_string(), defs);
+                    match term {
+                        Term::Lop(lop) => lop.to_list_nf(input, defs),
+                        _ => panic!("Using non-list as list."),
                     }
                 }
+                ListTerm::ListOpIndexed { list_op, indices } => {
+                    unimplemented!()
+                    //let list_op_terms = list_op.terms(defs);
+                    //let index_vectors = indices.vectorize();
+                    //let mut result = vec![];
+                    //for iv in index_vectors {
+                    //for index in iv.indices {
+                    //let mut nf = input.clone();
+                    //let list_op_term = &list_op_terms[index as usize];
+                    //list_op_term.apply_to_normal_form(&mut nf, defs);
+                    //for term in &iv.terms {
+                    //term.apply_to_normal_form(&mut nf, defs);
+                    //}
+                    //result.push(nf);
+                    //}
+                    //}
 
-                result
-            }
+                    //result
+                }
+            },
         }
     }
 }
