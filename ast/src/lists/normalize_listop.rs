@@ -23,10 +23,9 @@ impl ListOp {
 
 impl Indices {
     pub fn get_length_ratio(&self, terms: Vec<Term>, defs: &Defs) -> Rational64 {
-        self.0.iter().fold(Rational64::new(1, 1), |sum, index| {
-            //sum + index.get_length_ratio(&terms, defs)
-
-            unimplemented!()
+        let vectorized = self.vectorize();
+        vectorized.iter().fold(Rational64::new(1, 1), |sum, index| {
+            sum + index.get_length_ratio(&terms, defs)
         })
     }
     pub fn vectorize(&self) -> Vec<IndexVector> {
@@ -70,6 +69,19 @@ impl Index {
                 vectorized
             }
         }
+    }
+}
+
+impl IndexVector {
+    fn get_length_ratio(&self, terms: &Vec<Term>, defs: &Defs) -> Rational64 {
+        let mut result = Rational64::new(1, 1);
+        for term in self.terms.iter() {
+            let term_lr = term.get_length_ratio(defs);
+            for index in self.indices.iter() {
+                result += term_lr * terms[*index as usize].get_length_ratio(defs);
+            }
+        }
+        result
     }
 }
 
