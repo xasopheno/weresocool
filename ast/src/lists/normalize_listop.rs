@@ -153,9 +153,9 @@ impl GetLengthRatio for ListOp {
 }
 
 impl ListOp {
-    pub fn to_list_nf(&self, input: &mut NormalForm, defs: &Defs) -> Vec<NormalForm> {
+    pub fn to_list_nf(&mut self, input: &mut NormalForm, defs: &Defs) {
         match self {
-            ListOp::ListNf(vec_nf) => vec_nf.to_vec(),
+            ListOp::ListNf(_vec_nf) => {}
             ListOp::ListTerm(list_term) => match list_term {
                 ListTerm::Const(operations) => {
                     let mut result: Vec<NormalForm> = vec![];
@@ -164,13 +164,12 @@ impl ListOp {
                         op.apply_to_normal_form(&mut input_clone, defs);
                         result.push(input_clone);
                     }
-
-                    result
+                    *self = ListOp::ListNf(result);
                 }
                 ListTerm::Named(name) => {
                     let term = handle_id_error(name.to_string(), defs);
                     match term {
-                        Term::Lop(lop) => lop.to_list_nf(input, defs),
+                        Term::Lop(mut lop) => lop.to_list_nf(input, defs),
                         _ => panic!("Using non-list as list."),
                     }
                 }
@@ -198,10 +197,19 @@ impl ListOp {
     }
 }
 
+impl ListOp {
+    pub fn join(&mut self, input: &mut NormalForm, defs: &Defs) -> NormalForm {
+        match self {
+            ListOp::ListNf(list_nf) => join_list_nf(list_nf.to_vec()),
+            _ => unimplemented!(),
+        }
+    }
+}
+
 impl Normalize for ListOp {
     fn apply_to_normal_form(&self, input: &mut NormalForm, defs: &Defs) {
-        let vec_nf = self.to_list_nf(input, defs);
-        *input = join_list_nf(vec_nf);
+        self.to_list_nf(input, defs);
+        *input = self.join(input, defs);
     }
 }
 
@@ -214,6 +222,7 @@ fn join_list_nf(indexed: Vec<NormalForm>) -> NormalForm {
     result
 }
 
+/*
 fn get_indexed(
     list_op: &ListOp,
     input: &mut NormalForm,
@@ -264,3 +273,4 @@ fn normalize_list_terms(nf: &NormalForm, terms: &[Term], defs: &Defs) -> Vec<Nor
 
     list_nf
 }
+*/

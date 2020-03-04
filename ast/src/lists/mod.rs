@@ -36,7 +36,7 @@ impl Indices {
                 Index::Random(index, seed) => result.push(Index::Random(index, seed)),
                 Index::IndexAndTerm { index, term } => {
                     result.push(Index::IndexAndTerm { index, term })
-                } //Index::RandomAndTerm { n, seed, term } => unimplemented!(),
+                }
             }
         }
         Self(result)
@@ -48,9 +48,4 @@ pub enum Index {
     Const(i64),
     Random(i64, Option<i64>),
     IndexAndTerm { index: Box<Index>, term: Term },
-    //RandomAndTerm {
-    //n: i64,
-    //seed: Option<i64>,
-    //term: Term,
-    //},
 }
