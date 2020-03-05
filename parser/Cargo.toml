@@ -8,7 +8,7 @@ description = "Parser for WereSoCool"
 license = "GPL-3.0" 
 
 [build-dependencies]
-lalrpop = "0.17.1"
+lalrpop = "0.18.1"
 
 [dependencies]
 lalrpop-util = "0.17.2"
