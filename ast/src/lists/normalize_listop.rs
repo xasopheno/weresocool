@@ -4,6 +4,7 @@ use num_rational::Rational64;
 
 #[derive(Clone, PartialEq, Debug, Hash)]
 pub struct IndexVector {
+    //should be a single term
     terms: Vec<Term>,
     index_terms: Vec<Term>,
 }
@@ -53,6 +54,9 @@ impl ListOp {
                 let mut result = vec![];
                 let index_vectors = list_op.terms(defs);
                 let (indices, index_terms) = indices.get_indices_and_terms(index_vectors.len());
+                dbg!("__________\n", &indices, "_________\n");
+                dbg!("__________\n", &index_vectors, "_________\n");
+
                 for index in indices {
                     let mut new_index = index_vectors[index].clone();
                     for index_term in index_terms.iter() {
@@ -60,6 +64,7 @@ impl ListOp {
                     }
                     result.push(new_index);
                 }
+                dbg!("__________\n", &result, "_________\n");
                 result
             }
         }
@@ -111,7 +116,7 @@ impl ListOp {
             ListOp::Named(name) => {
                 let term = handle_id_error(name.to_string(), defs);
                 match term {
-                    Term::Lop(mut lop) => lop.to_list_nf(input, defs),
+                    Term::Lop(lop) => lop.to_list_nf(input, defs),
                     _ => panic!("Using non-list as list."),
                 }
             }
