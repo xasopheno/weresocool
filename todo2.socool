@@ -5,7 +5,6 @@ listop ::= [ term.. ]
             | ET(n) @ [ index ...]
 
 
-
 listop ::= list
             | ET(n)
             | name @ [ index.. ]
@@ -30,3 +29,30 @@ pub enum Index {
         seed: Option<i64>,
     },
 }
+
+
+[ term.. ] 
+    @ [ 
+        1, 
+        2 | Tm 3/2, 
+        Random(2) | Tm 3/2
+    ]
+    @ | [ 
+        Random(10) 
+    ]
+
+
+@ | [ 
+    2 | Tm 1/2 | Tm 3/2,
+    Random(2) | Tm 1/2 | Tm 3/2,
+]
+
+Index | Op | Op | Op | Op
+
+
+
+
+
+
+
+
