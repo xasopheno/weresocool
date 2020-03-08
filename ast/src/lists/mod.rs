@@ -52,16 +52,13 @@ pub enum Index {
 }
 
 impl Indices {
-    pub fn get_indices_and_terms(&self, len_list: usize) -> (Vec<usize>, Vec<Term>) {
-        let mut indices = vec![];
-        let mut terms = vec![];
+    pub fn get_indices_and_terms(&self, len_list: usize) -> Vec<(Vec<usize>, Vec<Term>)> {
+        let mut result = vec![];
 
         self.0.iter().for_each(|index| {
-            let (mut i, mut t) = index.get_indices_and_terms(len_list);
-            indices.append(&mut i);
-            terms.append(&mut t);
+            result.push(index.get_indices_and_terms(len_list));
         });
-        (indices, terms)
+        result
     }
 }
 
@@ -92,6 +89,7 @@ impl Index {
             Index::IndexAndTerm { index, term } => {
                 let (indices, mut terms) = index.get_indices_and_terms(len_list);
                 terms.push(term.clone());
+
                 (indices, terms)
             }
         }

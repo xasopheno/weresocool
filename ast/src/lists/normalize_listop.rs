@@ -4,8 +4,7 @@ use num_rational::Rational64;
 
 #[derive(Clone, PartialEq, Debug, Hash)]
 pub struct IndexVector {
-    //should be a single term
-    terms: Vec<Term>,
+    term: Term,
     index_terms: Vec<Term>,
 }
 
@@ -17,32 +16,20 @@ impl IndexVector {
             .fold(Rational64::new(1, 1), |acc, index_term| {
                 acc + index_term.get_length_ratio(defs)
             });
-        self.terms.iter().fold(Rational64::new(1, 1), |acc, term| {
-            acc + (term.get_length_ratio(defs) * index_terms_lr)
-        })
-    }
-    pub fn to_list_nf(&mut self, input: &mut NormalForm, defs: &Defs) -> Vec<NormalForm> {
-        self.terms
-            .iter()
-            .map(|term| {
-                let mut nf = input.clone();
-                term.apply_to_normal_form(input, defs);
-                self.index_terms
-                    .iter()
-                    .for_each(|index_term| index_term.apply_to_normal_form(&mut nf, defs));
-                nf
-            })
-            .collect()
+        self.term.get_length_ratio(defs) * index_terms_lr
     }
 }
 
 impl ListOp {
     fn terms(&self, defs: &Defs) -> Vec<IndexVector> {
         match self {
-            ListOp::Const(terms) => vec![IndexVector {
-                terms: terms.to_vec(),
-                index_terms: vec![],
-            }],
+            ListOp::Const(terms) => terms
+                .iter()
+                .map(|term| IndexVector {
+                    term: term.to_owned(),
+                    index_terms: vec![],
+                })
+                .collect(),
             ListOp::Named(name) => {
                 let term = handle_id_error(name.to_string(), defs);
                 match term {
@@ -53,18 +40,21 @@ impl ListOp {
             ListOp::ListOpIndexed { list_op, indices } => {
                 let mut result = vec![];
                 let index_vectors = list_op.terms(defs);
-                let (indices, index_terms) = indices.get_indices_and_terms(index_vectors.len());
-                dbg!("__________\n", &indices, "_________\n");
-                dbg!("__________\n", &index_vectors, "_________\n");
+                let vec_index_and_index_terms = indices.get_indices_and_terms(index_vectors.len());
+                //dbg!("__________\n", &indices, "_________\n");
+                //dbg!("__________\n", &index_vectors, "_________\n");
+                //dbg!("__________\n", &index_terms, "_________\n");
 
-                for index in indices {
-                    let mut new_index = index_vectors[index].clone();
-                    for index_term in index_terms.iter() {
-                        new_index.index_terms.push(index_term.clone());
+                for (indices, index_terms) in vec_index_and_index_terms.iter() {
+                    for index in indices {
+                        let mut new_index = index_vectors[*index].clone();
+                        for index_term in index_terms.iter() {
+                            new_index.index_terms.push(index_term.clone());
+                        }
+                        result.push(new_index);
                     }
-                    result.push(new_index);
                 }
-                dbg!("__________\n", &result, "_________\n");
+                //dbg!("__________\n", &result, "_________\n");
                 result
             }
         }
@@ -125,11 +115,15 @@ impl ListOp {
                 indices: _,
             } => {
                 let mut result: Vec<NormalForm> = vec![];
-                self.terms(defs).iter_mut().for_each(|index_term| {
-                    let list_nf = index_term.to_list_nf(input, defs);
-                    for nf in list_nf.iter() {
-                        result.push(nf.clone())
-                    }
+
+                self.terms(defs).iter_mut().for_each(|index_vector| {
+                    let mut nf = input.clone();
+                    index_vector.term.apply_to_normal_form(&mut nf, defs);
+                    index_vector
+                        .index_terms
+                        .iter()
+                        .for_each(|index_term| index_term.apply_to_normal_form(&mut nf, defs));
+                    result.push(nf)
                 });
                 result
             }

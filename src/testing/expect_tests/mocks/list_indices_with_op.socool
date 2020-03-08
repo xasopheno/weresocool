@@ -1,0 +1,10 @@
+{ f: 220, l: 1, g: 1, p: 0 } 
+
+main = {
+    List [Tm 1, Tm 9/8] @ [Random(2, 0) | Tm 2, 1] 
+}
+
+expect = {
+    Seq [Tm 2, Tm 2, Tm 9/8]
+}
+
