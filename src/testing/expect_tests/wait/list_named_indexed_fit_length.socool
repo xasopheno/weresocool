@@ -1,0 +1,20 @@
+{ f: 220, l: 1, g: 1, p: 0 } 
+
+
+list1 = {
+    List [Tm 1, Tm 9/8] 
+}
+
+list2 = { 
+    List[Tm 1] 
+}
+
+main = {
+    List list1 @ [0, 1] 
+    > FitLength list2
+}
+
+expect = {
+    Seq [Tm 1, Tm 9/8] | Length 1/2
+}
+
