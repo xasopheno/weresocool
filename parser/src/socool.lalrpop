@@ -101,16 +101,20 @@ List: ListOp = {
 }
 
 Indices: Indices = {
-  <indices: Comma<Index>> => Indices::new(indices),
+  <indices: Comma<Index>> => Indices(indices),
 };
 
 Index: Index = {
   <index: Int> => Index::Const { index: vec![index] },
-  "Random" "(" <n: Int> ")" => Index::Random {
-    n, seed: Some(random_seed()), terms: vec![] 
-  },
-  "Random" "(" <n: Int> "," <seed: Int> ")" => Index::Random { 
-    n, seed: Some(seed), terms: vec![] 
+  "Random" "(" <n: Int> <seed: ("," Int)?> ")" => {
+      match seed {
+        Some(seed) => {
+          Index::Random { n, seed: seed.1 }
+        },
+        None => {
+          Index::Random { n, seed: random_seed() }
+        }
+      }
   },
   <index: Index> "|" <term: Composeable> => Index::IndexAndTerm {index: Box::new(index), term},
 } 
