@@ -105,7 +105,7 @@ Indices: Indices = {
 };
 
 Index: Index = {
-  <index: Int> => Index::Const {index: vec![index], terms: vec![] },
+  <index: Int> => Index::Const { index: vec![index] },
   "Random" "(" <n: Int> ")" => Index::Random {
     n, seed: Some(random_seed()), terms: vec![] 
   },
