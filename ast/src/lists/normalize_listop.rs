@@ -1,12 +1,6 @@
 use crate::operations::helpers::{handle_id_error, join_sequence};
-use crate::{Defs, GetLengthRatio, Index, Indices, ListOp, NormalForm, Normalize, Term};
+use crate::{Defs, GetLengthRatio, ListOp, NormalForm, Normalize, Term, TermVector};
 use num_rational::Rational64;
-
-#[derive(Clone, PartialEq, Debug, Hash)]
-pub struct TermVector {
-    term: Term,
-    index_terms: Vec<Term>,
-}
 
 impl TermVector {
     fn get_length_ratio(&self, defs: &Defs) -> Rational64 {
@@ -78,12 +72,11 @@ impl GetLengthRatio for ListOp {
             ListOp::ListOpIndexed {
                 list_op: _,
                 indices: _,
-            } => self
-                .term_vectors(defs)
-                .iter()
-                .fold(Rational64::new(1, 1), |acc, term_vector| {
-                    acc + term_vector.get_length_ratio(defs)
-                }),
+            } => {
+                let mut nf = NormalForm::init();
+                self.apply_to_normal_form(&mut nf, defs);
+                nf.get_length_ratio(defs)
+            }
         }
     }
 }
@@ -143,4 +136,3 @@ fn join_list_nf(indexed: Vec<NormalForm>) -> NormalForm {
 
     result
 }
-

@@ -1,8 +1,6 @@
 pub mod indices;
 pub mod normalize_listop;
 pub mod substitute_list;
-use indices::Indices;
-use rand::{rngs::StdRng, thread_rng, Rng, SeedableRng};
 
 use crate::Term;
 
@@ -16,3 +14,24 @@ pub enum ListOp {
     },
 }
 
+#[derive(Clone, PartialEq, Debug, Hash)]
+pub struct Indices(pub Vec<Index>);
+
+#[derive(Clone, PartialEq, Debug, Hash)]
+pub enum Index {
+    Const { index: Vec<i64> },
+    Random { n: i64, seed: i64 },
+    IndexAndTerm { index: Box<Index>, term: Term },
+}
+
+#[derive(Clone, PartialEq, Debug, Hash)]
+pub struct TermVector {
+    term: Term,
+    index_terms: Vec<Term>,
+}
+
+#[derive(Clone, PartialEq, Debug, Hash)]
+pub struct IndexVector {
+    pub index: usize,
+    pub index_terms: Vec<Term>,
+}

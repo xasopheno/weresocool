@@ -6,10 +6,7 @@ pub mod operations;
 pub mod term;
 pub use crate::{
     ast::{is_choice_op, Defs, FunDef, Op, Op::*, OscType, ASR},
-    lists::{
-        indices::{Index, Indices},
-        ListOp,
-    },
+    lists::{Index, IndexVector, Indices, ListOp, TermVector},
     operations::{
         substitute::substitute_operations, ArgMap, GetLengthRatio, NameSet, NormalForm, Normalize,
         PointOp, Substitute,
