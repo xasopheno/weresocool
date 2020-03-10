@@ -3,8 +3,7 @@
 op = { Tm 2 }
 
 f(list) = {
-    op |
-    list @ [0, 1, 0]
+    op | List list @ [0, 1, 0]
 }
 
 
