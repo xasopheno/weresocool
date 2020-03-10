@@ -1,18 +1,27 @@
 extern crate colored;
 extern crate num_rational;
 use crate::operations::{GetLengthRatio, NameSet, NormalForm, PointOp};
-use crate::{Defs, OscType, Term, ASR};
+use crate::{ArgMap, Defs, OscType, Term, ASR};
 use colored::*;
 use num_rational::{Ratio, Rational64};
 use std::cmp::Ordering::{Equal, Greater, Less};
 
-pub fn handle_id_error(id: String, defs: &Defs) -> Term {
-    let result = defs.terms.get(&id).or_else(|| defs.lists.get(&id));
+pub fn handle_id_error(id: String, defs: &Defs, arg_map: Option<&ArgMap>) -> Term {
+    let arg_result = match arg_map {
+        Some(map) => map.get(&id),
+        None => None,
+    };
+    match arg_result {
+        Some(result) => result.clone(),
+        None => handle_def_error(id, defs),
+    }
+}
 
+pub fn handle_def_error(id: String, defs: &Defs) -> Term {
+    let result = defs.terms.get(&id).or_else(|| defs.lists.get(&id));
     match result {
         Some(result) => result.clone(),
         None => {
-            let id = id;
             println!("Not able to find {} in let defs", id.red().bold());
             panic!("Id Not Found");
         }

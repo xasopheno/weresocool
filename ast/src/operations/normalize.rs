@@ -12,11 +12,11 @@ impl Normalize for Op {
             Op::AsIs => {}
 
             Op::Id(id) => {
-                handle_id_error(id.to_string(), defs).apply_to_normal_form(input, defs);
+                handle_id_error(id.to_string(), defs, None).apply_to_normal_form(input, defs);
             }
             //
             Op::FunctionCall { name, args } => {
-                let f = handle_id_error(name.to_string(), defs);
+                let f = handle_id_error(name.to_string(), defs, None);
                 let arg_map = get_fn_arg_map(f.clone(), args);
 
                 match f {

@@ -12,21 +12,18 @@ impl Substitute for ListOp {
                 arg_map,
             ))),
             ListOp::Named(name) => {
-                let arg_term = arg_map.get(name);
-                let term = match arg_term {
-                    Some(arg_term) => arg_term.clone(),
-                    None => handle_id_error(name.to_string(), defs),
-                };
+                let term = handle_id_error(name.to_string(), defs, Some(arg_map));
 
                 match term {
                     Term::Lop(lop) => lop.substitute(normal_form, defs, arg_map),
                     _ => unimplemented!(),
                 }
             }
-            ListOp::ListOpIndexed {
-                list_op: _,
-                indices: _,
-            } => unimplemented!(),
+            ListOp::ListOpIndexed { list_op, indices } => {
+                let term_vectors = list_op.term_vectors(defs, Some(arg_map));
+                //let index_vectors = indices.get_indices_and_terms(term_vectors.len());
+                unimplemented!()
+            }
         }
     }
 }

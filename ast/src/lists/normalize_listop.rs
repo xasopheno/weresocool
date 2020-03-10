@@ -1,5 +1,5 @@
 use crate::operations::helpers::{handle_id_error, join_sequence};
-use crate::{Defs, GetLengthRatio, ListOp, NormalForm, Normalize, Term, TermVector};
+use crate::{ArgMap, Defs, GetLengthRatio, ListOp, NormalForm, Normalize, Term, TermVector};
 use num_rational::Rational64;
 
 impl TermVector {
@@ -15,7 +15,7 @@ impl TermVector {
 }
 
 impl ListOp {
-    fn term_vectors(&self, defs: &Defs) -> Vec<TermVector> {
+    pub fn term_vectors(&self, defs: &Defs, arg_map: Option<&ArgMap>) -> Vec<TermVector> {
         match self {
             ListOp::Const(terms) => terms
                 .iter()
@@ -25,18 +25,16 @@ impl ListOp {
                 })
                 .collect(),
             ListOp::Named(name) => {
-                let term = handle_id_error(name.to_string(), defs);
+                let term = handle_id_error(name.to_string(), defs, arg_map);
                 match term {
-                    Term::Lop(lop) => (lop.term_vectors(defs)),
+                    Term::Lop(lop) => (lop.term_vectors(defs, arg_map)),
                     _ => unimplemented!(),
                 }
             }
             ListOp::ListOpIndexed { list_op, indices } => {
                 let mut result = vec![];
-                let term_vectors = list_op.term_vectors(defs);
+                let term_vectors = list_op.term_vectors(defs, arg_map);
                 let index_vectors = indices.get_indices_and_terms(term_vectors.len());
-                //dbg!("%%%%%%%%%%%%%\n", &term_vectors, "_________\n");
-                //dbg!("&&&&&&&&&&&&&\n", &index_vectors, "_________\n");
 
                 for index_vector in index_vectors.iter() {
                     let mut new_index = term_vectors[index_vector.index].clone();
@@ -45,7 +43,6 @@ impl ListOp {
                     }
                     result.push(new_index);
                 }
-                //dbg!("__________\n", &result, "_________\n");
                 result
             }
         }
@@ -63,7 +60,7 @@ impl GetLengthRatio for ListOp {
                 new_total
             }
             ListOp::Named(name) => {
-                let term = handle_id_error(name.to_string(), defs);
+                let term = handle_id_error(name.to_string(), defs, None);
                 match term {
                     Term::Lop(lop) => lop.get_length_ratio(defs),
                     _ => unimplemented!(),
@@ -94,7 +91,7 @@ impl ListOp {
                 result
             }
             ListOp::Named(name) => {
-                let term = handle_id_error(name.to_string(), defs);
+                let term = handle_id_error(name.to_string(), defs, None);
                 match term {
                     Term::Lop(lop) => lop.to_list_nf(input, defs),
                     _ => panic!("Using non-list as list."),
@@ -106,15 +103,17 @@ impl ListOp {
             } => {
                 let mut result: Vec<NormalForm> = vec![];
 
-                self.term_vectors(defs).iter_mut().for_each(|term_vector| {
-                    let mut nf = input.clone();
-                    term_vector.term.apply_to_normal_form(&mut nf, defs);
-                    term_vector
-                        .index_terms
-                        .iter()
-                        .for_each(|index_term| index_term.apply_to_normal_form(&mut nf, defs));
-                    result.push(nf)
-                });
+                self.term_vectors(defs, None)
+                    .iter_mut()
+                    .for_each(|term_vector| {
+                        let mut nf = input.clone();
+                        term_vector.term.apply_to_normal_form(&mut nf, defs);
+                        term_vector
+                            .index_terms
+                            .iter()
+                            .for_each(|index_term| index_term.apply_to_normal_form(&mut nf, defs));
+                        result.push(nf)
+                    });
                 result
             }
         }

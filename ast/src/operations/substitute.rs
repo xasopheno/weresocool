@@ -23,13 +23,7 @@ pub fn get_fn_arg_map(f: Term, args: &[Term]) -> ArgMap {
 impl Substitute for Op {
     fn substitute(&self, normal_form: &mut NormalForm, defs: &Defs, arg_map: &ArgMap) -> Term {
         match self {
-            Op::Id(id) => {
-                let value = arg_map.get(&id.clone());
-                match value {
-                    Some(sub) => sub.clone(),
-                    None => handle_id_error(id.to_string(), defs),
-                }
-            }
+            Op::Id(id) => handle_id_error(id.to_string(), defs, Some(arg_map)),
 
             Op::WithLengthRatioOf {
                 main,
