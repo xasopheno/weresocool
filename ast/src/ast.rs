@@ -1,4 +1,4 @@
-use crate::{operations::helpers::handle_id_error, Term};
+use crate::Term;
 use indexmap::IndexMap;
 use num_rational::Rational64;
 

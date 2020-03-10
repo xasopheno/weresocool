@@ -2,18 +2,6 @@ use crate::operations::helpers::{handle_id_error, join_sequence};
 use crate::{ArgMap, Defs, GetLengthRatio, ListOp, NormalForm, Normalize, Term, TermVector};
 use num_rational::Rational64;
 
-impl TermVector {
-    fn get_length_ratio(&self, defs: &Defs) -> Rational64 {
-        let index_terms_lr = self
-            .index_terms
-            .iter()
-            .fold(Rational64::new(1, 1), |acc, index_term| {
-                acc + index_term.get_length_ratio(defs)
-            });
-        self.term.get_length_ratio(defs) * index_terms_lr
-    }
-}
-
 impl ListOp {
     pub fn term_vectors(&self, defs: &Defs, arg_map: Option<&ArgMap>) -> Vec<TermVector> {
         match self {
