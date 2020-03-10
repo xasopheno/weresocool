@@ -106,6 +106,7 @@ Indices: Indices = {
 
 Index: Index = {
   <index: Int> => Index::Const { index: vec![index] },
+  <start: Int?>":"<end: Int?> => { List::Slice { start, end } },
   "Random" "(" <n: Int> <seed: ("," Int)?> ")" => {
       match seed {
         Some(seed) => {

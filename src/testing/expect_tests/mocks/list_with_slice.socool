@@ -1,0 +1,17 @@
+{ f: 220, l: 1, g: 1, p: 0 } 
+
+main = {
+    Seq [
+        List [Tm 1, Tm 9/8, Tm 3/2, Tm 4/3] @ [:],
+        List [Tm 1, Tm 9/8, Tm 3/2, Tm 4/3] @ [:2],
+        List [Tm 1, Tm 9/8, Tm 3/2, Tm 4/3] @ [2:],
+        List [Tm 1, Tm 9/8, Tm 3/2, Tm 4/3] @ [0:2],
+    ]
+}
+
+expect = {
+    Seq [
+        Seq [Tm 1, Tm 9/8],
+    ]
+}
+

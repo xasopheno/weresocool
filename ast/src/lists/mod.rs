@@ -19,9 +19,21 @@ pub struct Indices(pub Vec<Index>);
 
 #[derive(Clone, PartialEq, Debug, Hash)]
 pub enum Index {
-    Const { index: Vec<i64> },
-    Random { n: i64, seed: i64 },
-    IndexAndTerm { index: Box<Index>, term: Term },
+    Const {
+        index: Vec<i64>,
+    },
+    Slice {
+        start: Option<i64>,
+        end: Option<i64>,
+    },
+    Random {
+        n: i64,
+        seed: i64,
+    },
+    IndexAndTerm {
+        index: Box<Index>,
+        term: Term,
+    },
 }
 
 #[derive(Clone, PartialEq, Debug, Hash)]
