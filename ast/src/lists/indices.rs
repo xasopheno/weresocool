@@ -22,6 +22,42 @@ impl Index {
                     index_terms: vec![],
                 })
                 .collect(),
+
+            Index::Slice { start, end } => {
+                let a = match start {
+                    Some(start) => {
+                        if *start as usize > len_list as usize {
+                            panic!(
+                                "Start of slice {} is greater than length of list {}",
+                                start, len_list
+                            )
+                        }
+                        *start as usize
+                    }
+                    None => 0,
+                };
+                let b = match end {
+                    Some(end) => {
+                        if (*end as usize) > len_list as usize {
+                            panic!(
+                                "End of slice {} is greater than length of list {}",
+                                end, len_list
+                            )
+                        }
+                        *end as usize
+                    }
+                    None => len_list as usize,
+                };
+
+                let mut result = vec![];
+                for n in a..b {
+                    result.push(IndexVector {
+                        index: n as usize,
+                        index_terms: vec![],
+                    });
+                }
+                result
+            }
             Index::Random { n, seed } => {
                 let mut rng: StdRng = SeedableRng::seed_from_u64(*seed as u64);
                 let mut result = vec![];
@@ -46,4 +82,3 @@ impl Index {
         }
     }
 }
-
