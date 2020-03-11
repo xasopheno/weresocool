@@ -46,7 +46,7 @@ impl Index {
                         }
                         *end as usize
                     }
-                    None => len_list as usize,
+                    None => (len_list - 1) as usize,
                 };
 
                 if a == b {
