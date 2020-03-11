@@ -54,10 +54,7 @@ impl GetLengthRatio for ListOp {
                     _ => unimplemented!(),
                 }
             }
-            ListOp::ListOpIndexed {
-                list_op: _,
-                indices: _,
-            } => {
+            ListOp::ListOpIndexed { .. } => {
                 let mut nf = NormalForm::init();
                 self.apply_to_normal_form(&mut nf, defs);
                 nf.get_length_ratio(defs)
@@ -85,10 +82,7 @@ impl ListOp {
                     _ => panic!("Using non-list as list."),
                 }
             }
-            ListOp::ListOpIndexed {
-                list_op: _,
-                indices: _,
-            } => {
+            ListOp::ListOpIndexed { .. } => {
                 let mut result: Vec<NormalForm> = vec![];
 
                 self.term_vectors(defs, None)

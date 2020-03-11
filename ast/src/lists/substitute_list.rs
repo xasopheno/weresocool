@@ -19,10 +19,7 @@ impl Substitute for ListOp {
                     _ => unimplemented!(),
                 }
             }
-            ListOp::ListOpIndexed {
-                list_op: _,
-                indices: _,
-            } => {
+            ListOp::ListOpIndexed { .. } => {
                 let mut result = vec![];
 
                 self.term_vectors(defs, Some(arg_map))

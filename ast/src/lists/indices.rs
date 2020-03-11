@@ -55,14 +55,14 @@ impl Index {
 
                 let mut result = vec![];
                 if a < b {
-                    for n in a..b + 1 {
+                    for n in a..=b {
                         result.push(IndexVector {
                             index: n as usize,
                             index_terms: vec![],
                         });
                     }
                 } else {
-                    for n in (b..a + 1).rev() {
+                    for n in (b..=a).rev() {
                         result.push(IndexVector {
                             index: n as usize,
                             index_terms: vec![],
