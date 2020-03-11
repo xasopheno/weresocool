@@ -7,11 +7,12 @@ build = "build.rs" # LALRPOP preprocessing
 description = "Parser for WereSoCool"
 license = "GPL-3.0" 
 
-[build-dependencies]
-lalrpop = "0.17.1"
+[build-dependencies.lalrpop]
+version = "0.18.1"
+features = ["lexer"]
 
 [dependencies]
-lalrpop-util = "0.17.2"
+lalrpop-util = "0.18.1"
 regex = "1"
 colored = "1.9"
 num-rational = "0.2"
