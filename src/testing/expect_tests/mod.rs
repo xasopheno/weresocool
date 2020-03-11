@@ -52,11 +52,11 @@ mod expect_eq_tests {
         expect("src/testing/expect_tests/mocks/simple.socool");
     }
 
-    //#[test]
-    //#[should_panic]
-    //fn test_expect_fail() {
-    //expect("src/testing/expect_tests/fail_mocks/simple_fail.socool");
-    //}
+    #[test]
+    #[should_panic]
+    fn test_expect_fail() {
+        expect("src/testing/expect_tests/fail_mocks/simple_fail.socool");
+    }
 
     #[test_resources("src/testing/expect_tests/mocks/*.socool")]
     fn generated_expect_test(resource: &str) {
