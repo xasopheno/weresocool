@@ -10,7 +10,16 @@ overtones = {
   	]
 }
 
-list = List [Tm 1, Tm 9/8, Tm 5/4, Tm 4/3, Tm 3/2, Tm 5/3, Tm 15/8]
+list = List [
+    Tm 1, 
+    Tm 9/8,  
+    Tm 5/4, 
+    Tm 4/3, 
+    Tm 3/2, 
+    Tm 5/3, 
+    Tm 15/8
+]
+--list = ET(7)
 
 thing1 = {
     Ta 1/2 |
