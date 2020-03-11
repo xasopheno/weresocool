@@ -12,7 +12,6 @@ overtones = {
 
 list = List [Tm 1, Tm 9/8, Tm 5/4, Tm 4/3, Tm 3/2, Tm 5/3, Tm 15/8]
 
-
 thing1 = {
     Ta 1/2 |
 	overtones |
@@ -27,6 +26,10 @@ thing2 = {
     Ta -1/2 |
 	Tm 2 |
     O[
+    	(4/1, 3, 1/4, 0),
+    	(4/1, -2, 1/4, 0),
+    	(2/1, 3, 1/2, 0),
+    	(2/1, -2, 1/2, 0),
     	(1/1, 3, 1, -1/2),
       	(1/1, 0, 1, 1/2),
       	(1/2, 1, 1, -1/2),
@@ -46,10 +49,10 @@ main = {
     Seq [
         thing1 | Repeat 3,
         Overlay [
-            thing1,
-            thing2
+            thing1 | Seq [Reverse, AsIs],
+            thing2 | Repeat 2
         ]
-        | Repeat 3,
+        | Seq [Reverse | Tm 7/8, Tm 1, Tm 1]
     ]
     | Length 1/7
     | Repeat 3
