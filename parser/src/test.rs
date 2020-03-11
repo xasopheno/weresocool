@@ -4,7 +4,7 @@ pub mod test {
         parser::*,
     };
     use num_rational::Ratio;
-    use weresocool_ast::ast::{Defs, Op, Op::*, Term::*};
+    use weresocool_ast::{Defs, Op, Op::*, Term::*};
 
     fn mock_init() -> String {
         "{ f: 200, l: 1.0, g: 1.0, p: 0.0 }

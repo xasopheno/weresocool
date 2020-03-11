@@ -2,10 +2,7 @@
 pub mod normalize_tests {
     extern crate num_rational;
     extern crate pretty_assertions;
-    use crate::{
-        ast::{Defs, Op::*, OscType, Term::*, ASR},
-        operations::{NameSet, NormalForm, Normalize, PointOp},
-    };
+    use crate::{Defs, NameSet, NormalForm, Normalize, Op::*, OscType, PointOp, Term::*, ASR};
     use num_rational::{Ratio, Rational64};
 
     fn make_parse_table() -> Defs {
