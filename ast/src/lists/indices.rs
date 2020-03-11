@@ -3,12 +3,10 @@ use rand::{rngs::StdRng, Rng, SeedableRng};
 
 impl Indices {
     pub fn get_indices_and_terms(&self, len_list: usize) -> Vec<IndexVector> {
-        let mut result = vec![];
-
-        self.0.iter().for_each(|index| {
-            result.append(&mut index.get_indices_and_terms(len_list));
-        });
-        result
+        self.0
+            .iter()
+            .flat_map(|index| index.get_indices_and_terms(len_list))
+            .collect()
     }
 }
 
@@ -53,37 +51,28 @@ impl Index {
                     panic! {"start {} and end {} of slice are the same value", a, b};
                 };
 
-                let mut result = vec![];
-                if a < b {
-                    for n in a..=b {
-                        result.push(IndexVector {
-                            index: n as usize,
-                            index_terms: vec![],
-                        });
-                    }
-                } else {
-                    for n in (b..=a).rev() {
-                        result.push(IndexVector {
-                            index: n as usize,
-                            index_terms: vec![],
-                        });
-                    }
-                };
+                let range = if a < b { (a..=b) } else { (b..=a) };
 
-                result
+                range
+                    .into_iter()
+                    .map(|n| IndexVector {
+                        index: n as usize,
+                        index_terms: vec![],
+                    })
+                    .collect()
             }
             Index::Random { n, seed } => {
                 let mut rng: StdRng = SeedableRng::seed_from_u64(*seed as u64);
-                let mut result = vec![];
-                for _ in 0..*n {
-                    let n: usize = rng.gen_range(0, len_list);
-                    result.push(IndexVector {
-                        index: n,
-                        index_terms: vec![],
-                    });
-                }
-
-                result
+                (0..*n)
+                    .into_iter()
+                    .map(|_| {
+                        let n: usize = rng.gen_range(0, len_list);
+                        IndexVector {
+                            index: n,
+                            index_terms: vec![],
+                        }
+                    })
+                    .collect()
             }
             Index::IndexAndTerm { index, term } => {
                 let mut result = index.get_indices_and_terms(len_list);
