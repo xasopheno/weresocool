@@ -49,13 +49,27 @@ impl Index {
                     None => len_list as usize,
                 };
 
+                if a == b {
+                    panic! {"start {} and end {} of slice are the same value", a, b};
+                };
+
                 let mut result = vec![];
-                for n in a..b {
-                    result.push(IndexVector {
-                        index: n as usize,
-                        index_terms: vec![],
-                    });
-                }
+                if a < b {
+                    for n in a..b + 1 {
+                        result.push(IndexVector {
+                            index: n as usize,
+                            index_terms: vec![],
+                        });
+                    }
+                } else {
+                    for n in (b..a + 1).rev() {
+                        result.push(IndexVector {
+                            index: n as usize,
+                            index_terms: vec![],
+                        });
+                    }
+                };
+
                 result
             }
             Index::Random { n, seed } => {
