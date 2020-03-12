@@ -66,15 +66,14 @@ impl GetLengthRatio for ListOp {
 impl ListOp {
     pub fn to_list_nf(&self, input: &mut NormalForm, defs: &Defs) -> Vec<NormalForm> {
         match self {
-            ListOp::Const(operations) => {
-                let mut result: Vec<NormalForm> = vec![];
-                for op in operations {
+            ListOp::Const(operations) => operations
+                .iter()
+                .map(|op| {
                     let mut input_clone = input.clone();
                     op.apply_to_normal_form(&mut input_clone, defs);
-                    result.push(input_clone);
-                }
-                result
-            }
+                    input_clone
+                })
+                .collect(),
             ListOp::Named(name) => {
                 let term = handle_id_error(name.to_string(), defs, None);
                 match term {

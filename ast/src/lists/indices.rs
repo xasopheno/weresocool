@@ -51,9 +51,7 @@ impl Index {
                     panic! {"start {} and end {} of slice are the same value", a, b};
                 };
 
-                let range = if a < b { (a..=b) } else { (b..=a) };
-
-                range
+                if a < b { (a..=b) } else { (b..=a) }
                     .into_iter()
                     .map(|n| IndexVector {
                         index: n as usize,
@@ -74,14 +72,14 @@ impl Index {
                     })
                     .collect()
             }
-            Index::IndexAndTerm { index, term } => {
-                let mut result = index.get_indices_and_terms(len_list);
-                result
-                    .iter_mut()
-                    .for_each(|index_vector| index_vector.index_terms.push(term.clone()));
-
-                result
-            }
+            Index::IndexAndTerm { index, term } => index
+                .get_indices_and_terms(len_list)
+                .iter_mut()
+                .map(|index_vector| {
+                    index_vector.index_terms.push(term.clone());
+                    index_vector.to_owned()
+                })
+                .collect(),
         }
     }
 }
