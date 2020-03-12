@@ -13,7 +13,7 @@ impl Indices {
 impl Index {
     pub fn get_indices_and_terms(&self, len_list: usize) -> Vec<IndexVector> {
         match self {
-            Index::Const { index } => index
+            Index::Const { indices } => indices
                 .iter()
                 .map(|i| IndexVector {
                     index: *i as usize,

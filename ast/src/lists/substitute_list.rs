@@ -19,22 +19,22 @@ impl Substitute for ListOp {
                     _ => unimplemented!(),
                 }
             }
-            ListOp::ListOpIndexed { .. } => {
-                let mut result = vec![];
-
+            ListOp::ListOpIndexed { .. } => Term::Lop(ListOp::Const(
                 self.term_vectors(defs, Some(arg_map))
                     .iter_mut()
-                    .for_each(|term_vector| {
+                    .map(|term_vector| {
                         let mut nf = normal_form.clone();
+
                         term_vector.term.apply_to_normal_form(&mut nf, defs);
                         term_vector
                             .index_terms
                             .iter()
                             .for_each(|index_term| index_term.apply_to_normal_form(&mut nf, defs));
-                        result.push(Term::Nf(nf))
-                    });
-                Term::Lop(ListOp::Const(result))
-            }
+
+                        Term::Nf(nf)
+                    })
+                    .collect(),
+            )),
         }
     }
 }

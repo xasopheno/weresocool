@@ -20,7 +20,7 @@ pub struct Indices(pub Vec<Index>);
 #[derive(Clone, PartialEq, Debug, Hash)]
 pub enum Index {
     Const {
-        index: Vec<i64>,
+        indices: Vec<i64>,
     },
     Slice {
         start: Option<i64>,

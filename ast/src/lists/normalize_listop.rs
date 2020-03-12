@@ -20,18 +20,19 @@ impl ListOp {
                 }
             }
             ListOp::ListOpIndexed { list_op, indices } => {
-                let mut result = vec![];
                 let term_vectors = list_op.term_vectors(defs, arg_map);
                 let index_vectors = indices.get_indices_and_terms(term_vectors.len());
 
-                for index_vector in index_vectors.iter() {
-                    let mut new_index = term_vectors[index_vector.index].clone();
-                    for index_term in index_vector.index_terms.iter() {
-                        new_index.index_terms.push(index_term.clone());
-                    }
-                    result.push(new_index);
-                }
-                result
+                index_vectors
+                    .iter()
+                    .map(|index_vector| {
+                        let mut new_index = term_vectors[index_vector.index].clone();
+                        index_vector.index_terms.iter().for_each(|index_term| {
+                            new_index.index_terms.push(index_term.clone());
+                        });
+                        new_index
+                    })
+                    .collect()
             }
         }
     }
@@ -96,16 +97,12 @@ impl ListOp {
 
 impl Normalize for ListOp {
     fn apply_to_normal_form(&self, input: &mut NormalForm, defs: &Defs) {
-        let list_nf = self.to_list_nf(input, defs);
-        *input = join_list_nf(list_nf);
+        *input = join_list_nf(self.to_list_nf(input, defs));
     }
 }
 
 fn join_list_nf(indexed: Vec<NormalForm>) -> NormalForm {
-    let mut result = NormalForm::init_empty();
-    for nf in indexed {
-        result = join_sequence(result, nf);
-    }
-
-    result
+    indexed.iter().fold(NormalForm::init_empty(), |acc, nf| {
+        join_sequence(acc, nf.to_owned())
+    })
 }
