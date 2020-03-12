@@ -1,5 +1,5 @@
 #[cfg(test)]
-mod expect_eq_tests {
+mod expect {
     use crate::{
         generation::{RenderReturn, RenderType},
         interpretable::{InputType::Filename, Interpretable},
@@ -59,7 +59,7 @@ mod expect_eq_tests {
     }
 
     #[test_resources("src/testing/expect_tests/mocks/*.socool")]
-    fn generated_expect_test(resource: &str) {
+    fn __generated_(resource: &str) {
         expect(resource);
     }
 }

@@ -1,0 +1,49 @@
+{ f: 340, l: 1, g: 1, p: 0 }
+
+overtones = {
+    O[
+    	(1/1, 3, 1, 1/2),
+      	(1/1, 0, 1, -1/2),
+      	(1/2, 0, 1/2, 1/2),
+      	(1/2, 0, 1/2, -1/2),
+  	]
+}
+
+list = ET(10) 
+    @ [ Random(10) ] 
+    @ [ 
+        1 | Tm 3/4,
+        1 | Tm 1/2,
+        Random(1) | Tm 1/2, 
+        Random(2) | Tm 3/4 | PanA -1/2, 
+        Random(1) | Tm 1,  
+        Random(2) | Tm 1/4, 
+      ]
+
+thing1 = { list | Seq [Tm 1, Reverse | Tm 25/24] }
+
+thing2 = {
+    --Seq [0^6, 1^1 | Gain 1/2, 0^1, 1^1]
+    Seq [0^2, 1^1]
+    | O[
+    	(6/5, 0, 1, 1),
+      	(7/4, 0, 1, -1),
+    	(3/2, 1, 1, 1),
+      	(1/1, 0, 1, -1),
+  	]
+    | Seq [Tm 1, Tm 9/8, Tm 9/8, Tm 5/4 | Overlay [Tm 1, Tm 11/8 | Gain 1/4]]
+    | Gain 1 
+    > FitLength thing1  
+}
+
+main = {
+    Overlay [
+        overtones | 
+        thing1,
+        thing2
+    ]
+    | Length 1/4
+    | Seq [Repeat 3, Length 7/8, Length 6/8, Length 5/8, Length 1/2 | Repeat 2]
+    | Repeat 2
+}
+	

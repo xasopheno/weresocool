@@ -1,0 +1,58 @@
+listop ::= [ term.. ] 
+            | [ term.. ] @ [ index.. ] 
+            | named @ [ index.. ] 
+            | ET(n) 
+            | ET(n) @ [ index ...]
+
+
+listop ::= list
+            | ET(n)
+            | name @ [ index.. ]
+            | listop @ [ index.. ]
+
+list_op => list_nf
+
+indices ::= [[index]..] => [Term]
+
+index ::= const(n) => [term]
+            | random(i64, Option<i64>) => [term .. ]
+            | index | term => [term ..] | term => [term]
+
+
+pub enum Index {
+    Index(i64),
+    Random(i64, Option<i64>),
+    IndexAndTerm { index: i64, term: Term },
+    RandomAndTerm {
+        n: i64,
+        term: Term,
+        seed: Option<i64>,
+    },
+}
+
+
+[ term.. ] 
+    @ [ 
+        1, 
+        2 | Tm 3/2, 
+        Random(2) | Tm 3/2
+    ]
+    @ | [ 
+        Random(10) 
+    ]
+
+
+@ | [ 
+    2 | Tm 1/2 | Tm 3/2,
+    Random(2) | Tm 1/2 | Tm 3/2,
+]
+
+Index | Op | Op | Op | Op
+
+
+
+
+
+
+
+

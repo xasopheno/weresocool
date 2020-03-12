@@ -10,7 +10,7 @@ list2 = {
 }
 
 main = {
-    list1 @ [0, 1] 
+    List list1 @ [0, 1] 
     > FitLength list2
 }
 

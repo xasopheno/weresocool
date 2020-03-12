@@ -1,7 +1,7 @@
-use crate::ast::{Defs, FunDef, Op, OscType, Term, Term::*};
 use crate::operations::{
     helpers::*, substitute::get_fn_arg_map, GetLengthRatio, NormalForm, Normalize, Substitute,
 };
+use crate::{Defs, FunDef, Op, OscType, Term, Term::*};
 use num_rational::Ratio;
 use rand::prelude::*;
 
@@ -12,11 +12,11 @@ impl Normalize for Op {
             Op::AsIs => {}
 
             Op::Id(id) => {
-                handle_id_error(id.to_string(), defs).apply_to_normal_form(input, defs);
+                handle_id_error(id.to_string(), defs, None).apply_to_normal_form(input, defs);
             }
             //
             Op::FunctionCall { name, args } => {
-                let f = handle_id_error(name.to_string(), defs);
+                let f = handle_id_error(name.to_string(), defs, None);
                 let arg_map = get_fn_arg_map(f.clone(), args);
 
                 match f {
@@ -32,8 +32,10 @@ impl Normalize for Op {
                             Term::FunDef(_) => {
                                 panic!("Function Op stored in FunDef");
                             }
-                            Term::Lop(_lop) => unimplemented!(),
-                            Term::Lnf(_lnf) => unimplemented!(),
+                            Term::Lop(lop) => {
+                                let result = lop.substitute(input, defs, &arg_map);
+                                result.apply_to_normal_form(input, defs)
+                            }
                         },
                     },
                     _ => {

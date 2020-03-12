@@ -1,4 +1,4 @@
-use crate::ast::{Defs, OscType, Term, ASR};
+use crate::{Defs, OscType, Term, ASR};
 use num_rational::{Ratio, Rational64};
 use std::{
     collections::{BTreeSet, HashMap},
@@ -7,15 +7,15 @@ use std::{
 mod get_length_ratio;
 pub mod helpers;
 mod normalize;
-pub mod normalize_listop;
-pub mod normalize_nf;
-mod substitute;
+pub mod substitute;
 
 #[derive(Debug, Clone, PartialEq, Hash)]
 pub struct NormalForm {
     pub operations: Vec<Vec<PointOp>>,
     pub length_ratio: Rational64,
 }
+
+pub type ArgMap = HashMap<String, Term>;
 
 pub type NameSet = BTreeSet<String>;
 
@@ -52,8 +52,6 @@ impl GetLengthRatio for NormalForm {
         self.length_ratio
     }
 }
-
-pub type ArgMap = HashMap<String, Term>;
 
 impl Substitute for NormalForm {
     fn substitute(&self, _normal_form: &mut NormalForm, _defs: &Defs, _arg_map: &ArgMap) -> Term {

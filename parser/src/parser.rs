@@ -7,10 +7,7 @@ use std::fs::File;
 use std::io::prelude::*;
 use std::io::BufReader;
 use std::sync::{Arc, Mutex};
-use weresocool_ast::{
-    ast::{Defs, Term},
-    operations::{NormalForm, Normalize},
-};
+use weresocool_ast::{Defs, NormalForm, Normalize, Term};
 use weresocool_error::{Error, ParseError};
 
 #[derive(Clone, PartialEq, Debug)]
@@ -53,7 +50,6 @@ fn process_op_table(defs: Defs) -> Defs {
                 lop.apply_to_normal_form(&mut nf, &defs);
                 result.terms.insert(name.to_string(), Term::Nf(nf));
             }
-            Term::Lnf(_lnf) => unimplemented!(),
         };
     }
 

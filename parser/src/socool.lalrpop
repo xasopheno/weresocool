@@ -2,22 +2,18 @@ use num_rational::{Rational64};
 use std::str::FromStr;
 use std::string::String;
 use weresocool_ast::{
-    ast::{
         Defs,
         Op,
         Op::*,
         Term,
-        is_choice_op,
         ASR,
         FunDef,
         ListOp,
         Indices, 
         Index,
-        IndexList 
-    },
 };
 use crate::parser::Init;
-use crate::et::et;
+use crate::indices::{et, random_seed};
 use crate::float_to_rational::helpers::*;
 
 grammar<'defs, 'err>(
@@ -57,7 +53,7 @@ LetDef: () = {
     },
 
     <name: Name> "=" <list: List> => {
-        defs.lists.insert(name.clone(), list); ()
+        defs.lists.insert(name.clone(), Term::Lop(list)); ()
     }
 };
 
@@ -80,69 +76,49 @@ Operation: Term = {
         )
     },
 
-    <op1: Operation> ">" "LazyRepeat" <i: Int> => {
-        let mut op = Term::Op(AsIs);
-        if is_choice_op(op1.clone(), defs) {
-            op = op1
-        }
-        let mut vec = Vec::new();
-        for x in 0..i {
-            vec.push(op.clone())
-        }
-        Term::Op(Sequence { operations: vec })
-    },
-
     <op: ComposeOperation> => op,
 
-    <list: List> => list
+    <list: List> => Term::Lop(list),
+
 }
 
-List: Term = {
-  "List" "[" <terms: Operations> "]" "@" "[" <indices: Indices> "]"=> {
-    Term::Lop(
-      ListOp::IndexedList { 
-        terms, 
-        indices
-      }
-    )
-  },
-
+List: ListOp = {
   "List" "[" <operations: Operations> "]" => {
-    Term::Lop(ListOp::List(operations))
+    ListOp::Const(operations)
   },
 
-  <name: Name> "@" "[" <indices: Indices> "]"=> {
-    Term::Lop(
-      ListOp::IndexedNamedList { 
-        name, 
-        indices
-      }
-    )
+  "List" <name: Name> => {
+    ListOp::Named(name)
   },
 
-
-  "ET" "(" <int: Int> ")" => Term::Lop(ListOp::List(et(int))),
-
-  "ET" "(" <int: Int> ")" "@" "[" <indices: Indices> "]"=> {
-    Term::Lop(
-      ListOp::IndexedList { 
-        terms: et(int), 
-        indices  
-      }
-    )
+  "ET" "(" <n: Int> ")" => {
+    ListOp::Const(et(n))
   },
 
+  <listop: List> "@" "[" <indices: Indices> "]" => {
+    ListOp::ListOpIndexed { list_op: Box::new(listop), indices}
+  },
 }
 
 Indices: Indices = {
-  <indices: Comma<Index>> => Indices::IndexList(IndexList::new(indices)),
+  <indices: Comma<Index>> => Indices(indices),
 };
 
 Index: Index = {
-  <index: Int> => Index::Index(index),
-  <index: Int> "|" <term: Composeable> => Index::IndexAndTerm {index, term},
-  "Random" "(" <index: Int> ")" => Index::Random(index, None),
-  "Random" "(" <index: Int> "," <seed: Int> ")" => Index::Random(index, Some(seed))
+  <index: Int> => Index::Const { indices: vec![index] },
+  "(" <indices: Comma<Int>> ")" => Index::Const { indices },
+  <start: Int?>":"<end: Int?> => { Index::Slice { start, end } },
+  "Random" "(" <n: Int> <seed: ("," Int)?> ")" => {
+      match seed {
+        Some(seed) => {
+          Index::Random { n, seed: seed.1 }
+        },
+        None => {
+          Index::Random { n, seed: random_seed() }
+        }
+      }
+  },
+  <index: Index> "|" <term: Composeable> => Index::IndexAndTerm {index: Box::new(index), term},
 } 
 
 ComposeOperation: Term = {
@@ -152,7 +128,7 @@ ComposeOperation: Term = {
 
 Composeable: Term = {
   <base_operation: BaseOperation> => base_operation,
-  <list: List> => list,
+  <list: List> => Term::Lop(list),
 }
 
 BaseOperation: Term = {

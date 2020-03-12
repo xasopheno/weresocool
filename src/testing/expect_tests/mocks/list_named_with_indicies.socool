@@ -3,7 +3,7 @@
 list_def = List [Tm 1, Tm 9/8]
 
 main = {
-    list_def @ [0, 1, 0]
+    List list_def @ [0, 1, 0]
 }
 
 expect = {

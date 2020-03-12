@@ -1,5 +1,5 @@
-use crate::ast::{Defs, FunDef, Op, Term};
 use crate::operations::{helpers::handle_id_error, ArgMap, NormalForm, Normalize, Substitute};
+use crate::{Defs, FunDef, Op, Term};
 use std::collections::HashMap;
 
 pub fn get_fn_arg_map(f: Term, args: &[Term]) -> ArgMap {
@@ -23,13 +23,7 @@ pub fn get_fn_arg_map(f: Term, args: &[Term]) -> ArgMap {
 impl Substitute for Op {
     fn substitute(&self, normal_form: &mut NormalForm, defs: &Defs, arg_map: &ArgMap) -> Term {
         match self {
-            Op::Id(id) => {
-                let value = arg_map.get(&id.clone());
-                match value {
-                    Some(sub) => sub.clone(),
-                    None => handle_id_error(id.to_string(), defs),
-                }
-            }
+            Op::Id(id) => handle_id_error(id.to_string(), defs, Some(arg_map)),
 
             Op::WithLengthRatioOf {
                 main,
@@ -93,7 +87,7 @@ impl Substitute for Op {
     }
 }
 
-fn substitute_operations(
+pub fn substitute_operations(
     operations: Vec<Term>,
     normal_form: &mut NormalForm,
     defs: &Defs,
@@ -110,11 +104,9 @@ fn substitute_operations(
             Term::FunDef(_fun) => {
                 unimplemented!();
             }
-            Term::Lop(_lop) => {
-                unimplemented!();
-            }
-            Term::Lnf(_lnf) => {
-                unimplemented!();
+            Term::Lop(lop) => {
+                let subbed = lop.substitute(normal_form, defs, arg_map);
+                result.push(subbed)
             }
         }
     }
