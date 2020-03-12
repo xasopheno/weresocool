@@ -40,13 +40,9 @@ impl ListOp {
 impl GetLengthRatio for ListOp {
     fn get_length_ratio(&self, defs: &Defs) -> Rational64 {
         match self {
-            ListOp::Const(terms) => {
-                let mut new_total = Rational64::from_integer(0);
-                for term in terms {
-                    new_total += term.get_length_ratio(defs);
-                }
-                new_total
-            }
+            ListOp::Const(terms) => terms.iter().fold(Rational64::from_integer(0), |acc, term| {
+                acc + term.get_length_ratio(defs)
+            }),
             ListOp::Named(name) => {
                 let term = handle_id_error(name.to_string(), defs, None);
                 match term {
@@ -81,22 +77,19 @@ impl ListOp {
                     _ => panic!("Using non-list as list."),
                 }
             }
-            ListOp::ListOpIndexed { .. } => {
-                let mut result: Vec<NormalForm> = vec![];
-
-                self.term_vectors(defs, None)
-                    .iter_mut()
-                    .for_each(|term_vector| {
-                        let mut nf = input.clone();
-                        term_vector.term.apply_to_normal_form(&mut nf, defs);
-                        term_vector
-                            .index_terms
-                            .iter()
-                            .for_each(|index_term| index_term.apply_to_normal_form(&mut nf, defs));
-                        result.push(nf)
-                    });
-                result
-            }
+            ListOp::ListOpIndexed { .. } => self
+                .term_vectors(defs, None)
+                .iter_mut()
+                .map(|term_vector| {
+                    let mut nf = input.clone();
+                    term_vector.term.apply_to_normal_form(&mut nf, defs);
+                    term_vector
+                        .index_terms
+                        .iter()
+                        .for_each(|index_term| index_term.apply_to_normal_form(&mut nf, defs));
+                    nf
+                })
+                .collect(),
         }
     }
 }
