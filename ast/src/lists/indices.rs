@@ -52,7 +52,6 @@ impl Index {
                 };
 
                 if a < b { (a..=b) } else { (b..=a) }
-                    .into_iter()
                     .map(|n| IndexVector {
                         index: n as usize,
                         index_terms: vec![],
@@ -62,7 +61,6 @@ impl Index {
             Index::Random { n, seed } => {
                 let mut rng: StdRng = SeedableRng::seed_from_u64(*seed as u64);
                 (0..*n)
-                    .into_iter()
                     .map(|_| {
                         let n: usize = rng.gen_range(0, len_list);
                         IndexVector {
