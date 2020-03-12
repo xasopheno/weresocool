@@ -15,6 +15,8 @@ pub struct NormalForm {
     pub length_ratio: Rational64,
 }
 
+pub type ArgMap = HashMap<String, Term>;
+
 pub type NameSet = BTreeSet<String>;
 
 #[derive(Debug, Clone, Hash, Eq, Ord, PartialEq, PartialOrd)]
@@ -50,8 +52,6 @@ impl GetLengthRatio for NormalForm {
         self.length_ratio
     }
 }
-
-pub type ArgMap = HashMap<String, Term>;
 
 impl Substitute for NormalForm {
     fn substitute(&self, _normal_form: &mut NormalForm, _defs: &Defs, _arg_map: &ArgMap) -> Term {

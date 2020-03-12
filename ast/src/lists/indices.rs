@@ -2,16 +2,16 @@ use crate::{Index, IndexVector, Indices};
 use rand::{rngs::StdRng, Rng, SeedableRng};
 
 impl Indices {
-    pub fn get_indices_and_terms(&self, len_list: usize) -> Vec<IndexVector> {
+    pub fn vectorize(&self, len_list: usize) -> Vec<IndexVector> {
         self.0
             .iter()
-            .flat_map(|index| index.get_indices_and_terms(len_list))
+            .flat_map(|index| index.vectorize(len_list))
             .collect()
     }
 }
 
 impl Index {
-    pub fn get_indices_and_terms(&self, len_list: usize) -> Vec<IndexVector> {
+    pub fn vectorize(&self, len_list: usize) -> Vec<IndexVector> {
         match self {
             Index::Const { indices } => indices
                 .iter()
@@ -73,7 +73,7 @@ impl Index {
                     .collect()
             }
             Index::IndexAndTerm { index, term } => index
-                .get_indices_and_terms(len_list)
+                .vectorize(len_list)
                 .iter_mut()
                 .map(|index_vector| {
                     index_vector.index_terms.push(term.clone());
