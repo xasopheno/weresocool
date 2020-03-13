@@ -161,7 +161,6 @@ BaseOperation: Term = {
     r"(PanA|Pa)" <v:Rational> => Term::Op(PanA {a: v}),
     r"(Length|Lm)" <v:Rational> => Term::Op(Length {m: v}),
     r"(Gain|Gm)" <v:Rational> => Term::Op(Gain {m: v}),
-    "Choice" "[" <operations: Operations> "]" => Term::Op(Choice { operations: operations }),
     r"(Sequence|Seq)" "[" <operations: Operations> "]" => Term::Op(Sequence { operations: operations }),
     "Overlay" "[" <operations: Operations> "]" => Term::Op(Overlay { operations: operations }),
     r"(ModulateBy|ModBy)" "[" <operations: Operations> "]" => Term::Op(ModulateBy { operations: operations }),
