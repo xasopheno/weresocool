@@ -49,16 +49,16 @@ mod expect {
 
     #[test]
     fn test_expect() {
-        expect("src/testing/expect_tests/mocks/simple.socool");
+        expect("src/testing/expect_tests/mod_mocks/simple.socool");
     }
 
     #[test]
     #[should_panic]
     fn test_expect_fail() {
-        expect("src/testing/expect_tests/fail_mocks/simple_fail.socool");
+        expect("src/testing/expect_tests/mod_mocks/simple_fail.socool");
     }
 
-    #[test_resources("src/testing/expect_tests/mocks/*.socool")]
+    #[test_resources("mocks/*.socool")]
     fn __generated_(resource: &str) {
         expect(resource);
     }
