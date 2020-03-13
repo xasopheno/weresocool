@@ -51,12 +51,17 @@ impl Index {
                     panic! {"start {} and end {} of slice are the same value", a, b};
                 };
 
-                if a < b { (a..=b) } else { (b..=a) }
-                    .map(|n| IndexVector {
-                        index: n as usize,
-                        index_terms: vec![],
-                    })
-                    .collect()
+                if a < b {
+                    (a..=b).collect::<Vec<usize>>()
+                } else {
+                    (b..=a).rev().collect::<Vec<usize>>()
+                }
+                .iter()
+                .map(|n| IndexVector {
+                    index: *n as usize,
+                    index_terms: vec![],
+                })
+                .collect()
             }
             Index::Random { n, seed } => {
                 let mut rng: StdRng = SeedableRng::seed_from_u64(*seed as u64);
