@@ -8,6 +8,16 @@ main = {
         List [Tm 1, Tm 9/8, Tm 3/2, Tm 4/3] @ [1:2],
         List [Tm 1, Tm 9/8, Tm 3/2, Tm 4/3] @ [1:2 | Tm 2, 0],
         List [Tm 1, Tm 9/8, Tm 3/2, Tm 4/3] @ [(0, 1, 2) | Tm 2, 0],
+        List [
+            Tm 1, Tm 9/8, Tm 5/4, Tm 4/3, 
+            Tm 3/2, Tm 5/3, Tm 15/8
+        ] 
+        @ [::2],
+        List [
+            Tm 1, Tm 9/8, Tm 5/4, Tm 4/3, 
+            Tm 3/2, Tm 5/3, Tm 15/8
+        ] 
+        @ [6:0:2]
     ]
 }
 
@@ -18,7 +28,9 @@ expect = {
         Seq [Tm 3/2, Tm 4/3],
         Seq [Tm 9/8, Tm 3/2],
         Seq [Seq [Tm 9/8, Tm 3/2] | Tm 2, Tm 1],
-        Seq [Seq [Tm 1, Tm 9/8, Tm 3/2] | Tm 2, Tm 1]
+        Seq [Seq [Tm 1, Tm 9/8, Tm 3/2] | Tm 2, Tm 1],
+        Seq [Tm 1, Tm 5/4, Tm 3/2, Tm 15/8], 
+        Seq [Tm 1, Tm 5/4, Tm 3/2, Tm 15/8] | Reverse
     ]
 }
 

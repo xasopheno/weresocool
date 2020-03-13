@@ -21,7 +21,7 @@ impl Index {
                 })
                 .collect(),
 
-            Index::Slice { start, end } => {
+            Index::Slice { start, end, skip } => {
                 let a = match start {
                     Some(start) => {
                         if *start as usize > len_list as usize {
@@ -57,9 +57,16 @@ impl Index {
                     (b..=a).rev().collect::<Vec<usize>>()
                 }
                 .iter()
-                .map(|n| IndexVector {
-                    index: *n as usize,
-                    index_terms: vec![],
+                .enumerate()
+                .filter_map(|(i, n)| {
+                    if i % *skip as usize == 0 {
+                        Some(IndexVector {
+                            index: *n as usize,
+                            index_terms: vec![],
+                        })
+                    } else {
+                        None
+                    }
                 })
                 .collect()
             }
