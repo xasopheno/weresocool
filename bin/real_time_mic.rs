@@ -1,8 +1,8 @@
 use weresocool::{
     examples::documentation,
-    generation::parsed_to_render::{RenderReturn, RenderType},
+    generation::parsed_to_render::{r_to_f64, RenderReturn, RenderType},
     interpretable::{InputType::Filename, Interpretable},
-    portaudio::real_time,
+    portaudio::duplex_setup,
     renderable::nf_to_vec_renderable,
     ui::{get_args, no_file_name, were_so_cool_logo},
 };
@@ -44,11 +44,11 @@ fn run() -> Result<(), Error> {
     let renderables = nf_to_vec_renderable(&nf, &table, &basis);
 
     println!("\nGenerating Composition ");
-    let mut output_stream = real_time(renderables)?;
-    output_stream.start()?;
+    let mut duplex_stream = duplex_setup(r_to_f64(basis.f), renderables)?;
+    duplex_stream.start()?;
 
-    while let true = output_stream.is_active()? {}
+    while let true = duplex_stream.is_active()? {}
 
-    output_stream.stop()?;
+    duplex_stream.stop()?;
     Ok(())
 }

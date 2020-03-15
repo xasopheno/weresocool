@@ -1,7 +1,4 @@
 use failure::Fail;
-use std::fs::{self};
-use std::io;
-use std::path::Path;
 use weresocool_error::Error;
 
 fn main() {
