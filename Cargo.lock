@@ -1819,6 +1819,7 @@ dependencies = [
  "term 0.6.1",
  "test-generator",
  "uuid 0.8.1",
+ "walkdir",
  "watch",
  "weresocool_ast",
  "weresocool_error",
