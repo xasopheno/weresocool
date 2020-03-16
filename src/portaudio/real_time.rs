@@ -1,7 +1,7 @@
 use crate::{
     generation::parsed_to_render::sum_all_waveforms,
     instrument::StereoWaveform,
-    renderable::{renderables_to_render_voices, RenderOp},
+    renderable::RenderVoice,
     settings::{default_settings, Settings},
     write::write_output_buffer,
 };
@@ -12,11 +12,10 @@ use weresocool_error::Error;
 const SETTINGS: Settings = default_settings();
 
 pub fn real_time(
-    renderables: Vec<Vec<RenderOp>>,
+    mut voices: Vec<RenderVoice>,
 ) -> Result<pa::Stream<pa::NonBlocking, pa::Output<f32>>, Error> {
     let pa = pa::PortAudio::new()?;
     let output_stream_settings = get_output_settings(&pa)?;
-    let mut voices = renderables_to_render_voices(renderables);
 
     let output_stream = pa.open_non_blocking_stream(output_stream_settings, move |args| {
         let result: Vec<StereoWaveform> = voices

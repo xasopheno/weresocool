@@ -4,6 +4,7 @@ use weresocool::{
     interpretable::{InputType::Filename, Interpretable},
     portaudio::real_time,
     renderable::nf_to_vec_renderable,
+    renderable::renderables_to_render_voices,
     ui::{get_args, no_file_name, were_so_cool_logo},
 };
 
@@ -42,9 +43,10 @@ fn run() -> Result<(), Error> {
         _ => panic!("Error. Unable to generate NormalForm"),
     };
     let renderables = nf_to_vec_renderable(&nf, &table, &basis);
+    let voices = renderables_to_render_voices(renderables);
 
     println!("\nGenerating Composition ");
-    let mut output_stream = real_time(renderables)?;
+    let mut output_stream = real_time(voices)?;
     output_stream.start()?;
 
     while let true = output_stream.is_active()? {}
