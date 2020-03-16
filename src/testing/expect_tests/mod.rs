@@ -49,17 +49,27 @@ mod expect {
 
     #[test]
     fn test_expect() {
-        expect("src/testing/expect_tests/mocks/simple.socool");
+        expect("src/testing/expect_tests/mod_mocks/simple.socool");
     }
 
     #[test]
     #[should_panic]
     fn test_expect_fail() {
-        expect("src/testing/expect_tests/fail_mocks/simple_fail.socool");
+        expect("src/testing/expect_tests/mod_mocks/simple_fail.socool");
     }
 
-    #[test_resources("src/testing/expect_tests/mocks/*.socool")]
-    fn __generated_(resource: &str) {
+    #[test_resources("mocks/list/*.socool")]
+    fn __list_generated_(resource: &str) {
+        expect(resource);
+    }
+
+    #[test_resources("mocks/index/*.socool")]
+    fn __index_generated_(resource: &str) {
+        expect(resource);
+    }
+
+    #[test_resources("mocks/function/*.socool")]
+    fn __function_generated_(resource: &str) {
         expect(resource);
     }
 }

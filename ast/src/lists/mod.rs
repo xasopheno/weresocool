@@ -25,6 +25,7 @@ pub enum Index {
     Slice {
         start: Option<i64>,
         end: Option<i64>,
+        skip: i64,
     },
     /// @ [ Random(n) ]
     Random { n: i64, seed: i64 },

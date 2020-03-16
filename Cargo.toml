@@ -50,8 +50,7 @@ test-generator = "0.3.0"
 [dev-dependencies]
 pretty_assertions = "0.6.1"
 criterion = "0.3"
-watch = "0.1.0"
-listenfd = "0.3.3"
+#listenfd = "0.3.3"
 
 [[bench]]
 name = "render_batch_bench"
@@ -82,6 +81,10 @@ path = "bin/stems.rs"
 [[bin]]
 name = "real_time"
 path = "bin/real_time.rs"
+
+[[bin]]
+name = "mic"
+path = "bin/real_time_mic.rs"
 
 [[bin]]
 name = "scratch"
