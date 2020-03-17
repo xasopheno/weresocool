@@ -48,7 +48,7 @@ fn sing_along_callback(
 
     let result: Vec<StereoWaveform> = voices
         .par_iter_mut()
-        .map(|voice| voice.render_batch(SETTINGS.buffer_size, offset.as_ref()))
+        .filter_map(|voice| voice.render_batch(SETTINGS.buffer_size, offset.as_ref()))
         .collect();
     let stereo_waveform = sum_all_waveforms(result);
     write_output_buffer(args.out_buffer, stereo_waveform);

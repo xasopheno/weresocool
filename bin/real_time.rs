@@ -46,11 +46,11 @@ fn run() -> Result<(), Error> {
     let voices = renderables_to_render_voices(renderables);
 
     println!("\nGenerating Composition ");
-    let mut output_stream = real_time(voices)?;
-    output_stream.start()?;
+    let mut stream = real_time(voices)?;
+    stream.start()?;
 
-    while let true = output_stream.is_active()? {}
+    while let true = stream.is_active()? {}
 
-    output_stream.stop()?;
+    stream.stop()?;
     Ok(())
 }

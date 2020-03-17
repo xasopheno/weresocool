@@ -1,4 +1,5 @@
 use serde::{Deserialize, Serialize};
+use std::cmp;
 
 #[derive(Clone, Debug, PartialEq, Serialize, Deserialize)]
 pub struct StereoWaveform {
@@ -16,6 +17,14 @@ impl StereoWaveform {
             l_buffer: vec![0.0; buffer_size],
             r_buffer: vec![0.0; buffer_size],
         }
+    }
+
+    pub fn max_len(&self) -> usize {
+        cmp::max(self.l_buffer.len(), self.r_buffer.len())
+    }
+
+    pub fn total_len(&self) -> usize {
+        self.l_buffer.len() + self.r_buffer.len()
     }
 
     pub fn append(&mut self, mut stereo_waveform: Self) {
