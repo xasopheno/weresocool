@@ -28,7 +28,7 @@ fn main() {
 
 fn run() -> Result<(), Error> {
     were_so_cool_logo();
-    println!("       )))***=== Prin Ting ===***(((  \n ");
+    println!("       )))***=== Printing Cool Sounds ===***(((  \n ");
     let args = get_args();
 
     let filename = args.value_of("filename");
@@ -56,11 +56,8 @@ fn run() -> Result<(), Error> {
             result.append(stereo_waveform);
         } else {
             break;
-            //pa::Complete
         }
     }
-    dbg!(result.total_len());
-
     write_composition_to_wav(result, filename.unwrap(), true, true);
 
     Ok(())
