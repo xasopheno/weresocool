@@ -1,11 +1,16 @@
+use rayon::prelude::*;
 use weresocool::{
-    examples::documentation,
-    generation::parsed_to_render::{RenderReturn, RenderType},
-    interpretable::{InputType::Filename, Interpretable},
+    generation::parsed_to_render::{sum_all_waveforms, RenderReturn, RenderType},
     //portaudio::real_time,
+    instrument::StereoWaveform,
+    interpretable::{InputType::Filename, Interpretable},
     renderable::{nf_to_vec_renderable, renderables_to_render_voices},
+    settings::{default_settings, Settings},
     ui::{get_args, no_file_name, were_so_cool_logo},
+    write::write_composition_to_wav,
 };
+
+const SETTINGS: Settings = default_settings();
 
 use failure::Fail;
 use weresocool_error::Error;
@@ -23,13 +28,8 @@ fn main() {
 
 fn run() -> Result<(), Error> {
     were_so_cool_logo();
-    println!("       )))***=== REAL<GOOD>TIME ===***(((  \n ");
-
+    println!("       )))***=== Prin Ting ===***(((  \n ");
     let args = get_args();
-
-    if args.is_present("doc") {
-        documentation();
-    }
 
     let filename = args.value_of("filename");
     match filename {
@@ -42,14 +42,26 @@ fn run() -> Result<(), Error> {
         _ => panic!("Error. Unable to generate NormalForm"),
     };
     let renderables = nf_to_vec_renderable(&nf, &table, &basis);
-    let _voices = renderables_to_render_voices(renderables);
+    let mut voices = renderables_to_render_voices(renderables);
 
-    //println!("\nGenerating Composition ");
-    //let mut output_stream = real_time(renderables)?;
-    //output_stream.start()?;
+    let mut result = StereoWaveform::new(0);
+    loop {
+        let batch: Vec<StereoWaveform> = voices
+            .par_iter_mut()
+            .filter_map(|voice| voice.render_batch(SETTINGS.buffer_size, None))
+            .collect();
 
-    //while let true = output_stream.is_active()? {}
+        if batch.len() > 0 {
+            let stereo_waveform = sum_all_waveforms(batch);
+            result.append(stereo_waveform);
+        } else {
+            break;
+            //pa::Complete
+        }
+    }
+    dbg!(result.total_len());
 
-    //output_stream.stop()?;
+    write_composition_to_wav(result, filename.unwrap(), true, true);
+
     Ok(())
 }
