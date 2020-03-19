@@ -2,5 +2,5 @@
 
 FILENAME=$1
 cargo run --release --bin wsc songs/$FILENAME.socool --json
-cargo run --release --bin wsc songs/$FILENAME.socool --print
+cargo run --release --bin scratch songs/$FILENAME.socool
 ../ws/client/target/release/client
