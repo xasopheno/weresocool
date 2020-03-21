@@ -2,4 +2,4 @@
 
 FILENAME=$1
 
-cargo run --release --bin scratch $FILENAME -p
+cargo run --release --bin print $FILENAME -p

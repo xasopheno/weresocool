@@ -46,6 +46,7 @@ actix-service = "1.0.5"
 async-std = "1.5.0"
 actix-http = "1.0.1"
 actix-rt = "1.0.0"
+crossbeam-channel = "0.4.2"
 
 [dev-dependencies]
 pretty_assertions = "0.6.1"
@@ -69,6 +70,10 @@ members = [
 [[bin]]
 name = "wsc"
 path = "bin/wsc.rs"
+
+[[bin]]
+name = "print"
+path = "bin/print.rs"
 
 [[bin]]
 name = "server"

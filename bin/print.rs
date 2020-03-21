@@ -1,6 +1,4 @@
 use rayon::prelude::*;
-use std::sync::{Arc, Mutex};
-use std::thread;
 use weresocool::{
     generation::parsed_to_render::{sum_all_waveforms, RenderReturn, RenderType},
     //portaudio::real_time,
@@ -46,10 +44,8 @@ fn run() -> Result<(), Error> {
     let renderables = nf_to_vec_renderable(&nf, &table, &basis);
     let mut voices = renderables_to_render_voices(renderables);
 
-    let result = Arc::new(Mutex::new(StereoWaveform::new(0)));
-    let result_clone = result.clone();
-
-    thread::spawn(move || loop {
+    let mut result = StereoWaveform::new(0);
+    loop {
         let batch: Vec<StereoWaveform> = voices
             .par_iter_mut()
             .filter_map(|voice| voice.render_batch(SETTINGS.buffer_size, None))
@@ -57,15 +53,12 @@ fn run() -> Result<(), Error> {
 
         if batch.len() > 0 {
             let stereo_waveform = sum_all_waveforms(batch);
-            result_clone.lock().unwrap().append(stereo_waveform);
+            result.append(stereo_waveform);
         } else {
             break;
         }
-    });
-    loop {
-        dbg!(&result.lock().unwrap().r_buffer.len());
     }
-    //write_composition_to_wav(result, filename.unwrap(), true, true);
+    write_composition_to_wav(result, filename.unwrap(), true, true);
 
     Ok(())
 }
