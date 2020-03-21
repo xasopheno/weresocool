@@ -3,9 +3,9 @@ use std::sync::{Arc, Mutex};
 use std::thread;
 use weresocool::{
     generation::parsed_to_render::{sum_all_waveforms, RenderReturn, RenderType},
-    //portaudio::real_time,
     instrument::StereoWaveform,
     interpretable::{InputType::Filename, Interpretable},
+    portaudio::{real_time_buffer, RealTimeRender},
     renderable::{nf_to_vec_renderable, renderables_to_render_voices},
     settings::{default_settings, Settings},
     ui::{get_args, no_file_name, were_so_cool_logo},
@@ -30,7 +30,7 @@ fn main() {
 
 fn run() -> Result<(), Error> {
     were_so_cool_logo();
-    println!("       )))***=== Printing Cool Sounds ===***(((  \n ");
+    println!("       )))***=== Buffering Cool Sounds ===***(((  \n ");
     let args = get_args();
 
     let filename = args.value_of("filename");
@@ -46,8 +46,8 @@ fn run() -> Result<(), Error> {
     let renderables = nf_to_vec_renderable(&nf, &table, &basis);
     let mut voices = renderables_to_render_voices(renderables);
 
-    let result = Arc::new(Mutex::new(StereoWaveform::new(0)));
-    let result_clone = result.clone();
+    let result = Arc::new(Mutex::new(RealTimeRender::init()));
+    let result_clone = Arc::clone(&result);
 
     thread::spawn(move || loop {
         let batch: Vec<StereoWaveform> = voices
@@ -57,15 +57,18 @@ fn run() -> Result<(), Error> {
 
         if batch.len() > 0 {
             let stereo_waveform = sum_all_waveforms(batch);
-            result_clone.lock().unwrap().append(stereo_waveform);
+            result_clone.lock().unwrap().write(stereo_waveform);
         } else {
             break;
         }
     });
-    loop {
-        dbg!(&result.lock().unwrap().r_buffer.len());
-    }
-    //write_composition_to_wav(result, filename.unwrap(), true, true);
+
+    let mut stream = real_time_buffer(Arc::clone(&result))?;
+    stream.start()?;
+
+    while let true = stream.is_active()? {}
+
+    stream.stop()?;
 
     Ok(())
 }

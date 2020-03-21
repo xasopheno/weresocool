@@ -32,6 +32,7 @@ impl StereoWaveform {
         self.r_buffer.append(&mut stereo_waveform.r_buffer);
     }
 
+    /// This assumes that all buffers are the same size
     pub fn get_buffer(&mut self, index: usize, buffer_size: usize) -> Option<Self> {
         if (index + 1) * buffer_size < self.l_buffer.len() {
             let l_buffer = &self.l_buffer[index * buffer_size..(index + 1) * buffer_size];
