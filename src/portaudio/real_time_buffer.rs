@@ -1,12 +1,9 @@
 use crate::{
-    generation::parsed_to_render::sum_all_waveforms,
     instrument::StereoWaveform,
-    renderable::RenderVoice,
     settings::{default_settings, Settings},
     write::write_output_buffer,
 };
 use portaudio as pa;
-use rayon::prelude::*;
 use std::sync::{Arc, Mutex};
 use weresocool_error::Error;
 
@@ -21,7 +18,7 @@ pub struct RealTimeRender {
 /// This assumes that all buffers are the same size
 impl RealTimeRender {
     pub fn init() -> Self {
-        RealTimeRender {
+        Self {
             stereo_waveform: StereoWaveform::new(0),
             write_idx: 0,
             read_idx: 0,
@@ -45,8 +42,7 @@ pub fn real_time_buffer(
     let output_stream_settings = get_output_settings(&pa)?;
 
     let output_stream = pa.open_non_blocking_stream(output_stream_settings, move |args| {
-        let mut rtr = real_time_render.lock().unwrap();
-        let sw = rtr.read(SETTINGS.buffer_size);
+        let sw = real_time_render.lock().unwrap().read(SETTINGS.buffer_size);
 
         match sw {
             Some(stereo_waveform) => {

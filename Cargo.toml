@@ -39,14 +39,6 @@ futures = "0.3.4"
 bytes = "0.5.4"
 env_logger = "0.7.1"
 test-generator = "0.3.0"
-actix-cors = "0.2.0"
-actix-files = "0.2.1"
-actix-web = "2.0.0"
-actix-service = "1.0.5"
-async-std = "1.5.0"
-actix-http = "1.0.1"
-actix-rt = "1.0.0"
-crossbeam-channel = "0.4.2"
 
 [dev-dependencies]
 pretty_assertions = "0.6.1"
@@ -74,10 +66,6 @@ path = "bin/wsc.rs"
 [[bin]]
 name = "print"
 path = "bin/print.rs"
-
-[[bin]]
-name = "server"
-path = "bin/server.rs"
 
 [[bin]]
 name = "stems"
