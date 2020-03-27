@@ -78,9 +78,23 @@ indexed_transposed_list = {
     ET(12) @ [0, /11, /10, /7, /4, 5, 3, 2, /11, 7, \2]
 }
 
+listop ::= [ term.. ] 
+            | [ term.. ] @ [ index.. ] 
+            | named @ [ index.. ] 
+            | ET(n) 
+            | ET(n) @ [ index ...]
 
-Index =
-  Int
-| Random(Int)
-| IntWithTerm(Int, Term)
+listop ::= list
+            | ET(n)
+            | name @ [ index.. ]
+            | listop @ [ index.. ]
+
+list_op => list_nf
+
+indices ::= [[index]..] => [Term]
+
+index ::= const(n) => [term]
+            | random(i64, Option<i64>) => [term .. ]
+            | index | term => [term ..] | term => [term]
+
 

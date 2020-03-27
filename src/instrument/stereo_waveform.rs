@@ -1,4 +1,5 @@
 use serde::{Deserialize, Serialize};
+use std::cmp;
 
 #[derive(Clone, Debug, PartialEq, Serialize, Deserialize)]
 pub struct StereoWaveform {
@@ -18,11 +19,20 @@ impl StereoWaveform {
         }
     }
 
+    pub fn max_len(&self) -> usize {
+        cmp::max(self.l_buffer.len(), self.r_buffer.len())
+    }
+
+    pub fn total_len(&self) -> usize {
+        self.l_buffer.len() + self.r_buffer.len()
+    }
+
     pub fn append(&mut self, mut stereo_waveform: Self) {
         self.l_buffer.append(&mut stereo_waveform.l_buffer);
         self.r_buffer.append(&mut stereo_waveform.r_buffer);
     }
 
+    /// This assumes that all buffers are the same size
     pub fn get_buffer(&mut self, index: usize, buffer_size: usize) -> Option<Self> {
         if (index + 1) * buffer_size < self.l_buffer.len() {
             let l_buffer = &self.l_buffer[index * buffer_size..(index + 1) * buffer_size];

@@ -1,3 +1,5 @@
+//use weresocool::ui::were_so_cool_logo;
+
 use failure::Fail;
 use weresocool_error::Error;
 
@@ -12,8 +14,6 @@ fn main() {
     }
 }
 
-#[allow(unused_variables)]
 fn run() -> Result<(), Error> {
     Ok(())
 }
-

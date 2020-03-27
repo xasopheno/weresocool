@@ -23,7 +23,7 @@ fn main() {
 
 fn run() -> Result<(), Error> {
     were_so_cool_logo();
-    println!("       )))***=== REAL<GOOD>TIME ===***(((  \n ");
+    println!("       )))***=== REAL<GOOD>TIME *mic ===***(((  \n ");
 
     let args = get_args();
 

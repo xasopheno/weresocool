@@ -35,7 +35,7 @@ impl RenderVoice {
         &mut self,
         samples_left_in_batch: usize,
         result: Option<Vec<RenderOp>>,
-    ) -> Vec<RenderOp> {
+    ) -> Option<Vec<RenderOp>> {
         let mut result: Vec<RenderOp> = match result {
             Some(result) => result.to_vec(),
             None => vec![],
@@ -46,9 +46,11 @@ impl RenderVoice {
         }
 
         if self.op_index >= self.ops.len() {
-            let op = RenderOp::init_silent_with_length(1.0);
-            result.push(op);
-            return result;
+            return if result.is_empty() {
+                None
+            } else {
+                Some(result)
+            };
         }
 
         let current_op = &self.ops[self.op_index];
@@ -75,13 +77,18 @@ impl RenderVoice {
             return self.get_batch(samples_left_in_batch - n_samples, Some(result));
         }
 
-        result
+        Some(result)
     }
 
-    pub fn render_batch(&mut self, n_samples: usize, offset: Option<&Offset>) -> StereoWaveform {
-        let mut batch = self.get_batch(n_samples, None);
-
-        batch.render(&mut self.oscillator, offset)
+    pub fn render_batch(
+        &mut self,
+        n_samples: usize,
+        offset: Option<&Offset>,
+    ) -> Option<StereoWaveform> {
+        match self.get_batch(n_samples, None) {
+            Some(mut b) => Some(b.render(&mut self.oscillator, offset)),
+            None => None,
+        }
     }
 }
 

@@ -84,6 +84,7 @@ pub fn write_composition_to_wav(
             .write_sample(sample)
             .expect("Error writing wave file.");
     }
+    println!("Successful wav encoding.");
 
     if mp3 {
         wav_to_mp3_in_renders(filename);
