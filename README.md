@@ -1,5 +1,5 @@
 # ***** WereSoCool __!Now In Stereo!__ ******
-[![Build Status](https://travis-ci.org/xasopheno/WereSoCool.svg?branch=master)](https://travis-ci.org/xasopheno/WereSoCool)
+![](https://github.com/actions/xasopheno/WereSoCool/Cool%Tests/badge.svg)
 
 A language for binaural, microtonal composition built in Rust.
 
