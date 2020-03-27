@@ -1,0 +1,29 @@
+name: Rust
+
+on:
+  push:
+    branches: [ master ]
+  pull_request:
+    branches: [ master ]
+
+jobs:
+  build:
+
+    runs-on: ubuntu-latest
+
+    steps:
+    - uses: actions/checkout@v2
+    - name: Build
+      run: cargo build --verbose
+    - name: Add rustfmt
+      run: rustup component add rustfmt
+    - name: add clippy
+      run: rustup component add clippy
+    - name: format
+      run: ./format_ci.sh
+    - name: clippy 
+      run: cargo clippy -- -D warnings
+    - name: run tests
+      run: ./test.sh
+      
+      
