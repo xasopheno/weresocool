@@ -1,5 +1,5 @@
 # ***** WereSoCool __!Now In Stereo!__ ******
-![](https://github.com/actions/xasopheno/WereSoCool/Cool%Tests/badge.svg)
+![Cool Tests](https://github.com/xasopheno/WereSoCool/workflows/Cool%20Tests/badge.svg)
 
 A language for binaural, microtonal composition built in Rust.
 
