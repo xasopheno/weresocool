@@ -51,9 +51,6 @@ impl RenderVoice {
             } else {
                 Some(result)
             };
-            //let op = RenderOp::init_silent_with_length(1.0);
-            //result.push(op);
-            //return Some(result);
         }
 
         let current_op = &self.ops[self.op_index];
