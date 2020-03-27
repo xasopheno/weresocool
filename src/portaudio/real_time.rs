@@ -23,7 +23,7 @@ pub fn real_time(
             .filter_map(|voice| voice.render_batch(SETTINGS.buffer_size, None))
             .collect();
 
-        if result.len() > 0 {
+        if !result.is_empty() {
             let stereo_waveform = sum_all_waveforms(result);
             write_output_buffer(args.buffer, stereo_waveform);
             pa::Continue

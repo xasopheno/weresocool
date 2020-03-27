@@ -46,7 +46,7 @@ impl RenderVoice {
         }
 
         if self.op_index >= self.ops.len() {
-            return if result.len() == 0 {
+            return if result.is_empty() {
                 None
             } else {
                 Some(result)
