@@ -157,10 +157,10 @@ mod tests {
         let mut voice = voices[0].clone();
         //Two ops each with 44_100 samples
         //Use everything but the last 100 samples of the first op
-        let batch = voice.get_batch(44_000, None);
+        let batch = voice.get_batch(44_000, None).unwrap();
         assert_eq!(batch.len(), 1);
         //Use the rest of the first op and start the second op;
-        let batch = voice.get_batch(200, None);
+        let batch = voice.get_batch(200, None).unwrap();
         assert_eq!(batch.len(), 2);
 
         assert_eq!(batch[0].samples, 100);
@@ -203,7 +203,7 @@ mod tests {
         for _ in 0..20 {
             let r: Vec<StereoWaveform> = voices1
                 .iter_mut()
-                .map(|voice| voice.render_batch(1024, None))
+                .flat_map(|voice| voice.render_batch(1024, None))
                 .collect();
 
             let r = sum_all_waveforms(r);
@@ -218,7 +218,7 @@ mod tests {
         let long: Vec<StereoWaveform> = voices2
             .clone()
             .iter_mut()
-            .map(|voice| voice.render_batch(20480, None))
+            .flat_map(|voice| voice.render_batch(20480, None))
             .collect();
         let long = sum_all_waveforms(long);
         for (a, b) in short.l_buffer.iter().zip(&long.l_buffer) {

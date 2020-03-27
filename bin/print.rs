@@ -51,7 +51,7 @@ fn run() -> Result<(), Error> {
             .filter_map(|voice| voice.render_batch(SETTINGS.buffer_size, None))
             .collect();
 
-        if batch.len() > 0 {
+        if !batch.is_empty() {
             let stereo_waveform = sum_all_waveforms(batch);
             result.append(stereo_waveform);
         } else {
