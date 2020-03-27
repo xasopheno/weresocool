@@ -16,9 +16,9 @@ jobs:
     - name: Build
       run: cargo build --verbose
     - name: Add rustfmt
-      run: rustup add rustfmt
+      run: rustup component add rustfmt
     - name: add clippy
-      run: rustup add clippy
+      run: rustup component add clippy
     - name: format
       run: ./format_ci.sh
     - name: clippy 
