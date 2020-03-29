@@ -44,13 +44,17 @@ fn run() -> Result<(), Error> {
         _ => panic!("Error. Unable to generate NormalForm"),
     };
     let renderables = nf_to_vec_renderable(&nf, &table, &basis);
-    let mut voices = renderables_to_render_voices(renderables);
+    let render_voices = renderables_to_render_voices(renderables);
+
+    let voices = Arc::new(Mutex::new(render_voices));
 
     let rtr = Arc::new(Mutex::new(RealTimeRender::init()));
     let rtr_clone = Arc::clone(&rtr);
 
     thread::spawn(move || loop {
         let batch: Vec<StereoWaveform> = voices
+            .lock()
+            .unwrap()
             .par_iter_mut()
             .filter_map(|voice| voice.render_batch(SETTINGS.buffer_size, None))
             .collect();
