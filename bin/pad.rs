@@ -1,5 +1,6 @@
 //use weresocool::ui::were_so_cool_logo;
-use std::sync::{Arc, Mutex};
+//use std::sync::{Arc, Mutex};
+use weresocool::{instrument::StereoWaveform, renderable::RenderVoice};
 
 use failure::Fail;
 use weresocool_error::Error;
@@ -15,75 +16,82 @@ fn main() {
     }
 }
 
-#[derive(Clone, PartialEq, Debug)]
-struct Renderer {
-    new: bool,
-    voices: [Voice; 2],
-    buffers: [Vec<usize>; 2],
-    index: usize,
-}
-
-#[derive(Clone, PartialEq, Debug)]
-struct Voice {
-    ops: Vec<usize>,
+struct RenderManager {
+    pub renders: [Option<Vec<RenderVoice>>; 2],
+    render_idx: usize,
     read_idx: usize,
 }
 
-impl Voice {
-    fn new() -> Self {
-        let ops: Vec<usize> = (0..3).into_iter().collect();
-        Self { ops, read_idx: 0 }
+impl RenderManager {
+    fn inc_render(&mut self) {
+        self.render_idx = (self.render_idx + 1) % 2;
+    }
+
+    fn current_render(&mut self) -> &mut Option<Vec<RenderVoice>> {
+        &mut self.renders[self.render_idx]
+    }
+
+    fn next_render(&mut self) -> &mut Option<Vec<RenderVoice>> {
+        &mut self.renders[(self.render_idx + 1) % 2]
+    }
+
+    fn exists_new_render(&mut self) -> bool {
+        match self.next_render() {
+            Some(_) => true,
+            None => false,
+        }
+    }
+    fn push_render(&mut self, render: Vec<RenderVoice>) {
+        *self.next_render() = Some(render);
+    }
+
+    fn prepare_render(&mut self, language: &str) -> Result<(), Error> {
+        unimplemented!();
     }
 }
 
-impl Renderer {
-    fn new() -> Self {
-        Self {
-            new: false,
-            voices: [Voice::new(), Voice::new()],
-            buffers: [vec![], vec![]],
-            index: 0,
-        }
-    }
-
-    fn inc(&mut self) {
-        self.index = (self.index + 1) % 2;
-    }
-
-    fn render(&mut self) {
-        for _ in 0..4 {
-            let voice = &mut self.voices[self.index];
-            let buffer = &mut self.buffers[self.index];
-            buffer.push(voice.ops[voice.read_idx]);
-
-            if voice.read_idx >= voice.ops.len() - 1 {
-                voice.read_idx = 0
-            } else {
-                voice.read_idx += 1
-            }
-        }
-    }
+struct BufferManager {
+    pub buffers: [Option<StereoWaveform>; 2],
+    buffer_idx: usize,
+    write_idx: usize,
+    read_idx: usize,
 }
 
-fn test_inc() {
-    let mut r = Renderer::new();
+impl BufferManager {
+    fn inc_buffer(&mut self) {
+        self.buffer_idx = (self.buffer_idx + 1) % 2;
+    }
 
-    r.inc();
-    assert!(r.index == 1);
-    r.inc();
-    assert!(r.index == 0);
-    r.inc();
-    assert!(r.index == 1);
+    fn current_buffer(&mut self) -> &mut Option<StereoWaveform> {
+        &mut self.buffers[self.buffer_idx]
+    }
+
+    fn next_buffer(&mut self) -> &mut Option<StereoWaveform> {
+        &mut self.buffers[(self.buffer_idx + 1) % 2]
+    }
+
+    fn exists_new_buffer(&mut self) -> bool {
+        match self.next_buffer() {
+            Some(_) => true,
+            None => false,
+        }
+    }
+
+    fn fade_vec() -> Vec<f32> {
+        (0..2048)
+            .into_iter()
+            .rev()
+            .collect::<Vec<usize>>()
+            .iter()
+            .map(|s| *s as f32 / 2048.0)
+            .collect()
+    }
+
+    fn fade_stereowaveform(sw: &mut StereoWaveform) {
+        unimplemented!()
+    }
 }
 
 fn run() -> Result<(), Error> {
-    test_inc();
-    let mut r = Renderer::new();
-
-    for i in 0..3 {
-        r.render();
-        dbg!(&r.buffers[r.index]);
-    }
-
     Ok(())
 }

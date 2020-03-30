@@ -11,8 +11,8 @@ const SETTINGS: Settings = default_settings();
 
 pub struct RealTimeRender {
     pub stereo_waveform: StereoWaveform,
-    write_idx: usize,
-    read_idx: usize,
+    pub write_idx: usize,
+    pub read_idx: usize,
 }
 
 /// This assumes that all buffers are the same size
