@@ -34,3 +34,27 @@ struct Renderer {
 }
 
 1 ~~> | Fade | 2 ~~>
+
+if self.op_index >= self.ops.len() {
+    if new
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

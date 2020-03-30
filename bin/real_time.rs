@@ -11,10 +11,10 @@ use weresocool::{
     ui::{get_args, no_file_name, were_so_cool_logo},
 };
 
-const SETTINGS: Settings = default_settings();
-
 use failure::Fail;
 use weresocool_error::Error;
+
+const SETTINGS: Settings = default_settings();
 
 fn main() {
     match run() {
