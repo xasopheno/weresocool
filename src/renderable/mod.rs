@@ -3,6 +3,7 @@ use crate::{
     instrument::{oscillator::Basis, Oscillator, StereoWaveform},
 };
 use num_rational::Rational64;
+use rayon::prelude::*;
 pub use render_voice::{renderables_to_render_voices, RenderVoice};
 use weresocool_ast::{Defs, NormalForm, Normalize, OscType, PointOp, ASR};
 pub mod render_voice;
@@ -235,7 +236,7 @@ pub fn nf_to_vec_renderable(
 
     let result: Vec<Vec<RenderOp>> = normal_form
         .operations
-        .iter()
+        .par_iter()
         .enumerate()
         .map(|(voice, vec_point_op)| {
             let mut time = Rational64::new(0, 1);

@@ -52,7 +52,7 @@ pub struct BufferManager {
 }
 
 impl RenderManager {
-    pub fn init(render_voices: Vec<RenderVoice>) -> Self {
+    pub const fn init(render_voices: Vec<RenderVoice>) -> Self {
         Self {
             renders: [Some(render_voices), None],
             render_idx: 0,
@@ -60,13 +60,23 @@ impl RenderManager {
         }
     }
 
-    pub fn render_batch(&mut self, n_samples: usize) -> Vec<StereoWaveform> {
+    pub const fn init_silent() -> Self {
+        Self {
+            renders: [None, None],
+            render_idx: 0,
+            read_idx: 0,
+        }
+    }
+
+    pub fn render_batch(&mut self, n_samples: usize) -> Option<Vec<StereoWaveform>> {
         match self.current_render() {
-            Some(render) => render
-                .par_iter_mut()
-                .filter_map(|voice| voice.render_batch(n_samples, None))
-                .collect(),
-            None => [].to_vec(),
+            Some(render) => Some(
+                render
+                    .par_iter_mut()
+                    .filter_map(|voice| voice.render_batch(n_samples, None))
+                    .collect(),
+            ),
+            None => None,
         }
     }
 
@@ -99,9 +109,9 @@ impl RenderManager {
 }
 
 impl BufferManager {
-    pub fn init() -> Self {
+    pub const fn init_silent() -> Self {
         Self {
-            buffers: [Some(Buffer::init()), None],
+            buffers: [None, None],
             renderer_write_idx: 0,
             buffer_idx: 0,
             write_idx: 0,
@@ -151,7 +161,12 @@ impl BufferManager {
                 }
                 sw
             }
-            None => None,
+            None => {
+                if next {
+                    self.inc_buffer();
+                };
+                None
+            }
         }
     }
 
@@ -160,8 +175,9 @@ impl BufferManager {
         match current {
             Some(buffer) => buffer.write(stereo_waveform),
             None => {
-                *current = Some(Buffer::init());
-                current.as_mut().unwrap().write(stereo_waveform)
+                let mut new_buffer = Buffer::init();
+                new_buffer.write(stereo_waveform);
+                *current = Some(new_buffer);
             }
         }
     }

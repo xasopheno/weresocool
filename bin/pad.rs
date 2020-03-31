@@ -54,7 +54,8 @@ fn run() -> Result<(), Error> {
     let render_voices1_clone = render_voices1.clone();
     let render_voices2 = renderables_to_render_voices(renderables2);
 
-    let buffer_manager = Arc::new(Mutex::new(BufferManager::init()));
+    let mut render_manager = RenderManager::init_silent();
+    let buffer_manager = Arc::new(Mutex::new(BufferManager::init_silent()));
     let buffer_manager_clone = Arc::clone(&buffer_manager);
 
     let (send, recv) = channel();
@@ -72,24 +73,27 @@ fn run() -> Result<(), Error> {
 
     thread::Builder::new()
         .name("Receiver".to_string())
-        .spawn(move || {
-            let mut render_manager = RenderManager::init(render_voices1);
-            loop {
-                if let Ok(v) = recv.try_recv() {
-                    println!("{:?}", &v.len());
+        .spawn(move || loop {
+            if let Ok(v) = recv.try_recv() {
+                println!("new language received");
 
-                    render_manager.push_render(v);
-                    buffer_manager_clone
-                        .lock()
-                        .unwrap()
-                        .inc_render_write_buffer();
-                };
+                render_manager.push_render(v);
+                buffer_manager_clone
+                    .lock()
+                    .unwrap()
+                    .inc_render_write_buffer();
+            };
 
-                let batch: Vec<StereoWaveform> = render_manager.render_batch(SETTINGS.buffer_size);
-                if !batch.is_empty() {
-                    let stereo_waveform = sum_all_waveforms(batch);
-                    buffer_manager_clone.lock().unwrap().write(stereo_waveform);
+            let batch: Option<Vec<StereoWaveform>> =
+                render_manager.render_batch(SETTINGS.buffer_size);
+            match batch {
+                Some(b) => {
+                    if !b.is_empty() {
+                        let stereo_waveform = sum_all_waveforms(b);
+                        buffer_manager_clone.lock().unwrap().write(stereo_waveform);
+                    }
                 }
+                None => {}
             }
         })?;
 

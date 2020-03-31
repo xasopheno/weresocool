@@ -1,4 +1,5 @@
 use crate::{
+    instrument::StereoWaveform,
     render_manager::BufferManager,
     settings::{default_settings, Settings},
     write::write_output_buffer,
@@ -23,7 +24,11 @@ pub fn real_time_managed(
                 write_output_buffer(args.buffer, stereo_waveform);
                 pa::Continue
             }
-            None => pa::Continue,
+            None => {
+                write_output_buffer(args.buffer, StereoWaveform::new(1024));
+
+                pa::Continue
+            }
         }
     })?;
 
