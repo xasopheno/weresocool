@@ -1,5 +1,4 @@
-#![allow(dead_code, unused_imports, unused_variables)]
-use rayon::prelude::*;
+//#![allow(dead_code, unused_imports, unused_variables)]
 use std::sync::mpsc::channel;
 use std::sync::{Arc, Mutex};
 use std::thread;
@@ -10,9 +9,9 @@ use weresocool::{
     interpretable::{InputType::Filename, Interpretable},
     portaudio::real_time_managed::real_time_managed,
     render_manager::{BufferManager, RenderManager},
-    renderable::{nf_to_vec_renderable, renderables_to_render_voices, RenderVoice},
+    renderable::{nf_to_vec_renderable, renderables_to_render_voices},
     settings::{default_settings, Settings},
-    ui::{get_args, no_file_name, were_so_cool_logo},
+    ui::were_so_cool_logo,
 };
 
 use failure::Fail;
@@ -52,6 +51,7 @@ fn run() -> Result<(), Error> {
     let renderables2 = nf_to_vec_renderable(&nf2, &table2, &basis2);
 
     let render_voices1 = renderables_to_render_voices(renderables1);
+    let render_voices1_clone = render_voices1.clone();
     let render_voices2 = renderables_to_render_voices(renderables2);
 
     let buffer_manager = Arc::new(Mutex::new(BufferManager::init()));
@@ -62,9 +62,12 @@ fn run() -> Result<(), Error> {
     thread::Builder::new()
         .name("Sender".to_string())
         .spawn(move || {
-            //for i in 0..3 {
-            thread::sleep(Duration::from_secs(4));
-            send.send(render_voices2.clone()).unwrap();
+            for _ in 0..4 {
+                thread::sleep(Duration::from_secs(2));
+                send.send(render_voices2.clone()).unwrap();
+                thread::sleep(Duration::from_secs(2));
+                send.send(render_voices1_clone.clone()).unwrap();
+            }
         })?;
 
     thread::Builder::new()

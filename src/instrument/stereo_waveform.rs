@@ -13,7 +13,6 @@ pub trait Normalize {
 
 pub fn make_fade_vec(buffer_size: usize) -> Vec<f64> {
     (0..buffer_size)
-        .into_iter()
         .rev()
         .collect::<Vec<usize>>()
         .iter()
@@ -32,8 +31,8 @@ impl StereoWaveform {
     pub fn fade_out(&mut self) {
         let fade_vec = make_fade_vec(self.max_len());
         for (i, value) in fade_vec.iter().enumerate() {
-            self.l_buffer[i] = self.l_buffer[i] * value;
-            self.r_buffer[i] = self.r_buffer[i] * value;
+            self.l_buffer[i] *= value;
+            self.r_buffer[i] *= value;
         }
     }
 
