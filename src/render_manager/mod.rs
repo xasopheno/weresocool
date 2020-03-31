@@ -1,7 +1,13 @@
 //#![allow(dead_code, unused_imports, unused_variables)]
-use crate::{instrument::StereoWaveform, renderable::RenderVoice};
+use crate::{
+    generation::parsed_to_render::{RenderReturn, RenderType},
+    instrument::StereoWaveform,
+    interpretable::{InputType, Interpretable},
+    renderable::{nf_to_vec_renderable, renderables_to_render_voices, RenderVoice},
+};
+use crossbeam::scope;
 use rayon::prelude::*;
-use std::thread;
+use std::{thread, thread::JoinHandle};
 
 use weresocool_error::Error;
 
@@ -101,10 +107,18 @@ impl RenderManager {
         self.inc_render();
     }
 
-    pub async fn prepare_render(&mut self, _language: &str) -> Result<(), Error> {
-        thread::spawn(move || {});
+    pub fn prepare_render(&mut self, input: InputType<'_>) -> Result<(), Error> {
+        let (nf, basis, table) = match input.make(RenderType::NfBasisAndTable)? {
+            RenderReturn::NfBasisAndTable(nf, basis, table) => (nf, basis, table),
+            _ => panic!("Error. Unable to generate NormalForm"),
+        };
+        let renderables = nf_to_vec_renderable(&nf, &table, &basis);
 
-        unimplemented!();
+        let render_voices = renderables_to_render_voices(renderables);
+
+        self.push_render(render_voices);
+
+        Ok(())
     }
 }
 

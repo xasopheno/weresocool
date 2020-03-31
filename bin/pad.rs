@@ -34,25 +34,8 @@ fn run() -> Result<(), Error> {
     were_so_cool_logo();
     println!("       )))***=== REAL<COOL>TIME *buffered ===***(((  \n ");
 
-    let filename1 = "songs/test_2/manager_1.socool";
-    let filename2 = "songs/test_2/manager_2.socool";
-
-    let (nf1, basis1, table1) = match Filename(filename1).make(RenderType::NfBasisAndTable)? {
-        RenderReturn::NfBasisAndTable(nf, basis, table) => (nf, basis, table),
-        _ => panic!("Error. Unable to generate NormalForm"),
-    };
-
-    let (nf2, basis2, table2) = match Filename(filename2).make(RenderType::NfBasisAndTable)? {
-        RenderReturn::NfBasisAndTable(nf, basis, table) => (nf, basis, table),
-        _ => panic!("Error. Unable to generate NormalForm"),
-    };
-
-    let renderables1 = nf_to_vec_renderable(&nf1, &table1, &basis1);
-    let renderables2 = nf_to_vec_renderable(&nf2, &table2, &basis2);
-
-    let render_voices1 = renderables_to_render_voices(renderables1);
-    let render_voices1_clone = render_voices1.clone();
-    let render_voices2 = renderables_to_render_voices(renderables2);
+    let filename1 = "songs/dance/skip.socool";
+    let filename2 = "songs/dance/candle.socool";
 
     let mut render_manager = RenderManager::init_silent();
     let buffer_manager = Arc::new(Mutex::new(BufferManager::init_silent()));
@@ -64,10 +47,10 @@ fn run() -> Result<(), Error> {
         .name("Sender".to_string())
         .spawn(move || {
             for _ in 0..4 {
-                thread::sleep(Duration::from_secs(2));
-                send.send(render_voices2.clone()).unwrap();
-                thread::sleep(Duration::from_secs(2));
-                send.send(render_voices1_clone.clone()).unwrap();
+                send.send(Filename(&filename1.clone())).unwrap();
+                thread::sleep(Duration::from_secs(16));
+                send.send(Filename(&filename2.clone())).unwrap();
+                thread::sleep(Duration::from_secs(20));
             }
         })?;
 
@@ -77,7 +60,7 @@ fn run() -> Result<(), Error> {
             if let Ok(v) = recv.try_recv() {
                 println!("new language received");
 
-                render_manager.push_render(v);
+                render_manager.prepare_render(v);
                 buffer_manager_clone
                     .lock()
                     .unwrap()
