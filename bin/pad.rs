@@ -1,6 +1,4 @@
 #![allow(dead_code, unused_imports, unused_variables)]
-//use weresocool::ui::were_so_cool_logo;
-//use std::sync::{Arc, Mutex};
 use rayon::prelude::*;
 use std::sync::mpsc::channel;
 use std::sync::{Arc, Mutex};
@@ -37,15 +35,8 @@ fn run() -> Result<(), Error> {
     were_so_cool_logo();
     println!("       )))***=== REAL<COOL>TIME *buffered ===***(((  \n ");
 
-    //let args = get_args();
-
-    //let filename = args.value_of("filename");
     let filename1 = "songs/test_2/manager_1.socool";
     let filename2 = "songs/test_2/manager_2.socool";
-    //match filename {
-    //Some(_filename) => {}
-    //_ => no_file_name(),
-    //}
 
     let (nf1, basis1, table1) = match Filename(filename1).make(RenderType::NfBasisAndTable)? {
         RenderReturn::NfBasisAndTable(nf, basis, table) => (nf, basis, table),
@@ -65,23 +56,19 @@ fn run() -> Result<(), Error> {
 
     let buffer_manager = Arc::new(Mutex::new(BufferManager::init()));
     let buffer_manager_clone = Arc::clone(&buffer_manager);
-    //let voices = Arc::new(Mutex::new(render_voices));
-
-    //let rtr = Arc::new(Mutex::new(RealTimeRender::init()));
-    //let rtr_clone = Arc::clone(&rtr);
 
     let (send, recv) = channel();
     println!("Start...");
     thread::Builder::new()
-        .name("sender".to_string())
+        .name("Sender".to_string())
         .spawn(move || {
             //for i in 0..3 {
-            thread::sleep(Duration::from_secs(2));
+            thread::sleep(Duration::from_secs(4));
             send.send(render_voices2.clone()).unwrap();
         })?;
 
     thread::Builder::new()
-        .name("receiver".to_string())
+        .name("Receiver".to_string())
         .spawn(move || {
             let mut render_manager = RenderManager::init(render_voices1);
             loop {
@@ -89,6 +76,10 @@ fn run() -> Result<(), Error> {
                     println!("{:?}", &v.len());
 
                     render_manager.push_render(v);
+                    buffer_manager_clone
+                        .lock()
+                        .unwrap()
+                        .inc_render_write_buffer();
                 };
 
                 let batch: Vec<StereoWaveform> = render_manager.render_batch(SETTINGS.buffer_size);

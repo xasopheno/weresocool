@@ -60,6 +60,7 @@ pub struct RenderManager {
 #[derive(Clone, Debug)]
 pub struct BufferManager {
     pub buffers: [Option<Buffer>; 2],
+    renderer_write_idx: usize,
     buffer_idx: usize,
     write_idx: usize,
     read_idx: usize,
@@ -118,6 +119,7 @@ impl BufferManager {
     pub fn init() -> Self {
         Self {
             buffers: [Some(Buffer::init()), None],
+            renderer_write_idx: 0,
             buffer_idx: 0,
             write_idx: 0,
             read_idx: 0,
@@ -128,8 +130,16 @@ impl BufferManager {
         self.buffer_idx = (self.buffer_idx + 1) % 2;
     }
 
+    pub fn inc_render_write_buffer(&mut self) {
+        self.renderer_write_idx = (self.renderer_write_idx + 1) % 2;
+    }
+
     pub fn current_buffer(&mut self) -> &mut Option<Buffer> {
         &mut self.buffers[self.buffer_idx]
+    }
+
+    pub fn current_render_write_buffer(&mut self) -> &mut Option<Buffer> {
+        &mut self.buffers[self.renderer_write_idx]
     }
 
     pub fn next_buffer(&mut self) -> &mut Option<Buffer> {
@@ -144,18 +154,22 @@ impl BufferManager {
     }
 
     pub fn read(&mut self, buffer_size: usize) -> Option<StereoWaveform> {
-        let current = self.current_buffer();
+        let next = self.exists_new_buffer();
+        let current = &mut self.buffers[self.buffer_idx];
+
         match current {
             Some(buffer) => {
                 //println!("read_idx {}", buffer.read_idx);
                 //println!("______write_idx {}", buffer.write_idx);
                 //
                 let mut sw = buffer.read(buffer_size);
-                if self.exists_new_buffer() {
+
+                if next {
                     if let Some(s) = sw.as_mut() {
                         s.fade_out()
                     }
 
+                    *current = None;
                     self.inc_buffer();
                 }
                 sw
@@ -165,10 +179,13 @@ impl BufferManager {
     }
 
     pub fn write(&mut self, stereo_waveform: StereoWaveform) {
-        let current = self.current_buffer();
+        let current = self.current_render_write_buffer();
         match current {
             Some(buffer) => buffer.write(stereo_waveform),
-            None => {}
+            None => {
+                *current = Some(Buffer::init());
+                current.as_mut().unwrap().write(stereo_waveform)
+            }
         }
     }
 
