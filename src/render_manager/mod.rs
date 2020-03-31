@@ -164,8 +164,10 @@ impl BufferManager {
             None => {
                 if next {
                     self.inc_buffer();
-                };
-                None
+                    self.read(buffer_size)
+                } else {
+                    None
+                }
             }
         }
     }
