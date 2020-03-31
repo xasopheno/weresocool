@@ -1,11 +1,11 @@
-use rayon::prelude::*;
 use std::sync::{Arc, Mutex};
 use std::thread;
 use weresocool::{
     generation::parsed_to_render::{sum_all_waveforms, RenderReturn, RenderType},
     instrument::StereoWaveform,
     interpretable::{InputType::Filename, Interpretable},
-    portaudio::{real_time_buffer, RealTimeRender},
+    portaudio::real_time_managed,
+    render_manager::{BufferManager, RenderManager},
     renderable::{nf_to_vec_renderable, renderables_to_render_voices},
     settings::{default_settings, Settings},
     ui::{get_args, no_file_name, were_so_cool_logo},
@@ -46,28 +46,24 @@ fn run() -> Result<(), Error> {
     let renderables = nf_to_vec_renderable(&nf, &table, &basis);
     let render_voices = renderables_to_render_voices(renderables);
 
-    let voices = Arc::new(Mutex::new(render_voices));
-
-    let rtr = Arc::new(Mutex::new(RealTimeRender::init()));
-    let rtr_clone = Arc::clone(&rtr);
+    let mut render_manager = RenderManager::init(render_voices);
+    let buffer_manager = Arc::new(Mutex::new(BufferManager::init_silent()));
+    let buffer_manager_clone = Arc::clone(&buffer_manager);
 
     thread::spawn(move || loop {
-        let batch: Vec<StereoWaveform> = voices
-            .lock()
-            .unwrap()
-            .par_iter_mut()
-            .filter_map(|voice| voice.render_batch(SETTINGS.buffer_size, None))
-            .collect();
+        let batch: Option<Vec<StereoWaveform>> = render_manager.render_batch(SETTINGS.buffer_size);
 
-        if !batch.is_empty() {
-            let stereo_waveform = sum_all_waveforms(batch);
-            rtr_clone.lock().unwrap().write(stereo_waveform);
-        } else {
-            break;
+        if let Some(b) = batch {
+            if !b.is_empty() {
+                let stereo_waveform = sum_all_waveforms(b);
+                buffer_manager_clone.lock().unwrap().write(stereo_waveform);
+            } else {
+                break;
+            }
         }
     });
 
-    let mut stream = real_time_buffer(Arc::clone(&rtr))?;
+    let mut stream = real_time_managed(Arc::clone(&buffer_manager))?;
     stream.start()?;
 
     while let true = stream.is_active()? {}

@@ -57,7 +57,7 @@ fn run() -> Result<(), Error> {
         .name("Receiver".to_string())
         .spawn(move || loop {
             if let Ok(v) = recv.try_recv() {
-                println!("new language received");
+                println!("language received");
 
                 match render_manager.prepare_render(v) {
                     Ok(_) => buffer_manager_clone
