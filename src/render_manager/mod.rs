@@ -5,9 +5,7 @@ use crate::{
     interpretable::{InputType, Interpretable},
     renderable::{nf_to_vec_renderable, renderables_to_render_voices, RenderVoice},
 };
-use crossbeam::scope;
 use rayon::prelude::*;
-use std::{thread, thread::JoinHandle};
 
 use weresocool_error::Error;
 

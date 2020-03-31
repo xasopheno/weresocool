@@ -4,12 +4,11 @@ use std::sync::{Arc, Mutex};
 use std::thread;
 use std::time::Duration;
 use weresocool::{
-    generation::parsed_to_render::{sum_all_waveforms, RenderReturn, RenderType},
+    generation::parsed_to_render::sum_all_waveforms,
     instrument::StereoWaveform,
-    interpretable::{InputType::Filename, Interpretable},
+    interpretable::InputType::Filename,
     portaudio::real_time_managed::real_time_managed,
     render_manager::{BufferManager, RenderManager},
-    renderable::{nf_to_vec_renderable, renderables_to_render_voices},
     settings::{default_settings, Settings},
     ui::were_so_cool_logo,
 };
@@ -47,9 +46,9 @@ fn run() -> Result<(), Error> {
         .name("Sender".to_string())
         .spawn(move || {
             for _ in 0..4 {
-                send.send(Filename(&filename1.clone())).unwrap();
+                send.send(Filename(&filename1)).unwrap();
                 thread::sleep(Duration::from_secs(16));
-                send.send(Filename(&filename2.clone())).unwrap();
+                send.send(Filename(&filename2)).unwrap();
                 thread::sleep(Duration::from_secs(20));
             }
         })?;
@@ -60,23 +59,23 @@ fn run() -> Result<(), Error> {
             if let Ok(v) = recv.try_recv() {
                 println!("new language received");
 
-                render_manager.prepare_render(v);
-                buffer_manager_clone
-                    .lock()
-                    .unwrap()
-                    .inc_render_write_buffer();
+                match render_manager.prepare_render(v) {
+                    Ok(_) => buffer_manager_clone
+                        .lock()
+                        .unwrap()
+                        .inc_render_write_buffer(),
+                    _ => panic!("Need to handle failed preparation"),
+                }
             };
 
             let batch: Option<Vec<StereoWaveform>> =
                 render_manager.render_batch(SETTINGS.buffer_size);
-            match batch {
-                Some(b) => {
-                    if !b.is_empty() {
-                        let stereo_waveform = sum_all_waveforms(b);
-                        buffer_manager_clone.lock().unwrap().write(stereo_waveform);
-                    }
+
+            if let Some(b) = batch {
+                if !b.is_empty() {
+                    let stereo_waveform = sum_all_waveforms(b);
+                    buffer_manager_clone.lock().unwrap().write(stereo_waveform);
                 }
-                None => {}
             }
         })?;
 
