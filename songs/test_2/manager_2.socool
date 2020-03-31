@@ -1,0 +1,20 @@
+{ f: 340, l: 1, g: 1, p: 0 }
+
+overtones = {
+    O[
+    	(1/1, 1, 1, 1),
+      	(1/1, 0, 1, -1),
+  	]
+}
+
+thing1 = {
+	overtones |
+	Sequence [
+		Fm 4/3, Fm 5/4, Fm 15/8
+	] 
+}
+
+main = {
+	thing1 | Repeat 10
+}
+	

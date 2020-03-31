@@ -10,6 +10,7 @@ pub mod generation;
 pub mod instrument;
 pub mod interpretable;
 pub mod portaudio;
+pub mod render_manager;
 pub mod renderable;
 pub mod ring_buffer;
 pub mod settings;
