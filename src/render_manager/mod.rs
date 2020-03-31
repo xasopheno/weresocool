@@ -104,6 +104,7 @@ impl RenderManager {
     }
     pub fn push_render(&mut self, render: Vec<RenderVoice>) {
         *self.next_render() = Some(render);
+        self.inc_render();
     }
 
     pub async fn prepare_render(&mut self, language: &str) -> Result<(), Error> {
@@ -142,23 +143,22 @@ impl BufferManager {
         }
     }
 
-    pub fn fade_vec() -> Vec<f32> {
-        (0..1024)
-            .into_iter()
-            .rev()
-            .collect::<Vec<usize>>()
-            .iter()
-            .map(|s| *s as f32 / 1024.0)
-            .collect()
-    }
-
     pub fn read(&mut self, buffer_size: usize) -> Option<StereoWaveform> {
         let current = self.current_buffer();
         match current {
             Some(buffer) => {
                 //println!("read_idx {}", buffer.read_idx);
                 //println!("______write_idx {}", buffer.write_idx);
-                buffer.read(buffer_size)
+                //
+                let mut sw = buffer.read(buffer_size);
+                if self.exists_new_buffer() {
+                    if let Some(s) = sw.as_mut() {
+                        s.fade_out()
+                    }
+
+                    self.inc_buffer();
+                }
+                sw
             }
             None => None,
         }

@@ -75,12 +75,10 @@ fn run() -> Result<(), Error> {
     thread::Builder::new()
         .name("sender".to_string())
         .spawn(move || {
-            for i in 0..3 {
-                thread::sleep(Duration::from_secs(1));
-                send.send(render_voices2.clone()).unwrap();
-            }
-        })
-        .unwrap();
+            //for i in 0..3 {
+            thread::sleep(Duration::from_secs(2));
+            send.send(render_voices2.clone()).unwrap();
+        })?;
 
     thread::Builder::new()
         .name("receiver".to_string())
@@ -99,8 +97,7 @@ fn run() -> Result<(), Error> {
                     buffer_manager_clone.lock().unwrap().write(stereo_waveform);
                 }
             }
-        })
-        .unwrap();
+        })?;
 
     let mut stream = real_time_managed(Arc::clone(&buffer_manager))?;
     stream.start()?;
