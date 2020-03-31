@@ -75,10 +75,9 @@ fn run() -> Result<(), Error> {
     thread::Builder::new()
         .name("sender".to_string())
         .spawn(move || {
-            //send.send(vec![]);
             for i in 0..3 {
                 thread::sleep(Duration::from_secs(1));
-                send.send(0).unwrap();
+                send.send(render_voices2.clone()).unwrap();
             }
         })
         .unwrap();
@@ -89,13 +88,10 @@ fn run() -> Result<(), Error> {
             let mut render_manager = RenderManager::init(render_voices1);
             loop {
                 if let Ok(v) = recv.try_recv() {
-                    println!("{:?}", &v);
+                    println!("{:?}", &v.len());
+
+                    render_manager.push_render(v);
                 };
-                //v => {
-                //render_manager.push_render(v);
-                //}
-                //_ => {}
-                //};
 
                 let batch: Vec<StereoWaveform> = render_manager.render_batch(SETTINGS.buffer_size);
                 if !batch.is_empty() {
