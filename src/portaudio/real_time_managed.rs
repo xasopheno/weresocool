@@ -25,7 +25,7 @@ pub fn real_time_managed(
                 pa::Continue
             }
             None => {
-                write_output_buffer(args.buffer, StereoWaveform::new(1024));
+                write_output_buffer(args.buffer, StereoWaveform::new(SETTINGS.buffer_size));
 
                 pa::Continue
             }

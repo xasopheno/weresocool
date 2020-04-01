@@ -45,6 +45,7 @@ fn run() -> Result<(), Error> {
     thread::Builder::new()
         .name("Sender".to_string())
         .spawn(move || {
+            thread::sleep(Duration::from_secs(1));
             for _ in 0..4 {
                 send.send(Filename(&filename1)).unwrap();
                 thread::sleep(Duration::from_secs(4));
