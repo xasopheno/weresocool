@@ -3,10 +3,11 @@ use crate::{
     renderable::{Offset, RenderOp, Renderable},
     settings::{default_settings, Settings},
 };
+use rayon::prelude::*;
 
 const SETTINGS: Settings = default_settings();
 
-#[derive(Debug, Clone)]
+#[derive(Debug, Clone, PartialEq)]
 pub struct RenderVoice {
     pub sample_index: usize,
     pub op_index: usize,
@@ -94,7 +95,7 @@ impl RenderVoice {
 
 pub fn renderables_to_render_voices(renderables: Vec<Vec<RenderOp>>) -> Vec<RenderVoice> {
     renderables
-        .iter()
+        .par_iter()
         .map(|voice| RenderVoice::init(voice))
         .collect::<Vec<RenderVoice>>()
 }

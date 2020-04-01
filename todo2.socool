@@ -1,7 +1,0 @@
-Render {
-    rendered_index: usize,
-    render: StereoWaveform
-}
-
-renderer(render_voices, Sender<Render>):
-player(Receiver<Render>)

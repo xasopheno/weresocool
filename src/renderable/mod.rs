@@ -8,6 +8,7 @@ use weresocool_ast::{Defs, NormalForm, Normalize, OscType, PointOp, ASR};
 pub mod render_voice;
 mod test;
 use rand::{thread_rng, Rng};
+use rayon::prelude::*;
 
 use crate::settings::{default_settings, Settings};
 const SETTINGS: Settings = default_settings();
@@ -235,7 +236,7 @@ pub fn nf_to_vec_renderable(
 
     let result: Vec<Vec<RenderOp>> = normal_form
         .operations
-        .iter()
+        .par_iter()
         .enumerate()
         .map(|(voice, vec_point_op)| {
             let mut time = Rational64::new(0, 1);

@@ -11,11 +11,33 @@ pub trait Normalize {
     fn normalize(&mut self);
 }
 
+pub fn make_fade_vec(buffer_size: usize) -> Vec<f64> {
+    (0..buffer_size)
+        .rev()
+        .map(|s| s as f64 / buffer_size as f64)
+        .collect()
+}
+
 impl StereoWaveform {
     pub fn new(buffer_size: usize) -> Self {
         Self {
             l_buffer: vec![0.0; buffer_size],
             r_buffer: vec![0.0; buffer_size],
+        }
+    }
+
+    pub fn new_with_buffer(buffer: Vec<f64>) -> Self {
+        Self {
+            l_buffer: buffer.clone(),
+            r_buffer: buffer,
+        }
+    }
+
+    pub fn fade_out(&mut self) {
+        let fade_vec = make_fade_vec(self.max_len());
+        for (i, value) in fade_vec.iter().enumerate() {
+            self.l_buffer[i] *= value;
+            self.r_buffer[i] *= value;
         }
     }
 
