@@ -14,9 +14,7 @@ pub trait Normalize {
 pub fn make_fade_vec(buffer_size: usize) -> Vec<f64> {
     (0..buffer_size)
         .rev()
-        .collect::<Vec<usize>>()
-        .iter()
-        .map(|s| *s as f64 / buffer_size as f64)
+        .map(|s| s as f64 / buffer_size as f64)
         .collect()
 }
 
