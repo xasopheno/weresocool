@@ -6,7 +6,7 @@ use crate::{
 
 const SETTINGS: Settings = default_settings();
 
-#[derive(Debug, Clone)]
+#[derive(Debug, Clone, PartialEq)]
 pub struct RenderVoice {
     pub sample_index: usize,
     pub op_index: usize,

@@ -55,9 +55,6 @@ impl RenderManager {
         &mut self.renders[(self.render_idx + 1) % 2]
     }
 
-    pub fn exists_new_render(&mut self) -> bool {
-        self.next_render().is_some()
-    }
     pub fn push_render(&mut self, render: Vec<RenderVoice>) {
         *self.next_render() = Some(render);
         *self.current_render() = None;
@@ -76,5 +73,31 @@ impl RenderManager {
         self.push_render(render_voices);
 
         Ok(())
+    }
+}
+
+#[cfg(test)]
+mod render_manager_tests {
+    use super::*;
+    use crate::renderable::RenderOp;
+    #[test]
+    fn test_inc_render() {
+        let mut r = RenderManager::init_silent();
+        r.inc_render();
+        assert_eq!(r.render_idx, 1);
+        r.inc_render();
+        assert_eq!(r.render_idx, 0);
+    }
+
+    fn render_voices_mock() -> Vec<RenderVoice> {
+        vec![RenderVoice::init(&[RenderOp::init_silent_with_length(1.0)])]
+    }
+
+    #[test]
+    fn test_push_render() {
+        let mut r = RenderManager::init(render_voices_mock());
+        r.push_render(render_voices_mock());
+        assert_eq!(*r.current_render(), Some(render_voices_mock()));
+        assert_eq!(*r.next_render(), None);
     }
 }
