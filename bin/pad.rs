@@ -7,8 +7,8 @@ use weresocool::{
     generation::parsed_to_render::sum_all_waveforms,
     instrument::StereoWaveform,
     interpretable::InputType::Filename,
+    manager::{BufferManager, RenderManager},
     portaudio::real_time_managed::real_time_managed,
-    render_manager::{BufferManager, RenderManager},
     settings::{default_settings, Settings},
     ui::were_so_cool_logo,
 };

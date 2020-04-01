@@ -1,6 +1,6 @@
 use crate::{
     instrument::StereoWaveform,
-    render_manager::BufferManager,
+    manager::BufferManager,
     settings::{default_settings, Settings},
     write::write_output_buffer,
 };

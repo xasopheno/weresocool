@@ -3,12 +3,12 @@ use crate::{
     instrument::{oscillator::Basis, Oscillator, StereoWaveform},
 };
 use num_rational::Rational64;
-use rayon::prelude::*;
 pub use render_voice::{renderables_to_render_voices, RenderVoice};
 use weresocool_ast::{Defs, NormalForm, Normalize, OscType, PointOp, ASR};
 pub mod render_voice;
 mod test;
 use rand::{thread_rng, Rng};
+use rayon::prelude::*;
 
 use crate::settings::{default_settings, Settings};
 const SETTINGS: Settings = default_settings();

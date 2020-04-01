@@ -26,6 +26,13 @@ impl StereoWaveform {
         }
     }
 
+    pub fn new_with_buffer(buffer: Vec<f64>) -> Self {
+        Self {
+            l_buffer: buffer.clone(),
+            r_buffer: buffer,
+        }
+    }
+
     pub fn fade_out(&mut self) {
         let fade_vec = make_fade_vec(self.max_len());
         for (i, value) in fade_vec.iter().enumerate() {

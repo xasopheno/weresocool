@@ -16,6 +16,15 @@ impl Buffer {
             read_idx: 0,
         }
     }
+
+    pub const fn init_with_buffer(stereo_waveform: StereoWaveform) -> Self {
+        Self {
+            stereo_waveform,
+            write_idx: 0,
+            read_idx: 0,
+        }
+    }
+
     pub fn write(&mut self, stereo_waveform: StereoWaveform) {
         self.stereo_waveform.append(stereo_waveform);
         self.write_idx += 1;
@@ -35,8 +44,6 @@ pub struct BufferManager {
     pub buffers: [Option<Buffer>; 2],
     renderer_write_idx: usize,
     buffer_idx: usize,
-    write_idx: usize,
-    read_idx: usize,
 }
 
 impl BufferManager {
@@ -45,8 +52,14 @@ impl BufferManager {
             buffers: [None, None],
             renderer_write_idx: 0,
             buffer_idx: 0,
-            write_idx: 0,
-            read_idx: 0,
+        }
+    }
+
+    pub fn init_wth_buffer(buffer: Buffer) -> Self {
+        Self {
+            buffers: [Some(buffer), None],
+            renderer_write_idx: 0,
+            buffer_idx: 0,
         }
     }
 
@@ -70,12 +83,16 @@ impl BufferManager {
         &mut self.buffers[(self.buffer_idx + 1) % 2]
     }
 
-    pub fn exists_new_buffer(&mut self) -> bool {
+    pub fn exists_current_buffer(&mut self) -> bool {
+        self.current_buffer().is_some()
+    }
+
+    pub fn exists_next_buffer(&mut self) -> bool {
         self.next_buffer().is_some()
     }
 
     pub fn read(&mut self, buffer_size: usize) -> Option<StereoWaveform> {
-        let next = self.exists_new_buffer();
+        let next = self.exists_next_buffer();
         let current = self.current_buffer();
 
         match current {
@@ -113,5 +130,78 @@ impl BufferManager {
                 *current = Some(new_buffer);
             }
         }
+    }
+}
+
+#[cfg(test)]
+mod buffer_manager_tests {
+    use super::*;
+    #[test]
+    fn test_inc_buffer() {
+        let mut r = BufferManager::init_silent();
+        r.inc_buffer();
+        assert_eq!(r.buffer_idx, 1);
+        r.inc_buffer();
+        assert_eq!(r.buffer_idx, 0);
+    }
+
+    #[test]
+    fn test_inc_render_write_buffer() {
+        let mut r = BufferManager::init_silent();
+        r.inc_render_write_buffer();
+        assert_eq!(r.renderer_write_idx, 1);
+        r.inc_render_write_buffer();
+        assert_eq!(r.renderer_write_idx, 0);
+    }
+
+    fn buffer_manager_mock() -> BufferManager {
+        BufferManager::init_wth_buffer(Buffer::init_with_buffer(StereoWaveform::new_with_buffer(
+            vec![1.0, 1.0, 1.0, 1.0],
+        )))
+    }
+
+    #[test]
+    fn test_read_normal() {
+        let mut b = buffer_manager_mock();
+        let read = b.read(2);
+
+        let expected = StereoWaveform::new_with_buffer(vec![1.0, 1.0]);
+        assert_eq!(read.unwrap(), expected);
+    }
+
+    #[test]
+    fn test_read_with_next_fade() {
+        let mut b = buffer_manager_mock();
+        *b.next_buffer() = Some(Buffer::init_with_buffer(StereoWaveform::new_with_buffer(
+            vec![1.0, 1.0],
+        )));
+        let read = b.read(2);
+
+        let expected = StereoWaveform::new_with_buffer(vec![0.5, 0.0]);
+        assert_eq!(read.unwrap(), expected);
+    }
+
+    #[test]
+    fn test_read_with_empty_current() {
+        let mut b = buffer_manager_mock();
+        b.inc_buffer();
+        assert_eq!(b.exists_current_buffer(), false);
+        assert_eq!(b.exists_next_buffer(), true);
+
+        let read = b.read(2);
+
+        let expected = StereoWaveform::new_with_buffer(vec![1.0, 1.0]);
+        assert_eq!(read.unwrap(), expected);
+    }
+
+    #[test]
+    fn test_read_empty_buffer_manager() {
+        let mut b = BufferManager::init_silent();
+        assert_eq!(b.exists_current_buffer(), false);
+        assert_eq!(b.exists_next_buffer(), false);
+
+        let read = b.read(2);
+
+        assert_eq!(read, None);
     }
 }
