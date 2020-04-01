@@ -47,9 +47,9 @@ fn run() -> Result<(), Error> {
         .spawn(move || {
             for _ in 0..4 {
                 send.send(Filename(&filename1)).unwrap();
-                thread::sleep(Duration::from_secs(16));
+                thread::sleep(Duration::from_secs(4));
                 send.send(Filename(&filename2)).unwrap();
-                thread::sleep(Duration::from_secs(20));
+                thread::sleep(Duration::from_secs(4));
             }
         })?;
 
