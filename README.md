@@ -21,10 +21,6 @@ On Mac
 `brew install pkg-config`
 `&& cargo clean` if you are having problems linking
 
-## Grammar:
-
-https://github.com/xasopheno/weresocool-parser/blob/master/src/socool.lalrpop
-
 ## Run:
 Listen to something created with the framework
 
