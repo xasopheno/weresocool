@@ -5,7 +5,7 @@ A language for binaural, microtonal composition built in Rust.
 
 Make cool sounds. Impress your friends/pets/plants.
 
-## See some things generated with the language here:
+## See some cool things generated with the language here:
 
 https://www.weresocool.org/
 
