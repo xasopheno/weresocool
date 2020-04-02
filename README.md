@@ -5,8 +5,6 @@ A language for binaural, microtonal composition built in Rust.
 
 Make cool sounds. Impress your friends/pets/plants.
 
-Working on additional documentation. :) 
-
 ## See some things generated with the language here:
 
 https://www.weresocool.org/
@@ -52,6 +50,8 @@ ARGS:
 ## Test:
 
 `./test.sh`
+
+Working on additional documentation. :) 
 
 Copyright (C) 2020 - Danny Meyer
 
