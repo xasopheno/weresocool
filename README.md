@@ -5,6 +5,12 @@ A language for binaural, microtonal composition built in Rust.
 
 Make cool sounds. Impress your friends/pets/plants.
 
+Working on additional documentation. :) 
+
+## See some things generated with the language here
+
+https://www.weresocool.org/
+
 ## Install
 You'll need Rust and Cargo.
 `https://www.rust-lang.org/en-US/install.html` 
@@ -17,10 +23,7 @@ On Mac
 `brew install pkg-config`
 `&& cargo clean` if you are having problems linking
 
-## Parser
-`https://github.com/xasopheno/weresocool-parser`
-
-Grammar:
+## Grammar:
 
 https://github.com/xasopheno/weresocool-parser/blob/master/src/socool.lalrpop
 
@@ -28,30 +31,6 @@ https://github.com/xasopheno/weresocool-parser/blob/master/src/socool.lalrpop
 Listen to something created with the framework
 
 `cargo run --release --bin wsc songs/fall/table.socool`
-
-
-Run with `-p` flag to print a wav file.
-
-`cargo run --release --bin wsc songs/fall/table.socool -p`
-
-I use `ffmpeg` to convert to `mp3`
-
-`ffmpeg -i composition.wav composition.mp3`
-
-https://www.ffmpeg.org/
-
-For files in `songs/*` of type `.socool`
-`./play dir/filename`
-`./print dir/filename`
-
-## Building a binary
-To build the binary:
-
-`cargo build --release --bin wsc`
-
-and then you can parse and play files without having to build the binary each time.
-
-`./target/release/wsc songs/fall/table.socool -p`
 
 ## Usage
 
@@ -71,11 +50,10 @@ ARGS:
 ```
 
 ## Test
-To run tests for WSC, Parser, AST, and the end-to-end tests run:
 
 `./test.sh`
 
-Copyright (C) 2019 - Danny Meyer
+Copyright (C) 2020 - Danny Meyer
 
 This program is free software, licensed under the GPLv3 (see LICENSE).
 
