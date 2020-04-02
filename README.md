@@ -7,11 +7,11 @@ Make cool sounds. Impress your friends/pets/plants.
 
 Working on additional documentation. :) 
 
-## See some things generated with the language here
+## See some things generated with the language here:
 
 https://www.weresocool.org/
 
-## Install
+## Install:
 You'll need Rust and Cargo.
 `https://www.rust-lang.org/en-US/install.html` 
 
@@ -27,12 +27,12 @@ On Mac
 
 https://github.com/xasopheno/weresocool-parser/blob/master/src/socool.lalrpop
 
-## Run
+## Run:
 Listen to something created with the framework
 
 `cargo run --release --bin wsc songs/fall/table.socool`
 
-## Usage
+## Usage:
 
 ```
 USAGE:
@@ -49,7 +49,7 @@ ARGS:
     <filename>    filename eg: my_song.socool
 ```
 
-## Test
+## Test:
 
 `./test.sh`
 
