@@ -1,0 +1,90 @@
+{ f: 300, l: 1, g: 1, p: 0 }
+
+f0 = { f | Tm 1 / 2 }
+fsharp0 = { fsharp | Tm 1 / 2 }
+g0 = { g | Tm 1 / 2 }
+a0 = { a | Tm 1 / 2 }
+bflat0 = { bflat1 | Tm 1 / 4 }
+c = { c1 | Tm 1 / 2 }
+d = { d2 | Tm 1 / 4 }
+e = { e1 | Tm 1 / 2 }
+f = { Tm 1 }
+fsharp = { d | Tm 5 / 4 }
+g = { g1 | Tm 1 / 2 }
+a = { a1 | Tm 1 / 2 }
+bflat = { bflat0 | Tm 2 }
+b = { g | Tm 5 / 4 }
+c1 = { Tm 3 / 2 }
+csharp1 = { a | Tm 5 / 4 }
+dflat1 = { bflat0 | Tm 12 / 5 }
+d1 = { d | Tm 2 }
+e1 = { Tm 15 / 8 }
+f1 = { Tm 2 }
+g1 = { d1 | Tm 4 / 3 }
+a1 = { Tm 5 / 2 }
+bflat1 = { f1 | Tm 4 / 3 }
+c2 = { Tm 3 }
+d2 = { bflat1 | Tm 5 / 4 }
+
+main = {
+    Seq [
+        Overlay [
+            Overlay [
+                f,
+                c1,
+                e1,
+            ] | Length 4,
+            Seq [a1, Seq [c2, a1] | Length 0.5, d2, Seq [c2, a1] | Length 0.5]
+        ],
+        Overlay [
+            Overlay [
+                d,
+                a,
+                c1,
+            ] | Length 2,
+            Seq [f1, Seq [g1, d1] | Length 0.5]
+        ],
+        Overlay [
+            bflat0,
+            g,
+            dflat1,
+            f1,
+        ] | Length 2,
+        Overlay [
+            a0,
+            g,
+            c1,
+            e1,
+        ] | Length 2,
+        Overlay [
+            d,
+            fsharp,
+            c1,
+            e1,
+        ] | Length 2,
+        Overlay [
+            g0,
+            f,
+            bflat,
+            d1,
+        ] | Length 2,
+        Overlay [
+            c,
+            e,
+            bflat,
+            d1,
+        ] | Length 1.25,
+        Overlay [
+            fsharp0,
+            a,
+            bflat,
+            csharp1,
+        ] | Length 0.75,
+        Overlay [
+            f0,
+            e,
+            a,
+            c1,
+        ] | Length 4,
+    ]
+}
