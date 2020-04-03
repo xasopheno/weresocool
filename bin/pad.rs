@@ -65,7 +65,7 @@ fn run() -> Result<(), Error> {
                         .lock()
                         .unwrap()
                         .inc_render_write_buffer(),
-                    _ => panic!("Need to handle failed preparation"),
+                    _ => panic!("need to handle failed preparation"),
                 }
             };
 
