@@ -8,7 +8,7 @@ use weresocool::{
     instrument::StereoWaveform,
     interpretable::InputType::Filename,
     manager::{BufferManager, RenderManager},
-    portaudio::real_time_managed::real_time_managed,
+    portaudio::real_time_managed_long,
     settings::{default_settings, Settings},
     ui::were_so_cool_logo,
 };
@@ -36,9 +36,8 @@ fn run() -> Result<(), Error> {
     let filename1 = "songs/dance/skip.socool";
     let filename2 = "songs/dance/candle.socool";
 
-    let mut render_manager = RenderManager::init_silent();
-    let buffer_manager = Arc::new(Mutex::new(BufferManager::init_silent()));
-    let buffer_manager_clone = Arc::clone(&buffer_manager);
+    let mut render_manager = Arc::new(Mutex::new(RenderManager::init_silent()));
+    let mut render_manager_clone = render_manager.clone();
 
     let (send, recv) = channel();
     println!("Start...");
@@ -60,27 +59,14 @@ fn run() -> Result<(), Error> {
             if let Ok(v) = recv.try_recv() {
                 println!("language received");
 
-                match render_manager.prepare_render(v) {
-                    Ok(_) => buffer_manager_clone
-                        .lock()
-                        .unwrap()
-                        .inc_render_write_buffer(),
-                    _ => panic!("need to handle failed preparation"),
+                match render_manager_clone.lock().unwrap().prepare_render(v) {
+                    Ok(_) => println!("Render Success"),
+                    _ => panic!("Render Failure"),
                 }
             };
-
-            let batch: Option<Vec<StereoWaveform>> =
-                render_manager.render_batch(SETTINGS.buffer_size);
-
-            if let Some(b) = batch {
-                if !b.is_empty() {
-                    let stereo_waveform = sum_all_waveforms(b);
-                    buffer_manager_clone.lock().unwrap().write(stereo_waveform);
-                }
-            }
         })?;
 
-    let mut stream = real_time_managed(Arc::clone(&buffer_manager))?;
+    let mut stream = real_time_managed_long(Arc::clone(&render_manager))?;
     stream.start()?;
 
     while let true = stream.is_active()? {}
