@@ -1,4 +1,5 @@
 use crate::{
+    generation::sum_all_waveforms,
     instrument::StereoWaveform,
     manager::RenderManager,
     settings::{default_settings, Settings},
@@ -17,19 +18,26 @@ pub fn real_time_managed_long(
     let output_stream_settings = get_output_settings(&pa)?;
 
     let output_stream = pa.open_non_blocking_stream(output_stream_settings, move |args| {
-        //let sw = buffer_manager.lock().unwrap().read(SETTINGS.buffer_size);
+        let batch: Option<Vec<StereoWaveform>> = render_manager
+            .lock()
+            .unwrap()
+            .render_batch(SETTINGS.buffer_size);
 
-        //match sw {
-        //Some(stereo_waveform) => {
-        //write_output_buffer(args.buffer, stereo_waveform);
-        //pa::Continue
-        //}
-        //None => {
-        write_output_buffer(args.buffer, StereoWaveform::new(SETTINGS.buffer_size));
+        if let Some(b) = batch {
+            if !b.is_empty() {
+                let stereo_waveform = sum_all_waveforms(b);
+                write_output_buffer(args.buffer, stereo_waveform);
+                pa::Continue
+            } else {
+                write_output_buffer(args.buffer, StereoWaveform::new(SETTINGS.buffer_size));
 
-        pa::Continue
-        //}
-        //}
+                pa::Continue
+            }
+        } else {
+            write_output_buffer(args.buffer, StereoWaveform::new(SETTINGS.buffer_size));
+
+            pa::Continue
+        }
     })?;
 
     Ok(output_stream)
