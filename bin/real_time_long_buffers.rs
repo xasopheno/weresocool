@@ -5,7 +5,6 @@ use weresocool::{
     manager::RenderManager,
     portaudio::real_time_managed_long,
     renderable::{nf_to_vec_renderable, renderables_to_render_voices},
-    settings::{default_settings, Settings},
     ui::{get_args, no_file_name, were_so_cool_logo},
 };
 

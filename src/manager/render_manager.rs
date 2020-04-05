@@ -1,5 +1,6 @@
 use crate::{
     generation::parsed_to_render::{RenderReturn, RenderType},
+    generation::sum_all_waveforms,
     instrument::StereoWaveform,
     interpretable::{InputType, Interpretable},
     renderable::{nf_to_vec_renderable, renderables_to_render_voices, RenderVoice},
@@ -43,6 +44,38 @@ impl RenderManager {
         }
     }
 
+    pub fn read(&mut self, buffer_size: usize) -> Option<StereoWaveform> {
+        let next = self.exists_next_render();
+        let current = self.current_render();
+
+        match current {
+            Some(render) => {
+                let mut sw: StereoWaveform = sum_all_waveforms(
+                    render
+                        .iter_mut()
+                        .filter_map(|voice| voice.render_batch(buffer_size, None))
+                        .collect(),
+                );
+
+                if next {
+                    sw.fade_out();
+
+                    *current = None;
+                    self.inc_render();
+                }
+                Some(sw)
+            }
+            None => {
+                if next {
+                    self.inc_render();
+                    self.read(buffer_size)
+                } else {
+                    None
+                }
+            }
+        }
+    }
+
     pub fn inc_render(&mut self) {
         self.render_idx = (self.render_idx + 1) % 2;
     }
@@ -55,10 +88,16 @@ impl RenderManager {
         &mut self.renders[(self.render_idx + 1) % 2]
     }
 
+    pub fn exists_current_render(&mut self) -> bool {
+        self.current_render().is_some()
+    }
+
+    pub fn exists_next_render(&mut self) -> bool {
+        self.next_render().is_some()
+    }
+
     pub fn push_render(&mut self, render: Vec<RenderVoice>) {
         *self.next_render() = Some(render);
-        *self.current_render() = None;
-        self.inc_render();
     }
 
     pub fn prepare_render(&mut self, input: InputType<'_>) -> Result<(), Error> {
@@ -71,7 +110,6 @@ impl RenderManager {
         let render_voices = renderables_to_render_voices(renderables);
 
         self.push_render(render_voices);
-
         Ok(())
     }
 }
