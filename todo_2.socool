@@ -1,0 +1,28 @@
+.... .   ..
+...  ..  ....
+.    ...
+     ..
+
+RenderManager {
+    [Option<Vec<RenderVoice>>; 3]
+}
+
+
+current_idx: 0 
+transition_idx: 1
+next_idx: 2
+
+impl RenderManager {
+    fn get_voice_op(voice: usize, idx: usize) {
+        if voice > self.voices.len() { silent }
+        let voice = &voices[voice];
+        if id > voice.len() {
+            if next { handle_transition }
+        }
+        
+
+    }
+}
+
+
+
