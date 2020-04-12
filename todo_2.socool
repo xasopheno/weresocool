@@ -1,26 +1,32 @@
+.... .   
+...  .. 
+.    ...
+     ..
+
 .... .   ..
 ...  ..  ....
 .    ...
      ..
 
-RenderManager {
-    [Option<Vec<RenderVoice>>; 3]
+Renders {
+    ops: Vec<RenderVoice>,
+    idx: usize,
 }
 
-
-current_idx: 0 
-transition_idx: 1
-next_idx: 2
+Renders {
+    [Option<Vec<RenderVoice>>; 3],
+    idx: usize,
+}
 
 impl RenderManager {
-    fn get_voice_op(voice: usize, idx: usize) {
+    fn push(&mut self, Vec<RenderVoice>)
+
+    fn get_next_voice_op(&mut self, voice: usize, idx: usize) {
         if voice > self.voices.len() { silent }
         let voice = &voices[voice];
         if id > voice.len() {
             if next { handle_transition }
         }
-        
-
     }
 }
 
