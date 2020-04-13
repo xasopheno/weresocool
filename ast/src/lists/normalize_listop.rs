@@ -34,6 +34,14 @@ impl ListOp {
                     })
                     .collect()
             }
+            ListOp::Concat(lists) => {
+                let mut result = vec![];
+                for list in lists {
+                    result.extend(list.term_vectors(defs, arg_map))
+                }
+
+                result
+            }
         }
     }
 }

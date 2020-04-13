@@ -1,0 +1,12 @@
+{ f: 220, l: 1, g: 1, p: 0 } 
+
+main = {
+    Concat ( 
+        List [Tm 1, Tm 9/8], List [Tm 0]
+    ) 
+}
+
+expect = {
+    Seq [Tm 1, Tm 9/8, Tm 0]
+}
+
