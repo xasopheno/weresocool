@@ -4,19 +4,16 @@ use std::sync::{Arc, Mutex};
 use std::thread;
 use std::time::Duration;
 use weresocool::{
-    generation::parsed_to_render::sum_all_waveforms,
-    instrument::StereoWaveform,
-    interpretable::InputType::Filename,
-    manager::{BufferManager, RenderManager},
-    portaudio::real_time_managed::real_time_managed,
-    settings::{default_settings, Settings},
+    generation::parsed_to_render::{RenderReturn, RenderType},
+    interpretable::{InputType, Interpretable},
+    manager::RenderManager,
+    portaudio::real_time_render_manager,
+    renderable::{nf_to_vec_renderable, renderables_to_render_voices, RenderVoice},
     ui::were_so_cool_logo,
 };
 
 use failure::Fail;
 use weresocool_error::Error;
-
-const SETTINGS: Settings = default_settings();
 
 fn main() {
     match run() {
@@ -29,6 +26,18 @@ fn main() {
     }
 }
 
+pub fn prepare_render(input: InputType<'_>) -> Result<Vec<RenderVoice>, Error> {
+    let (nf, basis, table) = match input.make(RenderType::NfBasisAndTable)? {
+        RenderReturn::NfBasisAndTable(nf, basis, table) => (nf, basis, table),
+        _ => panic!("Error. Unable to generate NormalForm"),
+    };
+    let renderables = nf_to_vec_renderable(&nf, &table, &basis);
+
+    let render_voices = renderables_to_render_voices(renderables);
+
+    Ok(render_voices)
+}
+
 fn run() -> Result<(), Error> {
     were_so_cool_logo();
     println!("       )))***=== REAL<COOL>TIME *buffered ===***(((  \n ");
@@ -36,9 +45,8 @@ fn run() -> Result<(), Error> {
     let filename1 = "songs/dance/skip.socool";
     let filename2 = "songs/dance/candle.socool";
 
-    let mut render_manager = RenderManager::init_silent();
-    let buffer_manager = Arc::new(Mutex::new(BufferManager::init_silent()));
-    let buffer_manager_clone = Arc::clone(&buffer_manager);
+    let render_manager = Arc::new(Mutex::new(RenderManager::init_silent()));
+    let render_manager_clone = render_manager.clone();
 
     let (send, recv) = channel();
     println!("Start...");
@@ -47,9 +55,9 @@ fn run() -> Result<(), Error> {
         .spawn(move || {
             thread::sleep(Duration::from_secs(1));
             for _ in 0..4 {
-                send.send(Filename(&filename1)).unwrap();
+                send.send(InputType::Filename(&filename1)).unwrap();
                 thread::sleep(Duration::from_secs(4));
-                send.send(Filename(&filename2)).unwrap();
+                send.send(InputType::Filename(&filename2)).unwrap();
                 thread::sleep(Duration::from_secs(4));
             }
         })?;
@@ -59,28 +67,19 @@ fn run() -> Result<(), Error> {
         .spawn(move || loop {
             if let Ok(v) = recv.try_recv() {
                 println!("language received");
+                let render = prepare_render(v);
 
-                match render_manager.prepare_render(v) {
-                    Ok(_) => buffer_manager_clone
-                        .lock()
-                        .unwrap()
-                        .inc_render_write_buffer(),
-                    _ => panic!("Need to handle failed preparation"),
+                match render {
+                    Ok(r) => {
+                        render_manager_clone.lock().unwrap().push_render(r);
+                        println!("Render Success")
+                    }
+                    _ => panic!("Render Failure"),
                 }
             };
-
-            let batch: Option<Vec<StereoWaveform>> =
-                render_manager.render_batch(SETTINGS.buffer_size);
-
-            if let Some(b) = batch {
-                if !b.is_empty() {
-                    let stereo_waveform = sum_all_waveforms(b);
-                    buffer_manager_clone.lock().unwrap().write(stereo_waveform);
-                }
-            }
         })?;
 
-    let mut stream = real_time_managed(Arc::clone(&buffer_manager))?;
+    let mut stream = real_time_render_manager(Arc::clone(&render_manager))?;
     stream.start()?;
 
     while let true = stream.is_active()? {}

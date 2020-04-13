@@ -41,6 +41,11 @@ impl StereoWaveform {
         }
     }
 
+    pub fn pad(&mut self, buffersize: usize) {
+        self.l_buffer.resize(buffersize, 0.0);
+        self.r_buffer.resize(buffersize, 0.0);
+    }
+
     pub fn max_len(&self) -> usize {
         cmp::max(self.l_buffer.len(), self.r_buffer.len())
     }
