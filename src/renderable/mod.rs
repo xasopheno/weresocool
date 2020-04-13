@@ -173,7 +173,7 @@ fn pointop_to_renderop(
         decay: r_to_f64(point_op.decay * basis.d) * SETTINGS.sample_rate,
         osc_type: point_op.osc_type,
         asr: point_op.asr,
-        portamento: (r_to_f64(point_op.portamento) * 1024 as f64) as usize,
+        portamento: (r_to_f64(point_op.portamento) * 1024_f64) as usize,
         voice,
         event,
         next_l_silent,
