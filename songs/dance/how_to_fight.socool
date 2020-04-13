@@ -203,5 +203,5 @@ main = {
         ]
 
     ]
-    | Repeat 2
+    | Repeat 1
 }
