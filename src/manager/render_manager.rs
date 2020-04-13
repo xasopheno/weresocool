@@ -32,47 +32,6 @@ impl RenderManager {
         }
     }
 
-    //fn get_batch(&mut self) {}
-
-    pub fn loop_read(&mut self, buffer_size: usize) -> Option<StereoWaveform> {
-        let next = self.exists_next_render();
-        let current = self.current_render();
-
-        match current {
-            Some(render_voices) => {
-                let rendered: Vec<StereoWaveform> = render_voices
-                    .par_iter_mut()
-                    .filter_map(|voice| voice.render_batch(buffer_size, None))
-                    .collect();
-                if !rendered.is_empty() {
-                    //let mut sw: StereoWaveform = sum_all_waveforms(rendered);
-
-                    //if next {
-                    //sw.fade_out();
-
-                    //*current = None;
-                    //self.inc_render();
-                    //}
-
-                    //sw.pad(buffer_size);
-
-                    //Some(sw)
-                    None
-                } else {
-                    None
-                }
-            }
-            None => {
-                if next {
-                    self.inc_render();
-                    self.read(buffer_size)
-                } else {
-                    None
-                }
-            }
-        }
-    }
-
     pub fn read(&mut self, buffer_size: usize) -> Option<StereoWaveform> {
         let next = self.exists_next_render();
         let current = self.current_render();
