@@ -1,6 +1,6 @@
 use crate::{
     instrument::StereoWaveform,
-    manager::RenderManager,
+    manager::BufferManager,
     settings::{default_settings, Settings},
     write::write_output_buffer,
 };
@@ -10,23 +10,25 @@ use weresocool_error::Error;
 
 const SETTINGS: Settings = default_settings();
 
-pub fn real_time_managed_long(
-    render_manager: Arc<Mutex<RenderManager>>,
+pub fn real_time_buffer_manager(
+    buffer_manager: Arc<Mutex<BufferManager>>,
 ) -> Result<pa::Stream<pa::NonBlocking, pa::Output<f32>>, Error> {
     let pa = pa::PortAudio::new()?;
     let output_stream_settings = get_output_settings(&pa)?;
 
     let output_stream = pa.open_non_blocking_stream(output_stream_settings, move |args| {
-        let batch: Option<StereoWaveform> =
-            render_manager.lock().unwrap().read(SETTINGS.buffer_size);
+        let sw = buffer_manager.lock().unwrap().read(SETTINGS.buffer_size);
 
-        if let Some(b) = batch {
-            write_output_buffer(args.buffer, b);
-            pa::Continue
-        } else {
-            write_output_buffer(args.buffer, StereoWaveform::new(SETTINGS.buffer_size));
+        match sw {
+            Some(stereo_waveform) => {
+                write_output_buffer(args.buffer, stereo_waveform);
+                pa::Continue
+            }
+            None => {
+                write_output_buffer(args.buffer, StereoWaveform::new(SETTINGS.buffer_size));
 
-            pa::Continue
+                pa::Continue
+            }
         }
     })?;
 

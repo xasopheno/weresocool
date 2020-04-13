@@ -73,7 +73,7 @@ path = "bin/stems.rs"
 
 [[bin]]
 name = "real_time"
-path = "bin/real_time_long_buffers.rs"
+path = "bin/real_time.rs"
 
 [[bin]]
 name = "mic"

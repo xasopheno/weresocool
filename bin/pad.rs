@@ -7,7 +7,7 @@ use weresocool::{
     generation::parsed_to_render::{RenderReturn, RenderType},
     interpretable::{InputType, Interpretable},
     manager::RenderManager,
-    portaudio::real_time_managed_long,
+    portaudio::real_time_render_manager,
     renderable::{nf_to_vec_renderable, renderables_to_render_voices, RenderVoice},
     ui::were_so_cool_logo,
 };
@@ -79,7 +79,7 @@ fn run() -> Result<(), Error> {
             };
         })?;
 
-    let mut stream = real_time_managed_long(Arc::clone(&render_manager))?;
+    let mut stream = real_time_render_manager(Arc::clone(&render_manager))?;
     stream.start()?;
 
     while let true = stream.is_active()? {}
