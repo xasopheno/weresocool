@@ -38,7 +38,7 @@ impl Substitute for ListOp {
             ListOp::Concat(lists) => {
                 let mut result = vec![];
                 for list in lists {
-                    result.extend(list.substitute(&mut nf, defs, arg_map))
+                    result.push(list.substitute(normal_form, defs, arg_map))
                 }
 
                 Term::Lop(ListOp::Const(result))

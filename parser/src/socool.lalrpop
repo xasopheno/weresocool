@@ -99,7 +99,7 @@ List: ListOp = {
     ListOp::ListOpIndexed { list_op: Box::new(listop), indices}
   },
 
-  "Concat" "(" <lists: Comma<List>> ")" => unimplemented!(),
+  "Concat" "(" <lists: Comma<List>> ")" => ListOp::Concat(lists),
 }
 
 Indices: Indices = {

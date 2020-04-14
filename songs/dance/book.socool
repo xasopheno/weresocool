@@ -19,7 +19,7 @@ overtones = {
   	]
 }
 
-list = ET(69)
+list = Concat(List [Tm 0], ET(69))
 
 thing1 = {
 	overtones |
@@ -40,12 +40,12 @@ thing1 = {
         65 
             | Lm 36 | Pa 1,
         8 
-            | ET(5) @ [5:1] | Reverse | Lm 3/5 
+            | Concat(List[Tm 0], ET(5)) @ [5:1] | Reverse | Lm 3/5 
             | Seq [Fm 1, Fm 7/6 | Reverse | Lm 4/5],
         (55, 59, 44, 42, 63) | Seq [Fm 1, Fm 15/16 | Reverse] | Lm 1/2
             | Seq [Fm 1, Lm 3/2],
         3 
-            | ET(7) @ [1:7] | Lm 3/5 | Pa 1,
+            | Concat(List[Tm 0], ET(7)) @ [1:7] | Lm 3/5 | Pa 1,
         17:1 | Lm 1/6,
         44:10 | Lm 1/10 | Pa -1,
         55:22 | Lm 1/11 | Pa 1,

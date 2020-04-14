@@ -9,7 +9,7 @@ overtones = {
   	]
 }
 
-list = ET(10) 
+list = Concat (List[Tm 0], ET(10))
     @ [ Random(10) ] 
     @ [ 
         1 | Tm 3/4,

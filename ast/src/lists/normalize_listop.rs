@@ -64,6 +64,11 @@ impl GetLengthRatio for ListOp {
                 self.apply_to_normal_form(&mut nf, defs);
                 nf.get_length_ratio(defs)
             }
+            ListOp::Concat(listops) => listops
+                .iter()
+                .fold(Rational64::from_integer(0), |acc, term| {
+                    acc + term.get_length_ratio(defs)
+                }),
         }
     }
 }
@@ -96,6 +101,14 @@ impl ListOp {
                         .index_terms
                         .iter()
                         .for_each(|index_term| index_term.apply_to_normal_form(&mut nf, defs));
+                    nf
+                })
+                .collect(),
+            ListOp::Concat(listops) => listops
+                .iter()
+                .map(|list| {
+                    let mut nf = input.clone();
+                    list.apply_to_normal_form(&mut nf, defs);
                     nf
                 })
                 .collect(),
