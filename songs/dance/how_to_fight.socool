@@ -121,7 +121,7 @@ thing2 = {
     ] 
 }
 
-list2 = ET(120) @ [0:60:15 | Tm 7/4]
+list2 = Concat(List[Tm 0], ET(120) @ [0:60:15 | Tm 7/4])
 
 melody = {
     Gain 2/3 |
@@ -150,7 +150,7 @@ melody = {
             6, 7, 8, 9, 10, 11, 12, 13, 15, 14, 17, 
             15, 14, 12, 10, 9, 7, 5, 8, 3, 4, 6, 7, 8, 9, 0 | Fm 0
         ],
-        List list2 @ [
+        Concat (List [Fm 0, Fm 0, Fm 0, Fm 0], List list2) @ [
             Random(100) | Overlay [Fm 2, Fm 5/4, Fm 9/8] | Gain 1/4, 0 | Fm 0
         ],
     ] | Repeat 2
