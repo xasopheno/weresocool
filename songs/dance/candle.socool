@@ -47,7 +47,7 @@ thing2 = {
     > FitLength thing1
 }
 
-list = ET(120)
+list = Concat (List[Tm 0], ET(120))
 
 thing3 = {
     O[

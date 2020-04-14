@@ -35,6 +35,14 @@ impl Substitute for ListOp {
                     })
                     .collect(),
             )),
+            ListOp::Concat(lists) => {
+                let mut result = vec![];
+                for list in lists {
+                    result.push(list.substitute(normal_form, defs, arg_map))
+                }
+
+                Term::Lop(ListOp::Const(result))
+            }
         }
     }
 }

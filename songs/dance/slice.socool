@@ -19,7 +19,6 @@ list = List [
     Tm 5/3, 
     Tm 15/8
 ]
---list = ET(7)
 
 thing1 = {
     Ta 1/2 |

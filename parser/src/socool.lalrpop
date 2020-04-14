@@ -98,6 +98,8 @@ List: ListOp = {
   <listop: List> "@" "[" <indices: Indices> "]" => {
     ListOp::ListOpIndexed { list_op: Box::new(listop), indices}
   },
+
+  "Concat" "(" <lists: Comma<List>> ")" => ListOp::Concat(lists),
 }
 
 Indices: Indices = {

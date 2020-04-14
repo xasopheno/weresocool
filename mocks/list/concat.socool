@@ -1,0 +1,21 @@
+{ f: 220, l: 1, g: 1, p: 0 } 
+
+list = List [Tm 3/2, Tm 5/3]
+concat_list = Concat(List [Tm 0], List list)
+
+main = {
+    Seq [
+        Concat (List [Tm 1, Tm 9/8], List [Tm 0]), 
+        Concat (List list @ [0, 1, 0], List [Tm 0]),
+        List concat_list
+    ]
+}
+
+expect = {
+    Seq [
+        Seq [Tm 1, Tm 9/8, Tm 0],
+        Seq [Tm 3/2, Tm 5/3, Tm 3/2, Tm 0],
+        Seq [Tm 0, Tm 3/2, Tm 5/3],
+    ]
+}
+

@@ -12,6 +12,7 @@ pub enum ListOp {
         list_op: Box<ListOp>,
         indices: Indices,
     },
+    Concat(Vec<ListOp>),
 }
 
 #[derive(Clone, PartialEq, Debug, Hash)]
