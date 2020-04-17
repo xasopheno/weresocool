@@ -81,7 +81,6 @@ Operation: Term = {
 
     <list: List> => Term::Lop(list),
 
-    "(" <o: Operation> ")" => o,
 }
 
 
@@ -155,7 +154,7 @@ Composeable: Term = {
 }
 
 BaseOperation: Term = {
-    //"(" <o: Operation> ")" => o,
+    "(" <o: Operation> ")" => o,
     "AsIs" => Term::Op(AsIs {}),
     "Sine" => Term::Op(Sine {}),
     "Square" => Term::Op(Square {}),
