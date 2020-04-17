@@ -55,6 +55,7 @@ LetDef: () = {
     <name: Name> "=" <list: List> => {
         defs.lists.insert(name.clone(), Term::Lop(list)); ()
     }
+    
 };
 
 
@@ -80,14 +81,34 @@ Operation: Term = {
 
     <list: List> => Term::Lop(list),
 
+    "(" <o: Operation> ")" => o,
 }
 
+
 List: ListOp = {
-  "List" "[" <operations: Operations> "]" => {
+  <lists: Concat<ListIndexed>> => ListOp::Concat(lists),
+
+  <list: ListIndexed> => list,
+
+}
+
+ListIndexed: ListOp = {
+  <listop: ListIndexed> "@" "[" <indices: Indices> "]" => {
+    ListOp::ListOpIndexed { list_op: Box::new(listop), indices}
+  },
+
+   "<" <list: List> ">" => list,
+
+
+  <list: ListBase> => list,
+}
+
+ListBase: ListOp = {
+  r"(List|&)" "[" <operations: Operations> "]" => {
     ListOp::Const(operations)
   },
 
-  "List" <name: Name> => {
+  r"(List|&)" <name: Name> => {
     ListOp::Named(name)
   },
 
@@ -95,11 +116,6 @@ List: ListOp = {
     ListOp::Const(et(n))
   },
 
-  <listop: List> "@" "[" <indices: Indices> "]" => {
-    ListOp::ListOpIndexed { list_op: Box::new(listop), indices}
-  },
-
-  "Concat" "(" <lists: Comma<List>> ")" => ListOp::Concat(lists),
 }
 
 Indices: Indices = {
@@ -139,7 +155,7 @@ Composeable: Term = {
 }
 
 BaseOperation: Term = {
-    "(" <o: Operation> ")" => o,
+    //"(" <o: Operation> ")" => o,
     "AsIs" => Term::Op(AsIs {}),
     "Sine" => Term::Op(Sine {}),
     "Square" => Term::Op(Square {}),
@@ -234,6 +250,17 @@ Lets<T>: Vec<T> = {
 
 Pipe<T>: Vec<T> = {
     <v:(<T> "|")+> <e:T?> => match e {
+        None=> v,
+        Some(e) => {
+          let mut v = v;
+          v.push(e);
+          v
+        }
+    }
+};
+
+Concat<T>: Vec<T> = {
+    <v:(<T> "++")+> <e:T?> => match e {
         None=> v,
         Some(e) => {
           let mut v = v;

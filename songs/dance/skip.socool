@@ -10,11 +10,11 @@ overtones = {
     | Fm 4/5 
 }
 
-list = Concat (List[Tm 0], ET(72))
+list = &[Tm 0] ++ ET(72)
 
 thing1 = {
     Portamento 1/2 |
-    List list @ [
+    &list @ [
         7:71:13,
         72:40:5,
         32:5:11,
@@ -68,10 +68,10 @@ thing1 = {
     ]
 }
 
-list2 = Concat (List [Tm 0], ET(120))
+list2 = &[Tm 0] ++ ET(120)
 
 thing2 = {
-    List list2 @ [
+    &list2 @ [
         30:85:12,
         20:95:7,
         100:14:20,
