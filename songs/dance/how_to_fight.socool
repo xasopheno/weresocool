@@ -8,7 +8,7 @@ overtones = {
   	]
 }
 
-list = List [
+list = &[
     Fm 1/2, Fm 3/4, Fm 7/8, Fm 1, Fm 7/6, 
     Fm 4/3, Fm 3/2, Fm 8/5, Fm 15/8, 
     Fm 2, Fm 9/4, Fm 5/2, Fm 11/4, Fm 3, 
@@ -17,7 +17,7 @@ list = List [
 
 thing1 = {
     overtones | 
-	List list
+	&list
     @ [
         4:10:2, 8:4, 3 | Length 2, 
         10:1:3, 0 | Fm 0 | Length 2, 
@@ -121,7 +121,7 @@ thing2 = {
     ] 
 }
 
-list2 = Concat(List[Tm 0], ET(120) @ [0:60:15 | Tm 7/4])
+list2 = <&[Tm 0] ++ ET(120)> @ [0:60:15 | Tm 7/4]
 
 melody = {
     Gain 2/3 |
@@ -132,7 +132,7 @@ melody = {
         (1/2, 3, 1/2, 1),
     ]
     | Seq [
-        List list @ [
+         &list @ [
             10, 13, 15, 14, 11, 9, 7, 5,
             4, 6, 7, 3, 2, 5, 7, 3, 4 | Length 3,
             6, 2, 4, 3, 3, 1, 5, 6,
@@ -150,7 +150,7 @@ melody = {
             6, 7, 8, 9, 10, 11, 12, 13, 15, 14, 17, 
             15, 14, 12, 10, 9, 7, 5, 8, 3, 4, 6, 7, 8, 9, 0 | Fm 0
         ],
-        Concat (List [Fm 0, Fm 0, Fm 0, Fm 0], List list2) @ [
+        <&[Fm 0, Fm 0, Fm 0, Fm 0] ++ &list2> @ [
             Random(100) | Overlay [Fm 2, Fm 5/4, Fm 9/8] | Gain 1/4, 0 | Fm 0
         ],
     ] | Repeat 2

@@ -1,13 +1,19 @@
 { f: 220, l: 1, g: 1, p: 0 } 
 
-list = List [Tm 3/2, Tm 5/3]
-concat_list = Concat(List [Tm 0], List list)
+list = &[Tm 3/2, Tm 5/3]
+concat_list =  &[Tm 0] ++ &list
+concat_list2 = <&[Tm 0] ++  &list> @ [0]
+concat_list3 = &[Tm 0] ++ & list @ [0]
+concat_list4 =  &[Tm 0] ++  & list @ [0] ++  &[Tm 1]
 
 main = {
     Seq [
-        Concat (List [Tm 1, Tm 9/8], List [Tm 0]), 
-        Concat (List list @ [0, 1, 0], List [Tm 0]),
-        List concat_list
+        List [Tm 1, Tm 9/8] ++ &[Tm 0], 
+        List list @ [0, 1, 0] ++  &[Tm 0],
+        List concat_list,
+        List concat_list2,
+        List concat_list3,
+        List concat_list4,
     ]
 }
 
@@ -16,6 +22,9 @@ expect = {
         Seq [Tm 1, Tm 9/8, Tm 0],
         Seq [Tm 3/2, Tm 5/3, Tm 3/2, Tm 0],
         Seq [Tm 0, Tm 3/2, Tm 5/3],
+        Seq [Tm 0],
+        Seq [Tm 0, Tm 3/2],
+        Seq [Tm 0, Tm 3/2, Tm 1],
     ]
 }
 
