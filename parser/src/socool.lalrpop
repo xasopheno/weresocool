@@ -83,6 +83,7 @@ Operation: Term = {
 
 }
 
+ListConcat = Concat<ListIndexed>;
 
 List: ListOp = {
   <lists: Concat<ListIndexed>> => ListOp::Concat(lists),
