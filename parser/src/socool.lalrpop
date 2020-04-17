@@ -83,14 +83,14 @@ Operation: Term = {
 
 }
 
-ListConcat = Concat<ListIndexed>;
-
 List: ListOp = {
-  <lists: Concat<ListIndexed>> => ListOp::Concat(lists),
+  <lists: ListConcat> => ListOp::Concat(lists),
 
   <list: ListIndexed> => list,
 
 }
+
+ListConcat = Concat<ListIndexed>;
 
 ListIndexed: ListOp = {
   <listop: ListIndexed> "@" "[" <indices: Indices> "]" => {
@@ -269,7 +269,6 @@ Concat<T>: Vec<T> = {
         }
     }
 };
-
 
 Compose = Pipe<Operation>;
 
