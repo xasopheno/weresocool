@@ -56,6 +56,7 @@ impl RenderManager {
 
                     Some(sw)
                 } else {
+                    *self.current_render() = None;
                     None
                 }
             }
