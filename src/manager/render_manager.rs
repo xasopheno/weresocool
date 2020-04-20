@@ -13,6 +13,7 @@ pub struct RenderManager {
     pub renders: [Option<Vec<RenderVoice>>; 2],
     render_idx: usize,
     read_idx: usize,
+    //playing: bool,
 }
 
 impl RenderManager {
