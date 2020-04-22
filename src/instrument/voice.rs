@@ -89,8 +89,6 @@ impl Voice {
                 index,
                 if op.samples > 250 { op.samples } else { 250 },
             );
-            dbg!(frequency);
-            dbg!(gain);
 
             let info = SampleInfo { gain, frequency };
 

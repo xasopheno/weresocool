@@ -108,18 +108,6 @@ impl RenderVoice {
         }
     }
 
-    pub fn render_sample(&mut self) -> Option<StereoWaveform> {
-        let sample = self.get_next_sample();
-        match sample {
-            Some(mut b) => {
-                dbg!(&b);
-                let render = b.render(&mut self.oscillator, None);
-                Some(render)
-            }
-            None => None,
-        }
-    }
-
     pub fn render_batch(
         &mut self,
         n_samples: usize,

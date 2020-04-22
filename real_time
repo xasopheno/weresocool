@@ -2,5 +2,5 @@
 
 FILENAME=$1
 
-#fd | entr -crs "echo | ./target/release/real_time $FILENAME"
-fd | entr -crs "echo | cargo run --release --bin real_time $FILENAME"
+fd | entr -crs "echo | ./target/release/real_time $FILENAME"
+#fd | entr -crs "echo | cargo run --release --bin real_time $FILENAME"
