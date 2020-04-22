@@ -83,7 +83,6 @@ impl Voice {
                 self.offset_past.frequency,
                 self.offset_current.frequency,
             );
-
             let gain = gain_at_index(
                 self.offset_past.gain,
                 op_gain * offset.gain,
