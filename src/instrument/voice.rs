@@ -83,13 +83,14 @@ impl Voice {
                 self.offset_past.frequency,
                 self.offset_current.frequency,
             );
-
             let gain = gain_at_index(
                 self.offset_past.gain,
                 op_gain * offset.gain,
                 index,
                 if op.samples > 250 { op.samples } else { 250 },
             );
+            dbg!(frequency);
+            dbg!(gain);
 
             let info = SampleInfo { gain, frequency };
 

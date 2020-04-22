@@ -19,6 +19,13 @@ pub fn make_fade_vec(buffer_size: usize) -> Vec<f64> {
 }
 
 impl StereoWaveform {
+    pub fn new_empty() -> Self {
+        Self {
+            l_buffer: vec![],
+            r_buffer: vec![],
+        }
+    }
+
     pub fn new(buffer_size: usize) -> Self {
         Self {
             l_buffer: vec![0.0; buffer_size],

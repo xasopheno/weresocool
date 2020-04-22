@@ -81,44 +81,41 @@ impl RenderVoice {
         Some(result)
     }
 
-    pub fn get_next_sample(&mut self) -> Option<Vec<RenderOp>> {
-        let mut result: Vec<RenderOp> = vec![];
-
+    pub fn get_next_sample(&mut self) -> Option<RenderOp> {
         if self.op_index >= self.ops.len() {
-            return if result.is_empty() {
-                None
-            } else {
-                Some(result)
-            };
+            return None;
         }
 
         let current_op = &self.ops[self.op_index];
 
         if (current_op.samples - self.sample_index) > 1 {
-            result.push(RenderOp {
+            let result = RenderOp {
                 samples: 1,
                 index: self.sample_index,
                 ..*current_op
-            });
-
-            self.sample_index += 1
+            };
+            self.sample_index += 1;
+            return Some(result);
         } else {
             self.op_index += 1;
             self.sample_index = 0;
 
-            result.push(RenderOp {
+            return Some(RenderOp {
                 samples: 1,
                 index: self.sample_index,
                 ..*current_op
             });
         }
-
-        Some(result)
     }
 
     pub fn render_sample(&mut self) -> Option<StereoWaveform> {
-        match self.get_next_sample() {
-            Some(mut b) => Some(b.render(&mut self.oscillator, None)),
+        let sample = self.get_next_sample();
+        match sample {
+            Some(mut b) => {
+                dbg!(&b);
+                let render = b.render(&mut self.oscillator, None);
+                Some(render)
+            }
             None => None,
         }
     }
