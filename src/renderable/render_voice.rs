@@ -81,33 +81,6 @@ impl RenderVoice {
         Some(result)
     }
 
-    pub fn get_next_sample(&mut self) -> Option<RenderOp> {
-        if self.op_index >= self.ops.len() {
-            return None;
-        }
-
-        let current_op = &self.ops[self.op_index];
-
-        if (current_op.samples - self.sample_index) > 1 {
-            let result = RenderOp {
-                samples: 1,
-                index: self.sample_index,
-                ..*current_op
-            };
-            self.sample_index += 1;
-            return Some(result);
-        } else {
-            self.op_index += 1;
-            self.sample_index = 0;
-
-            return Some(RenderOp {
-                samples: 1,
-                index: self.sample_index,
-                ..*current_op
-            });
-        }
-    }
-
     pub fn render_batch(
         &mut self,
         n_samples: usize,
