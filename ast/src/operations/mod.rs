@@ -4,6 +4,7 @@ use std::{
     collections::{BTreeSet, HashMap},
     ops::{Mul, MulAssign},
 };
+use weresocool_error::Error;
 mod get_length_ratio;
 pub mod helpers;
 mod normalize;
@@ -36,7 +37,7 @@ pub struct PointOp {
 }
 
 pub trait Normalize {
-    fn apply_to_normal_form(&self, normal_form: &mut NormalForm, defs: &Defs);
+    fn apply_to_normal_form(&self, normal_form: &mut NormalForm, defs: &Defs) -> Result<(), Error>;
 }
 
 pub trait GetLengthRatio {
@@ -131,8 +132,9 @@ impl MulAssign<&NormalForm> for NormalForm {
 }
 
 impl Normalize for NormalForm {
-    fn apply_to_normal_form(&self, input: &mut NormalForm, _defs: &Defs) {
-        *input *= self
+    fn apply_to_normal_form(&self, input: &mut NormalForm, _defs: &Defs) -> Result<(), Error> {
+        *input *= self;
+        Ok(())
     }
 }
 

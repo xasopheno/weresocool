@@ -4,10 +4,11 @@ use crate::operations::{
 use crate::{Defs, FunDef, Op, OscType, Term, Term::*};
 use num_rational::Ratio;
 use rand::prelude::*;
+use weresocool_error::Error;
 
 impl Normalize for Op {
     #[allow(clippy::cognitive_complexity)]
-    fn apply_to_normal_form(&self, input: &mut NormalForm, defs: &Defs) {
+    fn apply_to_normal_form(&self, input: &mut NormalForm, defs: &Defs) -> Result<(), Error> {
         match self {
             Op::AsIs => {}
 
@@ -24,7 +25,7 @@ impl Normalize for Op {
                         FunDef { term, .. } => match *term {
                             Term::Op(op) => {
                                 let result_op = op.substitute(input, defs, &arg_map);
-                                result_op.apply_to_normal_form(input, defs)
+                                result_op.apply_to_normal_form(input, defs)?
                             }
                             Term::Nf(_) => {
                                 panic!("Function Op stored in NormalForm");
@@ -34,7 +35,7 @@ impl Normalize for Op {
                             }
                             Term::Lop(lop) => {
                                 let result = lop.substitute(input, defs, &arg_map);
-                                result.apply_to_normal_form(input, defs)
+                                result.apply_to_normal_form(input, defs)?
                             }
                         },
                     },
@@ -177,7 +178,7 @@ impl Normalize for Op {
             Op::Choice { operations } => {
                 let mut rng = thread_rng();
                 let choice = operations.choose(&mut rng).unwrap();
-                choice.apply_to_normal_form(input, defs)
+                choice.apply_to_normal_form(input, defs)?
             }
 
             Op::Sequence { operations } => {
@@ -290,5 +291,6 @@ impl Normalize for Op {
                 };
             }
         }
+        Ok(())
     }
 }

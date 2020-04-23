@@ -7,6 +7,7 @@ description = "AST for WereSoCool"
 license = "GPL-3.0" 
 
 [dependencies]
+weresocool_error = { path = "../error" }
 num-rational = "0.2"
 rand = "0.7.3"
 serde = { version = "1.0.106", features = ["derive"] }

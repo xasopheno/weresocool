@@ -1,6 +1,7 @@
 use crate::Defs;
 use crate::{ArgMap, FunDef, GetLengthRatio, ListOp, NormalForm, Normalize, Op, Substitute};
 use num_rational::Rational64;
+use weresocool_error::Error;
 
 #[derive(Clone, PartialEq, Debug, Hash)]
 pub enum Term {
@@ -11,7 +12,7 @@ pub enum Term {
 }
 
 impl Normalize for Term {
-    fn apply_to_normal_form(&self, input: &mut NormalForm, defs: &Defs) {
+    fn apply_to_normal_form(&self, input: &mut NormalForm, defs: &Defs) -> Result<(), Error> {
         match self {
             Term::Op(op) => op.apply_to_normal_form(input, defs),
             Term::Nf(nf) => nf.apply_to_normal_form(input, defs),

@@ -20,16 +20,31 @@ impl Substitute for ListOp {
                 }
             }
             ListOp::ListOpIndexed { .. } => Term::Lop(ListOp::Const(
+                //self.term_vectors(defs, Some(arg_map))
+                //.iter_mut()
+                //.map(|term_vector| {
+                //let mut nf = normal_form.clone();
+
+                //term_vector.term.apply_to_normal_form(&mut nf, defs);
+                //term_vector
+                //.index_terms
+                //.iter()
+                //.map(|index_term| index_term.apply_to_normal_form(&mut nf, defs)?)
+                //.collect::<Result<(), Error>>();
+
+                //Term::Nf(nf)
+                //})
+                //.collect::<Result<(), Error>>(),
                 self.term_vectors(defs, Some(arg_map))
                     .iter_mut()
                     .map(|term_vector| {
                         let mut nf = normal_form.clone();
 
                         term_vector.term.apply_to_normal_form(&mut nf, defs);
-                        term_vector
-                            .index_terms
-                            .iter()
-                            .for_each(|index_term| index_term.apply_to_normal_form(&mut nf, defs));
+                        term_vector.index_terms.iter().for_each(|index_term| {
+                            unimplemented!();
+                            //index_term.apply_to_normal_form(&mut nf, defs)
+                        });
 
                         Term::Nf(nf)
                     })
