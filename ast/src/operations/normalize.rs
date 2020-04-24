@@ -185,7 +185,7 @@ impl Normalize for Op {
                 let mut result = NormalForm::init_empty();
                 for op in operations {
                     let mut input_clone = input.clone();
-                    op.apply_to_normal_form(&mut input_clone, defs);
+                    op.apply_to_normal_form(&mut input_clone, defs)?;
                     result = join_sequence(result, input_clone);
                 }
 
@@ -239,7 +239,7 @@ impl Normalize for Op {
 
                 for op in operations {
                     let mut nf = NormalForm::init();
-                    op.apply_to_normal_form(&mut nf, defs);
+                    op.apply_to_normal_form(&mut nf, defs)?;
                     modulator = join_sequence(modulator, nf);
                 }
 
