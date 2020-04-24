@@ -45,7 +45,12 @@ pub trait GetLengthRatio {
 }
 
 pub trait Substitute {
-    fn substitute(&self, normal_form: &mut NormalForm, defs: &Defs, arg_map: &ArgMap) -> Term;
+    fn substitute(
+        &self,
+        normal_form: &mut NormalForm,
+        defs: &Defs,
+        arg_map: &ArgMap,
+    ) -> Result<Term, Error>;
 }
 
 impl GetLengthRatio for NormalForm {
@@ -55,8 +60,13 @@ impl GetLengthRatio for NormalForm {
 }
 
 impl Substitute for NormalForm {
-    fn substitute(&self, _normal_form: &mut NormalForm, _defs: &Defs, _arg_map: &ArgMap) -> Term {
-        Term::Nf(self.clone())
+    fn substitute(
+        &self,
+        _normal_form: &mut NormalForm,
+        _defs: &Defs,
+        _arg_map: &ArgMap,
+    ) -> Result<Term, Error> {
+        Ok(Term::Nf(self.clone()))
     }
 }
 
