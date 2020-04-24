@@ -86,7 +86,7 @@ impl ListOp {
                 .map(|op| {
                     let mut input_clone = input.clone();
                     op.apply_to_normal_form(&mut input_clone, defs)?;
-                    input_clone
+                    Ok(input_clone)
                 })
                 .collect::<Result<Vec<NormalForm>, Error>>(),
 
@@ -97,25 +97,29 @@ impl ListOp {
                     _ => panic!("Using non-list as list."),
                 }
             }
-            ListOp::ListOpIndexed { .. } => {
-                self.term_vectors(defs, None)
-                    .iter_mut()
-                    .map(|term_vector| {
-                        let mut nf = input.clone();
-                        term_vector.term.apply_to_normal_form(&mut nf, defs)?;
-                        term_vector.index_terms.iter().for_each(|index_term| {
-                            index_term.apply_to_normal_form(&mut nf, defs)?
-                        });
-                        nf
-                    })
-                    .collect::<Result<Vec<NormalForm>, Error>>()
-            }
+            ListOp::ListOpIndexed { .. } => self
+                .term_vectors(defs, None)
+                .iter_mut()
+                .map(|term_vector| {
+                    let mut nf = input.clone();
+                    term_vector.term.apply_to_normal_form(&mut nf, defs)?;
+                    term_vector
+                        .index_terms
+                        .iter()
+                        .map(|index_term| {
+                            index_term.apply_to_normal_form(&mut nf, defs)?;
+                            Ok(())
+                        })
+                        .collect::<Result<Vec<_>, Error>>()?;
+                    Ok(nf)
+                })
+                .collect::<Result<Vec<NormalForm>, Error>>(),
             ListOp::Concat(listops) => listops
                 .iter()
                 .map(|list| {
                     let mut nf = input.clone();
-                    list.apply_to_normal_form(&mut nf, defs);
-                    nf
+                    list.apply_to_normal_form(&mut nf, defs)?;
+                    Ok(nf)
                 })
                 .collect(),
         }

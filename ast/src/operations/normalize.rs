@@ -13,7 +13,7 @@ impl Normalize for Op {
             Op::AsIs => {}
 
             Op::Id(id) => {
-                handle_id_error(id.to_string(), defs, None).apply_to_normal_form(input, defs);
+                handle_id_error(id.to_string(), defs, None).apply_to_normal_form(input, defs)?;
             }
             //
             Op::FunctionCall { name, args } => {
@@ -194,7 +194,7 @@ impl Normalize for Op {
 
             Op::Compose { operations } => {
                 for op in operations {
-                    op.apply_to_normal_form(input, defs);
+                    op.apply_to_normal_form(input, defs)?;
                 }
             }
 
@@ -207,7 +207,7 @@ impl Normalize for Op {
                 let ratio = target_length / main_length;
                 let new_op = Op::Length { m: ratio };
 
-                new_op.apply_to_normal_form(input, defs);
+                new_op.apply_to_normal_form(input, defs)?;
 
                 input.length_ratio = target_length;
             }
@@ -217,11 +217,11 @@ impl Normalize for Op {
                 main,
                 op_to_apply,
             } => {
-                main.apply_to_normal_form(input, defs);
+                main.apply_to_normal_form(input, defs)?;
                 let (named, rest) = input.clone().partition(name.to_string());
 
                 let mut nf = NormalForm::init();
-                op_to_apply.apply_to_normal_form(&mut nf, defs);
+                op_to_apply.apply_to_normal_form(&mut nf, defs)?;
                 let named_applied = nf * named;
 
                 let mut result = NormalForm::init();
@@ -229,7 +229,7 @@ impl Normalize for Op {
                 Op::Overlay {
                     operations: vec![Nf(rest), Nf(named_applied)],
                 }
-                .apply_to_normal_form(&mut result, defs);
+                .apply_to_normal_form(&mut result, defs)?;
 
                 *input = result
             }
@@ -246,7 +246,7 @@ impl Normalize for Op {
                 Op::Length {
                     m: input.length_ratio / modulator.length_ratio,
                 }
-                .apply_to_normal_form(&mut modulator, defs);
+                .apply_to_normal_form(&mut modulator, defs)?;
 
                 let mut result = NormalForm::init_empty();
 
@@ -263,14 +263,14 @@ impl Normalize for Op {
             }
 
             Op::Overlay { operations } => {
-                let normal_forms: Vec<NormalForm> = operations
+                let normal_forms = operations
                     .iter()
                     .map(|op| {
                         let mut input_clone = input.clone();
-                        op.apply_to_normal_form(&mut input_clone, defs);
-                        input_clone
+                        op.apply_to_normal_form(&mut input_clone, defs)?;
+                        Ok(input_clone)
                     })
-                    .collect();
+                    .collect::<Result<Vec<NormalForm>, Error>>()?;
 
                 let max_lr = normal_forms
                     .iter()
