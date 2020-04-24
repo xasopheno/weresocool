@@ -8,6 +8,7 @@ license = "GPL-3.0"
 
 [dependencies]
 portaudio = "0.7.0"
+#portaudio = { path="../../test/rust-portaudio"}
 hound = "3.4.0"
 serde_json = "1.0.51"
 csv = "1.1.3"

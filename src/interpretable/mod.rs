@@ -18,6 +18,7 @@ impl Interpretable for InputType<'_> {
             InputType::Language(language) => (&"Language", language_to_vec_string(language)),
         };
         let parsed_composition = parse_file(vec_string, None)?;
+
         parsed_to_render(filename, parsed_composition, target)
     }
 }

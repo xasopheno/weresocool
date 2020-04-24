@@ -11,11 +11,18 @@ keywords = ["microtonal", "binaural", "composition",  "audio", "music"]
 categories = ["multimedia::audio"]
 readme = "README.md"
 
+
+#[target.x86_64-apple-darwin]
+#rustc-flags = ["-L", "/usr/local/opt/portaudio/lib/"]
+#rustc-link-search = ["/usr/local/opt/portaudio/lib/"]
+#rustc-cdylib-link-arg = ["…"]
+
 [dependencies]
 weresocool_parser = { path = "parser" }
 weresocool_ast = { path = "ast" }
 weresocool_error = { path = "error" } 
 portaudio = "0.7.0"
+#portaudio = { path = "../test/rust-portaudio" }
 rand = "0.7.3"
 hound = "3.4.0"
 serde = { version = "1.0.106", features = ["derive"] }
