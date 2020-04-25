@@ -281,7 +281,7 @@ impl Normalize for Op {
                 let mut result = vec![];
 
                 for mut nf in normal_forms {
-                    pad_length(&mut nf, max_lr, defs);
+                    pad_length(&mut nf, max_lr, defs)?;
                     result.append(&mut nf.operations);
                 }
 

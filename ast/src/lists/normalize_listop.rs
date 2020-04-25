@@ -64,7 +64,7 @@ impl GetLengthRatio for ListOp {
             }
             ListOp::ListOpIndexed { .. } => {
                 let mut nf = NormalForm::init();
-                self.apply_to_normal_form(&mut nf, defs);
+                self.apply_to_normal_form(&mut nf, defs)?;
                 nf.get_length_ratio(defs)
             }
             ListOp::Concat(listops) => listops

@@ -65,7 +65,7 @@ impl Substitute for Op {
                 Op::Overlay {
                     operations: vec![Term::Nf(named_applied), Term::Nf(rest)],
                 }
-                .apply_to_normal_form(&mut result, defs);
+                .apply_to_normal_form(&mut result, defs)?;
 
                 Ok(Term::Nf(result))
             }
