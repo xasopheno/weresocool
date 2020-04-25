@@ -77,7 +77,7 @@ mod tests {
                 panic!("missing songs/tests/render_op.socool");
             }
         };
-        let result = nf_to_vec_renderable(&nf, &table, &basis);
+        let result = nf_to_vec_renderable(&nf, &table, &basis).unwrap();
         let expected: Vec<Vec<RenderOp>> = vec![vec![
             RenderOp {
                 f: 220.0,
@@ -152,7 +152,7 @@ mod tests {
                 panic!();
             }
         };
-        let renderables = nf_to_vec_renderable(&nf, &table, &basis);
+        let renderables = nf_to_vec_renderable(&nf, &table, &basis).unwrap();
         let voices = renderables_to_render_voices(renderables);
         let mut voice = voices[0].clone();
         //Two ops each with 44_100 samples
@@ -193,7 +193,7 @@ mod tests {
             }
         };
 
-        let renderables = nf_to_vec_renderable(&nf, &table, &basis);
+        let renderables = nf_to_vec_renderable(&nf, &table, &basis).unwrap();
         let mut voices1 = renderables_to_render_voices(renderables);
         let voices2 = voices1.clone();
 
