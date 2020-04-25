@@ -66,7 +66,9 @@ fn generate_render_hashes(p: &str) -> CompositionHashes {
     let op_hash = calculate_hash(main_op);
     let mut normal_form = NormalForm::init();
 
-    main_op.apply_to_normal_form(&mut normal_form, &parsed.defs);
+    main_op
+        .apply_to_normal_form(&mut normal_form, &parsed.defs)
+        .expect("apply_to_normal_form in generate_render_hashes failing");
     let nf_hash = calculate_hash(&normal_form);
 
     let origin = Basis {
@@ -78,7 +80,8 @@ fn generate_render_hashes(p: &str) -> CompositionHashes {
         d: Rational64::new(1, 1),
     };
 
-    let renderable = nf_to_vec_renderable(&normal_form, &parsed.defs, &origin);
+    let renderable = nf_to_vec_renderable(&normal_form, &parsed.defs, &origin)
+        .expect("nf_to_vec_renderable failing when generating_render_hashes");
 
     let vec_wav = generate_waveforms(renderable, false);
     let mut result = sum_all_waveforms(vec_wav);

@@ -256,11 +256,14 @@ pub fn vec_timed_op_to_vec_op4d(timed_ops: Vec<TimedOp>, basis: &Basis) -> Vec<O
     timed_ops.iter().map(|t_op| t_op.to_op_4d(basis)).collect()
 }
 
-pub fn composition_to_vec_timed_op(composition: &NormalForm, defs: &Defs) -> (Vec<TimedOp>, usize) {
+pub fn composition_to_vec_timed_op(
+    composition: &NormalForm,
+    defs: &Defs,
+) -> Result<(Vec<TimedOp>, usize), Error> {
     let mut normal_form = NormalForm::init();
 
     println!("Generating Composition \n");
-    composition.apply_to_normal_form(&mut normal_form, defs);
+    composition.apply_to_normal_form(&mut normal_form, defs)?;
 
     let n_voices = normal_form.operations.len();
     let mut result: Vec<TimedOp> = normal_form
@@ -281,7 +284,7 @@ pub fn composition_to_vec_timed_op(composition: &NormalForm, defs: &Defs) -> (Ve
 
     result.sort_unstable_by_key(|a| a.t);
 
-    (result, n_voices)
+    Ok((result, n_voices))
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
@@ -298,7 +301,7 @@ pub fn to_json(
 ) -> Result<(), Error> {
     banner("JSONIFY-ing".to_string(), filename.clone());
 
-    let (vec_timed_op, _) = composition_to_vec_timed_op(composition, defs);
+    let (vec_timed_op, _) = composition_to_vec_timed_op(composition, defs)?;
     let mut op4d_1d = vec_timed_op_to_vec_op4d(vec_timed_op, basis);
 
     //TODO: Factor out
@@ -330,7 +333,7 @@ pub fn to_csv(
 ) -> Result<(), Error> {
     banner("CSV-ing".to_string(), filename.clone());
 
-    let (vec_timed_op, _) = composition_to_vec_timed_op(composition, defs);
+    let (vec_timed_op, _) = composition_to_vec_timed_op(composition, defs)?;
     let mut op4d_1d = vec_timed_op_to_vec_op4d(vec_timed_op, basis);
 
     op4d_1d.retain(|op| {

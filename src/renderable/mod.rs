@@ -5,6 +5,7 @@ use crate::{
 use num_rational::Rational64;
 pub use render_voice::{renderables_to_render_voices, RenderVoice};
 use weresocool_ast::{Defs, NormalForm, Normalize, OscType, PointOp, ASR};
+use weresocool_error::Error;
 pub mod render_voice;
 mod test;
 use rand::{thread_rng, Rng};
@@ -230,9 +231,9 @@ pub fn nf_to_vec_renderable(
     composition: &NormalForm,
     defs: &Defs,
     basis: &Basis,
-) -> Vec<Vec<RenderOp>> {
+) -> Result<Vec<Vec<RenderOp>>, Error> {
     let mut normal_form = NormalForm::init();
-    composition.apply_to_normal_form(&mut normal_form, defs);
+    composition.apply_to_normal_form(&mut normal_form, defs)?;
 
     let result: Vec<Vec<RenderOp>> = normal_form
         .operations
@@ -265,5 +266,5 @@ pub fn nf_to_vec_renderable(
         })
         .collect();
 
-    result
+    Ok(result)
 }

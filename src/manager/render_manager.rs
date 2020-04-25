@@ -100,7 +100,7 @@ impl RenderManager {
             RenderReturn::NfBasisAndTable(nf, basis, table) => (nf, basis, table),
             _ => panic!("Not in Normal Form"),
         };
-        let renderables = nf_to_vec_renderable(&nf, &table, &basis);
+        let renderables = nf_to_vec_renderable(&nf, &table, &basis)?;
 
         let render_voices = renderables_to_render_voices(renderables);
 
