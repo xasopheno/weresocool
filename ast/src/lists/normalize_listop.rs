@@ -48,11 +48,13 @@ impl ListOp {
 }
 
 impl GetLengthRatio for ListOp {
-    fn get_length_ratio(&self, defs: &Defs) -> Rational64 {
+    fn get_length_ratio(&self, defs: &Defs) -> Result<Rational64, Error> {
         match self {
-            ListOp::Const(terms) => terms.iter().fold(Rational64::from_integer(0), |acc, term| {
-                acc + term.get_length_ratio(defs)
-            }),
+            ListOp::Const(terms) => terms
+                .iter()
+                .try_fold(Rational64::from_integer(0), |acc, term| {
+                    Ok(acc + term.get_length_ratio(defs)?)
+                }),
             ListOp::Named(name) => {
                 let term = handle_id_error(name.to_string(), defs, None);
                 match term {
@@ -67,8 +69,8 @@ impl GetLengthRatio for ListOp {
             }
             ListOp::Concat(listops) => listops
                 .iter()
-                .fold(Rational64::from_integer(0), |acc, term| {
-                    acc + term.get_length_ratio(defs)
+                .try_fold(Rational64::from_integer(0), |acc, term| {
+                    Ok(acc + term.get_length_ratio(defs)?)
                 }),
         }
     }

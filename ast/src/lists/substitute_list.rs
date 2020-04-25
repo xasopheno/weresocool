@@ -31,16 +31,14 @@ impl Substitute for ListOp {
                     .map(|term_vector| {
                         let mut nf = normal_form.clone();
 
-                        term_vector.term.apply_to_normal_form(&mut nf, defs);
-                        term_vector
-                            .index_terms
-                            .iter()
-                            .map(|index_term| index_term.apply_to_normal_form(&mut nf, defs))
-                            .collect::<Result<Vec<_>, Error>>();
+                        term_vector.term.apply_to_normal_form(&mut nf, defs)?;
+                        term_vector.index_terms.iter().try_for_each(|index_term| {
+                            index_term.apply_to_normal_form(&mut nf, defs)
+                        })?;
 
-                        Term::Nf(nf)
+                        Ok(Term::Nf(nf))
                     })
-                    .collect(),
+                    .collect::<Result<Vec<Term>, Error>>()?,
             ))),
             ListOp::Concat(lists) => {
                 let mut result = vec![];
