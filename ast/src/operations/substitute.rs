@@ -29,7 +29,7 @@ impl Substitute for Op {
         arg_map: &ArgMap,
     ) -> Result<Term, Error> {
         match self {
-            Op::Id(id) => Ok(handle_id_error(id.to_string(), defs, Some(arg_map))),
+            Op::Id(id) => handle_id_error(id.to_string(), defs, Some(arg_map)),
 
             Op::WithLengthRatioOf {
                 main,

@@ -18,15 +18,15 @@ impl Substitute for ListOp {
                 arg_map,
             )?))),
             ListOp::Named(name) => {
-                let term = handle_id_error(name.to_string(), defs, Some(arg_map));
+                let term = handle_id_error(name.to_string(), defs, Some(arg_map))?;
 
                 match term {
-                    Term::Lop(lop) => Ok(lop.substitute(normal_form, defs, arg_map)?),
+                    Term::Lop(lop) => lop.substitute(normal_form, defs, arg_map),
                     _ => unimplemented!(),
                 }
             }
             ListOp::ListOpIndexed { .. } => Ok(Term::Lop(ListOp::Const(
-                self.term_vectors(defs, Some(arg_map))
+                self.term_vectors(defs, Some(arg_map))?
                     .iter_mut()
                     .map(|term_vector| {
                         let mut nf = normal_form.clone();

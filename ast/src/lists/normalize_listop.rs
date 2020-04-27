@@ -4,27 +4,31 @@ use num_rational::Rational64;
 use weresocool_error::Error;
 
 impl ListOp {
-    pub fn term_vectors(&self, defs: &Defs, arg_map: Option<&ArgMap>) -> Vec<TermVector> {
+    pub fn term_vectors(
+        &self,
+        defs: &Defs,
+        arg_map: Option<&ArgMap>,
+    ) -> Result<Vec<TermVector>, Error> {
         match self {
-            ListOp::Const(terms) => terms
+            ListOp::Const(terms) => Ok(terms
                 .iter()
                 .map(|term| TermVector {
                     term: term.to_owned(),
                     index_terms: vec![],
                 })
-                .collect(),
+                .collect()),
             ListOp::Named(name) => {
-                let term = handle_id_error(name.to_string(), defs, arg_map);
+                let term = handle_id_error(name.to_string(), defs, arg_map)?;
                 match term {
-                    Term::Lop(lop) => (lop.term_vectors(defs, arg_map)),
+                    Term::Lop(lop) => lop.term_vectors(defs, arg_map),
                     _ => unimplemented!(),
                 }
             }
             ListOp::ListOpIndexed { list_op, indices } => {
-                let term_vectors = list_op.term_vectors(defs, arg_map);
+                let term_vectors = list_op.term_vectors(defs, arg_map)?;
                 let index_vectors = indices.vectorize(term_vectors.len());
 
-                index_vectors
+                Ok(index_vectors
                     .iter()
                     .map(|index_vector| {
                         let mut new_index = term_vectors[index_vector.index].clone();
@@ -33,15 +37,15 @@ impl ListOp {
                         });
                         new_index
                     })
-                    .collect()
+                    .collect())
             }
             ListOp::Concat(lists) => {
                 let mut result = vec![];
                 for list in lists {
-                    result.extend(list.term_vectors(defs, arg_map))
+                    result.extend(list.term_vectors(defs, arg_map)?)
                 }
 
-                result
+                Ok(result)
             }
         }
     }
@@ -56,7 +60,7 @@ impl GetLengthRatio for ListOp {
                     Ok(acc + term.get_length_ratio(defs)?)
                 }),
             ListOp::Named(name) => {
-                let term = handle_id_error(name.to_string(), defs, None);
+                let term = handle_id_error(name.to_string(), defs, None)?;
                 match term {
                     Term::Lop(lop) => lop.get_length_ratio(defs),
                     _ => unimplemented!(),
@@ -93,14 +97,14 @@ impl ListOp {
                 .collect::<Result<Vec<NormalForm>, Error>>(),
 
             ListOp::Named(name) => {
-                let term = handle_id_error(name.to_string(), defs, None);
+                let term = handle_id_error(name.to_string(), defs, None)?;
                 match term {
                     Term::Lop(lop) => lop.to_list_nf(input, defs),
                     _ => panic!("Using non-list as list."),
                 }
             }
             ListOp::ListOpIndexed { .. } => self
-                .term_vectors(defs, None)
+                .term_vectors(defs, None)?
                 .iter_mut()
                 .map(|term_vector| {
                     let mut nf = input.clone();

@@ -5,26 +5,26 @@ use crate::{ArgMap, Defs, OscType, Term, ASR};
 use colored::*;
 use num_rational::{Ratio, Rational64};
 use std::cmp::Ordering::{Equal, Greater, Less};
-use weresocool_error::Error;
+use weresocool_error::{Error, IdError};
 
-pub fn handle_id_error(id: String, defs: &Defs, arg_map: Option<&ArgMap>) -> Term {
+pub fn handle_id_error(id: String, defs: &Defs, arg_map: Option<&ArgMap>) -> Result<Term, Error> {
     let arg_result = match arg_map {
         Some(map) => map.get(&id),
         None => None,
     };
     match arg_result {
-        Some(result) => result.clone(),
+        Some(result) => Ok(result.to_owned()),
         None => handle_def_error(id, defs),
     }
 }
 
-pub fn handle_def_error(id: String, defs: &Defs) -> Term {
+pub fn handle_def_error(id: String, defs: &Defs) -> Result<Term, Error> {
     let result = defs.terms.get(&id).or_else(|| defs.lists.get(&id));
     match result {
-        Some(result) => result.clone(),
+        Some(result) => Ok(result.to_owned()),
         None => {
             println!("Not able to find {} in let defs", id.red().bold());
-            panic!("Id Not Found");
+            Err(IdError { id }.into_error())
         }
     }
 }
