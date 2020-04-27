@@ -42,7 +42,6 @@ pub fn parsed_to_render(
     parsed_composition: ParsedComposition,
     return_type: RenderType,
 ) -> Result<RenderReturn, Error> {
-    // Need to handle this
     let parsed_main = parsed_composition.defs.terms.get("main");
 
     let nf = match parsed_main {
