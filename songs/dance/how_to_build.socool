@@ -16,10 +16,7 @@ overtones = {
 c = &[Fm 1, Fm 9/8, Fm 5/4, Fm 11/8, Fm 3/2, Fm 8/5, Fm 15/8] @ [Random(200)]
 d = &c @ [: | Fm 9/4]
 e = &d @ [: | Fm 9/4 | Gain 1/2]
-
 scale = &c ++ &d ++ &e
-
-
 
 bass = {
     overtones 
