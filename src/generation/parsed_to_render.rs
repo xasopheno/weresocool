@@ -11,7 +11,7 @@ use pbr::ProgressBar;
 use rayon::prelude::*;
 use std::sync::{Arc, Mutex};
 use weresocool_ast::{Defs, NormalForm, Normalize as NormalizeOp, Term};
-use weresocool_error::Error;
+use weresocool_error::{Error, ErrorInner, IdError};
 use weresocool_parser::ParsedComposition;
 
 #[derive(Clone, PartialEq, Debug)]
@@ -31,7 +31,6 @@ pub enum RenderReturn {
     StereoWaveform(StereoWaveform),
     NfBasisAndTable(NormalForm, Basis, Defs),
     Wav(String),
-    Error(),
 }
 
 pub fn r_to_f64(r: Rational64) -> f64 {
@@ -44,13 +43,22 @@ pub fn parsed_to_render(
     return_type: RenderType,
 ) -> Result<RenderReturn, Error> {
     // Need to handle this
-    let parsed_main = parsed_composition.defs.terms.get("main").unwrap();
+    let parsed_main = parsed_composition.defs.terms.get("main");
 
     let nf = match parsed_main {
-        Term::Nf(nf) => nf,
-        Term::Op(_) => panic!("main is not in Normal Form for some terrible reason."),
-        Term::FunDef(_) => unimplemented!(),
-        Term::Lop(_) => unimplemented!(),
+        Some(main) => match main {
+            Term::Nf(nf) => nf,
+            Term::Op(_) => panic!("main is not in Normal Form for some terrible reason."),
+            Term::FunDef(_) => unimplemented!(),
+            Term::Lop(_) => unimplemented!(),
+        },
+        None => {
+            return Err(Error {
+                inner: Box::new(ErrorInner::IdError(IdError {
+                    id: "main".to_string(),
+                })),
+            })
+        }
     };
 
     let basis = Basis::from(parsed_composition.init);
