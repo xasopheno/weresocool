@@ -42,9 +42,25 @@ pub struct ParseError {
     pub column: usize,
 }
 
+impl ParseError {
+    pub fn into_error(self) -> Error {
+        Error {
+            inner: Box::new(ErrorInner::ParseError(self))
+        }
+    }
+}
+
 #[derive(Debug, Fail, Serialize, Deserialize)]
 pub struct IdError {
     pub id: String,
+}
+
+impl IdError {
+    pub fn into_error(self) -> Error {
+        Error {
+            inner: Box::new(ErrorInner::IdError(self))
+        }
+    }
 }
 
 impl fmt::Display for IdError {
