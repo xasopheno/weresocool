@@ -5,6 +5,7 @@ use crate::{ArgMap, Defs, OscType, Term, ASR};
 use colored::*;
 use num_rational::{Ratio, Rational64};
 use std::cmp::Ordering::{Equal, Greater, Less};
+use weresocool_error::Error;
 
 pub fn handle_id_error(id: String, defs: &Defs, arg_map: Option<&ArgMap>) -> Term {
     let arg_result = match arg_map {
@@ -63,8 +64,8 @@ pub fn modulate(input: &[PointOp], modulator: &[PointOp]) -> Vec<PointOp> {
     result
 }
 
-pub fn pad_length(input: &mut NormalForm, max_len: Rational64, defs: &Defs) {
-    let input_lr = input.get_length_ratio(defs);
+pub fn pad_length(input: &mut NormalForm, max_len: Rational64, defs: &Defs) -> Result<(), Error> {
+    let input_lr = input.get_length_ratio(defs)?;
     if max_len > Rational64::new(0, 1) && input_lr < max_len {
         for voice in input.operations.iter_mut() {
             let osc_type = voice.clone().last().unwrap().osc_type;
@@ -85,6 +86,7 @@ pub fn pad_length(input: &mut NormalForm, max_len: Rational64, defs: &Defs) {
         }
     }
     input.length_ratio = max_len;
+    Ok(())
 }
 
 pub fn join_sequence(mut l: NormalForm, mut r: NormalForm) -> NormalForm {

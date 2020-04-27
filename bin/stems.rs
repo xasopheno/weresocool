@@ -22,7 +22,7 @@ fn main() -> Result<(), Error> {
         RenderReturn::NfBasisAndTable(nf, basis, table) => (nf, basis, table),
         _ => panic!("huh"),
     };
-    let renderables = nf_to_vec_renderable(&nf, &table, &basis);
+    let renderables = nf_to_vec_renderable(&nf, &table, &basis)?;
     let vec_wav = generate_waveforms(renderables, true);
     for (i, w) in vec_wav.iter().enumerate() {
         let f = format!("{}_{}.wav", &filename.clone().unwrap(), i);

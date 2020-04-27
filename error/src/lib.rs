@@ -42,6 +42,17 @@ pub struct ParseError {
     pub column: usize,
 }
 
+#[derive(Debug, Fail, Serialize, Deserialize)]
+pub struct IdError {
+    pub id: String,
+}
+
+impl fmt::Display for IdError {
+    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+        write!(f, "Could not find id: {}", self.id)
+    }
+}
+
 impl fmt::Display for ParseError {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
         write!(
@@ -71,11 +82,22 @@ pub enum ErrorInner {
 
     #[fail(display = "Parse error: {}", _0)]
     ParseError(#[cause] ParseError),
+
+    #[fail(display = "Id error: {}", _0)]
+    IdError(#[cause] IdError),
 }
 
 impl<'a> From<&'a str> for Error {
     fn from(msg: &'a str) -> Error {
         Error::with_msg(msg)
+    }
+}
+
+impl From<IdError> for Error {
+    fn from(e: IdError) -> Error {
+        Error {
+            inner: Box::new(ErrorInner::IdError(e)),
+        }
     }
 }
 

@@ -4,6 +4,7 @@ use std::{
     collections::{BTreeSet, HashMap},
     ops::{Mul, MulAssign},
 };
+use weresocool_error::Error;
 mod get_length_ratio;
 pub mod helpers;
 mod normalize;
@@ -36,26 +37,36 @@ pub struct PointOp {
 }
 
 pub trait Normalize {
-    fn apply_to_normal_form(&self, normal_form: &mut NormalForm, defs: &Defs);
+    fn apply_to_normal_form(&self, normal_form: &mut NormalForm, defs: &Defs) -> Result<(), Error>;
 }
 
 pub trait GetLengthRatio {
-    fn get_length_ratio(&self, defs: &Defs) -> Rational64;
+    fn get_length_ratio(&self, defs: &Defs) -> Result<Rational64, Error>;
 }
 
 pub trait Substitute {
-    fn substitute(&self, normal_form: &mut NormalForm, defs: &Defs, arg_map: &ArgMap) -> Term;
+    fn substitute(
+        &self,
+        normal_form: &mut NormalForm,
+        defs: &Defs,
+        arg_map: &ArgMap,
+    ) -> Result<Term, Error>;
 }
 
 impl GetLengthRatio for NormalForm {
-    fn get_length_ratio(&self, _defs: &Defs) -> Rational64 {
-        self.length_ratio
+    fn get_length_ratio(&self, _defs: &Defs) -> Result<Rational64, Error> {
+        Ok(self.length_ratio)
     }
 }
 
 impl Substitute for NormalForm {
-    fn substitute(&self, _normal_form: &mut NormalForm, _defs: &Defs, _arg_map: &ArgMap) -> Term {
-        Term::Nf(self.clone())
+    fn substitute(
+        &self,
+        _normal_form: &mut NormalForm,
+        _defs: &Defs,
+        _arg_map: &ArgMap,
+    ) -> Result<Term, Error> {
+        Ok(Term::Nf(self.clone()))
     }
 }
 
@@ -131,8 +142,9 @@ impl MulAssign<&NormalForm> for NormalForm {
 }
 
 impl Normalize for NormalForm {
-    fn apply_to_normal_form(&self, input: &mut NormalForm, _defs: &Defs) {
-        *input *= self
+    fn apply_to_normal_form(&self, input: &mut NormalForm, _defs: &Defs) -> Result<(), Error> {
+        *input *= self;
+        Ok(())
     }
 }
 

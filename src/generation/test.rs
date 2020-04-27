@@ -59,9 +59,10 @@ pub mod tests {
                 }),
             ],
         }
-        .apply_to_normal_form(&mut normal_form, &pt);
+        .apply_to_normal_form(&mut normal_form, &pt)
+        .unwrap();
 
-        let timed_ops = composition_to_vec_timed_op(&normal_form, &pt);
+        let timed_ops = composition_to_vec_timed_op(&normal_form, &pt).unwrap();
 
         let op = TimedOp {
             fm: Rational64::new(1, 1),

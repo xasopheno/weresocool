@@ -40,7 +40,7 @@ fn run() -> Result<(), Error> {
         RenderReturn::NfBasisAndTable(nf, basis, table) => (nf, basis, table),
         _ => panic!("Error. Unable to generate NormalForm"),
     };
-    let renderables = nf_to_vec_renderable(&nf, &table, &basis);
+    let renderables = nf_to_vec_renderable(&nf, &table, &basis)?;
     let mut voices = renderables_to_render_voices(renderables);
 
     let mut result = StereoWaveform::new(0);

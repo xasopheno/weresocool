@@ -1,6 +1,7 @@
 use crate::operations::helpers::{handle_id_error, join_sequence};
 use crate::{ArgMap, Defs, GetLengthRatio, ListOp, NormalForm, Normalize, Term, TermVector};
 use num_rational::Rational64;
+use weresocool_error::Error;
 
 impl ListOp {
     pub fn term_vectors(&self, defs: &Defs, arg_map: Option<&ArgMap>) -> Vec<TermVector> {
@@ -47,11 +48,13 @@ impl ListOp {
 }
 
 impl GetLengthRatio for ListOp {
-    fn get_length_ratio(&self, defs: &Defs) -> Rational64 {
+    fn get_length_ratio(&self, defs: &Defs) -> Result<Rational64, Error> {
         match self {
-            ListOp::Const(terms) => terms.iter().fold(Rational64::from_integer(0), |acc, term| {
-                acc + term.get_length_ratio(defs)
-            }),
+            ListOp::Const(terms) => terms
+                .iter()
+                .try_fold(Rational64::from_integer(0), |acc, term| {
+                    Ok(acc + term.get_length_ratio(defs)?)
+                }),
             ListOp::Named(name) => {
                 let term = handle_id_error(name.to_string(), defs, None);
                 match term {
@@ -61,29 +64,34 @@ impl GetLengthRatio for ListOp {
             }
             ListOp::ListOpIndexed { .. } => {
                 let mut nf = NormalForm::init();
-                self.apply_to_normal_form(&mut nf, defs);
+                self.apply_to_normal_form(&mut nf, defs)?;
                 nf.get_length_ratio(defs)
             }
             ListOp::Concat(listops) => listops
                 .iter()
-                .fold(Rational64::from_integer(0), |acc, term| {
-                    acc + term.get_length_ratio(defs)
+                .try_fold(Rational64::from_integer(0), |acc, term| {
+                    Ok(acc + term.get_length_ratio(defs)?)
                 }),
         }
     }
 }
 
 impl ListOp {
-    pub fn to_list_nf(&self, input: &mut NormalForm, defs: &Defs) -> Vec<NormalForm> {
+    pub fn to_list_nf(
+        &self,
+        input: &mut NormalForm,
+        defs: &Defs,
+    ) -> Result<Vec<NormalForm>, Error> {
         match self {
             ListOp::Const(operations) => operations
                 .iter()
                 .map(|op| {
                     let mut input_clone = input.clone();
-                    op.apply_to_normal_form(&mut input_clone, defs);
-                    input_clone
+                    op.apply_to_normal_form(&mut input_clone, defs)?;
+                    Ok(input_clone)
                 })
-                .collect(),
+                .collect::<Result<Vec<NormalForm>, Error>>(),
+
             ListOp::Named(name) => {
                 let term = handle_id_error(name.to_string(), defs, None);
                 match term {
@@ -96,20 +104,24 @@ impl ListOp {
                 .iter_mut()
                 .map(|term_vector| {
                     let mut nf = input.clone();
-                    term_vector.term.apply_to_normal_form(&mut nf, defs);
+                    term_vector.term.apply_to_normal_form(&mut nf, defs)?;
                     term_vector
                         .index_terms
                         .iter()
-                        .for_each(|index_term| index_term.apply_to_normal_form(&mut nf, defs));
-                    nf
+                        .map(|index_term| {
+                            index_term.apply_to_normal_form(&mut nf, defs)?;
+                            Ok(())
+                        })
+                        .collect::<Result<Vec<_>, Error>>()?;
+                    Ok(nf)
                 })
-                .collect(),
+                .collect::<Result<Vec<NormalForm>, Error>>(),
             ListOp::Concat(listops) => listops
                 .iter()
                 .map(|list| {
                     let mut nf = input.clone();
-                    list.apply_to_normal_form(&mut nf, defs);
-                    nf
+                    list.apply_to_normal_form(&mut nf, defs)?;
+                    Ok(nf)
                 })
                 .collect(),
         }
@@ -117,8 +129,9 @@ impl ListOp {
 }
 
 impl Normalize for ListOp {
-    fn apply_to_normal_form(&self, input: &mut NormalForm, defs: &Defs) {
-        *input = join_list_nf(self.to_list_nf(input, defs));
+    fn apply_to_normal_form(&self, input: &mut NormalForm, defs: &Defs) -> Result<(), Error> {
+        *input = join_list_nf(self.to_list_nf(input, defs)?);
+        Ok(())
     }
 }
 

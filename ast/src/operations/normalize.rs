@@ -4,15 +4,16 @@ use crate::operations::{
 use crate::{Defs, FunDef, Op, OscType, Term, Term::*};
 use num_rational::Ratio;
 use rand::prelude::*;
+use weresocool_error::Error;
 
 impl Normalize for Op {
     #[allow(clippy::cognitive_complexity)]
-    fn apply_to_normal_form(&self, input: &mut NormalForm, defs: &Defs) {
+    fn apply_to_normal_form(&self, input: &mut NormalForm, defs: &Defs) -> Result<(), Error> {
         match self {
             Op::AsIs => {}
 
             Op::Id(id) => {
-                handle_id_error(id.to_string(), defs, None).apply_to_normal_form(input, defs);
+                handle_id_error(id.to_string(), defs, None).apply_to_normal_form(input, defs)?;
             }
             //
             Op::FunctionCall { name, args } => {
@@ -23,8 +24,8 @@ impl Normalize for Op {
                     Term::FunDef(fun) => match fun {
                         FunDef { term, .. } => match *term {
                             Term::Op(op) => {
-                                let result_op = op.substitute(input, defs, &arg_map);
-                                result_op.apply_to_normal_form(input, defs)
+                                let result_op = op.substitute(input, defs, &arg_map)?;
+                                result_op.apply_to_normal_form(input, defs)?
                             }
                             Term::Nf(_) => {
                                 panic!("Function Op stored in NormalForm");
@@ -33,8 +34,8 @@ impl Normalize for Op {
                                 panic!("Function Op stored in FunDef");
                             }
                             Term::Lop(lop) => {
-                                let result = lop.substitute(input, defs, &arg_map);
-                                result.apply_to_normal_form(input, defs)
+                                let result = lop.substitute(input, defs, &arg_map)?;
+                                result.apply_to_normal_form(input, defs)?
                             }
                         },
                     },
@@ -177,14 +178,14 @@ impl Normalize for Op {
             Op::Choice { operations } => {
                 let mut rng = thread_rng();
                 let choice = operations.choose(&mut rng).unwrap();
-                choice.apply_to_normal_form(input, defs)
+                choice.apply_to_normal_form(input, defs)?
             }
 
             Op::Sequence { operations } => {
                 let mut result = NormalForm::init_empty();
                 for op in operations {
                     let mut input_clone = input.clone();
-                    op.apply_to_normal_form(&mut input_clone, defs);
+                    op.apply_to_normal_form(&mut input_clone, defs)?;
                     result = join_sequence(result, input_clone);
                 }
 
@@ -193,7 +194,7 @@ impl Normalize for Op {
 
             Op::Compose { operations } => {
                 for op in operations {
-                    op.apply_to_normal_form(input, defs);
+                    op.apply_to_normal_form(input, defs)?;
                 }
             }
 
@@ -201,12 +202,12 @@ impl Normalize for Op {
                 with_length_of,
                 main,
             } => {
-                let target_length = with_length_of.get_length_ratio(defs);
-                let main_length = main.get_length_ratio(defs);
+                let target_length = with_length_of.get_length_ratio(defs)?;
+                let main_length = main.get_length_ratio(defs)?;
                 let ratio = target_length / main_length;
                 let new_op = Op::Length { m: ratio };
 
-                new_op.apply_to_normal_form(input, defs);
+                new_op.apply_to_normal_form(input, defs)?;
 
                 input.length_ratio = target_length;
             }
@@ -216,11 +217,11 @@ impl Normalize for Op {
                 main,
                 op_to_apply,
             } => {
-                main.apply_to_normal_form(input, defs);
+                main.apply_to_normal_form(input, defs)?;
                 let (named, rest) = input.clone().partition(name.to_string());
 
                 let mut nf = NormalForm::init();
-                op_to_apply.apply_to_normal_form(&mut nf, defs);
+                op_to_apply.apply_to_normal_form(&mut nf, defs)?;
                 let named_applied = nf * named;
 
                 let mut result = NormalForm::init();
@@ -228,7 +229,7 @@ impl Normalize for Op {
                 Op::Overlay {
                     operations: vec![Nf(rest), Nf(named_applied)],
                 }
-                .apply_to_normal_form(&mut result, defs);
+                .apply_to_normal_form(&mut result, defs)?;
 
                 *input = result
             }
@@ -238,14 +239,14 @@ impl Normalize for Op {
 
                 for op in operations {
                     let mut nf = NormalForm::init();
-                    op.apply_to_normal_form(&mut nf, defs);
+                    op.apply_to_normal_form(&mut nf, defs)?;
                     modulator = join_sequence(modulator, nf);
                 }
 
                 Op::Length {
                     m: input.length_ratio / modulator.length_ratio,
                 }
-                .apply_to_normal_form(&mut modulator, defs);
+                .apply_to_normal_form(&mut modulator, defs)?;
 
                 let mut result = NormalForm::init_empty();
 
@@ -262,14 +263,14 @@ impl Normalize for Op {
             }
 
             Op::Overlay { operations } => {
-                let normal_forms: Vec<NormalForm> = operations
+                let normal_forms = operations
                     .iter()
                     .map(|op| {
                         let mut input_clone = input.clone();
-                        op.apply_to_normal_form(&mut input_clone, defs);
-                        input_clone
+                        op.apply_to_normal_form(&mut input_clone, defs)?;
+                        Ok(input_clone)
                     })
-                    .collect();
+                    .collect::<Result<Vec<NormalForm>, Error>>()?;
 
                 let max_lr = normal_forms
                     .iter()
@@ -280,7 +281,7 @@ impl Normalize for Op {
                 let mut result = vec![];
 
                 for mut nf in normal_forms {
-                    pad_length(&mut nf, max_lr, defs);
+                    pad_length(&mut nf, max_lr, defs)?;
                     result.append(&mut nf.operations);
                 }
 
@@ -290,5 +291,6 @@ impl Normalize for Op {
                 };
             }
         }
+        Ok(())
     }
 }

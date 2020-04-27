@@ -31,7 +31,7 @@ pub fn prepare_render(input: InputType<'_>) -> Result<Vec<RenderVoice>, Error> {
         RenderReturn::NfBasisAndTable(nf, basis, table) => (nf, basis, table),
         _ => panic!("Error. Unable to generate NormalForm"),
     };
-    let renderables = nf_to_vec_renderable(&nf, &table, &basis);
+    let renderables = nf_to_vec_renderable(&nf, &table, &basis)?;
 
     let render_voices = renderables_to_render_voices(renderables);
 

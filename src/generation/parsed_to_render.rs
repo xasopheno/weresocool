@@ -11,7 +11,7 @@ use pbr::ProgressBar;
 use rayon::prelude::*;
 use std::sync::{Arc, Mutex};
 use weresocool_ast::{Defs, NormalForm, Normalize as NormalizeOp, Term};
-use weresocool_error::Error;
+use weresocool_error::{Error, ErrorInner, IdError};
 use weresocool_parser::ParsedComposition;
 
 #[derive(Clone, PartialEq, Debug)]
@@ -42,13 +42,23 @@ pub fn parsed_to_render(
     parsed_composition: ParsedComposition,
     return_type: RenderType,
 ) -> Result<RenderReturn, Error> {
-    let parsed_main = parsed_composition.defs.terms.get("main").unwrap();
+    // Need to handle this
+    let parsed_main = parsed_composition.defs.terms.get("main");
 
     let nf = match parsed_main {
-        Term::Nf(nf) => nf,
-        Term::Op(_) => panic!("main is not in Normal Form for some terrible reason."),
-        Term::FunDef(_) => unimplemented!(),
-        Term::Lop(_) => unimplemented!(),
+        Some(main) => match main {
+            Term::Nf(nf) => nf,
+            Term::Op(_) => panic!("main is not in Normal Form for some terrible reason."),
+            Term::FunDef(_) => unimplemented!(),
+            Term::Lop(_) => unimplemented!(),
+        },
+        None => {
+            return Err(Error {
+                inner: Box::new(ErrorInner::IdError(IdError {
+                    id: "main".to_string(),
+                })),
+            })
+        }
     };
 
     let basis = Basis::from(parsed_composition.init);
@@ -78,7 +88,7 @@ pub fn parsed_to_render(
             Ok(RenderReturn::Csv1d("json".to_string()))
         }
         RenderType::StereoWaveform | RenderType::Wav => {
-            let stereo_waveform = render(&basis, nf, &parsed_composition.defs);
+            let stereo_waveform = render(&basis, nf, &parsed_composition.defs)?;
             if return_type == RenderType::StereoWaveform {
                 Ok(RenderReturn::StereoWaveform(stereo_waveform))
             } else {
@@ -89,18 +99,22 @@ pub fn parsed_to_render(
     }
 }
 
-pub fn render(basis: &Basis, composition: &NormalForm, defs: &Defs) -> StereoWaveform {
+pub fn render(
+    basis: &Basis,
+    composition: &NormalForm,
+    defs: &Defs,
+) -> Result<StereoWaveform, Error> {
     let mut normal_form = NormalForm::init();
 
     println!("\nGenerating Composition ");
-    composition.apply_to_normal_form(&mut normal_form, defs);
-    let render_ops = nf_to_vec_renderable(composition, defs, basis);
+    composition.apply_to_normal_form(&mut normal_form, defs)?;
+    let render_ops = nf_to_vec_renderable(composition, defs, basis)?;
 
     let vec_wav = generate_waveforms(render_ops, true);
     let mut result = sum_all_waveforms(vec_wav);
     result.normalize();
 
-    result
+    Ok(result)
 }
 
 pub fn to_wav(composition: StereoWaveform, filename: String) -> String {

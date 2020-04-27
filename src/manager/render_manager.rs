@@ -98,9 +98,9 @@ impl RenderManager {
     pub fn prepare_render(&mut self, input: InputType<'_>) -> Result<(), Error> {
         let (nf, basis, table) = match input.make(RenderType::NfBasisAndTable)? {
             RenderReturn::NfBasisAndTable(nf, basis, table) => (nf, basis, table),
-            _ => panic!("Error. Unable to generate NormalForm"),
+            _ => panic!("Not in Normal Form"),
         };
-        let renderables = nf_to_vec_renderable(&nf, &table, &basis);
+        let renderables = nf_to_vec_renderable(&nf, &table, &basis)?;
 
         let render_voices = renderables_to_render_voices(renderables);
 

@@ -8,7 +8,7 @@ use std::io::prelude::*;
 use std::io::BufReader;
 use std::sync::{Arc, Mutex};
 use weresocool_ast::{Defs, NormalForm, Normalize, Term};
-use weresocool_error::{Error, ParseError};
+use weresocool_error::{Error, ErrorInner, ParseError};
 
 #[derive(Clone, PartialEq, Debug)]
 pub struct Init {
@@ -24,7 +24,7 @@ pub struct ParsedComposition {
     pub defs: Defs,
 }
 
-fn process_op_table(defs: Defs) -> Defs {
+fn process_op_table(defs: Defs) -> Result<Defs, Error> {
     let mut result: Defs = Default::default();
 
     for (name, term) in defs.terms.iter() {
@@ -36,7 +36,7 @@ fn process_op_table(defs: Defs) -> Defs {
             }
             Term::Op(op) => {
                 let mut nf = NormalForm::init();
-                op.apply_to_normal_form(&mut nf, &defs);
+                op.apply_to_normal_form(&mut nf, &defs)?;
 
                 result.terms.insert(name.to_string(), Term::Nf(nf));
             }
@@ -47,13 +47,13 @@ fn process_op_table(defs: Defs) -> Defs {
             }
             Term::Lop(lop) => {
                 let mut nf = NormalForm::init();
-                lop.apply_to_normal_form(&mut nf, &defs);
+                lop.apply_to_normal_form(&mut nf, &defs)?;
                 result.terms.insert(name.to_string(), Term::Nf(nf));
             }
         };
     }
 
-    result
+    Ok(result)
 }
 pub fn read_file(filename: &str) -> File {
     let f = File::open(filename);
@@ -87,7 +87,7 @@ pub fn language_to_vec_string(language: &str) -> Vec<String> {
 pub fn parse_file(
     vec_string: Vec<String>,
     prev_defs: Option<Defs>,
-) -> Result<ParsedComposition, ParseError> {
+) -> Result<ParsedComposition, Error> {
     let mut defs: Defs = if let Some(defs) = prev_defs {
         defs
     } else {
@@ -121,19 +121,21 @@ pub fn parse_file(
 
     match init {
         Ok(init) => {
-            let defs = process_op_table(defs);
+            let defs = process_op_table(defs)?;
             Ok(ParsedComposition { init, defs })
         }
         Err(error) => {
             let location = Arc::new(Mutex::new(Vec::new()));
             error.map_location(|l| location.lock().unwrap().push(l));
             let (line, column) = handle_parse_error(location, &composition);
-            Err(ParseError {
-                message: "Unexpected Token".to_string(),
-                line,
-                column,
+
+            Err(Error {
+                inner: Box::new(ErrorInner::ParseError(ParseError {
+                    message: "Unexpected Token".to_string(),
+                    line,
+                    column,
+                })),
             })
-            //panic!("Unexpected Token")
         }
     }
 }
