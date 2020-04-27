@@ -1,9 +1,13 @@
-use std::fmt;
-use std::io;
+//mod io_error;
+mod portaudio_error;
 
 use failure::Fail;
+//use io_error::IoError;
 use portaudio;
+use portaudio_error::PortAudioError;
 use serde::{Deserialize, Serialize};
+use std::fmt;
+use std::io;
 
 #[derive(Debug)]
 pub struct Error {
@@ -33,6 +37,10 @@ impl Error {
             inner: Box::new(ErrorInner::Msg(msg.into())),
         }
     }
+
+    pub fn inner(self) -> ErrorInner {
+        *self.inner
+    }
 }
 
 #[derive(Debug, Fail, Serialize, Deserialize)]
@@ -45,7 +53,7 @@ pub struct ParseError {
 impl ParseError {
     pub fn into_error(self) -> Error {
         Error {
-            inner: Box::new(ErrorInner::ParseError(self))
+            inner: Box::new(ErrorInner::ParseError(self)),
         }
     }
 }
@@ -58,7 +66,7 @@ pub struct IdError {
 impl IdError {
     pub fn into_error(self) -> Error {
         Error {
-            inner: Box::new(ErrorInner::IdError(self))
+            inner: Box::new(ErrorInner::IdError(self)),
         }
     }
 }
@@ -77,6 +85,41 @@ impl fmt::Display for ParseError {
             self.message, self.line, self.column
         )
     }
+}
+
+impl ErrorInner {
+    fn into_serializeable(self) -> Serializable {
+        match self {
+            ErrorInner::Msg(e) => Serializable::Msg(e),
+            ErrorInner::ParseError(e) => Serializable::ParseError(e),
+            ErrorInner::IdError(e) => Serializable::IdError(e),
+            ErrorInner::Io(e) => {
+                println!("{:#?}", e);
+                Serializable::IoError("".to_string())
+            }
+            ErrorInner::SerdeJson(e) => {
+                println!("{:#?}", e);
+                Serializable::SerdeJsonError("SerdeJson Error".to_string())
+            }
+            ErrorInner::CSVError(e) => {
+                println!("{:#?}", e);
+                Serializable::CSVError("CSVError".to_string())
+            }
+            _ => unimplemented!(),
+        }
+    }
+}
+
+#[derive(Debug, Serialize, Deserialize)]
+enum Serializable {
+    Msg(String),
+    IoError(String),
+    #[serde(with = "PortAudioError")]
+    PortAudio(portaudio::error::Error),
+    SerdeJsonError(String),
+    CSVError(String),
+    ParseError(ParseError),
+    IdError(IdError),
 }
 
 #[derive(Debug, Fail)]
