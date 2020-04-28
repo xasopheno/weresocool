@@ -87,8 +87,20 @@ impl fmt::Display for ParseError {
     }
 }
 
+#[derive(Debug, Serialize, Deserialize)]
+pub enum Serializable {
+    Msg(String),
+    IoError(String),
+    #[serde(with = "PortAudioError")]
+    PortAudio(portaudio::error::Error),
+    SerdeJsonError(String),
+    CSVError(String),
+    ParseError(ParseError),
+    IdError(IdError),
+}
+
 impl ErrorInner {
-    fn into_serializeable(self) -> Serializable {
+    pub fn into_serializeable(self) -> Serializable {
         match self {
             ErrorInner::Msg(e) => Serializable::Msg(e),
             ErrorInner::ParseError(e) => Serializable::ParseError(e),
@@ -108,18 +120,6 @@ impl ErrorInner {
             _ => unimplemented!(),
         }
     }
-}
-
-#[derive(Debug, Serialize, Deserialize)]
-enum Serializable {
-    Msg(String),
-    IoError(String),
-    #[serde(with = "PortAudioError")]
-    PortAudio(portaudio::error::Error),
-    SerdeJsonError(String),
-    CSVError(String),
-    ParseError(ParseError),
-    IdError(IdError),
 }
 
 #[derive(Debug, Fail)]
