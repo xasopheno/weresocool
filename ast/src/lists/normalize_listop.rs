@@ -26,7 +26,7 @@ impl ListOp {
             }
             ListOp::ListOpIndexed { list_op, indices } => {
                 let term_vectors = list_op.term_vectors(defs, arg_map)?;
-                let index_vectors = indices.vectorize(term_vectors.len());
+                let index_vectors = indices.vectorize(term_vectors.len())?;
 
                 Ok(index_vectors
                     .iter()

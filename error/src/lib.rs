@@ -61,6 +61,29 @@ pub struct IdError {
     pub id: String,
 }
 
+#[derive(Debug, Fail, Serialize, Deserialize)]
+pub struct IndexError {
+    pub len_list: usize,
+    pub index: usize,
+    pub message: String,
+}
+
+impl IndexError {
+    pub fn as_error(self) -> Error {
+        Error {
+            inner: Box::new(ErrorInner::IndexError(self)),
+        }
+    }
+}
+
+impl IndexError {
+    pub fn into_error(self) -> Error {
+        Error {
+            inner: Box::new(ErrorInner::IndexError(self)),
+        }
+    }
+}
+
 impl IdError {
     pub fn into_error(self) -> Error {
         Error {
@@ -72,6 +95,12 @@ impl IdError {
 impl fmt::Display for IdError {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
         write!(f, "Could not find id: {}", self.id)
+    }
+}
+
+impl fmt::Display for IndexError {
+    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+        write!(f, "{}", self.message)
     }
 }
 
@@ -95,6 +124,7 @@ pub enum Serializable {
     CSVError(String),
     ParseError(ParseError),
     IdError(IdError),
+    IndexError(IndexError),
 }
 
 impl ErrorInner {
@@ -103,6 +133,7 @@ impl ErrorInner {
             ErrorInner::Msg(e) => Serializable::Msg(e),
             ErrorInner::ParseError(e) => Serializable::ParseError(e),
             ErrorInner::IdError(e) => Serializable::IdError(e),
+            ErrorInner::IndexError(e) => Serializable::IndexError(e),
             ErrorInner::Io(e) => {
                 println!("{:#?}", e);
                 Serializable::IoError("".to_string())
@@ -142,6 +173,9 @@ pub enum ErrorInner {
 
     #[fail(display = "Id error: {}", _0)]
     IdError(#[cause] IdError),
+
+    #[fail(display = "Index error: {}", _0)]
+    IndexError(#[cause] IndexError),
 }
 
 impl<'a> From<&'a str> for Error {
@@ -154,6 +188,14 @@ impl From<IdError> for Error {
     fn from(e: IdError) -> Error {
         Error {
             inner: Box::new(ErrorInner::IdError(e)),
+        }
+    }
+}
+
+impl From<IndexError> for Error {
+    fn from(e: IndexError) -> Error {
+        Error {
+            inner: Box::new(ErrorInner::IndexError(e)),
         }
     }
 }
