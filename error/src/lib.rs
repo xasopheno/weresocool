@@ -1,8 +1,6 @@
-//mod io_error;
 mod portaudio_error;
 
 use failure::Fail;
-//use io_error::IoError;
 use portaudio;
 use portaudio_error::PortAudioError;
 use serde::{Deserialize, Serialize};
