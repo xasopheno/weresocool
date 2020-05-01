@@ -1,117 +1,18 @@
-mod portaudio_error;
+pub mod error;
+pub mod error_inner;
+pub mod id_error;
+pub mod index_error;
+pub mod parse_error;
+pub mod portaudio_error;
 
-use failure::Fail;
+pub use error::Error;
+pub use error_inner::ErrorInner;
+pub use id_error::IdError;
+pub use index_error::IndexError;
+pub use parse_error::ParseError;
 use portaudio_error::PortAudioError;
 use serde::{Deserialize, Serialize};
-use std::fmt;
 use std::io;
-
-#[derive(Debug)]
-pub struct Error {
-    pub inner: Box<ErrorInner>,
-}
-
-impl fmt::Display for Error {
-    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
-        write!(f, "{}", self.inner)
-    }
-}
-
-impl failure::Fail for Error {
-    fn cause(&self) -> Option<&dyn failure::Fail> {
-        self.inner.cause()
-    }
-
-    fn backtrace(&self) -> Option<&failure::Backtrace> {
-        self.inner.backtrace()
-    }
-}
-
-impl Error {
-    /// Create an error with the given message.
-    pub fn with_msg<S: Into<String>>(msg: S) -> Error {
-        Error {
-            inner: Box::new(ErrorInner::Msg(msg.into())),
-        }
-    }
-
-    pub fn inner(self) -> ErrorInner {
-        *self.inner
-    }
-}
-
-#[derive(Debug, Fail, Serialize, Deserialize)]
-pub struct ParseError {
-    pub message: String,
-    pub line: usize,
-    pub column: usize,
-}
-
-impl ParseError {
-    pub fn into_error(self) -> Error {
-        Error {
-            inner: Box::new(ErrorInner::ParseError(self)),
-        }
-    }
-}
-
-#[derive(Debug, Fail, Serialize, Deserialize)]
-pub struct IdError {
-    pub id: String,
-}
-
-#[derive(Debug, Fail, Serialize, Deserialize)]
-pub struct IndexError {
-    pub len_list: usize,
-    pub index: usize,
-    pub message: String,
-}
-
-impl IndexError {
-    pub fn to_error(self) -> Error {
-        Error {
-            inner: Box::new(ErrorInner::IndexError(self)),
-        }
-    }
-}
-
-impl IndexError {
-    pub fn into_error(self) -> Error {
-        Error {
-            inner: Box::new(ErrorInner::IndexError(self)),
-        }
-    }
-}
-
-impl IdError {
-    pub fn into_error(self) -> Error {
-        Error {
-            inner: Box::new(ErrorInner::IdError(self)),
-        }
-    }
-}
-
-impl fmt::Display for IdError {
-    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
-        write!(f, "Could not find id: {}", self.id)
-    }
-}
-
-impl fmt::Display for IndexError {
-    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
-        write!(f, "{}", self.message)
-    }
-}
-
-impl fmt::Display for ParseError {
-    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
-        write!(
-            f,
-            "message: {}, line: {}, column: {}",
-            self.message, self.line, self.column
-        )
-    }
-}
 
 #[derive(Debug, Serialize, Deserialize)]
 pub enum Serializable {
@@ -150,33 +51,6 @@ impl ErrorInner {
     }
 }
 
-#[derive(Debug, Fail)]
-pub enum ErrorInner {
-    #[fail(display = "{}", _0)]
-    Msg(String),
-
-    #[fail(display = "I/O error: {}", _0)]
-    Io(#[cause] io::Error),
-
-    #[fail(display = "PortAudio error: {}", _0)]
-    PortAudio(#[cause] portaudio::error::Error),
-
-    #[fail(display = "SerdeJson error: {}", _0)]
-    SerdeJson(#[cause] serde_json::error::Error),
-
-    #[fail(display = "CSV error: {}", _0)]
-    CSVError(#[cause] csv::Error),
-
-    #[fail(display = "Parse error: {}", _0)]
-    ParseError(#[cause] ParseError),
-
-    #[fail(display = "Id error: {}", _0)]
-    IdError(#[cause] IdError),
-
-    #[fail(display = "Index error: {}", _0)]
-    IndexError(#[cause] IndexError),
-}
-
 impl<'a> From<&'a str> for Error {
     fn from(msg: &'a str) -> Error {
         Error::with_msg(msg)
@@ -187,14 +61,6 @@ impl From<IdError> for Error {
     fn from(e: IdError) -> Error {
         Error {
             inner: Box::new(ErrorInner::IdError(e)),
-        }
-    }
-}
-
-impl From<IndexError> for Error {
-    fn from(e: IndexError) -> Error {
-        Error {
-            inner: Box::new(ErrorInner::IndexError(e)),
         }
     }
 }
