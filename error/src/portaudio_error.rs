@@ -1,5 +1,4 @@
 use failure::Fail;
-use portaudio;
 use serde::{Deserialize, Serialize};
 use std::fmt;
 

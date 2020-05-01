@@ -21,8 +21,9 @@ impl Normalize for Op {
                 let arg_map = get_fn_arg_map(f.clone(), args);
 
                 match f {
-                    Term::FunDef(fun) => match fun {
-                        FunDef { term, .. } => match *term {
+                    Term::FunDef(fun) => {
+                        let FunDef { term, .. } = fun;
+                        match *term {
                             Term::Op(op) => {
                                 let result_op = op.substitute(input, defs, &arg_map)?;
                                 result_op.apply_to_normal_form(input, defs)?
@@ -37,8 +38,8 @@ impl Normalize for Op {
                                 let result = lop.substitute(input, defs, &arg_map)?;
                                 result.apply_to_normal_form(input, defs)?
                             }
-                        },
-                    },
+                        }
+                    }
                     _ => {
                         panic!("Function stored in NormalForm");
                     }

@@ -6,13 +6,12 @@ use weresocool_error::Error;
 pub fn get_fn_arg_map(f: Term, args: &[Term]) -> ArgMap {
     let mut arg_map: ArgMap = HashMap::new();
     match f {
-        Term::FunDef(fun) => match fun {
-            FunDef { vars, .. } => {
-                for (var, arg) in vars.iter().zip(args.iter()) {
-                    arg_map.insert(var.to_string(), arg.clone());
-                }
+        Term::FunDef(fun) => {
+            let FunDef { vars, .. } = fun;
+            for (var, arg) in vars.iter().zip(args.iter()) {
+                arg_map.insert(var.to_string(), arg.clone());
             }
-        },
+        }
         _ => {
             panic!("Function stored in NormalForm");
         }

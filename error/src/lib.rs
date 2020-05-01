@@ -1,7 +1,6 @@
 mod portaudio_error;
 
 use failure::Fail;
-use portaudio;
 use portaudio_error::PortAudioError;
 use serde::{Deserialize, Serialize};
 use std::fmt;
@@ -69,7 +68,7 @@ pub struct IndexError {
 }
 
 impl IndexError {
-    pub fn as_error(self) -> Error {
+    pub fn to_error(self) -> Error {
         Error {
             inner: Box::new(ErrorInner::IndexError(self)),
         }

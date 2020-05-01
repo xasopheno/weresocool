@@ -31,7 +31,7 @@ impl Index {
                                 i, len_list
                             ),
                         }
-                        .as_error())
+                        .to_error())
                     } else {
                         Ok(IndexVector {
                             index: *i as usize,
@@ -57,7 +57,7 @@ impl Index {
                                     *start, len_list
                                 ),
                             }
-                            .as_error());
+                            .to_error());
                         }
 
                         *start as usize
@@ -80,7 +80,7 @@ impl Index {
                                     *end, len_list
                                 ),
                             }
-                            .as_error());
+                            .to_error());
                         }
                         *end as usize
                     }

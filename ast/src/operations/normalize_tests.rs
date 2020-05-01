@@ -1,5 +1,5 @@
 #[cfg(test)]
-pub mod normalize_tests {
+pub mod tests {
     extern crate num_rational;
     extern crate pretty_assertions;
     use crate::{Defs, NameSet, NormalForm, Normalize, Op::*, OscType, PointOp, Term::*, ASR};
@@ -24,7 +24,7 @@ pub mod normalize_tests {
         let mut b = NormalForm::init();
         let mut pt = make_parse_table();
 
-        let foo = Op(Compose {
+        let foo_tag = Op(Compose {
             operations: vec![
                 Op(TransposeM {
                     m: Rational64::new(5, 4),
@@ -33,7 +33,7 @@ pub mod normalize_tests {
             ],
         });
 
-        let bar = Op(Compose {
+        let bar_tag = Op(Compose {
             operations: vec![
                 Op(Tag("bar".to_string())),
                 Op(Sequence {
@@ -50,10 +50,10 @@ pub mod normalize_tests {
             ],
         });
 
-        pt.terms.insert("foo".to_string(), foo);
-        pt.terms.insert("bar".to_string(), bar.clone());
+        pt.terms.insert("foo".to_string(), foo_tag);
+        pt.terms.insert("bar".to_string(), bar_tag.clone());
 
-        bar.apply_to_normal_form(&mut a, &pt).unwrap();
+        bar_tag.apply_to_normal_form(&mut a, &pt).unwrap();
 
         Sequence {
             operations: vec![
@@ -120,7 +120,7 @@ pub mod normalize_tests {
                     asr: ASR::Long,
                     portamento: Ratio::new(1, 1),
                     osc_type: OscType::Sine,
-                    names: names_foo_bar.clone(),
+                    names: names_foo_bar,
                 },
             ]],
             length_ratio: Ratio::new(8, 1),
@@ -222,7 +222,7 @@ pub mod normalize_tests {
                         asr: ASR::Long,
                         portamento: Ratio::new(1, 1),
                         osc_type: OscType::Sine,
-                        names: names_foo_bar.clone(),
+                        names: names_foo_bar,
                     },
                 ],
                 vec![
@@ -266,7 +266,7 @@ pub mod normalize_tests {
                         asr: ASR::Long,
                         portamento: Ratio::new(1, 1),
                         osc_type: OscType::Sine,
-                        names: names_bar.clone(),
+                        names: names_bar,
                     },
                 ],
             ],
@@ -425,7 +425,7 @@ pub mod normalize_tests {
                         asr: ASR::Long,
                         portamento: Ratio::new(1, 1),
                         osc_type: OscType::Sine,
-                        names: names_foo_bar.clone(),
+                        names: names_foo_bar,
                     },
                 ],
                 vec![
@@ -469,7 +469,7 @@ pub mod normalize_tests {
                         asr: ASR::Long,
                         portamento: Ratio::new(1, 1),
                         osc_type: OscType::Sine,
-                        names: names_bar.clone(),
+                        names: names_bar,
                     },
                 ],
             ],
