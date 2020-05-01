@@ -1,3 +1,4 @@
+#[allow(clippy::unreadable_literal)]
 pub mod fourier;
 
 pub trait Analyze {

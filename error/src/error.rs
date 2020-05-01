@@ -1,4 +1,4 @@
-use crate::error_inner::ErrorInner;
+use crate::ErrorInner;
 use std::fmt;
 
 #[derive(Debug)]

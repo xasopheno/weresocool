@@ -1,4 +1,4 @@
-use crate::{id_error::IdError, index_error::IndexError, parse_error::ParseError};
+use crate::{IdError, IndexError, ParseError};
 use failure::Fail;
 use portaudio;
 use serde_json;

@@ -1,5 +1,4 @@
-use crate::error::Error;
-use crate::error_inner::ErrorInner;
+use crate::{Error, ErrorInner};
 use failure::Fail;
 use serde::{Deserialize, Serialize};
 use std::fmt;
