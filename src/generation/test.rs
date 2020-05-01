@@ -1,4 +1,5 @@
 #[cfg(test)]
+#[allow(clippy::unreadable_literal)]
 pub mod tests {
     use crate::{
         generation::{
