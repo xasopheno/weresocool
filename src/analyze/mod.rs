@@ -1,4 +1,3 @@
-#[allow(clippy::unreadable_literal)]
 pub mod fourier;
 
 pub trait Analyze {
@@ -149,6 +148,7 @@ impl Analyze for Vec<f32> {
 }
 
 #[cfg(test)]
+#[allow(clippy::unreadable_literal)]
 mod tests {
     use super::*;
     #[test]
