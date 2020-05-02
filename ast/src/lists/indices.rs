@@ -21,9 +21,9 @@ impl Index {
             Index::Const { indices } => indices
                 .iter()
                 .map(|i| {
-                    if *i as usize > len_list {
+                    if *i as usize >= len_list {
                         println!("index {} is greater than length of list {}", i, len_list);
-                        Err(IndexError {
+                        return Err(IndexError {
                             index: *i as usize,
                             len_list,
                             message: format!(
@@ -31,7 +31,7 @@ impl Index {
                                 i, len_list
                             ),
                         }
-                        .into_error())
+                        .into_error());
                     } else {
                         Ok(IndexVector {
                             index: *i as usize,
@@ -44,7 +44,7 @@ impl Index {
             Index::Slice { start, end, skip } => {
                 let a = match start {
                     Some(start) => {
-                        if *start as usize > len_list as usize {
+                        if *start as usize >= len_list as usize {
                             println!(
                                 "Start of slice {} is greater than length of list {}",
                                 start, len_list
@@ -66,7 +66,7 @@ impl Index {
                 };
                 let b = match end {
                     Some(end) => {
-                        if (*end as usize) > len_list as usize {
+                        if (*end as usize) >= len_list as usize {
                             println!(
                                 "End of slice {} is greater than length of list {}",
                                 end, len_list
