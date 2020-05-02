@@ -232,14 +232,9 @@ mod tests {
             -0.5, 0.0, 0.5, 1.0, 0.5, 0.0, -0.5, -1.0, -0.5, 0.0, 0.5, 1.0, 0.5, 0.0, -0.5, -1.0,
         ];
         let expected = (5181.9604, 0.8405063);
+        let result = buffer.yin_pitch_detection(sample_rate, threshold);
 
-        assert!(cmp_f32(
-            buffer.yin_pitch_detection(sample_rate, threshold).0,
-            expected.0
-        ));
-        assert!(cmp_f32(
-            buffer.yin_pitch_detection(sample_rate, threshold).1,
-            expected.1
-        ));
+        assert!(cmp_f32(result.0, expected.0));
+        assert!(cmp_f32(result.1, expected.1));
     }
 }

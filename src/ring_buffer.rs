@@ -94,8 +94,8 @@ impl<T: Sized + Copy + Clone + std::default::Default> RingBuffer<T> {
 #[cfg(test)]
 pub mod tests {
     use super::*;
-    use crate::helpers::cmp_vec_f32;
     use crate::helpers::cmp_f32;
+    use crate::helpers::cmp_vec_f32;
     #[test]
     fn ring_buffer() {
         let mut rb = RingBuffer::<usize>::new_full(10);
@@ -170,10 +170,10 @@ pub mod tests {
         assert!(cmp_f32(rb.previous(), 1.1));
         rb.push(3.3);
         assert!(cmp_f32(rb.previous(), 2.2));
-        assert!(cmp_f32(rb.previous(), 3.3));
+        assert!(cmp_f32(rb.current(), 3.3));
         rb.push(4.4);
         rb.push(5.5);
-        assert!(cmp_f32(rb.previous(),4.4));
+        assert!(cmp_f32(rb.previous(), 4.4));
         assert!(cmp_vec_f32(rb.to_vec(), vec![3.3, 4.4, 5.5]));
     }
 
