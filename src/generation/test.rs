@@ -117,7 +117,7 @@ pub mod tests {
                         l: Rational64::new(2, 1),
                         event_type: EventType::On,
                         event: 3,
-                        ..op.clone()
+                        ..op
                     },
                 ],
                 2
@@ -164,7 +164,7 @@ pub mod tests {
                 event_type: EventType::Off,
                 l: Rational64::new(3, 2),
                 t: Rational64::new(3, 2),
-                ..op.clone()
+                ..op
             },
         ];
 

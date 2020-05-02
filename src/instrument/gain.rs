@@ -54,7 +54,7 @@ impl Voice {
 #[cfg(test)]
 mod tests {
     use super::*;
-
+    use crate::helpers::cmp_f64;
     #[test]
     fn test_get_current_gain_from_op() {
         let v = Voice::init(0);
@@ -62,15 +62,15 @@ mod tests {
         op.osc_type = OscType::Noise;
 
         let result = v.current_gain_from_op(&op);
-        assert_eq!(result, 0.3);
+        assert!(cmp_f64(result, 0.3));
 
         op.osc_type = OscType::Sine;
         let result = v.current_gain_from_op(&op);
-        assert_eq!(result, 0.9);
+        assert!(cmp_f64(result, 0.9));
 
         op.f = 0.0;
         let result = v.current_gain_from_op(&op);
-        assert_eq!(result, 0.0);
+        assert!(cmp_f64(result, 0.0));
     }
 
     #[test]
@@ -83,7 +83,7 @@ mod tests {
 
         let result = v.past_gain_from_op(&op);
 
-        assert_eq!(result, 0.3);
+        assert!(cmp_f64(result, 0.3));
     }
 
     #[test]
@@ -103,13 +103,13 @@ mod tests {
     #[test]
     fn test_gain_from_index() {
         let mut g = gain_at_index(0.0, 1.0, 5, 10);
-        assert_eq!(g, 0.5);
+        assert!(cmp_f64(g, 0.5));
 
         g = gain_at_index(1.0, 0.0, 5, 10);
-        assert_eq!(g, 0.5);
+        assert!(cmp_f64(g, 0.5));
 
         g = gain_at_index(0.9, 1.0, 2, 10);
-        assert_eq!(g, 0.92);
+        assert!(cmp_f64(g, 0.92));
     }
     #[test]
     fn test_silence_now() {

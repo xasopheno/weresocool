@@ -151,6 +151,9 @@ impl Analyze for Vec<f32> {
 #[allow(clippy::unreadable_literal)]
 mod tests {
     use super::*;
+    use crate::helpers::cmp_f32;
+    use crate::helpers::cmp_vec_f32;
+
     #[test]
     fn gain_test() {
         let mut buffer = vec![
@@ -159,7 +162,7 @@ mod tests {
         ];
         let gain = buffer.gain();
         let expected = 0.0102376845;
-        assert_eq!(gain, expected);
+        assert!(cmp_f32(gain, expected));
     }
 
     #[test]
@@ -173,7 +176,7 @@ mod tests {
             15.75, 7.75,
         ];
         buffer.yin_difference();
-        assert_eq!(buffer, expected);
+        assert!(cmp_vec_f32(buffer, expected));
     }
 
     #[test]
@@ -187,7 +190,10 @@ mod tests {
             0.15949367, 0.7276996, 1.4171779, 1.8125, 1.7058824, 1.214876, 0.6142668,
         ];
         buffer.yin_cumulative_mean_normalized_difference();
-        assert_eq!(buffer, expected);
+
+        for (a, b) in buffer.iter().zip(expected.iter()) {
+            assert!(cmp_f32(*a, *b))
+        }
     }
 
     #[test]
@@ -210,12 +216,15 @@ mod tests {
         let tau_estimate = 9;
         let expected = 8.509509;
 
-        assert_eq!(buffer.yin_parabolic_interpolation(tau_estimate), expected);
+        assert!(cmp_f32(
+            buffer.yin_parabolic_interpolation(tau_estimate),
+            expected
+        ));
     }
 
     #[test]
     fn yin_end_to_end() {
-        let sample_rate = 44_100.00;
+        let sample_rate = 44_100.0;
         let threshold = 0.20;
 
         let mut buffer = vec![
@@ -224,6 +233,13 @@ mod tests {
         ];
         let expected = (5181.9604, 0.8405063);
 
-        assert_eq!(buffer.yin_pitch_detection(sample_rate, threshold), expected);
+        assert!(cmp_f32(
+            buffer.yin_pitch_detection(sample_rate, threshold).0,
+            expected.0
+        ));
+        assert!(cmp_f32(
+            buffer.yin_pitch_detection(sample_rate, threshold).1,
+            expected.1
+        ));
     }
 }

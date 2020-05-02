@@ -1,7 +1,5 @@
 use crate::{IdError, IndexError, ParseError};
 use failure::Fail;
-use portaudio;
-use serde_json;
 use std::io;
 
 #[derive(Debug, Fail)]

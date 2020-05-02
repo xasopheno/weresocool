@@ -7,7 +7,7 @@ pub fn freq_to_sones(frequency: f64) -> f64 {
     if frequency < SETTINGS.min_freq {
         0.0
     } else {
-        1.0 / 2.0_f64.powf(((20.0 * (frequency).log10()) - 40.0) / 10.0)
+        1.0 / (((20.0 * (frequency).log10()) - 40.0) / 10.0).exp2()
     }
 }
 

@@ -1,5 +1,3 @@
-use std;
-
 #[derive(Debug, Clone)]
 pub struct RingBuffer<T: Copy + Clone + Sized> {
     buffer: Vec<T>,
@@ -96,6 +94,8 @@ impl<T: Sized + Copy + Clone + std::default::Default> RingBuffer<T> {
 #[cfg(test)]
 pub mod tests {
     use super::*;
+    use crate::helpers::cmp_vec_f32;
+    use crate::helpers::cmp_f32;
     #[test]
     fn ring_buffer() {
         let mut rb = RingBuffer::<usize>::new_full(10);
@@ -127,15 +127,17 @@ pub mod tests {
         rb.push(440.0);
         let expected = vec![440.0];
         assert_eq!(rb.to_vec(), expected);
+        assert!(cmp_vec_f32(rb.to_vec(), expected));
+
         rb.push(441.0);
         let expected = vec![440.0, 441.0];
-        assert_eq!(rb.to_vec(), expected);
+        assert!(cmp_vec_f32(rb.to_vec(), expected));
         rb.push(442.0);
         let expected = vec![440.0, 441.0, 442.0];
-        assert_eq!(rb.to_vec(), expected);
+        assert!(cmp_vec_f32(rb.to_vec(), expected));
         rb.push(443.0);
         let expected = vec![441.0, 442.0, 443.0];
-        assert_eq!(rb.to_vec(), expected);
+        assert!(cmp_vec_f32(rb.to_vec(), expected));
     }
     #[test]
     fn ring_buffer_empty() {
@@ -165,14 +167,14 @@ pub mod tests {
         let mut rb = RingBuffer::<f32>::new_full(capacity);
         rb.push(1.1);
         rb.push(2.2);
-        assert_eq!(rb.previous(), 1.1);
+        assert!(cmp_f32(rb.previous(), 1.1));
         rb.push(3.3);
-        assert_eq!(rb.previous(), 2.2);
-        assert_eq!(rb.current(), 3.3);
+        assert!(cmp_f32(rb.previous(), 2.2));
+        assert!(cmp_f32(rb.previous(), 3.3));
         rb.push(4.4);
         rb.push(5.5);
-        assert_eq!(rb.previous(), 4.4);
-        assert_eq!(rb.to_vec(), vec![3.3, 4.4, 5.5]);
+        assert!(cmp_f32(rb.previous(),4.4));
+        assert!(cmp_vec_f32(rb.to_vec(), vec![3.3, 4.4, 5.5]));
     }
 
     //    #[test]
