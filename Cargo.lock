@@ -490,6 +490,15 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "86d4de0081402f5e88cdac65c8dcdcc73118c1a7a465e2a05f0da05843a8ea33"
 
 [[package]]
+name = "float-cmp"
+version = "0.7.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "499a1bfa03d254b047e7e5c1fc8dd23a8cf6b344a8eb7e622ae4bc76bfac8e68"
+dependencies = [
+ "num-traits",
+]
+
+[[package]]
 name = "fuchsia-cprng"
 version = "0.1.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -1704,6 +1713,7 @@ dependencies = [
  "env_logger",
  "failure",
  "failure_derive",
+ "float-cmp",
  "futures",
  "hound",
  "indexmap",

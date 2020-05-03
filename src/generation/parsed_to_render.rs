@@ -11,7 +11,7 @@ use pbr::ProgressBar;
 use rayon::prelude::*;
 use std::sync::{Arc, Mutex};
 use weresocool_ast::{Defs, NormalForm, Normalize as NormalizeOp, Term};
-use weresocool_error::{Error, ErrorInner, IdError};
+use weresocool_error::{Error, IdError};
 use weresocool_parser::ParsedComposition;
 
 #[derive(Clone, PartialEq, Debug)]
@@ -42,7 +42,6 @@ pub fn parsed_to_render(
     parsed_composition: ParsedComposition,
     return_type: RenderType,
 ) -> Result<RenderReturn, Error> {
-    // Need to handle this
     let parsed_main = parsed_composition.defs.terms.get("main");
 
     let nf = match parsed_main {
@@ -53,11 +52,9 @@ pub fn parsed_to_render(
             Term::Lop(_) => unimplemented!(),
         },
         None => {
-            return Err(Error {
-                inner: Box::new(ErrorInner::IdError(IdError {
+            return Err(IdError {
                     id: "main".to_string(),
-                })),
-            })
+            }.into_error())
         }
     };
 

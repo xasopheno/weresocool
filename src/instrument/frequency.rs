@@ -32,16 +32,17 @@ impl Voice {
 #[cfg(test)]
 mod tests {
     use super::*;
+    use crate::helpers::cmp_f64;
 
     #[test]
     fn test_calculate_portamento_delta() {
         let v = Voice::init(0);
         let result = v.calculate_portamento_delta(10, 0.0, 100.0);
-        assert_eq!(result, 10.0);
+        assert!(cmp_f64(result, 10.0));
         let result = v.calculate_portamento_delta(10, 100.0, 0.0);
-        assert_eq!(result, -10.0);
+        assert!(cmp_f64(result, -10.0));
         let result = v.calculate_portamento_delta(10, 90.0, 100.0);
-        assert_eq!(result, 1.0);
+        assert!(cmp_f64(result, 1.0));
     }
     #[test]
     fn test_calculate_frequency() {

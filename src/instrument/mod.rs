@@ -10,6 +10,7 @@ pub mod voice;
 #[cfg(test)]
 mod asr_test;
 #[cfg(test)]
+#[allow(clippy::unreadable_literal)]
 mod test;
 
 pub use self::{

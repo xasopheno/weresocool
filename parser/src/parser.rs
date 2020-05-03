@@ -8,7 +8,7 @@ use std::io::prelude::*;
 use std::io::BufReader;
 use std::sync::{Arc, Mutex};
 use weresocool_ast::{Defs, NormalForm, Normalize, Term};
-use weresocool_error::{Error, ErrorInner, ParseError};
+use weresocool_error::{Error, ParseError};
 
 #[derive(Clone, PartialEq, Debug)]
 pub struct Init {
@@ -129,13 +129,12 @@ pub fn parse_file(
             error.map_location(|l| location.lock().unwrap().push(l));
             let (line, column) = handle_parse_error(location, &composition);
 
-            Err(Error {
-                inner: Box::new(ErrorInner::ParseError(ParseError {
-                    message: "Unexpected Token".to_string(),
-                    line,
-                    column,
-                })),
-            })
+            Err(ParseError {
+                message: "Unexpected Token".to_string(),
+                line,
+                column,
+            }
+            .into_error())
         }
     }
 }

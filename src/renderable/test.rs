@@ -2,6 +2,7 @@
 mod tests {
     use crate::{
         generation::{sum_all_waveforms, RenderReturn, RenderType},
+        helpers::cmp_f64,
         instrument::{oscillator::Basis, StereoWaveform},
         interpretable::{InputType::Filename, Interpretable},
         renderable::{
@@ -63,7 +64,7 @@ mod tests {
             Rational64::new(4, 1),
         );
         let expected = 604.0;
-        assert_eq!(result, expected);
+        assert!(cmp_f64(result, expected));
     }
 
     #[test]
@@ -165,11 +166,11 @@ mod tests {
 
         assert_eq!(batch[0].samples, 100);
         assert_eq!(batch[0].index, 44_000);
-        assert_eq!(batch[0].f, 220.0);
+        assert!(cmp_f64(batch[0].f, 220.0));
 
         assert_eq!(batch[1].samples, 100);
         assert_eq!(batch[1].index, 0);
-        assert_eq!(batch[1].f, 247.5);
+        assert!(cmp_f64(batch[1].f, 247.5));
 
         //let _ = voice.get_batch(44_000, None);
         //let batch = voice.get_batch(200, None);
@@ -195,7 +196,7 @@ mod tests {
 
         let renderables = nf_to_vec_renderable(&nf, &table, &basis).unwrap();
         let mut voices1 = renderables_to_render_voices(renderables);
-        let voices2 = voices1.clone();
+        let mut voices2 = voices1.clone();
 
         let mut short_r = vec![];
         let mut short_l = vec![];
@@ -216,7 +217,6 @@ mod tests {
         let short = StereoWaveform { r_buffer, l_buffer };
 
         let long: Vec<StereoWaveform> = voices2
-            .clone()
             .iter_mut()
             .flat_map(|voice| voice.render_batch(20480, None))
             .collect();

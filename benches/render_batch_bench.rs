@@ -19,13 +19,13 @@ fn render_batch_bench(c: &mut Criterion) {
         }
     };
 
-    let renderables = nf_to_vec_renderable(&nf, &table, &basis);
+    let renderables = nf_to_vec_renderable(&nf, &table, &basis).unwrap();
     let mut voices1 = renderables_to_render_voices(renderables);
     c.bench_function("render_batch", |b| {
         b.iter(|| {
             let _r: Vec<StereoWaveform> = voices1
                 .iter_mut()
-                .map(|voice| voice.render_batch(black_box(1024), None))
+                .map(|voice| voice.render_batch(black_box(1024), None).unwrap())
                 .collect();
         })
     });
