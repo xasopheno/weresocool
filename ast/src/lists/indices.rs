@@ -15,76 +15,77 @@ impl Indices {
     }
 }
 
+fn make_index_error(index: i64, len_list: usize) -> Option<Error> {
+    if index < 0 {
+        println!("negative index {} not yet supported ¯\\_(ツ)_/¯", index);
+        return Some(
+            IndexError {
+                index,
+                len_list,
+                message: format!("negative index {} not yet supported ¯\\_(ツ)_/¯", index),
+            }
+            .into_error(),
+        );
+    } else if index as usize >= len_list {
+        println!(
+            "index {} is greater than length of list {}",
+            index, len_list
+        );
+
+        return Some(
+            IndexError {
+                index,
+                len_list,
+                message: format!(
+                    "index {} is greater than length of list {}",
+                    index, len_list
+                ),
+            }
+            .into_error(),
+        );
+    }
+    None
+}
+
 impl Index {
     pub fn vectorize(&self, len_list: usize) -> Result<Vec<IndexVector>, Error> {
         match self {
             Index::Const { indices } => indices
                 .iter()
                 .map(|i| {
-                    if *i as usize >= len_list {
-                        println!("index {} is greater than length of list {}", i, len_list);
-                        return Err(IndexError {
-                            index: *i as usize,
-                            len_list,
-                            message: format!(
-                                "index {} is greater than length of list {}",
-                                i, len_list
-                            ),
-                        }
-                        .into_error());
-                    } else {
-                        Ok(IndexVector {
+                    let index_error = make_index_error(*i, len_list);
+                    return match index_error {
+                        Some(e) => Err(e),
+                        None => Ok(IndexVector {
                             index: *i as usize,
                             index_terms: vec![],
-                        })
-                    }
+                        }),
+                    };
                 })
                 .collect::<Result<Vec<IndexVector>, Error>>(),
 
             Index::Slice { start, end, skip } => {
                 let a = match start {
                     Some(start) => {
-                        if *start as usize >= len_list as usize {
-                            println!(
-                                "Start of slice {} is greater than length of list {}",
-                                start, len_list
-                            );
-                            return Err(IndexError {
-                                index: *start as usize,
-                                len_list,
-                                message: format!(
-                                    "index {} is greater than length of list {}",
-                                    *start, len_list
-                                ),
-                            }
-                            .into_error());
+                        let index_error = make_index_error(*start, len_list);
+                        if let Some(e) = index_error {
+                            return Err(e);
+                        } else {
+                            *start as usize
                         }
-
-                        *start as usize
                     }
                     None => 0,
                 };
                 let b = match end {
                     Some(end) => {
-                        if (*end as usize) >= len_list as usize {
-                            println!(
-                                "End of slice {} is greater than length of list {}",
-                                end, len_list
-                            );
-
-                            return Err(IndexError {
-                                index: *end as usize,
-                                len_list,
-                                message: format!(
-                                    "index {} is greater than length of list {}",
-                                    *end, len_list
-                                ),
-                            }
-                            .into_error());
+                        let index_error = make_index_error(*end, len_list);
+                        if let Some(e) = index_error {
+                            return Err(e);
+                        } else {
+                            *end as usize
                         }
-                        *end as usize
                     }
-                    None => (len_list - 1) as usize,
+                    None => 0,
                 };
 
                 Ok(if a < b {

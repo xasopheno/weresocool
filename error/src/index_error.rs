@@ -6,7 +6,7 @@ use std::fmt;
 #[derive(Debug, Fail, Serialize, Deserialize)]
 pub struct IndexError {
     pub len_list: usize,
-    pub index: usize,
+    pub index: i64,
     pub message: String,
 }
 
