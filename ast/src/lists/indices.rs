@@ -54,13 +54,13 @@ impl Index {
                 .iter()
                 .map(|i| {
                     let index_error = make_index_error(*i, len_list);
-                    return match index_error {
+                    match index_error {
                         Some(e) => Err(e),
                         None => Ok(IndexVector {
                             index: *i as usize,
                             index_terms: vec![],
                         }),
-                    };
+                    }
                 })
                 .collect::<Result<Vec<IndexVector>, Error>>(),
 
