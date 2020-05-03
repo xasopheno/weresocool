@@ -85,7 +85,7 @@ impl Index {
                             *end as usize
                         }
                     }
-                    None => 0,
+                    None => len_list - 1,
                 };
 
                 Ok(if a < b {
