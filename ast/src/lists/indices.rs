@@ -17,12 +17,12 @@ impl Indices {
 
 fn make_index_error(index: i64, len_list: usize) -> Option<Error> {
     if index < 0 {
-        println!("negative index {} not yet supported ¯\\_(ツ)_/¯", index);
+        println!("negative index {} not yet supported.", index);
         return Some(
             IndexError {
                 index,
                 len_list,
-                message: format!("negative index {} not yet supported ¯\\_(ツ)_/¯", index),
+                message: format!("negative index {} not yet supported", index),
             }
             .into_error(),
         );
