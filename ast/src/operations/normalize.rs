@@ -18,7 +18,7 @@ impl Normalize for Op {
             //
             Op::FunctionCall { name, args } => {
                 let f = handle_id_error(name.to_string(), defs, None)?;
-                let arg_map = get_fn_arg_map(f.clone(), args);
+                let arg_map = get_fn_arg_map(f.clone(), args)?;
 
                 match f {
                     Term::FunDef(fun) => {
@@ -29,10 +29,12 @@ impl Normalize for Op {
                                 result_op.apply_to_normal_form(input, defs)?
                             }
                             Term::Nf(_) => {
-                                panic!("Function Op stored in NormalForm");
+                                println!("Function Op stored in NormalForm");
+                                return Err(Error::with_msg("Function Op stored in NormalForm"));
                             }
                             Term::FunDef(_) => {
-                                panic!("Function Op stored in FunDef");
+                                println!("Function Op stored in FunDef");
+                                return Err(Error::with_msg("Function Op stored in FunDef"));
                             }
                             Term::Lop(lop) => {
                                 let result = lop.substitute(input, defs, &arg_map)?;
@@ -41,7 +43,10 @@ impl Normalize for Op {
                         }
                     }
                     _ => {
-                        panic!("Function stored in NormalForm");
+                        println!("FunctionCall does not point to FunctionDef");
+                        return Err(Error::with_msg(
+                            "FunctionCall does not point to FunctionDef",
+                        ));
                     }
                 }
             }

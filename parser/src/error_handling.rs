@@ -4,7 +4,7 @@ use std::sync::{Arc, Mutex};
 use weresocool_ast::{Defs, Term};
 
 #[allow(dead_code)]
-fn handle_id_error(id_vec: Vec<String>, defs: &Defs) -> Term {
+fn _handle_id_error(id_vec: Vec<String>, defs: &Defs) -> Term {
     let result = match id_vec.len() {
         1 => defs
             .terms

@@ -47,14 +47,24 @@ pub fn parsed_to_render(
     let nf = match parsed_main {
         Some(main) => match main {
             Term::Nf(nf) => nf,
-            Term::Op(_) => panic!("main is not in Normal Form for some terrible reason."),
-            Term::FunDef(_) => unimplemented!(),
-            Term::Lop(_) => unimplemented!(),
+            Term::Op(_) => {
+                println!("main is not in Normal Form for some terrible reason.");
+                return Err(Error::with_msg("Unrecoverable Error"));
+            }
+            Term::FunDef(_) => {
+                println!("main as function not yet supported.");
+                return Err(Error::with_msg("main as function not yet supported"));
+            }
+            Term::Lop(_) => {
+                println!("main as list not yet supported.");
+                return Err(Error::with_msg("main as list not yet supported"));
+            }
         },
         None => {
             return Err(IdError {
-                    id: "main".to_string(),
-            }.into_error())
+                id: "main".to_string(),
+            }
+            .into_error())
         }
     };
 

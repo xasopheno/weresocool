@@ -3,7 +3,7 @@ use crate::{Defs, FunDef, Op, Term};
 use std::collections::HashMap;
 use weresocool_error::Error;
 
-pub fn get_fn_arg_map(f: Term, args: &[Term]) -> ArgMap {
+pub fn get_fn_arg_map(f: Term, args: &[Term]) -> Result<ArgMap, Error> {
     let mut arg_map: ArgMap = HashMap::new();
     match f {
         Term::FunDef(fun) => {
@@ -13,11 +13,14 @@ pub fn get_fn_arg_map(f: Term, args: &[Term]) -> ArgMap {
             }
         }
         _ => {
-            panic!("Function stored in NormalForm");
+            println!("FunctionCall does not point to FunctionDef");
+            return Err(Error::with_msg(
+                "FunctionCall does not point to FunctionDef",
+            ));
         }
     }
 
-    arg_map
+    Ok(arg_map)
 }
 
 impl Substitute for Op {
