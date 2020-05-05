@@ -100,7 +100,11 @@ impl ListOp {
                 let term = handle_id_error(name.to_string(), defs, None)?;
                 match term {
                     Term::Lop(lop) => lop.to_list_nf(input, defs),
-                    _ => panic!("Using non-list as list."),
+
+                    _ => {
+                        println!("Using non-list as list.");
+                        Err(Error::with_msg("Using non-list as list."))
+                    }
                 }
             }
             ListOp::ListOpIndexed { .. } => self

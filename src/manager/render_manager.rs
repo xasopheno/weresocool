@@ -98,7 +98,7 @@ impl RenderManager {
     pub fn prepare_render(&mut self, input: InputType<'_>) -> Result<(), Error> {
         let (nf, basis, table) = match input.make(RenderType::NfBasisAndTable)? {
             RenderReturn::NfBasisAndTable(nf, basis, table) => (nf, basis, table),
-            _ => panic!("Not in Normal Form"),
+            _ => return Err(Error::with_msg("Failed Parse/Render")),
         };
         let renderables = nf_to_vec_renderable(&nf, &table, &basis)?;
 
