@@ -22,7 +22,7 @@ impl Substitute for ListOp {
 
                 match term {
                     Term::Lop(lop) => lop.substitute(normal_form, defs, arg_map),
-                    _ => unimplemented!(),
+                    _ => Err(Error::with_msg("List.substitute() on called non-list")),
                 }
             }
             ListOp::ListOpIndexed { .. } => Ok(Term::Lop(ListOp::Const(

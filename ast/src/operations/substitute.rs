@@ -110,7 +110,7 @@ pub fn substitute_operations(
                 result.push(subbed)
             }
             Term::FunDef(_fun) => {
-                unimplemented!();
+                return Err(Error::with_msg("Cannot get length_ratio of FunDef."))
             }
             Term::Lop(lop) => {
                 let subbed = lop.substitute(normal_form, defs, arg_map)?;
