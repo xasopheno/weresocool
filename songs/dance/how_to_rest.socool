@@ -32,10 +32,10 @@ thing1 = {
       Fm 3/2, Fm 4/3, Fm 5/4, Fm 9/8,
     ] | Pa -1,
     O[
-      (6, 7/2, 1, 1/8),
-      (6, 0, 1, -1/8),
-      (3/2, 2, 1, 1/8),
-      (3/2, 0, 1, -1/8),
+      (6, 7/2, 1, 1/4),
+      (6, 0, 1, -1/4),
+      (3/2, 2, 1/2, 1/8),
+      (3/2, 0, 1/2, -1/8),
       (1/1, 1, 1, 1/8),
       (1/1, 0, 1, -1/8),
     ]
@@ -54,7 +54,6 @@ main = {
     Repeat 2, 
     Reverse,
     Repeat 2, 
-    Repeat 2 | Reverse | Overlay [AsIs, Fa 2 | Gain 1/1] | Gain 1/2
+    Repeat 2 | Reverse | Overlay [AsIs, Fa 1.945 | Gain 1/1] | Gain 1/2
   ]
-  | Repeat 2
 }

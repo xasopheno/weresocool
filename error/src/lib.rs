@@ -34,6 +34,7 @@ impl ErrorInner {
             ErrorInner::ParseError(e) => Serializable::ParseError(e),
             ErrorInner::IdError(e) => Serializable::IdError(e),
             ErrorInner::IndexError(e) => Serializable::IndexError(e),
+            ErrorInner::PortAudio(e) => Serializable::PortAudio(e),
             ErrorInner::Io(e) => {
                 println!("{:#?}", e);
                 Serializable::IoError("".to_string())
@@ -46,7 +47,6 @@ impl ErrorInner {
                 println!("{:#?}", e);
                 Serializable::CSVError("CSVError".to_string())
             }
-            _ => unimplemented!(),
         }
     }
 }
