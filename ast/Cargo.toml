@@ -10,7 +10,7 @@ license = "GPL-3.0"
 weresocool_error = { path = "../error" }
 num-rational = "0.2"
 rand = "0.7.3"
-serde = { version = "1.0.106", features = ["derive"] }
+serde = { version = "1.0.110", features = ["derive"] }
 pretty_assertions = "0.6.1"
 indexmap = "1.3.1"
 colored = "1.9.3"
