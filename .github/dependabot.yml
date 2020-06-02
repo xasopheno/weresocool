@@ -6,3 +6,10 @@ updates:
   schedule:
     interval: daily
   open-pull-requests-limit: 10
+
+updates:
+- package-ecosystem: npm
+  directory: "/application"
+  schedule:
+    interval: daily
+  open-pull-requests-limit: 10
