@@ -24,8 +24,6 @@ jobs:
       with:
         path: target
         key: ${{ runner.os }}-cargo-build-target-${{ hashFiles('**/Cargo.lock') }}
-    - name: Build
-      run: cargo build --verbose
     - name: Add rustfmt
       run: rustup component add rustfmt
     - name: add clippy
