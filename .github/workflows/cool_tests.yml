@@ -30,7 +30,7 @@ jobs:
       run: ruby -e "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/master/install)" < /dev/null 2> /dev/null
 
     - name: install portaudio
-      run: brew install portaudio
+      run: brew install portaudio pkg-config
 
     - name: Build
       run: cargo build --verbose
