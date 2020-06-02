@@ -10,15 +10,15 @@ edition = "2018"
 #debug = true
 
 [dependencies]
-weresocool_error = { path = "../../audio/error" } 
-weresocool = { path = "../../audio" } 
+weresocool_error = { path = "../../error" } 
+weresocool = { path = "../../" } 
 actix-cors = "0.2.0"
 actix-files = "0.2.1"
 actix-web = "2.0.0"
 actix-service = "1.0.5"
 async-std = "1.5.0"
 actix-http = "1.0.1"
-actix-rt = "1.0.0"
+actix-rt = "1.1.1"
 env_logger = "0.7.1"
 serde = "1.0.105"
 rust-embed = "5.5.1"
