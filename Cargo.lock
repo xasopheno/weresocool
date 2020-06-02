@@ -1369,7 +1369,7 @@ dependencies = [
  "docopt",
  "ena",
  "itertools 0.8.2",
- "lalrpop-util",
+ "lalrpop-util 0.18.1",
  "petgraph",
  "regex",
  "regex-syntax",
@@ -1389,6 +1389,12 @@ checksum = "7d6e9bc1801eb54529fd6a020aaf9514e8193bb6b42d96d0fe7da99187efa93d"
 dependencies = [
  "regex",
 ]
+
+[[package]]
+name = "lalrpop-util"
+version = "0.19.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "f7e88f15a7d31dfa8fb607986819039127f0161058a3b248a146142d276cbd28"
 
 [[package]]
 name = "language-tags"
@@ -2981,7 +2987,7 @@ dependencies = [
  "colored",
  "indexmap",
  "lalrpop",
- "lalrpop-util",
+ "lalrpop-util 0.19.0",
  "num-rational",
  "rand 0.7.3",
  "regex",
