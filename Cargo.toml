@@ -58,6 +58,7 @@ members = [
     "ast",
     "parser",
     "error",
+    "application/server",
 ]
 
 [[bin]]
