@@ -12,7 +12,7 @@ version = "0.18.1"
 features = ["lexer"]
 
 [dependencies]
-lalrpop-util = "0.18.1"
+lalrpop-util = "0.19.0"
 regex = "1"
 colored = "1.9"
 num-rational = "0.2"
