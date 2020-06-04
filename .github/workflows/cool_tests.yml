@@ -1,11 +1,12 @@
 name: Cool Tests
 
-on: [push, pull_request]
+on: [push]
 
 jobs:
   build:
 
-    runs-on: ubuntu-latest
+    runs-on: macos-latest
+
 
     steps:
     - uses: actions/checkout@v2
@@ -24,6 +25,13 @@ jobs:
       with:
         path: target
         key: ${{ runner.os }}-cargo-build-target-${{ hashFiles('**/Cargo.lock') }}
+
+    - name: install brew
+      run: ruby -e "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/master/install)" < /dev/null 2> /dev/null
+
+    - name: install portaudio
+      run: brew install portaudio pkg-config
+
     - name: Build
       run: cargo build --verbose
     - name: Add rustfmt
