@@ -1,0 +1,336 @@
+-- { f: 330, l: 1.2, g: 1, p: 0 }
+{ f: 261, l: 1, g: 1, p: 0 }
+
+g(  a, b, c, d,
+    e, f, g, h  ) = {
+    Overlay [
+        Sequence [a, b, c, b, d, b, c, b],
+        Tm 1/2 | Sequence [e, f, g, f, h, f, g, f],
+    ] 
+}
+
+f(  a, b, c, d,
+    e, f, g, h  ) = {
+    g(a, b, c, d, e, f, g, h)
+    | Repeat 2 
+}
+
+overtones = {
+    O[
+        (3, 0, 1/8, -1/3),
+        (2, 3, 1/4, 1/3),
+        (2, 0, 1/4, -1/3),
+        (1, 0, 1, 0.0)
+    ]
+}
+
+m1_24 = {
+    Sequence [
+        f(
+            Tm 2, Tm 6/5, Tm 9/8, Tm 1,
+            Tm 1, Tm 3/2, Tm 4/3, Tm 6/5
+        ),
+        f(
+            Tm 8/5, Tm 4/3, Tm 5/4, Tm 1,
+            Tm 1, Tm 8/5, Tm 3/2, Tm 4/3 
+        ),
+        f(
+            Tm 15/8, Tm 4/3, Tm 6/5, Tm 9/8,
+            Tm 1, Tm 8/5, Tm 3/2, Tm 4/3 
+        ),
+        f(
+            Tm 2, Tm 3/2, Tm 4/3, Tm 6/5,
+            Tm 1, Tm 6/5, Tm 9/8, Tm 3/2 
+        ),
+        -- 5
+        f(
+            Tm 2, Tm 8/5, Tm 3/2, Tm 6/5,
+            Tm 1, Tm 2, Tm 7/4, Tm 8/5 
+        ),
+        f(
+            Tm 9/4, Tm 25/18, Tm 5/4, Tm 9/8,
+            Tm 1, Tm 5/3, Tm 3/2, Tm 25/18 
+        ),
+        f(
+            Tm 9/4, Tm 3/2, Tm 25/18, Tm 9/8,
+            Tm 7/8, Tm 7/4, Tm 8/5, Tm 3/2, 
+        ),
+        f(
+            Tm 2, Tm 5/4, Tm 9/8, Tm 1, 
+            Tm 7/8, Tm 3/2, Tm 4/3, Tm 5/4, 
+        ),
+        -- 9
+        f(
+            Tm 2, Tm 4/3, Tm 5/4, Tm 1, 
+            Tm 4/5, Tm 8/5, Tm 3/2, Tm 4/3, 
+        ),
+        f(
+            Tm 8/5, Tm 9/8, Tm 1, Tm 7/8, 
+            Tm 9/8, Tm 4/3, Tm 6/5, Tm 8/5, 
+        ),
+        f(
+            Tm 7/4, Tm 3/2, Tm 4/3, Tm 6/5, 
+            Tm 7/8, Tm 6/5, Tm 9/8, Tm 3/2, 
+        ),
+        f(
+            Tm 8/5, Tm 3/2, Tm 4/3, Tm 6/5, 
+            Tm 1, Tm 6/5, Tm 9/8, Tm 8/5, 
+        ),
+        -- 13
+        f(
+            Tm 8/5, Tm 9/8, Tm 1, Tm 7/8, 
+            Tm 9/8, Tm 4/3, Tm 6/5, Tm 8/5, 
+        ),
+        f(
+            Tm 3/2, Tm 7/8, Tm 4/5, Tm 6/5, 
+            Tm 6/5, Tm 3/2, Tm 4/3, Tm 8/5, 
+        ),
+        f(
+            Tm 4/3, Tm 1, Tm 7/8, Tm 5/6, 
+            Tm 6/5, Tm 5/3, Tm 3/2, Tm 4/3, 
+        ),
+        f(
+            Tm 4/3, Tm 9/8, Tm 1, Tm 15/16, 
+            Tm 9/8, Tm 4/3, Tm 6/5, Tm 8/5, 
+        ),
+        -- 17
+        f(
+            Tm 4/3, Tm 9/8, Tm 1, Tm 15/16, 
+            Tm 1, Tm 4/3, Tm 5/4, Tm 8/5, 
+        ),
+        f(
+            Tm 6/5, Tm 1, Tm 15/16, Tm 3/4, 
+            Tm 1, Tm 6/5, Tm 9/8, Tm 4/3, 
+        ),
+        f(
+            Tm 2/3, Tm 6/5, Tm 9/8, Tm 4/3, 
+            Tm 4/5, Tm 1, Tm 15/16, Tm 9/8, 
+        ),
+        f(
+            Tm 25/36, Tm 1, Tm 15/16, Tm 6/5, 
+            Tm 5/6, Tm 6/5, Tm 9/8, Tm 1, 
+        ),
+        -- 21
+        f(
+            Tm 6/5, Tm 1, Tm 15/16, Tm 3/4, 
+            Tm 3/4, Tm 6/5, Tm 9/8, Tm 4/3, 
+        ),
+        f(
+            Tm 25/18, Tm 1, Tm 15/16, Tm 5/6, 
+            Tm 3/4, Tm 6/5, Tm 9/8, Tm 1, 
+        ),
+        f(
+            Tm 3/2, Tm 1, Tm 15/16, Tm 9/8, 
+            Tm 3/4, Tm 6/5, Tm 9/8, Tm 4/3, 
+        ),
+        f(
+            Tm 8/5, Tm 1, Tm 15/16, Tm 9/8, 
+            Tm 3/4, Tm 6/5, Tm 9/8, Tm 4/3,
+        ),
+        Overlay [
+            Silence 1/16,
+            Silence 1/16,
+        ]
+    ]
+}
+
+m25_27 = {
+    Tm 1/2 
+    | Sequence [
+        Tm 3/4, Tm 15/16, Tm 9/8, Tm 4/3,
+        Tm 8/5, Tm 4/3, Tm 5/4, Tm 4/3,
+        Tm 15/8, Tm 4/3, Tm 9/4, Tm 15/8, 
+        Tm 8/5, Tm 4/3, Tm 5/4, Tm 4/3,
+        -- 
+        Tm 3/4, Tm 1, Tm 6/5, Tm 3/2,
+        Tm 2, Tm 3/2, Tm 25/18, Tm 3/2,
+        Tm 12/5, Tm 2, Tm 3, Tm 12/5,
+        Tm 2, Tm 8/5, Tm 3/2, Tm 8/5,
+        --
+        Tm 3/4, Tm 5/6, Tm 25/18, Tm 2, 
+        Tm 12/5, Tm 2, Tm 15/8, Tm 2,
+        Tm 25/9, Tm 2, Tm 10/3, Tm 25/9, 
+        Tm 5/2, Tm 2, Tm 15/8, Tm 2 
+    ]
+}
+
+m28_31 = {
+    Sequence [
+        Overlay [
+            Sequence [
+                Gain 0, Tm 9/4, Tm 2, Tm 9/4,
+                Tm 12/5, Tm 2, Tm 15/8, Tm 2,
+                Tm 5/3, Tm 2, Tm 15/8, Tm 2,
+                Tm 9/4, Tm 15/8, Tm 5/3, Tm 15/8, 
+            ],
+            Tm 3/8 | Repeat 15 
+        ], 
+        g(
+            Tm 3/2, Tm 15/8, Tm 5/3, Tm 2, 
+            Tm 3/4, Tm 9/4, Tm 2, Tm 5/2
+        ),
+        g(
+            Tm 25/18, Tm 5/3, Tm 3/2, Tm 15/8, 
+            Tm 5/3, Tm 2, Tm 15/8, Tm 9/4 
+        ), 
+        g(
+            Tm 9/8, Tm 3, Tm 8/3, Tm 10/3, 
+            Tm 3/2, Tm 15/8, Tm 5/3, Tm 2 
+        ),
+        g(
+            Tm 9/4, Tm 8/3, Tm 12/5, Tm 3, 
+            Tm 4/3, Tm 5/3, Tm 3/2, Tm 15/8 
+        ),
+        g(
+            Tm 2, Tm 12/5, Tm 9/4, Tm 8/3, 
+            Tm 6/5, Tm 3, Tm 8/3, Tm 16/5 
+        ),
+        g(
+            Tm 15/8, Tm 9/4, Tm 2, Tm 12/5, 
+            Tm 9/4, Tm 8/3, Tm 12/5, Tm 3, 
+        ),
+    ]
+}
+
+m32 = {
+    Overlay [
+        Sequence [
+            Tm 3/2, Tm 2, Tm 15/8, Tm 2, 
+            Tm 8/5, Tm 8/3, Tm 12/5, Tm 8/3, 
+            Tm 3/2, Tm 12/5, Tm 9/4, Tm 12/5, 
+            Tm 4/3, Tm 9/4, Tm 2, Tm 9/4
+        ],
+        Sequence [
+            Tm 1, Tm 6/5, Tm 9/8, Tm 6/5,
+            Tm 4/3, Tm 9/8, Tm 1, Tm 9/8,
+            Tm 6/5, Tm 1, Tm 15/16, Tm 1,
+            Tm 9/8, Tm 15/16, Tm 5/6, Tm 15/16,
+        ],
+    ]
+}
+
+m33 = {
+    Overlay [
+        Sequence [
+            Tm 6/5, Tm 2, Tm 15/8, Tm 2, 
+            Tm 8/5, Tm 4/3, Tm 6/5, Tm 4/3,
+            Tm 3/2, Tm 6/5, Tm 9/8, Tm 6/5, 
+            Tm 4/3, Tm 9/8, Tm 1, Tm 9/8
+        ],
+        Tm 1/2 | Sequence [
+            Tm 2, Tm 12/5, Tm 9/4, Tm 12/5,
+            Tm 4/3, Tm 9/4, Tm 2, Tm 9/4, 
+            Tm 6/5, Tm 2, Tm 15/8, Tm 2, 
+            Tm 9/8, Tm 15/8, Tm 5/3, Tm 15/8 
+        ],
+    ]
+}
+
+m34 = {
+    Overlay [
+            Sequence [
+                Tm 5/4 | Length 5, 
+                    Tm 1, Tm 9/8, Tm 5/4, 
+                Sequence [
+                    Tm 4/3, Tm 3/2, Tm 8/5, Tm 7/4, Tm 2, Tm 7/4, Tm 8/5, Tm 3/2,
+                    Tm 4/3 | Length 2, Tm 3/2, Tm 5/4
+                ] | Length 2/3,
+                -- 
+            ],
+            Sequence [
+               Overlay [
+                    Tm 1,
+                    Tm 7/8,
+                    Tm 3/4,
+                    Tm 1/2, 
+               ] | Sequence [AsIs | Length 8, Gain 0], 
+            ]
+    ]
+}
+
+m35 = {
+    Length 4/3 |
+    Overlay [
+        Sequence [
+            Tm 4/3 | Length 5, 
+                Tm 3/2, Tm 4/3, Tm 5/4, 
+            Sequence [
+                Tm 4/3, Tm 3/2, Tm 8/5, Tm 7/4, 
+                Tm 2, Tm 7/4, Tm 8/5, Tm 3/2,
+                Length 2/3 
+                | Sequence [
+                    Tm 4/3, Tm 6/5, Tm 9/8, Tm 6/5,
+                    Tm 4/3, Tm 9/8, Tm 6/5, Tm 4/3,
+                ]
+            ] | Length 3/4,
+        ],
+        Sequence [
+           Overlay [
+                Tm 1,
+                Tm 8/5,
+                Tm 2/3,
+                Tm 1/2, 
+           ] | Sequence [AsIs | Length 8, Gain 0], 
+        ]
+    ]
+}
+
+m36 = {
+    Overlay [
+        Sequence [
+            Tm 15/8 | Length 3, Tm 9/8,
+            Tm 4/3, Tm 8/5, Tm 3/2, Tm 4/3,
+            Tm 15/8, Tm 4/3, Tm 9/4, Tm 4/3, 
+            Tm 15/8, Tm 8/5, Tm 3/2, Tm 4/3
+        ] | Tm 1/2,
+        Tm 1/4 | Sequence [Gain 0 | Repeat 2, Tm 15/8 | Repeat 13, Gain 0],
+        Tm 1/4 | Sequence [Gain 0, Tm 1 | Repeat 14, Gain 0],
+    ]
+}
+
+m37 = {
+    Sequence [
+        Tm 5/3, Tm 25/12, Tm 7/4, Tm 3/2,
+        Tm 2, Tm 8/5, Tm 4/3, Tm 8/5, 
+        Tm 3/2, Tm 7/4, Tm 3/2, Tm 5/4, 
+        Tm 8/5, Tm 4/3, Tm 9/8, Tm 4/3,
+        Tm 5/4, Tm 3/2, Tm 5/4, Tm 1,
+        Tm 4/3, Tm 9/8, Tm 15/16, Tm 9/8
+    ] | Tm 1/2
+}
+
+m38 = {
+    Length 4/3 |
+    Overlay [
+        Tm 1/2 | Sequence [
+            Tm 9/8, Tm 5/4, Tm 3/2, Tm 7/4, Tm 3/2,
+            Tm 2 | Sequence [
+                Tm 4/5, Tm 1, Tm 4/3, Tm 9/8,
+                Tm 4/3, Tm 8/5, Tm 2, Tm 15/8, 
+                Tm 2, Tm 3/2, Tm 4/3, Tm 9/8, 
+                Tm 5/4 | Repeat 4
+            ]
+        ],
+        Tm 1/4 | Sequence [Tm 3/2, Tm 2 | Repeat 21],
+        Tm 1/4 | Sequence [AsIs, Repeat 8, Repeat 16]
+    ]
+}
+
+
+main = {
+    -- overtones |
+    Length 1/10 | 
+    -- Seq [Tm 1 | Repeat 6, Tm 0] | Length 1/7 |
+    Sequence [
+        m1_24,
+        m25_27, 
+        m28_31,
+        m32,
+        m33,
+        m34,
+        m35,
+        m36,
+        m37,
+        m38,
+    ]
+}

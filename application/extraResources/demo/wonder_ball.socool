@@ -1,0 +1,166 @@
+{ f: 220, l: 1, g: 1, p: 0}
+
+overtones = {
+    O[
+      	(5/2, 11, 1/3, 1/2),
+      	(5/2, 0, 1/3, -1/2),
+      	(3/2, 9, 1, 1/2),
+      	(3/2, 0, 1, -1/2),
+      	(1/1, 9, 1, 1/2),
+      	(1/1, 0, 1, -1/2),
+  	]
+}
+
+thing1 = {
+	overtones |
+	Sequence [
+		1^1,
+		2^5,
+	] 
+	| Length 0.25	
+	| Seq [
+		Length 2,
+		Repeat 2 | Seq [
+			Tm 4/3,
+			Tm 6/5, 
+			Tm 25/24, 
+		]
+		| Length 1/5,
+		Tm 7/8, 
+		Length 1/4 | Seq [
+			Tm 7/6, 
+			Tm 5/4, 
+			Tm 6/5,
+			Tm 11/8, 
+		],
+		Length 2/7 | Seq [
+			Tm 3/2,
+			Tm 7/4,
+		],
+
+ 	] | Seq [
+ 		AsIs,	
+		Tm 7/8 
+ 	] 
+	| Overlay [
+		AsIs | PanA -1,
+		Ta 3 | PanA 1,
+	]
+ 	| Seq [
+ 		AsIs, 
+ 		Gain 1/2 | Tm 3/2
+	    | O[
+	      	(3/2, 1, 1, -1/7),
+	      	(1/2, 0, 1, 1/7),
+	  	] | PanM -1/2  
+	]
+ 	| Length 4/5
+}
+
+bass = {
+    O[
+      	(3/1, 1, 1, 1),
+      	(3/1, 0, 1, -1),
+      	(1/1, 1, 1, 1),
+      	(1/1, 0, 1, -1),
+  	] | 
+	Seq [Tm 0 | Ta 0, Length 5] |
+	Seq [
+		Tm 6/5, Tm 4/3, Tm 6/5, Tm 4/3,
+		Tm 1, Tm 0 | Ta 0, Tm 1, Tm 0 | Ta 0,
+		Tm 3/2 | Length 4, 
+		Tm 7/8, Tm 1, Tm 7/8, Tm 1,
+		Tm 0 | Ta 0, Tm 4/3, Tm 4/3, Tm 0 | Ta 0,
+		Tm 5/3, Tm 3/2, Tm 4/3, Tm 0 | Ta 0,
+	]
+	| Seq [AsIs, Reverse | Tm 9/8]	
+	| Seq [
+		Seq [AsIs, Tm 25/24], 
+		Gain 1/4 | Tm 15/8
+	    | O[
+	      	(9/8, 8, 1, -1/5),
+	      	(7/8, 0, 1, 1/5),
+	  	] | PanM -1/2  
+	] 
+	| Repeat 2
+	> FitLength thing1
+}
+
+drone = {
+    O[
+      	(6/1, 4, 1/15, 1/2),
+      	(6/1, 0, 1/15, -1/2),
+      	(5/1, 5, 1/10, 1/2),
+      	(5/1, 0, 1/10, -1/2),
+      	(3/4, 1, 1, 1/5),
+      	(3/4, 0, 1, -1/5),
+      	(1/2, 1, 1, 1/4),
+      	(1/2, 0, 1, -1/4),
+  	]
+  	| Seq [
+  		AsIs,
+  		Tm 9/8, 
+  		Tm 4/3,
+  		Tm 3/2, 
+  		Tm 5/3,
+	] 
+	> FitLength thing1
+}
+
+highs = {
+    O[
+      	(2/1, 1, 1, 1/5),
+      	(2/1, 0, 1, -1/5),
+      	(3/2, 1, 1, 1/5),
+      	(3/2, 0, 1, -1/5),
+      	(1/1, 1, 1, 1/4),
+      	(1/1, 0, 1, -1/4),
+  	]
+	| Seq [
+		Tm 0, Tm 5/3, Tm 5/4, Tm 3/2, 
+		Tm 0, Tm 8/5, Tm 5/3, Tm 3/2, 
+		Tm 5/3, Tm 4/3, Tm 5/3, Tm 7/4, 
+		Tm 0, Tm 15/8, Tm 7/4, Tm 15/8,
+		Tm 3/2, Tm 5/3, Tm 15/8, Tm 0, 
+		Tm 5/4, Tm 11/8, Tm 8/5, Tm 7/4, 
+		Tm 2, Tm 9/4, Tm 15/8, Tm 25/12,
+		Seq [
+			Tm 0, Tm 3/2, Tm 9/4, Tm 11/4, 
+			Tm 0, Tm 4/3, Tm 7/4, Tm 12/5,
+			Tm 0, Tm 6/5, Tm 8/5, Tm 25/12,
+			Tm 11/4, Tm 15/4, Tm 3, Tm 4, 
+			Tm 5, Tm 6, Tm 7, 
+			Gain 1/2 | Tm 9/8
+			| Seq [Tm 3, Tm 5, Tm 4, Tm 6, Tm 8, Tm 7, Tm 9, Tm 6, Tm 3, Tm 1, Tm 1/2, Tm 1/3, Tm 1/4],
+		] 
+	    | O[
+	      	(3/2, 3, 1/4, 4/5),
+	      	(3/2, 0, 1/4, -4/5),
+	      	(1/1, 3, 1/4, 4/5),
+	      	(1/1, 0, 1/4, -4/5),
+	  	]
+	]
+	| ModulateBy [Seq [PanA -1/2, PanA 1/2, PanA 1/2, PanA -1/2, PanA 1/3, PanA -1/3] | Repeat 5]
+	| Tm 2	
+	| Seq [Ta 0 | Tm 0 | Repeat 4, Tm 1]
+	> FitLength thing1
+}
+
+main = {
+	Overlay [
+		highs,
+		drone,
+		Gain 1/4 | thing1,
+		bass
+	] | Seq [
+		AsIs, 
+		Gain 1/2 | Overlay [
+			AsIs, 
+		    O[
+		      	(1/1, 3, 1, -1/7),
+		      	(1/1, 0, 1, 1/7),
+			]
+		]
+	]
+}
+	
