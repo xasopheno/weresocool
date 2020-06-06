@@ -6,6 +6,7 @@ fn main() {
         _ => false,
     };
 
+    println!("cargo:rerun-if-env-changed=PORTAUDIO_ONLY_STATIC");
     if cfg!(target_os = "macos") && static_build {
         println!("cargo:rustc-link-lib=static=portaudio");
         println!("cargo:rustc-link-lib=framework=CoreAudio");
