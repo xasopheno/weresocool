@@ -1,6 +1,6 @@
 import React, { useReducer, useState } from 'react';
 import { Switch, Route } from 'react-router-dom';
-import { OuterSpace } from './containers/outerSpace';
+import { OuterSpace } from './containers/OuterSpace';
 import { GlobalContext, Store } from './store';
 import { DispatchContext, Dispatch } from './actions/actions';
 import { mainReducer } from './reducers/reducer';
