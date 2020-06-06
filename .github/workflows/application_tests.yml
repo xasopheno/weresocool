@@ -58,6 +58,10 @@ jobs:
         run: |
           yarn build
 
+      - name: install portaudio
+        run: brew install portaudio pkg-config
+
+
       - name: yarn package-mac
         working-directory: ./application
         env:
