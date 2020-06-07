@@ -59,7 +59,10 @@ const copyDemoSong = (filename: string, documentsDir: string) => {
     fs.copyFileSync(input_file, output_file);
   }
 };
-copyDemoSongs();
+
+if (process.env.NODE_ENV !== 'test') {
+  copyDemoSongs();
+}
 
 let mainWindow: BrowserWindow | null = null;
 
@@ -93,10 +96,7 @@ const createWindow = async () => {
     await installExtensions();
   }
 
-  let server_path =
-    process.env.NODE_ENV === 'development'
-      ? path.join(extraResourcesPath, 'weresocool_server')
-      : path.join(extraResourcesPath, 'weresocool_server');
+  let server_path = path.join(extraResourcesPath, 'weresocool_server');
 
   const port = await getPort({ port: 4588 });
   process.env.BACKEND_PORT = port.toString();
@@ -106,7 +106,7 @@ const createWindow = async () => {
     stdio: 'inherit',
   });
 
-  const showDevTools = process.env.NODE_ENV === 'development' ? true : false;
+  const showDevTools = process.env.NODE_ENV === 'development' ? true : true;
 
   mainWindow = new BrowserWindow({
     show: true,

@@ -3,6 +3,7 @@ import { GlobalContext } from '../store';
 
 import styled from 'styled-components';
 import { DispatchContext } from '../actions/actions';
+import path from 'path';
 
 const RSpace = styled.div`
   position: absolute;
@@ -81,6 +82,8 @@ export const Ratios = (props: { width: number }): React.ReactElement | null => {
 };
 
 export const RatiosInner = (): React.ReactElement => {
+  const remote = require('electron').remote;
+  const fs = remote.require('fs');
   const dispatch = useContext(DispatchContext);
   const store = useContext(GlobalContext);
   const [render, setRender] = useState<boolean>(false);
@@ -98,9 +101,11 @@ export const RatiosInner = (): React.ReactElement => {
     });
   }, [render, dispatch, store.language]);
 
+  const assetsPath = remote.app.isPackaged
+    ? path.join(process.resourcesPath, 'extraResources/assets')
+    : 'assets';
+
   const demoSong = () => {
-    const remote = require('electron').remote;
-    const fs = remote.require('fs');
     const home = `${remote.app.getPath('home')}/Documents/weresocool/demo`;
 
     const songs: Array<string> = [];
@@ -193,7 +198,7 @@ export const RatiosInner = (): React.ReactElement => {
           <Two>1/1</Two>
         </Maj>
       </Degree>
-      <MagicButton src="./img/magic.png" onClick={() => demoSong()} />
+      <MagicButton src={`${assetsPath}/magic.png`} onClick={() => demoSong()} />
     </RSpace>
   );
 };
