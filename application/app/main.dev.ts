@@ -36,8 +36,6 @@ const documentsDir = path.join(
   'Documents/weresocool/demo'
 );
 
-// app.setPath ('userData', "path/to/new/directory");
-
 const copyDemoSongs = () => {
   try {
     fs.readdir(demoPath, (err, files) => {

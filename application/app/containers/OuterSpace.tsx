@@ -21,19 +21,6 @@ export const OuterSpace = (): React.ReactElement => {
     }
   };
 
-  const remote = require('electron').remote;
-  const fs = remote.require('fs');
-  const home = `${remote.app.getPath('home')}/Documents/weresocool/demo`;
-  console.log(home);
-  fs.readFile(`${home}/table.socool`, 'utf-8', function read(err, data) {
-    if (err) {
-      throw err;
-    }
-
-    // Invoke the next step here however you like
-    console.log(data); // Put all of the code here (not the best solution)
-  });
-
   return (
     <GlobalContext.Provider value={store}>
       <input

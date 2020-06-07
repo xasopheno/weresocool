@@ -1,6 +1,8 @@
-import React from 'react';
+import React, { useContext, useState, useEffect } from 'react';
+import { GlobalContext } from '../store';
 
 import styled from 'styled-components';
+import { DispatchContext } from '../actions/actions';
 
 const RSpace = styled.div`
   position: absolute;
@@ -63,6 +65,12 @@ const Two = styled.p`
   padding: 0 0 0 0;
   margin: 0 0 0 0;
 `;
+const MagicButton = styled.img`
+  width: 70px;
+  height: 70px;
+  border-top: 5px ridge goldenrod;
+  margin-top: 10px;
+`;
 
 export const Ratios = (props: { width: number }): React.ReactElement | null => {
   if (props.width > 1000) {
@@ -73,6 +81,54 @@ export const Ratios = (props: { width: number }): React.ReactElement | null => {
 };
 
 export const RatiosInner = (): React.ReactElement => {
+  const dispatch = useContext(DispatchContext);
+  const store = useContext(GlobalContext);
+  const [render, setRender] = useState<boolean>(false);
+
+  useEffect(() => {
+    const submit = async () => {
+      if (render) {
+        await dispatch.onRender(store.language);
+        setRender(false);
+      }
+    };
+
+    submit().catch((e) => {
+      throw e;
+    });
+  }, [render, dispatch, store.language]);
+
+  const demoSong = () => {
+    const remote = require('electron').remote;
+    const fs = remote.require('fs');
+    const home = `${remote.app.getPath('home')}/Documents/weresocool/demo`;
+
+    const songs: Array<string> = [];
+    try {
+      const files = fs.readdirSync(home);
+      for (const i in files) {
+        songs.push(files[i]);
+      }
+    } catch (e) {
+      console.log(e);
+    }
+
+    const song = songs[Math.floor(Math.random() * songs.length)];
+    console.log(song);
+
+    fs.readFile(`${home}/${song}`, 'utf-8', function read(
+      err: Error,
+      data: string
+    ) {
+      if (err) {
+        throw err;
+      }
+
+      dispatch.onUpdateLanguage(data);
+      setRender(true);
+    });
+  };
+
   return (
     <RSpace id="ratios">
       <Degree>
@@ -137,6 +193,7 @@ export const RatiosInner = (): React.ReactElement => {
           <Two>1/1</Two>
         </Maj>
       </Degree>
+      <MagicButton src="./img/magic.png" onClick={() => demoSong()} />
     </RSpace>
   );
 };
