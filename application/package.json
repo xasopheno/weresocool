@@ -1,7 +1,7 @@
 {
   "name": "weresocool",
   "productName": "WereSoCool",
-  "version": "1.1.0",
+  "version": "1.0.0",
   "description": " Make cool sounds. Impress your friends/pets/plants.",
   "scripts": {
     "build-backend": "cd server && ./build_static.sh && cd ../ && cp ../target/release/weresocool_server extraResources/weresocool_server",
@@ -17,7 +17,7 @@
     "lint-fix": "yarn --silent lint --fix; exit 0",
     "lint-styles": "stylelint --ignore-path .eslintignore '**/*.*(css|scss)' --syntax scss",
     "lint-styles-fix": "yarn --silent lint-styles --fix; exit 0",
-    "package": "yarn build-backend && yarn build && electron-builder build --publish never",
+    "package": "yarn build-backend && yarn build && electron-builder build --publish always",
     "package-all": "yarn build-backend && yarn build && electron-builder build -mwl",
     "package-ci": "yarn postinstall && yarn build && electron-builder --publish always",
     "package-mac": "yarn build-backend && yarn build && electron-builder build --mac",
@@ -115,7 +115,7 @@
     "publish": {
       "provider": "github",
       "owner": "xasopheno",
-      "repo": "weresocool",
+      "repo": "WereSoCool",
       "private": false
     }
   },
