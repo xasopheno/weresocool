@@ -28,7 +28,7 @@ export type Action =
 export class Dispatch {
   constructor(public dispatch: React.Dispatch<Action>) {}
 
-  onDemo = (demoIdx: number): void => {
+  async onDemo(demoIdx: number): Promise<void> {
     const fs = remote.require('fs');
     const home = `${remote.app.getPath('home')}/Documents/weresocool/demo`;
 
@@ -47,15 +47,15 @@ export class Dispatch {
 
     const song = songs[demoIdx];
     console.log(song);
-
-    fs.readFile(`${home}/${song}`, 'utf-8', (err: Error, data: string) => {
-      if (err) {
-        throw err;
-      }
+    try {
+      const data = fs.readFileSync(`${home}/${song}`, 'utf-8');
       this.dispatch({ _k: 'Set_Language', language: data });
       this.dispatch({ _k: 'Increment_Demo_Index', len: songs.length });
-    });
-  };
+      await this.onRender(data);
+    } catch (e) {
+      console.log(e);
+    }
+  }
 
   onFileLoad = (e: React.ChangeEvent<HTMLInputElement>): void => {
     if (e && e.target && e.target.files && e.target.files.length > 0) {

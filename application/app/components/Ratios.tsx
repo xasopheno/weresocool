@@ -93,16 +93,16 @@ export const RatiosInner = (): React.ReactElement => {
 
   const submit = useCallback(async () => {
     if (render) {
-      dispatch.onDemo(store.demoIdx);
-      await dispatch.onRender(store.language);
+      await dispatch.onDemo(store.demoIdx);
     }
   }, [dispatch, render, store.language, store.demoIdx]);
+
   useEffect(() => {
     submit().catch((e) => {
       throw e;
     });
     setRender(false);
-  }, [render, dispatch, store.language, submit]);
+  }, [render, dispatch, store.language, store.demoIdx, submit]);
 
   const assetsPath = remote.app.isPackaged
     ? path.join(process.resourcesPath, 'extraResources/assets')
