@@ -2,6 +2,7 @@ import React, { useContext } from 'react';
 import { TopBox, ButtonBox, Button, RightButton, VimBox } from './style';
 import { DispatchContext } from '../actions/actions';
 import { GlobalContext, Editors } from '../store';
+import ReactTooltip from 'react-tooltip';
 
 const stub = () => {};
 
@@ -19,21 +20,24 @@ export const Controls = (props: Props): React.ReactElement => {
         style={{ display: 'none', visibility: 'hidden' }}
         onChange={stub}
       />
+      <ReactTooltip />
 
       <ButtonBox>
         <Button
+          data-tip="Shift+Enter"
           id={'renderButton'}
           onClick={() => dispatch.onRender(store.language)}
         >
           Render
         </Button>
-        <Button id={'stopButton'} onClick={dispatch.onStop}>
+        <Button data-tip="⌘+Enter" id={'stopButton'} onClick={dispatch.onStop}>
           Stop
         </Button>
-        <Button id={'loadButton'} onClick={props.handleLoad}>
+        <Button data-tip="⌘+L" id={'loadButton'} onClick={props.handleLoad}>
           Load
         </Button>
         <Button
+          data-tip="⌘+S"
           id={'saveButton'}
           onClick={() => dispatch.onFileSave(store.language)}
         >
