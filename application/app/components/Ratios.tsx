@@ -4,6 +4,10 @@ import { GlobalContext } from '../store';
 import styled from 'styled-components';
 import { DispatchContext } from '../actions/actions';
 import path from 'path';
+// @ts-ignore
+const remote = require('electron').remote;
+// @ts-ignore
+const fs = remote.require('fs');
 
 const RSpace = styled.div`
   position: absolute;
@@ -82,8 +86,6 @@ export const Ratios = (props: { width: number }): React.ReactElement | null => {
 };
 
 export const RatiosInner = (): React.ReactElement => {
-  const remote = require('electron').remote;
-  const fs = remote.require('fs');
   const dispatch = useContext(DispatchContext);
   const store = useContext(GlobalContext);
   const [render, setRender] = useState<boolean>(false);
