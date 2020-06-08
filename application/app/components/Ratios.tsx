@@ -1,4 +1,4 @@
-import React, { useContext, useState, useEffect } from 'react';
+import React, { useContext, useState, useCallback, useEffect } from 'react';
 import { GlobalContext } from '../store';
 
 import styled from 'styled-components';
@@ -91,52 +91,22 @@ export const RatiosInner = (): React.ReactElement => {
   const store = useContext(GlobalContext);
   const [render, setRender] = useState<boolean>(false);
 
+  const submit = useCallback(async () => {
+    if (render) {
+      dispatch.onDemo();
+      await dispatch.onRender(store.language);
+    }
+  }, [dispatch, render, store.language]);
   useEffect(() => {
-    const submit = async () => {
-      if (render) {
-        await dispatch.onRender(store.language);
-        setRender(false);
-      }
-    };
-
     submit().catch((e) => {
       throw e;
     });
-  }, [render, dispatch, store.language]);
+    setRender(false);
+  }, [render, dispatch, store.language, submit]);
 
   const assetsPath = remote.app.isPackaged
     ? path.join(process.resourcesPath, 'extraResources/assets')
     : 'assets';
-
-  const demoSong = () => {
-    const fs = remote.require('fs');
-    const home = `${remote.app.getPath('home')}/Documents/weresocool/demo`;
-
-    const songs: Array<string> = [];
-    try {
-      const files = fs.readdirSync(home);
-      for (const i in files) {
-        songs.push(files[i]);
-      }
-    } catch (e) {
-      console.log(e);
-    }
-
-    const song = songs[Math.floor(Math.random() * songs.length)];
-    console.log(song);
-
-    fs.readFile(`${home}/${song}`, 'utf-8', function read(
-      err: Error,
-      data: string
-    ) {
-      if (err) {
-        throw err;
-      }
-
-      dispatch.onUpdateLanguage(data);
-      setRender(true);
-    });
-  };
 
   return (
     <RSpace id="ratios">
@@ -202,7 +172,10 @@ export const RatiosInner = (): React.ReactElement => {
           <Two>1/1</Two>
         </Maj>
       </Degree>
-      <MagicButton src={`${assetsPath}/magic.png`} onClick={() => demoSong()} />
+      <MagicButton
+        src={`${assetsPath}/magic.png`}
+        onClick={() => setRender(true)}
+      />
     </RSpace>
   );
 };

@@ -31,10 +31,7 @@ const extraResourcesPath =
     : path.join(process.resourcesPath + '/extraResources');
 const demoPath = path.join(extraResourcesPath, 'demo');
 
-const documentsDir = path.join(
-  app.getPath('home'),
-  'Documents/weresocool/demo'
-);
+const demoDir = path.join(app.getPath('home'), 'Documents/weresocool/demo');
 
 const copyDemoSongs = () => {
   try {
@@ -43,7 +40,7 @@ const copyDemoSongs = () => {
         throw new Error(err.toString());
       }
       files.forEach((path) => {
-        copyDemoSong(path, documentsDir);
+        copyDemoSong(path, demoDir);
       });
     });
   } catch (e) {
@@ -51,11 +48,11 @@ const copyDemoSongs = () => {
   }
 };
 
-const copyDemoSong = (filename: string, documentsDir: string) => {
+const copyDemoSong = (filename: string, demoDir: string) => {
   if (filename.endsWith('.socool')) {
     const input_file = path.join(demoPath, filename);
-    const output_file = path.join(documentsDir, filename);
-    fs.mkdirSync(documentsDir, { recursive: true });
+    const output_file = path.join(demoDir, filename);
+    fs.mkdirSync(demoDir, { recursive: true });
     fs.copyFileSync(input_file, output_file);
   }
 };

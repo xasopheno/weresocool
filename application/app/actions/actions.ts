@@ -3,6 +3,8 @@ import { Fetch } from '../store';
 import axios from 'axios';
 import FileSaver from 'file-saver';
 import { settings } from '../settings';
+import path from 'path';
+import { remote } from 'electron';
 
 export enum ResponseType {
   RenderSuccess = 'RenderSuccess',
@@ -25,6 +27,31 @@ export type Action =
 
 export class Dispatch {
   constructor(public dispatch: React.Dispatch<Action>) {}
+
+  onDemo = (): void => {
+    const fs = remote.require('fs');
+    const home = `${remote.app.getPath('home')}/Documents/weresocool/demo`;
+
+    const songs: Array<string> = [];
+    try {
+      const files = fs.readdirSync(home);
+      for (const i in files) {
+        songs.push(files[i]);
+      }
+    } catch (e) {
+      console.log(e);
+    }
+
+    const song = songs[Math.floor(Math.random() * songs.length)];
+    console.log(song);
+
+    fs.readFile(`${home}/${song}`, 'utf-8', (err: Error, data: string) => {
+      if (err) {
+        throw err;
+      }
+      this.dispatch({ _k: 'Set_Language', language: data });
+    });
+  };
 
   onFileLoad = (e: React.ChangeEvent<HTMLInputElement>): void => {
     if (e && e.target && e.target.files && e.target.files.length > 0) {
