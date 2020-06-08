@@ -4,9 +4,9 @@ import { GlobalContext } from '../store';
 import styled from 'styled-components';
 import { DispatchContext } from '../actions/actions';
 import path from 'path';
-// @ts-ignore
+// eslint-disable-line
 const remote = require('electron').remote;
-// @ts-ignore
+// eslint-disable-line
 const fs = remote.require('fs');
 
 const RSpace = styled.div`
