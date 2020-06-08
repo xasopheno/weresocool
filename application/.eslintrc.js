@@ -9,11 +9,11 @@ module.exports = {
     'prettier/@typescript-eslint',
     'plugin:prettier/recommended',
     'plugin:jest/recommended',
-    'plugin:react/recommended'
+    'plugin:react/recommended',
   ],
   env: {
     jest: true,
-    es6: true
+    es6: true,
   },
   ignorePatterns: ['ignored'],
   rules: {
@@ -23,6 +23,7 @@ module.exports = {
     'react/prop-types': 0,
     'react-hooks/rules-of-hooks': 'error',
     'react-hooks/exhaustive-deps': 'warn',
+    '@typescript-eslint/ban-ts-ignore': 'off',
     '@typescript-eslint/ban-ts-ignore': 'off',
     '@typescript-eslint/ban-ts-comment': 'off',
     '@typescript-eslint/no-floating-promises': 2,
@@ -36,9 +37,10 @@ module.exports = {
     '@typescript-eslint/indent': 0,
     '@typescript-eslint/no-use-before-define': 0,
     '@typescript-eslint/no-namespace': 0,
-    '@typescript-eslint/no-empty-function': 0
+    '@typescript-eslint/no-empty-function': 0,
+    '@typescript-eslint/no-var-requires': 0,
   },
   parserOptions: {
-    project: './tsconfig.json'
-  }
+    project: './tsconfig.json',
+  },
 };
