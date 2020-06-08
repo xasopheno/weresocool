@@ -38,7 +38,6 @@ module.exports = {
     '@typescript-eslint/no-use-before-define': 0,
     '@typescript-eslint/no-namespace': 0,
     '@typescript-eslint/no-empty-function': 0,
-    '@typescript-eslint/no-var-requires': 0,
   },
   parserOptions: {
     project: './tsconfig.json',

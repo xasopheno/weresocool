@@ -4,8 +4,7 @@ import { GlobalContext } from '../store';
 import styled from 'styled-components';
 import { DispatchContext } from '../actions/actions';
 import path from 'path';
-const remote = require('electron').remote;
-const fs = remote.require('fs');
+import { remote } from 'electron';
 
 const RSpace = styled.div`
   position: absolute;
@@ -72,7 +71,11 @@ const MagicButton = styled.img`
   width: 70px;
   height: 70px;
   border-top: 5px ridge goldenrod;
+  opacity: 0.8;
   margin-top: 10px;
+  :hover {
+    opacity: 1;
+  }
 `;
 
 export const Ratios = (props: { width: number }): React.ReactElement | null => {
@@ -106,6 +109,7 @@ export const RatiosInner = (): React.ReactElement => {
     : 'assets';
 
   const demoSong = () => {
+    const fs = remote.require('fs');
     const home = `${remote.app.getPath('home')}/Documents/weresocool/demo`;
 
     const songs: Array<string> = [];

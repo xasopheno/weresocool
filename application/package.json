@@ -92,7 +92,6 @@
       "category": "Development"
     },
     "extraResources": [
-      "./assets/**",
       {
         "from": "./extraResources/",
         "to": "extraResources",

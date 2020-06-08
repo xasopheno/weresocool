@@ -106,7 +106,7 @@ const createWindow = async () => {
     stdio: 'inherit',
   });
 
-  const showDevTools = process.env.NODE_ENV === 'development' ? true : true;
+  const showDevTools = process.env.NODE_ENV === 'development' ? true : false;
 
   mainWindow = new BrowserWindow({
     show: true,
