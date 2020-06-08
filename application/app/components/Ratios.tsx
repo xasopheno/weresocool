@@ -95,14 +95,14 @@ export const RatiosInner = (): React.ReactElement => {
     if (render) {
       await dispatch.onDemo(store.demoIdx);
     }
-  }, [dispatch, render, store.language, store.demoIdx]);
+  }, [dispatch, render, store.demoIdx]);
 
   useEffect(() => {
     submit().catch((e) => {
       throw e;
     });
     setRender(false);
-  }, [render, dispatch, store.language, store.demoIdx, submit]);
+  }, [render, dispatch, store.demoIdx, submit]);
 
   const assetsPath = remote.app.isPackaged
     ? path.join(process.resourcesPath, 'extraResources/assets')
