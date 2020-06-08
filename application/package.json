@@ -63,6 +63,14 @@
       "extraResources",
       "package.json"
     ],
+    "mac": {
+      "hardenedRuntime": true,
+      "entitlements": "./build/entitlements.mac.inherit.plist",
+      "target": [
+        "dmg",
+        "zip"
+      ]
+    },
     "dmg": {
       "contents": [
         {

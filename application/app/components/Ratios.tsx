@@ -173,6 +173,7 @@ export const RatiosInner = (): React.ReactElement => {
         </Maj>
       </Degree>
       <MagicButton
+        id={'magicButton'}
         src={`${assetsPath}/magic.png`}
         onClick={() => setRender(true)}
       />
