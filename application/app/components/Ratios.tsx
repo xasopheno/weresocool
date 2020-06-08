@@ -93,10 +93,10 @@ export const RatiosInner = (): React.ReactElement => {
 
   const submit = useCallback(async () => {
     if (render) {
-      dispatch.onDemo();
+      dispatch.onDemo(store.demoIdx);
       await dispatch.onRender(store.language);
     }
-  }, [dispatch, render, store.language]);
+  }, [dispatch, render, store.language, store.demoIdx]);
   useEffect(() => {
     submit().catch((e) => {
       throw e;

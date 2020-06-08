@@ -3,7 +3,6 @@ import { Fetch } from '../store';
 import axios from 'axios';
 import FileSaver from 'file-saver';
 import { settings } from '../settings';
-import path from 'path';
 import { remote } from 'electron';
 
 export enum ResponseType {
@@ -16,6 +15,7 @@ export enum ResponseType {
 
 export type Action =
   | { _k: 'Increment_Editor_Type' }
+  | { _k: 'Increment_Demo_Index'; len: number }
   | { _k: 'Backend'; fetch: Fetch }
   | { _k: 'Set_Render_State'; state: ResponseType }
   | { _k: 'Set_Markers'; line: number; column: number; n_lines: number }
@@ -28,7 +28,7 @@ export type Action =
 export class Dispatch {
   constructor(public dispatch: React.Dispatch<Action>) {}
 
-  onDemo = (): void => {
+  onDemo = (demoIdx: number): void => {
     const fs = remote.require('fs');
     const home = `${remote.app.getPath('home')}/Documents/weresocool/demo`;
 
@@ -36,13 +36,16 @@ export class Dispatch {
     try {
       const files = fs.readdirSync(home);
       for (const i in files) {
-        songs.push(files[i]);
+        const song = files[i];
+        if (song.endsWith('.socool')) {
+          songs.push(song);
+        }
       }
     } catch (e) {
       console.log(e);
     }
 
-    const song = songs[Math.floor(Math.random() * songs.length)];
+    const song = songs[demoIdx];
     console.log(song);
 
     fs.readFile(`${home}/${song}`, 'utf-8', (err: Error, data: string) => {
@@ -50,6 +53,7 @@ export class Dispatch {
         throw err;
       }
       this.dispatch({ _k: 'Set_Language', language: data });
+      this.dispatch({ _k: 'Increment_Demo_Index', len: songs.length });
     });
   };
 

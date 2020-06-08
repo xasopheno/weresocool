@@ -20,6 +20,7 @@ export const Editors: Editor = {
 
 export interface Store {
   editor: number;
+  demoIdx: number;
   backend: Fetch;
   render: ResponseType;
   language: string;
@@ -30,6 +31,7 @@ export interface Store {
 
 export const intialStore: Store = {
   editor: 1,
+  demoIdx: 0,
   backend: { state: 'bad', error: Error('Startup') },
   render: ResponseType.RenderSuccess,
   language: language_template,
@@ -40,6 +42,7 @@ export const intialStore: Store = {
 
 export const testStore: Store = {
   editor: 1,
+  demoIdx: 0,
   backend: { state: 'good' },
   render: ResponseType.RenderSuccess,
   language: language_template,
