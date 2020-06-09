@@ -42,10 +42,7 @@ export const OuterSpace = (): React.ReactElement => {
         style={{ display: 'none', visibility: 'hidden' }}
         onChange={(e) => dispatch.onFileLoad(e)}
       />
-          <Version>
-            {`v${remote.app.getVersion()}`}
-          </Version>
-
+      <Version>{`v${remote.app.getVersion()}`}</Version>
       <LED state={store.backend.state} />
       <Logo />;
       <Ratios width={width} />
