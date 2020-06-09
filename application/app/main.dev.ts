@@ -17,8 +17,8 @@ import child_process from 'child_process';
 import getPort from 'get-port';
 import fs from 'fs';
 
+log.transports.file.level = 'info';
 autoUpdater.logger = log;
-autoUpdater.logger.transports.file.level = 'info';
 log.info('App starting...');
 
 const extraResourcesPath =
@@ -139,7 +139,6 @@ const createWindow = async () => {
   autoUpdater.checkForUpdatesAndNotify();
 };
 
-
 /**
  * Add event listeners...
  */
@@ -147,27 +146,27 @@ const createWindow = async () => {
 // autoUpdater.logger.transports.file.level = "info";
 
 // autoUpdater.on('update-downloaded', () => {
-  // console.log('update-downloaded lats quitAndInstall');
+// console.log('update-downloaded lats quitAndInstall');
 
-  // if (process.env.NODE_ENV === 'production') { 
-    // dialog.showMessageBox({
-      // type: 'info',
-      // title: 'Found Updates',
-      // message: 'Found updates, do you want update now?',
-      // buttons: ['Sure', 'No']
-    // }, (buttonIndex) => {
-      // if (buttonIndex === 0) {
-        // const isSilent = true;
-        // const isForceRunAfter = true; 
-        // autoUpdater.quitAndInstall(isSilent, isForceRunAfter); 
-      // } 
-      // else {
-        // updater.enabled = true
-        // updater = null
-      // }
-    // })
-  // }
-  
+// if (process.env.NODE_ENV === 'production') {
+// dialog.showMessageBox({
+// type: 'info',
+// title: 'Found Updates',
+// message: 'Found updates, do you want update now?',
+// buttons: ['Sure', 'No']
+// }, (buttonIndex) => {
+// if (buttonIndex === 0) {
+// const isSilent = true;
+// const isForceRunAfter = true;
+// autoUpdater.quitAndInstall(isSilent, isForceRunAfter);
+// }
+// else {
+// updater.enabled = true
+// updater = null
+// }
+// })
+// }
+
 // })
 
 app.on('window-all-closed', () => {

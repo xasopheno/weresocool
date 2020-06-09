@@ -11,6 +11,15 @@ import { DispatchContext } from '../actions/actions';
 import { remote } from 'electron';
 import styled from 'styled-components';
 
+const Version = styled.p`
+  position: absolute;
+  right: 0;
+  margin-right: 5px;
+  top: 2;
+  color: #111111;
+  font-family: monospace;
+`;
+
 export const OuterSpace = (): React.ReactElement => {
   const width = useCurrentWidth();
   const store = useContext(GlobalContext);
@@ -22,15 +31,6 @@ export const OuterSpace = (): React.ReactElement => {
       fileInput.current.click();
     }
   };
-
-  const Version = styled.p`
-    position: absolute;
-    right: 0;
-    margin-right: 5px;
-    top: 2;
-    color: #111111;
-    font-family: monospace;
-  `;
 
   return (
     <GlobalContext.Provider value={store}>

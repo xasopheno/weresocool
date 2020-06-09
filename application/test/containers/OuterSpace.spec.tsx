@@ -20,6 +20,7 @@ jest.mock('electron', () => ({
   remote: {
     app: {
       getPath: jest.fn(),
+      getVersion: jest.fn(() => 'test'),
       isPackaged: jest.fn(),
     },
   },

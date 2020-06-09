@@ -21,6 +21,7 @@ jest.mock('electron', () => ({
     app: {
       getPath: jest.fn(() => 'extraResources'),
       isPackaged: jest.fn(),
+      getVersion: jest.fn(() => 'test'),
     },
   },
   dialog: jest.fn(),
