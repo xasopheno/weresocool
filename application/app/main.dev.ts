@@ -17,13 +17,9 @@ import child_process from 'child_process';
 import getPort from 'get-port';
 import fs from 'fs';
 
-export default class AppUpdater {
-  constructor() {
-    log.transports.file.level = 'info';
-    autoUpdater.logger = log;
-    autoUpdater.checkForUpdatesAndNotify();
-  }
-}
+autoUpdater.logger = log;
+autoUpdater.logger.transports.file.level = 'info';
+log.info('App starting...');
 
 const extraResourcesPath =
   process.env.NODE_ENV === 'development'
@@ -140,14 +136,39 @@ const createWindow = async () => {
   const menuBuilder = new MenuBuilder(mainWindow);
   menuBuilder.buildMenu();
 
-  // Remove this if your app does not use auto updates
-  // eslint-disable-next-line
-  new AppUpdater();
+  autoUpdater.checkForUpdatesAndNotify();
 };
+
 
 /**
  * Add event listeners...
  */
+// autoUpdater.logger = require("electron-log");
+// autoUpdater.logger.transports.file.level = "info";
+
+// autoUpdater.on('update-downloaded', () => {
+  // console.log('update-downloaded lats quitAndInstall');
+
+  // if (process.env.NODE_ENV === 'production') { 
+    // dialog.showMessageBox({
+      // type: 'info',
+      // title: 'Found Updates',
+      // message: 'Found updates, do you want update now?',
+      // buttons: ['Sure', 'No']
+    // }, (buttonIndex) => {
+      // if (buttonIndex === 0) {
+        // const isSilent = true;
+        // const isForceRunAfter = true; 
+        // autoUpdater.quitAndInstall(isSilent, isForceRunAfter); 
+      // } 
+      // else {
+        // updater.enabled = true
+        // updater = null
+      // }
+    // })
+  // }
+  
+// })
 
 app.on('window-all-closed', () => {
   // Respect the OSX convention of having the application in memory even

@@ -1,7 +1,7 @@
 {
   "name": "weresocool",
   "productName": "WereSoCool",
-  "version": "1.0.3",
+  "version": "1.0.5",
   "description": "Make cool sounds. Impress you friends/pets/plants.",
   "main": "./main.prod.js",
   "author": {
