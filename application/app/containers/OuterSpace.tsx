@@ -8,6 +8,8 @@ import { ErrorDescription } from '../components/Error';
 import { useCurrentWidth } from '../utils/width';
 import { GlobalContext } from '../store';
 import { DispatchContext } from '../actions/actions';
+import { remote } from 'electron';
+import styled from 'styled-components';
 
 export const OuterSpace = (): React.ReactElement => {
   const width = useCurrentWidth();
@@ -21,6 +23,15 @@ export const OuterSpace = (): React.ReactElement => {
     }
   };
 
+  const Version = styled.p`
+    position: absolute;
+    right: 0;
+    margin-right: 5px;
+    top: 2;
+    color: #111111;
+    font-family: monospace;
+  `;
+
   return (
     <GlobalContext.Provider value={store}>
       <input
@@ -31,6 +42,10 @@ export const OuterSpace = (): React.ReactElement => {
         style={{ display: 'none', visibility: 'hidden' }}
         onChange={(e) => dispatch.onFileLoad(e)}
       />
+          <Version>
+            {`v${remote.app.getVersion()}`}
+          </Version>
+
       <LED state={store.backend.state} />
       <Logo />;
       <Ratios width={width} />
