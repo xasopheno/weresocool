@@ -1,7 +1,7 @@
 {
   "name": "weresocool",
   "productName": "WereSoCool",
-  "version": "1.0.7",
+  "version": "1.0.8",
   "description": " Make cool sounds. Impress your friends/pets/plants.",
   "scripts": {
     "build-backend": "cd server && ./build_static.sh && cd ../ && cp ../target/release/weresocool_server extraResources/weresocool_server",
@@ -19,7 +19,9 @@
     "lint-styles-fix": "yarn --silent lint-styles --fix; exit 0",
     "package": "yarn build-backend && yarn build && electron-builder build --publish never",
     "package-all": "yarn build-backend && yarn build && electron-builder build -mwl",
-    "package-ci": "yarn build-backend && yarn postinstall && yarn build && electron-builder --publish always",
+    "package-ci-old": "yarn build-backend && yarn postinstall && yarn build && electron-builder --publish always",
+    "package-ci": " NOTARIZE=true yarn build-backend && yarn build && electron-builder build --publish always",
+    "package-local": " NOTARIZE=false CSC_IDENTITY_AUTO_DISCOVERY=false yarn build-backend && yarn build && electron-builder build --publish always",
     "package-mac": "yarn build-backend && yarn build && electron-builder build --mac",
     "package-linux": "yarn build-backend && yarn build && electron-builder build --linux",
     "package-win": "yarn build-backend &&yarn build && electron-builder build --win --x64",
