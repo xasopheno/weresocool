@@ -29,6 +29,9 @@ jobs:
         with:
           node-version: 13
 
+      - name: install portaudio
+        run: brew install portaudio pkg-config
+
       - name: Build/release Electron app
         uses: samuelmeuli/action-electron-builder@v1
         with:
