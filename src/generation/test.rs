@@ -110,7 +110,7 @@ pub mod tests {
                         t: Rational64::new(2, 1),
                         event_type: EventType::On,
                         event: 2,
-                        ..op.clone()
+                        ..op
                     },
                     TimedOp {
                         t: Rational64::new(3, 1),
@@ -158,7 +158,7 @@ pub mod tests {
             TimedOp {
                 event_type: EventType::On,
                 l: Rational64::new(3, 2),
-                ..op.clone()
+                ..op.
             },
             TimedOp {
                 event_type: EventType::Off,

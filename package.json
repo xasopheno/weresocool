@@ -1,5 +1,0 @@
-{
-  "devDependencies": {
-    "electron-builder-notarize": "^1.1.2"
-  }
-}
