@@ -8,7 +8,8 @@ var electron_notarize = require('electron-notarize');
 module.exports = async function (params) {
   const notarize = process.env.NOTARIZE;
   // Only notarize the app on Mac OS only.
-  if (notarize !== 'true' || process.platform !== 'darwin') {
+  //  if (notarize !== 'true' || process.platform !== 'darwin') {
+  if (process.platform !== 'darwin') {
     console.log('App not notorized');
     return;
   }

@@ -1,6 +1,8 @@
 name: Build/release
 
-on: push
+on: push:
+  tags-ignore:        
+    - *
 # on:
   # push:
     # branches:
@@ -35,6 +37,7 @@ jobs:
       - name: Build/release Electron app
         uses: samuelmeuli/action-electron-builder@v1
         with:
+          args: "--publish never"
           package_root: "application"
           build_script_name: "build-ci"
           # GitHub token, automatically provided to the action
