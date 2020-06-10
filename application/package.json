@@ -68,7 +68,6 @@
     ],
     "mac": {
       "hardenedRuntime": true,
-      "publish": "always",
       "entitlements": "./build/entitlements.mac.inherit.plist",
       "target": [
         "dmg",
