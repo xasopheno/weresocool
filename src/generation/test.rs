@@ -6,6 +6,7 @@ pub mod tests {
             composition_to_vec_timed_op, sum_vec, vec_timed_op_to_vec_op4d, EventType, Op4D,
             TimedOp,
         },
+        helpers::cmp_vec_f64,
         instrument::Basis,
     };
     use num_rational::Rational64;
@@ -18,7 +19,7 @@ pub mod tests {
         let b = vec![1.0, 2.0, 3.0];
         sum_vec(&mut a, &b[..]);
         let expected = [2.0, 4.0, 6.0];
-        assert_eq!(a, expected);
+        assert!(cmp_vec_f64(a.to_vec(), expected.to_vec()));
     }
 
     #[test]
@@ -27,7 +28,7 @@ pub mod tests {
         let b = vec![1.0, 2.0, 3.0];
         sum_vec(&mut a, &b[..]);
         let expected = [2.0, 4.0, 6.0, 2.0];
-        assert_eq!(a, expected);
+        assert!(cmp_vec_f64(a.to_vec(), expected.to_vec()));
     }
 
     #[test]
@@ -90,20 +91,20 @@ pub mod tests {
                     TimedOp {
                         pa: Rational64::new(1, 2),
                         event_type: EventType::On,
-                        ..op.clone()
+                        ..op
                     },
                     TimedOp {
                         event_type: EventType::On,
                         l: Rational64::new(5, 1),
                         voice: 1,
-                        ..op.clone()
+                        ..op
                     },
                     TimedOp {
                         fm: Rational64::new(2, 1),
                         t: Rational64::new(1, 1),
                         event_type: EventType::On,
                         event: 1,
-                        ..op.clone()
+                        ..op
                     },
                     TimedOp {
                         g: Rational64::new(1, 2),
@@ -158,7 +159,7 @@ pub mod tests {
             TimedOp {
                 event_type: EventType::On,
                 l: Rational64::new(3, 2),
-                ..op.
+                ..op
             },
             TimedOp {
                 event_type: EventType::Off,

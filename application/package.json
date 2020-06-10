@@ -56,7 +56,7 @@
   "build": {
     "productName": "WereSoCool",
     "appId": "org.xasopheno.WereSoCool",
-    "afterSign": "electron_builder_notarize",
+    "afterSign": "electron-builder-notarize",
     "files": [
       "dist/",
       "node_modules/",
