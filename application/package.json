@@ -20,7 +20,7 @@
     "package": "yarn build-backend && yarn build && electron-builder build --publish never",
     "package-all": "yarn build-backend && yarn build && electron-builder build -mwl",
     "package-ci-old": "yarn build-backend && yarn postinstall && yarn build && electron-builder --publish always",
-    "package-ci": " NOTARIZE=true yarn build-backend && yarn build && electron-builder build --publish always",
+    "build-ci": " yarn build-backend && yarn build",
     "package-local": " NOTARIZE=false CSC_IDENTITY_AUTO_DISCOVERY=false yarn build-backend && yarn build && electron-builder build --publish always",
     "package-mac": "yarn build-backend && yarn build && electron-builder build --mac",
     "package-linux": "yarn build-backend && yarn build && electron-builder build --linux",
