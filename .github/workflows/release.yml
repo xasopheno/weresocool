@@ -1,8 +1,9 @@
 name: Build/release
 
-on: push:
-  tags-ignore:        
-    - *
+on: 
+  push
+  # tags-ignore:        
+    # - *
 # on:
   # push:
     # branches:
