@@ -30,11 +30,14 @@ export class Dispatch {
 
   async onDemo(demoIdx: number): Promise<void> {
     const fs = remote.require('fs');
-    const home = `${remote.app.getPath('home')}/Documents/weresocool/demo`;
+    
+    const demoPath = remote.app.isPackaged
+    ? path.join(process.resourcesPath, 'extraResources/demo')
+    : './extraResources/demo';
 
     const songs: Array<string> = [];
     try {
-      const files = fs.readdirSync(home);
+      const files = fs.readdirSync(demoPath);
       for (const i in files) {
         const song = files[i];
         if (song.endsWith('.socool')) {
@@ -48,7 +51,7 @@ export class Dispatch {
     const song = songs[demoIdx];
     console.log(song);
     try {
-      const data = fs.readFileSync(`${home}/${song}`, 'utf-8');
+      const data = fs.readFileSync(`${demoPath}/${song}`, 'utf-8');
       this.dispatch({ _k: 'Set_Language', language: data });
       this.dispatch({ _k: 'Increment_Demo_Index', len: songs.length });
       await this.onRender(data);

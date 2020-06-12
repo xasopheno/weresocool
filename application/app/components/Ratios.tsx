@@ -106,7 +106,7 @@ export const RatiosInner = (): React.ReactElement => {
 
   const assetsPath = remote.app.isPackaged
     ? path.join(process.resourcesPath, 'extraResources/assets')
-    : 'assets';
+    : '../extraResources/assets';
 
   return (
     <RSpace id="ratios">

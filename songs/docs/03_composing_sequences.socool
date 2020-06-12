@@ -1,0 +1,23 @@
+-- 03 Composing Sequences
+{ f: 220, l: 1, g: 1, p: 0 }
+
+-- This is a pentatonic_scale. It's a subset of the major_scale.
+pentatonic_scale = {
+	Seq [
+        Fm 1, Fm 9/8, Fm 5/4,  
+        Fm 3/2, Fm 5/3, 
+    ]
+    -- 4x faster
+    | Lm 1/8
+}
+
+main = {
+	pentatonic_scale
+    | Seq [
+        Fm 1, Fm 9/8, Fm 5/4
+        -- uncomment the following line with cmd + /
+        -- Fm 9/8 | Reverse
+    ]
+    -- Repeat 2
+}
+	
