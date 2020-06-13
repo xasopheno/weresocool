@@ -4,6 +4,7 @@ import axios from 'axios';
 import FileSaver from 'file-saver';
 import { settings } from '../settings';
 import { remote } from 'electron';
+import path from 'path';
 
 export enum ResponseType {
   RenderSuccess = 'RenderSuccess',
@@ -30,10 +31,10 @@ export class Dispatch {
 
   async onDemo(demoIdx: number): Promise<void> {
     const fs = remote.require('fs');
-    
+
     const demoPath = remote.app.isPackaged
-    ? path.join(process.resourcesPath, 'extraResources/demo')
-    : './extraResources/demo';
+      ? path.join(process.resourcesPath, 'extraResources/demo')
+      : './extraResources/demo';
 
     const songs: Array<string> = [];
     try {

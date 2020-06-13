@@ -15,7 +15,6 @@ import log from 'electron-log';
 import MenuBuilder from './menu';
 import child_process from 'child_process';
 import getPort from 'get-port';
-import fs from 'fs';
 
 log.transports.file.level = 'info';
 autoUpdater.logger = log;
@@ -25,37 +24,6 @@ const extraResourcesPath =
   process.env.NODE_ENV === 'development'
     ? path.join(path.dirname(__dirname) + '/extraResources')
     : path.join(process.resourcesPath + '/extraResources');
-// const demoPath = path.join(extraResourcesPath, 'demo');
-
-// const demoDir = path.join(app.getPath('home'), 'Documents/weresocool/demo') 
-
-// const copyDemoSongs = () => {
-  // try {
-    // fs.readdir(demoPath, (err, files) => {
-      // if (err) {
-        // throw new Error(err.toString());
-      // }
-      // files.forEach((path) => {
-        // copyDemoSong(path, demoDir);
-      // });
-    // });
-  // } catch (e) {
-    // console.log(e);
-  // }
-// };
-
-// const copyDemoSong = (filename: string, demoDir: string) => {
-  // if (filename.endsWith('.socool')) {
-    // const input_file = path.join(demoPath, filename);
-    // const output_file = path.join(demoDir, filename);
-    // fs.mkdirSync(demoDir, { recursive: true });
-    // fs.copyFileSync(input_file, output_file);
-  // }
-// };
-
-// if (process.env.NODE_ENV !== 'test') {
-  // // copyDemoSongs();
-// }
 
 let mainWindow: BrowserWindow | null = null;
 

@@ -1,0 +1,46 @@
+-- 03 Composing Sequences
+{ f: 220, l: 1, g: 1, p: 0 }
+
+-- This is a pentatonic_scale. It's a subset of the major_scale.
+pentatonic_scale = {
+	Seq [
+        Fm 1, Fm 9/8, Fm 5/4,  
+        Fm 3/2, Fm 5/3 
+    ]
+    -- 8x faster
+    | Lm 1/8
+}
+
+-- Fm 1, Fm 9/8, Fm 5/4 are the first three notes of the major_scale. 
+-- In the main block below, we are Pipe-ing the pentatonic_scale above
+-- into a Seq (Sequence). Essentially, this says:
+--     This song plays the pentatonic_scale first starting at 220 * 1,
+--     then plays the pentatonic_scale starting at 220 * 9/8,
+--        the major second in relation to f,
+--     then plays the pentatonic_scale starting a at 220 * 5/4 
+--        which is the just major third in relation to f.
+
+main = {
+    -- We use the pentonic_scale block by name here.
+	  pentatonic_scale
+    | Seq [
+        Fm 1, Fm 9/8, Fm 5/4,
+        -- uncomment the following line with cmd + /
+        -- Fm 9/8 | Reverse
+        -- Reverse is super cool. It takes what ever you Pipe into it
+        -- and reverses it. Simple as that. 
+    ]
+    -- and uncomment the following line with cmd + /
+    -- | Repeat 4
+    -- Repeat is also super cool if you want to something to happen again. 
+}
+-- As songs get longer, you might want to stop them with cmd + enter.
+
+-- *** Congratulations!!! ***
+-- You now know enough to start making some pretty cool things. 
+-- Before going continuing with the tutorial, 
+-- I recommend trying to make your own piece starting with this one.
+-- A good starting place would be to change the pentatonic_scale to be 
+-- another set of operation. Perhaps, add an additional Fm...
+
+-- If you make something cool, save it with cmd + s before going on.
