@@ -2,17 +2,17 @@
 //  https://github.com/electron-userland/spectron#version-map
 const Application = require('spectron').Application;
 const assert = require('assert');
-const electronPath = require('electron');
-const path = require('path');
+//  const electronPath = require('electron');
+//  const path = require('path');
 
 describe('Application launch', function () {
   this.timeout(10000);
 
   beforeEach(function () {
     this.app = new Application({
-      path: electronPath,
-      //  path: 'release/mac/WereSoCool.app/Contents/MacOS/WereSoCool',
-      args: [path.join(__dirname, '../../app')],
+      path: 'release/mac/WereSoCool.app/Contents/MacOS/WereSoCool',
+      //  args: [path.join(__dirname, '../../app')],
+      //  path: electronPath,
     });
     return this.app.start();
   });

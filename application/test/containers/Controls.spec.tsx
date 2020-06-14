@@ -11,6 +11,22 @@ import { flushPromises } from '../helpers/tools';
 
 Enzyme.configure({ adapter: new Adapter() });
 
+// @ts-ignore
+process.resourcesPath = 'test';
+jest.mock('electron', () => ({
+  require: jest.fn(),
+  match: jest.fn(),
+  app: jest.fn(),
+  remote: {
+    app: {
+      getPath: jest.fn(() => 'extraResources'),
+      isPackaged: jest.fn(),
+      getVersion: jest.fn(() => 'test'),
+    },
+  },
+  dialog: jest.fn(),
+}));
+
 describe('Render', () => {
   test('click #render: ParseError', async () => {
     const mock = new MockAdapter(axios);

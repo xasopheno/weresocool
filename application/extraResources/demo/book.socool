@@ -1,0 +1,133 @@
+{ f: 311, l: 1, g: 1, p: 0 }
+
+overtones = {
+    O[
+        (4, 0, 1/4, -1),
+        (4, 10, 1/4, 1),
+        (5/2, 0, 1/2, -1),
+        (5/2, 11, 1/2, 1),
+        (9/4, 0, 1/2, -1),
+        (9/4, 11, 1/2, 1),
+    	(3/2, 5, 1, 1/4),
+      	(3/2, 0, 1, -1/4),
+      	(1/1, 0, 1, -1/2),
+      	(1/1, 5, 1, 1/2),
+      	(3/4, 5, 1, 1/2),
+      	(3/4, 0, 1, -1/2),
+      	(1/2, 5, 1, 1/2),
+      	(1/2, 0, 1, -1/2),
+  	]
+}
+
+list = List [Tm 0] ++ ET(69)
+
+thing1 = {
+	overtones |
+    List list @ [
+        1 
+            | Lm 30 | Gm 3/2,
+        30 
+            | Lm 14 | Gm 3/2,
+        1 
+            | Lm 40 | Gm 3/2,
+
+        1:55 | Lm 1/4, 
+        1 | Lm 30 | Tm 9/4,
+        40:24 | Lm 1/4, 
+        24, 55, 44, 
+        33 
+            | Lm 3 | Pa -1, 36, 
+        65 
+            | Lm 36 | Pa 1,
+        8 
+            | <List[Tm 0] ++ ET(5)> @ [5:1] | Reverse | Lm 3/5 
+            | Seq [Fm 1, Fm 7/6 | Reverse | Lm 4/5],
+        (55, 59, 44, 42, 63) | Seq [Fm 1, Fm 15/16 | Reverse] | Lm 1/2
+            | Seq [Fm 1, Lm 3/2],
+        3 
+            | <List[Tm 0] ++ ET(7)> @ [1:7] | Lm 3/5 | Pa 1,
+        17:1 | Lm 1/6,
+        44:10 | Lm 1/10 | Pa -1,
+        55:22 | Lm 1/11 | Pa 1,
+        40:15 | Lm 1/9 | Pa -1/2,
+        32:1 | Lm 1/8 | Pa -1/2,
+    ]
+}
+
+three = {
+    Seq [
+        0^5,
+        Seq [
+            thing1
+            | Lm 1/7
+            | Repeat 2,
+            0^10
+        ]
+        | Overlay [
+            Fm 1 | Repeat 2, 
+            Fm 3 | Repeat 3 | Lm 2/3 | Gm 1/9,
+            Fm 5 | Repeat 5 | Lm 2/5 | Gm 1/18 
+        ],
+        0^5
+    ]
+}
+
+book = {
+    Overlay [
+        three, 
+        Seq [
+            Gm 2/5 | O[
+                (5/1, 0, 1/32, -1/2),
+                (5/1, 0.03, 1/32, 1/2),
+                (4/1, 0, 1/32, -1/2),
+                (4/1, 0.03, 1/32, 1/2),
+                (4/1, 0, 1/32, -1/2),
+                (4/1, 0.03, 1/32, 1/2),
+                (2/1, 0, 1/2, -1/4),
+                (2/1, 0.4, 1/2, 1/4),
+                (1/1, 0, 1, -1/4),
+                (1/1, 0.1, 1, 1/4),
+                (3/4, 0.2, 1, 1/4),
+                (3/4, 0, 1, -1/4),
+                (1/2, 0.3, 1, 1/4),
+                (1/2, 0, 1, -1/4),
+                (1/3, 0.4, 1/8, 1/4),
+                (1/3, 0, 1/8, -1/4),
+                (1/4, 0, 1/8, 0),
+                (1/4, 0.15, 1/8, 0),
+            ],
+            Tm 0 | Length 1/50
+        ] 
+        | Repeat 4 
+        > FitLength three
+    ]
+}
+
+noise = List [
+    Noise | Seq [Tm 1, Tm 0, Tm 1, Tm 0, Tm 1, Tm 0] | Length 1/6 | Repeat 4 | Pa 3/2,
+    Noise | Seq [Tm 1, Tm 1, Tm 0, Tm 1, Tm 0, Tm 1] | Length 1/6 | Repeat 4 | Pa 3/2,
+    Noise | Seq [Tm 1, Tm 0, Tm 1, Tm 0] | Length 1/4 | Repeat 4 | Pa 2,
+    Noise | Seq [Tm 1, Tm 0, Tm 1] | Length 1/3 | Repeat 4 | Pa 2,
+    Noise | Seq [Tm 1, Tm 0] | Length 1/2 | Repeat 4 | Pa 1/3,
+    Noise | Seq [Tm 0, Tm 1] | Length 1/2 | Repeat 4 | Pa 1,
+    Noise | Seq [Tm 0, Tm 1, Tm 0, Tm 1, Tm 0] | Length 1/5 | Repeat 4 | Pa -1,
+    Noise | Seq [Tm 0, Tm 1, Tm 0] | Length 3 | Pa 4/5, 
+    Noise | Seq [Tm 0, Tm 1, Tm 0] | Length 2 | Pa -4/5, 
+    Noise | Seq [Tm 0, Tm 1, Tm 0] | Length 4 | Pa -1/3, Noise | Seq [Tm 0, Tm 1, Tm 0] | Length 6, 
+    Noise | Seq [Tm 0, Tm 1, Tm 0] | Length 8, 
+    Tm 0,
+    Tm 0,
+]
+
+main = {
+    Overlay [
+        book,
+        Gain 1/5 | Seq [0^50, List noise @ [Random(55)]]
+        | Overlay [
+            AsIs, 
+            Repeat 2 | Length 1/2 | Pm -1/4,
+            Repeat 3 | Length 1/3 | Pm 2/3,
+        ] > FitLength three
+    ]
+}
+	

@@ -1,0 +1,196 @@
+{ f: 220, l: 1, g: 1, p: 0 }
+
+overtones = {
+    O[
+    	(7/1, 8, 1/8, 1/5),
+    	(6/1, 0, 1/8, -1/4),
+    	(3/1, 5, 1, 2/8),
+    	(3/1, 0, 1, -3/8),
+    	(3/2, 0, 1, 0),
+    	(1/1, 1, 1, 0),
+      	(1/2, 1, 3/4, -1/2),
+      	(1/2, 0, 3/4, 1/2),
+  	]
+}
+
+thing1 = {
+	Sequence [
+		Tm 1, 
+        Tm 3/2,
+        Tm 9/8, 
+        Tm 5/3 | Length 2
+	] 
+    | Length 1/4
+    | Seq [
+        Tm 1, 
+        Tm 5/6, 
+        Tm 9/8, 
+        Tm 15/16
+    ]
+}
+
+thing2 = {
+    Seq [
+        7/6^1 | Length 3, 
+        4/3^1, 
+        25/24^1 | Length 2, 
+        0^1,
+        15/16^1, 
+        9/8^1 | Length 3, 
+    ]
+    | Length 1/8
+    | Seq [
+        Tm 1, 
+        Tm 9/8 | Length 2/3,
+        Tm 7/8 | Length 1 
+    ]
+}
+
+noise = {
+    Noise 
+    | PanA 1/10
+    | Seq [
+        0^1,
+        1^1 | Gain 1/2, 
+        0^1,
+        0^1/2 | PanA 1,
+        1^1/2 | PanA -1, 
+        0^1/2 | Gain 1/2,
+        1^1/2, 
+        0^1,
+        1^1 | Gain 1/2, 
+        0^1,
+        1^1, 
+        0^1,
+    ]
+    | Seq [
+        Gain 1/2, 
+        Gain 2/3, 
+        Gain 3/4, 
+        Gain 1, 
+    ]
+    > FitLength thing1 
+}
+
+bass = {
+	overtones
+    | Overlay [AsIs, Tm 3/2 | PanM -1]
+    | Seq [
+        thing1 | Repeat 3, 
+        Tm 0 | Length 1/100,
+        thing2,
+        Tm 0 | Length 1/100
+    ]
+}
+
+drums = {
+   Seq [
+        Gain 11/5 | noise | Seq [
+            AsIs,  
+            Seq [
+                Length 1/2, Length 1/2 | Tm 2
+            ],
+            Seq [
+                Length 1/3, Length 1/3, Length 1/3 | Tm 2
+            ]
+        ],
+        Tm 0 | Length 1/100,
+        noise 
+        | Reverse,
+        Tm 0 | Length 1/100,
+   ] 
+   > FitLength bass 
+}
+
+
+melody = {
+    Tm 2
+    | Gain 7/6 
+    | O[
+        (1/1, 0, 1, 1),
+        (1/1, 1, 1, -1),
+    ]
+    | Seq [
+        Seq [
+            O[
+                (3/2, 0, 1, 1),
+                (1/1, 1, 1, -1),
+            ],
+            O[
+                (9/8, 0, 1, 1),
+                (3/2, 1, 1, -1),
+            ],
+            O[
+                (3/2, 0, 1, 1),
+                (5/4, 1, 1, -1),
+            ],
+            O[
+                (15/8, 0, 1, 1),
+                (5/3, 1, 1, -1),
+            ],
+            O[
+                (5/3, 0, 1, 1),
+                (15/8, 1, 1, -1),
+            ],
+            O[
+                (9/4, 0, 1, 1),
+                (2, 1, 1, -1),
+            ],
+            O[
+                (3/2, 0, 1, 1),
+                (5/3, 1, 1, -1),
+            ],
+            O[
+                (3/2, 0, 1, 1),
+                (5/3, 1, 1, -1),
+            ],
+            O[
+                (3/2, 0, 1, 1),
+                (5/3, 1, 1, -1),
+            ],
+            O[
+                (15/8, 0, 1, 1),
+                (9/4, 1, 1, -1),
+            ],
+            O[
+                (3/2, 0, 1, 1),
+                (5/3, 1, 1, -1),
+            ],
+            O[
+                (4/3, 0, 1, 1),
+                (3/2, 1, 1, -1),
+            ] | Length 2,
+        ]
+        | Seq [AsIs, Reverse]
+        | Seq [
+            Length 1/2 | Seq [AsIs, Tm 9/8],
+            Length 1/3 | Tm 9/8 
+            | Seq [AsIs, Tm 9/8, Tm 5/4, Tm 9/8 | Length 3/4], 
+            Tm 1 
+            | Length 1/2
+            | Seq [Tm 9/8, Tm 15/16]
+            | Length 4/5
+            | Overlay [Tm 1, Tm 3/2] | Gain 1/2
+        ],
+        0^1/100
+    ]
+    > FitLength bass
+}
+
+main = {
+    Seq [
+        Overlay [
+            drums,
+            bass, 
+        ],
+        Overlay [
+            drums,
+            melody,
+            bass 
+        ],
+        0^1/100,
+    ]
+    | Gain 1/3
+    | Repeat 2
+}
+	

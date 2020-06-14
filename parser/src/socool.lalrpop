@@ -22,7 +22,7 @@ grammar<'defs, 'err>(
 
 pub SoCool: Init = {
   <init: Point>
-  <l: LetDefs> => { init }
+  <l: LetDefs> => init 
 }
 
 Point: Init = {

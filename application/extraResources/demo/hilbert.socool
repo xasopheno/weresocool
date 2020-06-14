@@ -1,0 +1,142 @@
+{ f: 220, l: 1, g: 1, p: 0}
+
+overtones_1 = {
+    O[
+    	(5/3, 3, 1, 1),
+      	(3/2, 0, 1, -1),
+      	(1/1, 2, 1, 1/2),
+      	(1/2, 0, 1, -1/2),
+  	]
+}
+
+overtones_2 = {
+    O[
+    	(15/8, 3, 1, -1/2),
+      	(1/1, 2, 1, 1/2),
+  	]
+}
+
+unit = {
+	Length 8	
+}
+
+thing1 = {
+	Seq [
+		Overlay [
+			overtones_1 |
+			Overlay [
+				AsIs | PanA 1/2 | Tm 2, 
+				AsIs | PanA -3/5 | Tm 8/3,
+			],
+			overtones_2 |
+			Overlay [
+				AsIs | PanA -1/5 | Tm 6,
+				AsIs | Ta 5 | PanA 1/5 | Tm 6,
+			] | Gain 1/8
+		] | Length 1,
+		Tm 0 | Length 2
+	] 
+	| Overlay [
+		AsIs | PanA 1, 
+		Ta 1 | PanA -1,
+		Tm 2 | PanA -1/2,
+		Tm 2 | Ta 2 | PanA 1/2
+	]
+}
+
+bass = {
+    O[
+      	(2/1, 0, 1, 0),
+      	(1/1, 2, 1, 0),
+      	(1/2, 0, 1, 0),
+  	] | 
+	Seq [
+		AsIs, 
+		0^1/4, 
+		3/2^1/4, 
+		0^1/4, 
+		3/2^1/4, 
+		0^1/4, 
+		7/8^1/4, 
+		3/4^1/4, 
+	] 
+	| Tm 1/2 
+	| Repeat 3 
+}
+
+melody = {
+    O[
+      	(14/1, 0, 1/50, -1),
+      	(13/1, 0, 1/50, 1),
+      	(2/1, 4, 1, 0),
+      	(2/1, 0, 1, 0),
+      	(1/1, 3, 1, 0),
+      	(1/1, 0, 1, 0),
+  	] | 
+	Seq [
+		Tm 0,
+		AsIs,
+		Tm 9/8, 
+		Tm 3/2, 
+		Tm 4/3, 
+		Tm 5/4 | Length 8, 
+		Tm 6/5, 
+		Tm 3/2,
+		Tm 5/4, 
+		Tm 15/8 | Length 5,
+		Tm 0
+	]
+	> FitLength unit
+} 
+
+melody2 = {
+    O[
+      	(10/3, 0, 3/4, -4/7),
+      	(10/3, 3, 3/4, 4/7),
+      	(11/4, 3, 3/4, 2/7),
+      	(11/4, 0, 3/4, -1/7),
+      	(2/1, 7, 1, -3/7),
+      	(3/2, 0, 1, 1),
+      	(1/1, 0, 1, -1),
+      	(1/1, 4, 1, 1/2),
+  	] | 
+	Seq [
+		Tm 0 | Length 2,
+		Tm 9/4, 
+		Tm 7/4, 
+		Tm 8/5, 
+		Tm 4/3,
+		AsIs,
+		Tm 3/2, 
+		Tm 5/4,
+		Tm 0,
+		Overlay [Tm 9/8, Tm 4/3] | Gain 2/3 | Seq [AsIs, Tm 8/9],
+	]
+	> FitLength unit
+} 
+
+main = {
+	Overlay [
+		melody | Seq [AsIs, Tm 0] | Overlay [AsIs | PanA -5/8, Ta 1/8 | PanA 2/8] | Gain 1/2,
+		melody2 | Seq [Tm 0, AsIs] | Overlay [AsIs | PanA -1/8, Ta 1/8 | PanA 7/8] | Gain 1/2,
+		Overlay [
+			Gain 1/10 | thing1 | Seq [
+				Tm 0, 
+				Invert | Tm 6 | Length 2/3,
+				Invert | Tm 5,
+				Tm 0,
+				AsIs | Gain 2/3, 
+				Tm 5/4 | Gain 2/3,
+			] | Seq [
+				AsIs, 
+				Tm 25/6 
+				| Overlay [Ta -3 | PanA -1, Ta 4 | PanA 1]
+				| Seq [AsIs, Tm 9/8, Tm 5/4] 
+				| Seq [AsIs, Tm 4/3 | Reverse, Tm 6/5, Tm 3/2 | Reverse] 
+				| Length 1/14 | Gain 1/12
+			] > FitLength unit,
+			bass > FitLength unit 
+		] | Repeat 2
+	] | Repeat 2
+}
+	

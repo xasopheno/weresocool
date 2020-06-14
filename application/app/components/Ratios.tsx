@@ -1,6 +1,10 @@
-import React from 'react';
+import React, { useContext, useState, useCallback, useEffect } from 'react';
+import { GlobalContext } from '../store';
 
 import styled from 'styled-components';
+import { DispatchContext } from '../actions/actions';
+import path from 'path';
+import { remote } from 'electron';
 
 const RSpace = styled.div`
   position: absolute;
@@ -63,6 +67,16 @@ const Two = styled.p`
   padding: 0 0 0 0;
   margin: 0 0 0 0;
 `;
+const MagicButton = styled.img`
+  width: 70px;
+  height: 70px;
+  border-top: 5px ridge goldenrod;
+  opacity: 0.8;
+  margin-top: 10px;
+  :hover {
+    opacity: 1;
+  }
+`;
 
 export const Ratios = (props: { width: number }): React.ReactElement | null => {
   if (props.width > 1000) {
@@ -73,6 +87,27 @@ export const Ratios = (props: { width: number }): React.ReactElement | null => {
 };
 
 export const RatiosInner = (): React.ReactElement => {
+  const dispatch = useContext(DispatchContext);
+  const store = useContext(GlobalContext);
+  const [render, setRender] = useState<boolean>(false);
+
+  const submit = useCallback(async () => {
+    if (render) {
+      await dispatch.onDemo(store.demoIdx);
+    }
+  }, [dispatch, render, store.demoIdx]);
+
+  useEffect(() => {
+    submit().catch((e) => {
+      throw e;
+    });
+    setRender(false);
+  }, [render, dispatch, store.demoIdx, submit]);
+
+  const assetsPath = remote.app.isPackaged
+    ? path.join(process.resourcesPath, 'extraResources/assets')
+    : '../extraResources/assets';
+
   return (
     <RSpace id="ratios">
       <Degree>
@@ -137,6 +172,11 @@ export const RatiosInner = (): React.ReactElement => {
           <Two>1/1</Two>
         </Maj>
       </Degree>
+      <MagicButton
+        id={'magicButton'}
+        src={`${assetsPath}/magic.png`}
+        onClick={() => setRender(true)}
+      />
     </RSpace>
   );
 };

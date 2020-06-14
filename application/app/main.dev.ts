@@ -16,13 +16,14 @@ import MenuBuilder from './menu';
 import child_process from 'child_process';
 import getPort from 'get-port';
 
-export default class AppUpdater {
-  constructor() {
-    log.transports.file.level = 'info';
-    autoUpdater.logger = log;
-    autoUpdater.checkForUpdatesAndNotify();
-  }
-}
+log.transports.file.level = 'info';
+autoUpdater.logger = log;
+log.info('App starting...');
+
+const extraResourcesPath =
+  process.env.NODE_ENV === 'development'
+    ? path.join(path.dirname(__dirname) + '/extraResources')
+    : path.join(process.resourcesPath + '/extraResources');
 
 let mainWindow: BrowserWindow | null = null;
 
@@ -56,16 +57,7 @@ const createWindow = async () => {
     await installExtensions();
   }
 
-  let server_path =
-    process.env.NODE_ENV === 'development'
-      ? path.join(
-          path.dirname(__dirname) + '/extraResources',
-          'weresocool_server'
-        )
-      : path.join(
-          process.resourcesPath + '/extraResources',
-          'weresocool_server'
-        );
+  let server_path = path.join(extraResourcesPath, 'weresocool_server');
 
   const port = await getPort({ port: 4588 });
   process.env.BACKEND_PORT = port.toString();
@@ -112,14 +104,38 @@ const createWindow = async () => {
   const menuBuilder = new MenuBuilder(mainWindow);
   menuBuilder.buildMenu();
 
-  // Remove this if your app does not use auto updates
-  // eslint-disable-next-line
-  new AppUpdater();
+  autoUpdater.checkForUpdatesAndNotify();
 };
 
 /**
  * Add event listeners...
  */
+// autoUpdater.logger = require("electron-log");
+// autoUpdater.logger.transports.file.level = "info";
+
+// autoUpdater.on('update-downloaded', () => {
+// console.log('update-downloaded lats quitAndInstall');
+
+// if (process.env.NODE_ENV === 'production') {
+// dialog.showMessageBox({
+// type: 'info',
+// title: 'Found Updates',
+// message: 'Found updates, do you want update now?',
+// buttons: ['Sure', 'No']
+// }, (buttonIndex) => {
+// if (buttonIndex === 0) {
+// const isSilent = true;
+// const isForceRunAfter = true;
+// autoUpdater.quitAndInstall(isSilent, isForceRunAfter);
+// }
+// else {
+// updater.enabled = true
+// updater = null
+// }
+// })
+// }
+
+// })
 
 app.on('window-all-closed', () => {
   // Respect the OSX convention of having the application in memory even

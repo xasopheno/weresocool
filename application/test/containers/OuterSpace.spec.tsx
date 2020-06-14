@@ -11,6 +11,21 @@ import { flushPromises } from '../helpers/tools';
 import FileSaver from 'file-saver';
 
 Enzyme.configure({ adapter: new Adapter() });
+// @ts-ignore
+process.resourcesPath = 'test';
+jest.mock('electron', () => ({
+  require: jest.fn(),
+  match: jest.fn(),
+  app: jest.fn(),
+  remote: {
+    app: {
+      getPath: jest.fn(),
+      getVersion: jest.fn(() => 'test'),
+      isPackaged: jest.fn(),
+    },
+  },
+  dialog: jest.fn(),
+}));
 
 describe('OuterSpace', () => {
   it('onResetLanguage', () => {

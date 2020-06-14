@@ -9,87 +9,91 @@ export class CustomHighlightRules extends window.ace.acequire(
       start: [
         {
           token: 'comment',
-          regex: '--.*$'
+          regex: '--.*$',
         },
         {
           token: 'number',
-          regex: '[1-9]'
+          regex: '[1-9]',
         },
         {
           token: 'zero',
-          regex: '[0]'
+          regex: '[0]',
         },
         {
           token: 'danny',
-          regex: 'f:|l:|g:|p:'
+          regex: 'f:|l:|g:|p:',
         },
         {
           token: 'slash',
-          regex: '/'
+          regex: '/',
         },
         {
           token: 'keyword',
-          regex: '#'
+          regex: '#',
         },
         {
           token: 'curly',
-          regex: '{|}'
+          regex: '{|}',
         },
         {
           token: 'bracket',
-          regex: '\\[|\\]'
+          regex: '\\[|\\]',
         },
         {
           token: 'paren',
-          regex: '\\(|\\)'
+          regex: '\\(|\\)',
         },
         {
           token: 'pipe',
-          regex: '\\|'
+          regex: '\\|',
         },
 
         {
           token: 'keyword',
-          regex: '>'
+          regex: '>',
         },
 
         {
           token: 'curly',
-          regex: '='
+          regex: '=',
+        },
+        {
+          token: 'curly',
+          regex: 'main',
         },
         {
           token: 'dot',
-          regex: '\\.'
+          regex: '\\.',
         },
         {
           token: 'group_operation_other',
-          regex: 'FitLength|ModulateBy|Reverse|ModBy|Invert'
+          regex: 'FitLength|ModulateBy|Reverse|ModBy|Invert',
         },
         {
           token: 'repeat',
-          regex: 'Repeat'
+          regex: 'Repeat',
         },
         { token: 'group_operation', regex: 'Sequence|Overlay|Seq' },
 
         {
           token: 'o_shortcut',
-          regex: 'O'
+          regex: 'O',
         },
 
         {
           token: 'operation',
           regex:
-            'AsIs|Tm|Ta|PanA|PanM|Gain|Length|Fm|Fa|Pa|Pm|Lm|Gm|Sine|Square|Noise|Portamento'
+            'AsIs|Tm|Ta|PanA|PanM|Gain|Length|Fm|Fa|Pa|Pm|Lm|Gm|Sine|Square|Noise|Portamento',
         },
         {
           token: 'list',
-          regex: '@|List|Random|&|ET'
+          regex: '@|List|Random|&|ET',
         },
         {
           token: 'letter',
-          regex: '[a-z]'
-        }
-      ]
+          regex: '[a-z]',
+        },
+      ],
     };
   }
 }
@@ -100,7 +104,7 @@ export default class WSCMode extends window.ace.acequire('ace/mode/text').Mode {
     this.HighlightRules = CustomHighlightRules;
     this.lineCommentStart = '--';
 
-    this.getNextLineIndent = function(state, line, tab) {
+    this.getNextLineIndent = function (state, line, tab) {
       var indent = this.$getIndent(line);
 
       var tokenizedLine = this.getTokenizer().getLineTokens(line, state);

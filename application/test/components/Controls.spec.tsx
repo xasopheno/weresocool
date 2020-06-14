@@ -8,6 +8,21 @@ import { Dispatch, DispatchContext } from '../../app/actions/actions';
 import { GlobalContext, intialStore } from '../../app/store';
 
 Enzyme.configure({ adapter: new Adapter() });
+// @ts-ignore
+process.resourcesPath = 'test';
+jest.mock('electron', () => ({
+  require: jest.fn(),
+  match: jest.fn(),
+  app: jest.fn(),
+  remote: {
+    app: {
+      getPath: jest.fn(),
+      isPackaged: jest.fn(),
+      getVersion: jest.fn(() => 'test'),
+    },
+  },
+  dialog: jest.fn(),
+}));
 
 function ControlsComponent() {
   const [store, rawDispatch] = useReducer(mainReducer, intialStore);

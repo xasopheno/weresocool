@@ -1,0 +1,42 @@
+-- 02 Moving Things Around
+{ f: 220, l: 1, g: 1, p: 0 }
+
+-- We can factor out the major_scale into it's own block.
+major_scale = {
+	Seq [
+        Fm 1, Fm 9/8, Fm 5/4, Fm 4/3, 
+        Fm 3/2, Fm 5/3, Fm 15/8, Fm 2
+    ]
+}
+
+-- In the following main block, we're using another new operation,
+-- Lm (Length Multiply). Lm does the same thing for length
+-- as Fm did for frequency. Multipliers < 1 will decrease
+-- and multipliers > 1 will increase length. 
+
+-- One of the most import Operations in this language is "|" (Pipe), because it allows you to chain together operations.
+
+-- In the main block below, we are multiplying the frequency
+-- of all the operations in our major_scale by 3/2 (a perfect 5th),
+-- and then speeding up all the operations 7x. 
+-- Operations are cumulative, so:
+--     major_scale | Lm 1/2 | Lm 1/2
+-- sounds the same as: 
+--     major_scale | Lm 1/4
+
+
+main = {
+    -- We can use the major scale block by name here.
+    major_scale
+    | Fm 3/2
+    | Lm 1/7
+}
+
+-- You can now make melodies with rhythms:
+-- main = {
+--      Seq [ 
+--        Fm 1 | Lm 2, 
+--        Fm 3/2 | Lm 1/2, 
+--        Fm 4/3 | Lm 4 
+--      ]
+--}

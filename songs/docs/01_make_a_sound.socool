@@ -1,0 +1,40 @@
+-- 01 Major Scale
+{ f: 220, l: 1, g: 1, p: 0 } 
+-- Any line that starts with "--" is commented out 
+-- and will not be rendered. 
+
+-- *** You can quickly comment/uncomment with cmd+/ ***
+
+-- At the top of your .socool file, you need one of these:
+-- { f: 220, l: 1, g: 1, p: 0 } 
+
+-- f is your starting frequency. in this case, 220 which happens to be an "A".
+-- l is your starting length in seconds. in this case, 1 second.
+-- g is your staring gain. smaller is quieter, larger is louder.
+-- p is your staring pan. 
+--   0 is in the middle. 
+--   -1 is on the left 
+--   1 is on the right 
+
+-- In order for a .socool file to render, it also needs a "main block".
+
+-- There are two Operations being used in this file's main block:
+
+--   "Fm" (Frequency Multiply): takes the "f" at the top of your file and multiplies it by the multiplier provided. 
+
+--   "Seq" (Sequence): Operations in a Seq block will play in order.
+
+-- Click Render or press Shift-Enter to render this file.
+main = {
+	Seq [
+        Fm 1, Fm 9/8, Fm 5/4, Fm 4/3, 
+        Fm 3/2, Fm 5/3, Fm 15/8, Fm 2
+    ]
+}
+-- Hopefully, you just heard a major scale. If you look to the
+-- right you'll see that the ratios that make up a major scale 
+-- are surrounded by gold boxes. 
+
+-- Try changing some of the ratios to make different sounds. 
+-- Ratios > 1 will go up and ratios < 1 will go down. 
+-- For example: 2/1 is up one octave and 1/2 is down one octave.

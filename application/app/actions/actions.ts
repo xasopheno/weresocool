@@ -3,6 +3,8 @@ import { Fetch } from '../store';
 import axios from 'axios';
 import FileSaver from 'file-saver';
 import { settings } from '../settings';
+import { remote } from 'electron';
+import path from 'path';
 
 export enum ResponseType {
   RenderSuccess = 'RenderSuccess',
@@ -14,6 +16,7 @@ export enum ResponseType {
 
 export type Action =
   | { _k: 'Increment_Editor_Type' }
+  | { _k: 'Increment_Demo_Index'; len: number }
   | { _k: 'Backend'; fetch: Fetch }
   | { _k: 'Set_Render_State'; state: ResponseType }
   | { _k: 'Set_Markers'; line: number; column: number; n_lines: number }
@@ -25,6 +28,38 @@ export type Action =
 
 export class Dispatch {
   constructor(public dispatch: React.Dispatch<Action>) {}
+
+  async onDemo(demoIdx: number): Promise<void> {
+    const fs = remote.require('fs');
+
+    const demoPath = remote.app.isPackaged
+      ? path.join(process.resourcesPath, 'extraResources/demo')
+      : './extraResources/demo';
+
+    const songs: Array<string> = [];
+    try {
+      const files = fs.readdirSync(demoPath);
+      for (const i in files) {
+        const song = files[i];
+        if (song.endsWith('.socool')) {
+          songs.push(song);
+        }
+      }
+    } catch (e) {
+      console.log(e);
+    }
+
+    const song = songs[demoIdx];
+    console.log(song);
+    try {
+      const data = fs.readFileSync(`${demoPath}/${song}`, 'utf-8');
+      this.dispatch({ _k: 'Set_Language', language: data });
+      this.dispatch({ _k: 'Increment_Demo_Index', len: songs.length });
+      await this.onRender(data);
+    } catch (e) {
+      console.log(e);
+    }
+  }
 
   onFileLoad = (e: React.ChangeEvent<HTMLInputElement>): void => {
     if (e && e.target && e.target.files && e.target.files.length > 0) {

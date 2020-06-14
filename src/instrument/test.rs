@@ -2,7 +2,7 @@ pub mod tests {
     use crate::renderable::{Offset, RenderOp};
     use crate::settings::get_test_settings;
     use crate::{
-        helpers::cmp_f64,
+        helpers::{cmp_f64, cmp_vec_f64},
         instrument::{
             loudness::loudness_normalization,
             oscillator::Oscillator,
@@ -68,10 +68,10 @@ pub mod tests {
             op.samples = 3;
             voice.update(&op, &Offset::identity());
             let buffer = voice.generate_waveform(&op, &Offset::identity());
-            assert_eq!(
-                buffer,
-                [0.0, 0.0000000019383814567487256, 0.000000007752738881862574]
-            );
+            assert!(cmp_vec_f64(
+                buffer.to_vec(),
+                [0.0, 0.0000000019383814567487256, 0.000000007752738881862574].to_vec()
+            ));
         }
 
         #[test]
