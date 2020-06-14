@@ -4,7 +4,7 @@
   "version": "1.0.9",
   "description": " Make cool sounds. Impress your friends/pets/plants.",
   "scripts": {
-    "build-backend": "make build_static -C ../ && cp ../target/release/weresocool_server extraResources/weresocool_server",
+    "build-backend": "cd server && ./build_static.sh && cd ../ && cp ../target/release/weresocool_server extraResources/weresocool_server",
     "build": "concurrently \"yarn build-main\" \"yarn build-renderer\"",
     "build-dll": "cross-env NODE_ENV=development webpack --config ./configs/webpack.config.renderer.dev.dll.babel.js --colors",
     "build-e2e": "cross-env E2E_BUILD=true yarn build",
