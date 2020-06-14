@@ -27,8 +27,6 @@ jobs:
     - name: install portaudio
       run: brew install portaudio pkg-config
 
-    - name: Build
-      run: cargo build --verbose
     - name: Add rustfmt
       run: rustup component add rustfmt
     - name: add clippy
