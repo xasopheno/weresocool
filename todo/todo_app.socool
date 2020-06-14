@@ -1,0 +1,107 @@
+app_so_cool
+
+single repo:
+[x] - no submodules?
+[x] - e2e test in electron
+[x] - dependabot    
+[x] - e2e test in built app
+[x] - ci test
+      https://github.com/anaisbetts/xvfb-maybe
+      https://www.electronjs.org/docs/tutorial/testing-on-headless-ci
+[x] - app_server => server
+[x] - app_so_cool => WereSoCool/app_so_cool
+[x] - decide on CI. Actions expensive? 
+
+
+frontend:
+[x]  - Save/Save_As
+
+backend: 
+[x]  - build the backend on build-e2e
+[x]  - cp backend to correct place
+
+app signing:
+[x] - sign locally
+[] - notorize locally
+[x] - sign on ci
+[x] - notorize on ci
+[x] - auto-update 
+
+scripts:
+[] ci w/o signing/notarization
+[] ci with signing/notarization
+[] test-e2e w/o signing/notarization
+[] package-local with signing/notarization
+
+ui: 
+[]  - focus on editor after each operation
+[]  - save editorType in local storage
+[]  - play instead of render
+[]  - a failure should not break the backend
+
+build on ci:
+[x]  - flag for static build
+[\]  - action for master only if tests pass
+[x]  - cache rust during application build
+
+publishing:
+[x]   - github
+
+app setup:
+[x]     Choose Port
+            Find a port not being used and pass it to backend as an argument
+[x]     Build Portaudio Statically
+[x]        Using macos image.
+[x]         Only on macos
+
+dependabot:
+[]  - auto-merge
+
+Update README.md's:
+[]  - audio
+[]  - application
+
+Demo:
+[\] - pick songs
+[]  - proof songs 
+[x] - only play one song at a time for now
+[x] - for song in WereSoCool/demo`
+     (server side events)
+[x] - copy demo songs on load
+[]  - only do it on first load
+
+Tutorial: 
+[] - "tutorial mode"
+[] - "left and right buttons"
+
+Documentation:
+[x]  Fm, 
+[x]  Seq [],
+[x]  Fa | Lm | Gm | Pm | Pa,
+[x]  Overlay [],
+[x]  Repeat,
+[x]  Reverse,
+[/]  Invert,
+[x]  O[],
+[/]  FitLength,
+     ModulateBy,
+     List | &,
+     ET(n),
+     @ [0, 1, 2, 3, ..]
+     @ [Random(n, seed)]
+     @ [start:end:skip]
+     list1 ++ list2
+
+_______________________________________
+
+Mic:
+    Replace Yin with Yaapt
+        https://github.com/mcraig2/pyaapt/blob/master/yaapt.py
+
+
+
+[]     Build ffmpeg Statically
+            Needs to be operating system specific
+        -- https://amin-ahmadi.com/2020/05/10/how-to-build-static-ffmpeg-with-x264-on-macos/
+        -- https://github.com/albinoz/ffmpeg-static-OSX
+

@@ -21,4 +21,3 @@ impl Interpretable for InputType<'_> {
         parsed_to_render(filename, parsed_composition, target)
     }
 }
-

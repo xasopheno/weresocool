@@ -34,4 +34,3 @@ impl Error {
         *self.inner
     }
 }
-
