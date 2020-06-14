@@ -1,12 +1,10 @@
-name: Cool Tests
+name: Cool Tmake testests
 
 on: [push]
 
 jobs:
   build:
-
     runs-on: macos-latest
-
 
     steps:
     - uses: actions/checkout@v2
@@ -36,10 +34,10 @@ jobs:
     - name: add clippy
       run: rustup component add clippy
     - name: format
-      run: ./format_ci.sh
+      run: make format_ci
     - name: clippy 
-      run: cargo clippy --all-targets -- -D warnings
+      run: make clippy
     - name: run tests
-      run: ./test.sh
+      run: make test
       
       

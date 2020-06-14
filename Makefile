@@ -19,6 +19,8 @@ format_ci:
 	pushd parser && cargo fmt -- --check && popd
 	pushd ast && cargo fmt -- --check && popd
 
+clippy:
+	cargo clippy --all-targets -- -D warnings
 
 test:
 	cargo test --workspace --release
@@ -29,3 +31,4 @@ test_rehash:
 
 scratch:
 	cargo watch --exec "run --release --bin scratch"
+
