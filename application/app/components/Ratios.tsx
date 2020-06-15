@@ -5,6 +5,7 @@ import styled from 'styled-components';
 import { DispatchContext } from '../actions/actions';
 import path from 'path';
 import { remote } from 'electron';
+import { Tutorial } from './Tutorial';
 
 const RSpace = styled.div`
   position: absolute;
@@ -71,22 +72,34 @@ const MagicButton = styled.img`
   width: 70px;
   height: 70px;
   border-top: 5px ridge goldenrod;
-  opacity: 0.8;
-  margin-top: 10px;
+  opacity: 0.7;
+  background-color: red;
   :hover {
     opacity: 1;
   }
 `;
 
 export const Ratios = (props: { width: number }): React.ReactElement | null => {
+  const [modal, setModal] = React.useState(true);
+
+  const setShow = (b: boolean) => {
+    setModal(b);
+  };
   if (props.width > 1000) {
-    return <RatiosInner />;
+    return (
+      <div>
+        <Tutorial show={modal} setShow={setShow} />
+        <RatiosInner setShow={setShow} />
+      </div>
+    );
   } else {
     return null;
   }
 };
 
-export const RatiosInner = (): React.ReactElement => {
+type Props = { setShow: (b: boolean) => void };
+
+export const RatiosInner = (props: Props): React.ReactElement => {
   const dispatch = useContext(DispatchContext);
   const store = useContext(GlobalContext);
   const [render, setRender] = useState<boolean>(false);
@@ -176,6 +189,11 @@ export const RatiosInner = (): React.ReactElement => {
         id={'magicButton'}
         src={`${assetsPath}/magic.png`}
         onClick={() => setRender(true)}
+      />
+      <MagicButton
+        id={'magicButton'}
+        src={`${assetsPath}/question_mark.jpg`}
+        onClick={() => props.setShow(true)}
       />
     </RSpace>
   );
