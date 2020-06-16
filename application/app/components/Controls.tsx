@@ -25,10 +25,10 @@ export const Controls = (props: Props): React.ReactElement => {
       <ButtonBox>
         <Button
           data-tip="Shift+Enter"
-          id={'renderButton'}
+          id={'playButton'}
           onClick={() => dispatch.onRender(store.language)}
         >
-          Render
+          Play
         </Button>
         <Button data-tip="⌘+Enter" id={'stopButton'} onClick={dispatch.onStop}>
           Stop

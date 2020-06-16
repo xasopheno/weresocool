@@ -1,8 +1,7 @@
 import React, { useContext, useState, useCallback, useEffect } from 'react';
 import { GlobalContext } from '../store';
-
-import styled from 'styled-components';
 import { DispatchContext } from '../actions/actions';
+import styled from 'styled-components';
 import path from 'path';
 import { remote } from 'electron';
 import { Tutorial } from './Tutorial';
@@ -79,7 +78,21 @@ const MagicButton = styled.img`
   }
 `;
 
+const MagicButtonSmall = styled.img`
+  width: 40px;
+  height: 40px;
+  border-top: 5px ridge goldenrod;
+  opacity: 0.7;
+  background-color: red;
+  :hover {
+    opacity: 1;
+  }
+`;
+
 export const Ratios = (props: { width: number }): React.ReactElement | null => {
+  const assetsPath = remote.app.isPackaged
+    ? path.join(process.resourcesPath, 'extraResources/assets')
+    : '../extraResources/assets';
   const [modal, setModal] = React.useState(true);
 
   const setShow = (b: boolean) => {
@@ -92,14 +105,32 @@ export const Ratios = (props: { width: number }): React.ReactElement | null => {
         <RatiosInner setShow={setShow} />
       </div>
     );
+  } else if (props.width > 650) {
+    return (
+      <RSpace>
+        <MagicButtonSmall
+          id={'magicButtonSmall'}
+          src={`${assetsPath}/magic.png`}
+          onClick={() => {}}
+        />
+        <MagicButtonSmall
+          id={'magicButtonSmall'}
+          src={`${assetsPath}/question_mark.jpg`}
+          onClick={() => {}}
+        />
+      </RSpace>
+    );
   } else {
-    return null;
+    return <div />;
   }
 };
 
 type Props = { setShow: (b: boolean) => void };
 
 export const RatiosInner = (props: Props): React.ReactElement => {
+  const assetsPath = remote.app.isPackaged
+    ? path.join(process.resourcesPath, 'extraResources/assets')
+    : '../extraResources/assets';
   const dispatch = useContext(DispatchContext);
   const store = useContext(GlobalContext);
   const [render, setRender] = useState<boolean>(false);
@@ -116,10 +147,6 @@ export const RatiosInner = (props: Props): React.ReactElement => {
     });
     setRender(false);
   }, [render, dispatch, store.demoIdx, submit]);
-
-  const assetsPath = remote.app.isPackaged
-    ? path.join(process.resourcesPath, 'extraResources/assets')
-    : '../extraResources/assets';
 
   return (
     <RSpace id="ratios">

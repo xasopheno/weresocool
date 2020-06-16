@@ -27,8 +27,8 @@ jest.mock('electron', () => ({
   dialog: jest.fn(),
 }));
 
-describe('Render', () => {
-  test('click #render: ParseError', async () => {
+describe('Play', () => {
+  test('click #play: ParseError', async () => {
     const mock = new MockAdapter(axios);
     const response = {
       ParseError: { message: 'Unexpected Token', line: 14, column: 15 },
@@ -37,7 +37,7 @@ describe('Render', () => {
 
     const component = mount(<OuterSpaceWrapper />);
     await act(async () => {
-      component.find('#renderButton').at(0).simulate('click');
+      component.find('#playButton').at(0).simulate('click');
       await flushPromises();
     });
     component.update();
@@ -48,7 +48,7 @@ describe('Render', () => {
       'UnexpectedToken: Line: 14 | Column 15'
     );
   });
-  test('click #render: RenderSuccess', async () => {
+  test('click play: RenderSuccess', async () => {
     const mock = new MockAdapter(axios);
     const response = {
       RenderSuccess: 'success',
@@ -58,7 +58,7 @@ describe('Render', () => {
     const component = mount(<OuterSpaceWrapper />);
 
     await act(async () => {
-      component.find('#renderButton').at(0).simulate('click');
+      component.find('#playButton').at(0).simulate('click');
       await flushPromises();
     });
     component.update();
@@ -66,7 +66,7 @@ describe('Render', () => {
     const errorDescription = component.find('#errorDescription');
     expect(errorDescription.exists()).toBe(false);
   });
-  test('click #render: IdError', async () => {
+  test('click play: IdError', async () => {
     const mock = new MockAdapter(axios);
     const response = {
       IdError: { id: 'thing' },
@@ -75,7 +75,7 @@ describe('Render', () => {
 
     const component = mount(<OuterSpaceWrapper />);
     await act(async () => {
-      component.find('#renderButton').at(0).simulate('click');
+      component.find('#playButton').at(0).simulate('click');
       await flushPromises();
     });
     component.update();
@@ -84,7 +84,7 @@ describe('Render', () => {
     expect(errorDescription.exists()).toBe(true);
     expect(errorDescription.at(0).text()).toBe('Name Not Found: thing');
   });
-  test('click #render: IndexError', async () => {
+  test('click #play: IndexError', async () => {
     const mock = new MockAdapter(axios);
     const response = {
       IndexError: {
@@ -97,7 +97,7 @@ describe('Render', () => {
 
     const component = mount(<OuterSpaceWrapper />);
     await act(async () => {
-      component.find('#renderButton').at(0).simulate('click');
+      component.find('#playButton').at(0).simulate('click');
       await flushPromises();
     });
     component.update();
@@ -108,7 +108,7 @@ describe('Render', () => {
       'index 8 is greater than length of list 7'
     );
   });
-  test('click #render: MsgError', async () => {
+  test('click #play: MsgError', async () => {
     const mock = new MockAdapter(axios);
     const response = {
       Msg: {
@@ -119,7 +119,7 @@ describe('Render', () => {
 
     const component = mount(<OuterSpaceWrapper />);
     await act(async () => {
-      component.find('#renderButton').at(0).simulate('click');
+      component.find('#playButton').at(0).simulate('click');
       await flushPromises();
     });
     component.update();
@@ -131,9 +131,9 @@ describe('Render', () => {
 });
 
 describe('Controls', () => {
-  it('render button exists', () => {
+  it('play button exists', () => {
     const component = mount(<Root initialStore={testStore} />);
-    expect(component.find('#renderButton').exists()).toBe(true);
+    expect(component.find('#playButton').exists()).toBe(true);
   });
   it('stop button exists', () => {
     const component = mount(<Root initialStore={testStore} />);

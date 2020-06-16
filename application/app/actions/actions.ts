@@ -29,6 +29,22 @@ export type Action =
 export class Dispatch {
   constructor(public dispatch: React.Dispatch<Action>) {}
 
+  async onTutorial(filename: string): Promise<void> {
+    const fs = remote.require('fs');
+
+    const tutorialPath = remote.app.isPackaged
+      ? path.join(process.resourcesPath, 'extraResources/tutorial')
+      : './extraResources/tutorial';
+
+    try {
+      const data = fs.readFileSync(`${tutorialPath}/${filename}`, 'utf-8');
+      this.dispatch({ _k: 'Set_Language', language: data });
+      await this.onRender(data);
+    } catch (e) {
+      console.log(e);
+    }
+  }
+
   async onDemo(demoIdx: number): Promise<void> {
     const fs = remote.require('fs');
 

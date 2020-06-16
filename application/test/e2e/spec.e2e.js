@@ -30,7 +30,7 @@ describe('Application launch', function () {
 
   it('should display #led_good after render', async function () {
     await this.app.client.waitUntilWindowLoaded();
-    await this.app.client.click('#renderButton');
+    await this.app.client.click('#playButton');
     return this.app.client.isExisting('#led_good');
   });
 });
