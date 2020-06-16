@@ -1,6 +1,6 @@
 import React, { useContext } from 'react';
 import styled from 'styled-components';
-import { tutorial_list } from './tutorial_list';
+import { DemoList } from './tutorial_list';
 import { DispatchContext } from '../actions/actions';
 
 const Modal = styled.div`
@@ -38,19 +38,25 @@ const Button = styled.div`
   color: #edd;
 `;
 
-type Props = { show: boolean; setShow: (b: boolean) => void };
+export interface DemoData {
+  show: boolean;
+  setShow: (b: boolean) => void;
+  data: DemoList;
+  title: string;
+  folder: string;
+}
 
-export const Tutorial = (props: Props): React.ReactElement => {
+export const Demo = (props: { demoData: DemoData }): React.ReactElement => {
   const dispatch = useContext(DispatchContext);
   const chooseTutorial = async (filename: string) => {
-    props.setShow(false);
-    await dispatch.onTutorial(filename);
+    props.demoData.setShow(false);
+    await dispatch.onDemo(filename, props.demoData.folder);
   };
 
-  const makeTutorials = (): React.ReactElement => {
+  const makeDemos = (): React.ReactElement => {
     return (
       <div>
-        {tutorial_list.map((tutorial, i) => {
+        {props.demoData.data.map((tutorial, i) => {
           return (
             <Section key={i} onClick={() => chooseTutorial(tutorial.filename)}>
               {tutorial.text}
@@ -60,12 +66,12 @@ export const Tutorial = (props: Props): React.ReactElement => {
       </div>
     );
   };
-  if (props.show) {
+  if (props.demoData.show) {
     return (
       <Modal>
-        <Title>Cool Tutorials</Title>
-        {makeTutorials()}
-        <Button onClick={() => props.setShow(false)}>X</Button>
+        <Title>{props.demoData.title}</Title>
+        {makeDemos()}
+        <Button onClick={() => props.demoData.setShow(false)}>X</Button>
       </Modal>
     );
   } else {

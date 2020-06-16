@@ -4,7 +4,9 @@ on: [push]
 
 jobs:
   build:
+
     runs-on: macos-latest
+
 
     steps:
     - uses: actions/checkout@v2
@@ -27,15 +29,17 @@ jobs:
     - name: install portaudio
       run: brew install portaudio pkg-config
 
+    - name: Build
+      run: cargo build --verbose
     - name: Add rustfmt
       run: rustup component add rustfmt
     - name: add clippy
       run: rustup component add clippy
     - name: format
-      run: make format_ci
+      run: make format_ci 
     - name: clippy 
-      run: make clippy
+      run: cargo clippy --all-targets -- -D warnings
     - name: run tests
-      run: make test
+      run: ./test.sh
       
       

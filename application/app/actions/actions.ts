@@ -29,48 +29,16 @@ export type Action =
 export class Dispatch {
   constructor(public dispatch: React.Dispatch<Action>) {}
 
-  async onTutorial(filename: string): Promise<void> {
-    const fs = remote.require('fs');
-
-    const tutorialPath = remote.app.isPackaged
-      ? path.join(process.resourcesPath, 'extraResources/tutorial')
-      : './extraResources/tutorial';
-
-    try {
-      const data = fs.readFileSync(`${tutorialPath}/${filename}`, 'utf-8');
-      this.dispatch({ _k: 'Set_Language', language: data });
-      await this.onRender(data);
-    } catch (e) {
-      console.log(e);
-    }
-  }
-
-  async onDemo(demoIdx: number): Promise<void> {
+  async onDemo(filename: string, folder: string): Promise<void> {
     const fs = remote.require('fs');
 
     const demoPath = remote.app.isPackaged
-      ? path.join(process.resourcesPath, 'extraResources/demo')
-      : './extraResources/demo';
+      ? path.join(process.resourcesPath, `extraResources/${folder}`)
+      : `./extraResources/${folder}`;
 
-    const songs: Array<string> = [];
     try {
-      const files = fs.readdirSync(demoPath);
-      for (const i in files) {
-        const song = files[i];
-        if (song.endsWith('.socool')) {
-          songs.push(song);
-        }
-      }
-    } catch (e) {
-      console.log(e);
-    }
-
-    const song = songs[demoIdx];
-    console.log(song);
-    try {
-      const data = fs.readFileSync(`${demoPath}/${song}`, 'utf-8');
+      const data = fs.readFileSync(`${demoPath}/${filename}`, 'utf-8');
       this.dispatch({ _k: 'Set_Language', language: data });
-      this.dispatch({ _k: 'Increment_Demo_Index', len: songs.length });
       await this.onRender(data);
     } catch (e) {
       console.log(e);
@@ -87,7 +55,6 @@ export class Dispatch {
           read_event.target.result &&
           typeof read_event.target.result === 'string'
         ) {
-          // setFileName(file.name);
           this.onUpdateLanguage(read_event.target.result);
         }
       };
