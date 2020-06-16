@@ -66,15 +66,15 @@ Demo:
 []  - proof songs 
 [x] - only play one song at a time for now
 [x] - for song in WereSoCool/demo`
-     (server side events)
 [x] - copy demo songs on load
 []  - only do it on first load
+[x] - "Demo Modal"
 
 Tutorial: 
-[] - "tutorial mode"
-[] - "left and right buttons"
+[x] - Tutorial Modal
 
 Documentation:
+
 [x]  Fm, 
 [x]  Seq [],
 [x]  Fa | Lm | Gm | Pm | Pa,
