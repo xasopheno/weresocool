@@ -16,12 +16,12 @@ const Modal = styled.div`
 
 const Title = styled.h1`
   font-size: 40px;
-  margin-top: 120px;
+  margin-top: 60px;
   text-align: center;
   color: #edd;
 `;
 const Section = styled.p`
-  font-size: 30px;
+  font-size: 20px;
   text-align: center;
   color: #edd;
   :hover {
@@ -36,6 +36,11 @@ const Button = styled.div`
   margin: 80px;
   font-size: 80px;
   color: #edd;
+`;
+
+const TitleContainer = styled.div`
+  overflow-y: scroll;
+  height: 700px;
 `;
 
 export interface DemoData {
@@ -55,15 +60,15 @@ export const Demo = (props: { demoData: DemoData }): React.ReactElement => {
 
   const makeDemos = (): React.ReactElement => {
     return (
-      <div>
+      <TitleContainer>
         {props.demoData.data.map((tutorial, i) => {
           return (
             <Section key={i} onClick={() => chooseTutorial(tutorial.filename)}>
-              {tutorial.text}
+              {i}. {tutorial.text}
             </Section>
           );
         })}
-      </div>
+      </TitleContainer>
     );
   };
   if (props.demoData.show) {

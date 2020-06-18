@@ -1,0 +1,544 @@
+{ f: 220, l: 1, g: 1, p: 0}
+
+overtones = {
+    O[
+      	(2/1, 2, 1, 1/4),
+      	(2/1, 0, 1, -1/4),
+    	(5/4, 3, 1, 3/4),
+      	(9/8, 0, 1, -3/4),
+      	(1/1, 2, 1, 1/4),
+      	(1/1, 0, 1, -1/4), ]
+}
+
+thing1 = {
+	Sequence [
+	    O[
+	    	(4/1, 0, 1/64, 1),
+	    	(4/1, 8, 1/32, 0),
+	    	(2/1, 0, 1/32, 0),
+	    	(2/1, 8, 1/32, -1),
+	    	(11/4, 3, 1, 1),
+	    	(12/5, 3, 1, 0),
+	    	(9/4, 3, 1, 1),
+	      	(5/3, 0, 1, -1),
+	      	(1/1, 2, 1, 1/2),
+	      	(1/1, 0, 1, -1/2),
+	      	(1/2, 0, 1, -1/2),
+	      	(1/2, 7, 1, 1/2),
+	  	]
+	]
+	| Seq [
+		AsIs,
+		Tm 9/8, 
+		3/2^1/4, 
+		11/8^1/4,
+		3/2^1/4, 
+		11/8^1/4,
+		3/2^1/4, 
+		11/8^1/4,
+		3/2^4,
+		Length 1/4 | Seq [
+			Tm 5/3, 
+			Tm 8/5, 
+			Tm 4/3,
+			Tm 25/24,
+			Tm 16/15,
+		]
+	]
+	| Length 1/4
+	| Seq [AsIs, Tm 4/3, Tm 7/4]
+}
+
+thing2 = {
+	overtones |
+	Seq [
+		0^2,
+		AsIs,
+		Tm 3/2,
+		Tm 5/3,
+		0^2,
+		AsIs,
+		Tm 3/2,
+		Tm 4/3,
+	] | Tm 3/2 | Seq [Tm 0, Repeat 2] > FitLength thing1
+} 
+
+thing3 = {
+	Seq [
+	    O[
+	    	(5/2, 3, 1, 9/10),
+	    	(5/2, 0, 1, 9/10),
+	    	(15/8, 3, 1, 9/10),
+	    	(15/8, 0, 1, 9/10),
+	    	(5/4, 3, 1, 9/10),
+	    	(5/4, 0, 1, 9/10),
+	  	],
+		Tm 0,
+	] 
+	| Tm 2 
+	| Seq [AsIs, PanM -1]
+	| Seq [AsIs, Gain 1/2] 
+	> FitLength thing1
+} 
+
+thing4 = {
+	    O[
+	    	(5/2, 3, 1, 0),
+	    	(5/2, 0, 1, 0),
+	    	(3/2, 3, 1, 0),
+	    	(3/2, 0, 1, 0),
+	    	(1/1, 0, 1, 0),
+	    	(1/1, 0, 1, 0),
+	    	(1/2, 0, 1, 1/4),
+	    	(1/2, 0, 1, -1/4),
+	    	(1/4, 3, 1/4, -1/4),
+	    	(1/4, 0, 1/4, 1/4),
+	  	] |
+	Seq [
+		Tm 3/2 | Length 3,
+		Tm 8/5,
+		Tm 15/8, 
+		Tm 9/4, 
+		Tm 2, 
+		Tm 7/4,
+		Tm 4/3, 
+		Tm 5/3, 
+		Tm 9/4, 
+		Tm 5/2, 
+		Tm 11/4, 
+		Tm 15/8,
+		Tm 16/5,
+		Tm 3,
+		Tm 10/3, 
+		Tm 11/4, 
+		Tm 25/12,
+		Tm 3/2,
+		Tm 5/3,
+		Tm 15/8,
+		Tm 2,
+		Tm 3/2, 
+		Tm 7/6, 
+		Tm 1,
+		Tm 0,
+	] | Length 1/11
+}
+
+bass = {
+	Seq [
+		Seq [
+		    O[
+		    	(3/2, 5, 1, 0),
+		    	(3/2, 0, 1, 0),
+		    	(1/1, 5, 1, 0),
+		    	(1/1, 0, 1/2, 0),
+		    	(1/2, 1, 1/2, -1/3),
+		    	(1/2, 0, 1/2, 1/3),
+		  	]
+		  	| Seq [
+		  		0^1, 
+		  		1^3/2, 
+		  		0^1, 
+		  		1^3/2, 
+		  		0^1, 
+		  		6/5^1,
+		  		0^1,
+		  		1^3/2, 
+	  		]
+		  	| Repeat 4 
+		] | Gain 5/4 | Tm 1/2 > FitLength thing1,
+		Seq [
+		    O[
+		    	(4/1, 0, 1, 2/5),
+		    	(4/1, 2, 1, -2/5),
+		    	(3/1, 0, 1, 2/5),
+		    	(3/1, 2, 1, -2/5),
+		    	(2/1, 0, 1, 2/5),
+		    	(2/1, 2, 1, -2/5),
+		  	] 
+		  	| Seq [
+		  		0^1, 
+		  		1^3/2, 
+		  		0^1, 
+		  		1^3/2, 
+		  		0^1, 
+		  		6/5^1,
+		  		0^1,
+		  		6/5^1/2,
+		  		0^1, 
+		  		1^3/2, 
+	  		]
+		  	| Overlay [
+		  		Seq [Tm 4, Tm 5, Tm 6, Tm 9 | PanA -1], 
+		  		Seq [Tm 3, Tm 4, Tm 7 | PanA 1]
+	  		] 
+		] | Gain 1/4 | Tm 7/16 > FitLength thing4
+	]
+}
+
+section_1 = {
+	AD(1/100, 1, 2) |
+	Overlay [
+		Gain 1/2 
+		| Seq [
+			Tm 0 | Gain 0 > FitLength thing1, 
+			#fast | Overlay [
+				thing4 | PanA -1 
+				| ModulateBy [
+					AsIs | Length 5,
+					Overlay [AsIs, Tm 2],
+					Gain 1/2 | Overlay [AsIs, Tm 2, Tm 5]
+				],
+				thing4 | Reverse | PanA 1
+				| ModulateBy [
+					AsIs | Length 5,
+					Overlay [AsIs, Tm 2],
+					Gain 1/2 | Overlay [AsIs, Tm 2, Tm 4]
+				]
+			]
+		],
+		thing1 | Reverse,
+		thing2,
+		thing3,
+		bass,
+	]
+}
+
+chord = {
+	AD(1/50, 1/50, 1) |
+    O[
+        (19/1, 8, 1/16, 1),
+        (19/1, 0, 1/16, -1),
+        (17/1, 0, 1/16, 0),
+        (15/1, 0, 1/16, -1),
+        (13/1, 9, 1/16, 1),
+        (11/1, 0, 1/16, 0),
+        (9/1, 0, 1/16, 1),
+        (8/1, 0, 1/16, -1),
+        (8/1, 5, 1/16, 0),
+        (4/1, 0, 1/16, 1),
+        (2/1, 0, 1/32, 0),
+        (2/1, 8, 1/32, -1),
+        (11/4, 3, 1, 1),
+        (12/5, 3, 1, 0),
+        (9/4, 3, 1, 1),
+          (5/3, 0, 1, -1),
+          (1/1, 2, 1, 1/2),
+          (1/1, 0, 1, -1/2),
+          (1/2, 0, 1, -1/2),
+          (1/2, 7, 1, 1/2),
+          (1/4, 0, 1, -1/2),
+          (1/4, 7, 1, 1/2),
+  	]
+}
+
+interlude_thing = {
+	Overlay [
+		chord | Length 3/2 | Gain 1/4, 
+		Seq [
+			PanA -1, PanA 1, PanA -1, PanA 1
+		]
+		| Gain 1/5
+		| Seq [Tm 4, Tm 5, Tm 6, Tm 7, Tm 8, Tm 9, Tm 10, Tm 11] 
+		| Repeat 3 
+		| Length 1/64,
+		O [
+	    	(3, 3, 1, 1),
+	    	(5/2, 3, 1, 0),
+	    	(9/4, 3, 1, 1),
+	      	(3/2, 0, 1, -1),
+	      	(1/1, 2, 1, 1/2),
+	      	(1/1, 0, 1, -1/2),
+	      	(1/4, 3, 1, -1/2),
+	      	(1/4, 0, 1, 1/2),
+      	] |
+		Seq [
+			Tm 0 | Length 1/2, 
+			Tm 9/8, 
+			Tm 11/8,
+			Tm 7/4, 
+			Tm 3/2,
+			Tm 6/5, 
+			Tm 25/24,
+			Tm 6/5, 
+			Tm 8/5, 
+			Tm 3/2, 
+			Tm 15/8,
+			Tm 9/4,
+		] | Length 1/6,
+	]
+}
+
+section_2_maybe = {
+	Overlay [
+		O [
+	    	(9/4, 3, 1, 1),
+	      	(3/2, 0, 1, -1),
+	      	(1/1, 2, 1, 1/2),
+	      	(1/1, 0, 1, -1/2),
+		] |
+		Gain 2 | Seq [
+			Tm 1/2,
+			Tm 3/4,
+			Tm 2/3, 
+			Tm 1/2 | Length 3/2,
+		] 
+		| Seq [ 
+			Repeat 4, 
+			Reverse | Tm 9/8 | Repeat 2,
+			Repeat 2,
+			Tm 9/8, 
+			Reverse | Tm 9/8,
+			Reverse,
+		] | Repeat 4,
+		Seq [
+			Tm 0 | Length 3,
+			Seq [Tm 1, Tm 0, Tm 0]
+			| Overlay [Tm 1, Tm 3/2]
+			| O [
+		    	(3/2, 11, 1/4, 1/2),
+		      	(3/2, 0, 1/4, -1/2),
+		      	(1/1, 12, 1/4, 1/2),
+		      	(1/1, 0, 1/4, -1/2),
+			]
+			| Gain 1/10
+			| thing4 
+			| Tm 3 
+			| Length 17 
+		]
+	]
+}
+
+triangle_1 = {
+		chord 
+		| Gain 1/2 
+		| Seq [Tm 1, Tm 0 | Length 1/4, Tm 200/209 | Length 1/4, Tm 0 | Length 1/4] 
+		| Tm 7/4 
+		| Length 1/4
+}
+
+triangle_part_1 = {
+	Overlay [
+		triangle_1,
+		O [
+	    	(3/2, 0, 1/2, 1/2),
+	      	(3/2, 0, 1/2, -1/2),
+	      	(1/1, 0, 1/2, 1/2),
+	      	(1/1, 0, 1/2, -1/2),
+		] |
+		Tm 3
+		| Seq [
+			Tm 3, 
+			Tm 4, 
+			Tm 5,
+		] > FitLength triangle_1
+	] 
+}
+
+triangle_2 = {
+		chord 
+		| Gain 4/5 
+		| Seq [
+            Tm 1, 
+            Tm 0 | Length 1/4, 
+            Tm 103/100 | Length 1/2, 
+            Tm 0 | Length 1/4
+        ] 
+		| Tm 7/4 
+		| Length 1/4
+}
+
+triangle_part_2 = {
+	Overlay [
+		triangle_2,
+        O [
+            (3/2, 0, 1/2, 1/2),
+              (3/2, 0, 1/2, -1/2),
+              (1/1, 0, 1/2, 1/2),
+              (1/1, 0, 1/2, -1/2),
+        ] |
+        Tm 3
+        | Gain 2/3
+        | Seq [
+            Tm 2,
+            Tm 3, 
+            Tm 4, 
+            Tm 5,
+            Tm 6, 
+            Tm 7,
+            Overlay [
+                Tm 7,
+                Tm 8,
+            ] | Gain 1/2,
+            Overlay [
+                Tm 7 | PanA -1/2,
+                Tm 8,
+                Tm 9 | PanA 1/2
+            ] | Gain 1/3,
+            Overlay [
+                Tm 7 | PanA 1/2,
+                Tm 8 | PanA -1/2,
+                Tm 9 | PanA 1,
+                Tm 10 | PanA -1,
+            ] | Gain 1/4,
+            Overlay [
+                Tm 7 | PanA 1/2,
+                Tm 8 | PanA -1/2,
+                Tm 9 | PanA 1,
+                Tm 10 | PanA -1,
+                Tm 11 | Ta 5,
+                Tm 11,
+                Tm 12 | PanA -1/2 | Ta 10,
+                Tm 12 | PanA 1/2,
+            ] | Gain 1/7,
+        ] > FitLength triangle_2
+	] 
+}
+
+unit = {
+	Length 1/2 
+}
+
+tornado_1 = {
+    O[
+
+    	(5/3, 3, 1, 1),
+    	(5/4, 3, 1, 1),
+      	(1/1, 2, 1, 1/2),
+      	(1/1, 0, 1, -1/2),
+      	(1/2, 0, 1, -1/2),
+  	] |
+	Sequence [
+		AsIs,
+		Tm 9/8,
+		Tm 5/4,
+		Tm 4/3,
+		Tm 3/2,
+		Tm 5/3,
+		Tm 15/8,
+		Tm 2,
+	] > FitLength unit
+}
+
+tornado_2 = {
+    O[
+    	(15/8, 3, 1, -1),
+    	(3/2, 3, 1, -1),
+      	(1/1, 2, 1, -1/2),
+      	(1/1, 0, 1, 1/2),
+      	(1/2, 0, 1, 1),
+  	] |
+	Sequence [
+		AsIs,
+		Tm 9/8,
+		Tm 5/4,
+		Tm 4/3,
+		Tm 3/2,
+		Tm 5/3,
+		Tm 15/8,
+		Tm 2,
+		Tm 9/4, 
+		Tm 5/2, 
+		Tm 8/3, 
+		Tm 3, 
+		Tm 10/3, 
+		Tm 15/4,
+	] 
+	| Tm 9/8
+	> FitLength unit
+}
+
+tornado_full = {
+	Overlay [
+		tornado_1,
+		tornado_2,
+	] 
+	| Seq [Tm 1, PanM -1 | Reverse]
+	| Overlay [AsIs, Tm 3/2 | PanM -1, Tm 9/4, Tm 3 | PanM -1]
+	| Seq [
+		Repeat 4, 
+		Length 7/6, 
+		Gain 7/8, 
+		Length 6/5 | Gain 3/4, 
+		Length 5/4 | Gain 1/2, 
+		Length 3/2 | Gain 1/4 | ModulateBy [AsIs, Gain 1/2, Gain 1/4]
+	]
+}
+
+sweet_melody = {
+	O[
+		(4/1, 0, 1/4, 1/5),
+		(5/1, 0, 1/4, -1/5),
+		(5/2, 0, 1/4, 2/5),
+		(2/1, 0, 1/4, -2/5),
+		(5/4, 0, 1, -1/5),
+		(1, 0, 1, 1/5),
+	] |
+	Seq [
+		Tm 0 | Length 2, 
+		Tm 3/2 | Length 4/3, 
+		Tm 4/3 | Length 3/4, 
+		Tm 5/3 | Length 4/3, 
+		Tm 3/2 | Length 1/2, 
+		Tm 9/4,
+		Tm 15/8 | Gain 4/5,
+		Tm 5/3 | Length 5/4 | Gain 3/5, 
+	] | Length 6/5 
+}
+
+coda_chord = {
+	Seq [
+		Overlay [
+			AD(1, 1/100, 1) |
+			O [
+		    	(15/1, 5, 1/200, 7/8),
+		    	(15/1, 0, 1/200, 7/8),
+		    	(13/1, 7, 1/200, -7/8),
+		    	(13/1, 0, 1/200, -7/8),
+		    	(4/3, 11, 1/4, 7/20),
+		    	(4/3, 0, 1/4, -7/20),
+		      	(9/8, 10, 1/4, 7/20),
+		      	(9/8, 0, 1/4, -7/20),
+		      	(7/16, 12, 1/4, 7/20),
+		      	(7/16, 0, 1/4, -7/20),
+			]
+			| Length 1/2 
+			| Seq [AsIs, PanM -1/2, PanM -1, PanM -1/2, AsIs, PanM 1/2] 
+			| Repeat 4 
+			| Gain 5,
+
+			sweet_melody,
+			Seq [
+				Tm 0 | Length 2,
+				tornado_full 
+				| Gain 1/35 
+				| Seq [
+					AsIs | ModulateBy [AsIs | PanA -1, Tm 25/24 | PanA -1/2, Tm 9/8, Tm 5/4 | PanA 1/2, Tm 4/3, Tm 25/18 | PanA 1]
+				],
+			]
+			]
+	]
+}
+
+main = {
+	Seq [
+        section_1 | Length 4/9 | Tm	7/4, 
+		Seq [
+            section_1,
+            section_1 > @fast(
+                Overlay [AsIs | PanA -4/5, Ta 3 | PanA 4/5]
+                | Gain 1/2 
+            ),
+            section_1 > @fast(
+                Overlay [Tm 5/4 | Reverse, Tm 6/5 | Reverse]
+                | Tm 9/8 
+                | Gain 2/3
+            ),
+            triangle_part_1,
+            interlude_thing | Seq [AsIs, Reverse] | Tm 4/3, 
+            triangle_part_2,
+            coda_chord
+		] 
+		-- | Repeat 2
+	]
+}
+	

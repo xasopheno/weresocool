@@ -13,15 +13,17 @@ export const tutorial_list: DemoList = [
 ];
 
 export const album_list: DemoList = [
-  { filename: 'day_5.socool', text: '1. Day 5' },
-  { filename: 'table.socool', text: '2. Table' },
-  { filename: 'day_3.socool', text: '3. Goodbye, Glacier Bay' },
-  // { filename: 'herring.socool', text: '4. Herring' },
-  // { filename: 'how_to_move.socool', text: '4. How To Move' },
-  // { filename: 'modern_modem.socool', text: '4. Modern Modem' },
-  // { filename: 'arcs.socool', text: '5. Arcs' },
-  // { filename: 'antonis.socool', text: '6. Antonis' },
-  // { filename: 'delayed.socool', text: '7. Delayed' },
-  // { filename: 'madness.socool', text: '8. Madness' },
-  // { filename: 'Marichan.socool', text: '1. Marichan' },
+  { filename: 'television.socool', text: 'テレビ | Television' },
+  { filename: 'day_5.socool', text: 'Day 5' },
+  { filename: 'day_6_long.socool', text: 'Day 6' },
+  { filename: 'day_3.socool', text: 'Goodbye, Glacier Bay' },
+  { filename: 'modern_modem.socool', text: 'Modern Modem' },
+  { filename: 'madness.socool', text: 'Madness' },
+  { filename: 'what_a_world.socool', text: 'What A World' },
+  // { filename: 'tokyo.socool', text: '東京 | Tokyo' },
+  { filename: 'songsongsong.socool', text: 'Song Song Song' },
+  { filename: 'growing.socool', text: 'Growing' },
+  { filename: 'slice.socool', text: 'Slice' },
+  { filename: 'how_to_swim.socool', text: 'How To Move' },
+  { filename: 'Marichan.socool', text: 'Marichan' },
 ];
