@@ -35,8 +35,8 @@ scripts:
 
 ui: 
 []  - focus on editor after each operation
-[]  - save editorType in local storage
-[]  - play instead of render
+[x]  - save editorType in local storage
+[x]  - play instead of render
 []  - a failure should not break the backend
 
 build on ci:

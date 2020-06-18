@@ -118,4 +118,3 @@ export const RatioChart = (): React.ReactElement => {
     </div>
   );
 };
-

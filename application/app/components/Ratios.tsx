@@ -92,76 +92,26 @@ export const Ratios = (props: { width: number }): React.ReactElement | null => {
         </RSpace>
       </div>
     );
-    {
-      /* } else if (props.width > 650) { */
-    }
-    {
-      /* return ( */
-    }
-    {
-      /* <RSpace> */
-    }
-    {
-      /* <MagicButtonSmall */
-    }
-    {
-      /* id={'magicButtonSmall'} */
-    }
-    {
-      /* src={`${assetsPath}/magic.png`} */
-    }
-    {
-      /* onClick={() => {}} */
-    }
-    {
-      /* /> */
-    }
-    {
-      /* <MagicButtonSmall */
-    }
-    {
-      /* id={'magicButtonSmall'} */
-    }
-    {
-      /* src={`${assetsPath}/question_mark.jpg`} */
-    }
-    {
-      /* onClick={() => {}} */
-    }
-    {
-      /* /> */
-    }
-    {
-      /* </RSpace> */
-    }
-    {
-      /* ); */
-    }
+  } else if (props.width > 700) {
+    return (
+      <div>
+        <Demo demoData={tutorialData} />
+        <Demo demoData={demoData} />
+        <RSpace id="ratios">
+          <MagicButtonSmall
+            id={'magicButton'}
+            src={`${assetsPath}/magic.png`}
+            onClick={() => showDemoModal(true)}
+          />
+          <MagicButtonSmall
+            id={'magicButton'}
+            src={`${assetsPath}/question_mark.jpg`}
+            onClick={() => showTutorialModal(true)}
+          />
+        </RSpace>
+      </div>
+    );
   } else {
     return <div />;
   }
-};
-
-type Props = { setShow: (b: boolean) => void };
-
-export const RatiosInner = (props: Props): React.ReactElement => {
-  // const dispatch = useContext(DispatchContext);
-  // const store = useContext(GlobalContext);
-  // const [render, setRender] = useState<boolean>(false);
-
-  return (
-    <RSpace id="ratios">
-      <RatioChart />
-      <MagicButton
-        id={'magicButton'}
-        src={`${assetsPath}/magic.png`}
-        onClick={() => props.setShow(true)}
-      />
-      <MagicButton
-        id={'magicButton'}
-        src={`${assetsPath}/question_mark.jpg`}
-        onClick={() => props.setShow(true)}
-      />
-    </RSpace>
-  );
 };

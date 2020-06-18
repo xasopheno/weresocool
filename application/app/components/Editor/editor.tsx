@@ -69,12 +69,17 @@ export const Editor = (props: Props): React.ReactElement => {
       });
     }
   }, [dispatch, store.initializeTest]);
+  const setRenderSpaceOuter = (el: AceEditor | null) => {
+    if (el) {
+      setRenderSpace(el);
+    }
+  };
 
   return (
     <AceEditor
       focus={true}
       ref={(el) => {
-        setRenderSpace(el);
+        setRenderSpaceOuter(el);
       }}
       placeholder="WereSoCool"
       mode="elixir"
