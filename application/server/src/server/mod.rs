@@ -21,6 +21,7 @@ pub async fn render(
     render_manager: web::Data<Arc<Mutex<RenderManager>>>,
     req: web::Json<Language>,
 ) -> HttpResponse {
+    // TODO: Pull out prepare_render so it's not inside the lock.
     match render_manager
         .lock()
         .unwrap()

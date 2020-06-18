@@ -25,16 +25,20 @@ export const Editor = (props: Props): React.ReactElement => {
 
   useEffect(() => {
     if (renderSpace) {
-      const getStoredLanguage = () => {
-        const stored = localStorage.getItem('language');
-        if (stored) {
-          dispatch.onUpdateLanguage(stored);
+      const getLocalStorage = () => {
+        const storedLanguage = localStorage.getItem('language');
+        const storedEditor = localStorage.getItem('editor');
+        if (storedLanguage) {
+          dispatch.onUpdateLanguage(storedLanguage);
+        }
+        if (storedEditor) {
+          dispatch.onIncrementEditorType(parseInt(storedEditor) - 1);
         }
       };
       // @ts-ignore
       renderSpace.editor.getSession().setMode(customMode);
       renderSpace.editor.setTheme('ace/theme/wsc');
-      getStoredLanguage();
+      getLocalStorage();
     }
   }, [renderSpace, dispatch]);
 

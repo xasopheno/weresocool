@@ -15,7 +15,7 @@ export enum ResponseType {
 }
 
 export type Action =
-  | { _k: 'Increment_Editor_Type' }
+  | { _k: 'Increment_Editor_Type'; editor: number }
   | { _k: 'Increment_Demo_Index'; len: number }
   | { _k: 'Backend'; fetch: Fetch }
   | { _k: 'Set_Render_State'; state: ResponseType }
@@ -71,8 +71,13 @@ export class Dispatch {
     FileSaver.saveAs(blob, 'my_song.socool');
   }
 
-  onIncrementEditorType(): void {
-    this.dispatch({ _k: 'Increment_Editor_Type' });
+  onIncrementEditorType(current_editor: number): void {
+    const editor = (current_editor + 1) % 3;
+    localStorage.setItem('editor', editor.toString());
+    this.dispatch({
+      _k: 'Increment_Editor_Type',
+      editor,
+    });
   }
 
   onUpdateLanguage(language: string): void {

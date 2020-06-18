@@ -30,7 +30,7 @@ export interface Store {
 }
 
 export const intialStore: Store = {
-  editor: 1,
+  editor: 0,
   demoIdx: 0,
   backend: { state: 'bad', error: Error('Startup') },
   render: ResponseType.RenderSuccess,

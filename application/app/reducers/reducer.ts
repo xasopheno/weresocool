@@ -12,7 +12,7 @@ export const mainReducer: React.Reducer<Store, Action> = (
 ): Store => {
   switch (action._k) {
     case 'Increment_Editor_Type':
-      return { ...state, editor: (state.editor + 1) % 3 };
+      return { ...state, editor: action.editor };
     case 'Increment_Demo_Index':
       return { ...state, demoIdx: (state.demoIdx + 1) % action.len };
     case 'Set_Error_Message':

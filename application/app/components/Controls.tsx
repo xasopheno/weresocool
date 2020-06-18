@@ -51,7 +51,7 @@ export const Controls = (props: Props): React.ReactElement => {
         </RightButton>
         <RightButton
           id={'editorButton'}
-          onClick={() => dispatch.onIncrementEditorType()}
+          onClick={() => dispatch.onIncrementEditorType(store.editor)}
         >
           {Editors[store.editor].name}
         </RightButton>

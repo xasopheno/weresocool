@@ -143,40 +143,43 @@ thing2 = {
 }
 
 main = {
-    Overlay [
-	    thing1,
-        O[
-            (1/1, 0.02, 1, 1/8),
-            (1/1, 0.1, 1, -1/8), 
-            (1/1, 0, 1, 1/10),
-            (1/1, 0, 1, 1/10),
-        ]
-        | thing2 |
-        ModBy [
-            Seq [Gain 0, Gain 1] | Repeat 100 
-        ]
-        | ModBy [
-            Seq [Gain 0, Gain 1] | Repeat 4
-        ]
-        | ModBy [
-            Seq [Pa -1, Pa 1, Pa 1, Pa -1, Pa 1/2, Pa -1/2] | Repeat 10
-        ]
-        | Overlay [
-            AsIs,
-            Fm 9/4 | Repeat 2 | Lm 1/2 | Gain 1/8,
-        ]
+  Seq [
+    0^1/2,
+      Overlay [
+  	    thing1,
+          O[
+              (1/1, 0.02, 1, 1/8),
+              (1/1, 0.1, 1, -1/8), 
+              (1/1, 0, 1, 1/10),
+              (1/1, 0, 1, 1/10),
+          ]
+          | thing2 |
+          ModBy [
+              Seq [Gain 0, Gain 1] | Repeat 100 
+          ]
+          | ModBy [
+              Seq [Gain 0, Gain 1] | Repeat 4
+          ]
+          | ModBy [
+              Seq [Pa -1, Pa 1, Pa 1, Pa -1, Pa 1/2, Pa -1/2] | Repeat 10
+          ]
+          | Overlay [
+              AsIs,
+              Fm 9/4 | Repeat 2 | Lm 1/2 | Gain 1/8,
+          ]
+      ]
+      | Lm 7/4
+      | Seq [
+          Repeat 2, 
+          Reverse | Overlay [
+              Fa 4/3, Fm 1, Fa 0.3 | Fm 3/1 | Gain 1/8
+          ] 
+          | Seq [Fm 9/8] 
+          | Gm 8/17 
+          | Repeat 2,
+          Fm 0 | Lm 1/100,
+      ]
+      | Repeat 2
     ]
-    | Lm 7/4
-    | Seq [
-        Repeat 2, 
-        Reverse | Overlay [
-            Fa 4/3, Fm 1, Fa 0.3 | Fm 3/1 | Gain 1/8
-        ] 
-        | Seq [Fm 9/8] 
-        | Gm 8/17 
-        | Repeat 2,
-        Fm 0 | Lm 1/100,
-    ]
-    | Repeat 2
 }
 	
