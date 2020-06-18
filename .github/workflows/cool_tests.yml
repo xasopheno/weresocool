@@ -40,6 +40,6 @@ jobs:
     - name: clippy 
       run: cargo clippy --all-targets -- -D warnings
     - name: run tests
-      run: ./test.sh
+      run: make test
       
       

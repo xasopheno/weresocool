@@ -28,8 +28,8 @@ app signing:
 [x] - auto-update 
 
 scripts:
-[] ci w/o signing/notarization
-[] ci with signing/notarization
+[x] ci w/o signing/notarization
+[x] ci with signing/notarization
 [] test-e2e w/o signing/notarization
 [] package-local with signing/notarization
 
@@ -67,7 +67,7 @@ Demo:
 [x] - only play one song at a time for now
 [x] - for song in WereSoCool/demo`
 [x] - copy demo songs on load
-[]  - only do it on first load
+[x]  - only do it on first load
 [x] - "Demo Modal"
 
 Tutorial: 
