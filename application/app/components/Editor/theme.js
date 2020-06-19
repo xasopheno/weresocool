@@ -3,7 +3,7 @@ import ace from 'brace';
 ace.define(
   'ace/theme/wsc',
   ['require', 'exports', 'module', 'ace/lib/dom'],
-  function(require, exports, module) {
+  function (require, exports, module) {
     exports.isDark = true;
     exports.cssClass = 'ace-wsc-theme';
     exports.cssText =
@@ -58,7 +58,19 @@ background-color: #2A112A\
 color: #343434\
 }\
 .ace-wsc-theme .ace_operation {\
-color: #ff6168\
+color: #789816\
+}\
+.ace-wsc-theme .ace_frequency {\
+color: #ef8168\
+}\
+.ace-wsc-theme .ace_gain {\
+color: #ee8241\
+}\
+.ace-wsc-theme .ace_length {\
+color: #dd4341\
+}\
+.ace-wsc-theme .ace_pan {\
+color: #df7198\
 }\
 .ace-wsc-theme .ace_danny {\
 color: deeppink\
@@ -119,8 +131,8 @@ color: #B9CA4A\
     dom.importCssString(exports.cssText, exports.cssClass);
   }
 );
-(function() {
-  ace.require(['ace/theme/wsc'], function(m) {
+(function () {
+  ace.require(['ace/theme/wsc'], function (m) {
     if (typeof module == 'object' && typeof exports == 'object' && module) {
       module.exports = m;
     }

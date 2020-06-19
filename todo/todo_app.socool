@@ -30,17 +30,19 @@ app signing:
 scripts:
 [x] ci w/o signing/notarization
 [x] ci with signing/notarization
-[] test-e2e w/o signing/notarization
+[x] test-e2e w/o signing/notarization
 [] package-local with signing/notarization
 
 ui: 
 [x]  - focus on editor after each operation
 [x]  - save editorType in local storage
 [x]  - play instead of render
+[]   - menus
+[]   - *.socool File Association
 
 backend:
 []  - a failure should not break the backend
-[]  - prepare_render should happen outside of lock
+[x]  - prepare_render should happen outside of lock
 
 tests: 
 [x]  - editor focus

@@ -19,10 +19,10 @@ export class CustomHighlightRules extends window.ace.acequire(
           token: 'zero',
           regex: '[0]',
         },
-        {
-          token: 'danny',
-          regex: 'f:|l:|g:|p:',
-        },
+        //  {
+        //  token: 'danny',
+        //  regex: 'f:|l:|g:|p:',
+        //  },
         {
           token: 'slash',
           regex: '/',
@@ -82,8 +82,23 @@ export class CustomHighlightRules extends window.ace.acequire(
 
         {
           token: 'operation',
-          regex:
-            'AsIs|Tm|Ta|PanA|PanM|Gain|Length|Fm|Fa|Pa|Pm|Lm|Gm|Sine|Square|Noise|Portamento',
+          regex: 'Sine|Square|Noise|Portamento|AD',
+        },
+        {
+          token: 'frequency',
+          regex: 'AsIs|Tm|Ta|Fm|Fa|f:',
+        },
+        {
+          token: 'length',
+          regex: 'Lm|Length|l:',
+        },
+        {
+          token: 'pan',
+          regex: 'Pm|Pa|PanM|PanA|p:',
+        },
+        {
+          token: 'gain',
+          regex: 'Gm|Gain|g:',
         },
         {
           token: 'list',
