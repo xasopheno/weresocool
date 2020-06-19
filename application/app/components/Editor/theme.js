@@ -82,7 +82,7 @@ color: steelblue\
 color: #FFD866\
 }\
 .ace-wsc-theme .ace_o_shortcut {\
-color: #E78C45\
+color: #ff6168\
 }\
 .ace-wsc-theme .ace_pipe {\
 color: #D54E53\

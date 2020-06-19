@@ -1,3 +1,4 @@
+-- Marichan - Danny Meyer (2020)
 { f: 245, l: 1, g: 1, p: 0 }
 
 overtones = {
@@ -72,7 +73,6 @@ highs = {
         ]
       | Overlay [
         AsIs, 
-        -- Fm 3/2 | Lm 1/2 | Seq [AsIs, Reverse] | Gm 1/3  
       ],
       Fm 0 | Lm 2,
       Fm 15/8| Lm 2,

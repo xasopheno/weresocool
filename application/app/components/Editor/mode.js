@@ -82,7 +82,7 @@ export class CustomHighlightRules extends window.ace.acequire(
 
         {
           token: 'operation',
-          regex: 'Sine|Square|Noise|Portamento|AD',
+          regex: 'Sine|Square|Noise|Portamento',
         },
         {
           token: 'frequency',
@@ -94,11 +94,11 @@ export class CustomHighlightRules extends window.ace.acequire(
         },
         {
           token: 'pan',
-          regex: 'Pm|Pa|PanM|PanA|p:',
+          regex: 'PanM|PanA|Pm|Pa|p:',
         },
         {
           token: 'gain',
-          regex: 'Gm|Gain|g:',
+          regex: 'Gain|Gm|g:',
         },
         {
           token: 'list',

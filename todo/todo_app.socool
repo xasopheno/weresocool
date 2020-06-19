@@ -39,10 +39,12 @@ ui:
 [x]  - play instead of render
 []   - menus
 []   - *.socool File Association
+[]   - editor font size
 
 backend:
 []  - a failure should not break the backend
 [x]  - prepare_render should happen outside of lock
+[]  - FitGain
 
 tests: 
 [x]  - editor focus
