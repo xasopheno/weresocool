@@ -39,6 +39,10 @@ ui:
 [x]  - play instead of render
 []  - a failure should not break the backend
 
+tests: 
+[]  - editor focus
+[]  - tutorials
+
 build on ci:
 [x]  - flag for static build
 [\]  - action for master only if tests pass
