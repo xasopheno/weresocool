@@ -69,8 +69,10 @@ export const Editor = (props: Props): React.ReactElement => {
       });
     }
   }, [dispatch, store.initializeTest]);
+
   const setRenderSpaceOuter = (el: AceEditor | null) => {
-    if (el) {
+    if (el && !store.editor_ref) {
+      dispatch.onSetEditorRef(el);
       setRenderSpace(el);
     }
   };

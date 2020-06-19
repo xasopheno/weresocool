@@ -1,5 +1,6 @@
 import { createContext } from 'react';
 import { IMarker } from 'react-ace';
+import AceEditor from 'react-ace';
 import { language_template } from '../app/components/Editor/language_template';
 import { ResponseType } from '../app/actions/actions';
 
@@ -27,6 +28,7 @@ export interface Store {
   errorMessage: string;
   markers: IMarker[];
   initializeTest: boolean;
+  editor_ref: AceEditor | null;
 }
 
 export const intialStore: Store = {
@@ -38,6 +40,7 @@ export const intialStore: Store = {
   errorMessage: '',
   markers: [],
   initializeTest: true,
+  editor_ref: null,
 };
 
 export const testStore: Store = {
@@ -49,6 +52,7 @@ export const testStore: Store = {
   errorMessage: '',
   markers: [],
   initializeTest: false,
+  editor_ref: null,
 };
 export const GlobalContext = createContext((undefined as unknown) as Store);
 // // This adds a `_k: 'something'` to a given type

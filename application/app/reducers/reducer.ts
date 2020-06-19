@@ -11,10 +11,15 @@ export const mainReducer: React.Reducer<Store, Action> = (
   action
 ): Store => {
   switch (action._k) {
+    case 'Set_Editor_Focus':
+      if (state.editor_ref) {
+        state.editor_ref.editor.focus();
+      }
+      return { ...state };
+    case 'Set_Editor_Ref':
+      return { ...state, editor_ref: action.editor_ref };
     case 'Increment_Editor_Type':
       return { ...state, editor: action.editor };
-    case 'Increment_Demo_Index':
-      return { ...state, demoIdx: (state.demoIdx + 1) % action.len };
     case 'Set_Error_Message':
       return { ...state, errorMessage: action.message };
     case 'Reset_Error_Message':

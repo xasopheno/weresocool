@@ -3,6 +3,7 @@ import { Fetch } from '../store';
 import axios from 'axios';
 import FileSaver from 'file-saver';
 import { settings } from '../settings';
+import AceEditor from 'react-ace';
 import { remote } from 'electron';
 import path from 'path';
 
@@ -15,8 +16,9 @@ export enum ResponseType {
 }
 
 export type Action =
+  | { _k: 'Set_Editor_Focus' }
   | { _k: 'Increment_Editor_Type'; editor: number }
-  | { _k: 'Increment_Demo_Index'; len: number }
+  | { _k: 'Set_Editor_Ref'; editor_ref: AceEditor }
   | { _k: 'Backend'; fetch: Fetch }
   | { _k: 'Set_Render_State'; state: ResponseType }
   | { _k: 'Set_Markers'; line: number; column: number; n_lines: number }
@@ -28,6 +30,19 @@ export type Action =
 
 export class Dispatch {
   constructor(public dispatch: React.Dispatch<Action>) {}
+
+  setEditorFocus = (): void => {
+    this.dispatch({
+      _k: 'Set_Editor_Focus',
+    });
+  };
+
+  onSetEditorRef(editor_ref: AceEditor): void {
+    this.dispatch({
+      _k: 'Set_Editor_Ref',
+      editor_ref,
+    });
+  }
 
   async onDemo(filename: string, folder: string): Promise<void> {
     const fs = remote.require('fs');
@@ -43,6 +58,7 @@ export class Dispatch {
     } catch (e) {
       console.log(e);
     }
+    this.setEditorFocus();
   }
 
   onFileLoad = (e: React.ChangeEvent<HTMLInputElement>): void => {
@@ -61,6 +77,7 @@ export class Dispatch {
 
       reader.readAsText(file);
     }
+    this.setEditorFocus();
   };
 
   onFileSave(language: string): void {
@@ -69,6 +86,8 @@ export class Dispatch {
       type: 'text/plain;charset=utf-8',
     });
     FileSaver.saveAs(blob, 'my_song.socool');
+
+    this.setEditorFocus();
   }
 
   onIncrementEditorType(current_editor: number): void {
@@ -78,6 +97,8 @@ export class Dispatch {
       _k: 'Increment_Editor_Type',
       editor,
     });
+
+    this.setEditorFocus();
   }
 
   onUpdateLanguage(language: string): void {
@@ -88,10 +109,13 @@ export class Dispatch {
   onStop = async (): Promise<void> => {
     const stop_lang = `{ f: 220, l: 1, g: 1, p: 0 }\nmain = {Fm 0}`;
     await this.onRender(stop_lang);
+
+    this.setEditorFocus();
   };
 
   onResetLanguage = (): void => {
     this.dispatch({ _k: 'Reset_Language' });
+    this.setEditorFocus();
   };
 
   async onRender(language: string): Promise<void> {
@@ -109,6 +133,8 @@ export class Dispatch {
     } catch (e) {
       this.dispatch({ _k: 'Backend', fetch: { state: 'bad', error: e } });
     }
+
+    this.setEditorFocus();
   }
 }
 
