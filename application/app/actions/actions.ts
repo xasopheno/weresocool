@@ -31,10 +31,10 @@ export type Action =
 export class Dispatch {
   constructor(public dispatch: React.Dispatch<Action>) {}
 
-  setEditorFocus = (): void => {
-    this.dispatch({
-      _k: 'Set_Editor_Focus',
-    });
+  setEditorFocus = (editor_ref: AceEditor | null): void => {
+    if (editor_ref) {
+      editor_ref.editor.focus();
+    }
   };
 
   onSetEditorRef(editor_ref: AceEditor): void {
@@ -58,7 +58,6 @@ export class Dispatch {
     } catch (e) {
       console.log(e);
     }
-    this.setEditorFocus();
   }
 
   onFileLoad = (e: React.ChangeEvent<HTMLInputElement>): void => {
@@ -77,7 +76,6 @@ export class Dispatch {
 
       reader.readAsText(file);
     }
-    this.setEditorFocus();
   };
 
   onFileSave(language: string): void {
@@ -86,8 +84,6 @@ export class Dispatch {
       type: 'text/plain;charset=utf-8',
     });
     FileSaver.saveAs(blob, 'my_song.socool');
-
-    this.setEditorFocus();
   }
 
   onIncrementEditorType(current_editor: number): void {
@@ -97,8 +93,6 @@ export class Dispatch {
       _k: 'Increment_Editor_Type',
       editor,
     });
-
-    this.setEditorFocus();
   }
 
   onUpdateLanguage(language: string): void {
@@ -109,13 +103,10 @@ export class Dispatch {
   onStop = async (): Promise<void> => {
     const stop_lang = `{ f: 220, l: 1, g: 1, p: 0 }\nmain = {Fm 0}`;
     await this.onRender(stop_lang);
-
-    this.setEditorFocus();
   };
 
   onResetLanguage = (): void => {
     this.dispatch({ _k: 'Reset_Language' });
-    this.setEditorFocus();
   };
 
   async onRender(language: string): Promise<void> {
@@ -133,8 +124,6 @@ export class Dispatch {
     } catch (e) {
       this.dispatch({ _k: 'Backend', fetch: { state: 'bad', error: e } });
     }
-
-    this.setEditorFocus();
   }
 }
 

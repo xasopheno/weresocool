@@ -34,13 +34,16 @@ scripts:
 [] package-local with signing/notarization
 
 ui: 
-[]  - focus on editor after each operation
+[x]  - focus on editor after each operation
 [x]  - save editorType in local storage
 [x]  - play instead of render
+
+backend:
 []  - a failure should not break the backend
+[]  - prepare_render should happen outside of lock
 
 tests: 
-[]  - editor focus
+[x]  - editor focus
 []  - tutorials
 
 build on ci:

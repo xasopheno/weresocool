@@ -26,32 +26,53 @@ export const Controls = (props: Props): React.ReactElement => {
         <Button
           data-tip="Shift+Enter"
           id={'playButton'}
-          onClick={() => dispatch.onRender(store.language)}
+          onClick={async () => {
+            await dispatch.onRender(store.language);
+            dispatch.setEditorFocus(store.editor_ref);
+          }}
         >
           Play
         </Button>
         <Button data-tip="⌘+Enter" id={'stopButton'} onClick={dispatch.onStop}>
           Stop
         </Button>
-        <Button data-tip="⌘+L" id={'loadButton'} onClick={props.handleLoad}>
+        <Button
+          data-tip="⌘+L"
+          id={'loadButton'}
+          onClick={() => {
+            props.handleLoad();
+          }}
+        >
           Load
         </Button>
         <Button
           data-tip="⌘+S"
           id={'saveButton'}
-          onClick={() => dispatch.onFileSave(store.language)}
+          onClick={() => {
+            dispatch.onFileSave(store.language);
+            dispatch.setEditorFocus(store.editor_ref);
+          }}
         >
           Save
         </Button>
       </ButtonBox>
 
       <VimBox>
-        <RightButton id={'resetButton'} onClick={dispatch.onResetLanguage}>
+        <RightButton
+          id={'resetButton'}
+          onClick={() => {
+            dispatch.onResetLanguage();
+            dispatch.setEditorFocus(store.editor_ref);
+          }}
+        >
           Reset
         </RightButton>
         <RightButton
           id={'editorButton'}
-          onClick={() => dispatch.onIncrementEditorType(store.editor)}
+          onClick={() => {
+            dispatch.onIncrementEditorType(store.editor);
+            dispatch.setEditorFocus(store.editor_ref);
+          }}
         >
           {Editors[store.editor].name}
         </RightButton>

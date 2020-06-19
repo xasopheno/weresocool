@@ -109,6 +109,18 @@ impl RenderManager {
     }
 }
 
+pub fn prepare_render_outside(input: InputType<'_>) -> Result<Vec<RenderVoice>, Error> {
+    let (nf, basis, table) = match input.make(RenderType::NfBasisAndTable)? {
+        RenderReturn::NfBasisAndTable(nf, basis, table) => (nf, basis, table),
+        _ => return Err(Error::with_msg("Failed Parse/Render")),
+    };
+    let renderables = nf_to_vec_renderable(&nf, &table, &basis)?;
+
+    let render_voices = renderables_to_render_voices(renderables);
+
+    Ok(render_voices)
+}
+
 #[cfg(test)]
 mod render_manager_tests {
     use super::*;

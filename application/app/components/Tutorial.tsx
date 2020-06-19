@@ -2,6 +2,7 @@ import React, { useContext } from 'react';
 import styled from 'styled-components';
 import { DemoList } from './tutorial_list';
 import { DispatchContext } from '../actions/actions';
+import { GlobalContext, Editors } from '../store';
 
 const Modal = styled.div`
   position: absolute;
@@ -52,10 +53,12 @@ export interface DemoData {
 }
 
 export const Demo = (props: { demoData: DemoData }): React.ReactElement => {
+  const store = useContext(GlobalContext);
   const dispatch = useContext(DispatchContext);
   const chooseTutorial = async (filename: string) => {
     props.demoData.setShow(false);
     await dispatch.onDemo(filename, props.demoData.folder);
+    dispatch.setEditorFocus(store.editor_ref);
   };
 
   const makeDemos = (): React.ReactElement => {
