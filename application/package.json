@@ -200,7 +200,7 @@
     "@types/tapable": "^1.0.5",
     "@types/vfile-message": "^2.0.0",
     "@types/webpack": "^4.41.17",
-    "@typescript-eslint/eslint-plugin": "^3.1.0",
+    "@typescript-eslint/eslint-plugin": "^3.3.0",
     "@typescript-eslint/parser": "^3.2.0",
     "axios-mock-adapter": "^1.18.1",
     "babel-core": "7.0.0-bridge.0",
