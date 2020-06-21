@@ -67,6 +67,11 @@ Operation: Term = {
         })
     },
 
+    <op1: Operation> ">" "FitGain" <op2: ComposeOperation> => {
+      unimplemented!()
+    },
+
+
     <op1: Operation> ">" "@" <name: Name> <op2: ComposeOperation> => {
         Term::Op(
             Focus {

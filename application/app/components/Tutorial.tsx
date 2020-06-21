@@ -2,7 +2,7 @@ import React, { useContext } from 'react';
 import styled from 'styled-components';
 import { DemoList } from './tutorial_list';
 import { DispatchContext } from '../actions/actions';
-import { GlobalContext, Editors } from '../store';
+import { GlobalContext } from '../store';
 
 const Modal = styled.div`
   position: absolute;

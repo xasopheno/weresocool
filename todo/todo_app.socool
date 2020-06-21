@@ -22,7 +22,7 @@ backend:
 
 app signing:
 [x] - sign locally
-[] - notorize locally
+[]  - notorize locally
 [x] - sign on ci
 [x] - notorize on ci
 [x] - auto-update 
@@ -38,32 +38,34 @@ ui:
 [x]  - save editorType in local storage
 [x]  - play instead of render
 []   - menus
+----
 []   - *.socool File Association
+            https://github.com/rchrd2/example-electron-file-association
 []   - editor font size
 
 backend:
-[]  - a failure should not break the backend
 [x]  - prepare_render should happen outside of lock
-[]  - FitGain
+[]   - a failure should not break the backend
+[]   - FitGain
 
 tests: 
 [x]  - editor focus
-[]  - tutorials
+[]   - tutorials
 
 build on ci:
 [x]  - flag for static build
-[\]  - action for master only if tests pass
+[x]  - action for master only if tests pass
 [x]  - cache rust during application build
 
 publishing:
 [x]   - github
 
 app setup:
-[x]     Choose Port
-            Find a port not being used and pass it to backend as an argument
-[x]     Build Portaudio Statically
-[x]        Using macos image.
-[x]         Only on macos
+[x]  - Choose Port
+        *  Find a port not being used and pass it to backend as an argument
+[x]  - Build Portaudio Statically
+[x]     * Using macos image.
+[x]     * Only on macos
 
 dependabot:
 []  - auto-merge
@@ -73,13 +75,11 @@ Update README.md's:
 []  - application
 
 Demo:
-[\] - pick songs
-[]  - proof songs 
-[x] - only play one song at a time for now
-[x] - for song in WereSoCool/demo`
-[x] - copy demo songs on load
-[x]  - only do it on first load
-[x] - "Demo Modal"
+[]   - maria songs
+[x]  - proof songs 
+[x]  - pick songs
+[x]  - for song in WereSoCool/demo`
+[x]  - "Demo Modal"
 
 Tutorial: 
 [x] - Tutorial Modal
@@ -102,6 +102,7 @@ Documentation:
      @ [Random(n, seed)]
      @ [start:end:skip]
      list1 ++ list2
+     fn(op, op) {}
 
 _______________________________________
 
