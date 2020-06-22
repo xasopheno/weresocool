@@ -287,10 +287,10 @@
   dependencies:
     "@babel/types" "^7.8.3"
 
-"@babel/helper-plugin-utils@^7.0.0", "@babel/helper-plugin-utils@^7.10.1", "@babel/helper-plugin-utils@^7.8.0", "@babel/helper-plugin-utils@^7.8.3":
-  version "7.10.1"
-  resolved "https://registry.yarnpkg.com/@babel/helper-plugin-utils/-/helper-plugin-utils-7.10.1.tgz#ec5a5cf0eec925b66c60580328b122c01230a127"
-  integrity sha512-fvoGeXt0bJc7VMWZGCAEBEMo/HAjW2mP8apF5eXK0wSqwLAVHAISCWRoLMBMUs2kqeaG77jltVqu4Hn8Egl3nA==
+"@babel/helper-plugin-utils@^7.0.0", "@babel/helper-plugin-utils@^7.10.1", "@babel/helper-plugin-utils@^7.10.3", "@babel/helper-plugin-utils@^7.8.0", "@babel/helper-plugin-utils@^7.8.3":
+  version "7.10.3"
+  resolved "https://registry.yarnpkg.com/@babel/helper-plugin-utils/-/helper-plugin-utils-7.10.3.tgz#aac45cccf8bc1873b99a85f34bceef3beb5d3244"
+  integrity sha512-j/+j8NAWUTxOtx4LKHybpSClxHoq6I91DQ/mKgAXn5oNUPIUiGppjPIX3TDtJWPrdfP9Kfl7e4fgVMiQR9VE/g==
 
 "@babel/helper-regex@^7.10.1":
   version "7.10.1"
@@ -488,12 +488,12 @@
     "@babel/helper-plugin-utils" "^7.10.1"
     "@babel/plugin-syntax-json-strings" "^7.8.0"
 
-"@babel/plugin-proposal-logical-assignment-operators@^7.10.1":
-  version "7.10.1"
-  resolved "https://registry.yarnpkg.com/@babel/plugin-proposal-logical-assignment-operators/-/plugin-proposal-logical-assignment-operators-7.10.1.tgz#4adb41f15793187f1cba7f2d1b760faba3d25bfb"
-  integrity sha512-+0uLbTZhTvSet8KpTMMaL2p7p12/b//sKbFzDPAMk6z4rlYbTtyFZmq65KJMLGLio9AVjq2VKF8mxxJMXKUMwA==
+"@babel/plugin-proposal-logical-assignment-operators@^7.10.3":
+  version "7.10.3"
+  resolved "https://registry.yarnpkg.com/@babel/plugin-proposal-logical-assignment-operators/-/plugin-proposal-logical-assignment-operators-7.10.3.tgz#efae900a91f76ad07dbd50142108e8cd602fee44"
+  integrity sha512-9uievCCgqOa7VDyMDXlTp5U+0bXu0ubMQL2ek5M1mrwQIY2T9Fx6PUpx/0Eh/8XZice1hzZZo3CJx0wHcDVqNQ==
   dependencies:
-    "@babel/helper-plugin-utils" "^7.10.1"
+    "@babel/helper-plugin-utils" "^7.10.3"
     "@babel/plugin-syntax-logical-assignment-operators" "^7.10.1"
 
 "@babel/plugin-proposal-nullish-coalescing-operator@^7.10.1":
