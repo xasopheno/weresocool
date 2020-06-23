@@ -102,7 +102,7 @@ Documentation:
 [x]     ET(n),
 [x]     @ [start:end:skip]
      list1 ++ list2
-     fn(op, op) {}
+[x]     fn(op, op) {}
 
 _______________________________________
 

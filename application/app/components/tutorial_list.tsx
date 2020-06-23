@@ -13,6 +13,7 @@ export const tutorial_list: DemoList = [
   { filename: 'lists_101.socool', text: 'Introduction to Lists' },
   { filename: 'et_world.socool', text: 'Equal Temperaments' },
   { filename: 'indicies.socool', text: 'Indicies' },
+  { filename: 'functions.socool', text: 'Functions' },
 ];
 
 export const album_list: DemoList = [
