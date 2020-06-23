@@ -544,12 +544,12 @@
     "@babel/helper-plugin-utils" "^7.10.1"
     "@babel/plugin-syntax-json-strings" "^7.8.0"
 
-"@babel/plugin-proposal-logical-assignment-operators@^7.10.1":
-  version "7.10.1"
-  resolved "https://registry.yarnpkg.com/@babel/plugin-proposal-logical-assignment-operators/-/plugin-proposal-logical-assignment-operators-7.10.1.tgz#4adb41f15793187f1cba7f2d1b760faba3d25bfb"
-  integrity sha512-+0uLbTZhTvSet8KpTMMaL2p7p12/b//sKbFzDPAMk6z4rlYbTtyFZmq65KJMLGLio9AVjq2VKF8mxxJMXKUMwA==
+"@babel/plugin-proposal-logical-assignment-operators@^7.10.3":
+  version "7.10.3"
+  resolved "https://registry.yarnpkg.com/@babel/plugin-proposal-logical-assignment-operators/-/plugin-proposal-logical-assignment-operators-7.10.3.tgz#efae900a91f76ad07dbd50142108e8cd602fee44"
+  integrity sha512-9uievCCgqOa7VDyMDXlTp5U+0bXu0ubMQL2ek5M1mrwQIY2T9Fx6PUpx/0Eh/8XZice1hzZZo3CJx0wHcDVqNQ==
   dependencies:
-    "@babel/helper-plugin-utils" "^7.10.1"
+    "@babel/helper-plugin-utils" "^7.10.3"
     "@babel/plugin-syntax-logical-assignment-operators" "^7.10.1"
 
 "@babel/plugin-proposal-nullish-coalescing-operator@^7.10.1":
