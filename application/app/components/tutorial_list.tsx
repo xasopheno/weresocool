@@ -10,6 +10,7 @@ export const tutorial_list: DemoList = [
   { filename: 'overlay.socool', text: 'Overlay [op1, op2...]' },
   { filename: 'O.socool', text: 'O[(Fm, Fa, Gm, Pa), ...]' },
   { filename: 'fit_length.socool', text: 'Op2 > FitLength Op1' },
+  { filename: 'modulate_by.socool', text: 'ModulateBy' },
   { filename: 'lists_101.socool', text: 'Introduction to Lists' },
   { filename: 'et_world.socool', text: 'Equal Temperaments' },
   { filename: 'indicies.socool', text: 'Indicies' },

@@ -95,14 +95,14 @@ Documentation:
 [x]  Invert,
 [x]  O[],
 [x]  FitLength,
-     ModulateBy,
-[x]     List | &,
-[x]     @ [0, 1, 2, 3, ..]
-[x]     @ [Random(n, seed)]
-[x]     ET(n),
-[x]     @ [start:end:skip]
+[x]  ModulateBy,
+[x]  List | &,
+[x]  @ [0, 1, 2, 3, ..]
+[x]  @ [Random(n, seed)]
+[x]  ET(n),
+[x]  @ [start:end:skip]
      list1 ++ list2
-[x]     fn(op, op) {}
+[x]  fn(op, op) {}
 
 _______________________________________
 
