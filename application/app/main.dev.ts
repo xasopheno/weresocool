@@ -78,6 +78,7 @@ const createWindow = async () => {
       nodeIntegration: true,
     },
   });
+  mainWindow.setBackgroundColor('#454343');
   mainWindow.loadURL(`file://${__dirname}/app.html`);
 
   // @TODO: Use 'ready-to-show' event

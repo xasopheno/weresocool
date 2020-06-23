@@ -1,0 +1,53 @@
+{ f: 285, l: 1, g: 1/2, p: 0 }
+
+overtones = {
+  O[
+    (1/1, 0, 1, 0),
+    (1/2, 3, 1, -1/2),
+    (1/2, 0, 1, 1/2),
+    (1/4, 2, 1/2, 1/2),
+  ]
+}
+
+-- A special case of list definition is the ET(n) operations. 
+-- ET(n) will create a list that divides the octave into n parts. 
+-- This will create a twelve-tone equal-tempered scalle
+twelve_tone_et = ET(12)
+-- This mean any other kind of equal temperament can be easily made.
+three_tone_et = ET(7)
+seven_tone_et = ET(7)
+seventeen_tone_et = ET(17)
+
+all_scales = {
+  overtones |
+  Seq [
+    &three_tone_et,
+    &seven_tone_et,
+    &twelve_tone_et,
+    &seventeen_tone_et
+  ]
+}
+
+weird_microtonal_melody = {
+   O[
+    (3/2, 3, 1, -1/2),
+    (3/2, 0, 1, 1/2),
+    (1/1, 0, 1, 0),
+  ]
+  | Fm 2 
+  | ET(120) 
+    @ [
+      24, 55, 61, 12, 62, 77, 64, 
+      31, 22, 4, 25, 77, 89, 20, 60, 70
+  ]
+  > FitLength all_scales
+}
+
+main = {
+  Overlay [
+    all_scales,
+    weird_microtonal_melody
+  ]
+  | Seq [AsIs, Reverse, AsIs]
+  | Lm 1/7
+}

@@ -1,0 +1,44 @@
+{ f: 285, l: 1, g: 1/2, p: 0 }
+
+overtones = {
+  O[
+    (1/1, 2, 1, 0),
+    (1/2, 0, 1, 0),
+  ]
+}
+
+list = &[
+  Fm 3/2, Fm 13/7, Fm 13/6, Fm 15/8, Fm 9/4,
+]
+
+thing1 = {
+  Seq [
+    &list @ [:, : | Fm 7/6, : | Fm 9/8, 4 | Lm 4],
+    ET(20) @ [3:19:3, Random(8)]
+    | Seq [
+      Fm 1, Fm 7/8 | Reverse  
+    ]
+  ]
+  | Seq [Fm 1, Reverse, Fm 4 | Invert, Fm 15/16, Reverse, Fm 9/8, Reverse]
+  > FitLength Lm 60
+}
+
+main = {
+  Overlay [
+    -- overtones
+    -- | thing1,
+    O[
+      (2, 2, 1, 0),
+      (3/2, 2, 1, 0),
+      (2, 0, 1, 0),
+    ]
+    | Fm 1/2 
+    | Seq [
+      Fm 2, Fm 3/2, Fm 1, 
+      Fm 0, Fm 9/8, Fm 1, Fm 3/2
+    ]
+    | Repeat 5
+    > FitLength thing1
+  ]
+  | Lm 2/3
+}

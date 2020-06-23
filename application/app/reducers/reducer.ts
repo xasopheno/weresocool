@@ -12,9 +12,6 @@ export const mainReducer: React.Reducer<Store, Action> = (
 ): Store => {
   switch (action._k) {
     case 'Set_Editor_Focus':
-      if (state.editor_ref) {
-        state.editor_ref.editor.focus();
-      }
       return { ...state };
     case 'Set_Editor_Ref':
       return { ...state, editor_ref: action.editor_ref };

@@ -1,15 +1,16 @@
 export type DemoList = Array<{ filename: string; text: string }>;
 
 export const tutorial_list: DemoList = [
-  { filename: '01_major_scale.socool', text: '1. Major Scale' },
+  { filename: 'major_scale.socool', text: 'Major Scale' },
   {
-    filename: '02_moving_things_around.socool',
-    text: '2. Pipe',
+    filename: 'moving_things_around.socool',
+    text: 'Pipe',
   },
-  { filename: '03_sequences.socool', text: '3. Pipe and Sequences' },
-  { filename: '04_overlay.socool', text: '4. Overlay [op1, op2...]' },
-  { filename: '05_O.socool', text: '5. O[(Fm, Fa, Gm, Pa), ...]' },
-  { filename: '06_fit_length.socool', text: '6. Op2 > FitLength Op1' },
+  { filename: 'sequences.socool', text: 'Pipe and Sequences' },
+  { filename: 'overlay.socool', text: 'Overlay [op1, op2...]' },
+  { filename: 'O.socool', text: 'O[(Fm, Fa, Gm, Pa), ...]' },
+  { filename: 'fit_length.socool', text: 'Op2 > FitLength Op1' },
+  { filename: 'lists101.socool', text: 'Introduction to Lists' },
 ];
 
 export const album_list: DemoList = [

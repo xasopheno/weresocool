@@ -92,14 +92,14 @@ Documentation:
 [x]  Overlay [],
 [x]  Repeat,
 [x]  Reverse,
-[/]  Invert,
+[x]  Invert,
 [x]  O[],
-[/]  FitLength,
+[x]  FitLength,
      ModulateBy,
-     List | &,
-     ET(n),
-     @ [0, 1, 2, 3, ..]
-     @ [Random(n, seed)]
+[x]     List | &,
+[x]     @ [0, 1, 2, 3, ..]
+[x]     @ [Random(n, seed)]
+[x]     ET(n),
      @ [start:end:skip]
      list1 ++ list2
      fn(op, op) {}
