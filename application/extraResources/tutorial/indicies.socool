@@ -1,0 +1,57 @@
+-- Tutorials | Indicies 
+{ f: 310, l: 1, g: 1/2, p: 0 }
+
+overtones = {
+  O[
+    (2/1, 0, 1, 0),
+    (1/1, 2, 1, 1),
+    (1/1, 0, 1, -1),
+    (1/2, 0, 1, 0),
+  ]
+}
+
+-- There are a handful of different indicies you can
+-- use to select elements from a list. 
+
+main = {
+  -- Twelve-tone equal temperament.
+  overtones |
+  ET(12) 
+  @ [
+    -- You already know you can choose elements by index.
+    0, 3, 4, 6, 9, 
+    -- Slices can be used to select ranges of elements. 
+    -- this slice will select the 3rd -> 7th element of the list
+    -- The range is inclusive. 
+    3:7,
+    -- Slices can also go backwards. Again, slices are 
+    -- inclusive, so this create 8, 7, 6, 5, 4, 3, and 2.
+    8:2,
+    -- Slices can also be passed a third argument called "skip".
+    -- This will start from the 2nd element travel to the 10th
+    -- skipping 3 at a time. 
+    0:11:3,
+    -- You've already seen Random(n). Which chooses random elements
+    -- from the list. 
+    Random(5),
+    -- You can also apply operations to any index!
+    Random(30) | Overlay [Fm 1, Fm 9/8, Fm 15/8] | Gm 1/2,
+    
+    0 | Fm 0,
+    
+    11:2:2 
+    | Gm 1/2 
+    | Fm 3/4 
+    | Seq [Fm 1, Fm 9/8, Fm 4/3, Fm 5/4, Fm 3/2, Fm 5/3], 
+    
+    8:4 
+    | Fm 1/2 
+    | Lm 1/2,
+    
+    3 
+    | Fm 1/2 
+    | Lm 4
+    | Overlay [Fm 1, Fm 9/4, Fm 3/2, Fm 5/4]
+  ]
+  | Lm 1/11
+}

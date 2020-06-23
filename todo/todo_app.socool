@@ -100,7 +100,7 @@ Documentation:
 [x]     @ [0, 1, 2, 3, ..]
 [x]     @ [Random(n, seed)]
 [x]     ET(n),
-     @ [start:end:skip]
+[x]     @ [start:end:skip]
      list1 ++ list2
      fn(op, op) {}
 
