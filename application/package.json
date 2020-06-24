@@ -35,7 +35,7 @@
     "start-renderer-dev": "cross-env NODE_ENV=development webpack-dev-server --config configs/webpack.config.renderer.dev.babel.js",
     "test": "cross-env NODE_ENV=test BABEL_DISABLE_CACHE=1 jest",
     "test-all": "yarn lint && yarn ts && yarn build && yarn test && yarn package-mac && yarn test-e2e",
-    "test-e2e": "yarn package-mac && npx mocha ./test/e2e",
+    "test-e2e": "yarn package-mac && jest ./test/e2e",
     "test-watch": "yarn test --watch"
   },
   "lint-staged": {

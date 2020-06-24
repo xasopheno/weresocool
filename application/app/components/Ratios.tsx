@@ -85,7 +85,7 @@ export const Ratios = (props: { width: number }): React.ReactElement | null => {
             onClick={() => showDemoModal(true)}
           />
           <MagicButton
-            id={'magicButton'}
+            id={'questionButton'}
             src={`${assetsPath}/question_mark.jpg`}
             onClick={() => showTutorialModal(true)}
           />
@@ -104,7 +104,7 @@ export const Ratios = (props: { width: number }): React.ReactElement | null => {
             onClick={() => showDemoModal(true)}
           />
           <MagicButtonSmall
-            id={'magicButton'}
+            id={'questionButton'}
             src={`${assetsPath}/question_mark.jpg`}
             onClick={() => showTutorialModal(true)}
           />

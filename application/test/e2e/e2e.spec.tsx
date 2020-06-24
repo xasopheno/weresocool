@@ -4,7 +4,7 @@
 //  const assert = require('assert');
 import { Application } from 'spectron';
 import { assert } from 'chai';
-//  const tutorial_list = require('../../app/components/tutorial_list.tsx');
+import { tutorial_list } from '../../app/components/tutorial_list';
 //  const electronPath = require('electron');
 //  const path = require('path');
 
@@ -42,12 +42,19 @@ describe('Application launch', function () {
     return app.client.isExisting('#led_good');
   });
 
-  // it.only('should display #led_good after choosing tutorial', async function () {
-  // await this.app.client.waitUntilWindowLoaded();
-  // for (tutorial in tutorial_list) {
-  // console.log(tutorial);
-  // }
-  // await this.app.client.click('#magicButton');
-  // return this.app.client.isExisting('#led_good');
-  // });
+  it.only('should display #led_good after choosing tutorial', async function () {
+    await app.client.waitUntilWindowLoaded();
+    for (const tutorial in tutorial_list) {
+      await app.client.click('#questionButton');
+      const tutorial_name = tutorial_list[tutorial].text;
+      // const tutorial_name = 'Functions';
+      console.log(tutorial_name);
+      await app.client
+        .element(`//*[text()[contains(., '${tutorial_name}')]]`)
+        .click();
+    }
+    return app.client.isExisting('#led_good');
+  });
 });
+
+// return app.client.debug();
