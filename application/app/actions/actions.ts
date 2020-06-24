@@ -57,6 +57,7 @@ export class Dispatch {
       await this.onRender(data);
     } catch (e) {
       console.log(e);
+      this.dispatch({ _k: 'Backend', fetch: { state: 'bad', error: e } });
     }
   }
 

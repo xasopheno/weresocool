@@ -4,7 +4,7 @@
 //  const assert = require('assert');
 import { Application } from 'spectron';
 import { assert } from 'chai';
-import { tutorial_list } from '../../app/components/tutorial_list';
+import { tutorial_list, album_list } from '../../app/components/tutorial_list';
 //  const electronPath = require('electron');
 //  const path = require('path');
 
@@ -42,18 +42,35 @@ describe('Application launch', function () {
     return app.client.isExisting('#led_good');
   });
 
-  it.only('should display #led_good after choosing tutorial', async function () {
+  it('should display #led_good after choosing each demo/tutorial', async function () {
     await app.client.waitUntilWindowLoaded();
-    for (const tutorial in tutorial_list) {
-      await app.client.click('#questionButton');
-      const tutorial_name = tutorial_list[tutorial].text;
-      // const tutorial_name = 'Functions';
-      console.log(tutorial_name);
-      await app.client
-        .element(`//*[text()[contains(., '${tutorial_name}')]]`)
-        .click();
+    const results: { [key: string]: boolean } = {};
+    const demos = [
+      { button: '#magicButton', list: album_list },
+      { button: '#questionButton', list: tutorial_list },
+    ];
+    for (const demo of demos) {
+      for (const song in demo.list) {
+        //@ts-ignore
+        await app.client.click(demo.button);
+        const song_name: string = demo.list[song].text;
+        await app.client
+          //@ts-ignore
+          .element(`//*[text()[contains(., '${song_name}')]]`)
+          .click();
+        //@ts-ignore
+        const result: boolean = await app.client.isExisting('#led_good');
+        results[song_name] = result;
+      }
     }
-    return app.client.isExisting('#led_good');
+    console.log(results);
+    for (const result in results) {
+      if (results[result] !== true) {
+        console.log('FAILURE------', result);
+      }
+    }
+    const all_good = Object.values(results).every((v) => v === true);
+    return assert.isTrue(all_good);
   });
 });
 
