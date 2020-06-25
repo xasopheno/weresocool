@@ -3,6 +3,7 @@ import { Fetch } from '../store';
 import axios from 'axios';
 import FileSaver from 'file-saver';
 import { settings } from '../settings';
+import AceEditor from 'react-ace';
 import { remote } from 'electron';
 import path from 'path';
 
@@ -15,8 +16,9 @@ export enum ResponseType {
 }
 
 export type Action =
-  | { _k: 'Increment_Editor_Type' }
-  | { _k: 'Increment_Demo_Index'; len: number }
+  | { _k: 'Set_Editor_Focus' }
+  | { _k: 'Increment_Editor_Type'; editor: number }
+  | { _k: 'Set_Editor_Ref'; editor_ref: AceEditor }
   | { _k: 'Backend'; fetch: Fetch }
   | { _k: 'Set_Render_State'; state: ResponseType }
   | { _k: 'Set_Markers'; line: number; column: number; n_lines: number }
@@ -29,35 +31,33 @@ export type Action =
 export class Dispatch {
   constructor(public dispatch: React.Dispatch<Action>) {}
 
-  async onDemo(demoIdx: number): Promise<void> {
+  setEditorFocus = (editor_ref: AceEditor | null): void => {
+    if (editor_ref) {
+      editor_ref.editor.focus();
+    }
+  };
+
+  onSetEditorRef(editor_ref: AceEditor): void {
+    this.dispatch({
+      _k: 'Set_Editor_Ref',
+      editor_ref,
+    });
+  }
+
+  async onDemo(filename: string, folder: string): Promise<void> {
     const fs = remote.require('fs');
 
     const demoPath = remote.app.isPackaged
-      ? path.join(process.resourcesPath, 'extraResources/demo')
-      : './extraResources/demo';
+      ? path.join(process.resourcesPath, `extraResources/${folder}`)
+      : `./extraResources/${folder}`;
 
-    const songs: Array<string> = [];
     try {
-      const files = fs.readdirSync(demoPath);
-      for (const i in files) {
-        const song = files[i];
-        if (song.endsWith('.socool')) {
-          songs.push(song);
-        }
-      }
-    } catch (e) {
-      console.log(e);
-    }
-
-    const song = songs[demoIdx];
-    console.log(song);
-    try {
-      const data = fs.readFileSync(`${demoPath}/${song}`, 'utf-8');
+      const data = fs.readFileSync(`${demoPath}/${filename}`, 'utf-8');
       this.dispatch({ _k: 'Set_Language', language: data });
-      this.dispatch({ _k: 'Increment_Demo_Index', len: songs.length });
       await this.onRender(data);
     } catch (e) {
       console.log(e);
+      this.dispatch({ _k: 'Backend', fetch: { state: 'bad', error: e } });
     }
   }
 
@@ -71,7 +71,6 @@ export class Dispatch {
           read_event.target.result &&
           typeof read_event.target.result === 'string'
         ) {
-          // setFileName(file.name);
           this.onUpdateLanguage(read_event.target.result);
         }
       };
@@ -88,8 +87,13 @@ export class Dispatch {
     FileSaver.saveAs(blob, 'my_song.socool');
   }
 
-  onIncrementEditorType(): void {
-    this.dispatch({ _k: 'Increment_Editor_Type' });
+  onIncrementEditorType(current_editor: number): void {
+    const editor = (current_editor + 1) % 3;
+    localStorage.setItem('editor', editor.toString());
+    this.dispatch({
+      _k: 'Increment_Editor_Type',
+      editor,
+    });
   }
 
   onUpdateLanguage(language: string): void {

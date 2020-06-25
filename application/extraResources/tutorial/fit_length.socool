@@ -14,7 +14,13 @@
 -- to make it the same length as operation1. 
 -- *** Currently, FitLength needs to the final operation in a block. 
 
-melody1 = {
+-- In this example, you'll also see "Invert" being used.
+-- Invert is an operation on Frequency. Here are some examples:
+-- Fm 3/2 | Invert == Fm 2/3
+-- Fm 2 | Fm 2 | Invert == Fm 1/4
+
+bassline = {
+-- This is the bassline. 
   O[
     (1/1, 0, 1, 0),
     (1/2, 0, 1, 0),
@@ -26,21 +32,31 @@ melody1 = {
     Fm 0 | Lm 4,
   ]
   | Seq [
-    AsIs, Invert | Fm 3/2
+    -- It's played normally first,
+    Fm 1, 
+    -- and then, inverted and up a 5th.
+    Invert | Fm 3/2
   ]
 } 
-melody2 = {
+melody1 = {
+-- the melody is actually the bassline, 
+-- but with different overtones...
   O[
     (1/1, 0, 1, 1),
     (1/1, -2, 1, -1),
   ]
-  | melody1
+  | bassline
+-- ... up a 5th...
   | Fm 3/2
+-- ... and repeated twice...
   | Repeat 2
-  > FitLength melody1
+-- ... fit to the length of the original bassline.
+  > FitLength bassline
 }
 
-melody3 = {
+melody2 = {
+-- melody 2 employs the same trick. 
+-- It's just bassline with different overtones...
   O[
     (5/2, 0, 1/8, 0),
     (5/2, 9, 1/8, 0),
@@ -48,9 +64,12 @@ melody3 = {
     (9/8, 0, 1/8, 0),
     (1/1, 4, 1/4, 0),
   ]
-  | melody1
+  | bassline
+--... reversed...
   | Reverse
+-- ...up an octave and a major third...
   | Fm 5/2 
+-- ...in the following sequence...
   | Seq [
     Fm 0, 
     Fm 1 | Pa -1/3, 
@@ -58,10 +77,12 @@ melody3 = {
     Fm 5/4 | Pa -1, 
     Fm 11/8 | Pa 1,
   ]
-  > FitLength melody1
+-- ... fit to the length of the original bassline.
+  > FitLength bassline
 }
 
 chords = {
+--... and these are just some chords I liked, 
   Fm 4
   | O[
     (5/3, 7, 1/2, 1/8),
@@ -78,15 +99,17 @@ chords = {
     Fm 1, Fm 11/8 | Gm 1/2
   ]
   | Gm 1/2 
+  --... also fit to the length of the bassline. 
   > FitLength melody1
 }
 
+-- As usual, main is what get rendered.
 main = {
   Overlay [
-    -- chords,
+    chords,
+    bassline,
     melody1, 
     melody2,
-    melody3,
   ]
   | Repeat 4
   | Lm 1/3

@@ -22,4 +22,3 @@ pub struct RenderError {
     pub response_type: RenderResponse,
     pub error: ParseError,
 }
-

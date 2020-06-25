@@ -25,16 +25,20 @@ export const Editor = (props: Props): React.ReactElement => {
 
   useEffect(() => {
     if (renderSpace) {
-      const getStoredLanguage = () => {
-        const stored = localStorage.getItem('language');
-        if (stored) {
-          dispatch.onUpdateLanguage(stored);
+      const getLocalStorage = () => {
+        const storedLanguage = localStorage.getItem('language');
+        const storedEditor = localStorage.getItem('editor');
+        if (storedLanguage) {
+          dispatch.onUpdateLanguage(storedLanguage);
+        }
+        if (storedEditor) {
+          dispatch.onIncrementEditorType(parseInt(storedEditor) - 1);
         }
       };
       // @ts-ignore
       renderSpace.editor.getSession().setMode(customMode);
       renderSpace.editor.setTheme('ace/theme/wsc');
-      getStoredLanguage();
+      getLocalStorage();
     }
   }, [renderSpace, dispatch]);
 
@@ -66,11 +70,18 @@ export const Editor = (props: Props): React.ReactElement => {
     }
   }, [dispatch, store.initializeTest]);
 
+  const setRenderSpaceOuter = (el: AceEditor | null) => {
+    if (el && !store.editor_ref) {
+      dispatch.onSetEditorRef(el);
+      setRenderSpace(el);
+    }
+  };
+
   return (
     <AceEditor
       focus={true}
       ref={(el) => {
-        setRenderSpace(el);
+        setRenderSpaceOuter(el);
       }}
       placeholder="WereSoCool"
       mode="elixir"

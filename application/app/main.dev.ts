@@ -72,12 +72,13 @@ const createWindow = async () => {
   mainWindow = new BrowserWindow({
     show: true,
     width: 1200,
-    height: 1100,
+    height: 1000,
     webPreferences: {
       devTools: showDevTools,
       nodeIntegration: true,
     },
   });
+  mainWindow.setBackgroundColor('#454343');
   mainWindow.loadURL(`file://${__dirname}/app.html`);
 
   // @TODO: Use 'ready-to-show' event

@@ -36,10 +36,10 @@ jobs:
     - name: add clippy
       run: rustup component add clippy
     - name: format
-      run: ./format_ci.sh
+      run: make format_ci 
     - name: clippy 
       run: cargo clippy --all-targets -- -D warnings
     - name: run tests
-      run: ./test.sh
+      run: make test
       
       

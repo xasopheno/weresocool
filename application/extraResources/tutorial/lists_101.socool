@@ -1,0 +1,53 @@
+-- Tutorial | Introduction to Lists 
+{ f: 285, l: 1, g: 1/3, p: 0 }
+
+overtones = {
+  O[
+    (2/1, -3, 1, 1),
+    (2/1, 0, 1, -1),
+    (1/1, 3, 1, 1),
+    (1/1, 0, 1, -1),
+    (1/2, 0, 1, 1),
+    (1/2, 3, 1, -1),
+  ]
+}
+-- Lists are arrays that can be indexed into. They are essentially
+-- an ordered mapping from number to Operation. 
+-- The list syntax in this language is &[op1, op2, op3, ...]
+
+-- This is a list declaration. 
+-- In this list, you'll find a major scale with
+-- with a silence (Fm 0) at the end. 
+cool_list = &[
+  Fm 1, Fm 9/8, Fm 5/4, Fm 4/3,   
+  Fm 3/2, Fm 5/3, Fm 15/8, Fm 2,
+  Fm 0,
+] 
+
+main = {
+  overtones
+  | Seq [
+    -- First in the sequence is the list played as 
+    -- a sequence. 
+    &cool_list,
+    -- Next, the list indexed into. The syntax for indices is:
+    -- &list_name @ [index1, index2, index 3, etc]
+    &cool_list @ [
+      0, 1, 2, 3, 2, 1, 3, 5, 
+      7, 6, 5, 4, 3, 2, 1, 0, 8
+    ],
+    -- There are some special kinds of indices in the language. 
+    -- Random(n) is a special kind of index that will 
+    -- chose n random elements from your list
+    &cool_list @ [Random(30)] | Lm 2/3,
+    -- And here's a little melody to end our phrase. 
+    Seq [
+      Fm 3/2, 
+      Fm 15/16, 
+      Fm 1
+    ] 
+    | Lm 3
+  ]
+  | Lm 1/7
+  -- | Repeat 3
+}

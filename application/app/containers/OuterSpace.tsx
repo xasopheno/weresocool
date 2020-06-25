@@ -40,7 +40,10 @@ export const OuterSpace = (): React.ReactElement => {
         type="file"
         accept=".socool"
         style={{ display: 'none', visibility: 'hidden' }}
-        onChange={(e) => dispatch.onFileLoad(e)}
+        onChange={(e) => {
+          dispatch.onFileLoad(e);
+          dispatch.setEditorFocus(store.editor_ref);
+        }}
       />
       <Version>{`v${remote.app.getVersion()}`}</Version>
       <LED state={store.backend.state} />

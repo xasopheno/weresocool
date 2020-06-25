@@ -1,0 +1,14 @@
+{ f: 220, l: 1, g: 1, p: 0 } 
+
+main = {
+    Seq [
+        Gm 2 > FitLength Gm 1,
+    ]
+}
+
+expect = {
+    Seq [
+        Gm 1
+    ]
+}
+

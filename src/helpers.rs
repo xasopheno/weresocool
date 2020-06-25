@@ -20,10 +20,8 @@ pub fn cmp_vec_f64(vec1: Vec<f64>, vec2: Vec<f64>) -> bool {
 
 pub fn cmp_f32(a: f32, b: f32) -> bool {
     a.approx_eq(b, (0.0, 2))
-
 }
 
 pub fn cmp_f64(a: f64, b: f64) -> bool {
     a.approx_eq(b, (0.0, 2))
 }
-

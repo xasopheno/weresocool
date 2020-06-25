@@ -46,36 +46,30 @@ jobs:
             ${{ runner.os }}-build-${{ env.cache-name }}-
             ${{ runner.os }}-build-
             ${{ runner.os }}-
-
       - name: yarn install
         working-directory: ./application
         run: |
           yarn install
-
       - name: yarn ts
         working-directory: ./application
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
           yarn ts
-
       - name: yarn lint
         working-directory: ./application
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
           yarn lint
-
       - name: yarn build
         working-directory: ./application
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
           yarn build
-
       - name: install portaudio
         run: brew install portaudio pkg-config
-
 
       - name: yarn package-mac
         working-directory: ./application
@@ -83,18 +77,10 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
           yarn package-mac
-
       - name: yarn test
         working-directory: ./application
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
           yarn test 
-
-      - name: e2e 
-        working-directory: ./application
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        run: |
-          npx mocha test/e2e/
 

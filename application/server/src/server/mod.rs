@@ -5,7 +5,10 @@ use actix_web::{web, HttpRequest, HttpResponse};
 use serde::{Deserialize, Serialize};
 use std::path::PathBuf;
 use std::sync::{Arc, Mutex};
-use weresocool::{interpretable::InputType, manager::RenderManager};
+use weresocool::{
+    interpretable::InputType,
+    manager::{prepare_render_outside, RenderManager},
+};
 
 pub async fn single_page_app(_req: HttpRequest) -> actix_web::Result<NamedFile> {
     let path = PathBuf::from("./src/server/build/index.html");
@@ -21,12 +24,10 @@ pub async fn render(
     render_manager: web::Data<Arc<Mutex<RenderManager>>>,
     req: web::Json<Language>,
 ) -> HttpResponse {
-    match render_manager
-        .lock()
-        .unwrap()
-        .prepare_render(InputType::Language(&req.language))
-    {
-        Ok(_) => {
+    // TODO: Pull out prepare_render so it's not inside the lock.
+    match prepare_render_outside(InputType::Language(&req.language)) {
+        Ok(render) => {
+            render_manager.lock().unwrap().push_render(render);
             println!("Success.");
             HttpResponse::Ok().json(Success::RenderSuccess("Success".to_string()))
         }

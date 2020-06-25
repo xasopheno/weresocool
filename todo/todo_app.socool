@@ -1,0 +1,119 @@
+app_so_cool
+
+single repo:
+[x] - no submodules?
+[x] - e2e test in electron
+[x] - dependabot    
+[x] - e2e test in built app
+[x] - ci test
+      https://github.com/anaisbetts/xvfb-maybe
+      https://www.electronjs.org/docs/tutorial/testing-on-headless-ci
+[x] - app_server => server
+[x] - app_so_cool => WereSoCool/app_so_cool
+[x] - decide on CI. Actions expensive? 
+
+
+frontend:
+[x]  - Save/Save_As
+
+backend: 
+[x]  - build the backend on build-e2e
+[x]  - cp backend to correct place
+
+app signing:
+[x] - sign locally
+[]  - notorize locally
+[x] - sign on ci
+[x] - notorize on ci
+[x] - auto-update 
+
+scripts:
+[x] ci w/o signing/notarization
+[x] ci with signing/notarization
+[x] test-e2e w/o signing/notarization
+[] package-local with signing/notarization
+
+ui: 
+[x]  - focus on editor after each operation
+[x]  - save editorType in local storage
+[x]  - play instead of render
+[]   - menus
+----
+[]   - *.socool File Association
+            https://github.com/rchrd2/example-electron-file-association
+[]   - editor font size
+
+backend:
+[x]  - prepare_render should happen outside of lock
+[]   - a failure should not break the backend
+[]   - FitGain
+
+tests: 
+[x]  - editor focus
+[]   - tutorials
+
+build on ci:
+[x]  - flag for static build
+[x]  - action for master only if tests pass
+[x]  - cache rust during application build
+
+publishing:
+[x]   - github
+
+app setup:
+[x]  - Choose Port
+        *  Find a port not being used and pass it to backend as an argument
+[x]  - Build Portaudio Statically
+[x]     * Using macos image.
+[x]     * Only on macos
+
+dependabot:
+[]  - auto-merge
+
+Update README.md's:
+[]  - audio
+[]  - application
+
+Demo:
+[]   - maria songs
+[x]  - proof songs 
+[x]  - pick songs
+[x]  - for song in WereSoCool/demo`
+[x]  - "Demo Modal"
+
+Tutorial: 
+[x] - Tutorial Modal
+
+Documentation:
+
+[x]  Fm, 
+[x]  Seq [],
+[x]  Fa | Lm | Gm | Pm | Pa,
+[x]  Overlay [],
+[x]  Repeat,
+[x]  Reverse,
+[x]  Invert,
+[x]  O[],
+[x]  FitLength,
+[x]  ModulateBy,
+[x]  List | &,
+[x]  @ [0, 1, 2, 3, ..]
+[x]  @ [Random(n, seed)]
+[x]  ET(n),
+[x]  @ [start:end:skip]
+     list1 ++ list2
+[x]  fn(op, op) {}
+
+_______________________________________
+
+Mic:
+    Replace Yin with Yaapt
+        https://github.com/mcraig2/pyaapt/blob/master/yaapt.py
+
+
+
+[]     Build ffmpeg Statically
+            Needs to be operating system specific
+        -- https://amin-ahmadi.com/2020/05/10/how-to-build-static-ffmpeg-with-x264-on-macos/
+        -- https://github.com/albinoz/ffmpeg-static-OSX
+

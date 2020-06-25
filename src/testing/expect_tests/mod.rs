@@ -58,6 +58,11 @@ mod expect {
         expect("src/testing/expect_tests/mod_mocks/simple_fail.socool");
     }
 
+    // #[test_resources("mocks/fit_gain/*.socool")]
+    // fn __fit_gain_generated_(resource: &str) {
+    // expect(resource);
+    // }
+
     #[test_resources("mocks/list/*.socool")]
     fn __list_generated_(resource: &str) {
         expect(resource);

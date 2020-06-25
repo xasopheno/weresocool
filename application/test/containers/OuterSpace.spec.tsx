@@ -32,6 +32,8 @@ describe('OuterSpace', () => {
     const component = mount(<OuterSpaceWrapper />);
     // @ts-ignore
     const editor = component.find(AceEditor).instance().editor;
+    editor.focus = jest.fn();
+
     act(() => {
       editor.setValue('code');
     });
@@ -41,11 +43,19 @@ describe('OuterSpace', () => {
     });
     component.update();
     expect(editor.getValue()).toBe(intialStore.language);
+    expect(editor.focus.mock.calls.length).toBe(1);
   });
   //
   it('onFileSave', async () => {
     const component = mount(<OuterSpaceWrapper />);
     FileSaver.saveAs = jest.fn();
+
+    const editor = component
+      .find(AceEditor)
+      // @ts-ignore
+      .instance().editor;
+    editor.focus = jest.fn();
+
     await act(async () => {
       const saveButton = component.find('#saveButton');
       saveButton.at(0).simulate('click');
@@ -54,23 +64,28 @@ describe('OuterSpace', () => {
     });
 
     expect(FileSaver.saveAs).toHaveBeenCalled();
+    expect(editor.focus.mock.calls.length).toBe(1);
   });
 
   it('onFileLoad', async () => {
     const component = mount(<OuterSpaceWrapper />);
     const expected = 'language from file';
     const blob = new Blob([expected], { type: '.socool' });
+
+    const editor = component
+      .find(AceEditor)
+      // @ts-ignore
+      .instance().editor;
+    editor.focus = jest.fn();
+
     await act(async () => {
       const loadInput = component.find('#fileLoadInput');
       loadInput.at(0).simulate('change', { target: { files: [blob] } });
 
       await flushPromises();
     });
-    const editor = component
-      .find(AceEditor)
-      // @ts-ignore
-      .instance().editor;
     expect(editor.getValue()).toBe(expected);
+    expect(editor.focus.mock.calls.length).toBe(1);
   });
 
   it('displays title', () => {

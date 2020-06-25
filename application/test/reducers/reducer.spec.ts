@@ -12,12 +12,12 @@ describe('Reducer Tests', () => {
   it('iterate through editor types', () => {
     const reducer = mainReducer;
     let store = intialStore;
-    // expect(store.editor).toEqual(0);
-    // store = reducer(store, { _k: 'Increment_Editor_Type' });
+    expect(store.editor).toEqual(0);
+    store = reducer(store, { _k: 'Increment_Editor_Type', editor: 1 });
     expect(store.editor).toEqual(1);
-    store = reducer(store, { _k: 'Increment_Editor_Type' });
+    store = reducer(store, { _k: 'Increment_Editor_Type', editor: 2 });
     expect(store.editor).toEqual(2);
-    store = reducer(store, { _k: 'Increment_Editor_Type' });
+    store = reducer(store, { _k: 'Increment_Editor_Type', editor: 0 });
     expect(store.editor).toEqual(0);
   });
   it('Set_Error_Message', () => {

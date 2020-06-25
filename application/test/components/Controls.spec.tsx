@@ -52,8 +52,8 @@ const findAndTest = (
 describe('Controls', () => {
   it('incremment editor type', () => {
     const component = mount(<ControlsComponent />);
-    // findAndTest(component, '#editorButton', 'Text');
-    // findAndClick(component, '#editorButton');
+    findAndTest(component, '#editorButton', 'Text');
+    findAndClick(component, '#editorButton');
     findAndTest(component, '#editorButton', 'Vim');
     findAndClick(component, '#editorButton');
     findAndTest(component, '#editorButton', 'Emacs');
