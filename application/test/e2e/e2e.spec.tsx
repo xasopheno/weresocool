@@ -6,7 +6,7 @@ import { tutorial_list, album_list } from '../../app/components/tutorial_list';
 
 describe('Application launch', function () {
   let app: Application;
-  jest.setTimeout(10000);
+  jest.setTimeout(50000);
 
   beforeEach(function () {
     app = new Application({
