@@ -1,12 +1,8 @@
 //  Important to match spectron and electron versions
 //  https://github.com/electron-userland/spectron#version-map
-//  const Application = require('spectron').Application;
-//  const assert = require('assert');
 import { Application } from 'spectron';
 import { assert } from 'chai';
 import { tutorial_list, album_list } from '../../app/components/tutorial_list';
-//  const electronPath = require('electron');
-//  const path = require('path');
 
 describe('Application launch', function () {
   let app: Application;
