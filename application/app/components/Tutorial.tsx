@@ -40,8 +40,8 @@ const Button = styled.div`
 `;
 
 const TitleContainer = styled.div`
-  overflow-y: scroll;
-  height: 700px;
+  overflow-y: auto;
+  height: 100%;
 `;
 
 export interface DemoData {
@@ -66,7 +66,11 @@ export const Demo = (props: { demoData: DemoData }): React.ReactElement => {
       <TitleContainer>
         {props.demoData.data.map((tutorial, i) => {
           return (
-            <Section key={i} onClick={() => chooseTutorial(tutorial.filename)}>
+            <Section
+              id={tutorial.text}
+              key={i}
+              onClick={() => chooseTutorial(tutorial.filename)}
+            >
               {i}. {tutorial.text}
             </Section>
           );

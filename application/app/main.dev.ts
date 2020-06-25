@@ -72,7 +72,7 @@ const createWindow = async () => {
   mainWindow = new BrowserWindow({
     show: true,
     width: 1200,
-    height: 1100,
+    height: 1000,
     webPreferences: {
       devTools: showDevTools,
       nodeIntegration: true,

@@ -83,10 +83,4 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
           yarn test 
-      - name: e2e 
-        working-directory: ./application
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        run: |
-          npx mocha test/e2e/
 
