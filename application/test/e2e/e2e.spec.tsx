@@ -51,6 +51,7 @@ describe('Application launch', function () {
         await app.client.click(demo.button);
         const song_name: string = demo.list[song].text;
         const search = `//*[text()[contains(., '${song_name}')]]`;
+        //@ts-ignore
         await app.client.waitForExist(search);
         //@ts-ignore
         await app.client.element(search).click();
