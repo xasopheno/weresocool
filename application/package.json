@@ -287,7 +287,7 @@
     "devtron": "^1.4.0",
     "electron-debug": "^3.1.0",
     "electron-log": "^4.2.2",
-    "electron-notarize": "^0.3.0",
+    "electron-notarize": "^1.0.0",
     "electron-updater": "^4.3.1",
     "file-saver": "^2.0.2",
     "get-port": "^5.1.1",
