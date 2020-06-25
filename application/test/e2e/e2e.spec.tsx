@@ -50,10 +50,10 @@ describe('Application launch', function () {
         //@ts-ignore
         await app.client.click(demo.button);
         const song_name: string = demo.list[song].text;
-        await app.client
-          //@ts-ignore
-          .element(`//*[text()[contains(., '${song_name}')]]`)
-          .click();
+        const search = `//*[text()[contains(., '${song_name}')]]`;
+        await app.client.waitForExist(search);
+        //@ts-ignore
+        await app.client.element(search).click();
         //@ts-ignore
         const result: boolean = await app.client.isExisting('#led_good');
         results[song_name] = result;
