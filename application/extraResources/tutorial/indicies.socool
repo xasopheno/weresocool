@@ -1,5 +1,5 @@
 -- Tutorials | Indicies 
-{ f: 310, l: 1, g: 1/2, p: 0 }
+{ f: 310, l: 1, g: 1/4, p: 0 }
 
 overtones = {
   O[
@@ -14,8 +14,8 @@ overtones = {
 -- use to select elements from a list. 
 
 main = {
-  -- Twelve-tone equal temperament.
   overtones |
+  -- Twelve-tone equal temperament.
   ET(12) 
   @ [
     -- You already know you can choose elements by index.
@@ -25,7 +25,7 @@ main = {
     -- The range is inclusive. 
     3:7,
     -- Slices can also go backwards. Again, slices are 
-    -- inclusive, so this create 8, 7, 6, 5, 4, 3, and 2.
+    -- inclusive, so this will choose indicies 8, 7, 6, 5, 4, 3, and 2.
     8:2,
     -- Slices can also be passed a third argument called "skip".
     -- This will start from the 2nd element travel to the 10th
@@ -37,8 +37,10 @@ main = {
     -- You can also apply operations to any index!
     Random(30) | Overlay [Fm 1, Fm 9/8, Fm 15/8] | Gm 1/3,
     
+    -- Quick silence. I'll be adding a silent index soon. :)
     0 | Fm 0,
     
+    -- For the win!
     11:2:2 
     | Fm 3/4 
     | Seq [Fm 1, Fm 9/8, Fm 4/3, Fm 5/4, Fm 3/2, Fm 5/3]

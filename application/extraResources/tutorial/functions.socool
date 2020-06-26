@@ -1,5 +1,5 @@
 -- Tutorial | Functions
-{ f: 220, l: 1, g: 1/2, p: 0 }
+{ f: 220, l: 1, g: 1/5, p: 0 }
 
 overtones = {
   O[
@@ -19,12 +19,12 @@ overtones = {
 -- any block except for the "main" block can be extended to 
 -- take arguments. 
 
--- Some of the simplier Bach pieces can be described
--- pretty clearly as a small set of functions with 
--- different inputs. 
+-- (Some of the simplier Bach pieces can be described
+-- pretty clearly as a small set of functions run 
+-- a series of different inputs). 
 
 -- Here's a function that takes 4 arguments and
--- then plays them in a specific order. 
+-- then plays them in a new order. 
 cool_function(a, b, c, d) = {
   Seq [
     c, b, a, b, c, d, c | Lm 2
@@ -36,11 +36,11 @@ main = {
   Seq [
     -- And then we can use that function with different
     -- arguments to generate different melodies. 
-    cool_function(Fm 1, Fm 9/8, Fm 5/4, Fm 3/2) | Repeat 2,
-    cool_function(Fm 1, Fm 5/4, Fm 3/2, Fm 15/8) | Repeat 2,
+    cool_function(Fm 1, Fm 9/8, Fm 5/4, Fm 3/2) | Repeat 2, cool_function(Fm 1, Fm 5/4, Fm 3/2, Fm 15/8) | Repeat 2,
     cool_function(Fm 7/6, Fm 9/8, Fm 1, Fm 7/8) | Repeat 2,
     cool_function(Fm 3/2, Fm 7/6, Fm 5/4, Fm 1) | Repeat 2
   ]
+  -- Piped into a Seq, we can quickly put together 
+  -- a reasonable structure for a song.
   | Seq [Fm 1, Fm 4/3, Fm 6/5, Fm 1]
-  | Lm 1/7
-}
+  | Lm 1/7 }

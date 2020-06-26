@@ -1,5 +1,5 @@
 -- Tutorial | Introduction to Lists 
-{ f: 285, l: 1, g: 1/3, p: 0 }
+{ f: 285, l: 1, g: 1/5, p: 0 }
 
 overtones = {
   O[
@@ -42,12 +42,11 @@ main = {
     &cool_list @ [Random(30)] | Lm 2/3,
     -- And here's a little melody to end our phrase. 
     Seq [
-      Fm 3/2, 
+      Fm 3/2,
       Fm 15/16, 
       Fm 1
     ] 
     | Lm 3
   ]
   | Lm 1/7
-  -- | Repeat 3
 }

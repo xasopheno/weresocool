@@ -1,4 +1,13 @@
-{ f: 285, l: 1, g: 1/2, p: 0 }
+-- Tutorial | Equal Temperaments
+{ f: 285, l: 1, g: 1/3, p: 0 }
+
+-- An equal temperament is a musical temperament or tuning system, 
+-- which approximates just intervals by dividing an octave 
+-- (or other interval) into equal steps. 
+-- This means the ratio of the frequencies of any 
+-- adjacent pair of notes is the same, which gives an 
+-- equal perceived step size as pitch is perceived roughly 
+-- as the logarithm of frequency. - Wikipedia
 
 overtones = {
   O[
@@ -9,11 +18,12 @@ overtones = {
   ]
 }
 
--- A special case of list definition is the ET(n) operations. 
+-- A special case of list definition is the ET(n) operation. 
 -- ET(n) will create a list that divides the octave into n parts. 
--- This will create a twelve-tone equal-tempered scalle
+-- This will create a twelve-tone equal-tempered scale
 twelve_tone_et = ET(12)
--- This mean any other kind of equal temperament can be made easily.
+
+-- This also mean any other kind of equal temperament can be made easily.
 three_tone_et = ET(3)
 seven_tone_et = ET(7)
 seventeen_tone_et = ET(17)
@@ -36,14 +46,14 @@ weird_microtonal_melody = {
     (9/8, 0, 1, 1),
     (1/1, 0, 1, 0),
   ]
-  | Gm 1/2
-  | Fm 2 
   -- ET(120) is interesting because it splits every half-step in 
   -- 12-tone equal temperament into 10 parts...whoa!
-  -- That makes it easy for musicians to explore some pretty 
-  -- wacky melodies, but still be able to think in traditional way.
+  -- That makes it easy for musicians trained to think in 12-tone 
+  -- equal temperament to explore some pretty expressive melodies, 
+  -- still thinking in traditional way.
+  
   -- Regardless of you background, I'd recommend trying to compose
-  -- melodies in all sorts of equal temperaments. It's very fun. 
+  -- melodies in all sorts of equal temperaments. 
   | ET(120) 
     @ [
       24, 55, 61, 12, 62, 77, 64, 10, 44, 32, 
@@ -51,6 +61,8 @@ weird_microtonal_melody = {
       70, 74, 70, 73, 77, 60, 70, 65, 73, 74,
       70, 74, 77, 65, 73, 74, 70
     ]
+    | Fm 2 
+    | Gm 1/2
     > FitLength all_scales
 }
 
