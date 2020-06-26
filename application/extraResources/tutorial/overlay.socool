@@ -11,18 +11,16 @@
 --   - Negative values move left, positive values move right. 
 --   - You can use larger values, but a range of (-1, 1) is usually plenty.
 -- Gm (Gain Multiply) is an operation for changing volume
---   - Larger numbers are louder. 
-
--- You can make cool sounds by overlaying frequencies that 
+--   - Larger numbers are louder.   -- You can make cool sounds by overlaying frequencies that 
 -- are very close together. The sound will oscillate
 -- because the two waveforms will move between supporting
 -- each other and cancelling each other out. 
 cool_chord = {
--- I recommend listening to this by slowly uncommenting out
+-- I recommend listening to this by slowly commenting/uncommenting out
 -- each set of frequencies and then rendering again.
 
 -- *** Remember you can use cmd + / to comment/uncomment lines.
--- You can uncomment multiple lines at the same time.***
+-- *** You can uncomment multiple lines at the same time.
   Overlay [
     Fm 17/4 | Fa 8 | Gm 1/8 | Pa -1,
     Fm 17/4 | Pa -1 | Gm 1/8,
