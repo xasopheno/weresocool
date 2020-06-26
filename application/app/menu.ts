@@ -259,31 +259,21 @@ export default class MenuBuilder {
         label: 'Help',
         submenu: [
           {
-            label: 'Learn More',
+            label: 'Watch/Listen',
             click() {
               shell.openExternal('https://weresocool.org');
             },
           },
           {
-            label: 'Documentation',
+            label: 'Code',
             click() {
-              shell.openExternal(
-                'https://github.com/xasopheno/weresocool/tree/master/docs#readme'
-              );
+              shell.openExternal('https://github.com/xasopheno/weresocool/');
             },
           },
           {
-            label: 'Community Discussions',
+            label: 'Donate',
             click() {
-              shell.openExternal('https://www.weresocool.org/community');
-            },
-          },
-          {
-            label: 'Search Issues',
-            click() {
-              shell.openExternal(
-                'https://github.com/xasopheno/weresocool/issues'
-              );
+              shell.openExternal('https://paypal.me/weresocool');
             },
           },
         ],

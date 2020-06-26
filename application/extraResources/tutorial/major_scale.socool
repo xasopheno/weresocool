@@ -1,5 +1,7 @@
+-- Tutorial | Major Scale
 { f: 220, l: 1, g: 1, p: 0 } 
--- Any line that starts with "--". 
+-- Any line that starts with "--" is a comment and will not be run. 
+
 -- At the top of your .socool file, you need one of these:
 -- { f: 220, l: 1, g: 1, p: 0 } 
 
@@ -11,15 +13,20 @@
 --   -1 is on the left 
 --   1 is on the right 
 
--- In order for a .socool file to render, it also needs a "main block".
+-- In order for a .socool file to render, it also needs a "main" block:
+--
+--      main { 
+--        sounds_you_want_to_make 
+--      }
+--
+-- There are two Operations being used in this file's "main" block:
 
--- There are two Operations being used in this file's main block:
+--      "Fm" (Frequency Multiply): takes the "f" at the top of your file and 
+--                                 multiplies it by the multiplier provided. 
 
---   "Fm" (Frequency Multiply): takes the "f" at the top of your file and multiplies it by the multiplier provided. 
+--      "Seq" (Sequence): Operations in a Seq block will play in order.
 
---   "Seq" (Sequence): Operations in a Seq block will play in order.
-
--- Click Render or press Shift-Enter to render this file.
+-- Click Play or press Shift-Enter to render this file.
 main = {
 	Seq [
         Fm 1, Fm 9/8, Fm 5/4, Fm 4/3, 
@@ -31,5 +38,5 @@ main = {
 -- are surrounded by gold boxes. 
 
 -- Try changing some of the ratios to make different sounds. 
--- Ratios > 1 will go up and ratios < 1 will go down. 
+-- Ratios > 1 will sound higher and ratios < 1 will sound lower. 
 -- For example: 2/1 is up one octave and 1/2 is down one octave.

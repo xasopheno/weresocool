@@ -11,10 +11,10 @@ export const tutorial_list: DemoList = [
   { filename: 'O.socool', text: 'O[(Fm, Fa, Gm, Pa), ...]' },
   { filename: 'fit_length.socool', text: 'Op2 > FitLength Op1' },
   { filename: 'modulate_by.socool', text: 'ModulateBy' },
+  { filename: 'functions.socool', text: 'Functions' },
   { filename: 'lists_101.socool', text: 'Introduction to Lists' },
   { filename: 'et_world.socool', text: 'Equal Temperaments' },
   { filename: 'indicies.socool', text: 'Indicies' },
-  { filename: 'functions.socool', text: 'Functions' },
 ];
 
 export const album_list: DemoList = [
