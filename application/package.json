@@ -293,7 +293,7 @@
     "get-port": "^5.1.1",
     "history": "^4.10.1",
     "react": "^16.13.1",
-    "react-ace": "^9.0.0",
+    "react-ace": "^9.1.1",
     "react-dom": "^16.13.1",
     "react-hot-loader": "^4.12.21",
     "react-modal": "^3.11.2",
