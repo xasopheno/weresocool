@@ -54,7 +54,9 @@ export class Dispatch {
     try {
       const data = fs.readFileSync(`${demoPath}/${filename}`, 'utf-8');
       this.dispatch({ _k: 'Set_Language', language: data });
-      await this.onRender(data);
+      if (filename !== 'welcome.socool') {
+        await this.onRender(data);
+      }
     } catch (e) {
       console.log(e);
       this.dispatch({ _k: 'Backend', fetch: { state: 'bad', error: e } });

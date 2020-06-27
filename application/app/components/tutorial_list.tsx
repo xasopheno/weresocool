@@ -1,6 +1,7 @@
 export type DemoList = Array<{ filename: string; text: string }>;
 
 export const tutorial_list: DemoList = [
+  { filename: 'welcome.socool', text: 'Welcome' },
   { filename: 'major_scale.socool', text: 'Major Scale' },
   {
     filename: 'moving_things_around.socool',
@@ -22,12 +23,13 @@ export const album_list: DemoList = [
   { filename: 'day_5.socool', text: 'Day 5' },
   { filename: 'day_6_long.socool', text: 'Day 6' },
   { filename: 'day_3.socool', text: 'Goodbye, Glacier Bay' },
-  { filename: 'modern_modem.socool', text: 'Modern Modem' },
   { filename: 'madness.socool', text: '狂気 | Madness' },
-  { filename: 'Marichan.socool', text: 'Marichan' },
-  { filename: 'what_a_world.socool', text: 'What a World' },
-  { filename: 'tokyo.socool', text: '東京 | Tokyo' },
   { filename: 'songsongsong.socool', text: 'Song Song Song' },
+  { filename: 'wonder_ball.socool', text: 'Wonderball' },
+  { filename: 'Marichan.socool', text: 'Marichan' },
+  { filename: 'tokyo.socool', text: '東京 | Tokyo' },
+  { filename: 'modern_modem.socool', text: 'Modern Modem' },
+  { filename: 'what_a_world.socool', text: 'What a World' },
   { filename: 'slice.socool', text: 'Slice' },
   { filename: 'table.socool', text: 'Table' },
   { filename: 'how_to_swim.socool', text: 'How To Move' },
