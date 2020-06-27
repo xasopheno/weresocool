@@ -71,14 +71,15 @@ const createWindow = async () => {
 
   mainWindow = new BrowserWindow({
     show: true,
-    width: 1200,
-    height: 1000,
+    width: 700,
+    height: 700,
     webPreferences: {
       devTools: showDevTools,
       nodeIntegration: true,
     },
   });
   mainWindow.setBackgroundColor('#454343');
+  mainWindow.maximize();
   mainWindow.loadURL(`file://${__dirname}/app.html`);
 
   // @TODO: Use 'ready-to-show' event

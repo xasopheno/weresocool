@@ -6,7 +6,7 @@ import { testStore } from '../../app/store';
 import { OuterSpaceWrapper } from '../helpers/wrappers';
 import { act } from 'react-dom/test-utils';
 import AceEditor from 'react-ace';
-import { intialStore } from '../../app/store';
+import { language_template } from '../../app/components/Editor/language_template';
 import { flushPromises } from '../helpers/tools';
 import FileSaver from 'file-saver';
 
@@ -42,7 +42,7 @@ describe('OuterSpace', () => {
       component.find('#resetButton').at(0).simulate('click');
     });
     component.update();
-    expect(editor.getValue()).toBe(intialStore.language);
+    expect(editor.getValue()).toBe(language_template);
     expect(editor.focus.mock.calls.length).toBe(1);
   });
   //

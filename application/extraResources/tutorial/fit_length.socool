@@ -1,4 +1,6 @@
-{ f: 240, l: 1, g: 1, p: 0 }
+-- Tutorial | FitLength
+
+{ f: 240, l: 1, g: 1/5, p: 0 }
 
 -- Once you've started writing songs with Overlays, you'll likely notice
 -- that lining up the ends of phrases can be tedious. 
@@ -6,25 +8,33 @@
 -- the ends of operations. 
 
 -- The syntax is as follows:
---    operation2 > FitLength operation1 ***notice the ">" used here.
+--    operation2 > FitLength operation1
+--               ^notice the ">" used here.
 
--- In this example, operation2 is something new you've written. 
+-- Here, operation2 is something new you've written. 
 -- operation1 is something you wrote earlier in the piece.
 -- FitLength is going to stretch or squish operation2
 -- to make it the same length as operation1. 
--- *** Currently, FitLength needs to the final operation in a block. 
+-- *** Currently, FitLength needs to be the final operation in a block. 
 
 -- In this example, you'll also see "Invert" being used.
--- Invert is an operation on Frequency. Here are some examples:
--- Fm 3/2 | Invert == Fm 2/3
--- Fm 2 | Fm 2 | Invert == Fm 1/4
+-- Invert is an operation on Frequency which inverts the ratio of the current
+-- current frequency over the f at the top of the file. 
+--    Here are some examples:
+--        Fm 3/2 | Invert == Fm 2/3
+--        Fm 2 | Fm 2 | Invert == Fm 1/4
 
-bassline = {
 -- This is the bassline. 
+bassline = {
+  -- It has a small overtone structure
   O[
-    (1/1, 0, 1, 0),
+    (1/1, 0, 1/2, 0),
+    (1/1, -1/2, 1/2, 0),
+-- 1/2 because we want the fundamental to be 
+-- lower (1 octave lower)
     (1/2, 0, 1, 0),
   ]
+  -- and here's the line.
   | Seq [
     Fm 1, Fm 9/8, Fm 7/6, Fm 3/2, 
     Fm 4/3 | Lm 2, Fm 7/4, Fm 2,
@@ -34,19 +44,20 @@ bassline = {
   | Seq [
     -- It's played normally first,
     Fm 1, 
-    -- and then, inverted and up a 5th.
+    -- and then, inverted and up 3/2 (a perfect 5th).
     Invert | Fm 3/2
   ]
 } 
+
+-- this melody is actually just the bassline, 
 melody1 = {
--- the melody is actually the bassline, 
 -- but with different overtones...
   O[
     (1/1, 0, 1, 1),
-    (1/1, -2, 1, -1),
+    (1/1, -3, 1, -1),
   ]
   | bassline
--- ... up a 5th...
+-- ... up 3/2 (a perfect 5th)...
   | Fm 3/2
 -- ... and repeated twice...
   | Repeat 2
@@ -77,7 +88,7 @@ melody2 = {
     Fm 5/4 | Pa -1, 
     Fm 11/8 | Pa 1,
   ]
--- ... fit to the length of the original bassline.
+-- ... *automagically* fit to the length of the original bassline.
   > FitLength bassline
 }
 
@@ -99,8 +110,8 @@ chords = {
     Fm 1, Fm 11/8 | Gm 1/2
   ]
   | Gm 1/2 
-  --... also fit to the length of the bassline. 
-  > FitLength melody1
+  --... fit to the length of the bassline!. 
+  > FitLength melody1 
 }
 
 -- As usual, main is what get rendered.
@@ -111,6 +122,8 @@ main = {
     melody1, 
     melody2,
   ]
+  -- repeated 4x
   | Repeat 4
+  -- 3x faster
   | Lm 1/3
 }
