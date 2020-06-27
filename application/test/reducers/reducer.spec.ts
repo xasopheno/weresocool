@@ -1,5 +1,5 @@
 import { mainReducer } from '../../app/reducers/reducer';
-import { intialStore } from '../../app/store';
+import { testStore } from '../../app/store';
 import { Dispatch, ResponseType } from '../../app/actions/actions';
 import { language_template } from '../../app/components/Editor/language_template';
 import { makeMarker } from '../../app/components/Editor/markers';
@@ -11,7 +11,7 @@ import { renderHook, act } from '@testing-library/react-hooks';
 describe('Reducer Tests', () => {
   it('iterate through editor types', () => {
     const reducer = mainReducer;
-    let store = intialStore;
+    let store = testStore;
     expect(store.editor).toEqual(0);
     store = reducer(store, { _k: 'Increment_Editor_Type', editor: 1 });
     expect(store.editor).toEqual(1);
@@ -22,7 +22,7 @@ describe('Reducer Tests', () => {
   });
   it('Set_Error_Message', () => {
     const reducer = mainReducer;
-    let store = intialStore;
+    let store = testStore;
     expect(store.errorMessage).toEqual('');
     store = reducer(store, { _k: 'Set_Error_Message', message: 'hello' });
     expect(store.errorMessage).toEqual('hello');
@@ -32,7 +32,7 @@ describe('Reducer Tests', () => {
 
   it('Set_Markers, Unset_Markers', () => {
     const reducer = mainReducer;
-    let store = intialStore;
+    let store = testStore;
     expect(store.markers).toEqual([]);
     const markers = [makeMarker(0, 0, 5)];
     store = reducer(store, {
@@ -48,7 +48,7 @@ describe('Reducer Tests', () => {
 
   it('Set_Language', () => {
     const reducer = mainReducer;
-    let store = intialStore;
+    let store = testStore;
     expect(store.language).toEqual(language_template);
     const language = 'test test test';
     store = reducer(store, { _k: 'Set_Language', language });
@@ -64,7 +64,7 @@ describe('Fetch Tests', () => {
     const mock = new MockAdapter(axios);
     mock.onPost().networkError();
 
-    const { result } = renderHook(() => useReducer(mainReducer, intialStore));
+    const { result } = renderHook(() => useReducer(mainReducer, testStore));
     const [store, rawDispatch] = result.current;
     const dispatch = new Dispatch(rawDispatch);
     await act(async () => {
@@ -78,7 +78,7 @@ describe('Fetch Tests', () => {
     const response = { RenderSuccess: 'Success' };
     mock.onPost().reply(200, response);
 
-    const { result } = renderHook(() => useReducer(mainReducer, intialStore));
+    const { result } = renderHook(() => useReducer(mainReducer, testStore));
     const [store, rawDispatch] = result.current;
     const dispatch = new Dispatch(rawDispatch);
     await act(async () => {
@@ -97,7 +97,7 @@ describe('Fetch Tests', () => {
     };
     mock.onPost().reply(200, response);
 
-    const { result } = renderHook(() => useReducer(mainReducer, intialStore));
+    const { result } = renderHook(() => useReducer(mainReducer, testStore));
     const [store, rawDispatch] = result.current;
     const dispatch = new Dispatch(rawDispatch);
     await act(async () => {
@@ -119,7 +119,7 @@ describe('Fetch Tests', () => {
     };
     mock.onPost().reply(200, response);
 
-    const { result } = renderHook(() => useReducer(mainReducer, intialStore));
+    const { result } = renderHook(() => useReducer(mainReducer, testStore));
     const [store, rawDispatch] = result.current;
     const dispatch = new Dispatch(rawDispatch);
     await act(async () => {
@@ -144,7 +144,7 @@ describe('Fetch Tests', () => {
     };
     mock.onPost().reply(200, response);
 
-    const { result } = renderHook(() => useReducer(mainReducer, intialStore));
+    const { result } = renderHook(() => useReducer(mainReducer, testStore));
     const [store, rawDispatch] = result.current;
     const dispatch = new Dispatch(rawDispatch);
     await act(async () => {
@@ -168,7 +168,7 @@ describe('Fetch Tests', () => {
     };
     mock.onPost().reply(200, response);
 
-    const { result } = renderHook(() => useReducer(mainReducer, intialStore));
+    const { result } = renderHook(() => useReducer(mainReducer, testStore));
     const [store, rawDispatch] = result.current;
     const dispatch = new Dispatch(rawDispatch);
     await act(async () => {

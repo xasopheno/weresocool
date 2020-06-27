@@ -45,7 +45,7 @@ export class Dispatch {
   }
 
   async onDemo(filename: string, folder: string): Promise<void> {
-    const fs = remote.require('fs');
+    const fs = window.require('fs');
 
     const demoPath = remote.app.isPackaged
       ? path.join(process.resourcesPath, `extraResources/${folder}`)

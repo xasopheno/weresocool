@@ -2,8 +2,10 @@ import { createContext } from 'react';
 import { IMarker } from 'react-ace';
 import AceEditor from 'react-ace';
 import { language_template } from '../app/components/Editor/language_template';
+import { welcome } from '../app/components/Editor/welcome';
 import { ResponseType } from '../app/actions/actions';
-import { remote } from 'electron';
+// import { remote } from 'electron';
+// import path from 'path';
 
 interface Editor {
   [index: number]: { name: string; style: string };
@@ -20,15 +22,15 @@ export const Editors: Editor = {
   2: { name: 'Emacs', style: 'emacs' },
 };
 
-const getWelcome = () => {
-  const fs = remote.require('fs');
+// const getWelcome = () => {
+// const fs = window.require('fs');
 
-  const demoPath = remote.app.isPackaged
-    ? path.join(process.resourcesPath, `extraResources/tutorial`)
-    : `./extraResources/tutorial`;
+// const demoPath = remote.app.isPackaged
+// ? path.join(process.resourcesPath, `extraResources/tutorial`)
+// : `./extraResources/tutorial`;
 
-  return fs.readFileSync(`${demoPath}/welcome.socool`, 'utf-8');
-};
+// return fs.readFileSync(`${demoPath}/welcome.socool`, 'utf-8');
+// };
 
 export interface Store {
   editor: number;
@@ -47,7 +49,7 @@ export const intialStore: Store = {
   demoIdx: 0,
   backend: { state: 'bad', error: Error('Startup') },
   render: ResponseType.RenderSuccess,
-  language: getWelcome(),
+  language: welcome,
   errorMessage: '',
   markers: [],
   initializeTest: true,
@@ -55,7 +57,7 @@ export const intialStore: Store = {
 };
 
 export const testStore: Store = {
-  editor: 1,
+  editor: 0,
   demoIdx: 0,
   backend: { state: 'good' },
   render: ResponseType.RenderSuccess,
