@@ -1,6 +1,7 @@
 import React, { useContext, useRef } from 'react';
 import { Logo } from '../components/Title';
 import { Ratios } from '../components/Ratios';
+import { ButtonBar } from '../components/ButtonBar';
 import { Controls } from '../components/Controls';
 import { Editor } from '../components/Editor/editor';
 import { LED } from '../components/Backend';
@@ -49,6 +50,7 @@ export const OuterSpace = (): React.ReactElement => {
       <LED state={store.backend.state} />
       <Logo />;
       <Ratios width={width} />
+      <ButtonBar width={width} />
       <Controls handleLoad={handleLoad} />
       <Editor handleLoad={handleLoad} />
       <ErrorDescription

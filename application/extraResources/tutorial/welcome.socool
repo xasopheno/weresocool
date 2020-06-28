@@ -5,7 +5,7 @@ You might find this language useful if you want to make cool sounds and
 impress your friends/pets/plants. 
 
 *** Tutorials ***
-On the right side of the screen you'll see a Question Mark. If you click
+On the left side of the screen you'll see a ???Question Mark???. If you click
 it, you'll find the Cool Tutorials. I recommend doing the tutorials in order, 
 because each tutorial builds on the last. 
 
