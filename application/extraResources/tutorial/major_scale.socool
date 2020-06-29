@@ -7,8 +7,8 @@
 
 -- f is your starting frequency. in this case, 220 which happens to be an "A".
 -- l is your starting length in seconds. in this case, 1 second.
--- g is your staring gain. smaller is quieter, larger is louder.
--- p is your staring pan. 
+-- g is your starting gain. smaller is quieter, larger is louder.
+-- p is your starting pan. 
 --   0 is in the middle. 
 --   -1 is on the left 
 --   1 is on the right 
