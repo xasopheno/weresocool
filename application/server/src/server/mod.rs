@@ -1,3 +1,4 @@
+pub mod print;
 pub mod types;
 use crate::server::types::Language;
 use actix_files::NamedFile;
@@ -24,7 +25,6 @@ pub async fn render(
     render_manager: web::Data<Arc<Mutex<RenderManager>>>,
     req: web::Json<Language>,
 ) -> HttpResponse {
-    // TODO: Pull out prepare_render so it's not inside the lock.
     match prepare_render_outside(InputType::Language(&req.language)) {
         Ok(render) => {
             render_manager.lock().unwrap().push_render(render);

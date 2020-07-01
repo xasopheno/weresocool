@@ -27,7 +27,7 @@ export const Controls = (props: Props): React.ReactElement => {
           data-tip="Shift+Enter"
           id={'playButton'}
           onClick={async () => {
-            await dispatch.onRender(store.language);
+            await dispatch.onPrint(store.language);
             dispatch.setEditorFocus(store.editor_ref);
           }}
         >

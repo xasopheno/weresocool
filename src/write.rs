@@ -2,8 +2,10 @@ use crate::generation::Op4D;
 use crate::instrument::StereoWaveform;
 use crate::settings::{default_settings, Settings};
 use csv::Writer;
+use hound;
 use std::fs::File;
 use std::io::prelude::*;
+use std::io::{BufWriter, Cursor};
 use std::path::Path;
 use std::process::Command;
 use weresocool_error::Error;
@@ -59,6 +61,47 @@ fn wav_to_mp3_in_renders(filename: &str) {
 }
 
 pub fn write_composition_to_wav(
+    composition: StereoWaveform,
+    filename: &str,
+    mp3: bool,
+    normalize: bool,
+) {
+    let spec = hound::WavSpec {
+        channels: SETTINGS.channels as u16,
+        sample_rate: SETTINGS.sample_rate as u32,
+        bits_per_sample: 32,
+        sample_format: hound::SampleFormat::Float,
+    };
+
+    let c = Cursor::new(Vec::new());
+
+    let mut buf_writer = BufWriter::new(c);
+    let mut writer = hound::WavWriter::new(&mut buf_writer, spec).unwrap();
+    let mut buffer = vec![0.0; composition.r_buffer.len() * 2];
+
+    write_output_buffer(&mut buffer, composition);
+
+    if normalize {
+        normalize_waveform(&mut buffer);
+    }
+
+    for sample in &buffer {
+        writer
+            .write_sample(*sample)
+            .expect("Error writing wave file.");
+    }
+    writer.flush().unwrap();
+    writer.finalize().unwrap();
+    println!("Successful wav encoding.");
+
+    let mut file = File::create("test.wav").unwrap();
+    file.write_all(buf_writer.into_inner().unwrap().into_inner().as_slice())
+        .unwrap();
+
+    // dbg!(buffer);
+}
+
+pub fn write_composition_to_wav_old(
     composition: StereoWaveform,
     filename: &str,
     mp3: bool,

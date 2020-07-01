@@ -128,6 +128,24 @@ export class Dispatch {
       this.dispatch({ _k: 'Backend', fetch: { state: 'bad', error: e } });
     }
   }
+
+  async onPrint(language: string): Promise<void> {
+    this.dispatch({ _k: 'Backend', fetch: { state: 'loading' } });
+
+    try {
+      const response = await axios.post(settings.printURL, {
+        language,
+      });
+
+      this.dispatch({ _k: 'Backend', fetch: { state: 'good' } });
+      console.log(response);
+      // generateDispatches(response.data, language).map((dispatch) => {
+      // this.dispatch(dispatch);
+      // });
+    } catch (e) {
+      this.dispatch({ _k: 'Backend', fetch: { state: 'bad', error: e } });
+    }
+  }
 }
 
 const generateDispatches = (
