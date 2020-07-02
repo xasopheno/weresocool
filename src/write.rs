@@ -93,6 +93,7 @@ pub fn write_composition_to_wav(
     writer.flush().unwrap();
     writer.finalize().unwrap();
     println!("Successful wav encoding.");
+    dbg!(&buf_writer);
 
     let mut file = File::create("test.wav").unwrap();
     file.write_all(buf_writer.into_inner().unwrap().into_inner().as_slice())
