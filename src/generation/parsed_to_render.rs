@@ -30,7 +30,7 @@ pub enum RenderReturn {
     Csv1d(String),
     StereoWaveform(StereoWaveform),
     NfBasisAndTable(NormalForm, Basis, Defs),
-    Wav(String),
+    Wav(Vec<u8>),
 }
 
 pub fn r_to_f64(r: Rational64) -> f64 {
@@ -124,11 +124,12 @@ pub fn render(
     Ok(result)
 }
 
-pub fn to_wav(composition: StereoWaveform, filename: String) -> String {
+pub fn to_wav(composition: StereoWaveform, filename: String) -> Vec<u8> {
     banner("Printing".to_string(), filename.clone());
-    write_composition_to_wav(composition, filename.as_str(), true, true);
+    let composition = write_composition_to_wav(composition, filename.as_str(), true, true);
     printed("WAV".to_string());
-    "composition.wav".to_string()
+    composition.to_owned()
+    // "composition.wav".to_string()
 }
 
 fn create_pb_instance(n: usize) -> Arc<Mutex<ProgressBar<std::io::Stdout>>> {

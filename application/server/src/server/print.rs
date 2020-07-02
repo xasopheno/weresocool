@@ -8,7 +8,7 @@ pub async fn print(req: web::Json<Language>) -> HttpResponse {
     let result = InputType::Language(&req.language).make(RenderType::Wav);
     match result {
         Ok(render_return) => match render_return {
-            RenderReturn::StereoWaveform(wav) => HttpResponse::Ok()
+            RenderReturn::Wav(wav) => HttpResponse::Ok()
                 .content_type("application/json")
                 .status(StatusCode::OK)
                 .json(PrintSuccess::new(wav)),

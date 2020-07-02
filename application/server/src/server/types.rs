@@ -27,14 +27,14 @@ pub struct RenderError {
 #[derive(Deserialize, Serialize, Debug)]
 pub struct PrintSuccess {
     pub response_type: RenderResponse,
-    pub buffers: StereoWaveform,
+    pub wav: Vec<u8>,
 }
 
 impl PrintSuccess {
-    pub const fn new(buffers: StereoWaveform) -> Self {
+    pub const fn new(wav: Vec<u8>) -> Self {
         Self {
             response_type: RenderResponse::RenderSuccess(),
-            buffers,
+            wav,
         }
     }
 }

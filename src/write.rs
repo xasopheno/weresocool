@@ -65,7 +65,7 @@ pub fn write_composition_to_wav(
     filename: &str,
     mp3: bool,
     normalize: bool,
-) {
+) -> Vec<u8> {
     let spec = hound::WavSpec {
         channels: SETTINGS.channels as u16,
         sample_rate: SETTINGS.sample_rate as u32,
@@ -93,11 +93,11 @@ pub fn write_composition_to_wav(
     writer.flush().unwrap();
     writer.finalize().unwrap();
     println!("Successful wav encoding.");
-    dbg!(&buf_writer);
 
-    let mut file = File::create("test.wav").unwrap();
-    file.write_all(buf_writer.into_inner().unwrap().into_inner().as_slice())
-        .unwrap();
+    // let mut file = File::create("test.wav").unwrap();
+    // file.write_all(buf_writer.into_inner().unwrap().into_inner().as_slice())
+    // .unwrap();
+    buf_writer.into_inner().unwrap().into_inner()
 
     // dbg!(buffer);
 }
