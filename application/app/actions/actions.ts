@@ -139,10 +139,17 @@ export class Dispatch {
 
       this.dispatch({ _k: 'Backend', fetch: { state: 'good' } });
       console.log(response);
+
+      const blob = new Blob([new Uint8Array(response.data.wav)], {
+        type: 'application/octet-stream',
+      });
+
+      FileSaver.saveAs(blob, 'test.wav');
       // generateDispatches(response.data, language).map((dispatch) => {
       // this.dispatch(dispatch);
       // });
     } catch (e) {
+      console.log(e);
       this.dispatch({ _k: 'Backend', fetch: { state: 'bad', error: e } });
     }
   }
