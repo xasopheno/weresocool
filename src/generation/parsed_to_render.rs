@@ -128,8 +128,7 @@ pub fn to_wav(composition: StereoWaveform, filename: String) -> Vec<u8> {
     banner("Printing".to_string(), filename.clone());
     let composition = write_composition_to_wav(composition, filename.as_str(), true, true);
     printed("WAV".to_string());
-    composition.to_owned()
-    // "composition.wav".to_string()
+    composition
 }
 
 fn create_pb_instance(n: usize) -> Arc<Mutex<ProgressBar<std::io::Stdout>>> {

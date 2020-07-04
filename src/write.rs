@@ -2,7 +2,6 @@ use crate::generation::Op4D;
 use crate::instrument::StereoWaveform;
 use crate::settings::{default_settings, Settings};
 use csv::Writer;
-use hound;
 use std::fs::File;
 use std::io::prelude::*;
 use std::io::{BufWriter, Cursor};
@@ -94,12 +93,15 @@ pub fn write_composition_to_wav(
     writer.finalize().unwrap();
     println!("Successful wav encoding.");
 
-    // let mut file = File::create("test.wav").unwrap();
-    // file.write_all(buf_writer.into_inner().unwrap().into_inner().as_slice())
-    // .unwrap();
-    buf_writer.into_inner().unwrap().into_inner()
+    let mut file = File::create("composition.wav").unwrap();
+    file.write_all(buf_writer.get_ref().clone().into_inner().as_slice())
+        .unwrap();
 
-    // dbg!(buffer);
+    if mp3 {
+        wav_to_mp3_in_renders(filename);
+    }
+
+    buf_writer.into_inner().unwrap().into_inner()
 }
 
 pub fn write_composition_to_wav_old(
