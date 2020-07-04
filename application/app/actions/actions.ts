@@ -9,6 +9,7 @@ import path from 'path';
 
 export enum ResponseType {
   RenderSuccess = 'RenderSuccess',
+  PrintSuccess = 'PrintSuccess',
   IdError = 'IdError',
   ParseError = 'ParseError',
   IndexError = 'IndexError',
@@ -21,6 +22,7 @@ export type Action =
   | { _k: 'Set_Editor_Ref'; editor_ref: AceEditor }
   | { _k: 'Backend'; fetch: Fetch }
   | { _k: 'Set_Render_State'; state: ResponseType }
+  | { _k: 'Set_Printing'; state: boolean }
   | { _k: 'Set_Markers'; line: number; column: number; n_lines: number }
   | { _k: 'Reset_Markers' }
   | { _k: 'Set_Error_Message'; message: string }
@@ -136,18 +138,13 @@ export class Dispatch {
       const response = await axios.post(settings.printURL, {
         language,
       });
-
       this.dispatch({ _k: 'Backend', fetch: { state: 'good' } });
+
       console.log(response);
 
-      const blob = new Blob([new Uint8Array(response.data.wav)], {
-        type: 'application/octet-stream',
+      generateDispatches(response.data, language).map((dispatch) => {
+        this.dispatch(dispatch);
       });
-
-      FileSaver.saveAs(blob, 'test.wav');
-      // generateDispatches(response.data, language).map((dispatch) => {
-      // this.dispatch(dispatch);
-      // });
     } catch (e) {
       console.log(e);
       this.dispatch({ _k: 'Backend', fetch: { state: 'bad', error: e } });
@@ -159,11 +156,13 @@ const generateDispatches = (
   response: ResponseType,
   language: string
 ): Action[] => {
+  console.log(response);
   const responseType = Object.keys(response)[0];
   // This should eventually be typed.
   // eslint-disable-next-line
   const value: any = Object.values(response)[0];
   const result: Action[] = [];
+
   // console.log(responseType);
   // console.log(value);
   switch (responseType) {
@@ -174,6 +173,21 @@ const generateDispatches = (
       });
       result.push({ _k: 'Reset_Error_Message' });
       result.push({ _k: 'Reset_Markers' });
+      break;
+    case ResponseType.PrintSuccess:
+      {
+        result.push({
+          _k: 'Set_Render_State',
+          state: ResponseType.RenderSuccess,
+        });
+        result.push({ _k: 'Reset_Error_Message' });
+        result.push({ _k: 'Reset_Markers' });
+        console.log(response);
+        const blob = new Blob([new Uint8Array(value)], {
+          type: 'application/octet-stream',
+        });
+        FileSaver.saveAs(blob, 'test.wav');
+      }
       break;
     case ResponseType.ParseError:
       result.push({

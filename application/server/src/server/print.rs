@@ -1,4 +1,5 @@
-use crate::server::types::{Language, PrintSuccess};
+use crate::server::types::Language;
+use crate::server::{PrintSuccess, Success};
 // use actix_cors::Cors;
 use actix_web::{http::StatusCode, web, HttpResponse};
 use weresocool::generation::{RenderReturn, RenderType};
@@ -11,7 +12,7 @@ pub async fn print(req: web::Json<Language>) -> HttpResponse {
             RenderReturn::Wav(wav) => HttpResponse::Ok()
                 .content_type("application/json")
                 .status(StatusCode::OK)
-                .json(PrintSuccess::new(wav)),
+                .json(Success::PrintSuccess(PrintSuccess::new(wav))),
             _ => panic!(),
         },
         Err(parse_error) => {

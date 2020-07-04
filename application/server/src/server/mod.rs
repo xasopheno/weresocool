@@ -17,8 +17,18 @@ pub async fn single_page_app(_req: HttpRequest) -> actix_web::Result<NamedFile> 
 }
 
 #[derive(Deserialize, Serialize, Debug)]
+pub struct PrintSuccess(Vec<u8>);
+
+impl PrintSuccess {
+    pub fn new(wav: Vec<u8>) -> Self {
+        Self(wav)
+    }
+}
+
+#[derive(Deserialize, Serialize, Debug)]
 pub enum Success {
     RenderSuccess(String),
+    PrintSuccess(PrintSuccess),
 }
 
 pub async fn render(
