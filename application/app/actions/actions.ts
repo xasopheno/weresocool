@@ -18,11 +18,11 @@ export enum ResponseType {
 
 export type Action =
   | { _k: 'Set_Editor_Focus' }
+  | { _k: 'Set_Printing'; state: boolean }
   | { _k: 'Increment_Editor_Type'; editor: number }
   | { _k: 'Set_Editor_Ref'; editor_ref: AceEditor }
   | { _k: 'Backend'; fetch: Fetch }
   | { _k: 'Set_Render_State'; state: ResponseType }
-  | { _k: 'Set_Printing'; state: boolean }
   | { _k: 'Set_Markers'; line: number; column: number; n_lines: number }
   | { _k: 'Reset_Markers' }
   | { _k: 'Set_Error_Message'; message: string }
@@ -133,14 +133,12 @@ export class Dispatch {
 
   async onPrint(language: string): Promise<void> {
     this.dispatch({ _k: 'Backend', fetch: { state: 'loading' } });
-
+    this.dispatch({ _k: 'Set_Printing', state: true });
     try {
       const response = await axios.post(settings.printURL, {
         language,
       });
       this.dispatch({ _k: 'Backend', fetch: { state: 'good' } });
-
-      console.log(response);
 
       generateDispatches(response.data, language).map((dispatch) => {
         this.dispatch(dispatch);
@@ -149,6 +147,7 @@ export class Dispatch {
       console.log(e);
       this.dispatch({ _k: 'Backend', fetch: { state: 'bad', error: e } });
     }
+    this.dispatch({ _k: 'Set_Printing', state: false });
   }
 }
 
@@ -156,9 +155,8 @@ const generateDispatches = (
   response: ResponseType,
   language: string
 ): Action[] => {
-  console.log(response);
-  const responseType = Object.keys(response)[0];
   // This should eventually be typed.
+  const responseType = Object.keys(response)[0];
   // eslint-disable-next-line
   const value: any = Object.values(response)[0];
   const result: Action[] = [];

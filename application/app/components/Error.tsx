@@ -36,6 +36,12 @@ export const ErrorDescription = (props: {
           Error: <ErrorMessage>{props.errorMessage}</ErrorMessage>
         </ErrorType>
       );
+    default:
+      return (
+        <ErrorType id={'errorDescription'}>
+          Error: <ErrorMessage>Error</ErrorMessage>
+        </ErrorType>
+      );
   }
 };
 

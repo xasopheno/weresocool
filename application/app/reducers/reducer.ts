@@ -11,6 +11,8 @@ export const mainReducer: React.Reducer<Store, Action> = (
   action
 ): Store => {
   switch (action._k) {
+    case 'Set_Printing':
+      return { ...state, printing: action.state };
     case 'Set_Editor_Focus':
       return { ...state };
     case 'Set_Editor_Ref':

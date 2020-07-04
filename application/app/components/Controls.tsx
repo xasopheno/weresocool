@@ -30,10 +30,16 @@ export const Controls = (props: Props): React.ReactElement => {
             await dispatch.onPrint(store.language);
             dispatch.setEditorFocus(store.editor_ref);
           }}
+          disabled={store.printing}
         >
           Play
         </Button>
-        <Button data-tip="⌘+Enter" id={'stopButton'} onClick={dispatch.onStop}>
+        <Button
+          data-tip="⌘+Enter"
+          id={'stopButton'}
+          onClick={dispatch.onStop}
+          disabled={store.printing}
+        >
           Stop
         </Button>
         <Button
@@ -42,6 +48,7 @@ export const Controls = (props: Props): React.ReactElement => {
           onClick={() => {
             props.handleLoad();
           }}
+          disabled={store.printing}
         >
           Load
         </Button>
@@ -52,6 +59,7 @@ export const Controls = (props: Props): React.ReactElement => {
             dispatch.onFileSave(store.language);
             dispatch.setEditorFocus(store.editor_ref);
           }}
+          disabled={store.printing}
         >
           Save
         </Button>
@@ -64,6 +72,7 @@ export const Controls = (props: Props): React.ReactElement => {
             dispatch.onResetLanguage();
             dispatch.setEditorFocus(store.editor_ref);
           }}
+          disabled={store.printing}
         >
           Reset
         </RightButton>
@@ -73,6 +82,7 @@ export const Controls = (props: Props): React.ReactElement => {
             dispatch.onIncrementEditorType(store.editor);
             dispatch.setEditorFocus(store.editor_ref);
           }}
+          disabled={store.printing}
         >
           {Editors[store.editor].name}
         </RightButton>

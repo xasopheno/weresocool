@@ -4,6 +4,7 @@ import path from 'path';
 import { remote } from 'electron';
 import { Demo, DemoData } from './Tutorial';
 import { tutorial_list, album_list } from './tutorial_list';
+import { GlobalContext } from '../store';
 
 const RSpace = styled.div`
   position: absolute;
@@ -43,6 +44,8 @@ const MagicButtonSmall = styled.img`
 export const ButtonBar = (props: {
   width: number;
 }): React.ReactElement | null => {
+  const store = React.useContext(GlobalContext);
+
   const assetsPath = remote.app.isPackaged
     ? path.join(process.resourcesPath, 'extraResources/assets')
     : '../extraResources/assets';
@@ -82,12 +85,12 @@ export const ButtonBar = (props: {
           <MagicButton
             id={'magicButton'}
             src={`${assetsPath}/magic.png`}
-            onClick={() => showDemoModal(true)}
+            onClick={() => showDemoModal(!store.printing && true)}
           />
           <MagicButton
             id={'questionButton'}
             src={`${assetsPath}/question_mark.jpg`}
-            onClick={() => showTutorialModal(true)}
+            onClick={() => showTutorialModal(!store.printing && true)}
           />
         </RSpace>
       </div>
@@ -101,12 +104,12 @@ export const ButtonBar = (props: {
           <MagicButtonSmall
             id={'magicButton'}
             src={`${assetsPath}/magic.png`}
-            onClick={() => showDemoModal(true)}
+            onClick={() => showDemoModal(!store.printing && true)}
           />
           <MagicButtonSmall
             id={'questionButton'}
             src={`${assetsPath}/question_mark.jpg`}
-            onClick={() => showTutorialModal(true)}
+            onClick={() => showTutorialModal(!store.printing && true)}
           />
         </RSpace>
       </div>
