@@ -41,6 +41,8 @@ bytes = "0.5.4"
 env_logger = "0.7.1"
 test-generator = "0.3.0"
 float-cmp = "0.8.0"
+lame = "0.1.3"
+lame-sys = "0.1.2"
 
 [dev-dependencies]
 pretty_assertions = "0.6.1"

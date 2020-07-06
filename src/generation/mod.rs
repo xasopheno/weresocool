@@ -1,4 +1,6 @@
+pub mod ffi;
 pub mod json;
+pub mod lame;
 pub mod parsed_to_render;
 
 pub mod test;

@@ -1,3 +1,4 @@
+use crate::generation::lame;
 use crate::generation::Op4D;
 use crate::instrument::StereoWaveform;
 use crate::settings::{default_settings, Settings};
@@ -78,7 +79,7 @@ pub fn write_composition_to_wav(
     let mut writer = hound::WavWriter::new(&mut buf_writer, spec).unwrap();
     let mut buffer = vec![0.0; composition.r_buffer.len() * 2];
 
-    write_output_buffer(&mut buffer, composition);
+    write_output_buffer(&mut buffer, composition.clone());
 
     if normalize {
         normalize_waveform(&mut buffer);
@@ -93,15 +94,37 @@ pub fn write_composition_to_wav(
     writer.finalize().unwrap();
     println!("Successful wav encoding.");
 
-    let mut file = File::create("composition.wav").unwrap();
-    file.write_all(buf_writer.get_ref().clone().into_inner().as_slice())
+    let mut file = File::create("composition.mp3").unwrap();
+    // file.write_all(buf_writer.get_ref().clone().into_inner().as_slice())
+    // .unwrap();
+
+    let l_buffer = composition.clone().l_buffer;
+    let r_buffer = composition.clone().r_buffer;
+    let length: f32 = l_buffer.len() as f32 * (0.363);
+    // let length = l_buffer.len();
+    dbg!("starting_len", length);
+    let mp3buf = &mut vec![0_u8; length.ceil() as usize];
+    let mut l = lame::Lame::new().unwrap();
+    l.init_params().unwrap();
+
+    l.encode_f32(l_buffer.as_slice(), r_buffer.as_slice(), mp3buf)
         .unwrap();
+    file.write_all(mp3buf).unwrap();
+    // if mp3 {
+    // wav_to_mp3_in_renders(filename);
+    // }
 
-    if mp3 {
-        wav_to_mp3_in_renders(filename);
-    }
-
-    buf_writer.into_inner().unwrap().into_inner()
+    // buf_writer.into_inner().unwrap().into_inner()
+    //
+    let mp3buf_clone = mp3buf.clone();
+    let copy: Vec<&u8> = mp3buf_clone.iter().rev().collect();
+    let copy_len = copy.len();
+    let silence: Vec<&&u8> = copy.iter().take_while(|v| ***v <= 0).collect();
+    let silence_len = silence.len();
+    let mp3_actual_len = copy_len - silence_len;
+    dbg!(mp3_actual_len);
+    dbg!(mp3_actual_len as f32 / length as f32);
+    mp3buf.to_vec()
 }
 
 pub fn write_composition_to_wav_old(
