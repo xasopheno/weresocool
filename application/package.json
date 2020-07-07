@@ -257,7 +257,7 @@
     "react-test-renderer": "^16.13.1",
     "redux-logger": "^3.0.6",
     "rimraf": "^3.0.2",
-    "sass-loader": "^8.0.2",
+    "sass-loader": "^9.0.1",
     "sinon": "^9.0.2",
     "spectron": "^10.0.0",
     "style-loader": "^1.2.1",
