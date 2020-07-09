@@ -49,7 +49,7 @@ const Title = styled.h1`
 `;
 const Section = styled.p`
   font-size: 50px;
-  text-align: center;
+  // text-align: center;
   color: #edd;
   :hover {
     text-decoration: underline;
@@ -65,6 +65,14 @@ const CloseModalButton = styled.div`
   color: #edd;
 `;
 
+const TextContainer = styled.div`
+  height: 100%;
+  width: 100%;
+  position: absolute;
+  top: 30%;
+  left: 50%;
+`;
+
 export interface RenderModalOptions {
   show: boolean;
   setShow: (b: boolean) => void;
@@ -78,18 +86,19 @@ export const RenderModal = (props: {
   if (props.options.show) {
     return (
       <Modal>
-        <Title>Render Options</Title>
-        <Section
-          onClick={async () => {
-            await dispatch.onStop();
-            props.options.setShow(false);
-            await dispatch.onPrint(store.language);
-            dispatch.setEditorFocus(store.editor_ref);
-          }}
-        >
-          Mp3
-        </Section>
-        <Section>Wav</Section>
+        <TextContainer>
+          <Section
+            onClick={async () => {
+              await dispatch.onStop();
+              props.options.setShow(false);
+              await dispatch.onPrint(store.language);
+              dispatch.setEditorFocus(store.editor_ref);
+            }}
+          >
+            Mp3
+          </Section>
+          <Section>Wav</Section>
+        </TextContainer>
         <CloseModalButton onClick={() => props.options.setShow(false)}>
           X
         </CloseModalButton>
