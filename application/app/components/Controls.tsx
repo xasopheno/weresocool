@@ -3,6 +3,7 @@ import { TopBox, ButtonBox, Button, RightButton, VimBox } from './style';
 import { DispatchContext } from '../actions/actions';
 import { GlobalContext, Editors } from '../store';
 import ReactTooltip from 'react-tooltip';
+import { Render } from './Render';
 
 const stub = () => {};
 
@@ -43,17 +44,7 @@ export const Controls = (props: Props): React.ReactElement => {
           Stop
         </Button>
 
-        <Button
-          id={'printButton'}
-          onClick={async () => {
-            await dispatch.onStop();
-            await dispatch.onPrint(store.language);
-            dispatch.setEditorFocus(store.editor_ref);
-          }}
-          disabled={store.printing}
-        >
-          Render
-        </Button>
+        <Render />
 
         <Button
           data-tip="⌘+L"
