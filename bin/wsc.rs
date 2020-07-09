@@ -1,6 +1,6 @@
 use weresocool::{
     examples::documentation,
-    generation::{RenderReturn, RenderType},
+    generation::{RenderReturn, RenderType, WavType},
     interpretable::{InputType::Filename, Interpretable},
     portaudio::output_setup,
     ui::{banner, get_args, no_file_name, were_so_cool_logo},
@@ -22,7 +22,7 @@ fn main() -> Result<(), Error> {
     }
 
     if args.is_present("print") {
-        Filename(filename.unwrap()).make(RenderType::Wav)?;
+        Filename(filename.unwrap()).make(RenderType::Wav(WavType::MP3 { cli: true }))?;
     } else if args.is_present("json") {
         Filename(filename.unwrap()).make(RenderType::Json4d)?;
     } else if args.is_present("csv") {

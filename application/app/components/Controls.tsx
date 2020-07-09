@@ -27,7 +27,7 @@ export const Controls = (props: Props): React.ReactElement => {
           data-tip="Shift+Enter"
           id={'playButton'}
           onClick={async () => {
-            await dispatch.onPrint(store.language);
+            await dispatch.onRender(store.language);
             dispatch.setEditorFocus(store.editor_ref);
           }}
           disabled={store.printing}
@@ -42,6 +42,19 @@ export const Controls = (props: Props): React.ReactElement => {
         >
           Stop
         </Button>
+
+        <Button
+          id={'printButton'}
+          onClick={async () => {
+            await dispatch.onStop();
+            await dispatch.onPrint(store.language);
+            dispatch.setEditorFocus(store.editor_ref);
+          }}
+          disabled={store.printing}
+        >
+          Render
+        </Button>
+
         <Button
           data-tip="⌘+L"
           id={'loadButton'}
@@ -52,6 +65,7 @@ export const Controls = (props: Props): React.ReactElement => {
         >
           Load
         </Button>
+
         <Button
           data-tip="⌘+S"
           id={'saveButton'}

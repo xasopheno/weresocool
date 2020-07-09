@@ -184,7 +184,7 @@ const generateDispatches = (
         const blob = new Blob([new Uint8Array(value)], {
           type: 'application/octet-stream',
         });
-        FileSaver.saveAs(blob, 'test.wav');
+        FileSaver.saveAs(blob, 'my_song.mp3');
       }
       break;
     case ResponseType.ParseError:

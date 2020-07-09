@@ -1,6 +1,6 @@
 use crate::generation::lame;
 use crate::generation::Op4D;
-use crate::instrument::StereoWaveform;
+use crate::instrument::{Normalize, StereoWaveform};
 use crate::settings::{default_settings, Settings};
 use csv::Writer;
 use std::fs::File;
@@ -32,133 +32,101 @@ pub fn filename_from_string(s: &str) -> &str {
     filename[filename.len() - 1]
 }
 
-fn wav_to_mp3_in_renders(filename: &str) {
-    let filename = filename_from_string(filename);
-    let filename = format!("./renders/{}{}", filename, ".mp3".to_string());
+pub fn write_composition_to_mp3(mut composition: StereoWaveform, filename: &str) -> Vec<u8> {
+    composition.normalize();
 
-    let child = Command::new("ffmpeg")
-        .args(&[
-            "-v",
-            "panic",
-            "-i",
-            "composition.wav",
-            "-codec:a",
-            "libmp3lame",
-            "-qscale:a",
-            "2",
-            "-y",
-            &filename,
-        ])
-        .spawn();
+    let l_buffer = composition.l_buffer;
+    let r_buffer = composition.r_buffer;
+    let length: f32 = l_buffer.len() as f32 * (0.363);
+    let mp3buf = &mut vec![0_u8; length.ceil() as usize];
 
-    let ecode = child
-        .expect("ffmpeg failed to encode mp3")
-        .wait()
-        .expect("failed to wait on child");
+    let mut l = lame::Lame::new().unwrap();
+    l.init_params().unwrap();
+    l.encode_f32(l_buffer.as_slice(), r_buffer.as_slice(), mp3buf)
+        .unwrap();
 
-    assert!(ecode.success());
-    println!("Successful mp3 encoding.");
+    mp3buf.to_vec()
 }
 
 pub fn write_composition_to_wav(
-    composition: StereoWaveform,
+    mut composition: StereoWaveform,
     filename: &str,
     mp3: bool,
     normalize: bool,
 ) -> Vec<u8> {
-    let spec = hound::WavSpec {
-        channels: SETTINGS.channels as u16,
-        sample_rate: SETTINGS.sample_rate as u32,
-        bits_per_sample: 32,
-        sample_format: hound::SampleFormat::Float,
-    };
+    composition.normalize();
 
-    let c = Cursor::new(Vec::new());
+    // wav_________--
+    // let spec = hound::WavSpec {
+    // channels: SETTINGS.channels as u16,
+    // sample_rate: SETTINGS.sample_rate as u32,
+    // bits_per_sample: 32,
+    // sample_format: hound::SampleFormat::Float,
+    // };
+    // let c = Cursor::new(Vec::new());
 
-    let mut buf_writer = BufWriter::new(c);
-    let mut writer = hound::WavWriter::new(&mut buf_writer, spec).unwrap();
-    let mut buffer = vec![0.0; composition.r_buffer.len() * 2];
+    // let mut buf_writer = BufWriter::new(c);
+    // let mut writer = hound::WavWriter::new(&mut buf_writer, spec).unwrap();
+    // let mut buffer = vec![0.0; composition.r_buffer.len() * 2];
+    // write_output_buffer(&mut buffer, composition.clone());
+    // for sample in &buffer {
+    // writer
+    // .write_sample(*sample)
+    // .expect("Error writing wave file.");
+    // }
+    // writer.flush().unwrap();
+    // writer.finalize().unwrap();
+    // wav___________--
 
-    write_output_buffer(&mut buffer, composition.clone());
-
-    if normalize {
-        normalize_waveform(&mut buffer);
-    }
-
-    for sample in &buffer {
-        writer
-            .write_sample(*sample)
-            .expect("Error writing wave file.");
-    }
-    writer.flush().unwrap();
-    writer.finalize().unwrap();
-    println!("Successful wav encoding.");
-
-    let mut file = File::create("composition.mp3").unwrap();
+    // write________**
+    // let mut file = File::create(format!("{}.mp3", filename)).unwrap();
     // file.write_all(buf_writer.get_ref().clone().into_inner().as_slice())
     // .unwrap();
+    // file.write_all(mp3buf).unwrap();
+    // write________**
 
     let l_buffer = composition.clone().l_buffer;
     let r_buffer = composition.clone().r_buffer;
     let length: f32 = l_buffer.len() as f32 * (0.363);
-    // let length = l_buffer.len();
-    dbg!("starting_len", length);
     let mp3buf = &mut vec![0_u8; length.ceil() as usize];
     let mut l = lame::Lame::new().unwrap();
     l.init_params().unwrap();
 
     l.encode_f32(l_buffer.as_slice(), r_buffer.as_slice(), mp3buf)
         .unwrap();
-    file.write_all(mp3buf).unwrap();
-    // if mp3 {
-    // wav_to_mp3_in_renders(filename);
-    // }
 
     // buf_writer.into_inner().unwrap().into_inner()
-    //
-    let mp3buf_clone = mp3buf.clone();
-    let copy: Vec<&u8> = mp3buf_clone.iter().rev().collect();
-    let copy_len = copy.len();
-    let silence: Vec<&&u8> = copy.iter().take_while(|v| ***v <= 0).collect();
-    let silence_len = silence.len();
-    let mp3_actual_len = copy_len - silence_len;
-    dbg!(mp3_actual_len);
-    dbg!(mp3_actual_len as f32 / length as f32);
     mp3buf.to_vec()
 }
 
-pub fn write_composition_to_wav_old(
-    composition: StereoWaveform,
-    filename: &str,
-    mp3: bool,
-    normalize: bool,
-) {
-    let spec = hound::WavSpec {
-        channels: SETTINGS.channels as u16,
-        sample_rate: SETTINGS.sample_rate as u32,
-        bits_per_sample: 32,
-        sample_format: hound::SampleFormat::Float,
-    };
+// pub fn write_composition_to_wav_old(
+// composition: StereoWaveform,
+// filename: &str,
+// mp3: bool,
+// normalize: bool,
+// ) {
+// let spec = hound::WavSpec {
+// channels: SETTINGS.channels as u16,
+// sample_rate: SETTINGS.sample_rate as u32,
+// bits_per_sample: 32,
+// sample_format: hound::SampleFormat::Float,
+// };
 
-    let mut buffer = vec![0.0; composition.r_buffer.len() * 2];
+// let mut buffer = vec![0.0; composition.r_buffer.len() * 2];
 
-    write_output_buffer(&mut buffer, composition);
-    if normalize {
-        normalize_waveform(&mut buffer);
-    }
+// write_output_buffer(&mut buffer, composition);
+// if normalize {
+// normalize_waveform(&mut buffer);
+// }
 
-    let mut writer = hound::WavWriter::create("composition.wav", spec).unwrap();
-    for sample in buffer {
-        writer
-            .write_sample(sample)
-            .expect("Error writing wave file.");
-    }
-    println!("Successful wav encoding.");
-
-    if mp3 {
-        wav_to_mp3_in_renders(filename);
-    }
-}
+// let mut writer = hound::WavWriter::create("composition.wav", spec).unwrap();
+// for sample in buffer {
+// writer
+// .write_sample(sample)
+// .expect("Error writing wave file.");
+// }
+// println!("Successful wav encoding.");
+// }
 
 pub fn normalize_waveform(buffer: &mut Vec<f32>) {
     let mut max = 0.0;

@@ -12,6 +12,6 @@ pub use self::{
     },
     parsed_to_render::{
         generate_waveforms, parsed_to_render, r_to_f64, render, sum_all_waveforms, sum_vec, to_wav,
-        RenderReturn, RenderType,
+        RenderReturn, RenderType, WavType,
     },
 };
