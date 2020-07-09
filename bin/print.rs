@@ -57,7 +57,7 @@ fn run() -> Result<(), Error> {
             break;
         }
     }
-    write_composition_to_wav(result, filename.unwrap(), true, true);
+    write_composition_to_wav(result, "");
 
     Ok(())
 }

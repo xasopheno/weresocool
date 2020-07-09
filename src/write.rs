@@ -1,4 +1,3 @@
-use crate::generation::lame;
 use crate::generation::Op4D;
 use crate::instrument::{Normalize, StereoWaveform};
 use crate::settings::{default_settings, Settings};
@@ -7,8 +6,8 @@ use std::fs::File;
 use std::io::prelude::*;
 use std::io::{BufWriter, Cursor};
 use std::path::Path;
-use std::process::Command;
 use weresocool_error::Error;
+use weresocool_lame::Lame;
 
 const SETTINGS: Settings = default_settings();
 
@@ -32,7 +31,10 @@ pub fn filename_from_string(s: &str) -> &str {
     filename[filename.len() - 1]
 }
 
-pub fn write_composition_to_mp3(mut composition: StereoWaveform, filename: &str) -> Vec<u8> {
+pub fn write_composition_to_mp3(
+    mut composition: StereoWaveform,
+    filename: &str,
+) -> Result<Vec<u8>, Error> {
     composition.normalize();
 
     let l_buffer = composition.l_buffer;
@@ -40,43 +42,39 @@ pub fn write_composition_to_mp3(mut composition: StereoWaveform, filename: &str)
     let length: f32 = l_buffer.len() as f32 * (0.363);
     let mp3buf = &mut vec![0_u8; length.ceil() as usize];
 
-    let mut l = lame::Lame::new().unwrap();
-    l.init_params().unwrap();
-    l.encode_f32(l_buffer.as_slice(), r_buffer.as_slice(), mp3buf)
-        .unwrap();
+    let mut l = Lame::new().ok_or_else(|| weresocool_lame::Error::InternalError)?;
+    l.init_params()?;
+    l.encode_f32(l_buffer.as_slice(), r_buffer.as_slice(), mp3buf)?;
 
-    mp3buf.to_vec()
+    Ok(mp3buf.to_vec())
 }
 
 pub fn write_composition_to_wav(
     mut composition: StereoWaveform,
     filename: &str,
-    mp3: bool,
-    normalize: bool,
-) -> Vec<u8> {
+) -> Result<Vec<u8>, Error> {
     composition.normalize();
 
-    // wav_________--
-    // let spec = hound::WavSpec {
-    // channels: SETTINGS.channels as u16,
-    // sample_rate: SETTINGS.sample_rate as u32,
-    // bits_per_sample: 32,
-    // sample_format: hound::SampleFormat::Float,
-    // };
-    // let c = Cursor::new(Vec::new());
+    let spec = hound::WavSpec {
+        channels: SETTINGS.channels as u16,
+        sample_rate: SETTINGS.sample_rate as u32,
+        bits_per_sample: 32,
+        sample_format: hound::SampleFormat::Float,
+    };
+    let c = Cursor::new(Vec::new());
 
-    // let mut buf_writer = BufWriter::new(c);
-    // let mut writer = hound::WavWriter::new(&mut buf_writer, spec).unwrap();
-    // let mut buffer = vec![0.0; composition.r_buffer.len() * 2];
-    // write_output_buffer(&mut buffer, composition.clone());
-    // for sample in &buffer {
-    // writer
-    // .write_sample(*sample)
-    // .expect("Error writing wave file.");
-    // }
-    // writer.flush().unwrap();
-    // writer.finalize().unwrap();
-    // wav___________--
+    let mut buf_writer = BufWriter::new(c);
+    let mut writer = hound::WavWriter::new(&mut buf_writer, spec)?;
+    let mut buffer = vec![0.0; composition.r_buffer.len() * 2];
+    normalize_waveform(&mut buffer);
+    write_output_buffer(&mut buffer, composition.clone());
+    for sample in &buffer {
+        writer
+            .write_sample(*sample)
+            .expect("Error writing wave file.");
+    }
+    writer.flush()?;
+    writer.finalize()?;
 
     // write________**
     // let mut file = File::create(format!("{}.mp3", filename)).unwrap();
@@ -85,18 +83,7 @@ pub fn write_composition_to_wav(
     // file.write_all(mp3buf).unwrap();
     // write________**
 
-    let l_buffer = composition.clone().l_buffer;
-    let r_buffer = composition.clone().r_buffer;
-    let length: f32 = l_buffer.len() as f32 * (0.363);
-    let mp3buf = &mut vec![0_u8; length.ceil() as usize];
-    let mut l = lame::Lame::new().unwrap();
-    l.init_params().unwrap();
-
-    l.encode_f32(l_buffer.as_slice(), r_buffer.as_slice(), mp3buf)
-        .unwrap();
-
-    // buf_writer.into_inner().unwrap().into_inner()
-    mp3buf.to_vec()
+    Ok(buf_writer.into_inner().unwrap().into_inner())
 }
 
 // pub fn write_composition_to_wav_old(

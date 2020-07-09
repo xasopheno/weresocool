@@ -4,7 +4,7 @@ use crate::{
     renderable::{nf_to_vec_renderable, renderables_to_render_voices, RenderOp, Renderable},
     settings::{default_settings, Settings},
     ui::{banner, printed},
-    write::write_composition_to_mp3,
+    write::{write_composition_to_mp3, write_composition_to_wav},
 };
 use num_rational::Rational64;
 use pbr::ProgressBar;
@@ -109,10 +109,18 @@ pub fn parsed_to_render(
         RenderType::Wav(wav_type) => match wav_type {
             WavType::MP3 { cli } => {
                 let stereo_waveform = render(&basis, nf, &parsed_composition.defs)?;
-                let result = to_wav(stereo_waveform, filename.to_string());
-                Ok(RenderReturn::Wav(result))
+                Ok(RenderReturn::Wav(write_composition_to_mp3(
+                    stereo_waveform,
+                    filename,
+                )?))
             }
-            WavType::Wav { .. } => unimplemented!(),
+            WavType::Wav { cli } => {
+                let stereo_waveform = render(&basis, nf, &parsed_composition.defs)?;
+                Ok(RenderReturn::Wav(write_composition_to_wav(
+                    stereo_waveform,
+                    filename,
+                )?))
+            }
         },
     }
 }
@@ -147,7 +155,8 @@ pub fn to_wav(composition: StereoWaveform, filename: String) -> Vec<u8> {
     banner("Printing".to_string(), filename.clone());
     let composition = write_composition_to_mp3(composition, filename.as_str());
     printed("WAV".to_string());
-    composition
+    unimplemented!();
+    // composition
 }
 
 fn create_pb_instance(n: usize) -> Arc<Mutex<ProgressBar<std::io::Stdout>>> {
