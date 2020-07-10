@@ -1,4 +1,5 @@
 use weresocool::{
+    generation::parsed_to_render::write_audio_to_file,
     generation::{generate_waveforms, RenderReturn, RenderType},
     interpretable::{InputType::Filename, Interpretable},
     renderable::nf_to_vec_renderable,
@@ -23,15 +24,15 @@ fn main() -> Result<(), Error> {
         _ => panic!("huh"),
     };
     let renderables = nf_to_vec_renderable(&nf, &table, &basis)?;
-    let vec_wav = generate_waveforms(renderables, true);
-    for (i, w) in vec_wav.iter().enumerate() {
-        let f = format!("{}_{}.wav", &filename.clone().unwrap(), i);
+    let vec_sw = generate_waveforms(renderables, true);
+    for (i, sw) in vec_sw.iter().enumerate() {
+        let f = format!("{}_{}", &filename.clone().unwrap(), i);
         let f = f.split('/').collect::<Vec<&str>>();
         let f = f[f.len() - 1];
-        println!("{}", &f);
+        let render_return = RenderReturn::Wav(write_composition_to_wav(sw.clone())?);
 
-        unimplemented!();
-        // write_composition_to_wav(w.clone(), &f);
+        let audio: Vec<u8> = render_return.clone().into();
+        write_audio_to_file(&audio, f, "wav")
     }
 
     Ok(())

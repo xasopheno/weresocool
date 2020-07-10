@@ -31,6 +31,7 @@ extern "C" {
         mp3buf: *mut u8,
         mp3buf_size: c_int,
     ) -> c_int;
+    #[allow(dead_code)]
     pub fn lame_encode_buffer_interleaved_ieee_float(
         ptr: LamePtr,
         pcm: *const f32,

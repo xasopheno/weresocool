@@ -68,10 +68,6 @@ name = "wsc"
 path = "bin/wsc.rs"
 
 [[bin]]
-name = "print"
-path = "bin/print.rs"
-
-[[bin]]
 name = "stems"
 path = "bin/stems.rs"
 

@@ -61,7 +61,7 @@ pub fn write_composition_to_wav(mut composition: StereoWaveform) -> Result<Vec<u
     let mut writer = hound::WavWriter::new(&mut buf_writer, spec)?;
     let mut buffer = vec![0.0; composition.r_buffer.len() * 2];
     normalize_waveform(&mut buffer);
-    write_output_buffer(&mut buffer, composition.clone());
+    write_output_buffer(&mut buffer, composition);
     for sample in &buffer {
         writer
             .write_sample(*sample)
@@ -69,13 +69,6 @@ pub fn write_composition_to_wav(mut composition: StereoWaveform) -> Result<Vec<u
     }
     writer.flush()?;
     writer.finalize()?;
-
-    // write________**
-    // let mut file = File::create(format!("{}.mp3", filename)).unwrap();
-    // file.write_all(buf_writer.get_ref().clone().into_inner().as_slice())
-    // .unwrap();
-    // file.write_all(mp3buf).unwrap();
-    // write________**
 
     Ok(buf_writer.into_inner().unwrap().into_inner())
 }
