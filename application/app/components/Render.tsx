@@ -91,13 +91,22 @@ export const RenderModal = (props: {
             onClick={async () => {
               await dispatch.onStop();
               props.options.setShow(false);
-              await dispatch.onPrint(store.language);
+              await dispatch.onPrint(store.language, 'mp3');
               dispatch.setEditorFocus(store.editor_ref);
             }}
           >
             Mp3
           </Section>
-          <Section>Wav</Section>
+          <Section
+            onClick={async () => {
+              await dispatch.onStop();
+              props.options.setShow(false);
+              await dispatch.onPrint(store.language, 'wav');
+              dispatch.setEditorFocus(store.editor_ref);
+            }}
+          >
+            Wav
+          </Section>
         </TextContainer>
         <CloseModalButton onClick={() => props.options.setShow(false)}>
           X

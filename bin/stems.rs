@@ -30,7 +30,8 @@ fn main() -> Result<(), Error> {
         let f = f[f.len() - 1];
         println!("{}", &f);
 
-        write_composition_to_wav(w.clone(), &f);
+        unimplemented!();
+        // write_composition_to_wav(w.clone(), &f);
     }
 
     Ok(())

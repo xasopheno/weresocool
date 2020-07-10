@@ -131,12 +131,13 @@ export class Dispatch {
     }
   }
 
-  async onPrint(language: string): Promise<void> {
+  async onPrint(language: string, print_type: string): Promise<void> {
     this.dispatch({ _k: 'Backend', fetch: { state: 'loading' } });
     this.dispatch({ _k: 'Set_Printing', state: true });
     try {
       const response = await axios.post(settings.printURL, {
         language,
+        print_type,
       });
       this.dispatch({ _k: 'Backend', fetch: { state: 'good' } });
 
@@ -161,8 +162,8 @@ const generateDispatches = (
   const value: any = Object.values(response)[0];
   const result: Action[] = [];
 
-  // console.log(responseType);
-  // console.log(value);
+  console.log(responseType);
+  console.log(value);
   switch (responseType) {
     case ResponseType.RenderSuccess:
       result.push({
@@ -181,10 +182,10 @@ const generateDispatches = (
         result.push({ _k: 'Reset_Error_Message' });
         result.push({ _k: 'Reset_Markers' });
         console.log(response);
-        const blob = new Blob([new Uint8Array(value)], {
+        const blob = new Blob([new Uint8Array(value.audio)], {
           type: 'application/octet-stream',
         });
-        FileSaver.saveAs(blob, 'my_song.mp3');
+        FileSaver.saveAs(blob, `my_song.${value.print_type}`);
       }
       break;
     case ResponseType.ParseError:

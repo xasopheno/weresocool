@@ -109,17 +109,19 @@ pub fn parsed_to_render(
         RenderType::Wav(wav_type) => match wav_type {
             WavType::MP3 { cli } => {
                 let stereo_waveform = render(&basis, nf, &parsed_composition.defs)?;
-                Ok(RenderReturn::Wav(write_composition_to_mp3(
-                    stereo_waveform,
-                    filename,
-                )?))
+                let audio = RenderReturn::Wav(write_composition_to_mp3(stereo_waveform)?);
+                if cli {
+                    unimplemented!();
+                };
+                Ok(audio)
             }
             WavType::Wav { cli } => {
                 let stereo_waveform = render(&basis, nf, &parsed_composition.defs)?;
-                Ok(RenderReturn::Wav(write_composition_to_wav(
-                    stereo_waveform,
-                    filename,
-                )?))
+                let audio = RenderReturn::Wav(write_composition_to_wav(stereo_waveform)?);
+                if cli {
+                    unimplemented!();
+                };
+                Ok(audio)
             }
         },
     }
@@ -130,7 +132,7 @@ pub fn render(
     composition: &NormalForm,
     defs: &Defs,
 ) -> Result<StereoWaveform, Error> {
-    let renderables = nf_to_vec_renderable(&composition, &defs, &basis)?;
+    let renderables = nf_to_vec_renderable(composition, defs, basis)?;
     let mut voices = renderables_to_render_voices(renderables);
 
     let mut result = StereoWaveform::new(0);
@@ -151,13 +153,12 @@ pub fn render(
     Ok(result)
 }
 
-pub fn to_wav(composition: StereoWaveform, filename: String) -> Vec<u8> {
-    banner("Printing".to_string(), filename.clone());
-    let composition = write_composition_to_mp3(composition, filename.as_str());
-    printed("WAV".to_string());
-    unimplemented!();
-    // composition
-}
+// pub fn to_wav(composition: StereoWaveform, filename: String) -> Vec<u8> {
+// let composition = write_composition_to_mp3(composition, filename.as_str());
+// printed("WAV".to_string());
+// unimplemented!();
+// // composition
+// }
 
 fn create_pb_instance(n: usize) -> Arc<Mutex<ProgressBar<std::io::Stdout>>> {
     let mut pb = ProgressBar::new(n as u64);

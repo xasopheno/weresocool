@@ -17,11 +17,14 @@ pub async fn single_page_app(_req: HttpRequest) -> actix_web::Result<NamedFile> 
 }
 
 #[derive(Deserialize, Serialize, Debug)]
-pub struct PrintSuccess(Vec<u8>);
+pub struct PrintSuccess {
+    audio: Vec<u8>,
+    print_type: String,
+}
 
 impl PrintSuccess {
-    pub fn new(wav: Vec<u8>) -> Self {
-        Self(wav)
+    pub fn new(audio: Vec<u8>, print_type: String) -> Self {
+        Self { audio, print_type }
     }
 }
 

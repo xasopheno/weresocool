@@ -31,15 +31,12 @@ pub fn filename_from_string(s: &str) -> &str {
     filename[filename.len() - 1]
 }
 
-pub fn write_composition_to_mp3(
-    mut composition: StereoWaveform,
-    filename: &str,
-) -> Result<Vec<u8>, Error> {
+pub fn write_composition_to_mp3(mut composition: StereoWaveform) -> Result<Vec<u8>, Error> {
     composition.normalize();
 
     let l_buffer = composition.l_buffer;
     let r_buffer = composition.r_buffer;
-    let length: f32 = l_buffer.len() as f32 * (0.363);
+    let length: f32 = l_buffer.len() as f32 * (0.37);
     let mp3buf = &mut vec![0_u8; length.ceil() as usize];
 
     let mut l = Lame::new().ok_or_else(|| weresocool_lame::Error::InternalError)?;
@@ -49,10 +46,7 @@ pub fn write_composition_to_mp3(
     Ok(mp3buf.to_vec())
 }
 
-pub fn write_composition_to_wav(
-    mut composition: StereoWaveform,
-    filename: &str,
-) -> Result<Vec<u8>, Error> {
+pub fn write_composition_to_wav(mut composition: StereoWaveform) -> Result<Vec<u8>, Error> {
     composition.normalize();
 
     let spec = hound::WavSpec {
