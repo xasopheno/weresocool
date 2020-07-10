@@ -5,7 +5,6 @@ use std::convert::From;
 use std::fmt;
 use std::ops::Drop;
 use std::os::raw::c_int;
-use std::ptr;
 
 #[derive(Serialize, Deserialize, Debug, Fail)]
 pub enum Error {
@@ -62,7 +61,7 @@ fn handle_simple_error(retn: c_int) -> Result<(), Error> {
 
 fn int_size(sz: usize) -> c_int {
     if sz > c_int::max_value() as usize {
-        panic!("converting {} to c_int would overflow");
+        panic!("converting {} to c_int would overflow", sz);
     }
 
     sz as c_int
@@ -80,7 +79,7 @@ impl Lame {
     pub fn new() -> Option<Self> {
         let ctx = unsafe { ffi::lame_init() };
 
-        if ctx == ptr::null_mut() {
+        if ctx.is_null() {
             None
         } else {
             Some(Self { ptr: ctx })
