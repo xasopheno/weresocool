@@ -29,6 +29,13 @@ jest.mock('electron', () => ({
   dialog: jest.fn(),
 }));
 
+const click = async (button: string, component: Enzyme.ReactWrapper) => {
+  await act(async () => {
+    component.find(button).at(0).simulate('click');
+    await flushPromises();
+  });
+};
+
 describe('OuterSpace', () => {
   it('onResetLanguage', () => {
     const component = mount(<OuterSpaceWrapper />);
@@ -47,12 +54,12 @@ describe('OuterSpace', () => {
     expect(editor.getValue()).toBe(language_template);
     expect(editor.focus.mock.calls.length).toBe(1);
   });
-  //
+
   describe('Render', () => {
     test('click #Render', async () => {
       const mock = new MockAdapter(axios);
       const response = {
-        PrintSuccess: { audio: [0.0, 0.0, 0.0], print_type: 'wav' },
+        PrintSuccess: { audio: [0.0], print_type: 'wav' },
       };
       mock.onPost().reply(200, response);
       FileSaver.saveAs = jest.fn();
@@ -61,17 +68,10 @@ describe('OuterSpace', () => {
         const component = mount(<OuterSpaceWrapper />);
         expect(component.find('#renderModal').exists()).toBe(false);
 
-        await act(async () => {
-          component.find('#printButton').at(0).simulate('click');
-          await flushPromises();
-        });
+        await click('#printButton', component);
         component.update();
         expect(component.find('#renderModal').exists()).toBe(true);
-
-        await act(async () => {
-          component.find(`#${filetype}Button`).at(0).simulate('click');
-          await flushPromises();
-        });
+        await click(`#${filetype}Button`, component);
 
         expect(FileSaver.saveAs).toHaveBeenCalled();
       }
@@ -87,12 +87,7 @@ describe('OuterSpace', () => {
       .instance().editor;
     editor.focus = jest.fn();
 
-    await act(async () => {
-      const saveButton = component.find('#saveButton');
-      saveButton.at(0).simulate('click');
-
-      await flushPromises();
-    });
+    await click('#saveButton', component);
 
     expect(FileSaver.saveAs).toHaveBeenCalled();
     expect(editor.focus.mock.calls.length).toBe(1);
