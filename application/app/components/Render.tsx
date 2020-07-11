@@ -1,34 +1,8 @@
-import React, { useContext, useState } from 'react';
+import React, { useContext } from 'react';
 import { Button } from './style';
 import { DispatchContext } from '../actions/actions';
 import { GlobalContext } from '../store';
 import styled from 'styled-components';
-
-export const Render = (): React.ReactElement => {
-  const store = useContext(GlobalContext);
-  const dispatch = useContext(DispatchContext);
-  const [showRenderModal, setShowRenderModal] = React.useState(false);
-
-  const options: RenderModalOptions = {
-    setShow: setShowRenderModal,
-    show: showRenderModal,
-  };
-
-  return (
-    <div>
-      <RenderModal options={options} />
-      <Button
-        id={'printButton'}
-        onClick={() => {
-          setShowRenderModal(true);
-        }}
-        disabled={store.printing}
-      >
-        Render
-      </Button>
-    </div>
-  );
-};
 
 const Modal = styled.div`
   position: absolute;
@@ -41,12 +15,6 @@ const Modal = styled.div`
   z-index: 10;
 `;
 
-const Title = styled.h1`
-  font-size: 40px;
-  margin-top: 60px;
-  text-align: center;
-  color: #edd;
-`;
 const Section = styled.p`
   font-size: 50px;
   // text-align: center;
@@ -73,6 +41,31 @@ const TextContainer = styled.div`
   left: 50%;
 `;
 
+export const Render = (): React.ReactElement => {
+  const store = useContext(GlobalContext);
+  const [showRenderModal, setShowRenderModal] = React.useState(false);
+
+  const options: RenderModalOptions = {
+    setShow: setShowRenderModal,
+    show: showRenderModal,
+  };
+
+  return (
+    <div>
+      <RenderModal options={options} />
+      <Button
+        id={'printButton'}
+        onClick={() => {
+          setShowRenderModal(true);
+        }}
+        disabled={store.printing}
+      >
+        Render
+      </Button>
+    </div>
+  );
+};
+
 export interface RenderModalOptions {
   show: boolean;
   setShow: (b: boolean) => void;
@@ -85,9 +78,10 @@ export const RenderModal = (props: {
   const dispatch = useContext(DispatchContext);
   if (props.options.show) {
     return (
-      <Modal>
+      <Modal id={'renderModal'}>
         <TextContainer>
           <Section
+            id={'mp3Button'}
             onClick={async () => {
               await dispatch.onStop();
               props.options.setShow(false);
@@ -98,6 +92,7 @@ export const RenderModal = (props: {
             Mp3
           </Section>
           <Section
+            id={'wavButton'}
             onClick={async () => {
               await dispatch.onStop();
               props.options.setShow(false);

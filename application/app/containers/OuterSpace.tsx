@@ -11,6 +11,7 @@ import { GlobalContext } from '../store';
 import { DispatchContext } from '../actions/actions';
 import { remote } from 'electron';
 import styled from 'styled-components';
+// @ts-ignore
 import { Bars } from 'svg-loaders-react';
 
 const Version = styled.p`

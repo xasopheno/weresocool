@@ -162,8 +162,8 @@ const generateDispatches = (
   const value: any = Object.values(response)[0];
   const result: Action[] = [];
 
-  console.log(responseType);
-  console.log(value);
+  // console.log(responseType);
+  // console.log(value);
   switch (responseType) {
     case ResponseType.RenderSuccess:
       result.push({
@@ -181,7 +181,7 @@ const generateDispatches = (
         });
         result.push({ _k: 'Reset_Error_Message' });
         result.push({ _k: 'Reset_Markers' });
-        console.log(response);
+
         const blob = new Blob([new Uint8Array(value.audio)], {
           type: 'application/octet-stream',
         });

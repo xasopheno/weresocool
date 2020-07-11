@@ -9,6 +9,8 @@ import AceEditor from 'react-ace';
 import { language_template } from '../../app/components/Editor/language_template';
 import { flushPromises } from '../helpers/tools';
 import FileSaver from 'file-saver';
+import MockAdapter from 'axios-mock-adapter';
+import axios from 'axios';
 
 Enzyme.configure({ adapter: new Adapter() });
 // @ts-ignore
@@ -46,6 +48,35 @@ describe('OuterSpace', () => {
     expect(editor.focus.mock.calls.length).toBe(1);
   });
   //
+  describe('Render', () => {
+    test('click #Render', async () => {
+      const mock = new MockAdapter(axios);
+      const response = {
+        PrintSuccess: { audio: [0.0, 0.0, 0.0], print_type: 'wav' },
+      };
+      mock.onPost().reply(200, response);
+      FileSaver.saveAs = jest.fn();
+
+      for (const filetype of ['wav', 'mp3']) {
+        const component = mount(<OuterSpaceWrapper />);
+        expect(component.find('#renderModal').exists()).toBe(false);
+
+        await act(async () => {
+          component.find('#printButton').at(0).simulate('click');
+          await flushPromises();
+        });
+        component.update();
+        expect(component.find('#renderModal').exists()).toBe(true);
+
+        await act(async () => {
+          component.find(`#${filetype}Button`).at(0).simulate('click');
+          await flushPromises();
+        });
+
+        expect(FileSaver.saveAs).toHaveBeenCalled();
+      }
+    });
+  });
   it('onFileSave', async () => {
     const component = mount(<OuterSpaceWrapper />);
     FileSaver.saveAs = jest.fn();
