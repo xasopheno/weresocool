@@ -46,6 +46,13 @@ pub fn write_composition_to_mp3(mut composition: StereoWaveform) -> Result<Vec<u
     Ok(mp3buf.to_vec())
 }
 
+#[test]
+fn write_composition_to_mp3_test() {
+    let sw = StereoWaveform::new_with_buffer(vec![0.0; 2048]);
+    let mp3 = write_composition_to_mp3(sw);
+    assert_eq!(mp3.unwrap().len(), 758)
+}
+
 pub fn write_composition_to_wav(mut composition: StereoWaveform) -> Result<Vec<u8>, Error> {
     composition.normalize();
 
@@ -73,34 +80,12 @@ pub fn write_composition_to_wav(mut composition: StereoWaveform) -> Result<Vec<u
     Ok(buf_writer.into_inner().unwrap().into_inner())
 }
 
-// pub fn write_composition_to_wav_old(
-// composition: StereoWaveform,
-// filename: &str,
-// mp3: bool,
-// normalize: bool,
-// ) {
-// let spec = hound::WavSpec {
-// channels: SETTINGS.channels as u16,
-// sample_rate: SETTINGS.sample_rate as u32,
-// bits_per_sample: 32,
-// sample_format: hound::SampleFormat::Float,
-// };
-
-// let mut buffer = vec![0.0; composition.r_buffer.len() * 2];
-
-// write_output_buffer(&mut buffer, composition);
-// if normalize {
-// normalize_waveform(&mut buffer);
-// }
-
-// let mut writer = hound::WavWriter::create("composition.wav", spec).unwrap();
-// for sample in buffer {
-// writer
-// .write_sample(sample)
-// .expect("Error writing wave file.");
-// }
-// println!("Successful wav encoding.");
-// }
+#[test]
+fn write_composition_to_wav_test() {
+    let sw = StereoWaveform::new_with_buffer(vec![0.0; 10]);
+    let wav = write_composition_to_wav(sw);
+    assert_eq!(wav.unwrap().len(), 148)
+}
 
 pub fn normalize_waveform(buffer: &mut Vec<f32>) {
     let mut max = 0.0;
