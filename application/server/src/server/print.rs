@@ -1,6 +1,5 @@
 use crate::server::types::PrintLanguage;
 use crate::server::{PrintSuccess, Success};
-// use actix_cors::Cors;
 use actix_web::{http::StatusCode, web, HttpResponse};
 use weresocool::generation::{RenderReturn, RenderType, WavType};
 use weresocool::interpretable::{InputType, Interpretable};
