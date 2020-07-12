@@ -68,8 +68,9 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
           yarn build
-      - name: install portaudio
-        run: brew install portaudio pkg-config
+
+      - name: install dependancies
+        run: brew install portaudio pkg-config lame
 
       - name: yarn package-mac
         working-directory: ./application
