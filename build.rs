@@ -6,6 +6,10 @@ fn main() {
         _ => false,
     };
 
+    if env::var("LAME_STATIC").is_ok() {
+        println!("cargo:rustc-link-lib=static=mp3lame");
+    }
+
     println!("cargo:rerun-if-env-changed=PORTAUDIO_ONLY_STATIC");
     if cfg!(target_os = "macos") && static_build {
         println!("cargo:rustc-link-lib=static=portaudio");
