@@ -29,3 +29,5 @@ test_rehash:
 scratch:
 	cargo watch --exec "run --release --bin scratch"
 
+dev: 
+	(cd application && yarn build-backend && yarn dev)

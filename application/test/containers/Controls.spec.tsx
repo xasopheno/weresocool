@@ -135,6 +135,10 @@ describe('Controls', () => {
     const component = mount(<Root initialStore={testStore} />);
     expect(component.find('#playButton').exists()).toBe(true);
   });
+  it('render button exists', () => {
+    const component = mount(<Root initialStore={testStore} />);
+    expect(component.find('#printButton').exists()).toBe(true);
+  });
   it('stop button exists', () => {
     const component = mount(<Root initialStore={testStore} />);
     expect(component.find('#stopButton').exists()).toBe(true);

@@ -1,18 +1,29 @@
 use crate::{
     generation::{to_csv, to_json},
-    instrument::{Basis, Normalize, Oscillator, StereoWaveform},
-    renderable::{nf_to_vec_renderable, RenderOp, Renderable},
-    settings::default_settings,
-    ui::{banner, printed},
-    write::write_composition_to_wav,
+    instrument::{Basis, Oscillator, StereoWaveform},
+    renderable::{nf_to_vec_renderable, renderables_to_render_voices, RenderOp, Renderable},
+    settings::{default_settings, Settings},
+    ui::printed,
+    write::{write_composition_to_mp3, write_composition_to_wav},
 };
 use num_rational::Rational64;
 use pbr::ProgressBar;
 use rayon::prelude::*;
+use std::fs::File;
+use std::io::prelude::*;
+use std::path::Path;
 use std::sync::{Arc, Mutex};
-use weresocool_ast::{Defs, NormalForm, Normalize as NormalizeOp, Term};
+use weresocool_ast::{Defs, NormalForm, Term};
 use weresocool_error::{Error, IdError};
 use weresocool_parser::ParsedComposition;
+
+const SETTINGS: Settings = default_settings();
+
+#[derive(Clone, PartialEq, Debug)]
+pub enum WavType {
+    Wav { cli: bool },
+    MP3 { cli: bool },
+}
 
 #[derive(Clone, PartialEq, Debug)]
 pub enum RenderType {
@@ -20,7 +31,7 @@ pub enum RenderType {
     Csv1d,
     NfBasisAndTable,
     StereoWaveform,
-    Wav,
+    Wav(WavType),
 }
 
 #[derive(Clone, PartialEq, Debug)]
@@ -30,7 +41,16 @@ pub enum RenderReturn {
     Csv1d(String),
     StereoWaveform(StereoWaveform),
     NfBasisAndTable(NormalForm, Basis, Defs),
-    Wav(String),
+    Wav(Vec<u8>),
+}
+
+impl Into<Vec<u8>> for RenderReturn {
+    fn into(self) -> Vec<u8> {
+        match self {
+            Self::Wav(audio) => audio,
+            _ => unimplemented!(),
+        }
+    }
 }
 
 pub fn r_to_f64(r: Rational64) -> f64 {
@@ -94,16 +114,45 @@ pub fn parsed_to_render(
             )?;
             Ok(RenderReturn::Csv1d("json".to_string()))
         }
-        RenderType::StereoWaveform | RenderType::Wav => {
+        RenderType::StereoWaveform => {
             let stereo_waveform = render(&basis, nf, &parsed_composition.defs)?;
-            if return_type == RenderType::StereoWaveform {
-                Ok(RenderReturn::StereoWaveform(stereo_waveform))
-            } else {
-                let result = to_wav(stereo_waveform, filename.to_string());
-                Ok(RenderReturn::Wav(result))
-            }
+            Ok(RenderReturn::StereoWaveform(stereo_waveform))
         }
+        RenderType::Wav(wav_type) => match wav_type {
+            WavType::MP3 { cli } => {
+                let stereo_waveform = render(&basis, nf, &parsed_composition.defs)?;
+                let render_return = RenderReturn::Wav(write_composition_to_mp3(stereo_waveform)?);
+                if cli {
+                    let audio: Vec<u8> = render_return.clone().into();
+                    let f = filename_to_renderpath(filename);
+                    write_audio_to_file(&audio, f.as_str(), "mp3")
+                };
+                Ok(render_return)
+            }
+            WavType::Wav { cli } => {
+                let stereo_waveform = render(&basis, nf, &parsed_composition.defs)?;
+                let render_return = RenderReturn::Wav(write_composition_to_wav(stereo_waveform)?);
+                if cli {
+                    let audio: Vec<u8> = render_return.clone().into();
+                    let f = filename_to_renderpath(filename);
+                    write_audio_to_file(&audio, f.as_str(), "wav")
+                };
+                Ok(render_return)
+            }
+        },
     }
+}
+
+fn filename_to_renderpath(filename: &str) -> String {
+    let path = Path::new(filename).file_stem().unwrap();
+    let f = format!("renders/{}", path.to_str().unwrap().to_string());
+    f
+}
+
+pub fn write_audio_to_file(audio: &[u8], filename: &str, print_type: &str) {
+    let mut file = File::create(format!("{}.{}", filename, print_type)).unwrap();
+    file.write_all(audio).unwrap();
+    printed(filename.to_string());
 }
 
 pub fn render(
@@ -111,24 +160,25 @@ pub fn render(
     composition: &NormalForm,
     defs: &Defs,
 ) -> Result<StereoWaveform, Error> {
-    let mut normal_form = NormalForm::init();
+    let renderables = nf_to_vec_renderable(composition, defs, basis)?;
+    let mut voices = renderables_to_render_voices(renderables);
 
-    println!("\nGenerating Composition ");
-    composition.apply_to_normal_form(&mut normal_form, defs)?;
-    let render_ops = nf_to_vec_renderable(composition, defs, basis)?;
+    let mut result = StereoWaveform::new(0);
+    loop {
+        let batch: Vec<StereoWaveform> = voices
+            .par_iter_mut()
+            .filter_map(|voice| voice.render_batch(SETTINGS.buffer_size, None))
+            .collect();
 
-    let vec_wav = generate_waveforms(render_ops, true);
-    let mut result = sum_all_waveforms(vec_wav);
-    result.normalize();
+        if !batch.is_empty() {
+            let stereo_waveform = sum_all_waveforms(batch);
+            result.append(stereo_waveform);
+        } else {
+            break;
+        }
+    }
 
     Ok(result)
-}
-
-pub fn to_wav(composition: StereoWaveform, filename: String) -> String {
-    banner("Printing".to_string(), filename.clone());
-    write_composition_to_wav(composition, filename.as_str(), true, true);
-    printed("WAV".to_string());
-    "composition.wav".to_string()
 }
 
 fn create_pb_instance(n: usize) -> Arc<Mutex<ProgressBar<std::io::Stdout>>> {

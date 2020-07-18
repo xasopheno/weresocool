@@ -3,6 +3,7 @@ import { TopBox, ButtonBox, Button, RightButton, VimBox } from './style';
 import { DispatchContext } from '../actions/actions';
 import { GlobalContext, Editors } from '../store';
 import ReactTooltip from 'react-tooltip';
+import { Render } from './Render';
 
 const stub = () => {};
 
@@ -30,21 +31,32 @@ export const Controls = (props: Props): React.ReactElement => {
             await dispatch.onRender(store.language);
             dispatch.setEditorFocus(store.editor_ref);
           }}
+          disabled={store.printing}
         >
           Play
         </Button>
-        <Button data-tip="⌘+Enter" id={'stopButton'} onClick={dispatch.onStop}>
+        <Button
+          data-tip="⌘+Enter"
+          id={'stopButton'}
+          onClick={dispatch.onStop}
+          disabled={store.printing}
+        >
           Stop
         </Button>
+
+        <Render />
+
         <Button
           data-tip="⌘+L"
           id={'loadButton'}
           onClick={() => {
             props.handleLoad();
           }}
+          disabled={store.printing}
         >
           Load
         </Button>
+
         <Button
           data-tip="⌘+S"
           id={'saveButton'}
@@ -52,6 +64,7 @@ export const Controls = (props: Props): React.ReactElement => {
             dispatch.onFileSave(store.language);
             dispatch.setEditorFocus(store.editor_ref);
           }}
+          disabled={store.printing}
         >
           Save
         </Button>
@@ -64,6 +77,7 @@ export const Controls = (props: Props): React.ReactElement => {
             dispatch.onResetLanguage();
             dispatch.setEditorFocus(store.editor_ref);
           }}
+          disabled={store.printing}
         >
           Reset
         </RightButton>
@@ -73,6 +87,7 @@ export const Controls = (props: Props): React.ReactElement => {
             dispatch.onIncrementEditorType(store.editor);
             dispatch.setEditorFocus(store.editor_ref);
           }}
+          disabled={store.printing}
         >
           {Editors[store.editor].name}
         </RightButton>

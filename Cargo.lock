@@ -2772,6 +2772,7 @@ dependencies = [
  "uuid",
  "weresocool_ast",
  "weresocool_error",
+ "weresocool_lame",
  "weresocool_parser",
 ]
 
@@ -2799,6 +2800,16 @@ dependencies = [
  "portaudio",
  "serde",
  "serde_json",
+ "weresocool_lame",
+]
+
+[[package]]
+name = "weresocool_lame"
+version = "0.1.0"
+dependencies = [
+ "failure",
+ "failure_derive",
+ "serde",
 ]
 
 [[package]]

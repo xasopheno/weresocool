@@ -26,8 +26,8 @@ jobs:
         path: target
         key: ${{ runner.os }}-cargo-build-target-${{ hashFiles('**/Cargo.lock') }}
 
-    - name: install portaudio
-      run: brew install portaudio pkg-config
+    - name: install dependancies
+      run: brew install portaudio pkg-config lame
 
     - name: Build
       run: cargo build --verbose

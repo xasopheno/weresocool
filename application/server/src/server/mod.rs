@@ -1,3 +1,4 @@
+pub mod print;
 pub mod types;
 use crate::server::types::Language;
 use actix_files::NamedFile;
@@ -16,15 +17,27 @@ pub async fn single_page_app(_req: HttpRequest) -> actix_web::Result<NamedFile> 
 }
 
 #[derive(Deserialize, Serialize, Debug)]
+pub struct PrintSuccess {
+    audio: Vec<u8>,
+    print_type: String,
+}
+
+impl PrintSuccess {
+    pub fn new(audio: Vec<u8>, print_type: String) -> Self {
+        Self { audio, print_type }
+    }
+}
+
+#[derive(Deserialize, Serialize, Debug)]
 pub enum Success {
     RenderSuccess(String),
+    PrintSuccess(PrintSuccess),
 }
 
 pub async fn render(
     render_manager: web::Data<Arc<Mutex<RenderManager>>>,
     req: web::Json<Language>,
 ) -> HttpResponse {
-    // TODO: Pull out prepare_render so it's not inside the lock.
     match prepare_render_outside(InputType::Language(&req.language)) {
         Ok(render) => {
             render_manager.lock().unwrap().push_render(render);

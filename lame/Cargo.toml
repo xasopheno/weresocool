@@ -1,0 +1,15 @@
+[package]
+name = "weresocool_lame"
+version = "0.1.0"
+authors = ["Danny Meyer <weresocool@xasophenoo.com>"]
+edition = "2018"
+description = "Lame FFI for WereSoCool"
+license = "GPL-3.0"
+links = "mp3lame"
+
+# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
+
+[dependencies]
+serde = { version = "1.0.111", features = ["derive"] }
+failure = "0.1.8"
+failure_derive = "0.1.8"

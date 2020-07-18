@@ -11,6 +11,8 @@ import { GlobalContext } from '../store';
 import { DispatchContext } from '../actions/actions';
 import { remote } from 'electron';
 import styled from 'styled-components';
+// @ts-ignore
+import { Bars } from 'svg-loaders-react';
 
 const Version = styled.p`
   position: absolute;
@@ -20,6 +22,38 @@ const Version = styled.p`
   color: #111111;
   font-family: monospace;
 `;
+
+const SpinnerContainer = styled.div`
+  height: 100%;
+  width: 100%;
+  position: absolute;
+  top: 40%;
+  left: 45%;
+  z-index: 100;
+`;
+
+const SpinnerText = styled.p`
+  font-family: 'Courier New', Courier, monospace;
+  font-size: 2em;
+  color: goldenrod;
+`;
+
+interface SpinnerProps {
+  show: boolean;
+}
+
+const Spinner = (props: SpinnerProps): React.ReactElement => {
+  if (props.show) {
+    return (
+      <SpinnerContainer id={'spinner'}>
+        <SpinnerText>Rendering.....</SpinnerText>
+        <Bars stroke={'goldenrod'} heigth={200} width={200} />
+      </SpinnerContainer>
+    );
+  } else {
+    return <></>;
+  }
+};
 
 export const OuterSpace = (): React.ReactElement => {
   const width = useCurrentWidth();
@@ -46,6 +80,7 @@ export const OuterSpace = (): React.ReactElement => {
           dispatch.setEditorFocus(store.editor_ref);
         }}
       />
+      <Spinner show={store.printing} />
       <Version>{`v${remote.app.getVersion()}`}</Version>
       <LED state={store.backend.state} />
       <Logo />;

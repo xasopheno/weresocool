@@ -18,6 +18,7 @@ use std::io;
 pub enum Serializable {
     Msg(String),
     IoError(String),
+    HoundError(String),
     #[serde(with = "PortAudioError")]
     PortAudio(portaudio::error::Error),
     SerdeJsonError(String),
@@ -25,6 +26,8 @@ pub enum Serializable {
     ParseError(ParseError),
     IdError(IdError),
     IndexError(IndexError),
+    LameError(weresocool_lame::Error),
+    LameEncodeError(weresocool_lame::EncodeError),
 }
 
 impl ErrorInner {
@@ -35,6 +38,8 @@ impl ErrorInner {
             ErrorInner::IdError(e) => Serializable::IdError(e),
             ErrorInner::IndexError(e) => Serializable::IndexError(e),
             ErrorInner::PortAudio(e) => Serializable::PortAudio(e),
+            ErrorInner::LameError(e) => Serializable::LameError(e),
+            ErrorInner::LameEncodeError(e) => Serializable::LameEncodeError(e),
             ErrorInner::Io(e) => {
                 println!("{:#?}", e);
                 Serializable::IoError("".to_string())
@@ -46,6 +51,10 @@ impl ErrorInner {
             ErrorInner::CSVError(e) => {
                 println!("{:#?}", e);
                 Serializable::CSVError("CSVError".to_string())
+            }
+            ErrorInner::HoundError(e) => {
+                println!("{:#?}", e);
+                Serializable::HoundError("HoundError".to_string())
             }
         }
     }
@@ -101,6 +110,30 @@ impl From<ParseError> for Error {
     fn from(e: ParseError) -> Error {
         Error {
             inner: Box::new(ErrorInner::ParseError(e)),
+        }
+    }
+}
+
+impl From<hound::Error> for Error {
+    fn from(e: hound::Error) -> Error {
+        Error {
+            inner: Box::new(ErrorInner::HoundError(e)),
+        }
+    }
+}
+
+impl From<weresocool_lame::Error> for Error {
+    fn from(e: weresocool_lame::Error) -> Error {
+        Error {
+            inner: Box::new(ErrorInner::LameError(e)),
+        }
+    }
+}
+
+impl From<weresocool_lame::EncodeError> for Error {
+    fn from(e: weresocool_lame::EncodeError) -> Error {
+        Error {
+            inner: Box::new(ErrorInner::LameEncodeError(e)),
         }
     }
 }

@@ -1,12 +1,13 @@
 use crate::generation::Op4D;
-use crate::instrument::StereoWaveform;
+use crate::instrument::{Normalize, StereoWaveform};
 use crate::settings::{default_settings, Settings};
 use csv::Writer;
 use std::fs::File;
 use std::io::prelude::*;
+use std::io::{BufWriter, Cursor};
 use std::path::Path;
-use std::process::Command;
 use weresocool_error::Error;
+use weresocool_lame::Lame;
 
 const SETTINGS: Settings = default_settings();
 
@@ -30,65 +31,60 @@ pub fn filename_from_string(s: &str) -> &str {
     filename[filename.len() - 1]
 }
 
-fn wav_to_mp3_in_renders(filename: &str) {
-    let filename = filename_from_string(filename);
-    let filename = format!("./renders/{}{}", filename, ".mp3".to_string());
+pub fn write_composition_to_mp3(mut composition: StereoWaveform) -> Result<Vec<u8>, Error> {
+    composition.normalize();
 
-    let child = Command::new("ffmpeg")
-        .args(&[
-            "-v",
-            "panic",
-            "-i",
-            "composition.wav",
-            "-codec:a",
-            "libmp3lame",
-            "-qscale:a",
-            "2",
-            "-y",
-            &filename,
-        ])
-        .spawn();
+    let l_buffer = composition.l_buffer;
+    let r_buffer = composition.r_buffer;
+    let length: f32 = l_buffer.len() as f32 * (0.37);
+    let mp3buf = &mut vec![0_u8; length.ceil() as usize];
 
-    let ecode = child
-        .expect("ffmpeg failed to encode mp3")
-        .wait()
-        .expect("failed to wait on child");
+    let mut l = Lame::new().ok_or_else(|| weresocool_lame::Error::InternalError)?;
+    l.init_params()?;
+    l.encode_f32(l_buffer.as_slice(), r_buffer.as_slice(), mp3buf)?;
 
-    assert!(ecode.success());
-    println!("Successful mp3 encoding.");
+    Ok(mp3buf.to_vec())
 }
 
-pub fn write_composition_to_wav(
-    composition: StereoWaveform,
-    filename: &str,
-    mp3: bool,
-    normalize: bool,
-) {
+#[test]
+fn write_composition_to_mp3_test() {
+    let sw = StereoWaveform::new_with_buffer(vec![0.0; 2048]);
+    let mp3 = write_composition_to_mp3(sw);
+    assert_eq!(mp3.unwrap().len(), 758)
+}
+
+pub fn write_composition_to_wav(mut composition: StereoWaveform) -> Result<Vec<u8>, Error> {
+    composition.normalize();
+
     let spec = hound::WavSpec {
         channels: SETTINGS.channels as u16,
         sample_rate: SETTINGS.sample_rate as u32,
         bits_per_sample: 32,
         sample_format: hound::SampleFormat::Float,
     };
+    let c = Cursor::new(Vec::new());
 
+    let mut buf_writer = BufWriter::new(c);
+    let mut writer = hound::WavWriter::new(&mut buf_writer, spec)?;
     let mut buffer = vec![0.0; composition.r_buffer.len() * 2];
-
+    normalize_waveform(&mut buffer);
     write_output_buffer(&mut buffer, composition);
-    if normalize {
-        normalize_waveform(&mut buffer);
-    }
-
-    let mut writer = hound::WavWriter::create("composition.wav", spec).unwrap();
-    for sample in buffer {
+    for sample in &buffer {
         writer
-            .write_sample(sample)
+            .write_sample(*sample)
             .expect("Error writing wave file.");
     }
-    println!("Successful wav encoding.");
+    writer.flush()?;
+    writer.finalize()?;
 
-    if mp3 {
-        wav_to_mp3_in_renders(filename);
-    }
+    Ok(buf_writer.into_inner().unwrap().into_inner())
+}
+
+#[test]
+fn write_composition_to_wav_test() {
+    let sw = StereoWaveform::new_with_buffer(vec![0.0; 10]);
+    let wav = write_composition_to_wav(sw);
+    assert_eq!(wav.unwrap().len(), 148)
 }
 
 pub fn normalize_waveform(buffer: &mut Vec<f32>) {

@@ -66,21 +66,25 @@ jobs:
         working-directory: ./application
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        run: |
-          yarn build
-      - name: install portaudio
-        run: brew install portaudio pkg-config
+
+        run: yarn build
+
+      - name: install dependancies
+        run: brew install portaudio pkg-config lame
 
       - name: yarn package-mac
         working-directory: ./application
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        run: |
-          yarn package-mac
+        run: yarn package-mac
+
+      - name: test static build 
+        working-directory: ./application
+        run: ./test/test_static_linking.sh
+
       - name: yarn test
         working-directory: ./application
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        run: |
-          yarn test 
+        run: yarn test 
 

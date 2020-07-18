@@ -10,7 +10,7 @@ overtones = {
 thing1 = {
 	overtones |
 	Sequence [
-		Tm 1, Tm 3/2
+		Pa -1 | Tm 1, Tm 3/2 | Pa 2
 	] 
 }
 

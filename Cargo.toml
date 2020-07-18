@@ -2,7 +2,7 @@
 name = "weresocool"
 version = "0.6.0"
 edition = "2018"
-authors = ["Danny Meyer <weresocool@xasopheno.com>"]
+authors = ["Danny <weresocool@xasopheno.com>"]
 description = "***** WereSoCool __!Now In Stereo!__ ****** Make cool sounds. Impress your friends."
 license = "GPL-3.0" 
 autobins = false
@@ -16,6 +16,7 @@ readme = "README.md"
 weresocool_parser = { path = "parser" }
 weresocool_ast = { path = "ast" }
 weresocool_error = { path = "error" } 
+weresocool_lame = { path = "lame" } 
 portaudio = "0.7.0"
 rand = "0.7.3"
 hound = "3.4.0"
@@ -45,7 +46,6 @@ float-cmp = "0.8.0"
 [dev-dependencies]
 pretty_assertions = "0.6.1"
 criterion = "0.3"
-#listenfd = "0.3.3"
 
 [[bench]]
 name = "render_batch_bench"
@@ -57,6 +57,7 @@ harness = false
 [workspace]
 members = [
     "ast",
+    "lame",
     "parser",
     "error",
     "application/server",
@@ -65,10 +66,6 @@ members = [
 [[bin]]
 name = "wsc"
 path = "bin/wsc.rs"
-
-[[bin]]
-name = "print"
-path = "bin/print.rs"
 
 [[bin]]
 name = "stems"

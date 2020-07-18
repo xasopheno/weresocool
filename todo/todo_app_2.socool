@@ -1,0 +1,19 @@
+print: 
+[]   to wav
+    []-endpoint
+    []-ui
+[]   to mp3
+
+imports:
+[]   backend takes Option<import_path>
+[]   frontend choose import dir. 
+
+mic:
+[]   replace yin with yaapt
+
+list syntax:
+[]   &list = [ops...]
+[]   (&list1 ++ &list2)
+
+
+

@@ -22,16 +22,6 @@ export const Editors: Editor = {
   2: { name: 'Emacs', style: 'emacs' },
 };
 
-// const getWelcome = () => {
-// const fs = window.require('fs');
-
-// const demoPath = remote.app.isPackaged
-// ? path.join(process.resourcesPath, `extraResources/tutorial`)
-// : `./extraResources/tutorial`;
-
-// return fs.readFileSync(`${demoPath}/welcome.socool`, 'utf-8');
-// };
-
 export interface Store {
   editor: number;
   demoIdx: number;
@@ -42,6 +32,7 @@ export interface Store {
   markers: IMarker[];
   initializeTest: boolean;
   editor_ref: AceEditor | null;
+  printing: boolean;
 }
 
 export const intialStore: Store = {
@@ -54,6 +45,7 @@ export const intialStore: Store = {
   markers: [],
   initializeTest: true,
   editor_ref: null,
+  printing: false,
 };
 
 export const testStore: Store = {
@@ -66,6 +58,7 @@ export const testStore: Store = {
   markers: [],
   initializeTest: false,
   editor_ref: null,
+  printing: false,
 };
 export const GlobalContext = createContext((undefined as unknown) as Store);
 // // This adds a `_k: 'something'` to a given type

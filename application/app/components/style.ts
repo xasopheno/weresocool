@@ -21,6 +21,7 @@ export const VimBox = styled.div`
   flex-direction: row;
   justify-content: flex-end;
   margin-right: 10%;
+  margin-bottom: 10px;
 `;
 
 export const VimText = styled.label`
@@ -41,6 +42,7 @@ export const ButtonBox = styled.div`
   flex-direction: row;
   justify-content: flex-start;
   margin-left: 10%;
+  margin-bottom: 10px;
 `;
 
 export const Button = styled.button`

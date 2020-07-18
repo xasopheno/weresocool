@@ -1,5 +1,5 @@
 mod server;
-use crate::server::{render, single_page_app};
+use crate::server::{print::print, render, single_page_app};
 use actix_cors::Cors;
 use actix_rt;
 use actix_web::{body::Body, web, App, HttpRequest, HttpResponse, HttpServer};
@@ -63,7 +63,11 @@ pub async fn main() -> Result<(), actix_web::Error> {
         App::new()
             .app_data(rm.clone())
             .wrap(Cors::new().finish())
-            .service(web::scope("/api").route("/render", web::post().to(render)))
+            .service(
+                web::scope("/api")
+                    .route("/render", web::post().to(render))
+                    .route("/print", web::post().to(print)),
+            )
             .route("/compose", web::get().to(single_page_app))
             .default_service(web::get().to(assets))
     })
