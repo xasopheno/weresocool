@@ -76,12 +76,15 @@ jobs:
         working-directory: ./application
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        run: |
-          yarn package-mac
+        run: yarn package-mac
+
+      - name: test static build 
+        working-directory: ./application
+        run: ./test/test_static_linking.sh
+
       - name: yarn test
         working-directory: ./application
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        run: |
-          yarn test 
+        run: yarn test 
 
