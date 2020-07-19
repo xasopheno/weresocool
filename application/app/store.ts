@@ -33,9 +33,11 @@ export interface Store {
   initializeTest: boolean;
   editor_ref: AceEditor | null;
   printing: boolean;
+  volume: number;
 }
 
 export const intialStore: Store = {
+  volume: 80,
   editor: 0,
   demoIdx: 0,
   backend: { state: 'bad', error: Error('Startup') },
@@ -49,6 +51,7 @@ export const intialStore: Store = {
 };
 
 export const testStore: Store = {
+  volume: 80,
   editor: 0,
   demoIdx: 0,
   backend: { state: 'good' },

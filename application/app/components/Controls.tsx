@@ -15,28 +15,66 @@ const SliderContainer = styled.div`
 const Slider = styled.input`
   -webkit-appearance: none;
   width: 150px;
-  height: 15px;
-  background: goldenrod;
-  outline: none;
+  background: transparent;
   opacity: 0.7;
-  -webkit-transition: 0.2s;
-  transition: opacity 0.2s;
 
-  :hover {
+  :focus {
+    outline: none;
     opacity: 1;
   }
 
-  ::-webkit-slider-thumb {
-    -webkit-appearance: none; /* Override default look */
-    appearance: none;
-    width: 25px; /* Set a specific slider handle width */
-    height: 25px; /* Slider handle height */
-    background: #eff; /* Green background */
-    cursor: pointer; /* Cursor on hover */
+  ::-webkit-slider-runnable-track {
+    height: 0.9rem;
+    margin: 0;
+    width: 100%;
+    cursor: pointer;
+    background: goldenrod;
+    background: linear-gradient(
+      to bottom right,
+      transparent 50%,
+      goldenrod 50%
+    );
   }
+
+  ::-webkit-slider-thumb {
+    -webkit-appearance: none;
+    height: 1.5rem;
+    width: 0.5rem;
+    background: #edd;
+    border: 1px solid;
+    margin-top: -5px;
+    border-radius: 3px;
+    border-color: #eed;
+    cursor: pointer;
+  }
+
+  // // :focus::-webkit-slider-thumb {
+  // // box-shadow: 0px 0px 1px 1px #fff;
+  // // }
+
+  // -webkit-appearance: none;
+  // width: 150px;
+  // height: 10px;
+  // background: goldenrod;
+  // outline: none;
+  // opacity: 0.7;
+  // -webkit-transition: 0.2s;
+  // transition: opacity 0.2s;
+
+  // :hover {
+  // opacity: 1;
+  // }
+
+  // ::-webkit-slider-thumb {
+  // -webkit-appearance: none; /* Override default look */
+  // appearance: none;
+  // width: 20px; /* Set a specific slider handle width */
+  // height: 20px; /* Slider handle height */
+  // background: #cbb; /* Green background */
+  // cursor: pointer; /* Cursor on hover */
+  // }
 `;
 
-/* The slider handle (use -webkit- (Chrome, Opera, Safari, Edge) and -moz- (Firefox) to override default look) */
 const stub = () => {};
 
 type Props = { handleLoad: () => void };
@@ -105,7 +143,13 @@ export const Controls = (props: Props): React.ReactElement => {
 
       <VimBox>
         <SliderContainer>
-          <Slider type="range" min="1" max="100" id="volumeSlider" />
+          <Slider
+            type="range"
+            min="1"
+            max="100"
+            id="volumeSlider"
+            value={store.volume}
+          />
         </SliderContainer>
         <RightButton
           id={'resetButton'}
