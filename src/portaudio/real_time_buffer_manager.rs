@@ -21,11 +21,11 @@ pub fn real_time_buffer_manager(
 
         match sw {
             Some(stereo_waveform) => {
-                write_output_buffer(args.buffer, stereo_waveform);
+                write_output_buffer(args.buffer, stereo_waveform, None);
                 pa::Continue
             }
             None => {
-                write_output_buffer(args.buffer, StereoWaveform::new(SETTINGS.buffer_size));
+                write_output_buffer(args.buffer, StereoWaveform::new(SETTINGS.buffer_size), None);
 
                 pa::Continue
             }

@@ -68,7 +68,7 @@ describe('Fetch Tests', () => {
     const [store, rawDispatch] = result.current;
     const dispatch = new Dispatch(rawDispatch);
     await act(async () => {
-      await dispatch.onRender(store.language);
+      await dispatch.onRender(store.language, 1);
     });
     expect(result.current[0].backend.state).toEqual('bad');
   });
@@ -82,7 +82,7 @@ describe('Fetch Tests', () => {
     const [store, rawDispatch] = result.current;
     const dispatch = new Dispatch(rawDispatch);
     await act(async () => {
-      await dispatch.onRender(store.language);
+      await dispatch.onRender(store.language, 1);
     });
 
     const state = result.current[0];
@@ -101,7 +101,7 @@ describe('Fetch Tests', () => {
     const [store, rawDispatch] = result.current;
     const dispatch = new Dispatch(rawDispatch);
     await act(async () => {
-      await dispatch.onRender(store.language);
+      await dispatch.onRender(store.language, 1);
     });
 
     const state = result.current[0];
@@ -123,7 +123,7 @@ describe('Fetch Tests', () => {
     const [store, rawDispatch] = result.current;
     const dispatch = new Dispatch(rawDispatch);
     await act(async () => {
-      await dispatch.onRender(store.language);
+      await dispatch.onRender(store.language, 1);
     });
 
     const state = result.current[0];
@@ -148,7 +148,7 @@ describe('Fetch Tests', () => {
     const [store, rawDispatch] = result.current;
     const dispatch = new Dispatch(rawDispatch);
     await act(async () => {
-      await dispatch.onRender(store.language);
+      await dispatch.onRender(store.language, 1);
     });
 
     const state = result.current[0];
@@ -172,7 +172,7 @@ describe('Fetch Tests', () => {
     const [store, rawDispatch] = result.current;
     const dispatch = new Dispatch(rawDispatch);
     await act(async () => {
-      await dispatch.onRender(store.language);
+      await dispatch.onRender(store.language, 1);
     });
 
     const state = result.current[0];

@@ -51,7 +51,7 @@ fn sing_along_callback(
         .filter_map(|voice| voice.render_batch(SETTINGS.buffer_size, offset.as_ref()))
         .collect();
     let stereo_waveform = sum_all_waveforms(result);
-    write_output_buffer(args.out_buffer, stereo_waveform);
+    write_output_buffer(args.out_buffer, stereo_waveform, None);
 }
 
 pub fn duplex_setup(

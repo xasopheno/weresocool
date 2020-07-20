@@ -57,7 +57,7 @@ export const Demo = (props: { demoData: DemoData }): React.ReactElement => {
   const dispatch = useContext(DispatchContext);
   const chooseTutorial = async (filename: string) => {
     props.demoData.setShow(false);
-    await dispatch.onDemo(filename, props.demoData.folder);
+    await dispatch.onDemo(filename, props.demoData.folder, store.volume);
     dispatch.setEditorFocus(store.editor_ref);
   };
 

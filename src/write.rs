@@ -11,15 +11,19 @@ use weresocool_lame::Lame;
 
 const SETTINGS: Settings = default_settings();
 
-pub fn write_output_buffer(out_buffer: &mut [f32], stereo_waveform: StereoWaveform) {
+pub fn write_output_buffer(
+    out_buffer: &mut [f32],
+    stereo_waveform: StereoWaveform,
+    volume: Option<f32>,
+) {
     let mut l_idx = 0;
     let mut r_idx = 0;
     for (n, sample) in out_buffer.iter_mut().enumerate() {
         if n % 2 == 0 {
-            *sample = stereo_waveform.l_buffer[l_idx] as f32;
+            *sample = volume.unwrap_or(1.0) * stereo_waveform.l_buffer[l_idx] as f32;
             l_idx += 1
         } else {
-            *sample = stereo_waveform.r_buffer[r_idx] as f32;
+            *sample = volume.unwrap_or(1.0) * stereo_waveform.r_buffer[r_idx] as f32;
             r_idx += 1
         }
     }
@@ -68,7 +72,7 @@ pub fn write_composition_to_wav(mut composition: StereoWaveform) -> Result<Vec<u
     let mut writer = hound::WavWriter::new(&mut buf_writer, spec)?;
     let mut buffer = vec![0.0; composition.r_buffer.len() * 2];
     normalize_waveform(&mut buffer);
-    write_output_buffer(&mut buffer, composition);
+    write_output_buffer(&mut buffer, composition, None);
     for sample in &buffer {
         writer
             .write_sample(*sample)

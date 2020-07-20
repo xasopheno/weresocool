@@ -17,6 +17,7 @@ export enum ResponseType {
 }
 
 export type Action =
+  | { _k: 'Set_Volume'; volume: number }
   | { _k: 'Set_Editor_Focus' }
   | { _k: 'Set_Printing'; state: boolean }
   | { _k: 'Increment_Editor_Type'; editor: number }
@@ -33,6 +34,13 @@ export type Action =
 export class Dispatch {
   constructor(public dispatch: React.Dispatch<Action>) {}
 
+  onVolumeChange(volume: number) {
+    this.dispatch({
+      _k: 'Set_Volume',
+      volume,
+    });
+  }
+
   setEditorFocus = (editor_ref: AceEditor | null): void => {
     if (editor_ref) {
       editor_ref.editor.focus();
@@ -46,7 +54,11 @@ export class Dispatch {
     });
   }
 
-  async onDemo(filename: string, folder: string): Promise<void> {
+  async onDemo(
+    filename: string,
+    folder: string,
+    volume: number
+  ): Promise<void> {
     const fs = window.require('fs');
 
     const demoPath = remote.app.isPackaged
@@ -57,7 +69,7 @@ export class Dispatch {
       const data = fs.readFileSync(`${demoPath}/${filename}`, 'utf-8');
       this.dispatch({ _k: 'Set_Language', language: data });
       if (filename !== 'welcome.socool') {
-        await this.onRender(data);
+        await this.onRender(data, volume);
       }
     } catch (e) {
       console.log(e);
@@ -107,19 +119,20 @@ export class Dispatch {
 
   onStop = async (): Promise<void> => {
     const stop_lang = `{ f: 220, l: 1, g: 1, p: 0 }\nmain = {Fm 0}`;
-    await this.onRender(stop_lang);
+    await this.onRender(stop_lang, 0);
   };
 
   onResetLanguage = (): void => {
     this.dispatch({ _k: 'Reset_Language' });
   };
 
-  async onRender(language: string): Promise<void> {
+  async onRender(language: string, volume: number): Promise<void> {
     this.dispatch({ _k: 'Backend', fetch: { state: 'loading' } });
 
     try {
       const response = await axios.post(settings.backendURL, {
         language,
+        volume,
       });
 
       this.dispatch({ _k: 'Backend', fetch: { state: 'good' } });

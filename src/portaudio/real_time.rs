@@ -25,7 +25,7 @@ pub fn real_time(
 
         if !result.is_empty() {
             let stereo_waveform = sum_all_waveforms(result);
-            write_output_buffer(args.buffer, stereo_waveform);
+            write_output_buffer(args.buffer, stereo_waveform, None);
             pa::Continue
         } else {
             pa::Complete

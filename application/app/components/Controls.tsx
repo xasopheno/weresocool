@@ -17,6 +17,8 @@ const Slider = styled.input`
   width: 150px;
   background: transparent;
   opacity: 0.7;
+  -webkit-transition: 0.1s;
+  transition: opacity 0.1s;
 
   :focus {
     outline: none;
@@ -99,7 +101,7 @@ export const Controls = (props: Props): React.ReactElement => {
           data-tip="Shift+Enter"
           id={'playButton'}
           onClick={async () => {
-            await dispatch.onRender(store.language);
+            await dispatch.onRender(store.language, store.volume);
             dispatch.setEditorFocus(store.editor_ref);
           }}
           disabled={store.printing}
@@ -145,10 +147,16 @@ export const Controls = (props: Props): React.ReactElement => {
         <SliderContainer>
           <Slider
             type="range"
-            min="1"
+            min="0"
             max="100"
             id="volumeSlider"
             value={store.volume}
+            onChange={(e) => {
+              dispatch.onVolumeChange(parseInt(e.target.value));
+            }}
+            onMouseUp={() => {
+              dispatch.setEditorFocus(store.editor_ref);
+            }}
           />
         </SliderContainer>
         <RightButton

@@ -30,7 +30,7 @@ fn output_callback(
     let buffer_to_write = composition.get_buffer(index, buffer_size);
     match buffer_to_write {
         Some(result) => {
-            write_output_buffer(args.buffer, result);
+            write_output_buffer(args.buffer, result, None);
             pa::Continue
         }
         None => pa::Complete,
