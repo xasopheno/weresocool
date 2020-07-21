@@ -119,7 +119,7 @@ export class Dispatch {
 
   onStop = async (): Promise<void> => {
     const stop_lang = `{ f: 220, l: 1, g: 1, p: 0 }\nmain = {Fm 0}`;
-    await this.onRender(stop_lang);
+    await this.onRender(stop_lang, 1.0);
   };
 
   onResetLanguage = (): void => {
