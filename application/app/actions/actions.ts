@@ -34,7 +34,7 @@ export type Action =
 export class Dispatch {
   constructor(public dispatch: React.Dispatch<Action>) {}
 
-  onVolumeChange(volume: number) {
+  onVolumeChange(volume: number): void {
     this.dispatch({
       _k: 'Set_Volume',
       volume,
@@ -119,7 +119,7 @@ export class Dispatch {
 
   onStop = async (): Promise<void> => {
     const stop_lang = `{ f: 220, l: 1, g: 1, p: 0 }\nmain = {Fm 0}`;
-    await this.onRender(stop_lang, 0);
+    await this.onRender(stop_lang);
   };
 
   onResetLanguage = (): void => {
@@ -132,7 +132,7 @@ export class Dispatch {
     try {
       const response = await axios.post(settings.backendURL, {
         language,
-        volume,
+        volume: volume / 100.0,
       });
 
       this.dispatch({ _k: 'Backend', fetch: { state: 'good' } });

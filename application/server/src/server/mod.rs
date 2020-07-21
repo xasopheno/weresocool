@@ -40,9 +40,9 @@ pub async fn render(
 ) -> HttpResponse {
     match prepare_render_outside(InputType::Language(&req.language)) {
         Ok(render) => {
-            let rm = render_manager.lock().unwrap();
+            let mut rm = render_manager.lock().unwrap();
             rm.push_render(render);
-            rm.volume = req.volume;
+            // rm.volume = f32::powf(req.volume, 4.0);
 
             println!("Success.");
             HttpResponse::Ok().json(Success::RenderSuccess("Success".to_string()))
@@ -63,7 +63,7 @@ mod tests {
     async fn test_index() {
         let language = Language {
             language: "{f: 100, l: 1, g: 1, p: 0}\nmain={Tm 1}\n".to_string(),
-            volume: 1,
+            volume: 1.0,
         };
 
         let req = test::TestRequest::post()

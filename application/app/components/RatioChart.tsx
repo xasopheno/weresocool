@@ -2,7 +2,6 @@ import React from 'react';
 import styled from 'styled-components';
 
 const Maj = styled.div`
-  font-size: 1.1em;
   font-weight: bold;
   padding-left: 0.25em;
   padding-right: 0.25em;
@@ -50,9 +49,13 @@ const Two = styled.p`
   margin: 0 0 0 0;
 `;
 
+const Container = styled.div`
+  font-size: 0.8em;
+`;
+
 export const RatioChart = (): React.ReactElement => {
   return (
-    <div>
+    <Container>
       <Degree>
         <Maj>
           <Two>2/1</Two>
@@ -115,6 +118,6 @@ export const RatioChart = (): React.ReactElement => {
           <Two>1/1</Two>
         </Maj>
       </Degree>
-    </div>
+    </Container>
   );
 };

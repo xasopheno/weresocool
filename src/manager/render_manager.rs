@@ -11,7 +11,7 @@ use weresocool_error::Error;
 #[derive(Clone, Debug)]
 pub struct RenderManager {
     pub renders: [Option<Vec<RenderVoice>>; 2],
-    pub volume: usize,
+    pub volume: f32,
     render_idx: usize,
     read_idx: usize,
 }
@@ -22,7 +22,7 @@ impl RenderManager {
             renders: [Some(render_voices), None],
             render_idx: 0,
             read_idx: 0,
-            volume: 1,
+            volume: 1.0,
         }
     }
 
@@ -31,11 +31,11 @@ impl RenderManager {
             renders: [None, None],
             render_idx: 0,
             read_idx: 0,
-            volume: 1,
+            volume: 1.0,
         }
     }
 
-    pub fn read(&mut self, buffer_size: usize) -> Option<(StereoWaveform, usize)> {
+    pub fn read(&mut self, buffer_size: usize) -> Option<(StereoWaveform, f32)> {
         let next = self.exists_next_render();
         let current = self.current_render();
 
