@@ -26,7 +26,7 @@ export const album_list: DemoList = [
   { filename: 'madness.socool', text: '狂気 | Madness' },
   { filename: 'songsongsong.socool', text: 'Song Song Song' },
   { filename: 'wonder_ball.socool', text: 'Wonderball' },
-  { filename: 'Marichan.socool', text: 'Marichan' },
+  { filename: 'marichan.socool', text: 'Marichan' },
   { filename: 'tokyo.socool', text: '東京 | Tokyo' },
   { filename: 'modern_modem.socool', text: 'Modern Modem' },
   { filename: 'what_a_world.socool', text: 'What a World' },
