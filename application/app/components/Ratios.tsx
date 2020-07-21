@@ -4,12 +4,11 @@ import { RatioChart } from './RatioChart';
 
 const RSpace = styled.div`
   position: absolute;
-  top: 10;
   right: 0;
+  top: 70px;
   display: flex;
   flex-direction: column;
   font-family: 'Courier New', Courier, monospace;
-  font-size: 1.1em;
   margin-right: 1em;
   text-align: center;
   border: 5px ridge goldenrod;

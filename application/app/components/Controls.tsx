@@ -4,12 +4,14 @@ import { DispatchContext } from '../actions/actions';
 import { GlobalContext, Editors } from '../store';
 import ReactTooltip from 'react-tooltip';
 import { Render } from './Render';
+import { useCurrentWidth } from '../utils/width';
 
 const stub = () => {};
 
 type Props = { handleLoad: () => void };
 
 export const Controls = (props: Props): React.ReactElement => {
+  const width = useCurrentWidth();
   const store = useContext(GlobalContext);
   const dispatch = useContext(DispatchContext);
 
@@ -33,7 +35,7 @@ export const Controls = (props: Props): React.ReactElement => {
           }}
           disabled={store.printing}
         >
-          Play
+          {width > 650 ? 'Play' : 'P'}
         </Button>
         <Button
           data-tip="⌘+Enter"
@@ -41,7 +43,7 @@ export const Controls = (props: Props): React.ReactElement => {
           onClick={dispatch.onStop}
           disabled={store.printing}
         >
-          Stop
+          {width > 650 ? 'Stop' : 'S'}
         </Button>
 
         <Render />
@@ -54,7 +56,7 @@ export const Controls = (props: Props): React.ReactElement => {
           }}
           disabled={store.printing}
         >
-          Load
+          {width > 650 ? 'Load' : 'L'}
         </Button>
 
         <Button
@@ -66,7 +68,7 @@ export const Controls = (props: Props): React.ReactElement => {
           }}
           disabled={store.printing}
         >
-          Save
+          {width > 650 ? 'Save' : 'S'}
         </Button>
       </ButtonBox>
 
