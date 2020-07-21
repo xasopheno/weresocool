@@ -1,6 +1,6 @@
 use crate::{
-    instrument::{Oscillator, StereoWaveform},
     renderable::{Offset, RenderOp, Renderable},
+    Oscillator, StereoWaveform,
 };
 use rayon::prelude::*;
 use weresocool_shared::{default_settings, Settings};

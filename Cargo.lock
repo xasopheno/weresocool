@@ -2772,8 +2772,10 @@ dependencies = [
  "uuid",
  "weresocool_ast",
  "weresocool_error",
+ "weresocool_instrument",
  "weresocool_lame",
  "weresocool_parser",
+ "weresocool_shared",
 ]
 
 [[package]]
@@ -2801,6 +2803,20 @@ dependencies = [
  "serde",
  "serde_json",
  "weresocool_lame",
+]
+
+[[package]]
+name = "weresocool_instrument"
+version = "0.1.0"
+dependencies = [
+ "num-rational",
+ "rand",
+ "rayon",
+ "serde",
+ "weresocool_ast",
+ "weresocool_error",
+ "weresocool_parser",
+ "weresocool_shared",
 ]
 
 [[package]]
@@ -2846,6 +2862,10 @@ dependencies = [
  "weresocool",
  "weresocool_error",
 ]
+
+[[package]]
+name = "weresocool_shared"
+version = "0.1.0"
 
 [[package]]
 name = "widestring"

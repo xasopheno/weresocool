@@ -1,4 +1,4 @@
-use crate::instrument::voice::{SampleInfo, Voice};
+use crate::voice::{SampleInfo, Voice};
 use rand::{thread_rng, Rng};
 use std::f64::consts::PI;
 use weresocool_shared::{default_settings, Settings};

@@ -1,12 +1,8 @@
-use crate::{
-    instrument::StereoWaveform,
-    manager::BufferManager,
-    settings::{default_settings, Settings},
-    write::write_output_buffer,
-};
+use crate::{instrument::StereoWaveform, manager::BufferManager, write::write_output_buffer};
 use portaudio as pa;
 use std::sync::{Arc, Mutex};
 use weresocool_error::Error;
+use weresocool_shared::{default_settings, Settings};
 
 const SETTINGS: Settings = default_settings();
 

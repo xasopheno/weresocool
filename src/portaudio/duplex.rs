@@ -4,12 +4,13 @@ use crate::{
     instrument::StereoWaveform,
     renderable::{renderables_to_render_voices, Offset, RenderOp, RenderVoice},
     ring_buffer::RingBuffer,
-    settings::{default_settings, Settings},
     write::write_output_buffer,
 };
+
 use portaudio as pa;
 use rayon::prelude::*;
 use weresocool_error::Error;
+use weresocool_shared::{default_settings, Settings};
 
 const SETTINGS: Settings = default_settings();
 

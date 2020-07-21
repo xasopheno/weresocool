@@ -1,14 +1,15 @@
-use crate::instrument::{Basis, Oscillator, StereoWaveform};
+pub mod render_voice;
+mod test;
+
+use crate::{Basis, Oscillator, StereoWaveform};
 use num_rational::Rational64;
+use rand::{thread_rng, Rng};
+use rayon::prelude::*;
 pub use render_voice::{renderables_to_render_voices, RenderVoice};
 use weresocool_ast::{Defs, NormalForm, Normalize, OscType, PointOp, ASR};
 use weresocool_error::Error;
-pub mod render_voice;
-mod test;
-use rand::{thread_rng, Rng};
-use rayon::prelude::*;
-
 use weresocool_shared::{default_settings, Settings};
+
 const SETTINGS: Settings = default_settings();
 
 pub fn r_to_f64(r: Rational64) -> f64 {

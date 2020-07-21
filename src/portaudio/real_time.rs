@@ -1,13 +1,12 @@
 use crate::{
-    generation::parsed_to_render::sum_all_waveforms,
-    instrument::StereoWaveform,
-    renderable::RenderVoice,
-    settings::{default_settings, Settings},
-    write::write_output_buffer,
+    generation::parsed_to_render::sum_all_waveforms, instrument::StereoWaveform,
+    renderable::RenderVoice, write::write_output_buffer,
 };
 use portaudio as pa;
 use rayon::prelude::*;
+
 use weresocool_error::Error;
+use weresocool_shared::{default_settings, Settings};
 
 const SETTINGS: Settings = default_settings();
 

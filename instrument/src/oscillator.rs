@@ -1,9 +1,8 @@
 use crate::{
-    instrument::{stereo_waveform::StereoWaveform, voice::Voice},
     renderable::{Offset, RenderOp},
+    {stereo_waveform::StereoWaveform, voice::Voice},
 };
 use num_rational::Rational64;
-
 use weresocool_parser::Init;
 use weresocool_shared::Settings;
 
