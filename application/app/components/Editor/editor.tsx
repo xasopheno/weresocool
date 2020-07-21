@@ -5,6 +5,8 @@ import './theme';
 import { GlobalContext, Editors } from '../../store';
 import { DispatchContext } from '../../actions/actions';
 
+import styled from 'styled-components';
+
 import 'ace-builds/src-noconflict/mode-elixir';
 import 'ace-builds/src-noconflict/theme-github';
 import 'ace-builds/src-noconflict/keybinding-vim';
@@ -14,6 +16,13 @@ import 'ace-builds/src-noconflict/ext-language_tools';
 const customMode = new WSCMode();
 
 type Props = { handleLoad: () => void };
+
+const Container = styled.div`
+  top: 140px;
+  position: absolute;
+  bottom: 5vh;
+  width: 80vw;
+`;
 
 export const Editor = (props: Props): React.ReactElement => {
   const store = useContext(GlobalContext);
@@ -78,65 +87,67 @@ export const Editor = (props: Props): React.ReactElement => {
   };
 
   return (
-    <AceEditor
-      focus={true}
-      ref={(el) => {
-        setRenderSpaceOuter(el);
-      }}
-      placeholder="WereSoCool"
-      mode="elixir"
-      theme="github"
-      name="aceEditor"
-      keyboardHandler={Editors[store.editor]['style']}
-      value={store.language}
-      onChange={(l) => dispatch.onUpdateLanguage(l)}
-      markers={store.markers}
-      fontSize={20}
-      showPrintMargin={true}
-      showGutter={true}
-      highlightActiveLine={true}
-      setOptions={{
-        //enableLiveAutocompletion: true,
-        enableBasicAutocompletion: true,
-        showLineNumbers: true,
-        tabSize: 2,
-        displayIndentGuides: true,
-      }}
-      commands={[
-        {
-          name: 'submit',
-          bindKey: { win: 'Shift-Enter', mac: 'Shift-Enter' },
-          exec: () => {
-            setRender(true);
+    <Container>
+      <AceEditor
+        focus={true}
+        ref={(el) => {
+          setRenderSpaceOuter(el);
+        }}
+        placeholder="WereSoCool"
+        mode="elixir"
+        theme="github"
+        name="aceEditor"
+        keyboardHandler={Editors[store.editor]['style']}
+        value={store.language}
+        onChange={(l) => dispatch.onUpdateLanguage(l)}
+        markers={store.markers}
+        fontSize={20}
+        showPrintMargin={true}
+        showGutter={true}
+        highlightActiveLine={true}
+        setOptions={{
+          //enableLiveAutocompletion: true,
+          enableBasicAutocompletion: true,
+          showLineNumbers: true,
+          tabSize: 2,
+          displayIndentGuides: true,
+        }}
+        commands={[
+          {
+            name: 'submit',
+            bindKey: { win: 'Shift-Enter', mac: 'Shift-Enter' },
+            exec: () => {
+              setRender(true);
+            },
           },
-        },
-        {
-          name: 'stop',
-          bindKey: { win: 'Command-p', mac: 'Command-Enter' },
-          exec: async () => {
-            await dispatch.onStop();
+          {
+            name: 'stop',
+            bindKey: { win: 'Command-p', mac: 'Command-Enter' },
+            exec: async () => {
+              await dispatch.onStop();
+            },
           },
-        },
-        {
-          name: 'save',
-          bindKey: { win: 'Ctrl-s', mac: 'Command-s' },
-          exec: () => {
-            setSave(true);
+          {
+            name: 'save',
+            bindKey: { win: 'Ctrl-s', mac: 'Command-s' },
+            exec: () => {
+              setSave(true);
+            },
           },
-        },
-        {
-          name: 'load',
-          bindKey: { win: 'Ctrl-l', mac: 'Command-l' },
-          exec: () => {
-            props.handleLoad();
+          {
+            name: 'load',
+            bindKey: { win: 'Ctrl-l', mac: 'Command-l' },
+            exec: () => {
+              props.handleLoad();
+            },
           },
-        },
-      ]}
-      style={{
-        height: '80vh',
-        width: '80vw',
-        marginLeft: '10vw',
-      }}
-    />
+        ]}
+        style={{
+          width: '100%',
+          height: '100%',
+          marginLeft: '10vw',
+        }}
+      />
+    </Container>
   );
 };

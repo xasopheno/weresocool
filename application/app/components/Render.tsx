@@ -3,6 +3,7 @@ import { Button } from './style';
 import { DispatchContext } from '../actions/actions';
 import { GlobalContext } from '../store';
 import styled from 'styled-components';
+import { useCurrentWidth } from '../utils/width';
 
 const Modal = styled.div`
   position: absolute;
@@ -42,6 +43,7 @@ const TextContainer = styled.div`
 `;
 
 export const Render = (): React.ReactElement => {
+  const width = useCurrentWidth();
   const store = useContext(GlobalContext);
   const [showRenderModal, setShowRenderModal] = React.useState(false);
 
@@ -60,7 +62,7 @@ export const Render = (): React.ReactElement => {
         }}
         disabled={store.printing}
       >
-        Render
+        {width > 650 ? 'Render' : 'Re'}
       </Button>
     </div>
   );

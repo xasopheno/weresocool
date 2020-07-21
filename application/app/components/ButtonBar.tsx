@@ -17,6 +17,7 @@ const RSpace = styled.div`
   margin-left: 1em;
   text-align: center;
   border: 5px ridge goldenrod;
+  z-index: 10;
 `;
 
 const MagicButton = styled.img`

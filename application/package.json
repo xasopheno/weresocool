@@ -1,7 +1,7 @@
 {
   "name": "weresocool",
   "productName": "WereSoCool",
-  "version": "1.0.13",
+  "version": "1.0.14",
   "description": " Make cool sounds. Impress your friends/pets/plants.",
   "scripts": {
     "build-backend": "cd server && ./build_static.sh && cd ../ && cp ../target/release/weresocool_server extraResources/weresocool_server",
