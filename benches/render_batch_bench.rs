@@ -2,9 +2,11 @@ use criterion::{black_box, criterion_group, criterion_main, Criterion};
 
 use weresocool::{
     generation::{RenderReturn, RenderType},
-    instrument::StereoWaveform,
     interpretable::{InputType::Filename, Interpretable},
+};
+use weresocool_instrument::{
     renderable::{nf_to_vec_renderable, render_voice::renderables_to_render_voices},
+    StereoWaveform,
 };
 
 fn render_batch_bench(c: &mut Criterion) {
