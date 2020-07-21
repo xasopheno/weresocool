@@ -62,7 +62,7 @@ export const Render = (): React.ReactElement => {
         }}
         disabled={store.printing}
       >
-          {width > 650 ? 'Render' : 'Re'}
+        {width > 650 ? 'Render' : 'Re'}
       </Button>
     </div>
   );
