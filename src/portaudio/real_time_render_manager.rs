@@ -1,4 +1,5 @@
-use crate::{instrument::StereoWaveform, manager::RenderManager, write::write_output_buffer};
+use crate::{manager::RenderManager, write::write_output_buffer};
+use weresocool_instrument::StereoWaveform;
 
 use portaudio as pa;
 use std::sync::{Arc, Mutex};

@@ -7,11 +7,11 @@ pub mod tests {
             TimedOp,
         },
         helpers::cmp_vec_f64,
-        instrument::Basis,
     };
     use num_rational::Rational64;
     use pretty_assertions::assert_eq;
     use weresocool_ast::{Defs, NormalForm, Normalize, Op::*, OscType, Term::Op, ASR};
+    use weresocool_instrument::Basis;
 
     #[test]
     fn render_equal() {

@@ -54,7 +54,7 @@ impl Voice {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use crate::helpers::cmp_f64;
+    use weresocool_shared::helpers::cmp_f64;
     #[test]
     fn test_get_current_gain_from_op() {
         let v = Voice::init(0);

@@ -1,8 +1,4 @@
-use crate::{
-    generation::parsed_to_render::{generate_waveforms, sum_all_waveforms},
-    instrument::{Basis, Normalize, StereoWaveform},
-    renderable::nf_to_vec_renderable,
-};
+use crate::generation::parsed_to_render::{generate_waveforms, sum_all_waveforms};
 use difference::{Changeset, Difference};
 use indexmap::IndexMap;
 use num_rational::Rational64;
@@ -14,6 +10,8 @@ use std::fs::File;
 use std::hash::{Hash, Hasher};
 use std::io::Write;
 use weresocool_ast::{NormalForm, Normalize as NormalizeOp};
+use weresocool_instrument::renderable::nf_to_vec_renderable;
+use weresocool_instrument::{Basis, Normalize, StereoWaveform};
 use weresocool_parser::*;
 mod expect_tests;
 

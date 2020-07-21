@@ -1,7 +1,7 @@
-use crate::instrument::StereoWaveform;
 use crate::write::write_output_buffer;
 use portaudio as pa;
 use weresocool_error::Error;
+use weresocool_instrument::StereoWaveform;
 use weresocool_shared::{default_settings, Settings};
 
 const SETTINGS: Settings = default_settings();

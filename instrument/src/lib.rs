@@ -16,5 +16,7 @@ mod test;
 
 pub use self::{
     oscillator::{Basis, Oscillator},
+    renderable::render_voice::{renderables_to_render_voices, RenderVoice},
+    renderable::RenderOp,
     stereo_waveform::{Normalize, StereoWaveform},
 };

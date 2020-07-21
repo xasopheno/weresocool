@@ -1,5 +1,4 @@
 pub mod render_voice;
-mod test;
 
 use crate::{Basis, Oscillator, StereoWaveform};
 use num_rational::Rational64;

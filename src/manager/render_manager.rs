@@ -1,12 +1,14 @@
 use crate::{
     generation::parsed_to_render::{RenderReturn, RenderType},
     generation::sum_all_waveforms,
-    instrument::StereoWaveform,
     interpretable::{InputType, Interpretable},
-    renderable::{nf_to_vec_renderable, renderables_to_render_voices, RenderVoice},
 };
 use rayon::prelude::*;
 use weresocool_error::Error;
+use weresocool_instrument::renderable::{
+    nf_to_vec_renderable, renderables_to_render_voices, RenderVoice,
+};
+use weresocool_instrument::StereoWaveform;
 
 #[derive(Clone, Debug)]
 pub struct RenderManager {
@@ -124,7 +126,7 @@ pub fn prepare_render_outside(input: InputType<'_>) -> Result<Vec<RenderVoice>, 
 #[cfg(test)]
 mod render_manager_tests {
     use super::*;
-    use crate::renderable::RenderOp;
+    use weresocool_instrument::renderable::RenderOp;
     #[test]
     fn test_inc_render() {
         let mut r = RenderManager::init_silent();

@@ -1,15 +1,14 @@
+use failure::Fail;
 use std::sync::{Arc, Mutex};
 use weresocool::{
     generation::parsed_to_render::{RenderReturn, RenderType},
     interpretable::{InputType::Filename, Interpretable},
     manager::RenderManager,
     portaudio::real_time_render_manager,
-    renderable::{nf_to_vec_renderable, renderables_to_render_voices},
     ui::{get_args, no_file_name, were_so_cool_logo},
 };
-
-use failure::Fail;
 use weresocool_error::Error;
+use weresocool_instrument::renderable::{nf_to_vec_renderable, renderables_to_render_voices};
 
 fn main() {
     match run() {

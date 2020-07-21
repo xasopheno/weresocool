@@ -1,6 +1,8 @@
 #[cfg(test)]
 pub mod tests {
-    use crate::{helpers::cmp_f64, instrument::asr::*};
+    use crate::asr::*;
+
+    use weresocool_shared::helpers::cmp_f64;
     fn short_gain_at_index(index: usize, silence_next: bool) -> f64 {
         let past_gain = 0.5;
         let current_gain = 1.0;

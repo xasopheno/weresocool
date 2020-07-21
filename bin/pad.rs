@@ -1,4 +1,5 @@
 //#![allow(dead_code, unused_imports, unused_variables)]
+use failure::Fail;
 use std::sync::mpsc::channel;
 use std::sync::{Arc, Mutex};
 use std::thread;
@@ -8,12 +9,12 @@ use weresocool::{
     interpretable::{InputType, Interpretable},
     manager::RenderManager,
     portaudio::real_time_render_manager,
-    renderable::{nf_to_vec_renderable, renderables_to_render_voices, RenderVoice},
     ui::were_so_cool_logo,
 };
-
-use failure::Fail;
 use weresocool_error::Error;
+use weresocool_instrument::renderable::{
+    nf_to_vec_renderable, renderables_to_render_voices, RenderVoice,
+};
 
 fn main() {
     match run() {

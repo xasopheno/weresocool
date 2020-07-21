@@ -2866,6 +2866,9 @@ dependencies = [
 [[package]]
 name = "weresocool_shared"
 version = "0.1.0"
+dependencies = [
+ "float-cmp",
+]
 
 [[package]]
 name = "widestring"
