@@ -145,7 +145,6 @@ export const Editor = (props: Props): React.ReactElement => {
         style={{
           width: '100%',
           height: '100%',
-
           marginLeft: '10vw',
         }}
       />
