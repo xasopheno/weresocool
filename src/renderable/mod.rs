@@ -2,7 +2,6 @@
 mod tests {
     use crate::{
         generation::{sum_all_waveforms, RenderReturn, RenderType},
-        helpers::cmp_f64,
         interpretable::{InputType::Filename, Interpretable},
     };
     use num_rational::Rational64;
@@ -15,6 +14,7 @@ mod tests {
         },
         Basis, StereoWaveform,
     };
+    use weresocool_shared::helpers::cmp_f64;
 
     #[test]
     fn test_calculate_fgpl() {

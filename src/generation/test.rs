@@ -1,17 +1,14 @@
 #[cfg(test)]
 #[allow(clippy::unreadable_literal)]
 pub mod tests {
-    use crate::{
-        generation::{
-            composition_to_vec_timed_op, sum_vec, vec_timed_op_to_vec_op4d, EventType, Op4D,
-            TimedOp,
-        },
-        helpers::cmp_vec_f64,
+    use crate::generation::{
+        composition_to_vec_timed_op, sum_vec, vec_timed_op_to_vec_op4d, EventType, Op4D, TimedOp,
     };
     use num_rational::Rational64;
     use pretty_assertions::assert_eq;
     use weresocool_ast::{Defs, NormalForm, Normalize, Op::*, OscType, Term::Op, ASR};
     use weresocool_instrument::Basis;
+    use weresocool_shared::helpers::cmp_vec_f64;
 
     #[test]
     fn render_equal() {
