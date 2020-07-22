@@ -13,10 +13,13 @@ readme = "README.md"
 
 
 [dependencies]
+weresocool_analyze = { path = "analyze" }
 weresocool_parser = { path = "parser" }
 weresocool_ast = { path = "ast" }
 weresocool_error = { path = "error" } 
 weresocool_lame = { path = "lame" } 
+weresocool_shared = { path = "shared" } 
+weresocool_instrument = { path = "instrument" } 
 portaudio = "0.7.0"
 rand = "0.7.3"
 hound = "3.4.0"
@@ -56,10 +59,13 @@ harness = false
 
 [workspace]
 members = [
+    "analyze",
     "ast",
+    "error",
+    "instrument",
     "lame",
     "parser",
-    "error",
+    "shared",
     "application/server",
 ]
 

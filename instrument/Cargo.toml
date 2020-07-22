@@ -1,0 +1,17 @@
+[package]
+name = "weresocool_instrument"
+version = "0.1.0"
+authors = ["xasopheno <danny@xasopheno.com>"]
+edition = "2018"
+
+# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
+
+[dependencies]
+weresocool_ast = { path = "../ast" }
+weresocool_error = { path = "../error" }
+weresocool_parser = { path = "../parser" }
+weresocool_shared = { path = "../shared" }
+serde = { version = "1.0.111", features = ["derive"] }
+rayon = "1.3.0"
+num-rational = "0.2.4"
+rand = "0.7.3"

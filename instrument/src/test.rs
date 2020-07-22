@@ -1,19 +1,16 @@
 pub mod tests {
     use crate::renderable::{Offset, RenderOp};
-    use crate::settings::get_test_settings;
     use crate::{
-        helpers::{cmp_f64, cmp_vec_f64},
-        instrument::{
-            loudness::loudness_normalization,
-            oscillator::Oscillator,
-            stereo_waveform::StereoWaveform,
-            voice::{Voice, VoiceState},
-        },
+        loudness::loudness_normalization,
+        oscillator::Oscillator,
+        stereo_waveform::StereoWaveform,
+        voice::{Voice, VoiceState},
     };
     use weresocool_ast::ast::{OscType, ASR};
+    use weresocool_shared::get_test_settings;
+    use weresocool_shared::helpers::{cmp_f64, cmp_vec_f64};
     pub mod voice {
         use super::*;
-        use crate::helpers::cmp_f64;
         #[test]
         fn test_voice_init() {
             let index = 1;
@@ -92,7 +89,7 @@ pub mod tests {
 
     pub mod oscillator {
         use super::*;
-        use crate::helpers::cmp_f64;
+        use weresocool_shared::helpers::cmp_f64;
 
         #[test]
         fn oscillator_init_test() {

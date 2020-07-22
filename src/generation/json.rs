@@ -1,14 +1,13 @@
 use crate::{
-    instrument::Basis,
     ui::{banner, printed},
     write::{write_composition_to_csv, write_composition_to_json},
 };
-
 use num_rational::Rational64;
 use serde::{Deserialize, Serialize};
 use serde_json::to_string;
 use weresocool_ast::{Defs, NameSet, NormalForm, Normalize, OscType, PointOp, ASR};
 use weresocool_error::Error;
+use weresocool_instrument::Basis;
 
 pub fn r_to_f64(r: Rational64) -> f64 {
     *r.numer() as f64 / *r.denom() as f64

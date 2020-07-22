@@ -7,11 +7,16 @@ import { tutorial_list, album_list } from '../../app/components/tutorial_list';
 describe('Application launch', function () {
   let app: Application;
   jest.setTimeout(50000);
+  const app_path =
+    process.platform === 'darwin'
+      ? 'release/mac/WereSoCool.app/Contents/MacOS/WereSoCool'
+      : 'release/linux-unpacked/weresocool';
+  console.log('App Path:', app_path);
 
   beforeEach(function () {
     app = new Application({
-      path: 'release/mac/WereSoCool.app/Contents/MacOS/WereSoCool',
-      //  args: [path.join(__dirname, '../../app')],
+      path: app_path,
+      // args: [path.join(__dirname, '../../app')],
       //  path: electronPath,
     });
     return app.start();

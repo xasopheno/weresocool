@@ -1,9 +1,7 @@
-use crate::{
-    instrument::{Oscillator, StereoWaveform},
-    renderable::{Offset, RenderOp, Renderable},
-    settings::{default_settings, Settings},
-};
+use crate::renderable::{Offset, RenderOp, Renderable};
+use crate::{Oscillator, StereoWaveform};
 use rayon::prelude::*;
+use weresocool_shared::{default_settings, Settings};
 
 const SETTINGS: Settings = default_settings();
 
@@ -28,7 +26,7 @@ impl RenderVoice {
     /// Recursive function to prepare a batch of RenderOps for rendering
     /// Initially pass in None as result
     /// ```
-    /// # use weresocool::renderable::{RenderOp, RenderVoice};
+    /// # use weresocool_instrument::renderable::{RenderOp, RenderVoice};
     /// let mut voice = RenderVoice::init(&vec![RenderOp::init_silent_with_length(1.0)]);
     /// let batch = voice.get_batch(1024, None);
     /// ```

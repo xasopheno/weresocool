@@ -1,4 +1,4 @@
-use crate::instrument::StereoWaveform;
+use weresocool_instrument::StereoWaveform;
 
 #[derive(Clone, Debug)]
 pub struct Buffer {

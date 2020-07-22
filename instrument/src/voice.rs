@@ -1,10 +1,10 @@
 use crate::{
-    instrument::{gain::gain_at_index, loudness::loudness_normalization},
     renderable::{Offset, RenderOp},
+    {gain::gain_at_index, loudness::loudness_normalization},
 };
 use weresocool_ast::{OscType, ASR};
+use weresocool_shared::{default_settings, Settings};
 
-use crate::settings::{default_settings, Settings};
 const SETTINGS: Settings = default_settings();
 
 #[derive(Clone, Debug, PartialEq)]

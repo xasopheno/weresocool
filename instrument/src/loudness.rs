@@ -1,4 +1,4 @@
-use crate::settings::{default_settings, Settings};
+use weresocool_shared::{default_settings, Settings};
 
 const SETTINGS: Settings = default_settings();
 

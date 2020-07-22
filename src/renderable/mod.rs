@@ -1,270 +1,231 @@
-use crate::{
-    generation::parsed_to_render::r_to_f64,
-    instrument::{oscillator::Basis, Oscillator, StereoWaveform},
-};
-use num_rational::Rational64;
-pub use render_voice::{renderables_to_render_voices, RenderVoice};
-use weresocool_ast::{Defs, NormalForm, Normalize, OscType, PointOp, ASR};
-use weresocool_error::Error;
-pub mod render_voice;
-mod test;
-use rand::{thread_rng, Rng};
-use rayon::prelude::*;
+#[cfg(test)]
+mod tests {
+    use crate::{
+        generation::{sum_all_waveforms, RenderReturn, RenderType},
+        interpretable::{InputType::Filename, Interpretable},
+    };
+    use num_rational::Rational64;
+    use pretty_assertions::assert_eq;
+    use weresocool_ast::{OscType, PointOp, ASR};
+    use weresocool_instrument::{
+        renderable::{
+            calculate_fgpl, m_a_and_basis_to_f64, nf_to_vec_renderable,
+            render_voice::renderables_to_render_voices, RenderOp,
+        },
+        Basis, StereoWaveform,
+    };
+    use weresocool_shared::helpers::cmp_f64;
 
-use crate::settings::{default_settings, Settings};
-const SETTINGS: Settings = default_settings();
-
-#[derive(Debug, Clone, PartialEq)]
-pub struct RenderOp {
-    pub f: f64,
-    pub p: f64,
-    pub l: f64,
-    pub g: (f64, f64),
-    pub t: f64,
-    pub attack: f64,
-    pub decay: f64,
-    pub asr: ASR,
-    pub samples: usize,
-    pub index: usize,
-    pub total_samples: usize,
-    pub voice: usize,
-    pub event: usize,
-    pub portamento: usize,
-    pub osc_type: OscType,
-    pub next_l_silent: bool,
-    pub next_r_silent: bool,
-}
-
-impl RenderOp {
-    pub const fn init_fglp(f: f64, g: (f64, f64), l: f64, p: f64) -> Self {
-        Self {
-            f,
-            p,
-            g,
-            l,
-            t: 0.0,
-            attack: SETTINGS.sample_rate,
-            decay: SETTINGS.sample_rate,
-            asr: ASR::Long,
-            samples: SETTINGS.sample_rate as usize,
-            total_samples: SETTINGS.sample_rate as usize,
-            index: 0,
-            voice: 0,
-            event: 0,
-            portamento: 1024,
-            osc_type: OscType::Sine,
-            next_l_silent: false,
-            next_r_silent: false,
-        }
-    }
-    pub const fn init_silent_with_length(l: f64) -> Self {
-        Self {
-            f: 0.0,
-            g: (0.0, 0.0),
-            p: 0.0,
-            l,
-            t: 0.0,
-            attack: SETTINGS.sample_rate,
-            decay: SETTINGS.sample_rate,
-            asr: ASR::Long,
-            samples: SETTINGS.sample_rate as usize,
-            total_samples: SETTINGS.sample_rate as usize,
-            index: 0,
-            voice: 0,
-            event: 0,
-            portamento: 1024,
-            osc_type: OscType::Sine,
-            next_l_silent: true,
-            next_r_silent: true,
-        }
-    }
-}
-
-#[derive(Debug)]
-pub struct Offset {
-    pub freq: f64,
-    pub gain: f64,
-}
-impl Offset {
-    pub const fn identity() -> Self {
-        Self {
-            freq: 1.0,
-            gain: 1.0,
-        }
-    }
-    pub fn random() -> Self {
-        Self {
-            freq: thread_rng().gen_range(0.95, 1.05),
-            gain: 1.0,
-        }
-    }
-}
-
-pub trait Renderable<T> {
-    fn render(&mut self, oscillator: &mut Oscillator, _offset: Option<&Offset>) -> StereoWaveform;
-}
-
-impl Renderable<RenderOp> for RenderOp {
-    fn render(&mut self, oscillator: &mut Oscillator, offset: Option<&Offset>) -> StereoWaveform {
-        let o = match offset {
-            Some(o) => Offset {
-                freq: o.freq * 2.0,
-                gain: o.gain,
-            },
-            None => Offset::identity(),
+    #[test]
+    fn test_calculate_fgpl() {
+        let basis = Basis {
+            f: Rational64::new(100, 1),
+            g: Rational64::new(1, 1),
+            p: Rational64::new(0, 1),
+            l: Rational64::new(1, 1),
+            a: Rational64::new(1, 1),
+            d: Rational64::new(1, 1),
         };
 
-        oscillator.update(self, &o);
-        oscillator.generate(self, &o)
-    }
-}
-impl Renderable<Vec<RenderOp>> for Vec<RenderOp> {
-    fn render(&mut self, oscillator: &mut Oscillator, offset: Option<&Offset>) -> StereoWaveform {
-        let mut result: StereoWaveform = StereoWaveform::new(0);
+        let mut point_op = PointOp::init();
 
-        for op in self.iter() {
-            if op.samples > 0 {
-                let stereo_waveform = op.clone().render(oscillator, offset);
-                result.append(stereo_waveform);
+        //Simple case
+        point_op.fm = Rational64::new(1, 1);
+        point_op.g = Rational64::new(1, 1);
+        let result = calculate_fgpl(&basis, &point_op);
+        let expected = (100.0, (0.5, 0.5), 0.0, 1.0);
+        assert_eq!(result, expected);
+
+        //Should be zero if frequency is zero
+        point_op.fm = Rational64::new(0, 1);
+        point_op.g = Rational64::new(1, 1);
+        let result = calculate_fgpl(&basis, &point_op);
+        let expected = (0.0, (0.0, 0.0), 0.0, 1.0);
+        assert_eq!(result, expected);
+
+        //Should be zero if gain is zero
+        point_op.fm = Rational64::new(1, 1);
+        point_op.g = Rational64::new(0, 1);
+        let result = calculate_fgpl(&basis, &point_op);
+        let expected = (0.0, (0.0, 0.0), 0.0, 1.0);
+        assert_eq!(result, expected);
+
+        //Should be zero if freq less than 20
+        point_op.fm = Rational64::new(1, 6);
+        point_op.g = Rational64::new(1, 1);
+        let result = calculate_fgpl(&basis, &point_op);
+        let expected = (0.0, (0.0, 0.0), 0.0, 1.0);
+        assert_eq!(result, expected);
+    }
+
+    #[test]
+    fn test_m_a_and_basis_to_f64() {
+        let result = m_a_and_basis_to_f64(
+            Rational64::new(2, 1),
+            Rational64::new(300, 1),
+            Rational64::new(4, 1),
+        );
+        let expected = 604.0;
+        assert!(cmp_f64(result, expected));
+    }
+
+    #[test]
+    fn test_nf_to_vec_renderable() {
+        let (nf, basis, table) = match Filename(&"songs/test/render_op.socool".to_string())
+            .make(RenderType::NfBasisAndTable)
+            .unwrap()
+        {
+            RenderReturn::NfBasisAndTable(nf, basis, table) => (nf, basis, table),
+            _ => {
+                panic!("missing songs/tests/render_op.socool");
             }
+        };
+        let result = nf_to_vec_renderable(&nf, &table, &basis).unwrap();
+        let expected: Vec<Vec<RenderOp>> = vec![vec![
+            RenderOp {
+                f: 220.0,
+                p: 0.0,
+                g: (0.5, 0.5),
+                l: 1.0,
+                t: 0.0,
+                attack: 44_100.0,
+                decay: 44_100.0,
+                asr: ASR::Long,
+                samples: 44_100,
+                total_samples: 44100,
+                index: 0,
+                voice: 0,
+                event: 0,
+                portamento: 1024,
+                osc_type: OscType::Sine,
+                next_l_silent: false,
+                next_r_silent: false,
+            },
+            RenderOp {
+                f: 330.0,
+                p: 0.4,
+                l: 1.0,
+                g: (0.7, 0.3),
+                t: 1.0,
+                attack: 44_100.0,
+                decay: 44_100.0,
+                asr: ASR::Long,
+                samples: 44100,
+                total_samples: 44100,
+                index: 0,
+                voice: 0,
+                event: 1,
+                portamento: 1024,
+                osc_type: OscType::Sine,
+                next_l_silent: false,
+                next_r_silent: false,
+            },
+            RenderOp {
+                f: 0.0,
+                p: 0.0,
+                l: 1.0,
+                g: (0.0, 0.0),
+                t: 0.0,
+                attack: 44100.0,
+                decay: 44100.0,
+                asr: ASR::Long,
+                samples: 44100,
+                index: 0,
+                total_samples: 44100,
+                voice: 0,
+                event: 0,
+                portamento: 1024,
+                osc_type: OscType::Sine,
+                next_l_silent: true,
+                next_r_silent: true,
+            },
+        ]];
+        assert_eq!(result, expected);
+    }
+
+    #[test]
+    fn test_get_batch() {
+        let filename = "songs/test/render_op_get_batch.socool".to_string();
+        let (nf, basis, table) = match Filename(&filename)
+            .make(RenderType::NfBasisAndTable)
+            .unwrap()
+        {
+            RenderReturn::NfBasisAndTable(nf, basis, table) => (nf, basis, table),
+            _ => {
+                panic!();
+            }
+        };
+        let renderables = nf_to_vec_renderable(&nf, &table, &basis).unwrap();
+        let voices = renderables_to_render_voices(renderables);
+        let mut voice = voices[0].clone();
+        //Two ops each with 44_100 samples
+        //Use everything but the last 100 samples of the first op
+        let batch = voice.get_batch(44_000, None).unwrap();
+        assert_eq!(batch.len(), 1);
+        //Use the rest of the first op and start the second op;
+        let batch = voice.get_batch(200, None).unwrap();
+        assert_eq!(batch.len(), 2);
+
+        assert_eq!(batch[0].samples, 100);
+        assert_eq!(batch[0].index, 44_000);
+        assert!(cmp_f64(batch[0].f, 220.0));
+
+        assert_eq!(batch[1].samples, 100);
+        assert_eq!(batch[1].index, 0);
+        assert!(cmp_f64(batch[1].f, 247.5));
+
+        //let _ = voice.get_batch(44_000, None);
+        //let batch = voice.get_batch(200, None);
+
+        //Expect the voice to wrap around when it runs out of ops
+        //assert_eq!(batch[0].samples, 200);
+        //assert_eq!(batch[0].index, 0);
+        //assert_eq!(batch[0].f, 220.0);
+    }
+
+    #[test]
+    fn test_small_and_large_render_batch_same_result() {
+        let filename = "songs/test/render_op_get_batch.socool".to_string();
+        let (nf, basis, table) = match Filename(&filename)
+            .make(RenderType::NfBasisAndTable)
+            .unwrap()
+        {
+            RenderReturn::NfBasisAndTable(nf, basis, table) => (nf, basis, table),
+            _ => {
+                panic!();
+            }
+        };
+
+        let renderables = nf_to_vec_renderable(&nf, &table, &basis).unwrap();
+        let mut voices1 = renderables_to_render_voices(renderables);
+        let mut voices2 = voices1.clone();
+
+        let mut short_r = vec![];
+        let mut short_l = vec![];
+
+        for _ in 0..20 {
+            let r: Vec<StereoWaveform> = voices1
+                .iter_mut()
+                .flat_map(|voice| voice.render_batch(1024, None))
+                .collect();
+
+            let r = sum_all_waveforms(r);
+            short_r.push(r.r_buffer);
+            short_l.push(r.l_buffer);
         }
 
-        result
-    }
-}
+        let r_buffer: Vec<f64> = short_r.iter().flatten().cloned().collect();
+        let l_buffer: Vec<f64> = short_l.iter().flatten().cloned().collect();
+        let short = StereoWaveform { r_buffer, l_buffer };
 
-fn pointop_to_renderop(
-    point_op: &PointOp,
-    time: &mut Rational64,
-    voice: usize,
-    event: usize,
-    basis: &Basis,
-    next: Option<PointOp>,
-) -> RenderOp {
-    let mut next_l_gain = 0.0;
-    let mut next_r_gain = 0.0;
-    let next_silent;
-
-    match next {
-        Some(op) => {
-            let (l, r) = point_op_to_gains(&op, basis);
-            next_l_gain = l;
-            next_r_gain = r;
-            next_silent = op.is_silent();
+        let long: Vec<StereoWaveform> = voices2
+            .iter_mut()
+            .flat_map(|voice| voice.render_batch(20480, None))
+            .collect();
+        let long = sum_all_waveforms(long);
+        for (a, b) in short.l_buffer.iter().zip(&long.l_buffer) {
+            dbg!(a - b);
+            assert!(a - b < 0.00001);
         }
-
-        None => next_silent = true,
     }
-
-    let next_l_silent = next_silent || next_l_gain == 0.0;
-    let next_r_silent = next_silent || next_r_gain == 0.0;
-
-    let (f, g, p, l) = calculate_fgpl(basis, point_op);
-
-    let render_op = RenderOp {
-        f,
-        g,
-        p,
-        l,
-        t: r_to_f64(*time),
-        index: 0,
-        samples: (l * SETTINGS.sample_rate).round() as usize,
-        total_samples: (l * SETTINGS.sample_rate).round() as usize,
-        attack: r_to_f64(point_op.attack * basis.a) * SETTINGS.sample_rate,
-        decay: r_to_f64(point_op.decay * basis.d) * SETTINGS.sample_rate,
-        osc_type: point_op.osc_type,
-        asr: point_op.asr,
-        portamento: (r_to_f64(point_op.portamento) * 1024_f64) as usize,
-        voice,
-        event,
-        next_l_silent,
-        next_r_silent,
-    };
-
-    *time += point_op.l * basis.l;
-
-    render_op
-}
-
-pub fn point_op_to_gains(point_op: &PointOp, basis: &Basis) -> (f64, f64) {
-    let pm = r_to_f64(point_op.pm);
-    let pa = r_to_f64(point_op.pa);
-    let g = r_to_f64(point_op.g);
-
-    let l_gain = if *point_op.g.numer() == 0 {
-        0.0
-    } else {
-        g * (((pa.mul_add(pm, 1.0)) + r_to_f64(basis.p)) / 2.0) * r_to_f64(basis.g)
-    };
-
-    let r_gain = if *point_op.g.numer() == 0 {
-        0.0
-    } else {
-        g * (((pa.mul_add(pm, -1.0)) + r_to_f64(basis.p)) / -2.0) * r_to_f64(basis.g)
-    };
-
-    (l_gain, r_gain)
-}
-
-pub fn m_a_and_basis_to_f64(basis: Rational64, m: Rational64, a: Rational64) -> f64 {
-    r_to_f64(basis * m) + r_to_f64(a)
-}
-
-pub fn calculate_fgpl(basis: &Basis, point_op: &PointOp) -> (f64, (f64, f64), f64, f64) {
-    let (mut f, mut g) = if point_op.is_silent() {
-        (0.0, (0.0, 0.0))
-    } else {
-        let g = point_op_to_gains(point_op, basis);
-        (m_a_and_basis_to_f64(basis.f, point_op.fm, point_op.fa), g)
-    };
-    let p = m_a_and_basis_to_f64(basis.p, point_op.pm, point_op.pa);
-    let l = r_to_f64(point_op.l * basis.l);
-    if f < SETTINGS.min_freq {
-        f = 0.0;
-        g = (0.0, 0.0);
-    };
-
-    (f, g, p, l)
-}
-
-pub fn nf_to_vec_renderable(
-    composition: &NormalForm,
-    defs: &Defs,
-    basis: &Basis,
-) -> Result<Vec<Vec<RenderOp>>, Error> {
-    let mut normal_form = NormalForm::init();
-    composition.apply_to_normal_form(&mut normal_form, defs)?;
-
-    let result: Vec<Vec<RenderOp>> = normal_form
-        .operations
-        .par_iter()
-        .enumerate()
-        .map(|(voice, vec_point_op)| {
-            let mut time = Rational64::new(0, 1);
-            let mut result: Vec<RenderOp> = vec![];
-            let iter = vec_point_op.iter();
-            for (event, p_op) in iter.enumerate() {
-                let mut next_e = event;
-                if event == vec_point_op.len() {
-                    next_e = 0;
-                };
-
-                let op = pointop_to_renderop(
-                    p_op,
-                    &mut time,
-                    voice,
-                    event,
-                    basis,
-                    Some(vec_point_op[next_e].clone()),
-                );
-                result.push(op);
-            }
-            if default_settings().pad_end {
-                result.push(RenderOp::init_silent_with_length(1.0));
-            }
-            result
-        })
-        .collect();
-
-    Ok(result)
 }

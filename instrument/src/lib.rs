@@ -3,6 +3,7 @@ mod frequency;
 mod gain;
 mod loudness;
 pub mod oscillator;
+pub mod renderable;
 mod sample;
 pub mod stereo_waveform;
 pub mod voice;
@@ -15,5 +16,7 @@ mod test;
 
 pub use self::{
     oscillator::{Basis, Oscillator},
+    renderable::render_voice::{renderables_to_render_voices, RenderVoice},
+    renderable::RenderOp,
     stereo_waveform::{Normalize, StereoWaveform},
 };

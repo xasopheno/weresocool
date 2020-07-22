@@ -1,7 +1,7 @@
-use crate::instrument::voice::{SampleInfo, Voice};
-use crate::settings::{default_settings, Settings};
+use crate::voice::{SampleInfo, Voice};
 use rand::{thread_rng, Rng};
 use std::f64::consts::PI;
+use weresocool_shared::{default_settings, Settings};
 
 const SETTINGS: Settings = default_settings();
 const TAU: f64 = PI * 2.0;

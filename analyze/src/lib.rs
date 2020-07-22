@@ -151,8 +151,7 @@ impl Analyze for Vec<f32> {
 #[allow(clippy::unreadable_literal)]
 mod tests {
     use super::*;
-    use crate::helpers::cmp_f32;
-    use crate::helpers::cmp_vec_f32;
+    use weresocool_shared::helpers::{cmp_f32, cmp_vec_f32};
 
     #[test]
     fn gain_test() {

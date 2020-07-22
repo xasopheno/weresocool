@@ -1,4 +1,4 @@
-use crate::instrument::{gain::gain_at_index, voice::Voice};
+use crate::{gain::gain_at_index, voice::Voice};
 use weresocool_ast::ASR;
 
 impl Voice {

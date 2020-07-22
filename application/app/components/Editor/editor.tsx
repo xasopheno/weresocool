@@ -122,7 +122,7 @@ export const Editor = (props: Props): React.ReactElement => {
           },
           {
             name: 'stop',
-            bindKey: { win: 'Command-p', mac: 'Command-Enter' },
+            bindKey: { win: 'Ctrl-Enter', mac: 'Command-Enter' },
             exec: async () => {
               await dispatch.onStop();
             },

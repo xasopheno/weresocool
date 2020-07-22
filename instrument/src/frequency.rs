@@ -1,4 +1,4 @@
-use crate::instrument::voice::Voice;
+use crate::voice::Voice;
 
 impl Voice {
     pub fn calculate_portamento_delta(
@@ -32,7 +32,7 @@ impl Voice {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use crate::helpers::cmp_f64;
+    use weresocool_shared::helpers::cmp_f64;
 
     #[test]
     fn test_calculate_portamento_delta() {

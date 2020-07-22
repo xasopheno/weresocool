@@ -2,11 +2,11 @@ use weresocool::{
     generation::parsed_to_render::write_audio_to_file,
     generation::{generate_waveforms, RenderReturn, RenderType},
     interpretable::{InputType::Filename, Interpretable},
-    renderable::nf_to_vec_renderable,
     ui::{get_args, no_file_name, were_so_cool_logo},
     write::write_composition_to_wav,
 };
 use weresocool_error::Error;
+use weresocool_instrument::renderable::nf_to_vec_renderable;
 
 fn main() -> Result<(), Error> {
     were_so_cool_logo();

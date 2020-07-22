@@ -3,8 +3,9 @@ use criterion::{criterion_group, criterion_main, Criterion};
 use weresocool::{
     generation::{RenderReturn, RenderType},
     interpretable::{InputType::Filename, Interpretable},
-    renderable::nf_to_vec_renderable,
 };
+
+use weresocool_instrument::renderable::nf_to_vec_renderable;
 
 fn nf_to_vec_renderable_bench(c: &mut Criterion) {
     let filename = "songs/test/render_op_get_batch.socool".to_string();

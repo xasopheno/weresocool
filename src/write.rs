@@ -1,13 +1,13 @@
 use crate::generation::Op4D;
-use crate::instrument::{Normalize, StereoWaveform};
-use crate::settings::{default_settings, Settings};
 use csv::Writer;
 use std::fs::File;
 use std::io::prelude::*;
 use std::io::{BufWriter, Cursor};
 use std::path::Path;
 use weresocool_error::Error;
+use weresocool_instrument::{Normalize, StereoWaveform};
 use weresocool_lame::Lame;
+use weresocool_shared::{default_settings, Settings};
 
 const SETTINGS: Settings = default_settings();
 

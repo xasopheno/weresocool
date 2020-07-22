@@ -1,14 +1,13 @@
+use failure::Fail;
 use weresocool::{
     examples::documentation,
     generation::parsed_to_render::{r_to_f64, RenderReturn, RenderType},
     interpretable::{InputType::Filename, Interpretable},
     portaudio::duplex_setup,
-    renderable::nf_to_vec_renderable,
     ui::{get_args, no_file_name, were_so_cool_logo},
 };
-
-use failure::Fail;
 use weresocool_error::Error;
+use weresocool_instrument::renderable::nf_to_vec_renderable;
 
 fn main() {
     match run() {

@@ -1,8 +1,5 @@
 use crate::{
     generation::{to_csv, to_json},
-    instrument::{Basis, Oscillator, StereoWaveform},
-    renderable::{nf_to_vec_renderable, renderables_to_render_voices, RenderOp, Renderable},
-    settings::{default_settings, Settings},
     ui::printed,
     write::{write_composition_to_mp3, write_composition_to_wav},
 };
@@ -15,7 +12,12 @@ use std::path::Path;
 use std::sync::{Arc, Mutex};
 use weresocool_ast::{Defs, NormalForm, Term};
 use weresocool_error::{Error, IdError};
+use weresocool_instrument::renderable::{
+    nf_to_vec_renderable, renderables_to_render_voices, RenderOp, Renderable,
+};
+use weresocool_instrument::{Basis, Oscillator, StereoWaveform};
 use weresocool_parser::ParsedComposition;
+use weresocool_shared::{default_settings, Settings};
 
 const SETTINGS: Settings = default_settings();
 

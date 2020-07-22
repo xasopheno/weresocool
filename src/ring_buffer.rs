@@ -94,8 +94,7 @@ impl<T: Sized + Copy + Clone + std::default::Default> RingBuffer<T> {
 #[cfg(test)]
 pub mod tests {
     use super::*;
-    use crate::helpers::cmp_f32;
-    use crate::helpers::cmp_vec_f32;
+    use weresocool_shared::helpers::{cmp_f32, cmp_vec_f32};
     #[test]
     fn ring_buffer() {
         let mut rb = RingBuffer::<usize>::new_full(10);
