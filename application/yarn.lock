@@ -5228,12 +5228,13 @@ ejs@~2.5.6:
   resolved "https://registry.yarnpkg.com/ejs/-/ejs-2.5.9.tgz#7ba254582a560d267437109a68354112475b0ce5"
   integrity sha512-GJCAeDBKfREgkBtgrYSf9hQy9kTb3helv0zGdzqhM7iAkW8FA/ZF97VQDbwFiwIT8MQLLOe5VlPZOEvZAqtUAQ==
 
-electron-builder-notarize@^1.1.2:
-  version "1.1.2"
-  resolved "https://registry.yarnpkg.com/electron-builder-notarize/-/electron-builder-notarize-1.1.2.tgz#29939591c6edf133aadc8450d975e9ce94a15da3"
-  integrity sha512-IiuG+Wwky4EwekhJ9T5t9m00sFL9EGUrkyr4wqivXxrvtWIGAh2WCUwO6e47l3W8nE/4ng0v+VNJhZEIlCu1xg==
+electron-builder-notarize@^1.2.0:
+  version "1.2.0"
+  resolved "https://registry.yarnpkg.com/electron-builder-notarize/-/electron-builder-notarize-1.2.0.tgz#6db86173601513bcb667074f80322f8622e24ff9"
+  integrity sha512-mSU5CSjydNlO5oFSOimJvzKQ4m/whUUBoE3i2xSAOF7+T2ZIzSfsGCT1SJvqsiHYf2xvTb2RpFoHWE6Oc9Cvgg==
   dependencies:
     electron-notarize "^0.2.0"
+    js-yaml "^3.14.0"
     read-pkg-up "^7.0.0"
 
 electron-builder@^22.7.0:
