@@ -55,7 +55,7 @@ impl BufferManager {
         }
     }
 
-    pub fn init_wth_buffer(buffer: Buffer) -> Self {
+    pub const fn init_wth_buffer(buffer: Buffer) -> Self {
         Self {
             buffers: [Some(buffer), None],
             renderer_write_idx: 0,

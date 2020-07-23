@@ -57,6 +57,7 @@ impl TimedOp {
             event_type: self.event_type.clone(),
         }
     }
+    #[allow(clippy::missing_const_for_fn)]
     pub fn to_point_op(&self) -> PointOp {
         PointOp {
             fm: self.fm,
