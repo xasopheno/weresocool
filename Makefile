@@ -1,5 +1,5 @@
-package:
-	cd 
+package: 
+	cd application && yarn package
 
 test:
 	make test_rust && make test_application
@@ -34,6 +34,7 @@ test_application:
 	yarn test \
 
 test_rust:
+	make clippy
 	cargo test --workspace --release
 	cargo run --release --bin snapshot
 
