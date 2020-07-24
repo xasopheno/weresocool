@@ -1,3 +1,9 @@
+package:
+	cd 
+
+test:
+	make test_rust && make test_application
+
 format:
 	#!/usr/bin/env bash
 
@@ -19,7 +25,15 @@ format_ci:
 clippy:
 	cargo clippy --all-targets -- -D warnings
 
-test:
+
+test_application: 
+	cd application && \
+	yarn ts && \
+	yarn lint && \
+	yarn package && \
+	yarn test \
+
+test_rust:
 	cargo test --workspace --release
 	cargo run --release --bin snapshot
 
