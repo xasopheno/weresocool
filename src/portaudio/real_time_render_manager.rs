@@ -8,6 +8,12 @@ use weresocool_shared::{default_settings, Settings};
 
 const SETTINGS: Settings = default_settings();
 
+pub struct RealTimeRenderManager {
+    stream: pa::Stream<pa::NonBlocking, pa::Output<f32>>,
+    current_volume: f32,
+    past_volume: f32,
+}
+
 pub fn real_time_render_manager(
     render_manager: Arc<Mutex<RenderManager>>,
 ) -> Result<pa::Stream<pa::NonBlocking, pa::Output<f32>>, Error> {

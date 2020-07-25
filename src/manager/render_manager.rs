@@ -96,19 +96,6 @@ impl RenderManager {
     pub fn push_render(&mut self, render: Vec<RenderVoice>) {
         *self.next_render() = Some(render);
     }
-
-    pub fn prepare_render(&mut self, input: InputType<'_>) -> Result<(), Error> {
-        let (nf, basis, table) = match input.make(RenderType::NfBasisAndTable)? {
-            RenderReturn::NfBasisAndTable(nf, basis, table) => (nf, basis, table),
-            _ => return Err(Error::with_msg("Failed Parse/Render")),
-        };
-        let renderables = nf_to_vec_renderable(&nf, &table, &basis)?;
-
-        let render_voices = renderables_to_render_voices(renderables);
-
-        self.push_render(render_voices);
-        Ok(())
-    }
 }
 
 pub fn prepare_render_outside(input: InputType<'_>) -> Result<Vec<RenderVoice>, Error> {
