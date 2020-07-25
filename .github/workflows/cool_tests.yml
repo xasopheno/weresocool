@@ -23,6 +23,6 @@ jobs:
     - name: clippy 
       run: cargo clippy --all-targets -- -D warnings
     - name: run tests
-      run: make test
+      run: make test_rust
       
       

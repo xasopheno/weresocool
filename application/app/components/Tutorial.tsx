@@ -12,7 +12,7 @@ const Modal = styled.div`
   bottom: 0;
   right: 0;
   left: 0;
-  z-index: 10;
+  z-index: 200;
 `;
 
 const Title = styled.h1`
