@@ -3,6 +3,7 @@ use crate::{
     generation::sum_all_waveforms,
     interpretable::{InputType, Interpretable},
 };
+use rand::Rng;
 use rayon::prelude::*;
 use weresocool_error::Error;
 use weresocool_instrument::renderable::{
@@ -61,7 +62,10 @@ impl RenderManager {
                     }
 
                     sw.pad(buffer_size);
-
+                    let mut rng = rand::thread_rng();
+                    self.past_volume = self.current_volume;
+                    let r = rng.gen_range(0.0, 1.0);
+                    self.current_volume = r;
                     Some(sw)
                 } else {
                     *self.current_render() = None;
