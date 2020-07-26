@@ -41,6 +41,10 @@ impl RenderManager {
         }
     }
 
+    pub fn update_volume(self, volume) {
+        
+    }
+
     pub fn read(&mut self, buffer_size: usize) -> Option<(StereoWaveform, f32, f32)> {
         let next = self.exists_next_render();
         let current = self.current_render();
