@@ -41,11 +41,24 @@ impl RenderManager {
         }
     }
 
-    pub fn update_volume(self, volume) {
-        
+    pub fn update_volume(&mut self, volume: f32) {
+        self.current_volume = volume
     }
 
-    pub fn read(&mut self, buffer_size: usize) -> Option<(StereoWaveform, f32, f32)> {
+    fn ramp_to_current_volume(&mut self, buffer_size: usize) -> Vec<f32> {
+        let offset: Vec<f32> = (0..buffer_size * 2)
+            .map(|i| {
+                let distance = self.current_volume - self.past_volume;
+                self.past_volume + (distance * i as f32 / (buffer_size * 2) as f32)
+            })
+            .collect();
+
+        self.past_volume = self.current_volume;
+
+        offset
+    }
+
+    pub fn read(&mut self, buffer_size: usize) -> Option<(StereoWaveform, Vec<f32>)> {
         let next = self.exists_next_render();
         let current = self.current_render();
 
@@ -71,11 +84,9 @@ impl RenderManager {
                     let r = rng.gen_range(0.0, 1.0);
                     self.current_volume = r;
 
-                    let result = Some((sw, self.past_volume, self.current_volume));
+                    let ramp = self.ramp_to_current_volume(buffer_size);
 
-                    self.past_volume = self.current_volume;
-
-                    result
+                    Some((sw, ramp))
                 } else {
                     *self.current_render() = None;
                     None
