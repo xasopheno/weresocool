@@ -1,4 +1,7 @@
-use crate::{manager::RenderManager, write::write_output_buffer};
+use crate::{
+    manager::RenderManager,
+    write::{new_write_output_buffer, write_output_buffer},
+};
 use weresocool_instrument::StereoWaveform;
 
 use portaudio as pa;
@@ -17,9 +20,11 @@ pub fn real_time_render_manager(
     let output_stream = pa.open_non_blocking_stream(output_stream_settings, move |args| {
         let batch: Option<StereoWaveform> =
             render_manager.lock().unwrap().read(SETTINGS.buffer_size);
+        let current_volume = render_manager.lock().unwrap().current_volume;
+        let past_volume = render_manager.lock().unwrap().past_volume;
 
         if let Some(b) = batch {
-            write_output_buffer(args.buffer, b);
+            new_write_output_buffer(args.buffer, b, current_volume);
             pa::Continue
         } else {
             write_output_buffer(args.buffer, StereoWaveform::new(SETTINGS.buffer_size));

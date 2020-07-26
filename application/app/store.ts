@@ -33,6 +33,7 @@ export interface Store {
   initializeTest: boolean;
   editor_ref: AceEditor | null;
   printing: boolean;
+  volume: number;
 }
 
 export const intialStore: Store = {
@@ -46,6 +47,7 @@ export const intialStore: Store = {
   initializeTest: true,
   editor_ref: null,
   printing: false,
+  volume: 80,
 };
 
 export const testStore: Store = {
@@ -59,6 +61,7 @@ export const testStore: Store = {
   initializeTest: false,
   editor_ref: null,
   printing: false,
+  volume: 80,
 };
 export const GlobalContext = createContext((undefined as unknown) as Store);
 // // This adds a `_k: 'something'` to a given type

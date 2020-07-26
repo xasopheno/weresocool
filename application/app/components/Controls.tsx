@@ -5,7 +5,51 @@ import { GlobalContext, Editors } from '../store';
 import ReactTooltip from 'react-tooltip';
 import { Render } from './Render';
 import { useCurrentWidth } from '../utils/width';
+import styled from 'styled-components';
 
+const SliderContainer = styled.div`
+  padding-top: 5px;
+  width: 100%;
+`;
+
+const Slider = styled.input`
+  -webkit-appearance: none;
+  width: 150px;
+  background: transparent;
+  opacity: 0.7;
+  -webkit-transition: 0.1s;
+  transition: opacity 0.1s;
+
+  :focus {
+    outline: none;
+    opacity: 1;
+  }
+
+  ::-webkit-slider-runnable-track {
+    height: 0.9rem;
+    margin: 0;
+    width: 100%;
+    cursor: pointer;
+    background: goldenrod;
+    background: linear-gradient(
+      to bottom right,
+      transparent 50%,
+      goldenrod 50%
+    );
+  }
+
+  ::-webkit-slider-thumb {
+    -webkit-appearance: none;
+    height: 1.5rem;
+    width: 0.5rem;
+    background: #edd;
+    border: 1px solid;
+    margin-top: -5px;
+    border-radius: 3px;
+    border-color: #eed;
+    cursor: pointer;
+  }
+`;
 const stub = () => {};
 
 type Props = { handleLoad: () => void };
@@ -73,6 +117,21 @@ export const Controls = (props: Props): React.ReactElement => {
       </ButtonBox>
 
       <VimBox>
+        <SliderContainer>
+          <Slider
+            type="range"
+            min="0"
+            max="100"
+            id="volumeSlider"
+            value={store.volume}
+            onChange={(e) => {
+              // dispatch.onVolumeChange(parseInt(e.target.value));
+            }}
+            onMouseUp={() => {
+              dispatch.setEditorFocus(store.editor_ref);
+            }}
+          />
+        </SliderContainer>
         <RightButton
           id={'resetButton'}
           onClick={() => {

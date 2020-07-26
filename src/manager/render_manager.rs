@@ -13,6 +13,8 @@ use weresocool_instrument::StereoWaveform;
 #[derive(Clone, Debug)]
 pub struct RenderManager {
     pub renders: [Option<Vec<RenderVoice>>; 2],
+    pub current_volume: f32,
+    pub past_volume: f32,
     render_idx: usize,
     read_idx: usize,
 }
@@ -21,6 +23,8 @@ impl RenderManager {
     pub const fn init(render_voices: Vec<RenderVoice>) -> Self {
         Self {
             renders: [Some(render_voices), None],
+            past_volume: 1.0,
+            current_volume: 1.0,
             render_idx: 0,
             read_idx: 0,
         }
@@ -29,6 +33,8 @@ impl RenderManager {
     pub const fn init_silent() -> Self {
         Self {
             renders: [None, None],
+            past_volume: 0.0,
+            current_volume: 0.0,
             render_idx: 0,
             read_idx: 0,
         }
