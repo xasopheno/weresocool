@@ -41,7 +41,7 @@ impl RenderManager {
         }
     }
 
-    pub fn read(&mut self, buffer_size: usize) -> Option<StereoWaveform> {
+    pub fn read(&mut self, buffer_size: usize) -> Option<(StereoWaveform, f32, f32)> {
         let next = self.exists_next_render();
         let current = self.current_render();
 
@@ -63,10 +63,15 @@ impl RenderManager {
 
                     sw.pad(buffer_size);
                     let mut rng = rand::thread_rng();
-                    self.past_volume = self.current_volume;
+
                     let r = rng.gen_range(0.0, 1.0);
                     self.current_volume = r;
-                    Some(sw)
+
+                    let result = Some((sw, self.past_volume, self.current_volume));
+
+                    self.past_volume = self.current_volume;
+
+                    result
                 } else {
                     *self.current_render() = None;
                     None

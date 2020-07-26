@@ -18,18 +18,16 @@ pub fn real_time_render_manager(
     let output_stream_settings = get_output_settings(&pa)?;
 
     let output_stream = pa.open_non_blocking_stream(output_stream_settings, move |args| {
-        let current_volume = render_manager.lock().unwrap().current_volume;
-        let past_volume = render_manager.lock().unwrap().past_volume;
-        let batch: Option<StereoWaveform> =
+        let batch: Option<(StereoWaveform, f32, f32)> =
             render_manager.lock().unwrap().read(SETTINGS.buffer_size);
-        let offset: Vec<f32> = (0..SETTINGS.buffer_size * 2)
-            .map(|i| {
-                let distance = current_volume - past_volume;
-                past_volume + (distance * i as f32 / (SETTINGS.buffer_size * 2) as f32)
-            })
-            .collect();
 
-        if let Some(b) = batch {
+        if let Some((b, past_volume, current_volume)) = batch {
+            let offset: Vec<f32> = (0..SETTINGS.buffer_size * 2)
+                .map(|i| {
+                    let distance = current_volume - past_volume;
+                    past_volume + (distance * i as f32 / (SETTINGS.buffer_size * 2) as f32)
+                })
+                .collect();
             new_write_output_buffer(args.buffer, b, offset);
             pa::Continue
         } else {
