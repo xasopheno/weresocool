@@ -120,6 +120,7 @@ export class Dispatch {
       await axios.post(settings.volumeURL, {
         volume: volume / 100,
       });
+      localStorage.setItem('volume', volume.toString());
       this.dispatch({ _k: 'Update_Volume', volume });
       this.dispatch({ _k: 'Backend', fetch: { state: 'good' } });
     } catch (e) {

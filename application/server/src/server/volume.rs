@@ -9,6 +9,9 @@ pub async fn volume_update(
     req: web::Json<VolumeUpdate>,
 ) -> HttpResponse {
     render_manager.lock().unwrap().update_volume(req.volume);
-    println!("Volume Update.");
-    HttpResponse::Ok().json(Success::VolumeUpdate("VolumeUpdateSuccess".to_string()))
+    println!("Volume: {}", req.volume);
+    HttpResponse::Ok().json(Success::VolumeUpdate(format!(
+        "VolumeUpdate: {}",
+        req.volume
+    )))
 }
