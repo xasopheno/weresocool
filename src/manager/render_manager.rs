@@ -3,7 +3,6 @@ use crate::{
     generation::sum_all_waveforms,
     interpretable::{InputType, Interpretable},
 };
-use rand::Rng;
 use rayon::prelude::*;
 use weresocool_error::Error;
 use weresocool_instrument::renderable::{
@@ -34,15 +33,15 @@ impl RenderManager {
     pub const fn init_silent() -> Self {
         Self {
             renders: [None, None],
-            past_volume: 0.0,
-            current_volume: 0.0,
+            past_volume: 1.0,
+            current_volume: 1.0,
             render_idx: 0,
             read_idx: 0,
         }
     }
 
     pub fn update_volume(&mut self, volume: f32) {
-        self.current_volume = volume
+        self.current_volume = f32::powf(volume, 2.0)
     }
 
     fn ramp_to_current_volume(&mut self, buffer_size: usize) -> Vec<f32> {
@@ -79,13 +78,8 @@ impl RenderManager {
                     }
 
                     sw.pad(buffer_size);
-                    let mut rng = rand::thread_rng();
-
-                    let r = rng.gen_range(0.0, 1.0);
-                    self.current_volume = r;
 
                     let ramp = self.ramp_to_current_volume(buffer_size);
-
                     Some((sw, ramp))
                 } else {
                     *self.current_render() = None;

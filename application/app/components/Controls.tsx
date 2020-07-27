@@ -14,7 +14,7 @@ const SliderContainer = styled.div`
 
 const Slider = styled.input`
   -webkit-appearance: none;
-  width: 150px;
+  width: 200px;
   background: transparent;
   opacity: 0.7;
   -webkit-transition: 0.1s;
@@ -26,7 +26,7 @@ const Slider = styled.input`
   }
 
   ::-webkit-slider-runnable-track {
-    height: 0.9rem;
+    height: 1.3rem;
     margin: 0;
     width: 100%;
     cursor: pointer;
@@ -40,7 +40,7 @@ const Slider = styled.input`
 
   ::-webkit-slider-thumb {
     -webkit-appearance: none;
-    height: 1.5rem;
+    height: 1.7rem;
     width: 0.5rem;
     background: #edd;
     border: 1px solid;
@@ -124,8 +124,8 @@ export const Controls = (props: Props): React.ReactElement => {
             max="100"
             id="volumeSlider"
             value={store.volume}
-            onChange={(e) => {
-              dispatch.onVolumeChange(parseInt(e.target.value));
+            onChange={async (e) => {
+              await dispatch.onVolumeChange(parseInt(e.target.value));
             }}
             onMouseUp={() => {
               dispatch.setEditorFocus(store.editor_ref);
