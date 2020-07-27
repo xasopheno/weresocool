@@ -4,5 +4,6 @@
     "global-require": "off",
     "import/no-dynamic-require": "off",
     "import/no-extraneous-dependencies": "off"
-  }
+  },
+  settings: { version: 'detect' },
 }

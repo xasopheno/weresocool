@@ -1,5 +1,5 @@
 import React from 'react';
-import Enzyme, { mount } from 'enzyme';
+import Enzyme, { mount, ReactWrapper } from 'enzyme';
 import Adapter from 'enzyme-adapter-react-16';
 import Root from '../../app/containers/Root';
 import { testStore } from '../../app/store';
@@ -37,8 +37,12 @@ const click = async (button: string, component: Enzyme.ReactWrapper) => {
 };
 
 describe('OuterSpace', () => {
-  it('onResetLanguage', () => {
-    const component = mount(<OuterSpaceWrapper />);
+  it('onResetLanguage', async () => {
+    let component: ReactWrapper;
+    await act(async () => {
+      component = mount(<OuterSpaceWrapper />);
+      await flushPromises();
+    });
     // @ts-ignore
     const editor = component.find(AceEditor).instance().editor;
     editor.focus = jest.fn();
@@ -49,8 +53,8 @@ describe('OuterSpace', () => {
     expect(editor.getValue()).toBe('code');
     act(() => {
       component.find('#resetButton').at(0).simulate('click');
+      component.update();
     });
-    component.update();
     expect(editor.getValue()).toBe(language_template);
     expect(editor.focus.mock.calls.length).toBe(1);
   });
@@ -94,15 +98,22 @@ describe('OuterSpace', () => {
   });
 
   it('onFileLoad', async () => {
-    const component = mount(<OuterSpaceWrapper />);
+    let component: ReactWrapper;
+    await act(async () => {
+      component = mount(<OuterSpaceWrapper />);
+      await flushPromises();
+    });
+
     const expected = 'language from file';
     const blob = new Blob([expected], { type: '.socool' });
 
+    // @ts-ignore
     const editor = component
       .find(AceEditor)
       // @ts-ignore
       .instance().editor;
     editor.focus = jest.fn();
+    // });
 
     await act(async () => {
       const loadInput = component.find('#fileLoadInput');
@@ -110,21 +121,29 @@ describe('OuterSpace', () => {
 
       await flushPromises();
     });
+
     expect(editor.getValue()).toBe(expected);
     expect(editor.focus.mock.calls.length).toBe(1);
   });
 
-  it('displays title', () => {
-    const component = mount(<Root initialStore={testStore} />);
-    expect(component.find('#outerSpace').exists()).toBe(true);
+  it('displays title', async () => {
+    await act(async () => {
+      const component = mount(<Root initialStore={testStore} />);
+      await flushPromises();
+      expect(component.find('#outerSpace').exists()).toBe(true);
+    });
   });
 
-  it('displays ratios only when wide', () => {
+  it('displays ratios only when wide', async () => {
     window = Object.assign(window, { innerWidth: 500 });
-    let component = mount(<Root initialStore={testStore} />);
-    expect(component.find('#ratios').exists()).toBe(false);
-    window = Object.assign(window, { innerWidth: 1500 });
-    component = mount(<Root initialStore={testStore} />);
-    expect(component.find('#ratios').exists()).toBe(true);
+    let component: ReactWrapper;
+    await act(async () => {
+      component = mount(<Root initialStore={testStore} />);
+      await flushPromises();
+      expect(component.find('#ratios').exists()).toBe(false);
+      window = Object.assign(window, { innerWidth: 1500 });
+      component = mount(<Root initialStore={testStore} />);
+      expect(component.find('#ratios').exists()).toBe(true);
+    });
   });
 });

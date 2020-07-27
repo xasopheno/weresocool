@@ -7,12 +7,14 @@ dev:
 test:
 	make test_rust && make test_application
 
-test_all:
+lint:
 	make clippy && \
-	make ts_test && \
-	make test
+	make ts_test 
 
 ts_test:
+	#!/usr/bin/env bash
+	set -euo pipefail
+
 	cd application && \
 	yarn ts && \
 	yarn lint

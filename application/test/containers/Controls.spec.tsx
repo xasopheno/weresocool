@@ -1,5 +1,5 @@
 import React from 'react';
-import Enzyme, { mount } from 'enzyme';
+import Enzyme, { mount, ReactWrapper } from 'enzyme';
 import { testStore } from '../../app/store';
 import Adapter from 'enzyme-adapter-react-16';
 import Root from '../../app/containers/Root';
@@ -34,19 +34,22 @@ describe('Play', () => {
       ParseError: { message: 'Unexpected Token', line: 14, column: 15 },
     };
     mock.onPost().reply(200, response);
-
-    const component = mount(<OuterSpaceWrapper />);
+    // const component = mount(<OuterSpaceWrapper />);
+    let component: ReactWrapper;
+    await act(async () => {
+      component = mount(<OuterSpaceWrapper />);
+      await flushPromises();
+    });
     await act(async () => {
       component.find('#playButton').at(0).simulate('click');
       await flushPromises();
+      component.update();
+      const errorDescription = component.find('#errorDescription');
+      expect(errorDescription.exists()).toBe(true);
+      expect(errorDescription.at(0).text()).toBe(
+        'UnexpectedToken: Line: 14 | Column 15'
+      );
     });
-    component.update();
-
-    const errorDescription = component.find('#errorDescription');
-    expect(errorDescription.exists()).toBe(true);
-    expect(errorDescription.at(0).text()).toBe(
-      'UnexpectedToken: Line: 14 | Column 15'
-    );
   });
   test('click play: RenderSuccess', async () => {
     const mock = new MockAdapter(axios);
@@ -131,32 +134,53 @@ describe('Play', () => {
 });
 
 describe('Controls', () => {
-  it('play button exists', () => {
-    const component = mount(<Root initialStore={testStore} />);
-    expect(component.find('#playButton').exists()).toBe(true);
+  it('play button exists', async () => {
+    await act(async () => {
+      const component = mount(<Root initialStore={testStore} />);
+      await flushPromises();
+      expect(component.find('#playButton').exists()).toBe(true);
+    });
   });
-  it('render button exists', () => {
-    const component = mount(<Root initialStore={testStore} />);
-    expect(component.find('#printButton').exists()).toBe(true);
+  it('render button exists', async () => {
+    await act(async () => {
+      const component = mount(<Root initialStore={testStore} />);
+      await flushPromises();
+      expect(component.find('#printButton').exists()).toBe(true);
+    });
   });
-  it('stop button exists', () => {
-    const component = mount(<Root initialStore={testStore} />);
-    expect(component.find('#stopButton').exists()).toBe(true);
+  it('stop button exists', async () => {
+    await act(async () => {
+      const component = mount(<Root initialStore={testStore} />);
+      await flushPromises();
+      expect(component.find('#stopButton').exists()).toBe(true);
+    });
   });
-  it('load button exists', () => {
-    const component = mount(<Root initialStore={testStore} />);
-    expect(component.find('#loadButton').exists()).toBe(true);
+  it('load button exists', async () => {
+    await act(async () => {
+      const component = mount(<Root initialStore={testStore} />);
+      await flushPromises();
+      expect(component.find('#loadButton').exists()).toBe(true);
+    });
   });
-  it('save button exists', () => {
-    const component = mount(<Root initialStore={testStore} />);
-    expect(component.find('#saveButton').exists()).toBe(true);
+  it('save button exists', async () => {
+    await act(async () => {
+      const component = mount(<Root initialStore={testStore} />);
+      await flushPromises();
+      expect(component.find('#saveButton').exists()).toBe(true);
+    });
   });
-  it('reset button exists', () => {
-    const component = mount(<Root initialStore={testStore} />);
-    expect(component.find('#resetButton').exists()).toBe(true);
+  it('reset button exists', async () => {
+    await act(async () => {
+      const component = mount(<Root initialStore={testStore} />);
+      await flushPromises();
+      expect(component.find('#resetButton').exists()).toBe(true);
+    });
   });
-  it('editor button exists', () => {
-    const component = mount(<Root initialStore={testStore} />);
-    expect(component.find('#editorButton').exists()).toBe(true);
+  it('editor button exists', async () => {
+    await act(async () => {
+      const component = mount(<Root initialStore={testStore} />);
+      await flushPromises();
+      expect(component.find('#editorButton').exists()).toBe(true);
+    });
   });
 });

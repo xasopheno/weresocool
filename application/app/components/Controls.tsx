@@ -135,6 +135,7 @@ export const Controls = (props: Props): React.ReactElement => {
         <RightButton
           id={'resetButton'}
           onClick={() => {
+            console.log('???');
             dispatch.onResetLanguage();
             dispatch.setEditorFocus(store.editor_ref);
           }}

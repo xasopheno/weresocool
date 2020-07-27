@@ -44,8 +44,6 @@ export const Editor = (props: Props): React.ReactElement => {
         }
         if (storedVolume) {
           await dispatch.onVolumeChange(parseInt(storedVolume));
-        } else {
-          await dispatch.onVolumeChange(store.volume);
         }
         if (storedEditor) {
           dispatch.onIncrementEditorType(parseInt(storedEditor) - 1);
