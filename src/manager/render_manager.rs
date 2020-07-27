@@ -120,19 +120,6 @@ impl RenderManager {
     pub fn push_render(&mut self, render: Vec<RenderVoice>) {
         *self.next_render() = Some(render);
     }
-
-    pub fn prepare_render(&mut self, input: InputType<'_>) -> Result<(), Error> {
-        let (nf, basis, table) = match input.make(RenderType::NfBasisAndTable)? {
-            RenderReturn::NfBasisAndTable(nf, basis, table) => (nf, basis, table),
-            _ => return Err(Error::with_msg("Failed Parse/Render")),
-        };
-        let renderables = nf_to_vec_renderable(&nf, &table, &basis)?;
-
-        let render_voices = renderables_to_render_voices(renderables);
-
-        self.push_render(render_voices);
-        Ok(())
-    }
 }
 
 pub fn prepare_render_outside(input: InputType<'_>) -> Result<Vec<RenderVoice>, Error> {
@@ -151,6 +138,17 @@ pub fn prepare_render_outside(input: InputType<'_>) -> Result<Vec<RenderVoice>, 
 mod render_manager_tests {
     use super::*;
     use weresocool_instrument::renderable::RenderOp;
+    use weresocool_shared::helpers::{cmp_f32, cmp_vec_f32};
+
+    #[test]
+    fn test_ramp_to_current_value() {
+        let mut rm = RenderManager::init_silent();
+        rm.update_volume(0.9);
+        assert!(cmp_f32(rm.current_volume, f32::powf(0.9, 2.0)));
+        let ramp = rm.ramp_to_current_volume(2);
+        assert!(cmp_vec_f32(ramp, vec![1.0, 0.9525, 0.905, 0.85749996]));
+    }
+
     #[test]
     fn test_inc_render() {
         let mut r = RenderManager::init_silent();
