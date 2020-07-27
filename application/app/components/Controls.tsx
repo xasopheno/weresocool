@@ -125,7 +125,7 @@ export const Controls = (props: Props): React.ReactElement => {
             id="volumeSlider"
             value={store.volume}
             onChange={(e) => {
-              // dispatch.onVolumeChange(parseInt(e.target.value));
+              dispatch.onVolumeChange(parseInt(e.target.value));
             }}
             onMouseUp={() => {
               dispatch.setEditorFocus(store.editor_ref);

@@ -1,5 +1,6 @@
 pub mod print;
 pub mod types;
+pub mod volume;
 use crate::server::types::Language;
 use actix_files::NamedFile;
 use actix_web::{web, HttpRequest, HttpResponse};
@@ -32,6 +33,7 @@ impl PrintSuccess {
 pub enum Success {
     RenderSuccess(String),
     PrintSuccess(PrintSuccess),
+    VolumeUpdate(String),
 }
 
 pub async fn render(
