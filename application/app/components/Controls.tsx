@@ -14,13 +14,13 @@ const SliderContainer = styled.div`
   width: 100%;
 `;
 
-const VolumeText = styled.p`
+const VolumeText = styled.p<SliderProps>`
   margin: 0;
   padding-left: 10px;
   min-width: 30px;
   padding-top: 2px;
-  color: goldenrod;
-  opacity: 0.7;
+  color: ${(p: SliderProps) => (p.active ? 'goldenrod' : '#aaa')};
+  opacity: 0.8;
 `;
 
 interface SliderProps {
@@ -147,7 +147,7 @@ export const Controls = (props: Props): React.ReactElement => {
               dispatch.setEditorFocus(store.editor_ref);
             }}
           />
-          <VolumeText>{store.volume}</VolumeText>
+          <VolumeText active={store.volume > 0.0}>{store.volume}</VolumeText>
         </SliderContainer>
         <RightButton
           data-tip="Reset to Template"
