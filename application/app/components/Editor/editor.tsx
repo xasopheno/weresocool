@@ -20,7 +20,7 @@ type Props = { handleLoad: () => void };
 const Container = styled.div`
   top: 140px;
   position: absolute;
-  bottom: 5vh;
+  bottom: 23px;
   width: 80vw;
 `;
 

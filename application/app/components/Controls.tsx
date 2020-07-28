@@ -8,8 +8,17 @@ import { useCurrentWidth } from '../utils/width';
 import styled from 'styled-components';
 
 const SliderContainer = styled.div`
+  display: flex;
+  flex-direction: row;
   padding-top: 5px;
   width: 100%;
+`;
+
+const VolumeText = styled.p`
+  margin: 0;
+  padding-top: 2px;
+  color: goldenrod;
+  opacity: 0.7;
 `;
 
 interface SliderProps {
@@ -122,7 +131,6 @@ export const Controls = (props: Props): React.ReactElement => {
 
       <VimBox>
         <SliderContainer>
-          <h3>{store.volume}</h3>
           <Slider
             active={store.volume > 0.0}
             type="range"
@@ -137,6 +145,7 @@ export const Controls = (props: Props): React.ReactElement => {
               dispatch.setEditorFocus(store.editor_ref);
             }}
           />
+          <VolumeText>{store.volume}</VolumeText>
         </SliderContainer>
         <RightButton
           data-tip="Reset to Template"

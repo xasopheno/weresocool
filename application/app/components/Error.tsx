@@ -12,7 +12,7 @@ export const ErrorDescription = (props: {
     case ResponseType.ParseError:
       return (
         <ErrorType id={'errorDescription'}>
-          UnexpectedToken: <ErrorMessage>{props.errorMessage}</ErrorMessage>
+          Unexpected Token: <ErrorMessage>{props.errorMessage}</ErrorMessage>
         </ErrorType>
       );
     case ResponseType.IdError:
@@ -53,12 +53,14 @@ const ErrorType = styled.p`
   text-align: center;
   background-color: #454343;
   color: ${(props) => props.color};
-  font-size: 1.7em;
+  font-size: 20px;
   margin-top: 0;
   margin-bottom: 0;
   padding-top: 0;
   padding-bottom: 0;
   color: mistyrose;
+  position: absolute;
+  bottom: 5px;
 `;
 
 const ErrorMessage = styled.span`

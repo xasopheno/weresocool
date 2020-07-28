@@ -4,7 +4,6 @@ import { DispatchContext } from '../actions/actions';
 import { GlobalContext } from '../store';
 import styled from 'styled-components';
 import { useCurrentWidth } from '../utils/width';
-import ReactTooltip from 'react-tooltip';
 
 const Modal = styled.div`
   position: absolute;

@@ -55,6 +55,10 @@ const Spinner = (props: SpinnerProps): React.ReactElement => {
   }
 };
 
+const ErrorWrapper = styled.div`
+  position: absolute;
+`;
+
 export const OuterSpace = (): React.ReactElement => {
   const width = useCurrentWidth();
   const store = useContext(GlobalContext);
@@ -88,6 +92,7 @@ export const OuterSpace = (): React.ReactElement => {
       <ButtonBar width={width} />
       <Controls handleLoad={handleLoad} />
       <Editor handleLoad={handleLoad} />
+
       <ErrorDescription
         errorMessage={store.errorMessage}
         responseState={store.render}
