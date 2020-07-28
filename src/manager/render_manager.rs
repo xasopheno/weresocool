@@ -23,8 +23,8 @@ impl RenderManager {
     pub const fn init(render_voices: Vec<RenderVoice>) -> Self {
         Self {
             renders: [Some(render_voices), None],
-            past_volume: 1.0,
-            current_volume: 1.0,
+            past_volume: 0.8,
+            current_volume: 0.8,
             render_idx: 0,
             read_idx: 0,
         }
@@ -33,8 +33,8 @@ impl RenderManager {
     pub const fn init_silent() -> Self {
         Self {
             renders: [None, None],
-            past_volume: 1.0,
-            current_volume: 1.0,
+            past_volume: 0.8,
+            current_volume: 0.8,
             render_idx: 0,
             read_idx: 0,
         }

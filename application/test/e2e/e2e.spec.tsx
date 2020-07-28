@@ -1,7 +1,7 @@
 //  Important to match spectron and electron versions
 //  https://github.com/electron-userland/spectron#version-map
 import { Application } from 'spectron';
-import { assert, expect } from 'chai';
+import { assert } from 'chai';
 import { tutorial_list, album_list } from '../../app/components/tutorial_list';
 
 describe('Application launch', function () {
@@ -30,10 +30,10 @@ describe('Application launch', function () {
     }
   });
 
-  // it('shows an initial window', async function () {
-  // const count = await app.client.getWindowCount();
-  // return assert.equal(count, 1);
-  // });
+  it('shows an initial window', async function () {
+    const count = await app.client.getWindowCount();
+    return assert.equal(count, 1);
+  });
 
   it('should display #led_good after render', async function () {
     await app.client.waitUntilWindowLoaded();
