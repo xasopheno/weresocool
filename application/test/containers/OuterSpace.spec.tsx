@@ -37,6 +37,29 @@ const click = async (button: string, component: Enzyme.ReactWrapper) => {
 };
 
 describe('OuterSpace', () => {
+  it('onUpdateVolume', async () => {
+    let component: ReactWrapper;
+    await act(async () => {
+      component = mount(<OuterSpaceWrapper />);
+      await flushPromises();
+    });
+    // @ts-ignore
+    await act(async () => {
+      component.find('volumeSlider').at(0).simulate('click');
+      await flushPromises();
+    });
+
+    // act(() => {
+    // editor.setValue('code');
+    // });
+    // expect(editor.getValue()).toBe('code');
+    // act(() => {
+    // component.find('#resetButton').at(0).simulate('click');
+    // component.update();
+    // });
+    // expect(editor.getValue()).toBe(language_template);
+    // expect(editor.focus.mock.calls.length).toBe(1);
+  });
   it('onResetLanguage', async () => {
     let component: ReactWrapper;
     await act(async () => {

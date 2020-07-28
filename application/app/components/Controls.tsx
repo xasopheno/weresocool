@@ -122,6 +122,7 @@ export const Controls = (props: Props): React.ReactElement => {
 
       <VimBox>
         <SliderContainer>
+          <h3>{store.volume}</h3>
           <Slider
             active={store.volume > 0.0}
             type="range"
