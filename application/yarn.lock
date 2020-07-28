@@ -12394,7 +12394,7 @@ specificity@^0.4.1:
   resolved "https://registry.yarnpkg.com/specificity/-/specificity-0.4.1.tgz#aab5e645012db08ba182e151165738d00887b019"
   integrity sha512-1klA3Gi5PD1Wv9Q0wUoOQN1IWAuPu0D1U03ThXTr0cJ20+/iq2tHSDnK7Kk/0LXJ1ztUB2/1Os0wKmfyNgUQfg==
 
-spectron@^11.1.0:
+spectron@^11.0.0:
   version "11.1.0"
   resolved "https://registry.yarnpkg.com/spectron/-/spectron-11.1.0.tgz#ee4f11c9057f6d79094f2d444eba555ccbe63965"
   integrity sha512-gL5mQZrh2Afv5vfUX7Llf61NI9zzS139BP0vivNU9kbl92O1AoGk7KwOEg+Cf6Pb2/G/s/81wYWqo/WOhYi6jQ==
@@ -13871,7 +13871,7 @@ webdriver@6.3.5:
     got "^11.0.2"
     lodash.merge "^4.6.1"
 
-webdriverio@*, webdriverio@^6.1.20:
+webdriverio@*, webdriverio@5.22.5, webdriverio@^6.1.20:
   version "6.3.5"
   resolved "https://registry.yarnpkg.com/webdriverio/-/webdriverio-6.3.5.tgz#51a01b049e60ce965214abfa3ffdded6c983ea8d"
   integrity sha512-hPREeod6pjPmZXpHI+ixRUeaVr/Ce2AwBfyttQlvL0GmsRgYSHKs5Dy7VWlvXmGhH/ahIJCOY0tccUPTXcGJPQ==

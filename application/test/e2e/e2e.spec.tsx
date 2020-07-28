@@ -1,7 +1,7 @@
 //  Important to match spectron and electron versions
 //  https://github.com/electron-userland/spectron#version-map
 import { Application } from 'spectron';
-import { assert } from 'chai';
+import { assert, expect } from 'chai';
 import { tutorial_list, album_list } from '../../app/components/tutorial_list';
 
 describe('Application launch', function () {
@@ -38,9 +38,13 @@ describe('Application launch', function () {
   it('should display #led_good after render', async function () {
     await app.client.waitUntilWindowLoaded();
     //@ts-ignore
-    await app.client.click('#playButton');
+    // await app.client.click('#playButton');
+    // await app.client.isExisting('#playButton');
+    const play_button = await app.client.$('#playButton');
+    await play_button.click();
     //@ts-ignore
-    return app.client.isExisting('#led_good');
+    const led_good = await app.client.$('#led_good');
+    return led_good.isExisting();
   });
 
   it('should display #led_good after choosing each demo/tutorial', async function () {
@@ -52,17 +56,17 @@ describe('Application launch', function () {
     ];
     for (const demo of demos) {
       for (const song in demo.list) {
-        //@ts-ignore
-        await app.client.click(demo.button);
+        const demo_button = await app.client.$(demo.button);
+        await demo_button.click();
         const song_name: string = demo.list[song].text;
         console.log(song_name);
         const search = `//*[text()[contains(., '${song_name}')]]`;
-        //@ts-ignore
-        await app.client.scroll(search);
-        //@ts-ignore
-        await app.client.element(search).click();
-        //@ts-ignore
-        const result: boolean = await app.client.isExisting('#led_good');
+        // await app.client.scroll(search);
+        const search_handle = await app.client.$(search);
+        await search_handle.scrollIntoView();
+        await search_handle.click();
+        const led_good = await app.client.$('#led_good');
+        const result = await led_good.isExisting();
         results[song_name] = result;
       }
     }
