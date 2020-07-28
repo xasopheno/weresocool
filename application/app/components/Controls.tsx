@@ -12,9 +12,13 @@ const SliderContainer = styled.div`
   width: 100%;
 `;
 
-const Slider = styled.input`
+interface SliderProps {
+  active: boolean;
+}
+
+const Slider = styled.input<SliderProps>`
   -webkit-appearance: none;
-  width: 200px;
+  width: 30px;
   background: transparent;
   opacity: 0.7;
   -webkit-transition: 0.1s;
@@ -30,11 +34,10 @@ const Slider = styled.input`
     margin: 0;
     width: 100%;
     cursor: pointer;
-    background: goldenrod;
     background: linear-gradient(
       to bottom right,
       transparent 50%,
-      goldenrod 50%
+      ${(p: SliderProps) => (p.active ? 'goldenrod' : '#aaa')} 50%
     );
   }
 
@@ -119,6 +122,7 @@ export const Controls = (props: Props): React.ReactElement => {
       <VimBox>
         <SliderContainer>
           <Slider
+            active={store.volume > 0.0}
             type="range"
             min="0"
             max="100"
