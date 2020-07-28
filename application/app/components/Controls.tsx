@@ -16,6 +16,8 @@ const SliderContainer = styled.div`
 
 const VolumeText = styled.p`
   margin: 0;
+  padding-left: 10px;
+  min-width: 30px;
   padding-top: 2px;
   color: goldenrod;
   opacity: 0.7;
