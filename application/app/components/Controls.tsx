@@ -18,7 +18,7 @@ interface SliderProps {
 
 const Slider = styled.input<SliderProps>`
   -webkit-appearance: none;
-  width: 30px;
+  width: 100%;
   background: transparent;
   opacity: 0.7;
   -webkit-transition: 0.1s;
@@ -61,6 +61,7 @@ export const Controls = (props: Props): React.ReactElement => {
   const width = useCurrentWidth();
   const store = useContext(GlobalContext);
   const dispatch = useContext(DispatchContext);
+  const break_point = 800;
 
   return (
     <TopBox>
@@ -82,7 +83,7 @@ export const Controls = (props: Props): React.ReactElement => {
           }}
           disabled={store.printing}
         >
-          {width > 650 ? 'Play' : 'P'}
+          {width > break_point ? 'Play' : 'P'}
         </Button>
         <Button
           data-tip="⌘+Enter"
@@ -90,7 +91,7 @@ export const Controls = (props: Props): React.ReactElement => {
           onClick={dispatch.onStop}
           disabled={store.printing}
         >
-          {width > 650 ? 'Stop' : 'S'}
+          {width > break_point ? 'Stop' : 'S'}
         </Button>
 
         <Render />
@@ -103,7 +104,7 @@ export const Controls = (props: Props): React.ReactElement => {
           }}
           disabled={store.printing}
         >
-          {width > 650 ? 'Load' : 'L'}
+          {width > break_point ? 'Load' : 'L'}
         </Button>
 
         <Button
@@ -115,7 +116,7 @@ export const Controls = (props: Props): React.ReactElement => {
           }}
           disabled={store.printing}
         >
-          {width > 650 ? 'Save' : 'S'}
+          {width > break_point ? 'Save' : 'S'}
         </Button>
       </ButtonBox>
 
@@ -137,6 +138,7 @@ export const Controls = (props: Props): React.ReactElement => {
           />
         </SliderContainer>
         <RightButton
+          data-tip="Reset to Template"
           id={'resetButton'}
           onClick={() => {
             dispatch.onResetLanguage();
@@ -144,9 +146,10 @@ export const Controls = (props: Props): React.ReactElement => {
           }}
           disabled={store.printing}
         >
-          Reset
+          {width > break_point ? 'Reset' : 'R'}
         </RightButton>
         <RightButton
+          data-tip="Choose Editor"
           id={'editorButton'}
           onClick={() => {
             dispatch.onIncrementEditorType(store.editor);
@@ -154,7 +157,9 @@ export const Controls = (props: Props): React.ReactElement => {
           }}
           disabled={store.printing}
         >
-          {Editors[store.editor].name}
+          {width > break_point
+            ? Editors[store.editor].name
+            : Editors[store.editor].name.charAt(0)}
         </RightButton>
       </VimBox>
     </TopBox>
