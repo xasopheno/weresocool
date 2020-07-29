@@ -146,7 +146,8 @@ mod render_manager_tests {
         rm.update_volume(0.9);
         assert!(cmp_f32(rm.current_volume, f32::powf(0.9, 2.0)));
         let ramp = rm.ramp_to_current_volume(2);
-        assert!(cmp_vec_f32(ramp, vec![1.0, 0.9525, 0.905, 0.85749996]));
+        dbg!(&ramp);
+        assert!(cmp_vec_f32(ramp, vec![0.8, 0.8025, 0.80499995, 0.80749996]));
     }
 
     #[test]
