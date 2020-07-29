@@ -47,7 +47,7 @@ describe('Play', () => {
       const errorDescription = component.find('#errorDescription');
       expect(errorDescription.exists()).toBe(true);
       expect(errorDescription.at(0).text()).toBe(
-        'UnexpectedToken: Line: 14 | Column 15'
+        'Unexpected Token: Line: 14 | Column 15'
       );
     });
   });

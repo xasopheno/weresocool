@@ -87,7 +87,7 @@ mod tests {
 
     #[actix_rt::test]
     async fn test_volume() {
-        let volume = VolumeUpdate { volume: 0.8 };
+        let volume = VolumeUpdate { volume: 0.6 };
 
         let req = test::TestRequest::post()
             .uri("/api/volume")
@@ -105,7 +105,8 @@ mod tests {
             .await;
 
         let resp = test::call_service(&mut app, req).await;
-        dbg!(&resp);
+        assert_eq!(rm.lock().unwrap().current_volume, f32::powf(0.6, 2.0));
+
         assert!(resp.status().is_success());
     }
 }

@@ -1,5 +1,5 @@
 import React from 'react';
-import Enzyme, { expect, mount, ReactWrapper } from 'enzyme';
+import Enzyme, { mount, ReactWrapper } from 'enzyme';
 import Adapter from 'enzyme-adapter-react-16';
 import Root from '../../app/containers/Root';
 import { testStore } from '../../app/store';
@@ -37,34 +37,6 @@ const click = async (button: string, component: Enzyme.ReactWrapper) => {
 };
 
 describe('OuterSpace', () => {
-  it('onUpdateVolume', async () => {
-    // let component: ReactWrapper;
-    // await act(async () => {
-    // component = mount(<OuterSpaceWrapper />);
-    // await flushPromises();
-    // component
-    // .find('#volumeSlider')
-    // .at(0)
-    // .props()
-    // .onChange({ target: { value: 50 } });
-    // await flushPromises();
-    // expect(component.find('#volumeText').first().text()).toBe('50');
-    // });
-    // // @ts-ignore
-    // await act(async () => {
-    // await flushPromises();
-    // });
-    // act(() => {
-    // editor.setValue('code');
-    // });
-    // expect(editor.getValue()).toBe('code');
-    // act(() => {
-    // component.find('#resetButton').at(0).simulate('click');
-    // component.update();
-    // });
-    // expect(editor.getValue()).toBe(language_template);
-    // expect(editor.focus.mock.calls.length).toBe(1);
-  });
   it('onResetLanguage', async () => {
     let component: ReactWrapper;
     await act(async () => {

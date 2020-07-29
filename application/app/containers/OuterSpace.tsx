@@ -55,10 +55,6 @@ const Spinner = (props: SpinnerProps): React.ReactElement => {
   }
 };
 
-const ErrorWrapper = styled.div`
-  position: absolute;
-`;
-
 export const OuterSpace = (): React.ReactElement => {
   const width = useCurrentWidth();
   const store = useContext(GlobalContext);
