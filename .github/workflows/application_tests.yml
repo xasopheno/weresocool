@@ -39,11 +39,11 @@ jobs:
       - name: install dependancies
         run: brew install portaudio pkg-config lame
 
-      - name: yarn package-mac
+      - name: yarn package
         working-directory: ./application
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        run: yarn package-mac
+        run: yarn package
 
       - name: test static build 
         working-directory: ./application
