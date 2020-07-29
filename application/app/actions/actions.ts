@@ -123,7 +123,7 @@ export class Dispatch {
       localStorage.setItem('volume', volume.toString());
       this.dispatch({ _k: 'Update_Volume', volume });
     } catch (e) {
-      // this.dispatch({ _k: 'Backend', fetch: { state: 'bad', error: e } });
+      this.dispatch({ _k: 'Backend', fetch: { state: 'bad', error: e } });
     }
   }
 

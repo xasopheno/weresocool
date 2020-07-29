@@ -1,5 +1,5 @@
 import React from 'react';
-import Enzyme, { mount, ReactWrapper } from 'enzyme';
+import Enzyme, { expect, mount, ReactWrapper } from 'enzyme';
 import Adapter from 'enzyme-adapter-react-16';
 import Root from '../../app/containers/Root';
 import { testStore } from '../../app/store';
@@ -38,17 +38,22 @@ const click = async (button: string, component: Enzyme.ReactWrapper) => {
 
 describe('OuterSpace', () => {
   it('onUpdateVolume', async () => {
-    let component: ReactWrapper;
-    await act(async () => {
-      component = mount(<OuterSpaceWrapper />);
-      await flushPromises();
-    });
-    // @ts-ignore
-    await act(async () => {
-      component.find('volumeSlider').at(0).simulate('click');
-      await flushPromises();
-    });
-
+    // let component: ReactWrapper;
+    // await act(async () => {
+    // component = mount(<OuterSpaceWrapper />);
+    // await flushPromises();
+    // component
+    // .find('#volumeSlider')
+    // .at(0)
+    // .props()
+    // .onChange({ target: { value: 50 } });
+    // await flushPromises();
+    // expect(component.find('#volumeText').first().text()).toBe('50');
+    // });
+    // // @ts-ignore
+    // await act(async () => {
+    // await flushPromises();
+    // });
     // act(() => {
     // editor.setValue('code');
     // });

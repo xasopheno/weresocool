@@ -147,7 +147,9 @@ export const Controls = (props: Props): React.ReactElement => {
               dispatch.setEditorFocus(store.editor_ref);
             }}
           />
-          <VolumeText active={store.volume > 0.0}>{store.volume}</VolumeText>
+          <VolumeText id={'volumeText'} active={store.volume > 0.0}>
+            {store.volume}
+          </VolumeText>
         </SliderContainer>
         <RightButton
           data-tip="Reset to Template"

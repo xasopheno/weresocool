@@ -38,13 +38,21 @@ describe('Application launch', function () {
   it('should display #led_good after render', async function () {
     await app.client.waitUntilWindowLoaded();
     //@ts-ignore
-    // await app.client.click('#playButton');
-    // await app.client.isExisting('#playButton');
     const play_button = await app.client.$('#playButton');
     await play_button.click();
     //@ts-ignore
     const led_good = await app.client.$('#led_good');
     return led_good.isExisting();
+  });
+
+  it('should display #led_good after volume change', async function () {
+    await app.client.waitUntilWindowLoaded();
+    const volumeSlider = await app.client.$('#volumeSlider');
+    await volumeSlider.setValue(50);
+    const volumeText = await app.client.$('#volumeText');
+    const led_good = await app.client.$('#led_good');
+    const volume_value = await volumeText.getValue();
+    return led_good.isExisting() && volume_value === '50';
   });
 
   it('should display #led_good after choosing each demo/tutorial', async function () {
