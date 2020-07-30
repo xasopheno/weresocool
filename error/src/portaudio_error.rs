@@ -71,4 +71,6 @@ pub enum PortAudioError {
     IncompatibleStreamHostApi,
     /// Invalid buffer
     BadBufferPtr,
+    /// No Device
+    NoDevice,
 }
