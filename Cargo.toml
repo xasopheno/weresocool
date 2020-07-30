@@ -68,6 +68,7 @@ members = [
     "parser",
     "shared",
     "portaudio",
+    "portaudio/rust-portaudio-sys",
     "application/server",
 ]
 
