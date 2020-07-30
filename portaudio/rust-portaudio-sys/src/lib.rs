@@ -51,6 +51,7 @@ pub const OUTPUT_OVERFLOW: StreamCallbackFlags = 0x00000008;
 pub const PRIMING_OUTPUT: StreamCallbackFlags = 0x00000010;
 
 /// A function to convert C `*const char` arrays into Rust `&'a str`s.
+#[allow(clippy::missing_safety_doc)]
 pub unsafe fn c_str_to_str<'a>(
     c_str: *const std::os::raw::c_char,
 ) -> Result<&'a str, ::std::str::Utf8Error> {
