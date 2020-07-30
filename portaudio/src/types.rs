@@ -326,7 +326,9 @@ impl<'a> HostApiInfo<'a> {
         Some(HostApiInfo {
             struct_version: c_info.structVersion,
             host_type,
-            name: ffi::c_str_to_str(c_info.name).unwrap_or("<Failed to convert str from CStr>"),
+            name: unsafe {
+                ffi::c_str_to_str(c_info.name).unwrap_or("<Failed to convert str from CStr>")
+            },
             device_count,
             default_input_device,
             default_output_device,
@@ -372,8 +374,9 @@ impl<'a> HostErrorInfo<'a> {
         HostErrorInfo {
             host_api_type: FromPrimitive::from_u32(c_error.hostApiType).unwrap(),
             code: c_error.errorCode as u32,
-            text: ffi::c_str_to_str(c_error.errorText)
-                .unwrap_or("<Failed to convert str from CStr>"),
+            text: unsafe {
+                ffi::c_str_to_str(c_error.errorText).unwrap_or("<Failed to convert str from CStr>")
+            },
         }
     }
 }
@@ -420,7 +423,9 @@ impl<'a> DeviceInfo<'a> {
     pub fn from_c_info(c_info: ffi::PaDeviceInfo) -> DeviceInfo<'a> {
         DeviceInfo {
             struct_version: c_info.structVersion,
-            name: ffi::c_str_to_str(c_info.name).unwrap_or("<Failed to convert str from CStr>"),
+            name: unsafe {
+                ffi::c_str_to_str(c_info.name).unwrap_or("<Failed to convert str from CStr>")
+            },
             host_api: c_info.hostApi,
             max_input_channels: c_info.maxInputChannels,
             max_output_channels: c_info.maxOutputChannels,
