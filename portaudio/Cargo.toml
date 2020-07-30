@@ -9,6 +9,11 @@ license = "MIT"
 homepage = "https://github.com/RustAudio/rust-portaudio"
 repository = "https://github.com/RustAudio/rust-portaudio.git"
 
+[workspace]
+members = [
+  "rust-portaudio-sys"
+]
+
 [dependencies]
 bitflags = "1.2.1"
 libc = "0.2.51"
