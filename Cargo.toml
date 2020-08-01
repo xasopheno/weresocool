@@ -20,7 +20,6 @@ weresocool_error = { path = "error" }
 weresocool_lame = { path = "lame" } 
 weresocool_shared = { path = "shared" } 
 weresocool_instrument = { path = "instrument" } 
-# portaudio = { path = "portaudio" }
 portaudio = "0.7.0"
 rand = "0.7.3"
 hound = "3.4.0"
