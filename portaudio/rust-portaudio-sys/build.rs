@@ -42,10 +42,9 @@ fn main() {
             .is_ok()
         {
             return;
-        } else {
-            build();
         }
     }
+    build();
 }
 
 fn build() {
