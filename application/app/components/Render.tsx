@@ -56,13 +56,14 @@ export const Render = (): React.ReactElement => {
     <div>
       <RenderModal options={options} />
       <Button
+        data-tip="Render"
         id={'printButton'}
         onClick={() => {
           setShowRenderModal(true);
         }}
         disabled={store.printing}
       >
-        {width > 650 ? 'Render' : 'Re'}
+        {width > 800 ? 'Render' : 'R'}
       </Button>
     </div>
   );

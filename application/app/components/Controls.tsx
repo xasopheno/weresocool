@@ -5,7 +5,65 @@ import { GlobalContext, Editors } from '../store';
 import ReactTooltip from 'react-tooltip';
 import { Render } from './Render';
 import { useCurrentWidth } from '../utils/width';
+import styled from 'styled-components';
 
+const SliderContainer = styled.div`
+  display: flex;
+  flex-direction: row;
+  padding-top: 5px;
+  width: 100%;
+`;
+
+const VolumeText = styled.p<SliderProps>`
+  margin: 0;
+  padding-left: 10px;
+  min-width: 30px;
+  padding-top: 2px;
+  color: ${(p: SliderProps) => (p.active ? 'goldenrod' : '#aaa')};
+  opacity: 0.8;
+`;
+
+interface SliderProps {
+  active: boolean;
+}
+
+const Slider = styled.input<SliderProps>`
+  -webkit-appearance: none;
+  width: 100%;
+  background: transparent;
+  opacity: 0.7;
+  -webkit-transition: 0.1s;
+  transition: opacity 0.1s;
+
+  :focus {
+    outline: none;
+    opacity: 1;
+  }
+
+  ::-webkit-slider-runnable-track {
+    height: 1.3rem;
+    margin: 0;
+    width: 100%;
+    cursor: pointer;
+    background: linear-gradient(
+      to bottom right,
+      transparent 50%,
+      ${(p: SliderProps) => (p.active ? 'goldenrod' : '#aaa')} 50%
+    );
+  }
+
+  ::-webkit-slider-thumb {
+    -webkit-appearance: none;
+    height: 1.7rem;
+    width: 0.5rem;
+    background: #edd;
+    border: 1px solid;
+    margin-top: -5px;
+    border-radius: 3px;
+    border-color: #eed;
+    cursor: pointer;
+  }
+`;
 const stub = () => {};
 
 type Props = { handleLoad: () => void };
@@ -14,6 +72,7 @@ export const Controls = (props: Props): React.ReactElement => {
   const width = useCurrentWidth();
   const store = useContext(GlobalContext);
   const dispatch = useContext(DispatchContext);
+  const break_point = 800;
 
   return (
     <TopBox>
@@ -35,7 +94,7 @@ export const Controls = (props: Props): React.ReactElement => {
           }}
           disabled={store.printing}
         >
-          {width > 650 ? 'Play' : 'P'}
+          {width > break_point ? 'Play' : 'P'}
         </Button>
         <Button
           data-tip="⌘+Enter"
@@ -43,7 +102,7 @@ export const Controls = (props: Props): React.ReactElement => {
           onClick={dispatch.onStop}
           disabled={store.printing}
         >
-          {width > 650 ? 'Stop' : 'S'}
+          {width > break_point ? 'Stop' : 'S'}
         </Button>
 
         <Render />
@@ -56,7 +115,7 @@ export const Controls = (props: Props): React.ReactElement => {
           }}
           disabled={store.printing}
         >
-          {width > 650 ? 'Load' : 'L'}
+          {width > break_point ? 'Load' : 'L'}
         </Button>
 
         <Button
@@ -68,12 +127,32 @@ export const Controls = (props: Props): React.ReactElement => {
           }}
           disabled={store.printing}
         >
-          {width > 650 ? 'Save' : 'S'}
+          {width > break_point ? 'Save' : 'S'}
         </Button>
       </ButtonBox>
 
       <VimBox>
+        <SliderContainer>
+          <Slider
+            active={store.volume > 0.0}
+            type="range"
+            min="0"
+            max="100"
+            id="volumeSlider"
+            value={store.volume}
+            onChange={async (e) => {
+              await dispatch.onVolumeChange(parseInt(e.target.value));
+            }}
+            onMouseUp={() => {
+              dispatch.setEditorFocus(store.editor_ref);
+            }}
+          />
+          <VolumeText id={'volumeText'} active={store.volume > 0.0}>
+            {store.volume}
+          </VolumeText>
+        </SliderContainer>
         <RightButton
+          data-tip="Reset to Template"
           id={'resetButton'}
           onClick={() => {
             dispatch.onResetLanguage();
@@ -81,9 +160,10 @@ export const Controls = (props: Props): React.ReactElement => {
           }}
           disabled={store.printing}
         >
-          Reset
+          {width > break_point ? 'Reset' : 'R'}
         </RightButton>
         <RightButton
+          data-tip="Choose Editor"
           id={'editorButton'}
           onClick={() => {
             dispatch.onIncrementEditorType(store.editor);
@@ -91,7 +171,9 @@ export const Controls = (props: Props): React.ReactElement => {
           }}
           disabled={store.printing}
         >
-          {Editors[store.editor].name}
+          {width > break_point
+            ? Editors[store.editor].name
+            : Editors[store.editor].name.charAt(0)}
         </RightButton>
       </VimBox>
     </TopBox>

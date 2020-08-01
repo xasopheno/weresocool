@@ -25,6 +25,24 @@ pub fn write_output_buffer(out_buffer: &mut [f32], stereo_waveform: StereoWavefo
     }
 }
 
+pub fn new_write_output_buffer(
+    out_buffer: &mut [f32],
+    stereo_waveform: StereoWaveform,
+    offset: Vec<f32>,
+) {
+    let mut l_idx = 0;
+    let mut r_idx = 0;
+    for (n, sample) in out_buffer.iter_mut().enumerate() {
+        if n % 2 == 0 {
+            *sample = offset[n] * stereo_waveform.l_buffer[l_idx] as f32;
+            l_idx += 1
+        } else {
+            *sample = offset[n] * stereo_waveform.r_buffer[r_idx] as f32;
+            r_idx += 1
+        }
+    }
+}
+
 pub fn filename_from_string(s: &str) -> &str {
     let split: Vec<&str> = s.split('.').collect();
     let filename: Vec<&str> = split[0].split('/').collect();

@@ -88,6 +88,7 @@ export const OuterSpace = (): React.ReactElement => {
       <ButtonBar width={width} />
       <Controls handleLoad={handleLoad} />
       <Editor handleLoad={handleLoad} />
+
       <ErrorDescription
         errorMessage={store.errorMessage}
         responseState={store.render}

@@ -1,5 +1,6 @@
 pub mod print;
 pub mod types;
+pub mod volume;
 use crate::server::types::Language;
 use actix_files::NamedFile;
 use actix_web::{web, HttpRequest, HttpResponse};
@@ -32,6 +33,7 @@ impl PrintSuccess {
 pub enum Success {
     RenderSuccess(String),
     PrintSuccess(PrintSuccess),
+    VolumeUpdate(String),
 }
 
 pub async fn render(
@@ -55,6 +57,7 @@ pub async fn render(
 mod tests {
     use super::*;
     use actix_web::{http::header, test, web, App};
+    use types::VolumeUpdate;
 
     #[actix_rt::test]
     async fn test_index() {
@@ -79,6 +82,31 @@ mod tests {
         .await;
 
         let resp = test::call_service(&mut app, req).await;
+        assert!(resp.status().is_success());
+    }
+
+    #[actix_rt::test]
+    async fn test_volume() {
+        let volume = VolumeUpdate { volume: 0.6 };
+
+        let req = test::TestRequest::post()
+            .uri("/api/volume")
+            .header(header::CONTENT_TYPE, "application/json")
+            .set_json(&volume)
+            .to_request();
+
+        let render_manager = Arc::new(Mutex::new(RenderManager::init_silent()));
+        let rm = web::Data::new(Arc::clone(&render_manager));
+
+        let mut app =
+            test::init_service(App::new().app_data(rm.clone()).service(
+                web::resource("/api/volume").route(web::post().to(volume::volume_update)),
+            ))
+            .await;
+
+        let resp = test::call_service(&mut app, req).await;
+        assert_eq!(rm.lock().unwrap().current_volume, f32::powf(0.6, 2.0));
+
         assert!(resp.status().is_success());
     }
 }

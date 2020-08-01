@@ -13,6 +13,8 @@ use weresocool_instrument::StereoWaveform;
 #[derive(Clone, Debug)]
 pub struct RenderManager {
     pub renders: [Option<Vec<RenderVoice>>; 2],
+    pub current_volume: f32,
+    pub past_volume: f32,
     render_idx: usize,
     read_idx: usize,
 }
@@ -21,6 +23,8 @@ impl RenderManager {
     pub const fn init(render_voices: Vec<RenderVoice>) -> Self {
         Self {
             renders: [Some(render_voices), None],
+            past_volume: 0.8,
+            current_volume: 0.8,
             render_idx: 0,
             read_idx: 0,
         }
@@ -29,12 +33,31 @@ impl RenderManager {
     pub const fn init_silent() -> Self {
         Self {
             renders: [None, None],
+            past_volume: 0.8,
+            current_volume: 0.8,
             render_idx: 0,
             read_idx: 0,
         }
     }
 
-    pub fn read(&mut self, buffer_size: usize) -> Option<StereoWaveform> {
+    pub fn update_volume(&mut self, volume: f32) {
+        self.current_volume = f32::powf(volume, 2.0)
+    }
+
+    fn ramp_to_current_volume(&mut self, buffer_size: usize) -> Vec<f32> {
+        let offset: Vec<f32> = (0..buffer_size * 2)
+            .map(|i| {
+                let distance = self.current_volume - self.past_volume;
+                self.past_volume + (distance * i as f32 / (buffer_size * 2) as f32)
+            })
+            .collect();
+
+        self.past_volume = self.current_volume;
+
+        offset
+    }
+
+    pub fn read(&mut self, buffer_size: usize) -> Option<(StereoWaveform, Vec<f32>)> {
         let next = self.exists_next_render();
         let current = self.current_render();
 
@@ -56,7 +79,8 @@ impl RenderManager {
 
                     sw.pad(buffer_size);
 
-                    Some(sw)
+                    let ramp = self.ramp_to_current_volume(buffer_size);
+                    Some((sw, ramp))
                 } else {
                     *self.current_render() = None;
                     None
@@ -96,19 +120,6 @@ impl RenderManager {
     pub fn push_render(&mut self, render: Vec<RenderVoice>) {
         *self.next_render() = Some(render);
     }
-
-    pub fn prepare_render(&mut self, input: InputType<'_>) -> Result<(), Error> {
-        let (nf, basis, table) = match input.make(RenderType::NfBasisAndTable)? {
-            RenderReturn::NfBasisAndTable(nf, basis, table) => (nf, basis, table),
-            _ => return Err(Error::with_msg("Failed Parse/Render")),
-        };
-        let renderables = nf_to_vec_renderable(&nf, &table, &basis)?;
-
-        let render_voices = renderables_to_render_voices(renderables);
-
-        self.push_render(render_voices);
-        Ok(())
-    }
 }
 
 pub fn prepare_render_outside(input: InputType<'_>) -> Result<Vec<RenderVoice>, Error> {
@@ -127,6 +138,21 @@ pub fn prepare_render_outside(input: InputType<'_>) -> Result<Vec<RenderVoice>, 
 mod render_manager_tests {
     use super::*;
     use weresocool_instrument::renderable::RenderOp;
+    use weresocool_shared::helpers::{cmp_f32, cmp_vec_f32};
+
+    #[test]
+    fn test_ramp_to_current_value() {
+        let mut rm = RenderManager::init_silent();
+        rm.update_volume(0.9);
+        assert!(cmp_f32(rm.current_volume, f32::powf(0.9, 2.0)));
+        let ramp = rm.ramp_to_current_volume(2);
+        dbg!(&ramp);
+        assert!(cmp_vec_f32(
+            ramp,
+            vec![0.8, 0.8025, 0.80499995, 0.807_499_95]
+        ));
+    }
+
     #[test]
     fn test_inc_render() {
         let mut r = RenderManager::init_silent();

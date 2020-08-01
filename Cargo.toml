@@ -48,7 +48,7 @@ float-cmp = "0.8.0"
 
 [dev-dependencies]
 pretty_assertions = "0.6.1"
-criterion = "0.3"
+criterion = "0.3.3"
 
 [[bench]]
 name = "render_batch_bench"
@@ -66,6 +66,8 @@ members = [
     "lame",
     "parser",
     "shared",
+    # "portaudio",
+    # "portaudio/rust-portaudio-sys",
     "application/server",
 ]
 

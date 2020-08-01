@@ -6,6 +6,11 @@ pub struct Language {
 }
 
 #[derive(Deserialize, Serialize, Debug)]
+pub struct VolumeUpdate {
+    pub volume: f32,
+}
+
+#[derive(Deserialize, Serialize, Debug)]
 pub struct PrintLanguage {
     pub language: String,
     pub print_type: String,

@@ -20,7 +20,7 @@ type Props = { handleLoad: () => void };
 const Container = styled.div`
   top: 140px;
   position: absolute;
-  bottom: 5vh;
+  bottom: 23px;
   width: 80vw;
 `;
 
@@ -34,11 +34,16 @@ export const Editor = (props: Props): React.ReactElement => {
 
   useEffect(() => {
     if (renderSpace) {
-      const getLocalStorage = () => {
+      const getLocalStorage = async () => {
         const storedLanguage = localStorage.getItem('language');
         const storedEditor = localStorage.getItem('editor');
+        const storedVolume = localStorage.getItem('volume');
+
         if (storedLanguage) {
           dispatch.onUpdateLanguage(storedLanguage);
+        }
+        if (storedVolume) {
+          await dispatch.onVolumeChange(parseInt(storedVolume));
         }
         if (storedEditor) {
           dispatch.onIncrementEditorType(parseInt(storedEditor) - 1);
@@ -47,7 +52,9 @@ export const Editor = (props: Props): React.ReactElement => {
       // @ts-ignore
       renderSpace.editor.getSession().setMode(customMode);
       renderSpace.editor.setTheme('ace/theme/wsc');
-      getLocalStorage();
+      getLocalStorage().catch((e) => {
+        throw e;
+      });
     }
   }, [renderSpace, dispatch]);
 
