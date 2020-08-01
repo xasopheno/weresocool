@@ -44,6 +44,7 @@ fn main() {
             return;
         }
     }
+
     build();
 }
 
