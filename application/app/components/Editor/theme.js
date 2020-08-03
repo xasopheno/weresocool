@@ -60,6 +60,9 @@ color: #343434\
 .ace-wsc-theme .ace_operation {\
 color: #789816\
 }\
+.ace-wsc-theme .ace_import {\
+color: gold\
+}\
 .ace-wsc-theme .ace_frequency {\
 color: #ef8168\
 }\
