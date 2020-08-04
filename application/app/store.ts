@@ -4,7 +4,7 @@ import AceEditor from 'react-ace';
 import { language_template } from '../app/components/Editor/language_template';
 import { welcome } from '../app/components/Editor/welcome';
 import { ResponseType } from '../app/actions/actions';
-// import { remote } from 'electron';
+import { remote } from 'electron';
 // import path from 'path';
 
 interface Editor {
@@ -34,6 +34,7 @@ export interface Store {
   editor_ref: AceEditor | null;
   printing: boolean;
   volume: number;
+  working_path: string;
 }
 
 export const intialStore: Store = {
@@ -48,6 +49,7 @@ export const intialStore: Store = {
   editor_ref: null,
   printing: false,
   volume: 80,
+  working_path: remote.app.getPath('home'),
 };
 
 export const testStore: Store = {
@@ -62,6 +64,7 @@ export const testStore: Store = {
   editor_ref: null,
   printing: false,
   volume: 80,
+  working_path: '/tmp',
 };
 export const GlobalContext = createContext((undefined as unknown) as Store);
 // // This adds a `_k: 'something'` to a given type

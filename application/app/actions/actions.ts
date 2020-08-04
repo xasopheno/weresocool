@@ -17,6 +17,7 @@ export enum ResponseType {
 }
 
 export type Action =
+  | { _k: 'Set_Working_Path'; path: string }
   | { _k: 'Update_Volume'; volume: number }
   | { _k: 'Set_Editor_Focus' }
   | { _k: 'Set_Printing'; state: boolean }
@@ -44,6 +45,13 @@ export class Dispatch {
     this.dispatch({
       _k: 'Set_Editor_Ref',
       editor_ref,
+    });
+  }
+
+  onSetWorkingPath(path: string) {
+    this.dispatch({
+      _k: 'Set_Working_Path',
+      path,
     });
   }
 

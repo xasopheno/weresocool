@@ -1,9 +1,10 @@
-import React, { useContext, useRef } from 'react';
+import React, { useState, useContext, useRef } from 'react';
 import { Logo } from '../components/Title';
 import { Ratios } from '../components/Ratios';
 import { ButtonBar } from '../components/ButtonBar';
 import { Controls } from '../components/Controls';
 import { Editor } from '../components/Editor/editor';
+import { Settings, SettingsData } from '../components/Settings';
 import { LED } from '../components/Backend';
 import { ErrorDescription } from '../components/Error';
 import { useCurrentWidth } from '../utils/width';
@@ -60,11 +61,17 @@ export const OuterSpace = (): React.ReactElement => {
   const store = useContext(GlobalContext);
   const dispatch = useContext(DispatchContext);
   const fileInput = useRef<HTMLInputElement>(null);
+  const [showSettings, setShowSettings] = useState<boolean>(true);
 
   const handleLoad = () => {
     if (fileInput && fileInput.current) {
       fileInput.current.click();
     }
+  };
+
+  const settingsData: SettingsData = {
+    setShow: setShowSettings,
+    show: showSettings,
   };
 
   return (
@@ -80,6 +87,7 @@ export const OuterSpace = (): React.ReactElement => {
           dispatch.setEditorFocus(store.editor_ref);
         }}
       />
+      <Settings settingsData={settingsData}></Settings>
       <Spinner show={store.printing} />
       <Version>{`v${remote.app.getVersion()}`}</Version>
       <LED state={store.backend.state} />
