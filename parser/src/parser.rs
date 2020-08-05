@@ -87,6 +87,7 @@ pub fn language_to_vec_string(language: &str) -> Vec<String> {
 pub fn parse_file(
     vec_string: Vec<String>,
     prev_defs: Option<Defs>,
+    working_dir: Option<&str>,
 ) -> Result<ParsedComposition, Error> {
     let mut defs: Defs = if let Some(defs) = prev_defs {
         defs
@@ -98,9 +99,16 @@ pub fn parse_file(
         handle_whitespace_and_imports(vec_string).expect("Whitespace and imports parsing error");
 
     for import in imports_needed {
-        let (filepath, import_name) = get_filepath_and_import_name(import);
+        let (mut filepath, import_name) = get_filepath_and_import_name(import);
+        if let Some(wd) = working_dir {
+            let mut pb = std::path::PathBuf::new();
+            pb.push(wd);
+            pb.push(filepath);
+            filepath = pb.display().to_string();
+        }
+        dbg!(&filepath);
         let vec_string = filename_to_vec_string(&filepath.to_string());
-        let parsed_composition = parse_file(vec_string, Some(defs.clone()))?;
+        let parsed_composition = parse_file(vec_string, Some(defs.clone()), working_dir.clone())?;
 
         for (key, val) in parsed_composition.defs.terms {
             let mut name = import_name.clone();
