@@ -28,7 +28,7 @@ fn main() {
 }
 
 pub fn prepare_render(input: InputType<'_>) -> Result<Vec<RenderVoice>, Error> {
-    let (nf, basis, table) = match input.make(RenderType::NfBasisAndTable)? {
+    let (nf, basis, table) = match input.make(RenderType::NfBasisAndTable, None)? {
         RenderReturn::NfBasisAndTable(nf, basis, table) => (nf, basis, table),
         _ => panic!("Error. Unable to generate NormalForm"),
     };

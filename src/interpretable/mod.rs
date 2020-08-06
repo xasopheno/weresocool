@@ -8,11 +8,16 @@ pub enum InputType<'a> {
 }
 
 pub trait Interpretable {
-    fn make(&self, target: RenderType) -> Result<RenderReturn, Error>;
+    fn make(&self, target: RenderType, working_path: Option<String>)
+        -> Result<RenderReturn, Error>;
 }
 
 impl Interpretable for InputType<'_> {
-    fn make(&self, target: RenderType) -> Result<RenderReturn, Error> {
+    fn make(
+        &self,
+        target: RenderType,
+        working_path: Option<String>,
+    ) -> Result<RenderReturn, Error> {
         let (filename, vec_string) = match &self {
             InputType::Filename(filename) => (filename, filename_to_vec_string(filename)),
             InputType::Language(language) => (&"Language", language_to_vec_string(language)),
@@ -20,7 +25,9 @@ impl Interpretable for InputType<'_> {
         let parsed_composition = parse_file(
             vec_string,
             None,
-            Some("/Users/danny/Documents/weresocool/corey/"),
+            working_path
+            // Some("/home/danny/socool"),
+            // Some("/Users/danny/Documents/weresocool/corey/"),
         )?;
         parsed_to_render(filename, parsed_composition, target)
     }

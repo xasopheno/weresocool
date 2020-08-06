@@ -87,7 +87,7 @@ pub fn language_to_vec_string(language: &str) -> Vec<String> {
 pub fn parse_file(
     vec_string: Vec<String>,
     prev_defs: Option<Defs>,
-    working_dir: Option<&str>,
+    working_dir: Option<String>,
 ) -> Result<ParsedComposition, Error> {
     let mut defs: Defs = if let Some(defs) = prev_defs {
         defs
@@ -100,7 +100,7 @@ pub fn parse_file(
 
     for import in imports_needed {
         let (mut filepath, import_name) = get_filepath_and_import_name(import);
-        if let Some(wd) = working_dir {
+        if let Some(wd) = working_dir.clone() {
             let mut pb = std::path::PathBuf::new();
             pb.push(wd);
             pb.push(filepath);

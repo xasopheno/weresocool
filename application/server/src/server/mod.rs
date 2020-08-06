@@ -40,7 +40,10 @@ pub async fn render(
     render_manager: web::Data<Arc<Mutex<RenderManager>>>,
     req: web::Json<Language>,
 ) -> HttpResponse {
-    match prepare_render_outside(InputType::Language(&req.language)) {
+    match prepare_render_outside(
+        InputType::Language(&req.language),
+        req.working_path.to_owned(),
+    ) {
         Ok(render) => {
             render_manager.lock().unwrap().push_render(render);
             println!("Success.");

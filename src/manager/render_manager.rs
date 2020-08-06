@@ -122,8 +122,11 @@ impl RenderManager {
     }
 }
 
-pub fn prepare_render_outside(input: InputType<'_>) -> Result<Vec<RenderVoice>, Error> {
-    let (nf, basis, table) = match input.make(RenderType::NfBasisAndTable)? {
+pub fn prepare_render_outside(
+    input: InputType<'_>,
+    working_path: Option<String>,
+) -> Result<Vec<RenderVoice>, Error> {
+    let (nf, basis, table) = match input.make(RenderType::NfBasisAndTable, working_path)? {
         RenderReturn::NfBasisAndTable(nf, basis, table) => (nf, basis, table),
         _ => return Err(Error::with_msg("Failed Parse/Render")),
     };
