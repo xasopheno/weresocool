@@ -152,6 +152,27 @@ export class Dispatch {
     }
   }
 
+  async onRenderWithWorkingPath(
+    language: string,
+    working_path: string
+  ): Promise<void> {
+    this.dispatch({ _k: 'Backend', fetch: { state: 'loading' } });
+
+    try {
+      const response = await axios.post(settings.backendURL, {
+        language,
+        working_path,
+      });
+
+      this.dispatch({ _k: 'Backend', fetch: { state: 'good' } });
+      generateDispatches(response.data, language).map((dispatch) => {
+        this.dispatch(dispatch);
+      });
+    } catch (e) {
+      this.dispatch({ _k: 'Backend', fetch: { state: 'bad', error: e } });
+    }
+  }
+
   async onPrint(language: string, print_type: string): Promise<void> {
     this.dispatch({ _k: 'Backend', fetch: { state: 'loading' } });
     this.dispatch({ _k: 'Set_Printing', state: true });

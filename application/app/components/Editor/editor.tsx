@@ -61,7 +61,10 @@ export const Editor = (props: Props): React.ReactElement => {
   useEffect(() => {
     const submit = async () => {
       if (render) {
-        await dispatch.onRender(store.language);
+        await dispatch.onRenderWithWorkingPath(
+          store.language,
+          store.working_path
+        );
         setRender(false);
       }
     };

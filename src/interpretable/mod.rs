@@ -17,7 +17,11 @@ impl Interpretable for InputType<'_> {
             InputType::Filename(filename) => (filename, filename_to_vec_string(filename)),
             InputType::Language(language) => (&"Language", language_to_vec_string(language)),
         };
-        let parsed_composition = parse_file(vec_string, None, Some("/home/danny/socool"))?;
+        let parsed_composition = parse_file(
+            vec_string,
+            None,
+            Some("/Users/danny/Documents/weresocool/corey/"),
+        )?;
         parsed_to_render(filename, parsed_composition, target)
     }
 }

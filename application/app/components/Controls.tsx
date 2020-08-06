@@ -1,6 +1,7 @@
-import React, { useContext } from 'react';
+import React, { useState, useContext } from 'react';
 import { TopBox, ButtonBox, Button, RightButton, VimBox } from './style';
 import { DispatchContext } from '../actions/actions';
+import { Settings, SettingsData } from '../components/Settings';
 import { GlobalContext, Editors } from '../store';
 import ReactTooltip from 'react-tooltip';
 import { Render } from './Render';
@@ -72,7 +73,13 @@ export const Controls = (props: Props): React.ReactElement => {
   const width = useCurrentWidth();
   const store = useContext(GlobalContext);
   const dispatch = useContext(DispatchContext);
+  const [showSettings, setShowSettings] = useState<boolean>(false);
   const break_point = 800;
+
+  const settingsData: SettingsData = {
+    setShow: setShowSettings,
+    show: showSettings,
+  };
 
   return (
     <TopBox>
@@ -89,7 +96,10 @@ export const Controls = (props: Props): React.ReactElement => {
           data-tip="Shift+Enter"
           id={'playButton'}
           onClick={async () => {
-            await dispatch.onRender(store.language);
+            await dispatch.onRenderWithWorkingPath(
+              store.language,
+              store.working_path
+            );
             dispatch.setEditorFocus(store.editor_ref);
           }}
           disabled={store.printing}
@@ -163,18 +173,15 @@ export const Controls = (props: Props): React.ReactElement => {
           {width > break_point ? 'Reset' : 'R'}
         </RightButton>
         <RightButton
-          data-tip="Choose Editor"
-          id={'editorButton'}
+          id={'settingsButton'}
           onClick={() => {
-            dispatch.onIncrementEditorType(store.editor);
-            dispatch.setEditorFocus(store.editor_ref);
+            setShowSettings(true);
           }}
           disabled={store.printing}
         >
-          {width > break_point
-            ? Editors[store.editor].name
-            : Editors[store.editor].name.charAt(0)}
+          Settings
         </RightButton>
+        <Settings settingsData={settingsData} />
       </VimBox>
     </TopBox>
   );
