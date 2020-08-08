@@ -19,7 +19,7 @@ impl Interpretable for InputType<'_> {
         working_path: Option<String>,
     ) -> Result<RenderReturn, Error> {
         let (filename, vec_string) = match &self {
-            InputType::Filename(filename) => (filename, filename_to_vec_string(filename)),
+            InputType::Filename(filename) => (filename, filename_to_vec_string(filename)?),
             InputType::Language(language) => (&"Language", language_to_vec_string(language)),
         };
         let parsed_composition = parse_file(

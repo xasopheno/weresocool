@@ -55,10 +55,10 @@ fn process_op_table(defs: Defs) -> Result<Defs, Error> {
 
     Ok(result)
 }
-pub fn read_file(filename: &str) -> File {
+pub fn read_file(filename: &str) -> Result<File, Error> {
     let f = File::open(filename);
     match f {
-        Ok(f) => return f,
+        Ok(f) => return Ok(f),
         _ => {
             println!(
                 "{} {}\n",
@@ -66,18 +66,18 @@ pub fn read_file(filename: &str) -> File {
                 filename.red().bold()
             );
 
-            panic!("File not found");
+            Err(Error::with_msg(format!("File not found: {}", filename)));
         }
     };
 }
 
-pub fn filename_to_vec_string(filename: &str) -> Vec<String> {
-    let file = read_file(filename);
+pub fn filename_to_vec_string(filename: &str) -> Result<Vec<String>, Error> {
+    let file = read_file(filename)?;
     let reader = BufReader::new(&file);
-    reader
+    Ok(reader
         .lines()
-        .map(|line| line.expect("Could not parse line"))
-        .collect()
+        .map(|line| line)
+        .collect::<Result<Vec<_>, _>>()?)
 }
 
 pub fn language_to_vec_string(language: &str) -> Vec<String> {
@@ -95,9 +95,7 @@ pub fn parse_file(
         Default::default()
     };
 
-    let (imports_needed, composition) =
-        handle_whitespace_and_imports(vec_string).expect("Whitespace and imports parsing error");
-
+    let (imports_needed, composition) = handle_whitespace_and_imports(vec_string)?;
     for import in imports_needed {
         let (mut filepath, import_name) = get_filepath_and_import_name(import);
         if let Some(wd) = working_dir.clone() {
@@ -107,7 +105,7 @@ pub fn parse_file(
             filepath = pb.display().to_string();
         }
         dbg!(&filepath);
-        let vec_string = filename_to_vec_string(&filepath.to_string());
+        let vec_string = filename_to_vec_string(&filepath.to_string())?;
         let parsed_composition = parse_file(vec_string, Some(defs.clone()), working_dir.clone())?;
 
         for (key, val) in parsed_composition.defs.terms {
