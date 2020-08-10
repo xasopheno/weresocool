@@ -3,6 +3,7 @@ use crate::error_handling::handle_parse_error;
 use crate::imports::{get_filepath_and_import_name, is_import};
 use colored::*;
 use num_rational::Rational64;
+use path_absolutize::*;
 use std::fs::File;
 use std::io::prelude::*;
 use std::io::BufReader;
@@ -66,7 +67,7 @@ pub fn read_file(filename: &str) -> Result<File, Error> {
                 filename.red().bold()
             );
 
-            Err(Error::with_msg(format!("File not found: {}", filename)));
+            return Err(Error::with_msg(format!("File not found: {}", filename)));
         }
     };
 }
@@ -87,7 +88,7 @@ pub fn language_to_vec_string(language: &str) -> Vec<String> {
 pub fn parse_file(
     vec_string: Vec<String>,
     prev_defs: Option<Defs>,
-    working_dir: Option<String>,
+    working_path: Option<String>,
 ) -> Result<ParsedComposition, Error> {
     let mut defs: Defs = if let Some(defs) = prev_defs {
         defs
@@ -98,15 +99,16 @@ pub fn parse_file(
     let (imports_needed, composition) = handle_whitespace_and_imports(vec_string)?;
     for import in imports_needed {
         let (mut filepath, import_name) = get_filepath_and_import_name(import);
-        if let Some(wd) = working_dir.clone() {
+        if let Some(wd) = working_path.clone() {
             let mut pb = std::path::PathBuf::new();
             pb.push(wd);
             pb.push(filepath);
+            pb.as_path().is_absolutize()?;
             filepath = pb.display().to_string();
         }
         dbg!(&filepath);
         let vec_string = filename_to_vec_string(&filepath.to_string())?;
-        let parsed_composition = parse_file(vec_string, Some(defs.clone()), working_dir.clone())?;
+        let parsed_composition = parse_file(vec_string, Some(defs.clone()), working_path.clone())?;
 
         for (key, val) in parsed_composition.defs.terms {
             let mut name = import_name.clone();

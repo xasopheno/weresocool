@@ -267,14 +267,13 @@ const generateDispatches = (
       });
       break;
     case ResponseType.MsgError:
-      console.log(value);
       result.push({
         _k: 'Set_Render_State',
         state: ResponseType.MsgError,
       });
       result.push({
         _k: 'Set_Error_Message',
-        message: `${value.message}`,
+        message: `${value}`,
       });
       break;
     default:
