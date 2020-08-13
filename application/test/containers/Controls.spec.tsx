@@ -174,7 +174,7 @@ describe('Controls', () => {
       expect(component.find('#resetButton').exists()).toBe(true);
     });
   });
-  it('editor button exists', async () => {
+  it('settings button exists', async () => {
     await act(async () => {
       const component = mount(<Root initialStore={testStore} />);
       await flushPromises();

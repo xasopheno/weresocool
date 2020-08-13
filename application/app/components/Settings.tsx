@@ -58,6 +58,7 @@ export const Settings = (props: {
     const path = await remote.dialog.showOpenDialog({
       properties: ['openDirectory'],
     });
+    console.log(path);
     if (path) {
       dispatch.onSetWorkingPath(path.filePaths[0]);
     }
@@ -68,10 +69,16 @@ export const Settings = (props: {
       <Modal id={'settingsModal'}>
         <Title>Settings</Title>
         <SectionContainer>
-          <Section onClick={() => dispatch.onIncrementEditorType(store.editor)}>
+          <Section
+            id={'editorButton'}
+            onClick={() => dispatch.onIncrementEditorType(store.editor)}
+          >
             Editor: {Editors[store.editor].name}
           </Section>
-          <Section onClick={async () => await openDialog()}>
+          <Section
+            id={'workingPathButton'}
+            onClick={async () => await openDialog()}
+          >
             Working Path: &quot;{store.working_path}&quot;
           </Section>
         </SectionContainer>
