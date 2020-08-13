@@ -48,7 +48,8 @@ export class Dispatch {
     });
   }
 
-  onSetWorkingPath(path: string) {
+  onSetWorkingPath(path: string): void {
+    localStorage.setItem('working_path', path);
     this.dispatch({
       _k: 'Set_Working_Path',
       path,

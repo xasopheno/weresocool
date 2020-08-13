@@ -49,7 +49,7 @@ export const intialStore: Store = {
   editor_ref: null,
   printing: false,
   volume: 80,
-  working_path: remote.app.getPath('home'),
+  working_path: remote ? remote.app.getPath('home') : '/',
 };
 
 export const testStore: Store = {

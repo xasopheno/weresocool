@@ -3,7 +3,7 @@ use crate::error_handling::handle_parse_error;
 use crate::imports::{get_filepath_and_import_name, is_import};
 use colored::*;
 use num_rational::Rational64;
-use path_absolutize::*;
+use path_clean::PathClean;
 use std::fs::File;
 use std::io::prelude::*;
 use std::io::BufReader;
@@ -103,8 +103,7 @@ pub fn parse_file(
             let mut pb = std::path::PathBuf::new();
             pb.push(wd);
             pb.push(filepath);
-            pb.as_path().is_absolutize()?;
-            filepath = pb.display().to_string();
+            filepath = pb.clean().display().to_string();
         }
         dbg!(&filepath);
         let vec_string = filename_to_vec_string(&filepath.to_string())?;
@@ -181,7 +180,7 @@ mod tests {
             language.push_str("\n");
         });
 
-        let from_filename = filename_to_vec_string(filename);
+        let from_filename = filename_to_vec_string(filename).unwrap();
         let from_language = language_to_vec_string(language.as_str());
 
         for (a, b) in from_filename.iter().zip(&from_language) {

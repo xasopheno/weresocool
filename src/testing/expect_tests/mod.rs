@@ -17,7 +17,7 @@ mod expect {
     /// ```
 
     fn expect_eq_internal(input: &str) -> Result<(), Error> {
-        let input_render_return = Filename(input).make(RenderType::NfBasisAndTable)?;
+        let input_render_return = Filename(input).make(RenderType::NfBasisAndTable, None)?;
 
         let (nf, _basis, defs) = match input_render_return {
             RenderReturn::NfBasisAndTable(nf, basis, defs) => (nf, basis, defs),

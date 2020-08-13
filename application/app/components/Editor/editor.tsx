@@ -38,9 +38,13 @@ export const Editor = (props: Props): React.ReactElement => {
         const storedLanguage = localStorage.getItem('language');
         const storedEditor = localStorage.getItem('editor');
         const storedVolume = localStorage.getItem('volume');
+        const storedWorkingPath = localStorage.getItem('working_path');
 
         if (storedLanguage) {
           dispatch.onUpdateLanguage(storedLanguage);
+        }
+        if (storedWorkingPath) {
+          dispatch.onSetWorkingPath(storedWorkingPath);
         }
         if (storedVolume) {
           await dispatch.onVolumeChange(parseInt(storedVolume));

@@ -65,7 +65,7 @@ export const Settings = (props: {
 
   if (props.settingsData.show) {
     return (
-      <Modal>
+      <Modal id={'settingsModal'}>
         <Title>Settings</Title>
         <SectionContainer>
           <Section onClick={() => dispatch.onIncrementEditorType(store.editor)}>

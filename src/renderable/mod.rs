@@ -72,7 +72,7 @@ mod tests {
     #[test]
     fn test_nf_to_vec_renderable() {
         let (nf, basis, table) = match Filename(&"songs/test/render_op.socool".to_string())
-            .make(RenderType::NfBasisAndTable)
+            .make(RenderType::NfBasisAndTable, None)
             .unwrap()
         {
             RenderReturn::NfBasisAndTable(nf, basis, table) => (nf, basis, table),
@@ -147,7 +147,7 @@ mod tests {
     fn test_get_batch() {
         let filename = "songs/test/render_op_get_batch.socool".to_string();
         let (nf, basis, table) = match Filename(&filename)
-            .make(RenderType::NfBasisAndTable)
+            .make(RenderType::NfBasisAndTable, None)
             .unwrap()
         {
             RenderReturn::NfBasisAndTable(nf, basis, table) => (nf, basis, table),
@@ -187,7 +187,7 @@ mod tests {
     fn test_small_and_large_render_batch_same_result() {
         let filename = "songs/test/render_op_get_batch.socool".to_string();
         let (nf, basis, table) = match Filename(&filename)
-            .make(RenderType::NfBasisAndTable)
+            .make(RenderType::NfBasisAndTable, None)
             .unwrap()
         {
             RenderReturn::NfBasisAndTable(nf, basis, table) => (nf, basis, table),

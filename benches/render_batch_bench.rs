@@ -12,7 +12,7 @@ use weresocool_instrument::{
 fn render_batch_bench(c: &mut Criterion) {
     let filename = "songs/test/render_op_get_batch.socool".to_string();
     let (nf, basis, table) = match Filename(&filename)
-        .make(RenderType::NfBasisAndTable)
+        .make(RenderType::NfBasisAndTable, None)
         .unwrap()
     {
         RenderReturn::NfBasisAndTable(nf, basis, table) => (nf, basis, table),

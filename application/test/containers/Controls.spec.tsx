@@ -114,9 +114,7 @@ describe('Play', () => {
   test('click #play: MsgError', async () => {
     const mock = new MockAdapter(axios);
     const response = {
-      Msg: {
-        message: 'I am a message',
-      },
+      Msg: 'I am a message',
     };
     mock.onPost().reply(200, response);
 
@@ -180,7 +178,7 @@ describe('Controls', () => {
     await act(async () => {
       const component = mount(<Root initialStore={testStore} />);
       await flushPromises();
-      expect(component.find('#editorButton').exists()).toBe(true);
+      expect(component.find('#settingsButton').exists()).toBe(true);
     });
   });
 });
