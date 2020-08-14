@@ -76,7 +76,7 @@ export const Editor = (props: Props): React.ReactElement => {
     submit().catch((e) => {
       throw e;
     });
-  }, [render, dispatch, store.language]);
+  }, [render, dispatch, store.language, store.working_path]);
 
   useEffect(() => {
     if (save) {
