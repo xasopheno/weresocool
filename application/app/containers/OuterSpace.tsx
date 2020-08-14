@@ -1,4 +1,4 @@
-import React, { useState, useContext, useRef } from 'react';
+import React, { useContext, useRef } from 'react';
 import { Logo } from '../components/Title';
 import { Ratios } from '../components/Ratios';
 import { ButtonBar } from '../components/ButtonBar';

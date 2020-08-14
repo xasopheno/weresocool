@@ -2,7 +2,7 @@ import React, { useState, useContext } from 'react';
 import { TopBox, ButtonBox, Button, RightButton, VimBox } from './style';
 import { DispatchContext } from '../actions/actions';
 import { Settings, SettingsData } from '../components/Settings';
-import { GlobalContext, Editors } from '../store';
+import { GlobalContext } from '../store';
 import ReactTooltip from 'react-tooltip';
 import { Render } from './Render';
 import { useCurrentWidth } from '../utils/width';
