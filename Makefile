@@ -4,6 +4,9 @@ package:
 run:
 	./application/release/linux-unpacked/weresocool
 
+run_osx:
+	open ./application/release/mac/WereSoCool.app
+
 dev: 
 	(cd application && yarn build-backend && yarn dev)
 
