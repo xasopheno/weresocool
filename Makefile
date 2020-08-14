@@ -1,6 +1,9 @@
 package: 
 	cd application && yarn package
 
+run:
+	./application/release/linux-unpacked/weresocool
+
 dev: 
 	(cd application && yarn build-backend && yarn dev)
 
