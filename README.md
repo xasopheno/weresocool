@@ -64,6 +64,7 @@ You'll need also need [portaudio](https://github.com/RustAudio/rust-portaudio) a
 ## Run Tests:
 `make test`
 
+![WereSoCool](https://raw.githubusercontent.com/xasopheno/weresocool/master/imgs/cover.png)
 
 Copyright (C) 2020 - Danny Meyer
 
