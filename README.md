@@ -3,31 +3,26 @@
 
 A language for binaural, microtonal composition built in Rust.
 
-**Make cool sounds. Impress your friends/pets/plants.**
+<em>Make cool sounds. Impress your friends/pets/plants.</em>
 
 ![WereSoCool](https://raw.githubusercontent.com/xasopheno/weresocool/master/imgs/application.png)
 
-WereSoCool is a programming language for composing microtonal music geometrically. This language doesn't assume
-familiarity with either microtonal music or computer programming, but experience with either will certainly help. I recommend starting with the tutorials and when you feel sufficiently confident,  try to make some cool things. There's no better way to learn than to make stuff.
+**WereSoCool** is a programming language for composing microtonal music geometrically. This language doesn't assume familiarity with either microtonal music or computer programming, but experience with either will certainly help. I recommend starting with the tutorials and when you feel sufficiently confident,  try to make some cool things. There's no better way to learn than to make stuff. If you get stuck, feel free to reach out to me weresocool at xasopheno dot com. 
 
 ## Listen:
 
-Watch/Listen to some examples form the langauage [here](https://www.weresocool.org/play/arcs).
+Watch/Listen to some examples from the language [here](https://www.weresocool.org/play/arcs).
 
 ## Make Cool Sounds:
-
 ### Macos:
-
 The most recent version of the Macos application can be downloaded [here](https://www.weresocool.org/downloads).
-Inside, you'll find a lot of cool tutorials and demos that should help you get started. If you get stuck, feel free to reach out to me weresocool at xasopheno dot com. 
 
 ### Linux:
 Currently on linux, you'll need to compile this locally. See Development. 
 
 
 ### Windows
-This does not currently work on Windows...<em>sad panda</em>. If you're interested in using this software on a Windows machine, please
-    reach out and I'll work on it. 
+This does not currently work on Windows...<em>sad panda</em>. If you're interested in using this software on a Windows machine, reach out and I'll work on it. 
 
 
 ## Development:
@@ -40,10 +35,11 @@ You'll need also need [portaudio](https://github.com/RustAudio/rust-portaudio) a
 #### Macos:
 `brew install portaudio pkg-config lame`
 
-#### Arch:
+#### Linux:
+##### Arch:
 `sudo pacman -S portaudio pkg-config lame`
 
-#### Ubuntu:
+##### Ubuntu:
 `sudo apt-get portaudio pkg-config lame`
 
 ### Build
