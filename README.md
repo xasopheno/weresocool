@@ -3,14 +3,12 @@
 
 A language for binaural, microtonal composition built in Rust.
 
-Make cool sounds. Impress your friends/pets/plants.
+**Make cool sounds. Impress your friends/pets/plants.**
 
 ![WereSoCool](https://raw.githubusercontent.com/xasopheno/weresocool/master/imgs/application.png)
 
 WereSoCool is a programming language for composing microtonal music geometrically. This language doesn't assume
-familiarity with either microtonal music or computer programming, but experience with either will certainly help. I
-recommend starting with the tutorials and when you feel sufficiently confident, just try making some cool things.
-There's no better way to learn than to make stuff. 
+familiarity with either microtonal music or computer programming, but experience with either will certainly help. I recommend starting with the tutorials and when you feel sufficiently confident,  try to make some cool things. There's no better way to learn than to make stuff.
 
 ## Listen:
 
@@ -21,15 +19,14 @@ Watch/Listen to some examples form the langauage [here](https://www.weresocool.o
 ### Macos:
 
 The most recent version of the Macos application can be downloaded [here](https://www.weresocool.org/downloads).
-Inside, you'll find a lot of cool tutorials and demos that should help you get started. I recommend starting with the
-cool tutorials and doing them in order. If you get stuck or want to share some new sounds you've made, reach out to me weresocool at xasopheno dot com. 
+Inside, you'll find a lot of cool tutorials and demos that should help you get started. If you get stuck, feel free to reach out to me weresocool at xasopheno dot com. 
 
 ### Linux:
 Currently on linux, you'll need to compile this locally. See Development. 
 
 
 ### Windows
-This does not currently work on Windows...<sad panda>. If you're interested in using this software on a Windows machine, please
+This does not currently work on Windows...<em>sad panda</em>. If you're interested in using this software on a Windows machine, please
     reach out and I'll work on it. 
 
 
@@ -59,11 +56,19 @@ You'll need also need [portaudio](https://github.com/RustAudio/rust-portaudio) a
 #### Macos
 `make run_osx`
 
-## Run with Dev Server
+#### Run with Dev Server
 `make dev`
 
 ## Run Tests:
 `make test`
+
+## Special Thanks:
+This wouldn't exist in a million years if it wasn't for Antonis Stampoulis'
+help with language design or the help of friends/programmers like
+Sonke Hahn, Hao Lian, Catharine M, Matt Handler, Lee Pender, Amanda Doucette, Khaled Alquaddoomi, 
+Alex Kestner, everyone else that has sat down to program with me, and Originate. 
+Of course, special thanks to Maria for always listening to my new_weird_sounds 
+and programming problems. - Danny
 
 ![WereSoCool](https://raw.githubusercontent.com/xasopheno/weresocool/master/imgs/cover.png)
 
