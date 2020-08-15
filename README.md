@@ -21,8 +21,8 @@ Watch/Listen to some examples form the langauage [here](https://www.weresocool.o
 ### Macos:
 
 The most recent version of the Macos application can be downloaded [here](https://www.weresocool.org/downloads).
-Inside, you'll find a lot of cool tutorials and demos that should help you get started. If you get stuck, please do not
-hesitate to reach out to me weresocool at xasopheno dot com. 
+Inside, you'll find a lot of cool tutorials and demos that should help you get started. I recommend starting with the
+cool tutorials and doing them in order. If you get stuck or want to share some new sounds you've made, reach out to me weresocool at xasopheno dot com. 
 
 ### Linux:
 Currently on linux, you'll need to compile this locally. See Development. 
@@ -37,6 +37,7 @@ This does not currently work on Windows...<sad panda>. If you're interested in u
 
 ### Setup
 You'll need Rust. Rust is a great language. Install it with [Rustup](https://www.rust-lang.org/en-US/install.html).
+
 You'll need also need [portaudio](https://github.com/RustAudio/rust-portaudio) and [lame](https://lame.sourceforge.io/)
 
 #### Macos:
