@@ -179,7 +179,7 @@ export const Controls = (props: Props): React.ReactElement => {
           }}
           disabled={store.printing}
         >
-          Settings
+          {width > break_point ? 'Settings' : 'S'}
         </RightButton>
         <Settings settingsData={settingsData} />
       </VimBox>
