@@ -1,5 +1,0 @@
-#!/usr/bin/env sh
-
-FILENAME=$1
-
-cargo run --release --bin wsc print-mp3 filename=$FILENAME

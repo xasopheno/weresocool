@@ -3,54 +3,71 @@
 
 A language for binaural, microtonal composition built in Rust.
 
-Make cool sounds. Impress your friends/pets/plants.
+<em>Make cool sounds. Impress your friends/pets/plants.</em>
 
-## See some cool things generated with the language here:
+![WereSoCool](../master/imgs/application.png)
+**WereSoCool** is a programming language for composing microtonal music geometrically. This language doesn't assume familiarity with either microtonal music or computer programming, but experience with either will certainly help. I recommend starting with the tutorials and when you feel sufficiently confident,  try to make some cool things. There's no better way to learn than to make stuff. If you get stuck, feel free to reach out to me weresocool at xasopheno dot com. 
 
-https://www.weresocool.org/
+## Listen:
 
-## Install:
-You'll need Rust and Cargo.
-`https://www.rust-lang.org/en-US/install.html` 
+Watch/Listen to some examples from the language [here](https://www.weresocool.org/play/arcs).
 
-You'll need also need portaudio. 
-https://github.com/RustAudio/rust-portaudio
+## Make Cool Sounds:
+### Macos:
+The most recent version of the Macos application can be downloaded [here](https://www.weresocool.org/downloads).
 
-On Mac
-`brew install portaudio`
-`brew install pkg-config`
-`&& cargo clean` if you are having problems linking
+### Linux:
+Currently on linux, you'll need to compile this locally. See Development. 
 
-## Run:
-Listen to something created with the framework
 
-`cargo run --release --bin wsc songs/fall/table.socool`
+### Windows
+This does not currently work on Windows...<em>sad panda</em>. If you're interested in using this software on a Windows machine, reach out and I'll work on it. 
 
-## Usage:
 
-```
-USAGE:
-    wsc [FLAGS] [filename]
+## Development:
 
-FLAGS:
-    -d, --doc        Prints some documentation
-    -h, --help       Prints help information
-    -j, --json       Prints file to .json
-    -p, --print      Prints file to .wav
-    -V, --version    Prints version information
+### Setup
+You'll need Rust. Rust is a great language. Install it with [Rustup](https://www.rust-lang.org/en-US/install.html).
 
-ARGS:
-    <filename>    filename eg: my_song.socool
-```
+You'll need also need [portaudio](https://github.com/RustAudio/rust-portaudio) and [lame](https://lame.sourceforge.io/)
 
-## Test:
+#### Macos:
+`brew install portaudio pkg-config lame`
 
-`./test.sh`
+#### Linux:
+##### Arch:
+`sudo pacman -S portaudio pkg-config lame`
 
-Working on additional documentation. :) 
+##### Ubuntu:
+`sudo apt-get portaudio pkg-config lame`
+
+### Build
+`make package`
+
+## Run: 
+#### Linux
+`make run`
+
+#### Macos
+`make run_osx`
+
+#### Run with Dev Server
+`make dev`
+
+## Run Tests:
+`make test`
+
+## Special Thanks:
+This wouldn't exist in a million years if it wasn't for Antonis Stampoulis'
+help with language design or the help of friends/programmers like
+Sonke Hahn, Hao Lian, Catharine M, Matt Handler, Lee Pender, Amanda Doucette, Khaled Alquaddoomi, 
+Alex Kestner, everyone else that has sat down to program with me, and Originate. 
+Of course, special thanks to Maria for always listening to my new_weird_sounds 
+and programming problems. - Danny
+
+![WereSoCool](../master/imgs/cover.png)
 
 Copyright (C) 2020 - Danny Meyer
 
 This program is free software, licensed under the GPLv3 (see LICENSE).
 
-![WereSoCool](https://raw.githubusercontent.com/xasopheno/weresocool/master/cover.png)
