@@ -18,7 +18,7 @@ fn main() -> Result<(), Error> {
         _ => no_file_name(),
     }
 
-    let render_return = Filename(filename.unwrap()).make(RenderType::NfBasisAndTable)?;
+    let render_return = Filename(filename.unwrap()).make(RenderType::NfBasisAndTable, None)?;
     let (nf, basis, table) = match render_return {
         RenderReturn::NfBasisAndTable(nf, basis, table) => (nf, basis, table),
         _ => panic!("huh"),

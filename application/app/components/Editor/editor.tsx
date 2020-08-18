@@ -38,9 +38,13 @@ export const Editor = (props: Props): React.ReactElement => {
         const storedLanguage = localStorage.getItem('language');
         const storedEditor = localStorage.getItem('editor');
         const storedVolume = localStorage.getItem('volume');
+        const storedWorkingPath = localStorage.getItem('working_path');
 
         if (storedLanguage) {
           dispatch.onUpdateLanguage(storedLanguage);
+        }
+        if (storedWorkingPath) {
+          dispatch.onSetWorkingPath(storedWorkingPath);
         }
         if (storedVolume) {
           await dispatch.onVolumeChange(parseInt(storedVolume));
@@ -61,7 +65,10 @@ export const Editor = (props: Props): React.ReactElement => {
   useEffect(() => {
     const submit = async () => {
       if (render) {
-        await dispatch.onRender(store.language);
+        await dispatch.onRenderWithWorkingPath(
+          store.language,
+          store.working_path
+        );
         setRender(false);
       }
     };
@@ -69,7 +76,7 @@ export const Editor = (props: Props): React.ReactElement => {
     submit().catch((e) => {
       throw e;
     });
-  }, [render, dispatch, store.language]);
+  }, [render, dispatch, store.language, store.working_path]);
 
   useEffect(() => {
     if (save) {

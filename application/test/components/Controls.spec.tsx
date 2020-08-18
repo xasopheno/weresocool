@@ -4,6 +4,8 @@ import Adapter from 'enzyme-adapter-react-16';
 import { Controls } from '../../app/components/Controls';
 import { mainReducer } from '../../app/reducers/reducer';
 import { Dispatch, DispatchContext } from '../../app/actions/actions';
+import { act } from 'react-dom/test-utils';
+import { flushPromises } from '../helpers/tools';
 
 import { GlobalContext, intialStore } from '../../app/store';
 
@@ -20,8 +22,12 @@ jest.mock('electron', () => ({
       isPackaged: jest.fn(),
       getVersion: jest.fn(() => 'test'),
     },
+    dialog: {
+      showOpenDialog: jest.fn(async () =>
+        Promise.resolve({ filePaths: ['/test'] })
+      ),
+    },
   },
-  dialog: jest.fn(),
 }));
 
 function ControlsComponent() {
@@ -52,13 +58,25 @@ const findAndTest = (
 describe('Controls', () => {
   it('incremment editor type', () => {
     const component = mount(<ControlsComponent />);
-    findAndTest(component, '#editorButton', 'Text');
+    findAndClick(component, '#settingsButton');
+    findAndTest(component, '#editorButton', 'Editor: Text');
     findAndClick(component, '#editorButton');
-    findAndTest(component, '#editorButton', 'Vim');
+    findAndTest(component, '#editorButton', 'Editor: Vim');
     findAndClick(component, '#editorButton');
-    findAndTest(component, '#editorButton', 'Emacs');
+    findAndTest(component, '#editorButton', 'Editor: Emacs');
     findAndClick(component, '#editorButton');
-    findAndTest(component, '#editorButton', 'Text');
+    findAndTest(component, '#editorButton', 'Editor: Text');
+    component.unmount();
+  });
+
+  it('updates working_path', async () => {
+    const component = mount(<ControlsComponent />);
+    findAndClick(component, '#settingsButton');
+    await act(async () => {
+      component.find('#workingPathButton').first().simulate('click');
+      await flushPromises();
+    });
+    findAndTest(component, '#workingPathButton', 'Working Path: "/test"');
     component.unmount();
   });
 });

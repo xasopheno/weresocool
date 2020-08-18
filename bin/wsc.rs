@@ -31,11 +31,11 @@ fn main() -> Result<(), Error> {
     }
 
     if args.is_present("print") {
-        Filename(filename.unwrap()).make(RenderType::Wav(WavType::MP3 { cli: true }))?;
+        Filename(filename.unwrap()).make(RenderType::Wav(WavType::MP3 { cli: true }), None)?;
     } else if args.is_present("json") {
-        Filename(filename.unwrap()).make(RenderType::Json4d)?;
+        Filename(filename.unwrap()).make(RenderType::Json4d, None)?;
     } else if args.is_present("csv") {
-        Filename(filename.unwrap()).make(RenderType::Csv1d)?;
+        Filename(filename.unwrap()).make(RenderType::Csv1d, None)?;
     } else {
         // let stereo_waveform = match Filename(filename.unwrap()).make(RenderType::StereoWaveform)? {
         // RenderReturn::StereoWaveform(sw) => sw,

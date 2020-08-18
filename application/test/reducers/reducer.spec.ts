@@ -162,9 +162,7 @@ describe('Fetch Tests', () => {
   it('Render: MsgError', async () => {
     const mock = new MockAdapter(axios);
     const response = {
-      Msg: {
-        message: 'I am a message',
-      },
+      Msg: 'I am a message',
     };
     mock.onPost().reply(200, response);
 
@@ -179,6 +177,7 @@ describe('Fetch Tests', () => {
     expect(state.backend.state).toEqual('good');
     expect(state.render).toEqual(ResponseType.MsgError);
     expect(state.markers).toEqual([]);
+    console.log(state.errorMessage);
     expect(state.errorMessage).toEqual('I am a message');
   });
 });

@@ -17,6 +17,7 @@ export enum ResponseType {
 }
 
 export type Action =
+  | { _k: 'Set_Working_Path'; path: string }
   | { _k: 'Update_Volume'; volume: number }
   | { _k: 'Set_Editor_Focus' }
   | { _k: 'Set_Printing'; state: boolean }
@@ -44,6 +45,14 @@ export class Dispatch {
     this.dispatch({
       _k: 'Set_Editor_Ref',
       editor_ref,
+    });
+  }
+
+  onSetWorkingPath(path: string): void {
+    localStorage.setItem('working_path', path);
+    this.dispatch({
+      _k: 'Set_Working_Path',
+      path,
     });
   }
 
@@ -133,6 +142,27 @@ export class Dispatch {
     try {
       const response = await axios.post(settings.backendURL, {
         language,
+      });
+
+      this.dispatch({ _k: 'Backend', fetch: { state: 'good' } });
+      generateDispatches(response.data, language).map((dispatch) => {
+        this.dispatch(dispatch);
+      });
+    } catch (e) {
+      this.dispatch({ _k: 'Backend', fetch: { state: 'bad', error: e } });
+    }
+  }
+
+  async onRenderWithWorkingPath(
+    language: string,
+    working_path: string
+  ): Promise<void> {
+    this.dispatch({ _k: 'Backend', fetch: { state: 'loading' } });
+
+    try {
+      const response = await axios.post(settings.backendURL, {
+        language,
+        working_path,
       });
 
       this.dispatch({ _k: 'Backend', fetch: { state: 'good' } });
@@ -238,14 +268,13 @@ const generateDispatches = (
       });
       break;
     case ResponseType.MsgError:
-      console.log(value);
       result.push({
         _k: 'Set_Render_State',
         state: ResponseType.MsgError,
       });
       result.push({
         _k: 'Set_Error_Message',
-        message: `${value.message}`,
+        message: `${value}`,
       });
       break;
     default:

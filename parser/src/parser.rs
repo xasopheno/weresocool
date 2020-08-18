@@ -3,6 +3,7 @@ use crate::error_handling::handle_parse_error;
 use crate::imports::{get_filepath_and_import_name, is_import};
 use colored::*;
 use num_rational::Rational64;
+use path_clean::PathClean;
 use std::fs::File;
 use std::io::prelude::*;
 use std::io::BufReader;
@@ -55,10 +56,10 @@ fn process_op_table(defs: Defs) -> Result<Defs, Error> {
 
     Ok(result)
 }
-pub fn read_file(filename: &str) -> File {
+pub fn read_file(filename: &str) -> Result<File, Error> {
     let f = File::open(filename);
     match f {
-        Ok(f) => return f,
+        Ok(f) => return Ok(f),
         _ => {
             println!(
                 "{} {}\n",
@@ -66,18 +67,18 @@ pub fn read_file(filename: &str) -> File {
                 filename.red().bold()
             );
 
-            panic!("File not found");
+            return Err(Error::with_msg(format!("File not found: {}", filename)));
         }
     };
 }
 
-pub fn filename_to_vec_string(filename: &str) -> Vec<String> {
-    let file = read_file(filename);
+pub fn filename_to_vec_string(filename: &str) -> Result<Vec<String>, Error> {
+    let file = read_file(filename)?;
     let reader = BufReader::new(&file);
-    reader
+    Ok(reader
         .lines()
-        .map(|line| line.expect("Could not parse line"))
-        .collect()
+        .map(|line| line)
+        .collect::<Result<Vec<_>, _>>()?)
 }
 
 pub fn language_to_vec_string(language: &str) -> Vec<String> {
@@ -87,6 +88,7 @@ pub fn language_to_vec_string(language: &str) -> Vec<String> {
 pub fn parse_file(
     vec_string: Vec<String>,
     prev_defs: Option<Defs>,
+    working_path: Option<String>,
 ) -> Result<ParsedComposition, Error> {
     let mut defs: Defs = if let Some(defs) = prev_defs {
         defs
@@ -94,13 +96,18 @@ pub fn parse_file(
         Default::default()
     };
 
-    let (imports_needed, composition) =
-        handle_whitespace_and_imports(vec_string).expect("Whitespace and imports parsing error");
-
+    let (imports_needed, composition) = handle_whitespace_and_imports(vec_string)?;
     for import in imports_needed {
-        let (filepath, import_name) = get_filepath_and_import_name(import);
-        let vec_string = filename_to_vec_string(&filepath.to_string());
-        let parsed_composition = parse_file(vec_string, Some(defs.clone()))?;
+        let (mut filepath, import_name) = get_filepath_and_import_name(import);
+        if let Some(wd) = working_path.clone() {
+            let mut pb = std::path::PathBuf::new();
+            pb.push(wd);
+            pb.push(filepath);
+            filepath = pb.clean().display().to_string();
+        }
+        dbg!(&filepath);
+        let vec_string = filename_to_vec_string(&filepath.to_string())?;
+        let parsed_composition = parse_file(vec_string, Some(defs.clone()), working_path.clone())?;
 
         for (key, val) in parsed_composition.defs.terms {
             let mut name = import_name.clone();
@@ -173,7 +180,7 @@ mod tests {
             language.push_str("\n");
         });
 
-        let from_filename = filename_to_vec_string(filename);
+        let from_filename = filename_to_vec_string(filename).unwrap();
         let from_language = language_to_vec_string(language.as_str());
 
         for (a, b) in from_filename.iter().zip(&from_language) {

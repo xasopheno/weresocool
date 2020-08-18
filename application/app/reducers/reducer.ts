@@ -11,6 +11,8 @@ export const mainReducer: React.Reducer<Store, Action> = (
   action
 ): Store => {
   switch (action._k) {
+    case 'Set_Working_Path':
+      return { ...state, working_path: action.path };
     case 'Update_Volume':
       return { ...state, volume: action.volume };
     case 'Set_Printing':

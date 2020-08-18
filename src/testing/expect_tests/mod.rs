@@ -17,7 +17,7 @@ mod expect {
     /// ```
 
     fn expect_eq_internal(input: &str) -> Result<(), Error> {
-        let input_render_return = Filename(input).make(RenderType::NfBasisAndTable)?;
+        let input_render_return = Filename(input).make(RenderType::NfBasisAndTable, None)?;
 
         let (nf, _basis, defs) = match input_render_return {
             RenderReturn::NfBasisAndTable(nf, basis, defs) => (nf, basis, defs),
@@ -65,6 +65,11 @@ mod expect {
 
     #[test_resources("mocks/list/*.socool")]
     fn __list_generated_(resource: &str) {
+        expect(resource);
+    }
+
+    #[test_resources("mocks/imports/*.socool")]
+    fn __imports_generated_(resource: &str) {
         expect(resource);
     }
 

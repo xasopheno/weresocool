@@ -1,4 +1,4 @@
-export const language_template = `{ f: 285, l: 1, g: 1, p: 0 }
+export const language_template = `{ f: 293.7, l: 1, g: 1, p: 0 }
 
 overtones = {
   O[

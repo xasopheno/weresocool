@@ -63,6 +63,9 @@ color: #789816\
 .ace-wsc-theme .ace_frequency {\
 color: #ef8168\
 }\
+.ace-wsc-theme .ace_import {\
+color: mediumaquamarine\
+}\
 .ace-wsc-theme .ace_gain {\
 color: #ee8241\
 }\
