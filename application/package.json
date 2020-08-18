@@ -243,7 +243,7 @@
     "eslint-plugin-react": "^7.20.6",
     "eslint-plugin-react-hooks": "^4.0.8",
     "eslint-plugin-testcafe": "^0.2.1",
-    "fbjs-scripts": "^1.2.0",
+    "fbjs-scripts": "^2.0.0",
     "file-loader": "^6.0.0",
     "identity-obj-proxy": "^3.0.0",
     "jest": "^26.4.0",
