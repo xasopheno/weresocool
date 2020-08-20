@@ -300,7 +300,7 @@
     "react-redux": "^7.2.1",
     "react-router": "^5.2.0",
     "react-router-dom": "^5.2.0",
-    "react-tooltip": "^4.2.7",
+    "react-tooltip": "^4.2.8",
     "redux": "^4.0.5",
     "redux-thunk": "^2.3.0",
     "source-map-support": "^0.5.19",
