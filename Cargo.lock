@@ -2841,6 +2841,7 @@ dependencies = [
  "term 0.6.1",
  "test-generator",
  "uuid",
+ "walkdir",
  "weresocool_analyze",
  "weresocool_ast",
  "weresocool_error",
@@ -2948,6 +2949,7 @@ name = "weresocool_shared"
 version = "0.1.0"
 dependencies = [
  "float-cmp",
+ "num-rational",
 ]
 
 [[package]]

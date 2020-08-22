@@ -1,91 +1,94 @@
-//#![allow(dead_code, unused_imports, unused_variables)]
-use failure::Fail;
-use std::sync::mpsc::channel;
-use std::sync::{Arc, Mutex};
-use std::thread;
-use std::time::Duration;
-use weresocool::{
-    generation::parsed_to_render::{RenderReturn, RenderType},
-    interpretable::{InputType, Interpretable},
-    manager::RenderManager,
-    portaudio::real_time_render_manager,
-    ui::were_so_cool_logo,
-};
-use weresocool_error::Error;
-use weresocool_instrument::renderable::{
-    nf_to_vec_renderable, renderables_to_render_voices, RenderVoice,
-};
+use walkdir::WalkDir;
+// use weresocool::generation::nn::{get_min_max_for_path, CSVData, CSVOp};
+// use num_rational::Rational64;
+use weresocool_ast::PointOp;
+use weresocool_shared::helpers::r_to_f64;
 
-fn main() {
-    match run() {
-        Ok(_) => {}
-        e => {
-            for cause in Fail::iter_causes(&e.unwrap_err()) {
-                println!("Failure caused by: {}", cause);
-            }
+#[derive(Debug, Clone, Copy)]
+struct DataOp {
+    fm: f64,
+    fa: f64,
+    g: f64,
+    l: f64,
+    pm: f64,
+    pa: f64,
+}
+
+impl DataOp {
+    fn from_point_op(op: PointOp) -> Self {
+        Self {
+            fm: r_to_f64(op.fm),
+            fa: r_to_f64(op.fa),
+            g: r_to_f64(op.g),
+            l: r_to_f64(op.l),
+            pm: r_to_f64(op.pm),
+            pa: r_to_f64(op.pa),
         }
     }
 }
 
-pub fn prepare_render(input: InputType<'_>) -> Result<Vec<RenderVoice>, Error> {
-    let (nf, basis, table) = match input.make(RenderType::NfBasisAndTable, None)? {
-        RenderReturn::NfBasisAndTable(nf, basis, table) => (nf, basis, table),
-        _ => panic!("Error. Unable to generate NormalForm"),
-    };
-    let renderables = nf_to_vec_renderable(&nf, &table, &basis)?;
+fn main() {
+    let op = PointOp::init();
+    let data_op = DataOp::from_point_op(op);
+    dbg!(data_op);
 
-    let render_voices = renderables_to_render_voices(renderables);
+    // let mut max_state = OpCsv {
+    // fm: 0.0,
+    // fa: 0.0,
+    // pm: 0.0,
+    // pa: 0.0,
+    // g: 0.0,
+    // l: 0.0,
+    // };
+    // let mut min_state = OpCsv {
+    // fm: 0.0,
+    // fa: 0.0,
+    // pm: 0.0,
+    // pa: 0.0,
+    // g: 0.0,
+    // l: 0.0,
+    // };
 
-    Ok(render_voices)
-}
+    // let mut max_seq_length = 0;
 
-fn run() -> Result<(), Error> {
-    were_so_cool_logo();
-    println!("       )))***=== REAL<COOL>TIME *buffered ===***(((  \n ");
+    for entry in WalkDir::new("./songs/training_data")
+        .follow_links(true)
+        .into_iter()
+        .filter_map(|e| e.ok())
+    {
+        let f_name = entry.path().to_string_lossy();
+        println!("{:?}", f_name);
 
-    let filename1 = "songs/dance/skip.socool";
-    let filename2 = "songs/dance/candle.socool";
+        if f_name.ends_with(".socool") {
+            dbg!(f_name);
+            // let (song_max, song_min, n_voices) = get_min_max_for_path(f_name.to_string());
+            // max_state = CSVOp {
+            // fm: max_state.fm.max(song_max.fm),
+            // fa: max_state.fa.max(song_max.fa),
+            // pm: max_state.pm.max(song_max.pm),
+            // pa: max_state.pa.max(song_max.pa),
+            // g: max_state.g.max(song_max.g),
+            // l: max_state.l.max(song_max.l),
+            // v: max_state.v.max(song_max.v),
+            // };
+            // min_state = CSVOp {
+            // fm: min_state.fm.min(song_min.fm),
+            // fa: min_state.fa.min(song_min.fa),
+            // pm: min_state.pm.min(song_min.pm),
+            // pa: min_state.pa.min(song_min.pa),
+            // g: min_state.g.min(song_min.g),
+            // l: min_state.l.min(song_min.l),
+            // v: min_state.v.min(song_min.v),
+            // };
 
-    let render_manager = Arc::new(Mutex::new(RenderManager::init_silent()));
-    let render_manager_clone = render_manager.clone();
+            // max_seq_length = max_seq_length.max(n_voices);
 
-    let (send, recv) = channel();
-    println!("Start...");
-    thread::Builder::new()
-        .name("Sender".to_string())
-        .spawn(move || {
-            thread::sleep(Duration::from_secs(1));
-            for _ in 0..4 {
-                send.send(InputType::Filename(&filename1)).unwrap();
-                thread::sleep(Duration::from_secs(4));
-                send.send(InputType::Filename(&filename2)).unwrap();
-                thread::sleep(Duration::from_secs(4));
-            }
-        })?;
+            // println!("{:#?}", n_voices)
+        }
+    }
 
-    thread::Builder::new()
-        .name("Receiver".to_string())
-        .spawn(move || loop {
-            if let Ok(v) = recv.try_recv() {
-                println!("language received");
-                let render = prepare_render(v);
-
-                match render {
-                    Ok(r) => {
-                        render_manager_clone.lock().unwrap().push_render(r);
-                        println!("Render Success")
-                    }
-                    _ => panic!("Render Failure"),
-                }
-            };
-        })?;
-
-    let mut stream = real_time_render_manager(Arc::clone(&render_manager))?;
-    stream.start()?;
-
-    while let true = stream.is_active()? {}
-
-    stream.stop()?;
-
-    Ok(())
+    // println!(
+    // "MAX {:#?}\nMIN {:#?}\nMAX_SEQ_LENGTH {:?}",
+    // max_state, min_state, max_seq_length
+    // )
 }

@@ -1,4 +1,4 @@
-use crate::Term;
+pub use crate::Term;
 use indexmap::IndexMap;
 use num_rational::Rational64;
 
