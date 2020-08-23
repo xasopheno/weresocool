@@ -1,9 +1,8 @@
 use walkdir::WalkDir;
-// use weresocool::generation::nn::{get_min_max_for_path, CSVData, CSVOp};
 // use num_rational::Rational64;
 use weresocool::generation::{RenderReturn, RenderType};
 use weresocool::interpretable::{InputType::Filename, Interpretable};
-use weresocool_ast::PointOp;
+use weresocool_ast::{OscType, PointOp};
 use weresocool_error::Error;
 use weresocool_shared::helpers::r_to_f64;
 
@@ -15,10 +14,15 @@ struct DataOp {
     l: f64,
     pm: f64,
     pa: f64,
+    osc_type: f64,
 }
 
 impl DataOp {
     fn from_point_op(op: PointOp) -> Self {
+        let osc_type = match op.osc_type {
+            OscType::Sine => 0.0,
+            _ => 1.0,
+        };
         Self {
             fm: r_to_f64(op.fm),
             fa: r_to_f64(op.fa),
@@ -26,15 +30,27 @@ impl DataOp {
             l: r_to_f64(op.l),
             pm: r_to_f64(op.pm),
             pa: r_to_f64(op.pa),
+            osc_type,
         }
     }
 }
 
-fn main() -> Result<(), Error> {
-    let op = PointOp::init();
-    let data_op = DataOp::from_point_op(op);
-    dbg!(data_op);
+fn normalize(x: f64, min_x: f64, max_x: f64) -> f64 {
+    (x - min_x) / (max_x - min_x)
+}
 
+#[test]
+fn test_normalize() {
+    let result = normalize(8.0, 0.0, 10.0);
+    let expected = 0.8;
+    assert_eq!(result, expected);
+}
+
+// let op = PointOp::init();
+// let data_op = DataOp::from_point_op(op);
+// dbg!(data_op);
+
+fn main() -> Result<(), Error> {
     let mut max_state = DataOp {
         fm: 0.0,
         fa: 0.0,
@@ -42,6 +58,7 @@ fn main() -> Result<(), Error> {
         l: 0.0,
         pm: 0.0,
         pa: 0.0,
+        osc_type: 1.0,
     };
     let mut min_state = DataOp {
         fm: 0.0,
@@ -50,11 +67,10 @@ fn main() -> Result<(), Error> {
         l: 0.0,
         pm: 0.0,
         pa: 0.0,
+        osc_type: 0.0,
     };
 
-    // let mut max_seq_length = 0;
-
-    for entry in WalkDir::new("./songs/training_data")
+    for entry in WalkDir::new("./application/extraResources/demo/")
         .follow_links(true)
         .into_iter()
         .filter_map(|e| e.ok())
@@ -68,7 +84,7 @@ fn main() -> Result<(), Error> {
                 _ => panic!("huh"),
             };
 
-            let data_ops: Vec<Vec<DataOp>> = nf
+            let _data_ops: Vec<Vec<DataOp>> = nf
                 .operations
                 .iter()
                 .map(|voice| {
@@ -83,6 +99,7 @@ fn main() -> Result<(), Error> {
                                 pa: max_state.pa.max(data_op.pa),
                                 g: max_state.g.max(data_op.g),
                                 l: max_state.l.max(data_op.l),
+                                ..max_state
                             };
                             min_state = DataOp {
                                 fm: min_state.fm.min(data_op.fm),
@@ -91,6 +108,7 @@ fn main() -> Result<(), Error> {
                                 pa: min_state.pa.min(data_op.pa),
                                 g: min_state.g.min(data_op.g),
                                 l: min_state.l.min(data_op.l),
+                                ..min_state
                             };
 
                             data_op
@@ -98,13 +116,6 @@ fn main() -> Result<(), Error> {
                         .collect()
                 })
                 .collect();
-            dbg!(data_ops);
-
-            // let (data_op, data_op, n_voices) = get_min_max_for_path(f_name.to_string());
-
-            // max_seq_length = max_seq_length.max(n_voices);
-
-            // println!("{:#?}", n_voices)
         }
     }
     println!("MAX {:#?}\nMIN {:#?}\n", max_state, min_state);
