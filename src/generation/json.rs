@@ -54,7 +54,7 @@ impl TimedOp {
             z,
             voice: self.voice,
             event: self.event,
-            event_type: self.event_type.clone(),
+            // event_type: self.event_type.clone(),
         }
     }
     #[allow(clippy::missing_const_for_fn)]
@@ -79,7 +79,7 @@ impl TimedOp {
 #[derive(Debug, Clone, Serialize, Deserialize, PartialEq)]
 pub struct Op4D {
     pub t: f64,
-    pub event_type: EventType,
+    // pub event_type: EventType,
     pub voice: usize,
     pub event: usize,
     pub x: f64,
@@ -152,7 +152,7 @@ fn get_min_max_op4d_1d(vec_op4d: &[Op4D]) -> (Normalizer, f64) {
     let mut max_state = Op4D {
         t: 0.0,
         event: 0,
-        event_type: EventType::On,
+        // event_type: EventType::On,
         voice: 0,
         x: 0.0,
         y: 0.0,
@@ -163,7 +163,7 @@ fn get_min_max_op4d_1d(vec_op4d: &[Op4D]) -> (Normalizer, f64) {
     let mut min_state = Op4D {
         t: 0.0,
         event: 10,
-        event_type: EventType::On,
+        // event_type: EventType::On,
         voice: 10,
         x: 0.0,
         y: 10_000.0,
@@ -183,7 +183,7 @@ fn get_min_max_op4d_1d(vec_op4d: &[Op4D]) -> (Normalizer, f64) {
             t: max_state.t.max(op.t),
             event: max_state.event.max(op.event),
             voice: max_state.voice.max(op.voice),
-            event_type: EventType::On,
+            // event_type: EventType::On,
         };
 
         min_state = Op4D {
@@ -194,7 +194,7 @@ fn get_min_max_op4d_1d(vec_op4d: &[Op4D]) -> (Normalizer, f64) {
             t: min_state.t.min(op.t),
             event: min_state.event.min(op.event),
             voice: min_state.voice.min(op.voice),
-            event_type: EventType::On,
+            // event_type: EventType::On,
         };
     }
 
