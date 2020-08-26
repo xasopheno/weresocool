@@ -35,6 +35,7 @@ impl DataOp {
     }
 }
 
+#[allow(dead_code)]
 fn normalize(x: f64, min_x: f64, max_x: f64) -> f64 {
     (x - min_x) / (max_x - min_x)
 }
