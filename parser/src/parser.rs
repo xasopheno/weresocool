@@ -105,7 +105,6 @@ pub fn parse_file(
             pb.push(filepath);
             filepath = pb.clean().display().to_string();
         }
-        dbg!(&filepath);
         let vec_string = filename_to_vec_string(&filepath.to_string())?;
         let parsed_composition = parse_file(vec_string, Some(defs.clone()), working_path.clone())?;
 
