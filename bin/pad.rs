@@ -7,17 +7,83 @@ use weresocool_error::Error;
 use weresocool_shared::helpers::r_to_f64;
 
 #[derive(Debug, Clone, Copy)]
-struct DataOp {
-    fm: f64,
-    fa: f64,
-    g: f64,
-    l: f64,
-    pm: f64,
-    pa: f64,
-    osc_type: f64,
+pub struct DataOp {
+    pub fm: f64,
+    pub fa: f64,
+    pub g: f64,
+    pub l: f64,
+    pub pm: f64,
+    pub pa: f64,
+    pub osc_type: f64,
+}
+
+#[derive(Debug, Clone)]
+pub struct Normalizer {
+    pub fm: MinMax,
+    pub fa: MinMax,
+    pub g: MinMax,
+    pub l: MinMax,
+    pub pm: MinMax,
+    pub pa: MinMax,
+}
+
+impl Normalizer {
+    pub fn from_min_max(min: DataOp, max: DataOp) -> Self {
+        Self {
+            fm: MinMax {
+                min: min.fm,
+                max: max.fm,
+            },
+            fa: MinMax {
+                min: min.fm,
+                max: max.fm,
+            },
+            pm: MinMax {
+                min: min.pm,
+                max: max.pm,
+            },
+            pa: MinMax {
+                min: min.pa,
+                max: max.pa,
+            },
+            g: MinMax {
+                min: min.g,
+                max: max.g,
+            },
+            l: MinMax {
+                min: min.l,
+                max: max.l,
+            },
+        }
+    }
+}
+
+#[derive(Debug, Clone)]
+pub struct MinMax {
+    pub min: f64,
+    pub max: f64,
+}
+
+fn normalize_value(value: f64, min: f64, max: f64) -> f64 {
+    // equivilance check for floats. max == min.
+    let d = if (max - min).abs() < std::f64::EPSILON {
+        1.0
+    } else {
+        max - min
+    };
+    (value - min) / d
 }
 
 impl DataOp {
+    pub fn normalize(&mut self, normalizer: &Normalizer) {
+        self.fm = normalize_value(self.fm, normalizer.fm.min, normalizer.fm.max);
+        self.fa = normalize_value(self.fa, normalizer.fa.min, normalizer.fa.max);
+        self.pm = normalize_value(self.pm, normalizer.pm.min, normalizer.pm.max);
+        self.pa = normalize_value(self.pa, normalizer.pa.min, normalizer.pa.max);
+        self.l = normalize_value(self.l, normalizer.l.min, normalizer.l.max);
+        self.g = normalize_value(self.g, normalizer.g.min, normalizer.g.max);
+    }
+
     fn from_point_op(op: PointOp) -> Self {
         let osc_type = match op.osc_type {
             OscType::Sine => 0.0,
@@ -120,6 +186,32 @@ fn main() -> Result<(), Error> {
         }
     }
     println!("MAX {:#?}\nMIN {:#?}\n", max_state, min_state);
+    let normalizer = Normalizer::from_min_max(min_state, max_state);
+    // dbg!(normalizer);
+
+    let render_return =
+        Filename("songs/template.socool").make(RenderType::NfBasisAndTable, None)?;
+    let (nf, _, _) = match render_return {
+        RenderReturn::NfBasisAndTable(nf, basis, table) => (nf, basis, table),
+        _ => panic!("huh"),
+    };
+
+    let normalized: Vec<Vec<DataOp>> = nf
+        .operations
+        .iter()
+        .map(|voice| {
+            voice
+                .iter()
+                .map(|op| {
+                    let mut data_op = DataOp::from_point_op(op.to_owned());
+                    data_op.normalize(&normalizer);
+                    data_op
+                })
+                .collect()
+        })
+        .collect();
+
+    dbg!(normalized);
 
     Ok(())
 }

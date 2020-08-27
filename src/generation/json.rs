@@ -335,17 +335,18 @@ pub fn to_csv(
 
     let (vec_timed_op, _) = composition_to_vec_timed_op(composition, defs)?;
     let mut op4d_1d = vec_timed_op_to_vec_op4d(vec_timed_op, basis);
+    dbg!(&op4d_1d);
 
-    op4d_1d.retain(|op| {
-        let is_silent = op.y == 0.0 || op.z <= 0.0;
-        !is_silent
-    });
+    // op4d_1d.retain(|op| {
+    // let is_silent = op.y == 0.0 || op.z <= 0.0;
+    // !is_silent
+    // });
 
-    let (normalizer, _max_len) = get_min_max_op4d_1d(&op4d_1d);
+    // let (normalizer, _max_len) = get_min_max_op4d_1d(&op4d_1d);
 
-    normalize_op4d_1d(&mut op4d_1d, normalizer);
+    // normalize_op4d_1d(&mut op4d_1d, normalizer);
 
-    write_composition_to_csv(&mut op4d_1d, &filename)?;
+    // write_composition_to_csv(&mut op4d_1d, &filename)?;
 
     Ok(())
 }
