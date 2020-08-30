@@ -1,8 +1,10 @@
 use walkdir::WalkDir;
 // use num_rational::Rational64;
+use std::fs::OpenOptions;
+use std::io::prelude::*;
 use weresocool::generation::{RenderReturn, RenderType};
 use weresocool::interpretable::{InputType::Filename, Interpretable};
-use weresocool_ast::{OscType, PointOp};
+use weresocool_ast::{NormalForm, OscType, PointOp};
 use weresocool_error::Error;
 use weresocool_shared::helpers::r_to_f64;
 
@@ -116,8 +118,48 @@ fn test_normalize() {
 // let op = PointOp::init();
 // let data_op = DataOp::from_point_op(op);
 // dbg!(data_op);
-
+//
 fn main() -> Result<(), Error> {
+    let (min_state, max_state) = find_min_max_from_dir()?;
+    let normalizer = Normalizer::from_min_max(min_state, max_state);
+
+    let render_return =
+        Filename("songs/template.socool").make(RenderType::NfBasisAndTable, None)?;
+    let (nf, _, _) = match render_return {
+        RenderReturn::NfBasisAndTable(nf, basis, table) => (nf, basis, table),
+        _ => panic!("huh"),
+    };
+
+    let normalized: Vec<Vec<DataOp>> = nf_to_normalized_vec_data_op(&nf, &normalizer);
+    dbg!(&normalized);
+
+    let mut file = OpenOptions::new()
+        .truncate(true)
+        .create(true)
+        .write(true)
+        .append(true)
+        .open("data.csv")
+        .unwrap();
+
+    for op in normalized.iter().flatten() {
+        dbg!(op);
+        file.write(format!("{}\n", op.fm.to_string()).as_bytes())?;
+    }
+
+    // if let Err(e) = writeln!(file, "A new line!") {
+    // eprintln!("Couldn't write to file: {}", e);
+    // }
+
+    Ok(())
+}
+
+// [
+// [[1, 2, 3, 2, 1], [3, 4, 2, 4, 3], [1, 3, 4, 5, 2]],
+// [[1, 2, 3, 2, 1], [3, 4, 2, 4, 3]],
+// [[1, 2, 3, 2, 1], [3, 4, 2, 4, 3]],
+// ]
+
+fn find_min_max_from_dir() -> Result<(DataOp, DataOp), Error> {
     let mut max_state = DataOp {
         fm: 0.0,
         fa: 0.0,
@@ -186,32 +228,21 @@ fn main() -> Result<(), Error> {
         }
     }
     println!("MAX {:#?}\nMIN {:#?}\n", max_state, min_state);
-    let normalizer = Normalizer::from_min_max(min_state, max_state);
-    // dbg!(normalizer);
+    Ok((min_state, max_state))
+}
 
-    let render_return =
-        Filename("songs/template.socool").make(RenderType::NfBasisAndTable, None)?;
-    let (nf, _, _) = match render_return {
-        RenderReturn::NfBasisAndTable(nf, basis, table) => (nf, basis, table),
-        _ => panic!("huh"),
-    };
-
-    let normalized: Vec<Vec<DataOp>> = nf
-        .operations
+fn nf_to_normalized_vec_data_op(nf: &NormalForm, normalizer: &Normalizer) -> Vec<Vec<DataOp>> {
+    nf.operations
         .iter()
         .map(|voice| {
             voice
                 .iter()
                 .map(|op| {
                     let mut data_op = DataOp::from_point_op(op.to_owned());
-                    data_op.normalize(&normalizer);
+                    data_op.normalize(normalizer);
                     data_op
                 })
                 .collect()
         })
-        .collect();
-
-    dbg!(normalized);
-
-    Ok(())
+        .collect()
 }

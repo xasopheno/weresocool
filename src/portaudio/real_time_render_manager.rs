@@ -37,8 +37,8 @@ pub fn real_time_render_manager(
 pub fn get_output_settings(pa: &pa::PortAudio) -> Result<pa::stream::OutputSettings<f32>, Error> {
     let def_output = pa.default_output_device()?;
     let output_info = pa.device_info(def_output)?;
-    // println!("Default output device info: {:#?}", &output_info);
     let latency = output_info.default_low_output_latency;
+    // println!("Default output device info: {:#?}", &def_output);
     let output_params =
         pa::StreamParameters::new(def_output, SETTINGS.channels, SETTINGS.interleaved, latency);
 
