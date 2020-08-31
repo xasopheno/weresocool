@@ -86,6 +86,22 @@ impl DataOp {
         self.g = normalize_value(self.g, normalizer.g.min, normalizer.g.max);
     }
 
+    pub fn new_vec_from_lengths(lengths: Vec<usize>) -> Vec<DataOp> {
+        lengths
+            .iter()
+            .enumerate()
+            .map(|(i, length)| DataOp {
+                fm: i as f64,
+                fa: 0.0,
+                pm: 0.0,
+                pa: 0.0,
+                l: *length as f64,
+                g: 0.0,
+                osc_type: 0.0,
+            })
+            .collect()
+    }
+
     fn from_point_op(op: PointOp) -> Self {
         let osc_type = match op.osc_type {
             OscType::Sine => 0.0,
@@ -119,51 +135,89 @@ fn main() -> Result<(), Error> {
     let (min_state, max_state) = find_min_max_from_dir()?;
     let normalizer = Normalizer::from_min_max(min_state, max_state);
 
-    let render_return =
-        Filename("songs/template.socool").make(RenderType::NfBasisAndTable, None)?;
-    let (nf, _, _) = match render_return {
-        RenderReturn::NfBasisAndTable(nf, basis, table) => (nf, basis, table),
-        _ => panic!("huh"),
-    };
+    // let render_return =
+    // Filename("songs/tests/mod_by_test.socool").make(RenderType::NfBasisAndTable, None)?;
+    // let (nf, _, _) = match render_return {
+    // RenderReturn::NfBasisAndTable(nf, basis, table) => (nf, basis, table),
+    // _ => panic!("huh"),
+    // };
 
-    let normalized: Vec<Vec<DataOp>> = nf_to_normalized_vec_data_op(&nf, &normalizer);
-    // dbg!(&normalized);
+    // let normalized: Vec<Vec<DataOp>> = nf_to_normalized_vec_data_op(&nf, &normalizer);
+    let data = vec![
+        DataOp::new_vec_from_lengths(vec![4, 6, 1, 1, 1, 1, 1, 1]),
+        DataOp::new_vec_from_lengths(vec![2, 1, 1, 2, 10]),
+        DataOp::new_vec_from_lengths(vec![1, 1, 1, 1, 1, 1, 1, 1]),
+    ];
+    process_normalized(data);
 
-    let mut file = OpenOptions::new()
-        .create(true)
-        .write(true)
-        .truncate(true)
-        .open("data.csv")
-        .unwrap();
+    // let mut file = OpenOptions::new()
+    // .create(true)
+    // .write(true)
+    // .truncate(true)
+    // .open("data.csv")
+    // .unwrap();
 
-    for voice in normalized {
-        for op in voice {
-            // dbg!(op);
-            file.write(
-                format!(
-                    "{}, {}, {}, {}, {}, {}, {}\n",
-                    op.fm.to_string(),
-                    op.fa.to_string(),
-                    op.pm.to_string(),
-                    op.pa.to_string(),
-                    op.l.to_string(),
-                    op.g.to_string(),
-                    op.osc_type.to_string()
-                )
-                .as_bytes(),
-            )?;
-        }
-    }
+    // for voice in normalized {
+    // for op in voice {
+    // // dbg!(op);
+    // file.write(
+    // format!(
+    // "{}, {}, {}, {}, {}, {}, {}\n",
+    // op.fm.to_string(),
+    // op.fa.to_string(),
+    // op.pm.to_string(),
+    // op.pa.to_string(),
+    // op.l.to_string(),
+    // op.g.to_string(),
+    // op.osc_type.to_string()
+    // )
+    // .as_bytes(),
+    // )?;
+    // }
+    // }
 
     Ok(())
 }
 
-// [
-// [[1, 2, 3, 2, 1], [3, 4, 2, 4, 3], [1, 3, 4, 5, 2]],
-// [[1, 2, 3, 2, 1], [3, 4, 2, 4, 3]],
-// [[1, 2, 3, 2, 1], [3, 4, 2, 4, 3]],
-// ]
-//
+fn process_normalized(normalized: Vec<Vec<DataOp>>) {
+    let taken = take_n(3, &normalized);
+    let (min_idx, min_len) = shortest_phrase(taken);
+    dbg!(min_idx, min_len);
+}
+
+fn take_n(n: usize, normalized: &Vec<Vec<DataOp>>) -> Vec<Vec<DataOp>> {
+    normalized
+        .iter()
+        .map(|voice| {
+            voice
+                .iter()
+                .take(3)
+                .map(|op| op.clone())
+                .collect::<Vec<DataOp>>()
+        })
+        .collect::<Vec<Vec<DataOp>>>()
+}
+
+fn shortest_phrase(taken: Vec<Vec<DataOp>>) -> (usize, f64) {
+    let mut idx = 0;
+    let mut min = f64::INFINITY;
+
+    for (i, voice) in taken.iter().enumerate() {
+        if voice.len() == 3 {
+            let mut sum = 0.0;
+            for op in voice {
+                sum += op.l
+            }
+            if sum < min {
+                min = sum;
+                idx = i;
+            }
+        }
+    }
+
+    (idx, min)
+}
+
 fn get_file_names() -> Vec<String> {
     let demo_dir = "./application/extraResources/demo/";
     let mut result = vec![];
