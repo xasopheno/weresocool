@@ -48,6 +48,7 @@ float-cmp = "0.8.0"
 walkdir = "2.3.1"
 npy = "0.4.0"
 npy-derive = "0.4.0"
+pretty_assertions = "0.6.1"
 
 [dev-dependencies]
 pretty_assertions = "0.6.1"

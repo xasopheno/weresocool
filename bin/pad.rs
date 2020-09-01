@@ -1,6 +1,5 @@
 // use num_rational::Rational64;
-use std::fs::OpenOptions;
-use std::io::prelude::*;
+use pretty_assertions::assert_eq;
 use walkdir::WalkDir;
 use weresocool::generation::{RenderReturn, RenderType};
 use weresocool::interpretable::{InputType::Filename, Interpretable};
@@ -8,7 +7,7 @@ use weresocool_ast::{NormalForm, OscType, PointOp};
 use weresocool_error::Error;
 use weresocool_shared::helpers::r_to_f64;
 
-#[derive(Debug, Clone, Copy)]
+#[derive(Debug, Clone, Copy, PartialEq)]
 pub struct DataOp {
     pub fm: f64,
     pub fa: f64,
@@ -77,6 +76,17 @@ fn normalize_value(value: f64, min: f64, max: f64) -> f64 {
 }
 
 impl DataOp {
+    pub fn silent() -> Self {
+        Self {
+            fm: 0.0,
+            fa: 0.0,
+            g: 0.0,
+            l: 0.0,
+            pm: 0.0,
+            pa: 0.0,
+            osc_type: 0.0,
+        }
+    }
     pub fn normalize(&mut self, normalizer: &Normalizer) {
         self.fm = normalize_value(self.fm, normalizer.fm.min, normalizer.fm.max);
         self.fa = normalize_value(self.fa, normalizer.fa.min, normalizer.fa.max);
@@ -143,12 +153,10 @@ fn main() -> Result<(), Error> {
     // };
 
     // let normalized: Vec<Vec<DataOp>> = nf_to_normalized_vec_data_op(&nf, &normalizer);
-    let data = vec![
-        DataOp::new_vec_from_lengths(vec![4, 6, 1, 1, 1, 1, 1, 1]),
-        DataOp::new_vec_from_lengths(vec![2, 1, 1, 2, 10]),
-        DataOp::new_vec_from_lengths(vec![1, 1, 1, 1, 1, 1, 1, 1]),
-    ];
-    process_normalized(data);
+    let (data, expected) = make_data_and_expected();
+    let result = process_normalized(data);
+    dbg!(&result);
+    assert_eq!(result, expected);
 
     // let mut file = OpenOptions::new()
     // .create(true)
@@ -179,26 +187,130 @@ fn main() -> Result<(), Error> {
     Ok(())
 }
 
-fn process_normalized(normalized: Vec<Vec<DataOp>>) {
-    let taken = take_n(3, &normalized);
-    let (min_idx, min_len) = shortest_phrase(taken);
-    dbg!(min_idx, min_len);
+fn make_data_and_expected() -> (VD, VD) {
+    let data = vec![
+        DataOp::new_vec_from_lengths(vec![2, 1, 1, 2, 10]),
+        DataOp::new_vec_from_lengths(vec![4, 6, 1, 1, 1, 1, 1, 1]),
+        DataOp::new_vec_from_lengths(vec![1, 1, 1, 1, 1, 1, 1, 1]),
+        DataOp::new_vec_from_lengths(vec![8]),
+    ];
+    let expected = vec![
+        vec![
+            DataOp {
+                fm: 0.0,
+                fa: 0.0,
+                g: 0.0,
+                l: 2.0,
+                pm: 0.0,
+                pa: 0.0,
+                osc_type: 0.0,
+            },
+            DataOp {
+                fm: 1.0,
+                fa: 0.0,
+                g: 0.0,
+                l: 1.0,
+                pm: 0.0,
+                pa: 0.0,
+                osc_type: 0.0,
+            },
+        ],
+        vec![],
+        vec![
+            DataOp {
+                fm: 0.0,
+                fa: 0.0,
+                g: 0.0,
+                l: 1.0,
+                pm: 0.0,
+                pa: 0.0,
+                osc_type: 0.0,
+            },
+            DataOp {
+                fm: 1.0,
+                fa: 0.0,
+                g: 0.0,
+                l: 1.0,
+                pm: 0.0,
+                pa: 0.0,
+                osc_type: 0.0,
+            },
+            DataOp {
+                fm: 2.0,
+                fa: 0.0,
+                g: 0.0,
+                l: 1.0,
+                pm: 0.0,
+                pa: 0.0,
+                osc_type: 0.0,
+            },
+        ],
+        vec![],
+    ];
+
+    (data, expected)
 }
 
-fn take_n(n: usize, normalized: &Vec<Vec<DataOp>>) -> Vec<Vec<DataOp>> {
+type VD = Vec<Vec<DataOp>>;
+
+fn process_normalized(normalized: VD) -> VD {
+    let n = 3;
+    let taken = take_n(n, &normalized);
+    let (max_idx, min_len) = shortest_phrase(&taken);
+    let batch = make_batch(n, max_idx, min_len, taken);
+    dbg!(max_idx, min_len);
+    batch
+}
+
+fn make_batch(n: usize, max_idx: usize, min_len: f64, taken: VD) -> VD {
+    let result = taken
+        .iter()
+        .enumerate()
+        .map(|(i, voice)| process_voice(n, i, max_idx, min_len, voice.to_vec()))
+        .collect::<VD>();
+    result
+}
+
+// |(i, voice)| match voice.len().partial_cmp(&n).expect("not work") {
+// // std::cmp::Ordering::Less => pad_voice(n, voice.to_owned()),
+// // _ => vec![],
+// },
+
+fn process_voice(
+    n_ops: usize,
+    i: usize,
+    max_idx: usize,
+    min_len: f64,
+    voice: Vec<DataOp>,
+) -> Vec<DataOp> {
+    if i == max_idx {
+        voice
+    } else {
+        vec![]
+    }
+}
+
+fn pad_voice(n: usize, mut voice: Vec<DataOp>) -> Vec<DataOp> {
+    for i in 0..voice.len() - n {
+        voice.push(DataOp::silent())
+    }
+    voice
+}
+
+fn take_n(n: usize, normalized: &VD) -> VD {
     normalized
         .iter()
         .map(|voice| {
             voice
                 .iter()
-                .take(3)
+                .take(n)
                 .map(|op| op.clone())
                 .collect::<Vec<DataOp>>()
         })
-        .collect::<Vec<Vec<DataOp>>>()
+        .collect::<VD>()
 }
 
-fn shortest_phrase(taken: Vec<Vec<DataOp>>) -> (usize, f64) {
+fn shortest_phrase(taken: &VD) -> (usize, f64) {
     let mut idx = 0;
     let mut min = f64::INFINITY;
 
