@@ -1,4 +1,4 @@
-// use num_rational::Rational64;
+use num_rational::Rational64;
 use pretty_assertions::assert_eq;
 use walkdir::WalkDir;
 use weresocool::generation::{RenderReturn, RenderType};
@@ -9,13 +9,13 @@ use weresocool_shared::helpers::r_to_f64;
 
 #[derive(Debug, Clone, Copy, PartialEq)]
 pub struct DataOp {
-    pub fm: f64,
-    pub fa: f64,
-    pub g: f64,
-    pub l: f64,
-    pub pm: f64,
-    pub pa: f64,
-    pub osc_type: f64,
+    pub fm: Rational64,
+    pub fa: Rational64,
+    pub g: Rational64,
+    pub l: Rational64,
+    pub pm: Rational64,
+    pub pa: Rational64,
+    pub osc_type: Rational64,
 }
 
 #[derive(Debug, Clone)]
@@ -61,14 +61,14 @@ impl Normalizer {
 
 #[derive(Debug, Clone)]
 pub struct MinMax {
-    pub min: f64,
-    pub max: f64,
+    pub min: Rational64,
+    pub max: Rational64,
 }
 
-fn normalize_value(value: f64, min: f64, max: f64) -> f64 {
+fn normalize_value(value: Rational64, min: Rational64, max: Rational64) -> Rational64 {
     // equivilance check for floats. max == min.
-    let d = if (max - min).abs() < std::f64::EPSILON {
-        1.0
+    let d = if max - min == Rational64::new(0, 1) {
+        Rational64::new(1, 1)
     } else {
         max - min
     };
@@ -76,15 +76,15 @@ fn normalize_value(value: f64, min: f64, max: f64) -> f64 {
 }
 
 impl DataOp {
-    pub fn silent() -> Self {
+    pub fn empty() -> Self {
         Self {
-            fm: 0.0,
-            fa: 0.0,
-            g: 0.0,
-            l: 0.0,
-            pm: 0.0,
-            pa: 0.0,
-            osc_type: 0.0,
+            fm: Rational64::new(0, 1),
+            fa: Rational64::new(0, 1),
+            g: Rational64::new(0, 1),
+            l: Rational64::new(0, 1),
+            pm: Rational64::new(0, 1),
+            pa: Rational64::new(0, 1),
+            osc_type: Rational64::new(0, 1),
         }
     }
     pub fn normalize(&mut self, normalizer: &Normalizer) {
@@ -96,34 +96,49 @@ impl DataOp {
         self.g = normalize_value(self.g, normalizer.g.min, normalizer.g.max);
     }
 
-    pub fn new_vec_from_lengths(lengths: Vec<usize>) -> Vec<DataOp> {
+    pub fn new_vec_from_lengths(lengths: Vec<i64>) -> Vec<DataOp> {
         lengths
             .iter()
             .enumerate()
             .map(|(i, length)| DataOp {
-                fm: i as f64,
-                fa: 0.0,
-                pm: 0.0,
-                pa: 0.0,
-                l: *length as f64,
-                g: 0.0,
-                osc_type: 0.0,
+                fm: Rational64::new(i as i64, 1),
+                fa: Rational64::new(0, 1),
+                pm: Rational64::new(0, 1),
+                pa: Rational64::new(0, 1),
+                l: Rational64::new(*length, 1),
+                g: Rational64::new(0, 1),
+                osc_type: Rational64::new(0, 1),
+            })
+            .collect()
+    }
+
+    pub fn new_vec_from_fm_and_l(fm_and_ls: Vec<(usize, usize)>) -> Vec<DataOp> {
+        fm_and_ls
+            .iter()
+            .map(|fm_and_l| DataOp {
+                fm: Rational64::new(fm_and_l.0 as i64, 1),
+                fa: Rational64::new(0, 1),
+                pm: Rational64::new(0, 1),
+                pa: Rational64::new(0, 1),
+                l: Rational64::new(fm_and_l.1 as i64, 1),
+                g: Rational64::new(0, 1),
+                osc_type: Rational64::new(0, 1),
             })
             .collect()
     }
 
     fn from_point_op(op: PointOp) -> Self {
         let osc_type = match op.osc_type {
-            OscType::Sine => 0.0,
-            _ => 1.0,
+            OscType::Sine => Rational64::new(0, 1),
+            _ => Rational64::new(1, 1),
         };
         Self {
-            fm: r_to_f64(op.fm),
-            fa: r_to_f64(op.fa),
-            g: r_to_f64(op.g),
-            l: r_to_f64(op.l),
-            pm: r_to_f64(op.pm),
-            pa: r_to_f64(op.pa),
+            fm: op.fm,
+            fa: op.fa,
+            g: op.g,
+            l: op.l,
+            pm: op.pm,
+            pa: op.pa,
             osc_type,
         }
     }
@@ -142,8 +157,8 @@ fn test_normalize() {
 }
 
 fn main() -> Result<(), Error> {
-    let (min_state, max_state) = find_min_max_from_dir()?;
-    let normalizer = Normalizer::from_min_max(min_state, max_state);
+    // let (min_state, max_state) = find_min_max_from_dir()?;
+    // let normalizer = Normalizer::from_min_max(min_state, max_state);
 
     // let render_return =
     // Filename("songs/tests/mod_by_test.socool").make(RenderType::NfBasisAndTable, None)?;
@@ -153,10 +168,29 @@ fn main() -> Result<(), Error> {
     // };
 
     // let normalized: Vec<Vec<DataOp>> = nf_to_normalized_vec_data_op(&nf, &normalizer);
-    let (data, expected) = make_data_and_expected();
-    let result = process_normalized(data);
-    dbg!(&result);
-    assert_eq!(result, expected);
+    let (data, expected1, expected2) = make_data_and_expected();
+    let result = process_normalized(&data);
+    let len = shortest_first_element(&data);
+    let next = make_next(len, &data);
+    let result2 = process_normalized(&next);
+
+    assert_eq!(result, expected1);
+    assert_eq!(result2, expected2);
+
+    let (data, _, _) = make_data_and_expected();
+    let mut next = data;
+    let mut i = 0;
+
+    loop {
+        if !is_not_empty(&next) {
+            break;
+        };
+        // dbg!(&next);
+
+        let result = process_normalized(&next);
+        let len = shortest_first_element(&next);
+        next = make_next(len, &next);
+    }
 
     // let mut file = OpenOptions::new()
     // .create(true)
@@ -187,82 +221,60 @@ fn main() -> Result<(), Error> {
     Ok(())
 }
 
-fn make_data_and_expected() -> (VD, VD) {
+fn is_not_empty(data: &VD) -> bool {
+    data.iter().all(|voice| voice.len() != 0)
+}
+
+fn make_next(l: Rational64, data: &VD) -> VD {
+    data.iter()
+        .map(|voice| {
+            let mut v = voice.to_owned();
+            if v[0].l == l {
+                v[1..].to_vec()
+            } else {
+                v[0].l -= l;
+                v
+            }
+        })
+        .collect::<VD>()
+}
+
+fn make_data_and_expected() -> (VD, VD, VD) {
     let data = vec![
-        DataOp::new_vec_from_lengths(vec![2, 1, 1, 2, 10]),
-        DataOp::new_vec_from_lengths(vec![4, 6, 1, 1, 1, 1, 1, 1]),
-        DataOp::new_vec_from_lengths(vec![1, 1, 1, 1, 1, 1, 1, 1]),
-        DataOp::new_vec_from_lengths(vec![8]),
+        DataOp::new_vec_from_lengths(vec![1, 3, 3]),
+        DataOp::new_vec_from_lengths(vec![1, 1, 1, 2, 1, 1]),
+        DataOp::new_vec_from_lengths(vec![2, 2, 2, 1]),
+        DataOp::new_vec_from_lengths(vec![7]),
     ];
-    let expected = vec![
-        vec![
-            DataOp {
-                fm: 0.0,
-                fa: 0.0,
-                g: 0.0,
-                l: 2.0,
-                pm: 0.0,
-                pa: 0.0,
-                osc_type: 0.0,
-            },
-            DataOp {
-                fm: 1.0,
-                fa: 0.0,
-                g: 0.0,
-                l: 1.0,
-                pm: 0.0,
-                pa: 0.0,
-                osc_type: 0.0,
-            },
-        ],
-        vec![],
-        vec![
-            DataOp {
-                fm: 0.0,
-                fa: 0.0,
-                g: 0.0,
-                l: 1.0,
-                pm: 0.0,
-                pa: 0.0,
-                osc_type: 0.0,
-            },
-            DataOp {
-                fm: 1.0,
-                fa: 0.0,
-                g: 0.0,
-                l: 1.0,
-                pm: 0.0,
-                pa: 0.0,
-                osc_type: 0.0,
-            },
-            DataOp {
-                fm: 2.0,
-                fa: 0.0,
-                g: 0.0,
-                l: 1.0,
-                pm: 0.0,
-                pa: 0.0,
-                osc_type: 0.0,
-            },
-        ],
-        vec![],
+    let expected1 = vec![
+        DataOp::new_vec_from_fm_and_l(vec![(0, 1), (1, 2), (0, 0)]),
+        DataOp::new_vec_from_fm_and_l(vec![(0, 1), (1, 1), (2, 1)]),
+        DataOp::new_vec_from_fm_and_l(vec![(0, 2), (1, 1), (0, 0)]),
+        DataOp::new_vec_from_fm_and_l(vec![(0, 3), (0, 0), (0, 0)]),
     ];
 
-    (data, expected)
+    let expected2 = vec![
+        DataOp::new_vec_from_fm_and_l(vec![(1, 3), (2, 1), (0, 0)]),
+        DataOp::new_vec_from_fm_and_l(vec![(1, 1), (2, 1), (3, 2)]),
+        DataOp::new_vec_from_fm_and_l(vec![(0, 1), (1, 2), (2, 1)]),
+        DataOp::new_vec_from_fm_and_l(vec![(0, 4), (0, 0), (0, 0)]),
+    ];
+
+    (data, expected1, expected2)
 }
 
 type VD = Vec<Vec<DataOp>>;
 
-fn process_normalized(normalized: VD) -> VD {
+fn process_normalized(normalized: &VD) -> VD {
     let n = 3;
-    let taken = take_n(n, &normalized);
+    let taken = take_n(n, normalized);
     let (max_idx, min_len) = shortest_phrase(&taken);
     let batch = make_batch(n, max_idx, min_len, taken);
-    dbg!(max_idx, min_len);
+    // dbg!(max_idx, min_len);
     batch
 }
 
-fn make_batch(n: usize, max_idx: usize, min_len: f64, taken: VD) -> VD {
+fn make_batch(n: usize, max_idx: usize, min_len: Rational64, taken: VD) -> VD {
     let result = taken
         .iter()
         .enumerate()
@@ -271,28 +283,39 @@ fn make_batch(n: usize, max_idx: usize, min_len: f64, taken: VD) -> VD {
     result
 }
 
-// |(i, voice)| match voice.len().partial_cmp(&n).expect("not work") {
-// // std::cmp::Ordering::Less => pad_voice(n, voice.to_owned()),
-// // _ => vec![],
-// },
-
 fn process_voice(
     n_ops: usize,
     i: usize,
     max_idx: usize,
-    min_len: f64,
+    min_len: Rational64,
     voice: Vec<DataOp>,
 ) -> Vec<DataOp> {
     if i == max_idx {
         voice
     } else {
-        vec![]
+        let mut count = Rational64::new(0, 1);
+        let mut idx = 0;
+        let mut result = vec![];
+        while count < min_len && idx < voice.len() {
+            result.push(voice[idx]);
+            count += voice[idx].l;
+            idx += 1
+        }
+        if count > min_len {
+            let len = result.len() - 1;
+            let diff = result[len].l - (count - min_len);
+            let mut r = result[len].clone();
+            result[len].l = diff;
+            r.l = r.l - diff;
+        }
+        result = pad_voice(n_ops, result);
+        result
     }
 }
 
 fn pad_voice(n: usize, mut voice: Vec<DataOp>) -> Vec<DataOp> {
-    for i in 0..voice.len() - n {
-        voice.push(DataOp::silent())
+    while voice.len() < n {
+        voice.push(DataOp::empty())
     }
     voice
 }
@@ -310,13 +333,13 @@ fn take_n(n: usize, normalized: &VD) -> VD {
         .collect::<VD>()
 }
 
-fn shortest_phrase(taken: &VD) -> (usize, f64) {
+fn shortest_phrase(taken: &VD) -> (usize, Rational64) {
     let mut idx = 0;
-    let mut min = f64::INFINITY;
+    let mut min = Rational64::new(i64::MAX, 1);
 
     for (i, voice) in taken.iter().enumerate() {
         if voice.len() == 3 {
-            let mut sum = 0.0;
+            let mut sum = Rational64::new(0, 1);
             for op in voice {
                 sum += op.l
             }
@@ -328,6 +351,20 @@ fn shortest_phrase(taken: &VD) -> (usize, f64) {
     }
 
     (idx, min)
+}
+
+fn shortest_first_element(data: &VD) -> Rational64 {
+    let mut min = Rational64::new(i64::MAX, 1);
+
+    for voice in data.iter() {
+        for op in voice {
+            if op.l < min {
+                min = op.l;
+            }
+        }
+    }
+
+    min
 }
 
 fn get_file_names() -> Vec<String> {
@@ -368,22 +405,22 @@ fn get_file_names() -> Vec<String> {
 
 fn find_min_max_from_dir() -> Result<(DataOp, DataOp), Error> {
     let mut max_state = DataOp {
-        fm: 0.0,
-        fa: 0.0,
-        g: 0.0,
-        l: 0.0,
-        pm: 0.0,
-        pa: 0.0,
-        osc_type: 1.0,
+        fm: Rational64::new(0, 1),
+        fa: Rational64::new(0, 1),
+        g: Rational64::new(0, 1),
+        l: Rational64::new(0, 1),
+        pm: Rational64::new(0, 1),
+        pa: Rational64::new(0, 1),
+        osc_type: Rational64::new(1, 1),
     };
     let mut min_state = DataOp {
-        fm: 0.0,
-        fa: 0.0,
-        g: 0.0,
-        l: 0.0,
-        pm: 0.0,
-        pa: 0.0,
-        osc_type: 0.0,
+        fm: Rational64::new(0, 1),
+        fa: Rational64::new(0, 1),
+        g: Rational64::new(0, 1),
+        l: Rational64::new(0, 1),
+        pm: Rational64::new(0, 1),
+        pa: Rational64::new(0, 1),
+        osc_type: Rational64::new(1, 1),
     };
 
     let mut max_ops = 0;
