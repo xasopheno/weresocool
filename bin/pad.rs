@@ -66,7 +66,6 @@ pub struct MinMax {
 }
 
 fn normalize_value(value: Rational64, min: Rational64, max: Rational64) -> Rational64 {
-    // equivilance check for floats. max == min.
     let d = if max - min == Rational64::new(0, 1) {
         Rational64::new(1, 1)
     } else {
@@ -75,7 +74,30 @@ fn normalize_value(value: Rational64, min: Rational64, max: Rational64) -> Ratio
     (value - min) / d
 }
 
+#[derive(Debug, Clone, Copy, PartialEq)]
+pub struct NNOp {
+    pub fm: f64,
+    pub fa: f64,
+    pub g: f64,
+    pub l: f64,
+    pub pm: f64,
+    pub pa: f64,
+    pub osc_type: f64,
+}
+
 impl DataOp {
+    pub fn to_nnop(self) -> NNOp {
+        NNOp {
+            fm: r_to_f64(self.fm),
+            fa: r_to_f64(self.fa),
+            g: r_to_f64(self.g),
+            l: r_to_f64(self.l),
+            pm: r_to_f64(self.pm),
+            pa: r_to_f64(self.pa),
+            osc_type: r_to_f64(self.osc_type),
+        }
+    }
+
     pub fn empty() -> Self {
         Self {
             fm: Rational64::new(0, 1),
@@ -161,7 +183,7 @@ fn main() -> Result<(), Error> {
     // let normalizer = Normalizer::from_min_max(min_state, max_state);
 
     // let render_return =
-    // Filename("songs/tests/mod_by_test.socool").make(RenderType::NfBasisAndTable, None)?;
+    // Filename("songs/template.socool").make(RenderType::NfBasisAndTable, None)?;
     // let (nf, _, _) = match render_return {
     // RenderReturn::NfBasisAndTable(nf, basis, table) => (nf, basis, table),
     // _ => panic!("huh"),
