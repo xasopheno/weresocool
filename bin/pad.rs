@@ -1,5 +1,6 @@
 use num_rational::Rational64;
 use pretty_assertions::assert_eq;
+use rayon::prelude::*;
 use walkdir::WalkDir;
 use weresocool::generation::{RenderReturn, RenderType};
 use weresocool::interpretable::{InputType::Filename, Interpretable};
@@ -179,37 +180,55 @@ fn test_normalize() {
 }
 
 fn main() -> Result<(), Error> {
-    // let (min_state, max_state) = find_min_max_from_dir()?;
-    // let normalizer = Normalizer::from_min_max(min_state, max_state);
+    let (min_state, max_state) = find_min_max_from_dir()?;
+    let normalizer = Normalizer::from_min_max(min_state, max_state);
 
-    // let render_return =
-    // Filename("songs/template.socool").make(RenderType::NfBasisAndTable, None)?;
-    // let (nf, _, _) = match render_return {
-    // RenderReturn::NfBasisAndTable(nf, basis, table) => (nf, basis, table),
-    // _ => panic!("huh"),
-    // };
+    let render_return = Filename("application/extraResources/demo/how_to_rest.socool")
+        .make(RenderType::NfBasisAndTable, None)?;
+    let (nf, _, _) = match render_return {
+        RenderReturn::NfBasisAndTable(nf, basis, table) => (nf, basis, table),
+        _ => panic!("huh"),
+    };
 
-    // let normalized: Vec<Vec<DataOp>> = nf_to_normalized_vec_data_op(&nf, &normalizer);
-    let (data, expected1, expected2) = make_data_and_expected();
-    let result = process_normalized(&data);
-    let len = shortest_first_element(&data);
-    let next = make_next(len, &data);
-    let result2 = process_normalized(&next);
+    let normalized: Vec<Vec<DataOp>> = nf_to_normalized_vec_data_op(&nf, &normalizer);
+    // let (data, expected1, expected2) = make_data_and_expected();
+    // let result = process_normalized(&data);
+    // let len = shortest_first_element(&data);
+    // let next = make_next(len, &data);
+    // let result2 = process_normalized(&next);
 
-    assert_eq!(result, expected1);
-    assert_eq!(result2, expected2);
+    // assert_eq!(result, expected1);
+    // assert_eq!(result2, expected2);
 
-    let (data, _, _) = make_data_and_expected();
-    let mut next = data;
+    // let (data, _, _) = make_data_and_expected();
+    let mut next = normalized;
     let mut i = 0;
 
     loop {
         if !is_not_empty(&next) {
             break;
         };
-        // dbg!(&next);
+        i += 1;
+        if i % 1000 == 0 {
+            dbg!(i);
+        };
 
         let result = process_normalized(&next);
+        let nnops = result
+            .par_iter()
+            .map(|voice| {
+                voice
+                    .par_iter()
+                    .map(|op| op.to_nnop())
+                    .collect::<Vec<NNOp>>()
+            })
+            .collect::<Vec<Vec<NNOp>>>();
+
+        if i % 1 == 0 {
+            dbg!(nnops);
+            break;
+        };
+
         let len = shortest_first_element(&next);
         next = make_next(len, &next);
     }
@@ -248,7 +267,7 @@ fn is_not_empty(data: &VD) -> bool {
 }
 
 fn make_next(l: Rational64, data: &VD) -> VD {
-    data.iter()
+    data.par_iter()
         .map(|voice| {
             let mut v = voice.to_owned();
             if v[0].l == l {
@@ -288,7 +307,7 @@ fn make_data_and_expected() -> (VD, VD, VD) {
 type VD = Vec<Vec<DataOp>>;
 
 fn process_normalized(normalized: &VD) -> VD {
-    let n = 3;
+    let n = 100;
     let taken = take_n(n, normalized);
     let (max_idx, min_len) = shortest_phrase(&taken);
     let batch = make_batch(n, max_idx, min_len, taken);
