@@ -10,9 +10,10 @@ fn main() -> Result<(), Error> {
     let (min_state, max_state) = find_min_max_from_dir()?;
     let normalizer = Normalizer::from_min_max(min_state, max_state);
 
-    // let render_return = Filename("application/extraResources/demo/how_to_rest.socool")
-    let render_return =
-        Filename("songs/template.socool").make(RenderType::NfBasisAndTable, None)?;
+    let render_return = Filename("application/extraResources/demo/how_to_rest.socool")
+        .make(RenderType::NfBasisAndTable, None)?;
+    // let render_return =
+    // Filename("songs/template.socool").make(RenderType::NfBasisAndTable, None)?;
     let (nf, _, _) = match render_return {
         RenderReturn::NfBasisAndTable(nf, basis, table) => (nf, basis, table),
         _ => panic!("huh"),
