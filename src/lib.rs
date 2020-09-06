@@ -4,6 +4,7 @@
     //clippy::pedantic,
     //clippy::cargo,
 )]
+pub mod data;
 pub mod examples;
 pub mod generation;
 pub mod interpretable;
