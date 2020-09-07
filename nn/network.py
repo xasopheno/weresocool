@@ -11,7 +11,7 @@ import torchvision.datasets as dset
 import torchvision.transforms as transforms
 import torchvision.utils as vutils
 
-nz = 100
+nz = 256
 ngf = 64
 ndf = 64
 nc = 7
