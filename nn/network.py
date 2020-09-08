@@ -84,6 +84,7 @@ class Discriminator(nn.Module):
             nn.Conv2d(ndf * 4, ndf * 8, 4, 2, 1, bias=False),
             nn.BatchNorm2d(ndf * 8),
             nn.LeakyReLU(0.2, inplace=True),
+            nn.Dropout2d(0.4),
             # state size. (ndf*8) x 4 x 4
             nn.Conv2d(ndf * 8, 1, 4, 1, 0, bias=False),
             nn.Sigmoid()
@@ -92,6 +93,7 @@ class Discriminator(nn.Module):
 
     def forward(self, input):
         #  print("Discriminator input.shape:", input.shape)
+        input = input + (0.05 ** 0.5) * torch.randn(input.shape).to("cuda")
         if input.is_cuda and self.ngpu > 1:
             output = nn.parallel.data_parallel(self.main, input, range(self.ngpu))
         else:
