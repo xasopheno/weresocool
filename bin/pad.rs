@@ -1,16 +1,35 @@
 use rayon::prelude::*;
 use std::fs::OpenOptions;
+use std::io::Read;
 use std::io::Write;
+use std::io::{prelude::*, BufReader};
 use weresocool::data::*;
 use weresocool::generation::{RenderReturn, RenderType};
 use weresocool::interpretable::{InputType::Filename, Interpretable};
 use weresocool_error::Error;
 
 fn main() -> Result<(), Error> {
+    let file = std::fs::File::open("nn/output/out.csv")?;
+    let reader = BufReader::new(file);
+
+    let mut data: Vec<f64> = reader
+        .lines()
+        .map(|line| line.unwrap().parse().unwrap())
+        .collect();
+
+    let pre_ops: Vec<Vec<f64>> = data.chunks(7).map(|chunck| chunck.to_vec()).collect();
+    let post_ops: Vec<Vec<Vec<f64>>> = pre_ops.chunks(64).map(|chunck| chunck.to_vec()).collect();
+    // dbg!(pre_ops);
+    dbg!(post_ops);
+
+    Ok(())
+}
+
+fn _generate_data() -> Result<(), Error> {
     let (min_state, max_state) = find_min_max_from_dir()?;
     let normalizer = Normalizer::from_min_max(min_state, max_state);
 
-    let render_return = Filename("application/extraResources/demo/how_to_rest.socool")
+    let render_return = Filename("application/extraResources/demo/monica.socool")
         .make(RenderType::NfBasisAndTable, None)?;
     // let render_return =
     // Filename("songs/template.socool").make(RenderType::NfBasisAndTable, None)?;
@@ -34,7 +53,7 @@ fn main() -> Result<(), Error> {
             break;
         };
 
-        let filename = format!("nn/data/how_to_rest/how_to_rest_{:0>10}.socool.csv", i);
+        let filename = format!("nn/data/monica/monica_{:0>10}.socool.csv", i);
         dbg!(&filename);
         let mut file = OpenOptions::new()
             .create(true)

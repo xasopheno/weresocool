@@ -23,8 +23,7 @@ def inv_tanh(d: np.array):
     return (d + 1) * (1 / 2)
 
 
-def ravel_to_wsc(x, n_voices, n_ops):
-    return x.ravel("F").reshape(n_voices, n_voices, n_ops)
+song_name = "slice"
 
 
 def data_point_to_rgbxyz_img(data: np.array, i: int):
@@ -40,7 +39,7 @@ def data_point_to_rgbxyz_img(data: np.array, i: int):
     print(channels.shape)
     channels = channels.astype(np.uint8)
     channels = Image.fromarray(channels)
-    channels.save(f"{img_dir}/out_channels_{i:05d}.png")
+    channels.save(f"{img_dir}/{song_name}/out_channels_{i:05d}.png")
 
     a = np.dstack((r, g, b))
     b = np.dstack((x, y, z))
@@ -52,11 +51,11 @@ def data_point_to_rgbxyz_img(data: np.array, i: int):
     print(rgb_xyz.shape)
 
     result = Image.fromarray(rgb_xyz)
-    result.save(f"{img_dir}/out_rgbxyz_{i:05d}.png")
+    result.save(f"{img_dir}/{song_name}/out_rgbxyz_{i:05d}.png")
 
 
 files = []
-dirs = ["data/how_to_rest"]
+dirs = [f"data/{song_name}"]
 for d in dirs:
     for f in os.listdir(d):
         if f.endswith(".csv"):
@@ -66,11 +65,34 @@ for d in dirs:
 
 files = files[0:1000]
 dataset = RealDataGenerator(files)
-for i in range(0, 1000, 3):
-    #  i = random.randint(0, len(dataset) - 1)
-    data = dataset[i].numpy()
-    data = inv_tanh(data)
-    data_point_to_rgbxyz_img(torch.tensor(data), i)
+#  for i in range(0, 1000):
+#  #  i = random.randint(0, len(dataset) - 1)
+#  data = dataset[i].numpy()
+#  data = inv_tanh(data)
+#  data_point_to_rgbxyz_img(torch.tensor(data), i)
 
-d = ravel_to_wsc(data, n_voices, n_ops)
+
+def ravel_to_wsc(x, n_voices, n_ops):
+    return x.ravel("F").reshape(n_voices, n_voices, n_ops)
+
+
+#  d = ravel_to_wsc(data, n_voices, n_ops)
+
+
+#  def write_result_to_file(data, n_voices, n_op):
+#  data = inv_tanh(data)
+#  d = data.numpy().ravel("F").reshape(n_voices, n_voices, n_ops)
+#  print(d)
+#  np.save("output/out.npy", d)
+
+
+def write_result_to_file(data, n_voices, n_op):
+    data = inv_tanh(data)
+    d = data.numpy().ravel("F")
+    np.savetxt("output/out.csv", d, delimiter=",", fmt="%1.53f")
+
+
+write_result_to_file(dataset[0], n_voices, n_ops)
+
+
 #  print("WSC:", d)

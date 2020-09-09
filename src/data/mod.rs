@@ -6,6 +6,7 @@ use std::io::Write;
 use walkdir::WalkDir;
 use weresocool_ast::{NormalForm, OscType, PointOp};
 use weresocool_error::Error;
+use weresocool_parser::float_to_rational::helpers::f32_to_rational;
 use weresocool_shared::helpers::r_to_f64;
 
 #[derive(Debug, Clone, Copy, PartialEq)]
@@ -106,6 +107,36 @@ impl NNOp {
 }
 
 impl DataOp {
+    pub fn from_vec_f64(vec: Vec<f64>) -> Self {
+        Self {
+            fm: f32_to_rational(vec[0].to_string()),
+            fa: f32_to_rational(vec[1].to_string()),
+            g: f32_to_rational(vec[2].to_string()),
+            l: f32_to_rational(vec[3].to_string()),
+            pm: f32_to_rational(vec[4].to_string()),
+            pa: f32_to_rational(vec[5].to_string()),
+            osc_type: f32_to_rational(vec[6].to_string()),
+        }
+    }
+
+    pub fn to_point_op(self) -> PointOp {
+        let osc_type = if self.osc_type > Rational64::new(1, 2) {
+            OscType::Sine
+        } else {
+            OscType::Noise
+        };
+        let mut point_op = PointOp::init_silent();
+
+        point_op.fm = self.fm;
+        point_op.fa = self.fa;
+        point_op.g = self.g;
+        point_op.l = self.l;
+        point_op.pm = self.pm;
+        point_op.pa = self.pa;
+        point_op.osc_type = osc_type;
+
+        point_op
+    }
     pub fn to_nnop(self) -> NNOp {
         NNOp {
             fm: r_to_f64(self.fm),
