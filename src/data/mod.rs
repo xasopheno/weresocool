@@ -67,6 +67,15 @@ pub struct MinMax {
     pub max: Rational64,
 }
 
+fn denormalize_value(val: Rational64, min: Rational64, max: Rational64) -> Rational64 {
+    // let d = if max - min == Rational64::new(0, 1) {
+    // Rational64::new(1, 1)
+    // } else {
+    // max - min
+    // };
+
+    val * (max - min) - min
+}
 fn normalize_value(value: Rational64, min: Rational64, max: Rational64) -> Rational64 {
     let d = if max - min == Rational64::new(0, 1) {
         Rational64::new(1, 1)
@@ -168,6 +177,15 @@ impl DataOp {
         self.pa = normalize_value(self.pa, normalizer.pa.min, normalizer.pa.max);
         self.l = normalize_value(self.l, normalizer.l.min, normalizer.l.max);
         self.g = normalize_value(self.g, normalizer.g.min, normalizer.g.max);
+    }
+
+    pub fn denormalize(&mut self, normalizer: &Normalizer) {
+        self.fm = denormalize_value(self.fm, normalizer.fm.min, normalizer.fm.max);
+        self.fa = denormalize_value(self.fa, normalizer.fa.min, normalizer.fa.max);
+        self.pm = denormalize_value(self.pm, normalizer.pm.min, normalizer.pm.max);
+        self.pa = denormalize_value(self.pa, normalizer.pa.min, normalizer.pa.max);
+        self.l = denormalize_value(self.l, normalizer.l.min, normalizer.l.max);
+        self.g = denormalize_value(self.g, normalizer.g.min, normalizer.g.max);
     }
 
     pub fn new_vec_from_lengths(lengths: Vec<i64>) -> Vec<DataOp> {

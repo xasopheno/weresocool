@@ -24,6 +24,9 @@ fn main() -> Result<(), Error> {
     let file = std::fs::File::open("nn/output/out.csv")?;
     let reader = BufReader::new(file);
 
+    let (min_state, max_state) = find_min_max_from_dir()?;
+    let normalizer = Normalizer::from_min_max(min_state, max_state);
+
     let data: Vec<f64> = reader
         .lines()
         .map(|line| line.unwrap().parse().unwrap())
@@ -32,16 +35,21 @@ fn main() -> Result<(), Error> {
     let data: Vec<String> = data.iter().map(|v| format!("{:.16}", v)).collect();
 
     let pre_ops: Vec<Vec<String>> = data.chunks(7).map(|chunck| chunck.to_vec()).collect();
+
     let point_ops: Vec<PointOp> = pre_ops
         .iter()
-        .map(|chunk| DataOp::from_vec_f64_string(chunk.to_vec()).to_point_op())
+        .map(|chunk| {
+            let mut op = DataOp::from_vec_f64_string(chunk.to_vec());
+            op.denormalize(&normalizer);
+            op.to_point_op()
+        })
         .collect();
     let result: Vec<Vec<PointOp>> = point_ops.chunks(64).map(|chunck| chunck.to_vec()).collect();
     let mut nf = NormalForm::init_empty();
     nf.operations = result;
 
     let init: Init = Init {
-        f: Rational64::new(220, 1),
+        f: Rational64::new(330, 1),
         l: Rational64::new(1, 1),
         g: Rational64::new(1, 1),
         p: Rational64::new(0, 1),
@@ -49,8 +57,8 @@ fn main() -> Result<(), Error> {
 
     let basis = Basis::from(init);
     let defs: Defs = Default::default();
-    let sw = render(&basis, &nf, &defs).unwrap();
-    let wav = write_composition_to_wav(sw).unwrap();
+    let sw = render(&basis, &nf, &defs)?;
+    let wav = write_composition_to_wav(sw)?;
     write_audio_to_file(&wav, "test", "wav");
 
     // let renderables = nf_to_vec_renderable(&nf, &defs, &Basis::from(init))?;
