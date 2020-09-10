@@ -20,7 +20,7 @@ use weresocool_instrument::renderable::{nf_to_vec_renderable, renderables_to_ren
 use weresocool_instrument::{renderable::Renderable, Basis, StereoWaveform};
 use weresocool_parser::Init;
 
-fn main() -> Result<(), Error> {
+fn main2() -> Result<(), Error> {
     let file = std::fs::File::open("nn/output/out.csv")?;
     let reader = BufReader::new(file);
 
@@ -106,27 +106,28 @@ fn main() -> Result<(), Error> {
     Ok(())
 }
 
-fn _generate_data() -> Result<(), Error> {
+fn main() -> Result<(), Error> {
     let (min_state, max_state) = find_min_max_from_dir()?;
     let normalizer = Normalizer::from_min_max(min_state, max_state);
 
-    let render_return = Filename("application/extraResources/demo/monica.socool")
-        .make(RenderType::NfBasisAndTable, None)?;
-    // let render_return =
-    // Filename("songs/template.socool").make(RenderType::NfBasisAndTable, None)?;
+    // let render_return = Filename("application/extraResources/demo/monica.socool")
+    // .make(RenderType::NfBasisAndTable, None)?;
+    let render_return =
+        Filename("songs/template.socool").make(RenderType::NfBasisAndTable, None)?;
     let (nf, _, _) = match render_return {
         RenderReturn::NfBasisAndTable(nf, basis, table) => (nf, basis, table),
         _ => panic!("huh"),
     };
 
     let normalized: Vec<Vec<DataOp>> = nf_to_normalized_vec_data_op(&nf, &normalizer);
-    let voice_len = 64;
+    let voice_len = 4;
     let op_len = 7;
     // let n_voices = &normalized.len();
 
     let mut i = 0;
-    let min_len = voice_len - 10;
-    // let min_len = 0;
+    // let min_len = voice_len - 10;
+    let min_len = 2;
+
     let mut next = normalized;
 
     loop {
@@ -134,7 +135,7 @@ fn _generate_data() -> Result<(), Error> {
             break;
         };
 
-        let filename = format!("nn/data/monica/monica_{:0>10}.socool.csv", i);
+        let filename = format!("nn/data/template/tempate_{:0>10}.socool.csv", i);
         dbg!(&filename);
         let mut file = OpenOptions::new()
             .create(true)
@@ -161,6 +162,7 @@ fn _generate_data() -> Result<(), Error> {
         // if i > 20 {
         // break;
         // };
+        dbg!(&next);
 
         let result = process_normalized(&next, voice_len);
         let nnops = result

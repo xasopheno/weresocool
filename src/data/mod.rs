@@ -67,14 +67,10 @@ pub struct MinMax {
     pub max: Rational64,
 }
 
-fn denormalize_value(val: Rational64, min: Rational64, max: Rational64) -> Rational64 {
-    // let d = if max - min == Rational64::new(0, 1) {
-    // Rational64::new(1, 1)
-    // } else {
-    // max - min
-    // };
+// (max'-min')/(max-min)*(value-max)+max'
 
-    val * (max - min) - min
+fn denormalize_value(val: Rational64, min: Rational64, max: Rational64) -> Rational64 {
+    val * (max - min) + min
 }
 fn normalize_value(value: Rational64, min: Rational64, max: Rational64) -> Rational64 {
     let d = if max - min == Rational64::new(0, 1) {
@@ -120,10 +116,10 @@ impl DataOp {
         Self {
             fm: f32_to_rational(vec[0].to_owned()),
             fa: f32_to_rational(vec[1].to_owned()),
-            g: f32_to_rational(vec[2].to_owned()),
-            l: f32_to_rational(vec[3].to_owned()),
-            pm: f32_to_rational(vec[4].to_owned()),
-            pa: f32_to_rational(vec[5].to_owned()),
+            pm: f32_to_rational(vec[2].to_owned()),
+            pa: f32_to_rational(vec[3].to_owned()),
+            l: f32_to_rational(vec[5].to_owned()),
+            g: f32_to_rational(vec[4].to_owned()),
             osc_type: f32_to_rational(vec[6].to_owned()),
         }
     }
@@ -523,7 +519,7 @@ pub fn nf_to_normalized_vec_data_op(nf: &NormalForm, normalizer: &Normalizer) ->
                 .iter()
                 .map(|op| {
                     let mut data_op = DataOp::from_point_op(op.to_owned());
-                    data_op.normalize(normalizer);
+                    // data_op.normalize(normalizer);
                     data_op
                 })
                 .collect()

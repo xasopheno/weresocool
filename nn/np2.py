@@ -14,7 +14,7 @@ from PIL import Image
 
 
 n_ops = 7
-n_voices = 64
+n_voices = 4
 
 img_dir = "img"
 
@@ -23,7 +23,7 @@ def inv_tanh(d: np.array):
     return (d + 1) * (1 / 2)
 
 
-song_name = "slice"
+song_name = "template"
 
 
 def data_point_to_rgbxyz_img(data: np.array, i: int):
@@ -72,8 +72,8 @@ dataset = RealDataGenerator(files)
 #  data_point_to_rgbxyz_img(torch.tensor(data), i)
 
 
-def ravel_to_wsc(x, n_voices, n_ops):
-    return x.ravel("F").reshape(n_voices, n_voices, n_ops)
+#  def ravel_to_wsc(x, n_voices, n_ops):
+#  return x.ravel("F").reshape(n_voices, n_voices, n_ops)
 
 
 #  d = ravel_to_wsc(data, n_voices, n_ops)
@@ -93,6 +93,5 @@ def write_result_to_file(data, n_voices, n_op):
 
 
 write_result_to_file(dataset[0], n_voices, n_ops)
-
 
 #  print("WSC:", d)
