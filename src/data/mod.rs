@@ -107,24 +107,25 @@ impl NNOp {
 }
 
 impl DataOp {
-    pub fn from_vec_f64(vec: Vec<f64>) -> Self {
+    pub fn from_vec_f64_string(vec: Vec<String>) -> Self {
         Self {
-            fm: f32_to_rational(vec[0].to_string()),
-            fa: f32_to_rational(vec[1].to_string()),
-            g: f32_to_rational(vec[2].to_string()),
-            l: f32_to_rational(vec[3].to_string()),
-            pm: f32_to_rational(vec[4].to_string()),
-            pa: f32_to_rational(vec[5].to_string()),
-            osc_type: f32_to_rational(vec[6].to_string()),
+            fm: f32_to_rational(vec[0].to_owned()),
+            fa: f32_to_rational(vec[1].to_owned()),
+            g: f32_to_rational(vec[2].to_owned()),
+            l: f32_to_rational(vec[3].to_owned()),
+            pm: f32_to_rational(vec[4].to_owned()),
+            pa: f32_to_rational(vec[5].to_owned()),
+            osc_type: f32_to_rational(vec[6].to_owned()),
         }
     }
 
     pub fn to_point_op(self) -> PointOp {
         let osc_type = if self.osc_type > Rational64::new(1, 2) {
-            OscType::Sine
-        } else {
             OscType::Noise
+        } else {
+            OscType::Sine
         };
+
         let mut point_op = PointOp::init_silent();
 
         point_op.fm = self.fm;
