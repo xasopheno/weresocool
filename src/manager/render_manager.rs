@@ -22,7 +22,7 @@ pub struct RenderManager {
 impl RenderManager {
     pub const fn init(render_voices: Vec<RenderVoice>) -> Self {
         Self {
-            renders: [None, Some(render_voices)],
+            renders: [Some(render_voices), None],
             past_volume: 0.8,
             current_volume: 0.8,
             render_idx: 0,

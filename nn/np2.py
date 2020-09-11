@@ -63,7 +63,7 @@ for d in dirs:
             files.append(os.path.join(d, f))
 
 
-files = files[0:1000]
+files = sorted(files[0:1000])
 dataset = RealDataGenerator(files)
 #  for i in range(0, 1000):
 #  #  i = random.randint(0, len(dataset) - 1)
@@ -73,7 +73,7 @@ dataset = RealDataGenerator(files)
 
 
 #  def ravel_to_wsc(x, n_voices, n_ops):
-#  return x.ravel("F").reshape(n_voices, n_voices, n_ops)
+#  return x.ravel("F").reshape(n_voices, n_voces, n_ops)
 
 
 #  d = ravel_to_wsc(data, n_voices, n_ops)
@@ -87,8 +87,15 @@ dataset = RealDataGenerator(files)
 
 
 def write_result_to_file(data, n_voices, n_op):
-    data = inv_tanh(data)
-    d = data.numpy().ravel("F")
+    #  data = inv_tanh(data)
+    d = np.array([np.array(data[:, i, :]).ravel("F") for i in range(2)])
+    print("x\n", d)
+
+    #  d = np.array(x).ravel("F")
+    d = d.flatten()
+    print(d)
+
+    #  print("ravel\n", d)
     np.savetxt("output/out.csv", d, delimiter=",", fmt="%1.53f")
 
 

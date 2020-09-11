@@ -20,17 +20,30 @@ use weresocool_instrument::renderable::{nf_to_vec_renderable, renderables_to_ren
 use weresocool_instrument::{renderable::Renderable, Basis, StereoWaveform};
 use weresocool_parser::Init;
 
-fn main2() -> Result<(), Error> {
+fn main() -> Result<(), Error> {
     let file = std::fs::File::open("nn/output/out.csv")?;
+    // let file = std::fs::File::open("nn/data/template/tempate_0000000000.socool.csv")?;
     let reader = BufReader::new(file);
 
     let (min_state, max_state) = find_min_max_from_dir()?;
-    let normalizer = Normalizer::from_min_max(min_state, max_state);
+    // let normalizer = Normalizer::from_min_max(min_state, max_state);
 
     let data: Vec<f64> = reader
         .lines()
         .map(|line| line.unwrap().parse().unwrap())
         .collect();
+
+    // let mut data: Vec<f64> = vec![];
+    // let lines: Vec<String> = reader.lines().map(|line| line.unwrap()).collect();
+    // for (i, line) in lines.iter().enumerate() {
+    // if i > 0 {
+    // for val in line.split(",") {
+    // data.push(val.trim().parse().unwrap())
+    // }
+    // }
+    // }
+
+    dbg!(&data);
 
     let data: Vec<String> = data.iter().map(|v| format!("{:.16}", v)).collect();
 
@@ -39,12 +52,14 @@ fn main2() -> Result<(), Error> {
     let point_ops: Vec<PointOp> = pre_ops
         .iter()
         .map(|chunk| {
+            dbg!(&chunk);
             let mut op = DataOp::from_vec_f64_string(chunk.to_vec());
-            op.denormalize(&normalizer);
+            // op.denormalize(&normalizer);
             op.to_point_op()
         })
         .collect();
-    let result: Vec<Vec<PointOp>> = point_ops.chunks(64).map(|chunck| chunck.to_vec()).collect();
+    let result: Vec<Vec<PointOp>> = point_ops.chunks(4).map(|chunck| chunck.to_vec()).collect();
+    // dbg!(&result);
     let mut nf = NormalForm::init_empty();
     nf.operations = result;
 
@@ -106,7 +121,7 @@ fn main2() -> Result<(), Error> {
     Ok(())
 }
 
-fn main() -> Result<(), Error> {
+fn _main() -> Result<(), Error> {
     let (min_state, max_state) = find_min_max_from_dir()?;
     let normalizer = Normalizer::from_min_max(min_state, max_state);
 
@@ -162,7 +177,7 @@ fn main() -> Result<(), Error> {
         // if i > 20 {
         // break;
         // };
-        dbg!(&next);
+        // dbg!(&next);
 
         let result = process_normalized(&next, voice_len);
         let nnops = result

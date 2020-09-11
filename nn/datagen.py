@@ -19,11 +19,12 @@ class RealDataGenerator(Dataset):
 
     def prepare_image(self, x: np.array) -> np.array:
         x = x[:64]
-        x = normalize_data_to_tanh_space(x)
+        #  x = normalize_data_to_tanh_space(x)
         padding = np.array(
-            [np.zeros_like(x[0]) - 1.0 for i in range(x[0].shape[0] - x.shape[0])]
+            #  [np.zeros_like(x[0]) - 1.0 for i in range(x[0].shape[0] - x.shape[0])]
+            [np.zeros_like(x[0]) for i in range(x[0].shape[0] - x.shape[0])]
         )
-        x = np.concatenate([x, padding])
+        #  x = np.concatenate([x, padding])
 
         #  print("data_shape:", x.shape)
         x = np.array([x[:, :, i] for i in range(7)])
@@ -35,6 +36,7 @@ class RealDataGenerator(Dataset):
         n_steps = None
         op_len = None
         with open(self.files[idx]) as csv_file:
+            print(self.files[idx])
             x = np.array([])
             csv_reader = csv.reader(csv_file, delimiter=",")
             line_count = 0

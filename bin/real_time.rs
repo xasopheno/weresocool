@@ -38,16 +38,18 @@ fn run() -> Result<(), Error> {
             RenderReturn::NfBasisAndTable(nf, basis, table) => (nf, basis, table),
             _ => panic!("Error. Unable to generate NormalForm"),
         };
+
     let renderables = nf_to_vec_renderable(&nf, &table, &basis)?;
     let render_voices = renderables_to_render_voices(renderables);
 
-    let render_manager = Arc::new(Mutex::new(RenderManager::init(render_voices)));
-    // let render_manager = Arc::new(Mutex::new(RenderManager::init_silent()));
-    // render_manager.lock().unwrap().push_render(render_voices);
+    // let render_manager = Arc::new(Mutex::new(RenderManager::init(render_voices)));
+    let render_manager = Arc::new(Mutex::new(RenderManager::init_silent()));
 
     let mut stream = real_time_render_manager(Arc::clone(&render_manager))?;
-    stream.start()?;
+    // std::thread::sleep(std::time::Duration::from_secs(3));
+    render_manager.lock().unwrap().push_render(render_voices);
     println!("{}", "___Stream Started___".to_string());
+    stream.start()?;
 
     while let true = stream.is_active()? {}
     stream.stop()?;

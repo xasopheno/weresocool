@@ -21,10 +21,8 @@ pub fn real_time_render_manager(
         let batch: Option<(StereoWaveform, Vec<f32>)> =
             render_manager.lock().unwrap().read(SETTINGS.buffer_size);
 
-        // dbg!(&render_manager.lock().unwrap().renders[1].as_ref().unwrap()[0].ops[0]);
         if let Some((b, ramp)) = batch {
-            write_output_buffer(args.buffer, b);
-            // new_write_output_buffer(args.buffer, b, ramp);
+            new_write_output_buffer(args.buffer, b, ramp);
             pa::Continue
         } else {
             write_output_buffer(args.buffer, StereoWaveform::new(SETTINGS.buffer_size));

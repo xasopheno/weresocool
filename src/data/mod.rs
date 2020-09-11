@@ -92,18 +92,22 @@ pub struct NNOp {
     pub osc_type: f64,
 }
 
+fn number_to_string(n: f64) -> String {
+    format!("{:.32}", n)
+}
+
 impl NNOp {
     pub fn write_to_file(self, file: &mut std::fs::File) -> Result<(), Error> {
         file.write(
             format!(
                 "{}, {}, {}, {}, {}, {}, {}\n",
-                self.fm.to_string(),
-                self.fa.to_string(),
-                self.pm.to_string(),
-                self.pa.to_string(),
-                self.l.to_string(),
-                self.g.to_string(),
-                self.osc_type.to_string()
+                number_to_string(self.fm),
+                number_to_string(self.fa),
+                number_to_string(self.pm),
+                number_to_string(self.pa),
+                number_to_string(self.l),
+                number_to_string(self.g),
+                number_to_string(self.osc_type),
             )
             .as_bytes(),
         )?;
@@ -118,8 +122,8 @@ impl DataOp {
             fa: f32_to_rational(vec[1].to_owned()),
             pm: f32_to_rational(vec[2].to_owned()),
             pa: f32_to_rational(vec[3].to_owned()),
-            l: f32_to_rational(vec[5].to_owned()),
-            g: f32_to_rational(vec[4].to_owned()),
+            l: f32_to_rational(vec[4].to_owned()),
+            g: f32_to_rational(vec[5].to_owned()),
             osc_type: f32_to_rational(vec[6].to_owned()),
         }
     }
