@@ -35,9 +35,3 @@ class TestStrings(unittest.TestCase):
             all([a == b for (a, b) in zip(list(x.flatten()), list(expected.flatten()))])
         )
 
-
-def pad_image(x):
-    padding = np.array(
-        [np.zeros_like(x[0]) - 1.0 for i in range(x[0].shape[0] - x.shape[0])]
-    )
-    return np.concatenate([x, padding])

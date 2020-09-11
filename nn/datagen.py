@@ -25,7 +25,7 @@ class RealDataGenerator(Dataset):
         n_steps = None
         op_len = None
         with open(self.files[idx]) as csv_file:
-            print(self.files[idx])
+            #  print(self.files[idx])
             x = np.array([])
             csv_reader = csv.reader(csv_file, delimiter=",")
             line_count = 0

@@ -26,16 +26,18 @@ def denormalize_data_from_tanh_space(d: np.array):
     return (d + 1) * (1 / 2)
 
 
-def data_point_to_rgbxyz_img(data: np.array, i: int, song_name: str, img_dir: str):
+def data_point_to_rgbxyz_img(
+    data: np.array, i: int, img_dir: str, song_name: str,
+):
     data = denormalize_data_from_tanh_space(data)
 
-    r = data[0].numpy()
-    g = data[1].numpy()
-    b = data[2].numpy()
+    r = data[0]
+    g = data[1]
+    b = data[2]
 
-    x = data[3].numpy()
-    y = data[4].numpy()
-    z = data[5].numpy()
+    x = data[3]
+    y = data[4]
+    z = data[5]
 
     channels = np.concatenate([r, g, b, x, y, z], axis=0) * 255
 
@@ -52,6 +54,7 @@ def data_point_to_rgbxyz_img(data: np.array, i: int, song_name: str, img_dir: st
 
     result = Image.fromarray(rgb_xyz)
     result.save(f"{img_dir}/{song_name}/out_rgbxyz_{i:05d}.png")
+    return rgb_xyz
 
 
 def write_result_to_file(data, n_voices, n_op, filename):

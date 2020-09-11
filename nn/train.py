@@ -5,9 +5,11 @@ import torch.optim as optim
 import csv
 from torchvision import transforms
 from torch.utils.data import DataLoader, Dataset
+import torchvision.utils as vutils
 from network import Generator, Discriminator, weights_init
 from datagen import RealDataGenerator
 from typing import List
+from helpers import data_point_to_rgbxyz_img, write_result_to_file
 import random
 import os
 
@@ -110,19 +112,27 @@ if __name__ == "__main__":
                         D_G_z2,
                     )
                 )
+            if i % 50 == 0:
+                print("___CREATING EXAMPLE___")
+                fake = netG(fixed_noise).detach()
+                for img_no in range(batch_size):
+                    file_number = i + img_no
+                    data = fake[img_no].cpu().numpy()
+
+                    write_result_to_file(data, 64, 7, f"output/{file_number:05d}.csv")
+                    data_point_to_rgbxyz_img(data, file_number, "result_img", "network")
 
         print(
-            "[%d/%d][%d/%d] Loss_D: %.4f Loss_G: %.4f D(x): %.4f D(G(z)): %.8f / %.8f"
+            "[%d/%d][%d/%d] Loss_D: %.4f Loss_G: %.8f D(x): %.8f D(G(z)): %.8f / %.8f"
             % (epoch, epochs, i, len(r), errD.item(), errG.item(), D_x, D_G_z1, D_G_z2,)
         )
-        #  if i % 100 == 0:
-        #  vutils.save_image(
-        #  real_cpu, "%s/real_samples.png" % opt.outf, normalize=True
-        #  )
+        #  vutils.save_image(real_cpu, "results/real_samples.png", normalize=True)
+
+        #  vutils.save_image(real_cpu, "results/real_samples.png", normalize=True)
         #  fake = netG(fixed_noise)
         #  vutils.save_image(
         #  fake.detach(),
-        #  "%s/fake_samples_epoch_%03d.png" % (opt.outf, epoch),
+        #  "results/fake_samples_epoch_%03d.png" % epoch,
         #  normalize=True,
         #  )
 
