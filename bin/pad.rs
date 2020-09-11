@@ -1,38 +1,32 @@
 use num_rational::Rational64;
 use rayon::prelude::*;
 use std::fs::OpenOptions;
-use std::io::Read;
 use std::io::Write;
 use std::io::{prelude::*, BufReader};
-use std::sync::{Arc, Mutex};
 use weresocool::data::*;
 use weresocool::generation::{
     parsed_to_render::{render, write_audio_to_file},
     RenderReturn, RenderType,
 };
 use weresocool::interpretable::{InputType::Filename, Interpretable};
-use weresocool::manager::RenderManager;
-use weresocool::portaudio::real_time_render_manager;
 use weresocool::write::write_composition_to_wav;
 use weresocool_ast::{Defs, NormalForm, PointOp};
 use weresocool_error::Error;
-use weresocool_instrument::renderable::{nf_to_vec_renderable, renderables_to_render_voices};
-use weresocool_instrument::{renderable::Renderable, Basis, StereoWaveform};
+use weresocool_instrument::Basis;
 use weresocool_parser::Init;
 
 fn main() -> Result<(), Error> {
-    let file = std::fs::File::open("nn/output/out.csv")?;
+    // Test file before processing
     // let file = std::fs::File::open("nn/data/template/tempate_0000000000.socool.csv")?;
+
+    // Test file after processing
+    let file = std::fs::File::open("nn/output/out.csv")?;
     let reader = BufReader::new(file);
 
     let (min_state, max_state) = find_min_max_from_dir()?;
-    // let normalizer = Normalizer::from_min_max(min_state, max_state);
+    let normalizer = Normalizer::from_min_max(min_state, max_state);
 
-    let data: Vec<f64> = reader
-        .lines()
-        .map(|line| line.unwrap().parse().unwrap())
-        .collect();
-
+    // Test file before processing
     // let mut data: Vec<f64> = vec![];
     // let lines: Vec<String> = reader.lines().map(|line| line.unwrap()).collect();
     // for (i, line) in lines.iter().enumerate() {
@@ -43,18 +37,20 @@ fn main() -> Result<(), Error> {
     // }
     // }
 
-    dbg!(&data);
+    // Test File after processing
+    let data: Vec<f64> = reader
+        .lines()
+        .map(|line| line.unwrap().parse().unwrap())
+        .collect();
 
     let data: Vec<String> = data.iter().map(|v| format!("{:.16}", v)).collect();
-
     let pre_ops: Vec<Vec<String>> = data.chunks(7).map(|chunck| chunck.to_vec()).collect();
-
     let point_ops: Vec<PointOp> = pre_ops
         .iter()
         .map(|chunk| {
             dbg!(&chunk);
             let mut op = DataOp::from_vec_f64_string(chunk.to_vec());
-            // op.denormalize(&normalizer);
+            op.denormalize(&normalizer);
             op.to_point_op()
         })
         .collect();
@@ -76,48 +72,6 @@ fn main() -> Result<(), Error> {
     let wav = write_composition_to_wav(sw)?;
     write_audio_to_file(&wav, "test", "wav");
 
-    // let renderables = nf_to_vec_renderable(&nf, &defs, &Basis::from(init))?;
-    // let mut voices = renderables_to_render_voices(renderables);
-
-    // let mut result = StereoWaveform::new(0);
-    // loop {
-    // let batch: Vec<StereoWaveform> = voices
-    // .par_iter_mut()
-    // .filter_map(|voice| voice.render_batch(default_settings().buffer_size, None))
-    // .collect();
-
-    // if !batch.is_empty() {
-    // let stereo_waveform = sum_all_waveforms(batch);
-    // result.append(stereo_waveform);
-    // } else {
-    // break;
-    // }
-    // }
-
-    // Ok(result)
-
-    // fn render(&mut self, oscillator: &mut Oscillator, offset: Option<&Offset>) -> StereoWaveform {
-    // let mut result: StereoWaveform = StereoWaveform::new(0);
-
-    // for op in self.iter() {
-    // if op.samples > 0 {
-    // let stereo_waveform = op.clone().render(oscillator, offset);
-    // result.append(stereo_waveform);
-    // }
-    // }
-
-    // result
-    // }
-
-    // let sws = render_voices.map(|rv| rv.to)
-
-    // let render_manager = Arc::new(Mutex::new(RenderManager::init(render_voices)));
-
-    // let mut stream = real_time_render_manager(Arc::clone(&render_manager))?;
-    // stream.start()?;
-
-    // while let true = stream.is_active()? {}
-    // stream.stop()?;
     Ok(())
 }
 
@@ -137,7 +91,7 @@ fn _main() -> Result<(), Error> {
     let normalized: Vec<Vec<DataOp>> = nf_to_normalized_vec_data_op(&nf, &normalizer);
     let voice_len = 4;
     let op_len = 7;
-    // let n_voices = &normalized.len();
+    let _n_voices = &normalized.len();
 
     let mut i = 0;
     // let min_len = voice_len - 10;
@@ -156,19 +110,10 @@ fn _main() -> Result<(), Error> {
             .create(true)
             .write(true)
             .truncate(true)
-            // .open("nn/real_data.csv")
             .open(filename)
             .unwrap();
 
-        file.write(
-            format!(
-                "{}, {}\n",
-                // n_voices.to_string(),
-                voice_len.to_string(),
-                op_len.to_string(),
-            )
-            .as_bytes(),
-        )?;
+        file.write(format!("{}, {}\n", voice_len.to_string(), op_len.to_string(),).as_bytes())?;
 
         i += 1;
         if i % 1000 == 0 {

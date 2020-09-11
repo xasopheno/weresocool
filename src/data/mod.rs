@@ -523,7 +523,7 @@ pub fn nf_to_normalized_vec_data_op(nf: &NormalForm, normalizer: &Normalizer) ->
                 .iter()
                 .map(|op| {
                     let mut data_op = DataOp::from_point_op(op.to_owned());
-                    // data_op.normalize(normalizer);
+                    data_op.normalize(normalizer);
                     data_op
                 })
                 .collect()
