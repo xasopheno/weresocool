@@ -28,6 +28,17 @@ def weights_init(m):
     #  x = np.arange(n_steps * op_len * n_voices * n_examples)
 
 
+#  class Upsample2d(nn.Module):
+#  def __init__(self, ngf, mult):
+#  super(Upsample2d, self).__init__()
+#  self.upsample = nn.Upsample(scale_factor=2, mode="bilinear")
+#  self.pad = nn.ReflectionPad2d(1)
+#  self.conv = nn.Conv2d(ngf * mult, int(ngf * mult) / 2, kernel_size=3, padding=0)
+
+#  def forward(self, x):
+#  return x
+
+
 class Generator(nn.Module):
     def __init__(self, ngpu):
         super(Generator, self).__init__()
@@ -38,77 +49,92 @@ class Generator(nn.Module):
         )
         # input is Z, going into a convolution
         self.conv1 = nn.ConvTranspose2d(nz, ngf * 8, 4, 1, 0, bias=False)
+        self.upsample2 = nn.Upsample(scale_factor=2, mode="bilinear")
+        self.pad2 = nn.ReflectionPad2d(1)
+        self.conv2 = nn.Conv2d(
+            ngf * 8, int(ngf * 8) // 2, kernel_size=3, stride=1, padding=0
+        )
+
         self.batch_norm1 = nn.BatchNorm2d(ngf * 8)
         # state size. (ngf*8) x 4 x 4
-        self.conv2 = nn.ConvTranspose2d(ngf * 8, ngf * 4, 4, 2, 1, bias=False)
+
+        #  self.conv2 = nn.ConvTranspose2d(ngf * 8, ngf * 4, 4, 2, 1, bias=False)
+        self.upsample2 = nn.Upsample(scale_factor=2, mode="bilinear")
+        self.pad2 = nn.ReflectionPad2d(1)
+        self.conv2 = nn.Conv2d(
+            ngf * 8, int(ngf * 8) // 2, kernel_size=3, stride=1, padding=0
+        )
+
         self.batch_norm2 = nn.BatchNorm2d(ngf * 4)
         # state size. (ngf*4) x 8 x 8
-        self.conv3 = nn.ConvTranspose2d(ngf * 4, ngf * 2, 4, 2, 1, bias=False)
+        #  self.conv3 = nn.ConvTranspose2d(ngf * 4, ngf * 2, 4, 2, 1, bias=False)
+        self.upsample3 = nn.Upsample(scale_factor=2, mode="bilinear")
+        self.pad3 = nn.ReflectionPad2d(1)
+        self.conv3 = nn.Conv2d(
+            ngf * 4, int(ngf * 4) // 2, kernel_size=3, stride=1, padding=0
+        )
+
         self.batch_norm3 = nn.BatchNorm2d(ngf * 2)
         # state size. (ngf*2) x 16 x 16
-        self.conv4 = nn.ConvTranspose2d(ngf * 2, ngf, 4, 2, 1, bias=False)
+        #  self.conv4 = nn.ConvTranspose2d(ngf * 2, ngf, 4, 2, 1, bias=False)
+        self.upsample4 = nn.Upsample(scale_factor=2, mode="bilinear")
+        self.pad4 = nn.ReflectionPad2d(1)
+        self.conv4 = nn.Conv2d(
+            ngf * 2, int(ngf * 2) // 2, kernel_size=3, stride=1, padding=0
+        )
 
         self.batch_norm4 = nn.BatchNorm2d(ngf)
-        self.conv5 = nn.ConvTranspose2d(ngf, nc, 4, 2, 1, bias=False)
+        #  self.conv5 = nn.ConvTranspose2d(ngf, nc, 4, 2, 1, bias=False)
+        self.upsample5 = nn.Upsample(scale_factor=2, mode="bilinear")
+        self.pad5 = nn.ReflectionPad2d(1)
+        self.conv5 = nn.Conv2d(ngf, nc, kernel_size=3, stride=1, padding=0)
 
         self.tanh = nn.Tanh()
 
-        #  self.main = nn.Sequential(
-        # input is Z, going into a convolution
-        #  nn.ConvTranspose2d(nz, ngf * 8, 4, 1, 0, bias=False),
-        #  nn.BatchNorm2d(ngf * 8),
-        #  nn.ReLU(True),
-
-        # state size. (ngf*8) x 4 x 4
-        #  nn.ConvTranspose2d(ngf * 8, ngf * 4, 4, 2, 1, bias=False),
-        #  nn.BatchNorm2d(ngf * 4),
-        #  nn.ReLU(True),
-
-        # state size. (ngf*4) x 8 x 8
-        #  nn.ConvTranspose2d(ngf * 4, ngf * 2, 4, 2, 1, bias=False),
-        #  nn.BatchNorm2d(ngf * 2),
-        #  nn.ReLU(True),
-
-        # state size. (ngf*2) x 16 x 16
-        #  nn.ConvTranspose2d(ngf * 2, ngf, 4, 2, 1, bias=False),
-        #  nn.BatchNorm2d(ngf),
-        #  nn.ReLU(True),
-
-        # state size. (ngf) x 32 x 32
-        #  nn.ConvTranspose2d(ngf, nc, 4, 2, 1, bias=False),
-        #  nn.Tanh()
-        # state size. (nc) x 64 x 64
-        #  )
+        self.upsample = nn.Upsample(scale_factor=2, mode="bilinear")
+        self.pad = nn.ReflectionPad2d(1)
 
     def forward(self, x):
         #  print("Generator input.shape:", input.shape)
-        #  if input.is_cuda and self.ngpu > 1:
-        #  output = nn.parallel.data_parallel(self.main, input, range(self.ngpu))
-        #  else:
-        #  output = self.main(input)
         identity = x
 
         out = self.conv1(x)
         out = self.batch_norm1(out)
         out = self.relu(out)
 
+        #  out = self.conv2(out)
+        out = self.upsample2(out)
+        out = self.pad2(out)
         out = self.conv2(out)
+
         out = self.batch_norm2(out)
         out += identity
         out = self.relu(out)
 
         identity = out
 
+        #  out = self.conv3(out)
+        out = self.upsample3(out)
+        out = self.pad3(out)
         out = self.conv3(out)
+
         out = self.batch_norm3(out)
         out = self.relu(out)
 
+        #  out = self.conv4(out)
+        out = self.upsample4(out)
+        out = self.pad4(out)
         out = self.conv4(out)
+
         out = self.batch_norm4(out)
         #  out += identity
         out = self.relu(out)
 
+        #  out = self.conv5(out)
+        out = self.upsample5(out)
+        out = self.pad5(out)
         out = self.conv5(out)
+
         out = self.tanh(out)
 
         return out
@@ -143,10 +169,7 @@ class Discriminator(nn.Module):
 
     def forward(self, input):
         #  print("Discriminator input.shape:", input.shape)
-        input = input + (0.18 ** 0.5) * torch.randn(input.shape).to("cuda")
-        #  if input.is_cuda and self.ngpu > 1:
-        #  output = nn.parallel.data_parallel(self.main, input, range(self.ngpu))
-        #  else:
+        #  input = input + (0.18 ** 0.5) * torch.randn(input.shape).to("cuda")
         output = self.main(input)
 
         return output.view(-1, 1).squeeze(1)

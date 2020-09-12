@@ -15,12 +15,13 @@ use weresocool_error::Error;
 use weresocool_instrument::Basis;
 use weresocool_parser::Init;
 
-fn _main() -> Result<(), Error> {
+fn main() -> Result<(), Error> {
     // Test file before processing
     // let file = std::fs::File::open("nn/data/template/tempate_0000000000.socool.csv")?;
 
     // Test file after processing
-    let file = std::fs::File::open("nn/output/out.csv")?;
+    let file = std::fs::File::open("nn/output/0002_000000006.csv")?;
+    // let file = std::fs::File::open("nn/output/0001_000000502.csv")?;
     let reader = BufReader::new(file);
 
     let (min_state, max_state) = find_min_max_from_dir()?;
@@ -48,7 +49,7 @@ fn _main() -> Result<(), Error> {
     let point_ops: Vec<PointOp> = pre_ops
         .iter()
         .map(|chunk| {
-            dbg!(&chunk);
+            // dbg!(&chunk);
             let mut op = DataOp::from_vec_f64_string(chunk.to_vec());
             op.denormalize(&normalizer);
             op.to_point_op()
@@ -75,7 +76,7 @@ fn _main() -> Result<(), Error> {
     Ok(())
 }
 
-fn main() -> Result<(), Error> {
+fn _main() -> Result<(), Error> {
     let (min_state, max_state) = find_min_max_from_dir()?;
     let normalizer = Normalizer::from_min_max(min_state, max_state);
     let f = "marichan";

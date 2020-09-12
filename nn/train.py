@@ -21,7 +21,6 @@ dirs = [
     "data/madness",
     "data/day_3",
     "data/slice",
-    #  "data/marichan",
 ]
 
 for d in dirs:
@@ -42,8 +41,8 @@ if __name__ == "__main__":
     device = "cuda"
     fixed_noise = torch.randn(batch_size, nz, 1, 1, device=device)
     ngpu = 2
-    real_label = 1
-    fake_label = 0
+    real_label = 0.9
+    fake_label = 0.0
     epochs = 100
     lr = 0.0001
     beta1 = 0.5
@@ -63,8 +62,8 @@ if __name__ == "__main__":
     #  if opt.netD != "":
     #  netD.load_state_dict(torch.load(opt.netD))
 
-    optimizerD = optim.Adam(netD.parameters(), lr=lr, betas=(beta1, 0.999))
-    optimizerG = optim.Adam(netG.parameters(), lr=lr, betas=(beta1, 0.999))
+    optimizerG = optim.Adam(netG.parameters(), lr=0.00025, betas=(beta1, 0.99))
+    optimizerD = optim.Adam(netD.parameters(), lr=0.001, betas=(beta1, 0.99))
 
     for epoch in range(epochs):
         for i in range(1000):
@@ -82,6 +81,10 @@ if __name__ == "__main__":
             label = torch.full(
                 (batch_size,), real_label, dtype=torch.float, device=device
             )
+
+            #  label = torch.from_numpy(
+            #  np.random.uniform(low=0.8, high=1.0, size=(batch_size,))
+            #  ).to(device, dtype=torch.float)
 
             output = netD(real_batch)
             errD_real = criterion(output, label)
