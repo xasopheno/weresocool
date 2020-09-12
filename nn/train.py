@@ -15,7 +15,15 @@ import os
 
 
 files = []
-dirs = ["data/how_to_rest"]
+dirs = [
+    "data/growing",
+    "data/monica",
+    "data/madness",
+    "data/day_3",
+    "data/slice",
+    #  "data/marichan",
+]
+
 for d in dirs:
     for f in os.listdir(d):
         if f.endswith(".csv"):
@@ -24,11 +32,13 @@ for d in dirs:
 
 #  print(files)
 
-files = files[0:1000]
+#  files = files[0:1000]
+random.shuffle(files)
+print(files[0:30])
 r = RealDataGenerator(files)
 if __name__ == "__main__":
     nz = 256
-    batch_size = 16
+    batch_size = 8
     device = "cuda"
     fixed_noise = torch.randn(batch_size, nz, 1, 1, device=device)
     ngpu = 2
@@ -40,12 +50,14 @@ if __name__ == "__main__":
     criterion = nn.BCELoss()
 
     netG = Generator(ngpu).to(device, dtype=torch.float)
+    netG = nn.DataParallel(netG)
     netG.apply(weights_init)
     #  if opt.netG != "":
     #  netG.load_state_dict(torch.load(opt.netG))
     print(netG)
 
     netD = Discriminator(ngpu).to(device, dtype=torch.float)
+    netD = nn.DataParallel(netD)
     netD.apply(weights_init)
     print(netD)
     #  if opt.netD != "":
@@ -55,7 +67,7 @@ if __name__ == "__main__":
     optimizerG = optim.Adam(netG.parameters(), lr=lr, betas=(beta1, 0.999))
 
     for epoch in range(epochs):
-        for i in range(len(r)):
+        for i in range(1000):
             ############################
             # (1) Update D network: maximize log(D(x)) + log(1 - D(G(z)))
             ###########################
@@ -112,33 +124,24 @@ if __name__ == "__main__":
                         D_G_z2,
                     )
                 )
-            if i % 50 == 0:
+            if i % 500 == 0:
                 print("___CREATING EXAMPLE___")
                 fake = netG(fixed_noise).detach()
                 for img_no in range(batch_size):
                     file_number = i + img_no
                     data = fake[img_no].cpu().numpy()
 
-                    write_result_to_file(data, 64, 7, f"output/{file_number:05d}.csv")
-                    data_point_to_rgbxyz_img(data, file_number, "result_img", "network")
+                    write_result_to_file(
+                        data, 64, 7, f"output/{epoch:04}_{file_number:09d}.csv"
+                    )
+                    data_point_to_rgbxyz_img(
+                        data, file_number, epoch, "result_img", "network"
+                    )
 
         print(
             "[%d/%d][%d/%d] Loss_D: %.4f Loss_G: %.8f D(x): %.8f D(G(z)): %.8f / %.8f"
             % (epoch, epochs, i, len(r), errD.item(), errG.item(), D_x, D_G_z1, D_G_z2,)
         )
-        #  vutils.save_image(real_cpu, "results/real_samples.png", normalize=True)
-
-        #  vutils.save_image(real_cpu, "results/real_samples.png", normalize=True)
-        #  fake = netG(fixed_noise)
-        #  vutils.save_image(
-        #  fake.detach(),
-        #  "results/fake_samples_epoch_%03d.png" % epoch,
-        #  normalize=True,
-        #  )
-
-        #  if opt.dry_run:
-        #  break
-
     #  op_len = 7
     #  n_steps = 4
     #  n_voices = 2

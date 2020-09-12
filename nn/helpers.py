@@ -27,7 +27,7 @@ def denormalize_data_from_tanh_space(d: np.array):
 
 
 def data_point_to_rgbxyz_img(
-    data: np.array, i: int, img_dir: str, song_name: str,
+    data: np.array, i: int, epoch: int, img_dir: str, song_name: str,
 ):
     data = denormalize_data_from_tanh_space(data)
 
@@ -43,7 +43,7 @@ def data_point_to_rgbxyz_img(
 
     channels = channels.astype(np.uint8)
     channels = Image.fromarray(channels)
-    channels.save(f"{img_dir}/{song_name}/out_channels_{i:05d}.png")
+    channels.save(f"{img_dir}/{song_name}/out_channels_{epoch:04d}_{i:09d}.png")
 
     a = np.dstack((r, g, b))
     b = np.dstack((x, y, z))
@@ -53,7 +53,7 @@ def data_point_to_rgbxyz_img(
     rgb_xyz = rgb_xyz.astype(np.uint8)
 
     result = Image.fromarray(rgb_xyz)
-    result.save(f"{img_dir}/{song_name}/out_rgbxyz_{i:05d}.png")
+    result.save(f"{img_dir}/{song_name}/out_rgbxyz_{epoch:04d}_{i:09d}.png")
     return rgb_xyz
 
 

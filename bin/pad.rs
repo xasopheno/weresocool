@@ -15,7 +15,7 @@ use weresocool_error::Error;
 use weresocool_instrument::Basis;
 use weresocool_parser::Init;
 
-fn main() -> Result<(), Error> {
+fn _main() -> Result<(), Error> {
     // Test file before processing
     // let file = std::fs::File::open("nn/data/template/tempate_0000000000.socool.csv")?;
 
@@ -75,27 +75,28 @@ fn main() -> Result<(), Error> {
     Ok(())
 }
 
-fn _main() -> Result<(), Error> {
+fn main() -> Result<(), Error> {
     let (min_state, max_state) = find_min_max_from_dir()?;
     let normalizer = Normalizer::from_min_max(min_state, max_state);
+    let f = "marichan";
 
-    // let render_return = Filename("application/extraResources/demo/monica.socool")
-    // .make(RenderType::NfBasisAndTable, None)?;
-    let render_return =
-        Filename("songs/template.socool").make(RenderType::NfBasisAndTable, None)?;
+    let render_return = Filename(format!("application/extraResources/demo/{}.socool", f).as_str())
+        .make(RenderType::NfBasisAndTable, None)?;
+    // let render_return =
+    // Filename("songs/template.socool").make(RenderType::NfBasisAndTable, None)?;
     let (nf, _, _) = match render_return {
         RenderReturn::NfBasisAndTable(nf, basis, table) => (nf, basis, table),
         _ => panic!("huh"),
     };
 
     let normalized: Vec<Vec<DataOp>> = nf_to_normalized_vec_data_op(&nf, &normalizer);
-    let voice_len = 4;
+    let voice_len = 64;
     let op_len = 7;
-    let _n_voices = &normalized.len();
+    // let _n_voices = &normalized.len();
 
     let mut i = 0;
-    // let min_len = voice_len - 10;
-    let min_len = 2;
+    let min_len = voice_len - 10;
+    // let min_len = 2;
 
     let mut next = normalized;
 
@@ -104,8 +105,10 @@ fn _main() -> Result<(), Error> {
             break;
         };
 
-        let filename = format!("nn/data/template/tempate_{:0>10}.socool.csv", i);
-        dbg!(&filename);
+        let filename = format!("nn/data/{}/{}_{:0>10}.socool.csv", f, f, i);
+        if i % 100 == 0 {
+            dbg!(&filename);
+        }
         let mut file = OpenOptions::new()
             .create(true)
             .write(true)
