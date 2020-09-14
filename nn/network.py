@@ -11,6 +11,8 @@ import torchvision.datasets as dset
 import torchvision.transforms as transforms
 import torchvision.utils as vutils
 
+from spectral_norm import SpectralNorm
+
 nz = 256
 ngf = 64
 ndf = 64
@@ -59,6 +61,7 @@ class Generator(nn.Module):
         # state size. (ngf*8) x 4 x 4
 
         #  self.conv2 = nn.ConvTranspose2d(ngf * 8, ngf * 4, 4, 2, 1, bias=False)
+        #  https://github.com/junyanz/pytorch-CycleGAN-and-pix2pix/issues/190
         self.upsample2 = nn.Upsample(scale_factor=2, mode="bilinear")
         self.pad2 = nn.ReflectionPad2d(1)
         self.conv2 = nn.Conv2d(
@@ -96,7 +99,7 @@ class Generator(nn.Module):
 
     def forward(self, x):
         #  print("Generator input.shape:", input.shape)
-        identity = x
+        #  identity = x
 
         out = self.conv1(x)
         out = self.batch_norm1(out)
@@ -108,7 +111,7 @@ class Generator(nn.Module):
         out = self.conv2(out)
 
         out = self.batch_norm2(out)
-        out += identity
+        #  out += identity
         out = self.relu(out)
 
         identity = out
@@ -146,30 +149,33 @@ class Discriminator(nn.Module):
         self.ngpu = ngpu
         self.main = nn.Sequential(
             # input is (nc) x 64 x 64
-            nn.Conv2d(nc, ndf, 4, stride=2, padding=1, bias=False),
+            SpectralNorm(nn.Conv2d(nc, ndf, 4, stride=2, padding=1, bias=False)),
             nn.LeakyReLU(0.2, inplace=True),
+            nn.Dropout2d(0.1),
             # state size. (ndf) x 32 x 32
-            nn.Conv2d(ndf, ndf * 2, 4, 2, 1, bias=False),
+            SpectralNorm(nn.Conv2d(ndf, ndf * 2, 4, 2, 1, bias=False)),
             nn.BatchNorm2d(ndf * 2),
             nn.LeakyReLU(0.2, inplace=True),
+            nn.Dropout2d(0.1),
             # state size. (ndf*2) x 16 x 16
-            nn.Conv2d(ndf * 2, ndf * 4, 4, 2, 1, bias=False),
+            SpectralNorm(nn.Conv2d(ndf * 2, ndf * 4, 4, 2, 1, bias=False)),
             nn.BatchNorm2d(ndf * 4),
             nn.LeakyReLU(0.2, inplace=True),
+            nn.Dropout2d(0.1),
             # state size. (ndf*4) x 8 x 8
-            nn.Conv2d(ndf * 4, ndf * 8, 4, 2, 1, bias=False),
+            SpectralNorm(nn.Conv2d(ndf * 4, ndf * 8, 4, 2, 1, bias=False)),
             nn.BatchNorm2d(ndf * 8),
             nn.LeakyReLU(0.2, inplace=True),
-            nn.Dropout2d(0.4),
+            nn.Dropout2d(0.1),
             # state size. (ndf*8) x 4 x 4
-            nn.Conv2d(ndf * 8, 1, 4, 1, 0, bias=False),
+            SpectralNorm(nn.Conv2d(ndf * 8, 1, 4, 1, 0, bias=False)),
             nn.Sigmoid()
             # state size. 1
         )
 
     def forward(self, input):
         #  print("Discriminator input.shape:", input.shape)
-        #  input = input + (0.18 ** 0.5) * torch.randn(input.shape).to("cuda")
+        #  input = input + (0.1 ** 0.5) * torch.randn(input.shape).to("cuda")
         output = self.main(input)
 
         return output.view(-1, 1).squeeze(1)

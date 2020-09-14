@@ -1,4 +1,5 @@
 import numpy as np
+import math
 import torch
 import torch.nn as nn
 import torch.optim as optim
@@ -29,12 +30,30 @@ for d in dirs:
             #  print(os.path.join(d, f))
             files.append(os.path.join(d, f))
 
-#  print(files)
 
+def cyclical_lr(stepsize, min_lr=3e-4, max_lr=3e-3):
+
+    # Scaler: we can adapt this if we do not want the triangular CLR
+    scaler = lambda x: 1.0
+
+    # Lambda function to calculate the LR
+    lr_lambda = lambda it: min_lr + (max_lr - min_lr) * relative(it, stepsize)
+
+    # Additional function to see where on the cycle we are
+    def relative(it, stepsize):
+        cycle = math.floor(1 + it / (2 * stepsize))
+        x = abs(it / stepsize - 2 * cycle + 1)
+        return max(0, (1 - x)) * scaler(cycle)
+
+    return lr_lambda
+
+
+#  print(files)
 #  files = files[0:1000]
 random.shuffle(files)
 print(files[0:30])
 r = RealDataGenerator(files)
+
 if __name__ == "__main__":
     nz = 256
     batch_size = 8
@@ -42,31 +61,37 @@ if __name__ == "__main__":
     fixed_noise = torch.randn(batch_size, nz, 1, 1, device=device)
     ngpu = 2
     real_label = 0.9
-    fake_label = 0.0
-    epochs = 100
+    fake_label = 0.1
+    epochs = 200
     lr = 0.0001
     beta1 = 0.5
     criterion = nn.BCELoss()
 
     netG = Generator(ngpu).to(device, dtype=torch.float)
     netG = nn.DataParallel(netG)
-    netG.apply(weights_init)
+    #  netG.apply(weights_init)
     #  if opt.netG != "":
     #  netG.load_state_dict(torch.load(opt.netG))
     print(netG)
 
     netD = Discriminator(ngpu).to(device, dtype=torch.float)
     netD = nn.DataParallel(netD)
-    netD.apply(weights_init)
+    #  netD.apply(weights_init)
     print(netD)
     #  if opt.netD != "":
     #  netD.load_state_dict(torch.load(opt.netD))
 
-    optimizerG = optim.Adam(netG.parameters(), lr=0.00025, betas=(beta1, 0.99))
-    optimizerD = optim.Adam(netD.parameters(), lr=0.001, betas=(beta1, 0.99))
+    optimizerG = optim.Adam(netG.parameters(), lr=0.0001, betas=(beta1, 0.99))
+    #  schedulerG = torch.optim.lr_scheduler.ReduceLROnPlateau(
+    #  optimizerG, "min", verbose=True, patience=500
+    #  )
+    optimizerD = optim.Adam(netD.parameters(), lr=0.0001, betas=(beta1, 0.99))
+    #  schedulerD = torch.optim.lr_scheduler.ReduceLROnPlateau(
+    #  optimizerD, "min", verbose=True, patience=500
+    #  )
 
     for epoch in range(epochs):
-        for i in range(1000):
+        for i in range(2000):
             ############################
             # (1) Update D network: maximize log(D(x)) + log(1 - D(G(z)))
             ###########################
@@ -100,6 +125,7 @@ if __name__ == "__main__":
             D_G_z1 = output.mean().item()
             errD = errD_real + errD_fake
             optimizerD.step()
+            #  schedulerD.step(errD)
 
             ############################
             # (2) Update G network: maximize log(D(G(z)))
@@ -111,10 +137,11 @@ if __name__ == "__main__":
             errG.backward()
             D_G_z2 = output.mean().item()
             optimizerG.step()
+            #  schedulerG.step(errG)
 
             if i % 10 == 0:
                 print(
-                    "[%d/%d][%d/%d] Loss_D: %.4f Loss_G: %.4f D(x): %.4f D(G(z)): %.4f / %.4f"
+                    "[%d/%d][%d/%d] Loss_D: %.4f Loss_G: %.4f D(x): %.4f D(G(z)): %.8f / %.8f"
                     % (
                         epoch,
                         epochs,
