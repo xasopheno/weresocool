@@ -13,9 +13,9 @@ import torchvision.utils as vutils
 
 from spectral_norm import SpectralNorm
 
-nz = 256
+nz = 128
 ngf = 64
-ndf = 64
+ndf = 128
 nc = 7
 
 # custom weights initialization called on netG and netD
@@ -33,7 +33,7 @@ def weights_init(m):
 #  class Upsample2d(nn.Module):
 #  def __init__(self, ngf, mult):
 #  super(Upsample2d, self).__init__()
-#  self.upsample = nn.Upsample(scale_factor=2, mode="bilinear")
+#  self.upsample = nn.Upsample(scale_factor=2, mode="nearest")
 #  self.pad = nn.ReflectionPad2d(1)
 #  self.conv = nn.Conv2d(ngf * mult, int(ngf * mult) / 2, kernel_size=3, padding=0)
 
@@ -51,7 +51,7 @@ class Generator(nn.Module):
         )
         # input is Z, going into a convolution
         self.conv1 = nn.ConvTranspose2d(nz, ngf * 8, 4, 1, 0, bias=False)
-        self.upsample2 = nn.Upsample(scale_factor=2, mode="bilinear")
+        self.upsample2 = nn.Upsample(scale_factor=2, mode="nearest")
         self.pad2 = nn.ReflectionPad2d(1)
         self.conv2 = nn.Conv2d(
             ngf * 8, int(ngf * 8) // 2, kernel_size=3, stride=1, padding=0
@@ -62,7 +62,7 @@ class Generator(nn.Module):
 
         #  self.conv2 = nn.ConvTranspose2d(ngf * 8, ngf * 4, 4, 2, 1, bias=False)
         #  https://github.com/junyanz/pytorch-CycleGAN-and-pix2pix/issues/190
-        self.upsample2 = nn.Upsample(scale_factor=2, mode="bilinear")
+        self.upsample2 = nn.Upsample(scale_factor=2, mode="nearest")
         self.pad2 = nn.ReflectionPad2d(1)
         self.conv2 = nn.Conv2d(
             ngf * 8, int(ngf * 8) // 2, kernel_size=3, stride=1, padding=0
@@ -71,7 +71,7 @@ class Generator(nn.Module):
         self.batch_norm2 = nn.BatchNorm2d(ngf * 4)
         # state size. (ngf*4) x 8 x 8
         #  self.conv3 = nn.ConvTranspose2d(ngf * 4, ngf * 2, 4, 2, 1, bias=False)
-        self.upsample3 = nn.Upsample(scale_factor=2, mode="bilinear")
+        self.upsample3 = nn.Upsample(scale_factor=2, mode="nearest")
         self.pad3 = nn.ReflectionPad2d(1)
         self.conv3 = nn.Conv2d(
             ngf * 4, int(ngf * 4) // 2, kernel_size=3, stride=1, padding=0
@@ -80,7 +80,7 @@ class Generator(nn.Module):
         self.batch_norm3 = nn.BatchNorm2d(ngf * 2)
         # state size. (ngf*2) x 16 x 16
         #  self.conv4 = nn.ConvTranspose2d(ngf * 2, ngf, 4, 2, 1, bias=False)
-        self.upsample4 = nn.Upsample(scale_factor=2, mode="bilinear")
+        self.upsample4 = nn.Upsample(scale_factor=2, mode="nearest")
         self.pad4 = nn.ReflectionPad2d(1)
         self.conv4 = nn.Conv2d(
             ngf * 2, int(ngf * 2) // 2, kernel_size=3, stride=1, padding=0
@@ -88,35 +88,29 @@ class Generator(nn.Module):
 
         self.batch_norm4 = nn.BatchNorm2d(ngf)
         #  self.conv5 = nn.ConvTranspose2d(ngf, nc, 4, 2, 1, bias=False)
-        self.upsample5 = nn.Upsample(scale_factor=2, mode="bilinear")
+        self.upsample5 = nn.Upsample(scale_factor=2, mode="nearest")
         self.pad5 = nn.ReflectionPad2d(1)
         self.conv5 = nn.Conv2d(ngf, nc, kernel_size=3, stride=1, padding=0)
 
         self.tanh = nn.Tanh()
 
-        self.upsample = nn.Upsample(scale_factor=2, mode="bilinear")
-        self.pad = nn.ReflectionPad2d(1)
-
     def forward(self, x):
         #  print("Generator input.shape:", input.shape)
-        #  identity = x
+        #  residual = x
 
         out = self.conv1(x)
         out = self.batch_norm1(out)
         out = self.relu(out)
 
-        #  out = self.conv2(out)
         out = self.upsample2(out)
         out = self.pad2(out)
         out = self.conv2(out)
 
         out = self.batch_norm2(out)
-        #  out += identity
+        #  out += residual
         out = self.relu(out)
+        #  residual = out
 
-        identity = out
-
-        #  out = self.conv3(out)
         out = self.upsample3(out)
         out = self.pad3(out)
         out = self.conv3(out)
@@ -124,16 +118,13 @@ class Generator(nn.Module):
         out = self.batch_norm3(out)
         out = self.relu(out)
 
-        #  out = self.conv4(out)
         out = self.upsample4(out)
         out = self.pad4(out)
         out = self.conv4(out)
 
         out = self.batch_norm4(out)
-        #  out += identity
         out = self.relu(out)
 
-        #  out = self.conv5(out)
         out = self.upsample5(out)
         out = self.pad5(out)
         out = self.conv5(out)
@@ -149,28 +140,28 @@ class Discriminator(nn.Module):
         self.ngpu = ngpu
         self.main = nn.Sequential(
             # input is (nc) x 64 x 64
-            SpectralNorm(nn.Conv2d(nc, ndf, 4, stride=2, padding=1, bias=False)),
+            nn.Conv2d(nc, ndf, 4, stride=2, padding=1, bias=False),
             nn.LeakyReLU(0.2, inplace=True),
             nn.Dropout2d(0.1),
             # state size. (ndf) x 32 x 32
-            SpectralNorm(nn.Conv2d(ndf, ndf * 2, 4, 2, 1, bias=False)),
+            nn.Conv2d(ndf, ndf * 2, 4, 2, 1, bias=False),
             nn.BatchNorm2d(ndf * 2),
             nn.LeakyReLU(0.2, inplace=True),
             nn.Dropout2d(0.1),
             # state size. (ndf*2) x 16 x 16
-            SpectralNorm(nn.Conv2d(ndf * 2, ndf * 4, 4, 2, 1, bias=False)),
+            (nn.Conv2d(ndf * 2, ndf * 4, 4, 2, 1, bias=False)),
             nn.BatchNorm2d(ndf * 4),
             nn.LeakyReLU(0.2, inplace=True),
             nn.Dropout2d(0.1),
             # state size. (ndf*4) x 8 x 8
-            SpectralNorm(nn.Conv2d(ndf * 4, ndf * 8, 4, 2, 1, bias=False)),
+            nn.Conv2d(ndf * 4, ndf * 8, 4, 2, 1, bias=False),
             nn.BatchNorm2d(ndf * 8),
             nn.LeakyReLU(0.2, inplace=True),
             nn.Dropout2d(0.1),
             # state size. (ndf*8) x 4 x 4
-            SpectralNorm(nn.Conv2d(ndf * 8, 1, 4, 1, 0, bias=False)),
-            nn.Sigmoid()
+            nn.Conv2d(ndf * 8, 1, 4, 1, 0, bias=False),
             # state size. 1
+            nn.Sigmoid(),
         )
 
     def forward(self, input):

@@ -17,11 +17,11 @@ import os
 
 files = []
 dirs = [
-    "data/growing",
+    #  "data/growing",
     "data/monica",
-    "data/madness",
-    "data/day_3",
-    "data/slice",
+    #  "data/madness",
+    #  "data/day_3",
+    #  "data/slice",
 ]
 
 for d in dirs:
@@ -55,14 +55,14 @@ print(files[0:30])
 r = RealDataGenerator(files)
 
 if __name__ == "__main__":
-    nz = 256
+    nz = 128
     batch_size = 8
     device = "cuda"
     fixed_noise = torch.randn(batch_size, nz, 1, 1, device=device)
     ngpu = 2
-    real_label = 0.9
-    fake_label = 0.1
-    epochs = 200
+    real_label = 1.0
+    fake_label = 0.0
+    epochs = 400
     lr = 0.0001
     beta1 = 0.5
     criterion = nn.BCELoss()
@@ -91,7 +91,7 @@ if __name__ == "__main__":
     #  )
 
     for epoch in range(epochs):
-        for i in range(2000):
+        for i in range(len(r)):
             ############################
             # (1) Update D network: maximize log(D(x)) + log(1 - D(G(z)))
             ###########################
