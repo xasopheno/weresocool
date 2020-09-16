@@ -15,7 +15,7 @@ from spectral_norm import SpectralNorm
 
 nz = 128
 ngf = 64
-ndf = 128
+ndf = 64
 nc = 7
 
 # custom weights initialization called on netG and netD

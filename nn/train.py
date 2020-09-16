@@ -18,10 +18,10 @@ import os
 files = []
 dirs = [
     #  "data/growing",
-    "data/monica",
+    #  "data/monica",
     #  "data/madness",
     #  "data/day_3",
-    #  "data/slice",
+    "data/slice",
 ]
 
 for d in dirs:
@@ -167,6 +167,9 @@ if __name__ == "__main__":
                     data_point_to_rgbxyz_img(
                         data, file_number, epoch, "result_img", "network"
                     )
+
+        torch.save(netG.state_dict(), "trained_models/netG.pt")
+        torch.save(netD.state_dict(), "trained_models/netD.pt")
 
         print(
             "[%d/%d][%d/%d] Loss_D: %.4f Loss_G: %.8f D(x): %.8f D(G(z)): %.8f / %.8f"

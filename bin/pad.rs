@@ -15,12 +15,12 @@ use weresocool_error::Error;
 use weresocool_instrument::Basis;
 use weresocool_parser::Init;
 
-fn main() -> Result<(), Error> {
+fn _main() -> Result<(), Error> {
     // Test file before processing
-    // let file = std::fs::File::open("nn/data/template/tempate_0000000000.socool.csv")?;
+    let file = std::fs::File::open("nn/data/madness/madness_0000000100.socool.csv")?;
 
     // Test file after processing
-    let file = std::fs::File::open("nn/output/0002_000000006.csv")?;
+    // let file = std::fs::File::open("nn/output/0080_000000007.csv")?;
     // let file = std::fs::File::open("nn/output/0001_000000502.csv")?;
     let reader = BufReader::new(file);
 
@@ -28,21 +28,21 @@ fn main() -> Result<(), Error> {
     let normalizer = Normalizer::from_min_max(min_state, max_state);
 
     // Test file before processing
-    // let mut data: Vec<f64> = vec![];
-    // let lines: Vec<String> = reader.lines().map(|line| line.unwrap()).collect();
-    // for (i, line) in lines.iter().enumerate() {
-    // if i > 0 {
-    // for val in line.split(",") {
-    // data.push(val.trim().parse().unwrap())
-    // }
-    // }
-    // }
+    let mut data: Vec<f64> = vec![];
+    let lines: Vec<String> = reader.lines().map(|line| line.unwrap()).collect();
+    for (i, line) in lines.iter().enumerate() {
+        if i > 0 {
+            for val in line.split(",") {
+                data.push(val.trim().parse().unwrap())
+            }
+        }
+    }
 
     // Test File after processing
-    let data: Vec<f64> = reader
-        .lines()
-        .map(|line| line.unwrap().parse().unwrap())
-        .collect();
+    // let data: Vec<f64> = reader
+    // .lines()
+    // .map(|line| line.unwrap().parse().unwrap())
+    // .collect();
 
     let data: Vec<String> = data.iter().map(|v| format!("{:.16}", v)).collect();
     let pre_ops: Vec<Vec<String>> = data.chunks(7).map(|chunck| chunck.to_vec()).collect();
@@ -55,7 +55,9 @@ fn main() -> Result<(), Error> {
             op.to_point_op()
         })
         .collect();
-    let result: Vec<Vec<PointOp>> = point_ops.chunks(4).map(|chunck| chunck.to_vec()).collect();
+    let result: Vec<Vec<PointOp>> = point_ops.chunks(64).map(|chunck| chunck.to_vec()).collect();
+    dbg![&result.len()];
+    dbg![result[0].len()];
     // dbg!(&result);
     let mut nf = NormalForm::init_empty();
     nf.operations = result;
@@ -76,10 +78,10 @@ fn main() -> Result<(), Error> {
     Ok(())
 }
 
-fn _main() -> Result<(), Error> {
+fn main() -> Result<(), Error> {
     let (min_state, max_state) = find_min_max_from_dir()?;
     let normalizer = Normalizer::from_min_max(min_state, max_state);
-    let f = "marichan";
+    let f = "madness";
 
     let render_return = Filename(format!("application/extraResources/demo/{}.socool", f).as_str())
         .make(RenderType::NfBasisAndTable, None)?;

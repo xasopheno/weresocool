@@ -2,6 +2,7 @@ use crate::generation::{RenderReturn, RenderType};
 use crate::interpretable::{InputType::Filename, Interpretable};
 use num_rational::Rational64;
 use rayon::prelude::*;
+use std::collections::HashMap;
 use std::io::Write;
 use walkdir::WalkDir;
 use weresocool_ast::{NormalForm, OscType, PointOp};
@@ -298,6 +299,10 @@ pub fn process_normalized(normalized: &VD, voice_len: usize) -> VD {
     let batch = make_batch(voice_len, max_idx, min_len, taken);
     // dbg!(max_idx, min_len);
     batch
+}
+
+pub fn new_find_shortest_phrase(vd: &VD, voice_len: usize) -> VD {
+    let result: HashMap<usize, usize> = HashMap::new();
 }
 
 pub fn make_batch(n: usize, max_idx: usize, min_len: Rational64, taken: VD) -> VD {
