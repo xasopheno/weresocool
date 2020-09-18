@@ -22,7 +22,8 @@ dirs = [
     #  "data/madness",
     #  "data/day_3",
     #  "data/slice",
-    "data/simple"
+    #  "data/simple"
+    "data/simple2_fifths"
 ]
 
 for d in dirs:
@@ -64,7 +65,7 @@ if __name__ == "__main__":
     real_label = 0.9
     fake_label = 0.0
     epochs = 400
-    lr = 0.0001
+    lr = 0.00001
     beta1 = 0.5
     criterion = nn.BCELoss()
 

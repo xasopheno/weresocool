@@ -488,6 +488,7 @@ fn get_file_names() -> Vec<String> {
         let f_name = entry.path().to_string_lossy().to_string();
         if f_name.ends_with(".socool")
             && ![
+                "simple.socool",
                 // "dunno.socool",
                 // "tokyo.socool",
                 // "wonder_ball.socool",

@@ -20,7 +20,7 @@ fn main() -> Result<(), Error> {
     // let file = std::fs::File::open("nn/data/slice/slice_0000000100.socool.csv")?;
 
     // Test file after processing
-    let file = std::fs::File::open("nn/output/0041_000000004.csv")?;
+    let file = std::fs::File::open("nn/output/0220_000000000.csv")?;
     let reader = BufReader::new(file);
 
     let (min_state, max_state) = find_min_max_from_dir()?;
@@ -69,7 +69,7 @@ fn main() -> Result<(), Error> {
     nf.operations = vec![result[0].clone(), result[1].clone()];
 
     let init: Init = Init {
-        f: Rational64::new(220, 1),
+        f: Rational64::new(230, 1),
         l: Rational64::new(1, 1),
         g: Rational64::new(1, 1),
         p: Rational64::new(0, 1),
@@ -87,7 +87,7 @@ fn main() -> Result<(), Error> {
 fn _main() -> Result<(), Error> {
     let (min_state, max_state) = find_min_max_from_dir()?;
     let normalizer = Normalizer::from_min_max(min_state, max_state);
-    let f = "simples2_fifths";
+    let f = "simple2_fifths";
 
     // let render_return = Filename(format!("application/extraResources/demo/{}.socool", f).as_str())
     // .make(RenderType::NfBasisAndTable, None)?;
