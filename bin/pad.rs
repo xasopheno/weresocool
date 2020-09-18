@@ -15,34 +15,33 @@ use weresocool_error::Error;
 use weresocool_instrument::Basis;
 use weresocool_parser::Init;
 
-fn _main() -> Result<(), Error> {
+fn main() -> Result<(), Error> {
     // Test file before processing
-    let file = std::fs::File::open("nn/data/madness/madness_0000000100.socool.csv")?;
+    // let file = std::fs::File::open("nn/data/slice/slice_0000000100.socool.csv")?;
 
     // Test file after processing
-    // let file = std::fs::File::open("nn/output/0080_000000007.csv")?;
-    // let file = std::fs::File::open("nn/output/0001_000000502.csv")?;
+    let file = std::fs::File::open("nn/output/0041_000000004.csv")?;
     let reader = BufReader::new(file);
 
     let (min_state, max_state) = find_min_max_from_dir()?;
     let normalizer = Normalizer::from_min_max(min_state, max_state);
 
     // Test file before processing
-    let mut data: Vec<f64> = vec![];
-    let lines: Vec<String> = reader.lines().map(|line| line.unwrap()).collect();
-    for (i, line) in lines.iter().enumerate() {
-        if i > 0 {
-            for val in line.split(",") {
-                data.push(val.trim().parse().unwrap())
-            }
-        }
-    }
+    // let mut data: Vec<f64> = vec![];
+    // let lines: Vec<String> = reader.lines().map(|line| line.unwrap()).collect();
+    // for (i, line) in lines.iter().enumerate() {
+    // if i > 0 {
+    // for val in line.split(",") {
+    // data.push(val.trim().parse().unwrap())
+    // }
+    // }
+    // }
 
     // Test File after processing
-    // let data: Vec<f64> = reader
-    // .lines()
-    // .map(|line| line.unwrap().parse().unwrap())
-    // .collect();
+    let data: Vec<f64> = reader
+        .lines()
+        .map(|line| line.unwrap().parse().unwrap())
+        .collect();
 
     let data: Vec<String> = data.iter().map(|v| format!("{:.16}", v)).collect();
     let pre_ops: Vec<Vec<String>> = data.chunks(7).map(|chunck| chunck.to_vec()).collect();
@@ -56,14 +55,21 @@ fn _main() -> Result<(), Error> {
         })
         .collect();
     let result: Vec<Vec<PointOp>> = point_ops.chunks(64).map(|chunck| chunck.to_vec()).collect();
-    dbg![&result.len()];
-    dbg![result[0].len()];
+    dbg!(&result.len());
+    dbg!(&result[0].len());
+    // for i in 0..result.len() {
+    // if result[i].len() != 64 {
+    // dbg![i];
+    // dbg!("?????", result[i].len());
+    // }
+    // }
     // dbg!(&result);
     let mut nf = NormalForm::init_empty();
-    nf.operations = result;
+    // nf.operations[0] = result[0].clone();
+    nf.operations = vec![result[0].clone(), result[1].clone()];
 
     let init: Init = Init {
-        f: Rational64::new(330, 1),
+        f: Rational64::new(220, 1),
         l: Rational64::new(1, 1),
         g: Rational64::new(1, 1),
         p: Rational64::new(0, 1),
@@ -78,15 +84,15 @@ fn _main() -> Result<(), Error> {
     Ok(())
 }
 
-fn main() -> Result<(), Error> {
+fn _main() -> Result<(), Error> {
     let (min_state, max_state) = find_min_max_from_dir()?;
     let normalizer = Normalizer::from_min_max(min_state, max_state);
-    let f = "madness";
+    let f = "simples2_fifths";
 
-    let render_return = Filename(format!("application/extraResources/demo/{}.socool", f).as_str())
-        .make(RenderType::NfBasisAndTable, None)?;
-    // let render_return =
-    // Filename("songs/template.socool").make(RenderType::NfBasisAndTable, None)?;
+    // let render_return = Filename(format!("application/extraResources/demo/{}.socool", f).as_str())
+    // .make(RenderType::NfBasisAndTable, None)?;
+    let render_return =
+        Filename("nn/new_train/simple2_fifths.socool").make(RenderType::NfBasisAndTable, None)?;
     let (nf, _, _) = match render_return {
         RenderReturn::NfBasisAndTable(nf, basis, table) => (nf, basis, table),
         _ => panic!("huh"),
@@ -98,7 +104,7 @@ fn main() -> Result<(), Error> {
     // let _n_voices = &normalized.len();
 
     let mut i = 0;
-    let min_len = voice_len - 10;
+    let min_len = voice_len;
     // let min_len = 2;
 
     let mut next = normalized;
@@ -130,15 +136,10 @@ fn main() -> Result<(), Error> {
         // };
         // dbg!(&next);
 
-        let result = process_normalized(&next, voice_len);
+        let result = process_normalized(&next.clone(), voice_len);
         let nnops = result
-            .par_iter()
-            .map(|voice| {
-                voice
-                    .par_iter()
-                    .map(|op| op.to_nnop())
-                    .collect::<Vec<NNOp>>()
-            })
+            .iter()
+            .map(|voice| voice.iter().map(|op| op.to_nnop()).collect::<Vec<NNOp>>())
             .collect::<Vec<Vec<NNOp>>>();
 
         nnops.iter().for_each(|voice| {
@@ -149,6 +150,7 @@ fn main() -> Result<(), Error> {
 
         let len = shortest_first_element(&next);
         next = make_next(len, &next);
+        next = pad_voices(&next, 64);
     }
 
     Ok(())

@@ -68,18 +68,15 @@ pub struct MinMax {
     pub max: Rational64,
 }
 
-// (max'-min')/(max-min)*(value-max)+max'
-
 fn denormalize_value(val: Rational64, min: Rational64, max: Rational64) -> Rational64 {
     val * (max - min) + min
 }
 fn normalize_value(value: Rational64, min: Rational64, max: Rational64) -> Rational64 {
-    let d = if max - min == Rational64::new(0, 1) {
-        Rational64::new(1, 1)
-    } else {
-        max - min
-    };
-    (value - min) / d
+    if max == min {
+        // panic!("max == min in normalize_value");
+        return value;
+    }
+    (value - min) / (max - min)
 }
 
 #[derive(Debug, Clone, Copy, PartialEq)]
@@ -166,7 +163,7 @@ impl DataOp {
             fa: Rational64::new(0, 1),
             g: Rational64::new(0, 1),
             l: Rational64::new(0, 1),
-            pm: Rational64::new(0, 1),
+            pm: Rational64::new(1, 1),
             pa: Rational64::new(0, 1),
             osc_type: Rational64::new(0, 1),
         }
@@ -189,11 +186,11 @@ impl DataOp {
         self.g = denormalize_value(self.g, normalizer.g.min, normalizer.g.max);
     }
 
-    pub fn new_vec_from_lengths(lengths: Vec<i64>) -> Vec<DataOp> {
+    pub fn new_vec_from_lengths(lengths: Vec<i64>) -> Vec<Self> {
         lengths
             .iter()
             .enumerate()
-            .map(|(i, length)| DataOp {
+            .map(|(i, length)| Self {
                 fm: Rational64::new(i as i64, 1),
                 fa: Rational64::new(0, 1),
                 pm: Rational64::new(0, 1),
@@ -205,10 +202,10 @@ impl DataOp {
             .collect()
     }
 
-    pub fn new_vec_from_fm_and_l(fm_and_ls: Vec<(usize, usize)>) -> Vec<DataOp> {
+    pub fn new_vec_from_fm_and_l(fm_and_ls: Vec<(usize, usize)>) -> Vec<Self> {
         fm_and_ls
             .iter()
-            .map(|fm_and_l| DataOp {
+            .map(|fm_and_l| Self {
                 fm: Rational64::new(fm_and_l.0 as i64, 1),
                 fa: Rational64::new(0, 1),
                 pm: Rational64::new(0, 1),
@@ -278,7 +275,7 @@ pub fn is_not_empty(data: &VD, min_len: usize) -> bool {
 }
 
 pub fn make_next(l: Rational64, data: &VD) -> VD {
-    data.par_iter()
+    data.iter()
         .map(|voice| {
             let mut v = voice.to_owned();
             if v[0].l == l {
@@ -293,78 +290,156 @@ pub fn make_next(l: Rational64, data: &VD) -> VD {
 
 type VD = Vec<Vec<DataOp>>;
 
-pub fn process_normalized(normalized: &VD, voice_len: usize) -> VD {
-    let taken = take_n(voice_len, normalized);
-    let (max_idx, min_len) = shortest_phrase(&taken);
-    let batch = make_batch(voice_len, max_idx, min_len, taken);
+pub fn process_normalized(batch: &VD, voice_len: usize) -> VD {
+    let batch = take_n(batch, voice_len);
+    let min_len = new_find_shortest_phrase(&batch, voice_len);
+    let batch = new_make_batch(&batch, min_len, voice_len);
+    let batch = pad_voices(&batch, voice_len);
+
+    // let taken = take_n(voice_len, normalized);
+    // let (max_idx, min_len) = shortest_phrase(&taken);
+    // let batch = make_batch(voice_len, max_idx, min_len, taken);
     // dbg!(max_idx, min_len);
+    // unimplemented!();
     batch
 }
-
-pub fn new_find_shortest_phrase(vd: &VD, voice_len: usize) -> VD {
-    let result: HashMap<usize, usize> = HashMap::new();
+pub fn take_n(vd: &VD, n: usize) -> VD {
+    vd.iter()
+        .map(|voice| take_n_voice(voice.to_vec(), n))
+        .collect::<VD>()
 }
 
-pub fn make_batch(n: usize, max_idx: usize, min_len: Rational64, taken: VD) -> VD {
-    let result = taken
+pub fn take_n_voice(voice: Vec<DataOp>, n: usize) -> Vec<DataOp> {
+    voice.iter().take(n).map(|op| *op).collect()
+}
+
+pub fn pad_voices(vd: &VD, voice_len: usize) -> VD {
+    vd.iter()
+        .map(|voice| pad_voice(voice.to_vec(), voice_len))
+        .collect::<VD>()
+}
+
+pub fn new_make_batch(normalized: &VD, max_len: Rational64, n_ops: usize) -> VD {
+    let result = normalized
         .iter()
-        .enumerate()
-        .map(|(i, voice)| process_voice(n, i, max_idx, min_len, voice.to_vec()))
+        .map(|voice| new_process_voice(voice.to_vec(), max_len, n_ops))
         .collect::<VD>();
     result
 }
-
-fn process_voice(
-    n_ops: usize,
-    i: usize,
-    max_idx: usize,
-    min_len: Rational64,
-    voice: Vec<DataOp>,
-) -> Vec<DataOp> {
-    if i == max_idx {
-        let result = pad_voice(n_ops, voice);
-        result
-    } else {
-        let mut count = Rational64::new(0, 1);
-        let mut idx = 0;
-        let mut result = vec![];
-        while count < min_len && idx < voice.len() {
-            result.push(voice[idx]);
-            count += voice[idx].l;
-            idx += 1
-        }
-
-        if count > min_len {
-            let len = result.len() - 1;
-            let diff = result[len].l - (count - min_len);
-            // let mut r = result[len].clone();
-            result[len].l = diff;
-            // r.l = r.l - diff;
-        }
-        result = pad_voice(n_ops, result);
-        result
+pub fn new_process_voice(voice: Vec<DataOp>, max_len: Rational64, n_ops: usize) -> Vec<DataOp> {
+    let mut acc = Rational64::new(0, 1);
+    let mut idx = 0;
+    let mut result = vec![];
+    while acc < max_len && idx < n_ops - 1 {
+        result.push(voice[idx]);
+        idx += 1;
+        acc += voice[idx].l;
     }
+
+    if acc > max_len {
+        let len = result.len() - 1;
+        let diff = result[len].l - (acc - max_len);
+        result[len].l = diff;
+    }
+    result
 }
 
-fn pad_voice(n: usize, mut voice: Vec<DataOp>) -> Vec<DataOp> {
+pub fn compress(vd: &VD) -> VD {
+    vd.iter()
+        .map(|voice| {
+            let mut result = vec![voice[0]];
+            for op in voice.iter().skip(1) {
+                let mut p = result[result.len() - 1];
+                if op.fm == p.fm && op.fa == p.fa && op.pa == p.pa && op.pm == p.pm && op.g == p.g {
+                    p.l += op.l;
+                } else {
+                    result.push(*op);
+                };
+            }
+            result
+        })
+        .collect::<VD>()
+}
+
+pub fn new_find_shortest_phrase(vd: &VD, voice_len: usize) -> Rational64 {
+    vd.iter()
+        .flat_map(|voice| find_length_at_n(voice.to_vec(), voice_len))
+        .min()
+        .unwrap()
+}
+
+pub fn find_length_at_n(dops: Vec<DataOp>, voice_len: usize) -> Option<Rational64> {
+    if dops.len() < voice_len {
+        return None;
+    };
+    let mut result = Rational64::new(0, 1);
+    for i in 0..voice_len {
+        if dops[i].l == Rational64::from_integer(0) {
+            return None;
+        };
+        result += dops[i].l;
+    }
+    Some(result)
+}
+
+// pub fn make_batch(n: usize, max_idx: usize, min_len: Rational64, taken: VD) -> VD {
+// let result = taken
+// .iter()
+// .enumerate()
+// .map(|(i, voice)| process_voice(n, i, max_idx, min_len, voice.to_vec()))
+// .collect::<VD>();
+// result
+// }
+
+// fn process_voice(
+// n_ops: usize,
+// i: usize,
+// max_idx: usize,
+// min_len: Rational64,
+// voice: Vec<DataOp>,
+// ) -> Vec<DataOp> {
+// if i == max_idx {
+// let result = pad_voice(voice, n_ops);
+// result
+// } else {
+// let mut count = Rational64::new(0, 1);
+// let mut idx = 0;
+// let mut result = vec![];
+// while count < min_len && idx < voice.len() {
+// result.push(voice[idx]);
+// count += voice[idx].l;
+// idx += 1
+// }
+
+// if count > min_len {
+// let len = result.len() - 1;
+// let diff = result[len].l - (count - min_len);
+// result[len].l = diff;
+// }
+// // result = pad_voice(n_ops, result);
+// result
+// }
+// }
+
+fn pad_voice(mut voice: Vec<DataOp>, n: usize) -> Vec<DataOp> {
     while voice.len() < n {
         voice.push(DataOp::empty())
     }
     voice
 }
 
-fn take_n(n: usize, normalized: &VD) -> VD {
-    normalized
-        .iter()
-        .map(|voice| {
-            voice
-                .iter()
-                .take(n)
-                .map(|op| op.clone())
-                .collect::<Vec<DataOp>>()
-        })
-        .collect::<VD>()
-}
+// fn take_n(n: usize, normalized: &VD) -> VD {
+// normalized
+// .iter()
+// .map(|voice| {
+// voice
+// .iter()
+// .take(n)
+// .map(|op| op.clone())
+// .collect::<Vec<DataOp>>()
+// })
+// .collect::<VD>()
+// }
 
 pub fn shortest_phrase(taken: &VD) -> (usize, Rational64) {
     let mut idx = 0;
@@ -390,10 +465,8 @@ pub fn shortest_first_element(data: &VD) -> Rational64 {
     let mut min = Rational64::new(i64::MAX, 1);
 
     for voice in data.iter() {
-        for op in voice {
-            if op.l < min {
-                min = op.l;
-            }
+        if voice[0].l > Rational64::from_integer(0) && voice[0].l < min {
+            min = voice[0].l;
         }
     }
 
@@ -401,7 +474,8 @@ pub fn shortest_first_element(data: &VD) -> Rational64 {
 }
 
 fn get_file_names() -> Vec<String> {
-    let demo_dir = "./application/extraResources/demo/";
+    // let demo_dir = "./application/extraResources/demo/";
+    let demo_dir = "./nn/new_train/";
     let mut result = vec![];
 
     let paths = WalkDir::new(demo_dir)
@@ -414,17 +488,17 @@ fn get_file_names() -> Vec<String> {
         let f_name = entry.path().to_string_lossy().to_string();
         if f_name.ends_with(".socool")
             && ![
-                "dunno.socool",
-                "tokyo.socool",
-                "wonder_ball.socool",
-                "television.socool",
-                "songsongsong.socool",
-                "modby.socool",
-                "hilbert.socool",
-                "how_to_build.socool",
-                "how_to_fight.socool",
-                "dunno2.socool",
-                "for_two_ears.socool",
+                // "dunno.socool",
+                // "tokyo.socool",
+                // "wonder_ball.socool",
+                // "television.socool",
+                // "songsongsong.socool",
+                // "modby.socool",
+                // "hilbert.socool",
+                // "how_to_build.socool",
+                // "how_to_fight.socool",
+                // "dunno2.socool",
+                // "for_two_ears.socool",
             ]
             .iter()
             .any(|&name| demo_dir.clone().to_owned() + name == f_name)

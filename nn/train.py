@@ -21,7 +21,8 @@ dirs = [
     #  "data/monica",
     #  "data/madness",
     #  "data/day_3",
-    "data/slice",
+    #  "data/slice",
+    "data/simple"
 ]
 
 for d in dirs:
@@ -52,7 +53,7 @@ def cyclical_lr(stepsize, min_lr=3e-4, max_lr=3e-3):
 #  files = files[0:1000]
 random.shuffle(files)
 print(files[0:30])
-r = RealDataGenerator(files)
+r = RealDataGenerator(files[0:200])
 
 if __name__ == "__main__":
     nz = 128
@@ -60,7 +61,7 @@ if __name__ == "__main__":
     device = "cuda"
     fixed_noise = torch.randn(batch_size, nz, 1, 1, device=device)
     ngpu = 2
-    real_label = 1.0
+    real_label = 0.9
     fake_label = 0.0
     epochs = 400
     lr = 0.0001
@@ -69,17 +70,17 @@ if __name__ == "__main__":
 
     netG = Generator(ngpu).to(device, dtype=torch.float)
     netG = nn.DataParallel(netG)
-    #  netG.apply(weights_init)
+    netG.apply(weights_init)
     #  if opt.netG != "":
-    #  netG.load_state_dict(torch.load(opt.netG))
+    netG.load_state_dict(torch.load("./trained_models/netG.pt"))
     print(netG)
 
     netD = Discriminator(ngpu).to(device, dtype=torch.float)
     netD = nn.DataParallel(netD)
-    #  netD.apply(weights_init)
+    netD.apply(weights_init)
     print(netD)
     #  if opt.netD != "":
-    #  netD.load_state_dict(torch.load(opt.netD))
+    netD.load_state_dict(torch.load("./trained_models/netD.pt"))
 
     optimizerG = optim.Adam(netG.parameters(), lr=0.0001, betas=(beta1, 0.99))
     #  schedulerG = torch.optim.lr_scheduler.ReduceLROnPlateau(
@@ -154,11 +155,22 @@ if __name__ == "__main__":
                         D_G_z2,
                     )
                 )
-            if i % 500 == 0:
+            #  if i % 500 == 0:
+            if i == 0:
                 print("___CREATING EXAMPLE___")
                 fake = netG(fixed_noise).detach()
+                #  fake = torch.tensor(
+                #  np.array(
+                #  [
+                #  r[random.randint(0, len(r) - 1)].numpy()
+                #  for i in range(batch_size)
+                #  ]
+                #  )
+                #  )
                 for img_no in range(batch_size):
                     file_number = i + img_no
+
+                    real_batch = torch.tensor(real_batch).to(device, dtype=torch.float)
                     data = fake[img_no].cpu().numpy()
 
                     write_result_to_file(
