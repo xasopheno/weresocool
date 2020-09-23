@@ -20,7 +20,7 @@ fn main() -> Result<(), Error> {
     // let file = std::fs::File::open("nn/data/slice/slice_0000000100.socool.csv")?;
 
     // Test file after processing
-    let file = std::fs::File::open("nn/output/0220_000000000.csv")?;
+    let file = std::fs::File::open("nn/output/0048_000000002.csv")?;
     let reader = BufReader::new(file);
 
     let (min_state, max_state) = find_min_max_from_dir()?;
@@ -87,12 +87,12 @@ fn main() -> Result<(), Error> {
 fn _main() -> Result<(), Error> {
     let (min_state, max_state) = find_min_max_from_dir()?;
     let normalizer = Normalizer::from_min_max(min_state, max_state);
-    let f = "simple2_fifths";
+    let f = "simple";
 
     // let render_return = Filename(format!("application/extraResources/demo/{}.socool", f).as_str())
     // .make(RenderType::NfBasisAndTable, None)?;
     let render_return =
-        Filename("nn/new_train/simple2_fifths.socool").make(RenderType::NfBasisAndTable, None)?;
+        Filename("nn/new_train/simple.socool").make(RenderType::NfBasisAndTable, None)?;
     let (nf, _, _) = match render_return {
         RenderReturn::NfBasisAndTable(nf, basis, table) => (nf, basis, table),
         _ => panic!("huh"),

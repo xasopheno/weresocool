@@ -7,7 +7,7 @@ import csv
 from torchvision import transforms
 from torch.utils.data import DataLoader, Dataset
 import torchvision.utils as vutils
-from network import Generator, Discriminator, weights_init
+from network import Generator, Discriminator, weights_init, TransformerGenerator
 from datagen import RealDataGenerator
 from typing import List
 from helpers import data_point_to_rgbxyz_img, write_result_to_file
@@ -54,7 +54,7 @@ def cyclical_lr(stepsize, min_lr=3e-4, max_lr=3e-3):
 #  files = files[0:1000]
 random.shuffle(files)
 print(files[0:30])
-r = RealDataGenerator(files[0:200])
+r = RealDataGenerator(files)
 
 if __name__ == "__main__":
     nz = 128
@@ -65,23 +65,25 @@ if __name__ == "__main__":
     real_label = 0.9
     fake_label = 0.0
     epochs = 400
-    lr = 0.00001
+    lr = 0.0001
     beta1 = 0.5
     criterion = nn.BCELoss()
 
     netG = Generator(ngpu).to(device, dtype=torch.float)
+    #  netG = TransformerGenerator().to(device, dtype=torch.float)
+
     netG = nn.DataParallel(netG)
     netG.apply(weights_init)
     #  if opt.netG != "":
-    netG.load_state_dict(torch.load("./trained_models/netG.pt"))
+    #  netG.load_state_dict(torch.load("./trained_models/netG.pt"))
     print(netG)
 
     netD = Discriminator(ngpu).to(device, dtype=torch.float)
     netD = nn.DataParallel(netD)
     netD.apply(weights_init)
-    print(netD)
     #  if opt.netD != "":
-    netD.load_state_dict(torch.load("./trained_models/netD.pt"))
+    #  netD.load_state_dict(torch.load("./trained_models/netD.pt"))
+    print(netD)
 
     optimizerG = optim.Adam(netG.parameters(), lr=0.0001, betas=(beta1, 0.99))
     #  schedulerG = torch.optim.lr_scheduler.ReduceLROnPlateau(
@@ -156,8 +158,8 @@ if __name__ == "__main__":
                         D_G_z2,
                     )
                 )
-            #  if i % 500 == 0:
-            if i == 0:
+            if i % 500 == 0:
+                #  if i == 0:
                 print("___CREATING EXAMPLE___")
                 fake = netG(fixed_noise).detach()
                 #  fake = torch.tensor(

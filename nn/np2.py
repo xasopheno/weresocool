@@ -18,7 +18,7 @@ n_ops = 7
 n_voices = 64
 
 img_dir = "img"
-song_name = "template"
+song_name = "simple"
 
 files = []
 dirs = [f"data/{song_name}"]
@@ -32,7 +32,9 @@ files = sorted(files[0:1000])
 dataset = RealDataGenerator(files)
 for i in range(0, 3):
     data = dataset[i].numpy()
-    data_point_to_rgbxyz_img(torch.tensor(data), i, song_name, img_dir)
+    data_point_to_rgbxyz_img(
+        torch.tensor(data), i, 0, img_dir, song_name,
+    )
 
 
 write_result_to_file(dataset[0], n_voices, n_ops, "output/out.csv")

@@ -1,3 +1,7 @@
 data/*
 output/*
 result_img/*
+image_transformer/
+trained_models/*
+img/*
+*.mp3

@@ -1,0 +1,12 @@
+{ f: 220, l: 1, g: 1, p: 0 }
+
+list = &[Fm 1, Fm 9/8, Fm 5/4, Fm 4/3, Fm 3/2, Fm 6/5]
+
+main = {
+  Fm 2/3 |
+  &list | 
+    &list @ [
+      Random(200)
+    ]
+  | Lm 1/8
+}

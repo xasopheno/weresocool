@@ -14,8 +14,8 @@ import torchvision.utils as vutils
 from spectral_norm import SpectralNorm
 
 nz = 128
-ngf = 64
-ndf = 64
+ngf = 512
+ndf = 128
 nc = 7
 
 # custom weights initialization called on netG and netD
@@ -39,6 +39,29 @@ def weights_init(m):
 
 #  def forward(self, x):
 #  return x
+
+
+class TransformerGenerator(nn.Module):
+    def __init__(self):
+        super(TransformerGenerator, self).__init__()
+        self.relu = nn.ReLU(True)
+        self.encoder_layers = nn.TransformerEncoderLayer(nz, 8)
+
+        self.decoder = nn.Conv2d(ngf, nc, kernel_size=3, stride=1, padding=0)
+
+        self.tanh = nn.Tanh()
+
+    def forward(self, x):
+        #  print("Generator input.shape:", input.shape)
+        #  residual = x
+        x = self.encoder_layers(x[0:nz])
+        print(x.shape)
+        #  print(x.shape)
+        #  x = self.decoder(x)
+
+        #  out = self.tanh(x)
+
+        return x
 
 
 class Generator(nn.Module):
