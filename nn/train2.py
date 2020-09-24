@@ -23,8 +23,8 @@ dirs = [
     #  "data/madness",
     #  "data/day_3",
     #  "data/slice",
-    "data/simple"
     #  "data/simple2_fifths"
+    "data/simple"
 ]
 
 for d in dirs:
@@ -143,7 +143,7 @@ if __name__ == "__main__":
             optimizerG.step()
             #  schedulerG.step(errG)
 
-            if i % 50 == 0:
+            if i % 20 == 0:
                 print(
                     "[%d/%d][%d/%d] Loss_D: %.4f Loss_G: %.4f D(x): %.4f D(G(z)): %.8f / %.8f"
                     % (
