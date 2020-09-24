@@ -31,34 +31,35 @@ def data_point_to_rgbxyz_img(
 ):
     data = denormalize_data_from_tanh_space(data)
 
-    r = data[0]
-    g = data[1]
-    b = data[2]
+    #  r = data[0]
+    #  g = data[1]
+    #  b = data[2]
 
-    x = data[3]
-    y = data[4]
-    z = data[5]
+    #  x = data[3]
+    #  y = data[4]
+    #  z = data[5]
 
-    channels = np.concatenate([r, g, b, x, y, z], axis=0) * 255
+    #  channels = np.concatenate([r, g, b, x, y, z], axis=0) * 255
 
+    channels = data * 255.0
     channels = channels.astype(np.uint8)
     channels = Image.fromarray(channels)
     channels.save(f"{img_dir}/{song_name}/out_channels_{epoch:04d}_{i:09d}.png")
 
-    a = np.dstack((r, g, b))
-    b = np.dstack((x, y, z))
+    #  a = np.dstack((r, g, b))
+    #  b = np.dstack((x, y, z))
 
-    rgb_xyz = np.concatenate([a, b], axis=0)
-    rgb_xyz = denormalize_data_from_tanh_space(rgb_xyz) * 255
-    rgb_xyz = rgb_xyz.astype(np.uint8)
+    #  rgb_xyz = np.concatenate([a, b], axis=0)
+    #  rgb_xyz = denormalize_data_from_tanh_space(rgb_xyz) * 255
+    #  rgb_xyz = rgb_xyz.astype(np.uint8)
 
-    result = Image.fromarray(rgb_xyz)
-    result.save(f"{img_dir}/{song_name}/out_rgbxyz_{epoch:04d}_{i:09d}.png")
-    return rgb_xyz
+    #  result = Image.fromarray(rgb_xyz)
+    #  result.save(f"{img_dir}/{song_name}/out_rgbxyz_{epoch:04d}_{i:09d}.png")
+    #  return rgb_xyz
 
 
-def write_result_to_file(data, n_voices, n_op, filename):
+def write_result_to_file(data, n_voices, filename):
     data = denormalize_data_from_tanh_space(data)
-    d = rejoin_channels(data).flatten()
+    #  d = rejoin_channels(data).flatten()
 
-    np.savetxt(filename, d, delimiter=",", fmt="%1.53f")
+    np.savetxt(filename, data, delimiter=",", fmt="%1.53f")

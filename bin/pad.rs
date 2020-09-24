@@ -25,6 +25,7 @@ fn main() -> Result<(), Error> {
 
     let (min_state, max_state) = find_min_max_from_dir()?;
     let normalizer = Normalizer::from_min_max(min_state, max_state);
+    let op_len = 1;
 
     // Test file before processing
     // let mut data: Vec<f64> = vec![];
@@ -44,7 +45,7 @@ fn main() -> Result<(), Error> {
         .collect();
 
     let data: Vec<String> = data.iter().map(|v| format!("{:.16}", v)).collect();
-    let pre_ops: Vec<Vec<String>> = data.chunks(7).map(|chunck| chunck.to_vec()).collect();
+    let pre_ops: Vec<Vec<String>> = data.chunks(op_len).map(|chunck| chunck.to_vec()).collect();
     let point_ops: Vec<PointOp> = pre_ops
         .iter()
         .map(|chunk| {

@@ -117,6 +117,18 @@ impl DataOp {
     pub fn from_vec_f64_string(vec: Vec<String>) -> Self {
         Self {
             fm: f32_to_rational(vec[0].to_owned()),
+            fa: Rational64::from_integer(0),
+            pm: Rational64::from_integer(1),
+            pa: Rational64::from_integer(0),
+            l: Rational64::from_integer(1),
+            g: Rational64::from_integer(1),
+            osc_type: Rational64::from_integer(0),
+        }
+    }
+
+    pub fn from_vec_f64_string_bak(vec: Vec<String>) -> Self {
+        Self {
+            fm: f32_to_rational(vec[0].to_owned()),
             fa: f32_to_rational(vec[1].to_owned()),
             pm: f32_to_rational(vec[2].to_owned()),
             pa: f32_to_rational(vec[3].to_owned()),

@@ -19,7 +19,8 @@ class RealDataGenerator(Dataset):
         x = pad_image(x)
         x = separate_channels(x)
 
-        return x
+        #  return x
+        return x[0][0]
 
     def __getitem__(self, idx: int):
         n_steps = None
