@@ -177,7 +177,7 @@ if __name__ == "__main__":
                     data = fake[img_no].cpu().numpy()
 
                     write_result_to_file(
-                        data, 64, f"output/{epoch:04}_{file_number:09d}.csv"
+                        data, f"output/{epoch:04}_{file_number:09d}.csv"
                     )
                     data_point_to_rgbxyz_img(
                         data, file_number, epoch, "result_img", "network"

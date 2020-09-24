@@ -58,7 +58,14 @@ def data_point_to_rgbxyz_img(
     #  return rgb_xyz
 
 
-def write_result_to_file(data, n_voices, filename):
+def write_result_to_file(data, filename):
+    data = denormalize_data_from_tanh_space(data)
+    #  d = rejoin_channels(data).flatten()
+
+    np.savetxt(filename, data, delimiter="\n", fmt="%1.53f")
+
+
+def write_result_to_file_bak(data, filename):
     data = denormalize_data_from_tanh_space(data)
     #  d = rejoin_channels(data).flatten()
 

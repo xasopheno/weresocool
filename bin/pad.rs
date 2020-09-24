@@ -20,7 +20,7 @@ fn main() -> Result<(), Error> {
     // let file = std::fs::File::open("nn/data/slice/slice_0000000100.socool.csv")?;
 
     // Test file after processing
-    let file = std::fs::File::open("nn/output/0048_000000002.csv")?;
+    let file = std::fs::File::open("nn/output/0000_000000002.csv")?;
     let reader = BufReader::new(file);
 
     let (min_state, max_state) = find_min_max_from_dir()?;
@@ -67,7 +67,8 @@ fn main() -> Result<(), Error> {
     // dbg!(&result);
     let mut nf = NormalForm::init_empty();
     // nf.operations[0] = result[0].clone();
-    nf.operations = vec![result[0].clone(), result[1].clone()];
+    // nf.operations = vec![result[0].clone(), result[1].clone()];
+    nf.operations = vec![result[0].clone()];
 
     let init: Init = Init {
         f: Rational64::new(230, 1),
