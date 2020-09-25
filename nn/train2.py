@@ -58,7 +58,7 @@ print(files[0:30])
 r = RealDataGenerator(files[0:500])
 
 if __name__ == "__main__":
-    nz = 128
+    nz = 512
     batch_size = 8
     n_ops = 1
     device = "cuda"
