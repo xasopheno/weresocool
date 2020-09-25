@@ -15,12 +15,12 @@ use weresocool_error::Error;
 use weresocool_instrument::Basis;
 use weresocool_parser::Init;
 
-fn _main() -> Result<(), Error> {
+fn main() -> Result<(), Error> {
     // Test file before processing
     // let file = std::fs::File::open("nn/data/slice/slice_0000000100.socool.csv")?;
 
     // Test file after processing
-    let file = std::fs::File::open("nn/output/0023_000000007.csv")?;
+    let file = std::fs::File::open("nn/output/0010_000000003.csv")?;
     let reader = BufReader::new(file);
 
     let (min_state, max_state) = find_min_max_from_dir()?;
@@ -55,10 +55,7 @@ fn _main() -> Result<(), Error> {
             op.to_point_op()
         })
         .collect();
-    let result: Vec<Vec<PointOp>> = point_ops
-        .chunks(128)
-        .map(|chunck| chunck.to_vec())
-        .collect();
+    let result: Vec<Vec<PointOp>> = point_ops.chunks(64).map(|chunck| chunck.to_vec()).collect();
     dbg!(&result.len());
     dbg!(&result[0].len());
     // for i in 0..result.len() {
@@ -89,7 +86,7 @@ fn _main() -> Result<(), Error> {
     Ok(())
 }
 
-fn main() -> Result<(), Error> {
+fn _main() -> Result<(), Error> {
     let (min_state, max_state) = find_min_max_from_dir()?;
     let normalizer = Normalizer::from_min_max(min_state, max_state);
     let f = "simple";
@@ -104,7 +101,7 @@ fn main() -> Result<(), Error> {
     };
 
     let normalized: Vec<Vec<DataOp>> = nf_to_normalized_vec_data_op(&nf, &normalizer);
-    let voice_len = 128;
+    let voice_len = 64;
     let op_len = 2;
     // let _n_voices = &normalized.len();
 
@@ -155,7 +152,7 @@ fn main() -> Result<(), Error> {
 
         let len = shortest_first_element(&next);
         next = make_next(len, &next);
-        next = pad_voices(&next, 128);
+        next = pad_voices(&next, 64);
     }
 
     Ok(())

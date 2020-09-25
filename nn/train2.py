@@ -58,7 +58,7 @@ print(files[0:30])
 r = RealDataGenerator(files[0:500])
 
 if __name__ == "__main__":
-    nz = 256
+    nz = 128
     batch_size = 8
     n_ops = 1
     device = "cuda"
@@ -146,7 +146,7 @@ if __name__ == "__main__":
 
             if i % 20 == 0:
                 print(
-                    "[%d/%d][%d/%d] Loss_D: %.4f Loss_G: %.4f D(x): %.4f D(G(z)): %.8f / %.8f"
+                    "[%d/%d][%d/%d] Loss_D: %.4f Loss_G: %.4f D(x): %.4f D(G(z)): %.5f / %.5f"
                     % (
                         epoch,
                         epochs,
@@ -189,7 +189,7 @@ if __name__ == "__main__":
         torch.save(netD.state_dict(), "trained_models/netD.pt")
 
         print(
-            "[%d/%d][%d/%d] Loss_D: %.4f Loss_G: %.8f D(x): %.8f D(G(z)): %.8f / %.8f"
+            "[%d/%d][%d/%d] Loss_D: %.4f Loss_G: %.8f D(x): %.8f D(G(z)): %.5f / %.5f"
             % (epoch, epochs, i, len(r), errD.item(), errG.item(), D_x, D_G_z1, D_G_z2,)
         )
     #  op_len = 7
