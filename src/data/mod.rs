@@ -98,14 +98,15 @@ impl NNOp {
     pub fn write_to_file(self, file: &mut std::fs::File) -> Result<(), Error> {
         file.write(
             format!(
-                "{}, {}, {}, {}, {}, {}, {}\n",
+                // "{}, {}, {}, {}, {}, {}, {}\n",
+                "{}, {}\n",
                 number_to_string(self.fm),
-                number_to_string(self.fa),
-                number_to_string(self.pm),
-                number_to_string(self.pa),
+                // number_to_string(self.fa),
+                // number_to_string(self.pm),
+                // number_to_string(self.pa),
                 number_to_string(self.l),
-                number_to_string(self.g),
-                number_to_string(self.osc_type),
+                // number_to_string(self.g),
+                // number_to_string(self.osc_type),
             )
             .as_bytes(),
         )?;
@@ -117,10 +118,10 @@ impl DataOp {
     pub fn from_vec_f64_string(vec: Vec<String>) -> Self {
         Self {
             fm: f32_to_rational(vec[0].to_owned()),
+            l: f32_to_rational(vec[1].to_owned()),
             fa: Rational64::from_integer(0),
             pm: Rational64::from_integer(1),
             pa: Rational64::from_integer(0),
-            l: Rational64::from_integer(1),
             g: Rational64::from_integer(1),
             osc_type: Rational64::from_integer(0),
         }

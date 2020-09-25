@@ -3,7 +3,12 @@ import csv
 from torch.utils.data import DataLoader, Dataset
 import torch
 from typing import List
-from helpers import pad_image, separate_channels, normalize_data_to_tanh_space
+from helpers import (
+    pad_image,
+    separate_channels,
+    normalize_data_to_tanh_space,
+    rejoin_channels,
+)
 
 
 class RealDataGenerator(Dataset):
@@ -16,11 +21,13 @@ class RealDataGenerator(Dataset):
     def prepare_image(self, x: np.array) -> np.array:
         x = x[:64]
         x = normalize_data_to_tanh_space(x)
-        x = pad_image(x)
+        #  x = pad_image(x)
         x = separate_channels(x)
 
-        #  return x
-        return x[0][0]
+        x = np.concatenate([x[0], x[1]], axis=1)
+        #  print(x)
+        #  print(x.shape)
+        return x
 
     def __getitem__(self, idx: int):
         n_steps = None

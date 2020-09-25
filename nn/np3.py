@@ -96,19 +96,19 @@ for i in range(0, 3):
 
     real_batch = [r[random.randint(0, len(r) - 1)].numpy() for i in range(batch_size)]
 
-    real_batch = torch.tensor(real_batch).to("cuda", dtype=torch.float).unsqueeze(0)
+    real_batch = torch.tensor(real_batch).to("cuda", dtype=torch.float)
     label = torch.full((batch_size,), 1.0, dtype=torch.float, device="cuda")
-    noise = torch.randn(batch_size, 1, 64, device="cuda", dtype=torch.float)
-    print(real_batch.shape)
+    noise = torch.randn(batch_size, 1, 128, device="cuda", dtype=torch.float)
+    print("real_batch.shape", real_batch.shape)
     print("noise", noise.shape)
     #  print(data)
-    network = TransformerBlock(64, 1, None).to("cuda")
+    network = TransformerBlock(128, 1, None).to("cuda")
     #  disc = TransformerDiscriminator().to("cuda")
     #  y = network.forward(real_batch.float())
     #  print(y)
     #  print(y.shape)
     #  y = y.squeeze(1)
-    pred = network.forward(noise)
+    pred = network.forward(real_batch)
     print(pred.detach())
 
     #  data_point_to_rgbxyz_img(

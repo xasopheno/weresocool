@@ -11,7 +11,7 @@ from network2 import TransformerDiscriminator, TransformerBlock
 from network import weights_init
 from datagen import RealDataGenerator
 from typing import List
-from helpers import data_point_to_rgbxyz_img, write_result_to_file
+from helpers import data_point_to_rgbxyz_img, write_result_to_file, rejoin_channels
 import random
 import os
 
@@ -19,7 +19,7 @@ import os
 files = []
 dirs = [
     #  "data/growing",
-    #  "data/monica",
+    #  "data/monica"
     #  "data/madness",
     #  "data/day_3",
     #  "data/slice",
@@ -55,13 +55,14 @@ def cyclical_lr(stepsize, min_lr=3e-4, max_lr=3e-3):
 #  files = files[0:1000]
 random.shuffle(files)
 print(files[0:30])
-r = RealDataGenerator(files)
+r = RealDataGenerator(files[0:500])
 
 if __name__ == "__main__":
-    nz = 64
+    nz = 256
     batch_size = 8
+    n_ops = 1
     device = "cuda"
-    fixed_noise = torch.randn(batch_size, 1, 64, device=device, dtype=torch.float)
+    fixed_noise = torch.randn(batch_size, n_ops, nz, device=device, dtype=torch.float)
     ngpu = 2
     real_label = 0.9
     fake_label = 0.0
@@ -70,7 +71,7 @@ if __name__ == "__main__":
     beta1 = 0.5
     criterion = nn.BCELoss()
 
-    netG = TransformerBlock(64, 8, None).to(device, dtype=torch.float)
+    netG = TransformerBlock(nz, 8, None).to(device, dtype=torch.float)
     #  netG = TransformerGenerator().to(device, dtype=torch.float)
 
     netG = nn.DataParallel(netG)
@@ -120,7 +121,7 @@ if __name__ == "__main__":
             errD_real.backward()
             D_x = output.mean().item()
 
-            noise = torch.randn(batch_size, 1, 64, device=device, dtype=torch.float)
+            noise = torch.randn(batch_size, n_ops, nz, device=device, dtype=torch.float)
             fake = netG(noise)
             label.fill_(fake_label)
             output = netD(fake.detach())
@@ -175,6 +176,7 @@ if __name__ == "__main__":
 
                     real_batch = torch.tensor(real_batch).to(device, dtype=torch.float)
                     data = fake[img_no].cpu().numpy()
+                    data = rejoin_channels(data)
 
                     write_result_to_file(
                         data, f"output/{epoch:04}_{file_number:09d}.csv"

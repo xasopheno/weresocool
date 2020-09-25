@@ -20,12 +20,12 @@ fn main() -> Result<(), Error> {
     // let file = std::fs::File::open("nn/data/slice/slice_0000000100.socool.csv")?;
 
     // Test file after processing
-    let file = std::fs::File::open("nn/output/0011_000000003.csv")?;
+    let file = std::fs::File::open("nn/output/0212_000000006.csv")?;
     let reader = BufReader::new(file);
 
     let (min_state, max_state) = find_min_max_from_dir()?;
     let normalizer = Normalizer::from_min_max(min_state, max_state);
-    let op_len = 1;
+    let op_len = 2;
 
     // Test file before processing
     // let mut data: Vec<f64> = vec![];
@@ -102,7 +102,7 @@ fn _main() -> Result<(), Error> {
 
     let normalized: Vec<Vec<DataOp>> = nf_to_normalized_vec_data_op(&nf, &normalizer);
     let voice_len = 64;
-    let op_len = 7;
+    let op_len = 2;
     // let _n_voices = &normalized.len();
 
     let mut i = 0;

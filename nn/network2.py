@@ -13,9 +13,9 @@ import torchvision.datasets as dset
 import torchvision.transforms as transforms
 import torchvision.utils as vutils
 
-nz = 64
-nc = 64
-ndf = 64
+nz = 256
+nc = 128
+ndf = 128
 #  ngf = 64
 
 
@@ -92,9 +92,14 @@ class TransformerBlock(nn.Module):
 
         self.ff = nn.Sequential(
             nn.Linear(emb, ff_hidden_mult * emb),
+            nn.LayerNorm(ff_hidden_mult * emb),
             nn.ReLU(),
             nn.Linear(ff_hidden_mult * emb, emb),
+            nn.LayerNorm(emb),
+            nn.ReLU(),
         )
+
+        self.last = nn.Linear(emb, nc)
 
         self.do = nn.Dropout(dropout)
         self.tanh = nn.Tanh()
@@ -105,6 +110,7 @@ class TransformerBlock(nn.Module):
         x = self.do(x)
         feedforward = self.ff(x)
         x = self.norm2(feedforward + x)
+        x = self.last(x)
         x = self.do(x)
 
         return self.tanh(x)
