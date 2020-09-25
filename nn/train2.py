@@ -174,7 +174,7 @@ if __name__ == "__main__":
                 for img_no in range(batch_size):
                     file_number = i + img_no
 
-                    real_batch = torch.tensor(real_batch).to(device, dtype=torch.float)
+                    #  real_batch = torch.tensor(real_batch).to(device, dtype=torch.float)
                     data = fake[img_no].cpu().numpy()
                     data = rejoin_channels(data)
 
@@ -182,7 +182,7 @@ if __name__ == "__main__":
                         data, f"output/{epoch:04}_{file_number:09d}.csv"
                     )
                     data_point_to_rgbxyz_img(
-                        data, file_number, epoch, "result_img", "network"
+                        data.transpose(), file_number, epoch, "result_img", "network"
                     )
 
         torch.save(netG.state_dict(), "trained_models/netG.pt")

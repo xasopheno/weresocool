@@ -26,7 +26,6 @@ class RealDataGenerator(Dataset):
 
         x = np.concatenate([x[0], x[1]], axis=1)
         #  print(x)
-        #  print(x.shape)
         return x
 
     def __getitem__(self, idx: int):

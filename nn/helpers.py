@@ -62,7 +62,7 @@ def data_point_to_rgbxyz_img(
 
 def write_result_to_file(data, filename):
     data = denormalize_data_from_tanh_space(data)
-    d = rejoin_channels(data).flatten()
+    #  d = rejoin_channels(data).flatten()
 
     np.savetxt(filename, data, delimiter="\n", fmt="%1.53f")
 
