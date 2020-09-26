@@ -59,7 +59,7 @@ r = RealDataGenerator(files[0:500])
 
 if __name__ == "__main__":
     nz = 512
-    batch_size = 8
+    batch_size = 32
     n_ops = 1
     device = "cuda"
     fixed_noise = torch.randn(batch_size, n_ops, nz, device=device, dtype=torch.float)
@@ -74,14 +74,14 @@ if __name__ == "__main__":
     netG = TransformerBlock(nz, 8, None).to(device, dtype=torch.float)
     #  netG = TransformerGenerator().to(device, dtype=torch.float)
 
-    netG = nn.DataParallel(netG)
+    #  netG = nn.DataParallel(netG)
     netG.apply(weights_init)
     #  if opt.netG != "":
     #  netG.load_state_dict(torch.load("./trained_models/netG.pt"))
     print(netG)
 
     netD = TransformerDiscriminator().to(device, dtype=torch.float)
-    netD = nn.DataParallel(netD)
+    #  netD = nn.DataParallel(netD)
     netD.apply(weights_init)
     #  if opt.netD != "":
     #  netD.load_state_dict(torch.load("./trained_models/netD.pt"))
@@ -108,13 +108,13 @@ if __name__ == "__main__":
             ]
 
             real_batch = torch.tensor(real_batch).to(device, dtype=torch.float)
-            label = torch.full(
-                (batch_size,), real_label, dtype=torch.float, device=device
-            )
+            #  label = torch.full(
+            #  (batch_size,), real_label, dtype=torch.float, device=device
+            #  )
 
-            #  label = torch.from_numpy(
-            #  np.random.uniform(low=0.8, high=1.0, size=(batch_size,))
-            #  ).to(device, dtype=torch.float)
+            label = torch.from_numpy(
+                np.random.uniform(low=0.8, high=1.0, size=(batch_size,))
+            ).to(device, dtype=torch.float)
 
             output = netD(real_batch)
             errD_real = criterion(output, label)

@@ -20,7 +20,7 @@ fn main() -> Result<(), Error> {
     // let file = std::fs::File::open("nn/data/slice/slice_0000000100.socool.csv")?;
 
     // Test file after processing
-    let file = std::fs::File::open("nn/output/0015_000000003.csv")?;
+    let file = std::fs::File::open("nn/output/0091_000000006.csv")?;
     let reader = BufReader::new(file);
 
     let (min_state, max_state) = find_min_max_from_dir()?;
