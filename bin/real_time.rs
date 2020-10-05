@@ -1,5 +1,6 @@
 use failure::Fail;
 use std::sync::{Arc, Mutex};
+use std::thread;
 use weresocool::{
     generation::parsed_to_render::{RenderReturn, RenderType},
     interpretable::{InputType::Filename, Interpretable},
@@ -43,12 +44,10 @@ fn run() -> Result<(), Error> {
 
     let render_manager = Arc::new(Mutex::new(RenderManager::init(render_voices)));
 
-    let mut stream = real_time_render_manager(Arc::clone(&render_manager))?;
-    stream.start()?;
-
-    while let true = stream.is_active()? {}
-
-    stream.stop()?;
+    let mut stream = real_time_render_manager(Arc::clone(&render_manager)).unwrap();
+    stream.start().unwrap();
+    while let true = stream.is_active().unwrap() {}
+    stream.stop().unwrap();
 
     Ok(())
 }
