@@ -14,7 +14,11 @@ fn random_offset() -> f64 {
 impl Voice {
     pub fn generate_sine_sample(&mut self, info: SampleInfo) -> f64 {
         self.phase = self.calculate_current_phase(&info, 0.0);
-        self.phase.sin() * info.gain
+        (
+            //
+            f64::powf(self.phase, 1.0).sin() + f64::powf(self.phase, 2.0).sin()
+        ) * info.gain
+            * 0.1
     }
 
     pub fn generate_square_sample(&mut self, info: SampleInfo) -> f64 {
