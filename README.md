@@ -39,7 +39,7 @@ You'll need also need [portaudio](https://github.com/RustAudio/rust-portaudio) a
 `sudo pacman -S portaudio pkg-config lame`
 
 ##### Ubuntu:
-`sudo apt-get portaudio pkg-config lame`
+`sudo apt-get portaudio pkg-config lame libmp3lame-dev rpm libasound2-dev`
 
 ### Build
 `make package`
