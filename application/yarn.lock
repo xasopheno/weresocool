@@ -1194,15 +1194,14 @@
   resolved "https://registry.yarnpkg.com/@fortawesome/fontawesome-free/-/fontawesome-free-5.15.1.tgz#ccfef6ddbe59f8fe8f694783e1d3eb88902dc5eb"
   integrity sha512-OEdH7SyC1suTdhBGW91/zBfR6qaIhThbcN8PUXtXilY4GYnSBbVqOntdHbC1vXwsDnX0Qix2m2+DSU1J51ybOQ==
 
-"@hot-loader/react-dom@16.13.0":
-  version "16.13.0"
-  resolved "https://registry.yarnpkg.com/@hot-loader/react-dom/-/react-dom-16.13.0.tgz#de245b42358110baf80aaf47a0592153d4047997"
-  integrity sha512-lJZrmkucz2MrQJTQtJobx5MICXcfQvKihszqv655p557HPi0hMOWxrNpiHv3DWD8ugNWjtWcVWqRnFvwsHq1mQ==
+"@hot-loader/react-dom@17.0.0-rc.2":
+  version "17.0.0-rc.2"
+  resolved "https://registry.yarnpkg.com/@hot-loader/react-dom/-/react-dom-17.0.0-rc.2.tgz#024c963956e8150a81783df77135ddac1c0d7a57"
+  integrity sha512-oUm7u9e3NtQcV3N+ybPmpAYAx3Jl1b5E62D39cBz1EIKtnhSyFgKou+0zEg79y1EFWT7SymsYDr33JXyczaFSw==
   dependencies:
     loose-envify "^1.1.0"
     object-assign "^4.1.1"
-    prop-types "^15.6.2"
-    scheduler "^0.19.0"
+    scheduler "0.20.0-rc.2"
 
 "@istanbuljs/load-nyc-config@^1.0.0":
   version "1.1.0"
@@ -4229,7 +4228,7 @@ core-js-pure@^3.0.0:
   resolved "https://registry.yarnpkg.com/core-js-pure/-/core-js-pure-3.6.5.tgz#c79e75f5e38dbc85a662d91eea52b8256d53b813"
   integrity sha512-lacdXOimsiD0QyNf9BC/mxivNJ/ybBGJXQFKzRekp1WTHoVUWsUHEn+2T8GJAzzIhyOuXA+gOxCVN3l+5PLPUA==
 
-core-js@3.6.5, core-js@^3.6.4, core-js@^3.6.5:
+core-js@3.6.5, core-js@^3.6.5:
   version "3.6.5"
   resolved "https://registry.yarnpkg.com/core-js/-/core-js-3.6.5.tgz#7395dc273af37fb2e50e9bd3d9fe841285231d1a"
   integrity sha512-vZVEEwZoIsI+vPEuoF9Iqf5H7/M3eeQqWlQnYa8FSKKePuYTf5MWnxb5SDAzCa60b3JBRS5g9b+Dq7b1y/RCrA==
@@ -6185,15 +6184,14 @@ fb-watchman@^2.0.0:
   dependencies:
     bser "2.1.1"
 
-fbjs-scripts@2.0.0:
-  version "2.0.0"
-  resolved "https://registry.yarnpkg.com/fbjs-scripts/-/fbjs-scripts-2.0.0.tgz#301dafb6a3ed8090a27015173b9efa46973fe319"
-  integrity sha512-8JlwHrLDyDmGz8IBsTmf6skNxUHYocPXTn9gqjwOM88JXeO34ewmTT0GdcYukgaqBeJF7tclcQIdnjjOIJ3L5A==
+fbjs-scripts@3.0.0:
+  version "3.0.0"
+  resolved "https://registry.yarnpkg.com/fbjs-scripts/-/fbjs-scripts-3.0.0.tgz#42d802826cfe746407d39e2bffab13ae66044e15"
+  integrity sha512-vrCXMDbgDZh6FHT1OQaU4v2cNW4MLsAFH6u23xJEe6SC7X1HrsL9QgU56toLQfuX8VNL0qQj+/w0patF2PjPGQ==
   dependencies:
     "@babel/core" "^7.0.0"
     ansi-colors "^1.0.1"
     babel-preset-fbjs "^3.2.0"
-    core-js "^3.6.4"
     cross-spawn "^5.1.0"
     fancy-log "^1.3.2"
     object-assign "^4.0.1"
@@ -9288,10 +9286,10 @@ mini-create-react-context@^0.4.0:
     "@babel/runtime" "^7.5.5"
     tiny-warning "^1.0.3"
 
-mini-css-extract-plugin@0.10.0:
-  version "0.10.0"
-  resolved "https://registry.yarnpkg.com/mini-css-extract-plugin/-/mini-css-extract-plugin-0.10.0.tgz#a0e6bfcad22a9c73f6c882a3c7557a98e2d3d27d"
-  integrity sha512-QgKgJBjaJhxVPwrLNqqwNS0AGkuQQ31Hp4xGXEK/P7wehEg6qmNtReHKai3zRXqY60wGVWLYcOMJK2b98aGc3A==
+mini-css-extract-plugin@0.11.3:
+  version "0.11.3"
+  resolved "https://registry.yarnpkg.com/mini-css-extract-plugin/-/mini-css-extract-plugin-0.11.3.tgz#15b0910a7f32e62ffde4a7430cfefbd700724ea6"
+  integrity sha512-n9BA8LonkOkW1/zn+IbLPQmovsL0wMb9yx75fMJQZf2X1Zoec9yTZtyMePcyu19wPkmFbzZZA6fLTotpFhQsOA==
   dependencies:
     loader-utils "^1.1.0"
     normalize-url "1.9.1"
@@ -12028,7 +12026,15 @@ saxes@^5.0.0:
   dependencies:
     xmlchars "^2.2.0"
 
-scheduler@^0.19.0, scheduler@^0.19.1:
+scheduler@0.20.0-rc.2:
+  version "0.20.0-rc.2"
+  resolved "https://registry.yarnpkg.com/scheduler/-/scheduler-0.20.0-rc.2.tgz#5c48ac29e1a352a43c74cb5fc54c5ca94d8396fc"
+  integrity sha512-tgvUKHPbQr0fq5EfRd3S8hgohi/fI3h/gv1jxVb9IungCF/t2jUG946dlwgCxy8bnYvSIwRjcuw7eksDDpplLg==
+  dependencies:
+    loose-envify "^1.1.0"
+    object-assign "^4.1.1"
+
+scheduler@^0.19.1:
   version "0.19.1"
   resolved "https://registry.yarnpkg.com/scheduler/-/scheduler-0.19.1.tgz#4f3e2ed2c1a7d65681f4c854fa8c5a1ccb40f196"
   integrity sha512-n/zwRWRYSUj0/3g/otKDRPMh6qv2SYMWNq85IEa8iZyAv8od9zDYpGSnpBEjNgcMNq6Scbu5KfIPxNF72R/2EA==
