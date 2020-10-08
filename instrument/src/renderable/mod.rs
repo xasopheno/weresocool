@@ -53,7 +53,7 @@ impl RenderOp {
             voice: 0,
             event: 0,
             portamento: 1024,
-            osc_type: OscType::Sine,
+            osc_type: OscType::Sine { pow: None },
             next_l_silent: false,
             next_r_silent: false,
         }
@@ -74,7 +74,7 @@ impl RenderOp {
             voice: 0,
             event: 0,
             portamento: 1024,
-            osc_type: OscType::Sine,
+            osc_type: OscType::Sine { pow: None },
             next_l_silent: true,
             next_r_silent: true,
         }

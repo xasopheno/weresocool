@@ -162,7 +162,9 @@ Composeable: Term = {
 BaseOperation: Term = {
     "(" <o: Operation> ")" => o,
     "AsIs" => Term::Op(AsIs {}),
-    "Sine" => Term::Op(Sine {}),
+    "Sine" <pow: Rational?> => {
+      Term::Op(Sine {pow})
+    },
     "Square" => Term::Op(Square {}),
     "Noise" => Term::Op(Noise {}),
     "Reverse" => Term::Op(Reverse {}),

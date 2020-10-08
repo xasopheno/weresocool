@@ -251,7 +251,7 @@ impl PointOp {
             decay: Ratio::new(1, 1),
             asr: ASR::Long,
             portamento: Ratio::new(1, 1),
-            osc_type: OscType::Sine,
+            osc_type: OscType::Sine { pow: None },
             names: NameSet::new(),
         }
     }
@@ -267,7 +267,7 @@ impl PointOp {
             decay: Ratio::new(1, 1),
             portamento: Ratio::new(1, 1),
             asr: ASR::Long,
-            osc_type: OscType::Sine,
+            osc_type: OscType::Sine { pow: None },
             names: NameSet::new(),
         }
     }

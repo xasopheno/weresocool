@@ -27,7 +27,9 @@ pub enum Op {
     },
     //
     Noise,
-    Sine,
+    Sine {
+        pow: Option<Rational64>,
+    },
     Square,
     AD {
         attack: Rational64,
@@ -93,7 +95,7 @@ pub enum Op {
 
 #[derive(Copy, Clone, Debug, PartialEq, Serialize, Deserialize, Ord, PartialOrd, Hash, Eq)]
 pub enum OscType {
-    Sine,
+    Sine { pow: Option<Rational64> },
     Noise,
     Square,
 }

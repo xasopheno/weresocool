@@ -53,7 +53,7 @@ impl Voice {
             offset_past: VoiceState::init(),
             offset_current: VoiceState::init(),
             phase: 0.0,
-            osc_type: OscType::Sine,
+            osc_type: OscType::Sine { pow: None },
             attack: SETTINGS.sample_rate as usize,
             decay: SETTINGS.sample_rate as usize,
             asr: ASR::Long,
@@ -93,7 +93,7 @@ impl Voice {
             let info = SampleInfo { gain, frequency };
 
             let new_sample = match self.osc_type {
-                OscType::Sine => self.generate_sine_sample(info),
+                OscType::Sine { pow } => self.generate_sine_sample(info, pow),
                 OscType::Square => self.generate_square_sample(info),
                 OscType::Noise => self.generate_random_sample(info),
             };
