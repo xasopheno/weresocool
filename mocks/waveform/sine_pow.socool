@@ -2,15 +2,15 @@
 
 main = {
   Seq [
-    Sine | Seq [Fm 1, Tm 9/8],
+    Sine | Seq [Fm 1, Fm 9/8, Fm 0],
     Sine 1.5 | Seq [Fm 1, Tm 9/8] | Gm 1/2
   ]
 }
 
 expect = {
   Seq [
-    Sine | Seq [Fm 1, Tm 9/8],
-    Sine 1.5 | Seq [Tm 1, Tm 9/8] | Gm 1/2
+    Sine | Seq [Fm 1, Fm 9/8, Fm 0],
+    Sine 1.5 | Seq [Fm 1, Fm 9/8] | Gm 1/2
   ]
 }
 
