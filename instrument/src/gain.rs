@@ -76,7 +76,7 @@ mod tests {
         let result = v.current_gain_from_op(&op);
         assert!(cmp_f64(result, 0.3));
 
-        op.osc_type = OscType::Sine;
+        op.osc_type = OscType::Sine{pow: None};
         let result = v.current_gain_from_op(&op);
         assert!(cmp_f64(result, 0.9));
 
