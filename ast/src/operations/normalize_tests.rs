@@ -91,7 +91,7 @@ pub mod tests {
                     decay: Ratio::new(1, 1),
                     asr: ASR::Long,
                     portamento: Ratio::new(1, 1),
-                    osc_type: OscType::Sine{pow: None},
+                    osc_type: OscType::Sine { pow: None },
                     names: names_foo_bar.clone(),
                 },
                 PointOp {
@@ -105,7 +105,7 @@ pub mod tests {
                     decay: Ratio::new(1, 1),
                     asr: ASR::Long,
                     portamento: Ratio::new(1, 1),
-                    osc_type: OscType::Sine{pow: None},
+                    osc_type: OscType::Sine { pow: None },
                     names: names_foo_bar.clone(),
                 },
                 PointOp {
@@ -119,7 +119,7 @@ pub mod tests {
                     decay: Ratio::new(1, 1),
                     asr: ASR::Long,
                     portamento: Ratio::new(1, 1),
-                    osc_type: OscType::Sine{pow: None},
+                    osc_type: OscType::Sine { pow: None },
                     names: names_foo_bar,
                 },
             ]],
@@ -149,7 +149,7 @@ pub mod tests {
                         decay: Ratio::new(1, 1),
                         asr: ASR::Long,
                         portamento: Ratio::new(1, 1),
-                        osc_type: OscType::Sine{pow: None},
+                        osc_type: OscType::Sine { pow: None },
                         names: names_bar.clone(),
                     },
                     PointOp {
@@ -163,7 +163,7 @@ pub mod tests {
                         decay: Ratio::new(1, 1),
                         asr: ASR::Long,
                         portamento: Ratio::new(1, 1),
-                        osc_type: OscType::Sine{pow: None},
+                        osc_type: OscType::Sine { pow: None },
                         names: names_bar.clone(),
                     },
                     PointOp {
@@ -177,7 +177,7 @@ pub mod tests {
                         decay: Ratio::new(1, 1),
                         asr: ASR::Long,
                         portamento: Ratio::new(1, 1),
-                        osc_type: OscType::Sine{pow: None},
+                        osc_type: OscType::Sine { pow: None },
                         names: names_bar.clone(),
                     },
                 ],
@@ -193,7 +193,7 @@ pub mod tests {
                         decay: Ratio::new(1, 1),
                         asr: ASR::Long,
                         portamento: Ratio::new(1, 1),
-                        osc_type: OscType::Sine{pow: None},
+                        osc_type: OscType::Sine { pow: None },
                         names: names_foo_bar.clone(),
                     },
                     PointOp {
@@ -207,7 +207,7 @@ pub mod tests {
                         decay: Ratio::new(1, 1),
                         asr: ASR::Long,
                         portamento: Ratio::new(1, 1),
-                        osc_type: OscType::Sine{pow: None},
+                        osc_type: OscType::Sine { pow: None },
                         names: names_foo_bar.clone(),
                     },
                     PointOp {
@@ -221,7 +221,7 @@ pub mod tests {
                         decay: Ratio::new(1, 1),
                         asr: ASR::Long,
                         portamento: Ratio::new(1, 1),
-                        osc_type: OscType::Sine{pow: None},
+                        osc_type: OscType::Sine { pow: None },
                         names: names_foo_bar,
                     },
                 ],
@@ -237,7 +237,7 @@ pub mod tests {
                         decay: Ratio::new(1, 1),
                         asr: ASR::Long,
                         portamento: Ratio::new(1, 1),
-                        osc_type: OscType::Sine{pow: None},
+                        osc_type: OscType::Sine { pow: None },
                         names: names_bar.clone(),
                     },
                     PointOp {
@@ -251,7 +251,7 @@ pub mod tests {
                         decay: Ratio::new(1, 1),
                         asr: ASR::Long,
                         portamento: Ratio::new(1, 1),
-                        osc_type: OscType::Sine{pow: None},
+                        osc_type: OscType::Sine { pow: None },
                         names: names_bar.clone(),
                     },
                     PointOp {
@@ -265,7 +265,7 @@ pub mod tests {
                         decay: Ratio::new(1, 1),
                         asr: ASR::Long,
                         portamento: Ratio::new(1, 1),
-                        osc_type: OscType::Sine{pow: None},
+                        osc_type: OscType::Sine { pow: None },
                         names: names_bar,
                     },
                 ],
@@ -290,7 +290,7 @@ pub mod tests {
             decay: Ratio::new(1, 1),
             asr: ASR::Long,
             portamento: Ratio::new(1, 1),
-            osc_type: OscType::Sine{pow: None},
+            osc_type: OscType::Sine { pow: None },
             names: names_a,
         };
 
@@ -352,7 +352,7 @@ pub mod tests {
                         decay: Ratio::new(1, 1),
                         asr: ASR::Long,
                         portamento: Ratio::new(1, 1),
-                        osc_type: OscType::Sine{pow: None},
+                        osc_type: OscType::Sine { pow: None },
                         names: names_bar.clone(),
                     },
                     PointOp {
@@ -366,7 +366,7 @@ pub mod tests {
                         decay: Ratio::new(1, 1),
                         asr: ASR::Long,
                         portamento: Ratio::new(1, 1),
-                        osc_type: OscType::Sine{pow: None},
+                        osc_type: OscType::Sine { pow: None },
                         names: names_bar.clone(),
                     },
                     PointOp {
@@ -380,7 +380,7 @@ pub mod tests {
                         decay: Ratio::new(1, 1),
                         asr: ASR::Long,
                         portamento: Ratio::new(1, 1),
-                        osc_type: OscType::Sine{pow: None},
+                        osc_type: OscType::Sine { pow: None },
                         names: names_bar.clone(),
                     },
                 ],
@@ -396,7 +396,7 @@ pub mod tests {
                         decay: Ratio::new(1, 1),
                         asr: ASR::Long,
                         portamento: Ratio::new(1, 1),
-                        osc_type: OscType::Sine{pow: None},
+                        osc_type: OscType::Sine { pow: None },
                         names: names_foo_bar.clone(),
                     },
                     PointOp {
@@ -410,7 +410,7 @@ pub mod tests {
                         decay: Ratio::new(1, 1),
                         asr: ASR::Long,
                         portamento: Ratio::new(1, 1),
-                        osc_type: OscType::Sine{pow: None},
+                        osc_type: OscType::Sine { pow: None },
                         names: names_foo_bar.clone(),
                     },
                     PointOp {
@@ -424,7 +424,7 @@ pub mod tests {
                         decay: Ratio::new(1, 1),
                         asr: ASR::Long,
                         portamento: Ratio::new(1, 1),
-                        osc_type: OscType::Sine{pow: None},
+                        osc_type: OscType::Sine { pow: None },
                         names: names_foo_bar,
                     },
                 ],
@@ -440,7 +440,7 @@ pub mod tests {
                         decay: Ratio::new(1, 1),
                         asr: ASR::Long,
                         portamento: Ratio::new(1, 1),
-                        osc_type: OscType::Sine{pow: None},
+                        osc_type: OscType::Sine { pow: None },
                         names: names_bar.clone(),
                     },
                     PointOp {
@@ -454,7 +454,7 @@ pub mod tests {
                         decay: Ratio::new(1, 1),
                         asr: ASR::Long,
                         portamento: Ratio::new(1, 1),
-                        osc_type: OscType::Sine{pow: None},
+                        osc_type: OscType::Sine { pow: None },
                         names: names_bar.clone(),
                     },
                     PointOp {
@@ -468,7 +468,7 @@ pub mod tests {
                         decay: Ratio::new(1, 1),
                         asr: ASR::Long,
                         portamento: Ratio::new(1, 1),
-                        osc_type: OscType::Sine{pow: None},
+                        osc_type: OscType::Sine { pow: None },
                         names: names_bar,
                     },
                 ],
@@ -517,7 +517,9 @@ pub mod tests {
 
         assert_eq!(input, expected);
 
-        Sine { pow: None}.apply_to_normal_form(&mut input, &pt).unwrap();
+        Sine { pow: None }
+            .apply_to_normal_form(&mut input, &pt)
+            .unwrap();
 
         let expected = NormalForm {
             length_ratio: Ratio::new(1, 1),
@@ -532,7 +534,7 @@ pub mod tests {
                 decay: Ratio::new(1, 1),
                 asr: ASR::Long,
                 portamento: Ratio::new(1, 1),
-                osc_type: OscType::Sine{pow: None},
+                osc_type: OscType::Sine { pow: None },
                 names: NameSet::new(),
             }]],
         };
@@ -563,7 +565,7 @@ pub mod tests {
                 decay: Ratio::new(1, 1),
                 asr: ASR::Long,
                 portamento: Ratio::new(1, 1),
-                osc_type: OscType::Sine{pow: None},
+                osc_type: OscType::Sine { pow: None },
                 names: NameSet::new(),
             }]],
         };
@@ -594,7 +596,7 @@ pub mod tests {
                 decay: Ratio::new(1, 1),
                 asr: ASR::Long,
                 portamento: Ratio::new(2, 1),
-                osc_type: OscType::Sine{pow: None},
+                osc_type: OscType::Sine { pow: None },
                 names: NameSet::new(),
             }]],
         };
@@ -625,7 +627,7 @@ pub mod tests {
                 decay: Ratio::new(1, 1),
                 asr: ASR::Long,
                 portamento: Ratio::new(1, 1),
-                osc_type: OscType::Sine{pow: None},
+                osc_type: OscType::Sine { pow: None },
                 names: NameSet::new(),
             }]],
         };
@@ -656,7 +658,7 @@ pub mod tests {
                 decay: Ratio::new(1, 1),
                 asr: ASR::Long,
                 portamento: Ratio::new(1, 1),
-                osc_type: OscType::Sine{pow: None},
+                osc_type: OscType::Sine { pow: None },
                 names: NameSet::new(),
             }]],
         };
@@ -686,7 +688,7 @@ pub mod tests {
                 decay: Ratio::new(1, 1),
                 asr: ASR::Long,
                 portamento: Ratio::new(1, 1),
-                osc_type: OscType::Sine{pow: None},
+                osc_type: OscType::Sine { pow: None },
                 names: NameSet::new(),
             }]],
         };
@@ -716,7 +718,7 @@ pub mod tests {
                 decay: Ratio::new(1, 1),
                 asr: ASR::Long,
                 portamento: Ratio::new(1, 1),
-                osc_type: OscType::Sine{pow: None},
+                osc_type: OscType::Sine { pow: None },
                 names: NameSet::new(),
             }]],
         };
@@ -746,7 +748,7 @@ pub mod tests {
                 decay: Ratio::new(1, 1),
                 asr: ASR::Long,
                 portamento: Ratio::new(1, 1),
-                osc_type: OscType::Sine{pow: None},
+                osc_type: OscType::Sine { pow: None },
                 names: NameSet::new(),
             }]],
         };
@@ -777,7 +779,7 @@ pub mod tests {
                 decay: Ratio::new(1, 1),
                 asr: ASR::Long,
                 portamento: Ratio::new(1, 1),
-                osc_type: OscType::Sine{pow: None},
+                osc_type: OscType::Sine { pow: None },
                 names: NameSet::new(),
             }]],
         };
@@ -816,7 +818,7 @@ pub mod tests {
                 decay: Ratio::new(1, 1),
                 asr: ASR::Long,
                 portamento: Ratio::new(1, 1),
-                osc_type: OscType::Sine{pow: None},
+                osc_type: OscType::Sine { pow: None },
                 names: NameSet::new(),
             }]],
         };
@@ -856,7 +858,7 @@ pub mod tests {
                     decay: Ratio::new(1, 1),
                     asr: ASR::Long,
                     portamento: Ratio::new(1, 1),
-                    osc_type: OscType::Sine{pow: None},
+                    osc_type: OscType::Sine { pow: None },
                     names: NameSet::new(),
                 },
                 PointOp {
@@ -870,7 +872,7 @@ pub mod tests {
                     decay: Ratio::new(1, 1),
                     asr: ASR::Long,
                     portamento: Ratio::new(1, 1),
-                    osc_type: OscType::Sine{pow: None},
+                    osc_type: OscType::Sine { pow: None },
                     names: NameSet::new(),
                 },
             ]],
@@ -912,7 +914,7 @@ pub mod tests {
                         decay: Ratio::new(1, 1),
                         asr: ASR::Long,
                         portamento: Ratio::new(1, 1),
-                        osc_type: OscType::Sine{pow: None},
+                        osc_type: OscType::Sine { pow: None },
                         names: NameSet::new(),
                     },
                     PointOp {
@@ -926,7 +928,7 @@ pub mod tests {
                         decay: Ratio::new(1, 1),
                         asr: ASR::Long,
                         portamento: Ratio::new(1, 1),
-                        osc_type: OscType::Sine{pow: None},
+                        osc_type: OscType::Sine { pow: None },
                         names: NameSet::new(),
                     },
                 ],
@@ -941,7 +943,7 @@ pub mod tests {
                     decay: Ratio::new(1, 1),
                     asr: ASR::Long,
                     portamento: Ratio::new(1, 1),
-                    osc_type: OscType::Sine {pow: None},
+                    osc_type: OscType::Sine { pow: None },
                     names: NameSet::new(),
                 }],
             ],
@@ -995,7 +997,7 @@ pub mod tests {
                 decay: Ratio::new(1, 1),
                 asr: ASR::Long,
                 portamento: Ratio::new(1, 1),
-                osc_type: OscType::Sine {pow: None},
+                osc_type: OscType::Sine { pow: None },
                 names: NameSet::new(),
             }]],
         };
@@ -1043,7 +1045,7 @@ pub mod tests {
                     decay: Ratio::new(1, 1),
                     asr: ASR::Long,
                     portamento: Ratio::new(1, 1),
-                    osc_type: OscType::Sine {pow: None},
+                    osc_type: OscType::Sine { pow: None },
                     names: NameSet::new(),
                 },
                 PointOp {
@@ -1057,7 +1059,7 @@ pub mod tests {
                     decay: Ratio::new(1, 1),
                     asr: ASR::Long,
                     portamento: Ratio::new(1, 1),
-                    osc_type: OscType::Sine {pow: None},
+                    osc_type: OscType::Sine { pow: None },
                     names: NameSet::new(),
                 },
                 PointOp {
@@ -1071,7 +1073,7 @@ pub mod tests {
                     decay: Ratio::new(1, 1),
                     asr: ASR::Long,
                     portamento: Ratio::new(1, 1),
-                    osc_type: OscType::Sine {pow: None},
+                    osc_type: OscType::Sine { pow: None },
                     names: NameSet::new(),
                 },
             ]],
@@ -1127,7 +1129,7 @@ pub mod tests {
                     decay: Ratio::new(1, 1),
                     portamento: Ratio::new(1, 1),
                     asr: ASR::Long,
-                    osc_type: OscType::Sine {pow: None},
+                    osc_type: OscType::Sine { pow: None },
                     names: NameSet::new(),
                 },
                 PointOp {
@@ -1141,7 +1143,7 @@ pub mod tests {
                     decay: Ratio::new(1, 1),
                     asr: ASR::Long,
                     portamento: Ratio::new(1, 1),
-                    osc_type: OscType::Sine {pow: None},
+                    osc_type: OscType::Sine { pow: None },
                     names: NameSet::new(),
                 },
                 PointOp {
@@ -1155,7 +1157,7 @@ pub mod tests {
                     decay: Ratio::new(1, 1),
                     asr: ASR::Long,
                     portamento: Ratio::new(1, 1),
-                    osc_type: OscType::Sine {pow: None},
+                    osc_type: OscType::Sine { pow: None },
                     names: NameSet::new(),
                 },
                 PointOp {
@@ -1169,7 +1171,7 @@ pub mod tests {
                     decay: Ratio::new(1, 1),
                     asr: ASR::Long,
                     portamento: Ratio::new(1, 1),
-                    osc_type: OscType::Sine {pow: None},
+                    osc_type: OscType::Sine { pow: None },
                     names: NameSet::new(),
                 },
             ]],

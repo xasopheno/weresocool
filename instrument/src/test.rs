@@ -35,7 +35,7 @@ pub mod tests {
                     gain: 0.0,
                 },
                 phase: 0.0,
-                osc_type: OscType::Sine{pow: None},
+                osc_type: OscType::Sine { pow: None },
                 attack: 44100,
                 decay: 44100,
                 asr: ASR::Long,
@@ -116,7 +116,7 @@ pub mod tests {
                             frequency: 0.0,
                             gain: 0.0,
                         },
-                        osc_type: OscType::Sine{pow: None},
+                        osc_type: OscType::Sine { pow: None },
                         attack: 44100,
                         decay: 44100,
                         asr: ASR::Long,
@@ -140,7 +140,7 @@ pub mod tests {
                             frequency: 0.0,
                             gain: 0.0,
                         },
-                        osc_type: OscType::Sine{pow: None},
+                        osc_type: OscType::Sine { pow: None },
                         attack: 44100,
                         decay: 44100,
                         asr: ASR::Long,
@@ -162,13 +162,13 @@ pub mod tests {
             assert!(cmp_f64(osc.voices.0.past.gain, 0.0));
             assert!(cmp_f64(osc.voices.0.current.frequency, 100.0));
             assert!(cmp_f64(osc.voices.0.current.gain, 0.75));
-            assert_eq!(osc.voices.0.osc_type, OscType::Sine{pow: None});
+            assert_eq!(osc.voices.0.osc_type, OscType::Sine { pow: None });
             //
             assert!(cmp_f64(osc.voices.1.past.frequency, 0.0));
             assert!(cmp_f64(osc.voices.1.past.gain, 0.0));
             assert!(cmp_f64(osc.voices.1.current.frequency, 100.0));
             assert!(cmp_f64(osc.voices.1.current.gain, 0.25));
-            assert_eq!(osc.voices.1.osc_type, OscType::Sine{pow: None});
+            assert_eq!(osc.voices.1.osc_type, OscType::Sine { pow: None });
         }
         #[test]
         fn oscillator_generate_sine_test() {

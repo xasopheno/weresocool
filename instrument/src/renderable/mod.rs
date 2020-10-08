@@ -96,7 +96,7 @@ impl RenderOp {
             voice: 0,
             event: 0,
             portamento: 1024,
-            osc_type: osc_type,
+            osc_type,
             next_l_silent: true,
             next_r_silent: true,
         }
@@ -266,7 +266,7 @@ pub fn nf_to_vec_renderable(
             let last_osc = vec_point_op
                 .last()
                 .cloned()
-                .unwrap_or(PointOp::init_silent())
+                .unwrap_or_else(PointOp::init_silent)
                 .osc_type;
             let mut time = Rational64::new(0, 1);
             let mut result: Vec<RenderOp> = vec![];
