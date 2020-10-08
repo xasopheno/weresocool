@@ -2972,6 +2972,7 @@ name = "weresocool_shared"
 version = "0.1.0"
 dependencies = [
  "float-cmp",
+ "num-rational 0.3.0",
 ]
 
 [[package]]
