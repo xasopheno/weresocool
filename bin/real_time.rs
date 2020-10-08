@@ -1,6 +1,5 @@
 use failure::Fail;
 use std::sync::{Arc, Mutex};
-use std::thread;
 use weresocool::{
     generation::parsed_to_render::{RenderReturn, RenderType},
     interpretable::{InputType::Filename, Interpretable},
