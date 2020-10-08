@@ -79,6 +79,28 @@ impl RenderOp {
             next_r_silent: true,
         }
     }
+
+    pub const fn init_silent_with_length_and_osctype(l: f64, osc_type: OscType) -> Self {
+        Self {
+            f: 0.0,
+            g: (0.0, 0.0),
+            p: 0.0,
+            l,
+            t: 0.0,
+            attack: SETTINGS.sample_rate,
+            decay: SETTINGS.sample_rate,
+            asr: ASR::Long,
+            samples: SETTINGS.sample_rate as usize,
+            total_samples: SETTINGS.sample_rate as usize,
+            index: 0,
+            voice: 0,
+            event: 0,
+            portamento: 1024,
+            osc_type: osc_type,
+            next_l_silent: true,
+            next_r_silent: true,
+        }
+    }
 }
 
 #[derive(Debug)]
@@ -241,10 +263,14 @@ pub fn nf_to_vec_renderable(
         .par_iter()
         .enumerate()
         .map(|(voice, vec_point_op)| {
+            let last_osc = vec_point_op
+                .last()
+                .cloned()
+                .unwrap_or(PointOp::init_silent())
+                .osc_type;
             let mut time = Rational64::new(0, 1);
             let mut result: Vec<RenderOp> = vec![];
-            let iter = vec_point_op.iter();
-            for (event, p_op) in iter.enumerate() {
+            for (event, p_op) in vec_point_op.iter().enumerate() {
                 let mut next_e = event;
                 if event == vec_point_op.len() {
                     next_e = 0;
@@ -261,7 +287,10 @@ pub fn nf_to_vec_renderable(
                 result.push(op);
             }
             if default_settings().pad_end {
-                result.push(RenderOp::init_silent_with_length(1.0));
+                result.push(RenderOp::init_silent_with_length_and_osctype(
+                    1.0, // OscType::Sine { pow: None },
+                    last_osc,
+                ));
             }
             result
         })
