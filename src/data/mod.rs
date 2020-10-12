@@ -502,19 +502,6 @@ fn get_file_names() -> Vec<String> {
         if f_name.ends_with(".socool")
             && ![
                 // "simple.socool",
-                // "simple_again.socool",
-                // "simple_two_part.socool",
-                // "dunno.socool",
-                // "tokyo.socool",
-                // "wonder_ball.socool",
-                // "television.socool",
-                // "songsongsong.socool",
-                // "modby.socool",
-                // "hilbert.socool",
-                // "how_to_build.socool",
-                // "how_to_fight.socool",
-                // "dunno2.socool",
-                // "for_two_ears.socool",
             ]
             .iter()
             .any(|&name| demo_dir.clone().to_owned() + name == f_name)

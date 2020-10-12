@@ -5,3 +5,4 @@ image_transformer/
 trained_models/*
 img/*
 *.mp3
+*__pycache__/*
