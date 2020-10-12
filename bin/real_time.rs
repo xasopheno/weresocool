@@ -43,10 +43,10 @@ fn run() -> Result<(), Error> {
 
     let render_manager = Arc::new(Mutex::new(RenderManager::init(render_voices)));
 
-    let mut stream = real_time_render_manager(Arc::clone(&render_manager)).unwrap();
-    stream.start().unwrap();
-    while let true = stream.is_active().unwrap() {}
-    stream.stop().unwrap();
+    let mut stream = real_time_render_manager(Arc::clone(&render_manager))?;
+    stream.start()?;
+    while let true = stream.is_active()? {}
+    stream.stop()?;
 
     Ok(())
 }

@@ -287,10 +287,7 @@ pub fn nf_to_vec_renderable(
                 result.push(op);
             }
             if default_settings().pad_end {
-                result.push(RenderOp::init_silent_with_length_and_osctype(
-                    1.0, // OscType::Sine { pow: None },
-                    last_osc,
-                ));
+                result.push(RenderOp::init_silent_with_length_and_osctype(1.0, last_osc));
             }
             result
         })

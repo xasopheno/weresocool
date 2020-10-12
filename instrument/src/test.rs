@@ -188,6 +188,36 @@ pub mod tests {
             };
             assert_eq!(osc.generate(&render_op, &Offset::identity()), expected);
         }
+
+        #[test]
+        fn oscillator_generate_sine_power_test() {
+            let mut osc = Oscillator::init(&get_test_settings());
+
+            let mut render_op = RenderOp::init_fglp(100.0, (0.75, 0.25), 1.0, 0.0);
+
+            render_op.osc_type = OscType::Sine {
+                pow: Some(num_rational::Rational64::new(2, 1)),
+            };
+            render_op.index = 0;
+            render_op.samples = 3;
+            render_op.total_samples = 44_100;
+
+            osc.update(&render_op, &Offset::identity());
+
+            let expected = StereoWaveform {
+                l_buffer: vec![
+                    0.0,
+                    0.00000000004142728525626911,
+                    0.0000000003314182479087334,
+                ],
+                r_buffer: vec![
+                    0.0,
+                    0.000000000013809095085423034,
+                    0.00000000011047274930291111,
+                ],
+            };
+            assert_eq!(osc.generate(&render_op, &Offset::identity()), expected);
+        }
     }
 
     pub mod loudness {

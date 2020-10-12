@@ -15,11 +15,6 @@ impl Voice {
             },
             _ => self.current.gain,
         }
-        // if self.osc_type == OscType::Sine && op.osc_type != OscType::Sine {
-        // self.current.gain / 3.0
-        // } else {
-        // self.current.gain
-        // }
     }
 
     pub fn current_gain_from_op(&self, op: &RenderOp) -> f64 {
@@ -29,12 +24,6 @@ impl Voice {
             OscType::Sine { .. } => gain,
             _ => (gain.0 / 3.0, gain.1 / 3.0),
         };
-
-        // gain = if op.osc_type == OscType::Sine {
-        // gain
-        // } else {
-        // (gain.0 / 3.0, gain.1 / 3.0)
-        // };
 
         match self.index {
             0 => gain.0,
