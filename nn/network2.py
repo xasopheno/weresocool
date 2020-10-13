@@ -19,6 +19,15 @@ ndf = 256
 #  ngf = 64
 
 
+def weights_init(m):
+    classname = m.__class__.__name__
+    if classname.find("Conv") != -1:
+        torch.nn.init.normal_(m.weight, 0.0, 0.02)
+    elif classname.find("BatchNorm") != -1:
+        torch.nn.init.normal_(m.weight, 1.0, 0.02)
+        torch.nn.init.zeros_(m.bias)
+
+
 class SelfAttention(nn.Module):
     def __init__(self, emb, heads=2, mask=False):
         """

@@ -143,7 +143,7 @@ impl DataOp {
         let osc_type = if self.osc_type > Rational64::new(1, 2) {
             OscType::Noise
         } else {
-            OscType::Sine
+            OscType::Sine { pow: None }
         };
 
         let mut point_op = PointOp::init_silent();
@@ -232,7 +232,7 @@ impl DataOp {
 
     fn from_point_op(op: PointOp) -> Self {
         let osc_type = match op.osc_type {
-            OscType::Sine => Rational64::new(0, 1),
+            OscType::Sine { .. } => Rational64::new(0, 1),
             _ => Rational64::new(1, 1),
         };
         Self {

@@ -11,7 +11,6 @@ import torchvision.datasets as dset
 import torchvision.transforms as transforms
 import torchvision.utils as vutils
 
-from spectral_norm import SpectralNorm
 
 nz = 128
 ngf = 512

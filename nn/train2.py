@@ -7,8 +7,7 @@ import csv
 from torchvision import transforms
 from torch.utils.data import DataLoader, Dataset
 import torchvision.utils as vutils
-from network2 import TransformerDiscriminator, TransformerBlock
-from network import weights_init
+from network2 import TransformerDiscriminator, TransformerBlock, weights_init
 from datagen import RealDataGenerator
 from typing import List
 from helpers import data_point_to_rgbxyz_img, write_result_to_file, rejoin_channels
@@ -17,39 +16,12 @@ import os
 
 
 files = []
-dirs = [
-    #  "data/growing",
-    #  "data/monica"
-    #  "data/madness",
-    #  "data/day_3",
-    #  "data/slice",
-    #  "data/simple2_fifths"
-    "data/simple"
-]
+dirs = ["data/simple"]
 
 for d in dirs:
     for f in os.listdir(d):
         if f.endswith(".csv"):
-            #  print(os.path.join(d, f))
             files.append(os.path.join(d, f))
-
-
-def cyclical_lr(stepsize, min_lr=3e-4, max_lr=3e-3):
-
-    # Scaler: we can adapt this if we do not want the triangular CLR
-    scaler = lambda x: 1.0
-
-    # Lambda function to calculate the LR
-    lr_lambda = lambda it: min_lr + (max_lr - min_lr) * relative(it, stepsize)
-
-    # Additional function to see where on the cycle we are
-    def relative(it, stepsize):
-        cycle = math.floor(1 + it / (2 * stepsize))
-        x = abs(it / stepsize - 2 * cycle + 1)
-        return max(0, (1 - x)) * scaler(cycle)
-
-    return lr_lambda
-
 
 #  print(files)
 #  files = files[0:1000]
@@ -59,7 +31,7 @@ r = RealDataGenerator(files[0:500])
 
 if __name__ == "__main__":
     nz = 256
-    batch_size = 8
+    batch_size = 32
     n_ops = 1
     device = "cuda"
     fixed_noise = torch.randn(batch_size, n_ops, nz, device=device, dtype=torch.float)
@@ -72,28 +44,19 @@ if __name__ == "__main__":
     criterion = nn.BCELoss()
 
     netG = TransformerBlock(nz, 8, None).to(device, dtype=torch.float)
-    #  netG = TransformerGenerator().to(device, dtype=torch.float)
-
     netG = nn.DataParallel(netG)
     netG.apply(weights_init)
-    #  if opt.netG != "":
     #  netG.load_state_dict(torch.load("./trained_models/netG.pt"))
     print(netG)
 
     netD = TransformerDiscriminator().to(device, dtype=torch.float)
     netD = nn.DataParallel(netD)
     netD.apply(weights_init)
-    #  if opt.netD != "":
     #  netD.load_state_dict(torch.load("./trained_models/netD.pt"))
     print(netD)
 
     optimizerG = optim.Adam(netG.parameters(), lr=0.0001, betas=(beta1, 0.999))
-    #  schedulerG = torch.optim.lr_scheduler.ReduceLROnPlateau(
-    #  optimizerG, "min", verbose=True, patience=500
-    #  )
     optimizerD = optim.Adam(netD.parameters(), lr=0.0004, betas=(beta1, 0.999))
-    #  schedulerD = torch.optim.lr_scheduler.ReduceLROnPlateau(
-    #  optimizerD, "min", verbose=True, patience=500)
 
     for epoch in range(epochs):
         for i in range(len(r)):
@@ -163,14 +126,6 @@ if __name__ == "__main__":
             if i == 0:
                 print("___CREATING EXAMPLE___")
                 fake = netG(fixed_noise).detach()
-                #  fake = torch.tensor(
-                #  np.array(
-                #  [
-                #  r[random.randint(0, len(r) - 1)].numpy()
-                #  for i in range(batch_size)
-                #  ]
-                #  )
-                #  )
                 for img_no in range(batch_size):
                     file_number = i + img_no
 
