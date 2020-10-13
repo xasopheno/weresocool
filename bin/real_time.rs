@@ -50,7 +50,6 @@ fn run() -> Result<(), Error> {
     render_manager.lock().unwrap().push_render(render_voices);
     println!("{}", "___Stream Started___".to_string());
     stream.start()?;
-
     while let true = stream.is_active()? {}
     stream.stop()?;
     println!("{}", "___Stream Stopped___".to_string());

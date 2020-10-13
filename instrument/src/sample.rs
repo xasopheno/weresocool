@@ -1,7 +1,8 @@
 use crate::voice::{SampleInfo, Voice};
+use num_rational::Rational64;
 use rand::{thread_rng, Rng};
 use std::f64::consts::PI;
-use weresocool_shared::{default_settings, Settings};
+use weresocool_shared::{default_settings, r_to_f64, Settings};
 
 const SETTINGS: Settings = default_settings();
 const TAU: f64 = PI * 2.0;
@@ -12,9 +13,13 @@ fn random_offset() -> f64 {
 }
 
 impl Voice {
-    pub fn generate_sine_sample(&mut self, info: SampleInfo) -> f64 {
+    pub fn generate_sine_sample(&mut self, info: SampleInfo, pow: Option<Rational64>) -> f64 {
         self.phase = self.calculate_current_phase(&info, 0.0);
-        self.phase.sin() * info.gain
+        let value = match pow {
+            Some(p) => f64::powf(self.phase, r_to_f64(p)).sin(),
+            None => self.phase.sin(),
+        };
+        value * info.gain
     }
 
     pub fn generate_square_sample(&mut self, info: SampleInfo) -> f64 {

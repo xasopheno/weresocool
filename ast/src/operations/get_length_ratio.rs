@@ -7,7 +7,7 @@ impl GetLengthRatio for Op {
     fn get_length_ratio(&self, defs: &Defs) -> Result<Rational64, Error> {
         match self {
             Op::AsIs {}
-            | Op::Sine {}
+            | Op::Sine { .. }
             | Op::AD { .. }
             | Op::Portamento { .. }
             | Op::Square {}
