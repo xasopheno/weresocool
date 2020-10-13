@@ -15,7 +15,7 @@ features = ["lexer"]
 lalrpop-util = "0.19.0"
 regex = "1"
 colored = "1.9"
-num-rational = "0.2"
+num-rational = "0.3"
 indexmap = "1.4.0"
 rand = "0.7.3"
 weresocool_ast = { path = "../ast" }

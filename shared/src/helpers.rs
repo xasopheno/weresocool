@@ -1,4 +1,9 @@
 use float_cmp::ApproxEq;
+use num_rational::Rational64;
+
+pub fn r_to_f64(r: Rational64) -> f64 {
+    *r.numer() as f64 / *r.denom() as f64
+}
 
 pub fn cmp_vec_f32(vec1: Vec<f32>, vec2: Vec<f32>) -> bool {
     for (a, b) in vec1.iter().zip(vec2) {

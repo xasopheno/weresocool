@@ -16,8 +16,15 @@ pub fn real_time_render_manager(
 ) -> Result<pa::Stream<pa::NonBlocking, pa::Output<f32>>, Error> {
     let pa = pa::PortAudio::new()?;
     let output_stream_settings = get_output_settings(&pa)?;
+    let mut x = 0;
 
     let output_stream = pa.open_non_blocking_stream(output_stream_settings, move |args| {
+        if x < 30 {
+            write_output_buffer(args.buffer, StereoWaveform::new(SETTINGS.buffer_size));
+            x += 1;
+            return pa::Continue;
+        }
+
         let batch: Option<(StereoWaveform, Vec<f32>)> =
             render_manager.lock().unwrap().read(SETTINGS.buffer_size);
 

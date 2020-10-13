@@ -45,9 +45,7 @@ fn run() -> Result<(), Error> {
 
     let mut stream = real_time_render_manager(Arc::clone(&render_manager))?;
     stream.start()?;
-
     while let true = stream.is_active()? {}
-
     stream.stop()?;
 
     Ok(())

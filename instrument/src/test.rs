@@ -35,7 +35,7 @@ pub mod tests {
                     gain: 0.0,
                 },
                 phase: 0.0,
-                osc_type: OscType::Sine,
+                osc_type: OscType::Sine { pow: None },
                 attack: 44100,
                 decay: 44100,
                 asr: ASR::Long,
@@ -116,7 +116,7 @@ pub mod tests {
                             frequency: 0.0,
                             gain: 0.0,
                         },
-                        osc_type: OscType::Sine,
+                        osc_type: OscType::Sine { pow: None },
                         attack: 44100,
                         decay: 44100,
                         asr: ASR::Long,
@@ -140,7 +140,7 @@ pub mod tests {
                             frequency: 0.0,
                             gain: 0.0,
                         },
-                        osc_type: OscType::Sine,
+                        osc_type: OscType::Sine { pow: None },
                         attack: 44100,
                         decay: 44100,
                         asr: ASR::Long,
@@ -162,13 +162,13 @@ pub mod tests {
             assert!(cmp_f64(osc.voices.0.past.gain, 0.0));
             assert!(cmp_f64(osc.voices.0.current.frequency, 100.0));
             assert!(cmp_f64(osc.voices.0.current.gain, 0.75));
-            assert_eq!(osc.voices.0.osc_type, OscType::Sine);
+            assert_eq!(osc.voices.0.osc_type, OscType::Sine { pow: None });
             //
             assert!(cmp_f64(osc.voices.1.past.frequency, 0.0));
             assert!(cmp_f64(osc.voices.1.past.gain, 0.0));
             assert!(cmp_f64(osc.voices.1.current.frequency, 100.0));
             assert!(cmp_f64(osc.voices.1.current.gain, 0.25));
-            assert_eq!(osc.voices.1.osc_type, OscType::Sine);
+            assert_eq!(osc.voices.1.osc_type, OscType::Sine { pow: None });
         }
         #[test]
         fn oscillator_generate_sine_test() {
@@ -185,6 +185,36 @@ pub mod tests {
             let expected = StereoWaveform {
                 l_buffer: vec![0.0, 0.000000002907572185123089, 0.000000011629108322793864],
                 r_buffer: vec![0.0, 0.0000000009691907283743628, 0.000000003876369440931287],
+            };
+            assert_eq!(osc.generate(&render_op, &Offset::identity()), expected);
+        }
+
+        #[test]
+        fn oscillator_generate_sine_power_test() {
+            let mut osc = Oscillator::init(&get_test_settings());
+
+            let mut render_op = RenderOp::init_fglp(100.0, (0.75, 0.25), 1.0, 0.0);
+
+            render_op.osc_type = OscType::Sine {
+                pow: Some(num_rational::Rational64::new(2, 1)),
+            };
+            render_op.index = 0;
+            render_op.samples = 3;
+            render_op.total_samples = 44_100;
+
+            osc.update(&render_op, &Offset::identity());
+
+            let expected = StereoWaveform {
+                l_buffer: vec![
+                    0.0,
+                    0.00000000004142728525626911,
+                    0.0000000003314182479087334,
+                ],
+                r_buffer: vec![
+                    0.0,
+                    0.000000000013809095085423034,
+                    0.00000000011047274930291111,
+                ],
             };
             assert_eq!(osc.generate(&render_op, &Offset::identity()), expected);
         }
