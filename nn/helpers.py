@@ -17,8 +17,20 @@ def separate_channels(x):
 def rejoin_channels(data):
     #  return np.array([np.array(data[:, i, :]).ravel("F") for i in range(data.shape[1])])
     data = data.reshape(4, -1)
-    result = np.array([np.array(data[:, i]).ravel("F") for i in range(data.shape[1])])
-    print(result.shape)
+    #  print(data.shape)
+    a = np.array([data[0], data[2]])
+    a = np.array([np.array(a[:, i]).ravel("F") for i in range(a.shape[1])])
+    #  print(a.shape)
+    b = np.array([data[1], data[3]])
+    b = np.array([np.array(b[:, i]).ravel("F") for i in range(b.shape[1])])
+    #  print(b.shape)
+    #  data = np.array([np.array(data[:, i]).ravel("F") for i in range(data.shape[1])])
+    #  print(data.shape)
+
+    result = np.array([a.flatten(), b.flatten()]).reshape(4, -1)
+    #  result = result.flatten()
+    #  print(result.shape)
+    #  exit(0)
     return result
 
 
