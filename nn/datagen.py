@@ -24,7 +24,8 @@ class RealDataGenerator(Dataset):
         #  x = pad_image(x)
         x = separate_channels(x)
 
-        x = np.concatenate([x[0], x[1]], axis=1)
+        #  x = np.concatenate([x[0], x[1]], axis=1)
+        x = x.flatten()
         #  print(x)
         #  print(x.shape)
         return x

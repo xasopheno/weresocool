@@ -16,8 +16,10 @@ def separate_channels(x):
 
 def rejoin_channels(data):
     #  return np.array([np.array(data[:, i, :]).ravel("F") for i in range(data.shape[1])])
-    data = data.reshape(2, -1)
-    return np.array([np.array(data[:, i]).ravel("F") for i in range(data.shape[1])])
+    data = data.reshape(4, -1)
+    result = np.array([np.array(data[:, i]).ravel("F") for i in range(data.shape[1])])
+    print(result.shape)
+    return result
 
 
 def normalize_data_to_tanh_space(x: np.array) -> np.array:
@@ -62,7 +64,7 @@ def data_point_to_rgbxyz_img(
 
 def write_result_to_file(data, filename):
     data = denormalize_data_from_tanh_space(data)
-    d = rejoin_channels(data).flatten()
+    #  d = rejoin_channels(data).flatten()
 
     np.savetxt(filename, data, delimiter="\n", fmt="%1.53f")
 

@@ -5,24 +5,14 @@ list = &[
   Fm 5/4, Fm 0, Fm 3/2, Fm 5/3, Fm 2
 ]
 
--- main = {
---   Fm 2/3 |
---   &list | 
---     &list @ [
---       Random(200)
---     ]
---   | Lm 1/8
--- }
-
 main = {
-  Fm 2/3 |
+  Overlay [Fm 1, Fm 3/2] |
   Seq [
     &list
     | Seq [AsIs, Reverse], 
     Seq [Fm 3/4, Fm 5/4, Fm 3/2, Fm 7/4, Fm 7/3] | Seq [AsIs, Reverse | Lm 1/2],
     Seq [Fm 0, Fm 2, Fm 7/4, Fm 2, Fm 7/4, Fm 2, Fm 7/4, Fm 7/6 | Lm 2, Fm 0],
     Seq [Fm 5/3 | Lm 3, Fm 6/5, Fm 1 | Lm 3, Fm 5/4 | Lm 3, Fm 9/8 | Lm 2, Fm 5/6, Fm 3/4]
-    
   ]
   | Repeat 80
   | Lm 1/7

@@ -30,8 +30,8 @@ print(files[0:30])
 r = RealDataGenerator(files[0:500])
 
 if __name__ == "__main__":
-    nz = 256
-    batch_size = 32
+    nz = 512
+    batch_size = 8
     n_ops = 1
     device = "cuda"
     fixed_noise = torch.randn(batch_size, n_ops, nz, device=device, dtype=torch.float)
@@ -137,7 +137,7 @@ if __name__ == "__main__":
                         data, f"output/{epoch:04}_{file_number:09d}.csv"
                     )
                     data_point_to_rgbxyz_img(
-                        data, file_number, epoch, "result_img", "network"
+                        data.T, file_number, epoch, "result_img", "network"
                     )
 
         torch.save(netG.state_dict(), "trained_models/netG.pt")
@@ -147,10 +147,4 @@ if __name__ == "__main__":
             "[%d/%d][%d/%d] Loss_D: %.4f Loss_G: %.8f D(x): %.8f D(G(z)): %.8f / %.8f"
             % (epoch, epochs, i, len(r), errD.item(), errG.item(), D_x, D_G_z1, D_G_z2,)
         )
-    #  op_len = 7
-    #  n_steps = 4
-    #  n_voices = 2
-    #  n_examples = 3
-
-    #  x = np.arange(n_steps * op_len * n_voices * n_examples)
 
