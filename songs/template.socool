@@ -37,12 +37,13 @@ thing2 = {
 }
 
 main = {
-  Seq [
-      thing1 | Lm 1/6,
-      thing2 | Seq [Fm 1, Fm 7/8, Fm 3/4, Fm 2/3] | Repeat 2,
-  ] 
-  | Lm 1
-  | Seq [Fm 1, Fm 9/8, Fm 7/8, Fm 4/5]
-  | Repeat 16
+  Fm 1
+--  Seq [
+--      thing1 | Lm 1/6,
+--      thing2 | Seq [Fm 1, Fm 7/8, Fm 3/4, Fm 2/3] | Repeat 2,
+--  ] 
+--  | Lm 1
+--  | Seq [Fm 1, Fm 9/8, Fm 7/8, Fm 4/5]
+--  | Repeat 16
 }
 	

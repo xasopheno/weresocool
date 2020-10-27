@@ -1,0 +1,19 @@
+[package]
+name = "lanceverb"
+version = "0.3.0"
+authors = ["josh, mitchell.nordine@gmail.com"]
+description = "A super-fast mono-to-stereo plate reverberator."
+readme = "README.md"
+keywords = ["reverb", "dsp", "audio", "effect", "stereo"]
+license = "MIT"
+repository = "https://github.com/MindBuffer/lanceverb.git"
+homepage = "https://github.com/RustAudio/lanceverb"
+
+[dependencies]
+dsp-chain = { optional = true, version = "0.13.1" }
+
+[features]
+default = ["dsp-chain"]
+
+[dev-dependencies]
+portaudio = "0.6.4"

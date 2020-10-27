@@ -588,6 +588,12 @@ checksum = "5f0dc55f2d8a1a85650ac47858bb001b4c0dd73d79e3c455a842925e68d29cd3"
 
 [[package]]
 name = "bitflags"
+version = "0.3.3"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "32866f4d103c4e438b1db1158aa1b1a80ee078e5d77a59a2f906fd62a577389c"
+
+[[package]]
+name = "bitflags"
 version = "0.7.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "aad18937a628ec6abcd26d1489012cc0e18c21798210f491af69ded9b881106d"
@@ -936,6 +942,15 @@ dependencies = [
 ]
 
 [[package]]
+name = "daggy"
+version = "0.4.1"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "d6a9b61ac11d223e884f431772d311087644e4710c1555d7db270cefb5fb9c69"
+dependencies = [
+ "petgraph 0.2.10",
+]
+
+[[package]]
 name = "derive_more"
 version = "0.99.11"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -1009,6 +1024,16 @@ dependencies = [
  "regex",
  "serde",
  "strsim 0.9.3",
+]
+
+[[package]]
+name = "dsp-chain"
+version = "0.13.1"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "5251bbb15727afffbf50403b1a5a6f030c1662bad1a5c665a895547330a17e17"
+dependencies = [
+ "daggy",
+ "sample",
 ]
 
 [[package]]
@@ -1108,6 +1133,12 @@ checksum = "ca5faf057445ce5c9d4329e382b2ce7ca38550ef3b73a5348362d5f24e0c7fe3"
 dependencies = [
  "instant",
 ]
+
+[[package]]
+name = "fixedbitset"
+version = "0.1.9"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "86d4de0081402f5e88cdac65c8dcdcc73118c1a7a465e2a05f0da05843a8ea33"
 
 [[package]]
 name = "fixedbitset"
@@ -1523,7 +1554,7 @@ dependencies = [
  "ena",
  "itertools",
  "lalrpop-util",
- "petgraph",
+ "petgraph 0.5.1",
  "regex",
  "regex-syntax",
  "serde",
@@ -1541,6 +1572,14 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "6771161eff561647fad8bb7e745e002c304864fb8f436b52b30acda51fca4408"
 dependencies = [
  "regex",
+]
+
+[[package]]
+name = "lanceverb"
+version = "0.3.0"
+dependencies = [
+ "dsp-chain",
+ "portaudio 0.6.4",
 ]
 
 [[package]]
@@ -1945,11 +1984,20 @@ checksum = "d4fd5641d01c8f18a23da7b6fe29298ff4b55afcccdf78973b24cf3175fee32e"
 
 [[package]]
 name = "petgraph"
+version = "0.2.10"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "3418aea32729bb24e3751c3893aa18f829a804f5030af2e9395c47c9b38f9535"
+dependencies = [
+ "fixedbitset 0.1.9",
+]
+
+[[package]]
+name = "petgraph"
 version = "0.5.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "467d164a6de56270bd7c4d070df81d07beace25012d5103ced4e9ff08d6afdb7"
 dependencies = [
- "fixedbitset",
+ "fixedbitset 0.2.0",
  "indexmap",
 ]
 
@@ -2023,6 +2071,18 @@ dependencies = [
  "log",
  "wepoll-sys",
  "winapi 0.3.9",
+]
+
+[[package]]
+name = "portaudio"
+version = "0.6.4"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "7fd0063d0d2083d37b77070de80c34b5692437819073025a37c72486ec6d3d2a"
+dependencies = [
+ "bitflags 0.3.3",
+ "libc",
+ "num 0.1.42",
+ "pkg-config",
 ]
 
 [[package]]
@@ -2308,6 +2368,12 @@ checksum = "93fc1dc3aaa9bfed95e02e6eadabb4baf7e3078b0bd1b4d7b6b0b68378900502"
 dependencies = [
  "winapi-util",
 ]
+
+[[package]]
+name = "sample"
+version = "0.6.2"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "80fb6a09c9909286e083dd666073427801c875452c6aada9e4f56bf98a10d76c"
 
 [[package]]
 name = "scopeguard"
@@ -2981,7 +3047,7 @@ dependencies = [
  "num-complex",
  "num-rational 0.3.0",
  "pbr",
- "portaudio",
+ "portaudio 0.7.0",
  "pretty_assertions",
  "rand",
  "rayon",
@@ -3028,7 +3094,7 @@ dependencies = [
  "failure",
  "failure_derive",
  "hound",
- "portaudio",
+ "portaudio 0.7.0",
  "serde",
  "serde_json",
  "weresocool_lame",
@@ -3038,6 +3104,8 @@ dependencies = [
 name = "weresocool_instrument"
 version = "0.1.0"
 dependencies = [
+ "dsp-chain",
+ "lanceverb",
  "num-rational 0.3.0",
  "rand",
  "rayon",
