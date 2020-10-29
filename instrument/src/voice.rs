@@ -2,6 +2,8 @@ use crate::{
     renderable::{Offset, RenderOp},
     {gain::gain_at_index, loudness::loudness_normalization},
 };
+
+use lanceverb::Reverb;
 use weresocool_ast::{OscType, ASR};
 use weresocool_shared::{default_settings, Settings};
 
@@ -9,6 +11,7 @@ const SETTINGS: Settings = default_settings();
 
 #[derive(Clone, Debug, PartialEq)]
 pub struct Voice {
+    pub verb: Reverb,
     pub index: usize,
     pub past: VoiceState,
     pub current: VoiceState,
@@ -45,8 +48,9 @@ impl VoiceState {
 }
 
 impl Voice {
-    pub const fn init(index: usize) -> Self {
+    pub fn init(index: usize) -> Self {
         Self {
+            verb: Reverb::new(),
             index,
             past: VoiceState::init(),
             current: VoiceState::init(),
@@ -105,8 +109,15 @@ impl Voice {
 
             *sample += new_sample
         }
+        // let buffer: Vec<f32> = buffer.iter().map(|s| *s as f32).collect();
 
-        buffer
+        // let buffer: &mut [[f32; 1]] = dsp::slice::equilibrium(buffer);
+        // let buffer = dsp::slice::to_frame_slice_mut().unwrap();
+        self.verb.audio_requested(&mut buffer, 44_100.0);
+
+        // let buffer: Vec<f64> = buffer.iter().map(|s| *s as f64).collect();
+
+        buffer.to_vec()
     }
 
     pub fn update(&mut self, op: &RenderOp, offset: &Offset) {

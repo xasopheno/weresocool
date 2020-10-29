@@ -1,19 +1,22 @@
 /// Delay-line whose maximum size is fixed
 /// The advantage of using a static versus dynamic array is that its elements
 /// can be laid out in a predicatable location in memeory. This can improve
-/// access speeds if many delay-lines are used within another object, like a 
+/// access speeds if many delay-lines are used within another object, like a
 /// reverb
+#[derive(PartialEq)]
 pub struct DelayLine<B> {
     pos: usize,
     buffer: B,
 }
 
-impl<B> DelayLine<B> where  B: Buffer {
-
+impl<B> DelayLine<B>
+where
+    B: Buffer,
+{
     /// Default constructor for a delay line
     pub fn new() -> DelayLine<B> {
-        DelayLine { 
-            pos: 0, 
+        DelayLine {
+            pos: 0,
             buffer: B::zeroed(),
         }
     }
@@ -32,13 +35,19 @@ impl<B> DelayLine<B> where  B: Buffer {
     /// Get index of back element.
     pub fn index_back(&self) -> usize {
         let i = self.pos + 1;
-        if i < self.size() { i } else { 0 }
+        if i < self.size() {
+            i
+        } else {
+            0
+        }
     }
 
     /// Read value at delay i
     pub fn read(&self, i: i32) -> &f32 {
         let mut idx = self.pos as i32 - i;
-        if idx < 0 { idx += self.size() as i32; }
+        if idx < 0 {
+            idx += self.size() as i32;
+        }
         &self.buffer.index(idx as usize)
     }
 
@@ -46,7 +55,9 @@ impl<B> DelayLine<B> where  B: Buffer {
     pub fn write(&mut self, value: f32) {
         *self.buffer.index_mut(self.pos) = value;
         self.pos += 1;
-        if self.pos >= self.size() { self.pos = 0; }
+        if self.pos >= self.size() {
+            self.pos = 0;
+        }
     }
 
     /// Write new value and return oldest value
@@ -59,9 +70,9 @@ impl<B> DelayLine<B> where  B: Buffer {
     /// Comb filter input using a delay time equal to the maximum size of the delay-line
     pub fn comb(&mut self, value: f32, feed_fwd: f32, feed_bck: f32) -> f32 {
         let d = *self.buffer.index(self.pos);
-        let r = value + d*feed_bck;
+        let r = value + d * feed_bck;
         self.write(r);
-        d + r*feed_fwd
+        d + r * feed_fwd
     }
 
     /// Allpass filter input using a delay time equal to the maximum size of the delay-line
@@ -70,8 +81,10 @@ impl<B> DelayLine<B> where  B: Buffer {
     }
 }
 
-
-impl<B> Clone for DelayLine<B> where B: Buffer {
+impl<B> Clone for DelayLine<B>
+where
+    B: Buffer,
+{
     fn clone(&self) -> Self {
         DelayLine {
             pos: self.pos,
@@ -80,13 +93,19 @@ impl<B> Clone for DelayLine<B> where B: Buffer {
     }
 }
 
-
-impl<B> ::std::fmt::Debug for DelayLine<B> where B: Buffer {
+impl<B> ::std::fmt::Debug for DelayLine<B>
+where
+    B: Buffer,
+{
     fn fmt(&self, f: &mut ::std::fmt::Formatter) -> Result<(), ::std::fmt::Error> {
-        write!(f, "pos: {:?}, buffer: [f32; {:?}]", self.pos, self.buffer.len())
+        write!(
+            f,
+            "pos: {:?}, buffer: [f32; {:?}]",
+            self.pos,
+            self.buffer.len()
+        )
     }
 }
-
 
 /// Some buffer of Float values that is compatible with the delay-line
 pub trait Buffer {
