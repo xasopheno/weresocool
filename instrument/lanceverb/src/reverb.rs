@@ -106,6 +106,7 @@ impl Reverb {
         verb.decay(0.85);
         verb.damping(0.2);
         verb.diffusion(0.76, 0.666, 0.707, 0.517);
+        // verb.diffusion(0.16, 0.166, 0.107, 0.117);
         verb
     }
 
