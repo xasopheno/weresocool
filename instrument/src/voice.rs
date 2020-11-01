@@ -109,13 +109,8 @@ impl Voice {
 
             *sample += new_sample
         }
-        // let buffer: Vec<f32> = buffer.iter().map(|s| *s as f32).collect();
 
-        // let buffer: &mut [[f32; 1]] = dsp::slice::equilibrium(buffer);
-        // let buffer = dsp::slice::to_frame_slice_mut().unwrap();
         self.verb.audio_requested(&mut buffer, 44_100.0);
-
-        // let buffer: Vec<f64> = buffer.iter().map(|s| *s as f64).collect();
 
         buffer.to_vec()
     }

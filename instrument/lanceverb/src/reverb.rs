@@ -67,6 +67,24 @@ pub struct Reverb {
 }
 
 impl Reverb {
+    pub fn is_empty(&self) -> bool {
+        self.all_pass_in_1.is_empty() &&
+        self.all_pass_in_2.is_empty() &&
+        self.all_pass_in_3.is_empty() &&
+        self.all_pass_in_4.is_empty() &&
+
+        self.all_pass_decay_11.is_empty() &&
+        self.all_pass_decay_12.is_empty() &&
+
+        self.delay_11.is_empty() &&
+        self.delay_12.is_empty() &&
+
+        self.all_pass_decay_21.is_empty() &&
+        self.all_pass_decay_22.is_empty() &&
+
+        self.delay_21.is_empty() &&
+        self.delay_22.is_empty()
+    }
     fn construct() -> Reverb {
         Reverb {
             delay_feed_1: 0.0,
@@ -106,7 +124,6 @@ impl Reverb {
         verb.decay(0.85);
         verb.damping(0.2);
         verb.diffusion(0.76, 0.666, 0.707, 0.517);
-        // verb.diffusion(0.16, 0.166, 0.107, 0.117);
         verb
     }
 
@@ -227,6 +244,9 @@ macro_rules! impl_buffer {
             }
             fn len(&self) -> usize {
                 $n
+            }
+            fn is_empty(&self) -> bool {
+                self.iter().all(|s| *s==0.0)
             }
             fn index(&self, idx: usize) -> &f32 {
                 &self[idx]

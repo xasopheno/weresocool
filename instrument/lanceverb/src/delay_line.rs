@@ -22,6 +22,12 @@ where
     }
 
     /// Get size of delay-line
+    pub fn is_empty(&self) -> bool {
+        self.buffer.is_empty()
+
+    }
+
+    /// Get size of delay-line
     pub fn size(&self) -> usize {
         self.buffer.len()
     }
@@ -112,6 +118,7 @@ pub trait Buffer {
     fn zeroed() -> Self;
     fn clone(&self) -> Self;
     fn len(&self) -> usize;
+    fn is_empty(&self) -> bool;
     fn index(&self, idx: usize) -> &f32;
     fn index_mut(&mut self, idx: usize) -> &mut f32;
 }
