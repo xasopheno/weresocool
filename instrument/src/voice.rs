@@ -45,6 +45,7 @@ impl VoiceState {
     pub fn silent(&self) -> bool {
         self.frequency < SETTINGS.min_freq || self.gain == 0.0
     }
+
 }
 
 impl Voice {
@@ -63,6 +64,11 @@ impl Voice {
             asr: ASR::Long,
         }
     }
+
+    pub fn is_empty(&self) -> bool {
+        self.verb.is_empty()
+    }
+
     pub fn generate_waveform(&mut self, op: &RenderOp, offset: &Offset) -> Vec<f64> {
         let mut buffer: Vec<f64> = vec![0.0; op.samples];
 
