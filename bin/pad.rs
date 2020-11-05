@@ -17,9 +17,7 @@ fn main() -> Result<(), anyhow::Error> {
     channels: 2,
     buffer_size: BufferSize::Fixed(1024 * 2),
     sample_rate: cpal::SampleRate(44_100),
-    // buffer_size: BufferSize::Default,
   };
-  // config.buffer_size;
 
   run(&device, &config.into())?;
 

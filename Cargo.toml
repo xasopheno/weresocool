@@ -48,6 +48,7 @@ float-cmp = "0.8.0"
 cpal = "0.12.1"
 anyhow = "1.0.33"
 
+
 [dev-dependencies]
 pretty_assertions = "0.6.1"
 criterion = "0.3.3"
