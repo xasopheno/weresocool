@@ -1575,14 +1575,6 @@ dependencies = [
 ]
 
 [[package]]
-name = "lanceverb"
-version = "0.3.0"
-dependencies = [
- "dsp-chain",
- "portaudio 0.6.4",
-]
-
-[[package]]
 name = "language-tags"
 version = "0.2.2"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -2293,6 +2285,14 @@ checksum = "11834e137f3b14e309437a8276714eed3a80d1ef894869e510f2c0c0b98b9f4a"
 dependencies = [
  "hostname",
  "quick-error",
+]
+
+[[package]]
+name = "reverb"
+version = "0.3.0"
+dependencies = [
+ "dsp-chain",
+ "portaudio 0.6.4",
 ]
 
 [[package]]
@@ -3105,10 +3105,10 @@ name = "weresocool_instrument"
 version = "0.1.0"
 dependencies = [
  "dsp-chain",
- "lanceverb",
  "num-rational 0.3.0",
  "rand",
  "rayon",
+ "reverb",
  "serde",
  "weresocool_ast",
  "weresocool_error",

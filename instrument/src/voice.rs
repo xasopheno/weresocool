@@ -3,7 +3,7 @@ use crate::{
     {gain::gain_at_index, loudness::loudness_normalization},
 };
 
-use lanceverb::Reverb;
+use reverb::Reverb;
 use weresocool_ast::{OscType, ASR};
 use weresocool_shared::{default_settings, Settings};
 
@@ -11,7 +11,7 @@ const SETTINGS: Settings = default_settings();
 
 #[derive(Clone, Debug, PartialEq)]
 pub struct Voice {
-    pub verb: Reverb,
+    pub reverb: Reverb,
     pub index: usize,
     pub past: VoiceState,
     pub current: VoiceState,
@@ -45,13 +45,12 @@ impl VoiceState {
     pub fn silent(&self) -> bool {
         self.frequency < SETTINGS.min_freq || self.gain == 0.0
     }
-
 }
 
 impl Voice {
     pub fn init(index: usize) -> Self {
         Self {
-            verb: Reverb::new(),
+            reverb: Reverb::new(),
             index,
             past: VoiceState::init(),
             current: VoiceState::init(),
@@ -66,7 +65,7 @@ impl Voice {
     }
 
     pub fn is_empty(&self) -> bool {
-        self.verb.is_empty()
+        self.reverb.is_empty()
     }
 
     pub fn generate_waveform(&mut self, op: &RenderOp, offset: &Offset) -> Vec<f64> {
@@ -116,7 +115,9 @@ impl Voice {
             *sample += new_sample
         }
 
-        self.verb.audio_requested(&mut buffer, 44_100.0);
+        if op.reverb > 0.0 {
+            self.reverb.audio_requested(&mut buffer, 44_100.0);
+        }
 
         buffer.to_vec()
     }

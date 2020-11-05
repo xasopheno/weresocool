@@ -82,45 +82,20 @@ pub mod tests {
             operations: vec![vec![
                 PointOp {
                     fm: Ratio::new(5, 4),
-                    fa: Ratio::new(0, 1),
-                    pm: Ratio::new(1, 1),
-                    pa: Ratio::new(0, 1),
-                    g: Ratio::new(1, 1),
-                    l: Ratio::new(1, 1),
-                    attack: Ratio::new(1, 1),
-                    decay: Ratio::new(1, 1),
-                    asr: ASR::Long,
-                    portamento: Ratio::new(1, 1),
-                    osc_type: OscType::Sine { pow: None },
                     names: names_foo_bar.clone(),
+                    ..PointOp::init()
                 },
                 PointOp {
                     fm: Ratio::new(5, 4),
                     fa: Ratio::new(2, 1),
-                    pm: Ratio::new(1, 1),
-                    pa: Ratio::new(0, 1),
-                    g: Ratio::new(1, 1),
-                    l: Ratio::new(1, 1),
-                    attack: Ratio::new(1, 1),
-                    decay: Ratio::new(1, 1),
-                    asr: ASR::Long,
-                    portamento: Ratio::new(1, 1),
-                    osc_type: OscType::Sine { pow: None },
                     names: names_foo_bar.clone(),
+                    ..PointOp::init()
                 },
                 PointOp {
                     fm: Ratio::new(5, 4),
-                    fa: Ratio::new(0, 1),
-                    pm: Ratio::new(1, 1),
-                    pa: Ratio::new(0, 1),
-                    g: Ratio::new(1, 1),
                     l: Ratio::new(2, 1),
-                    attack: Ratio::new(1, 1),
-                    decay: Ratio::new(1, 1),
-                    asr: ASR::Long,
-                    portamento: Ratio::new(1, 1),
-                    osc_type: OscType::Sine { pow: None },
                     names: names_foo_bar,
+                    ..PointOp::init()
                 },
             ]],
             length_ratio: Ratio::new(8, 1),
@@ -140,133 +115,59 @@ pub mod tests {
                 vec![
                     PointOp {
                         fm: Ratio::new(3, 2),
-                        fa: Ratio::new(0, 1),
-                        pm: Ratio::new(1, 1),
-                        pa: Ratio::new(0, 1),
-                        g: Ratio::new(1, 1),
-                        l: Ratio::new(1, 1),
-                        attack: Ratio::new(1, 1),
-                        decay: Ratio::new(1, 1),
-                        asr: ASR::Long,
-                        portamento: Ratio::new(1, 1),
-                        osc_type: OscType::Sine { pow: None },
                         names: names_bar.clone(),
+                        ..PointOp::init()
                     },
                     PointOp {
                         fm: Ratio::new(3, 2),
                         fa: Ratio::new(2, 1),
-                        pm: Ratio::new(1, 1),
-                        pa: Ratio::new(0, 1),
-                        g: Ratio::new(1, 1),
-                        l: Ratio::new(1, 1),
-                        attack: Ratio::new(1, 1),
-                        decay: Ratio::new(1, 1),
-                        asr: ASR::Long,
-                        portamento: Ratio::new(1, 1),
-                        osc_type: OscType::Sine { pow: None },
                         names: names_bar.clone(),
+                        ..PointOp::init()
                     },
                     PointOp {
                         fm: Ratio::new(3, 2),
-                        fa: Ratio::new(0, 1),
-                        pm: Ratio::new(1, 1),
-                        pa: Ratio::new(0, 1),
-                        g: Ratio::new(1, 1),
                         l: Ratio::new(2, 1),
-                        attack: Ratio::new(1, 1),
-                        decay: Ratio::new(1, 1),
-                        asr: ASR::Long,
-                        portamento: Ratio::new(1, 1),
-                        osc_type: OscType::Sine { pow: None },
                         names: names_bar.clone(),
+                        ..PointOp::init()
                     },
                 ],
                 vec![
                     PointOp {
                         fm: Ratio::new(0, 1),
-                        fa: Ratio::new(0, 1),
-                        pm: Ratio::new(1, 1),
-                        pa: Ratio::new(0, 1),
                         g: Ratio::new(0, 1),
-                        l: Ratio::new(1, 1),
-                        attack: Ratio::new(1, 1),
-                        decay: Ratio::new(1, 1),
-                        asr: ASR::Long,
-                        portamento: Ratio::new(1, 1),
-                        osc_type: OscType::Sine { pow: None },
                         names: names_foo_bar.clone(),
+                        ..PointOp::init()
                     },
                     PointOp {
                         fm: Ratio::new(0, 1),
-                        fa: Ratio::new(0, 1),
-                        pm: Ratio::new(1, 1),
-                        pa: Ratio::new(0, 1),
                         g: Ratio::new(0, 1),
-                        l: Ratio::new(1, 1),
-                        attack: Ratio::new(1, 1),
-                        decay: Ratio::new(1, 1),
-                        asr: ASR::Long,
-                        portamento: Ratio::new(1, 1),
-                        osc_type: OscType::Sine { pow: None },
                         names: names_foo_bar.clone(),
+                        ..PointOp::init()
                     },
                     PointOp {
                         fm: Ratio::new(0, 1),
-                        fa: Ratio::new(0, 1),
-                        pm: Ratio::new(1, 1),
-                        pa: Ratio::new(0, 1),
                         g: Ratio::new(0, 1),
                         l: Ratio::new(2, 1),
-                        attack: Ratio::new(1, 1),
-                        decay: Ratio::new(1, 1),
-                        asr: ASR::Long,
-                        portamento: Ratio::new(1, 1),
-                        osc_type: OscType::Sine { pow: None },
                         names: names_foo_bar,
+                        ..PointOp::init()
                     },
                 ],
                 vec![
                     PointOp {
-                        fm: Ratio::new(1, 1),
-                        fa: Ratio::new(0, 1),
-                        pm: Ratio::new(1, 1),
-                        pa: Ratio::new(0, 1),
-                        g: Ratio::new(1, 1),
                         l: Ratio::new(2, 1),
-                        attack: Ratio::new(1, 1),
-                        decay: Ratio::new(1, 1),
-                        asr: ASR::Long,
-                        portamento: Ratio::new(1, 1),
-                        osc_type: OscType::Sine { pow: None },
                         names: names_bar.clone(),
+                        ..PointOp::init()
                     },
                     PointOp {
-                        fm: Ratio::new(1, 1),
                         fa: Ratio::new(2, 1),
-                        pm: Ratio::new(1, 1),
-                        pa: Ratio::new(0, 1),
-                        g: Ratio::new(1, 1),
                         l: Ratio::new(2, 1),
-                        attack: Ratio::new(1, 1),
-                        decay: Ratio::new(1, 1),
-                        asr: ASR::Long,
-                        portamento: Ratio::new(1, 1),
-                        osc_type: OscType::Sine { pow: None },
                         names: names_bar.clone(),
+                        ..PointOp::init()
                     },
                     PointOp {
-                        fm: Ratio::new(1, 1),
-                        fa: Ratio::new(0, 1),
-                        pm: Ratio::new(1, 1),
-                        pa: Ratio::new(0, 1),
-                        g: Ratio::new(1, 1),
                         l: Ratio::new(4, 1),
-                        attack: Ratio::new(1, 1),
-                        decay: Ratio::new(1, 1),
-                        asr: ASR::Long,
-                        portamento: Ratio::new(1, 1),
-                        osc_type: OscType::Sine { pow: None },
                         names: names_bar,
+                        ..PointOp::init()
                     },
                 ],
             ],
@@ -281,17 +182,12 @@ pub mod tests {
         names_a.insert("foo".to_string());
         let mut a = PointOp {
             fm: Ratio::new(3, 2),
-            fa: Ratio::new(0, 1),
             pm: Ratio::new(1, 1),
             pa: Ratio::new(2, 1),
             g: Ratio::new(1, 2),
             l: Ratio::new(5, 2),
-            attack: Ratio::new(1, 1),
-            decay: Ratio::new(1, 1),
-            asr: ASR::Long,
-            portamento: Ratio::new(1, 1),
-            osc_type: OscType::Sine { pow: None },
             names: names_a,
+            ..PointOp::init()
         };
 
         let mut names_b = NameSet::new();
@@ -303,12 +199,9 @@ pub mod tests {
             pa: Ratio::new(1, 2),
             g: Ratio::new(1, 2),
             l: Ratio::new(2, 1),
-            attack: Ratio::new(1, 1),
-            decay: Ratio::new(1, 1),
-            asr: ASR::Long,
-            portamento: Ratio::new(1, 1),
             osc_type: OscType::Noise,
             names: names_b,
+            ..PointOp::init()
         };
 
         a.mod_by(b);
@@ -323,12 +216,9 @@ pub mod tests {
             pa: Ratio::new(5, 2),
             g: Ratio::new(1, 4),
             l: Ratio::new(5, 2),
-            attack: Ratio::new(1, 1),
-            decay: Ratio::new(1, 1),
-            asr: ASR::Long,
-            portamento: Ratio::new(1, 1),
             osc_type: OscType::Noise,
             names: names_expected,
+            ..PointOp::init()
         };
 
         assert_eq!(a, expected)
@@ -343,133 +233,58 @@ pub mod tests {
                 vec![
                     PointOp {
                         fm: Ratio::new(3, 2),
-                        fa: Ratio::new(0, 1),
-                        pm: Ratio::new(1, 1),
-                        pa: Ratio::new(0, 1),
-                        g: Ratio::new(1, 1),
-                        l: Ratio::new(1, 1),
-                        attack: Ratio::new(1, 1),
-                        decay: Ratio::new(1, 1),
-                        asr: ASR::Long,
-                        portamento: Ratio::new(1, 1),
-                        osc_type: OscType::Sine { pow: None },
                         names: names_bar.clone(),
+                        ..PointOp::init()
                     },
                     PointOp {
                         fm: Ratio::new(3, 2),
                         fa: Ratio::new(2, 1),
-                        pm: Ratio::new(1, 1),
-                        pa: Ratio::new(0, 1),
-                        g: Ratio::new(1, 1),
-                        l: Ratio::new(1, 1),
-                        attack: Ratio::new(1, 1),
-                        decay: Ratio::new(1, 1),
-                        asr: ASR::Long,
-                        portamento: Ratio::new(1, 1),
-                        osc_type: OscType::Sine { pow: None },
                         names: names_bar.clone(),
+                        ..PointOp::init()
                     },
                     PointOp {
                         fm: Ratio::new(3, 2),
-                        fa: Ratio::new(0, 1),
-                        pm: Ratio::new(1, 1),
-                        pa: Ratio::new(0, 1),
-                        g: Ratio::new(1, 1),
                         l: Ratio::new(2, 1),
-                        attack: Ratio::new(1, 1),
-                        decay: Ratio::new(1, 1),
-                        asr: ASR::Long,
-                        portamento: Ratio::new(1, 1),
-                        osc_type: OscType::Sine { pow: None },
                         names: names_bar.clone(),
+                        ..PointOp::init()
                     },
                 ],
                 vec![
                     PointOp {
                         fm: Ratio::new(5, 4),
-                        fa: Ratio::new(0, 1),
-                        pm: Ratio::new(1, 1),
-                        pa: Ratio::new(0, 1),
-                        g: Ratio::new(1, 1),
-                        l: Ratio::new(1, 1),
-                        attack: Ratio::new(1, 1),
-                        decay: Ratio::new(1, 1),
-                        asr: ASR::Long,
-                        portamento: Ratio::new(1, 1),
-                        osc_type: OscType::Sine { pow: None },
                         names: names_foo_bar.clone(),
+                        ..PointOp::init()
                     },
                     PointOp {
                         fm: Ratio::new(5, 4),
                         fa: Ratio::new(2, 1),
-                        pm: Ratio::new(1, 1),
-                        pa: Ratio::new(0, 1),
-                        g: Ratio::new(1, 1),
-                        l: Ratio::new(1, 1),
-                        attack: Ratio::new(1, 1),
-                        decay: Ratio::new(1, 1),
-                        asr: ASR::Long,
-                        portamento: Ratio::new(1, 1),
-                        osc_type: OscType::Sine { pow: None },
                         names: names_foo_bar.clone(),
+                        ..PointOp::init()
                     },
                     PointOp {
                         fm: Ratio::new(5, 4),
-                        fa: Ratio::new(0, 1),
-                        pm: Ratio::new(1, 1),
-                        pa: Ratio::new(0, 1),
-                        g: Ratio::new(1, 1),
                         l: Ratio::new(2, 1),
-                        attack: Ratio::new(1, 1),
-                        decay: Ratio::new(1, 1),
-                        asr: ASR::Long,
-                        portamento: Ratio::new(1, 1),
-                        osc_type: OscType::Sine { pow: None },
                         names: names_foo_bar,
+                        ..PointOp::init()
                     },
                 ],
                 vec![
                     PointOp {
-                        fm: Ratio::new(1, 1),
-                        fa: Ratio::new(0, 1),
-                        pm: Ratio::new(1, 1),
-                        pa: Ratio::new(0, 1),
-                        g: Ratio::new(1, 1),
                         l: Ratio::new(2, 1),
-                        attack: Ratio::new(1, 1),
-                        decay: Ratio::new(1, 1),
-                        asr: ASR::Long,
-                        portamento: Ratio::new(1, 1),
-                        osc_type: OscType::Sine { pow: None },
                         names: names_bar.clone(),
+                        ..PointOp::init()
                     },
                     PointOp {
-                        fm: Ratio::new(1, 1),
                         fa: Ratio::new(2, 1),
-                        pm: Ratio::new(1, 1),
-                        pa: Ratio::new(0, 1),
-                        g: Ratio::new(1, 1),
                         l: Ratio::new(2, 1),
-                        attack: Ratio::new(1, 1),
-                        decay: Ratio::new(1, 1),
-                        asr: ASR::Long,
-                        portamento: Ratio::new(1, 1),
-                        osc_type: OscType::Sine { pow: None },
                         names: names_bar.clone(),
+                        ..PointOp::init()
                     },
                     PointOp {
                         fm: Ratio::new(1, 1),
-                        fa: Ratio::new(0, 1),
-                        pm: Ratio::new(1, 1),
-                        pa: Ratio::new(0, 1),
-                        g: Ratio::new(1, 1),
                         l: Ratio::new(4, 1),
-                        attack: Ratio::new(1, 1),
-                        decay: Ratio::new(1, 1),
-                        asr: ASR::Long,
-                        portamento: Ratio::new(1, 1),
-                        osc_type: OscType::Sine { pow: None },
                         names: names_bar,
+                        ..PointOp::init()
                     },
                 ],
             ],
@@ -500,18 +315,8 @@ pub mod tests {
         let expected = NormalForm {
             length_ratio: Ratio::new(1, 1),
             operations: vec![vec![PointOp {
-                fm: Ratio::new(1, 1),
-                fa: Ratio::new(0, 1),
-                pm: Ratio::new(1, 1),
-                pa: Ratio::new(0, 1),
-                g: Ratio::new(1, 1),
-                l: Ratio::new(1, 1),
-                attack: Ratio::new(1, 1),
-                decay: Ratio::new(1, 1),
-                asr: ASR::Long,
-                portamento: Ratio::new(1, 1),
                 osc_type: OscType::Noise,
-                names: NameSet::new(),
+                ..PointOp::init()
             }]],
         };
 
@@ -524,18 +329,8 @@ pub mod tests {
         let expected = NormalForm {
             length_ratio: Ratio::new(1, 1),
             operations: vec![vec![PointOp {
-                fm: Ratio::new(1, 1),
-                fa: Ratio::new(0, 1),
-                pm: Ratio::new(1, 1),
-                pa: Ratio::new(0, 1),
-                g: Ratio::new(1, 1),
-                l: Ratio::new(1, 1),
-                attack: Ratio::new(1, 1),
-                decay: Ratio::new(1, 1),
-                asr: ASR::Long,
-                portamento: Ratio::new(1, 1),
                 osc_type: OscType::Sine { pow: None },
-                names: NameSet::new(),
+                ..PointOp::init()
             }]],
         };
 
@@ -556,17 +351,7 @@ pub mod tests {
             length_ratio: Ratio::new(1, 1),
             operations: vec![vec![PointOp {
                 fm: Ratio::new(2, 1),
-                fa: Ratio::new(0, 1),
-                pm: Ratio::new(1, 1),
-                pa: Ratio::new(0, 1),
-                g: Ratio::new(1, 1),
-                l: Ratio::new(1, 1),
-                attack: Ratio::new(1, 1),
-                decay: Ratio::new(1, 1),
-                asr: ASR::Long,
-                portamento: Ratio::new(1, 1),
-                osc_type: OscType::Sine { pow: None },
-                names: NameSet::new(),
+                ..PointOp::init()
             }]],
         };
 
@@ -586,18 +371,8 @@ pub mod tests {
         let expected = NormalForm {
             length_ratio: Ratio::new(1, 1),
             operations: vec![vec![PointOp {
-                fm: Ratio::new(1, 1),
-                fa: Ratio::new(0, 1),
-                pm: Ratio::new(1, 1),
-                pa: Ratio::new(0, 1),
-                g: Ratio::new(1, 1),
-                l: Ratio::new(1, 1),
-                attack: Ratio::new(1, 1),
-                decay: Ratio::new(1, 1),
-                asr: ASR::Long,
                 portamento: Ratio::new(2, 1),
-                osc_type: OscType::Sine { pow: None },
-                names: NameSet::new(),
+                ..PointOp::init()
             }]],
         };
 
@@ -617,18 +392,8 @@ pub mod tests {
         let expected = NormalForm {
             length_ratio: Ratio::new(1, 1),
             operations: vec![vec![PointOp {
-                fm: Ratio::new(1, 1),
                 fa: Ratio::new(2, 1),
-                pm: Ratio::new(1, 1),
-                pa: Ratio::new(0, 1),
-                g: Ratio::new(1, 1),
-                l: Ratio::new(1, 1),
-                attack: Ratio::new(1, 1),
-                decay: Ratio::new(1, 1),
-                asr: ASR::Long,
-                portamento: Ratio::new(1, 1),
-                osc_type: OscType::Sine { pow: None },
-                names: NameSet::new(),
+                ..PointOp::init()
             }]],
         };
 
@@ -648,18 +413,8 @@ pub mod tests {
         let expected = NormalForm {
             length_ratio: Ratio::new(1, 1),
             operations: vec![vec![PointOp {
-                fm: Ratio::new(1, 1),
-                fa: Ratio::new(0, 1),
                 pm: Ratio::new(2, 1),
-                pa: Ratio::new(0, 1),
-                g: Ratio::new(1, 1),
-                l: Ratio::new(1, 1),
-                attack: Ratio::new(1, 1),
-                decay: Ratio::new(1, 1),
-                asr: ASR::Long,
-                portamento: Ratio::new(1, 1),
-                osc_type: OscType::Sine { pow: None },
-                names: NameSet::new(),
+                ..PointOp::init()
             }]],
         };
 
@@ -678,18 +433,8 @@ pub mod tests {
         let expected = NormalForm {
             length_ratio: Ratio::new(1, 1),
             operations: vec![vec![PointOp {
-                fm: Ratio::new(1, 1),
-                fa: Ratio::new(0, 1),
-                pm: Ratio::new(1, 1),
                 pa: Ratio::new(2, 1),
-                g: Ratio::new(1, 1),
-                l: Ratio::new(1, 1),
-                attack: Ratio::new(1, 1),
-                decay: Ratio::new(1, 1),
-                asr: ASR::Long,
-                portamento: Ratio::new(1, 1),
-                osc_type: OscType::Sine { pow: None },
-                names: NameSet::new(),
+                ..PointOp::init()
             }]],
         };
 
@@ -708,18 +453,8 @@ pub mod tests {
         let expected = NormalForm {
             length_ratio: Ratio::new(1, 1),
             operations: vec![vec![PointOp {
-                fm: Ratio::new(1, 1),
-                fa: Ratio::new(0, 1),
-                pm: Ratio::new(1, 1),
-                pa: Ratio::new(0, 1),
                 g: Ratio::new(2, 1),
-                l: Ratio::new(1, 1),
-                attack: Ratio::new(1, 1),
-                decay: Ratio::new(1, 1),
-                asr: ASR::Long,
-                portamento: Ratio::new(1, 1),
-                osc_type: OscType::Sine { pow: None },
-                names: NameSet::new(),
+                ..PointOp::init()
             }]],
         };
 
@@ -739,17 +474,9 @@ pub mod tests {
             length_ratio: Ratio::new(2, 1),
             operations: vec![vec![PointOp {
                 fm: Ratio::new(0, 1),
-                fa: Ratio::new(0, 1),
-                pm: Ratio::new(1, 1),
-                pa: Ratio::new(0, 1),
                 g: Ratio::new(0, 1),
                 l: Ratio::new(2, 1),
-                attack: Ratio::new(1, 1),
-                decay: Ratio::new(1, 1),
-                asr: ASR::Long,
-                portamento: Ratio::new(1, 1),
-                osc_type: OscType::Sine { pow: None },
-                names: NameSet::new(),
+                ..PointOp::init()
             }]],
         };
 
@@ -769,18 +496,8 @@ pub mod tests {
         let expected = NormalForm {
             length_ratio: Ratio::new(2, 1),
             operations: vec![vec![PointOp {
-                fm: Ratio::new(1, 1),
-                fa: Ratio::new(0, 1),
-                pm: Ratio::new(1, 1),
-                pa: Ratio::new(0, 1),
-                g: Ratio::new(1, 1),
                 l: Ratio::new(2, 1),
-                attack: Ratio::new(1, 1),
-                decay: Ratio::new(1, 1),
-                asr: ASR::Long,
-                portamento: Ratio::new(1, 1),
-                osc_type: OscType::Sine { pow: None },
-                names: NameSet::new(),
+                ..PointOp::init()
             }]],
         };
 
@@ -809,17 +526,8 @@ pub mod tests {
             length_ratio: Ratio::new(2, 1),
             operations: vec![vec![PointOp {
                 fm: Ratio::new(2, 1),
-                fa: Ratio::new(0, 1),
-                pm: Ratio::new(1, 1),
-                pa: Ratio::new(0, 1),
-                g: Ratio::new(1, 1),
                 l: Ratio::new(2, 1),
-                attack: Ratio::new(1, 1),
-                decay: Ratio::new(1, 1),
-                asr: ASR::Long,
-                portamento: Ratio::new(1, 1),
-                osc_type: OscType::Sine { pow: None },
-                names: NameSet::new(),
+                ..PointOp::init()
             }]],
         };
 
@@ -849,31 +557,12 @@ pub mod tests {
             operations: vec![vec![
                 PointOp {
                     fm: Ratio::new(2, 1),
-                    fa: Ratio::new(0, 1),
-                    pm: Ratio::new(1, 1),
-                    pa: Ratio::new(0, 1),
-                    g: Ratio::new(1, 1),
-                    l: Ratio::new(1, 1),
-                    attack: Ratio::new(1, 1),
-                    decay: Ratio::new(1, 1),
-                    asr: ASR::Long,
-                    portamento: Ratio::new(1, 1),
-                    osc_type: OscType::Sine { pow: None },
-                    names: NameSet::new(),
+                    ..PointOp::init()
                 },
                 PointOp {
                     fm: Ratio::new(1, 1),
-                    fa: Ratio::new(0, 1),
-                    pm: Ratio::new(1, 1),
-                    pa: Ratio::new(0, 1),
-                    g: Ratio::new(1, 1),
                     l: Ratio::new(2, 1),
-                    attack: Ratio::new(1, 1),
-                    decay: Ratio::new(1, 1),
-                    asr: ASR::Long,
-                    portamento: Ratio::new(1, 1),
-                    osc_type: OscType::Sine { pow: None },
-                    names: NameSet::new(),
+                    ..PointOp::init()
                 },
             ]],
         };
@@ -905,46 +594,18 @@ pub mod tests {
                 vec![
                     PointOp {
                         fm: Ratio::new(2, 1),
-                        fa: Ratio::new(0, 1),
-                        pm: Ratio::new(1, 1),
-                        pa: Ratio::new(0, 1),
-                        g: Ratio::new(1, 1),
-                        l: Ratio::new(1, 1),
-                        attack: Ratio::new(1, 1),
-                        decay: Ratio::new(1, 1),
-                        asr: ASR::Long,
-                        portamento: Ratio::new(1, 1),
-                        osc_type: OscType::Sine { pow: None },
-                        names: NameSet::new(),
+                        ..PointOp::init()
                     },
                     PointOp {
                         fm: Ratio::new(0, 1),
-                        fa: Ratio::new(0, 1),
-                        pm: Ratio::new(1, 1),
-                        pa: Ratio::new(0, 1),
                         g: Ratio::new(0, 1),
-                        l: Ratio::new(1, 1),
-                        attack: Ratio::new(1, 1),
-                        decay: Ratio::new(1, 1),
-                        asr: ASR::Long,
-                        portamento: Ratio::new(1, 1),
-                        osc_type: OscType::Sine { pow: None },
-                        names: NameSet::new(),
+                        ..PointOp::init()
                     },
                 ],
                 vec![PointOp {
                     fm: Ratio::new(1, 1),
-                    fa: Ratio::new(0, 1),
-                    pm: Ratio::new(1, 1),
-                    pa: Ratio::new(0, 1),
-                    g: Ratio::new(1, 1),
                     l: Ratio::new(2, 1),
-                    attack: Ratio::new(1, 1),
-                    decay: Ratio::new(1, 1),
-                    asr: ASR::Long,
-                    portamento: Ratio::new(1, 1),
-                    osc_type: OscType::Sine { pow: None },
-                    names: NameSet::new(),
+                    ..PointOp::init()
                 }],
             ],
         };
@@ -988,17 +649,8 @@ pub mod tests {
             length_ratio: Ratio::new(9, 1),
             operations: vec![vec![PointOp {
                 fm: Ratio::new(3, 2),
-                fa: Ratio::new(0, 1),
-                pm: Ratio::new(1, 1),
-                pa: Ratio::new(0, 1),
-                g: Ratio::new(1, 1),
                 l: Ratio::new(9, 1),
-                attack: Ratio::new(1, 1),
-                decay: Ratio::new(1, 1),
-                asr: ASR::Long,
-                portamento: Ratio::new(1, 1),
-                osc_type: OscType::Sine { pow: None },
-                names: NameSet::new(),
+                ..PointOp::init()
             }]],
         };
 
@@ -1036,45 +688,15 @@ pub mod tests {
             operations: vec![vec![
                 PointOp {
                     fm: Ratio::new(1, 1),
-                    fa: Ratio::new(0, 1),
-                    pm: Ratio::new(1, 1),
-                    pa: Ratio::new(0, 1),
-                    g: Ratio::new(1, 1),
-                    l: Ratio::new(1, 1),
-                    attack: Ratio::new(1, 1),
-                    decay: Ratio::new(1, 1),
-                    asr: ASR::Long,
-                    portamento: Ratio::new(1, 1),
-                    osc_type: OscType::Sine { pow: None },
-                    names: NameSet::new(),
+                    ..PointOp::init()
                 },
                 PointOp {
                     fm: Ratio::new(8, 9),
-                    fa: Ratio::new(0, 1),
-                    pm: Ratio::new(1, 1),
-                    pa: Ratio::new(0, 1),
-                    g: Ratio::new(1, 1),
-                    l: Ratio::new(1, 1),
-                    attack: Ratio::new(1, 1),
-                    decay: Ratio::new(1, 1),
-                    asr: ASR::Long,
-                    portamento: Ratio::new(1, 1),
-                    osc_type: OscType::Sine { pow: None },
-                    names: NameSet::new(),
+                    ..PointOp::init()
                 },
                 PointOp {
                     fm: Ratio::new(4, 5),
-                    fa: Ratio::new(0, 1),
-                    pm: Ratio::new(1, 1),
-                    pa: Ratio::new(0, 1),
-                    g: Ratio::new(1, 1),
-                    l: Ratio::new(1, 1),
-                    attack: Ratio::new(1, 1),
-                    decay: Ratio::new(1, 1),
-                    asr: ASR::Long,
-                    portamento: Ratio::new(1, 1),
-                    osc_type: OscType::Sine { pow: None },
-                    names: NameSet::new(),
+                    ..PointOp::init()
                 },
             ]],
         };
@@ -1120,59 +742,23 @@ pub mod tests {
             operations: vec![vec![
                 PointOp {
                     fm: Ratio::new(1, 1),
-                    fa: Ratio::new(0, 1),
-                    pm: Ratio::new(1, 1),
-                    pa: Ratio::new(0, 1),
-                    g: Ratio::new(1, 1),
-                    l: Ratio::new(1, 1),
-                    attack: Ratio::new(1, 1),
-                    decay: Ratio::new(1, 1),
-                    portamento: Ratio::new(1, 1),
-                    asr: ASR::Long,
-                    osc_type: OscType::Sine { pow: None },
-                    names: NameSet::new(),
+                    ..PointOp::init()
                 },
                 PointOp {
                     fm: Ratio::new(9, 8),
-                    fa: Ratio::new(0, 1),
-                    pm: Ratio::new(1, 1),
-                    pa: Ratio::new(0, 1),
-                    g: Ratio::new(1, 1),
                     l: Ratio::new(1, 2),
-                    attack: Ratio::new(1, 1),
-                    decay: Ratio::new(1, 1),
-                    asr: ASR::Long,
-                    portamento: Ratio::new(1, 1),
-                    osc_type: OscType::Sine { pow: None },
-                    names: NameSet::new(),
+                    ..PointOp::init()
                 },
                 PointOp {
                     fm: Ratio::new(9, 8),
-                    fa: Ratio::new(0, 1),
-                    pm: Ratio::new(1, 1),
-                    pa: Ratio::new(0, 1),
                     g: Ratio::new(1, 2),
                     l: Ratio::new(1, 2),
-                    attack: Ratio::new(1, 1),
-                    decay: Ratio::new(1, 1),
-                    asr: ASR::Long,
-                    portamento: Ratio::new(1, 1),
-                    osc_type: OscType::Sine { pow: None },
-                    names: NameSet::new(),
+                    ..PointOp::init()
                 },
                 PointOp {
                     fm: Ratio::new(5, 4),
-                    fa: Ratio::new(0, 1),
-                    pm: Ratio::new(1, 1),
-                    pa: Ratio::new(0, 1),
                     g: Ratio::new(1, 2),
-                    l: Ratio::new(1, 1),
-                    attack: Ratio::new(1, 1),
-                    decay: Ratio::new(1, 1),
-                    asr: ASR::Long,
-                    portamento: Ratio::new(1, 1),
-                    osc_type: OscType::Sine { pow: None },
-                    names: NameSet::new(),
+                    ..PointOp::init()
                 },
             ]],
         };
