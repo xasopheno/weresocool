@@ -64,6 +64,9 @@ pub enum Op {
     Length {
         m: Rational64,
     },
+    Reverb {
+        m: Rational64,
+    },
     //
     Sequence {
         operations: Vec<Term>,

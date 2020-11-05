@@ -76,6 +76,8 @@ impl Normalize for Op {
                 }
             }
 
+            Op::Reverb { m: _ } => unimplemented!(),
+
             Op::Sine { pow } => {
                 for voice in input.operations.iter_mut() {
                     for point_op in voice {

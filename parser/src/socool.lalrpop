@@ -71,8 +71,7 @@ Operation: Term = {
       unimplemented!()
     },
 
-
-    <op1: Operation> ">" "@" <name: Name> <op2: ComposeOperation> => {
+<op1: Operation> ">" "@" <name: Name> <op2: ComposeOperation> => {
         Term::Op(
             Focus {
                 name: name,
@@ -183,14 +182,15 @@ BaseOperation: Term = {
           let asr = if decay_type == 2 {ASR::Long} else {ASR::Short};
           Term::Op(AD {attack, decay, asr})
         },
-    "Portamento" <v:Rational> => Term::Op(Portamento {m: v}),
-    "Silence" <v:Rational> => Term::Op(Silence {m: v}),
-    r"(Tm|Fm)" <v:Rational> => Term::Op(TransposeM {m: v}),
-    r"(Ta|Fa)" <v:Rational> => Term::Op(TransposeA {a: v}),
-    r"(PanM|Pm)" <v:Rational> => Term::Op(PanM {m: v}),
-    r"(PanA|Pa)" <v:Rational> => Term::Op(PanA {a: v}),
-    r"(Length|Lm)" <v:Rational> => Term::Op(Length {m: v}),
-    r"(Gain|Gm)" <v:Rational> => Term::Op(Gain {m: v}),
+    "Portamento" <m:Rational> => Term::Op(Portamento {m}),
+    "Reverb" <m:Rational> => Term::Op(Reverb {m}),
+    "Silence" <m:Rational> => Term::Op(Silence {m}),
+    r"(Tm|Fm)" <m:Rational> => Term::Op(TransposeM {m}),
+    r"(Ta|Fa)" <a:Rational> => Term::Op(TransposeA {a}),
+    r"(PanM|Pm)" <m:Rational> => Term::Op(PanM {m}),
+    r"(PanA|Pa)" <a:Rational> => Term::Op(PanA {a}),
+    r"(Length|Lm)" <m:Rational> => Term::Op(Length {m}),
+    r"(Gain|Gm)" <m:Rational> => Term::Op(Gain {m}),
     r"(Sequence|Seq)" "[" <operations: Operations> "]" => Term::Op(Sequence { operations: operations }),
     "Overlay" "[" <operations: Operations> "]" => Term::Op(Overlay { operations: operations }),
     r"(ModulateBy|ModBy)" "[" <operations: Operations> "]" => Term::Op(ModulateBy { operations: operations }),

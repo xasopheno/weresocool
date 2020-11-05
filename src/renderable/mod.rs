@@ -88,6 +88,7 @@ mod tests {
                 g: (0.5, 0.5),
                 l: 1.0,
                 t: 0.0,
+                reverb: false,
                 attack: 44_100.0,
                 decay: 44_100.0,
                 asr: ASR::Long,
