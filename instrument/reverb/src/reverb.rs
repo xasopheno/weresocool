@@ -68,22 +68,18 @@ pub struct Reverb {
 
 impl Reverb {
     pub fn is_empty(&self) -> bool {
-        self.all_pass_in_1.is_empty() &&
-        self.all_pass_in_2.is_empty() &&
-        self.all_pass_in_3.is_empty() &&
-        self.all_pass_in_4.is_empty() &&
-
-        self.all_pass_decay_11.is_empty() &&
-        self.all_pass_decay_12.is_empty() &&
-
-        self.delay_11.is_empty() &&
-        self.delay_12.is_empty() &&
-
-        self.all_pass_decay_21.is_empty() &&
-        self.all_pass_decay_22.is_empty() &&
-
-        self.delay_21.is_empty() &&
-        self.delay_22.is_empty()
+        self.all_pass_in_1.is_empty()
+            && self.all_pass_in_2.is_empty()
+            && self.all_pass_in_3.is_empty()
+            && self.all_pass_in_4.is_empty()
+            && self.all_pass_decay_11.is_empty()
+            && self.all_pass_decay_12.is_empty()
+            && self.delay_11.is_empty()
+            && self.delay_12.is_empty()
+            && self.all_pass_decay_21.is_empty()
+            && self.all_pass_decay_22.is_empty()
+            && self.delay_21.is_empty()
+            && self.delay_22.is_empty()
     }
     fn construct() -> Reverb {
         Reverb {
@@ -125,6 +121,13 @@ impl Reverb {
         verb.damping(0.2);
         verb.diffusion(0.76, 0.666, 0.707, 0.517);
         verb
+    }
+
+    pub fn update(&mut self, m: f32) {
+        self.bandwidth(0.9995 * m);
+        self.decay(0.85 * m);
+        self.damping(0.2 * m);
+        self.diffusion(0.76 * m, 0.666 * m, 0.707 * m, 0.517 * m);
     }
 
     /// Set input signal bandwidth, in [0,1]
@@ -246,7 +249,7 @@ macro_rules! impl_buffer {
                 $n
             }
             fn is_empty(&self) -> bool {
-                self.iter().all(|s| *s==0.0)
+                self.iter().all(|s| *s == 0.0)
             }
             fn index(&self, idx: usize) -> &f32 {
                 &self[idx]

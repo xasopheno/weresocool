@@ -102,6 +102,9 @@ color: orange\
 .ace-wsc-theme .ace_repeat {\
 color: #A9DC76\
 }\
+.ace-wsc-theme .ace_reverb {\
+color: blueviolet\
+}\
 .ace-wsc-theme .ace_comment {\
 color: grey\
 }\
