@@ -127,6 +127,7 @@ pub fn parsed_to_render(
                 if cli {
                     let audio: Vec<u8> = render_return.clone().into();
                     let f = filename_to_renderpath(filename);
+                    dbg!(&f);
                     write_audio_to_file(&audio, f.as_str(), "mp3")
                 };
                 Ok(render_return)

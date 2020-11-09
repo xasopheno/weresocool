@@ -45,9 +45,9 @@ impl RenderVoice {
         }
 
         if self.op_index >= self.ops.len() {
-            if !self.oscillator.is_empty() {
-                return Some(vec![RenderOp::init_silent_with_length((samples_left_in_batch as f64)/44_100.0)])
-            }
+            // if !self.oscillator.is_empty() {
+                // return Some(vec![RenderOp::init_silent_with_length((samples_left_in_batch as f64)/44_100.0)])
+            // }
 
             return if result.is_empty() {
                 None
