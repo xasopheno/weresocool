@@ -83,14 +83,14 @@ impl RenderOp {
         }
     }
 
-    pub const fn init_silent_with_length_and_osctype(l: f64, osc_type: OscType) -> Self {
+    pub const fn init_silent_with_length_and_osctype(l: f64, osc_type: OscType, reverb: f64) -> Self {
         Self {
             f: 0.0,
             g: (0.0, 0.0),
             p: 0.0,
             l,
             t: 0.0,
-            reverb: 0.0,
+            reverb: reverb,
             attack: SETTINGS.sample_rate,
             decay: SETTINGS.sample_rate,
             asr: ASR::Long,
@@ -268,11 +268,13 @@ pub fn nf_to_vec_renderable(
         .par_iter()
         .enumerate()
         .map(|(voice, vec_point_op)| {
-            let last_osc = vec_point_op
+            let last_op = vec_point_op
                 .last()
                 .cloned()
-                .unwrap_or_else(PointOp::init_silent)
-                .osc_type;
+                .unwrap_or_else(PointOp::init_silent);
+            let last_osc = last_op.osc_type;
+            let last_reverb = last_op.reverb;
+
             let mut time = Rational64::new(0, 1);
             let mut result: Vec<RenderOp> = vec![];
             for (event, p_op) in vec_point_op.iter().enumerate() {
@@ -292,7 +294,7 @@ pub fn nf_to_vec_renderable(
                 result.push(op);
             }
             if default_settings().pad_end {
-                result.push(RenderOp::init_silent_with_length_and_osctype(1.0, last_osc));
+                result.push(RenderOp::init_silent_with_length_and_osctype(1.0, last_osc, weresocool_shared::helpers::r_to_f64(last_reverb)));
             }
             result
         })
