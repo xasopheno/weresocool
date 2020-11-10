@@ -116,6 +116,7 @@ impl Voice {
         }
 
         if op.reverb > 0.0 {
+            self.reverb.update(op.reverb as f32);
             self.reverb.audio_requested(&mut buffer, 44_100.0);
         }
 

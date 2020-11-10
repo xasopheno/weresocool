@@ -24,8 +24,8 @@ export const Ratios = (props: { width: number }): React.ReactElement | null => {
       </div>
     );
   } else if (props.width > 700) {
-    return <div />;
+    return null;
   } else {
-    return <div />;
+    return null;
   }
 };

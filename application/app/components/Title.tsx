@@ -1,11 +1,14 @@
 import React from 'react';
 import styled from 'styled-components';
 
-export const Logo = (): React.ReactElement => {
+export const Logo = (props: { width: number }): React.ReactElement | null => {
   return (
     <div id={'outerSpace'}>
       <Title>WereSoCool</Title>
-      <SubTitle>Make cool sounds. Impress your friends/pets/plants.</SubTitle>
+
+      {props.width > 550 ? (
+        <SubTitle>Make cool sounds. Impress your friends/pets/plants.</SubTitle>
+      ) : null}
     </div>
   );
 };
