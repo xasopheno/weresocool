@@ -71,6 +71,7 @@ impl Voice {
     pub fn generate_waveform(&mut self, op: &RenderOp, offset: &Offset) -> Vec<f64> {
         let mut buffer: Vec<f64> = vec![0.0; op.samples];
 
+
         let p_delta = self.calculate_portamento_delta(
             op.portamento,
             self.offset_past.frequency,
@@ -83,6 +84,7 @@ impl Voice {
             op.index + op.samples,
             op.total_samples,
         ) * loudness_normalization(self.offset_current.frequency);
+        self.reverb.update(op.reverb as f32);
 
         for (index, sample) in buffer.iter_mut().enumerate() {
             let frequency = self.calculate_frequency(
@@ -101,11 +103,15 @@ impl Voice {
 
             let info = SampleInfo { gain, frequency };
 
-            let new_sample = match self.osc_type {
+            let mut new_sample = match self.osc_type {
                 OscType::Sine { pow } => self.generate_sine_sample(info, pow),
                 OscType::Square => self.generate_square_sample(info),
                 OscType::Noise => self.generate_random_sample(info),
             };
+
+            if op.reverb > 0.0 {
+                new_sample = self.reverb.calc_sample(new_sample, gain);
+            }
 
             if index == op.samples - 1 {
                 self.offset_current.frequency = frequency;
@@ -115,10 +121,7 @@ impl Voice {
             *sample += new_sample
         }
 
-        if op.reverb > 0.0 {
-            self.reverb.update(op.reverb as f32);
-            self.reverb.audio_requested(&mut buffer, 44_100.0);
-        }
+
 
         buffer.to_vec()
     }

@@ -125,9 +125,9 @@ impl Reverb {
 
     pub fn update(&mut self, m: f32) {
         self.bandwidth(0.9995 * m);
-        self.decay(0.85 * m);
+        self.decay(0.85);
         self.damping(0.2 * m);
-        self.diffusion(0.76 * m, 0.666 * m, 0.707 * m, 0.517 * m);
+        self.diffusion(0.76, 0.666, 0.707, 0.517);
     }
 
     /// Set input signal bandwidth, in [0,1]
