@@ -24,7 +24,10 @@ where
     /// Get size of delay-line
     pub fn is_empty(&self) -> bool {
         self.buffer.is_empty()
+    }
 
+    pub fn zero(&mut self) {
+        self.buffer = B::zeroed()
     }
 
     /// Get size of delay-line

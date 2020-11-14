@@ -26,8 +26,7 @@ impl Reverb {
 
         map_in_place(output, |sample| {
             let dry = to_f32_sample(sample);
-            let (output_1, output_2) = self.calc_frame(dry as f32, 0.6);
-            let avg = (output_1 + output_2) / 2.0;
+            let avg = self.calc_frame(dry as f32, 0.6);
             from_f32_sample(avg as f64)
         })
     }
@@ -41,9 +40,8 @@ impl Reverb {
             f.to_sample::<S::Float>().to_sample::<S>()
         }
 
-        let dry = to_f32_sample(sample );
-        let (output_1, output_2) = self.calc_frame(dry as f32, gain as f32);
-        let avg = (output_1 + output_2) / 2.0;
+        let dry = to_f32_sample(sample);
+        let avg = self.calc_frame(dry as f32, gain as f32);
         from_f32_sample(avg as f64)
     }
 }
