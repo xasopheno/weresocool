@@ -19,7 +19,7 @@ pub fn real_time_render_manager(
     let mut x = 0;
 
     let output_stream = pa.open_non_blocking_stream(output_stream_settings, move |args| {
-        if x < 30 {
+        if x < 0 {
             write_output_buffer(args.buffer, StereoWaveform::new(SETTINGS.buffer_size));
             x += 1;
             return pa::Continue;

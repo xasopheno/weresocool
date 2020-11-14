@@ -26,8 +26,9 @@ where
         self.buffer.is_empty()
     }
 
-    pub fn zero(&mut self) {
-        self.buffer = B::zeroed()
+    pub fn reset(&mut self) {
+        self.pos = 0;
+        self.buffer = B::zeroed();
     }
 
     /// Get size of delay-line

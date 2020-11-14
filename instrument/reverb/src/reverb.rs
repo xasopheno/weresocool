@@ -17,6 +17,12 @@ impl OnePole {
         }
     }
 
+    pub fn reset(&mut self) {
+        self.one = 0.0;
+        self.a = 1.0;
+        self.b = 0.0;
+    }
+
     pub fn damping(&mut self, value: f32) {
         self.a = 1.0 - value.abs();
         self.b = value;
@@ -38,7 +44,6 @@ impl OnePole {
 /// [45(9):660-684](https://ccrma.stanford.edu/~dattorro/EffectDesignPart1.pdf)
 #[derive(Clone, Debug, PartialEq)]
 pub struct Reverb {
-    last_sample: f32,
     delay_feed_1: f32,
     delay_feed_2: f32,
     decay_1: f32,
@@ -84,7 +89,6 @@ impl Reverb {
     }
     fn construct() -> Reverb {
         Reverb {
-            last_sample: 0.0,
             delay_feed_1: 0.0,
             delay_feed_2: 0.0,
             decay_1: 0.0,
@@ -93,6 +97,7 @@ impl Reverb {
 
             pre_delay: DelayLine::new(),
             one_pole: OnePole::new(),
+
             all_pass_in_1: DelayLine::new(),
             all_pass_in_2: DelayLine::new(),
             all_pass_in_3: DelayLine::new(),
@@ -113,6 +118,36 @@ impl Reverb {
 
             one_pole_2: OnePole::new(),
         }
+    }
+
+    pub fn reset(&mut self) {
+        self.delay_feed_1 = 0.0;
+        self.delay_feed_2 = 0.0;
+        self.decay_1 = 0.0;
+        self.decay_2 = 0.0;
+        self.decay = 0.0;
+
+        self.pre_delay.reset();
+        self.one_pole.reset();
+        self.all_pass_in_1.reset();
+        self.all_pass_in_2.reset();
+        self.all_pass_in_3.reset();
+        self.all_pass_in_4.reset();
+
+        self.all_pass_decay_11.reset();
+        self.all_pass_decay_12.reset();
+
+        self.delay_11.reset();
+        self.delay_12.reset();
+
+        self.one_pole_1.reset();
+        self.all_pass_decay_21.reset();
+        self.all_pass_decay_22.reset();
+
+        self.delay_21.reset();
+        self.delay_22.reset();
+
+        self.one_pole_2.reset();
     }
 
     /// Contructor default reverb
