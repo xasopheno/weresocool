@@ -10,5 +10,5 @@ overtones = {
 main = {
   overtones |
   Reverb 1 |
-  Seq [Fm 1, Fm 9/8, Fm 4/3, 0^1/10, Fm 1]
+  Seq [Fm 1, Fm 9/8, Fm 4/3, 0^3/10, Fm 1]
 }
