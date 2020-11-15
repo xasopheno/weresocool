@@ -44,6 +44,7 @@ impl OnePole {
 /// [45(9):660-684](https://ccrma.stanford.edu/~dattorro/EffectDesignPart1.pdf)
 #[derive(Clone, Debug, PartialEq)]
 pub struct Reverb {
+    last_gain: f64,
     delay_feed_1: f32,
     delay_feed_2: f32,
     decay_1: f32,
@@ -89,6 +90,7 @@ impl Reverb {
     }
     fn construct() -> Reverb {
         Reverb {
+            last_gain: 0.0,
             delay_feed_1: 0.0,
             delay_feed_2: 0.0,
             decay_1: 0.0,
@@ -121,6 +123,7 @@ impl Reverb {
     }
 
     pub fn reset(&mut self) {
+        self.last_gain = 0.0;
         self.delay_feed_1 = 0.0;
         self.delay_feed_2 = 0.0;
         self.decay_1 = 0.0;
@@ -129,6 +132,7 @@ impl Reverb {
 
         self.pre_delay.reset();
         self.one_pole.reset();
+
         self.all_pass_in_1.reset();
         self.all_pass_in_2.reset();
         self.all_pass_in_3.reset();
@@ -230,6 +234,9 @@ impl Reverb {
     /// @param[out] out2    wet output sample 2
     /// @param[ in] gain    gain of output
     pub fn calc_frame(&mut self, input: f32, gain: f32) -> f32 {
+        if self.last_gain == 0.0 && gain != 0.0 {
+            self.reset()
+        }
         let mut value = self.pre_delay.get_write_and_step(input * 0.5);
         value = self.one_pole.call(value);
         value = self.all_pass_in_1.allpass(value, self.delay_feed_1);
@@ -268,6 +275,7 @@ impl Reverb {
                 - self.delay_22.read(121)
         } * gain;
 
+        self.last_gain = gain.into();
         (output_1 + output_2) / 2.0
     }
 }
