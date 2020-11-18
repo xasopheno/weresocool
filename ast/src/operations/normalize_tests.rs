@@ -204,7 +204,7 @@ pub mod tests {
             ..PointOp::init()
         };
 
-        a.mod_by(b);
+        a.mod_by(b, a.l);
 
         let mut names_expected = NameSet::new();
         names_expected.insert("foo".to_string());

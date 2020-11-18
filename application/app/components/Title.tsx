@@ -8,7 +8,9 @@ export const Logo = (props: { width: number }): React.ReactElement | null => {
 
       {props.width > 550 ? (
         <SubTitle>Make cool sounds. Impress your friends/pets/plants.</SubTitle>
-      ) : null}
+      ) : (
+        <SubTitle>Make cool sounds.</SubTitle>
+      )}
     </div>
   );
 };
