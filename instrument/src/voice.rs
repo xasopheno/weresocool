@@ -110,7 +110,10 @@ impl Voice {
             };
 
             if op.reverb > 0.0 {
-                new_sample = self.reverb.calc_sample(new_sample, gain);
+                new_sample = self
+                    .reverb
+                    .calc_sample(new_sample as f32, gain as f32)
+                    .into();
             }
 
             if index == op.samples - 1 {

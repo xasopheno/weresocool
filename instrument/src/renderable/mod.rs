@@ -83,14 +83,18 @@ impl RenderOp {
         }
     }
 
-    pub const fn init_silent_with_length_and_osctype(l: f64, osc_type: OscType, reverb: f64) -> Self {
+    pub const fn init_silent_with_length_and_osctype(
+        l: f64,
+        osc_type: OscType,
+        reverb: f64,
+    ) -> Self {
         Self {
             f: 0.0,
             g: (0.0, 0.0),
             p: 0.0,
             l,
             t: 0.0,
-            reverb: reverb,
+            reverb,
             attack: SETTINGS.sample_rate,
             decay: SETTINGS.sample_rate,
             asr: ASR::Long,
@@ -294,7 +298,11 @@ pub fn nf_to_vec_renderable(
                 result.push(op);
             }
             if default_settings().pad_end {
-                result.push(RenderOp::init_silent_with_length_and_osctype(1.0, last_osc, weresocool_shared::helpers::r_to_f64(last_reverb)));
+                result.push(RenderOp::init_silent_with_length_and_osctype(
+                    1.0,
+                    last_osc,
+                    weresocool_shared::helpers::r_to_f64(last_reverb),
+                ));
             }
             result
         })

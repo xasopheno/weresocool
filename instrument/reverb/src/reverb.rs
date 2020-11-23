@@ -233,7 +233,7 @@ impl Reverb {
     /// @param[out] out1    wet output sample 1
     /// @param[out] out2    wet output sample 2
     /// @param[ in] gain    gain of output
-    pub fn calc_frame(&mut self, input: f32, gain: f32) -> f32 {
+    pub fn calc_sample(&mut self, input: f32, gain: f32) -> f32 {
         if self.last_gain == 0.0 && gain != 0.0 {
             self.reset()
         }
