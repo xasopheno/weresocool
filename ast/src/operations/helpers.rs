@@ -72,7 +72,7 @@ pub fn pad_length(input: &mut NormalForm, max_len: Rational64, defs: &Defs) -> R
                 .iter()
                 .last()
                 .map(|op| op.to_owned())
-                .unwrap_or_else(|| PointOp::init_silent());
+                .unwrap_or_else(PointOp::init_silent);
             let osc_type = last.osc_type;
             let reverb = last.reverb;
             voice.push(PointOp {
