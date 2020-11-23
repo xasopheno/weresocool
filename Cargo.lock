@@ -2291,7 +2291,6 @@ dependencies = [
 name = "reverb"
 version = "0.3.0"
 dependencies = [
- "dsp-chain",
  "portaudio 0.6.4",
 ]
 

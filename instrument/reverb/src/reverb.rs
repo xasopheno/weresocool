@@ -7,6 +7,12 @@ struct OnePole {
     b: f32,
 }
 
+impl Default for OnePole {
+    fn default() -> Self {
+        Self::new()
+    }
+}
+
 impl OnePole {
     /// Contructor for a new OnePole
     pub fn new() -> OnePole {
@@ -71,6 +77,12 @@ pub struct Reverb {
     delay_21: DelayLine<[f32; 4217]>,
     delay_22: DelayLine<[f32; 3163]>,
     one_pole_2: OnePole,
+}
+
+impl Default for Reverb {
+    fn default() -> Self {
+        Self::new()
+    }
 }
 
 impl Reverb {
