@@ -1,0 +1,14 @@
+{ f: 220, l: 1, g: 1, p: 0 } 
+
+main = {
+  Seq [
+    Reverb 1 | Seq [Fm 1, Fm 9/8]
+  ]
+}
+
+expect = {
+  Seq [
+    Seq [Reverb 1 | Fm 1, Reverb 1 | Fm 9/8]
+  ]
+}
+

@@ -121,10 +121,6 @@ impl Voice {
             *sample += new_sample
         }
 
-        // if op_gain == 0.0 && self.past.gain != 0.0 {
-        // self.reverb.reset();
-        // }
-
         buffer.to_vec()
     }
 
