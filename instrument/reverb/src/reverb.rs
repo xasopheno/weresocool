@@ -86,20 +86,6 @@ impl Default for Reverb {
 }
 
 impl Reverb {
-    pub fn is_empty(&self) -> bool {
-        self.all_pass_in_1.is_empty()
-            && self.all_pass_in_2.is_empty()
-            && self.all_pass_in_3.is_empty()
-            && self.all_pass_in_4.is_empty()
-            && self.all_pass_decay_11.is_empty()
-            && self.all_pass_decay_12.is_empty()
-            && self.delay_11.is_empty()
-            && self.delay_12.is_empty()
-            && self.all_pass_decay_21.is_empty()
-            && self.all_pass_decay_22.is_empty()
-            && self.delay_21.is_empty()
-            && self.delay_22.is_empty()
-    }
     fn construct() -> Reverb {
         Reverb {
             last_gain: 0.0,
