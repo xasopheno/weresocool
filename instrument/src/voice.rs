@@ -2,6 +2,8 @@ use crate::{
     renderable::{Offset, RenderOp},
     {gain::gain_at_index, loudness::loudness_normalization},
 };
+
+use reverb::Reverb;
 use weresocool_ast::{OscType, ASR};
 use weresocool_shared::{default_settings, Settings};
 
@@ -9,6 +11,7 @@ const SETTINGS: Settings = default_settings();
 
 #[derive(Clone, Debug, PartialEq)]
 pub struct Voice {
+    pub reverb: Reverb,
     pub index: usize,
     pub past: VoiceState,
     pub current: VoiceState,
@@ -45,8 +48,9 @@ impl VoiceState {
 }
 
 impl Voice {
-    pub const fn init(index: usize) -> Self {
+    pub fn init(index: usize) -> Self {
         Self {
+            reverb: Reverb::new(),
             index,
             past: VoiceState::init(),
             current: VoiceState::init(),
@@ -59,6 +63,7 @@ impl Voice {
             asr: ASR::Long,
         }
     }
+
     pub fn generate_waveform(&mut self, op: &RenderOp, offset: &Offset) -> Vec<f64> {
         let mut buffer: Vec<f64> = vec![0.0; op.samples];
 
@@ -74,6 +79,8 @@ impl Voice {
             op.index + op.samples,
             op.total_samples,
         ) * loudness_normalization(self.offset_current.frequency);
+
+        self.reverb.update(op.reverb as f32);
 
         for (index, sample) in buffer.iter_mut().enumerate() {
             let frequency = self.calculate_frequency(
@@ -92,11 +99,18 @@ impl Voice {
 
             let info = SampleInfo { gain, frequency };
 
-            let new_sample = match self.osc_type {
+            let mut new_sample = match self.osc_type {
                 OscType::Sine { pow } => self.generate_sine_sample(info, pow),
                 OscType::Square => self.generate_square_sample(info),
                 OscType::Noise => self.generate_random_sample(info),
             };
+
+            if op.reverb > 0.0 {
+                new_sample = self
+                    .reverb
+                    .calc_sample(new_sample as f32, gain as f32)
+                    .into();
+            }
 
             if index == op.samples - 1 {
                 self.offset_current.frequency = frequency;
@@ -106,7 +120,7 @@ impl Voice {
             *sample += new_sample
         }
 
-        buffer
+        buffer.to_vec()
     }
 
     pub fn update(&mut self, op: &RenderOp, offset: &Offset) {

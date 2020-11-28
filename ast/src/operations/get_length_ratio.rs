@@ -14,6 +14,7 @@ impl GetLengthRatio for Op {
             | Op::Noise {}
             | Op::FInvert {}
             | Op::Reverse {}
+            | Op::Reverb { .. }
             | Op::TransposeM { .. }
             | Op::TransposeA { .. }
             | Op::PanA { .. }

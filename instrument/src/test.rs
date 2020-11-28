@@ -18,6 +18,7 @@ pub mod tests {
 
             let result = Voice {
                 index,
+                reverb: reverb::Reverb::new(),
                 past: VoiceState {
                     frequency: 0.0,
                     gain: 0.0,
@@ -99,6 +100,7 @@ pub mod tests {
                 voices: (
                     Voice {
                         index: 0,
+                        reverb: reverb::Reverb::new(),
                         phase: 0.0,
                         past: VoiceState {
                             frequency: 0.0,
@@ -123,6 +125,7 @@ pub mod tests {
                     },
                     Voice {
                         index: 1,
+                        reverb: reverb::Reverb::new(),
                         phase: 0.0,
                         past: VoiceState {
                             frequency: 0.0,

@@ -1,0 +1,14 @@
+{ f: 340, l: 1, g: 1, p: 0 }
+
+overtones = {
+    O[
+      (1/1, 2, 1, 1),
+      (1/1, 0, 1, -1),
+  	]
+}
+
+main = {
+  overtones |
+  Reverb 1 |
+  Seq [Fm 1, Fm 9/8, Fm 4/3, 0^3/10, Fm 1]
+}

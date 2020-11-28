@@ -83,7 +83,7 @@ export const OuterSpace = (): React.ReactElement => {
       <Spinner show={store.printing} />
       <Version>{`v${remote.app.getVersion()}`}</Version>
       <LED state={store.backend.state} />
-      <Logo />
+      <Logo width={width} />
       <Ratios width={width} />
       <ButtonBar width={width} />
       <Controls handleLoad={handleLoad} />

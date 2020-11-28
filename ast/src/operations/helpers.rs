@@ -35,25 +35,25 @@ pub fn modulate(input: &[PointOp], modulator: &[PointOp]) -> Vec<PointOp> {
     let mut result = vec![];
     while !m.is_empty() && !i.is_empty() {
         let mut inpu = i[0].clone();
-        let mut modu = m[0].clone();
+        let modu = m[0].clone();
         let modu_l = modu.l;
         let inpu_l = inpu.l;
         if modu_l < inpu_l {
-            modu.mod_by(inpu);
-            result.push(modu);
+            inpu.mod_by(modu, modu_l);
+            result.push(inpu);
 
             i[0].l -= modu_l;
 
             m.remove(0);
         } else if modu.l > inpu.l {
-            inpu.mod_by(modu);
+            inpu.mod_by(modu, inpu_l);
             result.push(inpu);
 
             m[0].l -= inpu_l;
 
             i.remove(0);
         } else {
-            inpu.mod_by(modu);
+            inpu.mod_by(modu, inpu_l);
             result.push(inpu);
 
             i.remove(0);
@@ -68,7 +68,13 @@ pub fn pad_length(input: &mut NormalForm, max_len: Rational64, defs: &Defs) -> R
     let input_lr = input.get_length_ratio(defs)?;
     if max_len > Rational64::new(0, 1) && input_lr < max_len {
         for voice in input.operations.iter_mut() {
-            let osc_type = voice.clone().last().unwrap().osc_type;
+            let last = voice
+                .iter()
+                .last()
+                .map(|op| op.to_owned())
+                .unwrap_or_else(PointOp::init_silent);
+            let osc_type = last.osc_type;
+            let reverb = last.reverb;
             voice.push(PointOp {
                 fm: Ratio::new(0, 1),
                 fa: Ratio::new(0, 1),
@@ -76,6 +82,7 @@ pub fn pad_length(input: &mut NormalForm, max_len: Rational64, defs: &Defs) -> R
                 pa: Ratio::new(0, 1),
                 g: Ratio::new(0, 1),
                 l: max_len - input_lr,
+                reverb,
                 attack: Ratio::new(1, 1),
                 decay: Ratio::new(1, 1),
                 asr: ASR::Long,
@@ -106,6 +113,7 @@ pub fn join_sequence(mut l: NormalForm, mut r: NormalForm) -> NormalForm {
                     pa: Ratio::new(0, 1),
                     g: Ratio::new(0, 1),
                     l: r.length_ratio,
+                    reverb: Ratio::new(0, 1),
                     attack: Ratio::new(1, 1),
                     decay: Ratio::new(1, 1),
                     asr: ASR::Long,
@@ -124,6 +132,7 @@ pub fn join_sequence(mut l: NormalForm, mut r: NormalForm) -> NormalForm {
                     pa: Ratio::new(0, 1),
                     g: Ratio::new(0, 1),
                     l: l.length_ratio,
+                    reverb: Ratio::new(0, 1),
                     attack: Ratio::new(1, 1),
                     decay: Ratio::new(1, 1),
                     asr: ASR::Long,

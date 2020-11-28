@@ -27,6 +27,7 @@ pub struct PointOp {
     pub pm: Rational64,
     pub pa: Rational64,
     pub g: Rational64,
+    pub reverb: Rational64,
     pub l: Rational64,
     pub attack: Rational64,
     pub decay: Rational64,
@@ -161,6 +162,7 @@ impl Mul<PointOp> for PointOp {
             pa: self.pa + other.pa,
             g: self.g * other.g,
             l: self.l * other.l,
+            reverb: other.reverb,
             osc_type: other.osc_type,
             attack: self.attack * other.attack,
             decay: self.decay * other.decay,
@@ -184,6 +186,7 @@ impl<'a, 'b> Mul<&'b PointOp> for &'a PointOp {
             pa: self.pa + other.pa,
             g: self.g * other.g,
             l: self.l * other.l,
+            reverb: other.reverb,
             osc_type: other.osc_type,
             attack: self.attack * other.attack,
             decay: self.decay * other.decay,
@@ -205,6 +208,7 @@ impl MulAssign for PointOp {
             pa: self.pa + other.pa,
             g: self.g * other.g,
             l: self.l * other.l,
+            reverb: other.reverb,
             osc_type: other.osc_type,
             attack: self.attack * other.attack,
             decay: self.decay * other.decay,
@@ -221,7 +225,7 @@ impl PointOp {
         self.fm == zero && self.fa < Rational64::new(20, 1) || self.g == zero
     }
 
-    pub fn mod_by(&mut self, other: PointOp) {
+    pub fn mod_by(&mut self, other: PointOp, l: Rational64) {
         let names = union_names(self.names.clone(), &other.names);
         *self = PointOp {
             fm: self.fm * other.fm,
@@ -229,7 +233,8 @@ impl PointOp {
             pm: self.pm * other.pm,
             pa: self.pa + other.pa,
             g: self.g * other.g,
-            l: self.l,
+            l,
+            reverb: other.reverb,
             osc_type: other.osc_type,
             attack: self.attack * other.attack,
             decay: self.decay * other.decay,
@@ -247,6 +252,7 @@ impl PointOp {
             pa: Ratio::new(0, 1),
             g: Ratio::new(1, 1),
             l: Ratio::new(1, 1),
+            reverb: Ratio::new(0, 1),
             attack: Ratio::new(1, 1),
             decay: Ratio::new(1, 1),
             asr: ASR::Long,
@@ -263,6 +269,7 @@ impl PointOp {
             pa: Ratio::new(0, 1),
             g: Ratio::new(0, 1),
             l: Ratio::new(1, 1),
+            reverb: Ratio::new(0, 1),
             attack: Ratio::new(1, 1),
             decay: Ratio::new(1, 1),
             portamento: Ratio::new(1, 1),

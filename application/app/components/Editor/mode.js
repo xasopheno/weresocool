@@ -77,6 +77,10 @@ export class CustomHighlightRules extends window.ace.acequire(
           token: 'repeat',
           regex: 'Repeat',
         },
+        {
+          token: 'reverb',
+          regex: 'Reverb',
+        },
         { token: 'group_operation', regex: 'Sequence|Overlay|Seq' },
 
         {
