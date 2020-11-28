@@ -942,15 +942,6 @@ dependencies = [
 ]
 
 [[package]]
-name = "daggy"
-version = "0.4.1"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "d6a9b61ac11d223e884f431772d311087644e4710c1555d7db270cefb5fb9c69"
-dependencies = [
- "petgraph 0.2.10",
-]
-
-[[package]]
 name = "derive_more"
 version = "0.99.11"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -1024,16 +1015,6 @@ dependencies = [
  "regex",
  "serde",
  "strsim 0.9.3",
-]
-
-[[package]]
-name = "dsp-chain"
-version = "0.13.1"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "5251bbb15727afffbf50403b1a5a6f030c1662bad1a5c665a895547330a17e17"
-dependencies = [
- "daggy",
- "sample",
 ]
 
 [[package]]
@@ -1133,12 +1114,6 @@ checksum = "ca5faf057445ce5c9d4329e382b2ce7ca38550ef3b73a5348362d5f24e0c7fe3"
 dependencies = [
  "instant",
 ]
-
-[[package]]
-name = "fixedbitset"
-version = "0.1.9"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "86d4de0081402f5e88cdac65c8dcdcc73118c1a7a465e2a05f0da05843a8ea33"
 
 [[package]]
 name = "fixedbitset"
@@ -1554,7 +1529,7 @@ dependencies = [
  "ena",
  "itertools",
  "lalrpop-util",
- "petgraph 0.5.1",
+ "petgraph",
  "regex",
  "regex-syntax",
  "serde",
@@ -1976,20 +1951,11 @@ checksum = "d4fd5641d01c8f18a23da7b6fe29298ff4b55afcccdf78973b24cf3175fee32e"
 
 [[package]]
 name = "petgraph"
-version = "0.2.10"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "3418aea32729bb24e3751c3893aa18f829a804f5030af2e9395c47c9b38f9535"
-dependencies = [
- "fixedbitset 0.1.9",
-]
-
-[[package]]
-name = "petgraph"
 version = "0.5.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "467d164a6de56270bd7c4d070df81d07beace25012d5103ced4e9ff08d6afdb7"
 dependencies = [
- "fixedbitset 0.2.0",
+ "fixedbitset",
  "indexmap",
 ]
 
@@ -2367,12 +2333,6 @@ checksum = "93fc1dc3aaa9bfed95e02e6eadabb4baf7e3078b0bd1b4d7b6b0b68378900502"
 dependencies = [
  "winapi-util",
 ]
-
-[[package]]
-name = "sample"
-version = "0.6.2"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "80fb6a09c9909286e083dd666073427801c875452c6aada9e4f56bf98a10d76c"
 
 [[package]]
 name = "scopeguard"
@@ -3103,7 +3063,6 @@ dependencies = [
 name = "weresocool_instrument"
 version = "0.1.0"
 dependencies = [
- "dsp-chain",
  "num-rational 0.3.0",
  "rand",
  "rayon",
