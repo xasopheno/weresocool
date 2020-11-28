@@ -43,10 +43,6 @@ impl Oscillator {
         }
     }
 
-    pub fn is_empty(&self) -> bool {
-        self.voices.0.is_empty() && self.voices.1.is_empty()
-    }
-
     pub fn update(&mut self, op: &RenderOp, offset: &Offset) {
         let (ref mut l_voice, ref mut r_voice) = self.voices;
         l_voice.update(op, offset);
