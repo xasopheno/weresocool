@@ -291,9 +291,6 @@ macro_rules! impl_buffer {
             fn len(&self) -> usize {
                 $n
             }
-            fn is_empty(&self) -> bool {
-                self.iter().all(|s| *s == 0.0)
-            }
             fn index(&self, idx: usize) -> &f32 {
                 &self[idx]
             }

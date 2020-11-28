@@ -64,10 +64,6 @@ impl Voice {
         }
     }
 
-    pub fn is_empty(&self) -> bool {
-        self.reverb.is_empty()
-    }
-
     pub fn generate_waveform(&mut self, op: &RenderOp, offset: &Offset) -> Vec<f64> {
         let mut buffer: Vec<f64> = vec![0.0; op.samples];
 
