@@ -120,6 +120,10 @@ ListBase: ListOp = {
     ListOp::Const(et(n))
   },
 
+  "ET" "(" <et: Int>"," "["<indices: Indices>"]" "," <n: Int> ")" => {
+    unimplemented!()
+  },
+
 }
 
 Indices: Indices = {

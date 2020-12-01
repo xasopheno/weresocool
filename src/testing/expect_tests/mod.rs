@@ -62,28 +62,28 @@ mod expect {
     // fn __fit_gain_generated_(resource: &str) {
     // expect(resource);
     // }
-    #[test_resources("mocks/waveform/*.socool")]
-    fn __waveform_generated_(resource: &str) {
-        expect(resource);
-    }
+    // #[test_resources("mocks/waveform/*.socool")]
+    // fn __waveform_generated_(resource: &str) {
+    // expect(resource);
+    // }
 
     #[test_resources("mocks/list/*.socool")]
     fn __list_generated_(resource: &str) {
         expect(resource);
     }
 
-    #[test_resources("mocks/imports/*.socool")]
-    fn __imports_generated_(resource: &str) {
-        expect(resource);
-    }
+    // #[test_resources("mocks/imports/*.socool")]
+    // fn __imports_generated_(resource: &str) {
+    // expect(resource);
+    // }
 
-    #[test_resources("mocks/index/*.socool")]
-    fn __index_generated_(resource: &str) {
-        expect(resource);
-    }
+    // #[test_resources("mocks/index/*.socool")]
+    // fn __index_generated_(resource: &str) {
+    // expect(resource);
+    // }
 
-    #[test_resources("mocks/function/*.socool")]
-    fn __function_generated_(resource: &str) {
-        expect(resource);
-    }
+    // #[test_resources("mocks/function/*.socool")]
+    // fn __function_generated_(resource: &str) {
+    // expect(resource);
+    // }
 }
