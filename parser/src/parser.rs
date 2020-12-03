@@ -51,6 +51,7 @@ fn process_op_table(defs: Defs) -> Result<Defs, Error> {
                 lop.apply_to_normal_form(&mut nf, &defs)?;
                 result.terms.insert(name.to_string(), Term::Nf(nf));
             }
+            _ => unimplemented!(),
         };
     }
 

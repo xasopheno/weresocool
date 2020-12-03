@@ -9,6 +9,7 @@ use weresocool_ast::{
         ASR,
         FunDef,
         ListOp,
+        Generator,
         Indices, 
         Index,
 };
@@ -54,8 +55,11 @@ LetDef: () = {
 
     <name: Name> "=" <list: List> => {
         defs.lists.insert(name.clone(), Term::Lop(list)); ()
-    }
+    },
     
+    <name: Name> "=" <generator: Generator> => {
+      unimplemented!();
+    }
 };
 
 
@@ -85,6 +89,10 @@ Operation: Term = {
 
     <list: List> => Term::Lop(list),
 
+}
+
+Generator: Generator = {
+  "Gen" "(" <list: List> "," "[" <coefs: Ints> "]" ")" =>  unimplemented!()
 }
 
 List: ListOp = {
@@ -119,12 +127,8 @@ ListBase: ListOp = {
   "ET" "(" <n: Int> ")" => {
     ListOp::Const(et(n))
   },
-
-  "ET" "(" <et: Int>"," "["<indices: Indices>"]" "," <n: Int> ")" => {
-    unimplemented!()
-  },
-
 }
+
 
 Indices: Indices = {
   <indices: Comma<Index>> => Indices(indices),

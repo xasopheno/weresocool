@@ -1,8 +1,23 @@
 pub mod indices;
 pub mod normalize_listop;
 pub mod substitute_list;
+use crate::NormalForm;
 
 use crate::Term;
+
+#[derive(Clone, PartialEq, Debug, Hash)]
+pub struct Coefs {
+    idx: usize,
+    coefs: Vec<isize>,
+}
+
+#[derive(Clone, PartialEq, Debug, Hash)]
+pub struct Generator {
+    state: NormalForm,
+    idx: usize,
+    ops: ListOp,
+    coefs: Coefs,
+}
 
 #[derive(Clone, PartialEq, Debug, Hash)]
 pub enum ListOp {

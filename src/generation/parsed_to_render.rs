@@ -81,6 +81,7 @@ pub fn parsed_to_render(
                 println!("main as list not yet supported.");
                 return Err(Error::with_msg("main as list not yet supported"));
             }
+            _ => unimplemented!(),
         },
         None => {
             return Err(IdError {

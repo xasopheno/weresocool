@@ -40,6 +40,7 @@ impl Normalize for Op {
                                 let result = lop.substitute(input, defs, &arg_map)?;
                                 result.apply_to_normal_form(input, defs)?
                             }
+                            _ => unimplemented!(),
                         }
                     }
                     _ => {
