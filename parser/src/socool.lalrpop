@@ -9,9 +9,12 @@ use weresocool_ast::{
         ASR,
         FunDef,
         ListOp,
+        Coefs,
+        Axis,
         Generator,
         Indices, 
         Index,
+        NormalForm
 };
 use crate::parser::Init;
 use crate::indices::{et, random_seed};
@@ -92,7 +95,24 @@ Operation: Term = {
 }
 
 Generator: Generator = {
-  "Gen" "(" <list: List> "," "[" <coefs: Ints> "]" ")" =>  unimplemented!()
+  "Gen" "(" <list: List> "," <coefs: Comma<Coefs>> ")" =>  {
+    Generator {
+      idx: 0,
+      state: NormalForm::init(),
+      list,
+      coefs,
+    }
+  }
+}
+
+Coefs: Coefs = {
+  <axis: r"(F\*|F\+|G\*|L\*|P\*|P\+)"> ":" "[" <coefs: Comma<Rational>> "]" => { 
+    Coefs {
+      idx: 0,
+      coefs,
+      axis: Axis::from_str(axis).unwrap()
+    }
+  }
 }
 
 List: ListOp = {

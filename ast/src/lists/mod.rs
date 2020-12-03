@@ -1,22 +1,48 @@
 pub mod indices;
 pub mod normalize_listop;
 pub mod substitute_list;
+use num_rational::Rational64;
+
 use crate::NormalForm;
+use std::num::ParseIntError;
+use std::str::FromStr;
 
 use crate::Term;
 
 #[derive(Clone, PartialEq, Debug, Hash)]
 pub struct Coefs {
-    idx: usize,
-    coefs: Vec<isize>,
+    pub idx: usize,
+    pub axis: Axis,
+    pub coefs: Vec<Rational64>,
+}
+
+#[derive(Clone, PartialEq, Debug, Hash)]
+pub enum Axis {
+    Fm,
+    // Fa,
+    Gm,
+    // Lm,
+    // Pm,
+    // Pa,
+}
+
+impl FromStr for Axis {
+    type Err = ParseIntError;
+    fn from_str(s: &str) -> Result<Self, Self::Err> {
+        match s {
+            "F*" => Ok(Axis::Fm),
+            "G*" => Ok(Axis::Gm),
+            _ => unimplemented!(),
+        }
+    }
 }
 
 #[derive(Clone, PartialEq, Debug, Hash)]
 pub struct Generator {
-    state: NormalForm,
-    idx: usize,
-    ops: ListOp,
-    coefs: Coefs,
+    pub state: NormalForm,
+    pub idx: usize,
+    pub list: ListOp,
+    pub coefs: Vec<Coefs>,
 }
 
 #[derive(Clone, PartialEq, Debug, Hash)]
