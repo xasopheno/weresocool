@@ -79,7 +79,7 @@ Operation: Term = {
       unimplemented!()
     },
 
-<op1: Operation> ">" "@" <name: Name> <op2: ComposeOperation> => {
+    <op1: Operation> ">" "@" <name: Name> <op2: ComposeOperation> => {
         Term::Op(
             Focus {
                 name: name,
@@ -93,6 +93,7 @@ Operation: Term = {
 
     <list: List> => Term::Lop(list),
 
+    <gen: Generator> => Term::Gen(gen),
 }
 
 Generator: GenOp = {
@@ -153,8 +154,8 @@ ListBase: ListOp = {
   },
 
   <gen: Generator> "Take" <n: Int> => { ListOp::Gen {gen: Box::new(gen), n: n as usize }},
-}
 
+}
 
 Indices: Indices = {
   <indices: Comma<Index>> => Indices(indices),
@@ -193,7 +194,13 @@ Composeable: Term = {
 }
 
 BaseOperation: Term = {
-    "(" <o: Operation> ")" => o,
+    // "(" <o: Operation> ")" => o,
+    <fm: Fm> <m:Rational> => Term::Op(TransposeM {m}),
+    <fa: Fa> <a:Rational> => Term::Op(TransposeA {a}),
+    <pm: Pm>  <m:Rational> => Term::Op(PanM {m}),
+    <pa: Pa>   <a:Rational> => Term::Op(PanA {a}),
+    <lm: Lm> <m:Rational> => Term::Op(Length {m}),
+    <gain: Gm> <m:Rational> => Term::Op(Gain {m}),
     "AsIs" => Term::Op(AsIs {}),
     "Sine" <pow: Rational?> => {
       Term::Op(Sine {pow})
@@ -219,12 +226,6 @@ BaseOperation: Term = {
     "Portamento" <m:Rational> => Term::Op(Portamento {m}),
     "Reverb" <m:Rational> => Term::Op(Reverb {m}),
     "Silence" <m:Rational> => Term::Op(Silence {m}),
-    <fm: Fm> <m:Rational> => Term::Op(TransposeM {m}),
-    <fa: Fa> <a:Rational> => Term::Op(TransposeA {a}),
-    <pm: Pm>  <m:Rational> => Term::Op(PanM {m}),
-    <pa: Pa>   <a:Rational> => Term::Op(PanA {a}),
-    <lm: Lm> <m:Rational> => Term::Op(Length {m}),
-    <gain: Gm> <m:Rational> => Term::Op(Gain {m}),
     r"(Sequence|Seq)" "[" <operations: Operations> "]" => Term::Op(Sequence { operations: operations }),
     "Overlay" "[" <operations: Operations> "]" => Term::Op(Overlay { operations: operations }),
     r"(ModulateBy|ModBy)" "[" <operations: Operations> "]" => Term::Op(ModulateBy { operations: operations }),
