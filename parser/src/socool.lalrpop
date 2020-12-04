@@ -12,6 +12,7 @@ use weresocool_ast::{
         Coefs,
         Axis,
         Generator,
+        GenOp,
         Indices, 
         Index,
         NormalForm
@@ -94,14 +95,18 @@ Operation: Term = {
 
 }
 
-Generator: Generator = {
-  "Gen" "(" <list: List> "," <coefs: Comma<Coefs>> ")" =>  {
-    Generator {
+Generator: GenOp = {
+  r"(Gen|%)" "(" <list: List> "," <coefs: Comma<Coefs>> ")" =>  {
+    GenOp::Const(Generator {
       idx: 0,
       state: NormalForm::init(),
       list,
       coefs,
-    }
+    })
+  },
+
+  r"(Gen|%)" <name: Name> => {
+    GenOp::Named(name)
   }
 }
 
@@ -120,6 +125,7 @@ List: ListOp = {
 
   <list: ListIndexed> => list,
 
+  <gen: Generator> "Take" <n: Int> => { unimplemented!() }
 }
 
 ListConcat = Concat<ListIndexed>;

@@ -1,7 +1,5 @@
 use crate::Defs;
-use crate::{
-    ArgMap, FunDef, Generator, GetLengthRatio, ListOp, NormalForm, Normalize, Op, Substitute,
-};
+use crate::{ArgMap, FunDef, GenOp, GetLengthRatio, ListOp, NormalForm, Normalize, Op, Substitute};
 use num_rational::Rational64;
 use weresocool_error::Error;
 
@@ -11,7 +9,7 @@ pub enum Term {
     Nf(NormalForm),
     FunDef(FunDef),
     Lop(ListOp),
-    Gen(Generator),
+    Gen(GenOp),
 }
 
 impl Normalize for Term {

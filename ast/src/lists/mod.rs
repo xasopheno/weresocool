@@ -49,6 +49,12 @@ pub struct Generator {
 }
 
 #[derive(Clone, PartialEq, Debug, Hash)]
+pub enum GenOp {
+    Const(Generator),
+    Named(String),
+}
+
+#[derive(Clone, PartialEq, Debug, Hash)]
 pub enum ListOp {
     Const(Vec<Term>),
     Named(String),
