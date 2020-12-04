@@ -61,7 +61,7 @@ LetDef: () = {
     },
     
     <name: Name> "=" <generator: Generator> => {
-      unimplemented!();
+        defs.generators.insert(name.clone(), Term::Gen(generator)); ()
     }
 };
 
@@ -106,11 +106,11 @@ Generator: Generator = {
 }
 
 Coefs: Coefs = {
-  <axis: r"(F\*|F\+|G\*|L\*|P\*|P\+)"> ":" "[" <coefs: Comma<Rational>> "]" => { 
+  <axis: Axis> ":" "[" <coefs: Comma<Rational>> "]" => { 
     Coefs {
       idx: 0,
       coefs,
-      axis: Axis::from_str(axis).unwrap()
+      axis
     }
   }
 }
@@ -213,12 +213,12 @@ BaseOperation: Term = {
     "Portamento" <m:Rational> => Term::Op(Portamento {m}),
     "Reverb" <m:Rational> => Term::Op(Reverb {m}),
     "Silence" <m:Rational> => Term::Op(Silence {m}),
-    r"(Tm|Fm)" <m:Rational> => Term::Op(TransposeM {m}),
-    r"(Ta|Fa)" <a:Rational> => Term::Op(TransposeA {a}),
-    r"(PanM|Pm)" <m:Rational> => Term::Op(PanM {m}),
-    r"(PanA|Pa)" <a:Rational> => Term::Op(PanA {a}),
-    r"(Length|Lm)" <m:Rational> => Term::Op(Length {m}),
-    r"(Gain|Gm)" <m:Rational> => Term::Op(Gain {m}),
+    <fm: Fm> <m:Rational> => Term::Op(TransposeM {m}),
+    <fa: Fa> <a:Rational> => Term::Op(TransposeA {a}),
+    <pm: Pm>  <m:Rational> => Term::Op(PanM {m}),
+    <pa: Pa>   <a:Rational> => Term::Op(PanA {a}),
+    <lm: Lm> <m:Rational> => Term::Op(Length {m}),
+    <gain: Gm> <m:Rational> => Term::Op(Gain {m}),
     r"(Sequence|Seq)" "[" <operations: Operations> "]" => Term::Op(Sequence { operations: operations }),
     "Overlay" "[" <operations: Operations> "]" => Term::Op(Overlay { operations: operations }),
     r"(ModulateBy|ModBy)" "[" <operations: Operations> "]" => Term::Op(ModulateBy { operations: operations }),
@@ -243,6 +243,7 @@ BaseOperation: Term = {
         ]})
     },
 };
+
 
 Overtone: Term = {
     "("
@@ -316,6 +317,22 @@ Rational: Rational64 = {
     <n: Int> => Rational64::new(n, 1),
     <n: Int> "/" <d:Int> => Rational64::new(n, d),
 };
+
+Axis: Axis = {
+    Fm => Axis::Fm,
+    Fa => Axis::Fa,
+    Gm => Axis::Gm,
+    Lm => Axis::Lm,
+    Pm => Axis::Pm,
+    Pa => Axis::Pa,
+};
+
+Fm: String = <s: r"Fm|Tm"> => s.to_string();
+Fa: String = <s: r"Fa|Ta"> => s.to_string();
+Gm: String = <s: r"Gain|Gm"> => s.to_string();
+Lm: String = <s: r"Length|Lm"> => s.to_string();
+Pm: String = <s: r"PanM|Pm"> => s.to_string();
+Pa: String = <s: r"PanA|Pa"> => s.to_string();
 
 Name: String = <s:r"[a-z_][a-zA-Z_0-9.]*"> => s.to_string();
 Float: String = <s:r"-?(0|([1-9]\d*))\.\d+"> => s.to_string();

@@ -1,9 +1,8 @@
 pub mod indices;
 pub mod normalize_listop;
 pub mod substitute_list;
-use num_rational::Rational64;
-
 use crate::NormalForm;
+use num_rational::Rational64;
 use std::num::ParseIntError;
 use std::str::FromStr;
 
@@ -19,11 +18,11 @@ pub struct Coefs {
 #[derive(Clone, PartialEq, Debug, Hash)]
 pub enum Axis {
     Fm,
-    // Fa,
+    Fa,
     Gm,
-    // Lm,
-    // Pm,
-    // Pa,
+    Lm,
+    Pm,
+    Pa,
 }
 
 impl FromStr for Axis {
@@ -31,7 +30,11 @@ impl FromStr for Axis {
     fn from_str(s: &str) -> Result<Self, Self::Err> {
         match s {
             "F*" => Ok(Axis::Fm),
+            "F+" => Ok(Axis::Fa),
             "G*" => Ok(Axis::Gm),
+            "L*" => Ok(Axis::Lm),
+            "P*" => Ok(Axis::Pm),
+            "P+" => Ok(Axis::Pa),
             _ => unimplemented!(),
         }
     }

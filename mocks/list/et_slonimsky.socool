@@ -1,13 +1,13 @@
 { f: 220, l: 1, g: 1, p: 0 } 
 
-g = Gen(
+gen = Gen(
       &[Fm 25/24],
-      F*: [1, -1, 1],
-      G*: [1, -1, 1],
+      Fm: [1, -1, 1],
+      Gm: [1/2],
     )
 
 main = {
-  AsIs
+  %gen take 10
 }
 
 expect = {
