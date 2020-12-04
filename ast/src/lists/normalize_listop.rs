@@ -47,6 +47,7 @@ impl ListOp {
 
                 Ok(result)
             }
+            _ => unimplemented!(),
         }
     }
 }
@@ -78,6 +79,7 @@ impl GetLengthRatio for ListOp {
                 .try_fold(Rational64::from_integer(0), |acc, term| {
                     Ok(acc + term.get_length_ratio(defs)?)
                 }),
+            _ => unimplemented!(),
         }
     }
 }
@@ -134,6 +136,7 @@ impl ListOp {
                     Ok(nf)
                 })
                 .collect(),
+            _ => unimplemented!(),
         }
     }
 }

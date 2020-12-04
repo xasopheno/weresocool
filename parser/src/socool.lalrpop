@@ -125,7 +125,6 @@ List: ListOp = {
 
   <list: ListIndexed> => list,
 
-  <gen: Generator> "Take" <n: Int> => { unimplemented!() }
 }
 
 ListConcat = Concat<ListIndexed>;
@@ -136,7 +135,6 @@ ListIndexed: ListOp = {
   },
 
    "<" <list: List> ">" => list,
-
 
   <list: ListBase> => list,
 }
@@ -153,6 +151,8 @@ ListBase: ListOp = {
   "ET" "(" <n: Int> ")" => {
     ListOp::Const(et(n))
   },
+
+  <gen: Generator> "Take" <n: Int> => { ListOp::Gen {gen: Box::new(gen), n: n as usize }},
 }
 
 

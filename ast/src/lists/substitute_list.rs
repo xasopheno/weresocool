@@ -48,6 +48,7 @@ impl Substitute for ListOp {
 
                 Ok(Term::Lop(ListOp::Const(result)))
             }
+            _ => unimplemented!(),
         }
     }
 }
