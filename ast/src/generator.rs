@@ -9,10 +9,17 @@ pub struct Coefs {
     pub coefs: Vec<Rational64>,
 }
 
-impl Normalize for Coefs {
-    fn apply_to_normal_form(&self, input: &mut NormalForm, _defs: &Defs) -> Result<(), Error> {
-        dbg!(self);
-        unimplemented!()
+impl Coefs {
+    fn apply(&mut self, state: &mut NormalForm) -> Result<(), Error> {
+        dbg!(&self);
+        for mut voice in state.operations.iter_mut() {
+            for mut op in voice {
+                self.axis.apply(&mut op, self.coefs[self.idx])?
+            }
+        }
+        self.idx += 1;
+        self.idx %= self.coefs.len();
+        Ok(())
     }
 }
 
@@ -24,6 +31,19 @@ pub enum Axis {
     Lm,
     Pm,
     Pa,
+}
+
+impl Axis {
+    fn apply(&self, op: &mut PointOp, coef: Rational64) -> Result<(), Error> {
+        dbg!(&self, coef);
+        match self {
+            Axis::Fm => {
+                panic!();
+            }
+            _ => unimplemented!(),
+        }
+        unimplemented!();
+    }
 }
 
 #[derive(Clone, PartialEq, Debug, Hash)]
@@ -41,7 +61,7 @@ impl Generator {
         for i in 0..n {
             dbg!(i);
             for coef in self.coefs.iter_mut() {
-                coef.apply_to_normal_form(&mut gen.state, defs)?;
+                coef.apply(&mut gen.state)?;
             }
             result.push(gen.state.clone())
         }

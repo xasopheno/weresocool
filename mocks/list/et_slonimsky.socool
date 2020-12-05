@@ -12,9 +12,9 @@ main = {
         &[Fm 25/24],
         Fm: [1, -1, 1],
         Gm: [1/2],
-    ) Take 10,
-    %gen Take 10 @ [3],
-    %gen Take 10,
+    ) Take 3,
+    %gen Take 3 @ [2],
+    %gen Take 3,
   ]
 }
 
