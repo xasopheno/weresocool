@@ -92,8 +92,6 @@ Operation: Term = {
     <op: ComposeOperation> => op,
 
     <list: List> => Term::Lop(list),
-
-    <gen: Generator> => Term::Gen(gen),
 }
 
 Generator: GenOp = {
@@ -153,8 +151,9 @@ ListBase: ListOp = {
     ListOp::Const(et(n))
   },
 
-  <gen: Generator> "Take" <n: Int> => { ListOp::Gen {gen: Box::new(gen), n: n as usize }},
-
+  <gen: Generator> "Take" <n: Int> => {
+    ListOp::Gen {n: n as usize, gen: Box::new(gen)}
+  } 
 }
 
 Indices: Indices = {

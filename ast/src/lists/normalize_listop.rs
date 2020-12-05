@@ -1,5 +1,5 @@
 use crate::operations::helpers::{handle_id_error, join_sequence};
-use crate::{ArgMap, Defs, GetLengthRatio, ListOp, NormalForm, Normalize, Term, TermVector};
+use crate::{ArgMap, Defs, GenOp, GetLengthRatio, ListOp, NormalForm, Normalize, Term, TermVector};
 use num_rational::Rational64;
 use weresocool_error::Error;
 
@@ -136,7 +136,16 @@ impl ListOp {
                     Ok(nf)
                 })
                 .collect(),
-            _ => unimplemented!(),
+            ListOp::Gen { n, gen } => match *gen.to_owned() {
+                GenOp::Named(g) => {
+                    dbg!(&g);
+                    unimplemented!()
+                }
+                GenOp::Const(mut g) => {
+                    g.generate(n.to_owned());
+                    unimplemented!()
+                }
+            },
         }
     }
 }

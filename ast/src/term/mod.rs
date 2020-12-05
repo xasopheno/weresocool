@@ -19,7 +19,7 @@ impl Normalize for Term {
             Term::Nf(nf) => nf.apply_to_normal_form(input, defs),
             Term::FunDef(_fun) => Err(Error::with_msg("Cannot normalize FunDef.")),
             Term::Lop(lop) => lop.apply_to_normal_form(input, defs),
-            _ => unimplemented!(),
+            Term::Gen(gen) => gen.apply_to_normal_form(input, defs),
         }
     }
 }
