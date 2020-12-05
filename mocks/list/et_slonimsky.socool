@@ -7,7 +7,17 @@ gen = %(
     )
 
 main = {
-  Gen gen Take 10 @ [3]
+  Seq [
+    Gen (
+        &[Fm 25/24],
+        Fm: [1, -1, 1],
+        Gm: [1/2],
+    ),
+    %gen Take 10 @ [3],
+    %gen Take 10,
+    %gen
+
+  ]
 }
 
 expect = {
