@@ -1,4 +1,4 @@
-use crate::{Defs, ListOp, NormalForm, Normalize};
+use crate::{Defs, ListOp, NormalForm, Normalize, PointOp};
 use num_rational::Rational64;
 use weresocool_error::Error;
 
@@ -7,6 +7,13 @@ pub struct Coefs {
     pub idx: usize,
     pub axis: Axis,
     pub coefs: Vec<Rational64>,
+}
+
+impl Normalize for Coefs {
+    fn apply_to_normal_form(&self, input: &mut NormalForm, _defs: &Defs) -> Result<(), Error> {
+        dbg!(self);
+        unimplemented!()
+    }
 }
 
 #[derive(Clone, PartialEq, Debug, Hash)]
@@ -28,8 +35,17 @@ pub struct Generator {
 }
 
 impl Generator {
-    pub fn generate(&mut self, n: usize) -> NormalForm {
-        dbg!(self, n);
+    pub fn generate(&mut self, n: usize, defs: &Defs) -> Result<NormalForm, Error> {
+        let mut gen = self.clone();
+        let mut result: Vec<NormalForm> = vec![self.state.clone()];
+        for i in 0..n {
+            dbg!(i);
+            for coef in self.coefs.iter_mut() {
+                coef.apply_to_normal_form(&mut gen.state, defs)?;
+            }
+            result.push(gen.state.clone())
+        }
+
         unimplemented!()
     }
 }

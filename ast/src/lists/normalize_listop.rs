@@ -142,7 +142,7 @@ impl ListOp {
                     unimplemented!()
                 }
                 GenOp::Const(mut g) => {
-                    g.generate(n.to_owned());
+                    g.generate(n.to_owned(), defs);
                     unimplemented!()
                 }
             },
