@@ -1,4 +1,4 @@
-use crate::{Defs, ListOp, NormalForm, Normalize, PointOp};
+use crate::{Defs, ListOp, NormalForm, Normalize, PointOp, TermVector};
 use num_rational::Rational64;
 use weresocool_error::Error;
 
@@ -10,11 +10,12 @@ pub struct Coefs {
 }
 
 impl Coefs {
-    fn apply(&mut self, state: &mut NormalForm) -> Result<(), Error> {
+    fn apply(&mut self, state: &mut NormalForm, term_vector: &TermVector) -> Result<(), Error> {
         dbg!(&self);
         for mut voice in state.operations.iter_mut() {
             for mut op in voice {
-                self.axis.apply(&mut op, self.coefs[self.idx])?
+                self.axis
+                    .apply(&mut op, self.coefs[self.idx], term_vector)?
             }
         }
         self.idx += 1;
@@ -34,7 +35,12 @@ pub enum Axis {
 }
 
 impl Axis {
-    fn apply(&self, op: &mut PointOp, coef: Rational64) -> Result<(), Error> {
+    fn apply(
+        &self,
+        op: &mut PointOp,
+        coef: Rational64,
+        term_vector: &TermVector,
+    ) -> Result<(), Error> {
         dbg!(&self, coef);
         match self {
             Axis::Fm => {
@@ -57,14 +63,20 @@ pub struct Generator {
 impl Generator {
     pub fn generate(&mut self, n: usize, defs: &Defs) -> Result<NormalForm, Error> {
         let mut gen = self.clone();
+
+        let term_vectors = gen.list.term_vectors(defs, None)?;
+        dbg!(&term_vectors);
+
         let mut result: Vec<NormalForm> = vec![self.state.clone()];
         for i in 0..n {
             dbg!(i);
             for coef in self.coefs.iter_mut() {
-                coef.apply(&mut gen.state)?;
+                coef.apply(&mut gen.state, &term_vectors[self.idx])?;
             }
             result.push(gen.state.clone())
         }
+        self.idx += 1;
+        self.idx %= term_vectors.len();
 
         unimplemented!()
     }
