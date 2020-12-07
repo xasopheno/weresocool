@@ -193,7 +193,7 @@ Composeable: Term = {
 }
 
 BaseOperation: Term = {
-    // "(" <o: Operation> ")" => o,
+    "(" <o: Operation> ")" => o,
     <fm: Fm> <m:Rational> => Term::Op(TransposeM {m}),
     <fa: Fa> <a:Rational> => Term::Op(TransposeA {a}),
     <pm: Pm>  <m:Rational> => Term::Op(PanM {m}),
