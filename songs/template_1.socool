@@ -7,8 +7,24 @@ overtones = {
   	]
 }
 
+other =  {
+  Seq [
+
+    Gen (
+        [Fm 25/24],
+        Fm: [1],
+    ) Take 10
+  ]
+  | Lm 1/11
+}
+
+e = ET(12) @ [1, 2]
+
 main = {
   overtones |
-  Reverb 1 |
-  Seq [Fm 1, Fm 9/8, Fm 4/3, 0^3/10, Fm 1]
+  Seq [
+    e 
+    | e
+    | e
+  ]
 }

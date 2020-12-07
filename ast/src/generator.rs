@@ -1,6 +1,17 @@
 use crate::{Defs, NormalForm, Normalize, Term};
 use num_rational::Rational64;
 use weresocool_error::Error;
+use weresocool_shared::helpers::r_to_f64;
+
+use std::str::FromStr;
+
+pub fn f32_to_rational(float_string: String) -> Rational64 {
+    let decimal = float_string.split('.').collect::<Vec<&str>>()[1];
+    let den = i64::pow(10, decimal.len() as u32);
+    let num = i64::from_str(&float_string.replace('.', "")).unwrap();
+
+    Rational64::new(num, den)
+}
 
 #[derive(Clone, PartialEq, Debug, Hash)]
 pub struct Coefs {
@@ -33,12 +44,18 @@ impl Axis {
         for voice in applicative.operations.iter_mut() {
             for op in voice.iter_mut() {
                 match self {
-                    Axis::Fm => op.fm *= coef,
-                    Axis::Fa => op.fa *= coef,
-                    Axis::Lm => op.l *= coef,
-                    Axis::Gm => op.g *= coef,
-                    Axis::Pm => op.pm *= coef,
-                    Axis::Pa => op.pa *= coef,
+                    Axis::Fm => {
+                        let f_64 = r_to_f64(op.fm);
+                        let applied = f_64.powf(r_to_f64(coef)) as f32;
+                        let applied_str = applied.to_string();
+                        op.fm = f32_to_rational(applied_str);
+                    }
+                    _ => unimplemented!()
+                    // Axis::Fa => op.fa *= coef,
+                    // Axis::Lm => op.l *= coef,
+                    // Axis::Gm => op.g *= coef,
+                    // Axis::Pm => op.pm *= coef,
+                    // Axis::Pa => op.pa *= coef,
                 }
             }
         }

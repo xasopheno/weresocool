@@ -9,7 +9,7 @@ gen = *(
 main = {
   Seq [
     Gen (
-        [Fm 25/24],
+        [Fm 25/24, Fm 7/6],
         Fm: [1],
     ) Take 3,
 --   *gen Take 3 @ [2],
