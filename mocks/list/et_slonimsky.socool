@@ -1,7 +1,7 @@
 { f: 220, l: 1, g: 1, p: 0 } 
 
-gen = %(
-  &[Fm 25/24],
+gen = *(
+  [Fm 25/24],
   Fm: [1, -1, 1],
   Gm: [1/2],
 )
@@ -9,15 +9,14 @@ gen = %(
 main = {
   Seq [
     Gen (
-        &[Fm 25/24],
-        Fm: [1, -1, 1],
-        Gm: [1/2],
+        [Fm 25/24],
+        Fm: [1],
     ) Take 3,
-    %gen Take 3 @ [2],
-    %gen Take 3,
+--   *gen Take 3 @ [2],
+--   *gen Take 3,
   ]
 }
 
 expect = {
-  AsIs
+  Seq [Fm 1, Fm 25/24, Fm 25/24 | Fm 25/24, Fm 25/24 | Fm 25/24 | Fm 25/24]
 }

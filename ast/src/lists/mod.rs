@@ -40,8 +40,17 @@ pub enum Index {
 
 #[derive(Clone, PartialEq, Debug, Hash)]
 pub struct TermVector {
-    term: Term,
-    index_terms: Vec<Term>,
+    pub term: Term,
+    pub index_terms: Vec<Term>,
+}
+
+impl From<Term> for TermVector {
+    fn from(term: Term) -> Self {
+        Self {
+            term,
+            index_terms: vec![],
+        }
+    }
 }
 
 #[derive(Clone, PartialEq, Debug, Hash)]

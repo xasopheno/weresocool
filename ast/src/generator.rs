@@ -1,4 +1,4 @@
-use crate::{Defs, ListOp, NormalForm, Normalize, PointOp, TermVector};
+use crate::{Defs, NormalForm, Normalize, Term};
 use num_rational::Rational64;
 use weresocool_error::Error;
 
@@ -10,14 +10,8 @@ pub struct Coefs {
 }
 
 impl Coefs {
-    fn apply(&mut self, state: &mut NormalForm, term_vector: &TermVector) -> Result<(), Error> {
-        dbg!(&self);
-        for mut voice in state.operations.iter_mut() {
-            for mut op in voice {
-                self.axis
-                    .apply(&mut op, self.coefs[self.idx], term_vector)?
-            }
-        }
+    fn apply(&mut self, applicative: &mut NormalForm) -> Result<(), Error> {
+        self.axis.apply(self.coefs[self.idx], applicative)?;
         self.idx += 1;
         self.idx %= self.coefs.len();
         Ok(())
@@ -35,20 +29,20 @@ pub enum Axis {
 }
 
 impl Axis {
-    fn apply(
-        &self,
-        op: &mut PointOp,
-        coef: Rational64,
-        term_vector: &TermVector,
-    ) -> Result<(), Error> {
-        dbg!(&self, coef);
-        match self {
-            Axis::Fm => {
-                panic!();
+    fn apply(&self, coef: Rational64, applicative: &mut NormalForm) -> Result<(), Error> {
+        for voice in applicative.operations.iter_mut() {
+            for op in voice.iter_mut() {
+                match self {
+                    Axis::Fm => op.fm *= coef,
+                    Axis::Fa => op.fa *= coef,
+                    Axis::Lm => op.l *= coef,
+                    Axis::Gm => op.g *= coef,
+                    Axis::Pm => op.pm *= coef,
+                    Axis::Pa => op.pa *= coef,
+                }
             }
-            _ => unimplemented!(),
         }
-        unimplemented!();
+        Ok(())
     }
 }
 
@@ -56,29 +50,37 @@ impl Axis {
 pub struct Generator {
     pub idx: usize,
     pub state: NormalForm,
-    pub list: ListOp,
+    pub terms: Vec<Term>,
     pub coefs: Vec<Coefs>,
 }
 
 impl Generator {
-    pub fn generate(&mut self, n: usize, defs: &Defs) -> Result<NormalForm, Error> {
-        let mut gen = self.clone();
-
-        let term_vectors = gen.list.term_vectors(defs, None)?;
-        dbg!(&term_vectors);
-
+    pub fn generate(&mut self, n: usize, defs: &Defs) -> Result<Vec<NormalForm>, Error> {
+        let mut state = self.state.clone();
         let mut result: Vec<NormalForm> = vec![self.state.clone()];
-        for i in 0..n {
-            dbg!(i);
-            for coef in self.coefs.iter_mut() {
-                coef.apply(&mut gen.state, &term_vectors[self.idx])?;
-            }
-            result.push(gen.state.clone())
-        }
-        self.idx += 1;
-        self.idx %= term_vectors.len();
+        let vec_nf = self
+            .terms
+            .iter()
+            .map(|term| {
+                let mut nf = NormalForm::init();
+                term.apply_to_normal_form(&mut nf, defs)?;
+                Ok(nf)
+            })
+            .collect::<Result<Vec<NormalForm>, Error>>()?;
 
-        unimplemented!()
+        for i in 0..n {
+            let mut applicative = vec_nf[self.idx].clone();
+            for coef in self.coefs.iter_mut() {
+                coef.apply(&mut applicative)?;
+            }
+            applicative.apply_to_normal_form(&mut state, defs)?;
+            result.push(state.clone());
+
+            self.idx += 1;
+            self.idx %= self.terms.len();
+        }
+
+        Ok(result)
     }
 }
 

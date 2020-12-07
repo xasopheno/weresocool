@@ -95,16 +95,16 @@ Operation: Term = {
 }
 
 Generator: GenOp = {
-  r"(Gen|%)" "(" <list: List> "," <coefs: Comma<Coefs>> ")" =>  {
+  r"(Gen|\*)" "(" "["<terms: Comma<Operation>> "]" "," <coefs: Comma<Coefs>> ")" =>  {
     GenOp::Const(Generator {
       idx: 0,
       state: NormalForm::init(),
-      list,
+      terms,
       coefs,
     })
   },
 
-  r"(Gen|%)" <name: Name> => {
+  r"(Gen|\*)" <name: Name> => {
     GenOp::Named(name)
   }
 }
