@@ -1,11 +1,10 @@
-use crate::{Defs, NormalForm, Normalize, Op, Term};
+use crate::{Defs, NormalForm, Normalize, Op};
 use num_rational::Rational64;
-use weresocool_error::Error;
-use weresocool_shared::helpers::r_to_f64;
-
 use std::str::FromStr;
+use weresocool_error::Error;
 
 pub fn f32_to_rational(float_string: String) -> Rational64 {
+    dbg!(&float_string);
     let decimal = float_string.split('.').collect::<Vec<&str>>()[1];
     let den = i64::pow(10, decimal.len() as u32);
     let num = i64::from_str(&float_string.replace('.', "")).unwrap();
@@ -15,16 +14,21 @@ pub fn f32_to_rational(float_string: String) -> Rational64 {
 
 #[derive(Clone, PartialEq, Debug, Hash)]
 pub struct Coefs {
+    pub axis: Axis,
     pub div: usize,
     pub idx: usize,
-    pub axis: Axis,
     pub coefs: Vec<i64>,
-    pub state: isize,
+    pub state: i64,
 }
 
 impl Coefs {
     fn generate(&mut self) -> Result<Op, Error> {
-        self.axis.generate(self.coefs[self.idx], self.div)
+        let result = self.axis.generate(self.state, self.div);
+        dbg!(self.idx, self.coefs[self.idx]);
+        self.state += self.coefs[self.idx];
+        self.idx += 1;
+        self.idx %= self.coefs.len();
+        result
     }
 }
 
@@ -39,23 +43,26 @@ pub enum Axis {
 fn et_to_rational(i: i64, d: usize) -> Rational64 {
     let signum = i.signum();
     if signum == 0 {
-        return Rational64::from_integer(0);
+        return Rational64::from_integer(1);
     }
+    dbg!(i, d);
 
-    let et = 2.0_f32.powf(i.abs() as f32 / d as f32);
+    let et = 2.0_f32.powf(i as f32 / d as f32);
     if signum == -1 {
-        f32_to_rational(et.to_string()).recip()
+        let result = f32_to_rational(format!("{:.16}", et));
+        result.recip();
+        result
     } else {
-        f32_to_rational(et.to_string())
+        f32_to_rational(format!("{:.16}", et))
     }
 }
 
 impl Axis {
-    fn generate(&self, coef: i64, div: usize) -> Result<Op, Error> {
+    fn generate(&self, state: i64, div: usize) -> Result<Op, Error> {
         match self {
                 Axis::F => {
                     Ok(
-                        Op::TransposeM {m: et_to_rational(coef, div)}
+                        Op::TransposeM {m: et_to_rational(state, div)}
                     )
                 }
                 _ => unimplemented!()
@@ -75,7 +82,7 @@ pub struct Generator {
 
 impl Generator {
     pub fn generate(&mut self, n: usize, defs: &Defs) -> Result<Vec<NormalForm>, Error> {
-        let mut result: Vec<NormalForm> = vec![NormalForm::init()];
+        let mut result: Vec<NormalForm> = vec![];
 
         for _ in 0..n - 1 {
             let mut nf: NormalForm = NormalForm::init();

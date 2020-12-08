@@ -109,6 +109,7 @@ Generator: GenOp = {
 Coefs: Coefs = {
   <axis: Axis> <div: Int> "," "[" <coefs: Comma<Int>> "]" => { 
     Coefs {
+      state: 0,
       div: div as usize,
       idx: 0,
       coefs,
