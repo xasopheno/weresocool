@@ -1,4 +1,4 @@
-use crate::{Defs, NormalForm, Normalize, Term};
+use crate::{Defs, NormalForm, Normalize, Op, Term};
 use num_rational::Rational64;
 use weresocool_error::Error;
 use weresocool_shared::helpers::r_to_f64;
@@ -15,86 +15,74 @@ pub fn f32_to_rational(float_string: String) -> Rational64 {
 
 #[derive(Clone, PartialEq, Debug, Hash)]
 pub struct Coefs {
+    pub div: usize,
     pub idx: usize,
     pub axis: Axis,
-    pub coefs: Vec<Rational64>,
+    pub coefs: Vec<i64>,
+    pub state: isize,
 }
 
 impl Coefs {
-    fn apply(&mut self, applicative: &mut NormalForm) -> Result<(), Error> {
-        self.axis.apply(self.coefs[self.idx], applicative)?;
-        self.idx += 1;
-        self.idx %= self.coefs.len();
-        Ok(())
+    fn generate(&mut self) -> Result<Op, Error> {
+        self.axis.generate(self.coefs[self.idx], self.div)
     }
 }
 
 #[derive(Clone, PartialEq, Debug, Hash)]
 pub enum Axis {
-    Fm,
-    Fa,
-    Gm,
-    Lm,
-    Pm,
-    Pa,
+    F,
+    G,
+    L,
+    P,
+}
+
+fn et_to_rational(i: i64, d: usize) -> Rational64 {
+    let signum = i.signum();
+    if signum == 0 {
+        return Rational64::from_integer(0);
+    }
+
+    let et = 2.0_f32.powf(i.abs() as f32 / d as f32);
+    if signum == -1 {
+        f32_to_rational(et.to_string()).recip()
+    } else {
+        f32_to_rational(et.to_string())
+    }
 }
 
 impl Axis {
-    fn apply(&self, coef: Rational64, applicative: &mut NormalForm) -> Result<(), Error> {
-        for voice in applicative.operations.iter_mut() {
-            for op in voice.iter_mut() {
-                match self {
-                    Axis::Fm => {
-                        let f_64 = r_to_f64(op.fm);
-                        let applied = f_64.powf(r_to_f64(coef)) as f32;
-                        let applied_str = applied.to_string();
-                        op.fm = f32_to_rational(applied_str);
-                    }
-                    _ => unimplemented!()
-                    // Axis::Fa => op.fa *= coef,
-                    // Axis::Lm => op.l *= coef,
-                    // Axis::Gm => op.g *= coef,
-                    // Axis::Pm => op.pm *= coef,
-                    // Axis::Pa => op.pa *= coef,
+    fn generate(&self, coef: i64, div: usize) -> Result<Op, Error> {
+        match self {
+                Axis::F => {
+                    Ok(
+                        Op::TransposeM {m: et_to_rational(coef, div)}
+                    )
                 }
+                _ => unimplemented!()
+                // Axis::Fa => op.fa *= coef,
+                // Axis::Lm => op.l *= coef,
+                // Axis::Gm => op.g *= coef,
+                // Axis::Pm => op.pm *= coef,
+                // Axis::Pa => op.pa *= coef,
             }
-        }
-        Ok(())
     }
 }
 
 #[derive(Clone, PartialEq, Debug, Hash)]
 pub struct Generator {
-    pub idx: usize,
-    pub state: NormalForm,
-    pub terms: Vec<Term>,
     pub coefs: Vec<Coefs>,
 }
 
 impl Generator {
     pub fn generate(&mut self, n: usize, defs: &Defs) -> Result<Vec<NormalForm>, Error> {
-        let mut state = self.state.clone();
-        let mut result: Vec<NormalForm> = vec![self.state.clone()];
-        let vec_nf = self
-            .terms
-            .iter()
-            .map(|term| {
-                let mut nf = NormalForm::init();
-                term.apply_to_normal_form(&mut nf, defs)?;
-                Ok(nf)
-            })
-            .collect::<Result<Vec<NormalForm>, Error>>()?;
+        let mut result: Vec<NormalForm> = vec![NormalForm::init()];
 
-        for i in 0..n {
-            let mut applicative = vec_nf[self.idx].clone();
+        for _ in 0..n - 1 {
+            let mut nf: NormalForm = NormalForm::init();
             for coef in self.coefs.iter_mut() {
-                coef.apply(&mut applicative)?;
+                coef.generate()?.apply_to_normal_form(&mut nf, defs)?;
             }
-            applicative.apply_to_normal_form(&mut state, defs)?;
-            result.push(state.clone());
-
-            self.idx += 1;
-            self.idx %= self.terms.len();
+            result.push(nf)
         }
 
         Ok(result)

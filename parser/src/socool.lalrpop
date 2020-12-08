@@ -32,10 +32,10 @@ pub SoCool: Init = {
 
 Point: Init = {
     "{"
-         "f:" <f:Rational> ","
-         "l:" <l:Rational> ","
-         "g:" <g:Rational> ","
-         "p:" <p:Rational>
+         <f_axis: F> <f: Rational> ","
+         <l_axis: L> <l: Rational> ","
+         <g_axis: G> <g: Rational> ","
+         <p_axis: P> <p: Rational>
     "}" ";"? => Init { f, l, g, p }
 }
 
@@ -95,11 +95,8 @@ Operation: Term = {
 }
 
 Generator: GenOp = {
-  r"(Gen|\*)" "(" "["<terms: Comma<Operation>> "]" "," <coefs: Comma<Coefs>> ")" =>  {
+  r"(Gen|\*)" "(" <coefs: Comma<Coefs>> ")" =>  {
     GenOp::Const(Generator {
-      idx: 0,
-      state: NormalForm::init(),
-      terms,
       coefs,
     })
   },
@@ -110,8 +107,9 @@ Generator: GenOp = {
 }
 
 Coefs: Coefs = {
-  <axis: Axis> ":" "[" <coefs: Comma<Rational>> "]" => { 
+  <axis: Axis> <div: Int> "," "[" <coefs: Comma<Int>> "]" => { 
     Coefs {
+      div: div as usize,
       idx: 0,
       coefs,
       axis
@@ -325,12 +323,10 @@ Rational: Rational64 = {
 };
 
 Axis: Axis = {
-    Fm => Axis::Fm,
-    Fa => Axis::Fa,
-    Gm => Axis::Gm,
-    Lm => Axis::Lm,
-    Pm => Axis::Pm,
-    Pa => Axis::Pa,
+    F => Axis::F,
+    G => Axis::G,
+    L => Axis::L,
+    P => Axis::P,
 };
 
 Fm: String = <s: r"Fm|Tm"> => s.to_string();
@@ -339,6 +335,12 @@ Gm: String = <s: r"Gain|Gm"> => s.to_string();
 Lm: String = <s: r"Length|Lm"> => s.to_string();
 Pm: String = <s: r"PanM|Pm"> => s.to_string();
 Pa: String = <s: r"PanA|Pa"> => s.to_string();
+
+F: String = <s: r"f:"> => s.to_string();
+G: String = <s: r"g:"> => s.to_string();
+L: String = <s: r"l:"> => s.to_string();
+P: String = <s: r"p:"> => s.to_string();
+
 
 Name: String = <s:r"[a-z_][a-zA-Z_0-9.]*"> => s.to_string();
 Float: String = <s:r"-?(0|([1-9]\d*))\.\d+"> => s.to_string();
