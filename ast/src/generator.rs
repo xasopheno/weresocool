@@ -22,7 +22,9 @@ pub struct Coefs {
 
 impl Coefs {
     fn generate(&mut self) -> Result<Op, Error> {
-        let result = self.axis.generate(self.state, self.div);
+        let result = self
+            .axis
+            .generate(self.state, self.div, self.coefs[self.idx]);
         self.state += self.coefs[self.idx];
         self.idx += 1;
         self.idx %= self.coefs.len();
@@ -59,17 +61,17 @@ fn dec_to_rational(i: i64, d: usize) -> Rational64 {
 }
 
 impl Axis {
-    fn generate(&self, state: i64, div: usize) -> Result<Op, Error> {
+    fn generate(&self, state: i64, div: usize, coef: i64) -> Result<Op, Error> {
         match self {
             Axis::F => Ok(Op::TransposeM {
                 m: et_to_rational(state, div),
             }),
             Axis::L => {
-                let mut m;
-                if state <= 0 {
+                let m;
+                if state < 0 {
                     m = dec_to_rational(1, div);
                 } else {
-                    m = dec_to_rational(state, div);
+                    m = dec_to_rational(coef, div);
                 }
                 Ok(Op::Length { m })
             }
