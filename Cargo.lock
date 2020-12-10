@@ -3098,6 +3098,7 @@ dependencies = [
  "weresocool_instrument",
  "weresocool_lame",
  "weresocool_parser",
+ "weresocool_rational",
  "weresocool_shared",
 ]
 
@@ -3173,6 +3174,14 @@ dependencies = [
  "regex",
  "weresocool_ast",
  "weresocool_error",
+]
+
+[[package]]
+name = "weresocool_rational"
+version = "0.1.0"
+dependencies = [
+ "num-bigint 0.3.1",
+ "num-rational 0.3.2",
 ]
 
 [[package]]
