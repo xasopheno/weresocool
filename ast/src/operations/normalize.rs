@@ -2,7 +2,8 @@ use crate::operations::{
     helpers::*, substitute::get_fn_arg_map, GetLengthRatio, NormalForm, Normalize, Substitute,
 };
 use crate::{Defs, FunDef, Op, OscType, Term, Term::*};
-use num_rational::Ratio;
+use num_bigint::BigInt;
+use num_rational::{BigRational, Ratio};
 use rand::prelude::*;
 use weresocool_error::Error;
 
@@ -179,7 +180,7 @@ impl Normalize for Op {
             Op::Silence { m } => {
                 for voice in input.operations.iter_mut() {
                     for mut point_op in voice {
-                        point_op.fm = Ratio::new(0, 1);
+                        point_op.fm = BigRational::from_integer(BigInt::new(vec![0]));
                         point_op.fa = Ratio::new(0, 1);
                         point_op.g = Ratio::new(0, 1);
                         point_op.l *= m;

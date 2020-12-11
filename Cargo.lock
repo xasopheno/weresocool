@@ -3079,6 +3079,7 @@ dependencies = [
  "hound",
  "indexmap",
  "num 0.2.1",
+ "num-bigint 0.3.1",
  "num-complex",
  "num-rational 0.3.2",
  "pbr",
@@ -3114,6 +3115,7 @@ version = "0.5.0"
 dependencies = [
  "colored",
  "indexmap",
+ "num-bigint 0.3.1",
  "num-rational 0.3.2",
  "pretty_assertions",
  "rand",
