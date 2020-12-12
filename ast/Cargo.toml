@@ -8,6 +8,7 @@ license = "GPL-3.0"
 
 [dependencies]
 weresocool_error = { path = "../error" }
+weresocool_shared = { path = "../shared" }
 num-rational = {version = "0.3", features = ["serde"]} 
 rand = "0.7.3"
 serde = { version = "1.0.116", features = ["derive"] }

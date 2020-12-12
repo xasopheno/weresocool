@@ -5,6 +5,7 @@ use std::{
     ops::{Mul, MulAssign},
 };
 use weresocool_error::Error;
+use weresocool_shared::{CoolRatio, CoolRatioT};
 mod get_length_ratio;
 pub mod helpers;
 mod normalize;
@@ -22,7 +23,7 @@ pub type NameSet = BTreeSet<String>;
 
 #[derive(Debug, Clone, Hash, Eq, Ord, PartialEq, PartialOrd)]
 pub struct PointOp {
-    pub fm: Rational64,
+    pub fm: CoolRatio,
     pub fa: Rational64,
     pub pm: Rational64,
     pub pa: Rational64,
@@ -180,7 +181,7 @@ impl<'a, 'b> Mul<&'b PointOp> for &'a PointOp {
     fn mul(self, other: &'b PointOp) -> PointOp {
         let names = union_names(self.names.clone(), &other.names);
         PointOp {
-            fm: self.fm * other.fm,
+            fm: self.fm.to_owned() * other.fm.to_owned(),
             fa: self.fa + other.fa,
             pm: self.pm * other.pm,
             pa: self.pa + other.pa,
@@ -202,7 +203,7 @@ impl MulAssign for PointOp {
     fn mul_assign(&mut self, other: PointOp) {
         let names = union_names(self.names.clone(), &other.names);
         *self = PointOp {
-            fm: self.fm * other.fm,
+            fm: self.fm.to_owned() * other.fm,
             fa: self.fa + other.fa,
             pm: self.pm * other.pm,
             pa: self.pa + other.pa,
@@ -222,13 +223,13 @@ impl MulAssign for PointOp {
 impl PointOp {
     pub fn is_silent(&self) -> bool {
         let zero = Rational64::new(0, 1);
-        self.fm == zero && self.fa < Rational64::new(20, 1) || self.g == zero
+        self.fm.is_zero() && self.fa < Rational64::new(20, 1) || self.g == zero
     }
 
     pub fn mod_by(&mut self, other: PointOp, l: Rational64) {
         let names = union_names(self.names.clone(), &other.names);
         *self = PointOp {
-            fm: self.fm * other.fm,
+            fm: self.fm.to_owned() * other.fm,
             fa: self.fa + other.fa,
             pm: self.pm * other.pm,
             pa: self.pa + other.pa,
@@ -246,7 +247,7 @@ impl PointOp {
 
     pub fn init() -> PointOp {
         PointOp {
-            fm: Ratio::new(1, 1),
+            fm: CoolRatio::from_int(1),
             fa: Ratio::new(0, 1),
             pm: Ratio::new(1, 1),
             pa: Ratio::new(0, 1),
@@ -263,7 +264,7 @@ impl PointOp {
     }
     pub fn init_silent() -> PointOp {
         PointOp {
-            fm: Ratio::new(0, 1),
+            fm: CoolRatio::from_int(0),
             fa: Ratio::new(0, 1),
             pm: Ratio::new(1, 1),
             pa: Ratio::new(0, 1),

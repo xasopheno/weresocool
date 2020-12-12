@@ -1,6 +1,7 @@
 use crate::Term;
 use indexmap::IndexMap;
 use num_rational::Rational64;
+use weresocool_shared::CoolRatio;
 
 #[derive(Debug, Clone, PartialEq, Hash)]
 pub struct FunDef {
@@ -47,7 +48,7 @@ pub enum Op {
         m: Rational64,
     },
     TransposeM {
-        m: Rational64,
+        m: CoolRatio,
     },
     TransposeA {
         a: Rational64,

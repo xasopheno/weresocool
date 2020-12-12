@@ -5,6 +5,7 @@ use crate::{Defs, FunDef, Op, OscType, Term, Term::*};
 use num_rational::Ratio;
 use rand::prelude::*;
 use weresocool_error::Error;
+use weresocool_shared::{CoolRatio, CoolRatioT};
 
 impl Normalize for Op {
     #[allow(clippy::cognitive_complexity)]
@@ -63,7 +64,7 @@ impl Normalize for Op {
             Op::FInvert => {
                 for voice in input.operations.iter_mut() {
                     for point_op in voice {
-                        if *point_op.fm.numer() != 0 {
+                        if !point_op.fm.is_zero() {
                             point_op.fm = point_op.fm.recip();
                         }
                     }
@@ -179,7 +180,7 @@ impl Normalize for Op {
             Op::Silence { m } => {
                 for voice in input.operations.iter_mut() {
                     for mut point_op in voice {
-                        point_op.fm = Ratio::new(1, 1);
+                        point_op.fm = CoolRatio::from_int(1);
                         point_op.fa = Ratio::new(0, 1);
                         point_op.g = Ratio::new(0, 1);
                         point_op.l *= m;

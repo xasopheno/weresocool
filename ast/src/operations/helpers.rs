@@ -6,6 +6,7 @@ use colored::*;
 use num_rational::{Ratio, Rational64};
 use std::cmp::Ordering::{Equal, Greater, Less};
 use weresocool_error::{Error, IdError};
+use weresocool_shared::{CoolRatio, CoolRatioT};
 
 pub fn handle_id_error(id: String, defs: &Defs, arg_map: Option<&ArgMap>) -> Result<Term, Error> {
     let arg_result = match arg_map {
@@ -76,7 +77,7 @@ pub fn pad_length(input: &mut NormalForm, max_len: Rational64, defs: &Defs) -> R
             let osc_type = last.osc_type;
             let reverb = last.reverb;
             voice.push(PointOp {
-                fm: Ratio::new(0, 1),
+                fm: CoolRatio::from_int(0),
                 fa: Ratio::new(0, 1),
                 pm: Ratio::new(1, 1),
                 pa: Ratio::new(0, 1),
@@ -107,7 +108,7 @@ pub fn join_sequence(mut l: NormalForm, mut r: NormalForm) -> NormalForm {
         Greater => {
             for _ in 0..diff {
                 r.operations.push(vec![PointOp {
-                    fm: Ratio::new(0, 1),
+                    fm: CoolRatio::from_int(0),
                     fa: Ratio::new(0, 1),
                     pm: Ratio::new(1, 1),
                     pa: Ratio::new(0, 1),
@@ -126,7 +127,7 @@ pub fn join_sequence(mut l: NormalForm, mut r: NormalForm) -> NormalForm {
         Less => {
             for _ in 0..-diff {
                 l.operations.push(vec![PointOp {
-                    fm: Ratio::new(0, 1),
+                    fm: CoolRatio::from_int(0),
                     fa: Ratio::new(0, 1),
                     pm: Ratio::new(1, 1),
                     pa: Ratio::new(0, 1),

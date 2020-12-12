@@ -10,6 +10,7 @@ pub trait CoolRatioT {
     fn from_int(numer: i32) -> Self;
     fn from_ints(numer: i32, denom: i32) -> Self;
     fn as_f64(&self) -> f64;
+    fn is_zero(&self) -> bool;
 }
 
 impl CoolRatioT for CoolRatio {
@@ -46,6 +47,10 @@ impl CoolRatioT for CoolRatio {
 
     fn as_f64(&self) -> f64 {
         self.to_f64().unwrap()
+    }
+
+    fn is_zero(&self) -> bool {
+        *self == BigRational::from_int(0)
     }
 }
 
