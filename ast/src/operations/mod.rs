@@ -278,25 +278,6 @@ impl PointOp {
             names: NameSet::new(),
         }
     }
-
-    //        pub fn to_op(&self) -> Op {
-    //            let osc_op = match self.osc_type {
-    //                OscType::Sine => Op::Sine,
-    //                OscType::Square => Op::Square,
-    //                OscType::Noise => Op::Noise,
-    //            };
-    //            Op::Compose {
-    //                operations: vec![
-    //                    osc_op,
-    //                    Op::TransposeM { m: self.fm },
-    //                    Op::TransposeA { a: self.fa },
-    //                    Op::PanM { m: self.pm },
-    //                    Op::PanA { a: self.pa },
-    //                    Op::Gain { m: self.g },
-    //                    Op::Length { m: self.l },
-    //                ],
-    //            }
-    //        }
 }
 
 impl NormalForm {
@@ -313,20 +294,6 @@ impl NormalForm {
             length_ratio: Ratio::new(0, 1),
         }
     }
-    //    pub fn to_op(&self) -> Op {
-    //        let mut result = vec![];
-    //        for seq in self.operations.iter() {
-    //            let mut seq_result = vec![];
-    //            for p_op in seq.iter() {
-    //                seq_result.push(p_op.to_op())
-    //            }
-    //            result.push(Op::Sequence {
-    //                operations: seq_result,
-    //            })
-    //        }
-    //
-    //        Op::Overlay { operations: result }
-    //    }
 
     pub fn partition(&self, name: String) -> (NormalForm, NormalForm) {
         let silence = PointOp::init_silent();
