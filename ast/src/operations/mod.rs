@@ -1,5 +1,5 @@
 use crate::{Defs, OscType, Term, ASR};
-use num_rational::{BigRational, Ratio, Rational64};
+use num_rational::{Ratio, Rational64};
 use std::{
     collections::{BTreeSet, HashMap},
     ops::{Mul, MulAssign},
@@ -22,7 +22,7 @@ pub type NameSet = BTreeSet<String>;
 
 #[derive(Debug, Clone, Hash, Eq, Ord, PartialEq, PartialOrd)]
 pub struct PointOp {
-    pub fm: BigRational,
+    pub fm: Rational64,
     pub fa: Rational64,
     pub pm: Rational64,
     pub pa: Rational64,

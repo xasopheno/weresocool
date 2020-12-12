@@ -1,3 +1,4 @@
+mod cool_ratio;
 pub mod helpers;
 mod settings;
 

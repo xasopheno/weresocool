@@ -9,3 +9,4 @@ edition = "2018"
 [dependencies]
 float-cmp = "0.8.0"
 num-rational= "0.3"
+num = "0.3.1"
