@@ -8,7 +8,7 @@ pub mod tests {
     use pretty_assertions::assert_eq;
     use weresocool_ast::{Defs, NormalForm, Normalize, Op::*, OscType, Term::Op, ASR};
     use weresocool_instrument::Basis;
-    use weresocool_shared::helpers::cmp_vec_f64;
+    use weresocool_shared::{cool_ratio::*, helpers::cmp_vec_f64};
 
     #[test]
     fn render_equal() {
@@ -41,7 +41,7 @@ pub mod tests {
                             a: Rational64::new(1, 2),
                         }),
                         Op(TransposeM {
-                            m: Rational64::new(2, 1),
+                            m: CoolRatio::from_int(2),
                         }),
                         Op(Gain {
                             m: Rational64::new(1, 2),
@@ -64,7 +64,7 @@ pub mod tests {
         let timed_ops = composition_to_vec_timed_op(&normal_form, &pt).unwrap();
 
         let op = TimedOp {
-            fm: Rational64::new(1, 1),
+            fm: CoolRatio::from_int(1),
             fa: Rational64::new(0, 1),
             pm: Rational64::new(1, 1),
             pa: Rational64::new(0, 1),
@@ -89,16 +89,16 @@ pub mod tests {
                     TimedOp {
                         pa: Rational64::new(1, 2),
                         event_type: EventType::On,
-                        ..op
+                        ..op.clone()
                     },
                     TimedOp {
                         event_type: EventType::On,
                         l: Rational64::new(5, 1),
                         voice: 1,
-                        ..op
+                        ..op.clone()
                     },
                     TimedOp {
-                        fm: Rational64::new(2, 1),
+                        fm: CoolRatio::from_int(2),
                         t: Rational64::new(1, 1),
                         event_type: EventType::On,
                         event: 1,
@@ -109,7 +109,7 @@ pub mod tests {
                         t: Rational64::new(2, 1),
                         event_type: EventType::On,
                         event: 2,
-                        ..op
+                        ..op.clone()
                     },
                     TimedOp {
                         t: Rational64::new(3, 1),
@@ -136,7 +136,7 @@ pub mod tests {
         };
 
         let op = TimedOp {
-            fm: Rational64::new(2, 1),
+            fm: CoolRatio::from_int(2),
             fa: Rational64::new(0, 1),
             pm: Rational64::new(1, 1),
             pa: Rational64::new(1, 2),
@@ -158,7 +158,7 @@ pub mod tests {
             TimedOp {
                 event_type: EventType::On,
                 l: Rational64::new(3, 2),
-                ..op
+                ..op.clone()
             },
             TimedOp {
                 event_type: EventType::Off,

@@ -203,7 +203,7 @@ pub fn generate_waveforms(
     let vec_wav = vec_sequences
         .par_iter_mut()
         .map(|ref mut vec_render_op: &mut Vec<RenderOp>| {
-            pb.lock().unwrap().add(1 as u64);
+            pb.lock().unwrap().add(1_u64);
             let mut osc = Oscillator::init(&default_settings());
             vec_render_op.render(&mut osc, None)
         })

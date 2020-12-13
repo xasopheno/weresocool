@@ -1,9 +1,9 @@
 #[cfg(test)]
 pub mod tests {
-    extern crate num_rational;
     extern crate pretty_assertions;
     use crate::{Defs, NameSet, NormalForm, Normalize, Op::*, OscType, PointOp, Term::*};
     use num_rational::{Ratio, Rational64};
+    use weresocool_shared::cool_ratio::*;
 
     fn make_parse_table() -> Defs {
         Default::default()
@@ -27,7 +27,7 @@ pub mod tests {
         let foo_tag = Op(Compose {
             operations: vec![
                 Op(TransposeM {
-                    m: Rational64::new(5, 4),
+                    m: CoolRatio::from_ints(5, 4),
                 }),
                 Op(Tag("foo".to_string())),
             ],
@@ -39,7 +39,7 @@ pub mod tests {
                 Op(Sequence {
                     operations: vec![
                         Op(TransposeM {
-                            m: Rational64::new(3, 2),
+                            m: CoolRatio::from_ints(3, 2),
                         }),
                         Op(Id("foo".to_string())),
                         Op(Length {
@@ -81,18 +81,18 @@ pub mod tests {
         let expected = NormalForm {
             operations: vec![vec![
                 PointOp {
-                    fm: Ratio::new(5, 4),
+                    fm: CoolRatio::from_ints(5, 4),
                     names: names_foo_bar.clone(),
                     ..PointOp::init()
                 },
                 PointOp {
-                    fm: Ratio::new(5, 4),
+                    fm: CoolRatio::from_ints(5, 4),
                     fa: Ratio::new(2, 1),
                     names: names_foo_bar.clone(),
                     ..PointOp::init()
                 },
                 PointOp {
-                    fm: Ratio::new(5, 4),
+                    fm: CoolRatio::from_ints(5, 4),
                     l: Ratio::new(2, 1),
                     names: names_foo_bar,
                     ..PointOp::init()
@@ -114,18 +114,18 @@ pub mod tests {
             operations: vec![
                 vec![
                     PointOp {
-                        fm: Ratio::new(3, 2),
+                        fm: CoolRatio::from_ints(3, 2),
                         names: names_bar.clone(),
                         ..PointOp::init()
                     },
                     PointOp {
-                        fm: Ratio::new(3, 2),
+                        fm: CoolRatio::from_ints(3, 2),
                         fa: Ratio::new(2, 1),
                         names: names_bar.clone(),
                         ..PointOp::init()
                     },
                     PointOp {
-                        fm: Ratio::new(3, 2),
+                        fm: CoolRatio::from_ints(3, 2),
                         l: Ratio::new(2, 1),
                         names: names_bar.clone(),
                         ..PointOp::init()
@@ -133,19 +133,19 @@ pub mod tests {
                 ],
                 vec![
                     PointOp {
-                        fm: Ratio::new(0, 1),
+                        fm: CoolRatio::from_int(0),
                         g: Ratio::new(0, 1),
                         names: names_foo_bar.clone(),
                         ..PointOp::init()
                     },
                     PointOp {
-                        fm: Ratio::new(0, 1),
+                        fm: CoolRatio::from_int(0),
                         g: Ratio::new(0, 1),
                         names: names_foo_bar.clone(),
                         ..PointOp::init()
                     },
                     PointOp {
-                        fm: Ratio::new(0, 1),
+                        fm: CoolRatio::from_int(0),
                         g: Ratio::new(0, 1),
                         l: Ratio::new(2, 1),
                         names: names_foo_bar,
@@ -181,7 +181,7 @@ pub mod tests {
         let mut names_a = NameSet::new();
         names_a.insert("foo".to_string());
         let mut a = PointOp {
-            fm: Ratio::new(3, 2),
+            fm: CoolRatio::from_ints(3, 2),
             pm: Ratio::new(1, 1),
             pa: Ratio::new(2, 1),
             g: Ratio::new(1, 2),
@@ -193,7 +193,7 @@ pub mod tests {
         let mut names_b = NameSet::new();
         names_b.insert("bar".to_string());
         let b = PointOp {
-            fm: Ratio::new(2, 1),
+            fm: CoolRatio::from_int(2),
             fa: Ratio::new(2, 1),
             pm: Ratio::new(1, 2),
             pa: Ratio::new(1, 2),
@@ -210,7 +210,7 @@ pub mod tests {
         names_expected.insert("foo".to_string());
         names_expected.insert("bar".to_string());
         let expected = PointOp {
-            fm: Ratio::new(3, 1),
+            fm: CoolRatio::from_int(3),
             fa: Ratio::new(2, 1),
             pm: Ratio::new(1, 2),
             pa: Ratio::new(5, 2),
@@ -232,18 +232,18 @@ pub mod tests {
             operations: vec![
                 vec![
                     PointOp {
-                        fm: Ratio::new(3, 2),
+                        fm: CoolRatio::from_ints(3, 2),
                         names: names_bar.clone(),
                         ..PointOp::init()
                     },
                     PointOp {
-                        fm: Ratio::new(3, 2),
+                        fm: CoolRatio::from_ints(3, 2),
                         fa: Ratio::new(2, 1),
                         names: names_bar.clone(),
                         ..PointOp::init()
                     },
                     PointOp {
-                        fm: Ratio::new(3, 2),
+                        fm: CoolRatio::from_ints(3, 2),
                         l: Ratio::new(2, 1),
                         names: names_bar.clone(),
                         ..PointOp::init()
@@ -251,18 +251,18 @@ pub mod tests {
                 ],
                 vec![
                     PointOp {
-                        fm: Ratio::new(5, 4),
+                        fm: CoolRatio::from_ints(5, 4),
                         names: names_foo_bar.clone(),
                         ..PointOp::init()
                     },
                     PointOp {
-                        fm: Ratio::new(5, 4),
+                        fm: CoolRatio::from_ints(5, 4),
                         fa: Ratio::new(2, 1),
                         names: names_foo_bar.clone(),
                         ..PointOp::init()
                     },
                     PointOp {
-                        fm: Ratio::new(5, 4),
+                        fm: CoolRatio::from_ints(5, 4),
                         l: Ratio::new(2, 1),
                         names: names_foo_bar,
                         ..PointOp::init()
@@ -281,7 +281,7 @@ pub mod tests {
                         ..PointOp::init()
                     },
                     PointOp {
-                        fm: Ratio::new(1, 1),
+                        fm: CoolRatio::from_int(1),
                         l: Ratio::new(4, 1),
                         names: names_bar,
                         ..PointOp::init()
@@ -342,7 +342,7 @@ pub mod tests {
         let mut input = NormalForm::init();
         let pt = make_parse_table();
         TransposeM {
-            m: Ratio::new(2, 1),
+            m: CoolRatio::from_int(2),
         }
         .apply_to_normal_form(&mut input, &pt)
         .unwrap();
@@ -350,7 +350,7 @@ pub mod tests {
         let expected = NormalForm {
             length_ratio: Ratio::new(1, 1),
             operations: vec![vec![PointOp {
-                fm: Ratio::new(2, 1),
+                fm: CoolRatio::from_int(2),
                 ..PointOp::init()
             }]],
         };
@@ -473,7 +473,7 @@ pub mod tests {
         let expected = NormalForm {
             length_ratio: Ratio::new(2, 1),
             operations: vec![vec![PointOp {
-                fm: Ratio::new(0, 1),
+                fm: CoolRatio::from_ints(1, 1),
                 g: Ratio::new(0, 1),
                 l: Ratio::new(2, 1),
                 ..PointOp::init()
@@ -512,7 +512,7 @@ pub mod tests {
         Compose {
             operations: vec![
                 Op(TransposeM {
-                    m: Ratio::new(2, 1),
+                    m: CoolRatio::from_int(2),
                 }),
                 Op(Length {
                     m: Ratio::new(2, 1),
@@ -525,7 +525,7 @@ pub mod tests {
         let expected = NormalForm {
             length_ratio: Ratio::new(2, 1),
             operations: vec![vec![PointOp {
-                fm: Ratio::new(2, 1),
+                fm: CoolRatio::from_int(2),
                 l: Ratio::new(2, 1),
                 ..PointOp::init()
             }]],
@@ -542,7 +542,7 @@ pub mod tests {
         Sequence {
             operations: vec![
                 Op(TransposeM {
-                    m: Ratio::new(2, 1),
+                    m: CoolRatio::from_int(2),
                 }),
                 Op(Length {
                     m: Ratio::new(2, 1),
@@ -556,11 +556,11 @@ pub mod tests {
             length_ratio: Ratio::new(3, 1),
             operations: vec![vec![
                 PointOp {
-                    fm: Ratio::new(2, 1),
+                    fm: CoolRatio::from_int(2),
                     ..PointOp::init()
                 },
                 PointOp {
-                    fm: Ratio::new(1, 1),
+                    fm: CoolRatio::from_int(1),
                     l: Ratio::new(2, 1),
                     ..PointOp::init()
                 },
@@ -578,7 +578,7 @@ pub mod tests {
         Overlay {
             operations: vec![
                 Op(TransposeM {
-                    m: Ratio::new(2, 1),
+                    m: CoolRatio::from_int(2),
                 }),
                 Op(Length {
                     m: Ratio::new(2, 1),
@@ -593,17 +593,17 @@ pub mod tests {
             operations: vec![
                 vec![
                     PointOp {
-                        fm: Ratio::new(2, 1),
+                        fm: CoolRatio::from_int(2),
                         ..PointOp::init()
                     },
                     PointOp {
-                        fm: Ratio::new(0, 1),
+                        fm: CoolRatio::from_int(0),
                         g: Ratio::new(0, 1),
                         ..PointOp::init()
                     },
                 ],
                 vec![PointOp {
-                    fm: Ratio::new(1, 1),
+                    fm: CoolRatio::from_int(1),
                     l: Ratio::new(2, 1),
                     ..PointOp::init()
                 }],
@@ -619,7 +619,7 @@ pub mod tests {
         let mut input = NormalForm::init();
 
         TransposeM {
-            m: Ratio::new(3, 2),
+            m: CoolRatio::from_ints(3, 2),
         }
         .apply_to_normal_form(&mut input, &pt)
         .unwrap();
@@ -639,7 +639,7 @@ pub mod tests {
                 ],
             })),
             main: Box::new(Op(TransposeM {
-                m: Ratio::new(2, 1),
+                m: CoolRatio::from_ints(2, 1),
             })),
         }
         .apply_to_normal_form(&mut input, &pt)
@@ -648,7 +648,7 @@ pub mod tests {
         let expected = NormalForm {
             length_ratio: Ratio::new(9, 1),
             operations: vec![vec![PointOp {
-                fm: Ratio::new(3, 2),
+                fm: CoolRatio::from_ints(3, 2),
                 l: Ratio::new(9, 1),
                 ..PointOp::init()
             }]],
@@ -667,13 +667,13 @@ pub mod tests {
                 Op(Sequence {
                     operations: vec![
                         Op(TransposeM {
-                            m: Ratio::new(1, 1),
+                            m: CoolRatio::from_ints(1, 1),
                         }),
                         Op(TransposeM {
-                            m: Ratio::new(9, 8),
+                            m: CoolRatio::from_ints(9, 8),
                         }),
                         Op(TransposeM {
-                            m: Ratio::new(5, 4),
+                            m: CoolRatio::from_ints(5, 4),
                         }),
                     ],
                 }),
@@ -687,15 +687,15 @@ pub mod tests {
             length_ratio: Ratio::new(3, 1),
             operations: vec![vec![
                 PointOp {
-                    fm: Ratio::new(1, 1),
+                    fm: CoolRatio::from_int(1),
                     ..PointOp::init()
                 },
                 PointOp {
-                    fm: Ratio::new(8, 9),
+                    fm: CoolRatio::from_ints(8, 9),
                     ..PointOp::init()
                 },
                 PointOp {
-                    fm: Ratio::new(4, 5),
+                    fm: CoolRatio::from_ints(4, 5),
                     ..PointOp::init()
                 },
             ]],
@@ -711,13 +711,13 @@ pub mod tests {
         Sequence {
             operations: vec![
                 Op(TransposeM {
-                    m: Ratio::new(1, 1),
+                    m: CoolRatio::from_int(1),
                 }),
                 Op(TransposeM {
-                    m: Ratio::new(9, 8),
+                    m: CoolRatio::from_ints(9, 8),
                 }),
                 Op(TransposeM {
-                    m: Ratio::new(5, 4),
+                    m: CoolRatio::from_ints(5, 4),
                 }),
             ],
         }
@@ -741,22 +741,22 @@ pub mod tests {
             length_ratio: Ratio::new(3, 1),
             operations: vec![vec![
                 PointOp {
-                    fm: Ratio::new(1, 1),
+                    fm: CoolRatio::from_int(1),
                     ..PointOp::init()
                 },
                 PointOp {
-                    fm: Ratio::new(9, 8),
+                    fm: CoolRatio::from_ints(9, 8),
                     l: Ratio::new(1, 2),
                     ..PointOp::init()
                 },
                 PointOp {
-                    fm: Ratio::new(9, 8),
+                    fm: CoolRatio::from_ints(9, 8),
                     g: Ratio::new(1, 2),
                     l: Ratio::new(1, 2),
                     ..PointOp::init()
                 },
                 PointOp {
-                    fm: Ratio::new(5, 4),
+                    fm: CoolRatio::from_ints(5, 4),
                     g: Ratio::new(1, 2),
                     ..PointOp::init()
                 },

@@ -1,6 +1,7 @@
 use num_rational::{Rational64};
 use std::str::FromStr;
 use std::string::String;
+use weresocool_shared::cool_ratio::*;
 use weresocool_ast::{
         Defs,
         Op,
@@ -185,7 +186,7 @@ BaseOperation: Term = {
     "Portamento" <m:Rational> => Term::Op(Portamento {m}),
     "Reverb" <m:Rational> => Term::Op(Reverb {m}),
     "Silence" <m:Rational> => Term::Op(Silence {m}),
-    r"(Tm|Fm)" <m:Rational> => Term::Op(TransposeM {m}),
+    r"(Tm|Fm)" <m:Rational> => Term::Op(TransposeM {m: CoolRatio::from_ints(*m.numer(), *m.denom())}),
     r"(Ta|Fa)" <a:Rational> => Term::Op(TransposeA {a}),
     r"(PanM|Pm)" <m:Rational> => Term::Op(PanM {m}),
     r"(PanA|Pa)" <a:Rational> => Term::Op(PanA {a}),
@@ -210,7 +211,7 @@ BaseOperation: Term = {
     },
     <tm: Rational>"^"<length: Rational> => {
         Term::Op(Compose { operations: vec! [
-            Term::Op(TransposeM { m: tm }),
+            Term::Op(TransposeM { m: CoolRatio::from_ints(*tm.numer(), *tm.denom()) }),
             Term::Op(Length { m: length }),
         ]})
     },
@@ -224,7 +225,7 @@ Overtone: Term = {
         <p:Rational>
     ")"
     => Term::Op(Compose { operations: vec! [
-            Term::Op(TransposeM { m: fm }),
+            Term::Op(TransposeM {  m: CoolRatio::from_ints(*fm.numer(), *fm.denom()) }),
             Term::Op(TransposeA { a: fa }),
             Term::Op(Gain { m: g }),
             Term::Op(PanA { a: p }),

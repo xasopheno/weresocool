@@ -20,4 +20,5 @@ indexmap = "1.4.0"
 rand = "0.7.3"
 weresocool_ast = { path = "../ast" }
 weresocool_error = { path = "../error" }
+weresocool_shared = { path = "../shared" }
 path-clean = "0.1.0"

@@ -5,6 +5,7 @@ pub mod test {
     };
     use num_rational::Ratio;
     use weresocool_ast::{Defs, Op, Op::*, Term::*};
+    use weresocool_shared::cool_ratio::*;
 
     fn mock_init() -> String {
         "{ f: 200, l: 1.0, g: 1.0, p: 0.0 }
@@ -99,7 +100,7 @@ pub mod test {
         test_parsed_operation(
             parse_str,
             TransposeM {
-                m: Ratio::new(3, 2),
+                m: CoolRatio::from_ints(3, 2),
             },
         );
     }
@@ -195,7 +196,7 @@ pub mod test {
                 operations: vec![
                     Op(AsIs),
                     Op(TransposeM {
-                        m: Ratio::new(3, 2),
+                        m: CoolRatio::from_ints(3, 2),
                     }),
                 ],
             },
@@ -219,7 +220,7 @@ pub mod test {
                 operations: vec![
                     Op(AsIs),
                     Op(TransposeM {
-                        m: Ratio::new(3, 2),
+                        m: CoolRatio::from_ints(3, 2),
                     }),
                 ],
             },
@@ -242,7 +243,7 @@ pub mod test {
                     Op(Compose {
                         operations: vec![
                             Op(TransposeM {
-                                m: Ratio::new(3, 2),
+                                m: CoolRatio::from_ints(3, 2),
                             }),
                             Op(TransposeA {
                                 a: Ratio::new(3, 1),
@@ -258,7 +259,7 @@ pub mod test {
                     Op(Compose {
                         operations: vec![
                             Op(TransposeM {
-                                m: Ratio::new(1, 1),
+                                m: CoolRatio::from_int(1),
                             }),
                             Op(TransposeA {
                                 a: Ratio::new(0, 1),
@@ -298,7 +299,7 @@ pub mod test {
             Op(Compose {
                 operations: vec![
                     Op(TransposeM {
-                        m: Ratio::new(3, 2)
+                        m: CoolRatio::from_ints(3, 2)
                     }),
                     Op(Gain {
                         m: Ratio::new(3, 10)
@@ -365,10 +366,10 @@ pub mod test {
                             Op(Sequence {
                                 operations: vec![
                                     Op(TransposeM {
-                                        m: Ratio::new(5, 4)
+                                        m: CoolRatio::from_ints(5, 4)
                                     }),
                                     Op(TransposeM {
-                                        m: Ratio::new(3, 2)
+                                        m: CoolRatio::from_ints(3, 2)
                                     })
                                 ]
                             }),
@@ -384,10 +385,10 @@ pub mod test {
                                 Op(Sequence {
                                     operations: vec![
                                         Op(TransposeM {
-                                            m: Ratio::new(5, 4)
+                                            m: CoolRatio::from_ints(5, 4)
                                         }),
                                         Op(TransposeM {
-                                            m: Ratio::new(3, 2)
+                                            m: CoolRatio::from_ints(3, 2)
                                         })
                                     ]
                                 }),

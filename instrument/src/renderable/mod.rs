@@ -7,7 +7,7 @@ use rayon::prelude::*;
 pub use render_voice::{renderables_to_render_voices, RenderVoice};
 use weresocool_ast::{Defs, NormalForm, Normalize, OscType, PointOp, ASR};
 use weresocool_error::Error;
-use weresocool_shared::{default_settings, Settings};
+use weresocool_shared::{cool_ratio::*, default_settings, Settings};
 
 const SETTINGS: Settings = default_settings();
 
@@ -238,6 +238,10 @@ pub fn point_op_to_gains(point_op: &PointOp, basis: &Basis) -> (f64, f64) {
     (l_gain, r_gain)
 }
 
+pub fn m_a_and_basis_to_f64_f(basis: Rational64, m: CoolRatio, a: Rational64) -> f64 {
+    r_to_f64(basis) * m.as_f64() + r_to_f64(a)
+}
+
 pub fn m_a_and_basis_to_f64(basis: Rational64, m: Rational64, a: Rational64) -> f64 {
     r_to_f64(basis * m) + r_to_f64(a)
 }
@@ -247,7 +251,10 @@ pub fn calculate_fgpl(basis: &Basis, point_op: &PointOp) -> (f64, (f64, f64), f6
         (0.0, (0.0, 0.0))
     } else {
         let g = point_op_to_gains(point_op, basis);
-        (m_a_and_basis_to_f64(basis.f, point_op.fm, point_op.fa), g)
+        (
+            m_a_and_basis_to_f64_f(basis.f, point_op.fm.to_owned(), point_op.fa),
+            g,
+        )
     };
     let p = m_a_and_basis_to_f64(basis.p, point_op.pm, point_op.pa);
     let l = r_to_f64(point_op.l * basis.l);

@@ -14,6 +14,7 @@ mod tests {
         },
         Basis, StereoWaveform,
     };
+    use weresocool_shared::cool_ratio::*;
     use weresocool_shared::helpers::cmp_f64;
 
     #[test]
@@ -30,28 +31,28 @@ mod tests {
         let mut point_op = PointOp::init();
 
         //Simple case
-        point_op.fm = Rational64::new(1, 1);
-        point_op.g = Rational64::new(1, 1);
+        point_op.fm = CoolRatio::from_int(1);
+        point_op.g = Rational64::from_integer(1);
         let result = calculate_fgpl(&basis, &point_op);
         let expected = (100.0, (0.5, 0.5), 0.0, 1.0);
         assert_eq!(result, expected);
 
         //Should be zero if frequency is zero
-        point_op.fm = Rational64::new(0, 1);
+        point_op.fm = CoolRatio::from_int(0);
         point_op.g = Rational64::new(1, 1);
         let result = calculate_fgpl(&basis, &point_op);
         let expected = (0.0, (0.0, 0.0), 0.0, 1.0);
         assert_eq!(result, expected);
 
         //Should be zero if gain is zero
-        point_op.fm = Rational64::new(1, 1);
+        point_op.fm = CoolRatio::from_int(1);
         point_op.g = Rational64::new(0, 1);
         let result = calculate_fgpl(&basis, &point_op);
         let expected = (0.0, (0.0, 0.0), 0.0, 1.0);
         assert_eq!(result, expected);
 
         //Should be zero if freq less than 20
-        point_op.fm = Rational64::new(1, 6);
+        point_op.fm = CoolRatio::from_ints(1, 6);
         point_op.g = Rational64::new(1, 1);
         let result = calculate_fgpl(&basis, &point_op);
         let expected = (0.0, (0.0, 0.0), 0.0, 1.0);

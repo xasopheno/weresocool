@@ -8,6 +8,7 @@ use serde_json::to_string;
 use weresocool_ast::{Defs, NameSet, NormalForm, Normalize, OscType, PointOp, ASR};
 use weresocool_error::Error;
 use weresocool_instrument::Basis;
+use weresocool_shared::cool_ratio::*;
 
 pub fn r_to_f64(r: Rational64) -> f64 {
     *r.numer() as f64 / *r.denom() as f64
@@ -25,7 +26,7 @@ pub struct TimedOp {
     pub asr: ASR,
     pub portamento: Rational64,
     pub osc_type: OscType,
-    pub fm: Rational64,
+    pub fm: CoolRatio,
     pub fa: Rational64,
     pub pm: Rational64,
     pub pa: Rational64,
@@ -36,11 +37,11 @@ pub struct TimedOp {
 impl TimedOp {
     fn to_op_4d(&self, basis: &Basis) -> Op4D {
         let zero = Rational64::new(0, 1);
-        let is_silent = (self.fm == zero && self.fa < Rational64::new(20, 1)) || self.g == zero;
+        let is_silent = (self.fm.is_zero() && self.fa < Rational64::new(20, 1)) || self.g == zero;
         let y = if is_silent {
             0.0
         } else {
-            r_to_f64(basis.f).mul_add(r_to_f64(self.fm), r_to_f64(self.fa))
+            r_to_f64(basis.f).mul_add(self.fm.as_f64(), r_to_f64(self.fa))
         };
         let z = if is_silent {
             0.0
@@ -61,7 +62,7 @@ impl TimedOp {
     #[allow(clippy::missing_const_for_fn)]
     pub fn to_point_op(&self) -> PointOp {
         PointOp {
-            fm: self.fm,
+            fm: self.fm.to_owned(),
             fa: self.fa,
             pm: self.pm,
             pa: self.pa,
@@ -232,7 +233,7 @@ fn point_op_to_timed_op(
     event: usize,
 ) -> TimedOp {
     let timed_op = TimedOp {
-        fm: point_op.fm,
+        fm: point_op.fm.to_owned(),
         fa: point_op.fa,
         pm: point_op.pm,
         pa: point_op.pa,
