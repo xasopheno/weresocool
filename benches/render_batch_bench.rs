@@ -27,7 +27,11 @@ fn render_batch_bench(c: &mut Criterion) {
         b.iter(|| {
             let _r: Vec<StereoWaveform> = voices1
                 .iter_mut()
-                .map(|voice| voice.render_batch(black_box(1024), None).unwrap())
+                .map(|voice| {
+                    voice
+                        .render_batch(black_box(1024), None)
+                        .unwrap_or_else(|| StereoWaveform::new_empty())
+                })
                 .collect();
         })
     });
