@@ -148,7 +148,7 @@ mod tests {
 
     #[test]
     fn test_get_batch() {
-        let filename = "songs/test/render_op_get_batch.socool".to_string();
+        let filename = "songs/test/render_op_get_batch_simple.socool".to_string();
         let (nf, basis, table) = match Filename(&filename)
             .make(RenderType::NfBasisAndTable, None)
             .unwrap()
@@ -188,7 +188,7 @@ mod tests {
 
     #[test]
     fn test_small_and_large_render_batch_same_result() {
-        let filename = "songs/test/render_op_get_batch.socool".to_string();
+        let filename = "songs/test/render_op_get_batch_simple.socool".to_string();
         let (nf, basis, table) = match Filename(&filename)
             .make(RenderType::NfBasisAndTable, None)
             .unwrap()
