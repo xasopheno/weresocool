@@ -1,4 +1,4 @@
-use criterion::{black_box, criterion_group, criterion_main, Criterion};
+use criterion::{criterion_group, criterion_main, Criterion};
 
 use weresocool::{
     generation::{RenderReturn, RenderType},
@@ -30,7 +30,7 @@ fn render_batch_bench(c: &mut Criterion) {
                 .map(|voice| {
                     voice
                         .render_batch(1024, None)
-                        .unwrap_or_else(|| StereoWaveform::new_empty())
+                        .unwrap_or_else(StereoWaveform::new_empty)
                 })
                 .collect();
         })
