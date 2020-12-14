@@ -3,8 +3,10 @@ use crate::operations::{
 };
 use crate::{Defs, FunDef, Op, OscType, Term, Term::*};
 use num_rational::Ratio;
+use num_traits::CheckedMul;
 use rand::prelude::*;
 use weresocool_error::Error;
+use weresocool_shared::lossy_rational_mul;
 
 impl Normalize for Op {
     #[allow(clippy::cognitive_complexity)]
@@ -129,7 +131,10 @@ impl Normalize for Op {
             Op::TransposeM { m } => {
                 for voice in input.operations.iter_mut() {
                     for point_op in voice {
-                        point_op.fm *= m;
+                        point_op.fm = point_op
+                            .fm
+                            .checked_mul(m)
+                            .unwrap_or_else(|| lossy_rational_mul(point_op.fm, *m))
                     }
                 }
             }

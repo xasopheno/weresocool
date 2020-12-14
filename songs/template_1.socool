@@ -4,11 +4,30 @@ overtones = {
     O[
       (1/1, 2, 1, 1),
       (1/1, 0, 1, -1),
+      (1/16, 0, 1, 0),
   	]
 }
 
+e = {ET(12) @ [1]}
 main = {
-  overtones |
-  Reverb 1 |
-  Seq [Fm 1, Fm 9/8, Fm 4/3, 0^3/10, Fm 1]
+  overtones | 
+  Fm 1/128 | 
+  e | e | e | e | e | e |
+  e | e | e | e | e | e |
+  e | e | e | e | e | e |
+  e | e | e | e | e | e |
+  e | e | e | e | e | e |
+  e | e | e | e | e | e |
+  e | e | e | e | e | e |
+  e | e | e | e | e | e |
+  e | e | e | e | e | e |
+  e | e | e | e | e | e |
+  e | e | e | e | e | e |
+  e | e | e | e | e | e |
+  e | e | e | e | e | e |
+  e | e | e | e | e | e |
+  e | e | e | e | e | e |
+  e | e | e | e | e | e |
+  e | e | e | e | e | e |
+  e | e | e | e | e | e |
 }
