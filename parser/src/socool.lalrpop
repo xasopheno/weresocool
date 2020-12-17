@@ -107,10 +107,10 @@ Generator: GenOp = {
 }
 
 Coefs: Coefs = {
-  <axis: Axis> <div: Int> "," "[" <coefs: Comma<Int>> "]" => { 
+  <axis: Axis> <div: ExplicitRational> "," "[" <coefs: Comma<Int>> "]" => { 
     Coefs {
-      state: 0,
-      div: div as usize,
+      state: div.0,
+      div: div.1.abs() as usize,
       idx: 0,
       coefs,
       axis
@@ -320,8 +320,12 @@ Ints = Comma<Int>;
 Rational: Rational64 = {
     <n: Float> => f32_to_rational(n),
     <n: Int> => Rational64::new(n, 1),
-    <n: Int> "/" <d:Int> => Rational64::new(n, d),
+    <r: ExplicitRational> => Rational64::new(r.0, r.1)
 };
+
+ExplicitRational: (i64, i64) = {
+    <n: Int> "/" <d:Int> => (n, d),
+}
 
 Axis: Axis = {
     F => Axis::F,
