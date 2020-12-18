@@ -62,6 +62,7 @@ fn dec_to_rational(i: i64, d: usize) -> Rational64 {
 
 impl Axis {
     fn generate(&self, state: i64, div: usize, coef: i64) -> Result<Op, Error> {
+        dbg!(state, div, coef);
         match self {
             Axis::F => Ok(Op::TransposeM {
                 m: et_to_rational(state, div),

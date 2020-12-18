@@ -108,6 +108,7 @@ Generator: GenOp = {
 
 Coefs: Coefs = {
   <axis: Axis> <div: ExplicitRational> "," "[" <coefs: Comma<Int>> "]" => { 
+    dbg!(div.0, div.1);
     Coefs {
       state: div.0,
       div: div.1.abs() as usize,
