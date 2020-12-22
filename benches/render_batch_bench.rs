@@ -30,7 +30,7 @@ fn render_batch_bench(c: &mut Criterion) {
                 .map(|voice| {
                     voice
                         .render_batch(1024, None)
-                        .unwrap_or_else(|| StereoWaveform::new_empty())
+                        .unwrap_or_else(StereoWaveform::new_empty)
                 })
                 .collect();
         })
