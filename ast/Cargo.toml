@@ -15,3 +15,4 @@ serde = { version = "1.0.116", features = ["derive"] }
 pretty_assertions = "0.6.1"
 indexmap = "1.4.0"
 colored = "1.9.3"
+num-traits = "0.2.14"

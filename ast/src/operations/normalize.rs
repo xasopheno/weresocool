@@ -2,9 +2,11 @@ use crate::operations::{
     helpers::*, substitute::get_fn_arg_map, GetLengthRatio, NormalForm, Normalize, Substitute,
 };
 use crate::{Defs, FunDef, Op, OscType, Term, Term::*};
-use num_rational::{BigRational, Ratio};
+use num_rational::Ratio;
+use num_traits::CheckedMul;
 use rand::prelude::*;
 use weresocool_error::Error;
+use weresocool_shared::lossy_rational_mul;
 
 impl Normalize for Op {
     #[allow(clippy::cognitive_complexity)]
@@ -130,7 +132,10 @@ impl Normalize for Op {
             Op::TransposeM { m } => {
                 for voice in input.operations.iter_mut() {
                     for point_op in voice {
-                        point_op.fm *= m;
+                        point_op.fm = point_op
+                            .fm
+                            .checked_mul(m)
+                            .unwrap_or_else(|| lossy_rational_mul(point_op.fm, *m))
                     }
                 }
             }
@@ -154,7 +159,10 @@ impl Normalize for Op {
             Op::PanM { m } => {
                 for voice in input.operations.iter_mut() {
                     for point_op in voice {
-                        point_op.pm *= m;
+                        point_op.pm = point_op
+                            .pm
+                            .checked_mul(m)
+                            .unwrap_or_else(|| lossy_rational_mul(point_op.pm, *m))
                     }
                 }
             }
@@ -162,7 +170,10 @@ impl Normalize for Op {
             Op::Gain { m } => {
                 for voice in input.operations.iter_mut() {
                     for point_op in voice {
-                        point_op.g *= m;
+                        point_op.g = point_op
+                            .g
+                            .checked_mul(m)
+                            .unwrap_or_else(|| lossy_rational_mul(point_op.g, *m))
                     }
                 }
             }
@@ -170,7 +181,10 @@ impl Normalize for Op {
             Op::Length { m } => {
                 for voice in input.operations.iter_mut() {
                     for point_op in voice {
-                        point_op.l *= m;
+                        point_op.l = point_op
+                            .l
+                            .checked_mul(m)
+                            .unwrap_or_else(|| lossy_rational_mul(point_op.l, *m))
                     }
                 }
 

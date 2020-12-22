@@ -3115,6 +3115,7 @@ dependencies = [
  "colored",
  "indexmap",
  "num-rational 0.3.2",
+ "num-traits",
  "pretty_assertions",
  "rand",
  "serde",
