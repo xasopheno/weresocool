@@ -130,8 +130,6 @@ impl Normalize for Op {
             Op::TransposeM { m } => {
                 for voice in input.operations.iter_mut() {
                     for point_op in voice {
-                        // let op_fm: BigRational = BigRational::new(BigInt::new(point_op.fm.numer), BigInt.new(point_op.fm.denom));
-                        // let fm = BigRational::new()
                         point_op.fm *= m;
                     }
                 }
