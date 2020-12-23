@@ -245,7 +245,6 @@ pub fn m_a_and_basis_to_f64(basis: Rational64, m: Rational64, a: Rational64) -> 
             .checked_mul(&m)
             .unwrap_or_else(|| lossy_rational_mul(basis, m)),
     ) + r_to_f64(a)
-    // r_to_f64(basis * m) + r_to_f64(a)
 }
 
 pub fn calculate_fgpl(basis: &Basis, point_op: &PointOp) -> (f64, (f64, f64), f64, f64) {
