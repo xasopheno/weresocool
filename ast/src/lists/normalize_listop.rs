@@ -141,7 +141,7 @@ impl ListOp {
                     dbg!(&g);
                     unimplemented!()
                 }
-                GenOp::Const(mut g) => g.generate(n.to_owned(), defs),
+                GenOp::Const(mut g) => g.generate(input, n.to_owned(), defs),
             },
         }
     }

@@ -22,9 +22,7 @@ pub struct Coefs {
 
 impl Coefs {
     fn generate(&mut self) -> Result<Op, Error> {
-        let result = self
-            .axis
-            .generate(self.state, self.div, self.coefs[self.idx]);
+        let result = self.axis.generate(self.state, self.div);
         self.state += self.coefs[self.idx];
         self.idx += 1;
         self.idx %= self.coefs.len();
@@ -61,17 +59,20 @@ fn dec_to_rational(i: i64, d: usize) -> Rational64 {
 }
 
 impl Axis {
-    fn generate(&self, state: i64, div: usize, coef: i64) -> Result<Op, Error> {
+    fn generate(&self, state: i64, div: usize) -> Result<Op, Error> {
         match self {
             Axis::F => Ok(Op::TransposeM {
                 m: et_to_rational(state, div),
             }),
             Axis::L => Ok(Op::Length {
-                m: dec_to_rational(state, div),
+                m: dec_to_rational(std::cmp::max(0, state), div),
             }),
-            // Axis::G => op.g *= coef,
-            // Axis::P => op.pm *= coef,
-            _ => unimplemented!(),
+            Axis::G => Ok(Op::Gain {
+                m: dec_to_rational(std::cmp::max(0, state), div),
+            }),
+            Axis::P => Ok(Op::PanA {
+                a: et_to_rational(state, div),
+            }),
         }
     }
 }
@@ -82,11 +83,16 @@ pub struct Generator {
 }
 
 impl Generator {
-    pub fn generate(&mut self, n: usize, defs: &Defs) -> Result<Vec<NormalForm>, Error> {
+    pub fn generate(
+        &mut self,
+        nf: &NormalForm,
+        n: usize,
+        defs: &Defs,
+    ) -> Result<Vec<NormalForm>, Error> {
         let mut result: Vec<NormalForm> = vec![];
 
         for _ in 0..n - 1 {
-            let mut nf: NormalForm = NormalForm::init();
+            let mut nf: NormalForm = nf.clone();
             for coef in self.coefs.iter_mut() {
                 coef.generate()?.apply_to_normal_form(&mut nf, defs)?;
             }
@@ -104,7 +110,11 @@ pub enum GenOp {
 }
 
 impl Normalize for GenOp {
-    fn apply_to_normal_form(&self, input: &mut NormalForm, defs: &Defs) -> Result<(), Error> {
-        unimplemented!();
+    fn apply_to_normal_form(
+        &self,
+        _normal_form: &mut NormalForm,
+        _defs: &Defs,
+    ) -> Result<(), Error> {
+        unimplemented!()
     }
 }

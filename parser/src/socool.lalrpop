@@ -15,7 +15,6 @@ use weresocool_ast::{
         GenOp,
         Indices, 
         Index,
-        NormalForm
 };
 use crate::parser::Init;
 use crate::indices::{et, random_seed};
