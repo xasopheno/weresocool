@@ -19,7 +19,22 @@ pub fn handle_id_error(id: String, defs: &Defs, arg_map: Option<&ArgMap>) -> Res
 }
 
 pub fn handle_def_error(id: String, defs: &Defs) -> Result<Term, Error> {
-    let result = defs.terms.get(&id).or_else(|| defs.lists.get(&id));
+    let result = defs
+        .terms
+        .get(&id)
+        .or_else(|| defs.lists.get(&id))
+        .or_else(|| defs.generators.get(&id));
+    match result {
+        Some(result) => Ok(result.to_owned()),
+        None => {
+            println!("Not able to find {} in let defs", id.red().bold());
+            Err(IdError { id }.into_error())
+        }
+    }
+}
+
+pub fn handle_gen_def_error(id: String, defs: &Defs) -> Result<Term, Error> {
+    let result = defs.generators.get(&id);
     match result {
         Some(result) => Ok(result.to_owned()),
         None => {

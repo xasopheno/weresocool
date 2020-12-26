@@ -137,9 +137,16 @@ impl ListOp {
                 })
                 .collect(),
             ListOp::Gen { n, gen } => match *gen.to_owned() {
-                GenOp::Named(g) => {
-                    dbg!(&g);
-                    unimplemented!()
+                GenOp::Named(name) => {
+                    let generator = handle_id_error(name, defs, None)?;
+                    match generator {
+                        Term::Gen(gen_op) => gen_op.generate(*n, input, defs),
+
+                        _ => {
+                            println!("Using non-list as list.");
+                            Err(Error::with_msg("Using non-list as list."))
+                        }
+                    }
                 }
                 GenOp::Const(mut g) => g.generate(input, n.to_owned(), defs),
             },

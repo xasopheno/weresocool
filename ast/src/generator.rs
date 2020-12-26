@@ -1,4 +1,5 @@
-use crate::{Defs, NormalForm, Normalize, Op};
+use crate::operations::helpers::handle_id_error;
+use crate::{Defs, NormalForm, Normalize, Op, Term};
 use num_rational::Rational64;
 use std::str::FromStr;
 use weresocool_error::Error;
@@ -107,6 +108,30 @@ impl Generator {
 pub enum GenOp {
     Const(Generator),
     Named(String),
+}
+
+impl GenOp {
+    pub fn generate(
+        self,
+        n: usize,
+        input: &mut NormalForm,
+        defs: &Defs,
+    ) -> Result<Vec<NormalForm>, Error> {
+        match self {
+            GenOp::Named(name) => {
+                let generator = handle_id_error(name.to_string(), defs, None)?;
+                match generator {
+                    Term::Gen(gen) => gen.generate(n, input, defs),
+
+                    _ => {
+                        println!("Using non-list as list.");
+                        Err(Error::with_msg("Using non-list as list."))
+                    }
+                }
+            }
+            GenOp::Const(mut g) => g.generate(input, n.to_owned(), defs),
+        }
+    }
 }
 
 impl Normalize for GenOp {
