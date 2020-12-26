@@ -22,7 +22,7 @@ pub struct Coefs {
 }
 
 impl Coefs {
-    fn generate(&mut self) -> Result<Op, Error> {
+    fn generate(&mut self) -> Op {
         let result = self.axis.generate(self.state, self.div);
         self.state += self.coefs[self.idx];
         self.idx += 1;
@@ -60,20 +60,20 @@ fn dec_to_rational(i: i64, d: usize) -> Rational64 {
 }
 
 impl Axis {
-    fn generate(&self, state: i64, div: usize) -> Result<Op, Error> {
+    fn generate(&self, state: i64, div: usize) -> Op {
         match self {
-            Axis::F => Ok(Op::TransposeM {
+            Axis::F => Op::TransposeM {
                 m: et_to_rational(state, div),
-            }),
-            Axis::L => Ok(Op::Length {
+            },
+            Axis::L => Op::Length {
                 m: dec_to_rational(std::cmp::max(0, state), div),
-            }),
-            Axis::G => Ok(Op::Gain {
+            },
+            Axis::G => Op::Gain {
                 m: dec_to_rational(std::cmp::max(0, state), div),
-            }),
-            Axis::P => Ok(Op::PanA {
+            },
+            Axis::P => Op::PanA {
                 a: et_to_rational(state, div),
-            }),
+            },
         }
     }
 }
@@ -95,7 +95,7 @@ impl Generator {
         for _ in 0..n - 1 {
             let mut nf: NormalForm = nf.clone();
             for coef in self.coefs.iter_mut() {
-                coef.generate()?.apply_to_normal_form(&mut nf, defs)?;
+                coef.generate().apply_to_normal_form(&mut nf, defs)?;
             }
             result.push(nf)
         }
@@ -119,7 +119,7 @@ impl GenOp {
     ) -> Result<Vec<NormalForm>, Error> {
         match self {
             GenOp::Named(name) => {
-                let generator = handle_id_error(name.to_string(), defs, None)?;
+                let generator = handle_id_error(name, defs, None)?;
                 match generator {
                     Term::Gen(gen) => gen.generate(n, input, defs),
 
