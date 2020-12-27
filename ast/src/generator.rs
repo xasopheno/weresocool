@@ -1,5 +1,5 @@
 use crate::operations::helpers::handle_id_error;
-use crate::{Defs, NormalForm, Normalize, Op, Term};
+use crate::{ArgMap, Defs, NormalForm, Normalize, Op, Substitute, Term};
 use num_rational::Rational64;
 use std::str::FromStr;
 use weresocool_error::Error;
@@ -130,6 +130,27 @@ impl GenOp {
                 }
             }
             GenOp::Const(mut g) => g.generate(input, n.to_owned(), defs),
+        }
+    }
+}
+
+impl Substitute for GenOp {
+    fn substitute(
+        &self,
+        normal_form: &mut NormalForm,
+        defs: &Defs,
+        arg_map: &ArgMap,
+    ) -> Result<Term, Error> {
+        match self {
+            GenOp::Named(name) => {
+                let term = handle_id_error(name.to_string(), defs, Some(arg_map))?;
+
+                match term {
+                    Term::Gen(gen_op) => gen_op.substitute(normal_form, defs, arg_map),
+                    _ => Err(Error::with_msg("List.substitute() on called non-list")),
+                }
+            }
+            GenOp::Const(generator) => Ok(Term::Gen(GenOp::Const(generator.to_owned()))),
         }
     }
 }

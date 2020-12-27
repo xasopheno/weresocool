@@ -42,7 +42,10 @@ impl Normalize for Op {
                                 let result = lop.substitute(input, defs, &arg_map)?;
                                 result.apply_to_normal_form(input, defs)?
                             }
-                            _ => unimplemented!(),
+                            Term::Gen(gen_op) => {
+                                let result = gen_op.substitute(input, defs, &arg_map)?;
+                                result.apply_to_normal_form(input, defs)?
+                            }
                         }
                     }
                     _ => {
