@@ -23,6 +23,7 @@ pub struct PrintSuccess {
     print_type: String,
 }
 
+#[derive(Deserialize, Serialize, Debug)]
 pub struct DataSuccess {
     data: String,
     print_type: String,
