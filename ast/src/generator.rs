@@ -155,12 +155,37 @@ impl Substitute for GenOp {
     }
 }
 
-impl Normalize for GenOp {
-    fn apply_to_normal_form(
+impl Substitute for Generator {
+    fn substitute(
         &self,
-        _normal_form: &mut NormalForm,
-        _defs: &Defs,
-    ) -> Result<(), Error> {
+        normal_form: &mut NormalForm,
+        defs: &Defs,
+        arg_map: &ArgMap,
+    ) -> Result<Term, Error> {
         unimplemented!()
+    }
+}
+
+impl Normalize for Generator {
+    fn apply_to_normal_form(&self, normal_form: &mut NormalForm, defs: &Defs) -> Result<(), Error> {
+    }
+}
+
+impl Normalize for GenOp {
+    fn apply_to_normal_form(&self, normal_form: &mut NormalForm, defs: &Defs) -> Result<(), Error> {
+        match self {
+            GenOp::Named(name) => {
+                let generator = handle_id_error(name.to_string(), &defs.clone(), None)?;
+                match generator {
+                    Term::Gen(gen_op) => gen_op.apply_to_normal_form(normal_form, defs),
+
+                    _ => {
+                        println!("Using non-list as list.");
+                        Err(Error::with_msg("Using non-list as list."))
+                    }
+                }
+            }
+            GenOp::Const(g) => g.apply_to_normal_form(normal_form, defs),
+        }
     }
 }

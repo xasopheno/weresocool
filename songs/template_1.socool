@@ -19,20 +19,20 @@ my_gen = *(
   g: 4/4, [-2, 2]
 ) 
 
-test_nf(gen) = {
-  *gen Take 32
-}
+-- test_nf(gen) = {
+--  *gen Take 32
+-- }
 
 main = {
     Overlay [
       Seq [
         Fm 1 | Lm 8, 
-        test_nf(my_gen)
+        *my_gen Take 32
       ]
     ]
     | Seq [Fm 1, Reverse]
-    | Lm 1/7
-    | Seq [ET(12)]
+    | Lm 1/12
+  --| Seq [ET(12)]
     | overtones
 }
 
