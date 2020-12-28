@@ -8,10 +8,7 @@ use serde_json::to_string;
 use weresocool_ast::{Defs, NameSet, NormalForm, Normalize, OscType, PointOp, ASR};
 use weresocool_error::Error;
 use weresocool_instrument::Basis;
-
-pub fn r_to_f64(r: Rational64) -> f64 {
-    *r.numer() as f64 / *r.denom() as f64
-}
+use weresocool_shared::{lossy_rational_mul_to_f64, r_to_f64};
 
 #[derive(Debug, Clone, Eq, Ord, PartialEq, PartialOrd)]
 pub struct TimedOp {
@@ -40,16 +37,16 @@ impl TimedOp {
         let y = if is_silent {
             0.0
         } else {
-            r_to_f64(basis.f).mul_add(r_to_f64(self.fm), r_to_f64(self.fa))
+            lossy_rational_mul_to_f64(basis.f, self.fm) + r_to_f64(self.fa)
         };
         let z = if is_silent {
             0.0
         } else {
-            r_to_f64(basis.g) * r_to_f64(self.g)
+            lossy_rational_mul_to_f64(basis.g, self.g)
         };
         Op4D {
-            l: r_to_f64(self.l) * r_to_f64(basis.l),
-            t: r_to_f64(self.t) * r_to_f64(basis.l),
+            l: lossy_rational_mul_to_f64(self.l, basis.l),
+            t: lossy_rational_mul_to_f64(self.t, basis.l),
             x: ((r_to_f64(basis.p) + r_to_f64(self.pa)) * r_to_f64(self.pm)),
             y: y.log10(),
             z,

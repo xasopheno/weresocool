@@ -6,6 +6,13 @@ pub fn lossy_rational_mul(a: Rational64, b: Rational64) -> Rational64 {
     f32_string_to_rational(format!("{:.8}", r_to_f64(a) * r_to_f64(b)))
 }
 
+pub fn lossy_rational_mul_to_f64(a: Rational64, b: Rational64) -> f64 {
+    r_to_f64(f32_string_to_rational(format!(
+        "{:.8}",
+        r_to_f64(a) * r_to_f64(b)
+    )))
+}
+
 pub fn f32_string_to_rational(float_string: String) -> Rational64 {
     let decimal = float_string.split('.').collect::<Vec<&str>>()[1];
     let den = i64::pow(10, decimal.len() as u32);
