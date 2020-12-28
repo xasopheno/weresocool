@@ -303,7 +303,8 @@ pub fn to_json(
     composition: &NormalForm,
     defs: &Defs,
     filename: String,
-) -> Result<(), Error> {
+    cli: bool,
+) -> Result<String, Error> {
     banner("JSONIFY-ing".to_string(), filename.clone());
 
     let (vec_timed_op, _) = composition_to_vec_timed_op(composition, defs)?;
@@ -319,11 +320,12 @@ pub fn to_json(
         ops: op4d_1d,
         length: max_len,
     })?;
+    if cli {
+        write_composition_to_json(&json, &filename)?;
+        printed("JSON".to_string());
+    }
 
-    write_composition_to_json(&json, &filename)?;
-    printed("JSON".to_string());
-
-    Ok(())
+    Ok(json)
 }
 
 pub fn to_csv(

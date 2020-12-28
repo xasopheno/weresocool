@@ -1,6 +1,5 @@
 import React, { useContext } from 'react';
-import { Button } from './style';
-import { DispatchContext } from '../actions/actions';
+import { Button } from './style'; import { DispatchContext } from '../actions/actions';
 import { GlobalContext } from '../store';
 import styled from 'styled-components';
 import { useCurrentWidth } from '../utils/width';
@@ -104,17 +103,6 @@ export const RenderModal = (props: {
             }}
           >
             Wav
-          </Section>
-          <Section
-            id={'csvButton'}
-            onClick={async () => {
-              await dispatch.onStop();
-              props.options.setShow(false);
-              await dispatch.onPrint(store.language, 'csv');
-              dispatch.setEditorFocus(store.editor_ref);
-            }}
-          >
-            CSV
           </Section>
           <Section
             id={'jsonButton'}

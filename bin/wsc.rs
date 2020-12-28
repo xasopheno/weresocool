@@ -35,7 +35,7 @@ fn main() -> Result<(), Error> {
     } else if args.is_present("json") {
         Filename(filename.unwrap()).make(RenderType::Json4d { cli: true }, None)?;
     } else if args.is_present("csv") {
-        Filename(filename.unwrap()).make(RenderType::Csv1d { cli: true }, None)?;
+        Filename(filename.unwrap()).make(RenderType::Csv1d, None)?;
     } else {
         // let stereo_waveform = match Filename(filename.unwrap()).make(RenderType::StereoWaveform)? {
         // RenderReturn::StereoWaveform(sw) => sw,
