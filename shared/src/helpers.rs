@@ -7,7 +7,6 @@ pub fn lossy_rational_mul(a: Rational64, b: Rational64) -> Rational64 {
 }
 
 pub fn f32_string_to_rational(float_string: String) -> Rational64 {
-    dbg!(&float_string);
     let decimal = float_string.split('.').collect::<Vec<&str>>()[1];
     let den = i64::pow(10, decimal.len() as u32);
     let num = i64::from_str(&float_string.replace('.', "")).unwrap();

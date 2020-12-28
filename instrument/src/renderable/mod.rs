@@ -7,7 +7,7 @@ use rayon::prelude::*;
 pub use render_voice::{renderables_to_render_voices, RenderVoice};
 use weresocool_ast::{Defs, NormalForm, Normalize, OscType, PointOp, ASR};
 use weresocool_error::Error;
-use weresocool_shared::{default_settings, Settings};
+use weresocool_shared::{default_settings, lossy_rational_mul, Settings};
 
 const SETTINGS: Settings = default_settings();
 
@@ -239,7 +239,7 @@ pub fn point_op_to_gains(point_op: &PointOp, basis: &Basis) -> (f64, f64) {
 }
 
 pub fn m_a_and_basis_to_f64(basis: Rational64, m: Rational64, a: Rational64) -> f64 {
-    r_to_f64(basis * m) + r_to_f64(a)
+    r_to_f64(lossy_rational_mul(basis, m)) + r_to_f64(a)
 }
 
 pub fn calculate_fgpl(basis: &Basis, point_op: &PointOp) -> (f64, (f64, f64), f64, f64) {
