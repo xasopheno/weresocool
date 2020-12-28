@@ -105,6 +105,28 @@ export const RenderModal = (props: {
           >
             Wav
           </Section>
+          <Section
+            id={'csvButton'}
+            onClick={async () => {
+              await dispatch.onStop();
+              props.options.setShow(false);
+              await dispatch.onPrint(store.language, 'csv');
+              dispatch.setEditorFocus(store.editor_ref);
+            }}
+          >
+            CSV
+          </Section>
+          <Section
+            id={'jsonButton'}
+            onClick={async () => {
+              await dispatch.onStop();
+              props.options.setShow(false);
+              await dispatch.onPrint(store.language, 'json');
+              dispatch.setEditorFocus(store.editor_ref);
+            }}
+          >
+            Json
+          </Section>
         </TextContainer>
         <CloseModalButton onClick={() => props.options.setShow(false)}>
           X

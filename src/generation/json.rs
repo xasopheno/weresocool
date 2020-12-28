@@ -293,6 +293,11 @@ struct Json1d {
     length: f64,
 }
 
+fn is_not_silent(op: &Op4D) -> bool {
+    let is_silent = op.y == 0.0 || op.z <= 0.0;
+    !is_silent
+}
+
 pub fn to_json(
     basis: &Basis,
     composition: &NormalForm,
@@ -304,11 +309,7 @@ pub fn to_json(
     let (vec_timed_op, _) = composition_to_vec_timed_op(composition, defs)?;
     let mut op4d_1d = vec_timed_op_to_vec_op4d(vec_timed_op, basis);
 
-    //TODO: Factor out
-    op4d_1d.retain(|op| {
-        let is_silent = op.y == 0.0 || op.z <= 0.0;
-        !is_silent
-    });
+    op4d_1d.retain(|op| is_not_silent(op));
 
     let (normalizer, max_len) = get_min_max_op4d_1d(&op4d_1d);
 
@@ -336,10 +337,7 @@ pub fn to_csv(
     let (vec_timed_op, _) = composition_to_vec_timed_op(composition, defs)?;
     let mut op4d_1d = vec_timed_op_to_vec_op4d(vec_timed_op, basis);
 
-    op4d_1d.retain(|op| {
-        let is_silent = op.y == 0.0 || op.z <= 0.0;
-        !is_silent
-    });
+    op4d_1d.retain(|op| is_not_silent(op));
 
     let (normalizer, _max_len) = get_min_max_op4d_1d(&op4d_1d);
 
