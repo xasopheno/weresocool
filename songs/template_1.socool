@@ -31,7 +31,7 @@ main = {
       ]
     ]
     | Seq [Fm 1, Reverse]
-    | Lm 1/12
+    | Lm 1/9
   --| Seq [ET(12)]
     | overtones
 }
