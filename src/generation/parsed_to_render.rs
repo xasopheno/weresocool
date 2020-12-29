@@ -29,8 +29,8 @@ pub enum WavType {
 
 #[derive(Clone, PartialEq, Debug)]
 pub enum RenderType {
-    Json4d,
-    Csv1d,
+    Json4d { cli: bool },
+    Csv1d { cli: bool },
     NfBasisAndTable,
     StereoWaveform,
     Wav(WavType),
@@ -98,7 +98,7 @@ pub fn parsed_to_render(
             basis,
             parsed_composition.defs,
         )),
-        RenderType::Json4d => {
+        RenderType::Json4d { cli } => {
             to_json(
                 &basis,
                 nf,
@@ -107,7 +107,7 @@ pub fn parsed_to_render(
             )?;
             Ok(RenderReturn::Json4d("json".to_string()))
         }
-        RenderType::Csv1d => {
+        RenderType::Csv1d { cli } => {
             to_csv(
                 &basis,
                 nf,
