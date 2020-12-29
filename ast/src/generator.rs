@@ -143,12 +143,9 @@ impl Substitute for GenOp {
     ) -> Result<Term, Error> {
         match self {
             GenOp::Named(name) => {
-                let term = handle_id_error(name.to_string(), defs, Some(arg_map))?;
-
-                match term {
-                    Term::Gen(gen_op) => gen_op.substitute(normal_form, defs, arg_map),
-                    _ => Err(Error::with_msg("List.substitute() on called non-list")),
-                }
+                let gen = handle_id_error(name.to_string(), defs, Some(arg_map));
+                // gen.apply_to_normal_form(normal_form, defs);
+                unimplemented!()
             }
             GenOp::Const(generator) => Ok(Term::Gen(GenOp::Const(generator.to_owned()))),
         }

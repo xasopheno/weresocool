@@ -136,6 +136,7 @@ impl ListOp {
                     Ok(nf)
                 })
                 .collect(),
+
             ListOp::Gen { n, gen } => gen.to_owned().generate(n.to_owned(), input, defs),
         }
     }
@@ -148,7 +149,7 @@ impl Normalize for ListOp {
     }
 }
 
-fn join_list_nf(indexed: Vec<NormalForm>) -> NormalForm {
+pub fn join_list_nf(indexed: Vec<NormalForm>) -> NormalForm {
     indexed.iter().fold(NormalForm::init_empty(), |acc, nf| {
         join_sequence(acc, nf.to_owned())
     })
