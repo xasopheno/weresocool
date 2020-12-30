@@ -1,5 +1,6 @@
 import React, { useContext } from 'react';
-import { Button } from './style'; import { DispatchContext } from '../actions/actions';
+import { Button } from './style';
+import { DispatchContext } from '../actions/actions';
 import { GlobalContext } from '../store';
 import styled from 'styled-components';
 import { useCurrentWidth } from '../utils/width';
