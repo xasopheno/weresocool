@@ -39,7 +39,7 @@ export const ErrorDescription = (props: {
     default:
       return (
         <ErrorType id={'errorDescription'}>
-          Error: <ErrorMessage>Error</ErrorMessage>
+          Error: <ErrorMessage>Error (Default: Unhandled State)</ErrorMessage>
         </ErrorType>
       );
   }

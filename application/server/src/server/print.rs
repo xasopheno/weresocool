@@ -11,7 +11,7 @@ pub async fn print(req: web::Json<PrintLanguage>) -> HttpResponse {
         "wav" => InputType::Language(&req.language)
             .make(RenderType::Wav(WavType::Wav { cli: false }), None),
         "csv" => InputType::Language(&req.language).make(RenderType::Csv1d, None),
-        "json" => InputType::Language(&req.language).make(RenderType::Json4d, None),
+        "json" => InputType::Language(&req.language).make(RenderType::Json4d { cli: false }, None),
         _ => unimplemented!(),
     };
 

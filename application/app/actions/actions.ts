@@ -10,6 +10,7 @@ import path from 'path';
 export enum ResponseType {
   RenderSuccess = 'RenderSuccess',
   PrintSuccess = 'PrintSuccess',
+  DataSuccess = 'DataSuccess',
   IdError = 'IdError',
   ParseError = 'ParseError',
   IndexError = 'IndexError',
@@ -188,7 +189,7 @@ export class Dispatch {
         this.dispatch(dispatch);
       });
     } catch (e) {
-      console.log(e);
+      console.warn(e);
       this.dispatch({ _k: 'Backend', fetch: { state: 'bad', error: e } });
     }
     this.dispatch({ _k: 'Set_Printing', state: false });
@@ -227,6 +228,21 @@ const generateDispatches = (
 
         const blob = new Blob([new Uint8Array(value.audio)], {
           type: 'application/octet-stream',
+        });
+        FileSaver.saveAs(blob, `my_song.${value.print_type}`);
+      }
+      break;
+    case ResponseType.DataSuccess:
+      {
+        result.push({
+          _k: 'Set_Render_State',
+          state: ResponseType.RenderSuccess,
+        });
+        result.push({ _k: 'Reset_Error_Message' });
+        result.push({ _k: 'Reset_Markers' });
+
+        const blob = new Blob([value.data], {
+          type: 'application/json',
         });
         FileSaver.saveAs(blob, `my_song.${value.print_type}`);
       }
@@ -282,6 +298,7 @@ const generateDispatches = (
       console.log(response);
       break;
   }
+  console.log(result);
   return result;
 };
 
