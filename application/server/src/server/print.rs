@@ -10,7 +10,6 @@ pub async fn print(req: web::Json<PrintLanguage>) -> HttpResponse {
             .make(RenderType::Wav(WavType::MP3 { cli: false }), None),
         "wav" => InputType::Language(&req.language)
             .make(RenderType::Wav(WavType::Wav { cli: false }), None),
-        "csv" => InputType::Language(&req.language).make(RenderType::Csv1d, None),
         "json" => InputType::Language(&req.language).make(RenderType::Json4d { cli: false }, None),
         _ => unimplemented!(),
     };
@@ -22,13 +21,6 @@ pub async fn print(req: web::Json<PrintLanguage>) -> HttpResponse {
                 .status(StatusCode::OK)
                 .json(Success::PrintSuccess(PrintSuccess::new(
                     wav,
-                    req.print_type.to_owned(),
-                ))),
-            RenderReturn::Csv1d(csv) => HttpResponse::Ok()
-                .content_type("application/json")
-                .status(StatusCode::OK)
-                .json(Success::DataSuccess(DataSuccess::new(
-                    csv,
                     req.print_type.to_owned(),
                 ))),
             RenderReturn::Json4d(json) => HttpResponse::Ok()

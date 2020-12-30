@@ -189,7 +189,7 @@ export class Dispatch {
         this.dispatch(dispatch);
       });
     } catch (e) {
-      console.warn(e);
+      console.log(e);
       this.dispatch({ _k: 'Backend', fetch: { state: 'bad', error: e } });
     }
     this.dispatch({ _k: 'Set_Printing', state: false });
