@@ -31,6 +31,7 @@ impl Substitute for Term {
         defs: &Defs,
         arg_map: &ArgMap,
     ) -> Result<Term, Error> {
+        dbg!(self);
         match self {
             Term::Op(op) => op.substitute(normal_form, defs, arg_map),
             Term::Nf(nf) => nf.substitute(normal_form, defs, arg_map),

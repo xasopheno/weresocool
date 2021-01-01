@@ -47,11 +47,11 @@ fn et_to_rational(i: i64, d: usize) -> Rational64 {
 
     let et = 2.0_f32.powf(i as f32 / d as f32);
     if signum == -1 {
-        let result = f32_to_rational(format!("{:.16}", et));
+        let result = f32_to_rational(format!("{:.8}", et));
         result.recip();
         result
     } else {
-        f32_to_rational(format!("{:.16}", et))
+        f32_to_rational(format!("{:.8}", et))
     }
 }
 

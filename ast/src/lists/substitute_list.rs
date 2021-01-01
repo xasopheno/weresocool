@@ -50,11 +50,36 @@ impl Substitute for ListOp {
                 Ok(Term::Lop(ListOp::Const(result)))
             }
             ListOp::Gen { n, gen } => {
-                dbg!(&gen);
-                let g = gen.substitute(normal_form, defs, arg_map);
-                dbg!(&g);
+                match &**gen {
+                    GenOp::Named(name) => {
+                        let term = handle_id_error(name.to_string(), defs, Some(arg_map))?;
+                        // dbg!(term.substitute(normal_form, defs, arg_map));
+                        match term {
+                            Term::Gen(gen) => {
+                                let generated =
+                                    gen.to_owned().generate(n.to_owned(), normal_form, defs)?;
+                                Ok(Term::Nf(join_list_nf(generated)))
+                            }
+                            _ => unimplemented!(),
+                        }
+                    }
+                    GenOp::Const(generator) => {
+                        let generated =
+                            generator
+                                .to_owned()
+                                .generate(normal_form, n.to_owned(), defs)?;
+                        Ok(Term::Nf(join_list_nf(generated)))
+                    }
+                }
+                // dbg!(gen);
+                // unimplemented!();
+                // unimplemented!();
+                // match &**gen {
+                // }
+                // dbg!(&gen);
+
+                // let g = gen.substitute(normal_form, defs, arg_map);
                 // let generated = g.generate(n.to_owned(), normal_form, defs);
-                unimplemented!()
             }
         }
     }
