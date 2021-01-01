@@ -141,49 +141,15 @@ impl Substitute for GenOp {
         defs: &Defs,
         arg_map: &ArgMap,
     ) -> Result<Term, Error> {
-        match self {
-            GenOp::Named(name) => {
-                let gen = handle_id_error(name.to_string(), defs, Some(arg_map));
-                // gen.apply_to_normal_form(normal_form, defs);
-                unimplemented!()
-            }
-            GenOp::Const(generator) => Ok(Term::Gen(GenOp::Const(generator.to_owned()))),
-        }
-    }
-}
-
-impl Substitute for Generator {
-    fn substitute(
-        &self,
-        normal_form: &mut NormalForm,
-        defs: &Defs,
-        arg_map: &ArgMap,
-    ) -> Result<Term, Error> {
-        unimplemented!()
-    }
-}
-
-// impl Normalize for Generator {
-// fn apply_to_normal_form(&self, normal_form: &mut NormalForm, defs: &Defs) -> Result<(), Error> {
-// }
-// }
-
-impl Normalize for GenOp {
-    fn apply_to_normal_form(&self, normal_form: &mut NormalForm, defs: &Defs) -> Result<(), Error> {
+        dbg!(&self);
         unimplemented!()
         // match self {
         // GenOp::Named(name) => {
-        // let generator = handle_id_error(name.to_string(), &defs.clone(), None)?;
-        // match generator {
-        // Term::Gen(gen_op) => gen_op.apply_to_normal_form(normal_form, defs),
-
-        // _ => {
-        // println!("Using non-list as list.");
-        // Err(Error::with_msg("Using non-list as list."))
+        // // let gen = handle_id_error(name.to_string(), defs, Some(arg_map));
+        // // gen.apply_to_normal_form(normal_form, defs);
+        // unimplemented!()
         // }
-        // }
-        // }
-        // GenOp::Const(g) => g.apply_to_normal_form(normal_form, defs),
+        // GenOp::Const(generator) => Ok(Term::Gen(GenOp::Const(generator.to_owned()))),
         // }
     }
 }

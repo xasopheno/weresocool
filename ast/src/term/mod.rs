@@ -19,7 +19,7 @@ impl Normalize for Term {
             Term::Nf(nf) => nf.apply_to_normal_form(input, defs),
             Term::FunDef(_fun) => Err(Error::with_msg("Cannot normalize FunDef.")),
             Term::Lop(lop) => lop.apply_to_normal_form(input, defs),
-            Term::Gen(gen) => gen.apply_to_normal_form(input, defs),
+            Term::Gen(_gen) => Err(Error::with_msg("Cannot normalize Generator.")),
         }
     }
 }
@@ -31,7 +31,6 @@ impl Substitute for Term {
         defs: &Defs,
         arg_map: &ArgMap,
     ) -> Result<Term, Error> {
-        dbg!(self);
         match self {
             Term::Op(op) => op.substitute(normal_form, defs, arg_map),
             Term::Nf(nf) => nf.substitute(normal_form, defs, arg_map),
