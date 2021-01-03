@@ -49,30 +49,31 @@ impl Substitute for ListOp {
 
                 Ok(Term::Lop(ListOp::Const(result)))
             }
-            ListOp::Gen { n, gen } => match &**gen {
-                GenOp::Named(name) => {
-                    let term = handle_id_error(name.to_string(), defs, Some(arg_map))?;
-                    match term {
-                        Term::Gen(gen) => {
-                            let generated =
-                                gen.to_owned().generate(n.to_owned(), normal_form, defs)?;
-                            Ok(Term::Nf(join_list_nf(generated)))
-                        }
+            // ListOp::Gen { n, gen } => match &**gen {
+                // GenOp::Named(name) => {
+                    // let term = handle_id_error(name.to_string(), defs, Some(arg_map))?;
+                    // match term {
+                        // Term::Gen(gen) => {
+                            // let generated =
+                                // gen.to_owned().generate(n.to_owned(), normal_form, defs)?;
+                            // Ok(Term::Nf(join_list_nf(generated)))
+                        // }
 
-                        _ => {
-                            println!("Using non-generator as generator.");
-                            Err(Error::with_msg("Using non-list as list."))
-                        }
-                    }
-                }
-                GenOp::Const(generator) => {
-                    let generated =
-                        generator
-                            .to_owned()
-                            .generate(normal_form, n.to_owned(), defs)?;
-                    Ok(Term::Nf(join_list_nf(generated)))
-                }
-            },
+                        // _ => {
+                            // println!("Using non-generator as generator.");
+                            // Err(Error::with_msg("Using non-list as list."))
+                        // }
+                    // }
+                // }
+                // GenOp::Const(generator) => {
+                    // let generated =
+                        // generator
+                            // .to_owned()
+                            // .generate(normal_form, n.to_owned(), defs)?;
+                    // Ok(Term::Nf(join_list_nf(generated)))
+                // }
+                // GenOp::Taken { .. } => unimplemented!(),
+            // },
         }
     }
 }

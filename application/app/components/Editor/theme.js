@@ -99,6 +99,9 @@ color: tomato\
 .ace-wsc-theme .ace_list {\
 color: orange\
 }\
+.ace-wsc-theme .ace_gen {\
+color: crimson\
+}\
 .ace-wsc-theme .ace_repeat {\
 color: #A9DC76\
 }\

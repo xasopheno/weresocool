@@ -136,8 +136,7 @@ impl ListOp {
                     Ok(nf)
                 })
                 .collect(),
-
-            ListOp::Gen { n, gen } => gen.to_owned().generate(n.to_owned(), input, defs),
+            // ListOp::Gen { n, gen } => gen.to_owned().generate(n.to_owned(), input, defs),
         }
     }
 }

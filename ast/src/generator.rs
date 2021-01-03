@@ -1,5 +1,9 @@
 use crate::operations::helpers::handle_id_error;
-use crate::{ArgMap, Defs, NormalForm, Normalize, Op, Substitute, Term};
+use crate::{
+    lists::normalize_listop::join_list_nf, ArgMap, Defs, NormalForm, Normalize, Op, Substitute,
+    Term,
+};
+use num_integer::lcm;
 use num_rational::Rational64;
 use std::str::FromStr;
 use weresocool_error::Error;
@@ -84,6 +88,12 @@ pub struct Generator {
 }
 
 impl Generator {
+    pub fn lcm_length(&self) -> usize {
+        let lengths: Vec<usize> = self.coefs.iter().map(|coef| coef.coefs.len()).collect();
+        lengths
+            .iter()
+            .fold(1usize, |current, val| lcm(current, *val))
+    }
     pub fn generate(
         &mut self,
         nf: &NormalForm,
@@ -106,8 +116,32 @@ impl Generator {
 
 #[derive(Clone, PartialEq, Debug, Hash)]
 pub enum GenOp {
-    Const(Generator),
     Named(String),
+    Const(Generator),
+    Taken { gen: Box<GenOp>, n: usize },
+}
+
+impl Normalize for GenOp {
+    fn apply_to_normal_form(&self, input: &mut NormalForm, defs: &Defs) -> Result<(), Error> {
+        match self {
+            GenOp::Named(name) => {
+                let term = handle_id_error(name.to_string(), defs, None)?;
+                match term {
+                    Term::Gen(gen) => gen.apply_to_normal_form(input, defs),
+                    _ => Err(Error::with_msg("List.term_vectors() called on non-list")),
+                }
+            }
+            GenOp::Const(gen) => {
+                let lcm_length = gen.lcm_length();
+                *input = join_list_nf(gen.to_owned().generate(input, lcm_length, defs)?);
+                Ok(())
+            }
+            GenOp::Taken { n, gen } => {
+                *input = join_list_nf(gen.to_owned().generate(n.to_owned(), input, defs)?);
+                Ok(())
+            }
+        }
+    }
 }
 
 impl GenOp {
@@ -124,12 +158,13 @@ impl GenOp {
                     Term::Gen(gen) => gen.generate(n, input, defs),
 
                     _ => {
-                        println!("Using non-list as list.");
+                        println!("Using non-generator as generator.");
                         Err(Error::with_msg("Using non-list as list."))
                     }
                 }
             }
             GenOp::Const(mut g) => g.generate(input, n.to_owned(), defs),
+            GenOp::Taken { .. } => unimplemented!(),
         }
     }
 }
@@ -141,15 +176,33 @@ impl Substitute for GenOp {
         defs: &Defs,
         arg_map: &ArgMap,
     ) -> Result<Term, Error> {
-        dbg!(&self);
-        unimplemented!()
-        // match self {
-        // GenOp::Named(name) => {
-        // // let gen = handle_id_error(name.to_string(), defs, Some(arg_map));
-        // // gen.apply_to_normal_form(normal_form, defs);
-        // unimplemented!()
-        // }
-        // GenOp::Const(generator) => Ok(Term::Gen(GenOp::Const(generator.to_owned()))),
-        // }
+        match self {
+            GenOp::Named(name) => {
+                let term = handle_id_error(name.to_string(), defs, Some(arg_map))?;
+                match term {
+                    Term::Gen(_) => Ok(term),
+
+                    _ => {
+                        println!("Using non-generator as generator.");
+                        Err(Error::with_msg("Using non-list as list."))
+                    }
+                }
+            }
+            GenOp::Const(_) => Ok(Term::Gen(self.to_owned())),
+            GenOp::Taken { n, gen } => {
+                let term = gen.substitute(normal_form, defs, arg_map)?;
+                match term {
+                    Term::Gen(gen) => Ok(Term::Gen(GenOp::Taken {
+                        n: *n,
+                        gen: Box::new(gen),
+                    })),
+
+                    _ => {
+                        println!("Using non-generator as generator.");
+                        Err(Error::with_msg("Using non-list as list."))
+                    }
+                }
+            }
+        }
     }
 }

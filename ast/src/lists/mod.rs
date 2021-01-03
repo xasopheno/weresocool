@@ -13,10 +13,10 @@ pub enum ListOp {
         indices: Indices,
     },
     Concat(Vec<ListOp>),
-    Gen {
-        n: usize,
-        gen: Box<GenOp>,
-    },
+    // Gen {
+    // n: usize,
+    // gen: Box<GenOp>,
+    // },
 }
 
 #[derive(Clone, PartialEq, Debug, Hash)]
