@@ -187,7 +187,37 @@ impl GenOp {
 
 impl GetLengthRatio for GenOp {
     fn get_length_ratio(&self, defs: &Defs) -> Result<Rational64, Error> {
-        unimplemented!()
+        match self {
+            GenOp::Named(name) => {
+                unimplemented!();
+            }
+            GenOp::Const(gen) => {
+                let lcm = gen.lcm_length();
+                let mut lengths = vec![Rational64::new(1, 1); lcm];
+                for coef in gen.coefs.iter() {
+                    match coef.axis {
+                        Axis::L => {
+                            let mut state = coef.state;
+                            lengths[0] *= Rational64::new(state, coef.div as i64);
+                            for i in 1..lcm {
+                                state += coef.coefs[i % coef.coefs.len()];
+                                state = std::cmp::max(state, 1);
+                                lengths[i] *= Rational64::new(state, coef.div as i64);
+                            }
+                        }
+                        _ => {}
+                    }
+                    dbg!(&lengths);
+                }
+
+                Ok(lengths
+                    .iter()
+                    .fold(Rational64::from_integer(0), |current, val| current + *val))
+            }
+            GenOp::Taken { n, gen } => {
+                unimplemented!();
+            }
+        }
     }
 }
 
