@@ -47,7 +47,15 @@ impl ListOp {
 
                 Ok(result)
             }
-            _ => unimplemented!(),
+            ListOp::GenOp(gen) => Ok(gen
+                .to_owned()
+                .generate_from_genop(&mut NormalForm::init(), None, defs)?
+                .iter()
+                .map(|term| TermVector {
+                    term: Term::Nf(term.to_owned()),
+                    index_terms: vec![],
+                })
+                .collect()),
         }
     }
 }
@@ -136,7 +144,7 @@ impl ListOp {
                     Ok(nf)
                 })
                 .collect(),
-            ListOp::Gen { n, gen } => gen.to_owned().generate(n.to_owned(), input, defs),
+            ListOp::GenOp(gen) => gen.to_owned().generate_from_genop(input, None, defs),
         }
     }
 }
@@ -148,7 +156,7 @@ impl Normalize for ListOp {
     }
 }
 
-fn join_list_nf(indexed: Vec<NormalForm>) -> NormalForm {
+pub fn join_list_nf(indexed: Vec<NormalForm>) -> NormalForm {
     indexed.iter().fold(NormalForm::init_empty(), |acc, nf| {
         join_sequence(acc, nf.to_owned())
     })

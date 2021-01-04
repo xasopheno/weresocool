@@ -1,7 +1,7 @@
 extern crate colored;
 extern crate num_rational;
 use crate::operations::{GetLengthRatio, NameSet, NormalForm, PointOp};
-use crate::{ArgMap, Defs, OscType, Term, ASR};
+use crate::{ArgMap, Defs, Op, OscType, Term, ASR};
 use colored::*;
 use num_rational::{Ratio, Rational64};
 use std::cmp::Ordering::{Equal, Greater, Less};
@@ -13,7 +13,13 @@ pub fn handle_id_error(id: String, defs: &Defs, arg_map: Option<&ArgMap>) -> Res
         None => None,
     };
     match arg_result {
-        Some(result) => Ok(result.to_owned()),
+        Some(result) => match result {
+            Term::Op(op) => match op {
+                Op::Id(name) => handle_id_error(name.to_string(), defs, arg_map),
+                _ => Ok(result.to_owned()),
+            },
+            _ => Ok(result.to_owned()),
+        },
         None => handle_def_error(id, defs),
     }
 }

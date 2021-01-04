@@ -91,9 +91,19 @@ Operation: Term = {
     <op: ComposeOperation> => op,
 
     <list: List> => Term::Lop(list),
+
+    <generator: Generator> => Term::Gen(generator)
 }
 
 Generator: GenOp = {
+  <gen: GeneratorBase> "Take" <n: Int> => {
+    GenOp::Taken {n: n as usize, gen: Box::new(gen)}
+  },
+  <gen: GeneratorBase> => gen
+
+}
+
+GeneratorBase: GenOp = {
   r"(Gen|\*)" "(" <coefs: Comma<Coefs>> ")" =>  {
     GenOp::Const(Generator {
       coefs,
@@ -102,8 +112,9 @@ Generator: GenOp = {
 
   r"(Gen|\*)" <name: Name> => {
     GenOp::Named(name)
-  }
+  },
 }
+
 
 Coefs: Coefs = {
   <axis: Axis> <div: ExplicitRational> "," "[" <coefs: Comma<Int>> "]" => { 
@@ -149,9 +160,7 @@ ListBase: ListOp = {
     ListOp::Const(et(n))
   },
 
-  <gen: Generator> "Take" <n: Int> => {
-    ListOp::Gen {n: n as usize, gen: Box::new(gen)}
-  } 
+  r"(List|&)" <gen: Generator> => ListOp::GenOp(gen)
 }
 
 Indices: Indices = {
@@ -188,6 +197,7 @@ ComposeOperation: Term = {
 Composeable: Term = {
   <base_operation: BaseOperation> => base_operation,
   <list: List> => Term::Lop(list),
+  <generator: Generator> => Term::Gen(generator)
 }
 
 BaseOperation: Term = {

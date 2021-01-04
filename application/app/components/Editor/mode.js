@@ -113,6 +113,10 @@ export class CustomHighlightRules extends window.ace.acequire(
           regex: '@|List|Random|&|ET',
         },
         {
+          token: 'gen',
+          regex: '\*|Gen|Take|',
+        },
+        {
           token: 'letter',
           regex: '[a-z]',
         },

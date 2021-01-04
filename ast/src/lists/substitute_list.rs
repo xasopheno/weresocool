@@ -1,3 +1,4 @@
+use crate::lists::normalize_listop::join_list_nf;
 use crate::operations::{helpers::handle_id_error, ArgMap, NormalForm, Normalize, Substitute};
 use crate::substitute_operations;
 use crate::{Defs, GenOp, ListOp, Term};
@@ -48,21 +49,7 @@ impl Substitute for ListOp {
 
                 Ok(Term::Lop(ListOp::Const(result)))
             }
-            ListOp::Gen { n, gen } => match *gen.to_owned() {
-                GenOp::Named(name) => {
-                    let id = handle_id_error(name, defs, Some(arg_map))?;
-                    let generator = id.substitute(normal_form, defs, arg_map)?;
-                    match generator {
-                        Term::Gen(gen_op) => gen_op.substitute(normal_form, defs, arg_map),
-
-                        _ => {
-                            println!("Using non-generator as generator.");
-                            Err(Error::with_msg("Using non-generator as generator."))
-                        }
-                    }
-                }
-                GenOp::Const(g) => g.substitute(normal_form, defs, arg_map),
-            },
+            ListOp::GenOp(gen) => gen.substitute(normal_form, defs, arg_map),
         }
     }
 }
