@@ -5,17 +5,8 @@ use crate::{
 };
 use num_integer::lcm;
 use num_rational::Rational64;
-// use std::str::FromStr;
 use weresocool_error::Error;
 use weresocool_shared::helpers::f32_string_to_rational;
-
-// pub fn f32_to_rational(float_string: String) -> Rational64 {
-// let decimal = float_string.split('.').collect::<Vec<&str>>()[1];
-// let den = i64::pow(10, decimal.len() as u32);
-// let num = i64::from_str(&float_string.replace('.', "")).unwrap();
-
-// Rational64::new(num, den)
-// }
 
 #[derive(Clone, PartialEq, Debug, Hash)]
 pub struct Coefs {
