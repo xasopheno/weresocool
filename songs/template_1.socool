@@ -32,23 +32,26 @@ test_nf(gen) = {
 
 main = {
     Overlay [
+      *(
+        f: 0/12, [1],
+      ) Take 3,
       Seq [
         --%s Fm 1 | Lm 8, 
-        *(
-          f: 0/12, [
-            5, -3, 4, -2, -2
-           -- -3, -1, 1
-          ],
-          l: 12/10, [
-           -2,2 
-          ],
-          --f: 0/12, [-5, 0, 0, 5],
-          g: 100/100, [-2],
-          g: 4/4, [-2, 2]
-        ) Take 8 | Reverse, 
-        *my_gen Take 32,
-        test_nf(my_gen),
-        *my_gen Take 8 | Reverse,
+        --%s *(
+          --%s f: 0/12, [
+            --%s 5, -3, 4, -2, -2
+           --%s --%s -3, -1, 1
+          --%s ],
+          --%s l: 12/10, [
+           --%s -2,2 
+          --%s ],
+          --%s --%s f: 0/12, [-5, 0, 0, 5],
+          --%s g: 100/100, [-2],
+          --%s g: 4/4, [-2, 2]
+        --%s ) Take 8 | Reverse, 
+        --%s *my_gen Take 32,
+        --%s test_nf(my_gen),
+        --%s *my_gen Take 8 | Reverse,
         --%s Fm 2 | 
         --%s &*(
           --%s f: 0/12, [

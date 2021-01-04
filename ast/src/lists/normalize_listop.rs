@@ -47,18 +47,15 @@ impl ListOp {
 
                 Ok(result)
             }
-            ListOp::GenOp(gen) => {
-                let n = gen.length(defs)?;
-                Ok(gen
-                    .to_owned()
-                    .generate_from_genop(&mut NormalForm::init(), None, defs)?
-                    .iter()
-                    .map(|term| TermVector {
-                        term: Term::Nf(term.to_owned()),
-                        index_terms: vec![],
-                    })
-                    .collect())
-            }
+            ListOp::GenOp(gen) => Ok(gen
+                .to_owned()
+                .generate_from_genop(&mut NormalForm::init(), None, defs)?
+                .iter()
+                .map(|term| TermVector {
+                    term: Term::Nf(term.to_owned()),
+                    index_terms: vec![],
+                })
+                .collect()),
         }
     }
 }

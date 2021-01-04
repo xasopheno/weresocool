@@ -67,8 +67,12 @@ mod expect {
     // expect(resource);
     // }
 
-    #[test_resources("mocks/list/*.socool")]
-    fn __list_generated_(resource: &str) {
+    // #[test_resources("mocks/list/*.socool")]
+    // fn __list_generated_(resource: &str) {
+    // expect(resource);
+    // }
+    #[test_resources("mocks/generator/*.socool")]
+    fn __gen_op_generated_(resource: &str) {
         expect(resource);
     }
 

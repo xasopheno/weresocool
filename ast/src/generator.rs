@@ -5,16 +5,17 @@ use crate::{
 };
 use num_integer::lcm;
 use num_rational::Rational64;
-use std::str::FromStr;
+// use std::str::FromStr;
 use weresocool_error::Error;
+use weresocool_shared::helpers::f32_string_to_rational;
 
-pub fn f32_to_rational(float_string: String) -> Rational64 {
-    let decimal = float_string.split('.').collect::<Vec<&str>>()[1];
-    let den = i64::pow(10, decimal.len() as u32);
-    let num = i64::from_str(&float_string.replace('.', "")).unwrap();
+// pub fn f32_to_rational(float_string: String) -> Rational64 {
+// let decimal = float_string.split('.').collect::<Vec<&str>>()[1];
+// let den = i64::pow(10, decimal.len() as u32);
+// let num = i64::from_str(&float_string.replace('.', "")).unwrap();
 
-    Rational64::new(num, den)
-}
+// Rational64::new(num, den)
+// }
 
 #[derive(Clone, PartialEq, Debug, Hash)]
 pub struct Coefs {
@@ -51,11 +52,11 @@ fn et_to_rational(i: i64, d: usize) -> Rational64 {
 
     let et = 2.0_f32.powf(i as f32 / d as f32);
     if signum == -1 {
-        let result = f32_to_rational(format!("{:.8}", et));
+        let result = f32_string_to_rational(format!("{:.4}", et));
         result.recip();
         result
     } else {
-        f32_to_rational(format!("{:.8}", et))
+        f32_string_to_rational(format!("{:.4}", et))
     }
 }
 
@@ -90,7 +91,7 @@ pub struct Generator {
 impl Generator {
     fn lcm_length(&self) -> usize {
         let lengths: Vec<usize> = self.coefs.iter().map(|coef| coef.coefs.len()).collect();
-        lengths
+        1 + lengths
             .iter()
             .fold(1usize, |current, val| lcm(current, *val))
     }
@@ -102,7 +103,7 @@ impl Generator {
     ) -> Result<Vec<NormalForm>, Error> {
         let mut result: Vec<NormalForm> = vec![];
 
-        for _ in 0..n - 1 {
+        for _ in 0..n {
             let mut nf: NormalForm = nf.clone();
             for coef in self.coefs.iter_mut() {
                 coef.generate().apply_to_normal_form(&mut nf, defs)?;
