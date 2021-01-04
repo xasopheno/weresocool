@@ -160,7 +160,7 @@ ListBase: ListOp = {
     ListOp::Const(et(n))
   },
 
-  "&"<gen: Generator> => {unimplemented!()}
+  "&"<gen: Generator> => {ListOp::GenOp(gen)}
 }
 
 Indices: Indices = {

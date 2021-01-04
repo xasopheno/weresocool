@@ -88,7 +88,7 @@ pub struct Generator {
 }
 
 impl Generator {
-    pub fn lcm_length(&self) -> usize {
+    fn lcm_length(&self) -> usize {
         let lengths: Vec<usize> = self.coefs.iter().map(|coef| coef.coefs.len()).collect();
         lengths
             .iter()
@@ -137,7 +137,7 @@ impl Normalize for GenOp {
                 Ok(())
             }
             GenOp::Taken { n, gen } => {
-                *input = join_list_nf(gen.to_owned().generate(n.to_owned(), input, defs)?);
+                *input = join_list_nf(gen.to_owned().generate_from_genop(input, Some(*n), defs)?);
                 Ok(())
             }
         }
@@ -145,17 +145,12 @@ impl Normalize for GenOp {
 }
 
 impl GenOp {
-    pub fn generate(
-        self,
-        n: usize,
-        input: &mut NormalForm,
-        defs: &Defs,
-    ) -> Result<Vec<NormalForm>, Error> {
+    pub fn length(&self, defs: &Defs) -> Result<usize, Error> {
         match self {
             GenOp::Named(name) => {
-                let generator = handle_id_error(name, defs, None)?;
+                let generator = handle_id_error(name.to_string(), defs, None)?;
                 match generator {
-                    Term::Gen(gen) => gen.generate(n, input, defs),
+                    Term::Gen(gen) => gen.length(defs),
 
                     _ => {
                         println!("Using non-generator as generator.");
@@ -163,8 +158,37 @@ impl GenOp {
                     }
                 }
             }
-            GenOp::Const(mut g) => g.generate(input, n.to_owned(), defs),
-            GenOp::Taken { .. } => unimplemented!(),
+            GenOp::Const(generator) => Ok(generator.lcm_length()),
+            GenOp::Taken { n, .. } => Ok(*n),
+        }
+    }
+    pub fn generate_from_genop(
+        self,
+        input: &mut NormalForm,
+        n: Option<usize>,
+        defs: &Defs,
+    ) -> Result<Vec<NormalForm>, Error> {
+        match self {
+            GenOp::Named(name) => {
+                let generator = handle_id_error(name, defs, None)?;
+                match generator {
+                    Term::Gen(gen) => gen.generate_from_genop(input, n, defs),
+
+                    _ => {
+                        println!("Using non-generator as generator.");
+                        Err(Error::with_msg("Using non-list as list."))
+                    }
+                }
+            }
+            GenOp::Const(mut gen) => {
+                let length = if n.is_some() {
+                    n.unwrap()
+                } else {
+                    gen.lcm_length()
+                };
+                gen.generate(input, length, defs)
+            }
+            GenOp::Taken { gen, n } => gen.to_owned().generate_from_genop(input, Some(n), defs),
         }
     }
 }
