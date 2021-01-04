@@ -25,9 +25,9 @@ my_gen = *(
 
 
 test_nf(gen) = {
-  --%s Seq [
-    *gen Take 32
-  --%s ]
+  Seq [
+    *gen Take 8
+  ]
 }
 
 main = {
@@ -45,10 +45,10 @@ main = {
           --f: 0/12, [-5, 0, 0, 5],
           g: 100/100, [-2],
           g: 4/4, [-2, 2]
-        ) Take 32, 
-        --%s *my_gen Take 32,
-        --%s test_nf(my_gen),
-        --%s *my_gen Take 3,
+        ) Take 8 | Reverse, 
+        *my_gen Take 32,
+        test_nf(my_gen),
+        *my_gen Take 8 | Reverse,
         --%s Fm 2 | 
         --%s &*(
           --%s f: 0/12, [
