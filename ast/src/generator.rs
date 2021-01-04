@@ -1,7 +1,7 @@
 use crate::operations::helpers::handle_id_error;
 use crate::{
-    lists::normalize_listop::join_list_nf, ArgMap, Defs, NormalForm, Normalize, Op, Substitute,
-    Term,
+    lists::normalize_listop::join_list_nf, ArgMap, Defs, GetLengthRatio, NormalForm, Normalize, Op,
+    Substitute, Term,
 };
 use num_integer::lcm;
 use num_rational::Rational64;
@@ -182,6 +182,12 @@ impl GenOp {
             }
             GenOp::Taken { gen, n } => gen.to_owned().generate_from_genop(input, Some(n), defs),
         }
+    }
+}
+
+impl GetLengthRatio for GenOp {
+    fn get_length_ratio(&self, defs: &Defs) -> Result<Rational64, Error> {
+        unimplemented!()
     }
 }
 

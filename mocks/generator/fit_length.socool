@@ -1,0 +1,16 @@
+{ f: 220, l: 1, g: 1, p: 0 } 
+
+len = {
+  *(
+    l: 1/4, [1, 2]
+  )
+}
+
+main = {
+  Lm 1
+  > FitLength len
+}
+
+expect = {
+  Lm 3
+}

@@ -36,7 +36,7 @@ impl Substitute for Term {
             Term::Nf(nf) => nf.substitute(normal_form, defs, arg_map),
             Term::FunDef(_fun) => Err(Error::with_msg("Cannot call substitute on FunDef.")),
             Term::Lop(lop) => lop.substitute(normal_form, defs, arg_map),
-            _ => unimplemented!(),
+            Term::Gen(gen) => gen.substitute(normal_form, defs, arg_map),
         }
     }
 }
@@ -48,7 +48,7 @@ impl GetLengthRatio for Term {
             Term::Nf(nf) => nf.get_length_ratio(defs),
             Term::FunDef(_fun) => Err(Error::with_msg("Cannot get length_ratio of FunDef.")),
             Term::Lop(lop) => lop.get_length_ratio(defs),
-            _ => unimplemented!(),
+            Term::Gen(gen) => gen.get_length_ratio(defs),
         }
     }
 }
