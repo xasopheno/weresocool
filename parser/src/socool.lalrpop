@@ -120,6 +120,7 @@ Coefs: Coefs = {
   <axis: Axis> <div: ExplicitRational> "," "[" <coefs: Comma<Int>> "]" => { 
     Coefs {
       state: div.0,
+      state_bak: div.0,
       div: div.1.abs() as usize,
       idx: 0,
       coefs,

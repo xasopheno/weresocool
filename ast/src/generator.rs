@@ -15,9 +15,13 @@ pub struct Coefs {
     pub idx: usize,
     pub coefs: Vec<i64>,
     pub state: i64,
+    pub state_bak: i64,
 }
 
 impl Coefs {
+    fn reset(&mut self) {
+        self.state = self.state_bak
+    }
     fn generate(&mut self) -> Op {
         let result = self.axis.generate(self.state, self.div);
         self.state += self.coefs[self.idx];
@@ -62,10 +66,10 @@ impl Axis {
                 m: et_to_rational(state, div),
             },
             Axis::L => Op::Length {
-                m: dec_to_rational(std::cmp::max(0, state), div),
+                m: dec_to_rational(std::cmp::max(1, state), div),
             },
             Axis::G => Op::Gain {
-                m: dec_to_rational(std::cmp::max(0, state), div),
+                m: dec_to_rational(std::cmp::max(1, state), div),
             },
             Axis::P => Op::PanA {
                 a: et_to_rational(state, div),
@@ -85,20 +89,22 @@ impl Generator {
         for coef in self.coefs.iter() {
             match coef.axis {
                 Axis::L => {
-                    let mut state = coef.state;
+                    let mut state = coef.state_bak;
                     lengths[0] *= Rational64::new(state, coef.div as i64);
                     for i in 1..n {
-                        state += coef.coefs[i % coef.coefs.len()];
-                        state = std::cmp::max(state, 1);
+                        state += coef.coefs[(i - 1) % coef.coefs.len()];
+                        state = std::cmp::max(1, state);
                         lengths[i] *= Rational64::new(state, coef.div as i64);
                     }
                 }
                 _ => {}
             }
         }
-        lengths
+        let result = lengths
             .iter()
-            .fold(Rational64::from_integer(0), |current, val| current + *val)
+            .fold(Rational64::from_integer(0), |current, val| current + *val);
+
+        result
     }
 
     fn lcm_length(&self) -> usize {
@@ -226,6 +232,7 @@ impl GenOp {
                 };
                 gen.generate(input, length, defs)
             }
+
             GenOp::Taken { gen, n } => gen.to_owned().generate_from_genop(input, Some(n), defs),
         }
     }
