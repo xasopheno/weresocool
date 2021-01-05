@@ -80,6 +80,27 @@ pub struct Generator {
 }
 
 impl Generator {
+    fn get_length(&self, n: usize) -> Rational64 {
+        let mut lengths = vec![Rational64::new(1, 1); n];
+        for coef in self.coefs.iter() {
+            match coef.axis {
+                Axis::L => {
+                    let mut state = coef.state;
+                    lengths[0] *= Rational64::new(state, coef.div as i64);
+                    for i in 1..n {
+                        state += coef.coefs[i % coef.coefs.len()];
+                        state = std::cmp::max(state, 1);
+                        lengths[i] *= Rational64::new(state, coef.div as i64);
+                    }
+                }
+                _ => {}
+            }
+        }
+        lengths
+            .iter()
+            .fold(Rational64::from_integer(0), |current, val| current + *val)
+    }
+
     fn lcm_length(&self) -> usize {
         let lengths: Vec<usize> = self.coefs.iter().map(|coef| coef.coefs.len()).collect();
         1 + lengths
@@ -154,6 +175,31 @@ impl GenOp {
             GenOp::Taken { n, .. } => Ok(*n),
         }
     }
+
+    fn get_length_ratio_genop(&self, n: Option<usize>, defs: &Defs) -> Result<Rational64, Error> {
+        match self {
+            GenOp::Named(name) => {
+                let generator = handle_id_error(name.to_string(), defs, None)?;
+                match generator {
+                    Term::Gen(gen) => gen.get_length_ratio_genop(n, defs),
+
+                    _ => {
+                        println!("Using non-generator as generator.");
+                        Err(Error::with_msg("Using non-list as list."))
+                    }
+                }
+            }
+            GenOp::Const(gen) => {
+                let n = if n.is_some() {
+                    n.unwrap()
+                } else {
+                    gen.lcm_length()
+                };
+                Ok(gen.get_length(n))
+            }
+            GenOp::Taken { n, gen } => gen.get_length_ratio_genop(Some(*n), defs),
+        }
+    }
     pub fn generate_from_genop(
         self,
         input: &mut NormalForm,
@@ -189,34 +235,21 @@ impl GetLengthRatio for GenOp {
     fn get_length_ratio(&self, defs: &Defs) -> Result<Rational64, Error> {
         match self {
             GenOp::Named(name) => {
-                unimplemented!();
+                let generator = handle_id_error(name.to_string(), defs, None)?;
+                match generator {
+                    Term::Gen(gen) => gen.get_length_ratio_genop(None, defs),
+
+                    _ => {
+                        println!("Using non-generator as generator.");
+                        Err(Error::with_msg("Using non-list as list."))
+                    }
+                }
             }
             GenOp::Const(gen) => {
-                let lcm = gen.lcm_length();
-                let mut lengths = vec![Rational64::new(1, 1); lcm];
-                for coef in gen.coefs.iter() {
-                    match coef.axis {
-                        Axis::L => {
-                            let mut state = coef.state;
-                            lengths[0] *= Rational64::new(state, coef.div as i64);
-                            for i in 1..lcm {
-                                state += coef.coefs[i % coef.coefs.len()];
-                                state = std::cmp::max(state, 1);
-                                lengths[i] *= Rational64::new(state, coef.div as i64);
-                            }
-                        }
-                        _ => {}
-                    }
-                    dbg!(&lengths);
-                }
-
-                Ok(lengths
-                    .iter()
-                    .fold(Rational64::from_integer(0), |current, val| current + *val))
+                let n = gen.lcm_length();
+                Ok(gen.get_length(n))
             }
-            GenOp::Taken { n, gen } => {
-                unimplemented!();
-            }
+            GenOp::Taken { n, gen } => gen.get_length_ratio_genop(Some(*n), defs),
         }
     }
 }
