@@ -15,8 +15,7 @@ impl Normalize for GenOp {
                 }
             }
             GenOp::Const(gen) => {
-                let lcm_length = gen.lcm_length();
-                *input = join_list_nf(gen.to_owned().generate(input, lcm_length, defs)?);
+                *input = join_list_nf(gen.to_owned().generate(input, gen.lcm_length(), defs)?);
                 Ok(())
             }
             GenOp::Taken { n, gen } => {

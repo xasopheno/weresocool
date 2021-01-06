@@ -9,5 +9,5 @@ main = {
 }
 
 expect = {
-  Lm 4
+  Lm 7/2
 }
