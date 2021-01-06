@@ -1,5 +1,7 @@
-use crate::operations::helpers::{handle_id_error, join_sequence};
-use crate::{ArgMap, Defs, GenOp, GetLengthRatio, ListOp, NormalForm, Normalize, Term, TermVector};
+use crate::{
+    handle_id_error, join_sequence, ArgMap, Defs, GetLengthRatio, ListOp, NormalForm, Normalize,
+    Term, TermVector,
+};
 use num_rational::Rational64;
 use weresocool_error::Error;
 
@@ -87,7 +89,7 @@ impl GetLengthRatio for ListOp {
                 .try_fold(Rational64::from_integer(0), |acc, term| {
                     Ok(acc + term.get_length_ratio(defs)?)
                 }),
-            _ => unimplemented!(),
+            ListOp::GenOp(gen) => gen.get_length_ratio(defs),
         }
     }
 }

@@ -1,7 +1,6 @@
-use crate::lists::normalize_listop::join_list_nf;
 use crate::operations::{helpers::handle_id_error, ArgMap, NormalForm, Normalize, Substitute};
 use crate::substitute_operations;
-use crate::{Defs, GenOp, ListOp, Term};
+use crate::{Defs, ListOp, Term};
 use weresocool_error::Error;
 
 impl Substitute for ListOp {
