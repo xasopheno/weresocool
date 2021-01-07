@@ -72,11 +72,7 @@ impl GenOp {
                 }
             }
             GenOp::Const(mut gen) => {
-                let length = if n.is_some() {
-                    n.unwrap()
-                } else {
-                    gen.lcm_length()
-                };
+                let length = if let Some(n) = n { n } else { gen.lcm_length() };
                 gen.generate(input, length, defs)
             }
 

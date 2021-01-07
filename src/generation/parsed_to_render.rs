@@ -46,11 +46,20 @@ pub enum RenderReturn {
     Wav(Vec<u8>),
 }
 
-impl Into<Vec<u8>> for RenderReturn {
-    fn into(self) -> Vec<u8> {
-        match self {
-            Self::Wav(audio) => audio,
-            _ => unimplemented!(),
+// impl Into<Vec<u8>> for RenderReturn {
+// fn into(self) -> Vec<u8> {
+// match self {
+// Self::Wav(audio) => audio,
+// _ => unimplemented!(),
+// }
+// }
+// }
+
+impl From<RenderReturn> for Vec<u8> {
+    fn from(r: RenderReturn) -> Self {
+        match r {
+            RenderReturn::Wav(audio) => audio,
+            _ => Self::new(),
         }
     }
 }

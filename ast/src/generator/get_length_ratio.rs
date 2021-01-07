@@ -53,11 +53,7 @@ impl GenOp {
                 }
             }
             GenOp::Const(gen) => {
-                let n = if n.is_some() {
-                    n.unwrap()
-                } else {
-                    gen.lcm_length()
-                };
+                let n = if let Some(n) = n { n } else { gen.lcm_length() };
                 Ok(gen.get_length(n))
             }
             GenOp::Taken { n, gen } => gen.get_length_ratio_genop(Some(*n), defs),
