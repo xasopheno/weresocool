@@ -64,6 +64,9 @@ test_rust:
 	cargo test --workspace --release
 	cargo run --release --bin snapshot
 
+test_rust_generated:
+	cargo test _generated
+
 test_rehash:
 	cargo run --release --bin snapshot -- --rehash
 

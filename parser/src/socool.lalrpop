@@ -42,7 +42,7 @@ LetDefs = Lets<LetDef>;
 LetDef: () = {
     <s: Name> "(" <vars: Comma<Name>>  ")" "=" "{" <o: Operation> "}" => {
          defs.terms.insert(
-             s.clone(),
+             s.to_owned(),
              Term::FunDef(FunDef {
                  name: s,
                  vars: vars,
@@ -53,15 +53,15 @@ LetDef: () = {
     },
 
     <s: Name> "=" "{" <o: Operation> "}" => {
-        defs.terms.insert(s.clone(), o); ()
+        defs.terms.insert(s.to_owned(), o); ()
     },
 
     <name: Name> "=" <list: List> => {
-        defs.lists.insert(name.clone(), Term::Lop(list)); ()
+        defs.lists.insert(name.to_owned(), Term::Lop(list)); ()
     },
     
     <name: Name> "=" <generator: Generator> => {
-        defs.generators.insert(name.clone(), Term::Gen(generator)); ()
+        defs.generators.insert(name.to_owned(), Term::Gen(generator)); ()
     }
 };
 
@@ -70,7 +70,7 @@ Operation: Term = {
     <op1: Operation> ">" "FitLength" <op2: SuperCompose> => {
         Term::Op(
             Op::Compose { operations:
-            vec![op1.clone(), Term::Op(WithLengthRatioOf { with_length_of: Box::new(op2), main: Box::new(op1) })]
+            vec![op1.to_owned(), Term::Op(WithLengthRatioOf { with_length_of: Box::new(op2), main: Box::new(op1) })]
         })
     },
 
@@ -82,8 +82,8 @@ Operation: Term = {
         Term::Op(
             Focus {
                 name: name,
-                main: Box::new(op1.clone()),
-                op_to_apply: Box::new(op2.clone()),
+                main: Box::new(op1.to_owned()),
+                op_to_apply: Box::new(op2.to_owned()),
             }
         )
     },
@@ -117,7 +117,7 @@ GeneratorBase: GenOp = {
 
 
 Coefs: Coefs = {
-  <axis: Axis> <div: ExplicitRational> "," "[" <coefs: Comma<Int>> "]" => { 
+  <axis: Axis> <div: CoefStart> "," "[" <coefs: Comma<Int>> "]" => { 
     Coefs {
       state: div.0,
       state_bak: div.0,
@@ -335,12 +335,14 @@ Ints = Comma<Int>;
 Rational: Rational64 = {
     <n: Float> => f32_to_rational(n),
     <n: Int> => Rational64::new(n, 1),
-    <r: ExplicitRational> => Rational64::new(r.0, r.1)
+    <n: Int> "/" <d:Int> => Rational64::new(n, d),
 };
 
-ExplicitRational: (i64, i64) = {
-    <n: Int> "/" <d:Int> => (n, d),
+
+CoefStart: (i64, i64) = {
+    <n: Int> "|" <d:Int> => (n, d),
 }
+
 
 Axis: Axis = {
     F => Axis::F,

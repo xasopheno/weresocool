@@ -80,7 +80,7 @@ impl GenOp {
                 gen.generate(input, length, defs)
             }
 
-            GenOp::Taken { gen, n } => gen.to_owned().generate_from_genop(input, Some(n), defs),
+            GenOp::Taken { gen, n } => gen.generate_from_genop(input, Some(n), defs),
         }
     }
 }

@@ -69,17 +69,14 @@ impl Generator {
     pub fn get_length(&self, n: usize) -> Rational64 {
         let mut lengths = vec![Rational64::new(1, 1); n];
         for coef in self.coefs.iter() {
-            match coef.axis {
-                Axis::L => {
-                    let mut state = coef.state_bak;
-                    lengths[0] *= Rational64::new(state, coef.div as i64);
-                    for i in 1..n {
-                        state += coef.coefs[(i - 1) % coef.coefs.len()];
-                        state = std::cmp::max(1, state);
-                        lengths[i] *= Rational64::new(state, coef.div as i64);
-                    }
+            if let Axis::L = coef.axis {
+                let mut state = coef.state_bak;
+                lengths[0] *= Rational64::new(state, coef.div as i64);
+                for (i, length) in lengths.iter_mut().enumerate().take(n).skip(1) {
+                    state += coef.coefs[(i - 1) % coef.coefs.len()];
+                    state = std::cmp::max(1, state);
+                    *length *= Rational64::new(state, coef.div as i64);
                 }
-                _ => {}
             }
         }
         let result = lengths
