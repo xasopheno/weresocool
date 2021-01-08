@@ -135,6 +135,7 @@ impl Normalize for Op {
             Op::TransposeM { m } => {
                 for voice in input.operations.iter_mut() {
                     for point_op in voice {
+                        dbg!(&m);
                         point_op.fm = point_op
                             .fm
                             .checked_mul(m)
