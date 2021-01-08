@@ -1,3 +1,4 @@
+use std::convert::TryFrom;
 use weresocool::{
     generation::parsed_to_render::write_audio_to_file,
     generation::{generate_waveforms, RenderReturn, RenderType},
@@ -5,6 +6,7 @@ use weresocool::{
     ui::{get_args, no_file_name, were_so_cool_logo},
     write::write_composition_to_wav,
 };
+
 use weresocool_error::Error;
 use weresocool_instrument::renderable::nf_to_vec_renderable;
 
@@ -31,7 +33,7 @@ fn main() -> Result<(), Error> {
         let f = f[f.len() - 1];
         let render_return = RenderReturn::Wav(write_composition_to_wav(sw.clone())?);
 
-        let audio: Vec<u8> = render_return.clone().into();
+        let audio: Vec<u8> = Vec::try_from(render_return.clone())?;
         write_audio_to_file(&audio, f, "wav")
     }
 

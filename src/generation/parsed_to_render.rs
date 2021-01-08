@@ -6,6 +6,7 @@ use crate::{
 use num_rational::Rational64;
 use pbr::ProgressBar;
 use rayon::prelude::*;
+use std::convert::TryFrom;
 use std::fs::File;
 use std::io::prelude::*;
 use std::path::Path;
@@ -46,20 +47,14 @@ pub enum RenderReturn {
     Wav(Vec<u8>),
 }
 
-// impl Into<Vec<u8>> for RenderReturn {
-// fn into(self) -> Vec<u8> {
-// match self {
-// Self::Wav(audio) => audio,
-// _ => unimplemented!(),
-// }
-// }
-// }
-
-impl From<RenderReturn> for Vec<u8> {
-    fn from(r: RenderReturn) -> Self {
+impl TryFrom<RenderReturn> for Vec<u8> {
+    type Error = Error;
+    fn try_from(r: RenderReturn) -> Result<Self, Self::Error> {
         match r {
-            RenderReturn::Wav(audio) => audio,
-            _ => Self::new(),
+            RenderReturn::Wav(audio) => Ok(audio),
+            _ => Err(Error::with_msg(
+                "Can only produce Vnotec<U8> from RenderReturn::Wav",
+            )),
         }
     }
 }
@@ -135,7 +130,7 @@ pub fn parsed_to_render(
                 let stereo_waveform = render(&basis, nf, &parsed_composition.defs)?;
                 let render_return = RenderReturn::Wav(write_composition_to_mp3(stereo_waveform)?);
                 if cli {
-                    let audio: Vec<u8> = render_return.clone().into();
+                    let audio: Vec<u8> = Vec::try_from(render_return.clone())?;
                     let f = filename_to_renderpath(filename);
                     println!("filename: {}", &f);
                     write_audio_to_file(&audio, f.as_str(), "mp3")
@@ -146,7 +141,7 @@ pub fn parsed_to_render(
                 let stereo_waveform = render(&basis, nf, &parsed_composition.defs)?;
                 let render_return = RenderReturn::Wav(write_composition_to_wav(stereo_waveform)?);
                 if cli {
-                    let audio: Vec<u8> = render_return.clone().into();
+                    let audio: Vec<u8> = Vec::try_from(render_return.clone())?;
                     let f = filename_to_renderpath(filename);
                     write_audio_to_file(&audio, f.as_str(), "wav")
                 };
