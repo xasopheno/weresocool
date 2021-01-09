@@ -25,7 +25,7 @@ impl Axis {
                 m: Rational64::new(std::cmp::max(1, state), div as i64),
             },
             Axis::G => Op::Gain {
-                m: Rational64::new(std::cmp::max(1, state), div as i64),
+                m: Rational64::new(std::cmp::max(0, state), div as i64),
             },
             Axis::P => Op::PanA {
                 a: Rational64::new(state, div as i64),

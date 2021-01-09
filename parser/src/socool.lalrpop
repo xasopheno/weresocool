@@ -19,6 +19,7 @@ use weresocool_ast::{
 use crate::parser::Init;
 use crate::indices::{et, random_seed};
 use crate::float_to_rational::helpers::*;
+use regex::Regex;
 
 grammar<'defs, 'err>(
     defs: &'defs mut Defs,
@@ -117,15 +118,28 @@ GeneratorBase: GenOp = {
 
 
 Coefs: Coefs = {
-  <axis: Axis> <div: CoefStart> "[" <coefs: Comma<Int>> "]" => { 
+  <axis: Axis> <div: CoefStart> "[" <coefs: Comma<Coef>> "]" => { 
     Coefs {
       state: div.0,
       state_bak: div.0,
       div: div.1.abs() as usize,
       idx: 0,
-      coefs,
+      coefs: coefs.into_iter().flatten().collect(),
       axis
     }
+  }
+}
+
+Coef: Vec<i64> = {
+  <v: Int> => vec![v],
+  <s:r"(-?[0-9]+)x([0-9]+)"> => {
+    let regex = Regex::new("(-?[0-9]+)x([0-9]+)").unwrap();
+    let captures = regex.captures(s).unwrap();
+    let val = captures[1].parse::<i64>().unwrap();
+    let n = captures[2].parse::<usize>().unwrap();
+    
+
+    vec![val; n as usize]
   }
 }
 
