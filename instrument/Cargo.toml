@@ -16,3 +16,4 @@ reverb = { path = "reverb" }
 rayon = "1.3.0"
 num-rational = "0.3.0"
 rand = "0.7.3"
+num-traits = "0.2.14"

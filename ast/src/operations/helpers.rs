@@ -1,7 +1,4 @@
-extern crate colored;
-extern crate num_rational;
-use crate::operations::{GetLengthRatio, NameSet, NormalForm, PointOp};
-use crate::{ArgMap, Defs, OscType, Term, ASR};
+use crate::{ArgMap, Defs, GetLengthRatio, NameSet, NormalForm, Op, OscType, PointOp, Term, ASR};
 use colored::*;
 use num_rational::{Ratio, Rational64};
 use std::cmp::Ordering::{Equal, Greater, Less};
@@ -13,13 +10,31 @@ pub fn handle_id_error(id: String, defs: &Defs, arg_map: Option<&ArgMap>) -> Res
         None => None,
     };
     match arg_result {
-        Some(result) => Ok(result.to_owned()),
+        Some(result) => match result {
+            Term::Op(Op::Id(name)) => handle_id_error(name.to_string(), defs, arg_map),
+            _ => Ok(result.to_owned()),
+        },
         None => handle_def_error(id, defs),
     }
 }
 
 pub fn handle_def_error(id: String, defs: &Defs) -> Result<Term, Error> {
-    let result = defs.terms.get(&id).or_else(|| defs.lists.get(&id));
+    let result = defs
+        .terms
+        .get(&id)
+        .or_else(|| defs.lists.get(&id))
+        .or_else(|| defs.generators.get(&id));
+    match result {
+        Some(result) => Ok(result.to_owned()),
+        None => {
+            println!("Not able to find {} in let defs", id.red().bold());
+            Err(IdError { id }.into_error())
+        }
+    }
+}
+
+pub fn handle_gen_def_error(id: String, defs: &Defs) -> Result<Term, Error> {
+    let result = defs.generators.get(&id);
     match result {
         Some(result) => Ok(result.to_owned()),
         None => {

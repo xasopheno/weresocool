@@ -13,6 +13,7 @@ pub struct FunDef {
 pub struct Defs {
     pub terms: IndexMap<String, Term>,
     pub lists: IndexMap<String, Term>,
+    pub generators: IndexMap<String, Term>,
 }
 
 #[derive(Clone, PartialEq, Debug, Hash)]

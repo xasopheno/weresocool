@@ -1,5 +1,7 @@
-use crate::operations::helpers::{handle_id_error, join_sequence};
-use crate::{ArgMap, Defs, GetLengthRatio, ListOp, NormalForm, Normalize, Term, TermVector};
+use crate::{
+    handle_id_error, join_sequence, ArgMap, Defs, GetLengthRatio, ListOp, NormalForm, Normalize,
+    Term, TermVector,
+};
 use num_rational::Rational64;
 use weresocool_error::Error;
 
@@ -47,6 +49,15 @@ impl ListOp {
 
                 Ok(result)
             }
+            ListOp::GenOp(gen) => Ok(gen
+                .to_owned()
+                .generate_from_genop(&mut NormalForm::init(), None, defs)?
+                .iter()
+                .map(|term| TermVector {
+                    term: Term::Nf(term.to_owned()),
+                    index_terms: vec![],
+                })
+                .collect()),
         }
     }
 }
@@ -78,6 +89,7 @@ impl GetLengthRatio for ListOp {
                 .try_fold(Rational64::from_integer(0), |acc, term| {
                     Ok(acc + term.get_length_ratio(defs)?)
                 }),
+            ListOp::GenOp(gen) => gen.get_length_ratio(defs),
         }
     }
 }
@@ -134,6 +146,7 @@ impl ListOp {
                     Ok(nf)
                 })
                 .collect(),
+            ListOp::GenOp(gen) => gen.to_owned().generate_from_genop(input, None, defs),
         }
     }
 }
@@ -145,7 +158,7 @@ impl Normalize for ListOp {
     }
 }
 
-fn join_list_nf(indexed: Vec<NormalForm>) -> NormalForm {
+pub fn join_list_nf(indexed: Vec<NormalForm>) -> NormalForm {
     indexed.iter().fold(NormalForm::init_empty(), |acc, nf| {
         join_sequence(acc, nf.to_owned())
     })

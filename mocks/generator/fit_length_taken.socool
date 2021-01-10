@@ -1,0 +1,14 @@
+{ f: 220, l: 1, g: 1, p: 0 } 
+
+gen = *(
+        l: 1|4 [1, 3, 1],
+      ) Take 4
+
+main = {
+  Lm 1
+  > FitLength *gen
+}
+
+expect = {
+  Lm 7/2
+}

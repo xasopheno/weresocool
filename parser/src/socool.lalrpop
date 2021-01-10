@@ -5,16 +5,21 @@ use weresocool_ast::{
         Defs,
         Op,
         Op::*,
-        Term,
+        Term, 
         ASR,
         FunDef,
         ListOp,
+        Coefs,
+        Axis,
+        Generator,
+        GenOp,
         Indices, 
         Index,
 };
 use crate::parser::Init;
 use crate::indices::{et, random_seed};
 use crate::float_to_rational::helpers::*;
+use regex::Regex;
 
 grammar<'defs, 'err>(
     defs: &'defs mut Defs,
@@ -27,10 +32,10 @@ pub SoCool: Init = {
 
 Point: Init = {
     "{"
-         "f:" <f:Rational> ","
-         "l:" <l:Rational> ","
-         "g:" <g:Rational> ","
-         "p:" <p:Rational>
+         <f_axis: F> <f: Rational> ","
+         <l_axis: L> <l: Rational> ","
+         <g_axis: G> <g: Rational> ","
+         <p_axis: P> <p: Rational>
     "}" ";"? => Init { f, l, g, p }
 }
 
@@ -38,7 +43,7 @@ LetDefs = Lets<LetDef>;
 LetDef: () = {
     <s: Name> "(" <vars: Comma<Name>>  ")" "=" "{" <o: Operation> "}" => {
          defs.terms.insert(
-             s.clone(),
+             s.to_owned(),
              Term::FunDef(FunDef {
                  name: s,
                  vars: vars,
@@ -49,21 +54,24 @@ LetDef: () = {
     },
 
     <s: Name> "=" "{" <o: Operation> "}" => {
-        defs.terms.insert(s.clone(), o); ()
+        defs.terms.insert(s.to_owned(), o); ()
     },
 
     <name: Name> "=" <list: List> => {
-        defs.lists.insert(name.clone(), Term::Lop(list)); ()
-    }
+        defs.lists.insert(name.to_owned(), Term::Lop(list)); ()
+    },
     
+    <name: Name> "=" <generator: Generator> => {
+        defs.generators.insert(name.to_owned(), Term::Gen(generator)); ()
+    }
 };
 
 
 Operation: Term = {
-    <op1: Operation> ">" "FitLength" <op2: ComposeOperation> => {
+    <op1: Operation> ">" "FitLength" <op2: SuperCompose> => {
         Term::Op(
             Op::Compose { operations:
-            vec![op1.clone(), Term::Op(WithLengthRatioOf { with_length_of: Box::new(op2), main: Box::new(op1) })]
+            vec![op1.to_owned(), Term::Op(WithLengthRatioOf { with_length_of: Box::new(op2), main: Box::new(op1) })]
         })
     },
 
@@ -71,12 +79,12 @@ Operation: Term = {
       unimplemented!()
     },
 
-<op1: Operation> ">" "@" <name: Name> <op2: ComposeOperation> => {
+    <op1: Operation> ">" "@" <name: Name> <op2: ComposeOperation> => {
         Term::Op(
             Focus {
                 name: name,
-                main: Box::new(op1.clone()),
-                op_to_apply: Box::new(op2.clone()),
+                main: Box::new(op1.to_owned()),
+                op_to_apply: Box::new(op2.to_owned()),
             }
         )
     },
@@ -85,6 +93,54 @@ Operation: Term = {
 
     <list: List> => Term::Lop(list),
 
+    <generator: Generator> => Term::Gen(generator)
+}
+
+Generator: GenOp = {
+  <gen: GeneratorBase> "Take" <n: Int> => {
+    GenOp::Taken {n: n as usize, gen: Box::new(gen)}
+  },
+  <gen: GeneratorBase> => gen
+
+}
+
+GeneratorBase: GenOp = {
+  r"(Gen|\*)" "(" <coefs: Comma<Coefs>> ")" =>  {
+    GenOp::Const(Generator {
+      coefs,
+    })
+  },
+
+  r"(Gen|\*)" <name: Name> => {
+    GenOp::Named(name)
+  },
+}
+
+
+Coefs: Coefs = {
+  <axis: Axis> <div: CoefStart> "[" <coefs: Comma<Coef>> "]" => { 
+    Coefs {
+      state: div.0,
+      state_bak: div.0,
+      div: div.1.abs() as usize,
+      idx: 0,
+      coefs: coefs.into_iter().flatten().collect(),
+      axis
+    }
+  }
+}
+
+Coef: Vec<i64> = {
+  <v: Int> => vec![v],
+  <s:r"(-?[0-9]+)x([0-9]+)"> => {
+    let regex = Regex::new("(-?[0-9]+)x([0-9]+)").unwrap();
+    let captures = regex.captures(s).unwrap();
+    let val = captures[1].parse::<i64>().unwrap();
+    let n = captures[2].parse::<usize>().unwrap();
+    
+
+    vec![val; n as usize]
+  }
 }
 
 List: ListOp = {
@@ -103,7 +159,6 @@ ListIndexed: ListOp = {
 
    "<" <list: List> ">" => list,
 
-
   <list: ListBase> => list,
 }
 
@@ -120,6 +175,7 @@ ListBase: ListOp = {
     ListOp::Const(et(n))
   },
 
+  r"(List|&)" <gen: Generator> => ListOp::GenOp(gen)
 }
 
 Indices: Indices = {
@@ -148,6 +204,11 @@ Index: Index = {
   <index: Index> "|" <term: Composeable> => Index::IndexAndTerm {index: Box::new(index), term},
 } 
 
+SuperCompose: Term = {
+  <o: ComposeOperation> => o,
+  <o: Generator> => Term::Gen(o)
+}
+
 ComposeOperation: Term = {
     <ops: Pipe<Composeable>> => Term::Op(Compose { operations: ops }),
     <o: BaseOperation> => o,
@@ -156,10 +217,17 @@ ComposeOperation: Term = {
 Composeable: Term = {
   <base_operation: BaseOperation> => base_operation,
   <list: List> => Term::Lop(list),
+  <generator: Generator> => Term::Gen(generator)
 }
 
 BaseOperation: Term = {
     "(" <o: Operation> ")" => o,
+    <fm: Fm> <m:Rational> => Term::Op(TransposeM {m}),
+    <fa: Fa> <a:Rational> => Term::Op(TransposeA {a}),
+    <pm: Pm>  <m:Rational> => Term::Op(PanM {m}),
+    <pa: Pa>   <a:Rational> => Term::Op(PanA {a}),
+    <lm: Lm> <m:Rational> => Term::Op(Length {m}),
+    <gain: Gm> <m:Rational> => Term::Op(Gain {m}),
     "AsIs" => Term::Op(AsIs {}),
     "Sine" <pow: Rational?> => {
       Term::Op(Sine {pow})
@@ -185,12 +253,6 @@ BaseOperation: Term = {
     "Portamento" <m:Rational> => Term::Op(Portamento {m}),
     "Reverb" <m:Rational> => Term::Op(Reverb {m}),
     "Silence" <m:Rational> => Term::Op(Silence {m}),
-    r"(Tm|Fm)" <m:Rational> => Term::Op(TransposeM {m}),
-    r"(Ta|Fa)" <a:Rational> => Term::Op(TransposeA {a}),
-    r"(PanM|Pm)" <m:Rational> => Term::Op(PanM {m}),
-    r"(PanA|Pa)" <a:Rational> => Term::Op(PanA {a}),
-    r"(Length|Lm)" <m:Rational> => Term::Op(Length {m}),
-    r"(Gain|Gm)" <m:Rational> => Term::Op(Gain {m}),
     r"(Sequence|Seq)" "[" <operations: Operations> "]" => Term::Op(Sequence { operations: operations }),
     "Overlay" "[" <operations: Operations> "]" => Term::Op(Overlay { operations: operations }),
     r"(ModulateBy|ModBy)" "[" <operations: Operations> "]" => Term::Op(ModulateBy { operations: operations }),
@@ -215,6 +277,7 @@ BaseOperation: Term = {
         ]})
     },
 };
+
 
 Overtone: Term = {
     "("
@@ -288,6 +351,32 @@ Rational: Rational64 = {
     <n: Int> => Rational64::new(n, 1),
     <n: Int> "/" <d:Int> => Rational64::new(n, d),
 };
+
+
+CoefStart: (i64, i64) = {
+    <n: Int> "|" <d:Int> => (n, d),
+}
+
+
+Axis: Axis = {
+    F => Axis::F,
+    G => Axis::G,
+    L => Axis::L,
+    P => Axis::P,
+};
+
+Fm: String = <s: r"Fm|Tm"> => s.to_string();
+Fa: String = <s: r"Fa|Ta"> => s.to_string();
+Gm: String = <s: r"Gain|Gm"> => s.to_string();
+Lm: String = <s: r"Length|Lm"> => s.to_string();
+Pm: String = <s: r"PanM|Pm"> => s.to_string();
+Pa: String = <s: r"PanA|Pa"> => s.to_string();
+
+F: String = <s: r"f:"> => s.to_string();
+G: String = <s: r"g:"> => s.to_string();
+L: String = <s: r"l:"> => s.to_string();
+P: String = <s: r"p:"> => s.to_string();
+
 
 Name: String = <s:r"[a-z_][a-zA-Z_0-9.]*"> => s.to_string();
 Float: String = <s:r"-?(0|([1-9]\d*))\.\d+"> => s.to_string();

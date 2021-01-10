@@ -3114,6 +3114,7 @@ version = "0.5.0"
 dependencies = [
  "colored",
  "indexmap",
+ "num-integer",
  "num-rational 0.3.2",
  "num-traits",
  "pretty_assertions",
@@ -3142,6 +3143,7 @@ name = "weresocool_instrument"
 version = "0.1.0"
 dependencies = [
  "num-rational 0.3.2",
+ "num-traits",
  "rand",
  "rayon",
  "reverb",

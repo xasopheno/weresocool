@@ -116,6 +116,10 @@ pub fn substitute_operations(
                 let subbed = lop.substitute(normal_form, defs, arg_map)?;
                 result.push(subbed)
             }
+            Term::Gen(gen) => {
+                let subbed = gen.substitute(normal_form, defs, arg_map)?;
+                result.push(subbed)
+            }
         }
     }
 

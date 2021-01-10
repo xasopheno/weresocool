@@ -94,7 +94,7 @@ export class CustomHighlightRules extends window.ace.acequire(
         },
         {
           token: 'frequency',
-          regex: 'AsIs|Tm|Ta|Fm|Fa|f:',
+          regex: 'AsIs|Fm|Fa|f:',
         },
         {
           token: 'length',
@@ -111,6 +111,10 @@ export class CustomHighlightRules extends window.ace.acequire(
         {
           token: 'list',
           regex: '@|List|Random|&|ET',
+        },
+        {
+          token: 'generator',
+          regex: '\\*|Gen|Take',
         },
         {
           token: 'letter',

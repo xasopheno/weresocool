@@ -1,5 +1,5 @@
 use crate::Defs;
-use crate::{ArgMap, FunDef, GetLengthRatio, ListOp, NormalForm, Normalize, Op, Substitute};
+use crate::{ArgMap, FunDef, GenOp, GetLengthRatio, ListOp, NormalForm, Normalize, Op, Substitute};
 use num_rational::Rational64;
 use weresocool_error::Error;
 
@@ -9,6 +9,7 @@ pub enum Term {
     Nf(NormalForm),
     FunDef(FunDef),
     Lop(ListOp),
+    Gen(GenOp),
 }
 
 impl Normalize for Term {
@@ -18,6 +19,7 @@ impl Normalize for Term {
             Term::Nf(nf) => nf.apply_to_normal_form(input, defs),
             Term::FunDef(_fun) => Err(Error::with_msg("Cannot normalize FunDef.")),
             Term::Lop(lop) => lop.apply_to_normal_form(input, defs),
+            Term::Gen(gen) => gen.apply_to_normal_form(input, defs),
         }
     }
 }
@@ -34,6 +36,7 @@ impl Substitute for Term {
             Term::Nf(nf) => nf.substitute(normal_form, defs, arg_map),
             Term::FunDef(_fun) => Err(Error::with_msg("Cannot call substitute on FunDef.")),
             Term::Lop(lop) => lop.substitute(normal_form, defs, arg_map),
+            Term::Gen(gen) => gen.substitute(normal_form, defs, arg_map),
         }
     }
 }
@@ -45,6 +48,7 @@ impl GetLengthRatio for Term {
             Term::Nf(nf) => nf.get_length_ratio(defs),
             Term::FunDef(_fun) => Err(Error::with_msg("Cannot get length_ratio of FunDef.")),
             Term::Lop(lop) => lop.get_length_ratio(defs),
+            Term::Gen(gen) => gen.get_length_ratio(defs),
         }
     }
 }

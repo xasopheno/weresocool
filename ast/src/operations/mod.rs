@@ -313,20 +313,6 @@ impl NormalForm {
             length_ratio: Ratio::new(0, 1),
         }
     }
-    //    pub fn to_op(&self) -> Op {
-    //        let mut result = vec![];
-    //        for seq in self.operations.iter() {
-    //            let mut seq_result = vec![];
-    //            for p_op in seq.iter() {
-    //                seq_result.push(p_op.to_op())
-    //            }
-    //            result.push(Op::Sequence {
-    //                operations: seq_result,
-    //            })
-    //        }
-    //
-    //        Op::Overlay { operations: result }
-    //    }
 
     pub fn partition(&self, name: String) -> (NormalForm, NormalForm) {
         let silence = PointOp::init_silent();

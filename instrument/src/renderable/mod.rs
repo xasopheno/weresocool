@@ -2,6 +2,7 @@ pub mod render_voice;
 
 use crate::{Basis, Oscillator, StereoWaveform};
 use num_rational::Rational64;
+use num_traits::CheckedMul;
 use rand::{thread_rng, Rng};
 use rayon::prelude::*;
 pub use render_voice::{renderables_to_render_voices, RenderVoice};
@@ -239,7 +240,11 @@ pub fn point_op_to_gains(point_op: &PointOp, basis: &Basis) -> (f64, f64) {
 }
 
 pub fn m_a_and_basis_to_f64(basis: Rational64, m: Rational64, a: Rational64) -> f64 {
-    r_to_f64(lossy_rational_mul(basis, m)) + r_to_f64(a)
+    r_to_f64(
+        basis
+            .checked_mul(&m)
+            .unwrap_or_else(|| lossy_rational_mul(basis, m)),
+    ) + r_to_f64(a)
 }
 
 pub fn calculate_fgpl(basis: &Basis, point_op: &PointOp) -> (f64, (f64, f64), f64, f64) {

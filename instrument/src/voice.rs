@@ -105,7 +105,7 @@ impl Voice {
                 OscType::Noise => self.generate_random_sample(info),
             };
 
-            if op.reverb > 0.0 {
+            if op.reverb > 0.0 && gain > 0.0 {
                 new_sample = self
                     .reverb
                     .calc_sample(new_sample as f32, gain as f32)

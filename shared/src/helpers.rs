@@ -2,6 +2,22 @@ use float_cmp::ApproxEq;
 use num_rational::{Ratio, Rational64};
 use std::str::FromStr;
 
+pub fn et_to_rational(i: i64, d: usize) -> Rational64 {
+    let signum = i.signum();
+    if signum == 0 {
+        return Rational64::from_integer(1);
+    }
+
+    let et = 2.0_f32.powf(i as f32 / d as f32);
+    if signum == -1 {
+        let result = f32_string_to_rational(format!("{:.8}", et));
+        result.recip();
+        result
+    } else {
+        f32_string_to_rational(format!("{:.8}", et))
+    }
+}
+
 pub fn lossy_rational_mul(a: Rational64, b: Rational64) -> Rational64 {
     f32_string_to_rational(format!("{:.8}", r_to_f64(a) * r_to_f64(b)))
 }
