@@ -53,7 +53,7 @@ impl TryFrom<RenderReturn> for Vec<u8> {
         match r {
             RenderReturn::Wav(audio) => Ok(audio),
             _ => Err(Error::with_msg(
-                "Can only produce Vnotec<U8> from RenderReturn::Wav",
+                "Can only produce Vec<u8> from RenderReturn::Wav",
             )),
         }
     }

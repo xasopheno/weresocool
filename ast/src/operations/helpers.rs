@@ -12,8 +12,6 @@ pub fn handle_id_error(id: String, defs: &Defs, arg_map: Option<&ArgMap>) -> Res
     match arg_result {
         Some(result) => match result {
             Term::Op(Op::Id(name)) => handle_id_error(name.to_string(), defs, arg_map),
-            // _ => Ok(result.to_owned()),
-            // },
             _ => Ok(result.to_owned()),
         },
         None => handle_def_error(id, defs),

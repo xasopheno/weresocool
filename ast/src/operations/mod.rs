@@ -307,13 +307,6 @@ impl NormalForm {
         }
     }
 
-    pub fn init_with_point_ops(operations: Vec<Vec<PointOp>>) -> NormalForm {
-        NormalForm {
-            operations,
-            length_ratio: Ratio::new(1, 1),
-        }
-    }
-
     pub fn init_empty() -> NormalForm {
         NormalForm {
             operations: vec![],

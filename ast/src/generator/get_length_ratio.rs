@@ -75,11 +75,9 @@ impl Generator {
                 }
             }
         }
-        let result = lengths
+        lengths
             .iter()
-            .fold(Rational64::from_integer(0), |current, val| current + *val);
-
-        result
+            .fold(Rational64::from_integer(0), |current, val| current + *val)
     }
 
     pub fn lcm_length(&self) -> usize {
