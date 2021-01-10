@@ -5,6 +5,6 @@ main = {
 }
 
 expect = {
-    Seq [Tm 1, Tm 7071/5000]
+    Seq [Tm 1, Tm 70710677/50000000]
 }
 
