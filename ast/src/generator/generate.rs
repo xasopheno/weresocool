@@ -15,7 +15,11 @@ impl CoefState {
                 self.idx %= coefs.len();
                 result
             }
-            _ => unimplemented!(),
+            Coefs::Poly(poly) => {
+                let e = poly.eval(Rational64::new(self.state, self.div as i64));
+                dbg!(e);
+                unimplemented!()
+            }
         }
     }
 }
