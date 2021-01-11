@@ -1,4 +1,4 @@
-use crate::generator::{error_non_generator, Axis, GenOp, Generator};
+use crate::generator::{error_non_generator, Axis, Coefs, GenOp, Generator};
 use crate::operations::helpers::handle_id_error;
 use crate::{Defs, GetLengthRatio, Term};
 use num_integer::lcm;
@@ -67,11 +67,15 @@ impl Generator {
         for coef in self.coefs.iter() {
             if let Axis::L = coef.axis {
                 let mut state = coef.state_bak;
+
                 lengths[0] *= Rational64::new(state, coef.div as i64);
                 for (i, length) in lengths.iter_mut().enumerate().take(n).skip(1) {
-                    state += coef.coefs[(i - 1) % coef.coefs.len()];
-                    state = std::cmp::max(1, state);
+                    state += match &coef.coefs {
+                        Coefs::Const(c) => c[(i - 1) % coef.coefs.len()],
+                        _ => unimplemented!(),
+                    };
                     *length *= Rational64::new(state, coef.div as i64);
+                    state = std::cmp::max(1, state);
                 }
             }
         }

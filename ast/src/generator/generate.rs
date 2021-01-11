@@ -1,17 +1,22 @@
 use crate::{
-    generator::error_non_generator, handle_id_error, Axis, Coefs, Defs, GenOp, Generator,
-    NormalForm, Normalize, Op, Term,
+    generator::error_non_generator, handle_id_error, Axis, CoefState, Coefs, Defs, GenOp,
+    Generator, NormalForm, Normalize, Op, Term,
 };
 use num_rational::Rational64;
 use weresocool_error::Error;
 use weresocool_shared::helpers::et_to_rational;
-impl Coefs {
+impl CoefState {
     fn generate(&mut self) -> Op {
-        let result = self.axis.generate(self.state, self.div);
-        self.state += self.coefs[self.idx];
-        self.idx += 1;
-        self.idx %= self.coefs.len();
-        result
+        match &self.coefs {
+            Coefs::Const(coefs) => {
+                let result = self.axis.generate(self.state, self.div);
+                self.state += coefs[self.idx];
+                self.idx += 1;
+                self.idx %= coefs.len();
+                result
+            }
+            _ => unimplemented!(),
+        }
     }
 }
 
