@@ -3,6 +3,8 @@ mod generate;
 mod get_length_ratio;
 mod substitute;
 use num_rational::Rational64;
+use polynomials::*;
+use std::hash::{Hash, Hasher};
 use weresocool_error::Error;
 
 #[derive(Clone, PartialEq, Debug, Hash)]
@@ -17,16 +19,46 @@ pub struct Generator {
     pub coefs: Vec<CoefState>,
 }
 
-#[derive(Clone, PartialEq, Debug, Hash)]
+#[derive(Clone, PartialEq, Debug)]
 pub enum Coefs {
     Const(Vec<i64>),
-    // Poly(Vec<Rational64>),
+    Poly(Polynomial<Rational64>),
+}
+
+impl Hash for Coefs {
+    fn hash<H: Hasher>(&self, state: &mut H) {
+        match self {
+            Coefs::Const(c) => c.hash(state),
+            Coefs::Poly(p) => p
+                .iter()
+                .map(|val| *val)
+                .collect::<Vec<Rational64>>()
+                .hash(state),
+        }
+    }
+}
+
+impl Into<Coefs> for Vec<Vec<i64>> {
+    fn into(self) -> Coefs {
+        Coefs::Const(self.into_iter().flatten().collect())
+    }
+}
+
+impl Into<Coefs> for Vec<Rational64> {
+    fn into(self) -> Coefs {
+        let mut poly = Polynomial::new();
+        for p in self {
+            poly.push(p)
+        }
+        Coefs::Poly(poly)
+    }
 }
 
 impl Coefs {
     pub fn len(&self) -> usize {
         match self {
             Coefs::Const(coefs) => coefs.len(),
+            Coefs::Poly { .. } => unimplemented!(),
         }
     }
 }
@@ -42,11 +74,11 @@ pub struct CoefState {
 }
 
 impl CoefState {
-    pub fn new(start: i64, div: usize, axis: Axis, coefs: Coefs) -> Self {
+    pub fn new(start: i64, div: i64, axis: Axis, coefs: Coefs) -> Self {
         Self {
             state: start,
             state_bak: start,
-            div,
+            div: div.abs() as usize,
             idx: 0,
             coefs,
             axis,

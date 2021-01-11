@@ -85,7 +85,14 @@ impl Generator {
     }
 
     pub fn lcm_length(&self) -> usize {
-        let lengths: Vec<usize> = self.coefs.iter().map(|coef| coef.coefs.len()).collect();
+        let lengths: Vec<usize> = self
+            .coefs
+            .iter()
+            .map(|coef| match &coef.coefs {
+                Coefs::Const(c) => c.len(),
+                _ => coef.div,
+            })
+            .collect();
         1 + lengths
             .iter()
             .fold(1usize, |current, val| lcm(current, *val))

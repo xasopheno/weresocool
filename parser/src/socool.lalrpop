@@ -119,17 +119,22 @@ GeneratorBase: GenOp = {
 
 
 CoefState: CoefState = {
-  <axis: Axis> <div: CoefStart> "[" <coefs: Comma<Coef>> "]" => { 
-    CoefState {
-      state: div.0,
-      state_bak: div.0,
-      div: div.1.abs() as usize,
-      idx: 0,
-      coefs: Coefs::Const(coefs.into_iter().flatten().collect()),
-      axis
-    }
+  <axis: Axis> <div: CoefStart> <coefs: Coefs> => { 
+    CoefState::new(
+      div.0,
+      div.1,
+      axis,
+      coefs
+     )
   }
 }
+
+
+Coefs: Coefs = {
+  "[" <coefs: Comma<Coef>> "]" => coefs.into(),
+  "Poly" "[" <coefs: Comma<Rational>> "]" => coefs.into() 
+}
+
 
 
 Coef: Vec<i64> = {
