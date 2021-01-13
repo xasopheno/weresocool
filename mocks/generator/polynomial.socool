@@ -2,10 +2,12 @@
 
 main = {
   *(
-    f: 0|12 Poly[1, 1, 0],
+    f: 0|2 Poly[1, 1, 0],
   )
+  Take 4
 }
 
 expect = {
-  ET(12) @ [0, 1, 3]
+  Seq [Fm 1, Fm 3/2, Fm 2, Fm 5/2]
 }
+

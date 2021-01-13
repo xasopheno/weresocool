@@ -3,29 +3,40 @@ use crate::{
     Generator, NormalForm, Normalize, Op, Term,
 };
 use num_rational::Rational64;
+use polynomials::Polynomial;
 use weresocool_error::Error;
 use weresocool_shared::helpers::et_to_rational;
+
 impl CoefState {
     fn generate(&mut self) -> Op {
         match &self.coefs {
             Coefs::Const(coefs) => {
-                let result = self.axis.generate(self.state, self.div);
+                let result = self.axis.generate_const(self.state, self.div);
                 self.state += coefs[self.idx];
                 self.idx += 1;
                 self.idx %= coefs.len();
                 result
             }
             Coefs::Poly(poly) => {
-                let e = poly.eval(Rational64::new(self.state, self.div as i64));
-                dbg!(e);
-                unimplemented!()
+                let result = self.axis.generate_poly(self.state, self.div, poly);
+                self.state += 1;
+                result
             }
         }
     }
 }
 
 impl Axis {
-    fn generate(&self, state: i64, div: usize) -> Op {
+    fn generate_poly(&self, state: i64, div: usize, poly: &Polynomial<Rational64>) -> Op {
+        let m = poly.eval(Rational64::new(state, div as i64)).unwrap();
+        match self {
+            Axis::F => Op::TransposeM { m },
+            Axis::L => Op::Length { m },
+            Axis::G => Op::Gain { m },
+            Axis::P => Op::PanA { a: m },
+        }
+    }
+    fn generate_const(&self, state: i64, div: usize) -> Op {
         match self {
             Axis::F => Op::TransposeM {
                 m: et_to_rational(state, div),
