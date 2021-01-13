@@ -25,15 +25,12 @@ pub enum Coefs {
     Poly(Polynomial<Rational64>),
 }
 
+#[allow(clippy::derive_hash_xor_eq)]
 impl Hash for Coefs {
     fn hash<H: Hasher>(&self, state: &mut H) {
         match self {
             Coefs::Const(c) => c.hash(state),
-            Coefs::Poly(p) => p
-                .iter()
-                .map(|val| *val)
-                .collect::<Vec<Rational64>>()
-                .hash(state),
+            Coefs::Poly(p) => p.iter().copied().collect::<Vec<Rational64>>().hash(state),
         }
     }
 }
@@ -59,6 +56,13 @@ impl Coefs {
         match self {
             Coefs::Const(coefs) => coefs.len(),
             Coefs::Poly { .. } => unimplemented!(),
+        }
+    }
+
+    pub fn is_empty(&self) -> bool {
+        match self {
+            Coefs::Const(coefs) => coefs.is_empty(),
+            Coefs::Poly(_coefs) => unimplemented!(),
         }
     }
 }

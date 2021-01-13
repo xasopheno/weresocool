@@ -8,32 +8,52 @@ use weresocool_error::Error;
 use weresocool_shared::helpers::et_to_rational;
 
 impl CoefState {
-    fn generate(&mut self) -> Op {
+    fn generate(&mut self) -> Result<Op, Error> {
         match &self.coefs {
             Coefs::Const(coefs) => {
                 let result = self.axis.generate_const(self.state, self.div);
                 self.state += coefs[self.idx];
                 self.idx += 1;
                 self.idx %= coefs.len();
-                result
+                Ok(result)
             }
             Coefs::Poly(poly) => {
-                let result = self.axis.generate_poly(self.state, self.div, poly);
+                let result = self.axis.generate_poly(self.state, self.div, poly)?;
                 self.state += 1;
-                result
+                Ok(result)
             }
         }
     }
 }
 
+fn eval_polynomial(
+    polynomial: &Polynomial<Rational64>,
+    state: i64,
+    div: i64,
+) -> Result<Rational64, Error> {
+    let result = polynomial.eval(Rational64::new(state, div as i64));
+    if let Some(value) = result {
+        Ok(value)
+    } else {
+        println!("Error: Polynomials must have at least one value.");
+        Err(Error::with_msg("Polynomial must have at least one value."))
+    }
+}
+
 impl Axis {
-    fn generate_poly(&self, state: i64, div: usize, poly: &Polynomial<Rational64>) -> Op {
-        let m = poly.eval(Rational64::new(state, div as i64)).unwrap();
+    fn generate_poly(
+        &self,
+        state: i64,
+        div: usize,
+        poly: &Polynomial<Rational64>,
+    ) -> Result<Op, Error> {
+        let m = eval_polynomial(poly, state, div as i64)?;
+
         match self {
-            Axis::F => Op::TransposeM { m },
-            Axis::L => Op::Length { m },
-            Axis::G => Op::Gain { m },
-            Axis::P => Op::PanA { a: m },
+            Axis::F => Ok(Op::TransposeM { m }),
+            Axis::L => Ok(Op::Length { m }),
+            Axis::G => Ok(Op::Gain { m }),
+            Axis::P => Ok(Op::PanA { a: m }),
         }
     }
     fn generate_const(&self, state: i64, div: usize) -> Op {
@@ -67,7 +87,7 @@ impl Generator {
         for _ in 0..n {
             let mut nf: NormalForm = nf.clone();
             for coef in coefs.iter_mut() {
-                coef.generate().apply_to_normal_form(&mut nf, defs)?;
+                coef.generate()?.apply_to_normal_form(&mut nf, defs)?;
             }
             result.push(nf)
         }
