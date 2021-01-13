@@ -291,7 +291,7 @@
     "get-port": "5.1.1",
     "history": "5.0.0",
     "react": "16.13.1",
-    "react-ace": "9.2.0",
+    "react-ace": "9.2.1",
     "react-dom": "16.13.1",
     "react-hot-loader": "4.13.0",
     "react-modal": "3.11.2",
