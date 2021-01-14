@@ -74,8 +74,8 @@ impl Generator {
                         Coefs::Const(c) => c[(i - 1) % coef.coefs.len()],
                         _ => unimplemented!(),
                     };
-                    *length *= Rational64::new(state, coef.div as i64);
                     state = std::cmp::max(1, state);
+                    *length *= Rational64::new(state, coef.div as i64);
                 }
             }
         }
@@ -90,7 +90,7 @@ impl Generator {
             .iter()
             .map(|coef| match &coef.coefs {
                 Coefs::Const(c) => c.len(),
-                _ => coef.div,
+                Coefs::Poly(_) => coef.div - 1,
             })
             .collect();
         1 + lengths

@@ -1,0 +1,17 @@
+{ f: 220, l: 1, g: 1, p: 0 } 
+
+thing1 = {
+  *(
+    l: 1|10 [-1]
+  )
+  Take 10
+}
+
+main = {
+  AsIs > FitLength thing1
+}
+
+expect = {
+  Lm 1
+}
+

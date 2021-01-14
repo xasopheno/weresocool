@@ -1,0 +1,16 @@
+{ f: 220, l: 1, g: 1, p: 0 } 
+
+thing1 = {
+  *(
+    f: 0|10 Poly [1, 1, 2]
+  )
+}
+
+main = {
+  AsIs > FitLength thing1
+}
+
+expect = {
+  Lm 10
+}
+
