@@ -1,4 +1,6 @@
-use crate::generator::{error_non_generator, Axis, Coefs, GenOp, Generator};
+use crate::generator::{
+    error_non_generator, generate::eval_polynomial, Axis, Coefs, GenOp, Generator,
+};
 use crate::operations::helpers::handle_id_error;
 use crate::{Defs, GetLengthRatio, Term};
 use num_integer::lcm;
@@ -70,12 +72,18 @@ impl Generator {
 
                 lengths[0] *= Rational64::new(state, coef.div as i64);
                 for (i, length) in lengths.iter_mut().enumerate().take(n).skip(1) {
-                    state += match &coef.coefs {
-                        Coefs::Const(c) => c[(i - 1) % coef.coefs.len()],
-                        _ => unimplemented!(),
+                    match &coef.coefs {
+                        Coefs::Const(c) => {
+                            state += c[(i - 1) % coef.coefs.len()];
+
+                            state = std::cmp::max(1, state);
+                            *length *= Rational64::new(state, coef.div as i64);
+                        }
+                        Coefs::Poly(poly) => {
+                            let r = eval_polynomial(poly, i as i64, coef.div as i64).unwrap();
+                            *length *= std::cmp::max(r, Rational64::new(1, coef.div as i64));
+                        }
                     };
-                    state = std::cmp::max(1, state);
-                    *length *= Rational64::new(state, coef.div as i64);
                 }
             }
         }

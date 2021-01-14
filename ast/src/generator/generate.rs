@@ -26,7 +26,7 @@ impl CoefState {
     }
 }
 
-fn eval_polynomial(
+pub fn eval_polynomial(
     polynomial: &Polynomial<Rational64>,
     state: i64,
     div: i64,
