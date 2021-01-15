@@ -65,7 +65,7 @@ impl Axis {
     fn generate_const(&self, state: i64, div: usize) -> Op {
         match self {
             Axis::F => Op::TransposeM {
-                m: et_to_rational(state, div),
+                m: std::cmp::max(Rational64::from_integer(0), et_to_rational(state, div)),
             },
             Axis::L => Op::Length {
                 m: Rational64::new(std::cmp::max(1, state), div as i64),
