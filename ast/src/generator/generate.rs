@@ -47,13 +47,19 @@ impl Axis {
         div: usize,
         poly: &Polynomial<Rational64>,
     ) -> Result<Op, Error> {
-        let m = eval_polynomial(poly, state, div as i64)?;
+        let eval = eval_polynomial(poly, state, div as i64)?;
 
         match self {
-            Axis::F => Ok(Op::TransposeM { m }),
-            Axis::L => Ok(Op::Length { m }),
-            Axis::G => Ok(Op::Gain { m }),
-            Axis::P => Ok(Op::PanA { a: m }),
+            Axis::F => Ok(Op::TransposeM {
+                m: std::cmp::max(Rational64::from_integer(0), eval),
+            }),
+            Axis::L => Ok(Op::Length {
+                m: std::cmp::max(Rational64::new(1, div as i64), eval),
+            }),
+            Axis::G => Ok(Op::Gain {
+                m: std::cmp::max(Rational64::from_integer(0), eval),
+            }),
+            Axis::P => Ok(Op::PanA { a: eval }),
         }
     }
     fn generate_const(&self, state: i64, div: usize) -> Op {

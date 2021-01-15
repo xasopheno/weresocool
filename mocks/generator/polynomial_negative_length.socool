@@ -1,0 +1,13 @@
+{ f: 220, l: 1, g: 1, p: 0 } 
+
+main = {
+  *(
+    f: 3|3 Poly [2, -1]
+  ) Take 5
+}
+
+expect = {
+  Seq [Lm 1, Lm 2/3, Fm 1/3, Lm 1/3, Lm 1/3]
+}
+
+
