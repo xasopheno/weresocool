@@ -70,17 +70,24 @@ impl Generator {
             if let Axis::L = coef.axis {
                 let mut state = coef.state_bak;
 
-                lengths[0] *= Rational64::new(state, coef.div as i64);
+                lengths[0] *= std::cmp::max(
+                    Rational64::new(state, coef.div as i64),
+                    Rational64::new(1, coef.div as i64),
+                );
                 for (i, length) in lengths.iter_mut().enumerate().take(n).skip(1) {
                     match &coef.coefs {
                         Coefs::Const(c) => {
                             state += c[(i - 1) % coef.coefs.len()];
 
-                            state = std::cmp::max(1, state);
-                            *length *= Rational64::new(state, coef.div as i64);
+                            // state = std::cmp::max(1, state);
+                            *length *= std::cmp::max(
+                                Rational64::new(state, coef.div as i64),
+                                Rational64::new(1, coef.div as i64),
+                            );
                         }
                         Coefs::Poly(poly) => {
-                            let r = eval_polynomial(poly, i as i64, coef.div as i64).unwrap();
+                            state += 1;
+                            let r = eval_polynomial(poly, state as i64, coef.div as i64).unwrap();
                             *length *= std::cmp::max(r, Rational64::new(1, coef.div as i64));
                         }
                     };
