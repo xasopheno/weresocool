@@ -2,7 +2,7 @@
 
 thing1 = {
   *(
-    l: 4|4 Poly [1, -1]
+    l: 4|4 Poly [1, 0]
   )
   Take 4
 }
@@ -12,6 +12,6 @@ main = {
 }
 
 expect = {
-  Lm 7/4
+  Lm 4
 }
 
