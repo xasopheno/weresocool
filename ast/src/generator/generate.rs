@@ -29,7 +29,7 @@ impl CoefState {
 pub fn eval_polynomial(
     polynomial: &Polynomial<Rational64>,
     state: i64,
-    div: i64,
+    div: usize,
 ) -> Result<Rational64, Error> {
     let result = polynomial.eval(Rational64::new(state, div as i64));
     if let Some(value) = result {
@@ -47,7 +47,7 @@ impl Axis {
         div: usize,
         poly: &Polynomial<Rational64>,
     ) -> Result<Op, Error> {
-        let eval = eval_polynomial(poly, state, div as i64)?;
+        let eval = eval_polynomial(poly, state, div)?;
 
         match self {
             Axis::F => Ok(Op::TransposeM {
