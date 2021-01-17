@@ -63,17 +63,6 @@ impl GenOp {
     }
 }
 
-fn state_greater_than_zero(state: i64, div: usize) -> Rational64 {
-    std::cmp::max(
-        Rational64::new(state, div as i64),
-        Rational64::new(1, div as i64),
-    )
-}
-
-fn rational_greater_than_zero(r: Rational64, div: usize) -> Rational64 {
-    std::cmp::max(r, Rational64::new(1, div as i64))
-}
-
 impl Generator {
     pub fn get_length(&self, n: usize) -> Rational64 {
         let mut lengths = vec![Rational64::new(1, 1); n];
@@ -82,20 +71,26 @@ impl Generator {
                 let mut state = coef.state_bak;
                 match &coef.coefs {
                     Coefs::Const(c) => {
-                        lengths[0] *= state_greater_than_zero(state, coef.div);
+                        lengths[0] *= coef.axis.at_least_axis_minimum(
+                            Rational64::new(state, coef.div as i64),
+                            coef.div,
+                        );
                         for (i, length) in lengths.iter_mut().enumerate().take(n).skip(1) {
                             state += c[(i - 1) % coef.coefs.len()];
-                            *length *= state_greater_than_zero(state, coef.div);
+                            *length *= coef.axis.at_least_axis_minimum(
+                                Rational64::new(state, coef.div as i64),
+                                coef.div,
+                            );
                         }
                     }
 
                     Coefs::Poly(poly) => {
                         let r = eval_polynomial(poly, state, coef.div).unwrap();
-                        lengths[0] *= rational_greater_than_zero(r, coef.div);
+                        lengths[0] *= coef.axis.at_least_axis_minimum(r, coef.div);
                         for length in lengths.iter_mut().take(n).skip(1) {
                             state += 1;
                             let r = eval_polynomial(poly, state, coef.div).unwrap();
-                            *length *= rational_greater_than_zero(r, coef.div);
+                            *length *= coef.axis.at_least_axis_minimum(r, coef.div);
                         }
                     }
                 };

@@ -41,6 +41,15 @@ pub fn eval_polynomial(
 }
 
 impl Axis {
+    pub fn at_least_axis_minimum(&self, r: Rational64, div: usize) -> Rational64 {
+        match self {
+            Axis::F => std::cmp::max(r, Rational64::from_integer(0)),
+            Axis::G => std::cmp::max(r, Rational64::from_integer(0)),
+            Axis::L => std::cmp::max(r, Rational64::new(1, div as i64)),
+            Axis::P => r,
+        }
+    }
+
     fn generate_poly(
         &self,
         state: i64,
@@ -51,27 +60,29 @@ impl Axis {
 
         match self {
             Axis::F => Ok(Op::TransposeM {
-                m: std::cmp::max(Rational64::from_integer(0), eval),
+                m: self.at_least_axis_minimum(eval, div),
             }),
             Axis::L => Ok(Op::Length {
-                m: std::cmp::max(Rational64::new(1, div as i64), eval),
+                m: self.at_least_axis_minimum(eval, div),
             }),
             Axis::G => Ok(Op::Gain {
-                m: std::cmp::max(Rational64::from_integer(0), eval),
+                m: self.at_least_axis_minimum(eval, div),
             }),
-            Axis::P => Ok(Op::PanA { a: eval }),
+            Axis::P => Ok(Op::PanA {
+                a: self.at_least_axis_minimum(eval, div),
+            }),
         }
     }
     fn generate_const(&self, state: i64, div: usize) -> Op {
         match self {
             Axis::F => Op::TransposeM {
-                m: std::cmp::max(Rational64::from_integer(0), et_to_rational(state, div)),
+                m: self.at_least_axis_minimum(et_to_rational(state, div), div),
             },
             Axis::L => Op::Length {
-                m: Rational64::new(std::cmp::max(1, state), div as i64),
+                m: self.at_least_axis_minimum(Rational64::new(state, div as i64), div),
             },
             Axis::G => Op::Gain {
-                m: Rational64::new(std::cmp::max(0, state), div as i64),
+                m: self.at_least_axis_minimum(Rational64::new(state, div as i64), div),
             },
             Axis::P => Op::PanA {
                 a: Rational64::new(state, div as i64),
