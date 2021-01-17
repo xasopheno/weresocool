@@ -131,8 +131,8 @@ CoefState: CoefState = {
 
 
 Coefs: Coefs = {
-  "[" <coefs: Comma<Coef>> "]" => coefs.into(),
-  "Poly" "[" <coefs: Comma<Rational>> "]" => coefs.into() 
+  "[" <coefs: Comma<Coef>> "]" => Coefs::init_const(coefs),
+  "Poly" "[" <coefs: Comma<Rational>> "]" => Coefs::init_polynomial(coefs) 
 }
 
 

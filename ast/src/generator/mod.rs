@@ -35,23 +35,19 @@ impl Hash for Coefs {
     }
 }
 
-impl Into<Coefs> for Vec<Vec<i64>> {
-    fn into(self) -> Coefs {
-        Coefs::Const(self.into_iter().flatten().collect())
+impl Coefs {
+    pub fn init_const(coefs: Vec<Vec<i64>>) -> Coefs {
+        Self::Const(coefs.into_iter().flatten().collect())
     }
-}
 
-impl Into<Coefs> for Vec<Rational64> {
-    fn into(self) -> Coefs {
+    pub fn init_polynomial(coefs: Vec<Rational64>) -> Coefs {
         let mut poly = Polynomial::new();
-        for p in self {
+        for p in coefs {
             poly.push(p)
         }
         Coefs::Poly(poly)
     }
-}
 
-impl Coefs {
     pub fn len(&self) -> usize {
         match self {
             Coefs::Const(coefs) => coefs.len(),
