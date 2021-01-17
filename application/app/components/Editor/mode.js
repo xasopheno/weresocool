@@ -114,7 +114,7 @@ export class CustomHighlightRules extends window.ace.acequire(
         },
         {
           token: 'generator',
-          regex: '\\*|Gen|Take',
+          regex: '\\*|Gen|Take|Poly',
         },
         {
           token: 'letter',

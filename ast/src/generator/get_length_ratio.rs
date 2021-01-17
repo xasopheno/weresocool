@@ -1,4 +1,6 @@
-use crate::generator::{error_non_generator, Axis, GenOp, Generator};
+use crate::generator::{
+    error_non_generator, generate::eval_polynomial, Axis, Coefs, GenOp, Generator,
+};
 use crate::operations::helpers::handle_id_error;
 use crate::{Defs, GetLengthRatio, Term};
 use num_integer::lcm;
@@ -67,12 +69,31 @@ impl Generator {
         for coef in self.coefs.iter() {
             if let Axis::L = coef.axis {
                 let mut state = coef.state_bak;
-                lengths[0] *= Rational64::new(state, coef.div as i64);
-                for (i, length) in lengths.iter_mut().enumerate().take(n).skip(1) {
-                    state += coef.coefs[(i - 1) % coef.coefs.len()];
-                    state = std::cmp::max(1, state);
-                    *length *= Rational64::new(state, coef.div as i64);
-                }
+                match &coef.coefs {
+                    Coefs::Const(c) => {
+                        lengths[0] *= coef.axis.at_least_axis_minimum(
+                            Rational64::new(state, coef.div as i64),
+                            coef.div,
+                        );
+                        for (i, length) in lengths.iter_mut().enumerate().take(n).skip(1) {
+                            state += c[(i - 1) % coef.coefs.len()];
+                            *length *= coef.axis.at_least_axis_minimum(
+                                Rational64::new(state, coef.div as i64),
+                                coef.div,
+                            );
+                        }
+                    }
+
+                    Coefs::Poly(poly) => {
+                        let r = eval_polynomial(poly, state, coef.div).unwrap();
+                        lengths[0] *= coef.axis.at_least_axis_minimum(r, coef.div);
+                        for length in lengths.iter_mut().take(n).skip(1) {
+                            state += 1;
+                            let r = eval_polynomial(poly, state, coef.div).unwrap();
+                            *length *= coef.axis.at_least_axis_minimum(r, coef.div);
+                        }
+                    }
+                };
             }
         }
         lengths
@@ -81,7 +102,14 @@ impl Generator {
     }
 
     pub fn lcm_length(&self) -> usize {
-        let lengths: Vec<usize> = self.coefs.iter().map(|coef| coef.coefs.len()).collect();
+        let lengths: Vec<usize> = self
+            .coefs
+            .iter()
+            .map(|coef| match &coef.coefs {
+                Coefs::Const(c) => c.len(),
+                Coefs::Poly(_) => coef.div - 1,
+            })
+            .collect();
         1 + lengths
             .iter()
             .fold(1usize, |current, val| lcm(current, *val))

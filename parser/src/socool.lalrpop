@@ -9,6 +9,7 @@ use weresocool_ast::{
         ASR,
         FunDef,
         ListOp,
+        CoefState,
         Coefs,
         Axis,
         Generator,
@@ -105,7 +106,7 @@ Generator: GenOp = {
 }
 
 GeneratorBase: GenOp = {
-  r"(Gen|\*)" "(" <coefs: Comma<Coefs>> ")" =>  {
+  r"(Gen|\*)" "(" <coefs: Comma<CoefState>> ")" =>  {
     GenOp::Const(Generator {
       coefs,
     })
@@ -117,18 +118,24 @@ GeneratorBase: GenOp = {
 }
 
 
-Coefs: Coefs = {
-  <axis: Axis> <div: CoefStart> "[" <coefs: Comma<Coef>> "]" => { 
-    Coefs {
-      state: div.0,
-      state_bak: div.0,
-      div: div.1.abs() as usize,
-      idx: 0,
-      coefs: coefs.into_iter().flatten().collect(),
-      axis
-    }
+CoefState: CoefState = {
+  <axis: Axis> <div: CoefStart> <coefs: Coefs> => { 
+    CoefState::new(
+      div.0,
+      div.1,
+      axis,
+      coefs
+     )
   }
 }
+
+
+Coefs: Coefs = {
+  "[" <coefs: Comma<Coef>> "]" => Coefs::init_const(coefs),
+  "Poly" "[" <coefs: Comma<Rational>> "]" => Coefs::init_polynomial(coefs) 
+}
+
+
 
 Coef: Vec<i64> = {
   <v: Int> => vec![v],
@@ -138,7 +145,6 @@ Coef: Vec<i64> = {
     let val = captures[1].parse::<i64>().unwrap();
     let n = captures[2].parse::<usize>().unwrap();
     
-
     vec![val; n as usize]
   }
 }

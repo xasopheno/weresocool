@@ -2089,6 +2089,15 @@ dependencies = [
 ]
 
 [[package]]
+name = "polynomials"
+version = "0.2.4"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "207353e2f0e42079823f05c218fea7088ec598b276a0b92db11f9a813df2e04d"
+dependencies = [
+ "serde",
+]
+
+[[package]]
 name = "portaudio"
 version = "0.6.4"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -3117,6 +3126,7 @@ dependencies = [
  "num-integer",
  "num-rational 0.3.2",
  "num-traits",
+ "polynomials",
  "pretty_assertions",
  "rand",
  "serde",
