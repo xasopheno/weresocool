@@ -22,6 +22,7 @@ impl CoefState {
                 self.state += 1;
                 Ok(result)
             }
+            _ => unimplemented!(),
         }
     }
 }

@@ -93,6 +93,7 @@ impl Generator {
                             *length *= coef.axis.at_least_axis_minimum(r, coef.div);
                         }
                     }
+                    _ => unimplemented!(),
                 };
             }
         }
@@ -108,6 +109,7 @@ impl Generator {
             .map(|coef| match &coef.coefs {
                 Coefs::Const(c) => c.len(),
                 Coefs::Poly(_) => coef.div - 1,
+                _ => unimplemented!(),
             })
             .collect();
         1 + lengths

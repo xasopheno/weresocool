@@ -2,6 +2,7 @@ mod apply_to_normal_form;
 mod generate;
 mod get_length_ratio;
 mod substitute;
+use meval::Expr;
 use num_rational::Rational64;
 use polynomials::*;
 use std::hash::{Hash, Hasher};
@@ -23,6 +24,10 @@ pub struct Generator {
 pub enum Coefs {
     Const(Vec<i64>),
     Poly(Polynomial<Rational64>),
+    Expr {
+        expr_str: String,
+        expr: Option<Expr>,
+    },
 }
 
 #[allow(clippy::derive_hash_xor_eq)]
@@ -31,6 +36,7 @@ impl Hash for Coefs {
         match self {
             Coefs::Const(c) => c.hash(state),
             Coefs::Poly(p) => p.iter().copied().collect::<Vec<Rational64>>().hash(state),
+            _ => unimplemented!(),
         }
     }
 }
@@ -52,6 +58,7 @@ impl Coefs {
         match self {
             Coefs::Const(coefs) => coefs.len(),
             Coefs::Poly { .. } => unimplemented!(),
+            _ => unimplemented!(),
         }
     }
 
@@ -59,6 +66,7 @@ impl Coefs {
         match self {
             Coefs::Const(coefs) => coefs.is_empty(),
             Coefs::Poly(_coefs) => unimplemented!(),
+            _ => unimplemented!(),
         }
     }
 }
