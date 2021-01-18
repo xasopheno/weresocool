@@ -82,12 +82,10 @@ export class CustomHighlightRules extends window.ace.acequire(
           regex: 'Reverb',
         },
         { token: 'group_operation', regex: 'Sequence|Overlay|Seq' },
-
         {
           token: 'o_shortcut',
           regex: 'O',
         },
-
         {
           token: 'operation',
           regex: 'Sine|Square|Noise|Portamento',
@@ -114,7 +112,15 @@ export class CustomHighlightRules extends window.ace.acequire(
         },
         {
           token: 'generator',
-          regex: '\\*|Gen|Take|Poly',
+          regex: '\\*|Gen|Take',
+        },
+        {
+          token: 'gen_part',
+          regex: 'Poly|Expr',
+        },
+        {
+          token: ['expr_quote', 'expr', 'expr_quote'],
+          regex: '(`)(.*)(`)',
         },
         {
           token: 'letter',

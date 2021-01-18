@@ -2,7 +2,6 @@ mod apply_to_normal_form;
 mod generate;
 mod get_length_ratio;
 mod substitute;
-use meval::Expr;
 use num_rational::Rational64;
 use polynomials::*;
 use std::hash::{Hash, Hasher};
@@ -26,7 +25,7 @@ pub enum Coefs {
     Poly(Polynomial<Rational64>),
     Expr {
         expr_str: String,
-        expr: Option<Expr>,
+        parsed: Option<meval::Expr>,
     },
 }
 
@@ -44,6 +43,13 @@ impl Hash for Coefs {
 impl Coefs {
     pub fn init_const(coefs: Vec<Vec<i64>>) -> Coefs {
         Self::Const(coefs.into_iter().flatten().collect())
+    }
+
+    pub fn init_expr(expr_str: String) -> Coefs {
+        Self::Expr {
+            expr_str,
+            parsed: None,
+        }
     }
 
     pub fn init_polynomial(coefs: Vec<Rational64>) -> Coefs {

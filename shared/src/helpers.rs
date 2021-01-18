@@ -30,6 +30,15 @@ pub fn f32_string_to_rational(float_string: String) -> Rational64 {
     Ratio::new(num, den)
 }
 
+pub fn f32_to_rational(float: f32) -> Rational64 {
+    let float_string = format!("{:.8}", float);
+    let decimal = float_string.split('.').collect::<Vec<&str>>()[1];
+    let den = i64::pow(10, decimal.len() as u32);
+    let num = i64::from_str(&float_string.replace('.', "")).unwrap();
+
+    Ratio::new(num, den)
+}
+
 pub fn r_to_f64(r: Rational64) -> f64 {
     *r.numer() as f64 / *r.denom() as f64
 }

@@ -134,15 +134,11 @@ Coefs: Coefs = {
   "[" <coefs: Comma<Coef>> "]" => Coefs::init_const(coefs),
   "Poly" "[" <coefs: Comma<Rational>> "]" => Coefs::init_polynomial(coefs) ,
   "Expr" <expr: Expr> => {
-    println!("\n{}\n", &expr[1..expr.len() -1]);
-    unimplemented!() 
+    Coefs::init_expr(expr[1..expr.len() -1].to_string())
   }
 }
 
-Expr: String = <s:r#""(.*")"#> => s.to_string();
-
-// Name: String = <s:r"[a-z_][a-zA-Z_0-9.]*"> => s.to_string(); 
-
+Expr: String = <s:r#"`(.*)`"#> => s.to_string();
 
 
 Coef: Vec<i64> = {
@@ -159,7 +155,6 @@ Coef: Vec<i64> = {
 
 List: ListOp = {
   <lists: ListConcat> => ListOp::Concat(lists),
-
   <list: ListIndexed> => list,
 
 }

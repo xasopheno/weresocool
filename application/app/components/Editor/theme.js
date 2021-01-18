@@ -102,6 +102,15 @@ color: orange\
 .ace-wsc-theme .ace_generator {\
 color: DarkRed\
 }\
+.ace-wsc-theme .ace_expr {\
+color: lightskyblue\
+}\
+.ace-wsc-theme .ace_expr_quote {\
+color: goldenrod\
+}\
+.ace-wsc-theme .ace_gen_part {\
+color: lightsteelblue\
+}\
 .ace-wsc-theme .ace_repeat {\
 color: #A9DC76\
 }\

@@ -2,7 +2,7 @@
 
 main = {
   *(
-    f: 0|2 Expr "2 * Sin(x)",
+    f: 0|2 Expr "2 * sin(x)",
   )
   Take 4
 }
