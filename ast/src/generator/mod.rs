@@ -19,9 +19,24 @@ pub struct Generator {
     pub coefs: Vec<CoefState>,
 }
 
+#[derive(Clone, PartialEq, Debug, Hash)]
+pub enum Coef {
+    Int(i64),
+    // RandRange((i64, i64)),
+    // RandChoice(Vec<i64>),
+}
+
+impl Coef {
+    pub fn get_value(&self) -> i64 {
+        match self {
+            Self::Int(v) => *v,
+        }
+    }
+}
+
 #[derive(Clone, PartialEq, Debug)]
 pub enum Coefs {
-    Const(Vec<i64>),
+    Const(Vec<Coef>),
     Poly(Polynomial<Rational64>),
     Expr {
         expr_str: String,
@@ -42,7 +57,13 @@ impl Hash for Coefs {
 
 impl Coefs {
     pub fn init_const(coefs: Vec<Vec<i64>>) -> Coefs {
-        Self::Const(coefs.into_iter().flatten().collect())
+        Self::Const(
+            coefs
+                .into_iter()
+                .flatten()
+                .map(|coef| Coef::Int(coef))
+                .collect(),
+        )
     }
 
     pub fn init_expr(expr_str: String) -> Coefs {

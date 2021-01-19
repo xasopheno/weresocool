@@ -78,7 +78,7 @@ impl Generator {
                             coef.div,
                         );
                         for (i, length) in lengths.iter_mut().enumerate().take(n).skip(1) {
-                            state += c[(i - 1) % coef.coefs.len()];
+                            state += c[(i - 1) % coef.coefs.len()].get_value();
                             *length *= coef.axis.at_least_axis_minimum(
                                 Rational64::new(state, coef.div as i64),
                                 coef.div,
