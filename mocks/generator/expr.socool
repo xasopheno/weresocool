@@ -1,0 +1,13 @@
+{ f: 220, l: 1, g: 1, p: 0 } 
+
+main = {
+  *(
+    f: 0|2 Expr `x`,
+  )
+  Take 4
+}
+
+expect = {
+  Seq [Fm 0/1, Fm 1/2, Fm 1, Fm 3/2]
+}
+

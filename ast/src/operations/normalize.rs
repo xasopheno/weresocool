@@ -4,7 +4,6 @@ use crate::operations::{
 use crate::{Defs, FunDef, Op, OscType, Term, Term::*};
 use num_rational::Ratio;
 use num_traits::CheckedMul;
-use rand::prelude::*;
 use weresocool_error::Error;
 use weresocool_shared::lossy_rational_mul;
 
@@ -205,12 +204,6 @@ impl Normalize for Op {
                 }
 
                 input.length_ratio *= m;
-            }
-
-            Op::Choice { operations } => {
-                let mut rng = thread_rng();
-                let choice = operations.choose(&mut rng).unwrap();
-                choice.apply_to_normal_form(input, defs)?
             }
 
             Op::Sequence { operations } => {

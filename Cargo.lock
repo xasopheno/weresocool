@@ -1665,6 +1665,16 @@ dependencies = [
 ]
 
 [[package]]
+name = "meval"
+version = "0.2.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "f79496a5651c8d57cd033c5add8ca7ee4e3d5f7587a4777484640d9cb60392d9"
+dependencies = [
+ "fnv",
+ "nom 1.2.4",
+]
+
+[[package]]
 name = "mime"
 version = "0.3.16"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -1758,6 +1768,12 @@ name = "new_debug_unreachable"
 version = "1.0.4"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "e4a24736216ec316047a1fc4252e27dabb04218aa4a3f37c6e7ddbf1f9782b54"
+
+[[package]]
+name = "nom"
+version = "1.2.4"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "a5b8c256fd9471521bcb84c3cdba98921497f1a331cbc15b8030fc63b82050ce"
 
 [[package]]
 name = "nom"
@@ -2916,7 +2932,7 @@ version = "0.5.6"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "c2ca2a14bc3fc5b64d188b087a7d3a927df87b152e941ccfbc66672e20c467ae"
 dependencies = [
- "nom",
+ "nom 4.2.3",
  "proc-macro2 1.0.24",
  "quote 1.0.7",
  "syn 1.0.52",
@@ -3123,6 +3139,7 @@ version = "0.5.0"
 dependencies = [
  "colored",
  "indexmap",
+ "meval",
  "num-integer",
  "num-rational 0.3.2",
  "num-traits",

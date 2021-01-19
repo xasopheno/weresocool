@@ -23,6 +23,10 @@ pub struct Generator {
 pub enum Coefs {
     Const(Vec<i64>),
     Poly(Polynomial<Rational64>),
+    Expr {
+        expr_str: String,
+        parsed: Option<meval::Expr>,
+    },
 }
 
 #[allow(clippy::derive_hash_xor_eq)]
@@ -31,6 +35,7 @@ impl Hash for Coefs {
         match self {
             Coefs::Const(c) => c.hash(state),
             Coefs::Poly(p) => p.iter().copied().collect::<Vec<Rational64>>().hash(state),
+            _ => unimplemented!(),
         }
     }
 }
@@ -38,6 +43,13 @@ impl Hash for Coefs {
 impl Coefs {
     pub fn init_const(coefs: Vec<Vec<i64>>) -> Coefs {
         Self::Const(coefs.into_iter().flatten().collect())
+    }
+
+    pub fn init_expr(expr_str: String) -> Coefs {
+        Self::Expr {
+            expr_str,
+            parsed: None,
+        }
     }
 
     pub fn init_polynomial(coefs: Vec<Rational64>) -> Coefs {
@@ -52,6 +64,7 @@ impl Coefs {
         match self {
             Coefs::Const(coefs) => coefs.len(),
             Coefs::Poly { .. } => unimplemented!(),
+            _ => unimplemented!(),
         }
     }
 
@@ -59,6 +72,7 @@ impl Coefs {
         match self {
             Coefs::Const(coefs) => coefs.is_empty(),
             Coefs::Poly(_coefs) => unimplemented!(),
+            _ => unimplemented!(),
         }
     }
 }

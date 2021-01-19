@@ -5,11 +5,11 @@ use crate::{
 use num_rational::Rational64;
 use polynomials::Polynomial;
 use weresocool_error::Error;
-use weresocool_shared::helpers::et_to_rational;
+use weresocool_shared::helpers::{et_to_rational, f32_to_rational};
 
 impl CoefState {
     fn generate(&mut self) -> Result<Op, Error> {
-        match &self.coefs {
+        match &mut self.coefs {
             Coefs::Const(coefs) => {
                 let result = self.axis.generate_const(self.state, self.div);
                 self.state += coefs[self.idx];
@@ -22,6 +22,47 @@ impl CoefState {
                 self.state += 1;
                 Ok(result)
             }
+            Coefs::Expr { expr_str, parsed } => {
+                if parsed.is_none() {
+                    *parsed = Some(parse_expr(expr_str)?);
+                };
+                let result = self.axis.generate_expr(
+                    self.state,
+                    self.div,
+                    parsed.as_ref().unwrap(),
+                    expr_str,
+                )?;
+                self.state += 1;
+                Ok(result)
+            }
+        }
+    }
+}
+
+pub fn bind_x(e: &meval::Expr, s: &str) -> Result<impl Fn(f64) -> f64, Error> {
+    let func = e.to_owned().bind("x");
+    match func {
+        Ok(f) => Ok(f),
+        Err(err) => {
+            println!("{}", err);
+            Err(Error::with_msg(format!(
+                "Unable to parse expression: {}",
+                s
+            )))
+        }
+    }
+}
+
+pub fn parse_expr(s: &str) -> Result<meval::Expr, Error> {
+    let expr_parse: Result<meval::Expr, meval::Error> = s.parse();
+    match expr_parse {
+        Ok(e) => Ok(e),
+        Err(err) => {
+            println!("{}", err);
+            Err(Error::with_msg(format!(
+                "Unable to parse expression: {}",
+                s
+            )))
         }
     }
 }
@@ -47,6 +88,45 @@ impl Axis {
             Axis::G => std::cmp::max(r, Rational64::from_integer(0)),
             Axis::L => std::cmp::max(r, Rational64::new(1, div as i64)),
             Axis::P => r,
+        }
+    }
+
+    pub fn evaluate_expr(
+        &self,
+        state: i64,
+        div: usize,
+        expr: &meval::Expr,
+        s: &str,
+    ) -> Result<Rational64, Error> {
+        let func = bind_x(expr, s)?;
+        let eval = func(state as f64 / div as f64);
+        Ok(f32_to_rational(eval as f32))
+    }
+
+    pub fn generate_expr(
+        &self,
+        state: i64,
+        div: usize,
+        expr: &meval::Expr,
+        s: &str,
+    ) -> Result<Op, Error> {
+        let func = bind_x(expr, s)?;
+        let eval = func(state as f64 / div as f64);
+        let r = f32_to_rational(eval as f32);
+
+        match self {
+            Axis::F => Ok(Op::TransposeM {
+                m: self.at_least_axis_minimum(r, div),
+            }),
+            Axis::L => Ok(Op::Length {
+                m: self.at_least_axis_minimum(r, div),
+            }),
+            Axis::G => Ok(Op::Gain {
+                m: self.at_least_axis_minimum(r, div),
+            }),
+            Axis::P => Ok(Op::PanA {
+                a: self.at_least_axis_minimum(r, div),
+            }),
         }
     }
 

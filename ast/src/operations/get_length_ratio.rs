@@ -52,8 +52,6 @@ impl GetLengthRatio for Op {
                 Ok(new_total)
             }
 
-            Op::Choice { operations } => operations[0].get_length_ratio(defs),
-
             Op::WithLengthRatioOf {
                 with_length_of,
                 main,
