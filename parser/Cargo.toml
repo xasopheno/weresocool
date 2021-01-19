@@ -8,16 +8,16 @@ description = "Parser for WereSoCool"
 license = "GPL-3.0" 
 
 [build-dependencies.lalrpop]
-version = "0.19.0"
+version = "0.19.4"
 features = ["lexer"]
 
 [dependencies]
-lalrpop-util = "0.19.0"
-regex = "1"
-colored = "1.9"
-num-rational = "0.3"
-indexmap = "1.4.0"
-rand = "0.7.3"
+lalrpop-util = "0.19.4"
+regex = "1.4.3"
+colored = "2.0.0"
+num-rational = "0.3.2"
+indexmap = "1.6.1"
+rand = "0.8.2"
 weresocool_ast = { path = "../ast" }
 weresocool_error = { path = "../error" }
 path-clean = "0.1.0"

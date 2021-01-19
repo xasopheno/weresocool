@@ -126,7 +126,7 @@ impl Offset {
     }
     pub fn random() -> Self {
         Self {
-            freq: thread_rng().gen_range(0.95, 1.05),
+            freq: thread_rng().gen_range(0.95..1.05),
             gain: 1.0,
         }
     }

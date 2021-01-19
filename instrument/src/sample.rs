@@ -9,7 +9,7 @@ const TAU: f64 = PI * 2.0;
 const FACTOR: f64 = TAU / SETTINGS.sample_rate;
 
 fn random_offset() -> f64 {
-    thread_rng().gen_range(-0.5, 0.5)
+    thread_rng().gen_range(-0.5..0.5)
 }
 
 impl Voice {

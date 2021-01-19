@@ -9,12 +9,12 @@ license = "GPL-3.0"
 [dependencies]
 weresocool_error = { path = "../error" }
 weresocool_shared = { path = "../shared" }
-num-rational = {version = "0.3", features = ["serde"]} 
-rand = "0.7.3"
-serde = { version = "1.0.116", features = ["derive"] }
+num-rational = { version = "0.3.2", features = ["serde"] } 
+rand = "0.8.2"
+serde = { version = "1.0.119", features = ["derive"] }
 pretty_assertions = "0.6.1"
-indexmap = "1.4.0"
-colored = "1.9.3"
+indexmap = "1.6.1"
+colored = "2.0.0"
 num-traits = "0.2.14"
 num-integer = "0.1.44"
 polynomials = "0.2.4"

@@ -1,10 +1,10 @@
 { f: 220, l: 1, g: 1, p: 0 } 
 
 main = {
-    List [Tm 1, Tm 9/8] @ [Random(3, 0)]
+    List [Fm 1, Fm 9/8] @ [Random(3, 0)]
 }
 
 expect = {
-    Seq [Tm 1, Tm 1, Tm 1]
+    Seq [Fm 9/8, Fm 1, Fm 9/8]
 }
 
