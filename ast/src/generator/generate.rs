@@ -39,7 +39,7 @@ impl CoefState {
     }
 }
 
-pub fn bind_x(e: &meval::Expr, s: &String) -> Result<impl Fn(f64) -> f64, Error> {
+pub fn bind_x(e: &meval::Expr, s: &str) -> Result<impl Fn(f64) -> f64, Error> {
     let func = e.to_owned().bind("x");
     match func {
         Ok(f) => Ok(f),
@@ -53,7 +53,7 @@ pub fn bind_x(e: &meval::Expr, s: &String) -> Result<impl Fn(f64) -> f64, Error>
     }
 }
 
-pub fn parse_expr(s: &String) -> Result<meval::Expr, Error> {
+pub fn parse_expr(s: &str) -> Result<meval::Expr, Error> {
     let expr_parse: Result<meval::Expr, meval::Error> = s.parse();
     match expr_parse {
         Ok(e) => Ok(e),
@@ -96,7 +96,7 @@ impl Axis {
         state: i64,
         div: usize,
         expr: &meval::Expr,
-        s: &String,
+        s: &str,
     ) -> Result<Rational64, Error> {
         let func = bind_x(expr, s)?;
         let eval = func(state as f64 / div as f64);
@@ -108,7 +108,7 @@ impl Axis {
         state: i64,
         div: usize,
         expr: &meval::Expr,
-        s: &String,
+        s: &str,
     ) -> Result<Op, Error> {
         let func = bind_x(expr, s)?;
         let eval = func(state as f64 / div as f64);
