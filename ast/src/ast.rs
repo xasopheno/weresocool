@@ -78,9 +78,6 @@ pub enum Op {
     Compose {
         operations: Vec<Term>,
     },
-    Choice {
-        operations: Vec<Term>,
-    },
     ModulateBy {
         operations: Vec<Term>,
     },

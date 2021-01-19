@@ -84,10 +84,7 @@ impl Substitute for Op {
             Op::Compose { operations } => Ok(Term::Op(Op::Compose {
                 operations: substitute_operations(operations.to_vec(), normal_form, defs, arg_map)?,
             })),
-            Op::Choice { operations } => Ok(Term::Op(Op::Choice {
-                operations: substitute_operations(operations.to_vec(), normal_form, defs, arg_map)?,
-            })),
-            Op::ModulateBy { operations } => Ok(Term::Op(Op::Choice {
+            Op::ModulateBy { operations } => Ok(Term::Op(Op::ModulateBy {
                 operations: substitute_operations(operations.to_vec(), normal_form, defs, arg_map)?,
             })),
             _ => Ok(Term::Op(self.clone())),
