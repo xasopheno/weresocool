@@ -45,6 +45,7 @@ bytes = "1.0.1"
 env_logger = "0.8.2"
 test-generator = "0.3.0"
 float-cmp = "0.8.0"
+pretty_assertions = "0.6.1"
 
 [dev-dependencies]
 pretty_assertions = "0.6.1"
