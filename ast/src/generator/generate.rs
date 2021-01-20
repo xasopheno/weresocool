@@ -172,6 +172,21 @@ impl Axis {
 }
 
 impl Generator {
+    pub fn term_vectors(&mut self, n: usize) -> Result<Vec<Op>, Error> {
+        let mut result: Vec<Op> = vec![];
+        let mut coefs = self.coefs.clone();
+
+        for _ in 0..n {
+            let mut operations: Vec<Term> = vec![];
+            for coef in coefs.iter_mut() {
+                operations.push(Term::Op(coef.generate()?))
+            }
+            result.push(Op::Compose { operations })
+        }
+
+        Ok(result)
+    }
+
     pub fn generate(
         &mut self,
         nf: &NormalForm,
@@ -194,6 +209,23 @@ impl Generator {
 }
 
 impl GenOp {
+    pub fn term_vectors_from_genop(self, n: Option<usize>, defs: &Defs) -> Result<Vec<Op>, Error> {
+        match self {
+            GenOp::Named(name) => {
+                let generator = handle_id_error(name, defs, None)?;
+                match generator {
+                    Term::Gen(gen) => gen.term_vectors_from_genop(n, defs),
+                    _ => Err(error_non_generator()),
+                }
+            }
+            GenOp::Const(mut gen) => {
+                let length = if let Some(n) = n { n } else { gen.lcm_length() };
+                gen.term_vectors(length)
+            }
+
+            GenOp::Taken { gen, n } => gen.term_vectors_from_genop(Some(n), defs),
+        }
+    }
     pub fn generate_from_genop(
         self,
         input: &mut NormalForm,
