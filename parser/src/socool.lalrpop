@@ -148,7 +148,7 @@ Coef: Coef = {
 
 CoefType: Coef = {
   "RR" "(" <start: Int> ".." <end: Int> ")" => Coef::RandRange(start..=end),
-  //"RC" "(" <choices: Comma<Rational>> ")" => Coef::RandChoice(choices),
+  "RC" "(" "[" <choices: Comma<Int>> "]" ")" => Coef::RandChoice(choices),
   <v: Int> => Coef::Int(v)
 }
 

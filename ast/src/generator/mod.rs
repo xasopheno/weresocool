@@ -4,6 +4,7 @@ mod get_length_ratio;
 mod substitute;
 use num_rational::Rational64;
 use polynomials::*;
+use rand::{rngs::ThreadRng, thread_rng};
 use std::hash::{Hash, Hasher};
 use weresocool_error::Error;
 
@@ -23,7 +24,7 @@ pub struct Generator {
 pub enum Coef {
     Int(i64),
     RandRange(std::ops::RangeInclusive<i64>),
-    // RandChoice(Vec<i64>),
+    RandChoice(Vec<i64>),
 }
 
 impl Coef {
@@ -53,6 +54,18 @@ impl Hash for Coefs {
             Coefs::Poly(p) => p.iter().copied().collect::<Vec<Rational64>>().hash(state),
             _ => unimplemented!(),
         }
+    }
+}
+
+#[allow(clippy::derive_hash_xor_eq)]
+impl Hash for CoefState {
+    fn hash<H: Hasher>(&self, state: &mut H) {
+        self.axis.hash(state);
+        self.div.hash(state);
+        self.idx.hash(state);
+        self.coefs.hash(state);
+        self.state.hash(state);
+        self.state_bak.hash(state);
     }
 }
 
@@ -99,7 +112,7 @@ impl Coefs {
     }
 }
 
-#[derive(Clone, PartialEq, Debug, Hash)]
+#[derive(Clone, Debug)]
 pub struct CoefState {
     pub axis: Axis,
     pub div: usize,
@@ -107,6 +120,18 @@ pub struct CoefState {
     pub coefs: Coefs,
     pub state: i64,
     pub state_bak: i64,
+    pub rng: ThreadRng,
+}
+
+impl PartialEq for CoefState {
+    fn eq(&self, other: &Self) -> bool {
+        self.axis == other.axis
+            && self.div == other.div
+            && self.idx == other.idx
+            && self.coefs == other.coefs
+            && self.state == other.state
+            && self.state_bak == other.state_bak
+    }
 }
 
 impl CoefState {
@@ -118,6 +143,7 @@ impl CoefState {
             idx: 0,
             coefs,
             axis,
+            rng: thread_rng(),
         }
     }
 }
