@@ -11,6 +11,7 @@ use weresocool_ast::{
         ListOp,
         CoefState,
         Coefs,
+        Coef,
         Axis,
         Generator,
         GenOp,
@@ -131,7 +132,7 @@ CoefState: CoefState = {
 
 
 Coefs: Coefs = {
-  "[" <coefs: Comma<Coef>> "]" => Coefs::init_const(coefs),
+  "[" <coefs: Comma<Coef>> "]" => Coefs::Const(coefs),
   "Poly" "[" <coefs: Comma<Rational>> "]" => Coefs::init_polynomial(coefs) ,
   "Expr" <expr: Expr> => {
     Coefs::init_expr(expr[1..expr.len() -1].to_string())
@@ -141,18 +142,26 @@ Coefs: Coefs = {
 Expr: String = <s:r#"`(.*)`"#> => s.to_string();
 
 
-Coef: Vec<i64> = {
-  <v: Int> => vec![v],
-  // 0x10
-  <s:r"(-?[0-9]+)x([0-9]+)"> => {
-    let regex = Regex::new("(-?[0-9]+)x([0-9]+)").unwrap();
-    let captures = regex.captures(s).unwrap();
-    let val = captures[1].parse::<i64>().unwrap();
-    let n = captures[2].parse::<usize>().unwrap();
-    
-    vec![val; n as usize]
-  }
+Coef: Coef = {
+  <coef: CoefType> <times: CoefTimes> => coef,
 }
+
+CoefType: Coef = {
+  "RR" "(" <start: Int> ".." <end: Int> ")" => Coef::RandRange(start..=end),
+  //"RC" "(" <choices: Comma<Rational>> ")" => Coef::RandChoice(choices),
+  <v: Int> => Coef::Int(v)
+}
+
+CoefTimes: usize = {
+  <s:r"\*([0-9]+)"> => {
+    let regex = Regex::new("\\*([0-9]+)").unwrap();
+    let captures = regex.captures(s).unwrap();
+    let n = captures[1].parse::<usize>().unwrap();
+   
+    n as usize
+  }
+} 
+
 
 List: ListOp = {
   <lists: ListConcat> => ListOp::Concat(lists),

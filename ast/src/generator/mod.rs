@@ -22,7 +22,7 @@ pub struct Generator {
 #[derive(Clone, PartialEq, Debug, Hash)]
 pub enum Coef {
     Int(i64),
-    // RandRange((i64, i64)),
+    RandRange(std::ops::RangeInclusive<i64>),
     // RandChoice(Vec<i64>),
 }
 
@@ -30,6 +30,7 @@ impl Coef {
     pub fn get_value(&self) -> i64 {
         match self {
             Self::Int(v) => *v,
+            _ => unimplemented!(),
         }
     }
 }
