@@ -5,7 +5,7 @@ use crate::{
 use num_rational::Rational64;
 use polynomials::Polynomial;
 use weresocool_error::Error;
-use weresocool_shared::helpers::{et_to_rational, f32_to_rational};
+use weresocool_shared::helpers::{et_to_rational, f32_to_rational, r_to_f64};
 
 impl CoefState {
     fn generate(&mut self) -> Result<Op, Error> {
@@ -112,20 +112,19 @@ impl Axis {
     ) -> Result<Op, Error> {
         let func = bind_x(expr, s)?;
         let eval = func(state as f64 / div as f64);
-        let r = f32_to_rational(eval as f32);
 
         match self {
             Axis::F => Ok(Op::TransposeM {
-                m: self.at_least_axis_minimum(r, div),
+                m: self.at_least_axis_minimum(f32_to_rational(2.0_f64.powf(eval) as f32), div),
             }),
             Axis::L => Ok(Op::Length {
-                m: self.at_least_axis_minimum(r, div),
+                m: self.at_least_axis_minimum(f32_to_rational(eval as f32), div),
             }),
             Axis::G => Ok(Op::Gain {
-                m: self.at_least_axis_minimum(r, div),
+                m: self.at_least_axis_minimum(f32_to_rational(eval as f32), div),
             }),
             Axis::P => Ok(Op::PanA {
-                a: self.at_least_axis_minimum(r, div),
+                a: self.at_least_axis_minimum(f32_to_rational(eval as f32), div),
             }),
         }
     }
@@ -139,9 +138,14 @@ impl Axis {
         let eval = eval_polynomial(poly, state, div)?;
 
         match self {
-            Axis::F => Ok(Op::TransposeM {
-                m: self.at_least_axis_minimum(eval, div),
-            }),
+            Axis::F => {
+                let eval_f64 = r_to_f64(eval);
+                let eval_in_log = 2.0_f32.powf(eval_f64 as f32);
+                let rational = f32_to_rational(eval_in_log);
+                Ok(Op::TransposeM {
+                    m: self.at_least_axis_minimum(rational, div),
+                })
+            }
             Axis::L => Ok(Op::Length {
                 m: self.at_least_axis_minimum(eval, div),
             }),
