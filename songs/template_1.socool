@@ -27,6 +27,5 @@ main = {
     -- | Seq [AsIs, Reverse]
     Fm 0,
   ]
-  | Overlay [Reverb 1, Sine]
   | Repeat 5
 }

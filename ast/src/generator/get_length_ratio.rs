@@ -12,14 +12,14 @@ use weresocool_error::Error;
 impl GetLengthRatio for GenOp {
     fn get_length_ratio(&self, defs: &Defs) -> Result<Rational64, Error> {
         match self {
-            GenOp::Named(name) => {
+            GenOp::Named { name } => {
                 let generator = handle_id_error(name.to_string(), defs, None)?;
                 match generator {
                     Term::Gen(gen) => gen.get_length_ratio_genop(None, defs),
                     _ => Err(error_non_generator()),
                 }
             }
-            GenOp::Const(gen) => {
+            GenOp::Const { gen } => {
                 let n = gen.lcm_length();
                 Ok(gen.get_length(n)?)
             }
@@ -31,14 +31,14 @@ impl GetLengthRatio for GenOp {
 impl GenOp {
     pub fn length(&self, defs: &Defs) -> Result<usize, Error> {
         match self {
-            GenOp::Named(name) => {
+            GenOp::Named { name } => {
                 let generator = handle_id_error(name.to_string(), defs, None)?;
                 match generator {
                     Term::Gen(gen) => gen.length(defs),
                     _ => Err(error_non_generator()),
                 }
             }
-            GenOp::Const(generator) => Ok(generator.lcm_length()),
+            GenOp::Const { gen } => Ok(gen.lcm_length()),
             GenOp::Taken { n, .. } => Ok(*n),
         }
     }
@@ -49,14 +49,14 @@ impl GenOp {
         defs: &Defs,
     ) -> Result<Rational64, Error> {
         match self {
-            GenOp::Named(name) => {
+            GenOp::Named { name } => {
                 let generator = handle_id_error(name.to_string(), defs, None)?;
                 match generator {
                     Term::Gen(gen) => gen.get_length_ratio_genop(n, defs),
                     _ => Err(error_non_generator()),
                 }
             }
-            GenOp::Const(gen) => {
+            GenOp::Const { gen } => {
                 let n = if let Some(n) = n { n } else { gen.lcm_length() };
                 Ok(gen.get_length(n)?)
             }

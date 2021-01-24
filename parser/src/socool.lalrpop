@@ -108,13 +108,13 @@ Generator: GenOp = {
 
 GeneratorBase: GenOp = {
   r"(Gen|\*)" "(" <coefs: Comma<CoefState>> ")" =>  {
-    GenOp::Const(Generator {
+    GenOp::Const{ gen: Generator {
       coefs,
-    })
+    }}
   },
 
   r"(Gen|\*)" <name: Name> => {
-    GenOp::Named(name)
+    GenOp::Named{name}
   },
 }
 

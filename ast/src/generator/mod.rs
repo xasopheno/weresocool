@@ -4,14 +4,14 @@ mod get_length_ratio;
 mod substitute;
 use num_rational::Rational64;
 use polynomials::*;
-use rand::{seq::SliceRandom, Rng};
+use rand::{rngs::StdRng, seq::SliceRandom, Rng, SeedableRng};
 use std::hash::{Hash, Hasher};
 use weresocool_error::Error;
 
 #[derive(Clone, PartialEq, Debug, Hash)]
 pub enum GenOp {
-    Named(String),
-    Const(Generator),
+    Named { name: String },
+    Const { gen: Generator },
     Taken { gen: Box<GenOp>, n: usize },
 }
 
@@ -107,7 +107,7 @@ impl Coefs {
     }
 }
 
-#[derive(Clone, Debug, Hash, PartialEq)]
+#[derive(Clone, Debug, PartialEq)]
 pub struct CoefState {
     pub axis: Axis,
     pub div: usize,
@@ -115,6 +115,17 @@ pub struct CoefState {
     pub coefs: Coefs,
     pub state: i64,
     pub state_bak: i64,
+}
+
+impl Hash for CoefState {
+    fn hash<H: Hasher>(&self, state: &mut H) {
+        self.axis.hash(state);
+        self.div.hash(state);
+        self.idx.hash(state);
+        self.coefs.hash(state);
+        self.state.hash(state);
+        self.state_bak.hash(state);
+    }
 }
 
 impl CoefState {

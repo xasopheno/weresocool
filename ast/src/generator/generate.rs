@@ -215,14 +215,14 @@ impl Generator {
 impl GenOp {
     pub fn term_vectors_from_genop(self, n: Option<usize>, defs: &Defs) -> Result<Vec<Op>, Error> {
         match self {
-            GenOp::Named(name) => {
+            GenOp::Named { name } => {
                 let generator = handle_id_error(name, defs, None)?;
                 match generator {
                     Term::Gen(gen) => gen.term_vectors_from_genop(n, defs),
                     _ => Err(error_non_generator()),
                 }
             }
-            GenOp::Const(mut gen) => {
+            GenOp::Const { mut gen } => {
                 let length = if let Some(n) = n { n } else { gen.lcm_length() };
                 gen.term_vectors(length)
             }
@@ -237,14 +237,14 @@ impl GenOp {
         defs: &Defs,
     ) -> Result<Vec<NormalForm>, Error> {
         match self {
-            GenOp::Named(name) => {
+            GenOp::Named { name } => {
                 let generator = handle_id_error(name, defs, None)?;
                 match generator {
                     Term::Gen(gen) => gen.generate_from_genop(input, n, defs),
                     _ => Err(error_non_generator()),
                 }
             }
-            GenOp::Const(mut gen) => {
+            GenOp::Const { mut gen } => {
                 let length = if let Some(n) = n { n } else { gen.lcm_length() };
                 gen.generate(input, length, defs)
             }
