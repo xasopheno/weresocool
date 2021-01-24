@@ -176,7 +176,7 @@ impl Axis {
 }
 
 impl Generator {
-    pub fn term_vectors(&mut self, n: usize) -> Result<Vec<Op>, Error> {
+    pub fn term_vectors(&mut self, n: usize, seed: u64) -> Result<Vec<Op>, Error> {
         let mut result: Vec<Op> = vec![];
         let mut coefs = self.coefs.clone();
 
@@ -196,6 +196,7 @@ impl Generator {
         nf: &NormalForm,
         n: usize,
         defs: &Defs,
+        seed: u64,
     ) -> Result<Vec<NormalForm>, Error> {
         let mut result: Vec<NormalForm> = vec![];
         let mut coefs = self.coefs.clone();
@@ -225,9 +226,9 @@ impl GenOp {
                     _ => Err(error_non_generator()),
                 }
             }
-            GenOp::Const { mut gen, .. } => {
+            GenOp::Const { mut gen, seed } => {
                 let length = if let Some(n) = n { n } else { gen.lcm_length() };
-                gen.to_owned().term_vectors(length)
+                gen.to_owned().term_vectors(length, seed)
             }
 
             GenOp::Taken { gen, n, seed } => {
@@ -255,7 +256,7 @@ impl GenOp {
             }
             GenOp::Const { mut gen, seed } => {
                 let length = if let Some(n) = n { n } else { gen.lcm_length() };
-                gen.generate(input, length, defs)
+                gen.generate(input, length, defs, seed)
             }
 
             GenOp::Taken { gen, n, seed } => {

@@ -17,8 +17,12 @@ impl Normalize for GenOp {
                     _ => Err(error_non_generator()),
                 }
             }
-            GenOp::Const { gen, .. } => {
-                *input = join_list_nf(gen.to_owned().generate(input, gen.lcm_length(), defs)?);
+            GenOp::Const { gen, seed } => {
+                *input =
+                    join_list_nf(
+                        gen.to_owned()
+                            .generate(input, gen.lcm_length(), defs, *seed)?,
+                    );
                 Ok(())
             }
             GenOp::Taken { n, gen, seed } => {
