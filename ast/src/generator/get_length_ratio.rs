@@ -22,9 +22,9 @@ impl GetLengthRatio for GenOp {
                     _ => Err(error_non_generator()),
                 }
             }
-            GenOp::Const { gen, .. } => {
+            GenOp::Const { gen, seed } => {
                 let n = gen.lcm_length();
-                Ok(gen.get_length(n)?)
+                Ok(gen.get_length(n, *seed)?)
             }
             GenOp::Taken { n, gen, .. } => gen.get_length_ratio_genop(Some(*n), defs),
         }
@@ -44,7 +44,7 @@ impl GenOp {
                     _ => Err(error_non_generator()),
                 }
             }
-            GenOp::Const { gen, seed } => Ok(gen.lcm_length()),
+            GenOp::Const { gen, .. } => Ok(gen.lcm_length()),
             GenOp::Taken { n, .. } => Ok(*n),
         }
     }
@@ -65,9 +65,9 @@ impl GenOp {
                     _ => Err(error_non_generator()),
                 }
             }
-            GenOp::Const { gen, .. } => {
+            GenOp::Const { gen, seed } => {
                 let n = if let Some(n) = n { n } else { gen.lcm_length() };
-                Ok(gen.get_length(n)?)
+                Ok(gen.get_length(n, *seed)?)
             }
             GenOp::Taken { n, gen, seed } => {
                 gen.to_owned().set_seed(*seed);
@@ -78,7 +78,7 @@ impl GenOp {
 }
 
 impl Generator {
-    pub fn get_length(&self, n: usize) -> Result<Rational64, Error> {
+    pub fn get_length(&self, n: usize, seed: u64) -> Result<Rational64, Error> {
         let mut lengths = vec![Rational64::new(1, 1); n];
         for coef in self.coefs.iter() {
             if let Axis::L = coef.axis {
@@ -90,7 +90,7 @@ impl Generator {
                             coef.div,
                         );
                         for (i, length) in lengths.iter_mut().enumerate().take(n).skip(1) {
-                            state += c[(i - 1) % coef.coefs.len()].get_value();
+                            state += c[(i - 1) % coef.coefs.len()].get_value(seed);
                             *length *= coef.axis.at_least_axis_minimum(
                                 Rational64::new(state, coef.div as i64),
                                 coef.div,

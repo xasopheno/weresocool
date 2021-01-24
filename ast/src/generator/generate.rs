@@ -8,11 +8,11 @@ use weresocool_error::Error;
 use weresocool_shared::helpers::{et_to_rational, f32_to_rational, r_to_f64};
 
 impl CoefState {
-    fn generate(&mut self) -> Result<Op, Error> {
+    fn generate(&mut self, seed: u64) -> Result<Op, Error> {
         match &mut self.coefs {
             Coefs::Const(coefs) => {
                 let result = self.axis.generate_const(self.state, self.div);
-                self.state += coefs[self.idx].get_value();
+                self.state += coefs[self.idx].get_value(seed);
                 self.idx += 1;
                 self.idx %= coefs.len();
                 Ok(result)
@@ -183,7 +183,7 @@ impl Generator {
         for _ in 0..n {
             let mut operations: Vec<Term> = vec![];
             for coef in coefs.iter_mut() {
-                operations.push(Term::Op(coef.generate()?))
+                operations.push(Term::Op(coef.generate(seed)?))
             }
             result.push(Op::Compose { operations })
         }
@@ -204,7 +204,7 @@ impl Generator {
         for _ in 0..n {
             let mut nf: NormalForm = nf.clone();
             for coef in coefs.iter_mut() {
-                coef.generate()?.apply_to_normal_form(&mut nf, defs)?;
+                coef.generate(seed)?.apply_to_normal_form(&mut nf, defs)?;
             }
             result.push(nf)
         }
@@ -226,7 +226,7 @@ impl GenOp {
                     _ => Err(error_non_generator()),
                 }
             }
-            GenOp::Const { mut gen, seed } => {
+            GenOp::Const { gen, seed } => {
                 let length = if let Some(n) = n { n } else { gen.lcm_length() };
                 gen.to_owned().term_vectors(length, seed)
             }
