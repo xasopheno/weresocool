@@ -10,9 +10,29 @@ use weresocool_error::Error;
 
 #[derive(Clone, PartialEq, Debug, Hash)]
 pub enum GenOp {
-    Named { name: String },
-    Const { gen: Generator },
-    Taken { gen: Box<GenOp>, n: usize },
+    Named {
+        name: String,
+        seed: u64,
+    },
+    Const {
+        gen: Generator,
+        seed: u64,
+    },
+    Taken {
+        gen: Box<GenOp>,
+        n: usize,
+        seed: u64,
+    },
+}
+
+impl GenOp {
+    pub fn set_seed(&mut self, new_seed: u64) {
+        match self {
+            GenOp::Named { seed, .. } => *seed = new_seed,
+            GenOp::Const { seed, .. } => *seed = new_seed,
+            GenOp::Taken { seed, .. } => *seed = new_seed,
+        }
+    }
 }
 
 #[derive(Clone, PartialEq, Debug, Hash)]

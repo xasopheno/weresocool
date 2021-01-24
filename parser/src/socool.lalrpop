@@ -100,7 +100,7 @@ Operation: Term = {
 
 Generator: GenOp = {
   <gen: GeneratorBase> "Take" <n: Int> => {
-    GenOp::Taken {n: n as usize, gen: Box::new(gen)}
+    GenOp::Taken {n: n as usize, gen: Box::new(gen), seed: 0 }
   },
   <gen: GeneratorBase> => gen
 
@@ -110,11 +110,11 @@ GeneratorBase: GenOp = {
   r"(Gen|\*)" "(" <coefs: Comma<CoefState>> ")" =>  {
     GenOp::Const{ gen: Generator {
       coefs,
-    }}
+    }, seed: 0}
   },
 
   r"(Gen|\*)" <name: Name> => {
-    GenOp::Named{name}
+    GenOp::Named{name, seed: 0}
   },
 }
 
