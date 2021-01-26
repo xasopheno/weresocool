@@ -100,7 +100,6 @@ impl Axis {
     ) -> Result<Rational64, Error> {
         let func = bind_x(expr, s)?;
         let eval = func(state as f64 / div as f64);
-        dbg!(f32_to_rational(eval as f32));
         Ok(f32_to_rational(eval as f32))
     }
 
@@ -113,7 +112,6 @@ impl Axis {
     ) -> Result<Op, Error> {
         let func = bind_x(expr, s)?;
         let eval = func(state as f64 / div as f64);
-        dbg!(f32_to_rational(eval as f32));
 
         match self {
             Axis::F => Ok(Op::TransposeM {

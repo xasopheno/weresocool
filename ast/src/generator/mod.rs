@@ -26,6 +26,38 @@ pub enum GenOp {
 }
 
 impl GenOp {
+    pub fn init_named(name: String, seed: Option<(String, i64)>) -> Self {
+        let mut rng = rand::thread_rng();
+        GenOp::Named {
+            name,
+            seed: match seed {
+                None => rng.gen::<u64>(),
+                Some(s) => s.1.abs() as u64,
+            },
+        }
+    }
+    pub fn init_const(gen: Generator, seed: Option<(String, i64)>) -> Self {
+        let mut rng = rand::thread_rng();
+        GenOp::Const {
+            gen,
+            seed: match seed {
+                None => rng.gen::<u64>(),
+                Some(s) => s.1.abs() as u64,
+            },
+        }
+    }
+    pub fn init_taken(gen: GenOp, n: usize, seed: Option<(String, i64)>) -> Self {
+        let mut rng = rand::thread_rng();
+        GenOp::Taken {
+            gen: Box::new(gen),
+            seed: match seed {
+                None => rng.gen::<u64>(),
+                Some(s) => s.1.abs() as u64,
+            },
+            n,
+        }
+    }
+
     pub fn set_seed(&mut self, new_seed: u64) {
         match self {
             GenOp::Named { seed, .. } => *seed = new_seed,

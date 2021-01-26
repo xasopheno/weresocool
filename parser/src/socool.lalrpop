@@ -107,13 +107,15 @@ Generator: GenOp = {
 }
 
 GeneratorBase: GenOp = {
-  r"(Gen|\*)" "(" <coefs: Comma<CoefState>> ")" =>  {
+  r"(Gen|\*)" "(" <coefs: Comma<CoefState>> ")" <seed: ("Seed" Int)?>   =>  {
+    dbg!(seed);
     GenOp::Const{ gen: Generator {
       coefs,
     }, seed: 0}
   },
 
-  r"(Gen|\*)" <name: Name> => {
+  r"(Gen|\*)" <name: Name> <seed: ("Seed" Int)?>  => {
+    dbg!(seed);
     GenOp::Named{name, seed: 0}
   },
 }

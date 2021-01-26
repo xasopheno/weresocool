@@ -5,6 +5,7 @@ thing1 = {
     f: 0|2 Expr `x`,
     f: 0|2 Poly [0, 1, 1, -1],
   )
+  Seed 30
   Take 4
 }
 
