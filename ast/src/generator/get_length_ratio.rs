@@ -82,12 +82,12 @@ impl Generator {
         let mut rng: rand::rngs::StdRng = rand::SeedableRng::seed_from_u64(seed);
         let mut copy = self.clone();
 
-        for i in 0..n {
+        for length in lengths.iter_mut() {
             for coef in copy.coefs.iter_mut() {
                 match coef.axis {
                     Axis::L => {
                         let l = coef.generate(&mut rng)?.get_length_ratio(defs)?;
-                        lengths[i] *= l
+                        *length *= l
                     }
                     _ => {
                         coef.generate(&mut rng)?;

@@ -81,13 +81,7 @@ impl Hash for Coefs {
 
 impl Coefs {
     pub fn init_const(coefs: Vec<Vec<i64>>) -> Coefs {
-        Self::Const(
-            coefs
-                .into_iter()
-                .flatten()
-                .map(|coef| Coef::Int(coef))
-                .collect(),
-        )
+        Self::Const(coefs.into_iter().flatten().map(Coef::Int).collect())
     }
 
     pub fn init_expr(expr_str: String) -> Coefs {
@@ -122,7 +116,7 @@ impl Coefs {
     }
 }
 
-#[derive(Clone, Debug, PartialEq)]
+#[derive(Clone, Debug, PartialEq, Hash)]
 pub struct CoefState {
     pub axis: Axis,
     pub div: usize,
@@ -130,17 +124,6 @@ pub struct CoefState {
     pub coefs: Coefs,
     pub state: i64,
     pub state_bak: i64,
-}
-
-impl Hash for CoefState {
-    fn hash<H: Hasher>(&self, state: &mut H) {
-        self.axis.hash(state);
-        self.div.hash(state);
-        self.idx.hash(state);
-        self.coefs.hash(state);
-        self.state.hash(state);
-        self.state_bak.hash(state);
-    }
 }
 
 impl CoefState {
@@ -165,6 +148,5 @@ pub enum Axis {
 }
 
 pub fn error_non_generator() -> Error {
-    println!("");
     Error::with_msg("Using non-generator as generator.")
 }

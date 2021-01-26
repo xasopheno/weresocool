@@ -19,7 +19,6 @@ impl Substitute for GenOp {
                         gen.to_owned().set_seed(*seed);
                         Ok(Term::Gen(gen))
                     }
-                    // Term::Gen(_) => Ok(term),
                     _ => Err(error_non_generator()),
                 }
             }
