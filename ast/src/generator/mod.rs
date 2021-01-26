@@ -26,7 +26,7 @@ pub enum GenOp {
 }
 
 impl GenOp {
-    pub fn init_named(name: String, seed: Option<(String, i64)>) -> Self {
+    pub fn init_named(name: String, seed: Option<(&str, i64)>) -> Self {
         let mut rng = rand::thread_rng();
         GenOp::Named {
             name,
@@ -36,7 +36,7 @@ impl GenOp {
             },
         }
     }
-    pub fn init_const(gen: Generator, seed: Option<(String, i64)>) -> Self {
+    pub fn init_const(gen: Generator, seed: Option<(&str, i64)>) -> Self {
         let mut rng = rand::thread_rng();
         GenOp::Const {
             gen,
@@ -46,7 +46,7 @@ impl GenOp {
             },
         }
     }
-    pub fn init_taken(gen: GenOp, n: usize, seed: Option<(String, i64)>) -> Self {
+    pub fn init_taken(gen: GenOp, n: usize, seed: Option<(&str, i64)>) -> Self {
         let mut rng = rand::thread_rng();
         GenOp::Taken {
             gen: Box::new(gen),

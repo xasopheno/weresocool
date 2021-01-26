@@ -11,8 +11,8 @@ impl GetLengthRatio for GenOp {
             GenOp::Named { name, seed } => {
                 let generator = handle_id_error(name.to_string(), defs, None)?;
                 match generator {
-                    Term::Gen(gen) => {
-                        gen.to_owned().set_seed(*seed);
+                    Term::Gen(mut gen) => {
+                        gen.set_seed(*seed);
                         gen.get_length_ratio_genop(None, defs)
                     }
                     _ => Err(error_non_generator()),
@@ -22,8 +22,9 @@ impl GetLengthRatio for GenOp {
                 let n = gen.lcm_length();
                 Ok(gen.get_length(n, *seed, defs)?)
             }
-            GenOp::Taken { n, gen, seed } => {
-                gen.to_owned().set_seed(*seed);
+            GenOp::Taken { gen, n, seed } => {
+                let mut gen = gen.to_owned();
+                gen.set_seed(*seed);
                 gen.get_length_ratio_genop(Some(*n), defs)
             }
         }
@@ -36,8 +37,8 @@ impl GenOp {
             GenOp::Named { name, seed } => {
                 let generator = handle_id_error(name.to_string(), defs, None)?;
                 match generator {
-                    Term::Gen(gen) => {
-                        gen.to_owned().set_seed(*seed);
+                    Term::Gen(mut gen) => {
+                        gen.set_seed(*seed);
                         gen.length(defs)
                     }
                     _ => Err(error_non_generator()),
@@ -57,8 +58,8 @@ impl GenOp {
             GenOp::Named { name, seed } => {
                 let generator = handle_id_error(name.to_string(), defs, None)?;
                 match generator {
-                    Term::Gen(gen) => {
-                        gen.to_owned().set_seed(*seed);
+                    Term::Gen(mut gen) => {
+                        gen.set_seed(*seed);
                         gen.get_length_ratio_genop(n, defs)
                     }
                     _ => Err(error_non_generator()),
@@ -69,7 +70,8 @@ impl GenOp {
                 Ok(gen.get_length(n, *seed, defs)?)
             }
             GenOp::Taken { n, gen, seed } => {
-                gen.to_owned().set_seed(*seed);
+                let mut gen = gen.to_owned();
+                gen.set_seed(*seed);
                 gen.get_length_ratio_genop(Some(*n), defs)
             }
         }

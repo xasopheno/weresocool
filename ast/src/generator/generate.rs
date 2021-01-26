@@ -224,8 +224,8 @@ impl GenOp {
             GenOp::Named { name, seed } => {
                 let generator = handle_id_error(name, defs, None)?;
                 match generator {
-                    Term::Gen(gen) => {
-                        gen.to_owned().set_seed(seed);
+                    Term::Gen(mut gen) => {
+                        gen.set_seed(seed);
                         gen.term_vectors_from_genop(n, defs)
                     }
                     _ => Err(error_non_generator()),
@@ -237,8 +237,8 @@ impl GenOp {
                 gen.term_vectors(length, &mut rng)
             }
 
-            GenOp::Taken { gen, n, seed } => {
-                gen.to_owned().set_seed(seed);
+            GenOp::Taken { mut gen, n, seed } => {
+                gen.set_seed(seed);
                 gen.term_vectors_from_genop(Some(n), defs)
             }
         }
@@ -253,8 +253,8 @@ impl GenOp {
             GenOp::Named { name, seed } => {
                 let generator = handle_id_error(name, defs, None)?;
                 match generator {
-                    Term::Gen(gen) => {
-                        gen.to_owned().set_seed(seed);
+                    Term::Gen(mut gen) => {
+                        gen.set_seed(seed);
                         gen.generate_from_genop(input, n, defs)
                     }
                     _ => Err(error_non_generator()),
@@ -267,8 +267,8 @@ impl GenOp {
                 gen.generate(input, length, defs, &mut rng)
             }
 
-            GenOp::Taken { gen, n, seed } => {
-                gen.to_owned().set_seed(seed);
+            GenOp::Taken { mut gen, n, seed } => {
+                gen.set_seed(seed);
                 gen.generate_from_genop(input, Some(n), defs)
             }
         }
