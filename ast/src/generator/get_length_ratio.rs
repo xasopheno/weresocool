@@ -26,7 +26,10 @@ impl GetLengthRatio for GenOp {
                 let n = gen.lcm_length();
                 Ok(gen.get_length(n, *seed)?)
             }
-            GenOp::Taken { n, gen, .. } => gen.get_length_ratio_genop(Some(*n), defs),
+            GenOp::Taken { n, gen, seed } => {
+                gen.to_owned().set_seed(*seed);
+                gen.get_length_ratio_genop(Some(*n), defs)
+            }
         }
     }
 }
@@ -80,54 +83,66 @@ impl GenOp {
 impl Generator {
     pub fn get_length(&self, n: usize, seed: u64) -> Result<Rational64, Error> {
         let mut lengths = vec![Rational64::new(1, 1); n];
+        let mut rng: rand::rngs::StdRng = rand::SeedableRng::seed_from_u64(seed);
         for coef in self.coefs.iter() {
-            if let Axis::L = coef.axis {
-                let mut state = coef.state_bak;
-                match &coef.coefs {
-                    Coefs::Const(c) => {
-                        lengths[0] *= coef.axis.at_least_axis_minimum(
-                            Rational64::new(state, coef.div as i64),
-                            coef.div,
-                        );
-                        for (i, length) in lengths.iter_mut().enumerate().take(n).skip(1) {
-                            state += c[(i - 1) % coef.coefs.len()].get_value(seed);
-                            *length *= coef.axis.at_least_axis_minimum(
+            dbg!(&coef.axis);
+            println!("________________");
+            let mut state = coef.state_bak;
+            match coef.axis {
+                Axis::L => {
+                    match &coef.coefs {
+                        Coefs::Const(c) => {
+                            lengths[0] *= coef.axis.at_least_axis_minimum(
                                 Rational64::new(state, coef.div as i64),
                                 coef.div,
                             );
+                            for (i, length) in lengths.iter_mut().enumerate().take(n).skip(1) {
+                                state += c[(i - 1) % coef.coefs.len()].get_value(&mut rng);
+                                *length *= coef.axis.at_least_axis_minimum(
+                                    Rational64::new(state, coef.div as i64),
+                                    coef.div,
+                                );
+                            }
                         }
-                    }
 
-                    Coefs::Poly(poly) => {
-                        let r = eval_polynomial(poly, state, coef.div).unwrap();
-                        lengths[0] *= coef.axis.at_least_axis_minimum(r, coef.div);
-                        for length in lengths.iter_mut().take(n).skip(1) {
-                            state += 1;
+                        Coefs::Poly(poly) => {
                             let r = eval_polynomial(poly, state, coef.div).unwrap();
-                            *length *= coef.axis.at_least_axis_minimum(r, coef.div);
+                            lengths[0] *= coef.axis.at_least_axis_minimum(r, coef.div);
+                            for length in lengths.iter_mut().take(n).skip(1) {
+                                state += 1;
+                                let r = eval_polynomial(poly, state, coef.div).unwrap();
+                                *length *= coef.axis.at_least_axis_minimum(r, coef.div);
+                            }
                         }
-                    }
 
-                    Coefs::Expr { expr_str, .. } => {
-                        let parsed = parse_expr(expr_str)?;
-                        let r = coef
-                            .axis
-                            .evaluate_expr(state, coef.div, &parsed, expr_str)?;
-                        lengths[0] *= coef.axis.at_least_axis_minimum(r, coef.div);
-                        for length in lengths.iter_mut().take(n).skip(1) {
-                            state += 1;
+                        Coefs::Expr { expr_str, .. } => {
+                            let parsed = parse_expr(expr_str)?;
                             let r = coef
                                 .axis
                                 .evaluate_expr(state, coef.div, &parsed, expr_str)?;
-                            *length *= coef.axis.at_least_axis_minimum(r, coef.div);
+                            lengths[0] *= coef.axis.at_least_axis_minimum(r, coef.div);
+                            for length in lengths.iter_mut().take(n).skip(1) {
+                                state += 1;
+                                let r = coef
+                                    .axis
+                                    .evaluate_expr(state, coef.div, &parsed, expr_str)?;
+                                *length *= coef.axis.at_least_axis_minimum(r, coef.div);
+                            }
                         }
+                    };
+                }
+                _ => {
+                    for _ in 0..lengths.len() {
+                        coef.to_owned().generate(&mut rng)?;
                     }
-                };
+                }
             }
         }
-        Ok(lengths
+        let result = Ok(lengths
             .iter()
-            .fold(Rational64::from_integer(0), |current, val| current + *val))
+            .fold(Rational64::from_integer(0), |current, val| current + *val));
+        dbg!(&result);
+        result
     }
 
     pub fn lcm_length(&self) -> usize {

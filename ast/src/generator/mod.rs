@@ -48,18 +48,14 @@ pub enum Coef {
 }
 
 impl Coef {
-    pub fn get_value(&self, seed: u64) -> i64 {
-        match self {
+    pub fn get_value(&self, mut rng: &mut StdRng) -> i64 {
+        let result = match self {
             Self::Int(v) => *v,
-            Self::RandRange(range) => {
-                let mut rng: StdRng = SeedableRng::seed_from_u64(seed);
-                rng.gen_range(range.to_owned())
-            }
-            Self::RandChoice(choices) => {
-                let mut rng: StdRng = SeedableRng::seed_from_u64(seed);
-                *choices.as_slice().choose(&mut rng).unwrap()
-            }
-        }
+            Self::RandRange(range) => rng.gen_range(range.to_owned()),
+            Self::RandChoice(choices) => *choices.as_slice().choose(&mut rng).unwrap(),
+        };
+        dbg!(&result);
+        result
     }
 }
 

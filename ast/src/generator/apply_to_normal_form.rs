@@ -18,11 +18,13 @@ impl Normalize for GenOp {
                 }
             }
             GenOp::Const { gen, seed } => {
-                *input =
-                    join_list_nf(
-                        gen.to_owned()
-                            .generate(input, gen.lcm_length(), defs, *seed)?,
-                    );
+                let mut rng: rand::rngs::StdRng = rand::SeedableRng::seed_from_u64(*seed);
+                *input = join_list_nf(gen.to_owned().generate(
+                    input,
+                    gen.lcm_length(),
+                    defs,
+                    &mut rng,
+                )?);
                 Ok(())
             }
             GenOp::Taken { n, gen, seed } => {

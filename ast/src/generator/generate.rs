@@ -8,11 +8,11 @@ use weresocool_error::Error;
 use weresocool_shared::helpers::{et_to_rational, f32_to_rational, r_to_f64};
 
 impl CoefState {
-    fn generate(&mut self, seed: u64) -> Result<Op, Error> {
+    pub fn generate(&mut self, mut rng: &mut rand::rngs::StdRng) -> Result<Op, Error> {
         match &mut self.coefs {
             Coefs::Const(coefs) => {
                 let result = self.axis.generate_const(self.state, self.div);
-                self.state += coefs[self.idx].get_value(seed);
+                self.state += coefs[self.idx].get_value(&mut rng);
                 self.idx += 1;
                 self.idx %= coefs.len();
                 Ok(result)
@@ -176,14 +176,18 @@ impl Axis {
 }
 
 impl Generator {
-    pub fn term_vectors(&mut self, n: usize, seed: u64) -> Result<Vec<Op>, Error> {
+    pub fn term_vectors(
+        &mut self,
+        n: usize,
+        rng: &mut rand::rngs::StdRng,
+    ) -> Result<Vec<Op>, Error> {
         let mut result: Vec<Op> = vec![];
         let mut coefs = self.coefs.clone();
 
         for _ in 0..n {
             let mut operations: Vec<Term> = vec![];
             for coef in coefs.iter_mut() {
-                operations.push(Term::Op(coef.generate(seed)?))
+                operations.push(Term::Op(coef.generate(rng)?))
             }
             result.push(Op::Compose { operations })
         }
@@ -196,15 +200,17 @@ impl Generator {
         nf: &NormalForm,
         n: usize,
         defs: &Defs,
-        seed: u64,
+        mut rng: &mut rand::rngs::StdRng,
     ) -> Result<Vec<NormalForm>, Error> {
         let mut result: Vec<NormalForm> = vec![];
         let mut coefs = self.coefs.clone();
+        // one is depth first and the other breadth first.
 
         for _ in 0..n {
             let mut nf: NormalForm = nf.clone();
             for coef in coefs.iter_mut() {
-                coef.generate(seed)?.apply_to_normal_form(&mut nf, defs)?;
+                coef.generate(&mut rng)?
+                    .apply_to_normal_form(&mut nf, defs)?;
             }
             result.push(nf)
         }
@@ -228,7 +234,8 @@ impl GenOp {
             }
             GenOp::Const { gen, seed } => {
                 let length = if let Some(n) = n { n } else { gen.lcm_length() };
-                gen.to_owned().term_vectors(length, seed)
+                let mut rng: rand::rngs::StdRng = rand::SeedableRng::seed_from_u64(seed);
+                gen.to_owned().term_vectors(length, &mut rng)
             }
 
             GenOp::Taken { gen, n, seed } => {
@@ -256,7 +263,9 @@ impl GenOp {
             }
             GenOp::Const { mut gen, seed } => {
                 let length = if let Some(n) = n { n } else { gen.lcm_length() };
-                gen.generate(input, length, defs, seed)
+
+                let mut rng: rand::rngs::StdRng = rand::SeedableRng::seed_from_u64(seed);
+                gen.generate(input, length, defs, &mut rng)
             }
 
             GenOp::Taken { gen, n, seed } => {
