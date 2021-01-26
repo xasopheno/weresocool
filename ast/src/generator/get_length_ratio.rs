@@ -1,8 +1,4 @@
-use crate::generator::{
-    error_non_generator,
-    generate::{eval_polynomial, parse_expr},
-    Axis, Coefs, GenOp, Generator,
-};
+use crate::generator::{error_non_generator, Axis, Coefs, GenOp, Generator};
 use crate::operations::helpers::handle_id_error;
 use crate::{Defs, GetLengthRatio, Term};
 use num_integer::lcm;
@@ -24,7 +20,7 @@ impl GetLengthRatio for GenOp {
             }
             GenOp::Const { gen, seed } => {
                 let n = gen.lcm_length();
-                Ok(gen.get_length(n, *seed)?)
+                Ok(gen.get_length(n, *seed, defs)?)
             }
             GenOp::Taken { n, gen, seed } => {
                 gen.to_owned().set_seed(*seed);
@@ -70,7 +66,7 @@ impl GenOp {
             }
             GenOp::Const { gen, seed } => {
                 let n = if let Some(n) = n { n } else { gen.lcm_length() };
-                Ok(gen.get_length(n, *seed)?)
+                Ok(gen.get_length(n, *seed, defs)?)
             }
             GenOp::Taken { n, gen, seed } => {
                 gen.to_owned().set_seed(*seed);
@@ -81,67 +77,28 @@ impl GenOp {
 }
 
 impl Generator {
-    pub fn get_length(&self, n: usize, seed: u64) -> Result<Rational64, Error> {
+    pub fn get_length(&self, n: usize, seed: u64, defs: &Defs) -> Result<Rational64, Error> {
         let mut lengths = vec![Rational64::new(1, 1); n];
         let mut rng: rand::rngs::StdRng = rand::SeedableRng::seed_from_u64(seed);
-        for coef in self.coefs.iter() {
-            dbg!(&coef.axis);
-            println!("________________");
-            let mut state = coef.state_bak;
-            match coef.axis {
-                Axis::L => {
-                    match &coef.coefs {
-                        Coefs::Const(c) => {
-                            lengths[0] *= coef.axis.at_least_axis_minimum(
-                                Rational64::new(state, coef.div as i64),
-                                coef.div,
-                            );
-                            for (i, length) in lengths.iter_mut().enumerate().take(n).skip(1) {
-                                state += c[(i - 1) % coef.coefs.len()].get_value(&mut rng);
-                                *length *= coef.axis.at_least_axis_minimum(
-                                    Rational64::new(state, coef.div as i64),
-                                    coef.div,
-                                );
-                            }
-                        }
+        let mut copy = self.clone();
 
-                        Coefs::Poly(poly) => {
-                            let r = eval_polynomial(poly, state, coef.div).unwrap();
-                            lengths[0] *= coef.axis.at_least_axis_minimum(r, coef.div);
-                            for length in lengths.iter_mut().take(n).skip(1) {
-                                state += 1;
-                                let r = eval_polynomial(poly, state, coef.div).unwrap();
-                                *length *= coef.axis.at_least_axis_minimum(r, coef.div);
-                            }
-                        }
-
-                        Coefs::Expr { expr_str, .. } => {
-                            let parsed = parse_expr(expr_str)?;
-                            let r = coef
-                                .axis
-                                .evaluate_expr(state, coef.div, &parsed, expr_str)?;
-                            lengths[0] *= coef.axis.at_least_axis_minimum(r, coef.div);
-                            for length in lengths.iter_mut().take(n).skip(1) {
-                                state += 1;
-                                let r = coef
-                                    .axis
-                                    .evaluate_expr(state, coef.div, &parsed, expr_str)?;
-                                *length *= coef.axis.at_least_axis_minimum(r, coef.div);
-                            }
-                        }
-                    };
-                }
-                _ => {
-                    for _ in 0..lengths.len() {
-                        coef.to_owned().generate(&mut rng)?;
+        for i in 0..n {
+            for coef in copy.coefs.iter_mut() {
+                match coef.axis {
+                    Axis::L => {
+                        let l = coef.generate(&mut rng)?.get_length_ratio(defs)?;
+                        lengths[i] *= l
+                    }
+                    _ => {
+                        coef.generate(&mut rng)?;
                     }
                 }
             }
         }
+
         let result = Ok(lengths
             .iter()
             .fold(Rational64::from_integer(0), |current, val| current + *val));
-        dbg!(&result);
         result
     }
 

@@ -4,7 +4,7 @@ mod get_length_ratio;
 mod substitute;
 use num_rational::Rational64;
 use polynomials::*;
-use rand::{rngs::StdRng, seq::SliceRandom, Rng, SeedableRng};
+use rand::{rngs::StdRng, seq::SliceRandom, Rng};
 use std::hash::{Hash, Hasher};
 use weresocool_error::Error;
 
@@ -54,7 +54,6 @@ impl Coef {
             Self::RandRange(range) => rng.gen_range(range.to_owned()),
             Self::RandChoice(choices) => *choices.as_slice().choose(&mut rng).unwrap(),
         };
-        dbg!(&result);
         result
     }
 }
