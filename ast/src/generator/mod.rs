@@ -112,8 +112,8 @@ impl Hash for Coefs {
 }
 
 impl Coefs {
-    pub fn init_const(coefs: Vec<Vec<i64>>) -> Coefs {
-        Self::Const(coefs.into_iter().flatten().map(Coef::Int).collect())
+    pub fn init_const(coefs: Vec<Vec<Coef>>) -> Coefs {
+        Self::Const(coefs.into_iter().flatten().collect())
     }
 
     pub fn init_expr(expr_str: String) -> Coefs {

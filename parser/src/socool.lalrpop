@@ -130,7 +130,7 @@ CoefState: CoefState = {
 
 
 Coefs: Coefs = {
-  "[" <coefs: Comma<Coef>> "]" => Coefs::Const(coefs),
+  "[" <coefs: Comma<Coef>> "]" => Coefs::init_const(coefs),
   "Poly" "[" <coefs: Comma<Rational>> "]" => Coefs::init_polynomial(coefs) ,
   "Expr" <expr: Expr> => {
     Coefs::init_expr(expr[1..expr.len() -1].to_string())
@@ -139,17 +139,21 @@ Coefs: Coefs = {
 
 Expr: String = <s:r#"`(.*)`"#> => s.to_string();
 
+CoefType: Coef = {
+  "RR" "(" <start: Int> ".." <end: Int> ")" => Coef::RandRange(start..=end),
+  "RC" "(" <choices: Comma<ChoiceTimes>> ")" => Coef::RandChoice(choices.into_iter().flatten().collect()),
+  <v: Int> => Coef::Int(v)
+}
 
-Coef: Coef = {
+Coef: Vec<Coef> = {
   <coef: CoefType> <times: CoefTimes> => vec![coef; times],
   <coef: CoefType> => vec![coef]
 
 }
 
-CoefType: Coef = {
-  "RR" "(" <start: Int> ".." <end: Int> ")" => Coef::RandRange(start..=end),
-  "RC" "(" "[" <choices: Comma<Int>> "]" ")" => Coef::RandChoice(choices),
-  <v: Int> => Coef::Int(v)
+ChoiceTimes: Vec<i64> = {
+  <coef: Int> <times: CoefTimes> => vec![coef; times],
+  <coef: Int> => vec![coef]
 }
 
 CoefTimes: usize = {
