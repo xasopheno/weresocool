@@ -4,7 +4,6 @@ mod expect {
         generation::{RenderReturn, RenderType},
         interpretable::{InputType::Filename, Interpretable},
     };
-    // use pretty_assertions::assert_eq;
     use test_generator::test_resources;
     use weresocool_ast::Term;
     use weresocool_error::Error;

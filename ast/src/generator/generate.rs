@@ -4,12 +4,12 @@ use crate::{
 };
 use num_rational::Rational64;
 use polynomials::Polynomial;
-use rand::SeedableRng;
+use rand::{rngs::StdRng, SeedableRng};
 use weresocool_error::Error;
 use weresocool_shared::helpers::{et_to_rational, f32_to_rational, r_to_f64};
 
 impl CoefState {
-    pub fn generate(&mut self, mut rng: &mut rand::rngs::StdRng) -> Result<Op, Error> {
+    pub fn generate(&mut self, mut rng: &mut StdRng) -> Result<Op, Error> {
         match &mut self.coefs {
             Coefs::Const(coefs) => {
                 let result = self.axis.generate_const(self.state, self.div);
