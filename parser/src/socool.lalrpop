@@ -141,8 +141,8 @@ Expr: String = <s:r#"`(.*)`"#> => s.to_string();
 
 
 Coef: Coef = {
-  <coef: CoefType> <times: CoefTimes> => coef,
-  <coef: CoefType> => coef
+  <coef: CoefType> <times: CoefTimes> => vec![coef; times],
+  <coef: CoefType> => vec![coef]
 
 }
 
