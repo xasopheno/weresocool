@@ -4,10 +4,9 @@ use rand::{thread_rng, Rng};
 use weresocool_ast::{Op, Term};
 
 pub fn et(d: i64) -> Vec<Term> {
-    let mut ops = vec![];
-    ops.push(Term::Op(Op::TransposeM {
+    let mut ops = vec![Term::Op(Op::TransposeM {
         m: Rational64::from_integer(1),
-    }));
+    })];
     for i in 1..d as usize {
         let m = 2.0_f32.powf(i as f32 / d as f32);
         ops.push(Term::Op(Op::TransposeM {
