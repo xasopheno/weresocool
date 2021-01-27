@@ -4,6 +4,7 @@ use crate::{
 };
 use num_rational::Rational64;
 use polynomials::Polynomial;
+use rand::SeedableRng;
 use weresocool_error::Error;
 use weresocool_shared::helpers::{et_to_rational, f32_to_rational, r_to_f64};
 
@@ -233,8 +234,7 @@ impl GenOp {
             }
             GenOp::Const { mut gen, seed } => {
                 let length = if let Some(n) = n { n } else { gen.lcm_length() };
-                let mut rng: rand::rngs::StdRng = rand::SeedableRng::seed_from_u64(seed);
-                gen.term_vectors(length, &mut rng)
+                gen.term_vectors(length, &mut SeedableRng::seed_from_u64(seed))
             }
 
             GenOp::Taken { mut gen, n, seed } => {
@@ -263,8 +263,12 @@ impl GenOp {
             GenOp::Const { mut gen, seed } => {
                 let length = if let Some(n) = n { n } else { gen.lcm_length() };
 
-                let mut rng: rand::rngs::StdRng = rand::SeedableRng::seed_from_u64(seed);
-                gen.generate(input, length, defs, &mut rng)
+                gen.generate(
+                    input,
+                    length,
+                    defs,
+                    &mut rand::SeedableRng::seed_from_u64(seed),
+                )
             }
 
             GenOp::Taken { mut gen, n, seed } => {

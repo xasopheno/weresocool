@@ -7,7 +7,10 @@ pub mod operations;
 pub mod term;
 pub use crate::{
     ast::{Defs, FunDef, Op, Op::*, OscType, ASR},
-    generator::{Axis, Coef, CoefState, Coefs, GenOp, Generator},
+    generator::{
+        coefs::{Coef, Coefs},
+        Axis, CoefState, GenOp, Generator,
+    },
     lists::{normalize_listop::join_list_nf, Index, IndexVector, Indices, ListOp, TermVector},
     operations::{
         helpers::{handle_id_error, join_sequence},

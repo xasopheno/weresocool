@@ -2,6 +2,7 @@ use crate::{
     generator::error_non_generator, handle_id_error, join_list_nf, Defs, GenOp, NormalForm,
     Normalize, Term,
 };
+use rand::SeedableRng;
 use weresocool_error::Error;
 
 impl Normalize for GenOp {
@@ -18,12 +19,11 @@ impl Normalize for GenOp {
                 }
             }
             GenOp::Const { gen, seed } => {
-                let mut rng: rand::rngs::StdRng = rand::SeedableRng::seed_from_u64(*seed);
                 *input = join_list_nf(gen.to_owned().generate(
                     input,
                     gen.lcm_length(),
                     defs,
-                    &mut rng,
+                    &mut SeedableRng::seed_from_u64(*seed),
                 )?);
                 Ok(())
             }
