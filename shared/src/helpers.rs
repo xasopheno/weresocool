@@ -31,7 +31,7 @@ pub fn f32_string_to_rational(float_string: String) -> Rational64 {
 }
 
 pub fn f32_to_rational(mut float: f32) -> Rational64 {
-    if !float.is_finite() {
+    if !float.is_finite() || float > 1_000_000.0 {
         float = 0.0
     }
     let float_string = format!("{:.8}", float);

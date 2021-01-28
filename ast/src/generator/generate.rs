@@ -4,15 +4,16 @@ use crate::{
 };
 use num_rational::Rational64;
 use polynomials::Polynomial;
+use rand::{rngs::StdRng, SeedableRng};
 use weresocool_error::Error;
-use weresocool_shared::helpers::{et_to_rational, f32_to_rational};
+use weresocool_shared::helpers::{et_to_rational, f32_to_rational, r_to_f64};
 
 impl CoefState {
-    fn generate(&mut self) -> Result<Op, Error> {
+    pub fn generate(&mut self, mut rng: &mut StdRng) -> Result<Op, Error> {
         match &mut self.coefs {
             Coefs::Const(coefs) => {
                 let result = self.axis.generate_const(self.state, self.div);
-                self.state += coefs[self.idx];
+                self.state += coefs[self.idx].get_value(&mut rng)?;
                 self.idx += 1;
                 self.idx %= coefs.len();
                 Ok(result)
@@ -112,20 +113,19 @@ impl Axis {
     ) -> Result<Op, Error> {
         let func = bind_x(expr, s)?;
         let eval = func(state as f64 / div as f64);
-        let r = f32_to_rational(eval as f32);
 
         match self {
             Axis::F => Ok(Op::TransposeM {
-                m: self.at_least_axis_minimum(r, div),
+                m: self.at_least_axis_minimum(f32_to_rational(2.0_f64.powf(eval) as f32), div),
             }),
             Axis::L => Ok(Op::Length {
-                m: self.at_least_axis_minimum(r, div),
+                m: self.at_least_axis_minimum(f32_to_rational(eval as f32), div),
             }),
             Axis::G => Ok(Op::Gain {
-                m: self.at_least_axis_minimum(r, div),
+                m: self.at_least_axis_minimum(f32_to_rational(eval as f32), div),
             }),
             Axis::P => Ok(Op::PanA {
-                a: self.at_least_axis_minimum(r, div),
+                a: self.at_least_axis_minimum(f32_to_rational(eval as f32), div),
             }),
         }
     }
@@ -139,9 +139,14 @@ impl Axis {
         let eval = eval_polynomial(poly, state, div)?;
 
         match self {
-            Axis::F => Ok(Op::TransposeM {
-                m: self.at_least_axis_minimum(eval, div),
-            }),
+            Axis::F => {
+                let eval_f64 = r_to_f64(eval);
+                let eval_in_log = 2.0_f32.powf(eval_f64 as f32);
+                let rational = f32_to_rational(eval_in_log);
+                Ok(Op::TransposeM {
+                    m: self.at_least_axis_minimum(rational, div),
+                })
+            }
             Axis::L => Ok(Op::Length {
                 m: self.at_least_axis_minimum(eval, div),
             }),
@@ -172,11 +177,31 @@ impl Axis {
 }
 
 impl Generator {
+    pub fn term_vectors(
+        &mut self,
+        n: usize,
+        rng: &mut rand::rngs::StdRng,
+    ) -> Result<Vec<Op>, Error> {
+        let mut result: Vec<Op> = vec![];
+        let mut coefs = self.coefs.clone();
+
+        for _ in 0..n {
+            let mut operations: Vec<Term> = vec![];
+            for coef in coefs.iter_mut() {
+                operations.push(Term::Op(coef.generate(rng)?))
+            }
+            result.push(Op::Compose { operations })
+        }
+
+        Ok(result)
+    }
+
     pub fn generate(
         &mut self,
         nf: &NormalForm,
         n: usize,
         defs: &Defs,
+        mut rng: &mut rand::rngs::StdRng,
     ) -> Result<Vec<NormalForm>, Error> {
         let mut result: Vec<NormalForm> = vec![];
         let mut coefs = self.coefs.clone();
@@ -184,7 +209,8 @@ impl Generator {
         for _ in 0..n {
             let mut nf: NormalForm = nf.clone();
             for coef in coefs.iter_mut() {
-                coef.generate()?.apply_to_normal_form(&mut nf, defs)?;
+                coef.generate(&mut rng)?
+                    .apply_to_normal_form(&mut nf, defs)?;
             }
             result.push(nf)
         }
@@ -194,6 +220,29 @@ impl Generator {
 }
 
 impl GenOp {
+    pub fn term_vectors_from_genop(self, n: Option<usize>, defs: &Defs) -> Result<Vec<Op>, Error> {
+        match self {
+            GenOp::Named { name, seed } => {
+                let generator = handle_id_error(name, defs, None)?;
+                match generator {
+                    Term::Gen(mut gen) => {
+                        gen.set_seed(seed);
+                        gen.term_vectors_from_genop(n, defs)
+                    }
+                    _ => Err(error_non_generator()),
+                }
+            }
+            GenOp::Const { mut gen, seed } => {
+                let length = if let Some(n) = n { n } else { gen.lcm_length() };
+                gen.term_vectors(length, &mut SeedableRng::seed_from_u64(seed))
+            }
+
+            GenOp::Taken { mut gen, n, seed } => {
+                gen.set_seed(seed);
+                gen.term_vectors_from_genop(Some(n), defs)
+            }
+        }
+    }
     pub fn generate_from_genop(
         self,
         input: &mut NormalForm,
@@ -201,19 +250,31 @@ impl GenOp {
         defs: &Defs,
     ) -> Result<Vec<NormalForm>, Error> {
         match self {
-            GenOp::Named(name) => {
+            GenOp::Named { name, seed } => {
                 let generator = handle_id_error(name, defs, None)?;
                 match generator {
-                    Term::Gen(gen) => gen.generate_from_genop(input, n, defs),
+                    Term::Gen(mut gen) => {
+                        gen.set_seed(seed);
+                        gen.generate_from_genop(input, n, defs)
+                    }
                     _ => Err(error_non_generator()),
                 }
             }
-            GenOp::Const(mut gen) => {
+            GenOp::Const { mut gen, seed } => {
                 let length = if let Some(n) = n { n } else { gen.lcm_length() };
-                gen.generate(input, length, defs)
+
+                gen.generate(
+                    input,
+                    length,
+                    defs,
+                    &mut rand::SeedableRng::seed_from_u64(seed),
+                )
             }
 
-            GenOp::Taken { gen, n } => gen.generate_from_genop(input, Some(n), defs),
+            GenOp::Taken { mut gen, n, seed } => {
+                gen.set_seed(seed);
+                gen.generate_from_genop(input, Some(n), defs)
+            }
         }
     }
 }

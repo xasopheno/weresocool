@@ -11,6 +11,7 @@ use weresocool_ast::{
         ListOp,
         CoefState,
         Coefs,
+        Coef,
         Axis,
         Generator,
         GenOp,
@@ -98,22 +99,20 @@ Operation: Term = {
 }
 
 Generator: GenOp = {
-  <gen: GeneratorBase> "Take" <n: Int> => {
-    GenOp::Taken {n: n as usize, gen: Box::new(gen)}
+  <gen: GeneratorBase> "Take" <n: Int> <seed: ("Seed" Int)?> => {
+    GenOp::init_taken(gen, n as usize, seed)
   },
   <gen: GeneratorBase> => gen
 
 }
 
 GeneratorBase: GenOp = {
-  r"(Gen|\*)" "(" <coefs: Comma<CoefState>> ")" =>  {
-    GenOp::Const(Generator {
-      coefs,
-    })
+  r"(Gen|\*)" "(" <coefs: Comma<CoefState>> ")" <seed: ("Seed" Int)?>   =>  {
+    GenOp::init_const(Generator {coefs}, seed)
   },
 
-  r"(Gen|\*)" <name: Name> => {
-    GenOp::Named(name)
+  r"(Gen|\*)" <name: Name> <seed: ("Seed" Int)?>  => {
+    GenOp::init_named(name, seed)
   },
 }
 
@@ -140,18 +139,33 @@ Coefs: Coefs = {
 
 Expr: String = <s:r#"`(.*)`"#> => s.to_string();
 
-
-Coef: Vec<i64> = {
-  <v: Int> => vec![v],
-  <s:r"(-?[0-9]+)x([0-9]+)"> => {
-    let regex = Regex::new("(-?[0-9]+)x([0-9]+)").unwrap();
-    let captures = regex.captures(s).unwrap();
-    let val = captures[1].parse::<i64>().unwrap();
-    let n = captures[2].parse::<usize>().unwrap();
-    
-    vec![val; n as usize]
-  }
+CoefType: Coef = {
+  "RR" "(" <start: Int> ".." <end: Int> ")" => Coef::RandRange(start..=end),
+  "RC" "(" <choices: Comma<ChoiceTimes>> ")" => Coef::RandChoice(choices.into_iter().flatten().collect()),
+  <v: Int> => Coef::Int(v)
 }
+
+Coef: Vec<Coef> = {
+  <coef: CoefType> <times: CoefTimes> => vec![coef; times],
+  <coef: CoefType> => vec![coef]
+
+}
+
+ChoiceTimes: Vec<i64> = {
+  <coef: Int> <times: CoefTimes> => vec![coef; times],
+  <coef: Int> => vec![coef]
+}
+
+CoefTimes: usize = {
+  <s:r"\*([0-9]+)"> => {
+    let regex = Regex::new("\\*([0-9]+)").unwrap();
+    let captures = regex.captures(s).unwrap();
+    let n = captures[1].parse::<usize>().unwrap();
+   
+    n as usize
+  }
+} 
+
 
 List: ListOp = {
   <lists: ListConcat> => ListOp::Concat(lists),
