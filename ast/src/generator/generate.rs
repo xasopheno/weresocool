@@ -13,7 +13,7 @@ impl CoefState {
         match &mut self.coefs {
             Coefs::Const(coefs) => {
                 let result = self.axis.generate_const(self.state, self.div);
-                self.state += coefs[self.idx].get_value(&mut rng);
+                self.state += coefs[self.idx].get_value(&mut rng)?;
                 self.idx += 1;
                 self.idx %= coefs.len();
                 Ok(result)

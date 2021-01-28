@@ -2,6 +2,7 @@ use num_rational::Rational64;
 use polynomials::*;
 use rand::{rngs::StdRng, seq::SliceRandom, Rng};
 use std::hash::{Hash, Hasher};
+use weresocool_error::Error;
 
 #[derive(Clone, PartialEq, Debug, Hash)]
 pub enum Coef {
@@ -11,11 +12,18 @@ pub enum Coef {
 }
 
 impl Coef {
-    pub fn get_value(&self, mut rng: &mut StdRng) -> i64 {
+    pub fn get_value(&self, mut rng: &mut StdRng) -> Result<i64, Error> {
         let result = match self {
-            Self::Int(v) => *v,
-            Self::RandRange(range) => rng.gen_range(range.to_owned()),
-            Self::RandChoice(choices) => *choices.as_slice().choose(&mut rng).unwrap(),
+            Self::Int(v) => Ok(*v),
+            Self::RandRange(range) => Ok(rng.gen_range(range.to_owned())),
+            Self::RandChoice(choices) => {
+                let choice = choices.as_slice().choose(&mut rng);
+                if let Some(c) = choice {
+                    Ok(*c)
+                } else {
+                    Err(Error::with_msg("Error in RandChoice"))
+                }
+            }
         };
         result
     }
