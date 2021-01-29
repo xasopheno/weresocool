@@ -163,7 +163,11 @@ impl Mul<PointOp> for PointOp {
             g: self.g * other.g,
             l: self.l * other.l,
             reverb: other.reverb,
-            osc_type: other.osc_type,
+            osc_type: if other.osc_type == OscType::None {
+                self.osc_type
+            } else {
+                other.osc_type
+            },
             attack: self.attack * other.attack,
             decay: self.decay * other.decay,
             asr: other.asr,
@@ -187,7 +191,11 @@ impl<'a, 'b> Mul<&'b PointOp> for &'a PointOp {
             g: self.g * other.g,
             l: self.l * other.l,
             reverb: other.reverb,
-            osc_type: other.osc_type,
+            osc_type: if other.osc_type == OscType::None {
+                self.osc_type
+            } else {
+                other.osc_type
+            },
             attack: self.attack * other.attack,
             decay: self.decay * other.decay,
             asr: other.asr,
@@ -209,7 +217,11 @@ impl MulAssign for PointOp {
             g: self.g * other.g,
             l: self.l * other.l,
             reverb: other.reverb,
-            osc_type: other.osc_type,
+            osc_type: if other.osc_type == OscType::None {
+                self.osc_type
+            } else {
+                other.osc_type
+            },
             attack: self.attack * other.attack,
             decay: self.decay * other.decay,
             asr: other.asr,
@@ -235,7 +247,11 @@ impl PointOp {
             g: self.g * other.g,
             l,
             reverb: other.reverb,
-            osc_type: other.osc_type,
+            osc_type: if other.osc_type == OscType::None {
+                self.osc_type
+            } else {
+                other.osc_type
+            },
             attack: self.attack * other.attack,
             decay: self.decay * other.decay,
             asr: other.asr,
@@ -257,7 +273,7 @@ impl PointOp {
             decay: Ratio::new(1, 1),
             asr: ASR::Long,
             portamento: Ratio::new(1, 1),
-            osc_type: OscType::Sine { pow: None },
+            osc_type: OscType::None,
             names: NameSet::new(),
         }
     }
@@ -274,7 +290,7 @@ impl PointOp {
             decay: Ratio::new(1, 1),
             portamento: Ratio::new(1, 1),
             asr: ASR::Long,
-            osc_type: OscType::Sine { pow: None },
+            osc_type: OscType::None,
             names: NameSet::new(),
         }
     }

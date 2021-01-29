@@ -96,6 +96,7 @@ pub enum Op {
 
 #[derive(Copy, Clone, Debug, PartialEq, Serialize, Deserialize, Ord, PartialOrd, Hash, Eq)]
 pub enum OscType {
+    None,
     Sine { pow: Option<Rational64> },
     Noise,
     Square,

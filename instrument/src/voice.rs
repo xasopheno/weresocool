@@ -100,6 +100,7 @@ impl Voice {
             let info = SampleInfo { gain, frequency };
 
             let mut new_sample = match self.osc_type {
+                OscType::None => self.generate_sine_sample(info, None),
                 OscType::Sine { pow } => self.generate_sine_sample(info, pow),
                 OscType::Square => self.generate_square_sample(info),
                 OscType::Noise => self.generate_random_sample(info),
