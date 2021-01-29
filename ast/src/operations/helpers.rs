@@ -133,7 +133,7 @@ pub fn join_sequence(mut l: NormalForm, mut r: NormalForm) -> NormalForm {
                     decay: Ratio::new(1, 1),
                     asr: ASR::Long,
                     portamento: Ratio::new(1, 1),
-                    osc_type: OscType::Sine { pow: None },
+                    osc_type: OscType::None,
                     names: NameSet::new(),
                 }])
             }
@@ -152,7 +152,7 @@ pub fn join_sequence(mut l: NormalForm, mut r: NormalForm) -> NormalForm {
                     decay: Ratio::new(1, 1),
                     asr: ASR::Long,
                     portamento: Ratio::new(1, 1),
-                    osc_type: OscType::Sine { pow: None },
+                    osc_type: OscType::None,
                     names: NameSet::new(),
                 }])
             }

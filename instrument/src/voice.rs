@@ -34,12 +34,15 @@ pub struct SampleInfo {
 pub struct VoiceState {
     pub frequency: f64,
     pub gain: f64,
+    pub osc_type: OscType,
 }
+
 impl VoiceState {
     pub const fn init() -> Self {
         Self {
             frequency: 0.0,
             gain: 0.0,
+            osc_type: OscType::None,
         }
     }
     pub fn silent(&self) -> bool {
@@ -128,16 +131,21 @@ impl Voice {
         if op.index == 0 {
             self.past.frequency = self.current.frequency;
             self.current.frequency = op.f;
+            self.past.osc_type = self.current.osc_type;
 
             self.past.gain = self.past_gain_from_op(op);
             self.current.gain = self.current_gain_from_op(op);
 
-            self.osc_type = op.osc_type;
+            self.osc_type = if self.past.osc_type != OscType::None && op.osc_type == OscType::None {
+                self.past.osc_type
+            } else {
+                op.osc_type
+            };
 
             self.attack = op.attack.trunc() as usize;
             self.decay = op.decay.trunc() as usize;
-
             self.asr = op.asr;
+            self.current.osc_type = op.osc_type
         };
         self.offset_past.gain = self.offset_current.gain;
         self.offset_past.frequency = self.offset_current.frequency;

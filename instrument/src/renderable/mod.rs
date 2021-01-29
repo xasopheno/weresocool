@@ -56,7 +56,7 @@ impl RenderOp {
             voice: 0,
             event: 0,
             portamento: 1024,
-            osc_type: OscType::Sine { pow: None },
+            osc_type: OscType::None,
             next_l_silent: false,
             next_r_silent: false,
         }
@@ -78,7 +78,7 @@ impl RenderOp {
             voice: 0,
             event: 0,
             portamento: 1024,
-            osc_type: OscType::Sine { pow: None },
+            osc_type: OscType::None,
             next_l_silent: true,
             next_r_silent: true,
         }
@@ -305,7 +305,7 @@ pub fn nf_to_vec_renderable(
             if default_settings().pad_end {
                 result.push(RenderOp::init_silent_with_length_and_osctype(
                     1.0,
-                    last_osc,
+                    OscType::None,
                     weresocool_shared::helpers::r_to_f64(last_reverb),
                 ));
             }
