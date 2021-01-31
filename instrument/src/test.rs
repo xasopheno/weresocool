@@ -4,7 +4,7 @@ pub mod tests {
         loudness::loudness_normalization,
         oscillator::Oscillator,
         stereo_waveform::StereoWaveform,
-        voice::{Voice, VoiceState},
+        voice::{ReverbState, Voice, VoiceState},
     };
     use weresocool_ast::ast::{OscType, ASR};
     use weresocool_shared::get_test_settings;
@@ -18,22 +18,30 @@ pub mod tests {
 
             let result = Voice {
                 index,
-                reverb: reverb::Reverb::new(),
+                reverb: ReverbState::init(),
                 past: VoiceState {
                     frequency: 0.0,
                     gain: 0.0,
+                    osc_type: OscType::None,
+                    reverb: None,
                 },
                 current: VoiceState {
                     frequency: 0.0,
                     gain: 0.0,
+                    osc_type: OscType::None,
+                    reverb: None,
                 },
                 offset_past: VoiceState {
                     frequency: 0.0,
                     gain: 0.0,
+                    osc_type: OscType::None,
+                    reverb: None,
                 },
                 offset_current: VoiceState {
                     frequency: 0.0,
                     gain: 0.0,
+                    osc_type: OscType::None,
+                    reverb: None,
                 },
                 phase: 0.0,
                 osc_type: OscType::Sine { pow: None },
@@ -100,23 +108,31 @@ pub mod tests {
                 voices: (
                     Voice {
                         index: 0,
-                        reverb: reverb::Reverb::new(),
+                        reverb: ReverbState::init(),
                         phase: 0.0,
                         past: VoiceState {
                             frequency: 0.0,
                             gain: 0.0,
+                            osc_type: OscType::None,
+                            reverb: None,
                         },
                         current: VoiceState {
                             frequency: 0.0,
                             gain: 0.0,
+                            osc_type: OscType::None,
+                            reverb: None,
                         },
                         offset_past: VoiceState {
                             frequency: 0.0,
                             gain: 0.0,
+                            osc_type: OscType::None,
+                            reverb: None,
                         },
                         offset_current: VoiceState {
                             frequency: 0.0,
                             gain: 0.0,
+                            osc_type: OscType::None,
+                            reverb: None,
                         },
                         osc_type: OscType::Sine { pow: None },
                         attack: 44100,
@@ -125,23 +141,31 @@ pub mod tests {
                     },
                     Voice {
                         index: 1,
-                        reverb: reverb::Reverb::new(),
+                        reverb: ReverbState::init(),
                         phase: 0.0,
                         past: VoiceState {
                             frequency: 0.0,
                             gain: 0.0,
+                            osc_type: OscType::None,
+                            reverb: None,
                         },
                         current: VoiceState {
                             frequency: 0.0,
                             gain: 0.0,
+                            osc_type: OscType::None,
+                            reverb: None,
                         },
                         offset_past: VoiceState {
                             frequency: 0.0,
                             gain: 0.0,
+                            osc_type: OscType::None,
+                            reverb: None,
                         },
                         offset_current: VoiceState {
                             frequency: 0.0,
                             gain: 0.0,
+                            osc_type: OscType::None,
+                            reverb: None,
                         },
                         osc_type: OscType::Sine { pow: None },
                         attack: 44100,
@@ -165,13 +189,13 @@ pub mod tests {
             assert!(cmp_f64(osc.voices.0.past.gain, 0.0));
             assert!(cmp_f64(osc.voices.0.current.frequency, 100.0));
             assert!(cmp_f64(osc.voices.0.current.gain, 0.75));
-            assert_eq!(osc.voices.0.osc_type, OscType::Sine { pow: None });
+            assert_eq!(osc.voices.0.osc_type, OscType::None);
             //
             assert!(cmp_f64(osc.voices.1.past.frequency, 0.0));
             assert!(cmp_f64(osc.voices.1.past.gain, 0.0));
             assert!(cmp_f64(osc.voices.1.current.frequency, 100.0));
             assert!(cmp_f64(osc.voices.1.current.gain, 0.25));
-            assert_eq!(osc.voices.1.osc_type, OscType::Sine { pow: None });
+            assert_eq!(osc.voices.1.osc_type, OscType::None);
         }
         #[test]
         fn oscillator_generate_sine_test() {
