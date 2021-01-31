@@ -66,7 +66,7 @@ pub enum Op {
         m: Rational64,
     },
     Reverb {
-        m: Rational64,
+        m: Option<Rational64>,
     },
     //
     Sequence {

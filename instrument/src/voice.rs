@@ -11,7 +11,7 @@ const SETTINGS: Settings = default_settings();
 
 #[derive(Clone, Debug, PartialEq)]
 pub struct Voice {
-    pub reverb: Reverb,
+    pub reverb: ReverbState,
     pub index: usize,
     pub past: VoiceState,
     pub current: VoiceState,
@@ -35,6 +35,7 @@ pub struct VoiceState {
     pub frequency: f64,
     pub gain: f64,
     pub osc_type: OscType,
+    pub reverb: Option<f64>,
 }
 
 impl VoiceState {
@@ -43,6 +44,7 @@ impl VoiceState {
             frequency: 0.0,
             gain: 0.0,
             osc_type: OscType::None,
+            reverb: None,
         }
     }
     pub fn silent(&self) -> bool {
@@ -50,11 +52,26 @@ impl VoiceState {
     }
 }
 
+#[derive(Clone, Debug, PartialEq)]
+pub struct ReverbState {
+    model: Reverb,
+    state: Option<f32>,
+}
+
+impl ReverbState {
+    pub fn init() -> Self {
+        Self {
+            model: Reverb::new(),
+            state: None,
+        }
+    }
+}
+
 impl Voice {
     pub fn init(index: usize) -> Self {
         Self {
-            reverb: Reverb::new(),
             index,
+            reverb: ReverbState::init(),
             past: VoiceState::init(),
             current: VoiceState::init(),
             offset_past: VoiceState::init(),
@@ -83,7 +100,7 @@ impl Voice {
             op.total_samples,
         ) * loudness_normalization(self.offset_current.frequency);
 
-        self.reverb.update(op.reverb as f32);
+        self.reverb.model.update(op.reverb as f32);
 
         for (index, sample) in buffer.iter_mut().enumerate() {
             let frequency = self.calculate_frequency(
@@ -112,6 +129,7 @@ impl Voice {
             if op.reverb > 0.0 && gain > 0.0 {
                 new_sample = self
                     .reverb
+                    .model
                     .calc_sample(new_sample as f32, gain as f32)
                     .into();
             }
