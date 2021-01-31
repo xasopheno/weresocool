@@ -8,13 +8,17 @@ overtones = {
 }
 
 thing1 = {
-  Sine 1.1 
-  | Gm 1/4
+  Overlay [
+    Sine | Gm 2
+    -- Sine 1.1
+    -- Sine
+  ]
+  -- | Gm 1/4
   | Seq [
     Fm 1, Fm 9/8, Fm 5/4
   ]
   | ModBy [
-    Sine 3.25, Sine 4, Sine 3.5
+    Reverb 0.1, Fm 9/8| Reverb 2
   ]
   | ModBy [
     Fm 1, Fm 9/8, Fm 4/3, Fm 7/6 
@@ -29,5 +33,5 @@ main = {
     Fm 0, Fm 0
   ]
   | Gm 1/4
-  | Repeat 2
+  -- | Repeat 2
 }

@@ -100,8 +100,8 @@ impl Voice {
             op.total_samples,
         ) * loudness_normalization(self.offset_current.frequency);
 
-        self.reverb.model.update(if op.reverb.is_some() {
-            op.reverb.unwrap() as f32
+        self.reverb.model.update(if self.current.reverb.is_some() {
+            self.current.reverb.unwrap() as f32
         } else {
             0.0
         });
@@ -165,7 +165,7 @@ impl Voice {
                 op.osc_type
             };
 
-            self.reverb.state = if self.past.reverb.is_none() && op.reverb.is_some() {
+            self.reverb.state = if self.past.reverb.is_some() && op.reverb.is_none() {
                 self.past.reverb
             } else {
                 op.reverb

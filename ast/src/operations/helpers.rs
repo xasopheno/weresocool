@@ -83,13 +83,6 @@ pub fn pad_length(input: &mut NormalForm, max_len: Rational64, defs: &Defs) -> R
     let input_lr = input.get_length_ratio(defs)?;
     if max_len > Rational64::new(0, 1) && input_lr < max_len {
         for voice in input.operations.iter_mut() {
-            let last = voice
-                .iter()
-                .last()
-                .map(|op| op.to_owned())
-                .unwrap_or_else(PointOp::init_silent);
-            let osc_type = last.osc_type;
-            let reverb = last.reverb;
             voice.push(PointOp {
                 fm: Ratio::new(0, 1),
                 fa: Ratio::new(0, 1),
@@ -97,12 +90,12 @@ pub fn pad_length(input: &mut NormalForm, max_len: Rational64, defs: &Defs) -> R
                 pa: Ratio::new(0, 1),
                 g: Ratio::new(0, 1),
                 l: max_len - input_lr,
-                reverb,
+                reverb: None,
                 attack: Ratio::new(1, 1),
                 decay: Ratio::new(1, 1),
                 asr: ASR::Long,
                 portamento: Ratio::new(1, 1),
-                osc_type,
+                osc_type: OscType::None,
                 names: NameSet::new(),
             });
         }

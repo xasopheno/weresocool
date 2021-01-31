@@ -162,7 +162,11 @@ impl Mul<PointOp> for PointOp {
             pa: self.pa + other.pa,
             g: self.g * other.g,
             l: self.l * other.l,
-            reverb: other.reverb,
+            reverb: if other.reverb.is_none() {
+                self.reverb
+            } else {
+                other.reverb
+            },
             osc_type: if other.osc_type == OscType::None {
                 self.osc_type
             } else {
@@ -190,7 +194,11 @@ impl<'a, 'b> Mul<&'b PointOp> for &'a PointOp {
             pa: self.pa + other.pa,
             g: self.g * other.g,
             l: self.l * other.l,
-            reverb: other.reverb,
+            reverb: if other.reverb.is_none() {
+                self.reverb
+            } else {
+                other.reverb
+            },
             osc_type: if other.osc_type == OscType::None {
                 self.osc_type
             } else {
@@ -216,7 +224,11 @@ impl MulAssign for PointOp {
             pa: self.pa + other.pa,
             g: self.g * other.g,
             l: self.l * other.l,
-            reverb: other.reverb,
+            reverb: if other.reverb.is_none() {
+                self.reverb
+            } else {
+                other.reverb
+            },
             osc_type: if other.osc_type == OscType::None {
                 self.osc_type
             } else {
@@ -246,7 +258,11 @@ impl PointOp {
             pa: self.pa + other.pa,
             g: self.g * other.g,
             l,
-            reverb: other.reverb,
+            reverb: if other.reverb.is_none() {
+                self.reverb
+            } else {
+                other.reverb
+            },
             osc_type: if other.osc_type == OscType::None {
                 self.osc_type
             } else {
