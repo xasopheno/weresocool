@@ -55,7 +55,7 @@ impl VoiceState {
 #[derive(Clone, Debug, PartialEq)]
 pub struct ReverbState {
     model: Reverb,
-    state: Option<f32>,
+    state: Option<f64>,
 }
 
 impl ReverbState {
@@ -100,7 +100,11 @@ impl Voice {
             op.total_samples,
         ) * loudness_normalization(self.offset_current.frequency);
 
-        self.reverb.model.update(op.reverb as f32);
+        self.reverb.model.update(if op.reverb.is_some() {
+            op.reverb.unwrap() as f32
+        } else {
+            0.0
+        });
 
         for (index, sample) in buffer.iter_mut().enumerate() {
             let frequency = self.calculate_frequency(
@@ -126,7 +130,7 @@ impl Voice {
                 OscType::Noise => self.generate_random_sample(info),
             };
 
-            if op.reverb > 0.0 && gain > 0.0 {
+            if self.reverb.state.is_some() && self.reverb.state.unwrap() > 0.0 && gain > 0.0 {
                 new_sample = self
                     .reverb
                     .model
@@ -150,6 +154,7 @@ impl Voice {
             self.past.frequency = self.current.frequency;
             self.current.frequency = op.f;
             self.past.osc_type = self.current.osc_type;
+            self.past.reverb = self.current.reverb;
 
             self.past.gain = self.past_gain_from_op(op);
             self.current.gain = self.current_gain_from_op(op);
@@ -160,10 +165,17 @@ impl Voice {
                 op.osc_type
             };
 
+            self.reverb.state = if self.past.reverb.is_none() && op.reverb.is_some() {
+                self.past.reverb
+            } else {
+                op.reverb
+            };
+
             self.attack = op.attack.trunc() as usize;
             self.decay = op.decay.trunc() as usize;
             self.asr = op.asr;
-            self.current.osc_type = op.osc_type
+            self.current.osc_type = op.osc_type;
+            self.current.reverb = op.reverb;
         };
         self.offset_past.gain = self.offset_current.gain;
         self.offset_past.frequency = self.offset_current.frequency;
