@@ -167,7 +167,7 @@ impl Mul<PointOp> for PointOp {
             } else {
                 other.reverb
             },
-            osc_type: if other.osc_type == OscType::None {
+            osc_type: if other.osc_type.is_none() {
                 self.osc_type
             } else {
                 other.osc_type
@@ -199,7 +199,7 @@ impl<'a, 'b> Mul<&'b PointOp> for &'a PointOp {
             } else {
                 other.reverb
             },
-            osc_type: if other.osc_type == OscType::None {
+            osc_type: if other.osc_type.is_none() {
                 self.osc_type
             } else {
                 other.osc_type
@@ -263,7 +263,7 @@ impl PointOp {
             } else {
                 other.reverb
             },
-            osc_type: if other.osc_type == OscType::None {
+            osc_type: if other.osc_type.is_none() {
                 self.osc_type
             } else {
                 other.osc_type

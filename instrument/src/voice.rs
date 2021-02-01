@@ -159,7 +159,7 @@ impl Voice {
             self.past.gain = self.past_gain_from_op(op);
             self.current.gain = self.current_gain_from_op(op);
 
-            self.osc_type = if self.past.osc_type != OscType::None && op.osc_type == OscType::None {
+            self.osc_type = if self.past.osc_type.is_some() && op.osc_type.is_none() {
                 self.past.osc_type
             } else {
                 op.osc_type

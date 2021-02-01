@@ -102,6 +102,16 @@ pub enum OscType {
     Square,
 }
 
+impl OscType {
+    pub fn is_none(&self) -> bool {
+        matches!(self, OscType::None)
+    }
+
+    pub fn is_some(&self) -> bool {
+        !matches!(self, OscType::None)
+    }
+}
+
 #[derive(Copy, Clone, Debug, PartialEq, Serialize, Deserialize, Ord, PartialOrd, Hash, Eq)]
 pub enum ASR {
     Short,
