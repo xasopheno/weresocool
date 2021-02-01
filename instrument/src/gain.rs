@@ -9,8 +9,8 @@ pub fn gain_at_index(start: f64, target: f64, index: usize, length: usize) -> f6
 impl Voice {
     pub fn past_gain_from_op(&self, op: &RenderOp) -> f64 {
         match self.osc_type {
-            OscType::Sine { .. } => match op.osc_type {
-                OscType::Sine { .. } => self.current.gain,
+            OscType::Sine { .. } | OscType::None => match op.osc_type {
+                OscType::Sine { .. } | OscType::None => self.current.gain,
                 _ => self.current.gain / 3.0,
             },
             _ => self.current.gain,
@@ -21,7 +21,7 @@ impl Voice {
         let mut gain = if op.f > 20.0 { op.g } else { (0., 0.) };
 
         gain = match op.osc_type {
-            OscType::Sine { .. } => gain,
+            OscType::Sine { .. } | OscType::None => gain,
             _ => (gain.0 / 3.0, gain.1 / 3.0),
         };
 

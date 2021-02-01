@@ -67,7 +67,7 @@ impl TimedOp {
             pa: self.pa,
             g: self.g,
             l: self.l,
-            reverb: self.reverb,
+            reverb: Some(self.reverb),
             attack: self.decay,
             decay: self.decay,
             asr: self.asr,
@@ -239,7 +239,9 @@ fn point_op_to_timed_op(
         attack: point_op.attack,
         osc_type: point_op.osc_type,
         decay: point_op.decay,
-        reverb: point_op.reverb,
+        reverb: point_op
+            .reverb
+            .unwrap_or_else(|| Rational64::from_integer(0)),
         asr: point_op.asr,
         portamento: point_op.portamento,
         g: point_op.g,

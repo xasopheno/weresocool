@@ -23,7 +23,6 @@ pub struct RenderOp {
     pub l: f64,
     pub g: (f64, f64),
     pub t: f64,
-    pub reverb: f64,
     pub attack: f64,
     pub decay: f64,
     pub asr: ASR,
@@ -33,6 +32,7 @@ pub struct RenderOp {
     pub voice: usize,
     pub event: usize,
     pub portamento: usize,
+    pub reverb: Option<f64>,
     pub osc_type: OscType,
     pub next_l_silent: bool,
     pub next_r_silent: bool,
@@ -46,7 +46,7 @@ impl RenderOp {
             g,
             l,
             t: 0.0,
-            reverb: 0.0,
+            reverb: None,
             attack: SETTINGS.sample_rate,
             decay: SETTINGS.sample_rate,
             asr: ASR::Long,
@@ -56,7 +56,7 @@ impl RenderOp {
             voice: 0,
             event: 0,
             portamento: 1024,
-            osc_type: OscType::Sine { pow: None },
+            osc_type: OscType::None,
             next_l_silent: false,
             next_r_silent: false,
         }
@@ -68,7 +68,7 @@ impl RenderOp {
             p: 0.0,
             l,
             t: 0.0,
-            reverb: 0.0,
+            reverb: None,
             attack: SETTINGS.sample_rate,
             decay: SETTINGS.sample_rate,
             asr: ASR::Long,
@@ -78,16 +78,16 @@ impl RenderOp {
             voice: 0,
             event: 0,
             portamento: 1024,
-            osc_type: OscType::Sine { pow: None },
+            osc_type: OscType::None,
             next_l_silent: true,
             next_r_silent: true,
         }
     }
 
-    pub const fn init_silent_with_length_and_osctype(
+    pub const fn init_silent_with_length_osc_type_and_reverb(
         l: f64,
         osc_type: OscType,
-        reverb: f64,
+        reverb: Option<f64>,
     ) -> Self {
         Self {
             f: 0.0,
@@ -199,7 +199,11 @@ fn pointop_to_renderop(
         p,
         l,
         t: r_to_f64(*time),
-        reverb: r_to_f64(point_op.reverb),
+        reverb: if point_op.reverb.is_some() {
+            Some(r_to_f64(point_op.reverb.unwrap()))
+        } else {
+            None
+        },
         index: 0,
         samples: (l * SETTINGS.sample_rate).round() as usize,
         total_samples: (l * SETTINGS.sample_rate).round() as usize,
@@ -277,13 +281,6 @@ pub fn nf_to_vec_renderable(
         .par_iter()
         .enumerate()
         .map(|(voice, vec_point_op)| {
-            let last_op = vec_point_op
-                .last()
-                .cloned()
-                .unwrap_or_else(PointOp::init_silent);
-            let last_osc = last_op.osc_type;
-            let last_reverb = last_op.reverb;
-
             let mut time = Rational64::new(0, 1);
             let mut result: Vec<RenderOp> = vec![];
             for (event, p_op) in vec_point_op.iter().enumerate() {
@@ -303,10 +300,10 @@ pub fn nf_to_vec_renderable(
                 result.push(op);
             }
             if default_settings().pad_end {
-                result.push(RenderOp::init_silent_with_length_and_osctype(
+                result.push(RenderOp::init_silent_with_length_osc_type_and_reverb(
                     1.0,
-                    last_osc,
-                    weresocool_shared::helpers::r_to_f64(last_reverb),
+                    OscType::None,
+                    None,
                 ));
             }
             result

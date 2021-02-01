@@ -66,7 +66,7 @@ pub enum Op {
         m: Rational64,
     },
     Reverb {
-        m: Rational64,
+        m: Option<Rational64>,
     },
     //
     Sequence {
@@ -96,9 +96,20 @@ pub enum Op {
 
 #[derive(Copy, Clone, Debug, PartialEq, Serialize, Deserialize, Ord, PartialOrd, Hash, Eq)]
 pub enum OscType {
+    None,
     Sine { pow: Option<Rational64> },
     Noise,
     Square,
+}
+
+impl OscType {
+    pub fn is_none(&self) -> bool {
+        matches!(self, OscType::None)
+    }
+
+    pub fn is_some(&self) -> bool {
+        !matches!(self, OscType::None)
+    }
 }
 
 #[derive(Copy, Clone, Debug, PartialEq, Serialize, Deserialize, Ord, PartialOrd, Hash, Eq)]

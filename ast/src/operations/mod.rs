@@ -27,12 +27,12 @@ pub struct PointOp {
     pub pm: Rational64,
     pub pa: Rational64,
     pub g: Rational64,
-    pub reverb: Rational64,
     pub l: Rational64,
     pub attack: Rational64,
     pub decay: Rational64,
     pub asr: ASR,
     pub portamento: Rational64,
+    pub reverb: Option<Rational64>,
     pub osc_type: OscType,
     pub names: NameSet,
 }
@@ -162,8 +162,16 @@ impl Mul<PointOp> for PointOp {
             pa: self.pa + other.pa,
             g: self.g * other.g,
             l: self.l * other.l,
-            reverb: other.reverb,
-            osc_type: other.osc_type,
+            reverb: if other.reverb.is_none() {
+                self.reverb
+            } else {
+                other.reverb
+            },
+            osc_type: if other.osc_type.is_none() {
+                self.osc_type
+            } else {
+                other.osc_type
+            },
             attack: self.attack * other.attack,
             decay: self.decay * other.decay,
             asr: other.asr,
@@ -186,8 +194,16 @@ impl<'a, 'b> Mul<&'b PointOp> for &'a PointOp {
             pa: self.pa + other.pa,
             g: self.g * other.g,
             l: self.l * other.l,
-            reverb: other.reverb,
-            osc_type: other.osc_type,
+            reverb: if other.reverb.is_none() {
+                self.reverb
+            } else {
+                other.reverb
+            },
+            osc_type: if other.osc_type.is_none() {
+                self.osc_type
+            } else {
+                other.osc_type
+            },
             attack: self.attack * other.attack,
             decay: self.decay * other.decay,
             asr: other.asr,
@@ -208,8 +224,16 @@ impl MulAssign for PointOp {
             pa: self.pa + other.pa,
             g: self.g * other.g,
             l: self.l * other.l,
-            reverb: other.reverb,
-            osc_type: other.osc_type,
+            reverb: if other.reverb.is_none() {
+                self.reverb
+            } else {
+                other.reverb
+            },
+            osc_type: if other.osc_type == OscType::None {
+                self.osc_type
+            } else {
+                other.osc_type
+            },
             attack: self.attack * other.attack,
             decay: self.decay * other.decay,
             asr: other.asr,
@@ -234,8 +258,16 @@ impl PointOp {
             pa: self.pa + other.pa,
             g: self.g * other.g,
             l,
-            reverb: other.reverb,
-            osc_type: other.osc_type,
+            reverb: if other.reverb.is_none() {
+                self.reverb
+            } else {
+                other.reverb
+            },
+            osc_type: if other.osc_type.is_none() {
+                self.osc_type
+            } else {
+                other.osc_type
+            },
             attack: self.attack * other.attack,
             decay: self.decay * other.decay,
             asr: other.asr,
@@ -252,12 +284,12 @@ impl PointOp {
             pa: Ratio::new(0, 1),
             g: Ratio::new(1, 1),
             l: Ratio::new(1, 1),
-            reverb: Ratio::new(0, 1),
+            reverb: None,
             attack: Ratio::new(1, 1),
             decay: Ratio::new(1, 1),
             asr: ASR::Long,
             portamento: Ratio::new(1, 1),
-            osc_type: OscType::Sine { pow: None },
+            osc_type: OscType::None,
             names: NameSet::new(),
         }
     }
@@ -269,12 +301,12 @@ impl PointOp {
             pa: Ratio::new(0, 1),
             g: Ratio::new(0, 1),
             l: Ratio::new(1, 1),
-            reverb: Ratio::new(0, 1),
+            reverb: None,
             attack: Ratio::new(1, 1),
             decay: Ratio::new(1, 1),
             portamento: Ratio::new(1, 1),
             asr: ASR::Long,
-            osc_type: OscType::Sine { pow: None },
+            osc_type: OscType::None,
             names: NameSet::new(),
         }
     }

@@ -11,7 +11,7 @@ const SETTINGS: Settings = default_settings();
 
 #[derive(Clone, Debug, PartialEq)]
 pub struct Voice {
-    pub reverb: Reverb,
+    pub reverb: ReverbState,
     pub index: usize,
     pub past: VoiceState,
     pub current: VoiceState,
@@ -34,12 +34,17 @@ pub struct SampleInfo {
 pub struct VoiceState {
     pub frequency: f64,
     pub gain: f64,
+    pub osc_type: OscType,
+    pub reverb: Option<f64>,
 }
+
 impl VoiceState {
     pub const fn init() -> Self {
         Self {
             frequency: 0.0,
             gain: 0.0,
+            osc_type: OscType::None,
+            reverb: None,
         }
     }
     pub fn silent(&self) -> bool {
@@ -47,11 +52,26 @@ impl VoiceState {
     }
 }
 
+#[derive(Clone, Debug, PartialEq)]
+pub struct ReverbState {
+    model: Reverb,
+    state: Option<f64>,
+}
+
+impl ReverbState {
+    pub fn init() -> Self {
+        Self {
+            model: Reverb::new(),
+            state: None,
+        }
+    }
+}
+
 impl Voice {
     pub fn init(index: usize) -> Self {
         Self {
-            reverb: Reverb::new(),
             index,
+            reverb: ReverbState::init(),
             past: VoiceState::init(),
             current: VoiceState::init(),
             offset_past: VoiceState::init(),
@@ -80,7 +100,11 @@ impl Voice {
             op.total_samples,
         ) * loudness_normalization(self.offset_current.frequency);
 
-        self.reverb.update(op.reverb as f32);
+        self.reverb.model.update(if self.current.reverb.is_some() {
+            self.current.reverb.unwrap() as f32
+        } else {
+            0.0
+        });
 
         for (index, sample) in buffer.iter_mut().enumerate() {
             let frequency = self.calculate_frequency(
@@ -100,14 +124,16 @@ impl Voice {
             let info = SampleInfo { gain, frequency };
 
             let mut new_sample = match self.osc_type {
+                OscType::None => self.generate_sine_sample(info, None),
                 OscType::Sine { pow } => self.generate_sine_sample(info, pow),
                 OscType::Square => self.generate_square_sample(info),
                 OscType::Noise => self.generate_random_sample(info),
             };
 
-            if op.reverb > 0.0 && gain > 0.0 {
+            if self.reverb.state.is_some() && self.reverb.state.unwrap() > 0.0 && gain > 0.0 {
                 new_sample = self
                     .reverb
+                    .model
                     .calc_sample(new_sample as f32, gain as f32)
                     .into();
             }
@@ -127,16 +153,29 @@ impl Voice {
         if op.index == 0 {
             self.past.frequency = self.current.frequency;
             self.current.frequency = op.f;
+            self.past.osc_type = self.current.osc_type;
+            self.past.reverb = self.current.reverb;
 
             self.past.gain = self.past_gain_from_op(op);
             self.current.gain = self.current_gain_from_op(op);
 
-            self.osc_type = op.osc_type;
+            self.osc_type = if self.past.osc_type.is_some() && op.osc_type.is_none() {
+                self.past.osc_type
+            } else {
+                op.osc_type
+            };
+
+            self.reverb.state = if self.past.reverb.is_some() && op.reverb.is_none() {
+                self.past.reverb
+            } else {
+                op.reverb
+            };
 
             self.attack = op.attack.trunc() as usize;
             self.decay = op.decay.trunc() as usize;
-
             self.asr = op.asr;
+            self.current.osc_type = op.osc_type;
+            self.current.reverb = op.reverb;
         };
         self.offset_past.gain = self.offset_current.gain;
         self.offset_past.frequency = self.offset_current.frequency;

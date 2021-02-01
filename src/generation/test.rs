@@ -79,7 +79,7 @@ pub mod tests {
             decay: Rational64::new(1, 1),
             asr: ASR::Long,
             portamento: Rational64::new(1, 1),
-            osc_type: OscType::Sine { pow: None },
+            osc_type: OscType::None,
         };
 
         assert_eq!(
@@ -151,7 +151,7 @@ pub mod tests {
             decay: Rational64::new(1, 1),
             asr: ASR::Short,
             portamento: Rational64::new(1, 1),
-            osc_type: OscType::Sine { pow: None },
+            osc_type: OscType::None,
         };
 
         let vec_timed_op = vec![
