@@ -59,6 +59,7 @@ fn process_op_table(defs: Defs) -> Result<Defs, Error> {
             }
         };
     }
+    result.stems = defs.stems;
 
     Ok(result)
 }

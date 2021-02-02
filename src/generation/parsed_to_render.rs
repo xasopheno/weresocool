@@ -46,6 +46,7 @@ pub enum RenderReturn {
     StereoWaveform(StereoWaveform),
     NfBasisAndTable(NormalForm, Basis, Defs),
     Wav(Vec<u8>),
+    Stems(Vec<Vec<u8>>),
 }
 
 impl TryFrom<RenderReturn> for Vec<u8> {
@@ -100,7 +101,10 @@ pub fn parsed_to_render(
 
     match return_type {
         RenderType::Stems => {
-            dbg!(parsed_composition.defs.stems);
+            dbg!(&parsed_composition.defs.stems);
+            let renderables = nf_to_vec_renderable(nf, &parsed_composition.defs, &basis)?;
+            dbg!(renderables);
+
             unimplemented!();
         }
         RenderType::NfBasisAndTable => Ok(RenderReturn::NfBasisAndTable(

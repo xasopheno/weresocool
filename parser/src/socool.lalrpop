@@ -67,7 +67,9 @@ LetDef: () = {
         defs.generators.insert(name.to_owned(), Term::Gen(generator)); ()
     },
 
-    <stems: Stems> => {dbg!(stems); unimplemented!()}
+    <stems: Stems> =>{
+      defs.stems.extend(stems); ()
+    }
 };
 
 
