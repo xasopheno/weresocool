@@ -128,6 +128,13 @@ pub fn parse_file(
             name.push_str(&key);
             defs.lists.insert(name, val);
         }
+
+        for (key, val) in parsed_composition.defs.generators {
+            let mut name = import_name.clone();
+            name.push('.');
+            name.push_str(&key);
+            defs.generators.insert(name, val);
+        }
     }
 
     let init = socool::SoCoolParser::new().parse(&mut defs, &composition);

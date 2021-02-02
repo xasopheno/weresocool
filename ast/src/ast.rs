@@ -14,6 +14,7 @@ pub struct Defs {
     pub terms: IndexMap<String, Term>,
     pub lists: IndexMap<String, Term>,
     pub generators: IndexMap<String, Term>,
+    pub stems: Vec<String>,
 }
 
 #[derive(Clone, PartialEq, Debug, Hash)]

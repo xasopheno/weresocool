@@ -8,30 +8,11 @@ overtones = {
 }
 
 thing1 = {
-  Overlay [
-    Sine | Gm 2
-    -- Sine 1.1
-    -- Sine
-  ]
-  -- | Gm 1/4
-  | Seq [
-    Fm 1, Fm 9/8, Fm 5/4
-  ]
-  | ModBy [
-    Reverb 0.1, Fm 9/8| Reverb 2
-  ]
-  | ModBy [
-    Fm 1, Fm 9/8, Fm 4/3, Fm 7/6 
-  ]
-  | Seq [AsIs, Reverse]
+  AsIs
 }
 
 main = {
   Seq [
-    overtones
-    | thing1,
-    Fm 0, Fm 0
-  ]
-  | Gm 1/4
-  -- | Repeat 2
-}
+    #thing1 | thing1,
+  ] 
+} -> [thing1]

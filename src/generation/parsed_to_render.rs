@@ -35,6 +35,7 @@ pub enum RenderType {
     NfBasisAndTable,
     StereoWaveform,
     Wav(WavType),
+    Stems,
 }
 
 #[derive(Clone, PartialEq, Debug)]
@@ -98,6 +99,10 @@ pub fn parsed_to_render(
     let basis = Basis::from(parsed_composition.init);
 
     match return_type {
+        RenderType::Stems => {
+            dbg!(parsed_composition.defs.stems);
+            unimplemented!();
+        }
         RenderType::NfBasisAndTable => Ok(RenderReturn::NfBasisAndTable(
             nf.clone(),
             basis,
