@@ -352,7 +352,7 @@ impl NormalForm {
         }
     }
 
-    pub fn map_apply(&mut self, f: impl Fn(&mut PointOp)) {
+    pub fn fmap(&mut self, f: impl Fn(&mut PointOp)) {
         for voice in self.operations.iter_mut() {
             for point_op in voice {
                 f(point_op)
@@ -361,7 +361,7 @@ impl NormalForm {
     }
 
     pub fn solo_ops_by_name(&mut self, name: String) {
-        self.map_apply(|op: &mut PointOp| {
+        self.fmap(|op: &mut PointOp| {
             if !op.names.contains(&name) {
                 op.silence();
             };
