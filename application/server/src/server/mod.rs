@@ -1,6 +1,7 @@
 pub mod print;
 pub mod types;
 pub mod volume;
+use crate::server::print::PrintSuccess;
 use crate::server::types::Language;
 use actix_files::NamedFile;
 use actix_web::{web, HttpRequest, HttpResponse};
@@ -15,18 +16,6 @@ use weresocool::{
 pub async fn single_page_app(_req: HttpRequest) -> actix_web::Result<NamedFile> {
     let path = PathBuf::from("./src/server/build/index.html");
     Ok(NamedFile::open(path)?)
-}
-
-#[derive(Deserialize, Serialize, Debug)]
-pub struct PrintSuccess {
-    audio: Vec<u8>,
-    print_type: String,
-}
-
-impl PrintSuccess {
-    pub fn new(audio: Vec<u8>, print_type: String) -> Self {
-        Self { audio, print_type }
-    }
 }
 
 #[derive(Deserialize, Serialize, Debug)]

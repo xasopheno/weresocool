@@ -59,9 +59,7 @@ impl Normalize for Op {
             Op::Tag(name) => {
                 let name = name.to_string();
                 input.fmap(|op| {
-                    for op in seq {
-                        op.names.insert(name.clone());
-                    }
+                    op.names.insert(name.clone());
                 })
             }
 

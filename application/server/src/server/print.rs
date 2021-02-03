@@ -1,8 +1,21 @@
 use crate::server::types::PrintLanguage;
-use crate::server::{PrintSuccess, Success};
+use crate::server::Success;
 use actix_web::{http::StatusCode, web, HttpResponse};
+use serde::{Deserialize, Serialize};
 use weresocool::generation::{RenderReturn, RenderType, WavType};
 use weresocool::interpretable::{InputType, Interpretable};
+
+#[derive(Deserialize, Serialize, Debug)]
+pub struct PrintSuccess {
+    audio: Vec<u8>,
+    print_type: String,
+}
+
+impl PrintSuccess {
+    pub fn new(audio: Vec<u8>, print_type: String) -> Self {
+        Self { audio, print_type }
+    }
+}
 
 pub async fn print(req: web::Json<PrintLanguage>) -> HttpResponse {
     let result = if req.print_type == "mp3".to_string() {

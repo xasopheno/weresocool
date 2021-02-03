@@ -101,15 +101,19 @@ pub fn parsed_to_render(
 
     match return_type {
         RenderType::Stems => {
-            dbg!(&parsed_composition.defs.stems);
-            dbg!(&nf);
-            let mut n = nf.clone();
-            n.solo_ops_by_name(parsed_composition.defs.stems[0].clone());
-            dbg!(&n);
-            // let renderables = nf_to_vec_renderable(nf, &parsed_composition.defs, &basis)?;
-            // dbg!(renderables);
+            let names = parsed_composition.defs.stems.clone();
+            if names.len() == 0 {
+                return Err(Error::with_msg("No stems to render"));
+            }
 
-            unimplemented!();
+            let mut result: Vec<Vec<u8>> = vec![];
+            for name in names {
+                let mut n = nf.clone();
+                n.solo_ops_by_name(name);
+                let stereo_waveform = render(&basis, &n, &parsed_composition.defs)?;
+                result.push(write_composition_to_wav(stereo_waveform)?);
+            }
+            Ok(RenderReturn::Stems(result))
         }
         RenderType::NfBasisAndTable => Ok(RenderReturn::NfBasisAndTable(
             nf.clone(),
