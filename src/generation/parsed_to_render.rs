@@ -102,8 +102,12 @@ pub fn parsed_to_render(
     match return_type {
         RenderType::Stems => {
             dbg!(&parsed_composition.defs.stems);
-            let renderables = nf_to_vec_renderable(nf, &parsed_composition.defs, &basis)?;
-            dbg!(renderables);
+            dbg!(&nf);
+            let mut n = nf.clone();
+            n.solo_ops_by_name(parsed_composition.defs.stems[0].clone());
+            dbg!(&n);
+            // let renderables = nf_to_vec_renderable(nf, &parsed_composition.defs, &basis)?;
+            // dbg!(renderables);
 
             unimplemented!();
         }

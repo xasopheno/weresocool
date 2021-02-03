@@ -249,6 +249,12 @@ impl PointOp {
         self.fm == zero && self.fa < Rational64::new(20, 1) || self.g == zero
     }
 
+    pub fn silence(&mut self) {
+        self.fm = Rational64::from_integer(0);
+        self.fa = Rational64::from_integer(0);
+        self.g = Rational64::from_integer(0);
+    }
+
     pub fn mod_by(&mut self, other: PointOp, l: Rational64) {
         let names = union_names(self.names.clone(), &other.names);
         *self = PointOp {
@@ -344,6 +350,22 @@ impl NormalForm {
             operations: vec![],
             length_ratio: Ratio::new(0, 1),
         }
+    }
+
+    pub fn map_apply(&mut self, f: impl Fn(&mut PointOp)) {
+        for voice in self.operations.iter_mut() {
+            for point_op in voice {
+                f(point_op)
+            }
+        }
+    }
+
+    pub fn solo_ops_by_name(&mut self, name: String) {
+        self.map_apply(|op: &mut PointOp| {
+            if !op.names.contains(&name) {
+                op.silence();
+            };
+        })
     }
 
     pub fn partition(&self, name: String) -> (NormalForm, NormalForm) {

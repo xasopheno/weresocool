@@ -4,8 +4,13 @@ thing1 = {
   AsIs
 }
 
+thing2 = {
+  Fm 3/2
+}
+
 main = {
   Seq [
     #thing1 | thing1,
+    #thing2 | thing2,
   ] 
-} -> [thing1]
+} -> [thing1, thing2]
