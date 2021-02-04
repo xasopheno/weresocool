@@ -1,8 +1,8 @@
-use crate::server::types::PrintLanguage;
+use crate::server::types::StemLanguage;
 use crate::server::Success;
 use actix_web::{http::StatusCode, web, HttpResponse};
 use serde::{Deserialize, Serialize};
-use weresocool::generation::{RenderReturn, RenderType, WavType};
+use weresocool::generation::{RenderReturn, RenderType};
 use weresocool::interpretable::{InputType, Interpretable};
 
 #[derive(Deserialize, Serialize, Debug)]
@@ -17,7 +17,7 @@ impl StemSuccess {
     }
 }
 
-pub async fn stems(req: web::Json<PrintLanguage>) -> HttpResponse {
+pub async fn stems(req: web::Json<StemLanguage>) -> HttpResponse {
     let result = InputType::Language(&req.language).make(RenderType::Stems, None);
     match result {
         Ok(render_return) => match render_return {

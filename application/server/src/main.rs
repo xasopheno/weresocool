@@ -1,5 +1,5 @@
 mod server;
-use crate::server::{print::print, render, single_page_app, volume::volume_update};
+use crate::server::{print::print, render, single_page_app, stems::stems, volume::volume_update};
 use actix_cors::Cors;
 use actix_rt;
 use actix_web::{body::Body, web, App, HttpRequest, HttpResponse, HttpServer};
@@ -67,7 +67,8 @@ pub async fn main() -> Result<(), actix_web::Error> {
                 web::scope("/api")
                     .route("/render", web::post().to(render))
                     .route("/volume", web::post().to(volume_update))
-                    .route("/print", web::post().to(print)),
+                    .route("/print", web::post().to(print))
+                    .route("/stems", web::post().to(stems)),
             )
             .route("/compose", web::get().to(single_page_app))
             .default_service(web::get().to(assets))
