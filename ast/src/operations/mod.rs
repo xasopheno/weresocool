@@ -11,32 +11,49 @@ mod normalize;
 pub mod substitute;
 
 #[derive(Debug, Clone, PartialEq, Hash)]
+/// All operations in the language take a NormalForm as an import and
+/// return a NormalForm.
 pub struct NormalForm {
     pub operations: Vec<Vec<PointOp>>,
     pub length_ratio: Rational64,
 }
 
+/// Function Argument Map
 pub type ArgMap = HashMap<String, Term>;
-
+/// Set of Names associated with a Point
 pub type NameSet = BTreeSet<String>;
 
 #[derive(Debug, Clone, Hash, Eq, Ord, PartialEq, PartialOrd)]
 pub struct PointOp {
+    /// Frequency Multiply
     pub fm: Rational64,
+    /// Frequency Add
     pub fa: Rational64,
+    /// Pan Multiply
     pub pm: Rational64,
+    /// Pan Add
     pub pa: Rational64,
+    /// Gain Multiply
     pub g: Rational64,
+    /// Length Multiply
     pub l: Rational64,
+    /// Attack Length
     pub attack: Rational64,
+    /// Decay Length
     pub decay: Rational64,
+    /// Attack/Sustain/Release Type
     pub asr: ASR,
+    /// Portamento Length
     pub portamento: Rational64,
+    /// Reverb Multiplier
     pub reverb: Option<Rational64>,
+    /// Oscillator Type
     pub osc_type: OscType,
+    /// Set of Names
     pub names: NameSet,
 }
 
+/// Mutates a NormalForm in place.
 pub trait Normalize {
     fn apply_to_normal_form(&self, normal_form: &mut NormalForm, defs: &Defs) -> Result<(), Error>;
 }
@@ -338,6 +355,8 @@ impl PointOp {
 }
 
 impl NormalForm {
+    /// Creates a NormalForm with a single PointOp in the operations
+    /// and sets the appropriate length_ratio.
     pub fn init() -> NormalForm {
         NormalForm {
             operations: vec![vec![PointOp::init()]],
@@ -345,6 +364,8 @@ impl NormalForm {
         }
     }
 
+    /// Creates a NormalForm with empty operations
+    /// and set the length_ratio to zero.
     pub fn init_empty() -> NormalForm {
         NormalForm {
             operations: vec![],
@@ -352,6 +373,7 @@ impl NormalForm {
         }
     }
 
+    /// Applys function 'f' to every PointOp in the NormalForm
     pub fn fmap(&mut self, f: impl Fn(&mut PointOp)) {
         for voice in self.operations.iter_mut() {
             for point_op in voice {
@@ -360,6 +382,8 @@ impl NormalForm {
         }
     }
 
+    /// Given a name, solos that name by calling op.silence() on every op
+    /// that doesn't have that name in their NameSet.
     pub fn solo_ops_by_name(&mut self, name: String) {
         self.fmap(|op: &mut PointOp| {
             if !op.names.contains(&name) {

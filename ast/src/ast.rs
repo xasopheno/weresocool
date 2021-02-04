@@ -10,6 +10,7 @@ pub struct FunDef {
 }
 
 #[derive(Debug, Clone, PartialEq, Default)]
+/// Table of Definitions
 pub struct Defs {
     pub terms: IndexMap<String, Term>,
     pub lists: IndexMap<String, Term>,
@@ -96,6 +97,7 @@ pub enum Op {
 }
 
 #[derive(Copy, Clone, Debug, PartialEq, Serialize, Deserialize, Ord, PartialOrd, Hash, Eq)]
+/// Oscillator Type
 pub enum OscType {
     None,
     Sine { pow: Option<Rational64> },
@@ -114,6 +116,7 @@ impl OscType {
 }
 
 #[derive(Copy, Clone, Debug, PartialEq, Serialize, Deserialize, Ord, PartialOrd, Hash, Eq)]
+/// Attack/Sustain/Release Type
 pub enum ASR {
     Short,
     Long,
