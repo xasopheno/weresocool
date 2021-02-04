@@ -6,12 +6,12 @@ use weresocool::generation::{RenderReturn, RenderType};
 use weresocool::interpretable::{InputType, Interpretable};
 
 #[derive(Deserialize, Serialize, Debug)]
-pub struct StemSuccess {
+pub struct StemsSuccess {
     stems: Vec<Vec<u8>>,
     print_type: String,
 }
 
-impl StemSuccess {
+impl StemsSuccess {
     pub fn new(stems: Vec<Vec<u8>>, print_type: String) -> Self {
         Self { stems, print_type }
     }
@@ -24,7 +24,7 @@ pub async fn stems(req: web::Json<StemLanguage>) -> HttpResponse {
             RenderReturn::Stems(stems) => HttpResponse::Ok()
                 .content_type("application/json")
                 .status(StatusCode::OK)
-                .json(Success::StemSuccess(StemSuccess::new(
+                .json(Success::StemsSuccess(StemsSuccess::new(
                     stems,
                     req.print_type.to_owned(),
                 ))),

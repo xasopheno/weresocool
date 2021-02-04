@@ -10,6 +10,7 @@ import path from 'path';
 export enum ResponseType {
   RenderSuccess = 'RenderSuccess',
   PrintSuccess = 'PrintSuccess',
+  StemsSuccess = 'StemsSuccess',
   IdError = 'IdError',
   ParseError = 'ParseError',
   IndexError = 'IndexError',
@@ -193,6 +194,26 @@ export class Dispatch {
     }
     this.dispatch({ _k: 'Set_Printing', state: false });
   }
+
+  async onStems(language: string, print_type: string): Promise<void> {
+    this.dispatch({ _k: 'Backend', fetch: { state: 'loading' } });
+    this.dispatch({ _k: 'Set_Printing', state: true });
+    try {
+      const response = await axios.post(settings.stemsURL, {
+        language,
+        print_type,
+      });
+      this.dispatch({ _k: 'Backend', fetch: { state: 'good' } });
+
+      generateDispatches(response.data, language).map((dispatch) => {
+        this.dispatch(dispatch);
+      });
+    } catch (e) {
+      console.log(e);
+      this.dispatch({ _k: 'Backend', fetch: { state: 'bad', error: e } });
+    }
+    this.dispatch({ _k: 'Set_Printing', state: false });
+  }
 }
 
 const generateDispatches = (
@@ -229,6 +250,22 @@ const generateDispatches = (
           type: 'application/octet-stream',
         });
         FileSaver.saveAs(blob, `my_song.${value.print_type}`);
+      }
+      break;
+    case ResponseType.StemsSuccess:
+      {
+        result.push({
+          _k: 'Set_Render_State',
+          state: ResponseType.RenderSuccess,
+        });
+        result.push({ _k: 'Reset_Error_Message' });
+        result.push({ _k: 'Reset_Markers' });
+
+        console.log(value.stems);
+        // const blob = new Blob([new Uint8Array(value.audio)], {
+        // type: 'application/octet-stream',
+        // });
+        // FileSaver.saveAs(blob, `my_song.${value.print_type}`);
       }
       break;
     case ResponseType.ParseError:

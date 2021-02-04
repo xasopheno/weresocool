@@ -110,7 +110,7 @@ export const RenderModal = (props: {
             onClick={async () => {
               await dispatch.onStop();
               props.options.setShow(false);
-              // await dispatch.onStems(store.language, 'mp3');
+              await dispatch.onStems(store.language, 'mp3');
               dispatch.setEditorFocus(store.editor_ref);
             }}
           >

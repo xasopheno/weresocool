@@ -3,7 +3,7 @@ pub mod stems;
 pub mod types;
 pub mod volume;
 use crate::server::print::PrintSuccess;
-use crate::server::stems::StemSuccess;
+use crate::server::stems::StemsSuccess;
 use crate::server::types::Language;
 use actix_files::NamedFile;
 use actix_web::{web, HttpRequest, HttpResponse};
@@ -24,7 +24,7 @@ pub async fn single_page_app(_req: HttpRequest) -> actix_web::Result<NamedFile> 
 pub enum Success {
     RenderSuccess(String),
     PrintSuccess(PrintSuccess),
-    StemSuccess(StemSuccess),
+    StemsSuccess(StemsSuccess),
     VolumeUpdate(String),
 }
 
