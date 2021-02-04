@@ -101,7 +101,10 @@ pub fn parsed_to_render(
 
     match return_type {
         RenderType::Stems => {
-            let names = parsed_composition.defs.stems.clone();
+            let mut names = parsed_composition.defs.stems.clone();
+            names.sort_unstable();
+            names.dedup();
+
             if names.len() == 0 {
                 return Err(Error::with_msg("No stems to render"));
             }
@@ -111,7 +114,8 @@ pub fn parsed_to_render(
                 let mut n = nf.clone();
                 n.solo_ops_by_name(name);
                 let stereo_waveform = render(&basis, &n, &parsed_composition.defs)?;
-                result.push(write_composition_to_wav(stereo_waveform)?);
+
+                result.push(write_composition_to_mp3(stereo_waveform)?);
             }
             Ok(RenderReturn::Stems(result))
         }
