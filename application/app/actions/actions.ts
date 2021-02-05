@@ -1,5 +1,5 @@
 import { createContext } from 'react';
-import { Fetch, Store } from '../store';
+import { Fetch } from '../store';
 import axios from 'axios';
 import FileSaver from 'file-saver';
 import { settings } from '../settings';
@@ -7,6 +7,7 @@ import AceEditor from 'react-ace';
 import { remote } from 'electron';
 import path from 'path';
 import React from 'react';
+import JSZip from 'jszip';
 
 export enum ResponseType {
   RenderSuccess = 'RenderSuccess',
@@ -263,18 +264,28 @@ const generateDispatches = (
         });
         pushResets();
 
-        console.log(value.print_type);
-        value.stems.forEach((stem: { name: string; audio: number[] }) => {
-          console.log(stem.name);
-          const blob = new Blob([new Uint8Array(value.audio)], {
+        const zip = new JSZip();
+        value.stems.map((stem: { name: string; audio: number[] }) => {
+          console.log(stem.audio);
+          const blob = new Blob([new Uint8Array(stem.audio)], {
             type: 'application/octet-stream',
           });
-          console.log(blob);
+
+          zip.file(`${stem.name}.mp3`, blob);
         });
-        // const blob = new Blob([new Uint8Array(value.audio)], {
-        // type: 'application/octet-stream',
-        // });
-        // FileSaver.saveAs(blob, `my_song.${value.print_type}`);
+
+        zip
+          .generateAsync({ type: 'blob' })
+          .then((content) => {
+            FileSaver.saveAs(content, `my_stems.zip`);
+            return;
+          })
+          .catch((err) => {
+            results.push({
+              _k: 'Set_Error_Message',
+              message: 'Error generating stems',
+            });
+          });
       }
       break;
     case ResponseType.ParseError:

@@ -5,23 +5,24 @@
     "lib": ["dom", "esnext"],
     "declaration": true,
     "declarationMap": true,
+    "incremental": true,
+    "downlevelIteration": true,
     "noEmit": true,
     "jsx": "react",
     "strict": true,
     "pretty": true,
     "sourceMap": true,
-    /* Additional Checks */
     "noUnusedLocals": true,
     "noUnusedParameters": true,
     "noImplicitReturns": true,
     "noFallthroughCasesInSwitch": true,
-    /* Module Resolution Options */
     "moduleResolution": "node",
-    "esModuleInterop": true,
     "allowSyntheticDefaultImports": true,
-    "resolveJsonModule": true,
     "allowJs": true,
-    "skipLibCheck": true
+    "skipLibCheck": true,
+    "esModuleInterop": true,
+    "preserveSymlinks": true,
+    "resolveJsonModule": true
   },
   "exclude": [
     "release",
