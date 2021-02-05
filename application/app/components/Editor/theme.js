@@ -156,8 +156,8 @@ color: #B9CA4A\
 .error {\
   background: lightsalmon;\
   opacity: 0.2;\
-  position:absolute;\
-  z-index:20;\
+  position: absolute;\
+  z-index: 20;\
 }\
 ';
     var dom = require('../lib/dom');

@@ -290,6 +290,7 @@
     "file-saver": "2.0.2",
     "get-port": "5.1.1",
     "history": "5.0.0",
+    "jszip": "^3.5.0",
     "react": "16.13.1",
     "react-ace": "9.2.1",
     "react-dom": "16.13.1",

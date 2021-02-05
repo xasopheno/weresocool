@@ -1,11 +1,12 @@
 import { createContext } from 'react';
-import { Fetch } from '../store';
+import { Fetch, Store } from '../store';
 import axios from 'axios';
 import FileSaver from 'file-saver';
 import { settings } from '../settings';
 import AceEditor from 'react-ace';
 import { remote } from 'electron';
 import path from 'path';
+import React from 'react';
 
 export enum ResponseType {
   RenderSuccess = 'RenderSuccess',
@@ -224,27 +225,29 @@ const generateDispatches = (
   const responseType = Object.keys(response)[0];
   // eslint-disable-next-line
   const value: any = Object.values(response)[0];
-  const result: Action[] = [];
+  const results: Action[] = [];
+  const pushResets = () => {
+    results.push({ _k: 'Reset_Error_Message' });
+    results.push({ _k: 'Reset_Markers' });
+  };
 
   // console.log(responseType);
   // console.log(value);
   switch (responseType) {
     case ResponseType.RenderSuccess:
-      result.push({
+      results.push({
         _k: 'Set_Render_State',
         state: ResponseType.RenderSuccess,
       });
-      result.push({ _k: 'Reset_Error_Message' });
-      result.push({ _k: 'Reset_Markers' });
+      pushResets();
       break;
     case ResponseType.PrintSuccess:
       {
-        result.push({
+        results.push({
           _k: 'Set_Render_State',
           state: ResponseType.RenderSuccess,
         });
-        result.push({ _k: 'Reset_Error_Message' });
-        result.push({ _k: 'Reset_Markers' });
+        pushResets();
 
         const blob = new Blob([new Uint8Array(value.audio)], {
           type: 'application/octet-stream',
@@ -254,12 +257,11 @@ const generateDispatches = (
       break;
     case ResponseType.StemsSuccess:
       {
-        result.push({
+        results.push({
           _k: 'Set_Render_State',
           state: ResponseType.RenderSuccess,
         });
-        result.push({ _k: 'Reset_Error_Message' });
-        result.push({ _k: 'Reset_Markers' });
+        pushResets();
 
         console.log(value.print_type);
         value.stems.forEach((stem: { name: string; audio: number[] }) => {
@@ -276,47 +278,47 @@ const generateDispatches = (
       }
       break;
     case ResponseType.ParseError:
-      result.push({
+      results.push({
         _k: 'Set_Render_State',
         state: ResponseType.ParseError,
       });
-      result.push({
+      results.push({
         _k: 'Set_Markers',
         line: value.line,
         column: value.column,
         n_lines: language.split('\n').length,
       });
-      result.push({
+      results.push({
         _k: 'Set_Error_Message',
         message: `Line: ${value.line} | Column ${value.column}`,
       });
       break;
     case ResponseType.IdError:
-      result.push({
+      results.push({
         _k: 'Set_Render_State',
         state: ResponseType.IdError,
       });
-      result.push({
+      results.push({
         _k: 'Set_Error_Message',
         message: `${value.id}`,
       });
       break;
     case ResponseType.IndexError:
-      result.push({
+      results.push({
         _k: 'Set_Render_State',
         state: ResponseType.IndexError,
       });
-      result.push({
+      results.push({
         _k: 'Set_Error_Message',
         message: `${value.message}`,
       });
       break;
     case ResponseType.MsgError:
-      result.push({
+      results.push({
         _k: 'Set_Render_State',
         state: ResponseType.MsgError,
       });
-      result.push({
+      results.push({
         _k: 'Set_Error_Message',
         message: `${value}`,
       });
@@ -326,7 +328,7 @@ const generateDispatches = (
       console.log(response);
       break;
   }
-  return result;
+  return results;
 };
 
 export const DispatchContext = createContext(
