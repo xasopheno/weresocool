@@ -253,16 +253,13 @@ pub fn generate_waveforms(
 
 /// Sum a vec of StereoWaveform to a single stereo_waveform.
 pub fn sum_all_waveforms(mut vec_wav: Vec<StereoWaveform>) -> StereoWaveform {
-    let mut result = StereoWaveform::new(0);
-
     // Sort the vectors by length
     sort_vecs(&mut vec_wav);
 
-    // Find the longest vector
+    // Get the length of the longest vector
     let max_len = vec_wav[0].l_buffer.len();
 
-    result.l_buffer.resize(max_len, 0.0);
-    result.r_buffer.resize(max_len, 0.0);
+    let mut result = StereoWaveform::new(max_len);
 
     for wav in vec_wav {
         sum_vec(&mut result.l_buffer, &wav.l_buffer[..]);

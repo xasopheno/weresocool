@@ -2,6 +2,10 @@ use float_cmp::ApproxEq;
 use num_rational::{Ratio, Rational64};
 use std::str::FromStr;
 
+pub fn r_to_f64(r: Rational64) -> f64 {
+    *r.numer() as f64 / *r.denom() as f64
+}
+
 pub fn et_to_rational(i: i64, d: usize) -> Rational64 {
     let signum = i.signum();
     if signum == 0 {
@@ -40,10 +44,6 @@ pub fn f32_to_rational(mut float: f32) -> Rational64 {
     let num = i64::from_str(&float_string.replace('.', "")).unwrap();
 
     Ratio::new(num, den)
-}
-
-pub fn r_to_f64(r: Rational64) -> f64 {
-    *r.numer() as f64 / *r.denom() as f64
 }
 
 pub fn cmp_vec_f32(vec1: Vec<f32>, vec2: Vec<f32>) -> bool {
