@@ -120,7 +120,7 @@ pub fn parsed_to_render(
                 let difference = names
                     .difference(&nf_names)
                     .into_iter()
-                    .map(|s| s.clone())
+                    .cloned()
                     .collect::<Vec<String>>()
                     .join(", ");
 
