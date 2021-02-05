@@ -281,6 +281,7 @@ const generateDispatches = (
             return;
           })
           .catch((err) => {
+            console.log(err);
             results.push({
               _k: 'Set_Error_Message',
               message: 'Error generating stems',
