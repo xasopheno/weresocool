@@ -2,17 +2,17 @@ use crate::server::types::StemLanguage;
 use crate::server::Success;
 use actix_web::{http::StatusCode, web, HttpResponse};
 use serde::{Deserialize, Serialize};
-use weresocool::generation::{RenderReturn, RenderType};
+use weresocool::generation::{RenderReturn, RenderType, Stem};
 use weresocool::interpretable::{InputType, Interpretable};
 
 #[derive(Deserialize, Serialize, Debug)]
 pub struct StemsSuccess {
-    stems: Vec<Vec<u8>>,
+    stems: Vec<Stem>,
     print_type: String,
 }
 
 impl StemsSuccess {
-    pub fn new(stems: Vec<Vec<u8>>, print_type: String) -> Self {
+    pub fn new(stems: Vec<Stem>, print_type: String) -> Self {
         Self { stems, print_type }
     }
 }

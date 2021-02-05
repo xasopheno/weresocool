@@ -261,7 +261,14 @@ const generateDispatches = (
         result.push({ _k: 'Reset_Error_Message' });
         result.push({ _k: 'Reset_Markers' });
 
-        console.log(value.stems);
+        console.log(value.print_type);
+        value.stems.forEach((stem: { name: string; audio: number[] }) => {
+          console.log(stem.name);
+          const blob = new Blob([new Uint8Array(value.audio)], {
+            type: 'application/octet-stream',
+          });
+          console.log(blob);
+        });
         // const blob = new Blob([new Uint8Array(value.audio)], {
         // type: 'application/octet-stream',
         // });

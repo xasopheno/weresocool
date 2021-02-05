@@ -53,7 +53,6 @@ pub struct PointOp {
     pub names: NameSet,
 }
 
-/// Mutates a NormalForm in place.
 pub trait Normalize {
     fn apply_to_normal_form(&self, normal_form: &mut NormalForm, defs: &Defs) -> Result<(), Error>;
 }
@@ -384,9 +383,9 @@ impl NormalForm {
 
     /// Given a name, solos that name by calling op.silence() on every op
     /// that doesn't have that name in their NameSet.
-    pub fn solo_ops_by_name(&mut self, name: String) {
+    pub fn solo_ops_by_name(&mut self, name: &str) {
         self.fmap(|op: &mut PointOp| {
-            if !op.names.contains(&name) {
+            if !op.names.contains(name) {
                 op.silence();
             };
         })

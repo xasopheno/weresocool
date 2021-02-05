@@ -9,6 +9,6 @@ pub use self::{
     },
     parsed_to_render::{
         generate_waveforms, parsed_to_render, render, sum_all_waveforms, sum_vec, RenderReturn,
-        RenderType, WavType,
+        RenderType, Stem, WavType,
     },
 };

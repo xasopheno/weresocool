@@ -111,6 +111,21 @@ color: goldenrod\
 .ace-wsc-theme .ace_gen_part {\
 color: lightsteelblue\
 }\
+.ace-wsc-theme .ace_name_tag {\
+color: palegoldenrod\
+}\
+.ace-wsc-theme .ace_hash_tag {\
+color: goldenrod\
+}\
+.ace-wsc-theme .ace_stem_arrow {\
+color: goldenrod\
+}\
+.ace-wsc-theme .ace_stem_bracket {\
+color: goldenrod\
+}\
+.ace-wsc-theme .ace_stem_names {\
+color: palegoldenrod\
+}\
 .ace-wsc-theme .ace_repeat {\
 color: #A9DC76\
 }\

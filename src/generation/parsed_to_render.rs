@@ -5,6 +5,7 @@ use crate::{
 };
 use pbr::ProgressBar;
 use rayon::prelude::*;
+use serde::{Deserialize, Serialize};
 use std::convert::TryFrom;
 use std::fs::File;
 use std::io::prelude::*;
@@ -37,7 +38,7 @@ pub enum RenderType {
     Stems,
 }
 
-#[derive(Clone, PartialEq, Debug)]
+#[derive(Clone, PartialEq, Debug, Deserialize, Serialize)]
 /// A stem is an audio file of a NormalForm which has been solo'd
 /// and the audio rendered only contains operations with the name
 /// in the NameSet.
@@ -75,7 +76,8 @@ impl TryFrom<RenderReturn> for Vec<u8> {
     }
 }
 
-/// Parse a file and generate a render of the target render_type
+/// Generate a render of a parsed composition in the target render_type.
+/// The filename is only used to for naming things when needed.
 pub fn parsed_to_render(
     filename: &str,
     parsed_composition: ParsedComposition,
@@ -120,13 +122,16 @@ pub fn parsed_to_render(
                 return Err(Error::with_msg("No stems to render"));
             }
 
-            let mut result: Vec<Vec<u8>> = vec![];
+            let mut result: Vec<Stem> = vec![];
             for name in names {
                 let mut n = nf.clone();
-                n.solo_ops_by_name(name);
+                n.solo_ops_by_name(&name);
                 let stereo_waveform = render(&basis, &n, &parsed_composition.defs)?;
 
-                result.push(write_composition_to_mp3(stereo_waveform)?);
+                result.push(Stem {
+                    name,
+                    audio: write_composition_to_mp3(stereo_waveform)?,
+                });
             }
             Ok(RenderReturn::Stems(result))
         }
