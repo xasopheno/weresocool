@@ -1,7 +1,7 @@
 use crate::{Defs, OscType, Term, ASR};
 use num_rational::{Ratio, Rational64};
 use std::{
-    collections::{BTreeSet, HashMap},
+    collections::{BTreeSet, HashMap, HashSet},
     ops::{Mul, MulAssign},
 };
 use weresocool_error::Error;
@@ -373,8 +373,18 @@ impl NormalForm {
     }
 
     /// Applys function 'f' to every PointOp in the NormalForm
-    pub fn fmap(&mut self, f: impl Fn(&mut PointOp)) {
+    pub fn fmap_mut(&mut self, f: impl Fn(&mut PointOp)) {
         for voice in self.operations.iter_mut() {
+            for point_op in voice {
+                f(point_op)
+            }
+        }
+    }
+
+    /// Applys function 'f' to every PointOp in the NormalForm
+    /// with an impl FnMut allows a mutable function to be passed in.
+    pub fn fmap_with_state(&self, mut f: impl FnMut(&PointOp)) {
+        for voice in self.operations.iter() {
             for point_op in voice {
                 f(point_op)
             }
@@ -384,11 +394,23 @@ impl NormalForm {
     /// Given a name, solos that name by calling op.silence() on every op
     /// that doesn't have that name in their NameSet.
     pub fn solo_ops_by_name(&mut self, name: &str) {
-        self.fmap(|op: &mut PointOp| {
+        self.fmap_mut(|op: &mut PointOp| {
             if !op.names.contains(name) {
                 op.silence();
             };
         })
+    }
+
+    /// Returns all the names that exist in the NormalForm
+    pub fn names(&self) -> HashSet<String> {
+        let mut result = HashSet::new();
+        self.fmap_with_state(|op| {
+            for name in op.names.iter() {
+                result.insert(name.clone());
+            }
+        });
+
+        result
     }
 
     pub fn partition(&self, name: String) -> (NormalForm, NormalForm) {

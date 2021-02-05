@@ -1,6 +1,7 @@
 use crate::Term;
 use indexmap::IndexMap;
 use num_rational::Rational64;
+use std::collections::HashSet;
 
 #[derive(Debug, Clone, PartialEq, Hash)]
 pub struct FunDef {
@@ -15,7 +16,7 @@ pub struct Defs {
     pub terms: IndexMap<String, Term>,
     pub lists: IndexMap<String, Term>,
     pub generators: IndexMap<String, Term>,
-    pub stems: Vec<String>,
+    pub stems: HashSet<String>,
 }
 
 #[derive(Clone, PartialEq, Debug, Hash)]

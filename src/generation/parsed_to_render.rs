@@ -114,11 +114,23 @@ pub fn parsed_to_render(
 
     match return_type {
         RenderType::Stems => {
-            let mut names = parsed_composition.defs.stems.clone();
-            names.sort_unstable();
-            names.dedup();
+            let nf_names = nf.names();
+            let names = parsed_composition.defs.stems.clone();
+            if !names.is_subset(&nf_names) {
+                let difference = names
+                    .difference(&nf_names)
+                    .into_iter()
+                    .map(|s| s.clone())
+                    .collect::<Vec<String>>()
+                    .join(", ");
 
-            if names.len() == 0 {
+                return Err(Error::with_msg(format!(
+                    "Stem names not found in composition: {}",
+                    difference
+                )));
+            }
+
+            if names.is_empty() {
                 return Err(Error::with_msg("No stems to render"));
             }
 

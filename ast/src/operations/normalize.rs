@@ -58,12 +58,12 @@ impl Normalize for Op {
 
             Op::Tag(name) => {
                 let name = name.to_string();
-                input.fmap(|op| {
+                input.fmap_mut(|op| {
                     op.names.insert(name.clone());
                 })
             }
 
-            Op::FInvert => input.fmap(|op| {
+            Op::FInvert => input.fmap_mut(|op| {
                 if *op.fm.numer() != 0 {
                     op.fm = op.fm.recip();
                 }
@@ -75,58 +75,58 @@ impl Normalize for Op {
                 }
             }
 
-            Op::Reverb { m } => input.fmap(|op| {
+            Op::Reverb { m } => input.fmap_mut(|op| {
                 if m.is_some() {
                     op.reverb = *m
                 }
             }),
 
-            Op::Sine { pow } => input.fmap(|op| op.osc_type = OscType::Sine { pow: *pow }),
+            Op::Sine { pow } => input.fmap_mut(|op| op.osc_type = OscType::Sine { pow: *pow }),
 
-            Op::AD { attack, decay, asr } => input.fmap(|op| {
+            Op::AD { attack, decay, asr } => input.fmap_mut(|op| {
                 op.attack *= attack;
                 op.decay *= decay;
                 op.asr = *asr;
             }),
 
-            Op::Portamento { m } => input.fmap(|op| {
+            Op::Portamento { m } => input.fmap_mut(|op| {
                 op.portamento *= m;
             }),
 
-            Op::Square => input.fmap(|op| op.osc_type = OscType::Square),
+            Op::Square => input.fmap_mut(|op| op.osc_type = OscType::Square),
 
-            Op::Noise => input.fmap(|op| op.osc_type = OscType::Noise),
+            Op::Noise => input.fmap_mut(|op| op.osc_type = OscType::Noise),
 
-            Op::TransposeM { m } => input.fmap(|op| {
+            Op::TransposeM { m } => input.fmap_mut(|op| {
                 op.fm = op
                     .fm
                     .checked_mul(m)
                     .unwrap_or_else(|| lossy_rational_mul(op.fm, *m))
             }),
 
-            Op::TransposeA { a } => input.fmap(|op| {
+            Op::TransposeA { a } => input.fmap_mut(|op| {
                 op.fa += a;
             }),
 
-            Op::PanA { a } => input.fmap(|op| {
+            Op::PanA { a } => input.fmap_mut(|op| {
                 op.pa += a;
             }),
 
-            Op::PanM { m } => input.fmap(|op| {
+            Op::PanM { m } => input.fmap_mut(|op| {
                 op.pm = op
                     .pm
                     .checked_mul(m)
                     .unwrap_or_else(|| lossy_rational_mul(op.pm, *m))
             }),
 
-            Op::Gain { m } => input.fmap(|op| {
+            Op::Gain { m } => input.fmap_mut(|op| {
                 op.g =
                     op.g.checked_mul(m)
                         .unwrap_or_else(|| lossy_rational_mul(op.g, *m))
             }),
 
             Op::Length { m } => {
-                input.fmap(|op| {
+                input.fmap_mut(|op| {
                     op.l =
                         op.l.checked_mul(m)
                             .unwrap_or_else(|| lossy_rational_mul(op.l, *m))
@@ -136,7 +136,7 @@ impl Normalize for Op {
             }
 
             Op::Silence { m } => {
-                input.fmap(|op| {
+                input.fmap_mut(|op| {
                     op.fm = Ratio::new(0, 1);
                     op.fa = Ratio::new(0, 1);
                     op.g = Ratio::new(0, 1);
