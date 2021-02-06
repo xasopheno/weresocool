@@ -11,7 +11,13 @@ thing1 = {
 }
 
 thing2 = {
-  Fm 3/4
+  O[
+    (1/1, 2, 1, 1),
+    (1/1, 0, 1, -1),
+  ]
+  | Seq [
+    Fm 3/4
+  ]
   > FitLength thing1
 }
 
