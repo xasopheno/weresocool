@@ -218,6 +218,45 @@ export class Dispatch {
   }
 }
 
+function createAndSaveZipFileFromStems(
+  stems: { name: string; audio: number[] }[],
+  results: Action[]
+) {
+  const zip = new JSZip();
+  stems.map((stem: { name: string; audio: number[] }) => {
+    console.log(stem.audio);
+    const blob = new Blob([new Uint8Array(stem.audio)], {
+      type: 'application/octet-stream',
+    });
+
+    zip.file(`${stem.name}.mp3`, blob);
+  });
+
+  zip
+    .generateAsync({ type: 'blob' })
+    .then((content) => {
+      FileSaver.saveAs(content, `my_stems.zip`);
+      return;
+    })
+    .catch((err) => {
+      console.log(err);
+      results.push({
+        _k: 'Set_Error_Message',
+        message: 'Error generating stems',
+      });
+    });
+}
+
+function saveAudioFromResponse(response: {
+  audio: number[];
+  print_type: string;
+}) {
+  const blob = new Blob([new Uint8Array(response.audio)], {
+    type: 'application/octet-stream',
+  });
+  FileSaver.saveAs(blob, `my_song.${response.print_type}`);
+}
+
 const generateDispatches = (
   response: ResponseType,
   language: string
@@ -228,6 +267,10 @@ const generateDispatches = (
   const value: any = Object.values(response)[0];
   const results: Action[] = [];
   const pushResets = () => {
+    results.push({
+      _k: 'Set_Render_State',
+      state: ResponseType.RenderSuccess,
+    });
     results.push({ _k: 'Reset_Error_Message' });
     results.push({ _k: 'Reset_Markers' });
   };
@@ -236,57 +279,18 @@ const generateDispatches = (
   // console.log(value);
   switch (responseType) {
     case ResponseType.RenderSuccess:
-      results.push({
-        _k: 'Set_Render_State',
-        state: ResponseType.RenderSuccess,
-      });
       pushResets();
       break;
     case ResponseType.PrintSuccess:
       {
-        results.push({
-          _k: 'Set_Render_State',
-          state: ResponseType.RenderSuccess,
-        });
         pushResets();
-
-        const blob = new Blob([new Uint8Array(value.audio)], {
-          type: 'application/octet-stream',
-        });
-        FileSaver.saveAs(blob, `my_song.${value.print_type}`);
+        saveAudioFromResponse(value);
       }
       break;
     case ResponseType.StemsSuccess:
       {
-        results.push({
-          _k: 'Set_Render_State',
-          state: ResponseType.RenderSuccess,
-        });
         pushResets();
-
-        const zip = new JSZip();
-        value.stems.map((stem: { name: string; audio: number[] }) => {
-          console.log(stem.audio);
-          const blob = new Blob([new Uint8Array(stem.audio)], {
-            type: 'application/octet-stream',
-          });
-
-          zip.file(`${stem.name}.mp3`, blob);
-        });
-
-        zip
-          .generateAsync({ type: 'blob' })
-          .then((content) => {
-            FileSaver.saveAs(content, `my_stems.zip`);
-            return;
-          })
-          .catch((err) => {
-            console.log(err);
-            results.push({
-              _k: 'Set_Error_Message',
-              message: 'Error generating stems',
-            });
-          });
+        createAndSaveZipFileFromStems(value.stems, results);
       }
       break;
     case ResponseType.ParseError:
