@@ -114,7 +114,7 @@ export const RenderModal = (props: {
               dispatch.setEditorFocus(store.editor_ref);
             }}
           >
-            Stems: Mp3
+            Stems(Mp3)
           </Section>
         </TextContainer>
         <CloseModalButton onClick={() => props.options.setShow(false)}>

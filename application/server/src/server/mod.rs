@@ -57,7 +57,7 @@ mod tests {
     #[actix_rt::test]
     async fn test_index() {
         let language = Language {
-            language: "{f: 100, l: 1, g: 1, p: 0}\nmain={Tm 1}\n".to_string(),
+            language: "{f: 100, l: 1, g: 1, p: 0}\nmain={Fm 1}\n".to_string(),
             working_path: None,
         };
 
