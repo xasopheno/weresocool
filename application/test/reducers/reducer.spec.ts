@@ -105,7 +105,7 @@ describe('Fetch Tests', () => {
     });
 
     const state = result.current[0];
-    const expected_markers = [makeMarker(14, 15, 24)];
+    const expected_markers = [makeMarker(14, 15, 30)];
     expect(state.backend.state).toEqual('good');
     expect(state.render).toEqual(ResponseType.ParseError);
     expect(state.markers).toEqual(expected_markers);
