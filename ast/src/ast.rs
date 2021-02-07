@@ -1,6 +1,7 @@
 use crate::Term;
 use indexmap::IndexMap;
 use num_rational::Rational64;
+use std::collections::HashSet;
 
 #[derive(Debug, Clone, PartialEq, Hash)]
 pub struct FunDef {
@@ -10,10 +11,12 @@ pub struct FunDef {
 }
 
 #[derive(Debug, Clone, PartialEq, Default)]
+/// Table of Definitions
 pub struct Defs {
     pub terms: IndexMap<String, Term>,
     pub lists: IndexMap<String, Term>,
     pub generators: IndexMap<String, Term>,
+    pub stems: HashSet<String>,
 }
 
 #[derive(Clone, PartialEq, Debug, Hash)]
@@ -95,6 +98,7 @@ pub enum Op {
 }
 
 #[derive(Copy, Clone, Debug, PartialEq, Serialize, Deserialize, Ord, PartialOrd, Hash, Eq)]
+/// Oscillator Type
 pub enum OscType {
     None,
     Sine { pow: Option<Rational64> },
@@ -113,6 +117,7 @@ impl OscType {
 }
 
 #[derive(Copy, Clone, Debug, PartialEq, Serialize, Deserialize, Ord, PartialOrd, Hash, Eq)]
+/// Attack/Sustain/Release Type
 pub enum ASR {
     Short,
     Long,

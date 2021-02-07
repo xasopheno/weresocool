@@ -65,6 +65,10 @@ LetDef: () = {
     
     <name: Name> "=" <generator: Generator> => {
         defs.generators.insert(name.to_owned(), Term::Gen(generator)); ()
+    },
+
+    <stems: Stems> =>{
+      defs.stems.extend(stems); ()
     }
 };
 
@@ -387,6 +391,10 @@ Axis: Axis = {
     L => Axis::L,
     P => Axis::P,
 };
+
+Stems: Vec<String> = {
+  "->" "[" <names: Comma<Name>> "]" => names 
+}
 
 Fm: String = <s: r"Fm|Tm"> => s.to_string();
 Fa: String = <s: r"Fa|Ta"> => s.to_string();

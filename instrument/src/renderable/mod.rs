@@ -8,13 +8,9 @@ use rayon::prelude::*;
 pub use render_voice::{renderables_to_render_voices, RenderVoice};
 use weresocool_ast::{Defs, NormalForm, Normalize, OscType, PointOp, ASR};
 use weresocool_error::Error;
-use weresocool_shared::{default_settings, lossy_rational_mul, Settings};
+use weresocool_shared::{default_settings, lossy_rational_mul, r_to_f64, Settings};
 
 const SETTINGS: Settings = default_settings();
-
-pub fn r_to_f64(r: Rational64) -> f64 {
-    *r.numer() as f64 / *r.denom() as f64
-}
 
 #[derive(Debug, Clone, PartialEq)]
 pub struct RenderOp {

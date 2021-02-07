@@ -2,6 +2,7 @@ use serde::{Deserialize, Serialize};
 use std::cmp;
 
 #[derive(Clone, Debug, PartialEq, Serialize, Deserialize)]
+/// Left and Right audio channels
 pub struct StereoWaveform {
     pub l_buffer: Vec<f64>,
     pub r_buffer: Vec<f64>,

@@ -31,6 +31,7 @@ pub struct SampleInfo {
 }
 
 #[derive(Clone, Debug, PartialEq)]
+/// Stores state which allow for a 1-step look back at the previously rendered values.
 pub struct VoiceState {
     pub frequency: f64,
     pub gain: f64,
@@ -47,6 +48,8 @@ impl VoiceState {
             reverb: None,
         }
     }
+
+    /// Check if the previous voice state was silent
     pub fn silent(&self) -> bool {
         self.frequency < SETTINGS.min_freq || self.gain == 0.0
     }
@@ -84,6 +87,8 @@ impl Voice {
         }
     }
 
+    /// Renders a single RenderOp given an Offset
+    /// This is where all of the rendering logic for a single happens
     pub fn generate_waveform(&mut self, op: &RenderOp, offset: &Offset) -> Vec<f64> {
         let mut buffer: Vec<f64> = vec![0.0; op.samples];
 

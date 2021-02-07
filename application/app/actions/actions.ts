@@ -6,10 +6,13 @@ import { settings } from '../settings';
 import AceEditor from 'react-ace';
 import { remote } from 'electron';
 import path from 'path';
+import React from 'react';
+import JSZip from 'jszip';
 
 export enum ResponseType {
   RenderSuccess = 'RenderSuccess',
   PrintSuccess = 'PrintSuccess',
+  StemsSuccess = 'StemsSuccess',
   IdError = 'IdError',
   ParseError = 'ParseError',
   IndexError = 'IndexError',
@@ -193,6 +196,65 @@ export class Dispatch {
     }
     this.dispatch({ _k: 'Set_Printing', state: false });
   }
+
+  async onStems(language: string, print_type: string): Promise<void> {
+    this.dispatch({ _k: 'Backend', fetch: { state: 'loading' } });
+    this.dispatch({ _k: 'Set_Printing', state: true });
+    try {
+      const response = await axios.post(settings.stemsURL, {
+        language,
+        print_type,
+      });
+      this.dispatch({ _k: 'Backend', fetch: { state: 'good' } });
+
+      generateDispatches(response.data, language).map((dispatch) => {
+        this.dispatch(dispatch);
+      });
+    } catch (e) {
+      console.log(e);
+      this.dispatch({ _k: 'Backend', fetch: { state: 'bad', error: e } });
+    }
+    this.dispatch({ _k: 'Set_Printing', state: false });
+  }
+}
+
+function createAndSaveZipFileFromStems(
+  stems: { name: string; audio: number[] }[],
+  results: Action[]
+) {
+  const zip = new JSZip();
+  stems.map((stem: { name: string; audio: number[] }) => {
+    console.log(stem.audio);
+    const blob = new Blob([new Uint8Array(stem.audio)], {
+      type: 'application/octet-stream',
+    });
+
+    zip.file(`${stem.name}.mp3`, blob);
+  });
+
+  zip
+    .generateAsync({ type: 'blob' })
+    .then((content) => {
+      FileSaver.saveAs(content, `my_stems.zip`);
+      return;
+    })
+    .catch((err) => {
+      console.log(err);
+      results.push({
+        _k: 'Set_Error_Message',
+        message: 'Error generating stems',
+      });
+    });
+}
+
+function saveAudioFromResponse(response: {
+  audio: number[];
+  print_type: string;
+}) {
+  const blob = new Blob([new Uint8Array(response.audio)], {
+    type: 'application/octet-stream',
+  });
+  FileSaver.saveAs(blob, `my_song.${response.print_type}`);
 }
 
 const generateDispatches = (
@@ -203,76 +265,76 @@ const generateDispatches = (
   const responseType = Object.keys(response)[0];
   // eslint-disable-next-line
   const value: any = Object.values(response)[0];
-  const result: Action[] = [];
+  const results: Action[] = [];
+  const pushResets = () => {
+    results.push({
+      _k: 'Set_Render_State',
+      state: ResponseType.RenderSuccess,
+    });
+    results.push({ _k: 'Reset_Error_Message' });
+    results.push({ _k: 'Reset_Markers' });
+  };
 
   // console.log(responseType);
   // console.log(value);
   switch (responseType) {
     case ResponseType.RenderSuccess:
-      result.push({
-        _k: 'Set_Render_State',
-        state: ResponseType.RenderSuccess,
-      });
-      result.push({ _k: 'Reset_Error_Message' });
-      result.push({ _k: 'Reset_Markers' });
+      pushResets();
       break;
     case ResponseType.PrintSuccess:
       {
-        result.push({
-          _k: 'Set_Render_State',
-          state: ResponseType.RenderSuccess,
-        });
-        result.push({ _k: 'Reset_Error_Message' });
-        result.push({ _k: 'Reset_Markers' });
-
-        const blob = new Blob([new Uint8Array(value.audio)], {
-          type: 'application/octet-stream',
-        });
-        FileSaver.saveAs(blob, `my_song.${value.print_type}`);
+        pushResets();
+        saveAudioFromResponse(value);
+      }
+      break;
+    case ResponseType.StemsSuccess:
+      {
+        pushResets();
+        createAndSaveZipFileFromStems(value.stems, results);
       }
       break;
     case ResponseType.ParseError:
-      result.push({
+      results.push({
         _k: 'Set_Render_State',
         state: ResponseType.ParseError,
       });
-      result.push({
+      results.push({
         _k: 'Set_Markers',
         line: value.line,
         column: value.column,
         n_lines: language.split('\n').length,
       });
-      result.push({
+      results.push({
         _k: 'Set_Error_Message',
         message: `Line: ${value.line} | Column ${value.column}`,
       });
       break;
     case ResponseType.IdError:
-      result.push({
+      results.push({
         _k: 'Set_Render_State',
         state: ResponseType.IdError,
       });
-      result.push({
+      results.push({
         _k: 'Set_Error_Message',
         message: `${value.id}`,
       });
       break;
     case ResponseType.IndexError:
-      result.push({
+      results.push({
         _k: 'Set_Render_State',
         state: ResponseType.IndexError,
       });
-      result.push({
+      results.push({
         _k: 'Set_Error_Message',
         message: `${value.message}`,
       });
       break;
     case ResponseType.MsgError:
-      result.push({
+      results.push({
         _k: 'Set_Render_State',
         state: ResponseType.MsgError,
       });
-      result.push({
+      results.push({
         _k: 'Set_Error_Message',
         message: `${value}`,
       });
@@ -282,7 +344,7 @@ const generateDispatches = (
       console.log(response);
       break;
   }
-  return result;
+  return results;
 };
 
 export const DispatchContext = createContext(

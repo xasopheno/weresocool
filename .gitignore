@@ -7,3 +7,4 @@ parser/ast
 composition.wav
 application/extraResources/weresocool_server
 *.DS_Store
+application/tsconfig.tsbuildinfo

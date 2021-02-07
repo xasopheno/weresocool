@@ -1,21 +1,31 @@
-export const language_template = `{ f: 293.7, l: 1, g: 1, p: 0 }
+export const language_template = `{ f: 311.127, l: 1, g: 1, p: 0 }
 
-overtones = {
+thing1 = {
   O[
     (1/1, 2, 1, 1),
     (1/1, 0, 1, -1),
   ]
-}
-
-thing1 = {
-  Seq [
+  | Seq [
     Fm 1, Fm 9/8, Fm 5/4
   ]
 }
 
+thing2 = {
+  O[
+    (1/1, 2, 1, 1),
+    (1/1, 0, 1, -1),
+  ]
+  | Seq [
+    Fm 3/4
+  ]
+  > FitLength thing1
+}
+
 main = {
-  overtones
-  | thing1
+  Overlay [
+    thing1,
+    thing2
+  ]
 }
 `;
 

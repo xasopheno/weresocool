@@ -3,9 +3,9 @@ use crate::{
     ui::printed,
     write::{write_composition_to_mp3, write_composition_to_wav},
 };
-use num_rational::Rational64;
 use pbr::ProgressBar;
 use rayon::prelude::*;
+use serde::{Deserialize, Serialize};
 use std::convert::TryFrom;
 use std::fs::File;
 use std::io::prelude::*;
@@ -35,16 +35,33 @@ pub enum RenderType {
     NfBasisAndTable,
     StereoWaveform,
     Wav(WavType),
+    Stems,
+}
+
+#[derive(Clone, PartialEq, Debug, Deserialize, Serialize)]
+/// A stem is an audio file of a NormalForm which has been solo'd
+/// and the audio rendered only contains operations with the name
+/// in the NameSet.
+pub struct Stem {
+    /// Stem name
+    pub name: String,
+    /// Stem audio
+    pub audio: Vec<u8>,
 }
 
 #[derive(Clone, PartialEq, Debug)]
 #[allow(clippy::large_enum_variant)]
+/// Target of a render
 pub enum RenderReturn {
     Json4d(String),
     Csv1d(String),
     StereoWaveform(StereoWaveform),
+    /// NormalForm, Basis, and Definition Table
     NfBasisAndTable(NormalForm, Basis, Defs),
+    /// Wav or Mp3
     Wav(Vec<u8>),
+    /// A vector of audio solo'd by names
+    Stems(Vec<Stem>),
 }
 
 impl TryFrom<RenderReturn> for Vec<u8> {
@@ -59,10 +76,8 @@ impl TryFrom<RenderReturn> for Vec<u8> {
     }
 }
 
-pub fn r_to_f64(r: Rational64) -> f64 {
-    *r.numer() as f64 / *r.denom() as f64
-}
-
+/// Generate a render of a parsed composition in the target render_type.
+/// The filename is only used to for naming things when needed.
 pub fn parsed_to_render(
     filename: &str,
     parsed_composition: ParsedComposition,
@@ -98,6 +113,40 @@ pub fn parsed_to_render(
     let basis = Basis::from(parsed_composition.init);
 
     match return_type {
+        RenderType::Stems => {
+            let nf_names = nf.names();
+            let names = parsed_composition.defs.stems.clone();
+            if !names.is_subset(&nf_names) {
+                let difference = names
+                    .difference(&nf_names)
+                    .into_iter()
+                    .cloned()
+                    .collect::<Vec<String>>()
+                    .join(", ");
+
+                return Err(Error::with_msg(format!(
+                    "Stem names not found in composition: {}",
+                    difference
+                )));
+            }
+
+            if names.is_empty() {
+                return Err(Error::with_msg("No stems to render"));
+            }
+
+            let mut result: Vec<Stem> = vec![];
+            for name in names {
+                let mut n = nf.clone();
+                n.solo_ops_by_name(&name);
+                let stereo_waveform = render(&basis, &n, &parsed_composition.defs)?;
+
+                result.push(Stem {
+                    name,
+                    audio: write_composition_to_mp3(stereo_waveform)?,
+                });
+            }
+            Ok(RenderReturn::Stems(result))
+        }
         RenderType::NfBasisAndTable => Ok(RenderReturn::NfBasisAndTable(
             nf.clone(),
             basis,
@@ -219,15 +268,15 @@ pub fn generate_waveforms(
     vec_wav
 }
 
+/// Sum a vec of StereoWaveform to a single stereo_waveform.
 pub fn sum_all_waveforms(mut vec_wav: Vec<StereoWaveform>) -> StereoWaveform {
-    let mut result = StereoWaveform::new(0);
-
+    // Sort the vectors by length
     sort_vecs(&mut vec_wav);
 
+    // Get the length of the longest vector
     let max_len = vec_wav[0].l_buffer.len();
 
-    result.l_buffer.resize(max_len, 0.0);
-    result.r_buffer.resize(max_len, 0.0);
+    let mut result = StereoWaveform::new(max_len);
 
     for wav in vec_wav {
         sum_vec(&mut result.l_buffer, &wav.l_buffer[..]);
@@ -237,10 +286,14 @@ pub fn sum_all_waveforms(mut vec_wav: Vec<StereoWaveform>) -> StereoWaveform {
     result
 }
 
+/// Sort a vec of StereoWaveform by length. Assumes both channels have the same
+/// buffer length
 fn sort_vecs(vec_wav: &mut Vec<StereoWaveform>) {
     vec_wav.sort_unstable_by(|a, b| b.l_buffer.len().cmp(&a.l_buffer.len()));
 }
 
+/// Sum two vectors. Assumes vector a is longer than or of the same length
+/// as vector b.
 pub fn sum_vec(a: &mut Vec<f64>, b: &[f64]) {
     for (ai, bi) in a.iter_mut().zip(b) {
         *ai += *bi;

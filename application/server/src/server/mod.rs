@@ -1,6 +1,9 @@
 pub mod print;
+pub mod stems;
 pub mod types;
 pub mod volume;
+use crate::server::print::PrintSuccess;
+use crate::server::stems::StemsSuccess;
 use crate::server::types::Language;
 use actix_files::NamedFile;
 use actix_web::{web, HttpRequest, HttpResponse};
@@ -18,21 +21,10 @@ pub async fn single_page_app(_req: HttpRequest) -> actix_web::Result<NamedFile> 
 }
 
 #[derive(Deserialize, Serialize, Debug)]
-pub struct PrintSuccess {
-    audio: Vec<u8>,
-    print_type: String,
-}
-
-impl PrintSuccess {
-    pub fn new(audio: Vec<u8>, print_type: String) -> Self {
-        Self { audio, print_type }
-    }
-}
-
-#[derive(Deserialize, Serialize, Debug)]
 pub enum Success {
     RenderSuccess(String),
     PrintSuccess(PrintSuccess),
+    StemsSuccess(StemsSuccess),
     VolumeUpdate(String),
 }
 
@@ -65,7 +57,7 @@ mod tests {
     #[actix_rt::test]
     async fn test_index() {
         let language = Language {
-            language: "{f: 100, l: 1, g: 1, p: 0}\nmain={Tm 1}\n".to_string(),
+            language: "{f: 100, l: 1, g: 1, p: 0}\nmain={Fm 1}\n".to_string(),
             working_path: None,
         };
 

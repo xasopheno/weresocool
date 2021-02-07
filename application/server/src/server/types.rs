@@ -16,3 +16,9 @@ pub struct PrintLanguage {
     pub language: String,
     pub print_type: String,
 }
+
+#[derive(Deserialize, Serialize, Debug)]
+pub struct StemLanguage {
+    pub language: String,
+    pub print_type: String,
+}

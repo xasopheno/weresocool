@@ -1,7 +1,7 @@
 use crate::{Defs, OscType, Term, ASR};
 use num_rational::{Ratio, Rational64};
 use std::{
-    collections::{BTreeSet, HashMap},
+    collections::{BTreeSet, HashMap, HashSet},
     ops::{Mul, MulAssign},
 };
 use weresocool_error::Error;
@@ -11,29 +11,45 @@ mod normalize;
 pub mod substitute;
 
 #[derive(Debug, Clone, PartialEq, Hash)]
+/// All operations in the language take a NormalForm as an import and
+/// return a NormalForm.
 pub struct NormalForm {
     pub operations: Vec<Vec<PointOp>>,
     pub length_ratio: Rational64,
 }
 
+/// Function Argument Map
 pub type ArgMap = HashMap<String, Term>;
-
+/// Set of Names associated with a Point
 pub type NameSet = BTreeSet<String>;
 
 #[derive(Debug, Clone, Hash, Eq, Ord, PartialEq, PartialOrd)]
 pub struct PointOp {
+    /// Frequency Multiply
     pub fm: Rational64,
+    /// Frequency Add
     pub fa: Rational64,
+    /// Pan Multiply
     pub pm: Rational64,
+    /// Pan Add
     pub pa: Rational64,
+    /// Gain Multiply
     pub g: Rational64,
+    /// Length Multiply
     pub l: Rational64,
+    /// Attack Length
     pub attack: Rational64,
+    /// Decay Length
     pub decay: Rational64,
+    /// Attack/Sustain/Release Type
     pub asr: ASR,
+    /// Portamento Length
     pub portamento: Rational64,
+    /// Reverb Multiplier
     pub reverb: Option<Rational64>,
+    /// Oscillator Type
     pub osc_type: OscType,
+    /// Set of Names
     pub names: NameSet,
 }
 
@@ -249,6 +265,12 @@ impl PointOp {
         self.fm == zero && self.fa < Rational64::new(20, 1) || self.g == zero
     }
 
+    pub fn silence(&mut self) {
+        self.fm = Rational64::from_integer(0);
+        self.fa = Rational64::from_integer(0);
+        self.g = Rational64::from_integer(0);
+    }
+
     pub fn mod_by(&mut self, other: PointOp, l: Rational64) {
         let names = union_names(self.names.clone(), &other.names);
         *self = PointOp {
@@ -332,6 +354,8 @@ impl PointOp {
 }
 
 impl NormalForm {
+    /// Creates a NormalForm with a single PointOp in the operations
+    /// and sets the appropriate length_ratio.
     pub fn init() -> NormalForm {
         NormalForm {
             operations: vec![vec![PointOp::init()]],
@@ -339,11 +363,54 @@ impl NormalForm {
         }
     }
 
+    /// Creates a NormalForm with empty operations
+    /// and set the length_ratio to zero.
     pub fn init_empty() -> NormalForm {
         NormalForm {
             operations: vec![],
             length_ratio: Ratio::new(0, 1),
         }
+    }
+
+    /// Applys function 'f' to every PointOp in the NormalForm
+    pub fn fmap_mut(&mut self, f: impl Fn(&mut PointOp)) {
+        for voice in self.operations.iter_mut() {
+            for point_op in voice {
+                f(point_op)
+            }
+        }
+    }
+
+    /// Applys function 'f' to every PointOp in the NormalForm
+    /// with an impl FnMut allows a mutable function to be passed in.
+    pub fn fmap_with_state(&self, mut f: impl FnMut(&PointOp)) {
+        for voice in self.operations.iter() {
+            for point_op in voice {
+                f(point_op)
+            }
+        }
+    }
+
+    /// Given a name, solos that name by calling op.silence() on every op
+    /// that doesn't have that name in their NameSet.
+    pub fn solo_ops_by_name(&mut self, name: &str) {
+        self.fmap_mut(|op: &mut PointOp| {
+            if !op.names.contains(name) {
+                op.silence();
+            };
+        })
+    }
+
+    /// Returns all the names that exist in the NormalForm
+    pub fn names(&self) -> HashSet<String> {
+        let mut result = HashSet::new();
+        self.fmap_with_state(|op| {
+            for name in op.names.iter() {
+                result.insert(name.clone());
+            }
+        });
+
+        result
     }
 
     pub fn partition(&self, name: String) -> (NormalForm, NormalForm) {

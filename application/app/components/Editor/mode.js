@@ -8,6 +8,20 @@ export class CustomHighlightRules extends window.ace.acequire(
     this.$rules = {
       start: [
         {
+          token: ['hash_tag', 'name_tag'],
+          regex: '(#)([a-z_0-9]+[A-Z]*)',
+        },
+        {
+          token: [
+            'stem_arrow',
+            '',
+            'stem_bracket',
+            'stem_names',
+            'stem_bracket',
+          ],
+          regex: '(->)(\\s?)(\\[)(.*)(\\])',
+        },
+        {
           token: 'comment',
           regex: '--.*$',
         },

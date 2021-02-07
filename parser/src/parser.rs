@@ -59,6 +59,7 @@ fn process_op_table(defs: Defs) -> Result<Defs, Error> {
             }
         };
     }
+    result.stems = defs.stems;
 
     Ok(result)
 }
@@ -127,6 +128,13 @@ pub fn parse_file(
             name.push('.');
             name.push_str(&key);
             defs.lists.insert(name, val);
+        }
+
+        for (key, val) in parsed_composition.defs.generators {
+            let mut name = import_name.clone();
+            name.push('.');
+            name.push_str(&key);
+            defs.generators.insert(name, val);
         }
     }
 

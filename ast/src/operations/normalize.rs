@@ -58,22 +58,16 @@ impl Normalize for Op {
 
             Op::Tag(name) => {
                 let name = name.to_string();
-                for seq in input.operations.iter_mut() {
-                    for p_op in seq {
-                        p_op.names.insert(name.clone());
-                    }
-                }
+                input.fmap_mut(|op| {
+                    op.names.insert(name.clone());
+                })
             }
 
-            Op::FInvert => {
-                for voice in input.operations.iter_mut() {
-                    for point_op in voice {
-                        if *point_op.fm.numer() != 0 {
-                            point_op.fm = point_op.fm.recip();
-                        }
-                    }
+            Op::FInvert => input.fmap_mut(|op| {
+                if *op.fm.numer() != 0 {
+                    op.fm = op.fm.recip();
                 }
-            }
+            }),
 
             Op::Reverse => {
                 for voice in input.operations.iter_mut() {
@@ -81,129 +75,73 @@ impl Normalize for Op {
                 }
             }
 
-            Op::Reverb { m } => {
-                for voice in input.operations.iter_mut() {
-                    for point_op in voice {
-                        if m.is_some() {
-                            point_op.reverb = *m
-                        }
-                    }
+            Op::Reverb { m } => input.fmap_mut(|op| {
+                if m.is_some() {
+                    op.reverb = *m
                 }
-            }
+            }),
 
-            Op::Sine { pow } => {
-                for voice in input.operations.iter_mut() {
-                    for point_op in voice {
-                        point_op.osc_type = OscType::Sine { pow: *pow }
-                    }
-                }
-            }
+            Op::Sine { pow } => input.fmap_mut(|op| op.osc_type = OscType::Sine { pow: *pow }),
 
-            Op::AD { attack, decay, asr } => {
-                for voice in input.operations.iter_mut() {
-                    for point_op in voice {
-                        point_op.attack *= attack;
-                        point_op.decay *= decay;
-                        point_op.asr = *asr;
-                    }
-                }
-            }
+            Op::AD { attack, decay, asr } => input.fmap_mut(|op| {
+                op.attack *= attack;
+                op.decay *= decay;
+                op.asr = *asr;
+            }),
 
-            Op::Portamento { m } => {
-                for voice in input.operations.iter_mut() {
-                    for point_op in voice {
-                        point_op.portamento *= m;
-                    }
-                }
-            }
+            Op::Portamento { m } => input.fmap_mut(|op| {
+                op.portamento *= m;
+            }),
 
-            Op::Square => {
-                for voice in input.operations.iter_mut() {
-                    for point_op in voice {
-                        point_op.osc_type = OscType::Square
-                    }
-                }
-            }
+            Op::Square => input.fmap_mut(|op| op.osc_type = OscType::Square),
 
-            Op::Noise => {
-                for voice in input.operations.iter_mut() {
-                    for point_op in voice {
-                        point_op.osc_type = OscType::Noise
-                    }
-                }
-            }
+            Op::Noise => input.fmap_mut(|op| op.osc_type = OscType::Noise),
 
-            Op::TransposeM { m } => {
-                for voice in input.operations.iter_mut() {
-                    for point_op in voice {
-                        point_op.fm = point_op
-                            .fm
-                            .checked_mul(m)
-                            .unwrap_or_else(|| lossy_rational_mul(point_op.fm, *m))
-                    }
-                }
-            }
+            Op::TransposeM { m } => input.fmap_mut(|op| {
+                op.fm = op
+                    .fm
+                    .checked_mul(m)
+                    .unwrap_or_else(|| lossy_rational_mul(op.fm, *m))
+            }),
 
-            Op::TransposeA { a } => {
-                for voice in input.operations.iter_mut() {
-                    for point_op in voice {
-                        point_op.fa += a;
-                    }
-                }
-            }
+            Op::TransposeA { a } => input.fmap_mut(|op| {
+                op.fa += a;
+            }),
 
-            Op::PanA { a } => {
-                for voice in input.operations.iter_mut() {
-                    for point_op in voice {
-                        point_op.pa += a;
-                    }
-                }
-            }
+            Op::PanA { a } => input.fmap_mut(|op| {
+                op.pa += a;
+            }),
 
-            Op::PanM { m } => {
-                for voice in input.operations.iter_mut() {
-                    for point_op in voice {
-                        point_op.pm = point_op
-                            .pm
-                            .checked_mul(m)
-                            .unwrap_or_else(|| lossy_rational_mul(point_op.pm, *m))
-                    }
-                }
-            }
+            Op::PanM { m } => input.fmap_mut(|op| {
+                op.pm = op
+                    .pm
+                    .checked_mul(m)
+                    .unwrap_or_else(|| lossy_rational_mul(op.pm, *m))
+            }),
 
-            Op::Gain { m } => {
-                for voice in input.operations.iter_mut() {
-                    for point_op in voice {
-                        point_op.g = point_op
-                            .g
-                            .checked_mul(m)
-                            .unwrap_or_else(|| lossy_rational_mul(point_op.g, *m))
-                    }
-                }
-            }
+            Op::Gain { m } => input.fmap_mut(|op| {
+                op.g =
+                    op.g.checked_mul(m)
+                        .unwrap_or_else(|| lossy_rational_mul(op.g, *m))
+            }),
 
             Op::Length { m } => {
-                for voice in input.operations.iter_mut() {
-                    for point_op in voice {
-                        point_op.l = point_op
-                            .l
-                            .checked_mul(m)
-                            .unwrap_or_else(|| lossy_rational_mul(point_op.l, *m))
-                    }
-                }
+                input.fmap_mut(|op| {
+                    op.l =
+                        op.l.checked_mul(m)
+                            .unwrap_or_else(|| lossy_rational_mul(op.l, *m))
+                });
 
                 input.length_ratio *= m;
             }
 
             Op::Silence { m } => {
-                for voice in input.operations.iter_mut() {
-                    for mut point_op in voice {
-                        point_op.fm = Ratio::new(0, 1);
-                        point_op.fa = Ratio::new(0, 1);
-                        point_op.g = Ratio::new(0, 1);
-                        point_op.l *= m;
-                    }
-                }
+                input.fmap_mut(|op| {
+                    op.fm = Ratio::new(0, 1);
+                    op.fa = Ratio::new(0, 1);
+                    op.g = Ratio::new(0, 1);
+                    op.l *= m;
+                });
 
                 input.length_ratio *= m;
             }

@@ -105,6 +105,17 @@ export const RenderModal = (props: {
           >
             Wav
           </Section>
+          <Section
+            id={'stemsButton'}
+            onClick={async () => {
+              await dispatch.onStop();
+              props.options.setShow(false);
+              await dispatch.onStems(store.language, 'mp3');
+              dispatch.setEditorFocus(store.editor_ref);
+            }}
+          >
+            Stems(Mp3)
+          </Section>
         </TextContainer>
         <CloseModalButton onClick={() => props.options.setShow(false)}>
           X
