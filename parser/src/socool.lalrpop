@@ -259,8 +259,16 @@ BaseOperation: Term = {
     "Sine" <pow: Rational?> => {
       Term::Op(Sine { pow })
     },
-    r"Square|Pulse" <width: Rational?> => {
+   r"Square|Pulse" <width: Rational?> => {
       Term::Op(Square { width })
+    },
+
+   r"Square|Pulse" "[" <widths: Comma<Rational>> "]" => {
+        let mut operations = Vec::new();
+        for width in widths {
+            operations.push(Term::Op(Square { width: Some(width) }))
+        }
+        Term::Op(Sequence { operations  })
     },
     "Noise" => Term::Op(Noise {}),
     "Reverse" => Term::Op(Reverse {}),
