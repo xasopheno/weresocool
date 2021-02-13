@@ -257,9 +257,11 @@ BaseOperation: Term = {
     <gain: Gm> <m:Rational> => Term::Op(Gain {m}),
     "AsIs" => Term::Op(AsIs {}),
     "Sine" <pow: Rational?> => {
-      Term::Op(Sine {pow})
+      Term::Op(Sine { pow })
     },
-    "Square" => Term::Op(Square {}),
+    "Square" <width: Rational?> => {
+      Term::Op(Square { width })
+    },
     "Noise" => Term::Op(Noise {}),
     "Reverse" => Term::Op(Reverse {}),
     "Invert" => Term::Op(FInvert),

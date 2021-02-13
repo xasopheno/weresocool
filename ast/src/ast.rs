@@ -34,7 +34,9 @@ pub enum Op {
     Sine {
         pow: Option<Rational64>,
     },
-    Square,
+    Square {
+        width: Option<Rational64>,
+    },
     AD {
         attack: Rational64,
         decay: Rational64,
@@ -102,8 +104,8 @@ pub enum Op {
 pub enum OscType {
     None,
     Sine { pow: Option<Rational64> },
+    Square { width: Option<Rational64> },
     Noise,
-    Square,
 }
 
 impl OscType {

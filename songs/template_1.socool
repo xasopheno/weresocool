@@ -5,12 +5,58 @@ thing1 = {
 }
 
 thing2 = {
-  Fm 3/2
+ Fm 3/2
 }
 
 main = {
+  -- Gm 1/2 |
+  Overlay [
+    O[
+      -- (7, 3, 1, -1),      
+      -- (7, 0, 1, 1),      
+      -- (5, 8, 1, -1),      
+      -- (5, 0, 1, 1),      
+      -- (3, 4, 1, -1),      
+      -- (3, 0, 1, 1),      
+      (2, 8, 1, -1),      
+      (2, 0, 1, 1),      
+      (1, 0, 1, -1),      
+      (1, 0, 1, 1),      
+      -- (1/2, 3, 1, -1),      
+      -- (1/2, 0, 1, 1),      
+    ]
+  ]
+  | Fm 1/2 | 
   Seq [
-    #thing1 | thing1,
-    #thing2 | thing2,
+    -- #thing1 | thing1,
+    -- #thing2 | thing2,
+    Seq [Fm 1, Fm 9/8, Fm 4/3, Fm 7/4, Fm 3/2, Fm 4/3]
+    -- Lm 9
   ] 
+  | Repeat 7
+  | ModBy [
+    Seq [
+      Square -0.99 | Lm 1/2, 
+      Square -0.9, 
+      -- Square -0.95, 
+      -- Square -0.75,
+      Square -0.5,
+      -- Square -0.25, 
+      Square -0.1, 
+      Square, 
+      Square 0.1, 
+      -- Square 0.25, 
+      Square 0.5,
+      -- Square 0.75,
+      -- Square 0.9, 
+      Square 0.95, 
+      Square 0.99 | Lm 1/2, 
+    ] | Seq [AsIs, Reverse] | Repeat 1
+  ]
+  | Overlay [
+    AsIs | Fm 1/2, 
+    Square | Fm 2
+  ]
+  | Seq [AsIs, Reverse]
+  | Lm 1/8
 } -> [thing1, thing2]

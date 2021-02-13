@@ -10,7 +10,7 @@ impl GetLengthRatio for Op {
             | Op::Sine { .. }
             | Op::AD { .. }
             | Op::Portamento { .. }
-            | Op::Square {}
+            | Op::Square { .. }
             | Op::Noise {}
             | Op::FInvert {}
             | Op::Reverse {}

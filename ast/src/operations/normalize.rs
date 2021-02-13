@@ -93,7 +93,9 @@ impl Normalize for Op {
                 op.portamento *= m;
             }),
 
-            Op::Square => input.fmap_mut(|op| op.osc_type = OscType::Square),
+            Op::Square { width } => {
+                input.fmap_mut(|op| op.osc_type = OscType::Square { width: *width })
+            }
 
             Op::Noise => input.fmap_mut(|op| op.osc_type = OscType::Noise),
 
