@@ -131,6 +131,7 @@ impl Voice {
             let mut new_sample = match self.osc_type {
                 OscType::None => self.generate_sine_sample(info, None),
                 OscType::Sine { pow } => self.generate_sine_sample(info, pow),
+                OscType::Triangle { pow } => self.generate_triangle_sample(info, pow),
                 OscType::Square { width } => self.generate_square_sample(info, width),
                 OscType::Noise => self.generate_random_sample(info),
             };

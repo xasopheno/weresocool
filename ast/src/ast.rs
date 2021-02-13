@@ -34,6 +34,9 @@ pub enum Op {
     Sine {
         pow: Option<Rational64>,
     },
+    Triangle {
+        pow: Option<Rational64>,
+    },
     Square {
         width: Option<Rational64>,
     },
@@ -104,6 +107,7 @@ pub enum Op {
 pub enum OscType {
     None,
     Sine { pow: Option<Rational64> },
+    Triangle { pow: Option<Rational64> },
     Square { width: Option<Rational64> },
     Noise,
 }
