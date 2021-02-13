@@ -259,7 +259,7 @@ BaseOperation: Term = {
     "Sine" <pow: Rational?> => {
       Term::Op(Sine { pow })
     },
-    "Square" <width: Rational?> => {
+    r"Square|Pulse" <width: Rational?> => {
       Term::Op(Square { width })
     },
     "Noise" => Term::Op(Noise {}),

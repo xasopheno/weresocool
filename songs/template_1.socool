@@ -36,26 +36,26 @@ main = {
   | Repeat 7
   | ModBy [
     Seq [
-      Square -0.99 | Lm 1/2, 
-      Square -0.9, 
-      -- Square -0.95, 
-      -- Square -0.75,
-      Square -0.5,
-      -- Square -0.25, 
-      Square -0.1, 
-      Square, 
-      Square 0.1, 
-      -- Square 0.25, 
-      Square 0.5,
-      -- Square 0.75,
-      -- Square 0.9, 
-      Square 0.95, 
-      Square 0.99 | Lm 1/2, 
+      Pulse -0.99 | Lm 1/2, 
+      Pulse -0.9, 
+      -- Pulse -0.95, 
+      -- Pulse -0.75,
+      Pulse -0.5,
+      -- Pulse -0.25, 
+      Pulse -0.1, 
+      Pulse, 
+      Pulse 0.1, 
+      -- Pulse 0.25, 
+      Pulse 0.5,
+      -- Pulse 0.75,
+      -- Pulse 0.9, 
+      Pulse 0.95, 
+      Pulse 0.99 | Lm 1/2, 
     ] | Seq [AsIs, Reverse] | Repeat 1
   ]
   | Overlay [
     AsIs | Fm 1/2, 
-    Square | Fm 2
+    Pulse | Fm 2
   ]
   | Seq [AsIs, Reverse]
   | Lm 1/8
