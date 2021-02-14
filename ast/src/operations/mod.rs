@@ -298,6 +298,33 @@ impl PointOp {
         }
     }
 
+    pub fn lmod_by(&mut self, other: PointOp) {
+        let names = union_names(self.names.clone(), &other.names);
+        *self = PointOp {
+            fm: self.fm * other.fm,
+            fa: self.fa + other.fa,
+            pm: self.pm * other.pm,
+            pa: self.pa + other.pa,
+            g: self.g * other.g,
+            l: self.l * other.l,
+            reverb: if other.reverb.is_none() {
+                self.reverb
+            } else {
+                other.reverb
+            },
+            osc_type: if other.osc_type.is_none() {
+                self.osc_type
+            } else {
+                other.osc_type
+            },
+            attack: self.attack * other.attack,
+            decay: self.decay * other.decay,
+            asr: other.asr,
+            portamento: self.portamento * other.portamento,
+            names,
+        }
+    }
+
     pub fn init() -> PointOp {
         PointOp {
             fm: Ratio::new(1, 1),
