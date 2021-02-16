@@ -98,7 +98,7 @@ const createWindow = async () => {
 
   mainWindow.on('closed', () => {
     mainWindow = null;
-    server.kill('SIGKILL');
+    server.kill('SIGINT');
     console.log('Server Stopped');
     app.quit();
   });

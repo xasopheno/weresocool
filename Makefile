@@ -18,6 +18,9 @@ else
 	$(PACKAGE)
 endif
 
+clean: 
+	rm -rf $(PACKAGE)
+
 dev: application/node_modules
 	(cd application && yarn build-backend && yarn dev)
 
