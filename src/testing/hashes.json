@@ -120,8 +120,8 @@
     "pop_check": true
   },
   "./songs/test/render_op_get_batch.socool": {
-    "op": 13342856646768809351,
-    "normal_form": 14147507829164358544,
+    "op": 5768537416956320826,
+    "normal_form": 12317908549732618704,
     "stereo_waveform": -2613.226217,
     "pop_check": false
   },
