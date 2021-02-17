@@ -74,12 +74,12 @@ LetDef: () = {
 
 
 Operation: Term = {
-    <op1: Operation> ">" "FitLength" <op2: SuperCompose> => {
-        Term::Op(
-            Op::Compose { operations:
-            vec![op1.to_owned(), Term::Op(WithLengthRatioOf { with_length_of: Box::new(op2)})]
-        })
-    },
+    //<op1: Operation> ">" "FitLength" <op2: SuperCompose> => {
+      //  Term::Op(
+            //Op::Compose { operations:
+            //vec![op1.to_owned(), Term::Op(WithLengthRatioOf { with_length_of: Box::new(op2)})]
+       // })
+    //},
 
     <op1: Operation> ">" "FitGain" <op2: ComposeOperation> => {
       unimplemented!()
@@ -233,7 +233,7 @@ Index: Index = {
 
 SuperCompose: Term = {
   <o: ComposeOperation> => o,
-  <o: Generator> => Term::Gen(o)
+  <o: Generator> => Term::Gen(o),
 }
 
 ComposeOperation: Term = {
@@ -244,7 +244,10 @@ ComposeOperation: Term = {
 Composeable: Term = {
   <base_operation: BaseOperation> => base_operation,
   <list: List> => Term::Lop(list),
-  <generator: Generator> => Term::Gen(generator)
+  <generator: Generator> => Term::Gen(generator),
+  "FitLength" <op: Composeable> => {
+      Term::Op(WithLengthRatioOf { with_length_of: Box::new(op)})
+  },
 }
 
 BaseOperation: Term = {
@@ -303,6 +306,7 @@ BaseOperation: Term = {
             Term::Op(Length { m: length }),
         ]})
     },
+
 };
 
 
