@@ -3,7 +3,6 @@ use std::str::FromStr;
 use std::string::String;
 use weresocool_ast::{
         Defs,
-        Op,
         Op::*,
         Term, 
         ASR,
