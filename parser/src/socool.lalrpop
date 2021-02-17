@@ -283,6 +283,7 @@ BaseOperation: Term = {
     r"(Sequence|Seq)" "[" <operations: Operations> "]" => Term::Op(Sequence { operations: operations }),
     "Overlay" "[" <operations: Operations> "]" => Term::Op(Overlay { operations: operations }),
     r"(ModulateBy|ModBy)" "[" <operations: Operations> "]" => Term::Op(ModulateBy { operations: operations }),
+    r"(ModulateLengthBy|ModLenBy)" "[" <operations: Operations> "]" => Term::Op(ModulateLengthBy { operations: operations }),
     "O" "[" <o: Overtones> "]" => Term::Op(Overlay { operations: o }),
     <id: Name> => {
         Term::Op(Id(id))

@@ -2,7 +2,7 @@ use crate::operations::{
     helpers::*, substitute::get_fn_arg_map, GetLengthRatio, NormalForm, Normalize, Substitute,
 };
 use crate::{Defs, FunDef, Op, OscType, Term, Term::*};
-use num_rational::Ratio;
+use num_rational::{Ratio, Rational64};
 use num_traits::CheckedMul;
 use weresocool_error::Error;
 use weresocool_shared::lossy_rational_mul;
@@ -196,6 +196,37 @@ impl Normalize for Op {
                 }
                 .apply_to_normal_form(&mut result, defs)?;
 
+                *input = result
+            }
+            Op::ModulateLengthBy { operations } => {
+                let mut modulator = NormalForm::init_empty();
+                let n_ops = Rational64::from_integer(operations.len() as i64);
+                let mod_op_len = input.length_ratio / Rational64::from_integer(12);
+                dbg!(input.length_ratio, n_ops);
+                dbg!(input.length_ratio / n_ops);
+
+                for op in operations {
+                    let mut nf = NormalForm::init();
+                    op.apply_to_normal_form(&mut nf, defs)?;
+                    let lr_op = Op::WithLengthRatioOf {
+                        with_length_of: Box::new(Term::Op(Op::Length {
+                            m: Rational64::from_integer(1),
+                        })),
+                        main: Box::new(Term::Nf(nf.clone())),
+                    };
+                    // let lr_op = Op::Length { m: mod_op_len };
+                    lr_op.apply_to_normal_form(&mut nf, defs)?;
+                    modulator = join_sequence(modulator, nf);
+                }
+                let mut result = NormalForm::init_empty();
+
+                for modulation_line in modulator.operations.iter() {
+                    for input_line in input.operations.iter() {
+                        result
+                            .operations
+                            .push(modulate_len(input_line, modulation_line));
+                    }
+                }
                 *input = result
             }
 

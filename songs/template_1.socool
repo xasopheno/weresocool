@@ -1,16 +1,18 @@
 { f: 293.7, l: 1, g: 1, p: 0 }
 
 thing1 = {
-  AsIs
+  ET(12)
 }
 
 thing2 = {
-  Fm 3/2
+  *(
+    l: 10|10 [-2]
+  ) Take 10
 }
 
 main = {
   Seq [
-    #thing1 | thing1,
-    #thing2 | thing2,
+    -- thing1 | ModBy [thing2],
+    thing1 | ModLenBy [thing2]
   ] 
-} -> [thing1, thing2]
+}

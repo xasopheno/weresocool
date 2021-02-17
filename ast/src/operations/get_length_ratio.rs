@@ -19,6 +19,7 @@ impl GetLengthRatio for Op {
             | Op::TransposeA { .. }
             | Op::PanA { .. }
             | Op::PanM { .. }
+            | Op::ModulateBy { .. }
             | Op::Tag(_)
             | Op::Gain { .. } => Ok(Ratio::from_integer(1)),
 
@@ -62,7 +63,9 @@ impl GetLengthRatio for Op {
                 Ok(target_length / main_length)
             }
 
-            Op::ModulateBy { .. } => Ok(Ratio::from_integer(1)),
+            Op::ModulateLengthBy { .. } => {
+                todo!()
+            }
 
             Op::Focus {
                 main, op_to_apply, ..
