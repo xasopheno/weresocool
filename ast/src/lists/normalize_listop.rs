@@ -66,17 +66,17 @@ impl ListOp {
 }
 
 impl GetLengthRatio for ListOp {
-    fn get_length_ratio(&self, defs: &Defs) -> Result<Rational64, Error> {
+    fn get_length_ratio(&self, input: &NormalForm, defs: &Defs) -> Result<Rational64, Error> {
         match self {
             ListOp::Const(terms) => terms
                 .iter()
                 .try_fold(Rational64::from_integer(0), |acc, term| {
-                    Ok(acc + term.get_length_ratio(defs)?)
+                    Ok(acc + term.get_length_ratio(input, defs)?)
                 }),
             ListOp::Named(name) => {
                 let term = handle_id_error(name.to_string(), defs, None)?;
                 match term {
-                    Term::Lop(lop) => lop.get_length_ratio(defs),
+                    Term::Lop(lop) => lop.get_length_ratio(input, defs),
                     _ => Err(Error::with_msg(
                         "List.get_length_ratio() called on non-list",
                     )),
@@ -85,14 +85,14 @@ impl GetLengthRatio for ListOp {
             ListOp::ListOpIndexed { .. } => {
                 let mut nf = NormalForm::init();
                 self.apply_to_normal_form(&mut nf, defs)?;
-                nf.get_length_ratio(defs)
+                nf.get_length_ratio(input, defs)
             }
             ListOp::Concat(listops) => listops
                 .iter()
                 .try_fold(Rational64::from_integer(0), |acc, term| {
-                    Ok(acc + term.get_length_ratio(defs)?)
+                    Ok(acc + term.get_length_ratio(input, defs)?)
                 }),
-            ListOp::GenOp(gen) => gen.get_length_ratio(defs),
+            ListOp::GenOp(gen) => gen.get_length_ratio(input, defs),
         }
     }
 }

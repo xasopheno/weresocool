@@ -1,5 +1,6 @@
 use crate::generator::{error_non_generator, Axis, Coefs, GenOp, Generator};
 use crate::operations::helpers::handle_id_error;
+use crate::NormalForm;
 use crate::{Defs, GetLengthRatio, Term};
 use num_integer::lcm;
 use num_rational::Rational64;
@@ -7,7 +8,7 @@ use rand::{rngs::StdRng, SeedableRng};
 use weresocool_error::Error;
 
 impl GetLengthRatio for GenOp {
-    fn get_length_ratio(&self, defs: &Defs) -> Result<Rational64, Error> {
+    fn get_length_ratio(&self, input: &NormalForm, defs: &Defs) -> Result<Rational64, Error> {
         match self {
             GenOp::Named { name, seed } => {
                 let generator = handle_id_error(name.to_string(), defs, None)?;
@@ -89,7 +90,9 @@ impl Generator {
             for coef in copy.coefs.iter_mut() {
                 match coef.axis {
                     Axis::L => {
-                        let l = coef.generate(&mut rng)?.get_length_ratio(defs)?;
+                        let l = coef
+                            .generate(&mut rng)?
+                            .get_length_ratio(&NormalForm::init_empty(), defs)?;
                         *length *= l
                     }
                     _ => {

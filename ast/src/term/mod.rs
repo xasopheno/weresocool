@@ -42,13 +42,13 @@ impl Substitute for Term {
 }
 
 impl GetLengthRatio for Term {
-    fn get_length_ratio(&self, defs: &Defs) -> Result<Rational64, Error> {
+    fn get_length_ratio(&self, input: &NormalForm, defs: &Defs) -> Result<Rational64, Error> {
         match self {
-            Term::Op(op) => op.get_length_ratio(defs),
-            Term::Nf(nf) => nf.get_length_ratio(defs),
+            Term::Op(op) => op.get_length_ratio(input, defs),
+            Term::Nf(nf) => nf.get_length_ratio(input, defs),
             Term::FunDef(_fun) => Err(Error::with_msg("Cannot get length_ratio of FunDef.")),
-            Term::Lop(lop) => lop.get_length_ratio(defs),
-            Term::Gen(gen) => gen.get_length_ratio(defs),
+            Term::Lop(lop) => lop.get_length_ratio(input, defs),
+            Term::Gen(gen) => gen.get_length_ratio(input, defs),
         }
     }
 }

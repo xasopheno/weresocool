@@ -58,7 +58,7 @@ pub trait Normalize {
 }
 
 pub trait GetLengthRatio {
-    fn get_length_ratio(&self, defs: &Defs) -> Result<Rational64, Error>;
+    fn get_length_ratio(&self, input: &NormalForm, defs: &Defs) -> Result<Rational64, Error>;
 }
 
 pub trait Substitute {
@@ -71,7 +71,7 @@ pub trait Substitute {
 }
 
 impl GetLengthRatio for NormalForm {
-    fn get_length_ratio(&self, _defs: &Defs) -> Result<Rational64, Error> {
+    fn get_length_ratio(&self, input: &NormalForm, _defs: &Defs) -> Result<Rational64, Error> {
         Ok(self.length_ratio)
     }
 }
