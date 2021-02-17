@@ -77,7 +77,7 @@ Operation: Term = {
     <op1: Operation> ">" "FitLength" <op2: SuperCompose> => {
         Term::Op(
             Op::Compose { operations:
-            vec![op1.to_owned(), Term::Op(WithLengthRatioOf { with_length_of: Box::new(op2), main: Box::new(op1) })]
+            vec![op1.to_owned(), Term::Op(WithLengthRatioOf { with_length_of: Box::new(op2)})]
         })
     },
 

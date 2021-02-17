@@ -163,12 +163,9 @@ impl Normalize for Op {
                 }
             }
 
-            Op::WithLengthRatioOf {
-                with_length_of,
-                main,
-            } => {
+            Op::WithLengthRatioOf { with_length_of } => {
                 let target_length = with_length_of.get_length_ratio(defs)?;
-                let main_length = main.get_length_ratio(defs)?;
+                let main_length = input.get_length_ratio(defs)?;
                 let ratio = target_length / main_length;
                 let new_op = Op::Length { m: ratio };
 

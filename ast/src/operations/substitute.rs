@@ -33,15 +33,10 @@ impl Substitute for Op {
         match self {
             Op::Id(id) => handle_id_error(id.to_string(), defs, Some(arg_map)),
 
-            Op::WithLengthRatioOf {
-                main,
-                with_length_of,
-            } => {
-                let main = main.substitute(normal_form, defs, arg_map)?;
+            Op::WithLengthRatioOf { with_length_of } => {
                 let with_length_of = with_length_of.substitute(normal_form, defs, arg_map)?;
 
                 Ok(Term::Op(Op::WithLengthRatioOf {
-                    main: Box::new(main),
                     with_length_of: Box::new(with_length_of),
                 }))
             }
