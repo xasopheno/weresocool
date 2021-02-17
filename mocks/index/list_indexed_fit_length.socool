@@ -8,7 +8,7 @@ list1 = {
 main = {
     
     List [Tm 1, Tm 9/8] @ [0, 1] 
-    > FitLength list1
+    | FitLength list1
 }
 
 expect = {

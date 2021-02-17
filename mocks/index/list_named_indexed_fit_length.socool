@@ -11,7 +11,7 @@ list2 = {
 
 main = {
     List list1 @ [0, 1] 
-    > FitLength list2
+    | FitLength list2
 }
 
 expect = {

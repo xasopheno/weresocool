@@ -52,7 +52,7 @@ bass = {
       	(1/1, 0.0, 1.0, 0.0),
   	] |
     Tm 1/4 | Gain 0.2
-	> FitLength melody1
+	| FitLength melody1
 }
 
 thing4 = {
@@ -75,7 +75,7 @@ thing4 = {
 	| Length 0.2
 	| Tm 3
 	| Sequence [Silence 4, PanA -0.7, Silence 2, PanA 0.7] | Repeat 2 | Gain 0.3
-	> FitLength melody1
+	| FitLength melody1
 }
 
 main = {

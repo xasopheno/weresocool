@@ -35,7 +35,7 @@ modulator = {
 			Tm 3,
 		] 
 		| Sequence [Tm 7/8, Silence 3, AsIs] | Gain 1/12
-		> FitLength Length 3
+		| FitLength Length 3
 	]
 }
 

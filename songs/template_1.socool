@@ -1,17 +1,67 @@
-{ f: 293.7, l: 1, g: 1, p: 0 }
+{ f: 220, l: 2, g: 1, p: 0}
 
 thing1 = {
-  Seq [Fm 1, Fm 9/8, Fm 5/4]
+	Sequence [
+		AsIs,
+		Tm 9/8,
+		Tm 4/3,
+		Tm 3/2,
+		Tm 2
+	]
 }
 
 thing2 = {
-  Fm 3/4
-  | FitLength thing1
+	Sequence [
+		thing1	
+	]
+	| Repeat 8 
+	| FitLength thing1
+}
+
+bug = {
+	Seq [
+		AsIs,
+		Tm 3/2, 
+		Tm 5/4
+	] 
+	| FitLength thing2
+}
+
+again = {
+	Seq [
+		Tm 9/4, 
+		Tm 2, 
+		Tm 3/2, 
+		Tm 1
+	] 
+	| Tm 1/2
+	| thing1 
+	| FitLength bug
+}
+
+lastly = {
+	Gain 1/8 
+	| Seq [
+		Tm 5/4, 
+		Tm 9/8, 
+		Tm 4/3, 
+		Tm 3/2,
+		Tm 5/4,
+		Tm 9/8, 
+		Tm 1,
+	] 
+	| Tm 3 
+	| thing2
+	| FitLength bug
 }
 
 main = {
-  Overlay [
-    thing1,
-    thing2,
-  ] 
-} 
+	Overlay [
+		-- lastly,
+		-- again,
+		-- thing1, 
+		thing2,
+		bug
+	]
+}
+

@@ -351,7 +351,7 @@ pub mod test {
                                     Tm 3/2
                                 ]
                                 | Repeat 2
-                                > FitLength thing
+                                | FitLength thing
                             }
                         ",
         );
@@ -360,42 +360,21 @@ pub mod test {
             *thing,
             Op(Compose {
                 operations: vec![
-                    Op(Compose {
+                    Op(Sequence {
                         operations: vec![
-                            Op(Sequence {
-                                operations: vec![
-                                    Op(TransposeM {
-                                        m: Ratio::new(5, 4)
-                                    }),
-                                    Op(TransposeM {
-                                        m: Ratio::new(3, 2)
-                                    })
-                                ]
+                            Op(TransposeM {
+                                m: Ratio::new(5, 4)
                             }),
-                            Op(Sequence {
-                                operations: vec![Op(AsIs), Op(AsIs)]
+                            Op(TransposeM {
+                                m: Ratio::new(3, 2)
                             })
                         ]
                     }),
+                    Op(Sequence {
+                        operations: vec![Op(AsIs), Op(AsIs)]
+                    }),
                     Op(WithLengthRatioOf {
                         with_length_of: Box::new(Op(Id("thing".to_string()))),
-                        main: Box::new(Op(Compose {
-                            operations: vec![
-                                Op(Sequence {
-                                    operations: vec![
-                                        Op(TransposeM {
-                                            m: Ratio::new(5, 4)
-                                        }),
-                                        Op(TransposeM {
-                                            m: Ratio::new(3, 2)
-                                        })
-                                    ]
-                                }),
-                                Op(Sequence {
-                                    operations: vec![Op(AsIs), Op(AsIs)]
-                                })
-                            ]
-                        }))
                     })
                 ]
             })
