@@ -5,8 +5,7 @@ thing1 = {
 }
 
 thing2 = {
-  Fm 9/8 
-  | Seq [
+  Seq [
     Fm 3/2,
     Fm 4/3
   ]

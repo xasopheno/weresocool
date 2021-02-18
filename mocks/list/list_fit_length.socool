@@ -4,7 +4,7 @@ unit = { Length 1 }
 
 main = {
     List [Tm 1, Tm 9/8]  
-    > FitLength unit
+    | FitLength unit
 }
 
 expect = {

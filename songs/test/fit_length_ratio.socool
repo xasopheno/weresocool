@@ -20,7 +20,7 @@ thing2 = {
 		thing1	
 	]
 	| Repeat 8 
-	> FitLength thing1
+	| FitLength thing1
 }
 
 bug = {
@@ -29,7 +29,7 @@ bug = {
 		Tm 3/2, 
 		Tm 5/4
 	] 
-	> FitLength thing2
+	| FitLength thing2
 }
 
 again = {
@@ -41,7 +41,7 @@ again = {
 	] 
 	| Tm 1/2
 	| thing1 
-	> FitLength bug
+	| FitLength bug
 }
 
 lastly = {
@@ -57,7 +57,7 @@ lastly = {
 	] 
 	| Tm 3 
 	| thing2
-	> FitLength bug
+	| FitLength bug
 }
 
 main = {

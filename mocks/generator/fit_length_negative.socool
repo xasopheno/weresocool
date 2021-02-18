@@ -8,7 +8,7 @@ thing1 = {
 }
 
 main = {
-  AsIs > FitLength thing1
+  AsIs | FitLength thing1
 }
 
 expect = {

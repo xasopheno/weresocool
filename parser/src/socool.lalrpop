@@ -251,28 +251,28 @@ ComposeOperation: Term = {
 
         for (i, term) in terms.iter().enumerate() {
           if i == 0 {
-            result.push(term);
+            result.push(term.to_owned());
           } else {
             match term {
               Term::Op(op) => {
                 match op {
                   Op::WithLengthRatioOf {with_length_of, main} => {
-                    let op1 = Term::Op(Op::Compose{operations: result[0..i].into_iter().cloned().cloned().collect()});
+                    let op1 = Term::Op(Op::Compose{operations: result[0..i].into_iter().cloned().collect()});
                     let wlo = Term::Op(
                         Op::Compose { operations:
                         vec![op1.to_owned(), Term::Op(WithLengthRatioOf { with_length_of: with_length_of.clone(), main: Some(Box::new(op1)) })]
                     });
                     result = vec![wlo];
                   },
-                  _ => result.push(term) 
+                  _ => result.push(term.to_owned()) 
                 }
               },
-              _ => result.push(term)
+              _ => result.push(term.to_owned())
             }
           }
         };
 
-      Term::Op(Compose { operations: terms })
+      Term::Op(Compose { operations: result })
     },
     <o: BaseOperation> => o,
 }
