@@ -236,14 +236,6 @@ SuperCompose: Term = {
   <o: Generator> => Term::Gen(o)
 }
 
-
-//                Op::WithLengthRatioOf {mut main, with_length_of} => {
-//                  [> dbg!(main, with_length_of); <]
-//                  main = Some(Box::new(Term::Op(
-//                   Op::Compose {
-//                      operations: clone[0..i].to_vec()
-//                    }
-//                  )
 ComposeOperation: Term = {
     <terms: Pipe<Composeable>> => {
         let mut result = vec![];
@@ -283,19 +275,14 @@ Composeable: Term = {
   <base_operation: BaseOperation> => base_operation,
   <list: List> => Term::Lop(list),
   <generator: Generator> => Term::Gen(generator),
-  "FitLength" <op: Composeable> => {
+}
 
- //       Term::Op(
-  //          Op::Compose { operations:
-   //         vec![op1.to_owned(), Term::Op(WithLengthRatioOf { with_length_of: Box::new(op2), main: Box::new(op1) })]
-    //    })
+BaseOperation: Term = {
+  "FitLength" <op: Composeable> => {
       Term::Op(
           WithLengthRatioOf { with_length_of: Box::new(op), main: None }
       )
   },
-}
-
-BaseOperation: Term = {
     "(" <o: Operation> ")" => o,
     <fm: Fm> <m:Rational> => Term::Op(TransposeM {m}),
     <fa: Fa> <a:Rational> => Term::Op(TransposeA {a}),

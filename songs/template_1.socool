@@ -1,7 +1,7 @@
 { f: 293.7, l: 1, g: 1, p: 0 }
 
 thing1 = {
-  AsIs
+  Fm 3/2
 }
 
 thing2 = {
@@ -15,8 +15,9 @@ thing2 = {
 
 main = {
   Overlay [
+    FitLength thing1,
     thing1, 
-    thing2
+    -- thing2
   ]
   | FitLength Lm 1/9
   | Repeat 8
