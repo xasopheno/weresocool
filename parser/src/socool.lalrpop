@@ -74,12 +74,12 @@ LetDef: () = {
 
 
 Operation: Term = {
-    <op1: Operation> ">" "FitLength" <op2: SuperCompose> => {
-        Term::Op(
-            Op::Compose { operations:
-            vec![op1.to_owned(), Term::Op(WithLengthRatioOf { with_length_of: Box::new(op2), main: Box::new(op1) })]
-        })
-    },
+//    <op1: Operation> ">" "FitLength" <op2: SuperCompose> => {
+ //       Term::Op(
+  //          Op::Compose { operations:
+   //         vec![op1.to_owned(), Term::Op(WithLengthRatioOf { with_length_of: Box::new(op2), main: Box::new(op1) })]
+    //    })
+    //},
 
     <op1: Operation> ">" "FitGain" <op2: ComposeOperation> => {
       unimplemented!()
@@ -236,15 +236,61 @@ SuperCompose: Term = {
   <o: Generator> => Term::Gen(o)
 }
 
+
+//                Op::WithLengthRatioOf {mut main, with_length_of} => {
+//                  [> dbg!(main, with_length_of); <]
+//                  main = Some(Box::new(Term::Op(
+//                   Op::Compose {
+//                      operations: clone[0..i].to_vec()
+//                    }
+//                  )
 ComposeOperation: Term = {
-    <ops: Pipe<Composeable>> => Term::Op(Compose { operations: ops }),
+    <terms: Pipe<Composeable>> => {
+
+        let mut result = vec![];
+
+        for (i, term) in terms.iter().enumerate() {
+          if i == 0 {
+            result.push(term);
+          } else {
+            match term {
+              Term::Op(op) => {
+                match op {
+                  Op::WithLengthRatioOf {with_length_of, main} => {
+                    let op1 = Term::Op(Op::Compose{operations: result[0..i].into_iter().cloned().cloned().collect()});
+                    let wlo = Term::Op(
+                        Op::Compose { operations:
+                        vec![op1.to_owned(), Term::Op(WithLengthRatioOf { with_length_of: with_length_of.clone(), main: Some(Box::new(op1)) })]
+                    });
+                    result = vec![wlo];
+                  },
+                  _ => result.push(term) 
+                }
+              },
+              _ => result.push(term)
+            }
+          }
+        };
+
+      Term::Op(Compose { operations: terms })
+    },
     <o: BaseOperation> => o,
 }
 
 Composeable: Term = {
   <base_operation: BaseOperation> => base_operation,
   <list: List> => Term::Lop(list),
-  <generator: Generator> => Term::Gen(generator)
+  <generator: Generator> => Term::Gen(generator),
+  "FitLength" <op: Composeable> => {
+
+ //       Term::Op(
+  //          Op::Compose { operations:
+   //         vec![op1.to_owned(), Term::Op(WithLengthRatioOf { with_length_of: Box::new(op2), main: Box::new(op1) })]
+    //    })
+      Term::Op(
+          WithLengthRatioOf { with_length_of: Box::new(op), main: None }
+      )
+  },
 }
 
 BaseOperation: Term = {
@@ -288,7 +334,7 @@ BaseOperation: Term = {
         Term::Op(Id(id))
     },
     "#"<name: Name> => Term::Op(Tag(name)),
-    //
+    
     <name: Name> "(" <args: Comma<Operation>>  ")" => {
         Term::Op(
             FunctionCall {
@@ -297,9 +343,9 @@ BaseOperation: Term = {
             }
         )
     },
-    <tm: Rational>"^"<length: Rational> => {
+    <fm: Rational>"^"<length: Rational> => {
         Term::Op(Compose { operations: vec! [
-            Term::Op(TransposeM { m: tm }),
+            Term::Op(TransposeM { m: fm }),
             Term::Op(Length { m: length }),
         ]})
     },

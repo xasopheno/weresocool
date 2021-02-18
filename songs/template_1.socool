@@ -5,12 +5,17 @@ thing1 = {
 }
 
 thing2 = {
-  Fm 3/2
+  Fm 9/8 
+  | Seq [
+    Fm 3/2,
+    Fm 4/3
+  ]
+  | FitLength thing1
 }
 
 main = {
-  Seq [
-    #thing1 | thing1,
-    #thing2 | thing2,
-  ] 
-} -> [thing1, thing2]
+  Overlay [
+    thing1, 
+    thing2
+  ]
+}

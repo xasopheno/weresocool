@@ -37,11 +37,14 @@ impl Substitute for Op {
                 main,
                 with_length_of,
             } => {
-                let main = main.substitute(normal_form, defs, arg_map)?;
                 let with_length_of = with_length_of.substitute(normal_form, defs, arg_map)?;
+                let main = match main.as_ref() {
+                    Some(wlo) => wlo.substitute(normal_form, defs, arg_map)?,
+                    None => Term::Nf(NormalForm::init()),
+                };
 
                 Ok(Term::Op(Op::WithLengthRatioOf {
-                    main: Box::new(main),
+                    main: Some(Box::new(main)),
                     with_length_of: Box::new(with_length_of),
                 }))
             }
