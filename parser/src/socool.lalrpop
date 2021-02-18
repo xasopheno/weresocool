@@ -246,10 +246,10 @@ SuperCompose: Term = {
 //                  )
 ComposeOperation: Term = {
     <terms: Pipe<Composeable>> => {
-
         let mut result = vec![];
+        let mut i = 0;
 
-        for (i, term) in terms.iter().enumerate() {
+        for term in terms.iter() {
           if i == 0 {
             result.push(term.to_owned());
           } else {
@@ -263,6 +263,7 @@ ComposeOperation: Term = {
                         vec![op1.to_owned(), Term::Op(WithLengthRatioOf { with_length_of: with_length_of.clone(), main: Some(Box::new(op1)) })]
                     });
                     result = vec![wlo];
+                    i = 0;
                   },
                   _ => result.push(term.to_owned()) 
                 }
@@ -270,6 +271,7 @@ ComposeOperation: Term = {
               _ => result.push(term.to_owned())
             }
           }
+          i += 1;
         };
 
       Term::Op(Compose { operations: result })

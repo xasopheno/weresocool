@@ -10,6 +10,7 @@ thing2 = {
     Fm 4/3
   ]
   | FitLength thing1
+  | Fm 3
 }
 
 main = {
@@ -17,4 +18,6 @@ main = {
     thing1, 
     thing2
   ]
+  | FitLength Lm 1/9
+  | Repeat 8
 }
