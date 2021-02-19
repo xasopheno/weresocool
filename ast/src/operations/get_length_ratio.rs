@@ -1,6 +1,5 @@
 use crate::ast::{Defs, Op};
 use crate::operations::{helpers::*, GetLengthRatio, NormalForm, Normalize};
-use crate::Term;
 use num_rational::{Ratio, Rational64};
 use weresocool_error::Error;
 
@@ -61,6 +60,7 @@ impl GetLengthRatio for Op {
                     Some(tl) => tl.get_length_ratio(defs)?,
                     None => Rational64::from_integer(1),
                 };
+
                 let target_length = with_length_of.get_length_ratio(defs)?;
 
                 Ok(target_length / main_length)
