@@ -18,7 +18,7 @@ thing2 = {
   | Seq [
     Fm 3/4
   ]
-  > FitLength thing1
+  | FitLength thing1
 }
 
 main = {
