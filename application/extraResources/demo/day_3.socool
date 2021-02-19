@@ -239,8 +239,8 @@ voice_2 = {
 
 voice_3 = {
   Seq [
-    Fm 0 > FitLength Seq [a_1 | Length 5/4],
-    Fm 0 > FitLength Seq [a_2],
+    Fm 0 | FitLength Seq [a_1 | Length 5/4],
+    Fm 0 | FitLength Seq [a_2],
     c_3,
     c_4
   ]

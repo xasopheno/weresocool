@@ -93,7 +93,7 @@ chords = {
 thing2 = {
     Seq [
         chords
-        > FitLength thing1
+        | FitLength thing1
     ]
     | Repeat 2
     | Length 1/2
@@ -154,7 +154,7 @@ melody = {
             Random(100) | Overlay [Fm 2, Fm 5/4, Fm 9/8] | Gain 1/4, 0 | Fm 0
         ],
     ] | Repeat 2
-    > FitLength thing2
+    | FitLength thing2
 
 }
 
@@ -178,8 +178,8 @@ first = {
             Seq [Fm 0, Fm 3/4, Fm 7/8] | Length 1/2
         ] 
         | Repeat 4
-        > FitLength thing1,
-        chords > FitLength thing1
+        | FitLength thing1,
+        chords | FitLength thing1
     ]
     | Seq [
             Length 1, 

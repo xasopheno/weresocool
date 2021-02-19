@@ -98,7 +98,7 @@ book = {
       Fm 0 | Lm 1/50
     ] 
     | Repeat 4 
-    > FitLength three
+    | FitLength three
   ]
 }
 
@@ -127,6 +127,6 @@ main = {
       AsIs, 
       Repeat 2 | Lm 1/2 | Pm -1/4,
       Repeat 3 | Lm 1/3 | Pm 2/3,
-    ] > FitLength three
+    ] | FitLength three
   ]
 }
