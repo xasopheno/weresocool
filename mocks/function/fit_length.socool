@@ -1,0 +1,35 @@
+{ f: 293.7, l: 1, g: 1, p: 0 }
+
+thing1 = {
+  Fm 3/2
+}
+
+thing2(fl) = {
+  Seq [
+    Fm 3/2,
+    Fm 4/3
+  ]
+  | Repeat 3
+  | FitLength fl
+  | Fm 3
+}
+
+main = {
+  Overlay [
+    thing1, 
+    thing2(thing1)
+  ]
+}
+
+expect = {
+  Overlay [
+    thing1, 
+    Seq [
+      Fm 3/2,
+      Fm 4/3
+    ]
+    | Repeat 3
+    | FitLength thing1
+    | Fm 3
+  ]
+}
