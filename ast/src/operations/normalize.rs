@@ -169,7 +169,7 @@ impl Normalize for Op {
                 main,
             } => {
                 let main_length = match main {
-                    Some(tl) => tl.get_length_ratio(defs)?,
+                    Some(m) => m.get_length_ratio(defs)?,
                     None => Rational64::from_integer(1),
                 };
                 let target_length = with_length_of.get_length_ratio(defs)?;
