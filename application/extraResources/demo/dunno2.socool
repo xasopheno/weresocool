@@ -40,7 +40,7 @@ weird_microtonal_melody = {
       24, 55, 61, 12, 62, 77, 64, 
       31, 22, 4, 25, 77, 89, 20, 60, 70
   ]
-  > FitLength all_scales
+  | FitLength all_scales
 }
 
 main = {

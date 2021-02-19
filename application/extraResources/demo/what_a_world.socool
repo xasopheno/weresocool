@@ -96,7 +96,7 @@ chords = {
       @ [Random(40)] 
     ]
   ]
-  > FitLength thing1
+  | FitLength thing1
 }
 
 main = {

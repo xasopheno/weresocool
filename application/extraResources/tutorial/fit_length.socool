@@ -8,8 +8,7 @@
 -- the ends of operations. 
 
 -- The syntax is as follows:
---    operation2 > FitLength operation1
---               ^notice the ">" used here.
+--    operation2 | FitLength operation1
 
 -- Here, operation2 is something new you've written. 
 -- operation1 is something you wrote earlier in the piece.
@@ -62,7 +61,7 @@ melody1 = {
 -- ... and repeated twice...
   | Repeat 2
 -- ... fit to the length of the original bassline.
-  > FitLength bassline
+  | FitLength bassline
 }
 
 melody2 = {
@@ -89,7 +88,7 @@ melody2 = {
     Fm 11/8 | Pa 1,
   ]
 -- ... *automagically* fit to the length of the original bassline.
-  > FitLength bassline
+  | FitLength bassline
 }
 
 chords = {
@@ -111,7 +110,7 @@ chords = {
   ]
   | Gm 1/2 
   --... fit to the length of the bassline!. 
-  > FitLength melody1 
+  | FitLength melody1 
 }
 
 -- As usual, main is what get rendered.

@@ -7,11 +7,11 @@ thing = {
 }
 
 main = {
-  Lm 1 > FitLength thing
+  Lm 1 | FitLength thing
 }
 
 expect = {
-  Lm 1 > FitLength Seq [Lm 1, Lm 2/3, Lm 1/3, Lm 1/3, Lm 1/3]
+  Lm 1 | FitLength Seq [Lm 1, Lm 2/3, Lm 1/3, Lm 1/3, Lm 1/3]
 }
 
 

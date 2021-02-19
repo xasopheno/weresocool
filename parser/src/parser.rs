@@ -8,7 +8,7 @@ use std::fs::File;
 use std::io::prelude::*;
 use std::io::BufReader;
 use std::sync::{Arc, Mutex};
-use weresocool_ast::{Defs, NormalForm, Normalize, Term};
+use weresocool_ast::{Defs, NormalForm, Normalize, Op, Term};
 use weresocool_error::{Error, ParseError};
 
 #[derive(Clone, PartialEq, Debug)]
@@ -178,6 +178,42 @@ fn handle_whitespace_and_imports(lines: Vec<String>) -> Result<(Vec<String>, Str
     }
 
     Ok((imports_needed, composition))
+}
+
+pub fn handle_fit_length_recursively(terms: Vec<Term>) -> Vec<Term> {
+    let mut result = vec![];
+    let mut i = 0;
+
+    for term in terms.iter() {
+        if i == 0 {
+            result.push(term.to_owned());
+        } else {
+            match term {
+                Term::Op(op) => match op {
+                    Op::WithLengthRatioOf { with_length_of, .. } => {
+                        let op1 = Term::Op(Op::Compose {
+                            operations: result[0..i].into_iter().cloned().collect(),
+                        });
+                        result = vec![Term::Op(Op::Compose {
+                            operations: vec![
+                                op1.to_owned(),
+                                Term::Op(Op::WithLengthRatioOf {
+                                    with_length_of: with_length_of.clone(),
+                                    main: Some(Box::new(op1)),
+                                }),
+                            ],
+                        })];
+                        i = 0;
+                    }
+                    _ => result.push(term.to_owned()),
+                },
+                _ => result.push(term.to_owned()),
+            }
+        }
+        i += 1;
+    }
+
+    result
 }
 
 mod tests {

@@ -30,7 +30,7 @@ thing2 = {
 	| Gain 0.7
 	| Sequence [Tm 3/2, Tm 5/3, Tm 15/8 | Reverse]
 	| Repeat 2
-	> FitLength thing1
+	| FitLength thing1
 }
 
 bass = {
@@ -53,7 +53,7 @@ bass = {
 	]
 	| Tm 0.25
 	| Repeat 3
-	> FitLength thing1
+	| FitLength thing1
 }
 
 learn = { 

@@ -73,7 +73,7 @@ chords = {
         ] | Lm 3,
     ]
     | Seq [AsIs, Reverse | Fm 9/8]
-    > FitLength bass
+    | FitLength bass
 
 }
 
@@ -91,7 +91,7 @@ main = {
             Tm 4/3 | Repeat 2 | Lm 1/2 | PanM -1 | Gain 1/16
         ]
         | Gain 1/8
-        > FitLength bass,
+        | FitLength bass,
         chords | Gain 1/2
     ]
     | Seq [Tm 1, Reverse]

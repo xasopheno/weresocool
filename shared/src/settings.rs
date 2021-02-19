@@ -21,7 +21,7 @@ pub const fn default_settings() -> Settings {
         mic: false,
         sample_rate: 44_100.0,
         yin_buffer_size: 2048,
-        buffer_size: 1024 * 4,
+        buffer_size: 1024 * 8,
         probability_threshold: 0.3,
         gain_threshold_min: 0.0,
         channels: 2,

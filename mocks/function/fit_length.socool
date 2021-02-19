@@ -20,3 +20,16 @@ main = {
     thing2(thing1)
   ]
 }
+
+expect = {
+  Overlay [
+    thing1, 
+    Seq [
+      Fm 3/2,
+      Fm 4/3
+    ]
+    | Repeat 3
+    | FitLength thing1
+    | Fm 3
+  ]
+}

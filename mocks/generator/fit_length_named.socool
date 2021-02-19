@@ -6,7 +6,7 @@ gen = *(
 
 main = {
   Lm 1
-  > FitLength *gen 
+  | FitLength *gen 
 }
 
 expect = {

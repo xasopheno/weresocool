@@ -113,7 +113,7 @@ thing2 = {
     ] 
     @ [Random(100)]    
   ]
-  > FitLength melody
+  | FitLength melody
 }
   
 main = {

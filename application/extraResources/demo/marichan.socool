@@ -106,7 +106,7 @@ highs = {
       Fm 0 | Lm 1/100,
       Fm 0 | Lm 1,
     ]  
-  > FitLength thing1
+  | FitLength thing1
 }
 
 main = {

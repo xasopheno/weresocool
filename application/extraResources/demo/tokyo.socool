@@ -62,7 +62,7 @@ thing2 = {
 		AsIs,
 		Fm 3/2,
 		Fm 4/3,
-	] | Fm 3/2 | Seq [Fm 0, Repeat 2] > FitLength thing1
+	] | Fm 3/2 | Seq [Fm 0, Repeat 2] | FitLength thing1
 } 
 
 thing3 = {
@@ -80,7 +80,7 @@ thing3 = {
 	| Fm 2 
 	| Seq [AsIs, Pm -1]
 	| Seq [AsIs, Gm 1/2] 
-	> FitLength thing1
+	| FitLength thing1
 } 
 
 thing4 = {
@@ -149,7 +149,7 @@ bass = {
   		]
 	  	| Repeat 4 
 		] 
-		| Gm 5/4 | Fm 1/2 > FitLength thing1,
+		| Gm 5/4 | Fm 1/2 | FitLength thing1,
 		Seq [
 	    O[
 	    	(4/1, 0, 1, 2/5),
@@ -176,7 +176,7 @@ bass = {
 	  		Seq [Fm 3, Fm 4, Fm 7 | Pa 1]
   		] 
 		] 
-		| Gm 1/4 | Fm 7/16 > FitLength thing4
+		| Gm 1/4 | Fm 7/16 | FitLength thing4
 	]
 }
 
@@ -185,7 +185,7 @@ section_1 = {
 	Overlay [
 		Gm 1/2 
 		| Seq [
-			Fm 0 | Gm 0 > FitLength thing1, 
+			Fm 0 | Gm 0 | FitLength thing1, 
 			#fast | Overlay [
 				thing4 | Pa -1 
 				| ModulateBy [
@@ -342,7 +342,7 @@ triangle_part_1 = {
 			Fm 3, 
 			Fm 4, 
 			Fm 5,
-		] > FitLength triangle_1
+		] | FitLength triangle_1
 	] 
 }
 
@@ -402,7 +402,7 @@ triangle_part_2 = {
             Fm 12 | Pa -1/2 | Fa 10,
             Fm 12 | Pa 1/2,
           ] | Gm 1/7,
-      ] > FitLength triangle_2
+      ] | FitLength triangle_2
 	] 
 }
 
@@ -427,7 +427,7 @@ tornado_1 = {
 		Fm 5/3,
 		Fm 15/8,
 		Fm 2,
-	] > FitLength unit
+	] | FitLength unit
 }
 
 tornado_2 = {
@@ -455,7 +455,7 @@ tornado_2 = {
 		Fm 15/4,
 	] 
 	| Fm 9/8
-	> FitLength unit
+	| FitLength unit
 }
 
 tornado_full = {

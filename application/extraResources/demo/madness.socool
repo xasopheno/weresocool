@@ -38,7 +38,7 @@ bass1 = {
 		Fm 3/4 | Lm 3/2,
 		Fm 2/3,
 	]
-	> FitLength melody1
+	| FitLength melody1
 }
 
 phrase1 = {
@@ -66,7 +66,7 @@ chords2 = {
 		Fm 11/8,
 		Fm 5/4 | Lm 3, 
 	]
-	> FitLength melody1
+	| FitLength melody1
 }
 
 melody2 = {
@@ -118,7 +118,7 @@ melody2 = {
 		| Seq [AsIs, Fm 9/4]
 	]
 	| Seq [AsIs, Fm 4/5 | Lm 5/4]
-	> FitLength melody1
+	| FitLength melody1
 }
 
 phrase2 = {

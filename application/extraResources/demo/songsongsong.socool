@@ -140,7 +140,7 @@ thing2 = {
         Seq [Pa -1, Pa 1, Pa 1, Pa -1, Pa 1/2, Pa -1/2] | Repeat 10
     ]
     | Gain 1/16
-    > FitLength thing1
+    | FitLength thing1
 }
 
 main = {
