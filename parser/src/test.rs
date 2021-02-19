@@ -328,7 +328,7 @@ pub mod test {
     //                .unwrap();
     //        }
 
-    // #[test]
+    #[test]
     fn fit_length_test() {
         let mut defs: Defs = Default::default();
 
@@ -359,27 +359,9 @@ pub mod test {
         assert_eq!(
             *thing,
             Op(Compose {
-                operations: vec![
-                    Op(Compose {
-                        operations: vec![
-                            Op(Sequence {
-                                operations: vec![
-                                    Op(TransposeM {
-                                        m: Ratio::new(5, 4)
-                                    }),
-                                    Op(TransposeM {
-                                        m: Ratio::new(3, 2)
-                                    })
-                                ]
-                            }),
-                            Op(Sequence {
-                                operations: vec![Op(AsIs), Op(AsIs)]
-                            })
-                        ]
-                    }),
-                    Op(WithLengthRatioOf {
-                        with_length_of: Box::new(Op(Id("thing".to_string()))),
-                        main: Some(Box::new(Op(Compose {
+                operations: vec![Op(Compose {
+                    operations: vec![
+                        Op(Compose {
                             operations: vec![
                                 Op(Sequence {
                                     operations: vec![
@@ -395,9 +377,29 @@ pub mod test {
                                     operations: vec![Op(AsIs), Op(AsIs)]
                                 })
                             ]
-                        })))
-                    })
-                ]
+                        }),
+                        Op(WithLengthRatioOf {
+                            with_length_of: Box::new(Op(Id("thing".to_string()))),
+                            main: Some(Box::new(Op(Compose {
+                                operations: vec![
+                                    Op(Sequence {
+                                        operations: vec![
+                                            Op(TransposeM {
+                                                m: Ratio::new(5, 4)
+                                            }),
+                                            Op(TransposeM {
+                                                m: Ratio::new(3, 2)
+                                            })
+                                        ]
+                                    }),
+                                    Op(Sequence {
+                                        operations: vec![Op(AsIs), Op(AsIs)]
+                                    })
+                                ]
+                            })))
+                        })
+                    ]
+                })]
             })
         )
     }
