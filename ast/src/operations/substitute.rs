@@ -39,7 +39,7 @@ impl Substitute for Op {
             } => {
                 let with_length_of = with_length_of.substitute(normal_form, defs, arg_map)?;
                 let main = match main.as_ref() {
-                    Some(wlo) => wlo.substitute(normal_form, defs, arg_map)?,
+                    Some(m) => m.substitute(normal_form, defs, arg_map)?,
                     None => Term::Nf(NormalForm::init()),
                 };
 
