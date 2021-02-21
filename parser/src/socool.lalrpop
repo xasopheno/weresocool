@@ -277,6 +277,7 @@ BaseOperation: Term = {
     r"(Sequence|Seq)" "[" <operations: Operations> "]" => Term::Op(Sequence { operations: operations }),
     "Overlay" "[" <operations: Operations> "]" => Term::Op(Overlay { operations: operations }),
     r"(ModulateBy|ModBy)" "[" <operations: Operations> "]" => Term::Op(ModulateBy { operations: operations }),
+    r"(ModulateLengthBy|ModLenBy)" "[" <operations: Operations> "]" => Term::Op(ModulateLengthBy { operations: operations }),
     "FitLength" <op: Composeable> => {
         Term::Op(
             WithLengthRatioOf { with_length_of: Box::new(op), main: None }

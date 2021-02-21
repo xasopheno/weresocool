@@ -84,7 +84,9 @@ pub enum Op {
     ModulateBy {
         operations: Vec<Term>,
     },
-    //
+    ModulateLengthBy {
+        operations: Vec<Term>,
+    },
     WithLengthRatioOf {
         main: Option<Box<Term>>,
         with_length_of: Box<Term>,

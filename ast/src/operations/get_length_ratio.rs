@@ -67,6 +67,7 @@ impl GetLengthRatio for Op {
             }
 
             Op::ModulateBy { .. } => Ok(Ratio::from_integer(1)),
+            Op::ModulateLengthBy { .. } => unimplemented!(),
 
             Op::Focus {
                 main, op_to_apply, ..

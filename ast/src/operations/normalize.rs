@@ -231,6 +231,10 @@ impl Normalize for Op {
                 *input = result
             }
 
+            Op::ModulateLengthBy { operations } => {
+                unimplemented!()
+            }
+
             Op::Overlay { operations } => {
                 let normal_forms = operations
                     .iter()
