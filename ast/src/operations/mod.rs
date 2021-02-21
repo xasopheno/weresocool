@@ -372,6 +372,18 @@ impl NormalForm {
         }
     }
 
+    /// Creates a NormalForm with empty operations
+    /// and set the length_ratio to zero.
+    pub fn init_with_operations_and_lr(
+        operations: Vec<Vec<PointOp>>,
+        length_ratio: Rational64,
+    ) -> NormalForm {
+        NormalForm {
+            operations,
+            length_ratio,
+        }
+    }
+
     /// Applys function 'f' to every PointOp in the NormalForm
     pub fn fmap_mut(&mut self, f: impl Fn(&mut PointOp)) {
         for voice in self.operations.iter_mut() {
