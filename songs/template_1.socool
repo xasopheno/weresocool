@@ -2,5 +2,8 @@
 
 
 main = {
-  Seq [Fm 1, Fm 9/8]
+  Overlay [
+    Fm 2 | Lm 2,
+    Seq [Fm 1, Fm 9/8]
+  ]
 }

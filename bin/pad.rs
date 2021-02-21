@@ -22,58 +22,73 @@ fn main() -> Result<(), Error> {
     let filename = "songs/template_1.socool";
 
     let render_return = Filename(filename).make(RenderType::NfBasisAndTable, None)?;
-    let (mut nf, _basis, _table) = match render_return {
+    let (nf, _basis, _table) = match render_return {
         RenderReturn::NfBasisAndTable(nf, basis, table) => (nf, basis, table),
         _ => panic!("huh"),
     };
-    let n = 4;
-    let lr = nf.length_ratio / Rational64::from_integer(n);
-    // dbg!(lr);
-    // dbg!(nf);
-    let mut result: Vec<NormalForm> = vec![];
-    let mut outer_counter = 1;
-    let mut target_len = lr;
-    while outer_counter < n + 1 {
-        dbg!(target_len);
-        dbg!(outer_counter);
-        let mut slice_operations = vec![];
-        for voice in nf.operations.iter_mut() {
-            let mut voice_result: Vec<PointOp> = vec![];
-            let mut current = lr * outer_counter - 1;
-            let mut i = 0;
+    let result = divide_into_n_equal_lengths(nf, 3);
+
+    dbg!(result);
+    Ok(())
+}
+
+/// Divides a NormalForm into n equal parts lengthwise.
+/// This is accomplished one voice at a time.
+pub fn divide_into_n_equal_lengths(mut nf: NormalForm, n_divisions: usize) -> Vec<NormalForm> {
+    // This function should take a usize, but an i64 is more practical for computation.
+    let n_divisions = n_divisions as i64;
+    // length of an nth.
+    let lr_division = nf.length_ratio / n_divisions;
+    let mut result: Vec<Vec<Vec<PointOp>>> = vec![];
+    // Prepare n bins ahead of time.
+    for _ in 0..n_divisions {
+        result.push(vec![])
+    }
+    for voice in nf.operations.iter_mut() {
+        let mut division_counter = 0;
+        let mut voice_idx = 0;
+        let mut target_len = lr_division;
+        while division_counter < n_divisions {
+            let mut voice_division_result: Vec<PointOp> = vec![];
+            let mut lr_accumulator = lr_division * division_counter;
             loop {
-                dbg!(i);
-                if i >= voice.len() || current >= target_len {
+                // If we've reached the target_len of the division
+                // move on to next division or, finally, voice.
+                if lr_accumulator >= target_len || voice_idx >= voice.len() {
                     break;
                 };
-                if current + voice[i].l <= target_len {
-                    voice_result.push(voice[i].clone());
-                    current += voice[i].l;
-                    i += 1;
+                // If we haven't reached our target, add this op to
+                // in it's entirety.
+                if lr_accumulator + voice[voice_idx].l <= target_len {
+                    voice_division_result.push(voice[voice_idx].clone());
+                    lr_accumulator += voice[voice_idx].l;
+                    voice_idx += 1;
                 } else {
-                    let mut op_clone = voice[i].clone();
-                    let op_l = target_len - current;
+                    // Otherwise, add an an op with a partial length
+                    let mut op_clone = voice[voice_idx].clone();
+                    let op_l = target_len - lr_accumulator;
                     op_clone.l = op_l;
-                    voice_result.push(op_clone);
-                    dbg!(voice[i].l - op_l);
-                    if voice[i].l - op_l == Rational64::from_integer(0) {
-                        i += 1
+                    voice_division_result.push(op_clone);
+                    if voice[voice_idx].l - op_l == Rational64::from_integer(0) {
+                        // If the op is now empty, move on.
+                        voice_idx += 1
                     } else {
-                        voice[i].l = voice[i].l - op_l;
+                        // If not, replace the l in the current op with
+                        // the remainder.
+                        voice[voice_idx].l = voice[voice_idx].l - op_l;
                     }
-                    current += op_l;
+                    lr_accumulator += op_l;
                 }
             }
-            slice_operations.push(voice_result);
+            result[division_counter as usize].push(voice_division_result);
+            division_counter += 1;
+            target_len = lr_division * (division_counter + 1);
         }
-        result.push(NormalForm::init_with_operations_and_lr(
-            slice_operations,
-            lr,
-        ));
-        outer_counter += 1;
-        target_len = lr * outer_counter;
-        dbg!(&result.len());
     }
-
-    Ok(())
+    // Build NormalForms from the Vec<NormalForm.operations> above.
+    // All of the length_ratios should be the same.
+    result
+        .iter()
+        .map(|operations| NormalForm::init_with_operations_and_lr(operations.to_vec(), lr_division))
+        .collect()
 }
