@@ -232,10 +232,16 @@ impl Normalize for Op {
             }
 
             Op::ModulateLengthBy { operations } => {
-                let mut divided = input
-                    .to_owned()
-                    .divide_into_n_equal_lengths(operations.len());
+                let lengths: Vec<Rational64> = operations.iter().map(|mlb_op| mlb_op.lr).collect();
+                let sum_lrs: Rational64 = lengths.iter().sum();
+                let scaled_lrs: Vec<Rational64> = lengths
+                    .iter()
+                    .map(|l| l / sum_lrs * input.length_ratio)
+                    .collect();
+
+                let mut divided = input.to_owned().divide_into_parts(scaled_lrs);
                 let terms: Vec<Term> = operations.iter().map(|mlb| mlb.op.to_owned()).collect();
+
                 for (i, nf) in divided.iter_mut().enumerate() {
                     terms[i].apply_to_normal_form(nf, defs)?;
                 }

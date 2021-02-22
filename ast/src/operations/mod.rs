@@ -425,6 +425,71 @@ impl NormalForm {
         result
     }
 
+    /// Divides a NormalForm into parts lengthwise.
+    /// This is accomplished one voice at a time.
+    pub fn divide_into_parts(&mut self, part_lengths: Vec<Rational64>) -> Vec<NormalForm> {
+        // This function should take a usize, but an i64 is more practical for computation.
+        // length of an nth.
+        let mut result: Vec<Vec<Vec<PointOp>>> = vec![];
+        // Prepare n bins ahead of time.
+        for _ in 0..part_lengths.len() {
+            result.push(vec![])
+        }
+        for voice in self.operations.iter_mut() {
+            let mut division_counter = 0;
+            let mut voice_idx = 0;
+            let mut target_len = part_lengths[0];
+            let mut lr_accumulator = Rational64::from_integer(0);
+            while division_counter < part_lengths.len() {
+                dbg!(lr_accumulator);
+                let mut voice_division_result: Vec<PointOp> = vec![];
+                // let mut lr_accumulator = lr_division * division_counter;
+                loop {
+                    // If we've reached the target_len of the division
+                    // move on to next division or, finally, voice.
+                    if lr_accumulator >= target_len || voice_idx >= voice.len() {
+                        break;
+                    };
+                    // If we haven't reached our target, add this op to
+                    // in it's entirety.
+                    if lr_accumulator + voice[voice_idx].l <= target_len {
+                        voice_division_result.push(voice[voice_idx].clone());
+                        lr_accumulator += voice[voice_idx].l;
+                        voice_idx += 1;
+                    } else {
+                        // Otherwise, add an an op with a partial length
+                        let mut op_clone = voice[voice_idx].clone();
+                        let op_l = target_len - lr_accumulator;
+                        op_clone.l = op_l;
+                        voice_division_result.push(op_clone);
+                        if voice[voice_idx].l - op_l == Rational64::from_integer(0) {
+                            // If the op is now empty, move on.
+                            voice_idx += 1
+                        } else {
+                            // If not, replace the l in the current op with
+                            // the remainder.
+                            voice[voice_idx].l = voice[voice_idx].l - op_l;
+                        }
+                        lr_accumulator += op_l;
+                    }
+                }
+                result[division_counter as usize].push(voice_division_result);
+                division_counter += 1;
+                // target_len = lr_division * (division_counter + 1);
+                target_len = part_lengths[0..division_counter].iter().sum::<Rational64>();
+            }
+        }
+        // Build NormalForms from the Vec<NormalForm.operations> above.
+        // All of the length_ratios should be the same.
+        result
+            .iter()
+            .enumerate()
+            .map(|(i, operations)| {
+                NormalForm::init_with_operations_and_lr(operations.to_vec(), part_lengths[i])
+            })
+            .collect()
+    }
+
     /// Divides a NormalForm into n equal parts lengthwise.
     /// This is accomplished one voice at a time.
     pub fn divide_into_n_equal_lengths(&mut self, n_divisions: usize) -> Vec<NormalForm> {

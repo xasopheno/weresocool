@@ -13,7 +13,7 @@ fn main() -> Result<(), Error> {
     let filename = "songs/template_1.socool";
 
     let render_return = Filename(filename).make(RenderType::NfBasisAndTable, None)?;
-    let (nf, _basis, _table) = match render_return {
+    let (mut nf, _basis, _table) = match render_return {
         RenderReturn::NfBasisAndTable(nf, basis, table) => (nf, basis, table),
         _ => panic!("huh"),
     };
