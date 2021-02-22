@@ -90,9 +90,12 @@ impl Substitute for Op {
             Op::ModulateBy { operations } => Ok(Term::Op(Op::ModulateBy {
                 operations: substitute_operations(operations.to_vec(), normal_form, defs, arg_map)?,
             })),
-            Op::ModulateLengthBy { operations } => Ok(Term::Op(Op::ModulateLengthBy {
-                operations: substitute_operations(operations.to_vec(), normal_form, defs, arg_map)?,
-            })),
+            Op::ModulateLengthBy { operations } => {
+                unimplemented!();
+                // Ok(Term::Op(Op::ModulateLengthBy {
+                // operations: substitute_operations(operations.to_vec(), normal_form, defs, arg_map)?,
+                // })),
+            }
             _ => Ok(Term::Op(self.clone())),
         }
     }

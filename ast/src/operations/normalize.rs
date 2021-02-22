@@ -2,7 +2,7 @@ use crate::operations::Rational64;
 use crate::operations::{
     helpers::*, substitute::get_fn_arg_map, GetLengthRatio, NormalForm, Normalize, Substitute,
 };
-use crate::{Defs, FunDef, Op, OscType, Term, Term::*};
+use crate::{join_list_nf, Defs, FunDef, Op, OscType, Term, Term::*};
 use num_rational::Ratio;
 use num_traits::CheckedMul;
 use weresocool_error::Error;
@@ -232,7 +232,14 @@ impl Normalize for Op {
             }
 
             Op::ModulateLengthBy { operations } => {
-                unimplemented!()
+                let mut divided = input
+                    .to_owned()
+                    .divide_into_n_equal_lengths(operations.len());
+                let terms: Vec<Term> = operations.iter().map(|mlb| mlb.op.to_owned()).collect();
+                for (i, nf) in divided.iter_mut().enumerate() {
+                    terms[i].apply_to_normal_form(nf, defs)?;
+                }
+                *input = join_list_nf(divided);
             }
 
             Op::Overlay { operations } => {

@@ -427,7 +427,7 @@ impl NormalForm {
 
     /// Divides a NormalForm into n equal parts lengthwise.
     /// This is accomplished one voice at a time.
-    pub fn divide_into_n_equal_lengths(mut self, n_divisions: usize) -> Vec<NormalForm> {
+    pub fn divide_into_n_equal_lengths(&mut self, n_divisions: usize) -> Vec<NormalForm> {
         // This function should take a usize, but an i64 is more practical for computation.
         let n_divisions = n_divisions as i64;
         // length of an nth.

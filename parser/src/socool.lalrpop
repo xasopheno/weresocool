@@ -2,6 +2,7 @@ use num_rational::{Rational64};
 use std::str::FromStr;
 use std::string::String;
 use weresocool_ast::{
+        MLBOp,
         Defs,
         Op::*,
         Term, 
@@ -241,6 +242,11 @@ Composeable: Term = {
   <generator: Generator> => Term::Gen(generator),
 }
 
+MLBOp: MLBOp = {
+  <op: Operation> => MLBOp {op, lr: Rational64::from_integer(1)},
+  <lr: Rational> ":" <op: Operation> => MLBOp {op, lr}
+}
+
 BaseOperation: Term = {
     "(" <o: Operation> ")" => o,
     <fm: Fm> <m:Rational> => Term::Op(TransposeM {m}),
@@ -277,7 +283,7 @@ BaseOperation: Term = {
     r"(Sequence|Seq)" "[" <operations: Operations> "]" => Term::Op(Sequence { operations: operations }),
     "Overlay" "[" <operations: Operations> "]" => Term::Op(Overlay { operations: operations }),
     r"(ModulateBy|ModBy)" "[" <operations: Operations> "]" => Term::Op(ModulateBy { operations: operations }),
-    r"(ModulateLengthBy|ModLenBy)" "[" <operations: Operations> "]" => Term::Op(ModulateLengthBy { operations: operations }),
+    r"(ModulateLengthBy|ModLenBy)" "[" <operations: Comma<MLBOp>> "]" => Term::Op(ModulateLengthBy { operations: operations }),
     "FitLength" <op: Composeable> => {
         Term::Op(
             WithLengthRatioOf { with_length_of: Box::new(op), main: None }

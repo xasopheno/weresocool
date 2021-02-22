@@ -20,6 +20,12 @@ pub struct Defs {
 }
 
 #[derive(Clone, PartialEq, Debug, Hash)]
+pub struct MLBOp {
+    pub op: Term,
+    pub lr: Rational64,
+}
+
+#[derive(Clone, PartialEq, Debug, Hash)]
 pub enum Op {
     AsIs,
     Id(String),
@@ -85,7 +91,7 @@ pub enum Op {
         operations: Vec<Term>,
     },
     ModulateLengthBy {
-        operations: Vec<Term>,
+        operations: Vec<MLBOp>,
     },
     WithLengthRatioOf {
         main: Option<Box<Term>>,
