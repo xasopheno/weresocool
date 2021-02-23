@@ -438,16 +438,20 @@ impl NormalForm {
         for voice in self.operations.iter_mut() {
             let mut division_counter = 0;
             let mut voice_idx = 0;
-            let mut target_len = part_lengths[0];
             let mut lr_accumulator = Rational64::from_integer(0);
             while division_counter < part_lengths.len() {
+                let target_len = part_lengths[0..division_counter + 1]
+                    .iter()
+                    .sum::<Rational64>();
                 dbg!(lr_accumulator);
+                dbg!(target_len);
                 let mut voice_division_result: Vec<PointOp> = vec![];
                 // let mut lr_accumulator = lr_division * division_counter;
                 loop {
                     // If we've reached the target_len of the division
                     // move on to next division or, finally, voice.
                     if lr_accumulator >= target_len || voice_idx >= voice.len() {
+                        lr_accumulator = target_len;
                         break;
                     };
                     // If we haven't reached our target, add this op to
@@ -474,12 +478,8 @@ impl NormalForm {
                     }
                 }
                 result[division_counter as usize].push(voice_division_result);
+                // lr_accumulator = part_lengths[0..division_counter].iter().sum::<Rational64>();
                 division_counter += 1;
-                // target_len = lr_division * (division_counter + 1);
-                target_len = part_lengths[0..division_counter].iter().sum::<Rational64>();
-                lr_accumulator = part_lengths[0..division_counter - 1]
-                    .iter()
-                    .sum::<Rational64>();
             }
         }
         // Build NormalForms from the Vec<NormalForm.operations> above.

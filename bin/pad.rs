@@ -1,10 +1,10 @@
+use num_rational::Rational64;
 use weresocool::{
     generation::{RenderReturn, RenderType},
     interpretable::{InputType::Filename, Interpretable},
     ui::were_so_cool_logo,
 };
-// use num_rational::Rational64;
-// use weresocool_ast::{NormalForm, PointOp};
+use weresocool_ast::{NormalForm, PointOp};
 
 use weresocool_error::Error;
 
@@ -17,7 +17,21 @@ fn main() -> Result<(), Error> {
         RenderReturn::NfBasisAndTable(nf, basis, table) => (nf, basis, table),
         _ => panic!("huh"),
     };
-    let result = nf.divide_into_n_equal_lengths(3);
-    dbg!(result);
+
+    let lengths = vec![
+        Rational64::from_integer(2),
+        Rational64::from_integer(1),
+        Rational64::from_integer(1),
+    ];
+
+    let sum_lrs: Rational64 = lengths.iter().sum();
+    let scaled_lrs: Vec<Rational64> = lengths
+        .iter()
+        .map(|l| l / sum_lrs * nf.length_ratio)
+        .collect();
+    // dbg!(&scaled_lrs);
+
+    let result = nf.divide_into_parts(scaled_lrs);
+    // dbg!(result);
     Ok(())
 }
