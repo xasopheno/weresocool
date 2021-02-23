@@ -477,6 +477,9 @@ impl NormalForm {
                 division_counter += 1;
                 // target_len = lr_division * (division_counter + 1);
                 target_len = part_lengths[0..division_counter].iter().sum::<Rational64>();
+                lr_accumulator = part_lengths[0..division_counter - 1]
+                    .iter()
+                    .sum::<Rational64>();
             }
         }
         // Build NormalForms from the Vec<NormalForm.operations> above.

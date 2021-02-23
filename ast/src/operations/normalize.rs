@@ -240,10 +240,10 @@ impl Normalize for Op {
                     .collect();
 
                 let mut divided = input.to_owned().divide_into_parts(scaled_lrs);
-                let terms: Vec<Term> = operations.iter().map(|mlb| mlb.op.to_owned()).collect();
+                // let terms: Vec<Term> = operations.iter().map(|mlb| mlb.op.to_owned()).collect();
 
                 for (i, nf) in divided.iter_mut().enumerate() {
-                    terms[i].apply_to_normal_form(nf, defs)?;
+                    operations[i].op.apply_to_normal_form(nf, defs)?;
                 }
                 *input = join_list_nf(divided);
             }
