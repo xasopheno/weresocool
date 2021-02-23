@@ -197,7 +197,7 @@ ListBase: ListOp = {
 
   r"(List|&)" <gen: Generator> => ListOp::GenOp(gen),
 
-  "&"<op: ComposeOperation> ">" "Slice" => todo!()
+  r"(List|&)" <op: ComposeOperation> ">" "Slice" => todo!()
 }
 
 Indices: Indices = {
