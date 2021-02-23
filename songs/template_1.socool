@@ -5,15 +5,16 @@ thing1 = {
 }
 
 thing2(fl) = {
-  &Seq [
+  List Seq [
     Fm 3/2,
     Fm 4/3
   ]
-  > Slice [1, 3, 2, 4]
+  > Slice
   @[1, 2, 1, 0]
   | Repeat 3
-  | FitLength(fl)
+  | FitLength fl
   | Fm 3
+  > Slice
 }
 
 main = {

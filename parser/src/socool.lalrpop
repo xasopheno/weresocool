@@ -73,23 +73,23 @@ LetDef: () = {
 
 
 Operation: Term = {
-    <op1: Operation> ">" "FitGain" <op2: ComposeOperation> => {
-      unimplemented!()
-    },
-    // TODO: Revisit Focus/Lens
-    <op1: Operation> ">" "@" <name: Name> <op2: ComposeOperation> => {
-        Term::Op(
-            Focus {
-                name: name,
-                main: Box::new(op1.to_owned()),
-                op_to_apply: Box::new(op2.to_owned()),
-            }
-        )
-    },
+//   <op1: Operation> ">" "FitGain" <op2: ComposeOperation> => {
+//     unimplemented!()
+//   },
+//   // TODO: Revisit Focus/Lens
+//   <op1: Operation> ">" "@" <name: Name> <op2: ComposeOperation> => {
+//       Term::Op(
+//           Focus {
+//               name: name,
+//               main: Box::new(op1.to_owned()),
+//               op_to_apply: Box::new(op2.to_owned()),
+//           }
+//       )
+//   },
+//
+   <op: ComposeOperation> => op,
 
-    <op: ComposeOperation> => op,
-
-    <list: List> => Term::Lop(list),
+   <list: List> => Term::Lop(list),
 
     <generator: Generator> => Term::Gen(generator)
 }
@@ -195,9 +195,10 @@ ListBase: ListOp = {
     ListOp::Const(et(n))
   },
 
-  r"(List|&)" <gen: Generator> => ListOp::GenOp(gen),
+  // r"(List|&)" <gen: Generator> => ListOp::GenOp(gen),
 
-  r"(List|&)" <op: ComposeOperation> ">" "Slice" => todo!()
+  "&" <op: SuperCompose> ">" "Slice" => todo!(),
+  "List" <op: SuperCompose> ">" "Slice" => todo!()
 }
 
 Indices: Indices = {
