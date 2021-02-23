@@ -26,27 +26,21 @@ impl ListOp {
                     _ => Err(Error::with_msg("List.term_vectors() called on non-list")),
                 }
             }
-            ListOp::ListOpIndexed { list_op, indices } => match &**list_op {
-                Term::Lop(list_op) => {
-                    let term_vectors = list_op.term_vectors(defs, arg_map)?;
-                    let index_vectors = indices.vectorize(term_vectors.len())?;
+            ListOp::ListOpIndexed { list_op, indices } => {
+                let term_vectors = list_op.term_vectors(defs, arg_map)?;
+                let index_vectors = indices.vectorize(term_vectors.len())?;
 
-                    Ok(index_vectors
-                        .iter()
-                        .map(|index_vector| {
-                            let mut new_index = term_vectors[index_vector.index].clone();
-                            index_vector.index_terms.iter().for_each(|index_term| {
-                                new_index.index_terms.push(index_term.clone());
-                            });
-                            new_index
-                        })
-                        .collect())
-                }
-                _ => {
-                    println!("List.term.vectors() called on a non-list");
-                    Err(Error::with_msg("List.term_vectors() called on non-list"))
-                }
-            },
+                Ok(index_vectors
+                    .iter()
+                    .map(|index_vector| {
+                        let mut new_index = term_vectors[index_vector.index].clone();
+                        index_vector.index_terms.iter().for_each(|index_term| {
+                            new_index.index_terms.push(index_term.clone());
+                        });
+                        new_index
+                    })
+                    .collect())
+            }
             ListOp::Concat(lists) => {
                 let mut result = vec![];
                 for list in lists {
