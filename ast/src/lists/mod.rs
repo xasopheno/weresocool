@@ -9,7 +9,7 @@ pub enum ListOp {
     Const(Vec<Term>),
     Named(String),
     ListOpIndexed {
-        list_op: Box<ListOp>,
+        list_op: Box<Term>,
         indices: Indices,
     },
     GenOp(GenOp),

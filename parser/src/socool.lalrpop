@@ -73,19 +73,21 @@ LetDef: () = {
 
 
 Operation: Term = {
-    <op1: Operation> ">" "FitGain" <op2: ComposeOperation> => {
-      unimplemented!()
-    },
-    // TODO: Revisit Focus/Lens
-    <op1: Operation> ">" "@" <name: Name> <op2: ComposeOperation> => {
-        Term::Op(
-            Focus {
-                name: name,
-                main: Box::new(op1.to_owned()),
-                op_to_apply: Box::new(op2.to_owned()),
-            }
-        )
-    },
+  // <op1: Operation> ">" "FitGain" <op2: ComposeOperation> => {
+  //   unimplemented!()
+  // },
+  // // TODO: Revisit Focus/Lens
+  // <op1: Operation> ">" "@" <name: Name> <op2: ComposeOperation> => {
+  //     Term::Op(
+  //         Focus {
+  //             name: name,
+  //             main: Box::new(op1.to_owned()),
+  //             op_to_apply: Box::new(op2.to_owned()),
+  //         }
+  //     )
+  // },
+
+
 
     <op: ComposeOperation> => op,
 
@@ -172,9 +174,6 @@ List: ListOp = {
 ListConcat = Concat<ListIndexed>;
 
 ListIndexed: ListOp = {
-  <listop: ListIndexed> "@" "[" <indices: Indices> "]" => {
-    ListOp::ListOpIndexed { list_op: Box::new(listop), indices}
-  },
 
    "<" <list: List> ">" => list,
 
@@ -236,6 +235,9 @@ ComposeOperation: Term = {
 }
 
 Composeable: Term = {
+  <listop: Composeable> "@" "[" <indices: Indices> "]" => {
+    Term::Lop(ListOp::ListOpIndexed { list_op: Box::new(listop), indices})
+  },
   <base_operation: BaseOperation> => base_operation,
   <list: List> => Term::Lop(list),
   <generator: Generator> => Term::Gen(generator),
@@ -277,7 +279,7 @@ BaseOperation: Term = {
     r"(Sequence|Seq)" "[" <operations: Operations> "]" => Term::Op(Sequence { operations: operations }),
     "Overlay" "[" <operations: Operations> "]" => Term::Op(Overlay { operations: operations }),
     r"(ModulateBy|ModBy)" "[" <operations: Operations> "]" => Term::Op(ModulateBy { operations: operations }),
-    "FitLength" <op: Composeable> => {
+    "FitLength" "(" <op: Composeable> ")" => {
         Term::Op(
             WithLengthRatioOf { with_length_of: Box::new(op), main: None }
         )
