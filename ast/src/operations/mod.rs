@@ -443,8 +443,6 @@ impl NormalForm {
                 let target_len = part_lengths[0..division_counter + 1]
                     .iter()
                     .sum::<Rational64>();
-                dbg!(lr_accumulator);
-                dbg!(target_len);
                 let mut voice_division_result: Vec<PointOp> = vec![];
                 // let mut lr_accumulator = lr_division * division_counter;
                 loop {
