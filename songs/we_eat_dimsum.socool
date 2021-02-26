@@ -1,0 +1,109 @@
+{ f: 311.127, l: 1, g: 1, p: 0 }
+
+thing1 = {
+  O[
+    (2/1, 1, 1, 1/2),
+    (2/1, 0, 1, -1/2),
+    (1/1, 1, 1, 1),
+    (1/1, 0, 1, -1),
+    (1/2, 1, 1, 1),
+    (1/2, 0, 1, -1),
+  ]
+  | Seq [
+    Fm 1, Fm 5/6, Fm 5/4, Fm 5/6,
+    Fm 15/16, Fm 9/8, Fm 5/4, Fm 9/8,
+    Fm 1, Fm 5/6, Fm 15/16, Fm 9/8, 
+    Fm 5/4, Fm 9/8
+  ]
+}
+
+drone = {
+  Fm 2
+  | O[
+    (1/1, 1/2, 1, 1),
+    (1/1, 0, 1, -1),
+    -- (3/4, 2, 1, 1),
+    -- (3/4, 0, 1, -1),
+    (1/2, 2, 1, 1),
+    (1/2, 0, 1, -1),
+    (1/4, 1, 1, 1),
+    (1/4, 0, 1, -1),
+  ]
+  | Gm 1/2
+  | FitLength thing1
+}
+
+drone2 = {
+  O[
+    (5/2, 4, 1, 1/2),
+    (5/2, 0, 1, -1/3),
+    (9/4, 3, 1, 1/3),
+    (9/4, 0, 1, -1/2),
+    (3/4, 2, 1, 1/8),
+    (3/4, 0, 1, -1/7),
+  ]
+  | ModBy [
+    Overlay [
+      Seq [Fm 0, Fm 0, Fm 1] | Seq [Fm 0, Repeat 2],
+      Seq [Fm 0, Fm 3/2, Fm 0] | Seq [Fm 0, Repeat 2] | Pm -1
+    ]
+    | Overlay [AsIs, Reverb 1]
+  ]
+  | Gm 1/8
+  | Overlay [
+    AsIs,
+    Fm 3/2 | Repeat 2 | Lm 1/2,
+    Fm 5/3 | Repeat 3 | Lm 1/3
+  ]
+  | Overlay [AsIs, Noise | Gm 1/3]
+  | FitLength thing1
+}
+
+thing2 = {
+  O[
+    (1/1, 2, 1, 1),
+    (1/1, 0, 1, -1),
+  ]
+  | Seq [
+    Fm 3/4
+  ]
+  | FitLength thing1
+}
+
+noise = {
+  Noise 
+  | FitLength thing1
+  | Fm 1/2
+}
+
+melody = {
+  O[
+    (2/1, 3, 1/5, 1),
+    (2/1, 0, 1/5, -1),
+    (1/1, 2, 1, 1),
+    (1/1, 0, 1, -1),
+    (1/2, 0, 1, 0),
+  ]
+  | Seq [
+    Fm 3/2, Fm 5/3, Fm 3/2, Fm 4/3, Fm 5/4, 
+    Fm 3/2, Fm 5/3, Fm 2, Fm 3/2, Fm 5/3,
+    Fm 5/4, Fm 5/3, Fm 2, Fm 5/3, Fm 5/4
+  ]
+  | Overlay [AsIs, Reverb 1/2]
+  | Repeat 4
+  | Gm 1/2
+  | FitLength thing1
+}
+
+main = {
+  Overlay [
+    thing1,
+    thing2,
+    drone,
+    noise,
+    melody,
+    drone2,
+  ]
+  | Repeat 8
+  | Lm 8
+}
