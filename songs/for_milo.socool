@@ -1,0 +1,55 @@
+{ f: 311.127, l: 1, g: 1, p: 0 }
+
+
+thing1 = {
+  O[
+    (1/1, 2, 1, 1),
+    (1/1, 0, 1, -1),
+  ]
+  | Seq [
+    O[
+      (5/2, 0, 1, 0),
+      (3/2, 0, 1, 0),
+      (1/2, 2, 1, 0),
+    ],
+  ]
+  | Lm 8
+}
+
+thing2 = {
+  O[
+    (1/1, 2, 1, 1),
+    (1/1, 0, 1, -1),
+  ]
+  | Overlay [
+    Seq [
+      Fm 5/2, 
+      Seq [Fm 9/4, Fm 2] | Lm 1/4,
+      Fm 15/8 | Lm 2
+    ]
+  ]
+  | FitLength thing1
+}
+
+thing3 = {
+  Seq [
+    Fm 3
+  ] 
+  | FitLength thing3
+}
+
+noise = {
+  Noise  
+  | FitLength thing1
+  | Gm 1/2
+}
+
+main = {
+  Overlay [
+    noise,
+    thing1,
+    thing2,
+  ]
+  | Seq [Fm 1, Fm 7/8]
+  | Repeat 2
+}
