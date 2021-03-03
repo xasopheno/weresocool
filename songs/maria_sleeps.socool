@@ -1,0 +1,200 @@
+{ f: 311.127, l: 1, g: 1, p: 0 }
+
+thing1 = {
+  Seq [Fm 0, Fm 1] | Lm 1/2
+  | Portamento 4
+  | O[
+    (2/1, 5/4, 1, 1),
+    (2/1, 0, 1, -1),
+    (1/1, 2, 1, 1),
+    (1/1, 0, 1, -1),
+  ]
+  | Seq [
+    Fm 9/8, Fm 5/4, Fm 5/6, Fm 3/4,
+    Fm 3/2 | Lm 4,
+    Fm 5/3, Fm 4/3 | Lm 4,
+    Fm 5/4, Fm 3/2 | Lm 3, Fm 5/3, 
+    Fm 5/4 | Lm 2, Fm 9/8 | Lm 2,
+    Fm 5/3, Fm 1 | Lm 2, Fm 15/16, 
+  ]
+  | Repeat 2
+}
+
+thing1b = {
+  Seq [Fm 0, Fm 1, Fm 0] | Lm 1/3
+  | Portamento 4
+  | O[
+    (2/1, 2, 1, 1),
+    (2/1, 0, 1, -1),
+    (1/1, 4/3, 1, 1),
+    (1/1, 0, 1, -1),
+  ]
+  | Seq [
+    Fm 15/16, Fm 1, Fm 2/3, Fm 5/8,
+    Fm 9/8, Fm 5/4 | Lm 2, Fm 4/3 | Lm 2,
+    Fm 9/8 | Lm 2, Fm 1 | Lm 2,
+    Fm 1, Fm 15/16 | Lm 2, Fm 3/4, Fm 1, 
+    Fm 3/4 | Lm 2, Fm 15/16 | Lm 2,
+    Fm 3/4, Fm 5/6 | Lm 2, Fm 3/4, 
+  ]
+  | Repeat 2
+}
+
+thing1c = {
+  Portamento 3
+  | O[
+    (2/1, 1, 1, 1),
+    (2/1, 0, 1, -1),
+    (1/1, 3/2, 1, 1),
+    (1/1, 0, 1, -1),
+    (1/2, 0, 2/3, 1/2),
+    (1/2, 1/3, 2/3, -1/2),
+  ]
+  | Seq [
+    Fm 5/8, Fm 3/4, Fm 1/2 | Lm 15/4, Fm 2/3 | Lm 1/4,
+    Fm 3/4 | Seq [Fm 1, Fm 9/8] | Lm 1/2, Fm 5/6 | Lm 1/2, Fm 3/4 | Lm 5/2,
+    Fm 5/8 | Lm 11/10,  Fm 2/3 | Lm 19/10,
+    Seq [Fm 5/8, Fm 9/16, Fm 1/2, Fm 5/12] | Lm 1/2,
+      Fm 15/32, Fm 1/2, Fm 0, 
+    Overlay [
+      Fm 1, Fm 2, Fm 4 | Lm 1/8
+    ]  
+    | Gm 2/3
+    | Seq [
+      Fm 1/2, Fm 5/8, Fm 9/16,
+      Fm 1/2 | Lm 2, Fm 0 | Lm 2, 
+    ]
+  ]
+  | Gm 8/7
+  | Repeat 2
+}
+
+thing1d = {
+  Portamento 1
+  | O[
+    (2/1, 1, 1, 1),
+    (2/1, 0, 1, -1),
+    (1/1, 1, 1, 1),
+    (1/1, 0, 1, -1),
+  ]
+  | Seq [
+    Fm 2, Fm 15/8 | Lm 2, Fm 2,
+    Fm 15/8, Fm 3/2, Fm 2 | Lm 2,
+    Fm 9/4 | Lm 2, Fm 5/2 | Lm 2,
+    Fm 9/4 | Lm 3, Fm 15/8 | Lm 2, 
+    Fm 2 | Lm 2, Fm 9/4 | Lm 2,
+    Fm 2 | Lm 4
+  ]
+  | Gm 1
+  | Seq [Fm 1, Fm 0 | Repeat 3]
+  | Lm 1/2
+}
+
+thing2 = {
+  O[
+    (1/1, 1/2, 1, 1),
+    (1/1, 0, 1, -1),
+  ]
+  | Overlay [
+    Fm 3/4, Fm 9/4, Fm 5/2
+  ]
+  | FitLength thing1
+}
+
+thing3 = {
+  O[
+    (1/1, 1, 1, 1),
+    (1/1, 0, 1, -1),
+    (1/2, 1, 1, 1),
+    (1/2, 0, 1, -1),
+  ]
+  | Seq [
+    Fm 3/4, Fm 5/6 | Lm 3/2, Fm 15/16 | Lm 1/2, Fm 1, Fm 5/6,
+    Fm 3/4, Fm 5/6, Fm 2/3,
+    Fm 1, Fm 3/4, Fm 5/6, 
+    Fm 1, Fm 9/8,
+    Fm 5/6, Fm 3/4, Fm 1/2, 
+  ]
+  | Gm 1
+  | FitLength thing1
+}
+
+noise = {
+  Noise
+  | Overlay [
+    Fm 1/2, Fm 1, Fm 3, Fm 5
+  ]  
+  | Gm 13/10
+  | FitLength thing1
+}
+
+thing4 = {
+  Seq [
+    O[
+      (4, 3, 1, 1),
+      (4, 0, 1, -1),
+      (1/4, 2/3, 1, 1),
+      (1/4, 0, 1, -1),
+    ],
+    O[
+      (4, 2, 1, 1),
+      (4, 0, 1, -1),
+      (1/4, 0, 1, 1),
+      (1/4, -2, 1, -1),
+    ],
+    O[
+      (4, 2, 1, 1),
+      (4, 0, 1, -1),
+      (1/4, 0, 1, 1),
+      (1/4, -2, 1, -1),
+    ],
+    O[
+      (4, 3, 1, 1),
+      (4, 0, 1, -1),
+      (1/4, 0, 1, 1),
+      (1/4, -3, 1, -1),
+    ],
+    O[
+      (4, 5, 1, 1),
+      (4, 0, 1, -1),
+      (1/4, 0, 1, 1),
+      (1/4, 2, 1, -1),
+    ],
+    O[
+      (4, 1/2, 1, 1),
+      (4, 0, 1, -1),
+      (1/4, 0, 1, 1),
+      (1/4, 1, 1, -1),
+    ]
+  ]
+  | Repeat 5
+  | Gm 1/2
+  | FitLength thing1  
+}
+
+main = {
+  Fm 7/8 | 
+  Overlay [
+    thing1,
+    thing1b,
+    thing1c,
+    -- thing1d | Gm 1/2,
+    -- thing2,
+    thing3,
+    -- thing4, 
+    noise,
+  ]
+  | Overlay [
+    AsIs | Fm 4 | Gm 1/8, 
+    AsIs | Fm 2, 
+    AsIs,
+    -- Reverb 1 | Sine 1.5 | Gm 3/4, 
+    -- Reverb 1 | Gm 1/3
+  ]
+  -- | Seq [AsIs, Reverse]
+  | Lm 4
+  | Repeat 3
+  -- | Seq [Fm 1, Fm 25/24]
+  -- | Lm 2/3
+  -- | Seq [Fm 1, Lm 3/4, Lm 2/3]
+}
