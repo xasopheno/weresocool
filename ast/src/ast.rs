@@ -91,8 +91,8 @@ pub enum Op {
     },
     //
     WithLengthRatioOf {
+        main: Option<Box<Term>>,
         with_length_of: Box<Term>,
-        main: Box<Term>,
     },
 
     Focus {

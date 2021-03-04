@@ -638,9 +638,9 @@ pub mod tests {
                     }),
                 ],
             })),
-            main: Box::new(Op(TransposeM {
+            main: Some(Box::new(Op(TransposeM {
                 m: Ratio::new(2, 1),
-            })),
+            }))),
         }
         .apply_to_normal_form(&mut input, &pt)
         .unwrap();

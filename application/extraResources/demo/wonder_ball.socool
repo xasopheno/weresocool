@@ -86,7 +86,7 @@ bass = {
   	] | Pm -1/2  
 	] 
 	| Repeat 2
-	> FitLength thing1
+	| FitLength thing1
 }
 
 drone = {
@@ -107,7 +107,7 @@ drone = {
 		Fm 3/2, 
 		Fm 5/3,
 	] 
-	> FitLength thing1
+	| FitLength thing1
 }
 
 highs = {
@@ -146,7 +146,7 @@ highs = {
 	| ModulateBy [Seq [Pa -1/2, Pa 1/2, Pa 1/2, Pa -1/2, Pa 1/3, Pa -1/3] | Repeat 5]
 	| Fm 2	
 	| Seq [Ta 0 | Fm 0 | Repeat 4, Fm 1]
-	> FitLength thing1
+	| FitLength thing1
 }
 
 main = {

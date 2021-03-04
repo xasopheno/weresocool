@@ -86,7 +86,7 @@ melody = {
 		Tm 15/8 | Length 5,
 		Tm 0
 	]
-	> FitLength unit
+	| FitLength unit
 } 
 
 melody2 = {
@@ -112,7 +112,7 @@ melody2 = {
 		Tm 0,
 		Overlay [Tm 9/8, Tm 4/3] | Gain 2/3 | Seq [AsIs, Tm 8/9],
 	]
-	> FitLength unit
+	| FitLength unit
 } 
 
 main = {
@@ -134,8 +134,8 @@ main = {
 				| Seq [AsIs, Tm 9/8, Tm 5/4] 
 				| Seq [AsIs, Tm 4/3 | Reverse, Tm 6/5, Tm 3/2 | Reverse] 
 				| Length 1/14 | Gain 1/12
-			] > FitLength unit,
-			bass > FitLength unit 
+			] | FitLength unit,
+			bass | FitLength unit 
 		] | Repeat 2
 	] | Repeat 2
 }

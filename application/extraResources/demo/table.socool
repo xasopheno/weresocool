@@ -70,7 +70,7 @@ noise = {
     Gm 3/4, 
     Gm 1, 
   ]
-  > FitLength thing1 
+  | FitLength thing1 
 }
 
 bass = {
@@ -101,7 +101,7 @@ drums = {
     | Reverse,
     Fm 0 | Lm 1/100,
   ] 
-  > FitLength bass 
+  | FitLength bass 
 }
 
 
@@ -176,7 +176,7 @@ melody = {
       ],
       0^1/100
   ]
-  > FitLength bass
+  | FitLength bass
 }
 
 main = {

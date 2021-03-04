@@ -70,7 +70,7 @@ thing2(fit_me) = {
   ]
   | Overlay [Sine, Reverb 1 | Sine 2 | Gm 1/2]
   | Pm 1/2
-  > FitLength fit_me
+  | FitLength fit_me
 }
 
 fn(input, mod) = {

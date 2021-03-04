@@ -53,7 +53,7 @@ chords = {
 	] | Fm 2
 	| Gain 0.2 | Sequence [Repeat 3, 0^3, Sequence [Fm 9/8, Fm 1]]
 	| Sequence [AsIs, Fm 7/8]
-	> FitLength bass
+	| FitLength bass
 }
 
 highs = {
@@ -63,7 +63,7 @@ highs = {
 		| Fm 6 | Gain 0.1
   	] 
   	| Sequence [Fm 7/8, AsIs]
-  	> FitLength bass	
+  	| FitLength bass	
 }
 
 highs2 = {
@@ -73,7 +73,7 @@ highs2 = {
   	] 
   	| Sequence [Fm 7/8 | Repeat 2, AsIs, Fm 9/8]
   	| Sequence [Fm 0, AsIs]
-  	> FitLength bass	
+  	| FitLength bass	
 }
 
 melody = {
@@ -108,7 +108,7 @@ melody = {
 		Fm 0 | Lm 1/2,
 	] | Gain 0.75 | Fm 4
 	| Sequence [AsIs, Fm 0]
-	> FitLength bass
+	| FitLength bass
 }
 
 main = {

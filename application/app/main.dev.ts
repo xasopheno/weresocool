@@ -62,8 +62,11 @@ const createWindow = async () => {
   const port = await getPort({ port: 4588 });
   process.env.BACKEND_PORT = port.toString();
 
-  let server = child_process.spawn(`PORT=${port} ` + server_path, [], {
-    shell: true,
+  let server = child_process.spawn(server_path, [], {
+    env: {
+      PORT: port.toString(),
+      ...process.env,
+    },
     stdio: 'inherit',
   });
 

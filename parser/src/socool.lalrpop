@@ -3,7 +3,6 @@ use std::str::FromStr;
 use std::string::String;
 use weresocool_ast::{
         Defs,
-        Op,
         Op::*,
         Term, 
         ASR,
@@ -18,7 +17,7 @@ use weresocool_ast::{
         Indices, 
         Index,
 };
-use crate::parser::Init;
+use crate::parser::{Init, handle_fit_length_recursively};
 use crate::indices::{et, random_seed};
 use crate::float_to_rational::helpers::*;
 use regex::Regex;
@@ -74,17 +73,10 @@ LetDef: () = {
 
 
 Operation: Term = {
-    <op1: Operation> ">" "FitLength" <op2: SuperCompose> => {
-        Term::Op(
-            Op::Compose { operations:
-            vec![op1.to_owned(), Term::Op(WithLengthRatioOf { with_length_of: Box::new(op2), main: Box::new(op1) })]
-        })
-    },
-
     <op1: Operation> ">" "FitGain" <op2: ComposeOperation> => {
       unimplemented!()
     },
-
+    // TODO: Revisit Focus/Lens
     <op1: Operation> ">" "@" <name: Name> <op2: ComposeOperation> => {
         Term::Op(
             Focus {
@@ -237,14 +229,16 @@ SuperCompose: Term = {
 }
 
 ComposeOperation: Term = {
-    <ops: Pipe<Composeable>> => Term::Op(Compose { operations: ops }),
+    <terms: Pipe<Composeable>> => {
+      Term::Op(Compose { operations: handle_fit_length_recursively(terms) })
+    },
     <o: BaseOperation> => o,
 }
 
 Composeable: Term = {
   <base_operation: BaseOperation> => base_operation,
   <list: List> => Term::Lop(list),
-  <generator: Generator> => Term::Gen(generator)
+  <generator: Generator> => Term::Gen(generator),
 }
 
 BaseOperation: Term = {
@@ -309,12 +303,17 @@ BaseOperation: Term = {
     r"(Sequence|Seq)" "[" <operations: Operations> "]" => Term::Op(Sequence { operations: operations }),
     "Overlay" "[" <operations: Operations> "]" => Term::Op(Overlay { operations: operations }),
     r"(ModulateBy|ModBy)" "[" <operations: Operations> "]" => Term::Op(ModulateBy { operations: operations }),
+    "FitLength" <op: Composeable> => {
+        Term::Op(
+            WithLengthRatioOf { with_length_of: Box::new(op), main: None }
+        )
+    },
     "O" "[" <o: Overtones> "]" => Term::Op(Overlay { operations: o }),
     <id: Name> => {
         Term::Op(Id(id))
     },
     "#"<name: Name> => Term::Op(Tag(name)),
-    //
+    
     <name: Name> "(" <args: Comma<Operation>>  ")" => {
         Term::Op(
             FunctionCall {
@@ -323,9 +322,9 @@ BaseOperation: Term = {
             }
         )
     },
-    <tm: Rational>"^"<length: Rational> => {
+    <fm: Rational>"^"<length: Rational> => {
         Term::Op(Compose { operations: vec! [
-            Term::Op(TransposeM { m: tm }),
+            Term::Op(TransposeM { m: fm }),
             Term::Op(Length { m: length }),
         ]})
     },

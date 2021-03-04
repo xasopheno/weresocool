@@ -63,7 +63,7 @@ weird_microtonal_melody = {
     ]
     | Fm 2 
     | Gm 1/2
-    > FitLength all_scales
+    | FitLength all_scales
 }
 
 main = {

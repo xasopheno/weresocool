@@ -49,7 +49,7 @@ chord = {
       	(1/1, 0, 1, -1/4),
   	]
     | Seq [1^2, 9/8^1] | Repeat 2
-    > FitLength Seq [thing1, 0^1/2]
+    | FitLength Seq [thing1, 0^1/2]
 }
 
 main = {

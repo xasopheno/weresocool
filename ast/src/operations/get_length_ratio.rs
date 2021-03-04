@@ -57,8 +57,12 @@ impl GetLengthRatio for Op {
                 with_length_of,
                 main,
             } => {
+                let main_length = match main {
+                    Some(m) => m.get_length_ratio(defs)?,
+                    None => Rational64::from_integer(1),
+                };
+
                 let target_length = with_length_of.get_length_ratio(defs)?;
-                let main_length = main.get_length_ratio(defs)?;
 
                 Ok(target_length / main_length)
             }
