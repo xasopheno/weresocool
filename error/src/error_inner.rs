@@ -10,9 +10,10 @@ pub enum ErrorInner {
     #[fail(display = "I/O error: {}", _0)]
     Io(#[cause] io::Error),
 
-    #[fail(display = "PortAudio error: {}", _0)]
-    PortAudio(#[cause] portaudio::error::Error),
-
+    // #[fail(display = "PortAudio error: {}", _0)]
+    // PortAudio(#[cause] portaudio::error::Error),
+    // #[fail(display = "Cpal error: {}", _0)]
+    // CPAL(#[cause] cpal::StreamError),
     #[fail(display = "SerdeJson error: {}", _0)]
     SerdeJson(#[cause] serde_json::error::Error),
 

@@ -20,21 +20,22 @@ weresocool_error = { path = "error" }
 weresocool_lame = { path = "lame" } 
 weresocool_shared = { path = "shared" } 
 weresocool_instrument = { path = "instrument" } 
-portaudio = "0.7.0"
-rand = "0.7.3"
+# portaudio = "0.7.0"
+# rand = "0.7.3"
+rand = { version="0.7.0", features=["wasm-bindgen"]}
 hound = "3.4.0"
 serde = { version = "1.0.116", features = ["derive"] }
 serde_json = "1.0.53"
 serde_derive = "1.0.104"
 colored = "1.9.3"
-pbr = "1.0.3"
+# pbr = "1.0.3"
 clap = "2.33.1"
 num-rational = "0.3.0"
 rayon = "1.3.0"
 indexmap = { version = "1.4.0", features = ["serde-1"] }
 difference = "2.0.0"
 term = "0.6.1"
-uuid = { version = "0.8.1", features = ["v4"] }
+uuid = { version = "0.8.1", features = ["v4", "stdweb"] }
 num-complex = "0.2.4"
 num = "0.2.1"
 csv = "1.1.3"
@@ -45,7 +46,8 @@ bytes = "0.5.4"
 env_logger = "0.7.1"
 test-generator = "0.3.0"
 float-cmp = "0.8.0"
-cpal = "0.12.1"
+# cpal = "0.12.1"
+cpal = { version = "0.13.1", features = ["wasm-bindgen"]}
 anyhow = "1.0.33"
 
 

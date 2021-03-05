@@ -17,7 +17,8 @@ regex = "1"
 colored = "1.9"
 num-rational = "0.3"
 indexmap = "1.4.0"
-rand = "0.7.3"
+# rand = "0.7.3"
+rand = { version="0.7.0", features=["wasm-bindgen"]}
 weresocool_ast = { path = "../ast" }
 weresocool_error = { path = "../error" }
 path-clean = "0.1.0"

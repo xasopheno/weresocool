@@ -1,7 +1,4 @@
 mod buffer_manager;
 mod render_manager;
 
-pub use self::{
-    buffer_manager::BufferManager,
-    render_manager::{prepare_render_outside, RenderManager},
-};
+pub use self::render_manager::{prepare_render_outside, RenderManager};

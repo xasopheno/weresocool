@@ -9,7 +9,8 @@ license = "GPL-3.0"
 [dependencies]
 weresocool_error = { path = "../error" }
 num-rational = {version = "0.3", features = ["serde"]} 
-rand = "0.7.3"
+# rand = "0.7.3"
+rand = { version="0.7.0", features=["wasm-bindgen"]}
 serde = { version = "1.0.116", features = ["derive"] }
 pretty_assertions = "0.6.1"
 indexmap = "1.4.0"

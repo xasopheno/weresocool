@@ -3,14 +3,14 @@ pub mod error_inner;
 pub mod id_error;
 pub mod index_error;
 pub mod parse_error;
-pub mod portaudio_error;
+// pub mod portaudio_error;
 
 pub use error::Error;
 pub use error_inner::ErrorInner;
 pub use id_error::IdError;
 pub use index_error::IndexError;
 pub use parse_error::ParseError;
-use portaudio_error::PortAudioError;
+// use portaudio_error::PortAudioError;
 use serde::{Deserialize, Serialize};
 use std::io;
 
@@ -19,8 +19,9 @@ pub enum Serializable {
     Msg(String),
     IoError(String),
     HoundError(String),
-    #[serde(with = "PortAudioError")]
-    PortAudio(portaudio::error::Error),
+    // #[serde(with = "PortAudioError")]
+    // PortAudio(portaudio::error::Error),
+    // CPAL(cpal::StreamError),
     SerdeJsonError(String),
     CSVError(String),
     ParseError(ParseError),
@@ -37,7 +38,7 @@ impl ErrorInner {
             ErrorInner::ParseError(e) => Serializable::ParseError(e),
             ErrorInner::IdError(e) => Serializable::IdError(e),
             ErrorInner::IndexError(e) => Serializable::IndexError(e),
-            ErrorInner::PortAudio(e) => Serializable::PortAudio(e),
+            // ErrorInner::CPAL(e) => Serializable::CPAL(e),
             ErrorInner::LameError(e) => Serializable::LameError(e),
             ErrorInner::LameEncodeError(e) => Serializable::LameEncodeError(e),
             ErrorInner::Io(e) => {
@@ -82,13 +83,21 @@ impl From<io::Error> for Error {
     }
 }
 
-impl From<portaudio::error::Error> for Error {
-    fn from(e: portaudio::error::Error) -> Error {
-        Error {
-            inner: Box::new(ErrorInner::PortAudio(e)),
-        }
-    }
-}
+// impl From<cpal::StreamError> for Error {
+// fn from(e: cpal::StreamError) -> Error {
+// Error {
+// inner: Box::new(ErrorInner::CPAL(e)),
+// }
+// }
+// }
+
+// impl From<portaudio::error::Error> for Error {
+// fn from(e: portaudio::error::Error) -> Error {
+// Error {
+// inner: Box::new(ErrorInner::PortAudio(e)),
+// }
+// }
+// }
 
 impl From<serde_json::error::Error> for Error {
     fn from(e: serde_json::error::Error) -> Error {

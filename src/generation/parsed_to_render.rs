@@ -4,12 +4,12 @@ use crate::{
     write::{write_composition_to_mp3, write_composition_to_wav},
 };
 use num_rational::Rational64;
-use pbr::ProgressBar;
+// use pbr::ProgressBar;
 use rayon::prelude::*;
 use std::fs::File;
 use std::io::prelude::*;
 use std::path::Path;
-use std::sync::{Arc, Mutex};
+// use std::sync::{Arc, Mutex};
 use weresocool_ast::{Defs, NormalForm, Term};
 use weresocool_error::{Error, IdError};
 use weresocool_instrument::renderable::{
@@ -183,12 +183,12 @@ pub fn render(
     Ok(result)
 }
 
-fn create_pb_instance(n: usize) -> Arc<Mutex<ProgressBar<std::io::Stdout>>> {
-    let mut pb = ProgressBar::new(n as u64);
-    pb.format("╢w♬░╟");
-    pb.message("Rendering:  ");
-    Arc::new(Mutex::new(pb))
-}
+// fn create_pb_instance(n: usize) -> Arc<Mutex<ProgressBar<std::io::Stdout>>> {
+// let mut pb = ProgressBar::new(n as u64);
+// pb.format("╢w♬░╟");
+// pb.message("Rendering:  ");
+// Arc::new(Mutex::new(pb))
+// }
 
 pub fn generate_waveforms(
     mut vec_sequences: Vec<Vec<RenderOp>>,
@@ -197,18 +197,18 @@ pub fn generate_waveforms(
     if show {
         println!("Rendering {:?} waveforms", vec_sequences.len());
     }
-    let pb = create_pb_instance(vec_sequences.len());
+    // let pb = create_pb_instance(vec_sequences.len());
 
     let vec_wav = vec_sequences
         .par_iter_mut()
         .map(|ref mut vec_render_op: &mut Vec<RenderOp>| {
-            pb.lock().unwrap().add(1 as u64);
+            // pb.lock().unwrap().add(1 as u64);
             let mut osc = Oscillator::init(&default_settings());
             vec_render_op.render(&mut osc, None)
         })
         .collect();
 
-    pb.lock().unwrap().finish_print(&"".to_string());
+    // pb.lock().unwrap().finish_print(&"".to_string());
 
     vec_wav
 }
