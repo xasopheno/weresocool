@@ -3776,7 +3776,6 @@ dependencies = [
  "weresocool_ast",
  "weresocool_error",
  "weresocool_instrument",
- "weresocool_lame",
  "weresocool_parser",
  "weresocool_shared",
 ]
@@ -3811,7 +3810,6 @@ dependencies = [
  "hound",
  "serde",
  "serde_json",
- "weresocool_lame",
 ]
 
 [[package]]
@@ -3822,19 +3820,11 @@ dependencies = [
  "rand",
  "rayon",
  "serde",
+ "wasm-bindgen",
  "weresocool_ast",
  "weresocool_error",
  "weresocool_parser",
  "weresocool_shared",
-]
-
-[[package]]
-name = "weresocool_lame"
-version = "0.1.0"
-dependencies = [
- "failure",
- "failure_derive",
- "serde",
 ]
 
 [[package]]

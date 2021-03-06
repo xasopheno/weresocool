@@ -31,10 +31,9 @@ pub enum ErrorInner {
 
     #[fail(display = "Hound error: {}", _0)]
     HoundError(#[cause] hound::Error),
+    // #[fail(display = "Lame error: {}", _0)]
+    // LameError(#[cause] weresocool_lame::Error),
 
-    #[fail(display = "Lame error: {}", _0)]
-    LameError(#[cause] weresocool_lame::Error),
-
-    #[fail(display = "LameEncode error: {}", _0)]
-    LameEncodeError(#[cause] weresocool_lame::EncodeError),
+    // #[fail(display = "LameEncode error: {}", _0)]
+    // LameEncodeError(#[cause] weresocool_lame::EncodeError),
 }

@@ -168,7 +168,7 @@ pub fn render(
     let mut result = StereoWaveform::new(0);
     loop {
         let batch: Vec<StereoWaveform> = voices
-            .par_iter_mut()
+            .iter_mut()
             .filter_map(|voice| voice.render_batch(SETTINGS.buffer_size, None))
             .collect();
 

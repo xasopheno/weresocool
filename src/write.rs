@@ -6,7 +6,7 @@ use std::io::{BufWriter, Cursor};
 use std::path::Path;
 use weresocool_error::Error;
 use weresocool_instrument::{Normalize, StereoWaveform};
-use weresocool_lame::Lame;
+// use weresocool_lame::Lame;
 use weresocool_shared::{default_settings, Settings};
 
 const SETTINGS: Settings = default_settings();
@@ -50,18 +50,19 @@ pub fn filename_from_string(s: &str) -> &str {
 }
 
 pub fn write_composition_to_mp3(mut composition: StereoWaveform) -> Result<Vec<u8>, Error> {
-    composition.normalize();
+    // composition.normalize();
 
-    let l_buffer = composition.l_buffer;
-    let r_buffer = composition.r_buffer;
-    let length: f32 = l_buffer.len() as f32 * (0.37);
-    let mp3buf = &mut vec![0_u8; length.ceil() as usize];
+    // let l_buffer = composition.l_buffer;
+    // let r_buffer = composition.r_buffer;
+    // let length: f32 = l_buffer.len() as f32 * (0.37);
+    // let mp3buf = &mut vec![0_u8; length.ceil() as usize];
 
-    let mut l = Lame::new().ok_or_else(|| weresocool_lame::Error::InternalError)?;
-    l.init_params()?;
-    l.encode_f32(l_buffer.as_slice(), r_buffer.as_slice(), mp3buf)?;
+    // let mut l = Lame::new().ok_or_else(|| weresocool_lame::Error::InternalError)?;
+    // l.init_params()?;
+    // l.encode_f32(l_buffer.as_slice(), r_buffer.as_slice(), mp3buf)?;
 
-    Ok(mp3buf.to_vec())
+    // Ok(mp3buf.to_vec())
+    Ok(vec![])
 }
 
 #[test]

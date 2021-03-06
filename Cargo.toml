@@ -17,7 +17,7 @@ weresocool_analyze = { path = "analyze" }
 weresocool_parser = { path = "parser" }
 weresocool_ast = { path = "ast" }
 weresocool_error = { path = "error" } 
-weresocool_lame = { path = "lame" } 
+# weresocool_lame = { path = "lame" } 
 weresocool_shared = { path = "shared" } 
 weresocool_instrument = { path = "instrument" } 
 # portaudio = "0.7.0"
@@ -49,6 +49,8 @@ float-cmp = "0.8.0"
 # cpal = "0.12.1"
 cpal = { version = "0.13.1", features = ["wasm-bindgen"]}
 anyhow = "1.0.33"
+js-sys = "0.3.48"
+web-sys = "0.3.48"
 
 
 [dev-dependencies]
@@ -68,7 +70,7 @@ members = [
     "ast",
     "error",
     "instrument",
-    "lame",
+    # "lame",
     "parser",
     "shared",
     # "portaudio",

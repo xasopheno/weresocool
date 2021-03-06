@@ -27,8 +27,8 @@ pub enum Serializable {
     ParseError(ParseError),
     IdError(IdError),
     IndexError(IndexError),
-    LameError(weresocool_lame::Error),
-    LameEncodeError(weresocool_lame::EncodeError),
+    // LameError(weresocool_lame::Error),
+    // LameEncodeError(weresocool_lame::EncodeError),
 }
 
 impl ErrorInner {
@@ -39,8 +39,8 @@ impl ErrorInner {
             ErrorInner::IdError(e) => Serializable::IdError(e),
             ErrorInner::IndexError(e) => Serializable::IndexError(e),
             // ErrorInner::CPAL(e) => Serializable::CPAL(e),
-            ErrorInner::LameError(e) => Serializable::LameError(e),
-            ErrorInner::LameEncodeError(e) => Serializable::LameEncodeError(e),
+            // ErrorInner::LameError(e) => Serializable::LameError(e),
+            // ErrorInner::LameEncodeError(e) => Serializable::LameEncodeError(e),
             ErrorInner::Io(e) => {
                 println!("{:#?}", e);
                 Serializable::IoError("".to_string())
@@ -131,21 +131,21 @@ impl From<hound::Error> for Error {
     }
 }
 
-impl From<weresocool_lame::Error> for Error {
-    fn from(e: weresocool_lame::Error) -> Error {
-        Error {
-            inner: Box::new(ErrorInner::LameError(e)),
-        }
-    }
-}
+// impl From<weresocool_lame::Error> for Error {
+// fn from(e: weresocool_lame::Error) -> Error {
+// Error {
+// inner: Box::new(ErrorInner::LameError(e)),
+// }
+// }
+// }
 
-impl From<weresocool_lame::EncodeError> for Error {
-    fn from(e: weresocool_lame::EncodeError) -> Error {
-        Error {
-            inner: Box::new(ErrorInner::LameEncodeError(e)),
-        }
-    }
-}
+// impl From<weresocool_lame::EncodeError> for Error {
+// fn from(e: weresocool_lame::EncodeError) -> Error {
+// Error {
+// inner: Box::new(ErrorInner::LameEncodeError(e)),
+// }
+// }
+// }
 
 #[test]
 fn size_of_error_is_one_word() {

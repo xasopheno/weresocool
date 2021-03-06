@@ -45,6 +45,9 @@ fn write_data(output: &mut [f32], channels: usize, render_manager: &Arc<Mutex<Re
     let batch: Option<(StereoWaveform, Vec<f32>)> =
         render_manager.lock().unwrap().read(SETTINGS.buffer_size);
 
+    let array = js_sys::Array::new();
+    array.push(&"Hello Console Log".into());
+    web_sys::console::log(&array);
     if let Some((b, ramp)) = batch {
         let mut idx = 0;
         for frame in output.chunks_mut(channels) {

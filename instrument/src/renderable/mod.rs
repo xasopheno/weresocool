@@ -260,7 +260,7 @@ pub fn nf_to_vec_renderable(
 
     let result: Vec<Vec<RenderOp>> = normal_form
         .operations
-        .par_iter()
+        .iter()
         .enumerate()
         .map(|(voice, vec_point_op)| {
             let last_osc = vec_point_op

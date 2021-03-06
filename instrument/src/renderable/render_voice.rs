@@ -93,7 +93,7 @@ impl RenderVoice {
 
 pub fn renderables_to_render_voices(renderables: Vec<Vec<RenderOp>>) -> Vec<RenderVoice> {
     renderables
-        .par_iter()
+        .iter()
         .map(|voice| RenderVoice::init(voice))
         .collect::<Vec<RenderVoice>>()
 }
