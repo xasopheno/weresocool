@@ -225,8 +225,11 @@ pub fn render(
 
     let mut result = StereoWaveform::new(0);
     loop {
-        let batch: Vec<StereoWaveform> = voices
-            .par_iter_mut()
+        #[cfg(feature = "app")]
+        let iter = voices.par_iter_mut();
+        #[cfg(feature = "wasm")]
+        let iter = voices.iter_mut();
+        let batch: Vec<StereoWaveform> = iter
             .filter_map(|voice| voice.render_batch(SETTINGS.buffer_size, None))
             .collect();
 
@@ -259,8 +262,12 @@ pub fn generate_waveforms(
     #[cfg(feature = "app")]
     let pb = create_pb_instance(vec_sequences.len());
 
-    let vec_wav = vec_sequences
-        .par_iter_mut()
+    #[cfg(feature = "app")]
+    let iter = vec_sequences.par_iter_mut();
+    #[cfg(feature = "wasm")]
+    let iter = vec_sequences.iter_mut();
+
+    let vec_wav = iter
         .map(|ref mut vec_render_op: &mut Vec<RenderOp>| {
             #[cfg(feature = "app")]
             pb.lock().unwrap().add(1_u64);

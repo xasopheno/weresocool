@@ -272,9 +272,12 @@ pub fn nf_to_vec_renderable(
     let mut normal_form = NormalForm::init();
     composition.apply_to_normal_form(&mut normal_form, defs)?;
 
-    let result: Vec<Vec<RenderOp>> = normal_form
-        .operations
-        .par_iter()
+    #[cfg(feature = "app")]
+    let iter = normal_form.operations.par_iter();
+    #[cfg(feature = "wasm")]
+    let iter = normal_form.operations.iter();
+
+    let result: Vec<Vec<RenderOp>> = iter
         .enumerate()
         .map(|(voice, vec_point_op)| {
             let mut time = Rational64::new(0, 1);

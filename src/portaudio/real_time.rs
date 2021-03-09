@@ -15,8 +15,12 @@ pub fn real_time(
     let output_stream_settings = get_output_settings(&pa)?;
 
     let output_stream = pa.open_non_blocking_stream(output_stream_settings, move |args| {
-        let result: Vec<StereoWaveform> = voices
-            .par_iter_mut()
+        #[cfg(feature = "app")]
+        let iter = voices.par_iter_mut();
+        #[cfg(feature = "wasm")]
+        let iter = voices.iter_mut();
+
+        let result: Vec<StereoWaveform> = iter
             .filter_map(|voice| voice.render_batch(SETTINGS.buffer_size, None))
             .collect();
 

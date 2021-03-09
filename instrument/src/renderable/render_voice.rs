@@ -92,8 +92,10 @@ impl RenderVoice {
 }
 
 pub fn renderables_to_render_voices(renderables: Vec<Vec<RenderOp>>) -> Vec<RenderVoice> {
-    renderables
-        .par_iter()
-        .map(|voice| RenderVoice::init(voice))
+    #[cfg(feature = "app")]
+    let iter = renderables.par_iter();
+    #[cfg(feature = "wasm")]
+    let iter = renderables.iter();
+    iter.map(|voice| RenderVoice::init(voice))
         .collect::<Vec<RenderVoice>>()
 }
