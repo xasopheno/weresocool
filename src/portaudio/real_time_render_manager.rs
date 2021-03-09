@@ -1,6 +1,7 @@
 use crate::manager::RenderManager;
-use cpal::traits::{DeviceTrait, HostTrait};
+use cpal::traits::{DeviceTrait, HostTrait, StreamTrait};
 use cpal::{BufferSize, StreamConfig};
+// use web_sys::console;
 use weresocool_instrument::StereoWaveform;
 
 use std::sync::{Arc, Mutex};
@@ -13,10 +14,14 @@ pub fn real_time_render_manager(
     render_manager: Arc<Mutex<RenderManager>>,
 ) -> Result<cpal::Stream, Error> {
     let host = cpal::default_host();
+    let device = host.default_output_device().unwrap();
+    // .expect("failed to find a default output device");
 
-    let device = host
-        .default_output_device()
-        .expect("failed to find a default output device");
+    let array = js_sys::Array::new();
+    array.push(&"Hello Console Log".into());
+    web_sys::console::log(&array);
+
+    let config = device.default_output_config().unwrap();
 
     let config = StreamConfig {
         channels: 2,
@@ -25,15 +30,14 @@ pub fn real_time_render_manager(
         sample_rate: cpal::SampleRate(SETTINGS.sample_rate as u32),
     };
 
-    let channels = config.channels as usize;
-    let err_fn = |err| eprintln!("an error occurred on stream: {}", err);
+    // let channels = config.channels as usize;
+    // let err_fn = |err| console::error_1(&format!("an error occurred on stream: {}", err).into());
+    let err_fn = |_| {};
 
     let stream = device
         .build_output_stream(
-            &config,
-            move |data: &mut [f32], _: &cpal::OutputCallbackInfo| {
-                write_data(data, channels, &render_manager)
-            },
+            &config.into(),
+            move |data: &mut [f32], _: &cpal::OutputCallbackInfo| write_data(data, &render_manager),
             err_fn,
         )
         .unwrap();
@@ -41,16 +45,16 @@ pub fn real_time_render_manager(
     Ok(stream)
 }
 
-fn write_data(output: &mut [f32], channels: usize, render_manager: &Arc<Mutex<RenderManager>>) {
+fn write_data(output: &mut [f32], render_manager: &Arc<Mutex<RenderManager>>) {
+    // let array = js_sys::Array::new();
+    // array.push(&"Hello Console Log".into());
+    // web_sys::console::log(&array);
     let batch: Option<(StereoWaveform, Vec<f32>)> =
         render_manager.lock().unwrap().read(SETTINGS.buffer_size);
 
-    let array = js_sys::Array::new();
-    array.push(&"Hello Console Log".into());
-    web_sys::console::log(&array);
     if let Some((b, ramp)) = batch {
         let mut idx = 0;
-        for frame in output.chunks_mut(channels) {
+        for frame in output.chunks_mut(2) {
             frame[0] = ramp[idx] * b.l_buffer[idx] as f32;
             frame[1] = ramp[idx] * b.r_buffer[idx] as f32;
             idx += 1;
