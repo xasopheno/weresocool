@@ -1,6 +1,11 @@
 use crate::ErrorInner;
 use std::fmt;
 
+#[cfg(feature = "wasm")]
+use std::convert::From;
+#[cfg(feature = "wasm")]
+use wasm_bindgen::JsValue;
+
 #[derive(Debug)]
 pub struct Error {
     pub inner: Box<ErrorInner>,
@@ -19,6 +24,14 @@ impl failure::Fail for Error {
 
     fn backtrace(&self) -> Option<&failure::Backtrace> {
         self.inner.backtrace()
+    }
+}
+
+#[cfg(feature = "wasm")]
+impl From<Error> for JsValue {
+    fn from(error: Error) -> Self {
+        let inner = *error.inner;
+        JsValue::from_serde(&inner.into_serializeable()).unwrap()
     }
 }
 

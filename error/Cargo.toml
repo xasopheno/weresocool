@@ -15,9 +15,10 @@ csv = "1.1.5"
 failure = "0.1.8"
 failure_derive = "0.1.8"
 serde = { version = "1.0.119", features = ["derive"] }
+wasm-bindgen = { version="0.2.71", optional=true, features=["serde-serialize"] }
 
 [features]
 default= ["app"]
 app = ["portaudio", "weresocool_lame"]
-wasm = []
+wasm = ["wasm-bindgen"]
 
