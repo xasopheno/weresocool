@@ -3,6 +3,7 @@ use crate::{
     generation::sum_all_waveforms,
     interpretable::{InputType, Interpretable},
 };
+#[cfg(feature = "app")]
 use rayon::prelude::*;
 use weresocool_error::Error;
 use weresocool_instrument::renderable::{

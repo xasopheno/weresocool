@@ -51,7 +51,7 @@ pub fn filename_from_string(s: &str) -> &str {
 }
 
 #[cfg(feature = "wasm")]
-pub fn write_composition_to_mp3(mut composition: StereoWaveform) -> Result<Vec<u8>, Error> {
+pub fn write_composition_to_mp3(_composition: StereoWaveform) -> Result<Vec<u8>, Error> {
     Err(Error::with_msg("Mp3 not available on wasm."))
 }
 

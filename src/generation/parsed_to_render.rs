@@ -6,6 +6,7 @@ use crate::{
 
 #[cfg(feature = "app")]
 use pbr::ProgressBar;
+#[cfg(feature = "app")]
 use rayon::prelude::*;
 use serde::{Deserialize, Serialize};
 use std::convert::TryFrom;
