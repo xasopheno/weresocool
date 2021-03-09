@@ -15,7 +15,7 @@ impl Coef {
     pub fn get_value(&self, mut rng: &mut StdRng) -> Result<i64, Error> {
         let result = match self {
             Self::Int(v) => Ok(*v),
-            Self::RandRange(range) => Ok(rng.gen_range(range.to_owned())),
+            Self::RandRange(range) => Ok(rng.gen_range(range.start(), range.end())),
             Self::RandChoice(choices) => {
                 let choice = choices.as_slice().choose(&mut rng);
                 if let Some(c) = choice {

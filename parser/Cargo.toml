@@ -17,7 +17,12 @@ regex = "1.4.3"
 colored = "2.0.0"
 num-rational = "0.3.2"
 indexmap = "1.6.1"
-rand = "0.8.2"
+rand = { version="0.7.3", features=["wasm-bindgen"]}
 weresocool_ast = { path = "../ast" }
-weresocool_error = { path = "../error" }
 path-clean = "0.1.0"
+weresocool_error = { path = "../error", optional=true }
+
+[features]
+default=["app"]
+app=["weresocool_error/app"]
+wasm=["weresocool_error/wasm"]

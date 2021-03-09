@@ -9,5 +9,6 @@ license = "MIT"
 repository = "https://github.com/MindBuffer/lanceverb.git"
 homepage = "https://github.com/RustAudio/lanceverb"
 
-[dev-dependencies]
-portaudio = "0.6.4"
+# [dev-dependencies]
+# portaudio = "0.6.4"
+

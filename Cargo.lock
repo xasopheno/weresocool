@@ -120,7 +120,7 @@ dependencies = [
  "mime",
  "percent-encoding",
  "pin-project",
- "rand 0.7.3",
+ "rand",
  "regex",
  "serde",
  "serde_json",
@@ -545,7 +545,7 @@ dependencies = [
  "log",
  "mime",
  "percent-encoding",
- "rand 0.7.3",
+ "rand",
  "serde",
  "serde_json",
  "serde_urlencoded",
@@ -591,12 +591,6 @@ name = "bit-vec"
 version = "0.6.3"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "349f9b6a179ed607305526ca489b34ad0a41aed5f7980fa90eb03160b69598fb"
-
-[[package]]
-name = "bitflags"
-version = "0.3.3"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "32866f4d103c4e438b1db1158aa1b1a80ee078e5d77a59a2f906fd62a577389c"
 
 [[package]]
 name = "bitflags"
@@ -1273,8 +1267,10 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "8fc3cb4d91f53b50155bdcfd23f6a4c39ae1969c2ae85982b135750cccaf5fce"
 dependencies = [
  "cfg-if 1.0.0",
+ "js-sys",
  "libc",
  "wasi 0.9.0+wasi-snapshot-preview1",
+ "wasm-bindgen",
 ]
 
 [[package]]
@@ -1284,8 +1280,10 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "4060f4657be78b8e766215b02b18a2e862d83745545de804638e2b545e81aee6"
 dependencies = [
  "cfg-if 1.0.0",
+ "js-sys",
  "libc",
  "wasi 0.10.1+wasi-snapshot-preview1",
+ "wasm-bindgen",
 ]
 
 [[package]]
@@ -2023,18 +2021,6 @@ dependencies = [
 
 [[package]]
 name = "portaudio"
-version = "0.6.4"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "7fd0063d0d2083d37b77070de80c34b5692437819073025a37c72486ec6d3d2a"
-dependencies = [
- "bitflags 0.3.3",
- "libc",
- "num 0.1.42",
- "pkg-config",
-]
-
-[[package]]
-name = "portaudio"
 version = "0.7.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "0d289315f6155a7608b6d8757786c79ed2243afeab8a5eda8989effda3fdc5c3"
@@ -2131,21 +2117,9 @@ checksum = "6a6b1679d49b24bbfe0c803429aa1874472f50d9b363131f0e89fc356b544d03"
 dependencies = [
  "getrandom 0.1.16",
  "libc",
- "rand_chacha 0.2.2",
- "rand_core 0.5.1",
- "rand_hc 0.2.0",
-]
-
-[[package]]
-name = "rand"
-version = "0.8.2"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "18519b42a40024d661e1714153e9ad0c3de27cd495760ceb09710920f1098b1e"
-dependencies = [
- "libc",
- "rand_chacha 0.3.0",
- "rand_core 0.6.1",
- "rand_hc 0.3.0",
+ "rand_chacha",
+ "rand_core",
+ "rand_hc",
 ]
 
 [[package]]
@@ -2155,17 +2129,7 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "f4c8ed856279c9737206bf725bf36935d8666ead7aa69b52be55af369d193402"
 dependencies = [
  "ppv-lite86",
- "rand_core 0.5.1",
-]
-
-[[package]]
-name = "rand_chacha"
-version = "0.3.0"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "e12735cf05c9e10bf21534da50a147b924d555dc7a547c42e6bb2d5b6017ae0d"
-dependencies = [
- "ppv-lite86",
- "rand_core 0.6.1",
+ "rand_core",
 ]
 
 [[package]]
@@ -2178,30 +2142,12 @@ dependencies = [
 ]
 
 [[package]]
-name = "rand_core"
-version = "0.6.1"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "c026d7df8b298d90ccbbc5190bd04d85e159eaf5576caeacf8741da93ccbd2e5"
-dependencies = [
- "getrandom 0.2.1",
-]
-
-[[package]]
 name = "rand_hc"
 version = "0.2.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "ca3129af7b92a17112d59ad498c6f81eaf463253766b90396d39ea7a39d6613c"
 dependencies = [
- "rand_core 0.5.1",
-]
-
-[[package]]
-name = "rand_hc"
-version = "0.3.0"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "3190ef7066a446f2e7f42e239d161e905420ccab01eb967c9eb27d21b2322a73"
-dependencies = [
- "rand_core 0.6.1",
+ "rand_core",
 ]
 
 [[package]]
@@ -2305,9 +2251,6 @@ dependencies = [
 [[package]]
 name = "reverb"
 version = "0.3.0"
-dependencies = [
- "portaudio 0.6.4",
-]
 
 [[package]]
 name = "rust-argon2"
@@ -2776,7 +2719,7 @@ dependencies = [
  "idna",
  "lazy_static",
  "log",
- "rand 0.7.3",
+ "rand",
  "smallvec",
  "socket2",
  "tokio",
@@ -3064,9 +3007,9 @@ dependencies = [
  "num-complex",
  "num-rational",
  "pbr",
- "portaudio 0.7.0",
+ "portaudio",
  "pretty_assertions",
- "rand 0.8.2",
+ "rand",
  "rayon",
  "serde",
  "serde_derive",
@@ -3102,7 +3045,7 @@ dependencies = [
  "num-traits",
  "polynomials",
  "pretty_assertions",
- "rand 0.8.2",
+ "rand",
  "serde",
  "weresocool_error",
  "weresocool_shared",
@@ -3116,7 +3059,7 @@ dependencies = [
  "failure",
  "failure_derive",
  "hound",
- "portaudio 0.7.0",
+ "portaudio",
  "serde",
  "serde_json",
  "weresocool_lame",
@@ -3128,7 +3071,7 @@ version = "0.1.0"
 dependencies = [
  "num-rational",
  "num-traits",
- "rand 0.8.2",
+ "rand",
  "rayon",
  "reverb",
  "serde",
@@ -3157,7 +3100,7 @@ dependencies = [
  "lalrpop-util",
  "num-rational",
  "path-clean",
- "rand 0.8.2",
+ "rand",
  "regex",
  "weresocool_ast",
  "weresocool_error",

@@ -8,12 +8,17 @@ edition = "2018"
 
 [dependencies]
 weresocool_ast = { path = "../ast" }
-weresocool_error = { path = "../error" }
+weresocool_error = { path = "../error", optional=true }
 weresocool_parser = { path = "../parser" }
 weresocool_shared = { path = "../shared" }
 serde = { version = "1.0.119", features = ["derive"] }
 reverb = { path = "reverb" }
 rayon = "1.5.0"
 num-rational = "0.3.2"
-rand = "0.8.2"
+rand = { version="0.7.3", features=["wasm-bindgen"]}
 num-traits = "0.2.14"
+
+[features]
+default=["app"]
+app=["weresocool_error/app"]
+wasm=["weresocool_error/wasm"]
