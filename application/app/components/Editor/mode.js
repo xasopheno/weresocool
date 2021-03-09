@@ -102,7 +102,7 @@ export class CustomHighlightRules extends window.ace.acequire(
         },
         {
           token: 'operation',
-          regex: 'Sine|Square|Noise|Portamento',
+          regex: 'Sine|Square|Noise|Portamento|Pulse|Triangle|Tri',
         },
         {
           token: 'frequency',

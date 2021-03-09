@@ -82,8 +82,6 @@ impl Normalize for Op {
                 }
             }),
 
-            Op::Sine { pow } => input.fmap_mut(|op| op.osc_type = OscType::Sine { pow: *pow }),
-
             Op::AD { attack, decay, asr } => input.fmap_mut(|op| {
                 op.attack *= attack;
                 op.decay *= decay;
@@ -94,7 +92,15 @@ impl Normalize for Op {
                 op.portamento *= m;
             }),
 
-            Op::Square => input.fmap_mut(|op| op.osc_type = OscType::Square),
+            Op::Sine { pow } => input.fmap_mut(|op| op.osc_type = OscType::Sine { pow: *pow }),
+
+            Op::Triangle { pow } => {
+                input.fmap_mut(|op| op.osc_type = OscType::Triangle { pow: *pow })
+            }
+
+            Op::Square { width } => {
+                input.fmap_mut(|op| op.osc_type = OscType::Square { width: *width })
+            }
 
             Op::Noise => input.fmap_mut(|op| op.osc_type = OscType::Noise),
 

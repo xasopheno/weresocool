@@ -251,9 +251,35 @@ BaseOperation: Term = {
     <gain: Gm> <m:Rational> => Term::Op(Gain {m}),
     "AsIs" => Term::Op(AsIs {}),
     "Sine" <pow: Rational?> => {
-      Term::Op(Sine {pow})
+      Term::Op(Sine { pow })
     },
-    "Square" => Term::Op(Square {}),
+    "Sine" "[" <pows: Comma<Rational>> "]" => {
+        let mut operations = Vec::new();
+        for pow in pows {
+            operations.push(Term::Op(Sine { pow: Some(pow) }))
+        }
+        Term::Op(Sequence { operations  })
+    },
+    r"Triangle|Tri" <pow: Rational?> => {
+      Term::Op(Triangle { pow })
+    },
+    r"Triangle|Tri" "[" <pows: Comma<Rational>> "]" => {
+        let mut operations = Vec::new();
+        for pow in pows {
+            operations.push(Term::Op(Triangle { pow: Some(pow) }))
+        }
+        Term::Op(Sequence { operations  })
+    },
+    r"Square|Pulse" <width: Rational?> => {
+      Term::Op(Square { width })
+    },
+    r"Square|Pulse" "[" <widths: Comma<Rational>> "]" => {
+        let mut operations = Vec::new();
+        for width in widths {
+            operations.push(Term::Op(Square { width: Some(width) }))
+        }
+        Term::Op(Sequence { operations  })
+    },
     "Noise" => Term::Op(Noise {}),
     "Reverse" => Term::Op(Reverse {}),
     "Invert" => Term::Op(FInvert),

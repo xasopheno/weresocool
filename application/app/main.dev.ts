@@ -65,7 +65,7 @@ const createWindow = async () => {
   let server = child_process.spawn(server_path, [], {
     env: {
       PORT: port.toString(),
-      ...process.env
+      ...process.env,
     },
     stdio: 'inherit',
   });
@@ -101,8 +101,8 @@ const createWindow = async () => {
 
   mainWindow.on('closed', () => {
     mainWindow = null;
-    server.kill('SIGKILL');
-    console.log('Server Storped');
+    server.kill('SIGINT');
+    console.log('Server Stopped');
     app.quit();
   });
 
