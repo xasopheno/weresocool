@@ -3,13 +3,16 @@ use crate::{
     ui::printed,
     write::{write_composition_to_mp3, write_composition_to_wav},
 };
-// use pbr::ProgressBar;
+
+#[cfg(feature = "app")]
+use pbr::ProgressBar;
 use rayon::prelude::*;
 use serde::{Deserialize, Serialize};
 use std::convert::TryFrom;
 use std::fs::File;
 use std::io::prelude::*;
 use std::path::Path;
+#[cfg(feature = "app")]
 use std::sync::{Arc, Mutex};
 use weresocool_ast::{Defs, NormalForm, Term};
 use weresocool_error::{Error, IdError};
@@ -238,12 +241,13 @@ pub fn render(
     Ok(result)
 }
 
-// fn create_pb_instance(n: usize) -> Arc<Mutex<ProgressBar<std::io::Stdout>>> {
-// let mut pb = ProgressBar::new(n as u64);
-// pb.format("╢w♬░╟");
-// pb.message("Rendering:  ");
-// Arc::new(Mutex::new(pb))
-// }
+#[cfg(feature = "app")]
+fn create_pb_instance(n: usize) -> Arc<Mutex<ProgressBar<std::io::Stdout>>> {
+    let mut pb = ProgressBar::new(n as u64);
+    pb.format("╢w♬░╟");
+    pb.message("Rendering:  ");
+    Arc::new(Mutex::new(pb))
+}
 
 pub fn generate_waveforms(
     mut vec_sequences: Vec<Vec<RenderOp>>,
@@ -252,18 +256,21 @@ pub fn generate_waveforms(
     if show {
         println!("Rendering {:?} waveforms", vec_sequences.len());
     }
-    // let pb = create_pb_instance(vec_sequences.len());
+    #[cfg(feature = "app")]
+    let pb = create_pb_instance(vec_sequences.len());
 
     let vec_wav = vec_sequences
         .par_iter_mut()
         .map(|ref mut vec_render_op: &mut Vec<RenderOp>| {
-            // pb.lock().unwrap().add(1_u64);
+            #[cfg(feature = "app")]
+            pb.lock().unwrap().add(1_u64);
             let mut osc = Oscillator::init(&default_settings());
             vec_render_op.render(&mut osc, None)
         })
         .collect();
 
-    // pb.lock().unwrap().finish_print(&"".to_string());
+    #[cfg(feature = "app")]
+    pb.lock().unwrap().finish_print(&"".to_string());
 
     vec_wav
 }

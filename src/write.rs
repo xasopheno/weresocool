@@ -6,6 +6,7 @@ use std::io::{BufWriter, Cursor};
 use std::path::Path;
 use weresocool_error::Error;
 use weresocool_instrument::{Normalize, StereoWaveform};
+#[cfg(feature = "app")]
 use weresocool_lame::Lame;
 use weresocool_shared::{default_settings, Settings};
 
@@ -49,6 +50,12 @@ pub fn filename_from_string(s: &str) -> &str {
     filename[filename.len() - 1]
 }
 
+#[cfg(feature = "wasm")]
+pub fn write_composition_to_mp3(mut composition: StereoWaveform) -> Result<Vec<u8>, Error> {
+    Err(Error::with_msg("Mp3 not available on wasm."))
+}
+
+#[cfg(feature = "app")]
 pub fn write_composition_to_mp3(mut composition: StereoWaveform) -> Result<Vec<u8>, Error> {
     composition.normalize();
 
