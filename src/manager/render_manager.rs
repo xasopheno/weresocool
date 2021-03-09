@@ -63,8 +63,12 @@ impl RenderManager {
 
         match current {
             Some(render_voices) => {
-                let rendered: Vec<StereoWaveform> = render_voices
-                    .par_iter_mut()
+                #[cfg(feature = "app")]
+                let iter = render_voices.par_iter_mut();
+                #[cfg(feature = "wasm")]
+                let iter = render_voices.iter_mut();
+
+                let rendered: Vec<StereoWaveform> = iter
                     .filter_map(|voice| voice.render_batch(buffer_size, None))
                     .collect();
                 if !rendered.is_empty() {
