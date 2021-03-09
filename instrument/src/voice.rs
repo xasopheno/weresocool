@@ -126,7 +126,7 @@ impl Voice {
                 if op.samples > 250 { op.samples } else { 250 },
             );
 
-            let info = SampleInfo { gain, frequency };
+            let info = SampleInfo { frequency, gain };
 
             let mut new_sample = match self.osc_type {
                 OscType::None => self.generate_sine_sample(info, None),

@@ -85,10 +85,8 @@ impl RenderVoice {
         n_samples: usize,
         offset: Option<&Offset>,
     ) -> Option<StereoWaveform> {
-        match self.get_batch(n_samples, None) {
-            Some(mut b) => Some(b.render(&mut self.oscillator, offset)),
-            None => None,
-        }
+        self.get_batch(n_samples, None)
+            .map(|mut b| b.render(&mut self.oscillator, offset))
     }
 }
 

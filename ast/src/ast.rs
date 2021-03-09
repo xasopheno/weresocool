@@ -124,6 +124,7 @@ impl OscType {
 
 #[derive(Copy, Clone, Debug, PartialEq, Serialize, Deserialize, Ord, PartialOrd, Hash, Eq)]
 /// Attack/Sustain/Release Type
+///clippy::upper-case-acronyms
 pub enum ASR {
     Short,
     Long,
