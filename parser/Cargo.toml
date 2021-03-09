@@ -18,11 +18,11 @@ colored = "2.0.0"
 num-rational = "0.3.2"
 indexmap = "1.6.1"
 rand = { version="0.7.3", features=["wasm-bindgen"]}
-weresocool_ast = { path = "../ast" }
 path-clean = "0.1.0"
-weresocool_error = { path = "../error", optional=true }
+weresocool_ast = { path = "../ast", default_features=false, optional=true }
+weresocool_error = { path = "../error", default_features=false, optional=true }
 
 [features]
 default=["app"]
-app=["weresocool_error/app"]
-wasm=["weresocool_error/wasm"]
+app=["weresocool_error/app", "weresocool_ast/app"]
+wasm=["weresocool_error/wasm", "weresocool_ast/wasm"]
