@@ -1,0 +1,67 @@
+Hey, Antonis. Thanks for checking in. Things are going really well here. Maria's mom is staying with us and it's super super helpful. She loves when Milo crys and is an excellent cook. Eating so much amazing Japanese food. We're mostly getting enough sleep. The first week or so was a really tired time. We hardely slept at the hospital and it took a bit to catch back up. After a week or so, it stabilized. Milo is a little over two weeks old now. Mostly just good food and cuteness these days. Oh, and music! I got a Rhodes and so I play for Milo all the time. He's a cool dude. I'm excited for you to meet him ;)
+
+~~~~~~~~>
+
+In WereSoCool news, I've successfully compiled the backend to wasm and so now I can run it in the browser. It's single threaded, so I can't write anything tooo complicated in the browser, but it should work well for writing some documentation. 
+
+Also, I was finally able to get rid of the > in FitLength and so you can write:
+
+my_cool_melody
+| FitLength my_other_cool_melody
+
+FitLength still has to be smarter than other operations, but I was able to move that complexity to a different part of grammar. 
+
+~~~~~~~~>
+
+I mentioned that I have some questions. I'm going to try to explain a bit. 
+
+Of course, you are familiar with the ModulateBy operation. :) Thanks again. It's one of the best ones. I've always know there was a second operation in there somewhere since ModBy only uses the lengths of the operations to determine the shape of the modulator, but the length of the original is unchanged. 
+
+  Fm 1 | ModBy [Fm 1 | Lm 2, Fm 9/8 | Lm 2]
+  => Seq [Fm 1 | Lm 1/2, Fm 9/8 | Lm 1/2]
+
+Recently, I've been exploring a new operation. Let's call it ModulateLengthBy (ModLenBy). After playing around with it, it should probably have a better name, but that'll work for now. 
+
+Right now it looks something like this:
+
+  something_cool
+  | ModLenBy [
+       1: Fm 1, 
+       1: Repeat 2 | Overlay [Fm 1, Fm 1/2], 
+       2: Lm 2,
+  ]
+
+
+This would take something_cool and then divide it into 3 parts. The first two parts would be len 1 and the last would be length 2. The first part would play normally. The second part would repeat twice adding an octave below. The last part (the last half) would play last twice as long. 
+
+Looking at this more, it seems like I'm really combining two operations. Maybe something like...
+
+  something_cool
+  | Slice [1, 1, 2]
+  @ [
+     0, 
+     1 | Repeat 2 | Overlay [Fm 1, Fm 1/2], 
+     2 | Lm 2,
+  ]
+
+where Slice would be an operation that would take a non-list and convert it into a List.  
+
+Lists are neat. When I was working on generators I did some fiddling so that I could turn a generator into a list by prepending a "&". 
+
+  &*(
+    f: 0|12 [-1, 2, 4]  
+  ) | Take 8
+  @ [:, 3:7]
+
+This works well, but now after seeing the Slice stuff, I'm starting to wonder if I should be moving some of list/non-list stuff out of the grammer and into some kind of type checking later in the application?
+
+This is the current state of the grammar if it's useful. (I always imagine I could use some help trying to clean up the grammar into something more beautiful.)
+https://github.com/xasopheno/WereSoCool/blob/master/parser/src/socool.lalrpop
+
+I've also had a couple of big picture ideas that I'll share since they seem fun:
+1) A general language for sequence generation. It would be fun to try to generalize WereSoCool to be useful for generating sequences of other datatypes.
+2) Adding normal programming language stuff to WereSoCool. If/Else, For, Variables, etc. It's fun how WereSoCool doesn't have any of this stuff, but there are times it would be useful. 
+
+Alright, Milo is starting to wake and I think this novel must end. I'm sure you're busy and if you don't have time to think about all this stuff, that's totally ok. Also happy to hop on a call. Hugs from NYC,
+
+Danny
