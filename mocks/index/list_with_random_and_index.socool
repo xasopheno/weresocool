@@ -5,6 +5,6 @@ main = {
 }
 
 expect = {
-    Seq [Fm 9/8, Fm 1, Fm 9/8, Fm 9/8]
+    Seq [Fm 1, Fm 1, Fm 1, Fm 9/8]
 }
 
