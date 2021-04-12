@@ -27,7 +27,7 @@ pub enum Serializable {
     #[serde(with = "PortAudioError")]
     PortAudio(portaudio::error::Error),
     SerdeJsonError(String),
-    CSVError(String),
+    CsvError(String),
     ParseError(ParseError),
     IdError(IdError),
     IndexError(IndexError),
@@ -58,9 +58,9 @@ impl ErrorInner {
                 println!("{:#?}", e);
                 Serializable::SerdeJsonError("SerdeJson Error".to_string())
             }
-            ErrorInner::CSVError(e) => {
+            ErrorInner::CsvError(e) => {
                 println!("{:#?}", e);
-                Serializable::CSVError("CSVError".to_string())
+                Serializable::CsvError("CsvError".to_string())
             }
             ErrorInner::HoundError(e) => {
                 println!("{:#?}", e);
@@ -112,7 +112,7 @@ impl From<serde_json::error::Error> for Error {
 impl From<csv::Error> for Error {
     fn from(e: csv::Error) -> Error {
         Error {
-            inner: Box::new(ErrorInner::CSVError(e)),
+            inner: Box::new(ErrorInner::CsvError(e)),
         }
     }
 }

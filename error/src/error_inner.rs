@@ -18,7 +18,7 @@ pub enum ErrorInner {
     SerdeJson(#[cause] serde_json::error::Error),
 
     #[fail(display = "CSV error: {}", _0)]
-    CSVError(#[cause] csv::Error),
+    CsvError(#[cause] csv::Error),
 
     #[fail(display = "Parse error: {}", _0)]
     ParseError(#[cause] ParseError),

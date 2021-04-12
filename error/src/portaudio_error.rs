@@ -28,6 +28,7 @@ pub enum PortAudioError {
     /// The Sample format is not supported
     SampleFormatNotSupported,
     /// Input device not compatible with output device
+    #[allow(clippy::upper_case_acronyms)]
     BadIODeviceCombination,
     /// Memory insufficient
     InsufficientMemory,

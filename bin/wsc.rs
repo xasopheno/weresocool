@@ -31,7 +31,7 @@ fn main() -> Result<(), Error> {
     }
 
     if args.is_present("print") {
-        Filename(filename.unwrap()).make(RenderType::Wav(WavType::MP3 { cli: true }), None)?;
+        Filename(filename.unwrap()).make(RenderType::Wav(WavType::Mp3 { cli: true }), None)?;
     } else if args.is_present("json") {
         Filename(filename.unwrap()).make(RenderType::Json4d, None)?;
     } else if args.is_present("csv") {

@@ -29,7 +29,7 @@ const SETTINGS: Settings = default_settings();
 #[derive(Clone, PartialEq, Debug)]
 pub enum WavType {
     Wav { cli: bool },
-    MP3 { cli: bool },
+    Mp3 { cli: bool },
 }
 
 #[derive(Clone, PartialEq, Debug)]
@@ -179,7 +179,7 @@ pub fn parsed_to_render(
             Ok(RenderReturn::StereoWaveform(stereo_waveform))
         }
         RenderType::Wav(wav_type) => match wav_type {
-            WavType::MP3 { cli } => {
+            WavType::Mp3 { cli } => {
                 let stereo_waveform = render(&basis, nf, &parsed_composition.defs)?;
                 let render_return = RenderReturn::Wav(write_composition_to_mp3(stereo_waveform)?);
                 if cli {

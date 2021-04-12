@@ -14,7 +14,7 @@ fn main() {
     match run() {
         Ok(_) => {}
         e => {
-            for cause in dyn Fail::iter_causes(&e.unwrap_err()) {
+            for cause in Fail::iter_causes(&e.unwrap_err()) {
                 println!("Failure caused by: {}", cause);
             }
         }
