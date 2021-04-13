@@ -1,7 +1,7 @@
 [package]
 name = "weresocool_parser"
 version = "0.5.0"
-authors = ["Danny Meyer <Danny.Meyer@gmail.com>"]
+authors = ["Danny Meyer <weresocool@xasopheno.com>"]
 edition = "2018"
 build = "build.rs" # LALRPOP preprocessing
 description = "Parser for WereSoCool"
@@ -17,7 +17,12 @@ regex = "1.4.3"
 colored = "2.0.0"
 num-rational = "0.3.2"
 indexmap = "1.6.1"
-rand = "0.8.2"
-weresocool_ast = { path = "../ast" }
-weresocool_error = { path = "../error" }
+rand = { version="0.7.3", features=["wasm-bindgen"]}
 path-clean = "0.1.0"
+weresocool_ast = { path = "../ast", default_features=false, optional=true }
+weresocool_error = { path = "../error", default_features=false, optional=true }
+
+[features]
+default=["app"]
+app=["weresocool_error/app", "weresocool_ast/app"]
+wasm=["weresocool_error/wasm", "weresocool_ast/wasm"]

@@ -3,13 +3,17 @@ use crate::{
     ui::printed,
     write::{write_composition_to_mp3, write_composition_to_wav},
 };
+
+#[cfg(feature = "app")]
 use pbr::ProgressBar;
+#[cfg(feature = "app")]
 use rayon::prelude::*;
 use serde::{Deserialize, Serialize};
 use std::convert::TryFrom;
 use std::fs::File;
 use std::io::prelude::*;
 use std::path::Path;
+#[cfg(feature = "app")]
 use std::sync::{Arc, Mutex};
 use weresocool_ast::{Defs, NormalForm, Term};
 use weresocool_error::{Error, IdError};
@@ -25,7 +29,7 @@ const SETTINGS: Settings = default_settings();
 #[derive(Clone, PartialEq, Debug)]
 pub enum WavType {
     Wav { cli: bool },
-    MP3 { cli: bool },
+    Mp3 { cli: bool },
 }
 
 #[derive(Clone, PartialEq, Debug)]
@@ -175,7 +179,7 @@ pub fn parsed_to_render(
             Ok(RenderReturn::StereoWaveform(stereo_waveform))
         }
         RenderType::Wav(wav_type) => match wav_type {
-            WavType::MP3 { cli } => {
+            WavType::Mp3 { cli } => {
                 let stereo_waveform = render(&basis, nf, &parsed_composition.defs)?;
                 let render_return = RenderReturn::Wav(write_composition_to_mp3(stereo_waveform)?);
                 if cli {
@@ -222,8 +226,11 @@ pub fn render(
 
     let mut result = StereoWaveform::new(0);
     loop {
-        let batch: Vec<StereoWaveform> = voices
-            .par_iter_mut()
+        #[cfg(feature = "app")]
+        let iter = voices.par_iter_mut();
+        #[cfg(feature = "wasm")]
+        let iter = voices.iter_mut();
+        let batch: Vec<StereoWaveform> = iter
             .filter_map(|voice| voice.render_batch(SETTINGS.buffer_size, None))
             .collect();
 
@@ -238,6 +245,7 @@ pub fn render(
     Ok(result)
 }
 
+#[cfg(feature = "app")]
 fn create_pb_instance(n: usize) -> Arc<Mutex<ProgressBar<std::io::Stdout>>> {
     let mut pb = ProgressBar::new(n as u64);
     pb.format("╢w♬░╟");
@@ -252,17 +260,24 @@ pub fn generate_waveforms(
     if show {
         println!("Rendering {:?} waveforms", vec_sequences.len());
     }
+    #[cfg(feature = "app")]
     let pb = create_pb_instance(vec_sequences.len());
 
-    let vec_wav = vec_sequences
-        .par_iter_mut()
+    #[cfg(feature = "app")]
+    let iter = vec_sequences.par_iter_mut();
+    #[cfg(feature = "wasm")]
+    let iter = vec_sequences.iter_mut();
+
+    let vec_wav = iter
         .map(|ref mut vec_render_op: &mut Vec<RenderOp>| {
+            #[cfg(feature = "app")]
             pb.lock().unwrap().add(1_u64);
             let mut osc = Oscillator::init(&default_settings());
             vec_render_op.render(&mut osc, None)
         })
         .collect();
 
+    #[cfg(feature = "app")]
     pb.lock().unwrap().finish_print(&"".to_string());
 
     vec_wav

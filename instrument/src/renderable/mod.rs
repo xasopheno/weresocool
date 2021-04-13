@@ -4,6 +4,7 @@ use crate::{Basis, Oscillator, StereoWaveform};
 use num_rational::Rational64;
 use num_traits::CheckedMul;
 use rand::{thread_rng, Rng};
+#[cfg(feature = "app")]
 use rayon::prelude::*;
 pub use render_voice::{renderables_to_render_voices, RenderVoice};
 use weresocool_ast::{Defs, NormalForm, Normalize, OscType, PointOp, ASR};
@@ -122,7 +123,7 @@ impl Offset {
     }
     pub fn random() -> Self {
         Self {
-            freq: thread_rng().gen_range(0.95..1.05),
+            freq: thread_rng().gen_range(0.95, 1.05),
             gain: 1.0,
         }
     }
@@ -272,9 +273,12 @@ pub fn nf_to_vec_renderable(
     let mut normal_form = NormalForm::init();
     composition.apply_to_normal_form(&mut normal_form, defs)?;
 
-    let result: Vec<Vec<RenderOp>> = normal_form
-        .operations
-        .par_iter()
+    #[cfg(feature = "app")]
+    let iter = normal_form.operations.par_iter();
+    #[cfg(feature = "wasm")]
+    let iter = normal_form.operations.iter();
+
+    let result: Vec<Vec<RenderOp>> = iter
         .enumerate()
         .map(|(voice, vec_point_op)| {
             let mut time = Rational64::new(0, 1);

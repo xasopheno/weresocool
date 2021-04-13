@@ -219,7 +219,7 @@ mod tests {
 
         let r_buffer: Vec<f64> = short_r.iter().flatten().cloned().collect();
         let l_buffer: Vec<f64> = short_l.iter().flatten().cloned().collect();
-        let short = StereoWaveform { r_buffer, l_buffer };
+        let short = StereoWaveform { l_buffer, r_buffer };
 
         let long: Vec<StereoWaveform> = voices2
             .iter_mut()

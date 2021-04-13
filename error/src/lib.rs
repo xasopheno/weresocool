@@ -3,6 +3,8 @@ pub mod error_inner;
 pub mod id_error;
 pub mod index_error;
 pub mod parse_error;
+
+#[cfg(feature = "app")]
 pub mod portaudio_error;
 
 pub use error::Error;
@@ -10,6 +12,8 @@ pub use error_inner::ErrorInner;
 pub use id_error::IdError;
 pub use index_error::IndexError;
 pub use parse_error::ParseError;
+
+#[cfg(feature = "app")]
 use portaudio_error::PortAudioError;
 use serde::{Deserialize, Serialize};
 use std::io;
@@ -19,14 +23,17 @@ pub enum Serializable {
     Msg(String),
     IoError(String),
     HoundError(String),
+    #[cfg(feature = "app")]
     #[serde(with = "PortAudioError")]
     PortAudio(portaudio::error::Error),
     SerdeJsonError(String),
-    CSVError(String),
+    CsvError(String),
     ParseError(ParseError),
     IdError(IdError),
     IndexError(IndexError),
+    #[cfg(feature = "app")]
     LameError(weresocool_lame::Error),
+    #[cfg(feature = "app")]
     LameEncodeError(weresocool_lame::EncodeError),
 }
 
@@ -37,8 +44,11 @@ impl ErrorInner {
             ErrorInner::ParseError(e) => Serializable::ParseError(e),
             ErrorInner::IdError(e) => Serializable::IdError(e),
             ErrorInner::IndexError(e) => Serializable::IndexError(e),
+            #[cfg(feature = "app")]
             ErrorInner::PortAudio(e) => Serializable::PortAudio(e),
+            #[cfg(feature = "app")]
             ErrorInner::LameError(e) => Serializable::LameError(e),
+            #[cfg(feature = "app")]
             ErrorInner::LameEncodeError(e) => Serializable::LameEncodeError(e),
             ErrorInner::Io(e) => {
                 println!("{:#?}", e);
@@ -48,9 +58,9 @@ impl ErrorInner {
                 println!("{:#?}", e);
                 Serializable::SerdeJsonError("SerdeJson Error".to_string())
             }
-            ErrorInner::CSVError(e) => {
+            ErrorInner::CsvError(e) => {
                 println!("{:#?}", e);
-                Serializable::CSVError("CSVError".to_string())
+                Serializable::CsvError("CsvError".to_string())
             }
             ErrorInner::HoundError(e) => {
                 println!("{:#?}", e);
@@ -82,6 +92,7 @@ impl From<io::Error> for Error {
     }
 }
 
+#[cfg(feature = "app")]
 impl From<portaudio::error::Error> for Error {
     fn from(e: portaudio::error::Error) -> Error {
         Error {
@@ -101,7 +112,7 @@ impl From<serde_json::error::Error> for Error {
 impl From<csv::Error> for Error {
     fn from(e: csv::Error) -> Error {
         Error {
-            inner: Box::new(ErrorInner::CSVError(e)),
+            inner: Box::new(ErrorInner::CsvError(e)),
         }
     }
 }
@@ -122,6 +133,7 @@ impl From<hound::Error> for Error {
     }
 }
 
+#[cfg(feature = "app")]
 impl From<weresocool_lame::Error> for Error {
     fn from(e: weresocool_lame::Error) -> Error {
         Error {
@@ -130,6 +142,7 @@ impl From<weresocool_lame::Error> for Error {
     }
 }
 
+#[cfg(feature = "app")]
 impl From<weresocool_lame::EncodeError> for Error {
     fn from(e: weresocool_lame::EncodeError) -> Error {
         Error {

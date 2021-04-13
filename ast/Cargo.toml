@@ -7,10 +7,10 @@ description = "AST for WereSoCool"
 license = "GPL-3.0" 
 
 [dependencies]
-weresocool_error = { path = "../error" }
+weresocool_error = { path = "../error", default_features=false, optional=true }
 weresocool_shared = { path = "../shared" }
 num-rational = { version = "0.3.2", features = ["serde"] } 
-rand = "0.8.2"
+rand = { version="0.7.3", features=["wasm-bindgen"]}
 serde = { version = "1.0.119", features = ["derive"] }
 pretty_assertions = "0.6.1"
 indexmap = "1.6.1"
@@ -19,3 +19,8 @@ num-traits = "0.2.14"
 num-integer = "0.1.44"
 polynomials = "0.2.4"
 meval = "0.2.0"
+
+[features]
+default=["app"]
+app=["weresocool_error/app"]
+wasm=["weresocool_error/wasm"]

@@ -3,6 +3,7 @@ use crate::{
     generation::sum_all_waveforms,
     interpretable::{InputType, Interpretable},
 };
+#[cfg(feature = "app")]
 use rayon::prelude::*;
 use weresocool_error::Error;
 use weresocool_instrument::renderable::{
@@ -63,8 +64,12 @@ impl RenderManager {
 
         match current {
             Some(render_voices) => {
-                let rendered: Vec<StereoWaveform> = render_voices
-                    .par_iter_mut()
+                #[cfg(feature = "app")]
+                let iter = render_voices.par_iter_mut();
+                #[cfg(feature = "wasm")]
+                let iter = render_voices.iter_mut();
+
+                let rendered: Vec<StereoWaveform> = iter
                     .filter_map(|voice| voice.render_batch(buffer_size, None))
                     .collect();
                 if !rendered.is_empty() {

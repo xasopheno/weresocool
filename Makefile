@@ -56,7 +56,8 @@ format_ci:
 	pushd ast && cargo fmt -- --check && popd
 
 clippy:
-	cargo +nightly clippy --all-targets -- -D warnings
+	# cargo +nightly clippy --all-targets -- -D warnings
+	cargo clippy --all-targets -- -D warnings
 
 test_application: application/node_modules
 	cd application && \

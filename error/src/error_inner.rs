@@ -10,6 +10,7 @@ pub enum ErrorInner {
     #[fail(display = "I/O error: {}", _0)]
     Io(#[cause] io::Error),
 
+    #[cfg(feature = "app")]
     #[fail(display = "PortAudio error: {}", _0)]
     PortAudio(#[cause] portaudio::error::Error),
 
@@ -17,7 +18,7 @@ pub enum ErrorInner {
     SerdeJson(#[cause] serde_json::error::Error),
 
     #[fail(display = "CSV error: {}", _0)]
-    CSVError(#[cause] csv::Error),
+    CsvError(#[cause] csv::Error),
 
     #[fail(display = "Parse error: {}", _0)]
     ParseError(#[cause] ParseError),
@@ -31,9 +32,11 @@ pub enum ErrorInner {
     #[fail(display = "Hound error: {}", _0)]
     HoundError(#[cause] hound::Error),
 
+    #[cfg(feature = "app")]
     #[fail(display = "Lame error: {}", _0)]
     LameError(#[cause] weresocool_lame::Error),
 
+    #[cfg(feature = "app")]
     #[fail(display = "LameEncode error: {}", _0)]
     LameEncodeError(#[cause] weresocool_lame::EncodeError),
 }

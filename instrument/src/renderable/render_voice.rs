@@ -1,5 +1,6 @@
 use crate::renderable::{Offset, RenderOp, Renderable};
 use crate::{Oscillator, StereoWaveform};
+#[cfg(feature = "app")]
 use rayon::prelude::*;
 use weresocool_shared::{default_settings, Settings};
 
@@ -84,16 +85,16 @@ impl RenderVoice {
         n_samples: usize,
         offset: Option<&Offset>,
     ) -> Option<StereoWaveform> {
-        match self.get_batch(n_samples, None) {
-            Some(mut b) => Some(b.render(&mut self.oscillator, offset)),
-            None => None,
-        }
+        self.get_batch(n_samples, None)
+            .map(|mut b| b.render(&mut self.oscillator, offset))
     }
 }
 
 pub fn renderables_to_render_voices(renderables: Vec<Vec<RenderOp>>) -> Vec<RenderVoice> {
-    renderables
-        .par_iter()
-        .map(|voice| RenderVoice::init(voice))
+    #[cfg(feature = "app")]
+    let iter = renderables.par_iter();
+    #[cfg(feature = "wasm")]
+    let iter = renderables.iter();
+    iter.map(|voice| RenderVoice::init(voice))
         .collect::<Vec<RenderVoice>>()
 }

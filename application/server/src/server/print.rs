@@ -19,7 +19,7 @@ impl PrintSuccess {
 
 pub async fn print(req: web::Json<PrintLanguage>) -> HttpResponse {
     let result = if req.print_type == "mp3".to_string() {
-        InputType::Language(&req.language).make(RenderType::Wav(WavType::MP3 { cli: false }), None)
+        InputType::Language(&req.language).make(RenderType::Wav(WavType::Mp3 { cli: false }), None)
     } else {
         InputType::Language(&req.language).make(RenderType::Wav(WavType::Wav { cli: false }), None)
     };

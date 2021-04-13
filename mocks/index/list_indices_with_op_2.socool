@@ -8,6 +8,6 @@ main = {
 }
 
 expect = {
-    Seq [Tm 9/4, Tm 9/4]
+    Seq [Tm 2, Tm 9/4]
 }
 

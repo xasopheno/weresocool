@@ -40,6 +40,8 @@ pub enum Op {
     Square {
         width: Option<Rational64>,
     },
+
+    #[allow(clippy::upper_case_acronyms)]
     AD {
         attack: Rational64,
         decay: Rational64,
@@ -122,6 +124,7 @@ impl OscType {
     }
 }
 
+#[allow(clippy::upper_case_acronyms)]
 #[derive(Copy, Clone, Debug, PartialEq, Serialize, Deserialize, Ord, PartialOrd, Hash, Eq)]
 /// Attack/Sustain/Release Type
 pub enum ASR {

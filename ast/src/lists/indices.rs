@@ -111,7 +111,7 @@ impl Index {
                 let mut rng: StdRng = SeedableRng::seed_from_u64(*seed as u64);
                 Ok((0..*n)
                     .map(|_| {
-                        let n: usize = rng.gen_range(0..len_list);
+                        let n: usize = rng.gen_range(0, len_list);
                         IndexVector {
                             index: n,
                             index_terms: vec![],
