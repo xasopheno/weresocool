@@ -1,7 +1,7 @@
 {
   "name": "weresocool",
   "productName": "WereSoCool",
-  "version": "1.0.18",
+  "version": "1.0.19",
   "description": " Make cool sounds. Impress your friends/pets/plants.",
   "scripts": {
     "build-backend": "cd server && ./build_static.sh && cd ../ && cp ../target/release/weresocool_server extraResources/weresocool_server",
@@ -122,14 +122,14 @@
   },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/xasopheno/weresocool.git"
+    "url": "https://github.com/xasopheno/weresocool"
   },
   "author": {
     "name": "Danny Meyer",
-    "email": "d@xasopheno.com",
-    "url": "http://xasopheno.com"
+    "email": "weresocool@xasopheno.com",
+    "url": "http://weresocool.org"
   },
-  "license": "MIT",
+  "license": "GPL-3",
   "bugs": {
     "url": "https://github.com/xasopheno/weresocool/issues"
   },
