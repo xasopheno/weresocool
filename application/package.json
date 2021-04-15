@@ -195,7 +195,7 @@
     "@types/react-router-dom": "5.1.6",
     "@types/react-test-renderer": "16.9.3",
     "@types/redux-logger": "3.0.8",
-    "@types/sinon": "9.0.8",
+    "@types/sinon": "10.0.0",
     "@types/styled-components": "5.1.4",
     "@types/tapable": "1.0.6",
     "@types/vfile-message": "2.0.0",
