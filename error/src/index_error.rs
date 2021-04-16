@@ -1,9 +1,9 @@
 use crate::{Error, ErrorInner};
-use failure::Fail;
 use serde::{Deserialize, Serialize};
 use std::fmt;
+use thiserror::Error;
 
-#[derive(Debug, Fail, Serialize, Deserialize)]
+#[derive(Debug, Error, Serialize, Deserialize)]
 pub struct IndexError {
     pub len_list: usize,
     pub index: i64,

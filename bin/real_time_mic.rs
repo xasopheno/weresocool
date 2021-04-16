@@ -1,4 +1,3 @@
-use failure::Fail;
 use weresocool::{
     examples::documentation,
     generation::parsed_to_render::{RenderReturn, RenderType},
@@ -10,18 +9,7 @@ use weresocool_error::Error;
 use weresocool_instrument::renderable::nf_to_vec_renderable;
 use weresocool_shared::r_to_f64;
 
-fn main() {
-    match run() {
-        Ok(_) => {}
-        e => {
-            for cause in Fail::iter_causes(&e.unwrap_err()) {
-                println!("Failure caused by: {}", cause);
-            }
-        }
-    }
-}
-
-fn run() -> Result<(), Error> {
+fn main() -> Result<(), Error> {
     were_so_cool_logo();
     println!("       )))***=== REAL<GOOD>TIME *mic ===***(((  \n ");
 
