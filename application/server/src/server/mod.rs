@@ -34,7 +34,7 @@ pub async fn render(
 ) -> HttpResponse {
     match prepare_render_outside(
         InputType::Language(&req.language),
-        req.working_path.to_owned(),
+        req.working_path.clone().map(|cwd| PathBuf::from(cwd)),
     ) {
         Ok(render) => {
             render_manager.lock().unwrap().push_render(render);
