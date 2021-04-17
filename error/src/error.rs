@@ -18,16 +18,6 @@ impl fmt::Display for Error {
     }
 }
 
-// impl failure::Fail for Error {
-// fn cause(&self) -> Option<&dyn failure::Fail> {
-// self.inner.cause()
-// }
-
-// fn backtrace(&self) -> Option<&failure::Backtrace> {
-// self.inner.backtrace()
-// }
-// }
-
 #[cfg(feature = "wasm")]
 impl From<Error> for JsValue {
     fn from(error: Error) -> Self {
