@@ -1,42 +1,42 @@
 use crate::{IdError, IndexError, ParseError};
-use failure::Fail;
 use std::io;
+use thiserror::Error;
 
-#[derive(Debug, Fail)]
+#[derive(Debug, Error)]
 pub enum ErrorInner {
-    #[fail(display = "{}", _0)]
+    #[error("{0}")]
     Msg(String),
 
-    #[fail(display = "I/O error: {}", _0)]
-    Io(#[cause] io::Error),
+    #[error("I/O error: {0}")]
+    Io(#[from] io::Error),
 
     #[cfg(feature = "app")]
-    #[fail(display = "PortAudio error: {}", _0)]
-    PortAudio(#[cause] portaudio::error::Error),
+    #[error("PortAudio error: {0}")]
+    PortAudio(#[from] portaudio::error::Error),
 
-    #[fail(display = "SerdeJson error: {}", _0)]
-    SerdeJson(#[cause] serde_json::error::Error),
+    #[error("SerdeJson error: {0}")]
+    SerdeJson(#[from] serde_json::error::Error),
 
-    #[fail(display = "CSV error: {}", _0)]
-    CsvError(#[cause] csv::Error),
+    #[error("CSV error: {0}")]
+    CsvError(#[from] csv::Error),
 
-    #[fail(display = "Parse error: {}", _0)]
-    ParseError(#[cause] ParseError),
+    #[error("Parse error: {0}")]
+    ParseError(#[from] ParseError),
 
-    #[fail(display = "Id error: {}", _0)]
-    IdError(#[cause] IdError),
+    #[error("Id error: {0}")]
+    IdError(#[from] IdError),
 
-    #[fail(display = "Index error: {}", _0)]
-    IndexError(#[cause] IndexError),
+    #[error("Index error: {0}")]
+    IndexError(#[from] IndexError),
 
-    #[fail(display = "Hound error: {}", _0)]
-    HoundError(#[cause] hound::Error),
-
-    #[cfg(feature = "app")]
-    #[fail(display = "Lame error: {}", _0)]
-    LameError(#[cause] weresocool_lame::Error),
+    #[error("Hound error: {0}")]
+    HoundError(#[from] hound::Error),
 
     #[cfg(feature = "app")]
-    #[fail(display = "LameEncode error: {}", _0)]
-    LameEncodeError(#[cause] weresocool_lame::EncodeError),
+    #[error("Lame error: {0}")]
+    LameError(#[from] weresocool_lame::Error),
+
+    #[cfg(feature = "app")]
+    #[error("LameEncode error: {0}")]
+    LameEncodeError(#[from] weresocool_lame::EncodeError),
 }

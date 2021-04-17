@@ -13,3 +13,4 @@ links = "mp3lame"
 serde = { version = "1.0.111", features = ["derive"] }
 failure = "0.1.8"
 failure_derive = "0.1.8"
+thiserror = "1.0.24"

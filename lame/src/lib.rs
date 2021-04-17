@@ -1,12 +1,12 @@
 mod ffi;
-use failure::Fail;
 use serde::{Deserialize, Serialize};
 use std::convert::From;
 use std::fmt;
 use std::ops::Drop;
 use std::os::raw::c_int;
+use thiserror::Error;
 
-#[derive(Serialize, Deserialize, Debug, Fail)]
+#[derive(Serialize, Deserialize, Debug, Error)]
 pub enum Error {
     Ok,
     GenericError,
@@ -17,7 +17,7 @@ pub enum Error {
     Unknown(c_int),
 }
 
-#[derive(Serialize, Deserialize, Debug, Fail)]
+#[derive(Serialize, Deserialize, Debug, Error)]
 pub enum EncodeError {
     OutputBufferTooSmall,
     NoMem,
