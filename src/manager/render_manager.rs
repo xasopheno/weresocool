@@ -5,6 +5,7 @@ use crate::{
 };
 #[cfg(feature = "app")]
 use rayon::prelude::*;
+use std::path::PathBuf;
 use weresocool_error::Error;
 use weresocool_instrument::renderable::{
     nf_to_vec_renderable, renderables_to_render_voices, RenderVoice,
@@ -129,7 +130,7 @@ impl RenderManager {
 
 pub fn prepare_render_outside(
     input: InputType<'_>,
-    working_path: Option<String>,
+    working_path: Option<PathBuf>,
 ) -> Result<Vec<RenderVoice>, Error> {
     let (nf, basis, table) = match input.make(RenderType::NfBasisAndTable, working_path)? {
         RenderReturn::NfBasisAndTable(nf, basis, table) => (nf, basis, table),
