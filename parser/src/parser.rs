@@ -7,6 +7,7 @@ use path_clean::PathClean;
 use std::fs::File;
 use std::io::prelude::*;
 use std::io::BufReader;
+use std::path::PathBuf;
 use std::sync::{Arc, Mutex};
 use weresocool_ast::{Defs, NormalForm, Normalize, Op, Term};
 use weresocool_error::{Error, ParseError};
@@ -95,7 +96,7 @@ pub fn language_to_vec_string(language: &str) -> Vec<String> {
 pub fn parse_file(
     vec_string: Vec<String>,
     prev_defs: Option<Defs>,
-    working_path: Option<String>,
+    working_path: Option<PathBuf>,
 ) -> Result<ParsedComposition, Error> {
     let mut defs: Defs = if let Some(defs) = prev_defs {
         defs
@@ -106,11 +107,9 @@ pub fn parse_file(
     let (imports_needed, composition) = handle_whitespace_and_imports(vec_string)?;
     for import in imports_needed {
         let (mut filepath, import_name) = get_filepath_and_import_name(import);
-        if let Some(wd) = working_path.clone() {
-            let mut pb = std::path::PathBuf::new();
-            pb.push(wd);
-            pb.push(filepath);
-            filepath = pb.clean().display().to_string();
+        if let Some(mut wd) = working_path.clone() {
+            wd.push(filepath);
+            filepath = wd.clean().display().to_string();
         }
         dbg!(&filepath);
         let vec_string = filename_to_vec_string(&filepath.to_string())?;

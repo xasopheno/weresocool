@@ -1,12 +1,13 @@
 use crate::ErrorInner;
 use std::fmt;
+use thiserror::Error;
 
 #[cfg(feature = "wasm")]
 use std::convert::From;
 #[cfg(feature = "wasm")]
 use wasm_bindgen::JsValue;
 
-#[derive(Debug)]
+#[derive(Debug, Error)]
 pub struct Error {
     pub inner: Box<ErrorInner>,
 }
@@ -16,16 +17,6 @@ impl fmt::Display for Error {
         write!(f, "{}", self.inner)
     }
 }
-
-// impl failure::Fail for Error {
-// fn cause(&self) -> Option<&dyn failure::Fail> {
-// self.inner.cause()
-// }
-
-// fn backtrace(&self) -> Option<&failure::Backtrace> {
-// self.inner.backtrace()
-// }
-// }
 
 #[cfg(feature = "wasm")]
 impl From<Error> for JsValue {

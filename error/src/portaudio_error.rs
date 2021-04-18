@@ -1,4 +1,3 @@
-use failure::Fail;
 use serde::{Deserialize, Serialize};
 use std::fmt;
 
@@ -8,7 +7,7 @@ impl fmt::Display for PortAudioError {
     }
 }
 
-#[derive(Serialize, Deserialize, Debug, Fail)]
+#[derive(Serialize, Deserialize, Debug)]
 #[serde(remote = "portaudio::error::Error")]
 pub enum PortAudioError {
     /// No Error
