@@ -13,39 +13,54 @@ use weresocool_instrument::renderable::{
 };
 use weresocool_instrument::StereoWaveform;
 
+type KillChannel = Option<Sender<bool>>;
+
 #[derive(Clone, Debug)]
 pub struct RenderManager {
     pub renders: [Option<Vec<RenderVoice>>; 2],
     pub current_volume: f32,
     pub past_volume: f32,
-    pub stop_channel: Sender<bool>,
+    pub kill_channel: KillChannel,
     render_idx: usize,
     read_idx: usize,
+    once: bool,
 }
 
 impl RenderManager {
-    pub const fn init(render_voices: Vec<RenderVoice>) -> Self {
+    pub const fn init(
+        render_voices: Vec<RenderVoice>,
+        kill_channel: KillChannel,
+        once: bool,
+    ) -> Self {
         Self {
             renders: [Some(render_voices), None],
             past_volume: 0.8,
             current_volume: 0.8,
             render_idx: 0,
             read_idx: 0,
+            kill_channel,
+            once,
         }
     }
 
-    pub const fn init_silent() -> Self {
+    pub const fn init_silent(kill_channel: KillChannel) -> Self {
         Self {
             renders: [None, None],
             past_volume: 0.8,
             current_volume: 0.8,
             render_idx: 0,
             read_idx: 0,
+            kill_channel,
+            once: false,
         }
     }
 
-    pub fn stop(&self) -> Result<(), SendError<bool>> {
-        self.stop_channel.send(true)
+    pub fn kill(&self) -> Result<(), SendError<bool>> {
+        if let Some(kc) = &self.kill_channel {
+            kc.send(true)
+        } else {
+            Ok(())
+        }
     }
 
     pub fn update_volume(&mut self, volume: f32) {
@@ -95,7 +110,13 @@ impl RenderManager {
                     Some((sw, ramp))
                 } else {
                     *self.current_render() = None;
-                    None
+
+                    if self.once {
+                        self.kill().expect("Not able to kill");
+                        None
+                    } else {
+                        None
+                    }
                 }
             }
             None => {
