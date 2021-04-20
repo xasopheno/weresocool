@@ -5,7 +5,8 @@ use crate::{
 };
 #[cfg(feature = "app")]
 use rayon::prelude::*;
-use std::path::PathBuf;
+use std::sync::mpsc::Sender;
+use std::{path::PathBuf, sync::mpsc::SendError};
 use weresocool_error::Error;
 use weresocool_instrument::renderable::{
     nf_to_vec_renderable, renderables_to_render_voices, RenderVoice,
@@ -17,6 +18,7 @@ pub struct RenderManager {
     pub renders: [Option<Vec<RenderVoice>>; 2],
     pub current_volume: f32,
     pub past_volume: f32,
+    pub stop_channel: Sender<bool>,
     render_idx: usize,
     read_idx: usize,
 }
@@ -40,6 +42,10 @@ impl RenderManager {
             render_idx: 0,
             read_idx: 0,
         }
+    }
+
+    pub fn stop(&self) -> Result<(), SendError<bool>> {
+        self.stop_channel.send(true)
     }
 
     pub fn update_volume(&mut self, volume: f32) {
