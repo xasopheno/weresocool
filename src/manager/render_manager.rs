@@ -13,7 +13,7 @@ use weresocool_instrument::renderable::{
 };
 use weresocool_instrument::StereoWaveform;
 
-type KillChannel = Option<Sender<bool>>;
+pub type KillChannel = Option<Sender<bool>>;
 
 #[derive(Clone, Debug)]
 pub struct RenderManager {

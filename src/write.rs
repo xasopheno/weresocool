@@ -132,11 +132,7 @@ pub fn normalize_waveform(buffer: &mut Vec<f32>) {
 pub fn write_composition_to_json(serialized: &str, filename: &str) -> std::io::Result<()> {
     let filename = filename_from_string(filename);
     dbg!(filename);
-    let mut file = File::create(format!(
-        "./renders/{}{}",
-        filename,
-        ".socool.json".to_string()
-    ))?;
+    let mut file = File::create(format!("./{}.socool.json", filename,))?;
 
     println!(
         "{}.json was written and has \
@@ -154,7 +150,7 @@ pub fn write_composition_to_csv(ops: &mut Vec<Op4D>, filename: &str) -> Result<(
     let filename = filename_from_string(filename);
     dbg!(filename);
 
-    let filename = &format!("renders/{}{}", filename, ".socool.csv".to_string());
+    let filename = &format!("{}.socool.csv", filename.to_string());
     let path = Path::new(filename);
     let mut writer = Writer::from_path(&path)?;
     for op in ops {

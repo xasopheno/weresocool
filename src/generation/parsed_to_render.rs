@@ -206,7 +206,7 @@ pub fn parsed_to_render(
 
 fn filename_to_renderpath(filename: &str) -> String {
     let path = Path::new(filename).file_stem().unwrap();
-    let f = format!("renders/{}", path.to_str().unwrap().to_string());
+    let f = format!("{}", path.to_str().unwrap().to_string());
     f
 }
 
