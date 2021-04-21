@@ -20,10 +20,11 @@ pub struct RenderManager {
     pub renders: [Option<Vec<RenderVoice>>; 2],
     pub current_volume: f32,
     pub past_volume: f32,
-    pub kill_channel: KillChannel,
     render_idx: usize,
     read_idx: usize,
+    kill_channel: KillChannel,
     once: bool,
+    kill_me: bool,
 }
 
 impl RenderManager {
@@ -40,6 +41,7 @@ impl RenderManager {
             read_idx: 0,
             kill_channel,
             once,
+            kill_me: false,
         }
     }
 
@@ -52,6 +54,7 @@ impl RenderManager {
             read_idx: 0,
             kill_channel,
             once: false,
+            kill_me: false,
         }
     }
 
@@ -81,6 +84,9 @@ impl RenderManager {
     }
 
     pub fn read(&mut self, buffer_size: usize) -> Option<(StereoWaveform, Vec<f32>)> {
+        if self.kill_me {
+            self.kill().expect("Not able to kill");
+        }
         let next = self.exists_next_render();
         let current = self.current_render();
 
@@ -112,7 +118,7 @@ impl RenderManager {
                     *self.current_render() = None;
 
                     if self.once {
-                        self.kill().expect("Not able to kill");
+                        self.kill_me = true;
                         None
                     } else {
                         None
