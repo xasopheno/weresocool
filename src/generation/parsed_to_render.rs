@@ -3,6 +3,7 @@ use crate::{
     ui::printed,
     write::{write_composition_to_mp3, write_composition_to_wav},
 };
+use std::path::PathBuf;
 
 #[cfg(feature = "app")]
 use pbr::ProgressBar;
@@ -34,8 +35,8 @@ pub enum WavType {
 
 #[derive(Clone, PartialEq, Debug)]
 pub enum RenderType {
-    Json4d,
-    Csv1d,
+    Json4d { cli: bool, output_dir: PathBuf },
+    Csv1d { cli: bool, output_dir: PathBuf },
     NfBasisAndTable,
     StereoWaveform,
     Wav(WavType),
@@ -165,12 +166,13 @@ pub fn parsed_to_render(
             )?;
             Ok(RenderReturn::Json4d("json".to_string()))
         }
-        RenderType::Csv1d => {
+        RenderType::Csv1d { output_dir, .. } => {
             to_csv(
                 &basis,
                 nf,
                 &parsed_composition.defs.clone(),
                 filename.to_string(),
+                output_dir,
             )?;
             Ok(RenderReturn::Csv1d("json".to_string()))
         }

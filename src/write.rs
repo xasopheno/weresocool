@@ -3,7 +3,7 @@ use csv::Writer;
 use std::fs::File;
 use std::io::prelude::*;
 use std::io::{BufWriter, Cursor};
-use std::path::Path;
+use std::path::PathBuf;
 use weresocool_error::Error;
 use weresocool_instrument::{Normalize, StereoWaveform};
 #[cfg(feature = "app")]
@@ -146,13 +146,17 @@ pub fn write_composition_to_json(serialized: &str, filename: &str) -> std::io::R
     Ok(())
 }
 
-pub fn write_composition_to_csv(ops: &mut Vec<Op4D>, filename: &str) -> Result<(), Error> {
+pub fn write_composition_to_csv(
+    ops: &mut Vec<Op4D>,
+    filename: &str,
+    mut output_dir: PathBuf,
+) -> Result<(), Error> {
     let filename = filename_from_string(filename);
     dbg!(filename);
 
     let filename = &format!("{}.socool.csv", filename.to_string());
-    let path = Path::new(filename);
-    let mut writer = Writer::from_path(&path)?;
+    output_dir.push(filename);
+    let mut writer = Writer::from_path(output_dir.as_path())?;
     for op in ops {
         writer
             .serialize(op.to_op_csv_1d())
