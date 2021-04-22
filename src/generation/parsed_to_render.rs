@@ -157,12 +157,13 @@ pub fn parsed_to_render(
             basis,
             parsed_composition.defs,
         )),
-        RenderType::Json4d => {
+        RenderType::Json4d { output_dir, .. } => {
             to_json(
                 &basis,
                 nf,
                 &parsed_composition.defs.clone(),
                 filename.to_string(),
+                output_dir,
             )?;
             Ok(RenderReturn::Json4d("json".to_string()))
         }
@@ -174,7 +175,7 @@ pub fn parsed_to_render(
                 filename.to_string(),
                 output_dir,
             )?;
-            Ok(RenderReturn::Csv1d("json".to_string()))
+            Ok(RenderReturn::Csv1d("csv".to_string()))
         }
         RenderType::StereoWaveform => {
             let stereo_waveform = render(&basis, nf, &parsed_composition.defs)?;

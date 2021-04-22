@@ -325,7 +325,7 @@ pub fn to_json(
         length: max_len,
     })?;
 
-    write_composition_to_json(&json, &filename)?;
+    write_composition_to_json(&json, &filename, output_dir)?;
     printed("JSON".to_string());
 
     Ok(())
