@@ -208,8 +208,7 @@ pub fn parsed_to_render(
 
 fn filename_to_renderpath(filename: &str) -> String {
     let path = Path::new(filename).file_stem().unwrap();
-    let f = format!("{}", path.to_str().unwrap().to_string());
-    f
+    path.to_str().unwrap().to_string()
 }
 
 pub fn write_audio_to_file(audio: &[u8], filename: &str, print_type: &str) {

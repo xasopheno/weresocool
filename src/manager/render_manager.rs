@@ -24,7 +24,6 @@ pub struct RenderManager {
     read_idx: usize,
     kill_channel: KillChannel,
     once: bool,
-    kill_me: bool,
 }
 
 impl RenderManager {
@@ -41,26 +40,27 @@ impl RenderManager {
             read_idx: 0,
             kill_channel,
             once,
-            kill_me: false,
         }
     }
 
-    pub const fn init_silent(kill_channel: KillChannel) -> Self {
+    pub const fn init_silent() -> Self {
         Self {
             renders: [None, None],
             past_volume: 0.8,
             current_volume: 0.8,
             render_idx: 0,
             read_idx: 0,
-            kill_channel,
+            kill_channel: None,
             once: false,
-            kill_me: false,
         }
     }
 
     pub fn kill(&self) -> Result<(), SendError<bool>> {
         if let Some(kc) = &self.kill_channel {
-            kc.send(true)
+            kc.send(true)?;
+            #[cfg(target_os = "linux")]
+            std::thread::sleep(std::time::Duration::from_millis(500));
+            Ok(())
         } else {
             Ok(())
         }
@@ -84,9 +84,6 @@ impl RenderManager {
     }
 
     pub fn read(&mut self, buffer_size: usize) -> Option<(StereoWaveform, Vec<f32>)> {
-        if self.kill_me {
-            self.kill().expect("Not able to kill");
-        }
         let next = self.exists_next_render();
         let current = self.current_render();
 
@@ -118,7 +115,7 @@ impl RenderManager {
                     *self.current_render() = None;
 
                     if self.once {
-                        self.kill_me = true;
+                        self.kill().expect("Not able to kill");
                         None
                     } else {
                         None
@@ -210,7 +207,7 @@ mod render_manager_tests {
 
     #[test]
     fn test_push_render() {
-        let mut r = RenderManager::init(render_voices_mock());
+        let mut r = RenderManager::init(render_voices_mock(), None, false);
         assert_eq!(*r.current_render(), Some(render_voices_mock()));
         assert_eq!(*r.next_render(), None);
         r.push_render(render_voices_mock());
