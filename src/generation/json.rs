@@ -304,6 +304,7 @@ pub fn to_json(
     composition: &NormalForm,
     defs: &Defs,
     filename: String,
+    output_dir: PathBuf,
 ) -> Result<(), Error> {
     banner("JSONIFY-ing".to_string(), filename.clone());
 
