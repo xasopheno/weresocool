@@ -2,6 +2,7 @@ use crate::server::types::PrintLanguage;
 use crate::server::Success;
 use actix_web::{http::StatusCode, web, HttpResponse};
 use serde::{Deserialize, Serialize};
+use std::path::PathBuf;
 use weresocool::generation::{RenderReturn, RenderType, WavType};
 use weresocool::interpretable::{InputType, Interpretable};
 
@@ -19,9 +20,21 @@ impl PrintSuccess {
 
 pub async fn print(req: web::Json<PrintLanguage>) -> HttpResponse {
     let result = if req.print_type == "mp3".to_string() {
-        InputType::Language(&req.language).make(RenderType::Wav(WavType::Mp3 { cli: false }), None)
+        InputType::Language(&req.language).make(
+            RenderType::Wav(WavType::Mp3 {
+                cli: false,
+                output_dir: PathBuf::new(),
+            }),
+            None,
+        )
     } else {
-        InputType::Language(&req.language).make(RenderType::Wav(WavType::Wav { cli: false }), None)
+        InputType::Language(&req.language).make(
+            RenderType::Wav(WavType::Wav {
+                cli: false,
+                output_dir: PathBuf::new(),
+            }),
+            None,
+        )
     };
     match result {
         Ok(render_return) => match render_return {

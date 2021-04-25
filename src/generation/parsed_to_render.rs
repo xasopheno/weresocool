@@ -12,7 +12,7 @@ use rayon::prelude::*;
 use serde::{Deserialize, Serialize};
 use std::convert::TryFrom;
 use std::fs::File;
-use std::io::prelude::*;
+use std::io::Write;
 use std::path::Path;
 #[cfg(feature = "app")]
 use std::sync::{Arc, Mutex};
@@ -29,8 +29,8 @@ const SETTINGS: Settings = default_settings();
 
 #[derive(Clone, PartialEq, Debug)]
 pub enum WavType {
-    Wav { cli: bool },
-    Mp3 { cli: bool },
+    Wav { cli: bool, output_dir: PathBuf },
+    Mp3 { cli: bool, output_dir: PathBuf },
 }
 
 #[derive(Clone, PartialEq, Debug)]
@@ -40,7 +40,7 @@ pub enum RenderType {
     NfBasisAndTable,
     StereoWaveform,
     Wav(WavType),
-    Stems,
+    Stems { cli: bool, output_dir: PathBuf },
 }
 
 #[derive(Clone, PartialEq, Debug, Deserialize, Serialize)]
@@ -118,7 +118,7 @@ pub fn parsed_to_render(
     let basis = Basis::from(parsed_composition.init);
 
     match return_type {
-        RenderType::Stems => {
+        RenderType::Stems { cli, output_dir } => {
             let nf_names = nf.names();
             let names = parsed_composition.defs.stems.clone();
             if !names.is_subset(&nf_names) {
@@ -149,6 +149,10 @@ pub fn parsed_to_render(
                     name,
                     audio: write_composition_to_mp3(stereo_waveform)?,
                 });
+            }
+
+            if cli {
+                stems_to_zip(&result, filename, output_dir).unwrap();
             }
             Ok(RenderReturn::Stems(result))
         }
@@ -182,24 +186,32 @@ pub fn parsed_to_render(
             Ok(RenderReturn::StereoWaveform(stereo_waveform))
         }
         RenderType::Wav(wav_type) => match wav_type {
-            WavType::Mp3 { cli } => {
+            WavType::Mp3 {
+                cli,
+                mut output_dir,
+            } => {
                 let stereo_waveform = render(&basis, nf, &parsed_composition.defs)?;
                 let render_return = RenderReturn::Wav(write_composition_to_mp3(stereo_waveform)?);
                 if cli {
                     let audio: Vec<u8> = Vec::try_from(render_return.clone())?;
                     let f = filename_to_renderpath(filename);
-                    println!("filename: {}", &f);
-                    write_audio_to_file(&audio, f.as_str(), "mp3")
+                    // println!("filename: {}", &output_dir);
+                    output_dir.push(format!("{}.mp3", f));
+                    write_audio_to_file(&audio, output_dir);
                 };
                 Ok(render_return)
             }
-            WavType::Wav { cli } => {
+            WavType::Wav {
+                cli,
+                mut output_dir,
+            } => {
                 let stereo_waveform = render(&basis, nf, &parsed_composition.defs)?;
                 let render_return = RenderReturn::Wav(write_composition_to_wav(stereo_waveform)?);
                 if cli {
                     let audio: Vec<u8> = Vec::try_from(render_return.clone())?;
                     let f = filename_to_renderpath(filename);
-                    write_audio_to_file(&audio, f.as_str(), "wav")
+                    output_dir.push(format!("{}.wav", f));
+                    write_audio_to_file(&audio, output_dir);
                 };
                 Ok(render_return)
             }
@@ -212,10 +224,10 @@ fn filename_to_renderpath(filename: &str) -> String {
     path.to_str().unwrap().to_string()
 }
 
-pub fn write_audio_to_file(audio: &[u8], filename: &str, print_type: &str) {
-    let mut file = File::create(format!("{}.{}", filename, print_type)).unwrap();
+pub fn write_audio_to_file(audio: &[u8], filename: PathBuf) {
+    let mut file = File::create(filename.clone()).unwrap();
     file.write_all(audio).unwrap();
-    printed(filename.to_string());
+    printed(filename.display().to_string());
 }
 
 pub fn render(
@@ -245,6 +257,34 @@ pub fn render(
     }
 
     Ok(result)
+}
+
+fn stems_to_zip(
+    stems: &Vec<Stem>,
+    filename: &str,
+    mut output_dir: PathBuf,
+) -> zip::result::ZipResult<()> {
+    output_dir.push(format!(
+        "{}.stems.zip",
+        Path::new(filename)
+            .file_name()
+            .expect("No filename")
+            .to_string_lossy()
+    ));
+    let file = File::create(std::path::Path::new(&output_dir))?;
+    let mut zip = zip::ZipWriter::new(file);
+
+    let options =
+        zip::write::FileOptions::default().compression_method(zip::CompressionMethod::Stored);
+    for stem in stems {
+        zip.start_file(format!("{}.stem.mp3", stem.name), options)?;
+        zip.write(&stem.audio)?;
+    }
+
+    // Apply the changes you've made.
+    // Dropping the `ZipWriter` will have the same effect, but may silently fail
+    zip.finish()?;
+    Ok(())
 }
 
 #[cfg(feature = "app")]

@@ -2,6 +2,7 @@ use crate::server::types::StemLanguage;
 use crate::server::Success;
 use actix_web::{http::StatusCode, web, HttpResponse};
 use serde::{Deserialize, Serialize};
+use std::path::PathBuf;
 use weresocool::generation::{RenderReturn, RenderType, Stem};
 use weresocool::interpretable::{InputType, Interpretable};
 
@@ -18,7 +19,13 @@ impl StemsSuccess {
 }
 
 pub async fn stems(req: web::Json<StemLanguage>) -> HttpResponse {
-    let result = InputType::Language(&req.language).make(RenderType::Stems, None);
+    let result = InputType::Language(&req.language).make(
+        RenderType::Stems {
+            cli: false,
+            output_dir: PathBuf::new(),
+        },
+        None,
+    );
     match result {
         Ok(render_return) => match render_return {
             RenderReturn::Stems(stems) => HttpResponse::Ok()
