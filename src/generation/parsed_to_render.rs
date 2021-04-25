@@ -260,7 +260,7 @@ pub fn render(
 }
 
 fn stems_to_zip(
-    stems: &Vec<Stem>,
+    stems: &[Stem],
     filename: &str,
     mut output_dir: PathBuf,
 ) -> zip::result::ZipResult<()> {
@@ -278,7 +278,7 @@ fn stems_to_zip(
         zip::write::FileOptions::default().compression_method(zip::CompressionMethod::Stored);
     for stem in stems {
         zip.start_file(format!("{}.stem.mp3", stem.name), options)?;
-        zip.write(&stem.audio)?;
+        zip.write_all(&stem.audio)?;
     }
 
     // Apply the changes you've made.

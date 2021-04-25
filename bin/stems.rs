@@ -28,7 +28,7 @@ fn main() -> Result<(), Error> {
     let renderables = nf_to_vec_renderable(&nf, &table, &basis)?;
     let vec_sw = generate_waveforms(renderables, true);
     for (i, sw) in vec_sw.iter().enumerate() {
-        let f = format!("{}_{}", &filename.clone().unwrap(), i);
+        let f = format!("{}_{}", &filename.unwrap(), i);
         let f = f.split('/').collect::<Vec<&str>>();
         let _f = f[f.len() - 1];
         let render_return = RenderReturn::Wav(write_composition_to_wav(sw.clone())?);
