@@ -5,6 +5,7 @@ use crate::{
 use num_rational::Rational64;
 use serde::{Deserialize, Serialize};
 use serde_json::to_string;
+use std::path::PathBuf;
 use weresocool_ast::{Defs, NameSet, NormalForm, Normalize, OscType, PointOp, ASR};
 use weresocool_error::Error;
 use weresocool_instrument::Basis;
@@ -303,6 +304,7 @@ pub fn to_json(
     composition: &NormalForm,
     defs: &Defs,
     filename: String,
+    output_dir: PathBuf,
 ) -> Result<(), Error> {
     banner("JSONIFY-ing".to_string(), filename.clone());
 
@@ -324,7 +326,7 @@ pub fn to_json(
         length: max_len,
     })?;
 
-    write_composition_to_json(&json, &filename)?;
+    write_composition_to_json(&json, &filename, output_dir)?;
     printed("JSON".to_string());
 
     Ok(())
@@ -335,6 +337,7 @@ pub fn to_csv(
     composition: &NormalForm,
     defs: &Defs,
     filename: String,
+    output_dir: PathBuf,
 ) -> Result<(), Error> {
     banner("CSV-ing".to_string(), filename.clone());
 
@@ -350,7 +353,7 @@ pub fn to_csv(
 
     normalize_op4d_1d(&mut op4d_1d, normalizer);
 
-    write_composition_to_csv(&mut op4d_1d, &filename)?;
+    write_composition_to_csv(&mut op4d_1d, &filename, output_dir)?;
 
     Ok(())
 }

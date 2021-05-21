@@ -13,24 +13,33 @@ use weresocool_instrument::renderable::{
 };
 use weresocool_instrument::StereoWaveform;
 
+pub type KillChannel = Option<Sender<bool>>;
+
 #[derive(Clone, Debug)]
 pub struct RenderManager {
     pub renders: [Option<Vec<RenderVoice>>; 2],
     pub current_volume: f32,
     pub past_volume: f32,
-    pub stop_channel: Sender<bool>,
     render_idx: usize,
     read_idx: usize,
+    kill_channel: KillChannel,
+    once: bool,
 }
 
 impl RenderManager {
-    pub const fn init(render_voices: Vec<RenderVoice>) -> Self {
+    pub const fn init(
+        render_voices: Vec<RenderVoice>,
+        kill_channel: KillChannel,
+        once: bool,
+    ) -> Self {
         Self {
             renders: [Some(render_voices), None],
             past_volume: 0.8,
             current_volume: 0.8,
             render_idx: 0,
             read_idx: 0,
+            kill_channel,
+            once,
         }
     }
 
@@ -41,11 +50,20 @@ impl RenderManager {
             current_volume: 0.8,
             render_idx: 0,
             read_idx: 0,
+            kill_channel: None,
+            once: false,
         }
     }
 
-    pub fn stop(&self) -> Result<(), SendError<bool>> {
-        self.stop_channel.send(true)
+    pub fn kill(&self) -> Result<(), SendError<bool>> {
+        if let Some(kc) = &self.kill_channel {
+            kc.send(true)?;
+            #[cfg(target_os = "linux")]
+            std::thread::sleep(std::time::Duration::from_millis(500));
+            Ok(())
+        } else {
+            Ok(())
+        }
     }
 
     pub fn update_volume(&mut self, volume: f32) {
@@ -95,7 +113,13 @@ impl RenderManager {
                     Some((sw, ramp))
                 } else {
                     *self.current_render() = None;
-                    None
+
+                    if self.once {
+                        self.kill().expect("Not able to kill");
+                        None
+                    } else {
+                        None
+                    }
                 }
             }
             None => {
@@ -183,7 +207,7 @@ mod render_manager_tests {
 
     #[test]
     fn test_push_render() {
-        let mut r = RenderManager::init(render_voices_mock());
+        let mut r = RenderManager::init(render_voices_mock(), None, false);
         assert_eq!(*r.current_render(), Some(render_voices_mock()));
         assert_eq!(*r.next_render(), None);
         r.push_render(render_voices_mock());
