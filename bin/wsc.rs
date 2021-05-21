@@ -9,9 +9,9 @@ use weresocool::{
         were_so_cool_logo,
     },
 };
-use weresocool_error::Error;
+// use weresocool_error::Error;
 
-fn main() -> Result<(), Error> {
+fn main() {
     were_so_cool_logo();
     let args = get_args();
 
@@ -43,7 +43,4 @@ fn main() -> Result<(), Error> {
     // output_stream.start()?;
     // while let true = output_stream.is_active()? {}
     // output_stream.stop()?;
-    // }
-
-    Ok(())
 }

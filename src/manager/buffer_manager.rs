@@ -185,8 +185,8 @@ mod buffer_manager_tests {
     fn test_read_with_empty_current() {
         let mut b = buffer_manager_mock();
         b.inc_buffer();
-        assert_eq!(b.exists_current_buffer(), false);
-        assert_eq!(b.exists_next_buffer(), true);
+        assert!(!b.exists_current_buffer());
+        assert!(b.exists_next_buffer());
 
         let read = b.read(2);
 
@@ -197,8 +197,8 @@ mod buffer_manager_tests {
     #[test]
     fn test_read_empty_buffer_manager() {
         let mut b = BufferManager::init_silent();
-        assert_eq!(b.exists_current_buffer(), false);
-        assert_eq!(b.exists_next_buffer(), false);
+        assert!(!b.exists_current_buffer());
+        assert!(!b.exists_next_buffer());
 
         let read = b.read(2);
 

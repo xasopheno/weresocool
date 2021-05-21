@@ -45,11 +45,11 @@ bytes = "1.0.1"
 env_logger = "0.8.2"
 test-generator = "0.3.0"
 float-cmp = "0.8.0"
-zip = "0.5.12"
+zip = { version="0.5.12", optional=true }
 
 [features]
 default=["app"]
-app=["portaudio", "weresocool_lame", "pbr", "weresocool_error/app", 
+app=["portaudio", "weresocool_lame", "pbr", "zip", "weresocool_error/app", 
   "weresocool_parser/app", "weresocool_instrument/app", "weresocool_ast/app"]
 
 wasm = ["weresocool_ast/wasm", "weresocool_instrument/wasm", "weresocool_parser/wasm", "weresocool_error/wasm"]

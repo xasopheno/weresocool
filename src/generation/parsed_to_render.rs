@@ -140,17 +140,20 @@ pub fn parsed_to_render(
             }
 
             let mut result: Vec<Stem> = vec![];
+            println!("Rendering:");
             for name in names {
+                println!("\t{}", &name);
                 let mut n = nf.clone();
                 n.solo_ops_by_name(&name);
                 let stereo_waveform = render(&basis, &n, &parsed_composition.defs)?;
 
                 result.push(Stem {
                     name,
-                    audio: write_composition_to_mp3(stereo_waveform)?,
+                    audio: write_composition_to_wav(stereo_waveform)?,
                 });
             }
 
+            #[cfg(feature = "app")]
             if cli {
                 stems_to_zip(&result, filename, output_dir).unwrap();
             }
@@ -259,6 +262,7 @@ pub fn render(
     Ok(result)
 }
 
+#[cfg(feature = "app")]
 fn stems_to_zip(
     stems: &[Stem],
     filename: &str,
@@ -277,7 +281,7 @@ fn stems_to_zip(
     let options =
         zip::write::FileOptions::default().compression_method(zip::CompressionMethod::Stored);
     for stem in stems {
-        zip.start_file(format!("{}.stem.mp3", stem.name), options)?;
+        zip.start_file(format!("{}.stem.wav", stem.name), options)?;
         zip.write_all(&stem.audio)?;
     }
 
