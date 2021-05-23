@@ -71,6 +71,9 @@ LetDef: () = {
     }
 };
 
+Lambda: Term = {
+   "\\" "`" <term: Operation> "`" => Term::Op(Lambda { term: Box::new(term) })
+}
 
 Operation: Term = {
     <op1: Operation> ">" "FitGain" <op2: ComposeOperation> => {

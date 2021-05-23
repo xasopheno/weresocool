@@ -29,6 +29,9 @@ pub enum Op {
         name: String,
         args: Vec<Term>,
     },
+    Lambda {
+        term: Box<Term>,
+    },
     //
     Noise,
     Sine {

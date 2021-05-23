@@ -23,6 +23,8 @@ impl GetLengthRatio for Op {
             | Op::Tag(_)
             | Op::Gain { .. } => Ok(Ratio::from_integer(1)),
 
+            Op::Lambda { term } => term.get_length_ratio(defs),
+
             Op::FunctionCall { .. } => {
                 let mut nf = NormalForm::init();
                 self.apply_to_normal_form(&mut nf, defs)?;
