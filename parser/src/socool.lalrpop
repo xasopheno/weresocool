@@ -71,9 +71,6 @@ LetDef: () = {
     }
 };
 
-Lambda: Term = {
-   "\\" "`" <term: Operation> "`" => Term::Op(Lambda { term: Box::new(term) })
-}
 
 Operation: Term = {
     <op1: Operation> ">" "FitGain" <op2: ComposeOperation> => {
@@ -238,6 +235,7 @@ ComposeOperation: Term = {
     <o: BaseOperation> => o,
 }
 
+
 Composeable: Term = {
   <base_operation: BaseOperation> => base_operation,
   <list: List> => Term::Lop(list),
@@ -245,6 +243,7 @@ Composeable: Term = {
 }
 
 BaseOperation: Term = {
+    "\\" "{" <term: Operation> "}" => Term::Op(Lambda { term: Box::new(term) }),
     "(" <o: Operation> ")" => o,
     <fm: Fm> <m:Rational> => Term::Op(TransposeM {m}),
     <fa: Fa> <a:Rational> => Term::Op(TransposeA {a}),

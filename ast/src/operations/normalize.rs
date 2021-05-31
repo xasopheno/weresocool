@@ -13,8 +13,10 @@ impl Normalize for Op {
     fn apply_to_normal_form(&self, input: &mut NormalForm, defs: &Defs) -> Result<(), Error> {
         match self {
             Op::AsIs => {}
-            Op::Lambda { term: _ } => {
-                unimplemented!();
+            Op::Lambda { term } => {
+                let mut nf = NormalForm::init();
+                term.apply_to_normal_form(&mut nf, defs)?;
+                *input = nf;
             }
 
             Op::Id(id) => {
