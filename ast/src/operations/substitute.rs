@@ -91,7 +91,7 @@ impl Substitute for Op {
                 operations: substitute_operations(operations.to_vec(), normal_form, defs, arg_map)?,
             })),
             Op::Lambda { term } => Ok(Term::Op(Op::Lambda {
-                term: Box::new(substitute_operations(term, normal_form, defs, arg_map)?),
+                term: Box::new(term.substitute(normal_form, defs, arg_map)?),
             })),
             _ => Ok(Term::Op(self.clone())),
         }
