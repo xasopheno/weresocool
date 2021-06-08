@@ -1,0 +1,19 @@
+{ f: 220, l: 1, g: 1, p: 0 } 
+
+thing1 = {
+  Overlay [
+    Fm 1,
+    \{
+      Seq [Fm 1, Fm 9/8, Fm 5/4]
+    }
+  ]
+}
+
+main = {
+  Lm 1 | FitLength thing1
+}
+
+expect = {
+  Lm 3
+}
+
