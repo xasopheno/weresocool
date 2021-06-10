@@ -243,7 +243,7 @@ Composeable: Term = {
 }
 
 BaseOperation: Term = {
-    "\\" "{" <term: Operation> "}" => Term::Op(Lambda { term: Box::new(term) }),
+    r"\\|Lambda" "{" <term: Operation> "}" => Term::Op(Lambda { term: Box::new(term) }),
     "(" <o: Operation> ")" => o,
     <fm: Fm> <m:Rational> => Term::Op(TransposeM {m}),
     <fa: Fa> <a:Rational> => Term::Op(TransposeA {a}),
