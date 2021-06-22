@@ -10,7 +10,7 @@ fn main() -> Result<(), ScopError> {
     let new_scope = defs.create_uuid_scope();
     defs.insert(&new_scope, "3", 3)?;
 
-    let result = defs.substitute("id");
+    let result = defs.get("id");
     dbg!(defs);
     dbg!(result);
 

@@ -25,7 +25,6 @@ mod expect {
         };
 
         let expect_term = defs
-            .terms
             .get("expect")
             .unwrap_or_else(|| panic!("\n\n  No expect in: \n  {}\n\n", input));
 
@@ -35,7 +34,7 @@ mod expect {
         };
 
         println!("\n\n\t{}\n\n", input);
-        assert_eq!(nf, *expected);
+        assert_eq!(nf, expected);
         Ok(())
     }
 

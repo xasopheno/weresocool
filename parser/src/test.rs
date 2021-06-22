@@ -4,7 +4,8 @@ pub mod test {
         parser::*,
     };
     use num_rational::Ratio;
-    use weresocool_ast::{Defs, Op, Op::*, Term::*};
+    use scop::Defs;
+    use weresocool_ast::{Op, Op::*, Term, Term::*};
 
     fn mock_init() -> String {
         "{ f: 200, l: 1.0, g: 1.0, p: 0.0 }
@@ -13,14 +14,14 @@ pub mod test {
     }
 
     fn test_parsed_operation(mut parse_str: String, expected: Op) {
-        let mut defs: Defs = Default::default();
+        let mut defs: Defs<Term> = Default::default();
 
         parse_str.push_str("}");
 
         let _result = socool::SoCoolParser::new().parse(&mut defs, &parse_str);
 
-        let main = defs.terms.get(&"main".to_string()).unwrap();
-        assert_eq!(*main, Op(expected));
+        let main = defs.get(&"main".to_string()).unwrap();
+        assert_eq!(main, Op(expected));
     }
 
     fn test_data() -> Vec<String> {
@@ -76,7 +77,7 @@ pub mod test {
     #[test]
     fn init_test() {
         let mut parse_str = mock_init();
-        let mut defs: Defs = Default::default();
+        let mut defs: Defs<Term> = Default::default();
         parse_str.push_str("AsIs }");
         let init = socool::SoCoolParser::new()
             .parse(&mut defs, &parse_str)
@@ -278,7 +279,7 @@ pub mod test {
 
     #[test]
     fn let_insert() {
-        let mut defs: Defs = Default::default();
+        let mut defs: Defs<Term> = Default::default();
         socool::SoCoolParser::new()
             .parse(
                 &mut defs,
@@ -292,9 +293,9 @@ pub mod test {
                     ",
             )
             .unwrap();
-        let thing = defs.terms.get(&"thing".to_string()).unwrap();
+        let thing = defs.get(&"thing".to_string()).unwrap();
         assert_eq!(
-            *thing,
+            thing,
             Op(Compose {
                 operations: vec![
                     Op(TransposeM {
@@ -310,7 +311,7 @@ pub mod test {
 
     //        #[test]
     //        fn let_get() {
-    //            let mut defs: Defs = Default::default();
+    //            let mut defs: Defs<Term> = Default::default();
     //            socool::SoCoolParser::new()
     //                .parse(
     //                    &mut defs,
@@ -330,7 +331,7 @@ pub mod test {
 
     #[test]
     fn fit_length_test() {
-        let mut defs: Defs = Default::default();
+        let mut defs: Defs<Term> = Default::default();
 
         let _result = socool::SoCoolParser::new().parse(
             &mut defs,
@@ -355,9 +356,9 @@ pub mod test {
                             }
                         ",
         );
-        let thing = defs.terms.get(&"main".to_string()).unwrap();
+        let thing = defs.get(&"main".to_string()).unwrap();
         assert_eq!(
-            *thing,
+            thing,
             Op(Compose {
                 operations: vec![Op(Compose {
                     operations: vec![

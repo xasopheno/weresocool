@@ -6,7 +6,8 @@ pub mod tests {
     };
     use num_rational::Rational64;
     use pretty_assertions::assert_eq;
-    use weresocool_ast::{Defs, NormalForm, Normalize, Op::*, OscType, Term::Op, ASR};
+    use scop::Defs;
+    use weresocool_ast::{NormalForm, Normalize, Op::*, OscType, Term, Term::Op, ASR};
     use weresocool_instrument::Basis;
     use weresocool_shared::helpers::cmp_vec_f64;
 
@@ -31,7 +32,7 @@ pub mod tests {
     #[test]
     fn to_vec_timed_op_test() {
         let mut normal_form = NormalForm::init();
-        let pt: Defs = Default::default();
+        let pt: Defs<Term> = Default::default();
 
         Overlay {
             operations: vec![
