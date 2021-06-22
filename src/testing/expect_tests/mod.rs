@@ -34,7 +34,7 @@ mod expect {
         };
 
         println!("\n\n\t{}\n\n", input);
-        assert_eq!(nf, expected);
+        assert_eq!(nf, *expected);
         Ok(())
     }
 

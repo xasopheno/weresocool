@@ -72,7 +72,7 @@ where
         Ok(())
     }
 
-    pub fn get(&self, id: &str) -> Option<T> {
+    pub fn get(&self, id: &str) -> Option<&T> {
         for scope in self.scopes.iter().rev() {
             let current = self
                 .defs
@@ -80,7 +80,7 @@ where
                 .expect("Named scope not found");
             let result = current.get(&id.to_string());
             if result.is_some() {
-                return result.map(T::to_owned);
+                return result;
             }
         }
 
@@ -99,7 +99,7 @@ mod tests {
         defs.insert("global", "2", 2)?;
 
         let found = defs.get("1");
-        assert_eq!(found, Some(1));
+        assert_eq!(found, Some(&1));
         let not_found = defs.get("3");
         assert_eq!(not_found, None);
         Ok(())
@@ -116,7 +116,7 @@ mod tests {
         defs.insert(&new_scope, "3", 3)?;
 
         let found = defs.get("3");
-        assert_eq!(found, Some(3));
+        assert_eq!(found, Some(&3));
         Ok(())
     }
 
@@ -131,7 +131,7 @@ mod tests {
         defs.insert(&new_scope, "1", 10)?;
 
         let found = defs.get("1");
-        assert_eq!(found, Some(10));
+        assert_eq!(found, Some(&10));
         Ok(())
     }
 }

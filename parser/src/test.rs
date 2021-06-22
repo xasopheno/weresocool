@@ -21,7 +21,7 @@ pub mod test {
         let _result = socool::SoCoolParser::new().parse(&mut defs, &parse_str);
 
         let main = defs.get(&"main".to_string()).unwrap();
-        assert_eq!(main, Op(expected));
+        assert_eq!(*main, Op(expected));
     }
 
     fn test_data() -> Vec<String> {
@@ -295,7 +295,7 @@ pub mod test {
             .unwrap();
         let thing = defs.get(&"thing".to_string()).unwrap();
         assert_eq!(
-            thing,
+            *thing,
             Op(Compose {
                 operations: vec![
                     Op(TransposeM {
@@ -358,7 +358,7 @@ pub mod test {
         );
         let thing = defs.get(&"main".to_string()).unwrap();
         assert_eq!(
-            thing,
+            *thing,
             Op(Compose {
                 operations: vec![Op(Compose {
                     operations: vec![

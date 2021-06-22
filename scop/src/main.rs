@@ -11,7 +11,7 @@ fn main() -> Result<(), ScopError> {
     defs.insert(&new_scope, "3", 3)?;
 
     let result = defs.get("id");
-    dbg!(defs);
+    dbg!(&defs);
     dbg!(result);
 
     Ok(())
