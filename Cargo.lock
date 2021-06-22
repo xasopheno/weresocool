@@ -3103,6 +3103,7 @@ dependencies = [
  "polynomials",
  "pretty_assertions",
  "rand",
+ "scop",
  "serde",
  "weresocool_error",
  "weresocool_shared",
@@ -3163,6 +3164,7 @@ dependencies = [
  "path-clean",
  "rand",
  "regex",
+ "scop",
  "weresocool_ast",
  "weresocool_error",
 ]

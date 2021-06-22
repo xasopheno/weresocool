@@ -1,14 +1,14 @@
 use crate::{
-    generator::error_non_generator, handle_id_error, ArgMap, Defs, GenOp, NormalForm, Substitute,
-    Term,
+    generator::error_non_generator, handle_id_error, ArgMap, GenOp, NormalForm, Substitute, Term,
 };
+use scop::Defs;
 use weresocool_error::Error;
 
-impl Substitute for GenOp {
+impl Substitute<Term> for GenOp {
     fn substitute(
         &self,
         normal_form: &mut NormalForm,
-        defs: &Defs,
+        defs: &Defs<Term>,
         arg_map: &ArgMap,
     ) -> Result<Term, Error> {
         match self {

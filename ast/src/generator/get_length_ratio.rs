@@ -1,13 +1,14 @@
 use crate::generator::{error_non_generator, Axis, Coefs, GenOp, Generator};
 use crate::operations::helpers::handle_id_error;
-use crate::{Defs, GetLengthRatio, Term};
+use crate::{GetLengthRatio, Term};
 use num_integer::lcm;
 use num_rational::Rational64;
 use rand::{rngs::StdRng, SeedableRng};
+use scop::Defs;
 use weresocool_error::Error;
 
-impl GetLengthRatio for GenOp {
-    fn get_length_ratio(&self, defs: &Defs) -> Result<Rational64, Error> {
+impl GetLengthRatio<Term> for GenOp {
+    fn get_length_ratio(&self, defs: &Defs<Term>) -> Result<Rational64, Error> {
         match self {
             GenOp::Named { name, seed } => {
                 let generator = handle_id_error(name.to_string(), defs, None)?;
@@ -33,7 +34,7 @@ impl GetLengthRatio for GenOp {
 }
 
 impl GenOp {
-    pub fn length(&self, defs: &Defs) -> Result<usize, Error> {
+    pub fn length(&self, defs: &Defs<Term>) -> Result<usize, Error> {
         match self {
             GenOp::Named { name, seed } => {
                 let generator = handle_id_error(name.to_string(), defs, None)?;
@@ -53,7 +54,7 @@ impl GenOp {
     pub fn get_length_ratio_genop(
         &self,
         n: Option<usize>,
-        defs: &Defs,
+        defs: &Defs<Term>,
     ) -> Result<Rational64, Error> {
         match self {
             GenOp::Named { name, seed } => {
@@ -80,7 +81,7 @@ impl GenOp {
 }
 
 impl Generator {
-    pub fn get_length(&self, n: usize, seed: u64, defs: &Defs) -> Result<Rational64, Error> {
+    pub fn get_length(&self, n: usize, seed: u64, defs: &Defs<Term>) -> Result<Rational64, Error> {
         let mut lengths = vec![Rational64::new(1, 1); n];
         let mut rng: StdRng = SeedableRng::seed_from_u64(seed);
         let mut copy = self.clone();

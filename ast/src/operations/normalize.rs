@@ -2,15 +2,16 @@ use crate::operations::Rational64;
 use crate::operations::{
     helpers::*, substitute::get_fn_arg_map, GetLengthRatio, NormalForm, Normalize, Substitute,
 };
-use crate::{Defs, FunDef, Op, OscType, Term, Term::*};
+use crate::{FunDef, Op, OscType, Term, Term::*};
 use num_rational::Ratio;
 use num_traits::CheckedMul;
+use scop::Defs;
 use weresocool_error::Error;
 use weresocool_shared::lossy_rational_mul;
 
-impl Normalize for Op {
+impl Normalize<Term> for Op {
     #[allow(clippy::cognitive_complexity)]
-    fn apply_to_normal_form(&self, input: &mut NormalForm, defs: &Defs) -> Result<(), Error> {
+    fn apply_to_normal_form(&self, input: &mut NormalForm, defs: &Defs<Term>) -> Result<(), Error> {
         match self {
             Op::AsIs => {}
 

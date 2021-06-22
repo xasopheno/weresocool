@@ -1,47 +1,55 @@
-use crate::{ArgMap, Defs, GetLengthRatio, NameSet, NormalForm, Op, OscType, PointOp, Term, ASR};
+use crate::{ArgMap, GetLengthRatio, NameSet, NormalForm, Op, OscType, PointOp, Term, ASR};
 use colored::*;
 use num_rational::{Ratio, Rational64};
+use scop::Defs;
 use std::cmp::Ordering::{Equal, Greater, Less};
 use weresocool_error::{Error, IdError};
 
-pub fn handle_id_error(id: String, defs: &Defs, arg_map: Option<&ArgMap>) -> Result<Term, Error> {
-    let arg_result = match arg_map {
-        Some(map) => map.get(&id),
-        None => None,
-    };
-    match arg_result {
-        Some(result) => match result {
-            Term::Op(Op::Id(name)) => handle_id_error(name.to_string(), defs, arg_map),
-            _ => Ok(result.to_owned()),
-        },
-        None => handle_def_error(id, defs),
-    }
+pub fn handle_id_error(
+    id: String,
+    defs: &Defs<Term>,
+    arg_map: Option<&ArgMap>,
+) -> Result<Term, Error> {
+    unimplemented!()
+    // let arg_result = match arg_map {
+    // Some(map) => map.get(&id),
+    // None => None,
+    // };
+    // match arg_result {
+    // Some(result) => match result {
+    // Term::Op(Op::Id(name)) => handle_id_error(name.to_string(), defs, arg_map),
+    // _ => Ok(result.to_owned()),
+    // },
+    // None => handle_def_error(id, defs),
+    // }
 }
 
-pub fn handle_def_error(id: String, defs: &Defs) -> Result<Term, Error> {
-    let result = defs
-        .terms
-        .get(&id)
-        .or_else(|| defs.lists.get(&id))
-        .or_else(|| defs.generators.get(&id));
-    match result {
-        Some(result) => Ok(result.to_owned()),
-        None => {
-            println!("Not able to find {} in let defs", id.red().bold());
-            Err(IdError { id }.into_error())
-        }
-    }
+pub fn handle_def_error(id: String, defs: &Defs<Term>) -> Result<Term, Error> {
+    unimplemented!()
+    // let result = defs
+    // .terms
+    // .get(&id)
+    // .or_else(|| defs.lists.get(&id))
+    // .or_else(|| defs.generators.get(&id));
+    // match result {
+    // Some(result) => Ok(result.to_owned()),
+    // None => {
+    // println!("Not able to find {} in let defs", id.red().bold());
+    // Err(IdError { id }.into_error())
+    // }
+    // }
 }
 
-pub fn handle_gen_def_error(id: String, defs: &Defs) -> Result<Term, Error> {
-    let result = defs.generators.get(&id);
-    match result {
-        Some(result) => Ok(result.to_owned()),
-        None => {
-            println!("Not able to find {} in let defs", id.red().bold());
-            Err(IdError { id }.into_error())
-        }
-    }
+pub fn handle_gen_def_error(id: String, defs: &Defs<Term>) -> Result<Term, Error> {
+    unimplemented!()
+    // let result = defs.generators.get(&id);
+    // match result {
+    // Some(result) => Ok(result.to_owned()),
+    // None => {
+    // println!("Not able to find {} in let defs", id.red().bold());
+    // Err(IdError { id }.into_error())
+    // }
+    // }
 }
 
 pub fn modulate(input: &[PointOp], modulator: &[PointOp]) -> Vec<PointOp> {
@@ -79,7 +87,11 @@ pub fn modulate(input: &[PointOp], modulator: &[PointOp]) -> Vec<PointOp> {
     result
 }
 
-pub fn pad_length(input: &mut NormalForm, max_len: Rational64, defs: &Defs) -> Result<(), Error> {
+pub fn pad_length(
+    input: &mut NormalForm,
+    max_len: Rational64,
+    defs: &Defs<Term>,
+) -> Result<(), Error> {
     let input_lr = input.get_length_ratio(defs)?;
     if max_len > Rational64::new(0, 1) && input_lr < max_len {
         for voice in input.operations.iter_mut() {

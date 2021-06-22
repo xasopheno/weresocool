@@ -1,5 +1,6 @@
 use crate::operations::{helpers::handle_id_error, ArgMap, NormalForm, Normalize, Substitute};
-use crate::{Defs, FunDef, Op, Term};
+use crate::{FunDef, Op, Term};
+use scop::Defs;
 use std::collections::HashMap;
 use weresocool_error::Error;
 
@@ -23,11 +24,11 @@ pub fn get_fn_arg_map(f: Term, args: &[Term]) -> Result<ArgMap, Error> {
     Ok(arg_map)
 }
 
-impl Substitute for Op {
+impl Substitute<Term> for Op {
     fn substitute(
         &self,
         normal_form: &mut NormalForm,
-        defs: &Defs,
+        defs: &Defs<Term>,
         arg_map: &ArgMap,
     ) -> Result<Term, Error> {
         match self {
@@ -98,7 +99,7 @@ impl Substitute for Op {
 pub fn substitute_operations(
     operations: Vec<Term>,
     normal_form: &mut NormalForm,
-    defs: &Defs,
+    defs: &Defs<Term>,
     arg_map: &ArgMap,
 ) -> Result<Vec<Term>, Error> {
     let mut result = vec![];

@@ -1,5 +1,6 @@
-use crate::{Defs, OscType, Term, ASR};
+use crate::{OscType, Term, ASR};
 use num_rational::{Ratio, Rational64};
+use scop::Defs;
 use std::{
     collections::{BTreeSet, HashMap, HashSet},
     ops::{Mul, MulAssign},
@@ -53,34 +54,38 @@ pub struct PointOp {
     pub names: NameSet,
 }
 
-pub trait Normalize {
-    fn apply_to_normal_form(&self, normal_form: &mut NormalForm, defs: &Defs) -> Result<(), Error>;
+pub trait Normalize<T> {
+    fn apply_to_normal_form(
+        &self,
+        normal_form: &mut NormalForm,
+        defs: &Defs<T>,
+    ) -> Result<(), Error>;
 }
 
-pub trait GetLengthRatio {
-    fn get_length_ratio(&self, defs: &Defs) -> Result<Rational64, Error>;
+pub trait GetLengthRatio<T> {
+    fn get_length_ratio(&self, defs: &Defs<T>) -> Result<Rational64, Error>;
 }
 
-pub trait Substitute {
+pub trait Substitute<T> {
     fn substitute(
         &self,
         normal_form: &mut NormalForm,
-        defs: &Defs,
+        defs: &Defs<T>,
         arg_map: &ArgMap,
     ) -> Result<Term, Error>;
 }
 
-impl GetLengthRatio for NormalForm {
-    fn get_length_ratio(&self, _defs: &Defs) -> Result<Rational64, Error> {
+impl GetLengthRatio<Term> for NormalForm {
+    fn get_length_ratio(&self, _defs: &Defs<Term>) -> Result<Rational64, Error> {
         Ok(self.length_ratio)
     }
 }
 
-impl Substitute for NormalForm {
+impl Substitute<Term> for NormalForm {
     fn substitute(
         &self,
         _normal_form: &mut NormalForm,
-        _defs: &Defs,
+        _defs: &Defs<Term>,
         _arg_map: &ArgMap,
     ) -> Result<Term, Error> {
         Ok(Term::Nf(self.clone()))
@@ -158,8 +163,12 @@ impl MulAssign<&NormalForm> for NormalForm {
     }
 }
 
-impl Normalize for NormalForm {
-    fn apply_to_normal_form(&self, input: &mut NormalForm, _defs: &Defs) -> Result<(), Error> {
+impl Normalize<Term> for NormalForm {
+    fn apply_to_normal_form(
+        &self,
+        input: &mut NormalForm,
+        _defs: &Defs<Term>,
+    ) -> Result<(), Error> {
         *input *= self;
         Ok(())
     }

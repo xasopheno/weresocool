@@ -1,14 +1,15 @@
 use crate::{
-    handle_id_error, join_sequence, ArgMap, Defs, GetLengthRatio, ListOp, NormalForm, Normalize,
-    Term, TermVector,
+    handle_id_error, join_sequence, ArgMap, GetLengthRatio, ListOp, NormalForm, Normalize, Term,
+    TermVector,
 };
 use num_rational::Rational64;
+use scop::Defs;
 use weresocool_error::Error;
 
 impl ListOp {
     pub fn term_vectors(
         &self,
-        defs: &Defs,
+        defs: &Defs<Term>,
         arg_map: Option<&ArgMap>,
     ) -> Result<Vec<TermVector>, Error> {
         match self {
@@ -65,8 +66,8 @@ impl ListOp {
     }
 }
 
-impl GetLengthRatio for ListOp {
-    fn get_length_ratio(&self, defs: &Defs) -> Result<Rational64, Error> {
+impl GetLengthRatio<Term> for ListOp {
+    fn get_length_ratio(&self, defs: &Defs<Term>) -> Result<Rational64, Error> {
         match self {
             ListOp::Const(terms) => terms
                 .iter()
@@ -101,7 +102,7 @@ impl ListOp {
     pub fn to_list_nf(
         &self,
         input: &mut NormalForm,
-        defs: &Defs,
+        defs: &Defs<Term>,
     ) -> Result<Vec<NormalForm>, Error> {
         match self {
             ListOp::Const(operations) => operations
@@ -154,8 +155,8 @@ impl ListOp {
     }
 }
 
-impl Normalize for ListOp {
-    fn apply_to_normal_form(&self, input: &mut NormalForm, defs: &Defs) -> Result<(), Error> {
+impl Normalize<Term> for ListOp {
+    fn apply_to_normal_form(&self, input: &mut NormalForm, defs: &Defs<Term>) -> Result<(), Error> {
         *input = join_list_nf(self.to_list_nf(input, defs)?);
         Ok(())
     }
