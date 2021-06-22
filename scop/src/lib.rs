@@ -72,7 +72,7 @@ where
         Ok(())
     }
 
-    pub fn substitute(&self, id: &str) -> Option<T> {
+    pub fn get(&self, id: &str) -> Option<T> {
         for scope in self.scopes.iter().rev() {
             let current = self
                 .defs
@@ -98,9 +98,9 @@ mod tests {
         defs.insert("global", "1", 1)?;
         defs.insert("global", "2", 2)?;
 
-        let found = defs.substitute("1");
+        let found = defs.get("1");
         assert_eq!(found, Some(1));
-        let not_found = defs.substitute("3");
+        let not_found = defs.get("3");
         assert_eq!(not_found, None);
         Ok(())
     }
@@ -115,7 +115,7 @@ mod tests {
         let new_scope = defs.create_uuid_scope();
         defs.insert(&new_scope, "3", 3)?;
 
-        let found = defs.substitute("3");
+        let found = defs.get("3");
         assert_eq!(found, Some(3));
         Ok(())
     }
@@ -130,7 +130,7 @@ mod tests {
         let new_scope = defs.create_uuid_scope();
         defs.insert(&new_scope, "1", 10)?;
 
-        let found = defs.substitute("1");
+        let found = defs.get("1");
         assert_eq!(found, Some(10));
         Ok(())
     }

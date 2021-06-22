@@ -3,6 +3,7 @@ use crate::{
     ui::printed,
     write::{write_composition_to_mp3, write_composition_to_wav},
 };
+use scop::Defs;
 use std::path::PathBuf;
 
 #[cfg(feature = "app")]
@@ -16,7 +17,7 @@ use std::io::Write;
 use std::path::Path;
 #[cfg(feature = "app")]
 use std::sync::{Arc, Mutex};
-use weresocool_ast::{Defs, NormalForm, Term};
+use weresocool_ast::{NormalForm, Term};
 use weresocool_error::{Error, IdError};
 use weresocool_instrument::renderable::{
     nf_to_vec_renderable, renderables_to_render_voices, RenderOp, Renderable,
@@ -62,7 +63,7 @@ pub enum RenderReturn {
     Csv1d(String),
     StereoWaveform(StereoWaveform),
     /// NormalForm, Basis, and Definition Table
-    NfBasisAndTable(NormalForm, Basis, Defs),
+    NfBasisAndTable(NormalForm, Basis, Defs<Term>),
     /// Wav or Mp3
     Wav(Vec<u8>),
     /// A vector of audio solo'd by names
@@ -88,7 +89,7 @@ pub fn parsed_to_render(
     parsed_composition: ParsedComposition,
     return_type: RenderType,
 ) -> Result<RenderReturn, Error> {
-    let parsed_main = parsed_composition.defs.terms.get("main");
+    let parsed_main = parsed_composition.defs.get("main");
 
     let nf = match parsed_main {
         Some(main) => match main {
@@ -119,45 +120,46 @@ pub fn parsed_to_render(
 
     match return_type {
         RenderType::Stems { cli, output_dir } => {
-            let nf_names = nf.names();
-            let names = parsed_composition.defs.stems.clone();
-            if !names.is_subset(&nf_names) {
-                let difference = names
-                    .difference(&nf_names)
-                    .into_iter()
-                    .cloned()
-                    .collect::<Vec<String>>()
-                    .join(", ");
+            unimplemented!();
+            // let nf_names = nf.names();
+            // let names = parsed_composition.defs.stems.clone();
+            // if !names.is_subset(&nf_names) {
+            // let difference = names
+            // .difference(&nf_names)
+            // .into_iter()
+            // .cloned()
+            // .collect::<Vec<String>>()
+            // .join(", ");
 
-                return Err(Error::with_msg(format!(
-                    "Stem names not found in composition: {}",
-                    difference
-                )));
-            }
+            // return Err(Error::with_msg(format!(
+            // "Stem names not found in composition: {}",
+            // difference
+            // )));
+            // }
 
-            if names.is_empty() {
-                return Err(Error::with_msg("No stems to render"));
-            }
+            // if names.is_empty() {
+            // return Err(Error::with_msg("No stems to render"));
+            // }
 
-            let mut result: Vec<Stem> = vec![];
-            println!("Rendering:");
-            for name in names {
-                println!("\t{}", &name);
-                let mut n = nf.clone();
-                n.solo_ops_by_name(&name);
-                let stereo_waveform = render(&basis, &n, &parsed_composition.defs)?;
+            // let mut result: Vec<Stem> = vec![];
+            // println!("Rendering:");
+            // for name in names {
+            // println!("\t{}", &name);
+            // let mut n = nf.clone();
+            // n.solo_ops_by_name(name.into());
+            // let stereo_waveform = render(&basis, &n, &parsed_composition.defs)?;
 
-                result.push(Stem {
-                    name,
-                    audio: write_composition_to_wav(stereo_waveform)?,
-                });
-            }
+            // result.push(Stem {
+            // name,
+            // audio: write_composition_to_wav(stereo_waveform)?,
+            // });
+            // }
 
-            #[cfg(feature = "app")]
-            if cli {
-                stems_to_zip(&result, filename, output_dir).unwrap();
-            }
-            Ok(RenderReturn::Stems(result))
+            // #[cfg(feature = "app")]
+            // if cli {
+            // stems_to_zip(&result, filename, output_dir).unwrap();
+            // }
+            // Ok(RenderReturn::Stems(result))
         }
         RenderType::NfBasisAndTable => Ok(RenderReturn::NfBasisAndTable(
             nf.clone(),
@@ -167,7 +169,7 @@ pub fn parsed_to_render(
         RenderType::Json4d { output_dir, .. } => {
             to_json(
                 &basis,
-                nf,
+                &nf,
                 &parsed_composition.defs.clone(),
                 filename.to_string(),
                 output_dir,
@@ -177,7 +179,7 @@ pub fn parsed_to_render(
         RenderType::Csv1d { output_dir, .. } => {
             to_csv(
                 &basis,
-                nf,
+                &nf,
                 &parsed_composition.defs.clone(),
                 filename.to_string(),
                 output_dir,
@@ -185,7 +187,7 @@ pub fn parsed_to_render(
             Ok(RenderReturn::Csv1d("csv".to_string()))
         }
         RenderType::StereoWaveform => {
-            let stereo_waveform = render(&basis, nf, &parsed_composition.defs)?;
+            let stereo_waveform = render(&basis, &nf, &parsed_composition.defs)?;
             Ok(RenderReturn::StereoWaveform(stereo_waveform))
         }
         RenderType::Wav(wav_type) => match wav_type {
@@ -193,7 +195,7 @@ pub fn parsed_to_render(
                 cli,
                 mut output_dir,
             } => {
-                let stereo_waveform = render(&basis, nf, &parsed_composition.defs)?;
+                let stereo_waveform = render(&basis, &nf, &parsed_composition.defs)?;
                 let render_return = RenderReturn::Wav(write_composition_to_mp3(stereo_waveform)?);
                 if cli {
                     let audio: Vec<u8> = Vec::try_from(render_return.clone())?;
@@ -208,7 +210,7 @@ pub fn parsed_to_render(
                 cli,
                 mut output_dir,
             } => {
-                let stereo_waveform = render(&basis, nf, &parsed_composition.defs)?;
+                let stereo_waveform = render(&basis, &nf, &parsed_composition.defs)?;
                 let render_return = RenderReturn::Wav(write_composition_to_wav(stereo_waveform)?);
                 if cli {
                     let audio: Vec<u8> = Vec::try_from(render_return.clone())?;
@@ -236,7 +238,7 @@ pub fn write_audio_to_file(audio: &[u8], filename: PathBuf) {
 pub fn render(
     basis: &Basis,
     composition: &NormalForm,
-    defs: &Defs,
+    defs: &Defs<Term>,
 ) -> Result<StereoWaveform, Error> {
     let renderables = nf_to_vec_renderable(composition, defs, basis)?;
     let mut voices = renderables_to_render_voices(renderables);

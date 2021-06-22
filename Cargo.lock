@@ -3067,6 +3067,7 @@ dependencies = [
  "pretty_assertions",
  "rand",
  "rayon",
+ "scop",
  "serde",
  "serde_derive",
  "serde_json",
