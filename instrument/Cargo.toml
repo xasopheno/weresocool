@@ -11,6 +11,7 @@ weresocool_ast = { path = "../ast", default_features=false, optional=true }
 weresocool_error = { path = "../error", default_features=false, optional=true }
 weresocool_parser = { path = "../parser", default_features=false, optional=true }
 weresocool_shared = { path = "../shared" }
+scop = { path = "../scop" }
 serde = { version = "1.0.119", features = ["derive"] }
 reverb = { path = "reverb" }
 rayon = "1.5.0"

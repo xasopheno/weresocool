@@ -36,14 +36,12 @@ where
         defs.insert("global".into(), IndexMap::new());
         // defs.insert("lists".into(), IndexMap::new());
         // defs.insert("generators".into(), IndexMap::new());
-        defs.insert("stems".into(), IndexMap::new());
         Self {
             defs,
             scopes: vec![
                 "global".to_string(),
                 // "list".to_string(),
                 // "generators".to_string(),
-                "stems".to_string(),
             ],
         }
     }
@@ -56,16 +54,21 @@ where
     }
 
     #[allow(dead_code)]
-    pub fn create_named_scope(&mut self, new_scope: &str) {
-        self.defs.insert(new_scope.to_string(), Def::new());
-        self.scopes.push(new_scope.to_string());
+    pub fn create_named_scope<S: Into<String> + Clone>(&mut self, new_scope: S) {
+        self.defs.insert(new_scope.clone().into(), Def::new());
+        self.scopes.push(new_scope.into());
     }
-    pub fn insert(&mut self, scope: &str, name: &str, value: T) -> Result<(), ScopError> {
+    pub fn insert<S: Into<String>>(
+        &mut self,
+        scope: &str,
+        name: S,
+        value: T,
+    ) -> Result<(), ScopError> {
         let current_scope = self
             .defs
             .entry(scope.to_string())
             .or_insert_with(IndexMap::new);
-        current_scope.insert(name.to_string(), value);
+        current_scope.insert(name.into(), value);
         Ok(())
     }
 

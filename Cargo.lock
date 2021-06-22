@@ -3135,6 +3135,7 @@ dependencies = [
  "rand",
  "rayon",
  "reverb",
+ "scop",
  "serde",
  "weresocool_ast",
  "weresocool_error",
