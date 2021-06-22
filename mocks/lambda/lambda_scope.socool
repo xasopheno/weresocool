@@ -1,39 +1,18 @@
 { f: 220, l: 1, g: 1, p: 0 } 
 
--- Here's a lambda and what would be the result below.
-simple_lambda = {
-  -- This operation brings all the frequencies up 3/2
-  Fm 3/2
-  | Overlay [
-    AsIs,
-    -- This is my lambda syntax
-    -- Since this is a lambda, you'll hear [Fm 1, Fm 9/8]
-    -- If it weren't a lambda, you'll hear  
-    \{
-      Seq [Fm 1, Fm 9/8]
-    }
-  ]
-}
-
-simple_lambda_result = {
-  Overlay [
-    Fm 3/2,
-    Seq [Fm 1, Fm 9/8]
-  ]
-}
-
-global_function_in_weresocool(a, b) = {
-  Seq [a, b]
-}
-
-complex_lambda = {
+main = {
   Seq [Fm 3/2, Fm 1, Fm 7/8]
   | Overlay [
     AsIs,
-    \(input){
+    \ (input) {
       Seq [Fm 1, Fm 9/8] | FitLength input
     }
   ]
 }
 
-
+expect = {
+  Overlay [
+    Seq [Fm 3/2, Fm 1, Fm 7/8],
+    Seq [Fm 1, Fm 9/8] | Lm 3/2 
+  ]
+}
