@@ -1,4 +1,5 @@
 use crate::{IdError, IndexError, ParseError};
+use scop::ScopError;
 use std::io;
 use thiserror::Error;
 
@@ -19,6 +20,9 @@ pub enum ErrorInner {
 
     #[error("CSV error: {0}")]
     CsvError(#[from] csv::Error),
+
+    #[error("Parse error: {0}")]
+    ScopeError(#[from] ScopError),
 
     #[error("Parse error: {0}")]
     ParseError(#[from] ParseError),

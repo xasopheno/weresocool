@@ -75,6 +75,7 @@ members = [
     "lame",
     "parser",
     "shared",
+    "scop",
     # "portaudio",
     # "portaudio/rust-portaudio-sys",
     "application/server",
