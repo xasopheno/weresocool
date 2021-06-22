@@ -3,7 +3,7 @@ use serde::{Deserialize, Serialize};
 use thiserror::Error;
 use uuid::Uuid;
 
-#[derive(Error, Debug, Deserialize, Serialize)]
+#[derive(Error, Debug, PartialEq, Deserialize, Serialize)]
 pub enum ScopError {
     #[error("`{0}`")]
     Error(String),
@@ -12,7 +12,7 @@ pub enum ScopError {
 pub type Term = i32;
 pub type Def<T> = IndexMap<String, T>;
 
-#[derive(Debug, Clone)]
+#[derive(Debug, Clone, PartialEq, Deserialize, Serialize)]
 pub struct Defs<T> {
     defs: IndexMap<String, Def<T>>,
     scopes: Vec<String>,
