@@ -1,5 +1,7 @@
 use indexmap::IndexMap;
 use serde::{Deserialize, Serialize};
+use std::iter::Rev;
+use std::slice::Iter;
 use thiserror::Error;
 use uuid::Uuid;
 
@@ -44,6 +46,16 @@ where
                 // "generators".to_string(),
             ],
         }
+    }
+
+    pub fn iter_scopes(&self) -> Rev<Iter<String>> {
+        self.scopes.iter().rev()
+    }
+
+    pub fn iter(
+        &self,
+    ) -> indexmap::map::Iter<'_, std::string::String, IndexMap<std::string::String, T>> {
+        self.defs.iter()
     }
 
     pub fn create_uuid_scope(&mut self) -> String {

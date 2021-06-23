@@ -29,42 +29,39 @@ pub struct ParsedComposition {
 
 fn process_op_table(defs: Defs<Term>) -> Result<Defs<Term>, Error> {
     let mut result: Defs<Term> = Default::default();
-    unimplemented!()
 
-    // for (name, term) in defs.terms.iter() {
-    // match term {
-    // Term::Nf(nf) => {
-    // result
-    // .terms
-    // .insert(name.to_string(), Term::Nf(nf.to_owned()));
-    // }
-    // Term::Op(op) => {
-    // let mut nf = NormalForm::init();
-    // op.apply_to_normal_form(&mut nf, &defs)?;
+    for (scope_name, scope) in defs.iter() {
+        for (name, term) in scope {
+            match term {
+                Term::Nf(nf) => {
+                    result.insert(scope_name, name, Term::Nf(nf.to_owned()))?;
+                }
+                Term::Op(op) => {
+                    let mut nf = NormalForm::init();
+                    op.apply_to_normal_form(&mut nf, &defs)?;
 
-    // result.terms.insert(name.to_string(), Term::Nf(nf));
-    // }
-    // Term::FunDef(fun) => {
-    // result
-    // .terms
-    // .insert(name.to_string(), Term::FunDef(fun.to_owned()));
-    // }
-    // Term::Lop(lop) => {
-    // let mut nf = NormalForm::init();
-    // lop.apply_to_normal_form(&mut nf, &defs)?;
-    // result.terms.insert(name.to_string(), Term::Nf(nf));
-    // }
-    // Term::Gen(gen) => {
-    // let mut nf = NormalForm::init();
-    // gen.apply_to_normal_form(&mut nf, &defs)?;
+                    result.insert(scope_name, name, Term::Nf(nf))?;
+                }
+                Term::FunDef(fun) => {
+                    result.insert(scope_name, name, Term::FunDef(fun.to_owned()))?;
+                }
+                Term::Lop(lop) => {
+                    let mut nf = NormalForm::init();
+                    lop.apply_to_normal_form(&mut nf, &defs)?;
+                    result.insert(scope_name, name.to_string(), Term::Nf(nf))?;
+                }
+                Term::Gen(gen) => {
+                    let mut nf = NormalForm::init();
+                    gen.apply_to_normal_form(&mut nf, &defs)?;
 
-    // result.terms.insert(name.to_string(), Term::Nf(nf));
-    // }
-    // };
-    // }
-    // result.stems = defs.stems;
+                    result.insert(scope_name, name.to_string(), Term::Nf(nf))?;
+                }
+            };
+        }
+        // result.stems = defs.stems;
+    }
 
-    // Ok(result)
+    Ok(result)
 }
 pub fn read_file(filename: &str) -> Result<File, Error> {
     let f = File::open(filename);

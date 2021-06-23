@@ -18,9 +18,9 @@ fn main() {
     let vec_string = filename_to_vec_string(filename).unwrap();
     let parsed = parse_file(vec_string, None, None);
 
-    // for (key, _val) in parsed.unwrap().defs.iter() {
-    // println!("\n Name: {:?}", key);
-    // }
+    for (key, _val) in parsed.unwrap().defs.iter() {
+        println!("\n name: {:?}", key);
+    }
 }
 
 #[cfg(test)]
