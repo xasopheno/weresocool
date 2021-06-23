@@ -1,5 +1,6 @@
 use indexmap::IndexMap;
 use serde::{Deserialize, Serialize};
+use std::collections::HashSet;
 use std::iter::Rev;
 use std::slice::Iter;
 use thiserror::Error;
@@ -18,6 +19,7 @@ pub type Def<T> = IndexMap<String, T>;
 pub struct Defs<T> {
     defs: IndexMap<String, Def<T>>,
     scopes: Vec<String>,
+    pub stems: HashSet<String>,
 }
 
 impl<T> Default for Defs<T>
@@ -36,16 +38,15 @@ where
     pub fn new() -> Self {
         let mut defs = IndexMap::new();
         defs.insert("global".into(), IndexMap::new());
-        // defs.insert("lists".into(), IndexMap::new());
-        // defs.insert("generators".into(), IndexMap::new());
         Self {
             defs,
-            scopes: vec![
-                "global".to_string(),
-                // "list".to_string(),
-                // "generators".to_string(),
-            ],
+            scopes: vec!["global".to_string()],
+            stems: HashSet::new(),
         }
+    }
+
+    pub fn push_stem<S: Into<String> + Clone>(&mut self, stem_name: S) {
+        self.stems.insert(stem_name.into());
     }
 
     pub fn flat_map(
@@ -82,18 +83,12 @@ where
         self.defs.insert(new_scope.clone().into(), Def::new());
         self.scopes.push(new_scope.into());
     }
-    pub fn insert<S: Into<String>>(
-        &mut self,
-        scope: &str,
-        name: S,
-        value: T,
-    ) -> Result<(), ScopError> {
+    pub fn insert<S: Into<String>>(&mut self, scope: &str, name: S, value: T) {
         let current_scope = self
             .defs
             .entry(scope.to_string())
             .or_insert_with(IndexMap::new);
         current_scope.insert(name.into(), value);
-        Ok(())
     }
 
     pub fn get(&self, id: &str) -> Option<&T> {
@@ -119,8 +114,8 @@ mod tests {
     fn it_can_insert_and_find_in_global_scope() -> Result<(), ScopError> {
         let mut defs: Defs<Term> = Defs::new();
 
-        defs.insert("global", "1", 1)?;
-        defs.insert("global", "2", 2)?;
+        defs.insert("global", "1", 1);
+        defs.insert("global", "2", 2);
 
         let found = defs.get("1");
         assert_eq!(found, Some(&1));
@@ -133,11 +128,11 @@ mod tests {
     fn it_can_insert_and_find_with_uuid_scope_name() -> Result<(), ScopError> {
         let mut defs: Defs<Term> = Defs::new();
 
-        defs.insert("global", "1", 1)?;
-        defs.insert("global", "2", 2)?;
+        defs.insert("global", "1", 1);
+        defs.insert("global", "2", 2);
 
         let new_scope = defs.create_uuid_scope();
-        defs.insert(&new_scope, "3", 3)?;
+        defs.insert(&new_scope, "3", 3);
 
         let found = defs.get("3");
         assert_eq!(found, Some(&3));
@@ -148,11 +143,11 @@ mod tests {
     fn it_finds_value_in_innermost_scope() -> Result<(), ScopError> {
         let mut defs: Defs<Term> = Defs::new();
 
-        defs.insert("global", "1", 1)?;
-        defs.insert("global", "2", 2)?;
+        defs.insert("global", "1", 1);
+        defs.insert("global", "2", 2);
 
         let new_scope = defs.create_uuid_scope();
-        defs.insert(&new_scope, "1", 10)?;
+        defs.insert(&new_scope, "1", 10);
 
         let found = defs.get("1");
         assert_eq!(found, Some(&10));

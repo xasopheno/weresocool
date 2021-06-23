@@ -34,32 +34,33 @@ fn process_op_table(defs: Defs<Term>) -> Result<Defs<Term>, Error> {
         for (name, term) in scope {
             match term {
                 Term::Nf(nf) => {
-                    result.insert(scope_name, name, Term::Nf(nf.to_owned()))?;
+                    result.insert(scope_name, name, Term::Nf(nf.to_owned()));
                 }
                 Term::Op(op) => {
                     let mut nf = NormalForm::init();
                     op.apply_to_normal_form(&mut nf, &defs)?;
 
-                    result.insert(scope_name, name, Term::Nf(nf))?;
+                    result.insert(scope_name, name, Term::Nf(nf));
                 }
                 Term::FunDef(fun) => {
-                    result.insert(scope_name, name, Term::FunDef(fun.to_owned()))?;
+                    result.insert(scope_name, name, Term::FunDef(fun.to_owned()));
                 }
                 Term::Lop(lop) => {
                     let mut nf = NormalForm::init();
                     lop.apply_to_normal_form(&mut nf, &defs)?;
-                    result.insert(scope_name, name, Term::Nf(nf))?;
+                    result.insert(scope_name, name, Term::Nf(nf));
                 }
                 Term::Gen(gen) => {
                     let mut nf = NormalForm::init();
                     gen.apply_to_normal_form(&mut nf, &defs)?;
 
-                    result.insert(scope_name, name, Term::Nf(nf))?;
+                    result.insert(scope_name, name, Term::Nf(nf));
                 }
             };
         }
-        // result.stems = defs.stems;
     }
+
+    result.stems = defs.stems;
 
     Ok(result)
 }
@@ -119,7 +120,7 @@ pub fn parse_file(
                 let mut name = import_name.clone();
                 name.push('.');
                 name.push_str(n);
-                defs.insert(scope_name, name, term.clone())?;
+                defs.insert(scope_name, name, term.clone());
             }
         }
     }

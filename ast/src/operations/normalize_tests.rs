@@ -51,8 +51,8 @@ pub mod tests {
             ],
         });
 
-        pt.insert("global", "foo", foo_tag).unwrap();
-        pt.insert("global", "bar", bar_tag.clone()).unwrap();
+        pt.insert("global", "foo", foo_tag);
+        pt.insert("global", "bar", bar_tag.clone());
 
         bar_tag.apply_to_normal_form(&mut a, &pt).unwrap();
 

@@ -120,46 +120,45 @@ pub fn parsed_to_render(
 
     match return_type {
         RenderType::Stems { cli, output_dir } => {
-            unimplemented!();
-            // let nf_names = nf.names();
-            // let names = parsed_composition.defs.stems.clone();
-            // if !names.is_subset(&nf_names) {
-            // let difference = names
-            // .difference(&nf_names)
-            // .into_iter()
-            // .cloned()
-            // .collect::<Vec<String>>()
-            // .join(", ");
+            let nf_names = nf.names();
+            let names = parsed_composition.defs.stems.clone();
+            if !names.is_subset(&nf_names) {
+                let difference = names
+                    .difference(&nf_names)
+                    .into_iter()
+                    .cloned()
+                    .collect::<Vec<String>>()
+                    .join(", ");
 
-            // return Err(Error::with_msg(format!(
-            // "Stem names not found in composition: {}",
-            // difference
-            // )));
-            // }
+                return Err(Error::with_msg(format!(
+                    "Stem names not found in composition: {}",
+                    difference
+                )));
+            }
 
-            // if names.is_empty() {
-            // return Err(Error::with_msg("No stems to render"));
-            // }
+            if names.is_empty() {
+                return Err(Error::with_msg("No stems to render"));
+            }
 
-            // let mut result: Vec<Stem> = vec![];
-            // println!("Rendering:");
-            // for name in names {
-            // println!("\t{}", &name);
-            // let mut n = nf.clone();
-            // n.solo_ops_by_name(name.into());
-            // let stereo_waveform = render(&basis, &n, &parsed_composition.defs)?;
+            let mut result: Vec<Stem> = vec![];
+            println!("Rendering:");
+            for name in names {
+                println!("\t{}", &name);
+                let mut n = nf.clone();
+                n.solo_ops_by_name(&name);
+                let stereo_waveform = render(&basis, &n, &parsed_composition.defs)?;
 
-            // result.push(Stem {
-            // name,
-            // audio: write_composition_to_wav(stereo_waveform)?,
-            // });
-            // }
+                result.push(Stem {
+                    name,
+                    audio: write_composition_to_wav(stereo_waveform)?,
+                });
+            }
 
-            // #[cfg(feature = "app")]
-            // if cli {
-            // stems_to_zip(&result, filename, output_dir).unwrap();
-            // }
-            // Ok(RenderReturn::Stems(result))
+            #[cfg(feature = "app")]
+            if cli {
+                stems_to_zip(&result, filename, output_dir).unwrap();
+            }
+            Ok(RenderReturn::Stems(result))
         }
         RenderType::NfBasisAndTable => Ok(RenderReturn::NfBasisAndTable(
             nf.clone(),
