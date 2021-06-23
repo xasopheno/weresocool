@@ -27,7 +27,7 @@ pub struct ParsedComposition {
     pub defs: Defs<Term>,
 }
 
-fn process_op_table(defs: Defs<Term>) -> Result<Defs<Term>, Error> {
+fn process_op_table(defs: &mut Defs<Term>) -> Result<Defs<Term>, Error> {
     let mut result: Defs<Term> = Default::default();
 
     for (scope_name, scope) in defs.iter() {
@@ -38,7 +38,7 @@ fn process_op_table(defs: Defs<Term>) -> Result<Defs<Term>, Error> {
                 }
                 Term::Op(op) => {
                     let mut nf = NormalForm::init();
-                    op.apply_to_normal_form(&mut nf, &defs)?;
+                    op.apply_to_normal_form(&mut nf, defs)?;
 
                     result.insert(scope_name, name, Term::Nf(nf));
                 }
@@ -47,12 +47,12 @@ fn process_op_table(defs: Defs<Term>) -> Result<Defs<Term>, Error> {
                 }
                 Term::Lop(lop) => {
                     let mut nf = NormalForm::init();
-                    lop.apply_to_normal_form(&mut nf, &defs)?;
+                    lop.apply_to_normal_form(&mut nf, defs)?;
                     result.insert(scope_name, name, Term::Nf(nf));
                 }
                 Term::Gen(gen) => {
                     let mut nf = NormalForm::init();
-                    gen.apply_to_normal_form(&mut nf, &defs)?;
+                    gen.apply_to_normal_form(&mut nf, defs)?;
 
                     result.insert(scope_name, name, Term::Nf(nf));
                 }
@@ -129,7 +129,7 @@ pub fn parse_file(
 
     match init {
         Ok(init) => {
-            let defs = process_op_table(defs)?;
+            let defs = process_op_table(&mut defs)?;
             Ok(ParsedComposition { init, defs })
         }
         Err(error) => {

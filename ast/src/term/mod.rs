@@ -13,7 +13,11 @@ pub enum Term {
 }
 
 impl Normalize<Term> for Term {
-    fn apply_to_normal_form(&self, input: &mut NormalForm, defs: &Defs<Term>) -> Result<(), Error> {
+    fn apply_to_normal_form(
+        &self,
+        input: &mut NormalForm,
+        defs: &mut Defs<Term>,
+    ) -> Result<(), Error> {
         match self {
             Term::Op(op) => op.apply_to_normal_form(input, defs),
             Term::Nf(nf) => nf.apply_to_normal_form(input, defs),
@@ -28,7 +32,7 @@ impl Substitute<Term> for Term {
     fn substitute(
         &self,
         normal_form: &mut NormalForm,
-        defs: &Defs<Term>,
+        defs: &mut Defs<Term>,
         arg_map: &ArgMap,
     ) -> Result<Term, Error> {
         match self {
@@ -42,7 +46,7 @@ impl Substitute<Term> for Term {
 }
 
 impl GetLengthRatio<Term> for Term {
-    fn get_length_ratio(&self, defs: &Defs<Term>) -> Result<Rational64, Error> {
+    fn get_length_ratio(&self, defs: &mut Defs<Term>) -> Result<Rational64, Error> {
         match self {
             Term::Op(op) => op.get_length_ratio(defs),
             Term::Nf(nf) => nf.get_length_ratio(defs),

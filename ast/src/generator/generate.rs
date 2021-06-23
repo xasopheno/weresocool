@@ -201,7 +201,7 @@ impl Generator {
         &mut self,
         nf: &NormalForm,
         n: usize,
-        defs: &Defs<Term>,
+        defs: &mut Defs<Term>,
         mut rng: &mut rand::rngs::StdRng,
     ) -> Result<Vec<NormalForm>, Error> {
         let mut result: Vec<NormalForm> = vec![];
@@ -224,7 +224,7 @@ impl GenOp {
     pub fn term_vectors_from_genop(
         self,
         n: Option<usize>,
-        defs: &Defs<Term>,
+        defs: &mut Defs<Term>,
     ) -> Result<Vec<Op>, Error> {
         match self {
             GenOp::Named { name, seed } => {
@@ -252,7 +252,7 @@ impl GenOp {
         self,
         input: &mut NormalForm,
         n: Option<usize>,
-        defs: &Defs<Term>,
+        defs: &mut Defs<Term>,
     ) -> Result<Vec<NormalForm>, Error> {
         match self {
             GenOp::Named { name, seed } => {

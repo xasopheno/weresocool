@@ -96,7 +96,7 @@ pub fn modulate(input: &[PointOp], modulator: &[PointOp]) -> Vec<PointOp> {
 pub fn pad_length(
     input: &mut NormalForm,
     max_len: Rational64,
-    defs: &Defs<Term>,
+    defs: &mut Defs<Term>,
 ) -> Result<(), Error> {
     let input_lr = input.get_length_ratio(defs)?;
     if max_len > Rational64::new(0, 1) && input_lr < max_len {

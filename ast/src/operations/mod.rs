@@ -58,25 +58,25 @@ pub trait Normalize<T> {
     fn apply_to_normal_form(
         &self,
         normal_form: &mut NormalForm,
-        defs: &Defs<T>,
+        defs: &mut Defs<T>,
     ) -> Result<(), Error>;
 }
 
 pub trait GetLengthRatio<T> {
-    fn get_length_ratio(&self, defs: &Defs<T>) -> Result<Rational64, Error>;
+    fn get_length_ratio(&self, defs: &mut Defs<T>) -> Result<Rational64, Error>;
 }
 
 pub trait Substitute<T> {
     fn substitute(
         &self,
         normal_form: &mut NormalForm,
-        defs: &Defs<T>,
+        defs: &mut Defs<T>,
         arg_map: &ArgMap,
     ) -> Result<Term, Error>;
 }
 
 impl GetLengthRatio<Term> for NormalForm {
-    fn get_length_ratio(&self, _defs: &Defs<Term>) -> Result<Rational64, Error> {
+    fn get_length_ratio(&self, _defs: &mut Defs<Term>) -> Result<Rational64, Error> {
         Ok(self.length_ratio)
     }
 }
@@ -85,7 +85,7 @@ impl Substitute<Term> for NormalForm {
     fn substitute(
         &self,
         _normal_form: &mut NormalForm,
-        _defs: &Defs<Term>,
+        _defs: &mut Defs<Term>,
         _arg_map: &ArgMap,
     ) -> Result<Term, Error> {
         Ok(Term::Nf(self.clone()))
@@ -167,7 +167,7 @@ impl Normalize<Term> for NormalForm {
     fn apply_to_normal_form(
         &self,
         input: &mut NormalForm,
-        _defs: &Defs<Term>,
+        _defs: &mut Defs<Term>,
     ) -> Result<(), Error> {
         *input *= self;
         Ok(())

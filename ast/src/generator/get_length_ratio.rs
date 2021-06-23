@@ -8,7 +8,7 @@ use scop::Defs;
 use weresocool_error::Error;
 
 impl GetLengthRatio<Term> for GenOp {
-    fn get_length_ratio(&self, defs: &Defs<Term>) -> Result<Rational64, Error> {
+    fn get_length_ratio(&self, defs: &mut Defs<Term>) -> Result<Rational64, Error> {
         match self {
             GenOp::Named { name, seed } => {
                 let generator = handle_id_error(name, defs)?;
@@ -34,7 +34,7 @@ impl GetLengthRatio<Term> for GenOp {
 }
 
 impl GenOp {
-    pub fn length(&self, defs: &Defs<Term>) -> Result<usize, Error> {
+    pub fn length(&self, defs: &mut Defs<Term>) -> Result<usize, Error> {
         match self {
             GenOp::Named { name, seed } => {
                 let generator = handle_id_error(name, defs)?;
@@ -54,7 +54,7 @@ impl GenOp {
     pub fn get_length_ratio_genop(
         &self,
         n: Option<usize>,
-        defs: &Defs<Term>,
+        defs: &mut Defs<Term>,
     ) -> Result<Rational64, Error> {
         match self {
             GenOp::Named { name, seed } => {
@@ -81,7 +81,7 @@ impl GenOp {
 }
 
 impl Generator {
-    pub fn get_length(&self, n: usize, seed: u64, defs: &Defs<Term>) -> Result<Rational64, Error> {
+    pub fn get_length(&self, n: usize, seed: u64, defs: &mut Defs<Term>) -> Result<Rational64, Error> {
         let mut lengths = vec![Rational64::new(1, 1); n];
         let mut rng: StdRng = SeedableRng::seed_from_u64(seed);
         let mut copy = self.clone();

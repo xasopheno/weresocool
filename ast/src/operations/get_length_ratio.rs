@@ -6,7 +6,7 @@ use scop::Defs;
 use weresocool_error::Error;
 
 impl GetLengthRatio<Term> for Op {
-    fn get_length_ratio(&self, defs: &Defs<Term>) -> Result<Rational64, Error> {
+    fn get_length_ratio(&self, defs: &mut Defs<Term>) -> Result<Rational64, Error> {
         match self {
             Op::AsIs {}
             | Op::AD { .. }

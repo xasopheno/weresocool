@@ -28,7 +28,7 @@ impl Substitute<Term> for Op {
     fn substitute(
         &self,
         normal_form: &mut NormalForm,
-        defs: &Defs<Term>,
+        defs: &mut Defs<Term>,
         arg_map: &ArgMap,
     ) -> Result<Term, Error> {
         match self {
@@ -99,7 +99,7 @@ impl Substitute<Term> for Op {
 pub fn substitute_operations(
     operations: Vec<Term>,
     normal_form: &mut NormalForm,
-    defs: &Defs<Term>,
+    defs: &mut Defs<Term>,
     arg_map: &ArgMap,
 ) -> Result<Vec<Term>, Error> {
     let mut result = vec![];

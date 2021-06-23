@@ -71,6 +71,12 @@ where
         self.defs.iter()
     }
 
+    pub fn iter_mut(
+        &mut self,
+    ) -> indexmap::map::IterMut<'_, std::string::String, IndexMap<std::string::String, T>> {
+        self.defs.iter_mut()
+    }
+
     pub fn create_uuid_scope(&mut self) -> String {
         let new_scope = Uuid::new_v4().to_string();
         self.defs.insert(new_scope.to_string(), Def::new());

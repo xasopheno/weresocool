@@ -9,7 +9,7 @@ use weresocool_error::Error;
 impl ListOp {
     pub fn term_vectors(
         &self,
-        defs: &Defs<Term>,
+        defs: &mut Defs<Term>,
         arg_map: Option<&ArgMap>,
     ) -> Result<Vec<TermVector>, Error> {
         match self {
@@ -68,7 +68,7 @@ impl ListOp {
 }
 
 impl GetLengthRatio<Term> for ListOp {
-    fn get_length_ratio(&self, defs: &Defs<Term>) -> Result<Rational64, Error> {
+    fn get_length_ratio(&self, defs: &mut Defs<Term>) -> Result<Rational64, Error> {
         match self {
             ListOp::Const(terms) => terms
                 .iter()
@@ -103,7 +103,7 @@ impl ListOp {
     pub fn to_list_nf(
         &self,
         input: &mut NormalForm,
-        defs: &Defs<Term>,
+        defs: &mut Defs<Term>,
     ) -> Result<Vec<NormalForm>, Error> {
         match self {
             ListOp::Const(operations) => operations
@@ -157,7 +157,7 @@ impl ListOp {
 }
 
 impl Normalize<Term> for ListOp {
-    fn apply_to_normal_form(&self, input: &mut NormalForm, defs: &Defs<Term>) -> Result<(), Error> {
+    fn apply_to_normal_form(&self, input: &mut NormalForm, defs: &mut Defs<Term>) -> Result<(), Error> {
         *input = join_list_nf(self.to_list_nf(input, defs)?);
         Ok(())
     }

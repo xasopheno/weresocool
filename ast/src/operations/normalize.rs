@@ -11,7 +11,11 @@ use weresocool_shared::lossy_rational_mul;
 
 impl Normalize<Term> for Op {
     #[allow(clippy::cognitive_complexity)]
-    fn apply_to_normal_form(&self, input: &mut NormalForm, defs: &Defs<Term>) -> Result<(), Error> {
+    fn apply_to_normal_form(
+        &self,
+        input: &mut NormalForm,
+        defs: &mut Defs<Term>,
+    ) -> Result<(), Error> {
         match self {
             Op::AsIs => {}
 

@@ -8,7 +8,7 @@ impl Substitute<Term> for ListOp {
     fn substitute(
         &self,
         normal_form: &mut NormalForm,
-        defs: &Defs<Term>,
+        defs: &mut Defs<Term>,
         arg_map: &ArgMap,
     ) -> Result<Term, Error> {
         match self {
