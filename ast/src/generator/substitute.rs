@@ -13,7 +13,8 @@ impl Substitute<Term> for GenOp {
     ) -> Result<Term, Error> {
         match self {
             GenOp::Named { name, seed } => {
-                let term = handle_id_error(name.to_string(), defs, Some(arg_map))?;
+                // let term = handle_id_error(name.to_string(), defs, Some(arg_map))?;
+                let term = handle_id_error(name, defs)?;
                 match term {
                     Term::Gen(gen) => {
                         gen.to_owned().set_seed(*seed);

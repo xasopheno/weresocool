@@ -228,7 +228,7 @@ impl GenOp {
     ) -> Result<Vec<Op>, Error> {
         match self {
             GenOp::Named { name, seed } => {
-                let generator = handle_id_error(name, defs, None)?;
+                let generator = handle_id_error(name, defs)?;
                 match generator {
                     Term::Gen(mut gen) => {
                         gen.set_seed(seed);
@@ -256,7 +256,7 @@ impl GenOp {
     ) -> Result<Vec<NormalForm>, Error> {
         match self {
             GenOp::Named { name, seed } => {
-                let generator = handle_id_error(name, defs, None)?;
+                let generator = handle_id_error(name, defs)?;
                 match generator {
                     Term::Gen(mut gen) => {
                         gen.set_seed(seed);

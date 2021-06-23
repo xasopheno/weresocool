@@ -33,7 +33,7 @@ impl GetLengthRatio<Term> for Op {
             }
 
             Op::Id(id) => {
-                let op = handle_id_error(id.to_string(), defs, None)?;
+                let op = handle_id_error(id.to_string(), defs)?;
                 op.get_length_ratio(defs)
             }
 

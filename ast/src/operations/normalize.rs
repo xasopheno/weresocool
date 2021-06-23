@@ -16,12 +16,13 @@ impl Normalize<Term> for Op {
             Op::AsIs => {}
 
             Op::Id(id) => {
-                handle_id_error(id.to_string(), defs, None)?.apply_to_normal_form(input, defs)?;
+                handle_id_error(id, defs)?.apply_to_normal_form(input, defs)?;
             }
             //
             Op::FunctionCall { name, args } => {
-                let f = handle_id_error(name.to_string(), defs, None)?;
+                let f = handle_id_error(name.to_string(), defs)?;
                 let arg_map = get_fn_arg_map(f.clone(), args)?;
+                let new_scope = defs.create_uuid_scope();
 
                 match f {
                     Term::FunDef(fun) => {

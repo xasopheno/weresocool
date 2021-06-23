@@ -21,7 +21,8 @@ impl ListOp {
                 })
                 .collect()),
             ListOp::Named(name) => {
-                let term = handle_id_error(name.to_string(), defs, arg_map)?;
+                // let term = handle_id_error(name.to_string(), defs, arg_map)?;
+                let term = handle_id_error(name.to_string(), defs)?;
                 match term {
                     Term::Lop(lop) => lop.term_vectors(defs, arg_map),
                     _ => Err(Error::with_msg("List.term_vectors() called on non-list")),
@@ -75,7 +76,7 @@ impl GetLengthRatio<Term> for ListOp {
                     Ok(acc + term.get_length_ratio(defs)?)
                 }),
             ListOp::Named(name) => {
-                let term = handle_id_error(name.to_string(), defs, None)?;
+                let term = handle_id_error(name, defs)?;
                 match term {
                     Term::Lop(lop) => lop.get_length_ratio(defs),
                     _ => Err(Error::with_msg(
@@ -115,7 +116,7 @@ impl ListOp {
                 .collect::<Result<Vec<NormalForm>, Error>>(),
 
             ListOp::Named(name) => {
-                let term = handle_id_error(name.to_string(), defs, None)?;
+                let term = handle_id_error(name, defs)?;
                 match term {
                     Term::Lop(lop) => lop.to_list_nf(input, defs),
 

@@ -11,7 +11,7 @@ impl GetLengthRatio<Term> for GenOp {
     fn get_length_ratio(&self, defs: &Defs<Term>) -> Result<Rational64, Error> {
         match self {
             GenOp::Named { name, seed } => {
-                let generator = handle_id_error(name.to_string(), defs, None)?;
+                let generator = handle_id_error(name, defs)?;
                 match generator {
                     Term::Gen(mut gen) => {
                         gen.set_seed(*seed);
@@ -37,7 +37,7 @@ impl GenOp {
     pub fn length(&self, defs: &Defs<Term>) -> Result<usize, Error> {
         match self {
             GenOp::Named { name, seed } => {
-                let generator = handle_id_error(name.to_string(), defs, None)?;
+                let generator = handle_id_error(name, defs)?;
                 match generator {
                     Term::Gen(mut gen) => {
                         gen.set_seed(*seed);
@@ -58,7 +58,7 @@ impl GenOp {
     ) -> Result<Rational64, Error> {
         match self {
             GenOp::Named { name, seed } => {
-                let generator = handle_id_error(name.to_string(), defs, None)?;
+                let generator = handle_id_error(name, defs)?;
                 match generator {
                     Term::Gen(mut gen) => {
                         gen.set_seed(*seed);

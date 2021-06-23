@@ -19,7 +19,8 @@ impl Substitute<Term> for ListOp {
                 arg_map,
             )?))),
             ListOp::Named(name) => {
-                let term = handle_id_error(name.to_string(), defs, Some(arg_map))?;
+                // let term = handle_id_error(name.to_string(), defs, Some(arg_map))?;
+                let term = handle_id_error(name, defs)?;
 
                 match term {
                     Term::Lop(lop) => lop.substitute(normal_form, defs, arg_map),

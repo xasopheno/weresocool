@@ -10,7 +10,7 @@ impl Normalize<Term> for GenOp {
     fn apply_to_normal_form(&self, input: &mut NormalForm, defs: &Defs<Term>) -> Result<(), Error> {
         match self {
             GenOp::Named { name, seed } => {
-                let term = handle_id_error(name.to_string(), defs, None)?;
+                let term = handle_id_error(name, defs)?;
                 match term {
                     Term::Gen(gen) => {
                         gen.to_owned().set_seed(*seed);
