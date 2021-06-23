@@ -48,6 +48,18 @@ where
         }
     }
 
+    pub fn flat_map(
+        &self,
+        f: Box<dyn Fn(&str, &str, &T) -> Result<(), ScopError>>,
+    ) -> Result<(), ScopError> {
+        for (scope_name, scope) in self.iter() {
+            for (name, term) in scope {
+                f(scope_name, name, term)?;
+            }
+        }
+        Ok(())
+    }
+
     pub fn iter_scopes(&self) -> Rev<Iter<String>> {
         self.scopes.iter().rev()
     }

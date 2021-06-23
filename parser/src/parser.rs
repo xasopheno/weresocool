@@ -48,13 +48,13 @@ fn process_op_table(defs: Defs<Term>) -> Result<Defs<Term>, Error> {
                 Term::Lop(lop) => {
                     let mut nf = NormalForm::init();
                     lop.apply_to_normal_form(&mut nf, &defs)?;
-                    result.insert(scope_name, name.to_string(), Term::Nf(nf))?;
+                    result.insert(scope_name, name, Term::Nf(nf))?;
                 }
                 Term::Gen(gen) => {
                     let mut nf = NormalForm::init();
                     gen.apply_to_normal_form(&mut nf, &defs)?;
 
-                    result.insert(scope_name, name.to_string(), Term::Nf(nf))?;
+                    result.insert(scope_name, name, Term::Nf(nf))?;
                 }
             };
         }
@@ -113,28 +113,15 @@ pub fn parse_file(
         dbg!(&filepath);
         let vec_string = filename_to_vec_string(&filepath.to_string())?;
         let parsed_composition = parse_file(vec_string, Some(defs.clone()), working_path.clone())?;
-        unimplemented!()
 
-        // for (key, val) in parsed_composition.defs.terms {
-        // let mut name = import_name.clone();
-        // name.push('.');
-        // name.push_str(&key);
-        // defs.terms.insert(name, val);
-        // }
-
-        // for (key, val) in parsed_composition.defs.lists {
-        // let mut name = import_name.clone();
-        // name.push('.');
-        // name.push_str(&key);
-        // defs.lists.insert(name, val);
-        // }
-
-        // for (key, val) in parsed_composition.defs.generators {
-        // let mut name = import_name.clone();
-        // name.push('.');
-        // name.push_str(&key);
-        // defs.generators.insert(name, val);
-        // }
+        for (scope_name, scope) in parsed_composition.defs.iter() {
+            for (n, term) in scope {
+                let mut name = import_name.clone();
+                name.push('.');
+                name.push_str(n);
+                defs.insert(scope_name, name, term.clone())?;
+            }
+        }
     }
 
     let init = socool::SoCoolParser::new().parse(&mut defs, &composition);
