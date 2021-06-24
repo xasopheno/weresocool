@@ -1,19 +1,15 @@
-use crate::operations::{helpers::handle_id_error, ArgMap, NormalForm, Normalize, Substitute};
+use crate::operations::{helpers::handle_id_error, NormalForm, Normalize, Substitute};
 use crate::{FunDef, Op, Term};
 use scop::Defs;
 use weresocool_error::Error;
 
-pub fn get_fn_arg_map(
-    f: Term,
-    args: &[Term],
-    defs: &mut Defs<Term>,
-    scope: String,
-) -> Result<(), Error> {
+pub fn insert_function_args(f: &Term, args: &[Term], defs: &mut Defs<Term>) -> Result<(), Error> {
     match f {
         Term::FunDef(fun) => {
             let FunDef { vars, .. } = fun;
+            let new_scope = defs.create_uuid_scope();
             for (var, arg) in vars.iter().zip(args.iter()) {
-                defs.insert(&scope, var.to_string(), arg.clone());
+                defs.insert(&new_scope, var.to_string(), arg.clone());
             }
         }
         _ => {

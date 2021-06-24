@@ -2,7 +2,7 @@ use crate::{OscType, Term, ASR};
 use num_rational::{Ratio, Rational64};
 use scop::Defs;
 use std::{
-    collections::{BTreeSet, HashMap, HashSet},
+    collections::{BTreeSet, HashSet},
     ops::{Mul, MulAssign},
 };
 use weresocool_error::Error;
@@ -19,8 +19,6 @@ pub struct NormalForm {
     pub length_ratio: Rational64,
 }
 
-/// Function Argument Map
-pub type ArgMap = HashMap<String, Term>;
 /// Set of Names associated with a Point
 pub type NameSet = BTreeSet<String>;
 

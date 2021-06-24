@@ -27,8 +27,8 @@ pub struct ParsedComposition {
     pub defs: Defs<Term>,
 }
 
-fn process_op_table(defs: &mut Defs<Term>) -> Result<Defs<Term>, Error> {
-    let mut result: Defs<Term> = defs.clone();
+fn process_op_table(mut defs: &mut Defs<Term>) -> Result<Defs<Term>, Error> {
+    let mut result: Defs<Term> = Defs::default();
 
     for (scope_name, scope) in defs.clone().iter_mut() {
         for (name, term) in scope {
@@ -38,7 +38,7 @@ fn process_op_table(defs: &mut Defs<Term>) -> Result<Defs<Term>, Error> {
                 }
                 Term::Op(op) => {
                     let mut nf = NormalForm::init();
-                    op.apply_to_normal_form(&mut nf, &mut defs.clone())?;
+                    op.apply_to_normal_form(&mut nf, &mut defs)?;
 
                     result.insert(scope_name, name, Term::Nf(nf));
                 }
@@ -60,7 +60,7 @@ fn process_op_table(defs: &mut Defs<Term>) -> Result<Defs<Term>, Error> {
         }
     }
 
-    // result.stems = defs.stems;
+    result.stems = defs.stems.to_owned();
 
     Ok(result)
 }

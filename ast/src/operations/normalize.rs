@@ -1,6 +1,6 @@
 use crate::operations::Rational64;
 use crate::operations::{
-    helpers::*, substitute::get_fn_arg_map, GetLengthRatio, NormalForm, Normalize, Substitute,
+    helpers::*, substitute::insert_function_args, GetLengthRatio, NormalForm, Normalize, Substitute,
 };
 use crate::{FunDef, Op, OscType, Term, Term::*};
 use num_rational::Ratio;
@@ -22,11 +22,9 @@ impl Normalize<Term> for Op {
             Op::Id(id) => {
                 handle_id_error(id, defs)?.apply_to_normal_form(input, defs)?;
             }
-            //
             Op::FunctionCall { name, args } => {
                 let f = handle_id_error(name.to_string(), defs)?;
-                let new_scope = defs.create_uuid_scope();
-                let arg_map = get_fn_arg_map(f.clone(), args, defs, new_scope)?;
+                insert_function_args(&f, args, defs)?;
 
                 match f {
                     Term::FunDef(fun) => {

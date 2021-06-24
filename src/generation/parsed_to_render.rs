@@ -18,7 +18,7 @@ use std::path::Path;
 #[cfg(feature = "app")]
 use std::sync::{Arc, Mutex};
 use weresocool_ast::{NormalForm, Term};
-use weresocool_error::Error;
+use weresocool_error::{Error, IdError};
 use weresocool_instrument::renderable::{
     nf_to_vec_renderable, renderables_to_render_voices, RenderOp, Renderable,
 };
@@ -89,10 +89,13 @@ pub fn parsed_to_render(
     mut parsed_composition: ParsedComposition,
     return_type: RenderType,
 ) -> Result<RenderReturn, Error> {
-    let parsed_main = parsed_composition.defs.get("main").unwrap().to_owned();
+    let parsed_main = parsed_composition.defs.get("main");
 
-    let nf = match parsed_main {
-        // Some(main) => match main {
+    if parsed_main.is_none() {
+        return Err(IdError { id: "main".into() }.into_error());
+    };
+
+    let nf = match parsed_main.unwrap().to_owned() {
         Term::Nf(nf) => nf,
         Term::Op(_) => {
             println!("main is not in Normal Form for some terrible reason.");
@@ -107,13 +110,6 @@ pub fn parsed_to_render(
             return Err(Error::with_msg("main as list not yet supported"));
         }
         _ => unimplemented!(),
-        // };
-        // None => {
-        // return Err(IdError {
-        // id: "main".to_string(),
-        // }
-        // .into_error())
-        // }
     };
 
     let basis = Basis::from(parsed_composition.init);
@@ -161,7 +157,7 @@ pub fn parsed_to_render(
             Ok(RenderReturn::Stems(result))
         }
         RenderType::NfBasisAndTable => Ok(RenderReturn::NfBasisAndTable(
-            nf.clone(),
+            nf,
             basis,
             parsed_composition.defs,
         )),
@@ -169,7 +165,7 @@ pub fn parsed_to_render(
             to_json(
                 &basis,
                 &nf,
-                &mut parsed_composition.defs.clone(),
+                &mut parsed_composition.defs,
                 filename.to_string(),
                 output_dir,
             )?;
@@ -179,7 +175,7 @@ pub fn parsed_to_render(
             to_csv(
                 &basis,
                 &nf,
-                &mut parsed_composition.defs.clone(),
+                &mut parsed_composition.defs,
                 filename.to_string(),
                 output_dir,
             )?;

@@ -1,4 +1,5 @@
-use scop::{Defs, ScopError, Term};
+use scop::{Defs, ScopError};
+pub type Term = i32;
 
 fn main() -> Result<(), ScopError> {
     println!("Scop!");
@@ -10,7 +11,7 @@ fn main() -> Result<(), ScopError> {
     let new_scope = defs.create_uuid_scope();
     defs.insert(&new_scope, "3", 3);
 
-    let result = defs.get("id");
+    let result = defs.get("3");
     dbg!(&defs);
     dbg!(result);
 

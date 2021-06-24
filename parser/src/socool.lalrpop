@@ -66,9 +66,9 @@ LetDef: () = {
         defs.insert("global", name.to_owned(), Term::Gen(generator)); ()
     },
 
-//    <stems: Stems> =>{
-//      defs.stems.extend(stems); ()
-//    }
+    <stems: Stems> =>{
+      defs.stems.extend(stems); ()
+    }
 };
 
 

@@ -11,49 +11,15 @@ use weresocool_error::{Error, IdError};
 pub fn handle_id_error<S: Into<String> + Clone + Display>(
     id: S,
     defs: &Defs<Term>,
-    // arg_map: Option<&ArgMap>,
 ) -> Result<Term, Error> {
     match defs.get(&id.clone().into()) {
         Some(result) => Ok(result.to_owned()),
         None => {
             println!(
                 "Not able to find {} in let defs",
-                id.clone().to_string().red().bold()
+                id.to_string().red().bold()
             );
             Err(IdError { id: id.into() }.into_error())
-        }
-    }
-    // let arg_result = match arg_map {
-    // Some(map) => map.get(&id),
-    // None => None,
-    // };
-    // match arg_result {
-    // Some(result) => match result {
-    // Term::Op(Op::Id(name)) => handle_id_error(name.to_string(), defs, arg_map),
-    // _ => Ok(result.to_owned()),
-    // },
-    // None => handle_def_error(id, defs),
-    // }
-}
-
-pub fn handle_def_error(id: String, defs: &Defs<Term>) -> Result<Term, Error> {
-    let result = defs.get(&id);
-    match result {
-        Some(result) => Ok(result.to_owned()),
-        None => {
-            println!("Not able to find {} in let defs", id.red().bold());
-            Err(IdError { id }.into_error())
-        }
-    }
-}
-
-pub fn handle_gen_def_error(id: String, defs: &Defs<Term>) -> Result<Term, Error> {
-    let result = defs.get(&id);
-    match result {
-        Some(result) => Ok(result.to_owned()),
-        None => {
-            println!("Not able to find {} in let defs", id.red().bold());
-            Err(IdError { id }.into_error())
         }
     }
 }

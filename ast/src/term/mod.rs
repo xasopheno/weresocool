@@ -1,4 +1,4 @@
-use crate::{ArgMap, FunDef, GenOp, GetLengthRatio, ListOp, NormalForm, Normalize, Op, Substitute};
+use crate::{FunDef, GenOp, GetLengthRatio, ListOp, NormalForm, Normalize, Op, Substitute};
 use num_rational::Rational64;
 use scop::Defs;
 use weresocool_error::Error;

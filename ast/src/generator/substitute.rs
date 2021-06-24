@@ -1,6 +1,4 @@
-use crate::{
-    generator::error_non_generator, handle_id_error, ArgMap, GenOp, NormalForm, Substitute, Term,
-};
+use crate::{generator::error_non_generator, handle_id_error, GenOp, NormalForm, Substitute, Term};
 use scop::Defs;
 use weresocool_error::Error;
 
@@ -12,7 +10,6 @@ impl Substitute<Term> for GenOp {
     ) -> Result<Term, Error> {
         match self {
             GenOp::Named { name, seed } => {
-                // let term = handle_id_error(name.to_string(), defs, Some(arg_map))?;
                 let term = handle_id_error(name, defs)?;
                 match term {
                     Term::Gen(gen) => {

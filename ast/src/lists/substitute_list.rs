@@ -1,4 +1,4 @@
-use crate::operations::{helpers::handle_id_error, ArgMap, NormalForm, Normalize, Substitute};
+use crate::operations::{helpers::handle_id_error, NormalForm, Normalize, Substitute};
 use crate::substitute_operations;
 use crate::{ListOp, Term};
 use scop::Defs;
@@ -17,7 +17,6 @@ impl Substitute<Term> for ListOp {
                 defs,
             )?))),
             ListOp::Named(name) => {
-                // let term = handle_id_error(name.to_string(), defs, Some(arg_map))?;
                 let term = handle_id_error(name, defs)?;
 
                 match term {
@@ -26,7 +25,7 @@ impl Substitute<Term> for ListOp {
                 }
             }
             ListOp::ListOpIndexed { .. } => Ok(Term::Lop(ListOp::Const(
-                self.term_vectors(defs, None)?
+                self.term_vectors(defs)?
                     .iter_mut()
                     .map(|term_vector| {
                         let mut nf = normal_form.clone();

@@ -22,10 +22,10 @@ pub enum ErrorInner {
     CsvError(#[from] csv::Error),
 
     #[error("Parse error: {0}")]
-    ScopeError(#[from] ScopError),
-
-    #[error("Parse error: {0}")]
     ParseError(#[from] ParseError),
+
+    #[error("Id error: {0}")]
+    ScopeError(#[from] ScopError),
 
     #[error("Id error: {0}")]
     IdError(#[from] IdError),

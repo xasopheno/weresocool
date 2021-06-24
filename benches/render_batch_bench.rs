@@ -13,7 +13,7 @@ fn render_batch_bench(c: &mut Criterion) {
     let filename = "songs/test/render_op_get_batch.socool".to_string();
     c.bench_function("render_batch", |b| {
         b.iter(|| {
-            let (nf, basis, table) = match Filename(&filename)
+            let (nf, basis, mut table) = match Filename(&filename)
                 .make(RenderType::NfBasisAndTable, None)
                 .unwrap()
             {
@@ -23,7 +23,7 @@ fn render_batch_bench(c: &mut Criterion) {
                 }
             };
 
-            let renderables = nf_to_vec_renderable(&nf, &table, &basis).unwrap();
+            let renderables = nf_to_vec_renderable(&nf, &mut table, &basis).unwrap();
             let mut voices1 = renderables_to_render_voices(renderables);
             let _r: Vec<StereoWaveform> = voices1
                 .iter_mut()

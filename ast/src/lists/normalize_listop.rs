@@ -1,17 +1,12 @@
 use crate::{
-    handle_id_error, join_sequence, ArgMap, GetLengthRatio, ListOp, NormalForm, Normalize, Term,
-    TermVector,
+    handle_id_error, join_sequence, GetLengthRatio, ListOp, NormalForm, Normalize, Term, TermVector,
 };
 use num_rational::Rational64;
 use scop::Defs;
 use weresocool_error::Error;
 
 impl ListOp {
-    pub fn term_vectors(
-        &self,
-        defs: &mut Defs<Term>,
-        arg_map: Option<&ArgMap>,
-    ) -> Result<Vec<TermVector>, Error> {
+    pub fn term_vectors(&self, defs: &mut Defs<Term>) -> Result<Vec<TermVector>, Error> {
         match self {
             ListOp::Const(terms) => Ok(terms
                 .iter()
@@ -21,15 +16,14 @@ impl ListOp {
                 })
                 .collect()),
             ListOp::Named(name) => {
-                // let term = handle_id_error(name.to_string(), defs, arg_map)?;
                 let term = handle_id_error(name.to_string(), defs)?;
                 match term {
-                    Term::Lop(lop) => lop.term_vectors(defs, arg_map),
+                    Term::Lop(lop) => lop.term_vectors(defs),
                     _ => Err(Error::with_msg("List.term_vectors() called on non-list")),
                 }
             }
             ListOp::ListOpIndexed { list_op, indices } => {
-                let term_vectors = list_op.term_vectors(defs, arg_map)?;
+                let term_vectors = list_op.term_vectors(defs)?;
                 let index_vectors = indices.vectorize(term_vectors.len())?;
 
                 Ok(index_vectors
@@ -46,7 +40,7 @@ impl ListOp {
             ListOp::Concat(lists) => {
                 let mut result = vec![];
                 for list in lists {
-                    result.extend(list.term_vectors(defs, arg_map)?)
+                    result.extend(list.term_vectors(defs)?)
                 }
 
                 Ok(result)
@@ -127,7 +121,7 @@ impl ListOp {
                 }
             }
             ListOp::ListOpIndexed { .. } => self
-                .term_vectors(defs, None)?
+                .term_vectors(defs)?
                 .iter_mut()
                 .map(|term_vector| {
                     let mut nf = input.clone();
@@ -157,7 +151,11 @@ impl ListOp {
 }
 
 impl Normalize<Term> for ListOp {
-    fn apply_to_normal_form(&self, input: &mut NormalForm, defs: &mut Defs<Term>) -> Result<(), Error> {
+    fn apply_to_normal_form(
+        &self,
+        input: &mut NormalForm,
+        defs: &mut Defs<Term>,
+    ) -> Result<(), Error> {
         *input = join_list_nf(self.to_list_nf(input, defs)?);
         Ok(())
     }
