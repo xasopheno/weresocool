@@ -21,11 +21,11 @@ fn main() -> Result<(), Error> {
     }
 
     let render_return = Filename(filename.unwrap()).make(RenderType::NfBasisAndTable, None)?;
-    let (nf, basis, table) = match render_return {
+    let (nf, basis, mut table) = match render_return {
         RenderReturn::NfBasisAndTable(nf, basis, table) => (nf, basis, table),
         _ => panic!("huh"),
     };
-    let renderables = nf_to_vec_renderable(&nf, &table, &basis)?;
+    let renderables = nf_to_vec_renderable(&nf, &mut table, &basis)?;
     let vec_sw = generate_waveforms(renderables, true);
     for (i, sw) in vec_sw.iter().enumerate() {
         let f = format!("{}_{}", &filename.unwrap(), i);

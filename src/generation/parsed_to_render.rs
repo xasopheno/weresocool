@@ -18,7 +18,7 @@ use std::path::Path;
 #[cfg(feature = "app")]
 use std::sync::{Arc, Mutex};
 use weresocool_ast::{NormalForm, Term};
-use weresocool_error::{Error, IdError};
+use weresocool_error::Error;
 use weresocool_instrument::renderable::{
     nf_to_vec_renderable, renderables_to_render_voices, RenderOp, Renderable,
 };
@@ -86,34 +86,34 @@ impl TryFrom<RenderReturn> for Vec<u8> {
 /// The filename is only used to for naming things when needed.
 pub fn parsed_to_render(
     filename: &str,
-    parsed_composition: ParsedComposition,
+    mut parsed_composition: ParsedComposition,
     return_type: RenderType,
 ) -> Result<RenderReturn, Error> {
-    let parsed_main = parsed_composition.defs.get("main");
+    let parsed_main = parsed_composition.defs.get("main").unwrap().to_owned();
 
     let nf = match parsed_main {
-        Some(main) => match main {
-            Term::Nf(nf) => nf,
-            Term::Op(_) => {
-                println!("main is not in Normal Form for some terrible reason.");
-                return Err(Error::with_msg("Unrecoverable Error"));
-            }
-            Term::FunDef(_) => {
-                println!("main as function not yet supported.");
-                return Err(Error::with_msg("main as function not yet supported"));
-            }
-            Term::Lop(_) => {
-                println!("main as list not yet supported.");
-                return Err(Error::with_msg("main as list not yet supported"));
-            }
-            _ => unimplemented!(),
-        },
-        None => {
-            return Err(IdError {
-                id: "main".to_string(),
-            }
-            .into_error())
+        // Some(main) => match main {
+        Term::Nf(nf) => nf,
+        Term::Op(_) => {
+            println!("main is not in Normal Form for some terrible reason.");
+            return Err(Error::with_msg("Unrecoverable Error"));
         }
+        Term::FunDef(_) => {
+            println!("main as function not yet supported.");
+            return Err(Error::with_msg("main as function not yet supported"));
+        }
+        Term::Lop(_) => {
+            println!("main as list not yet supported.");
+            return Err(Error::with_msg("main as list not yet supported"));
+        }
+        _ => unimplemented!(),
+        // };
+        // None => {
+        // return Err(IdError {
+        // id: "main".to_string(),
+        // }
+        // .into_error())
+        // }
     };
 
     let basis = Basis::from(parsed_composition.init);
@@ -168,7 +168,7 @@ pub fn parsed_to_render(
         RenderType::Json4d { output_dir, .. } => {
             to_json(
                 &basis,
-                nf,
+                &nf,
                 &mut parsed_composition.defs.clone(),
                 filename.to_string(),
                 output_dir,
@@ -178,7 +178,7 @@ pub fn parsed_to_render(
         RenderType::Csv1d { output_dir, .. } => {
             to_csv(
                 &basis,
-                nf,
+                &nf,
                 &mut parsed_composition.defs.clone(),
                 filename.to_string(),
                 output_dir,
@@ -186,7 +186,7 @@ pub fn parsed_to_render(
             Ok(RenderReturn::Csv1d("csv".to_string()))
         }
         RenderType::StereoWaveform => {
-            let stereo_waveform = render(&basis, nf, &mut parsed_composition.defs)?;
+            let stereo_waveform = render(&basis, &nf, &mut parsed_composition.defs)?;
             Ok(RenderReturn::StereoWaveform(stereo_waveform))
         }
         RenderType::Wav(wav_type) => match wav_type {
@@ -194,7 +194,7 @@ pub fn parsed_to_render(
                 cli,
                 mut output_dir,
             } => {
-                let stereo_waveform = render(&basis, nf, &mut parsed_composition.defs)?;
+                let stereo_waveform = render(&basis, &nf, &mut parsed_composition.defs)?;
                 let render_return = RenderReturn::Wav(write_composition_to_mp3(stereo_waveform)?);
                 if cli {
                     let audio: Vec<u8> = Vec::try_from(render_return.clone())?;
@@ -209,7 +209,7 @@ pub fn parsed_to_render(
                 cli,
                 mut output_dir,
             } => {
-                let stereo_waveform = render(&basis, nf, &mut parsed_composition.defs)?;
+                let stereo_waveform = render(&basis, &nf, &mut parsed_composition.defs)?;
                 let render_return = RenderReturn::Wav(write_composition_to_wav(stereo_waveform)?);
                 if cli {
                     let audio: Vec<u8> = Vec::try_from(render_return.clone())?;

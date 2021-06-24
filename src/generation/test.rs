@@ -32,7 +32,7 @@ pub mod tests {
     #[test]
     fn to_vec_timed_op_test() {
         let mut normal_form = NormalForm::init();
-        let pt: Defs<Term> = Default::default();
+        let mut pt: Defs<Term> = Default::default();
 
         Overlay {
             operations: vec![
@@ -59,10 +59,10 @@ pub mod tests {
                 }),
             ],
         }
-        .apply_to_normal_form(&mut normal_form, &pt)
+        .apply_to_normal_form(&mut normal_form, &mut pt)
         .unwrap();
 
-        let timed_ops = composition_to_vec_timed_op(&normal_form, &pt).unwrap();
+        let timed_ops = composition_to_vec_timed_op(&normal_form, &mut pt).unwrap();
 
         let op = TimedOp {
             fm: Rational64::new(1, 1),

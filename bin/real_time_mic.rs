@@ -25,12 +25,12 @@ fn main() -> Result<(), Error> {
         _ => no_file_name(),
     }
 
-    let (nf, basis, table) =
+    let (nf, basis, mut table) =
         match Filename(filename.unwrap()).make(RenderType::NfBasisAndTable, None)? {
             RenderReturn::NfBasisAndTable(nf, basis, table) => (nf, basis, table),
             _ => panic!("Error. Unable to generate NormalForm"),
         };
-    let renderables = nf_to_vec_renderable(&nf, &table, &basis)?;
+    let renderables = nf_to_vec_renderable(&nf, &mut table, &basis)?;
 
     println!("\nGenerating Composition ");
     let mut duplex_stream = duplex_setup(r_to_f64(basis.f), renderables)?;

@@ -71,7 +71,7 @@ mod tests {
 
     #[test]
     fn test_nf_to_vec_renderable() {
-        let (nf, basis, table) = match Filename(&"songs/test/render_op.socool".to_string())
+        let (nf, basis, mut table) = match Filename(&"songs/test/render_op.socool".to_string())
             .make(RenderType::NfBasisAndTable, None)
             .unwrap()
         {
@@ -80,7 +80,7 @@ mod tests {
                 panic!("missing songs/tests/render_op.socool");
             }
         };
-        let result = nf_to_vec_renderable(&nf, &table, &basis).unwrap();
+        let result = nf_to_vec_renderable(&nf, &mut table, &basis).unwrap();
         let expected: Vec<Vec<RenderOp>> = vec![vec![
             RenderOp {
                 f: 220.0,
@@ -149,7 +149,7 @@ mod tests {
     #[test]
     fn test_get_batch() {
         let filename = "songs/test/render_op_get_batch_simple.socool".to_string();
-        let (nf, basis, table) = match Filename(&filename)
+        let (nf, basis, mut table) = match Filename(&filename)
             .make(RenderType::NfBasisAndTable, None)
             .unwrap()
         {
@@ -158,7 +158,7 @@ mod tests {
                 panic!();
             }
         };
-        let renderables = nf_to_vec_renderable(&nf, &table, &basis).unwrap();
+        let renderables = nf_to_vec_renderable(&nf, &mut table, &basis).unwrap();
         let voices = renderables_to_render_voices(renderables);
         let mut voice = voices[0].clone();
         //Two ops each with 44_100 samples
@@ -189,7 +189,7 @@ mod tests {
     #[test]
     fn test_small_and_large_render_batch_same_result() {
         let filename = "songs/test/render_op_get_batch_simple.socool".to_string();
-        let (nf, basis, table) = match Filename(&filename)
+        let (nf, basis, mut table) = match Filename(&filename)
             .make(RenderType::NfBasisAndTable, None)
             .unwrap()
         {
@@ -199,7 +199,7 @@ mod tests {
             }
         };
 
-        let renderables = nf_to_vec_renderable(&nf, &table, &basis).unwrap();
+        let renderables = nf_to_vec_renderable(&nf, &mut table, &basis).unwrap();
         let mut voices1 = renderables_to_render_voices(renderables);
         let mut voices2 = voices1.clone();
 
