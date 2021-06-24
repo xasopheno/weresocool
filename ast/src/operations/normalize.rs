@@ -25,15 +25,15 @@ impl Normalize<Term> for Op {
             //
             Op::FunctionCall { name, args } => {
                 let f = handle_id_error(name.to_string(), defs)?;
-                let arg_map = get_fn_arg_map(f.clone(), args)?;
                 let new_scope = defs.create_uuid_scope();
+                let arg_map = get_fn_arg_map(f.clone(), args, defs, new_scope)?;
 
                 match f {
                     Term::FunDef(fun) => {
                         let FunDef { term, .. } = fun;
                         match *term {
                             Term::Op(op) => {
-                                let result_op = op.substitute(input, defs, &arg_map)?;
+                                let result_op = op.substitute(input, defs)?;
                                 result_op.apply_to_normal_form(input, defs)?
                             }
                             Term::Nf(_) => {
@@ -45,11 +45,11 @@ impl Normalize<Term> for Op {
                                 return Err(Error::with_msg("Function Op stored in FunDef"));
                             }
                             Term::Lop(lop) => {
-                                let result = lop.substitute(input, defs, &arg_map)?;
+                                let result = lop.substitute(input, defs)?;
                                 result.apply_to_normal_form(input, defs)?
                             }
                             Term::Gen(gen_op) => {
-                                let result = gen_op.substitute(input, defs, &arg_map)?;
+                                let result = gen_op.substitute(input, defs)?;
                                 result.apply_to_normal_form(input, defs)?
                             }
                         }

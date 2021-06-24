@@ -30,7 +30,7 @@ pub struct ParsedComposition {
 fn process_op_table(defs: &mut Defs<Term>) -> Result<Defs<Term>, Error> {
     let mut result: Defs<Term> = defs.clone();
 
-    for (scope_name, scope) in defs.iter_mut() {
+    for (scope_name, scope) in defs.clone().iter_mut() {
         for (name, term) in scope {
             match term {
                 Term::Nf(nf) => {
@@ -38,7 +38,7 @@ fn process_op_table(defs: &mut Defs<Term>) -> Result<Defs<Term>, Error> {
                 }
                 Term::Op(op) => {
                     let mut nf = NormalForm::init();
-                    op.apply_to_normal_form(&mut nf, &mut result)?;
+                    op.apply_to_normal_form(&mut nf, &mut defs.clone())?;
 
                     result.insert(scope_name, name, Term::Nf(nf));
                 }
@@ -47,12 +47,12 @@ fn process_op_table(defs: &mut Defs<Term>) -> Result<Defs<Term>, Error> {
                 }
                 Term::Lop(lop) => {
                     let mut nf = NormalForm::init();
-                    lop.apply_to_normal_form(&mut nf, &mut result)?;
+                    lop.apply_to_normal_form(&mut nf, &mut defs.clone())?;
                     result.insert(scope_name, name, Term::Nf(nf));
                 }
                 Term::Gen(gen) => {
                     let mut nf = NormalForm::init();
-                    gen.apply_to_normal_form(&mut nf, &mut result)?;
+                    gen.apply_to_normal_form(&mut nf, &mut defs.clone())?;
 
                     result.insert(scope_name, name, Term::Nf(nf));
                 }

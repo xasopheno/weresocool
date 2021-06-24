@@ -9,7 +9,6 @@ impl Substitute<Term> for GenOp {
         &self,
         normal_form: &mut NormalForm,
         defs: &mut Defs<Term>,
-        arg_map: &ArgMap,
     ) -> Result<Term, Error> {
         match self {
             GenOp::Named { name, seed } => {
@@ -25,7 +24,7 @@ impl Substitute<Term> for GenOp {
             }
             GenOp::Const { .. } => Ok(Term::Gen(self.to_owned())),
             GenOp::Taken { n, gen, seed } => {
-                let term = gen.substitute(normal_form, defs, arg_map)?;
+                let term = gen.substitute(normal_form, defs)?;
                 match term {
                     Term::Gen(gen) => Ok(Term::Gen(GenOp::Taken {
                         n: *n,

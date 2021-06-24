@@ -33,14 +33,13 @@ impl Substitute<Term> for Term {
         &self,
         normal_form: &mut NormalForm,
         defs: &mut Defs<Term>,
-        arg_map: &ArgMap,
     ) -> Result<Term, Error> {
         match self {
-            Term::Op(op) => op.substitute(normal_form, defs, arg_map),
-            Term::Nf(nf) => nf.substitute(normal_form, defs, arg_map),
+            Term::Op(op) => op.substitute(normal_form, defs),
+            Term::Nf(nf) => nf.substitute(normal_form, defs),
             Term::FunDef(_fun) => Err(Error::with_msg("Cannot call substitute on FunDef.")),
-            Term::Lop(lop) => lop.substitute(normal_form, defs, arg_map),
-            Term::Gen(gen) => gen.substitute(normal_form, defs, arg_map),
+            Term::Lop(lop) => lop.substitute(normal_form, defs),
+            Term::Gen(gen) => gen.substitute(normal_form, defs),
         }
     }
 }
