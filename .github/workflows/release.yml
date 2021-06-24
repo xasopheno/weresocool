@@ -29,6 +29,9 @@ jobs:
         with:
           node-version: 14
 
+      - name: yarn network-timeout
+        run: yarn config set network-timeout 600000 -g
+
       - name: install portaudio
         run: brew install portaudio pkg-config
 

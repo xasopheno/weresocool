@@ -1,10 +1,12 @@
-use crate::ast::{Defs, Op};
+use crate::ast::Op;
 use crate::operations::{helpers::*, GetLengthRatio, NormalForm, Normalize};
+use crate::Term;
 use num_rational::{Ratio, Rational64};
+use scop::Defs;
 use weresocool_error::Error;
 
-impl GetLengthRatio for Op {
-    fn get_length_ratio(&self, defs: &Defs) -> Result<Rational64, Error> {
+impl GetLengthRatio<Term> for Op {
+    fn get_length_ratio(&self, defs: &mut Defs<Term>) -> Result<Rational64, Error> {
         match self {
             Op::AsIs {}
             | Op::AD { .. }
@@ -33,7 +35,7 @@ impl GetLengthRatio for Op {
             }
 
             Op::Id(id) => {
-                let op = handle_id_error(id.to_string(), defs, None)?;
+                let op = handle_id_error(id.to_string(), defs)?;
                 op.get_length_ratio(defs)
             }
 

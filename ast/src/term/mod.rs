@@ -1,6 +1,6 @@
-use crate::Defs;
-use crate::{ArgMap, FunDef, GenOp, GetLengthRatio, ListOp, NormalForm, Normalize, Op, Substitute};
+use crate::{FunDef, GenOp, GetLengthRatio, ListOp, NormalForm, Normalize, Op, Substitute};
 use num_rational::Rational64;
+use scop::Defs;
 use weresocool_error::Error;
 
 #[derive(Clone, PartialEq, Debug, Hash)]
@@ -12,8 +12,12 @@ pub enum Term {
     Gen(GenOp),
 }
 
-impl Normalize for Term {
-    fn apply_to_normal_form(&self, input: &mut NormalForm, defs: &Defs) -> Result<(), Error> {
+impl Normalize<Term> for Term {
+    fn apply_to_normal_form(
+        &self,
+        input: &mut NormalForm,
+        defs: &mut Defs<Term>,
+    ) -> Result<(), Error> {
         match self {
             Term::Op(op) => op.apply_to_normal_form(input, defs),
             Term::Nf(nf) => nf.apply_to_normal_form(input, defs),
@@ -24,25 +28,24 @@ impl Normalize for Term {
     }
 }
 
-impl Substitute for Term {
+impl Substitute<Term> for Term {
     fn substitute(
         &self,
         normal_form: &mut NormalForm,
-        defs: &Defs,
-        arg_map: &ArgMap,
+        defs: &mut Defs<Term>,
     ) -> Result<Term, Error> {
         match self {
-            Term::Op(op) => op.substitute(normal_form, defs, arg_map),
-            Term::Nf(nf) => nf.substitute(normal_form, defs, arg_map),
+            Term::Op(op) => op.substitute(normal_form, defs),
+            Term::Nf(nf) => nf.substitute(normal_form, defs),
             Term::FunDef(_fun) => Err(Error::with_msg("Cannot call substitute on FunDef.")),
-            Term::Lop(lop) => lop.substitute(normal_form, defs, arg_map),
-            Term::Gen(gen) => gen.substitute(normal_form, defs, arg_map),
+            Term::Lop(lop) => lop.substitute(normal_form, defs),
+            Term::Gen(gen) => gen.substitute(normal_form, defs),
         }
     }
 }
 
-impl GetLengthRatio for Term {
-    fn get_length_ratio(&self, defs: &Defs) -> Result<Rational64, Error> {
+impl GetLengthRatio<Term> for Term {
+    fn get_length_ratio(&self, defs: &mut Defs<Term>) -> Result<Rational64, Error> {
         match self {
             Term::Op(op) => op.get_length_ratio(defs),
             Term::Nf(nf) => nf.get_length_ratio(defs),

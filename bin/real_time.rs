@@ -21,12 +21,12 @@ fn main() -> Result<(), Error> {
         _ => no_file_name(),
     }
 
-    let (nf, basis, table) =
+    let (nf, basis, mut table) =
         match Filename(filename.unwrap()).make(RenderType::NfBasisAndTable, None)? {
             RenderReturn::NfBasisAndTable(nf, basis, table) => (nf, basis, table),
             _ => panic!("Error. Unable to generate NormalForm"),
         };
-    let renderables = nf_to_vec_renderable(&nf, &table, &basis)?;
+    let renderables = nf_to_vec_renderable(&nf, &mut table, &basis)?;
     let render_voices = renderables_to_render_voices(renderables);
 
     let render_manager = Arc::new(Mutex::new(RenderManager::init(render_voices, None, false)));

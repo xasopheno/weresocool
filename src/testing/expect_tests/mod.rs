@@ -25,7 +25,6 @@ mod expect {
         };
 
         let expect_term = defs
-            .terms
             .get("expect")
             .unwrap_or_else(|| panic!("\n\n  No expect in: \n  {}\n\n", input));
 

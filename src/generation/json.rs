@@ -3,10 +3,11 @@ use crate::{
     write::{write_composition_to_csv, write_composition_to_json},
 };
 use num_rational::Rational64;
+use scop::Defs;
 use serde::{Deserialize, Serialize};
 use serde_json::to_string;
 use std::path::PathBuf;
-use weresocool_ast::{Defs, NameSet, NormalForm, Normalize, OscType, PointOp, ASR};
+use weresocool_ast::{NameSet, NormalForm, Normalize, OscType, PointOp, Term, ASR};
 use weresocool_error::Error;
 use weresocool_instrument::Basis;
 
@@ -264,7 +265,7 @@ pub fn vec_timed_op_to_vec_op4d(timed_ops: Vec<TimedOp>, basis: &Basis) -> Vec<O
 
 pub fn composition_to_vec_timed_op(
     composition: &NormalForm,
-    defs: &Defs,
+    defs: &mut Defs<Term>,
 ) -> Result<(Vec<TimedOp>, usize), Error> {
     let mut normal_form = NormalForm::init();
 
@@ -302,7 +303,7 @@ struct Json1d {
 pub fn to_json(
     basis: &Basis,
     composition: &NormalForm,
-    defs: &Defs,
+    defs: &mut Defs<Term>,
     filename: String,
     output_dir: PathBuf,
 ) -> Result<(), Error> {
@@ -335,7 +336,7 @@ pub fn to_json(
 pub fn to_csv(
     basis: &Basis,
     composition: &NormalForm,
-    defs: &Defs,
+    defs: &mut Defs<Term>,
     filename: String,
     output_dir: PathBuf,
 ) -> Result<(), Error> {

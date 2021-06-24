@@ -8,6 +8,7 @@ license = "GPL-3.0"
 
 [dependencies]
 weresocool_lame = { path = "../lame", optional=true}
+scop = { path = "../scop"}
 portaudio = {version="0.7.0", optional=true}
 hound = "3.4.0"
 serde_json = "1.0.61"

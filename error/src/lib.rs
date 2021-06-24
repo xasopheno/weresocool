@@ -15,12 +15,14 @@ pub use parse_error::ParseError;
 
 #[cfg(feature = "app")]
 use portaudio_error::PortAudioError;
+use scop::ScopError;
 use serde::{Deserialize, Serialize};
 use std::io;
 
 #[derive(Debug, Serialize, Deserialize)]
 pub enum Serializable {
     Msg(String),
+    Scope(ScopError),
     IoError(String),
     HoundError(String),
     #[cfg(feature = "app")]
@@ -41,6 +43,7 @@ impl ErrorInner {
     pub fn into_serializeable(self) -> Serializable {
         match self {
             ErrorInner::Msg(e) => Serializable::Msg(e),
+            ErrorInner::ScopeError(e) => Serializable::Scope(e),
             ErrorInner::ParseError(e) => Serializable::ParseError(e),
             ErrorInner::IdError(e) => Serializable::IdError(e),
             ErrorInner::IndexError(e) => Serializable::IndexError(e),
@@ -113,6 +116,14 @@ impl From<csv::Error> for Error {
     fn from(e: csv::Error) -> Error {
         Error {
             inner: Box::new(ErrorInner::CsvError(e)),
+        }
+    }
+}
+
+impl From<scop::ScopError> for Error {
+    fn from(e: scop::ScopError) -> Error {
+        Error {
+            inner: Box::new(ErrorInner::ScopeError(e)),
         }
     }
 }

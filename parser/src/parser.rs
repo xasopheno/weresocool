@@ -4,12 +4,13 @@ use crate::imports::{get_filepath_and_import_name, is_import};
 use colored::*;
 use num_rational::Rational64;
 use path_clean::PathClean;
+use scop::Defs;
 use std::fs::File;
 use std::io::prelude::*;
 use std::io::BufReader;
 use std::path::PathBuf;
 use std::sync::{Arc, Mutex};
-use weresocool_ast::{Defs, NormalForm, Normalize, Op, Term};
+use weresocool_ast::{NormalForm, Normalize, Op, Term};
 use weresocool_error::{Error, ParseError};
 
 #[derive(Clone, PartialEq, Debug)]
@@ -23,44 +24,43 @@ pub struct Init {
 #[derive(Clone, PartialEq, Debug)]
 pub struct ParsedComposition {
     pub init: Init,
-    pub defs: Defs,
+    pub defs: Defs<Term>,
 }
 
-fn process_op_table(defs: Defs) -> Result<Defs, Error> {
-    let mut result: Defs = Default::default();
+fn process_op_table(mut defs: &mut Defs<Term>) -> Result<Defs<Term>, Error> {
+    let mut result: Defs<Term> = Defs::default();
 
-    for (name, term) in defs.terms.iter() {
-        match term {
-            Term::Nf(nf) => {
-                result
-                    .terms
-                    .insert(name.to_string(), Term::Nf(nf.to_owned()));
-            }
-            Term::Op(op) => {
-                let mut nf = NormalForm::init();
-                op.apply_to_normal_form(&mut nf, &defs)?;
+    for (scope_name, scope) in defs.clone().iter_mut() {
+        for (name, term) in scope {
+            match term {
+                Term::Nf(nf) => {
+                    result.insert(scope_name, name, Term::Nf(nf.to_owned()));
+                }
+                Term::Op(op) => {
+                    let mut nf = NormalForm::init();
+                    op.apply_to_normal_form(&mut nf, &mut defs)?;
 
-                result.terms.insert(name.to_string(), Term::Nf(nf));
-            }
-            Term::FunDef(fun) => {
-                result
-                    .terms
-                    .insert(name.to_string(), Term::FunDef(fun.to_owned()));
-            }
-            Term::Lop(lop) => {
-                let mut nf = NormalForm::init();
-                lop.apply_to_normal_form(&mut nf, &defs)?;
-                result.terms.insert(name.to_string(), Term::Nf(nf));
-            }
-            Term::Gen(gen) => {
-                let mut nf = NormalForm::init();
-                gen.apply_to_normal_form(&mut nf, &defs)?;
+                    result.insert(scope_name, name, Term::Nf(nf));
+                }
+                Term::FunDef(fun) => {
+                    result.insert(scope_name, name, Term::FunDef(fun.to_owned()));
+                }
+                Term::Lop(lop) => {
+                    let mut nf = NormalForm::init();
+                    lop.apply_to_normal_form(&mut nf, &mut defs.clone())?;
+                    result.insert(scope_name, name, Term::Nf(nf));
+                }
+                Term::Gen(gen) => {
+                    let mut nf = NormalForm::init();
+                    gen.apply_to_normal_form(&mut nf, &mut defs.clone())?;
 
-                result.terms.insert(name.to_string(), Term::Nf(nf));
-            }
-        };
+                    result.insert(scope_name, name, Term::Nf(nf));
+                }
+            };
+        }
     }
-    result.stems = defs.stems;
+
+    result.stems = defs.stems.to_owned();
 
     Ok(result)
 }
@@ -95,10 +95,10 @@ pub fn language_to_vec_string(language: &str) -> Vec<String> {
 
 pub fn parse_file(
     vec_string: Vec<String>,
-    prev_defs: Option<Defs>,
+    prev_defs: Option<Defs<Term>>,
     working_path: Option<PathBuf>,
 ) -> Result<ParsedComposition, Error> {
-    let mut defs: Defs = if let Some(defs) = prev_defs {
+    let mut defs: Defs<Term> = if let Some(defs) = prev_defs {
         defs
     } else {
         Default::default()
@@ -115,25 +115,13 @@ pub fn parse_file(
         let vec_string = filename_to_vec_string(&filepath.to_string())?;
         let parsed_composition = parse_file(vec_string, Some(defs.clone()), working_path.clone())?;
 
-        for (key, val) in parsed_composition.defs.terms {
-            let mut name = import_name.clone();
-            name.push('.');
-            name.push_str(&key);
-            defs.terms.insert(name, val);
-        }
-
-        for (key, val) in parsed_composition.defs.lists {
-            let mut name = import_name.clone();
-            name.push('.');
-            name.push_str(&key);
-            defs.lists.insert(name, val);
-        }
-
-        for (key, val) in parsed_composition.defs.generators {
-            let mut name = import_name.clone();
-            name.push('.');
-            name.push_str(&key);
-            defs.generators.insert(name, val);
+        for (scope_name, scope) in parsed_composition.defs.iter() {
+            for (n, term) in scope {
+                let mut name = import_name.clone();
+                name.push('.');
+                name.push_str(n);
+                defs.insert(scope_name, name, term.clone());
+            }
         }
     }
 
@@ -141,7 +129,7 @@ pub fn parse_file(
 
     match init {
         Ok(init) => {
-            let defs = process_op_table(defs)?;
+            let defs = process_op_table(&mut defs)?;
             Ok(ParsedComposition { init, defs })
         }
         Err(error) => {
