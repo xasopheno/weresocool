@@ -9,6 +9,7 @@ license = "GPL-3.0"
 [dependencies]
 weresocool_error = { path = "../error", default_features=false, optional=true }
 weresocool_shared = { path = "../shared" }
+scop = { path = "../scop" }
 num-rational = { version = "0.3.2", features = ["serde"] } 
 rand = { version="0.7.3", features=["wasm-bindgen"]}
 serde = { version = "1.0.119", features = ["derive"] }

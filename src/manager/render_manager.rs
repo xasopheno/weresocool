@@ -162,11 +162,11 @@ pub fn prepare_render_outside(
     input: InputType<'_>,
     working_path: Option<PathBuf>,
 ) -> Result<Vec<RenderVoice>, Error> {
-    let (nf, basis, table) = match input.make(RenderType::NfBasisAndTable, working_path)? {
+    let (nf, basis, mut table) = match input.make(RenderType::NfBasisAndTable, working_path)? {
         RenderReturn::NfBasisAndTable(nf, basis, table) => (nf, basis, table),
         _ => return Err(Error::with_msg("Failed Parse/Render")),
     };
-    let renderables = nf_to_vec_renderable(&nf, &table, &basis)?;
+    let renderables = nf_to_vec_renderable(&nf, &mut table, &basis)?;
 
     let render_voices = renderables_to_render_voices(renderables);
 

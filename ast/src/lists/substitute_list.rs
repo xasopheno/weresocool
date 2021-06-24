@@ -1,32 +1,31 @@
-use crate::operations::{helpers::handle_id_error, ArgMap, NormalForm, Normalize, Substitute};
+use crate::operations::{helpers::handle_id_error, NormalForm, Normalize, Substitute};
 use crate::substitute_operations;
-use crate::{Defs, ListOp, Term};
+use crate::{ListOp, Term};
+use scop::Defs;
 use weresocool_error::Error;
 
-impl Substitute for ListOp {
+impl Substitute<Term> for ListOp {
     fn substitute(
         &self,
         normal_form: &mut NormalForm,
-        defs: &Defs,
-        arg_map: &ArgMap,
+        defs: &mut Defs<Term>,
     ) -> Result<Term, Error> {
         match self {
             ListOp::Const(terms) => Ok(Term::Lop(ListOp::Const(substitute_operations(
                 terms.to_vec(),
                 normal_form,
                 defs,
-                arg_map,
             )?))),
             ListOp::Named(name) => {
-                let term = handle_id_error(name.to_string(), defs, Some(arg_map))?;
+                let term = handle_id_error(name, defs)?;
 
                 match term {
-                    Term::Lop(lop) => lop.substitute(normal_form, defs, arg_map),
+                    Term::Lop(lop) => lop.substitute(normal_form, defs),
                     _ => Err(Error::with_msg("List.substitute() on called non-list")),
                 }
             }
             ListOp::ListOpIndexed { .. } => Ok(Term::Lop(ListOp::Const(
-                self.term_vectors(defs, Some(arg_map))?
+                self.term_vectors(defs)?
                     .iter_mut()
                     .map(|term_vector| {
                         let mut nf = normal_form.clone();
@@ -43,12 +42,12 @@ impl Substitute for ListOp {
             ListOp::Concat(lists) => {
                 let mut result = vec![];
                 for list in lists {
-                    result.push(list.substitute(normal_form, defs, arg_map)?)
+                    result.push(list.substitute(normal_form, defs)?)
                 }
 
                 Ok(Term::Lop(ListOp::Const(result)))
             }
-            ListOp::GenOp(gen) => gen.substitute(normal_form, defs, arg_map),
+            ListOp::GenOp(gen) => gen.substitute(normal_form, defs),
         }
     }
 }

@@ -7,7 +7,8 @@ use rand::{thread_rng, Rng};
 #[cfg(feature = "app")]
 use rayon::prelude::*;
 pub use render_voice::{renderables_to_render_voices, RenderVoice};
-use weresocool_ast::{Defs, NormalForm, Normalize, OscType, PointOp, ASR};
+use scop::Defs;
+use weresocool_ast::{NormalForm, Normalize, OscType, PointOp, Term, ASR};
 use weresocool_error::Error;
 use weresocool_shared::{default_settings, lossy_rational_mul, r_to_f64, Settings};
 
@@ -267,7 +268,7 @@ pub fn calculate_fgpl(basis: &Basis, point_op: &PointOp) -> (f64, (f64, f64), f6
 
 pub fn nf_to_vec_renderable(
     composition: &NormalForm,
-    defs: &Defs,
+    defs: &mut Defs<Term>,
     basis: &Basis,
 ) -> Result<Vec<Vec<RenderOp>>, Error> {
     let mut normal_form = NormalForm::init();

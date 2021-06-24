@@ -1,7 +1,8 @@
-use crate::{Defs, OscType, Term, ASR};
+use crate::{OscType, Term, ASR};
 use num_rational::{Ratio, Rational64};
+use scop::Defs;
 use std::{
-    collections::{BTreeSet, HashMap, HashSet},
+    collections::{BTreeSet, HashSet},
     ops::{Mul, MulAssign},
 };
 use weresocool_error::Error;
@@ -18,8 +19,6 @@ pub struct NormalForm {
     pub length_ratio: Rational64,
 }
 
-/// Function Argument Map
-pub type ArgMap = HashMap<String, Term>;
 /// Set of Names associated with a Point
 pub type NameSet = BTreeSet<String>;
 
@@ -53,35 +52,33 @@ pub struct PointOp {
     pub names: NameSet,
 }
 
-pub trait Normalize {
-    fn apply_to_normal_form(&self, normal_form: &mut NormalForm, defs: &Defs) -> Result<(), Error>;
-}
-
-pub trait GetLengthRatio {
-    fn get_length_ratio(&self, defs: &Defs) -> Result<Rational64, Error>;
-}
-
-pub trait Substitute {
-    fn substitute(
+pub trait Normalize<T> {
+    fn apply_to_normal_form(
         &self,
         normal_form: &mut NormalForm,
-        defs: &Defs,
-        arg_map: &ArgMap,
-    ) -> Result<Term, Error>;
+        defs: &mut Defs<T>,
+    ) -> Result<(), Error>;
 }
 
-impl GetLengthRatio for NormalForm {
-    fn get_length_ratio(&self, _defs: &Defs) -> Result<Rational64, Error> {
+pub trait GetLengthRatio<T> {
+    fn get_length_ratio(&self, defs: &mut Defs<T>) -> Result<Rational64, Error>;
+}
+
+pub trait Substitute<T> {
+    fn substitute(&self, normal_form: &mut NormalForm, defs: &mut Defs<T>) -> Result<Term, Error>;
+}
+
+impl GetLengthRatio<Term> for NormalForm {
+    fn get_length_ratio(&self, _defs: &mut Defs<Term>) -> Result<Rational64, Error> {
         Ok(self.length_ratio)
     }
 }
 
-impl Substitute for NormalForm {
+impl Substitute<Term> for NormalForm {
     fn substitute(
         &self,
         _normal_form: &mut NormalForm,
-        _defs: &Defs,
-        _arg_map: &ArgMap,
+        _defs: &mut Defs<Term>,
     ) -> Result<Term, Error> {
         Ok(Term::Nf(self.clone()))
     }
@@ -158,8 +155,12 @@ impl MulAssign<&NormalForm> for NormalForm {
     }
 }
 
-impl Normalize for NormalForm {
-    fn apply_to_normal_form(&self, input: &mut NormalForm, _defs: &Defs) -> Result<(), Error> {
+impl Normalize<Term> for NormalForm {
+    fn apply_to_normal_form(
+        &self,
+        input: &mut NormalForm,
+        _defs: &mut Defs<Term>,
+    ) -> Result<(), Error> {
         *input *= self;
         Ok(())
     }

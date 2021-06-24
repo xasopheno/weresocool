@@ -1,33 +1,37 @@
 use crate::operations::Rational64;
 use crate::operations::{
-    helpers::*, substitute::get_fn_arg_map, GetLengthRatio, NormalForm, Normalize, Substitute,
+    helpers::*, substitute::insert_function_args, GetLengthRatio, NormalForm, Normalize, Substitute,
 };
-use crate::{Defs, FunDef, Op, OscType, Term, Term::*};
+use crate::{FunDef, Op, OscType, Term, Term::*};
 use num_rational::Ratio;
 use num_traits::CheckedMul;
+use scop::Defs;
 use weresocool_error::Error;
 use weresocool_shared::lossy_rational_mul;
 
-impl Normalize for Op {
+impl Normalize<Term> for Op {
     #[allow(clippy::cognitive_complexity)]
-    fn apply_to_normal_form(&self, input: &mut NormalForm, defs: &Defs) -> Result<(), Error> {
+    fn apply_to_normal_form(
+        &self,
+        input: &mut NormalForm,
+        defs: &mut Defs<Term>,
+    ) -> Result<(), Error> {
         match self {
             Op::AsIs => {}
 
             Op::Id(id) => {
-                handle_id_error(id.to_string(), defs, None)?.apply_to_normal_form(input, defs)?;
+                handle_id_error(id, defs)?.apply_to_normal_form(input, defs)?;
             }
-            //
             Op::FunctionCall { name, args } => {
-                let f = handle_id_error(name.to_string(), defs, None)?;
-                let arg_map = get_fn_arg_map(f.clone(), args)?;
+                let f = handle_id_error(name.to_string(), defs)?;
+                insert_function_args(&f, args, defs)?;
 
                 match f {
                     Term::FunDef(fun) => {
                         let FunDef { term, .. } = fun;
                         match *term {
                             Term::Op(op) => {
-                                let result_op = op.substitute(input, defs, &arg_map)?;
+                                let result_op = op.substitute(input, defs)?;
                                 result_op.apply_to_normal_form(input, defs)?
                             }
                             Term::Nf(_) => {
@@ -39,11 +43,11 @@ impl Normalize for Op {
                                 return Err(Error::with_msg("Function Op stored in FunDef"));
                             }
                             Term::Lop(lop) => {
-                                let result = lop.substitute(input, defs, &arg_map)?;
+                                let result = lop.substitute(input, defs)?;
                                 result.apply_to_normal_form(input, defs)?
                             }
                             Term::Gen(gen_op) => {
-                                let result = gen_op.substitute(input, defs, &arg_map)?;
+                                let result = gen_op.substitute(input, defs)?;
                                 result.apply_to_normal_form(input, defs)?
                             }
                         }

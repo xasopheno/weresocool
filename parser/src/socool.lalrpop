@@ -1,8 +1,8 @@
 use num_rational::{Rational64};
 use std::str::FromStr;
 use std::string::String;
+use scop::Defs;
 use weresocool_ast::{
-        Defs,
         Op::*,
         Term, 
         ASR,
@@ -23,7 +23,7 @@ use crate::float_to_rational::helpers::*;
 use regex::Regex;
 
 grammar<'defs, 'err>(
-    defs: &'defs mut Defs,
+    defs: &'defs mut Defs<Term>,
 );
 
 pub SoCool: Init = {
@@ -43,7 +43,7 @@ Point: Init = {
 LetDefs = Lets<LetDef>;
 LetDef: () = {
     <s: Name> "(" <vars: Comma<Name>>  ")" "=" "{" <o: Operation> "}" => {
-         defs.terms.insert(
+        defs.insert("global", 
              s.to_owned(),
              Term::FunDef(FunDef {
                  name: s,
@@ -55,15 +55,15 @@ LetDef: () = {
     },
 
     <s: Name> "=" "{" <o: Operation> "}" => {
-        defs.terms.insert(s.to_owned(), o); ()
+        defs.insert("global", s.to_owned(), o); ()
     },
 
     <name: Name> "=" <list: List> => {
-        defs.lists.insert(name.to_owned(), Term::Lop(list)); ()
+        defs.insert("global", name.to_owned(), Term::Lop(list)); ()
     },
     
     <name: Name> "=" <generator: Generator> => {
-        defs.generators.insert(name.to_owned(), Term::Gen(generator)); ()
+        defs.insert("global", name.to_owned(), Term::Gen(generator)); ()
     },
 
     <stems: Stems> =>{

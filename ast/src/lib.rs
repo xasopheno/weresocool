@@ -15,7 +15,7 @@ pub use crate::{
     operations::{
         helpers::{handle_id_error, join_sequence},
         substitute::substitute_operations,
-        ArgMap, GetLengthRatio, NameSet, NormalForm, Normalize, PointOp, Substitute,
+        GetLengthRatio, NameSet, NormalForm, Normalize, PointOp, Substitute,
     },
     term::Term,
 };
