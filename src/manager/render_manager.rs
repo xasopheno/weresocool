@@ -166,7 +166,7 @@ pub fn prepare_render_outside(
         RenderReturn::NfBasisAndTable(nf, basis, table) => (nf, basis, table),
         _ => return Err(Error::with_msg("Failed Parse/Render")),
     };
-    let renderables = nf_to_vec_renderable(&nf, &table, &basis)?;
+    let renderables = nf_to_vec_renderable(&nf, &mut table, &basis)?;
 
     let render_voices = renderables_to_render_voices(renderables);
 

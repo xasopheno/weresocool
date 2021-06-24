@@ -146,7 +146,7 @@ pub fn parsed_to_render(
                 println!("\t{}", &name);
                 let mut n = nf.clone();
                 n.solo_ops_by_name(&name);
-                let stereo_waveform = render(&basis, &n, &parsed_composition.defs)?;
+                let stereo_waveform = render(&basis, &n, &mut parsed_composition.defs)?;
 
                 result.push(Stem {
                     name,
@@ -169,7 +169,7 @@ pub fn parsed_to_render(
             to_json(
                 &basis,
                 nf,
-                &parsed_composition.defs.clone(),
+                &mut parsed_composition.defs.clone(),
                 filename.to_string(),
                 output_dir,
             )?;
@@ -179,14 +179,14 @@ pub fn parsed_to_render(
             to_csv(
                 &basis,
                 nf,
-                &parsed_composition.defs.clone(),
+                &mut parsed_composition.defs.clone(),
                 filename.to_string(),
                 output_dir,
             )?;
             Ok(RenderReturn::Csv1d("csv".to_string()))
         }
         RenderType::StereoWaveform => {
-            let stereo_waveform = render(&basis, nf, &parsed_composition.defs)?;
+            let stereo_waveform = render(&basis, nf, &mut parsed_composition.defs)?;
             Ok(RenderReturn::StereoWaveform(stereo_waveform))
         }
         RenderType::Wav(wav_type) => match wav_type {
@@ -194,7 +194,7 @@ pub fn parsed_to_render(
                 cli,
                 mut output_dir,
             } => {
-                let stereo_waveform = render(&basis, nf, &parsed_composition.defs)?;
+                let stereo_waveform = render(&basis, nf, &mut parsed_composition.defs)?;
                 let render_return = RenderReturn::Wav(write_composition_to_mp3(stereo_waveform)?);
                 if cli {
                     let audio: Vec<u8> = Vec::try_from(render_return.clone())?;
@@ -209,7 +209,7 @@ pub fn parsed_to_render(
                 cli,
                 mut output_dir,
             } => {
-                let stereo_waveform = render(&basis, nf, &parsed_composition.defs)?;
+                let stereo_waveform = render(&basis, nf, &mut parsed_composition.defs)?;
                 let render_return = RenderReturn::Wav(write_composition_to_wav(stereo_waveform)?);
                 if cli {
                     let audio: Vec<u8> = Vec::try_from(render_return.clone())?;
@@ -237,7 +237,7 @@ pub fn write_audio_to_file(audio: &[u8], filename: PathBuf) {
 pub fn render(
     basis: &Basis,
     composition: &NormalForm,
-    defs: &Defs<Term>,
+    defs: &mut Defs<Term>,
 ) -> Result<StereoWaveform, Error> {
     let renderables = nf_to_vec_renderable(composition, defs, basis)?;
     let mut voices = renderables_to_render_voices(renderables);

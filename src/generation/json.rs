@@ -265,7 +265,7 @@ pub fn vec_timed_op_to_vec_op4d(timed_ops: Vec<TimedOp>, basis: &Basis) -> Vec<O
 
 pub fn composition_to_vec_timed_op(
     composition: &NormalForm,
-    defs: &Defs<Term>,
+    defs: &mut Defs<Term>,
 ) -> Result<(Vec<TimedOp>, usize), Error> {
     let mut normal_form = NormalForm::init();
 
@@ -303,7 +303,7 @@ struct Json1d {
 pub fn to_json(
     basis: &Basis,
     composition: &NormalForm,
-    defs: &Defs<Term>,
+    defs: &mut Defs<Term>,
     filename: String,
     output_dir: PathBuf,
 ) -> Result<(), Error> {
@@ -336,7 +336,7 @@ pub fn to_json(
 pub fn to_csv(
     basis: &Basis,
     composition: &NormalForm,
-    defs: &Defs<Term>,
+    defs: &mut Defs<Term>,
     filename: String,
     output_dir: PathBuf,
 ) -> Result<(), Error> {

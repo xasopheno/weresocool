@@ -58,14 +58,14 @@ pub fn write_test_table_to_json_file(test_table: &TestTable) {
 
 fn generate_render_hashes(p: &str) -> CompositionHashes {
     let vec_string = filename_to_vec_string(&p.to_string()).unwrap();
-    let parsed = parse_file(vec_string, None, None).unwrap();
-    let main_op = parsed.defs.get("main").unwrap();
+    let mut parsed = parse_file(vec_string, None, None).unwrap();
+    let main_op = &parsed.defs.get("main").unwrap();
     let init = parsed.init;
     let op_hash = calculate_hash(&main_op);
     let mut normal_form = NormalForm::init();
 
     main_op
-        .apply_to_normal_form(&mut normal_form, &parsed.defs)
+        .apply_to_normal_form(&mut normal_form, &mut parsed.defs)
         .expect("apply_to_normal_form in generate_render_hashes failing");
     let nf_hash = calculate_hash(&normal_form);
 
@@ -78,7 +78,7 @@ fn generate_render_hashes(p: &str) -> CompositionHashes {
         d: Rational64::new(1, 1),
     };
 
-    let renderable = nf_to_vec_renderable(&normal_form, &parsed.defs, &origin)
+    let renderable = nf_to_vec_renderable(&normal_form, &mut parsed.defs, &origin)
         .expect("nf_to_vec_renderable failing when generating_render_hashes");
 
     let vec_wav = generate_waveforms(renderable, false);

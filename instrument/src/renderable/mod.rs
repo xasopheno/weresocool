@@ -268,7 +268,7 @@ pub fn calculate_fgpl(basis: &Basis, point_op: &PointOp) -> (f64, (f64, f64), f6
 
 pub fn nf_to_vec_renderable(
     composition: &NormalForm,
-    defs: &Defs<Term>,
+    defs: &mut Defs<Term>,
     basis: &Basis,
 ) -> Result<Vec<Vec<RenderOp>>, Error> {
     let mut normal_form = NormalForm::init();
