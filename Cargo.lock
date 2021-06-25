@@ -3167,6 +3167,7 @@ dependencies = [
  "rand",
  "regex",
  "scop",
+ "uuid",
  "weresocool_ast",
  "weresocool_error",
 ]

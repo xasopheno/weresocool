@@ -98,6 +98,11 @@ where
         current_scope.insert(name.into(), value);
     }
 
+    pub fn insert_into_new_scope<S: Into<String>>(&mut self, name: S, value: T) {
+        let new_scope = self.create_uuid_scope();
+        self.insert(&new_scope, name, value);
+    }
+
     pub fn get(&self, id: &str) -> Option<&T> {
         for scope in self.scopes.iter().rev() {
             let current = self

@@ -20,9 +20,12 @@ impl Normalize<Term> for Op {
             Op::AsIs => {}
             Op::Lambda {
                 term,
-                input_name: _,
+                input_name,
+                scope,
             } => {
-                unimplemented!();
+                if let Some(name) = input_name {
+                    defs.insert(scope, name, Term::Nf(input.to_owned()));
+                }
                 let mut nf = NormalForm::init();
                 term.apply_to_normal_form(&mut nf, defs)?;
                 *input = nf;
@@ -188,10 +191,10 @@ impl Normalize<Term> for Op {
                 main,
             } => {
                 let main_length = match main {
-                    Some(m) => m.get_length_ratio(defs)?,
+                    Some(m) => m.get_length_ratio(input, defs)?,
                     None => Rational64::from_integer(1),
                 };
-                let target_length = with_length_of.get_length_ratio(defs)?;
+                let target_length = with_length_of.get_length_ratio(input, defs)?;
                 let ratio = target_length / main_length;
                 let new_op = Op::Length { m: ratio };
 

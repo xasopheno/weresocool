@@ -1,6 +1,6 @@
 use crate::generator::{error_non_generator, Axis, Coefs, GenOp, Generator};
 use crate::operations::helpers::handle_id_error;
-use crate::{GetLengthRatio, Term};
+use crate::{GetLengthRatio, NormalForm, Term};
 use num_integer::lcm;
 use num_rational::Rational64;
 use rand::{rngs::StdRng, SeedableRng};
@@ -8,26 +8,30 @@ use scop::Defs;
 use weresocool_error::Error;
 
 impl GetLengthRatio<Term> for GenOp {
-    fn get_length_ratio(&self, defs: &mut Defs<Term>) -> Result<Rational64, Error> {
+    fn get_length_ratio(
+        &self,
+        normal_form: &NormalForm,
+        defs: &mut Defs<Term>,
+    ) -> Result<Rational64, Error> {
         match self {
             GenOp::Named { name, seed } => {
                 let generator = handle_id_error(name, defs)?;
                 match generator {
                     Term::Gen(mut gen) => {
                         gen.set_seed(*seed);
-                        gen.get_length_ratio_genop(None, defs)
+                        gen.get_length_ratio_genop(None, normal_form, defs)
                     }
                     _ => Err(error_non_generator()),
                 }
             }
             GenOp::Const { gen, seed } => {
                 let n = gen.lcm_length();
-                Ok(gen.get_length(n, *seed, defs)?)
+                Ok(gen.get_length(n, *seed, normal_form, defs)?)
             }
             GenOp::Taken { gen, n, seed } => {
                 let mut gen = gen.to_owned();
                 gen.set_seed(*seed);
-                gen.get_length_ratio_genop(Some(*n), defs)
+                gen.get_length_ratio_genop(Some(*n), normal_form, defs)
             }
         }
     }
@@ -54,6 +58,7 @@ impl GenOp {
     pub fn get_length_ratio_genop(
         &self,
         n: Option<usize>,
+        normal_form: &NormalForm,
         defs: &mut Defs<Term>,
     ) -> Result<Rational64, Error> {
         match self {
@@ -62,26 +67,32 @@ impl GenOp {
                 match generator {
                     Term::Gen(mut gen) => {
                         gen.set_seed(*seed);
-                        gen.get_length_ratio_genop(n, defs)
+                        gen.get_length_ratio_genop(n, normal_form, defs)
                     }
                     _ => Err(error_non_generator()),
                 }
             }
             GenOp::Const { gen, seed } => {
                 let n = if let Some(n) = n { n } else { gen.lcm_length() };
-                Ok(gen.get_length(n, *seed, defs)?)
+                Ok(gen.get_length(n, *seed, normal_form, defs)?)
             }
             GenOp::Taken { n, gen, seed } => {
                 let mut gen = gen.to_owned();
                 gen.set_seed(*seed);
-                gen.get_length_ratio_genop(Some(*n), defs)
+                gen.get_length_ratio_genop(Some(*n), normal_form, defs)
             }
         }
     }
 }
 
 impl Generator {
-    pub fn get_length(&self, n: usize, seed: u64, defs: &mut Defs<Term>) -> Result<Rational64, Error> {
+    pub fn get_length(
+        &self,
+        n: usize,
+        seed: u64,
+        normal_form: &NormalForm,
+        defs: &mut Defs<Term>,
+    ) -> Result<Rational64, Error> {
         let mut lengths = vec![Rational64::new(1, 1); n];
         let mut rng: StdRng = SeedableRng::seed_from_u64(seed);
         let mut copy = self.clone();
@@ -90,7 +101,9 @@ impl Generator {
             for coef in copy.coefs.iter_mut() {
                 match coef.axis {
                     Axis::L => {
-                        let l = coef.generate(&mut rng)?.get_length_ratio(defs)?;
+                        let l = coef
+                            .generate(&mut rng)?
+                            .get_length_ratio(normal_form, defs)?;
                         *length *= l
                     }
                     _ => {

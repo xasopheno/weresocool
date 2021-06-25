@@ -21,6 +21,7 @@ pub enum Op {
     Lambda {
         input_name: Option<String>,
         term: Box<Term>,
+        scope: String,
     },
     //
     Noise,
