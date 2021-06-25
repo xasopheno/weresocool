@@ -18,7 +18,11 @@ impl Normalize<Term> for Op {
     ) -> Result<(), Error> {
         match self {
             Op::AsIs => {}
-            Op::Lambda { term } => {
+            Op::Lambda {
+                term,
+                input_name: _,
+            } => {
+                unimplemented!();
                 let mut nf = NormalForm::init();
                 term.apply_to_normal_form(&mut nf, defs)?;
                 *input = nf;

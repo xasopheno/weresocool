@@ -1,33 +1,6 @@
 use colored::*;
 use std::cmp;
 use std::sync::{Arc, Mutex};
-use weresocool_ast::{Defs, Term};
-
-#[allow(dead_code)]
-fn _handle_id_error(id_vec: Vec<String>, defs: &Defs) -> Term {
-    let result = match id_vec.len() {
-        1 => defs
-            .terms
-            .get(&id_vec[0])
-            .or_else(|| defs.lists.get(&id_vec[0])),
-        2 => {
-            let mut name = id_vec[0].clone();
-            name.push('.');
-            name.push_str(&id_vec[1].clone());
-            defs.terms.get(&name).or_else(|| defs.lists.get(&name))
-        }
-        _ => panic!("Only one dot allowed in imports."),
-    };
-
-    match result {
-        Some(result) => result.clone(),
-        None => {
-            let id = id_vec.join(".");
-            println!("Not able to find {} in let defs", id.red().bold());
-            panic!("Id Not Found");
-        }
-    }
-}
 
 pub fn handle_parse_error(location: Arc<Mutex<Vec<usize>>>, composition: &str) -> (usize, usize) {
     let start_offset = 125;

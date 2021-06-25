@@ -1,22 +1,11 @@
 use crate::Term;
-use indexmap::IndexMap;
 use num_rational::Rational64;
-use std::collections::HashSet;
 
 #[derive(Debug, Clone, PartialEq, Hash)]
 pub struct FunDef {
     pub name: String,
     pub vars: Vec<String>,
     pub term: Box<Term>,
-}
-
-#[derive(Debug, Clone, PartialEq, Default)]
-/// Table of Definitions
-pub struct Defs {
-    pub terms: IndexMap<String, Term>,
-    pub lists: IndexMap<String, Term>,
-    pub generators: IndexMap<String, Term>,
-    pub stems: HashSet<String>,
 }
 
 #[derive(Clone, PartialEq, Debug, Hash)]
@@ -30,6 +19,7 @@ pub enum Op {
         args: Vec<Term>,
     },
     Lambda {
+        input_name: Option<String>,
         term: Box<Term>,
     },
     //

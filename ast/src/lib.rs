@@ -6,7 +6,7 @@ pub mod lists;
 pub mod operations;
 pub mod term;
 pub use crate::{
-    ast::{Defs, FunDef, Op, Op::*, OscType, ASR},
+    ast::{FunDef, Op, Op::*, OscType, ASR},
     generator::{
         coefs::{Coef, Coefs},
         Axis, CoefState, GenOp, Generator,

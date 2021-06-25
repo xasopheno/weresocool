@@ -89,9 +89,14 @@ impl Substitute<Term> for Op {
             Op::ModulateBy { operations } => Ok(Term::Op(Op::ModulateBy {
                 operations: substitute_operations(operations.to_vec(), normal_form, defs)?,
             })),
-            Op::Lambda { term } => Ok(Term::Op(Op::Lambda {
-                term: Box::new(term.substitute(normal_form, defs, arg_map)?),
-            })),
+            Op::Lambda { term, input_name } => {
+                unimplemented!();
+                Ok(Term::Op(Op::Lambda {
+                    input_name: *input_name,
+                    // need to insert input_name
+                    term: Box::new(term.substitute(normal_form, defs)?),
+                }))
+            }
             _ => Ok(Term::Op(self.clone())),
         }
     }
