@@ -8,7 +8,7 @@ use std::{
 };
 use weresocool_error::{Error, IdError};
 
-pub fn handle_id_error<S: Into<String> + Clone + Display>(
+pub fn handle_id_error<S: Into<String> + Clone + Display + std::fmt::Debug>(
     id: S,
     defs: &Defs<Term>,
 ) -> Result<Term, Error> {

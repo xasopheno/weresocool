@@ -96,11 +96,9 @@ where
             .entry(scope.to_string())
             .or_insert_with(IndexMap::new);
         current_scope.insert(name.into(), value);
-    }
-
-    pub fn insert_into_new_scope<S: Into<String>>(&mut self, name: S, value: T) {
-        let new_scope = self.create_uuid_scope();
-        self.insert(&new_scope, name, value);
+        if !self.scopes.contains(&scope.into()) {
+            self.scopes.push(scope.into());
+        }
     }
 
     pub fn get(&self, id: &str) -> Option<&T> {
