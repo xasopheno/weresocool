@@ -13,6 +13,8 @@ main = {
 expect = {
   Overlay [
     Seq [Fm 3/2, Fm 1, Fm 7/8],
+    -- If the second melody was not in the lambda, this line would say
+    -- Seq [Fm 3/2, Fm 1, Fm 7/8] | Seq [Fm 1, Fm 9/8]   Seq [Fm 3/2, Fm 1, Fm 7/8],
     Seq [Fm 1, Fm 9/8] | Lm 3/2 
   ]
 }
