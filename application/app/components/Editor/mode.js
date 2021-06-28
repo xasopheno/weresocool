@@ -42,6 +42,10 @@ export class CustomHighlightRules extends window.ace.acequire(
           regex: '/',
         },
         {
+          token: 'lambda',
+          regex: '\\\\|Lambda',
+        },
+        {
           token: 'keyword',
           regex: '#',
         },

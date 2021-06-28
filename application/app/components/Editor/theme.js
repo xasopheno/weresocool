@@ -141,6 +141,10 @@ color: cornsilk\
 .ace-wsc-theme .ace_slash {\
 color: tan\
 }\
+.ace-wsc-theme .ace_lambda {\
+color: springgreen;\
+font-weight: bold;\
+}\
 .ace-wsc-theme .ace_zero {\
 color: wheat\
 }\

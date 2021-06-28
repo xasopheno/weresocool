@@ -46,16 +46,16 @@ mod expect {
         }
     }
 
-    // #[test]
-    // fn test_expect() {
-    // expect("src/testing/expect_tests/mod_mocks/simple.socool");
-    // }
+    #[test]
+    fn test_expect() {
+        expect("src/testing/expect_tests/mod_mocks/simple.socool");
+    }
 
-    // #[test]
-    // #[should_panic]
-    // fn test_expect_fail() {
-    // expect("src/testing/expect_tests/mod_mocks/simple_fail.socool");
-    // }
+    #[test]
+    #[should_panic]
+    fn test_expect_fail() {
+        expect("src/testing/expect_tests/mod_mocks/simple_fail.socool");
+    }
 
     // #[test_resources("mocks/fit_gain/*.socool")]
     // fn __fit_gain_generated_(resource: &str) {
@@ -67,33 +67,33 @@ mod expect {
         expect(resource);
     }
 
-    // #[test_resources("mocks/waveform/*.socool")]
-    // fn __waveform_generated_(resource: &str) {
-    // expect(resource);
-    // }
+    #[test_resources("mocks/waveform/*.socool")]
+    fn __waveform_generated_(resource: &str) {
+        expect(resource);
+    }
 
-    // #[test_resources("mocks/list/*.socool")]
-    // fn __list_generated_(resource: &str) {
-    // expect(resource);
-    // }
+    #[test_resources("mocks/list/*.socool")]
+    fn __list_generated_(resource: &str) {
+        expect(resource);
+    }
 
-    // #[test_resources("mocks/generator/*.socool")]
-    // fn __gen_op_generated_(resource: &str) {
-    // expect(resource);
-    // }
+    #[test_resources("mocks/generator/*.socool")]
+    fn __gen_op_generated_(resource: &str) {
+        expect(resource);
+    }
 
-    // #[test_resources("mocks/imports/*.socool")]
-    // fn __imports_generated_(resource: &str) {
-    // expect(resource);
-    // }
+    #[test_resources("mocks/imports/*.socool")]
+    fn __imports_generated_(resource: &str) {
+        expect(resource);
+    }
 
-    // #[test_resources("mocks/index/*.socool")]
-    // fn __index_generated_(resource: &str) {
-    // expect(resource);
-    // }
+    #[test_resources("mocks/index/*.socool")]
+    fn __index_generated_(resource: &str) {
+        expect(resource);
+    }
 
-    // #[test_resources("mocks/function/*.socool")]
-    // fn __function_generated_(resource: &str) {
-    // expect(resource);
-    // }
+    #[test_resources("mocks/function/*.socool")]
+    fn __function_generated_(resource: &str) {
+        expect(resource);
+    }
 }
