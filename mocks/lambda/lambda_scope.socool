@@ -1,0 +1,20 @@
+{ f: 220, l: 1, g: 1, p: 0 } 
+
+main = {
+  Seq [Fm 3/2, Fm 1, Fm 7/8]
+  | Overlay [
+    AsIs,
+    \ (input) {
+      Seq [Fm 1, Fm 9/8] | FitLength input
+    }
+  ]
+}
+
+expect = {
+  Overlay [
+    Seq [Fm 3/2, Fm 1, Fm 7/8],
+    -- If the second melody was not in the lambda, this line would say
+    -- Seq [Fm 3/2, Fm 1, Fm 7/8] | Seq [Fm 1, Fm 9/8]   Seq [Fm 3/2, Fm 1, Fm 7/8],
+    Seq [Fm 1, Fm 9/8] | Lm 3/2 
+  ]
+}

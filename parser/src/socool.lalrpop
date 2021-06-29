@@ -235,6 +235,7 @@ ComposeOperation: Term = {
     <o: BaseOperation> => o,
 }
 
+
 Composeable: Term = {
   <base_operation: BaseOperation> => base_operation,
   <list: List> => Term::Lop(list),
@@ -242,6 +243,8 @@ Composeable: Term = {
 }
 
 BaseOperation: Term = {
+    r"\\|Lambda" <input_name: Parenthesized<Name>?> "{" <term: Operation> "}" => Term::Op(Lambda { term: Box::new(term),
+        input_name, scope: uuid::Uuid::new_v4().to_string()}),
     "(" <o: Operation> ")" => o,
     <fm: Fm> <m:Rational> => Term::Op(TransposeM {m}),
     <fa: Fa> <a:Rational> => Term::Op(TransposeA {a}),
@@ -361,10 +364,15 @@ Comma<T>: Vec<T> = {
     }
 };
 
+Parenthesized<T>: T = {
+    <t: T> => t,
+    "(" <t: T> ")" => t,
+};
+
 Import: Vec<String> = {
     <a: Name>"."<b: Name> => vec![a, b],
     <a: Name> => vec![a]
-}
+};
 
 Lets<T>: Vec<T> = {
   <v:(<T>)*> => v

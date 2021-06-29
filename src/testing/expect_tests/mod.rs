@@ -61,7 +61,12 @@ mod expect {
     // fn __fit_gain_generated_(resource: &str) {
     // expect(resource);
     // }
-    //
+
+    #[test_resources("mocks/lambda/*.socool")]
+    fn __lambda_generated_(resource: &str) {
+        expect(resource);
+    }
+
     #[test_resources("mocks/waveform/*.socool")]
     fn __waveform_generated_(resource: &str) {
         expect(resource);

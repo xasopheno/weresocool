@@ -8,7 +8,7 @@ use std::{
 };
 use weresocool_error::{Error, IdError};
 
-pub fn handle_id_error<S: Into<String> + Clone + Display>(
+pub fn handle_id_error<S: Into<String> + Clone + Display + std::fmt::Debug>(
     id: S,
     defs: &Defs<Term>,
 ) -> Result<Term, Error> {
@@ -64,7 +64,7 @@ pub fn pad_length(
     max_len: Rational64,
     defs: &mut Defs<Term>,
 ) -> Result<(), Error> {
-    let input_lr = input.get_length_ratio(defs)?;
+    let input_lr = input.get_length_ratio(input, defs)?;
     if max_len > Rational64::new(0, 1) && input_lr < max_len {
         for voice in input.operations.iter_mut() {
             voice.push(PointOp {

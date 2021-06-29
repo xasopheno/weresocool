@@ -89,6 +89,20 @@ impl Substitute<Term> for Op {
             Op::ModulateBy { operations } => Ok(Term::Op(Op::ModulateBy {
                 operations: substitute_operations(operations.to_vec(), normal_form, defs)?,
             })),
+            Op::Lambda {
+                term,
+                input_name,
+                scope,
+            } => {
+                if let Some(name) = input_name {
+                    defs.insert(scope, name, Term::Nf(normal_form.to_owned()));
+                }
+                Ok(Term::Op(Op::Lambda {
+                    input_name: input_name.to_owned(),
+                    term: Box::new(term.substitute(normal_form, defs)?),
+                    scope: scope.into(),
+                }))
+            }
             _ => Ok(Term::Op(self.clone())),
         }
     }
