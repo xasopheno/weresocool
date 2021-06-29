@@ -164,7 +164,7 @@ CoefTimes: usize = {
 
 
 List: ListOp = {
-  <lists: ListConcat> => ListOp::Concat(lists),
+  <lists: ListConcat> => ListOp::Concat{ value: lists },
   <list: ListIndexed> => list,
 
 }
@@ -183,18 +183,18 @@ ListIndexed: ListOp = {
 
 ListBase: ListOp = {
   r"(List|&)" "[" <operations: Operations> "]" => {
-    ListOp::Const(operations)
+    ListOp::Const{ value: operations }
   },
 
   r"(List|&)" <name: Name> => {
-    ListOp::Named(name)
+    ListOp::Named { value: name }
   },
 
   "ET" "(" <n: Int> ")" => {
-    ListOp::Const(et(n))
+    ListOp::Const{ value: et(n) }
   },
 
-  r"(List|&)" <gen: Generator> => ListOp::GenOp(gen)
+  r"(List|&)" <gen: Generator> => ListOp::GenOp { value: gen }
 }
 
 Indices: Indices = {

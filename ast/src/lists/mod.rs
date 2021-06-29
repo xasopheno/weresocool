@@ -6,14 +6,22 @@ use crate::{GenOp, Term};
 
 #[derive(Clone, PartialEq, Debug, Hash)]
 pub enum ListOp {
-    Const(Vec<Term>),
-    Named(String),
+    Const {
+        value: Vec<Term>,
+    },
+    Named {
+        value: String,
+    },
     ListOpIndexed {
         list_op: Box<ListOp>,
         indices: Indices,
     },
-    GenOp(GenOp),
-    Concat(Vec<ListOp>),
+    GenOp {
+        value: GenOp,
+    },
+    Concat {
+        value: Vec<ListOp>,
+    },
 }
 
 #[derive(Clone, PartialEq, Debug, Hash)]
