@@ -1,5 +1,6 @@
 use crate::{
-    handle_id_error, join_sequence, GetLengthRatio, ListOp, NormalForm, Normalize, Term, TermVector,
+    handle_id_error, join_sequence, GetLengthRatio, ListOp, NormalForm, Normalize, Op, Term,
+    TermVector,
 };
 use num_rational::Rational64;
 use scop::Defs;
@@ -169,7 +170,14 @@ impl Normalize<Term> for ListOp {
                     *input = join_list_nf(self.to_list_nf(input, defs)?);
                 }
                 crate::Direction::Overlay => {
-                    unimplemented!()
+                    Op::Overlay {
+                        operations: self
+                            .to_list_nf(input, defs)?
+                            .iter()
+                            .map(|nf| Term::Nf(nf.to_owned()))
+                            .collect(),
+                    }
+                    .apply_to_normal_form(input, defs)?;
                 }
             },
             _ => *input = join_list_nf(self.to_list_nf(input, defs)?),
