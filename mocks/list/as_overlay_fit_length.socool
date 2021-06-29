@@ -5,10 +5,16 @@ thing = {
 }
 
 main = {
-     Fm 2 | FitLength thing
+    Overlay [
+        Fm 2 | FitLength thing,
+        thing | FitLength Lm 6,
+    ]
 }
 
 expect = {
-    Fm 2 | Lm 3
+    Overlay [
+        Fm 2 | Lm 3,
+        thing | Lm 2,
+    ]
 }
 
