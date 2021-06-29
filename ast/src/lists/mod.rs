@@ -15,6 +15,7 @@ pub enum ListOp {
     ListOpIndexed {
         list_op: Box<ListOp>,
         indices: Indices,
+        direction: Direction,
     },
     GenOp {
         value: GenOp,
@@ -22,6 +23,12 @@ pub enum ListOp {
     Concat {
         value: Vec<ListOp>,
     },
+}
+
+#[derive(Clone, PartialEq, Debug, Hash)]
+pub enum Direction {
+    Overlay,
+    Sequence,
 }
 
 #[derive(Clone, PartialEq, Debug, Hash)]

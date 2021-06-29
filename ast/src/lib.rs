@@ -11,7 +11,9 @@ pub use crate::{
         coefs::{Coef, Coefs},
         Axis, CoefState, GenOp, Generator,
     },
-    lists::{normalize_listop::join_list_nf, Index, IndexVector, Indices, ListOp, TermVector},
+    lists::{
+        normalize_listop::join_list_nf, Direction, Index, IndexVector, Indices, ListOp, TermVector,
+    },
     operations::{
         helpers::{handle_id_error, join_sequence},
         substitute::substitute_operations,

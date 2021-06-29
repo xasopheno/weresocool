@@ -22,7 +22,9 @@ impl ListOp {
                     _ => Err(Error::with_msg("List.term_vectors() called on non-list")),
                 }
             }
-            ListOp::ListOpIndexed { list_op, indices } => {
+            ListOp::ListOpIndexed {
+                list_op, indices, ..
+            } => {
                 let term_vectors = list_op.term_vectors(defs)?;
                 let index_vectors = indices.vectorize(term_vectors.len())?;
 
@@ -83,6 +85,7 @@ impl GetLengthRatio<Term> for ListOp {
                 }
             }
             ListOp::ListOpIndexed { .. } => {
+                unimplemented!();
                 let mut nf = NormalForm::init();
                 self.apply_to_normal_form(&mut nf, defs)?;
                 nf.get_length_ratio(normal_form, defs)
@@ -149,7 +152,7 @@ impl ListOp {
                     Ok(nf)
                 })
                 .collect(),
-            ListOp::GenOp { value } => value.to_owned().generate_from_genop(input, None, defs),
+            ListOp::GenOp { value, .. } => value.to_owned().generate_from_genop(input, None, defs),
         }
     }
 }
@@ -160,7 +163,17 @@ impl Normalize<Term> for ListOp {
         input: &mut NormalForm,
         defs: &mut Defs<Term>,
     ) -> Result<(), Error> {
-        *input = join_list_nf(self.to_list_nf(input, defs)?);
+        match self {
+            ListOp::ListOpIndexed { direction, .. } => match direction {
+                crate::Direction::Sequence => {
+                    *input = join_list_nf(self.to_list_nf(input, defs)?);
+                }
+                crate::Direction::Overlay => {
+                    unimplemented!()
+                }
+            },
+            _ => *input = join_list_nf(self.to_list_nf(input, defs)?),
+        }
         Ok(())
     }
 }

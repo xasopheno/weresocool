@@ -8,6 +8,7 @@ use weresocool_ast::{
         ASR,
         FunDef,
         ListOp,
+        Direction,
         CoefState,
         Coefs,
         Coef,
@@ -173,7 +174,11 @@ ListConcat = Concat<ListIndexed>;
 
 ListIndexed: ListOp = {
   <listop: ListIndexed> "@" "[" <indices: Indices> "]" => {
-    ListOp::ListOpIndexed { list_op: Box::new(listop), indices}
+    ListOp::ListOpIndexed { list_op: Box::new(listop), indices, direction: Direction::Sequence}
+  },
+
+  <listop: ListIndexed> "%" "[" <indices: Indices> "]" => {
+    ListOp::ListOpIndexed { list_op: Box::new(listop), indices, direction: Direction::Overlay}
   },
 
    "<" <list: List> ">" => list,
