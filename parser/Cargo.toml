@@ -8,12 +8,12 @@ description = "Parser for WereSoCool"
 license = "GPL-3.0" 
 
 [build-dependencies.lalrpop]
-version = "0.19.4"
+version = "0.19.6"
 features = ["lexer"]
 
 [dependencies]
-lalrpop-util = "0.19.4"
-regex = "1.4.3"
+lalrpop-util = "0.19.6"
+regex = "1.5.4"
 colored = "2.0.0"
 num-rational = "0.3.2"
 indexmap = "1.6.1"
