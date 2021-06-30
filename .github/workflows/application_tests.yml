@@ -32,12 +32,6 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
           yarn lint
-      - name: yarn build
-        working-directory: ./application
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-
-        run: yarn build
 
       - name: install dependancies
         run: brew install portaudio pkg-config lame

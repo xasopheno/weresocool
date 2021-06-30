@@ -9,8 +9,8 @@
  * `./app/main.prod.js` using webpack. This gives us some performance wins.
  */
 import path from 'path';
-import { app, BrowserWindow } from 'electron';
-import { autoUpdater } from 'electron-updater';
+import {app, BrowserWindow} from 'electron';
+import {autoUpdater} from 'electron-updater';
 import log from 'electron-log';
 import MenuBuilder from './menu';
 import child_process from 'child_process';
@@ -59,7 +59,7 @@ const createWindow = async () => {
 
   let server_path = path.join(extraResourcesPath, 'weresocool_server');
 
-  const port = await getPort({ port: 4588 });
+  const port = await getPort({port: 4588});
   process.env.BACKEND_PORT = port.toString();
 
   let server = child_process.spawn(server_path, [], {
@@ -79,6 +79,8 @@ const createWindow = async () => {
     webPreferences: {
       devTools: showDevTools,
       nodeIntegration: true,
+      enableRemoteModule: true,
+      contextIsolation: false
     },
   });
   mainWindow.setBackgroundColor('#454343');
