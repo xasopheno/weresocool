@@ -80,8 +80,7 @@ const createWindow = async () => {
       devTools: showDevTools,
       nodeIntegration: true,
       enableRemoteModule: true,
-      contextIsolation: false,
-
+      contextIsolation: false
     },
   });
   mainWindow.setBackgroundColor('#454343');
