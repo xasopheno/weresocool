@@ -11,11 +11,11 @@ impl Substitute<Term> for ListOp {
         defs: &mut Defs<Term>,
     ) -> Result<Term, Error> {
         match self {
-            ListOp::Const { value: terms } => Ok(Term::Lop(ListOp::Const {
-                value: substitute_operations(terms.to_vec(), normal_form, defs)?,
+            ListOp::Const { terms } => Ok(Term::Lop(ListOp::Const {
+                terms: substitute_operations(terms.to_vec(), normal_form, defs)?,
             })),
-            ListOp::Named { value } => {
-                let term = handle_id_error(value, defs)?;
+            ListOp::Named { name } => {
+                let term = handle_id_error(name, defs)?;
 
                 match term {
                     Term::Lop(lop) => lop.substitute(normal_form, defs),
@@ -23,7 +23,7 @@ impl Substitute<Term> for ListOp {
                 }
             }
             ListOp::ListOpIndexed { .. } => Ok(Term::Lop(ListOp::Const {
-                value: self
+                terms: self
                     .term_vectors(defs)?
                     .iter_mut()
                     .map(|term_vector| {
@@ -38,15 +38,15 @@ impl Substitute<Term> for ListOp {
                     })
                     .collect::<Result<Vec<Term>, Error>>()?,
             })),
-            ListOp::Concat { value } => {
+            ListOp::Concat { listops } => {
                 let mut result = vec![];
-                for list in value {
+                for list in listops {
                     result.push(list.substitute(normal_form, defs)?)
                 }
 
-                Ok(Term::Lop(ListOp::Const { value: result }))
+                Ok(Term::Lop(ListOp::Const { terms: result }))
             }
-            ListOp::GenOp { value, .. } => value.substitute(normal_form, defs),
+            ListOp::GenOp { gen, .. } => gen.substitute(normal_form, defs),
         }
     }
 }

@@ -7,10 +7,10 @@ use crate::{GenOp, Term};
 #[derive(Clone, PartialEq, Debug, Hash)]
 pub enum ListOp {
     Const {
-        value: Vec<Term>,
+        terms: Vec<Term>,
     },
     Named {
-        value: String,
+        name: String,
     },
     ListOpIndexed {
         list_op: Box<ListOp>,
@@ -18,10 +18,10 @@ pub enum ListOp {
         direction: Direction,
     },
     GenOp {
-        value: GenOp,
+        gen: GenOp,
     },
     Concat {
-        value: Vec<ListOp>,
+        listops: Vec<ListOp>,
     },
 }
 

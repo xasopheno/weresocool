@@ -9,15 +9,15 @@ use weresocool_error::Error;
 impl ListOp {
     pub fn term_vectors(&self, defs: &mut Defs<Term>) -> Result<Vec<TermVector>, Error> {
         match self {
-            ListOp::Const { value } => Ok(value
+            ListOp::Const { terms } => Ok(terms
                 .iter()
                 .map(|term| TermVector {
                     term: term.to_owned(),
                     index_terms: vec![],
                 })
                 .collect()),
-            ListOp::Named { value } => {
-                let term = handle_id_error(value.to_string(), defs)?;
+            ListOp::Named { name } => {
+                let term = handle_id_error(name.to_string(), defs)?;
                 match term {
                     Term::Lop(lop) => lop.term_vectors(defs),
                     _ => Err(Error::with_msg("List.term_vectors() called on non-list")),
@@ -40,16 +40,16 @@ impl ListOp {
                     })
                     .collect())
             }
-            ListOp::Concat { value } => {
+            ListOp::Concat { listops } => {
                 let mut result = vec![];
-                for list in value {
+                for list in listops {
                     result.extend(list.term_vectors(defs)?)
                 }
 
                 Ok(result)
             }
-            ListOp::GenOp { value } => {
-                let result = value
+            ListOp::GenOp { gen } => {
+                let result = gen
                     .to_owned()
                     .term_vectors_from_genop(None, defs)?
                     .iter()
@@ -71,13 +71,13 @@ impl GetLengthRatio<Term> for ListOp {
         defs: &mut Defs<Term>,
     ) -> Result<Rational64, Error> {
         match self {
-            ListOp::Const { value } => value
+            ListOp::Const { terms } => terms
                 .iter()
                 .try_fold(Rational64::from_integer(0), |acc, term| {
                     Ok(acc + term.get_length_ratio(normal_form, defs)?)
                 }),
-            ListOp::Named { value } => {
-                let term = handle_id_error(value, defs)?;
+            ListOp::Named { name } => {
+                let term = handle_id_error(name, defs)?;
                 match term {
                     Term::Lop(lop) => lop.get_length_ratio(normal_form, defs),
                     _ => Err(Error::with_msg(
@@ -90,12 +90,12 @@ impl GetLengthRatio<Term> for ListOp {
                 self.apply_to_normal_form(&mut nf, defs)?;
                 nf.get_length_ratio(normal_form, defs)
             }
-            ListOp::Concat { value } => value
+            ListOp::Concat { listops } => listops
                 .iter()
                 .try_fold(Rational64::from_integer(0), |acc, term| {
                     Ok(acc + term.get_length_ratio(normal_form, defs)?)
                 }),
-            ListOp::GenOp { value } => value.get_length_ratio(normal_form, defs),
+            ListOp::GenOp { gen } => gen.get_length_ratio(normal_form, defs),
         }
     }
 }
@@ -107,7 +107,7 @@ impl ListOp {
         defs: &mut Defs<Term>,
     ) -> Result<Vec<NormalForm>, Error> {
         match self {
-            ListOp::Const { value } => value
+            ListOp::Const { terms } => terms
                 .iter()
                 .map(|op| {
                     let mut input_clone = input.clone();
@@ -116,8 +116,8 @@ impl ListOp {
                 })
                 .collect::<Result<Vec<NormalForm>, Error>>(),
 
-            ListOp::Named { value } => {
-                let term = handle_id_error(value, defs)?;
+            ListOp::Named { name } => {
+                let term = handle_id_error(name, defs)?;
                 match term {
                     Term::Lop(lop) => lop.to_list_nf(input, defs),
 
@@ -144,7 +144,7 @@ impl ListOp {
                     Ok(nf)
                 })
                 .collect::<Result<Vec<NormalForm>, Error>>(),
-            ListOp::Concat { value } => value
+            ListOp::Concat { listops } => listops
                 .iter()
                 .map(|list| {
                     let mut nf = input.clone();
@@ -152,7 +152,7 @@ impl ListOp {
                     Ok(nf)
                 })
                 .collect(),
-            ListOp::GenOp { value, .. } => value.to_owned().generate_from_genop(input, None, defs),
+            ListOp::GenOp { gen } => gen.to_owned().generate_from_genop(input, None, defs),
         }
     }
 }
