@@ -1,8 +1,8 @@
 //  Important to match spectron and electron versions
 //  https://github.com/electron-userland/spectron#version-map
-import { Application } from 'spectron';
-import { assert } from 'chai';
-import { tutorial_list, album_list } from '../../app/components/tutorial_list';
+import {Application} from 'spectron';
+import {assert} from 'chai';
+import {tutorial_list, album_list} from '../../app/components/tutorial_list';
 
 describe('Application launch', function () {
   let app: Application;
@@ -57,10 +57,10 @@ describe('Application launch', function () {
 
   it('should display #led_good after choosing each demo/tutorial', async function () {
     await app.client.waitUntilWindowLoaded();
-    const results: { [key: string]: boolean } = {};
+    const results: {[key: string]: boolean} = {};
     const demos = [
-      { button: '#magicButton', list: album_list },
-      { button: '#questionButton', list: tutorial_list },
+      {button: '#magicButton', list: album_list},
+      {button: '#questionButton', list: tutorial_list},
     ];
     for (const demo of demos) {
       for (const song in demo.list) {
