@@ -165,9 +165,6 @@ impl Normalize<Term> for ListOp {
     ) -> Result<(), Error> {
         match self {
             ListOp::ListOpIndexed { direction, .. } => match direction {
-                crate::Direction::Sequence => {
-                    *input = join_list_nf(self.to_list_nf(input, defs)?);
-                }
                 crate::Direction::Overlay => {
                     Op::Overlay {
                         operations: self
@@ -177,6 +174,9 @@ impl Normalize<Term> for ListOp {
                             .collect(),
                     }
                     .apply_to_normal_form(input, defs)?;
+                }
+                _ => {
+                    *input = join_list_nf(self.to_list_nf(input, defs)?);
                 }
             },
             _ => *input = join_list_nf(self.to_list_nf(input, defs)?),
