@@ -8,6 +8,7 @@ use weresocool_ast::{
         ASR,
         FunDef,
         ListOp,
+        Direction,
         CoefState,
         Coefs,
         Coef,
@@ -164,7 +165,7 @@ CoefTimes: usize = {
 
 
 List: ListOp = {
-  <lists: ListConcat> => ListOp::Concat(lists),
+  <listops: ListConcat> => ListOp::Concat{ listops },
   <list: ListIndexed> => list,
 
 }
@@ -173,7 +174,11 @@ ListConcat = Concat<ListIndexed>;
 
 ListIndexed: ListOp = {
   <listop: ListIndexed> "@" "[" <indices: Indices> "]" => {
-    ListOp::ListOpIndexed { list_op: Box::new(listop), indices}
+    ListOp::ListOpIndexed { list_op: Box::new(listop), indices, direction: Direction::Sequence}
+  },
+
+  <listop: ListIndexed> "%" "[" <indices: Indices> "]" => {
+    ListOp::ListOpIndexed { list_op: Box::new(listop), indices, direction: Direction::Overlay}
   },
 
    "<" <list: List> ">" => list,
@@ -182,19 +187,19 @@ ListIndexed: ListOp = {
 }
 
 ListBase: ListOp = {
-  r"(List|&)" "[" <operations: Operations> "]" => {
-    ListOp::Const(operations)
+  r"(List|&)" "[" <terms: Operations> "]" => {
+    ListOp::Const{ terms }
   },
 
   r"(List|&)" <name: Name> => {
-    ListOp::Named(name)
+    ListOp::Named { name }
   },
 
   "ET" "(" <n: Int> ")" => {
-    ListOp::Const(et(n))
+    ListOp::Const{ terms: et(n) }
   },
 
-  r"(List|&)" <gen: Generator> => ListOp::GenOp(gen)
+  r"(List|&)" <gen: Generator> => ListOp::GenOp { gen }
 }
 
 Indices: Indices = {

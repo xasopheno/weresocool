@@ -6,14 +6,29 @@ use crate::{GenOp, Term};
 
 #[derive(Clone, PartialEq, Debug, Hash)]
 pub enum ListOp {
-    Const(Vec<Term>),
-    Named(String),
+    Const {
+        terms: Vec<Term>,
+    },
+    Named {
+        name: String,
+    },
     ListOpIndexed {
         list_op: Box<ListOp>,
         indices: Indices,
+        direction: Direction,
     },
-    GenOp(GenOp),
-    Concat(Vec<ListOp>),
+    GenOp {
+        gen: GenOp,
+    },
+    Concat {
+        listops: Vec<ListOp>,
+    },
+}
+
+#[derive(Clone, PartialEq, Debug, Hash)]
+pub enum Direction {
+    Overlay,
+    Sequence,
 }
 
 #[derive(Clone, PartialEq, Debug, Hash)]

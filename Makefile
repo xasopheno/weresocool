@@ -69,7 +69,7 @@ test_rust:
 	cargo run --release --bin snapshot
 
 test_rust_generated:
-	cargo test _generated
+	cargo test --release _generated
 
 test_rehash:
 	cargo run --release --bin snapshot -- --rehash

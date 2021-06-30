@@ -1,0 +1,20 @@
+{ f: 220, l: 1, g: 1, p: 0 } 
+
+thing = {
+    &[Fm 1, Fm 9/8 | Lm 3] % [:]
+}
+
+main = {
+    Overlay [
+        Fm 2 | FitLength thing,
+        thing | FitLength Lm 6,
+    ]
+}
+
+expect = {
+    Overlay [
+        Fm 2 | Lm 3,
+        thing | Lm 2,
+    ]
+}
+

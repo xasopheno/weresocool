@@ -11,12 +11,10 @@ impl Substitute<Term> for ListOp {
         defs: &mut Defs<Term>,
     ) -> Result<Term, Error> {
         match self {
-            ListOp::Const(terms) => Ok(Term::Lop(ListOp::Const(substitute_operations(
-                terms.to_vec(),
-                normal_form,
-                defs,
-            )?))),
-            ListOp::Named(name) => {
+            ListOp::Const { terms } => Ok(Term::Lop(ListOp::Const {
+                terms: substitute_operations(terms.to_vec(), normal_form, defs)?,
+            })),
+            ListOp::Named { name } => {
                 let term = handle_id_error(name, defs)?;
 
                 match term {
@@ -24,8 +22,9 @@ impl Substitute<Term> for ListOp {
                     _ => Err(Error::with_msg("List.substitute() on called non-list")),
                 }
             }
-            ListOp::ListOpIndexed { .. } => Ok(Term::Lop(ListOp::Const(
-                self.term_vectors(defs)?
+            ListOp::ListOpIndexed { .. } => Ok(Term::Lop(ListOp::Const {
+                terms: self
+                    .term_vectors(defs)?
                     .iter_mut()
                     .map(|term_vector| {
                         let mut nf = normal_form.clone();
@@ -38,16 +37,16 @@ impl Substitute<Term> for ListOp {
                         Ok(Term::Nf(nf))
                     })
                     .collect::<Result<Vec<Term>, Error>>()?,
-            ))),
-            ListOp::Concat(lists) => {
+            })),
+            ListOp::Concat { listops } => {
                 let mut result = vec![];
-                for list in lists {
+                for list in listops {
                     result.push(list.substitute(normal_form, defs)?)
                 }
 
-                Ok(Term::Lop(ListOp::Const(result)))
+                Ok(Term::Lop(ListOp::Const { terms: result }))
             }
-            ListOp::GenOp(gen) => gen.substitute(normal_form, defs),
+            ListOp::GenOp { gen, .. } => gen.substitute(normal_form, defs),
         }
     }
 }
