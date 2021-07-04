@@ -288,7 +288,7 @@
     "electron-log": "4.2.4",
     "electron-notarize": "1.0.0",
     "electron-updater": "4.3.5",
-    "file-saver": "2.0.2",
+    "file-saver": "2.0.5",
     "get-port": "5.1.1",
     "history": "5.0.0",
     "jszip": "3.6.0",
