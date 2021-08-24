@@ -304,7 +304,7 @@
     "redux": "4.0.5",
     "redux-thunk": "2.3.0",
     "source-map-support": "0.5.19",
-    "styled-components": "5.2.1",
+    "styled-components": "5.3.1",
     "svg-loaders-react": "2.2.1"
   },
   "devEngines": {
