@@ -5,6 +5,7 @@ authors = ["Danny Meyer <weresocool@xasopheno.com>"]
 edition = "2018"
 description = "AST for WereSoCool"
 license = "GPL-3.0" 
+resolver="2"
 
 [dependencies]
 weresocool_error = { path = "../error", default_features=false, optional=true }

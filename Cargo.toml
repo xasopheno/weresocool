@@ -10,7 +10,7 @@ repository = "https://github.com/xasopheno/WereSoCool"
 keywords = ["microtonal", "binaural", "composition",  "audio", "music"]
 categories = ["multimedia::audio"]
 readme = "README.md"
-
+resolver="2"
 
 [dependencies]
 scop = { path = "scop" }
