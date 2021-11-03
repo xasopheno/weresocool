@@ -71,6 +71,7 @@ harness = false
 members = [
     "analyze",
     "ast",
+    "datagen",
     "error",
     "instrument",
     "lame",
