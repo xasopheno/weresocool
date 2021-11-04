@@ -913,8 +913,12 @@ name = "datagen"
 version = "0.1.0"
 dependencies = [
  "csv",
+ "num-rational",
+ "scop",
  "serde",
  "serde_json",
+ "weresocool_ast",
+ "weresocool_shared",
 ]
 
 [[package]]

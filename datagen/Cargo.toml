@@ -7,5 +7,9 @@ edition = "2021"
 
 [dependencies]
 csv = "1.1.6"
+num-rational = "0.3.2"
 serde = {version="1.0.68", features=["derive"]}
 serde_json = "1.0.68"
+weresocool_ast = { path = "../ast" }
+weresocool_shared = { path = "../shared" }
+scop = { path = "../scop" }
