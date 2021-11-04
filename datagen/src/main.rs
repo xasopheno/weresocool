@@ -1,4 +1,4 @@
-use num_rational::{Ratio, Rational64};
+use num_rational::Rational64;
 use scop::Defs;
 use serde::{Deserialize, Serialize};
 use std::fs::File;
@@ -36,8 +36,7 @@ fn vec_eeg_data_to_normal_form(data: &EEGData) -> NormalForm {
     let point_ops: Vec<PointOp> = data
         .data
         .iter()
-        .enumerate()
-        .map(|(idx, value)| eeg_datum_to_point_op(*value, 8))
+        .map(|value| eeg_datum_to_point_op(*value, 8))
         .collect();
 
     NormalForm {
