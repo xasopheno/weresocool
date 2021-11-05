@@ -47,7 +47,7 @@ fn vec_eeg_data_to_normal_form(data: &EEGData) -> NormalForm {
 
 fn eeg_datum_to_point_op(datum: f32, idx: usize) -> PointOp {
     let mut nameset = NameSet::new();
-    nameset.insert(format!("eeg{}", idx));
+    nameset.insert(format!("eeg_{}", idx));
     let fa = f32_to_rational(datum * 100_000.0);
     PointOp {
         fm: Rational64::new(1, 1),

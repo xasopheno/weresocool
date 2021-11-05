@@ -383,6 +383,10 @@ Lets<T>: Vec<T> = {
   <v:(<T>)*> => v
 };
 
+CSV: CSVData = {
+  "csv" <path: String> => CSVData { path }
+}
+
 Pipe<T>: Vec<T> = {
     <v:(<T> "|")+> <e:T?> => match e {
         None=> v,
