@@ -1,8 +1,9 @@
+use crate::datagen::csv_to_normalform;
 use crate::operations::Rational64;
 use crate::operations::{
     helpers::*, substitute::insert_function_args, GetLengthRatio, NormalForm, Normalize, Substitute,
 };
-use crate::{FunDef, Op, OscType, Term, Term::*};
+use crate::{datagen, FunDef, Op, OscType, Term, Term::*};
 use num_rational::Ratio;
 use num_traits::CheckedMul;
 use scop::Defs;
@@ -35,7 +36,7 @@ impl Normalize<Term> for Op {
                 handle_id_error(id, defs)?.apply_to_normal_form(input, defs)?;
             }
             Op::CSV { path } => {
-                unimplemented!()
+                csv_to_normalform(path, 100_000.0).apply_to_normal_form(input, defs)?;
             }
             Op::FunctionCall { name, args } => {
                 let f = handle_id_error(name.to_string(), defs)?;

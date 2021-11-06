@@ -12,7 +12,7 @@ pub struct EEGData {
     data: Vec<f32>,
 }
 
-fn csv_to_normalform(filename: &str, scale: f32) -> NormalForm {
+pub fn csv_to_normalform(filename: &str, scale: f32) -> NormalForm {
     // let file_path = "data/sample_audvis_filt-0-40_raw_chanel_EEG_008_array_0.csv";
     let data = get_data(filename.into());
     vec_eeg_data_to_normal_form(data, scale)
