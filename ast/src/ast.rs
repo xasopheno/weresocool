@@ -14,6 +14,10 @@ pub enum Op {
     Id(String),
     Tag(String),
     //
+    CSV {
+        path: String,
+    },
+    //
     FunctionCall {
         name: String,
         args: Vec<Term>,

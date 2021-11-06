@@ -29,6 +29,10 @@ impl GetLengthRatio<Term> for Op {
             | Op::Tag(_)
             | Op::Gain { .. } => Ok(Ratio::from_integer(1)),
 
+            Op::CSV { path } => {
+                unimplemented!()
+            }
+
             Op::Lambda {
                 term,
                 input_name,
