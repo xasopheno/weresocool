@@ -248,6 +248,8 @@ Composeable: Term = {
 }
 
 BaseOperation: Term = {
+    "csv" <path: Import> => Term::Op(CSV { path }),
+    //
     r"\\|Lambda" <input_name: Parenthesized<Name>?> "{" <term: Operation> "}" => Term::Op(Lambda { term: Box::new(term),
         input_name, scope: uuid::Uuid::new_v4().to_string()}),
     "(" <o: Operation> ")" => o,
@@ -374,17 +376,9 @@ Parenthesized<T>: T = {
     "(" <t: T> ")" => t,
 };
 
-Import: Vec<String> = {
-    <a: Name>"."<b: Name> => vec![a, b],
-    <a: Name> => vec![a]
-};
 
 Lets<T>: Vec<T> = {
   <v:(<T>)*> => v
-};
-
-CSV: CSVData = {
-  "csv" <path: String> => CSVData { path }
 };
 
 Pipe<T>: Vec<T> = {
@@ -451,6 +445,7 @@ L: String = <s: r"l:"> => s.to_string();
 P: String = <s: r"p:"> => s.to_string();
 
 
+Import: String = <s:r"\./[a-zA-Z\./]*"> => s.to_string();
 Name: String = <s:r"[a-z_][a-zA-Z_0-9.]*"> => s.to_string();
 Float: String = <s:r"-?(0|([1-9]\d*))\.\d+"> => s.to_string();
 Int: i64 = <s:r"-?[0-9]+"> => i64::from_str(s).unwrap();
