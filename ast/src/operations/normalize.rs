@@ -35,9 +35,11 @@ impl Normalize<Term> for Op {
             Op::Id(id) => {
                 handle_id_error(id, defs)?.apply_to_normal_form(input, defs)?;
             }
+
             Op::CSV { path } => {
-                csv_to_normalform(path, 100_000.0).apply_to_normal_form(input, defs)?;
+                csv_to_normalform(path, 200_000.0).apply_to_normal_form(input, defs)?;
             }
+
             Op::FunctionCall { name, args } => {
                 let f = handle_id_error(name.to_string(), defs)?;
                 insert_function_args(&f, args, defs)?;
