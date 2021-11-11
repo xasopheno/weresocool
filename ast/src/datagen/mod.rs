@@ -57,9 +57,9 @@ fn eeg_datum_to_point_op(datum: f32, idx: usize, scale: f32) -> PointOp {
     let mut nameset = NameSet::new();
     nameset.insert(format!("eeg_{}", idx));
     // let datum = (datum + 2.0) / 2.0;
-    let datum = datum * 1_000_000_000_000_000.0;
+    let datum = datum * 200_000_000_000_000.0;
     // let datum = datum * scale;
-    let fa = f32_to_rational(datum);
+    let fa = f32_to_rational(datum.abs());
     // dbg!(fm);
     PointOp {
         // fm,
