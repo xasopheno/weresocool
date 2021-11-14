@@ -445,7 +445,7 @@ L: String = <s: r"l:"> => s.to_string();
 P: String = <s: r"p:"> => s.to_string();
 
 
-Import: String = <s:r"\./[\.a-zA-Z/]*"> => s.to_string();
+Import: String = <s:r"\./[a-zA-Z0-9_/]+\.csv"> => s.to_string();
 Name: String = <s:r"[a-z_][a-zA-Z_0-9.]*"> => s.to_string();
 Float: String = <s:r"-?(0|([1-9]\d*))\.\d+"> => s.to_string();
 Int: i64 = <s:r"-?[0-9]+"> => i64::from_str(s).unwrap();
