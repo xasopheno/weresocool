@@ -1,9 +1,10 @@
 use crate::{NameSet, NormalForm, Normalize, Op, OscType, PointOp, Term, ASR};
-use num_rational::Rational64;
+use num_rational::{Ratio, Rational64};
 use scop::Defs;
 use serde::{Deserialize, Serialize};
+use std::str::FromStr;
 use std::{fs::File, path::Path};
-use weresocool_shared::helpers::f32_to_rational;
+// use weresocool_shared::helpers::f32_to_rational;
 
 mod test;
 
@@ -41,7 +42,7 @@ fn eeg_data_to_normal_form(data: &EEGData, scale: f32) -> NormalForm {
         .data
         .iter()
         .map(|value| {
-            let op = eeg_datum_to_point_op(*value, 1, scale);
+            let op = eeg_datum_to_point_op(*value, 1);
             length_ratio += op.l;
             op
         })
@@ -53,13 +54,38 @@ fn eeg_data_to_normal_form(data: &EEGData, scale: f32) -> NormalForm {
     }
 }
 
-fn eeg_datum_to_point_op(datum: f32, idx: usize, scale: f32) -> PointOp {
+pub fn f32_string_to_rational(float_string: String) -> Rational64 {
+    let decimal = float_string.split('.').collect::<Vec<&str>>()[1];
+    let den = i64::pow(10, decimal.len() as u32);
+    let num = i64::from_str(&float_string.replace('.', "")).unwrap();
+
+    Ratio::new(num, den)
+}
+
+pub fn f32_to_rational(mut float: f32) -> Rational64 {
+    if !float.is_finite() || float > 100_000_000.0 {
+        float = 0.0
+    }
+    let float_string = format!("{:.8}", float);
+    let decimal = float_string.split('.').collect::<Vec<&str>>()[1];
+    let den = i64::pow(10, decimal.len() as u32);
+    let num = i64::from_str(&float_string.replace('.', "")).unwrap();
+
+    Ratio::new(num, den)
+}
+
+fn eeg_datum_to_point_op(datum: f32, idx: usize) -> PointOp {
     let mut nameset = NameSet::new();
     nameset.insert(format!("eeg_{}", idx));
     // let datum = (datum + 2.0) / 2.0;
+    // dbg!(datum);
     let datum = datum * 200_000_000_000_000.0;
+    // dbg!(datum);
     // let datum = datum * scale;
     let fa = f32_to_rational(datum.abs());
+    // if fa == Rational64::new(0, 1) {
+    // dbg!(fa);
+    // };
     // dbg!(fm);
     PointOp {
         // fm,
