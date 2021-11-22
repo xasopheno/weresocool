@@ -735,6 +735,15 @@ dependencies = [
 ]
 
 [[package]]
+name = "circular-queue"
+version = "0.2.6"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "1d34327ead1c743a10db339de35fb58957564b99d248a67985c55638b22c59b5"
+dependencies = [
+ "version_check 0.9.3",
+]
+
+[[package]]
 name = "clap"
 version = "2.33.3"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -2199,6 +2208,12 @@ dependencies = [
 ]
 
 [[package]]
+name = "rb"
+version = "0.3.2"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "a27f4c5756bd2bfb5942758d8168805655c62388eef0544e581a2bfa5b532f15"
+
+[[package]]
 name = "redox_syscall"
 version = "0.2.9"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -2253,6 +2268,15 @@ dependencies = [
 [[package]]
 name = "reverb"
 version = "0.3.0"
+
+[[package]]
+name = "ringbuf"
+version = "0.2.6"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "6c60f3923939c33e6c543ddbff14d0ee6a407fcd186d560be37282559616adf3"
+dependencies = [
+ "cache-padded",
+]
 
 [[package]]
 name = "rust-embed"
@@ -3066,6 +3090,7 @@ dependencies = [
 name = "weresocool_ast"
 version = "0.5.0"
 dependencies = [
+ "circular-queue",
  "colored",
  "csv",
  "indexmap",
@@ -3076,6 +3101,8 @@ dependencies = [
  "polynomials",
  "pretty_assertions",
  "rand",
+ "rb",
+ "ringbuf",
  "scop",
  "serde",
  "weresocool_error",

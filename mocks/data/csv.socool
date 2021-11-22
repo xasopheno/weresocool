@@ -2,7 +2,7 @@
 
 
 main = {
-    csv ./csv.socool
+    csv(2.0e2) ./csv.socool
 }
 
 expect = {

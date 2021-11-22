@@ -16,6 +16,7 @@ pub enum Op {
     //
     CSV {
         path: String,
+        scale: Option<Rational64>,
     },
     //
     FunctionCall {
