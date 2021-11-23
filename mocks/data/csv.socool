@@ -2,9 +2,12 @@
 
 
 main = {
-    csv(2.0e2) ./csv.socool
+    csv(2.0e14) ./mocks/data/data.csv
 }
 
 expect = {
-    AsIs
+    Seq [
+     Fa 1/1, Fa 3/2, Fa 2/1
+    ] | Lm 1/50
+    | #eeg_1
 }

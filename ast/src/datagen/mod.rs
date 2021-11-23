@@ -102,17 +102,10 @@ fn eeg_datum_to_point_op(
         datum = sum / b_vec.len() as f32;
     }
 
-    // dbg!(datum);
-    // let datum = datum * scale;
     let fa = f32_to_rational(datum);
-    // if fa == Rational64::new(0, 1) {
-    // dbg!(fa);
-    // };
-    // dbg!(fm);
     PointOp {
         // fm,
         fm: Rational64::new(1, 1),
-        // fa: Rational64::new(0, 1),
         fa,
         l: Rational64::new(2, 100),
         g: Rational64::new(1, 1),
@@ -129,8 +122,17 @@ fn eeg_datum_to_point_op(
 }
 
 fn get_data(filename: String) -> Vec<EEGData> {
+    //TODO: Return Error
     let path = Path::new(&filename);
-    let file = File::open(path).expect("unable to read file");
+    let cwd = std::env::current_dir().unwrap();
+    let file = File::open(path).expect(
+        format!(
+            "unable to read file: {}. current working directory is: {}",
+            path.display().to_string(),
+            cwd.display().to_string(),
+        )
+        .as_str(),
+    );
     let mut rdr = csv::ReaderBuilder::new()
         .has_headers(false)
         .delimiter(b',')
