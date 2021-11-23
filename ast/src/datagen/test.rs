@@ -9,8 +9,8 @@ mod eeg_test {
     #[test]
     fn test_eeg_datum_to_point_op() {
         let mut names = NameSet::new();
-        names.insert(format!("eeg_{}", 1));
-        let result = eeg_datum_to_point_op(1.0e-14, 1, None, 2.0e14);
+        names.insert("data.csv".into());
+        let result = eeg_datum_to_point_op(1.0e-14, 1, None, 2.0e14, "data.csv");
         let expected = PointOp {
             fa: Rational64::new(2, 1),
             l: Rational64::new(1, 50),
@@ -26,8 +26,8 @@ mod eeg_test {
             data: vec![0.5e-14, 1.0e-14, 1.5e-14],
         };
         let mut names = NameSet::new();
-        names.insert(format!("eeg_{}", 1));
-        let result = eeg_data_to_normal_form(&eeg_data, 2.0e14);
+        names.insert("data.csv".into());
+        let result = eeg_data_to_normal_form(&eeg_data, 2.0e14, "data.csv");
         let expected = NormalForm {
             operations: vec![vec![
                 PointOp {
@@ -61,7 +61,7 @@ mod eeg_test {
         );
 
         let mut names = NameSet::new();
-        names.insert(format!("eeg_{}", 1));
+        names.insert("test_data.csv".into());
         let expected = NormalForm {
             operations: vec![vec![
                 PointOp {

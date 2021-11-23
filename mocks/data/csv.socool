@@ -9,5 +9,5 @@ expect = {
     Seq [
      Fa 1/1, Fa 3/2, Fa 2/1
     ] | Lm 1/50
-    | #eeg_1
+    | #data.csv
 }

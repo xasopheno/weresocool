@@ -16,6 +16,7 @@ pub struct EEGData {
 
 pub fn csv_to_normalform(filename: &str, scale: Option<Rational64>) -> NormalForm {
     let data = get_data(filename.into());
+    let path = Path::new(&filename);
     vec_eeg_data_to_normal_form(
         data,
         if let Some(s) = scale {
@@ -23,13 +24,18 @@ pub fn csv_to_normalform(filename: &str, scale: Option<Rational64>) -> NormalFor
         } else {
             1.0
         },
+        path.file_name()
+            .unwrap()
+            .to_string_lossy()
+            .to_string()
+            .as_str(),
     )
 }
 
-fn vec_eeg_data_to_normal_form(data: Vec<EEGData>, scale: f32) -> NormalForm {
+fn vec_eeg_data_to_normal_form(data: Vec<EEGData>, scale: f32, filename: &str) -> NormalForm {
     let mut nfs: Vec<NormalForm> = data
         .iter()
-        .map(|stream| eeg_data_to_normal_form(stream, scale))
+        .map(|stream| eeg_data_to_normal_form(stream, scale, filename))
         .collect();
 
     let overlay = Op::Overlay {
@@ -43,7 +49,7 @@ fn vec_eeg_data_to_normal_form(data: Vec<EEGData>, scale: f32) -> NormalForm {
     nf
 }
 
-fn eeg_data_to_normal_form(data: &EEGData, scale: f32) -> NormalForm {
+fn eeg_data_to_normal_form(data: &EEGData, scale: f32, filename: &str) -> NormalForm {
     let mut length_ratio = Rational64::new(0, 1);
 
     let mut buffer = ringbuffer::RingBuffer::<f32>::new(50);
@@ -52,7 +58,7 @@ fn eeg_data_to_normal_form(data: &EEGData, scale: f32) -> NormalForm {
         .data
         .iter()
         .map(|value| {
-            let op = eeg_datum_to_point_op(*value, 1, Some(&mut buffer), scale);
+            let op = eeg_datum_to_point_op(*value, 1, Some(&mut buffer), scale, filename);
             length_ratio += op.l;
             op
         })
@@ -89,9 +95,10 @@ fn eeg_datum_to_point_op(
     idx: usize,
     buffer: Option<&mut ringbuffer::RingBuffer<f32>>,
     scale: f32,
+    filename: &str,
 ) -> PointOp {
     let mut nameset = NameSet::new();
-    nameset.insert(format!("eeg_{}", idx));
+    nameset.insert(filename.into());
     // let mut datum = (datum * 200_000_000_000_000.0).abs();
     let mut datum = datum.abs() * scale;
     if let Some(b) = buffer {
