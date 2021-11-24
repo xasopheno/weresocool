@@ -1,5 +1,5 @@
 use crate::{
-    generation::{to_csv, to_json},
+    generation::{to_csv, to_json_file},
     ui::printed,
     write::{write_composition_to_mp3, write_composition_to_wav},
 };
@@ -128,6 +128,10 @@ pub fn parsed_to_render(
     let basis = Basis::from(parsed_composition.init);
 
     match return_type {
+        RenderType::AudioVisualBinary => {
+            unimplemented!()
+        }
+
         RenderType::Stems { cli, output_dir } => {
             let nf_names = nf.names();
             let names = parsed_composition.defs.stems.clone();
@@ -175,7 +179,7 @@ pub fn parsed_to_render(
             parsed_composition.defs,
         )),
         RenderType::Json4d { output_dir, .. } => {
-            to_json(
+            to_json_file(
                 &basis,
                 &nf,
                 &mut parsed_composition.defs,

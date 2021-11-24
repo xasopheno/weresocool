@@ -308,13 +308,13 @@ struct Json1d {
     length: f64,
 }
 
-pub fn to_json(
+pub fn to_normalized_op4d_1d(
     basis: &Basis,
     composition: &NormalForm,
     defs: &mut Defs<Term>,
     filename: String,
     output_dir: PathBuf,
-) -> Result<(), Error> {
+) -> Result<(Vec<Op4D>, f64), Error> {
     banner("JSONIFY-ing".to_string(), filename.clone());
 
     let (vec_timed_op, _) = composition_to_vec_timed_op(composition, defs)?;
@@ -327,8 +327,21 @@ pub fn to_json(
     });
 
     let (normalizer, max_len) = get_min_max_op4d_1d(&op4d_1d);
-
     normalize_op4d_1d(&mut op4d_1d, normalizer);
+
+    Ok((op4d_1d, max_len))
+}
+
+pub fn to_json_file(
+    basis: &Basis,
+    composition: &NormalForm,
+    defs: &mut Defs<Term>,
+    filename: String,
+    output_dir: PathBuf,
+) -> Result<(), Error> {
+    banner("JSONIFY-ing".to_string(), filename.clone());
+
+    let (op4d_1d, max_len) = to_normalized_op4d_1d(basis, composition, defs, filename, output_dir)?;
 
     let json = to_string(&Json1d {
         ops: op4d_1d,
