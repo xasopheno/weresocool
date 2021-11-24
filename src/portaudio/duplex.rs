@@ -1,9 +1,7 @@
-use crate::{
-    generation::parsed_to_render::sum_all_waveforms, ring_buffer::RingBuffer,
-    write::write_output_buffer,
-};
+use crate::{generation::parsed_to_render::sum_all_waveforms, write::write_output_buffer};
 use portaudio as pa;
 use rayon::prelude::*;
+use ring_buffer::RingBuffer;
 use weresocool_analyze::{Analyze, DetectionResult};
 use weresocool_error::Error;
 use weresocool_instrument::renderable::{

@@ -1,23 +1,14 @@
-use weresocool::{
-    examples::documentation,
-    // interpretable::{InputType::Filename, Interpretable},
-    // portaudio::output_setup,
-    ui::{
-        // banner,
-        get_args,
-        no_file_name,
-        were_so_cool_logo,
-    },
+use weresocool::ui::{
+    // banner,
+    get_args,
+    no_file_name,
+    were_so_cool_logo,
 };
 // use weresocool_error::Error;
 
 fn main() {
     were_so_cool_logo();
     let args = get_args();
-
-    if args.is_present("doc") {
-        documentation();
-    }
 
     let filename = args.value_of("filename");
     match filename {

@@ -1,5 +1,4 @@
 use weresocool::{
-    examples::documentation,
     generation::parsed_to_render::{RenderReturn, RenderType},
     interpretable::{InputType::Filename, Interpretable},
     portaudio::duplex_setup,
@@ -14,10 +13,6 @@ fn main() -> Result<(), Error> {
     println!("       )))***=== REAL<GOOD>TIME *mic ===***(((  \n ");
 
     let args = get_args();
-
-    if args.is_present("doc") {
-        documentation();
-    }
 
     let filename = args.value_of("filename");
     match filename {

@@ -1,12 +1,11 @@
 use crate::{NameSet, NormalForm, Normalize, Op, OscType, PointOp, Term, ASR};
 use num_rational::{Ratio, Rational64};
+use ring_buffer::RingBuffer;
 use scop::Defs;
 use serde::{Deserialize, Serialize};
 use std::str::FromStr;
 use std::{fs::File, path::Path};
 use weresocool_shared::helpers::r_to_f32;
-
-mod ringbuffer;
 mod test;
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
@@ -52,7 +51,7 @@ fn vec_eeg_data_to_normal_form(data: Vec<EEGData>, scale: f32, filename: &str) -
 fn eeg_data_to_normal_form(data: &EEGData, scale: f32, filename: &str) -> NormalForm {
     let mut length_ratio = Rational64::new(0, 1);
 
-    let mut buffer = ringbuffer::RingBuffer::<f32>::new(50);
+    let mut buffer = RingBuffer::<f32>::new(50);
 
     let point_ops: Vec<PointOp> = data
         .data
@@ -93,7 +92,7 @@ pub fn f32_to_rational(mut float: f32) -> Rational64 {
 fn eeg_datum_to_point_op(
     datum: f32,
     idx: usize,
-    buffer: Option<&mut ringbuffer::RingBuffer<f32>>,
+    buffer: Option<&mut RingBuffer<f32>>,
     scale: f32,
     filename: &str,
 ) -> PointOp {

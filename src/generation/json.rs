@@ -313,7 +313,6 @@ pub fn to_normalized_op4d_1d(
     composition: &NormalForm,
     defs: &mut Defs<Term>,
     filename: String,
-    output_dir: PathBuf,
 ) -> Result<(Vec<Op4D>, f64), Error> {
     banner("JSONIFY-ing".to_string(), filename.clone());
 
@@ -341,7 +340,7 @@ pub fn to_json_file(
 ) -> Result<(), Error> {
     banner("JSONIFY-ing".to_string(), filename.clone());
 
-    let (op4d_1d, max_len) = to_normalized_op4d_1d(basis, composition, defs, filename, output_dir)?;
+    let (op4d_1d, max_len) = to_normalized_op4d_1d(basis, composition, defs, filename.clone())?;
 
     let json = to_string(&Json1d {
         ops: op4d_1d,

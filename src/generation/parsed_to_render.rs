@@ -1,5 +1,5 @@
 use crate::{
-    generation::{to_csv, to_json_file},
+    generation::{json::to_normalized_op4d_1d, to_csv, to_json_file},
     ui::printed,
     write::{write_composition_to_mp3, write_composition_to_wav},
 };
@@ -26,6 +26,8 @@ use weresocool_instrument::{Basis, Oscillator, StereoWaveform};
 use weresocool_parser::ParsedComposition;
 use weresocool_shared::{default_settings, Settings};
 
+use super::Op4D;
+
 const SETTINGS: Settings = default_settings();
 
 #[derive(Clone, PartialEq, Debug)]
@@ -42,7 +44,7 @@ pub enum RenderType {
     StereoWaveform,
     Wav(WavType),
     Stems { cli: bool, output_dir: PathBuf },
-    AudioVisualBinary,
+    AudioVisual,
 }
 
 #[derive(Clone, PartialEq, Debug, Deserialize, Serialize)]
@@ -61,10 +63,12 @@ pub struct Stem {
 pub struct AudioVisual {
     /// Composition name
     pub name: String,
+    /// length of seconds of composition
+    pub length: f32,
     /// audio data
     pub audio: Vec<u8>,
     /// visual data
-    pub visual: Vec<RenderOp>,
+    pub visual: Vec<Op4D>,
 }
 
 #[derive(Clone, PartialEq, Debug)]
@@ -80,7 +84,8 @@ pub enum RenderReturn {
     Wav(Vec<u8>),
     /// A vector of audio solo'd by names
     Stems(Vec<Stem>),
-    AudioVisualBinary(Vec<u8>),
+    /// Data for audiovisualization
+    AudioVisual(AudioVisual),
 }
 
 impl TryFrom<RenderReturn> for Vec<u8> {
@@ -128,8 +133,21 @@ pub fn parsed_to_render(
     let basis = Basis::from(parsed_composition.init);
 
     match return_type {
-        RenderType::AudioVisualBinary => {
-            unimplemented!()
+        RenderType::AudioVisual => {
+            let (visual, length) = to_normalized_op4d_1d(
+                &basis,
+                &nf,
+                &mut parsed_composition.defs,
+                filename.to_string(),
+            )?;
+            let stereo_waveform = render(&basis, &nf, &mut parsed_composition.defs)?;
+            let audio = write_composition_to_wav(stereo_waveform)?;
+            return Ok(RenderReturn::AudioVisual(AudioVisual {
+                name: filename.to_string(),
+                length: length as f32,
+                audio,
+                visual,
+            }));
         }
 
         RenderType::Stems { cli, output_dir } => {
