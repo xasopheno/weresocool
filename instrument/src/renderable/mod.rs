@@ -8,13 +8,14 @@ use rand::{thread_rng, Rng};
 use rayon::prelude::*;
 pub use render_voice::{renderables_to_render_voices, RenderVoice};
 use scop::Defs;
+use serde::{Deserialize, Serialize};
 use weresocool_ast::{NormalForm, Normalize, OscType, PointOp, Term, ASR};
 use weresocool_error::Error;
 use weresocool_shared::{default_settings, lossy_rational_mul, r_to_f64, Settings};
 
 const SETTINGS: Settings = default_settings();
 
-#[derive(Debug, Clone, PartialEq)]
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
 pub struct RenderOp {
     pub f: f64,
     pub p: f64,

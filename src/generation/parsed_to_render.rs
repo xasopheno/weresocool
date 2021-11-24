@@ -42,6 +42,7 @@ pub enum RenderType {
     StereoWaveform,
     Wav(WavType),
     Stems { cli: bool, output_dir: PathBuf },
+    AudioVisualBinary,
 }
 
 #[derive(Clone, PartialEq, Debug, Deserialize, Serialize)]
@@ -53,6 +54,17 @@ pub struct Stem {
     pub name: String,
     /// Stem audio
     pub audio: Vec<u8>,
+}
+
+#[derive(Clone, PartialEq, Debug, Deserialize, Serialize)]
+/// AudioVisual is the datatype for audiovisualization
+pub struct AudioVisual {
+    /// Composition name
+    pub name: String,
+    /// audio data
+    pub audio: Vec<u8>,
+    /// visual data
+    pub visual: Vec<RenderOp>,
 }
 
 #[derive(Clone, PartialEq, Debug)]
@@ -68,6 +80,7 @@ pub enum RenderReturn {
     Wav(Vec<u8>),
     /// A vector of audio solo'd by names
     Stems(Vec<Stem>),
+    AudioVisualBinary(Vec<u8>),
 }
 
 impl TryFrom<RenderReturn> for Vec<u8> {
