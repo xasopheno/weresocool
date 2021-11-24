@@ -3,7 +3,7 @@ use crate::operations::Rational64;
 use crate::operations::{
     helpers::*, substitute::insert_function_args, GetLengthRatio, NormalForm, Normalize, Substitute,
 };
-use crate::{datagen, FunDef, Op, OscType, Term, Term::*};
+use crate::{FunDef, Op, OscType, Term, Term::*};
 use num_rational::Ratio;
 use num_traits::CheckedMul;
 use scop::Defs;
@@ -37,7 +37,7 @@ impl Normalize<Term> for Op {
             }
 
             Op::CSV { path, scale } => {
-                csv_to_normalform(path, *scale).apply_to_normal_form(input, defs)?;
+                csv_to_normalform(path, *scale)?.apply_to_normal_form(input, defs)?;
             }
 
             Op::FunctionCall { name, args } => {

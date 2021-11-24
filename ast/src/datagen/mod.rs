@@ -5,6 +5,7 @@ use scop::Defs;
 use serde::{Deserialize, Serialize};
 use std::str::FromStr;
 use std::{fs::File, path::Path};
+use weresocool_error::Error;
 use weresocool_shared::helpers::r_to_f32;
 mod test;
 
@@ -13,10 +14,10 @@ pub struct EEGData {
     data: Vec<f32>,
 }
 
-pub fn csv_to_normalform(filename: &str, scale: Option<Rational64>) -> NormalForm {
-    let data = get_data(filename.into());
+pub fn csv_to_normalform(filename: &str, scale: Option<Rational64>) -> Result<NormalForm, Error> {
+    let data = get_data(filename.into())?;
     let path = Path::new(&filename);
-    vec_eeg_data_to_normal_form(
+    Ok(vec_eeg_data_to_normal_form(
         data,
         if let Some(s) = scale {
             r_to_f32(s)
@@ -28,7 +29,7 @@ pub fn csv_to_normalform(filename: &str, scale: Option<Rational64>) -> NormalFor
             .to_string_lossy()
             .to_string()
             .as_str(),
-    )
+    ))
 }
 
 fn vec_eeg_data_to_normal_form(data: Vec<EEGData>, scale: f32, filename: &str) -> NormalForm {
@@ -57,7 +58,7 @@ fn eeg_data_to_normal_form(data: &EEGData, scale: f32, filename: &str) -> Normal
         .data
         .iter()
         .map(|value| {
-            let op = eeg_datum_to_point_op(*value, 1, Some(&mut buffer), scale, filename);
+            let op = eeg_datum_to_point_op(*value, Some(&mut buffer), scale, filename);
             length_ratio += op.l;
             op
         })
@@ -69,14 +70,6 @@ fn eeg_data_to_normal_form(data: &EEGData, scale: f32, filename: &str) -> Normal
     }
 }
 
-pub fn f32_string_to_rational(float_string: String) -> Rational64 {
-    let decimal = float_string.split('.').collect::<Vec<&str>>()[1];
-    let den = i64::pow(10, decimal.len() as u32);
-    let num = i64::from_str(&float_string.replace('.', "")).unwrap();
-
-    Ratio::new(num, den)
-}
-
 pub fn f32_to_rational(mut float: f32) -> Rational64 {
     if !float.is_finite() || float > 100_000_000.0 {
         float = 0.0
@@ -84,14 +77,14 @@ pub fn f32_to_rational(mut float: f32) -> Rational64 {
     let float_string = format!("{:.8}", float);
     let decimal = float_string.split('.').collect::<Vec<&str>>()[1];
     let den = i64::pow(10, decimal.len() as u32);
-    let num = i64::from_str(&float_string.replace('.', "")).unwrap();
+    let num = i64::from_str(&float_string.replace('.', ""))
+        .expect(format!("error converting {} to i64", float_string).as_str());
 
     Ratio::new(num, den)
 }
 
 fn eeg_datum_to_point_op(
     datum: f32,
-    idx: usize,
     buffer: Option<&mut RingBuffer<f32>>,
     scale: f32,
     filename: &str,
@@ -127,10 +120,10 @@ fn eeg_datum_to_point_op(
     }
 }
 
-fn get_data(filename: String) -> Vec<EEGData> {
+fn get_data(filename: String) -> Result<Vec<EEGData>, Error> {
     //TODO: Return Error
     let path = Path::new(&filename);
-    let cwd = std::env::current_dir().unwrap();
+    let cwd = std::env::current_dir()?;
     let file = File::open(path).expect(
         format!(
             "unable to read file: {}. current working directory is: {}",
@@ -144,5 +137,8 @@ fn get_data(filename: String) -> Vec<EEGData> {
         .delimiter(b',')
         .from_reader(file);
 
-    rdr.deserialize::<EEGData>().map(|t| t.unwrap()).collect()
+    Ok(rdr
+        .deserialize::<EEGData>()
+        .map(|datum| datum.expect("Error deserializing datum"))
+        .collect())
 }

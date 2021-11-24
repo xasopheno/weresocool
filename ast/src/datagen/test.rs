@@ -10,7 +10,7 @@ mod eeg_test {
     fn test_eeg_datum_to_point_op() {
         let mut names = NameSet::new();
         names.insert("data.csv".into());
-        let result = eeg_datum_to_point_op(1.0e-14, 1, None, 2.0e14, "data.csv");
+        let result = eeg_datum_to_point_op(1.0e-14, None, 2.0e14, "data.csv");
         let expected = PointOp {
             fa: Rational64::new(2, 1),
             l: Rational64::new(1, 50),
