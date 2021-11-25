@@ -120,7 +120,6 @@ fn eeg_datum_to_point_op(
 }
 
 fn get_data(filename: String) -> Result<Vec<CsvData>, Error> {
-    //TODO: Return Error
     let path = Path::new(&filename);
     let cwd = std::env::current_dir()?;
     let file = File::open(path).expect(
