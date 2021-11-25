@@ -10,7 +10,7 @@ use weresocool_shared::helpers::r_to_f32;
 mod test;
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
-pub struct EEGData {
+pub struct CsvData {
     data: Vec<f32>,
 }
 
@@ -32,7 +32,7 @@ pub fn csv_to_normalform(filename: &str, scale: Option<Rational64>) -> Result<No
     ))
 }
 
-fn vec_eeg_data_to_normal_form(data: Vec<EEGData>, scale: f32, filename: &str) -> NormalForm {
+fn vec_eeg_data_to_normal_form(data: Vec<CsvData>, scale: f32, filename: &str) -> NormalForm {
     let mut nfs: Vec<NormalForm> = data
         .iter()
         .map(|stream| eeg_data_to_normal_form(stream, scale, filename))
@@ -49,7 +49,7 @@ fn vec_eeg_data_to_normal_form(data: Vec<EEGData>, scale: f32, filename: &str) -
     nf
 }
 
-fn eeg_data_to_normal_form(data: &EEGData, scale: f32, filename: &str) -> NormalForm {
+fn eeg_data_to_normal_form(data: &CsvData, scale: f32, filename: &str) -> NormalForm {
     let mut length_ratio = Rational64::new(0, 1);
 
     let mut buffer = RingBuffer::<f32>::new(50);
@@ -91,7 +91,6 @@ fn eeg_datum_to_point_op(
 ) -> PointOp {
     let mut nameset = NameSet::new();
     nameset.insert(filename.into());
-    // let mut datum = (datum * 200_000_000_000_000.0).abs();
     let mut datum = datum.abs() * scale;
     if let Some(b) = buffer {
         b.push(datum);
@@ -120,7 +119,7 @@ fn eeg_datum_to_point_op(
     }
 }
 
-fn get_data(filename: String) -> Result<Vec<EEGData>, Error> {
+fn get_data(filename: String) -> Result<Vec<CsvData>, Error> {
     //TODO: Return Error
     let path = Path::new(&filename);
     let cwd = std::env::current_dir()?;
@@ -138,7 +137,7 @@ fn get_data(filename: String) -> Result<Vec<EEGData>, Error> {
         .from_reader(file);
 
     Ok(rdr
-        .deserialize::<EEGData>()
+        .deserialize::<CsvData>()
         .map(|datum| datum.expect("Error deserializing datum"))
         .collect())
 }

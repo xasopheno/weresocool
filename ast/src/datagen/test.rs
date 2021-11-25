@@ -3,7 +3,7 @@ mod eeg_test {
     use num_rational::Rational64;
 
     use crate::{
-        datagen::{csv_to_normalform, eeg_data_to_normal_form, eeg_datum_to_point_op, EEGData},
+        datagen::{csv_to_normalform, eeg_data_to_normal_form, eeg_datum_to_point_op, CsvData},
         NameSet, NormalForm, PointOp,
     };
     #[test]
@@ -22,7 +22,7 @@ mod eeg_test {
 
     #[test]
     fn test_eeg_datum_to_normal_form() {
-        let eeg_data = EEGData {
+        let eeg_data = CsvData {
             data: vec![0.5e-14, 1.0e-14, 1.5e-14],
         };
         let mut names = NameSet::new();
