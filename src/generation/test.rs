@@ -7,7 +7,7 @@ pub mod tests {
     use num_rational::Rational64;
     use pretty_assertions::assert_eq;
     use scop::Defs;
-    use weresocool_ast::{NameSet, NormalForm, Normalize, Op::*, OscType, Term, Term::Op, ASR};
+    use weresocool_ast::{NormalForm, Normalize, Op::*, OscType, Term, Term::Op, ASR};
     use weresocool_instrument::Basis;
     use weresocool_shared::helpers::cmp_vec_f64;
 

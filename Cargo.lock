@@ -2257,6 +2257,9 @@ version = "0.3.0"
 [[package]]
 name = "ring_buffer"
 version = "0.1.0"
+dependencies = [
+ "weresocool_shared",
+]
 
 [[package]]
 name = "rust-embed"

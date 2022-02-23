@@ -58,7 +58,8 @@ mod eeg_test {
         let result = csv_to_normalform(
             "./src/datagen/test_data.csv",
             Some(Rational64::new(200_000_000_000_000, 1)),
-        );
+        )
+        .unwrap();
 
         let mut names = NameSet::new();
         names.insert("test_data.csv".into());
