@@ -314,7 +314,7 @@ pub fn to_normalized_op4d_1d(
     defs: &mut Defs<Term>,
     filename: String,
 ) -> Result<(Vec<Op4D>, f64), Error> {
-    banner("JSONIFY-ing".to_string(), filename.clone());
+    banner("JSONIFY-ing".to_string(), filename);
 
     let (vec_timed_op, _) = composition_to_vec_timed_op(composition, defs)?;
     let mut op4d_1d = vec_timed_op_to_vec_op4d(vec_timed_op, basis);

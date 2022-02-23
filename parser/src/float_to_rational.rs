@@ -17,8 +17,7 @@ pub mod helpers {
         let den = i64::pow(10, decimal.len() as u32);
         let num = i64::from_str(&split[0].replace('.', "")).unwrap();
 
-        let result = Ratio::new(num * (i64::pow(10, e as u32)), den);
-        result
+        Ratio::new(num * (i64::pow(10, e as u32)), den)
     }
 
     #[cfg(test)]

@@ -142,12 +142,12 @@ pub fn parsed_to_render(
             )?;
             let stereo_waveform = render(&basis, &nf, &mut parsed_composition.defs)?;
             let audio = write_composition_to_wav(stereo_waveform)?;
-            return Ok(RenderReturn::AudioVisual(AudioVisual {
+            Ok(RenderReturn::AudioVisual(AudioVisual {
                 name: filename.to_string(),
                 length: length as f32,
                 audio,
                 visual,
-            }));
+            }))
         }
 
         RenderType::Stems { cli, output_dir } => {

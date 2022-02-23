@@ -31,7 +31,7 @@ pub fn get_filepath(s: String) -> String {
         let filename_vec: Vec<&str> = filename_with_as.split(" as ").collect();
         let filename: &str = filename_vec[0];
         path.push('/');
-        path.push_str(&filename);
+        path.push_str(filename);
         path.trim().to_string()
     }
 }

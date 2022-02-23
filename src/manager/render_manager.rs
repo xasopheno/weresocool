@@ -21,7 +21,7 @@ pub struct RenderManager {
     pub current_volume: f32,
     pub past_volume: f32,
     render_idx: usize,
-    read_idx: usize,
+    _read_idx: usize,
     kill_channel: KillChannel,
     once: bool,
 }
@@ -37,7 +37,7 @@ impl RenderManager {
             past_volume: 0.8,
             current_volume: 0.8,
             render_idx: 0,
-            read_idx: 0,
+            _read_idx: 0,
             kill_channel,
             once,
         }
@@ -49,7 +49,7 @@ impl RenderManager {
             past_volume: 0.8,
             current_volume: 0.8,
             render_idx: 0,
-            read_idx: 0,
+            _read_idx: 0,
             kill_channel: None,
             once: false,
         }
