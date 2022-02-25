@@ -356,7 +356,7 @@ pub fn generate_waveforms(
         .collect();
 
     #[cfg(feature = "app")]
-    pb.lock().unwrap().finish_print(&"".to_string());
+    pb.lock().unwrap().finish_print("");
 
     vec_wav
 }
