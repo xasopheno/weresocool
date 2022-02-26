@@ -1,5 +1,5 @@
 [package]
-name = "ring_buffer"
+name = "weresocool_ring_buffer"
 version = "0.1.0"
 edition = "2021"
 

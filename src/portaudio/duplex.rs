@@ -1,13 +1,13 @@
 use crate::{generation::parsed_to_render::sum_all_waveforms, write::write_output_buffer};
 use portaudio as pa;
 use rayon::prelude::*;
-use ring_buffer::RingBuffer;
 use weresocool_analyze::{Analyze, DetectionResult};
 use weresocool_error::Error;
 use weresocool_instrument::renderable::{
     renderables_to_render_voices, Offset, RenderOp, RenderVoice,
 };
 use weresocool_instrument::StereoWaveform;
+use weresocool_ring_buffer::RingBuffer;
 use weresocool_shared::{default_settings, Settings};
 
 const SETTINGS: Settings = default_settings();

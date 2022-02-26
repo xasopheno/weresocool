@@ -8,7 +8,7 @@ license = "GPL-3.0"
 resolver="2"
 
 [dependencies]
-ring_buffer = { path = "../ring_buffer" }
+weresocool_ring_buffer = { path = "../ring_buffer" }
 weresocool_error = { path = "../error", default_features=false, optional=true }
 weresocool_shared = { path = "../shared" }
 scop = { path = "../scop" }

@@ -14,7 +14,7 @@ resolver="2"
 
 [dependencies]
 scop = { path = "scop" }
-ring_buffer = { path = "ring_buffer" }
+weresocool_ring_buffer = { path = "ring_buffer" }
 weresocool_analyze = { path = "analyze" }
 weresocool_parser = { path = "parser", default_features=false, optional=true }
 weresocool_ast = { path = "ast", default_features=false, optional=true }

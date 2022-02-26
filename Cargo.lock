@@ -2255,13 +2255,6 @@ name = "reverb"
 version = "0.3.0"
 
 [[package]]
-name = "ring_buffer"
-version = "0.1.0"
-dependencies = [
- "weresocool_shared",
-]
-
-[[package]]
 name = "rust-embed"
 version = "5.9.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -3045,7 +3038,6 @@ dependencies = [
  "pretty_assertions",
  "rand",
  "rayon",
- "ring_buffer",
  "scop",
  "serde",
  "serde_derive",
@@ -3059,6 +3051,7 @@ dependencies = [
  "weresocool_instrument",
  "weresocool_lame",
  "weresocool_parser",
+ "weresocool_ring_buffer",
  "weresocool_shared",
  "zip",
 ]
@@ -3084,10 +3077,10 @@ dependencies = [
  "polynomials",
  "pretty_assertions",
  "rand",
- "ring_buffer",
  "scop",
  "serde",
  "weresocool_error",
+ "weresocool_ring_buffer",
  "weresocool_shared",
 ]
 
@@ -3151,6 +3144,13 @@ dependencies = [
  "uuid",
  "weresocool_ast",
  "weresocool_error",
+]
+
+[[package]]
+name = "weresocool_ring_buffer"
+version = "0.1.0"
+dependencies = [
+ "weresocool_shared",
 ]
 
 [[package]]

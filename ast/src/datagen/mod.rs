@@ -1,11 +1,11 @@
 use crate::{NameSet, NormalForm, Normalize, Op, OscType, PointOp, Term, ASR};
 use num_rational::{Ratio, Rational64};
-use ring_buffer::RingBuffer;
 use scop::Defs;
 use serde::{Deserialize, Serialize};
 use std::str::FromStr;
 use std::{fs::File, path::Path};
 use weresocool_error::Error;
+use weresocool_ring_buffer::RingBuffer;
 use weresocool_shared::helpers::r_to_f32;
 mod test;
 
