@@ -1,7 +1,10 @@
 [package]
 name = "filters"
-version = "0.1.0"
+version = "1.0.0"
+authors = ["Danny Meyer <weresocool@xasophenoo.com>"]
 edition = "2021"
+description = "filters wip"
+license = "GPL-3.0"
 
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 

@@ -1,8 +1,10 @@
 [package]
 name = "weresocool_server"
-version = "0.1.0"
-authors = ["Danny Meyer <danny@xasopheno.com>"]
+version = "1.0.0"
+authors = ["Danny Meyer <weresocool@xasopheno.com>"]
 edition = "2021"
+description = "server for WereSoCool application"
+license = "GPL-3.0"
 
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
@@ -10,8 +12,8 @@ edition = "2021"
 #debug = true
 
 [dependencies]
-weresocool_error = { path = "../../error" } 
-weresocool = { path = "../../" } 
+weresocool_error = { path = "../../error", version = "1.0.0" } 
+weresocool = { path = "../../", version = "1.0.0" } 
 actix-cors = "0.2.0"
 actix-files = "0.2.1"
 actix-web = "2.0.0"
