@@ -57,7 +57,7 @@ pub fn write_test_table_to_json_file(test_table: &TestTable) {
 }
 
 fn generate_render_hashes(p: &str) -> CompositionHashes {
-    let vec_string = filename_to_vec_string(&p.to_string()).unwrap();
+    let vec_string = filename_to_vec_string(p).unwrap();
     let mut parsed = parse_file(vec_string, None, None).unwrap();
     let main_op = parsed.defs.get("main").unwrap();
     let init = parsed.init;

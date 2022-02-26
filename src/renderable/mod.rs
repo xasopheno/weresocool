@@ -71,7 +71,7 @@ mod tests {
 
     #[test]
     fn test_nf_to_vec_renderable() {
-        let (nf, basis, mut table) = match Filename(&"songs/test/render_op.socool".to_string())
+        let (nf, basis, mut table) = match Filename("songs/test/render_op.socool")
             .make(RenderType::NfBasisAndTable, None)
             .unwrap()
         {

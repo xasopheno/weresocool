@@ -81,6 +81,7 @@ pub mod tests {
             asr: ASR::Long,
             portamento: Rational64::new(1, 1),
             osc_type: OscType::None,
+            names: vec![],
         };
 
         assert_eq!(
@@ -90,27 +91,27 @@ pub mod tests {
                     TimedOp {
                         pa: Rational64::new(1, 2),
                         event_type: EventType::On,
-                        ..op
+                        ..op.clone()
                     },
                     TimedOp {
                         event_type: EventType::On,
                         l: Rational64::new(5, 1),
                         voice: 1,
-                        ..op
+                        ..op.clone()
                     },
                     TimedOp {
                         fm: Rational64::new(2, 1),
                         t: Rational64::new(1, 1),
                         event_type: EventType::On,
                         event: 1,
-                        ..op
+                        ..op.clone()
                     },
                     TimedOp {
                         g: Rational64::new(1, 2),
                         t: Rational64::new(2, 1),
                         event_type: EventType::On,
                         event: 2,
-                        ..op
+                        ..op.clone()
                     },
                     TimedOp {
                         t: Rational64::new(3, 1),
@@ -153,13 +154,14 @@ pub mod tests {
             asr: ASR::Short,
             portamento: Rational64::new(1, 1),
             osc_type: OscType::None,
+            names: vec![],
         };
 
         let vec_timed_op = vec![
             TimedOp {
                 event_type: EventType::On,
                 l: Rational64::new(3, 2),
-                ..op
+                ..op.clone()
             },
             TimedOp {
                 event_type: EventType::Off,
@@ -180,6 +182,7 @@ pub mod tests {
                 y: 2.3010299956639813,
                 x: 0.5,
                 z: 0.5,
+                names: vec![],
             },
             Op4D {
                 t: 1.5,
@@ -190,6 +193,7 @@ pub mod tests {
                 x: 0.5,
                 y: 2.3010299956639813,
                 z: 0.5,
+                names: vec![],
             },
         ];
         assert_eq!(result, expected);

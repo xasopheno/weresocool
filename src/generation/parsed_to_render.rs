@@ -1,5 +1,5 @@
 use crate::{
-    generation::{to_csv, to_json},
+    generation::{json::to_normalized_op4d_1d, to_csv, to_json_file},
     ui::printed,
     write::{write_composition_to_mp3, write_composition_to_wav},
 };
@@ -26,6 +26,8 @@ use weresocool_instrument::{Basis, Oscillator, StereoWaveform};
 use weresocool_parser::ParsedComposition;
 use weresocool_shared::{default_settings, Settings};
 
+use super::Op4D;
+
 const SETTINGS: Settings = default_settings();
 
 #[derive(Clone, PartialEq, Debug)]
@@ -42,6 +44,7 @@ pub enum RenderType {
     StereoWaveform,
     Wav(WavType),
     Stems { cli: bool, output_dir: PathBuf },
+    AudioVisual,
 }
 
 #[derive(Clone, PartialEq, Debug, Deserialize, Serialize)]
@@ -53,6 +56,19 @@ pub struct Stem {
     pub name: String,
     /// Stem audio
     pub audio: Vec<u8>,
+}
+
+#[derive(Clone, PartialEq, Debug, Deserialize, Serialize)]
+/// AudioVisual is the datatype for audiovisualization
+pub struct AudioVisual {
+    /// Composition name
+    pub name: String,
+    /// length of seconds of composition
+    pub length: f32,
+    /// audio data
+    pub audio: Vec<u8>,
+    /// visual data
+    pub visual: Vec<Op4D>,
 }
 
 #[derive(Clone, PartialEq, Debug)]
@@ -68,6 +84,8 @@ pub enum RenderReturn {
     Wav(Vec<u8>),
     /// A vector of audio solo'd by names
     Stems(Vec<Stem>),
+    /// Data for audiovisualization
+    AudioVisual(AudioVisual),
 }
 
 impl TryFrom<RenderReturn> for Vec<u8> {
@@ -115,6 +133,23 @@ pub fn parsed_to_render(
     let basis = Basis::from(parsed_composition.init);
 
     match return_type {
+        RenderType::AudioVisual => {
+            let (visual, length) = to_normalized_op4d_1d(
+                &basis,
+                &nf,
+                &mut parsed_composition.defs,
+                filename.to_string(),
+            )?;
+            let stereo_waveform = render(&basis, &nf, &mut parsed_composition.defs)?;
+            let audio = write_composition_to_wav(stereo_waveform)?;
+            Ok(RenderReturn::AudioVisual(AudioVisual {
+                name: filename.to_string(),
+                length: length as f32,
+                audio,
+                visual,
+            }))
+        }
+
         RenderType::Stems { cli, output_dir } => {
             let nf_names = nf.names();
             let names = parsed_composition.defs.stems.clone();
@@ -162,7 +197,7 @@ pub fn parsed_to_render(
             parsed_composition.defs,
         )),
         RenderType::Json4d { output_dir, .. } => {
-            to_json(
+            to_json_file(
                 &basis,
                 &nf,
                 &mut parsed_composition.defs,
@@ -321,7 +356,7 @@ pub fn generate_waveforms(
         .collect();
 
     #[cfg(feature = "app")]
-    pb.lock().unwrap().finish_print(&"".to_string());
+    pb.lock().unwrap().finish_print("");
 
     vec_wav
 }

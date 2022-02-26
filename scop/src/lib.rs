@@ -122,10 +122,7 @@ where
     /// Searches through inner -> outer scopes looking for the given id.
     pub fn get(&self, id: &str) -> Option<&T> {
         for scope in self.scopes.iter().rev() {
-            let current = self
-                .defs
-                .get(&scope.to_string())
-                .expect("Named scope not found");
+            let current = self.defs.get(scope).expect("Named scope not found");
             let result = current.get(&id.to_string());
             if result.is_some() {
                 return result;

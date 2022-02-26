@@ -135,7 +135,7 @@ pub fn write_composition_to_json(
     mut output_dir: PathBuf,
 ) -> std::io::Result<()> {
     let filename = filename_from_string(filename);
-    let filename = &format!("{}.socool.json", filename.to_string());
+    let filename = &format!("{}.socool.json", filename);
     output_dir.push(filename);
     let mut file = File::create(output_dir)?;
 
@@ -157,7 +157,7 @@ pub fn write_composition_to_csv(
     mut output_dir: PathBuf,
 ) -> Result<(), Error> {
     let filename = filename_from_string(filename);
-    let filename = &format!("{}.socool.csv", filename.to_string());
+    let filename = &format!("{}.socool.csv", filename);
     output_dir.push(filename);
     let mut writer = Writer::from_path(output_dir.as_path())?;
     for op in ops {

@@ -29,6 +29,13 @@ impl GetLengthRatio<Term> for Op {
             | Op::Tag(_)
             | Op::Gain { .. } => Ok(Ratio::from_integer(1)),
 
+            Op::CSV { .. } => {
+                let mut nf = NormalForm::init();
+                self.apply_to_normal_form(&mut nf, defs)?;
+
+                nf.get_length_ratio(normal_form, defs)
+            }
+
             Op::Lambda {
                 term,
                 input_name,

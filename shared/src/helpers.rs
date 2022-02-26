@@ -6,6 +6,10 @@ pub fn r_to_f64(r: Rational64) -> f64 {
     *r.numer() as f64 / *r.denom() as f64
 }
 
+pub fn r_to_f32(r: Rational64) -> f32 {
+    *r.numer() as f32 / *r.denom() as f32
+}
+
 pub fn et_to_rational(i: i64, d: usize) -> Rational64 {
     let signum = i.signum();
     if signum == 0 {

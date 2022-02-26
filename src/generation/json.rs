@@ -33,6 +33,7 @@ pub struct TimedOp {
     pub pa: Rational64,
     pub g: Rational64,
     pub l: Rational64,
+    pub names: Vec<String>,
 }
 
 impl TimedOp {
@@ -58,6 +59,7 @@ impl TimedOp {
             voice: self.voice,
             event: self.event,
             event_type: self.event_type.clone(),
+            names: self.names.to_owned(),
         }
     }
     #[allow(clippy::missing_const_for_fn)]
@@ -90,6 +92,7 @@ pub struct Op4D {
     pub y: f64,
     pub z: f64,
     pub l: f64,
+    pub names: Vec<String>,
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize, PartialEq)]
@@ -162,6 +165,7 @@ fn get_min_max_op4d_1d(vec_op4d: &[Op4D]) -> (Normalizer, f64) {
         y: 0.0,
         z: 0.0,
         l: 0.0,
+        names: vec![],
     };
 
     let mut min_state = Op4D {
@@ -173,6 +177,7 @@ fn get_min_max_op4d_1d(vec_op4d: &[Op4D]) -> (Normalizer, f64) {
         y: 10_000.0,
         z: 1.0,
         l: 1.0,
+        names: vec![],
     };
 
     let mut max_len: f64 = 0.0;
@@ -188,6 +193,7 @@ fn get_min_max_op4d_1d(vec_op4d: &[Op4D]) -> (Normalizer, f64) {
             event: max_state.event.max(op.event),
             voice: max_state.voice.max(op.voice),
             event_type: EventType::On,
+            names: vec![],
         };
 
         min_state = Op4D {
@@ -199,6 +205,7 @@ fn get_min_max_op4d_1d(vec_op4d: &[Op4D]) -> (Normalizer, f64) {
             event: min_state.event.min(op.event),
             voice: min_state.voice.min(op.voice),
             event_type: EventType::On,
+            names: vec![],
         };
     }
 
@@ -252,6 +259,7 @@ fn point_op_to_timed_op(
         event_type: EventType::On,
         voice,
         event,
+        names: point_op.names.iter().map(|n| n.to_owned()).collect(),
     };
 
     *time += point_op.l;
@@ -300,14 +308,13 @@ struct Json1d {
     length: f64,
 }
 
-pub fn to_json(
+pub fn to_normalized_op4d_1d(
     basis: &Basis,
     composition: &NormalForm,
     defs: &mut Defs<Term>,
     filename: String,
-    output_dir: PathBuf,
-) -> Result<(), Error> {
-    banner("JSONIFY-ing".to_string(), filename.clone());
+) -> Result<(Vec<Op4D>, f64), Error> {
+    banner("JSONIFY-ing".to_string(), filename);
 
     let (vec_timed_op, _) = composition_to_vec_timed_op(composition, defs)?;
     let mut op4d_1d = vec_timed_op_to_vec_op4d(vec_timed_op, basis);
@@ -319,8 +326,21 @@ pub fn to_json(
     });
 
     let (normalizer, max_len) = get_min_max_op4d_1d(&op4d_1d);
-
     normalize_op4d_1d(&mut op4d_1d, normalizer);
+
+    Ok((op4d_1d, max_len))
+}
+
+pub fn to_json_file(
+    basis: &Basis,
+    composition: &NormalForm,
+    defs: &mut Defs<Term>,
+    filename: String,
+    output_dir: PathBuf,
+) -> Result<(), Error> {
+    banner("JSONIFY-ing".to_string(), filename.clone());
+
+    let (op4d_1d, max_len) = to_normalized_op4d_1d(basis, composition, defs, filename.clone())?;
 
     let json = to_string(&Json1d {
         ops: op4d_1d,

@@ -281,6 +281,7 @@
     "ace-builds": "1.4.12",
     "axios": "0.21.1",
     "brace": "0.11.1",
+    "caniuse-lite": "^1.0.30001312",
     "connected-react-router": "6.8.0",
     "core-js": "3.6.5",
     "devtron": "1.4.0",

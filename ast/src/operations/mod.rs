@@ -52,6 +52,26 @@ pub struct PointOp {
     pub names: NameSet,
 }
 
+impl Default for PointOp {
+    fn default() -> Self {
+        PointOp {
+            fm: Ratio::new(1, 1),
+            fa: Ratio::new(0, 1),
+            pm: Ratio::new(1, 1),
+            pa: Ratio::new(0, 1),
+            g: Ratio::new(1, 1),
+            l: Ratio::new(1, 1),
+            reverb: None,
+            attack: Ratio::new(1, 1),
+            decay: Ratio::new(1, 1),
+            asr: ASR::Long,
+            portamento: Ratio::new(1, 1),
+            osc_type: OscType::None,
+            names: NameSet::new(),
+        }
+    }
+}
+
 pub trait Normalize<T> {
     fn apply_to_normal_form(
         &self,

@@ -51,11 +51,11 @@ impl GetLengthRatio<Term> for Term {
         defs: &mut Defs<Term>,
     ) -> Result<Rational64, Error> {
         match self {
-            Term::Op(op) => op.get_length_ratio(&normal_form, defs),
-            Term::Nf(nf) => nf.get_length_ratio(&normal_form, defs),
+            Term::Op(op) => op.get_length_ratio(normal_form, defs),
+            Term::Nf(nf) => nf.get_length_ratio(normal_form, defs),
             Term::FunDef(_fun) => Err(Error::with_msg("Cannot get length_ratio of FunDef.")),
-            Term::Lop(lop) => lop.get_length_ratio(&normal_form, defs),
-            Term::Gen(gen) => gen.get_length_ratio(&normal_form, defs),
+            Term::Lop(lop) => lop.get_length_ratio(normal_form, defs),
+            Term::Gen(gen) => gen.get_length_ratio(normal_form, defs),
         }
     }
 }

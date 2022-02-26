@@ -1,7 +1,7 @@
 [package]
 name = "weresocool"
-version = "0.6.0"
-edition = "2018"
+version = "1.0.0"
+edition = "2021"
 authors = ["Danny <weresocool@xasopheno.com>"]
 description = "***** WereSoCool __!Now In Stereo!__ ****** Make cool sounds. Impress your friends."
 license = "GPL-3.0" 
@@ -10,10 +10,11 @@ repository = "https://github.com/xasopheno/WereSoCool"
 keywords = ["microtonal", "binaural", "composition",  "audio", "music"]
 categories = ["multimedia::audio"]
 readme = "README.md"
-
+resolver="2"
 
 [dependencies]
 scop = { path = "scop" }
+ring_buffer = { path = "ring_buffer" }
 weresocool_analyze = { path = "analyze" }
 weresocool_parser = { path = "parser", default_features=false, optional=true }
 weresocool_ast = { path = "ast", default_features=false, optional=true }
@@ -77,6 +78,7 @@ members = [
     "parser",
     "shared",
     "scop",
+    "ring_buffer",
     # "portaudio",
     # "portaudio/rust-portaudio-sys",
     "application/server",

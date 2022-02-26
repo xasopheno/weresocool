@@ -10,11 +10,11 @@ use weresocool_error::Error;
 use weresocool_shared::helpers::{et_to_rational, f32_to_rational, r_to_f64};
 
 impl CoefState {
-    pub fn generate(&mut self, mut rng: &mut StdRng) -> Result<Op, Error> {
+    pub fn generate(&mut self, rng: &mut StdRng) -> Result<Op, Error> {
         match &mut self.coefs {
             Coefs::Const(coefs) => {
                 let result = self.axis.generate_const(self.state, self.div);
-                self.state += coefs[self.idx].get_value(&mut rng)?;
+                self.state += coefs[self.idx].get_value(rng)?;
                 self.idx += 1;
                 self.idx %= coefs.len();
                 Ok(result)
@@ -202,7 +202,7 @@ impl Generator {
         nf: &NormalForm,
         n: usize,
         defs: &mut Defs<Term>,
-        mut rng: &mut rand::rngs::StdRng,
+        rng: &mut rand::rngs::StdRng,
     ) -> Result<Vec<NormalForm>, Error> {
         let mut result: Vec<NormalForm> = vec![];
         let mut coefs = self.coefs.clone();
@@ -210,8 +210,7 @@ impl Generator {
         for _ in 0..n {
             let mut nf: NormalForm = nf.clone();
             for coef in coefs.iter_mut() {
-                coef.generate(&mut rng)?
-                    .apply_to_normal_form(&mut nf, defs)?;
+                coef.generate(rng)?.apply_to_normal_form(&mut nf, defs)?;
             }
             result.push(nf)
         }
