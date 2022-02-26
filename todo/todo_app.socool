@@ -54,7 +54,7 @@ tests:
 
 build on ci:
 [x]  - flag for static build
-[x]  - action for master only if tests pass
+[x]  - action for maain only if tests pass
 [x]  - cache rust during application build
 
 publishing:
