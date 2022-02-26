@@ -1,9 +1,12 @@
 [package]
 name = "weresocool_ring_buffer"
-version = "0.1.0"
+version = "1.0.0"
+authors = ["Danny Meyer <weresocool@xasopheno.com>"]
 edition = "2021"
+description = "ring_buffer for WereSoCool"
+license = "GPL-3.0"
 
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
 [dependencies]
-weresocool_shared = { path = "../shared" }
+weresocool_shared = { path = "../shared", version = "1.0.0" }
