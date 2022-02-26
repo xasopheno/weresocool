@@ -181,11 +181,5 @@ mod test_normal {
             x_interp.push(p);
             y_interp.push(smooth(p));
         }
-        // let mut figure = Figure::new();
-        // let points = scatter_plot::<f64, f64>(x, y, None);
-        // let interpolation = line_plot::<f64, f64>(x_interp, y_interp, None);
-        // figure.add_plot(points);
-        // figure.add_plot(interpolation);
-        // figure.save("./docs/figures/monotonic_cubic_spline.png", None);
     }
 }
