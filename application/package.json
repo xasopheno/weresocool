@@ -200,7 +200,7 @@
     "@types/tapable": "1.0.6",
     "@types/vfile-message": "2.0.0",
     "@types/webdriverio": "5.0.0",
-    "@types/webpack": "4.41.22",
+    "@types/webpack": "5.28.0",
     "@typescript-eslint/eslint-plugin": "4.5.0",
     "@typescript-eslint/parser": "4.4.0",
     "axios-mock-adapter": "1.19.0",
