@@ -2325,7 +2325,7 @@ dependencies = [
 
 [[package]]
 name = "scop"
-version = "0.1.0"
+version = "1.0.0"
 dependencies = [
  "indexmap",
  "serde",
@@ -3015,7 +3015,7 @@ dependencies = [
 
 [[package]]
 name = "weresocool"
-version = "1.0.0"
+version = "1.0.1"
 dependencies = [
  "bytes 1.0.1",
  "clap",
@@ -3058,14 +3058,14 @@ dependencies = [
 
 [[package]]
 name = "weresocool_analyze"
-version = "0.1.0"
+version = "1.0.0"
 dependencies = [
  "weresocool_shared",
 ]
 
 [[package]]
 name = "weresocool_ast"
-version = "0.5.0"
+version = "1.0.0"
 dependencies = [
  "colored",
  "csv",
@@ -3086,7 +3086,7 @@ dependencies = [
 
 [[package]]
 name = "weresocool_error"
-version = "0.1.0"
+version = "1.0.0"
 dependencies = [
  "csv",
  "failure",
@@ -3103,7 +3103,7 @@ dependencies = [
 
 [[package]]
 name = "weresocool_instrument"
-version = "0.1.0"
+version = "1.0.0"
 dependencies = [
  "num-rational",
  "num-traits",
@@ -3120,7 +3120,7 @@ dependencies = [
 
 [[package]]
 name = "weresocool_lame"
-version = "0.1.0"
+version = "1.0.0"
 dependencies = [
  "failure",
  "failure_derive",
@@ -3130,7 +3130,7 @@ dependencies = [
 
 [[package]]
 name = "weresocool_parser"
-version = "0.5.0"
+version = "1.0.0"
 dependencies = [
  "colored",
  "indexmap",
@@ -3148,14 +3148,14 @@ dependencies = [
 
 [[package]]
 name = "weresocool_ring_buffer"
-version = "0.1.0"
+version = "1.0.0"
 dependencies = [
  "weresocool_shared",
 ]
 
 [[package]]
 name = "weresocool_server"
-version = "0.1.0"
+version = "1.0.0"
 dependencies = [
  "actix-cors",
  "actix-files",
@@ -3175,7 +3175,7 @@ dependencies = [
 
 [[package]]
 name = "weresocool_shared"
-version = "0.1.0"
+version = "1.0.0"
 dependencies = [
  "float-cmp",
  "num-rational",
