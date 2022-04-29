@@ -13,7 +13,6 @@ pub struct RenderVoice {
     pub ops: Vec<RenderOp>,
     pub oscillator: Oscillator,
 }
-
 impl RenderVoice {
     pub fn init(ops: &[RenderOp]) -> Self {
         Self {

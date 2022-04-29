@@ -88,7 +88,7 @@ impl Voice {
     }
 
     /// Renders a single RenderOp given an Offset
-    /// This is where all of the rendering logic for a single happens
+    /// This is where all of the rendering logic for a single render_op happens
     pub fn generate_waveform(&mut self, op: &RenderOp, offset: &Offset) -> Vec<f64> {
         let mut buffer: Vec<f64> = vec![0.0; op.samples];
 
