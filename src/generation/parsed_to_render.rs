@@ -45,6 +45,7 @@ pub enum RenderType {
     Wav(WavType),
     Stems { cli: bool, output_dir: PathBuf },
     AudioVisual,
+    Visual,
 }
 
 #[derive(Clone, PartialEq, Debug, Deserialize, Serialize)]
@@ -67,6 +68,16 @@ pub struct AudioVisual {
     pub length: f32,
     /// audio data
     pub audio: Vec<u8>,
+    /// visual data
+    pub visual: Vec<Op4D>,
+}
+
+#[derive(Clone, PartialEq, Debug)]
+pub struct Visual {
+    /// Composition name
+    pub name: String,
+    /// length of seconds of composition
+    pub length: f32,
     /// visual data
     pub visual: Vec<Op4D>,
 }
@@ -133,6 +144,21 @@ pub fn parsed_to_render(
     let basis = Basis::from(parsed_composition.init);
 
     match return_type {
+        RenderType::Visual => {
+            let (visual, length) = to_normalized_op4d_1d(
+                &basis,
+                &nf,
+                &mut parsed_composition.defs,
+                filename.to_string(),
+            )?;
+
+            Ok(RenderReturn::AudioVisual(AudioVisual {
+                name: filename.to_string(),
+                length: length as f32,
+                visual,
+                audio: vec![],
+            }))
+        }
         RenderType::AudioVisual => {
             let (visual, length) = to_normalized_op4d_1d(
                 &basis,

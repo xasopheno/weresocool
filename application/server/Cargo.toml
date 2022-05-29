@@ -13,7 +13,7 @@ license = "GPL-3.0"
 
 [dependencies]
 weresocool_error = { path = "../../error", version = "1.0.0" } 
-weresocool = { path = "../../", version = "1.0.0" } 
+weresocool = { path = "../../", version = "1.0.0", package="weresocool_core" } 
 actix-cors = "0.2.0"
 actix-files = "0.2.1"
 actix-web = "2.0.0"
