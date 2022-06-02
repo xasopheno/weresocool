@@ -90,7 +90,7 @@ fn eeg_datum_to_point_op(
     filename: &str,
 ) -> PointOp {
     let mut nameset = NameSet::new();
-    nameset.insert(filename.into());
+    nameset.insert(filename.to_string());
     let mut datum = datum.abs() * scale;
     if let Some(b) = buffer {
         b.push(datum);

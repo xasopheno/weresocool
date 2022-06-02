@@ -259,7 +259,7 @@ fn point_op_to_timed_op(
         event_type: EventType::On,
         voice,
         event,
-        names: point_op.names.iter().map(|n| n.to_owned()).collect(),
+        names: point_op.names.to_vec(),
     };
 
     *time += point_op.l;

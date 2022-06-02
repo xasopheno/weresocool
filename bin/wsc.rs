@@ -1,4 +1,4 @@
-use weresocool::ui::{
+use weresocool_core::ui::{
     // banner,
     get_args,
     no_file_name,

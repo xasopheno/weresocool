@@ -1,4 +1,4 @@
-use weresocool::{
+use weresocool_core::{
     generation::parsed_to_render::{RenderReturn, RenderType},
     interpretable::{InputType::Filename, Interpretable},
     portaudio::duplex_setup,

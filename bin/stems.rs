@@ -1,5 +1,5 @@
 use std::convert::TryFrom;
-use weresocool::{
+use weresocool_core::{
     // generation::parsed_to_render::write_audio_to_file,
     generation::{generate_waveforms, RenderReturn, RenderType},
     interpretable::{InputType::Filename, Interpretable},
