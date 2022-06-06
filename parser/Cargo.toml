@@ -14,7 +14,7 @@ features = ["lexer"]
 
 [dependencies]
 lalrpop-util = { version="0.19.6", features=["lexer"]}
-regex = "1.5.4"
+regex = "1.5.5"
 colored = "2.0.0"
 num-rational = "0.3.2"
 indexmap = "1.6.1"
