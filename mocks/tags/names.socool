@@ -1,0 +1,12 @@
+{ f: 220, l: 1, g: 1, p: 0 } 
+
+main = {
+    #mediumvioletred
+    | Seq [Fm 1, #lightblue]
+}
+
+
+expect = {
+    Seq [#mediumvioletred, #lightblue | #mediumvioletred]
+}
+

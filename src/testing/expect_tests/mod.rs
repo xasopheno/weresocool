@@ -62,6 +62,11 @@ mod expect {
     // expect(resource);
     // }
 
+    #[test_resources("mocks/tags/*.socool")]
+    fn __tags_generated_(resource: &str) {
+        expect(resource);
+    }
+
     #[test_resources("mocks/data/*.socool")]
     fn __data_generated_(resource: &str) {
         expect(resource);
