@@ -9,11 +9,14 @@ use std::sync::mpsc::Sender;
 use std::{path::PathBuf, sync::mpsc::SendError};
 use weresocool_error::Error;
 use weresocool_instrument::renderable::{
-    nf_to_vec_renderable, renderables_to_render_voices, RenderVoice,
+    nf_to_vec_renderable, renderables_to_render_voices, RenderOp, RenderVoice, Renderable,
 };
 use weresocool_instrument::StereoWaveform;
+use weresocool_shared::{default_settings, Settings};
 
 pub type KillChannel = Option<Sender<bool>>;
+
+const SETTINGS: Settings = default_settings();
 
 #[derive(Clone, Debug)]
 pub struct RenderManager {
@@ -94,9 +97,36 @@ impl RenderManager {
                 #[cfg(feature = "wasm")]
                 let iter = render_voices.iter_mut();
 
-                let rendered: Vec<StereoWaveform> = iter
-                    .filter_map(|voice| voice.render_batch(buffer_size, None))
+                // let rendered: Vec<StereoWaveform> = iter
+                // .filter_map(|voice| voice.render_batch(buffer_size, None))
+                // .collect();
+
+                let result: Vec<(_, _)> = iter
+                    // .filter_map(|voice| voice.render_batch(SETTINGS.buffer_size, None))
+                    .filter_map(|voice| {
+                        let ops = voice.get_batch(SETTINGS.buffer_size, None);
+                        match ops {
+                            Some(mut batch) => {
+                                Some((batch.clone(), batch.render(&mut voice.oscillator, None)))
+                            }
+                            None => None,
+                        }
+                    })
                     .collect();
+                let (ops, rendered): (Vec<_>, Vec<_>) =
+                    result.into_iter().map(|(a, b)| (a, b)).unzip();
+                let ops: Vec<Vec<RenderOp>> = ops
+                    .iter()
+                    .map(|voice| {
+                        voice
+                            .iter()
+                            .filter(|op| op.index == 0)
+                            .map(|v| v.to_owned())
+                            .collect()
+                    })
+                    .collect();
+                dbg!(ops);
+
                 if !rendered.is_empty() {
                     let mut sw: StereoWaveform = sum_all_waveforms(rendered);
 

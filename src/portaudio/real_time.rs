@@ -2,8 +2,7 @@ use crate::{generation::parsed_to_render::sum_all_waveforms, write::write_output
 use portaudio as pa;
 use rayon::prelude::*;
 use weresocool_error::Error;
-use weresocool_instrument::RenderVoice;
-use weresocool_instrument::StereoWaveform;
+use weresocool_instrument::{renderable::Renderable, RenderOp, RenderVoice};
 use weresocool_shared::{default_settings, Settings};
 
 const SETTINGS: Settings = default_settings();
@@ -20,9 +19,19 @@ pub fn real_time(
         #[cfg(feature = "wasm")]
         let iter = voices.iter_mut();
 
-        let result: Vec<StereoWaveform> = iter
-            .filter_map(|voice| voice.render_batch(SETTINGS.buffer_size, None))
+        let result: Vec<(_, _)> = iter
+            // .filter_map(|voice| voice.render_batch(SETTINGS.buffer_size, None))
+            .filter_map(|voice| {
+                let ops = voice.get_batch(SETTINGS.buffer_size, None);
+                match ops {
+                    Some(mut batch) => {
+                        Some((batch.clone(), batch.render(&mut voice.oscillator, None)))
+                    }
+                    None => None,
+                }
+            })
             .collect();
+        let (_ops, result): (Vec<_>, Vec<_>) = result.into_iter().map(|(a, b)| (a, b)).unzip();
 
         if !result.is_empty() {
             let stereo_waveform = sum_all_waveforms(result);
