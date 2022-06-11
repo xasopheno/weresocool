@@ -21,6 +21,7 @@ pub struct RenderOp {
     pub p: f64,
     pub l: f64,
     pub g: (f64, f64),
+    /// Time
     pub t: f64,
     pub attack: f64,
     pub decay: f64,

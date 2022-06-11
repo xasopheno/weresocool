@@ -15,16 +15,18 @@ use weresocool_instrument::StereoWaveform;
 use weresocool_shared::{default_settings, Settings};
 
 pub type KillChannel = Option<Sender<bool>>;
+pub type VisualizationChannel = Option<Sender<Vec<RenderOp>>>;
 
 const SETTINGS: Settings = default_settings();
 
-#[derive(Clone, Debug)]
+#[derive(Debug)]
 pub struct RenderManager {
     pub renders: [Option<Vec<RenderVoice>>; 2],
     pub current_volume: f32,
     pub past_volume: f32,
     render_idx: usize,
     _read_idx: usize,
+    visualization_channel: VisualizationChannel,
     kill_channel: KillChannel,
     once: bool,
 }
@@ -32,6 +34,7 @@ pub struct RenderManager {
 impl RenderManager {
     pub const fn init(
         render_voices: Vec<RenderVoice>,
+        visualization_channel: VisualizationChannel,
         kill_channel: KillChannel,
         once: bool,
     ) -> Self {
@@ -42,6 +45,7 @@ impl RenderManager {
             render_idx: 0,
             _read_idx: 0,
             kill_channel,
+            visualization_channel,
             once,
         }
     }
@@ -54,6 +58,7 @@ impl RenderManager {
             render_idx: 0,
             _read_idx: 0,
             kill_channel: None,
+            visualization_channel: None,
             once: false,
         }
     }
@@ -88,6 +93,7 @@ impl RenderManager {
 
     pub fn read(&mut self, buffer_size: usize) -> Option<(StereoWaveform, Vec<f32>)> {
         let next = self.exists_next_render();
+        let vtx = self.visualization_channel.clone();
         let current = self.current_render();
 
         match current {
@@ -106,26 +112,27 @@ impl RenderManager {
                     .filter_map(|voice| {
                         let ops = voice.get_batch(SETTINGS.buffer_size, None);
                         match ops {
-                            Some(mut batch) => {
-                                Some((batch.clone(), batch.render(&mut voice.oscillator, None)))
-                            }
+                            Some(mut batch) => Some((
+                                batch
+                                    .iter()
+                                    .filter(|op| op.index == 0)
+                                    .map(|v| v.clone())
+                                    .collect::<Vec<_>>(),
+                                batch.render(&mut voice.oscillator, None),
+                            )),
                             None => None,
                         }
                     })
                     .collect();
                 let (ops, rendered): (Vec<_>, Vec<_>) =
                     result.into_iter().map(|(a, b)| (a, b)).unzip();
-                let ops: Vec<Vec<RenderOp>> = ops
+                let ops: Vec<RenderOp> = ops
                     .iter()
-                    .map(|voice| {
-                        voice
-                            .iter()
-                            .filter(|op| op.index == 0)
-                            .map(|v| v.to_owned())
-                            .collect()
-                    })
+                    .flat_map(|voice| voice.iter().map(|v| v.to_owned()).collect::<Vec<_>>())
                     .collect();
-                dbg!(ops);
+                if let Some(tx) = vtx {
+                    tx.send(ops).unwrap();
+                }
 
                 if !rendered.is_empty() {
                     let mut sw: StereoWaveform = sum_all_waveforms(rendered);
