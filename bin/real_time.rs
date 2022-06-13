@@ -2,16 +2,17 @@ use std::sync::mpsc;
 use std::sync::mpsc::{Receiver, Sender};
 use std::sync::{Arc, Mutex};
 use weresocool_core::{
-    generation::parsed_to_render::{RenderReturn, RenderType},
+    generation::{
+        json::Op4D,
+        parsed_to_render::{RenderReturn, RenderType},
+    },
     interpretable::{InputType::Filename, Interpretable},
     manager::RenderManager,
     portaudio::real_time_render_manager,
     ui::{get_args, no_file_name, were_so_cool_logo},
 };
 use weresocool_error::Error;
-use weresocool_instrument::renderable::{
-    nf_to_vec_renderable, renderables_to_render_voices, RenderOp,
-};
+use weresocool_instrument::renderable::{nf_to_vec_renderable, renderables_to_render_voices};
 
 fn main() -> Result<(), Error> {
     were_so_cool_logo();
@@ -33,7 +34,7 @@ fn main() -> Result<(), Error> {
     let renderables = nf_to_vec_renderable(&nf, &mut table, &basis)?;
     let render_voices = renderables_to_render_voices(renderables);
 
-    let (tx, rx): (Sender<Vec<RenderOp>>, Receiver<Vec<RenderOp>>) = mpsc::channel();
+    let (tx, rx): (Sender<Vec<Op4D>>, Receiver<Vec<Op4D>>) = mpsc::channel();
 
     let render_manager = Arc::new(Mutex::new(RenderManager::init(
         render_voices,

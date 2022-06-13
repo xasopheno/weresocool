@@ -29,6 +29,12 @@ impl NameSet {
             .collect()
     }
 
+    pub fn to_vec_str(&self) -> Vec<&str> {
+        let count_b: BTreeMap<&usize, &str> =
+            self.map.iter().map(|(k, v)| (v, k.as_str())).collect();
+        count_b.values().into_iter().map(|v| *v).collect()
+    }
+
     pub fn last(&self) -> Option<String> {
         let vec = self.to_vec();
         if !vec.is_empty() {

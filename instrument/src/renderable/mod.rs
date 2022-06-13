@@ -36,6 +36,7 @@ pub struct RenderOp {
     pub osc_type: OscType,
     pub next_l_silent: bool,
     pub next_r_silent: bool,
+    pub names: Vec<String>,
 }
 
 impl RenderOp {
@@ -59,6 +60,7 @@ impl RenderOp {
             osc_type: OscType::None,
             next_l_silent: false,
             next_r_silent: false,
+            names: vec![],
         }
     }
     pub const fn init_silent_with_length(l: f64) -> Self {
@@ -81,6 +83,7 @@ impl RenderOp {
             osc_type: OscType::None,
             next_l_silent: true,
             next_r_silent: true,
+            names: vec![],
         }
     }
 
@@ -108,6 +111,7 @@ impl RenderOp {
             osc_type,
             next_l_silent: true,
             next_r_silent: true,
+            names: vec![],
         }
     }
 }
@@ -216,6 +220,7 @@ fn pointop_to_renderop(
         event,
         next_l_silent,
         next_r_silent,
+        names: point_op.names.to_vec(),
     };
 
     *time += point_op.l * basis.l;

@@ -58,6 +58,7 @@ impl RenderVoice {
             result.push(RenderOp {
                 samples: samples_left_in_batch,
                 index: self.sample_index,
+                names: current_op.names.clone(),
                 ..*current_op
             });
             self.sample_index += samples_left_in_batch;
@@ -66,6 +67,7 @@ impl RenderVoice {
             result.push(RenderOp {
                 samples: n_samples,
                 index: self.sample_index,
+                names: current_op.names.clone(),
                 ..*current_op
             });
 

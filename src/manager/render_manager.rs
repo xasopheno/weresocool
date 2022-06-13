@@ -1,4 +1,6 @@
+use crate::generation::json::Normalizer;
 use crate::{
+    generation::json::{EventType, Op4D},
     generation::parsed_to_render::{RenderReturn, RenderType},
     generation::sum_all_waveforms,
     interpretable::{InputType, Interpretable},
@@ -15,20 +17,44 @@ use weresocool_instrument::StereoWaveform;
 use weresocool_shared::{default_settings, Settings};
 
 pub type KillChannel = Option<Sender<bool>>;
-pub type VisualizationChannel = Option<Sender<Vec<RenderOp>>>;
+pub type VisualizationChannel = Option<Sender<Vec<Op4D>>>;
 
 const SETTINGS: Settings = default_settings();
 
 #[derive(Debug)]
+pub struct Visualization {
+    normalizer: Normalizer,
+    channel: VisualizationChannel,
+}
+
+#[derive(Debug)]
 pub struct RenderManager {
+    pub visualization: Visualization,
     pub renders: [Option<Vec<RenderVoice>>; 2],
     pub current_volume: f32,
     pub past_volume: f32,
     render_idx: usize,
     _read_idx: usize,
-    visualization_channel: VisualizationChannel,
     kill_channel: KillChannel,
     once: bool,
+}
+
+fn render_op_to_normalized_op4d(point_op: &RenderOp, normalizer: &Normalizer) -> Op4D {
+    let mut op4d = Op4D {
+        y: point_op.f,
+        z: (point_op.g.0 + point_op.g.1) / 2.0,
+        x: point_op.p,
+        l: point_op.l,
+        t: point_op.t,
+        voice: point_op.voice,
+        event: point_op.event,
+        names: point_op.names.to_vec(),
+        event_type: EventType::On,
+    };
+
+    op4d.normalize(&normalizer);
+
+    op4d
 }
 
 impl RenderManager {
@@ -39,26 +65,32 @@ impl RenderManager {
         once: bool,
     ) -> Self {
         Self {
+            visualization: Visualization {
+                channel: visualization_channel,
+                normalizer: Normalizer::default(),
+            },
             renders: [Some(render_voices), None],
             past_volume: 0.8,
             current_volume: 0.8,
             render_idx: 0,
             _read_idx: 0,
             kill_channel,
-            visualization_channel,
             once,
         }
     }
 
     pub const fn init_silent() -> Self {
         Self {
+            visualization: Visualization {
+                channel: None,
+                normalizer: Normalizer::default(),
+            },
             renders: [None, None],
             past_volume: 0.8,
             current_volume: 0.8,
             render_idx: 0,
             _read_idx: 0,
             kill_channel: None,
-            visualization_channel: None,
             once: false,
         }
     }
@@ -93,7 +125,8 @@ impl RenderManager {
 
     pub fn read(&mut self, buffer_size: usize) -> Option<(StereoWaveform, Vec<f32>)> {
         let next = self.exists_next_render();
-        let vtx = self.visualization_channel.clone();
+        let vtx = self.visualization.channel.clone();
+        let normalizer = self.visualization.normalizer.clone();
         let current = self.current_render();
 
         match current {
@@ -126,9 +159,15 @@ impl RenderManager {
                     .collect();
                 let (ops, rendered): (Vec<_>, Vec<_>) =
                     result.into_iter().map(|(a, b)| (a, b)).unzip();
-                let ops: Vec<RenderOp> = ops
+
+                let ops: Vec<Op4D> = ops
                     .iter()
-                    .flat_map(|voice| voice.iter().map(|v| v.to_owned()).collect::<Vec<_>>())
+                    .flat_map(|voice| {
+                        voice
+                            .iter()
+                            .map(|v| render_op_to_normalized_op4d(v, &normalizer))
+                            .collect::<Vec<_>>()
+                    })
                     .collect();
                 if let Some(tx) = vtx {
                     tx.send(ops).unwrap();
