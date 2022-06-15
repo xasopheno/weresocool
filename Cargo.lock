@@ -3033,6 +3033,7 @@ dependencies = [
  "clap",
  "colored",
  "criterion",
+ "crossbeam-channel",
  "csv",
  "difference",
  "env_logger 0.8.4",

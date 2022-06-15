@@ -1,5 +1,4 @@
-use std::sync::mpsc;
-use std::sync::mpsc::{Receiver, Sender};
+use crossbeam_channel::{Receiver, Sender};
 use std::sync::{Arc, Mutex};
 use weresocool_core::{
     generation::{
@@ -34,7 +33,7 @@ fn main() -> Result<(), Error> {
     let renderables = nf_to_vec_renderable(&nf, &mut table, &basis)?;
     let render_voices = renderables_to_render_voices(renderables);
 
-    let (tx, rx): (Sender<Vec<Op4D>>, Receiver<Vec<Op4D>>) = mpsc::channel();
+    let (tx, rx): (Sender<Vec<Op4D>>, Receiver<Vec<Op4D>>) = crossbeam_channel::unbounded();
 
     let render_manager = Arc::new(Mutex::new(RenderManager::init(
         render_voices,

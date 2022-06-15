@@ -17,7 +17,7 @@ use weresocool_instrument::StereoWaveform;
 use weresocool_shared::{default_settings, Settings};
 
 pub type KillChannel = Option<Sender<bool>>;
-pub type VisualizationChannel = Option<Sender<Vec<Op4D>>>;
+pub type VisualizationChannel = Option<crossbeam_channel::Sender<Vec<Op4D>>>;
 
 const SETTINGS: Settings = default_settings();
 
@@ -37,6 +37,7 @@ pub struct RenderManager {
     _read_idx: usize,
     kill_channel: KillChannel,
     once: bool,
+    paused: bool,
 }
 
 fn render_op_to_normalized_op4d(point_op: &RenderOp, normalizer: &Normalizer) -> Op4D {
@@ -76,6 +77,7 @@ impl RenderManager {
             _read_idx: 0,
             kill_channel,
             once,
+            paused: false,
         }
     }
 
@@ -92,6 +94,7 @@ impl RenderManager {
             _read_idx: 0,
             kill_channel: None,
             once: false,
+            paused: false,
         }
     }
 
@@ -104,6 +107,14 @@ impl RenderManager {
         } else {
             Ok(())
         }
+    }
+
+    pub fn play(&mut self) {
+        self.paused = false;
+    }
+
+    pub fn pause(&mut self) {
+        self.paused = true;
     }
 
     pub fn update_volume(&mut self, volume: f32) {
@@ -124,6 +135,10 @@ impl RenderManager {
     }
 
     pub fn read(&mut self, buffer_size: usize) -> Option<(StereoWaveform, Vec<f32>)> {
+        if self.paused {
+            return None;
+        };
+
         let next = self.exists_next_render();
         let vtx = self.visualization.channel.clone();
         let normalizer = self.visualization.normalizer.clone();
