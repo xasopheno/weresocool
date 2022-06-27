@@ -135,6 +135,22 @@ pub struct MinMax {
     pub max: f64,
 }
 
+impl std::default::Default for Op4D {
+    fn default() -> Self {
+        Self {
+            t: 0.0,
+            l: 0.0,
+            y: 0.0,
+            x: 0.0,
+            z: 0.0,
+            voice: 0,
+            event: 0,
+            event_type: EventType::On,
+            names: vec![],
+        }
+    }
+}
+
 impl Op4D {
     pub fn normalize(&mut self, normalizer: &Normalizer) {
         self.x = 2.0 * normalize_value(self.x, normalizer.x.min, normalizer.x.max) - 1.0;

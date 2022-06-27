@@ -5,6 +5,7 @@ use crate::{
     generation::sum_all_waveforms,
     interpretable::{InputType, Interpretable},
 };
+use opmap::OpMap;
 #[cfg(feature = "app")]
 use rayon::prelude::*;
 use std::sync::mpsc::Sender;
@@ -17,7 +18,13 @@ use weresocool_instrument::StereoWaveform;
 use weresocool_shared::{default_settings, Settings};
 
 pub type KillChannel = Option<Sender<bool>>;
-pub type VisualizationChannel = Option<crossbeam_channel::Sender<Vec<Op4D>>>;
+
+#[derive(Debug, Clone)]
+pub enum VisEvent {
+    Ops(opmap::OpMap<Op4D>),
+    Reset,
+}
+pub type VisualizationChannel = Option<crossbeam_channel::Sender<VisEvent>>;
 
 const SETTINGS: Settings = default_settings();
 
@@ -175,17 +182,20 @@ impl RenderManager {
                 let (ops, rendered): (Vec<_>, Vec<_>) =
                     result.into_iter().map(|(a, b)| (a, b)).unzip();
 
-                let ops: Vec<Op4D> = ops
-                    .iter()
-                    .flat_map(|voice| {
-                        voice
-                            .iter()
-                            .map(|v| render_op_to_normalized_op4d(v, &normalizer))
-                            .collect::<Vec<_>>()
-                    })
-                    .collect();
+                let mut opmap: OpMap<Op4D> = OpMap::default();
+
+                ops.iter().flatten().for_each(|v| {
+                    let name = if let Some(last) = v.names.last() {
+                        last
+                    } else {
+                        "nameless"
+                    };
+
+                    let op = render_op_to_normalized_op4d(v, &normalizer);
+                    opmap.insert(name, op.clone());
+                });
                 if let Some(tx) = vtx {
-                    tx.send(ops).unwrap();
+                    tx.send(VisEvent::Ops(opmap)).unwrap();
                 }
 
                 if !rendered.is_empty() {
@@ -195,6 +205,7 @@ impl RenderManager {
                         sw.fade_out();
 
                         *current = None;
+                        //TODO: send event here that refreshes
                         self.inc_render();
                     }
 
@@ -226,6 +237,10 @@ impl RenderManager {
 
     pub fn inc_render(&mut self) {
         self.render_idx = (self.render_idx + 1) % 2;
+        if let Some(vtx) = self.visualization.channel.clone() {
+            vtx.send(VisEvent::Reset)
+                .expect("couldn't send VisEvent::Reset");
+        };
     }
 
     pub fn current_render(&mut self) -> &mut Option<Vec<RenderVoice>> {

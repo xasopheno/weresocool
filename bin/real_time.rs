@@ -1,12 +1,9 @@
 use crossbeam_channel::{Receiver, Sender};
 use std::sync::{Arc, Mutex};
 use weresocool_core::{
-    generation::{
-        json::Op4D,
-        parsed_to_render::{RenderReturn, RenderType},
-    },
+    generation::parsed_to_render::{RenderReturn, RenderType},
     interpretable::{InputType::Filename, Interpretable},
-    manager::RenderManager,
+    manager::{RenderManager, VisEvent},
     portaudio::real_time_render_manager,
     ui::{get_args, no_file_name, were_so_cool_logo},
 };
@@ -33,7 +30,7 @@ fn main() -> Result<(), Error> {
     let renderables = nf_to_vec_renderable(&nf, &mut table, &basis)?;
     let render_voices = renderables_to_render_voices(renderables);
 
-    let (tx, rx): (Sender<Vec<Op4D>>, Receiver<Vec<Op4D>>) = crossbeam_channel::unbounded();
+    let (tx, rx): (Sender<VisEvent>, Receiver<VisEvent>) = crossbeam_channel::unbounded();
 
     let render_manager = Arc::new(Mutex::new(RenderManager::init(
         render_voices,

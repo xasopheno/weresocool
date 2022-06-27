@@ -2,7 +2,7 @@ use crate::{generation::parsed_to_render::sum_all_waveforms, write::write_output
 use portaudio as pa;
 use rayon::prelude::*;
 use weresocool_error::Error;
-use weresocool_instrument::{renderable::Renderable, RenderOp, RenderVoice};
+use weresocool_instrument::{renderable::Renderable, RenderVoice};
 use weresocool_shared::{default_settings, Settings};
 
 const SETTINGS: Settings = default_settings();

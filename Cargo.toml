@@ -20,6 +20,7 @@ exclude = [
 
 [dependencies]
 scop = { path = "scop", version = "1.0.0" }
+opmap = { path = "opmap", version = "0.1.0" }
 weresocool_ring_buffer = { path = "ring_buffer", version = "1.0.0" }
 weresocool_analyze = { path = "analyze", version = "1.0.0" }
 weresocool_parser = { path = "parser", version = "1.0.0", default_features=false, optional=true }
@@ -78,6 +79,7 @@ harness = false
 [workspace]
 members = [
     "analyze",
+    "opmap",
     "ast",
     "error",
     "instrument",
