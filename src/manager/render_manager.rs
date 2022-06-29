@@ -47,22 +47,26 @@ pub struct RenderManager {
     paused: bool,
 }
 
-fn render_op_to_normalized_op4d(point_op: &RenderOp, normalizer: &Normalizer) -> Op4D {
+fn render_op_to_normalized_op4d(render_op: &RenderOp, normalizer: &Normalizer) -> Option<Op4D> {
+    if render_op.f == 0.0 || render_op.g == (0.0, 0.0) {
+        return None;
+    };
+
     let mut op4d = Op4D {
-        y: point_op.f,
-        z: (point_op.g.0 + point_op.g.1) / 2.0,
-        x: point_op.p,
-        l: point_op.l,
-        t: point_op.t,
-        voice: point_op.voice,
-        event: point_op.event,
-        names: point_op.names.to_vec(),
+        y: render_op.f,
+        z: (render_op.g.0 + render_op.g.1) / 2.0,
+        x: render_op.p,
+        l: render_op.l,
+        t: render_op.t,
+        voice: render_op.voice,
+        event: render_op.event,
+        names: render_op.names.to_vec(),
         event_type: EventType::On,
     };
 
     op4d.normalize(&normalizer);
 
-    op4d
+    Some(op4d)
 }
 
 impl RenderManager {
@@ -192,7 +196,9 @@ impl RenderManager {
                     };
 
                     let op = render_op_to_normalized_op4d(v, &normalizer);
-                    opmap.insert(name, op.clone());
+                    if let Some(o) = op {
+                        opmap.insert(name, o);
+                    };
                 });
                 if let Some(tx) = vtx {
                     tx.send(VisEvent::Ops(opmap)).unwrap();
@@ -205,7 +211,6 @@ impl RenderManager {
                         sw.fade_out();
 
                         *current = None;
-                        //TODO: send event here that refreshes
                         self.inc_render();
                     }
 
