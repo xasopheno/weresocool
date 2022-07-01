@@ -31,7 +31,15 @@ where
         self.map.entry(k.to_owned()).or_insert(vec![]).push(v);
     }
 
-    pub fn get<P>(&mut self, k: &str, predicate: P) -> Vec<T>
+    pub fn set(&mut self, k: &str, v: Vec<T>) {
+        self.map.insert(k.to_string(), v);
+    }
+
+    pub fn get(&mut self, k: &str) -> Option<&Vec<T>> {
+        self.map.get(k)
+    }
+
+    pub fn drain<P>(&mut self, k: &str, predicate: P) -> Vec<T>
     where
         P: Fn(&T) -> bool,
     {
@@ -41,6 +49,19 @@ where
         } else {
             vec![]
         }
+    }
+
+    pub fn from_vec<P>(v: Vec<T>, key_from_t: P) -> OpMap<T>
+    where
+        P: Fn(&T) -> &str,
+    {
+        let mut result: OpMap<T> = OpMap::default();
+        v.iter().for_each(|t| {
+            let k = key_from_t(t);
+            result.insert(k, t.to_owned());
+        });
+
+        result
     }
 }
 
