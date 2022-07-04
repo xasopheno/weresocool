@@ -47,7 +47,7 @@ pub struct RenderManager {
     paused: bool,
 }
 
-fn render_op_to_normalized_op4d(render_op: &RenderOp, normalizer: &Normalizer) -> Option<Op4D> {
+pub fn render_op_to_normalized_op4d(render_op: &RenderOp, normalizer: &Normalizer) -> Option<Op4D> {
     if render_op.f == 0.0 || render_op.g == (0.0, 0.0) {
         return None;
     };
@@ -162,12 +162,7 @@ impl RenderManager {
                 #[cfg(feature = "wasm")]
                 let iter = render_voices.iter_mut();
 
-                // let rendered: Vec<StereoWaveform> = iter
-                // .filter_map(|voice| voice.render_batch(buffer_size, None))
-                // .collect();
-
                 let result: Vec<(_, _)> = iter
-                    // .filter_map(|voice| voice.render_batch(SETTINGS.buffer_size, None))
                     .filter_map(|voice| {
                         let ops = voice.get_batch(SETTINGS.buffer_size, None);
                         match ops {

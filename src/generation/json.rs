@@ -62,6 +62,7 @@ impl TimedOp {
             names: self.names.to_owned(),
         }
     }
+
     #[allow(clippy::missing_const_for_fn)]
     pub fn to_point_op(&self) -> PointOp {
         PointOp {
@@ -187,7 +188,7 @@ fn normalize_op4d_1d(op4d_1d: &mut Vec<Op4D>, n: Normalizer) {
     })
 }
 
-fn get_min_max_op4d_1d(vec_op4d: &[Op4D]) -> (Normalizer, f64) {
+pub fn get_min_max_op4d_1d(vec_op4d: &[Op4D]) -> (Normalizer, f64) {
     let mut max_state = Op4D {
         t: 0.0,
         event: 0,
@@ -357,7 +358,8 @@ pub fn to_normalized_op4d_1d(
         !is_silent
     });
 
-    let (normalizer, max_len) = get_min_max_op4d_1d(&op4d_1d);
+    let (_, max_len) = get_min_max_op4d_1d(&op4d_1d);
+    let normalizer = Normalizer::default();
     normalize_op4d_1d(&mut op4d_1d, normalizer);
 
     Ok((op4d_1d, max_len))
