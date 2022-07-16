@@ -167,11 +167,15 @@ impl RenderManager {
                         let ops = voice.get_batch(SETTINGS.buffer_size, None);
                         match ops {
                             Some(mut batch) => Some((
-                                batch
-                                    .iter()
-                                    .filter(|op| op.index == 0)
-                                    .map(|v| v.clone())
-                                    .collect::<Vec<_>>(),
+                                if vtx.is_some() {
+                                    batch
+                                        .iter()
+                                        .filter(|op| op.index == 0)
+                                        .map(|v| v.clone())
+                                        .collect::<Vec<_>>()
+                                } else {
+                                    vec![]
+                                },
                                 batch.render(&mut voice.oscillator, None),
                             )),
                             None => None,
@@ -181,21 +185,21 @@ impl RenderManager {
                 let (ops, rendered): (Vec<_>, Vec<_>) =
                     result.into_iter().map(|(a, b)| (a, b)).unzip();
 
-                let mut opmap: OpMap<Op4D> = OpMap::default();
-
-                ops.iter().flatten().for_each(|v| {
-                    let name = if let Some(last) = v.names.last() {
-                        last
-                    } else {
-                        "nameless"
-                    };
-
-                    let op = render_op_to_normalized_op4d(v, &normalizer);
-                    if let Some(o) = op {
-                        opmap.insert(name, o);
-                    };
-                });
                 if let Some(tx) = vtx {
+                    let mut opmap: OpMap<Op4D> = OpMap::default();
+
+                    ops.iter().flatten().for_each(|v| {
+                        let name = if let Some(last) = v.names.last() {
+                            last
+                        } else {
+                            "nameless"
+                        };
+
+                        let op = render_op_to_normalized_op4d(v, &normalizer);
+                        if let Some(o) = op {
+                            opmap.insert(name, o);
+                        };
+                    });
                     tx.send(VisEvent::Ops(opmap)).unwrap();
                 }
 
