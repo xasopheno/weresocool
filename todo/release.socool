@@ -1,0 +1,50 @@
+#Bugs
+    Fix panic that happens when the piece doesn't render the first time on watch.
+    pass in settings/rate on render_manager creation
+
+# Simplify
+    - Move application stuff out of repo? 
+    - remove songs folder
+        - fix tests that rely on songs folder
+    - remove "scripts" folder
+    - cleanup/remove todo folder
+    - remove unnecessary fields from op4d?
+        - better name
+        - pave the way for
+            - others to render 3d
+            - midi
+
+# CI/CD
+    auto release to when merged to main? 
+        main/danny
+
+# Documentation
+    - using the cli
+    - how to build
+    - run locally
+    - concept
+    - run tests
+    - contributing
+    - portuguese documentation
+        - portuguese commands in the cli? 
+    - binaries
+        mac
+            - brew install
+
+    justfile/makefile? 
+
+    cargo install
+
+    check licensing? 
+        - all crates - there is a command for this
+        - LAME
+        - Reverb
+        - Yin
+
+
+## FUTURE
+    wasm example
+    ASD 
+        Command for Seq [Fm 1, Fm 0 | Lm 1, Fm 0 | Lm 1]
+    Sustain/Decay/Silence
+        SDS(1, 1, 1)

@@ -88,14 +88,8 @@ members = [
     "shared",
     "scop",
     "ring_buffer",
-    # "portaudio",
-    # "portaudio/rust-portaudio-sys",
     "application/server",
 ]
-
-[[bin]]
-name = "wsc"
-path = "bin/wsc.rs"
 
 [[bin]]
 name = "stems"

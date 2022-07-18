@@ -145,31 +145,11 @@ pub fn parsed_to_render(
         _ => unimplemented!(),
     };
 
-    let normalizer = Normalizer::default();
-
-    let basis = Basis::from(parsed_composition.init);
-    let renderables = nf_to_vec_renderable(&nf, &mut parsed_composition.defs, &basis)?;
-    let render_voices = renderables_to_render_voices(renderables);
-
-    let mut visual: Vec<Op4D> = render_voices
-        .iter()
-        .flat_map(|render_voice| &render_voice.ops)
-        .flat_map(|op| render_op_to_normalized_op4d(&op, &normalizer))
-        .collect();
-
-    let (_, length) = get_min_max_op4d_1d(&visual);
-
-    visual.sort_by(|a, b| a.t.partial_cmp(&b.t).unwrap());
+    let basis = Basis::from_init(&parsed_composition.init);
 
     match return_type {
         RenderType::Visual => {
-            // let (visual, length) = to_normalized_op4d_1d(
-            // &basis,
-            // &nf,
-            // &mut parsed_composition.defs,
-            // filename.to_string(),
-            // )?;
-
+            let (visual, length) = make_visuals(&basis, &nf, parsed_composition)?;
             Ok(RenderReturn::AudioVisual(AudioVisual {
                 name: filename.to_string(),
                 length: length as f32,
@@ -178,13 +158,8 @@ pub fn parsed_to_render(
             }))
         }
         RenderType::AudioVisual => {
-            // let (visual, length) = to_normalized_op4d_1d(
-            // &basis,
-            // &nf,
-            // &mut parsed_composition.defs,
-            // filename.to_string(),
-            // )?;
             let stereo_waveform = render(&basis, &nf, &mut parsed_composition.defs)?;
+            let (visual, length) = make_visuals(&basis, &nf, parsed_composition)?;
             let audio = write_composition_to_wav(stereo_waveform)?;
             Ok(RenderReturn::AudioVisual(AudioVisual {
                 name: filename.to_string(),
@@ -403,6 +378,29 @@ pub fn generate_waveforms(
     pb.lock().unwrap().finish_print("");
 
     vec_wav
+}
+
+fn make_visuals(
+    basis: &Basis,
+    nf: &NormalForm,
+    mut parsed_composition: ParsedComposition,
+) -> Result<(Vec<Op4D>, f64), Error> {
+    let normalizer = Normalizer::default();
+
+    let renderables = nf_to_vec_renderable(nf, &mut parsed_composition.defs, &basis)?;
+    let render_voices = renderables_to_render_voices(renderables);
+
+    let mut visual: Vec<Op4D> = render_voices
+        .iter()
+        .flat_map(|render_voice| &render_voice.ops)
+        .flat_map(|op| render_op_to_normalized_op4d(&op, &normalizer))
+        .collect();
+
+    let (_, length) = get_min_max_op4d_1d(&visual);
+
+    visual.sort_by(|a, b| a.t.partial_cmp(&b.t).unwrap());
+
+    Ok((visual, length))
 }
 
 /// Sum a vec of StereoWaveform to a single stereo_waveform.
