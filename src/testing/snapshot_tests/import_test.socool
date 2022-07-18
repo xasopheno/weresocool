@@ -1,5 +1,5 @@
-import songs/test/import_test_2.socool
-import songs/test/std_test.socool as standard
+import src/testing/snapshot_tests/import_test_2.socool
+import src/testing/snapshot_tests/std_test.socool as standard
 
 { f: 220, l: 1, g: 1, p: 0 }
 

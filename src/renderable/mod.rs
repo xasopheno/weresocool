@@ -71,13 +71,13 @@ mod tests {
 
     #[test]
     fn test_nf_to_vec_renderable() {
-        let (nf, basis, mut table) = match Filename("songs/test/render_op.socool")
+        let (nf, basis, mut table) = match Filename("src/testing/snapshot_tests/render_op.socool")
             .make(RenderType::NfBasisAndTable, None)
             .unwrap()
         {
             RenderReturn::NfBasisAndTable(nf, basis, table) => (nf, basis, table),
             _ => {
-                panic!("missing songs/tests/render_op.socool");
+                panic!("missing src/testing/snapshot_tests/render_op.socool");
             }
         };
         let result = nf_to_vec_renderable(&nf, &mut table, &basis).unwrap();
@@ -151,7 +151,7 @@ mod tests {
 
     #[test]
     fn test_get_batch() {
-        let filename = "songs/test/render_op_get_batch_simple.socool".to_string();
+        let filename = "src/testing/snapshot_tests/render_op_get_batch_simple.socool".to_string();
         let (nf, basis, mut table) = match Filename(&filename)
             .make(RenderType::NfBasisAndTable, None)
             .unwrap()
@@ -191,7 +191,7 @@ mod tests {
 
     #[test]
     fn test_small_and_large_render_batch_same_result() {
-        let filename = "songs/test/render_op_get_batch_simple.socool".to_string();
+        let filename = "src/testing/snapshot_tests/render_op_get_batch_simple.socool".to_string();
         let (nf, basis, mut table) = match Filename(&filename)
             .make(RenderType::NfBasisAndTable, None)
             .unwrap()

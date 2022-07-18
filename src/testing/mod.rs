@@ -35,7 +35,7 @@ pub fn read_test_table_from_json_file() -> TestTable {
 
 pub fn generate_test_table() -> TestTable {
     let mut test_table: TestTable = IndexMap::new();
-    let paths = fs::read_dir("./songs/test").unwrap();
+    let paths = fs::read_dir("./src/testing/snapshot_tests").unwrap();
     for path in paths {
         let p = path.unwrap().path().into_os_string().into_string().unwrap();
         if p.ends_with(".socool") {
