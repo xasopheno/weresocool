@@ -2,8 +2,8 @@
 
 thing1 = {
     Overlay [
-        Tm 0 | Length 1/5,
-	    Tm 1/5,
+        Fm 0 | Length 1/5,
+	    Fm 1/5,
     ]
 }
 

@@ -317,7 +317,7 @@ mod render_manager_tests {
 
     #[test]
     fn test_push_render() {
-        let mut r = RenderManager::init(render_voices_mock(), None, false);
+        let mut r = RenderManager::init(render_voices_mock(), None, None, false);
         assert_eq!(*r.current_render(), Some(render_voices_mock()));
         assert_eq!(*r.next_render(), None);
         r.push_render(render_voices_mock());

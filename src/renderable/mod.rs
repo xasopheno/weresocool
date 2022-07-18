@@ -101,6 +101,7 @@ mod tests {
                 osc_type: OscType::None,
                 next_l_silent: false,
                 next_r_silent: false,
+                names: vec![],
             },
             RenderOp {
                 f: 330.0,
@@ -121,6 +122,7 @@ mod tests {
                 osc_type: OscType::None,
                 next_l_silent: false,
                 next_r_silent: false,
+                names: vec![],
             },
             RenderOp {
                 f: 0.0,
@@ -141,6 +143,7 @@ mod tests {
                 osc_type: OscType::None,
                 next_l_silent: true,
                 next_r_silent: true,
+                names: vec![],
             },
         ]];
         assert_eq!(result, expected);
