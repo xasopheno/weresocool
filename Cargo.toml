@@ -14,7 +14,6 @@ resolver="2"
 
 exclude = [
     "renders/*",
-    "application/*",
     "imgs/*",
 ]
 
@@ -88,7 +87,6 @@ members = [
     "shared",
     "scop",
     "ring_buffer",
-    "application/server",
 ]
 
 [[bin]]
