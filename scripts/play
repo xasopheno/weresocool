@@ -1,5 +1,0 @@
-#!/usr/bin/env sh
-
-FILENAME=$1
-
-fd | entr -crs "echo | cargo run --release --bin wsc $FILENAME"
