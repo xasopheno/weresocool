@@ -87,6 +87,7 @@ members = [
     "shared",
     "scop",
     "ring_buffer",
+    "vorbis"
 ]
 
 [[bin]]

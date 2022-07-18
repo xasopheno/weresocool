@@ -550,6 +550,12 @@ dependencies = [
 ]
 
 [[package]]
+name = "gcc"
+version = "0.3.55"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "8f5f3913fa0bfe7ee1fd8248b6b9f42a5af4b9d65ec2dd2c3c26132b950ecfc2"
+
+[[package]]
 name = "getrandom"
 version = "0.1.16"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -932,6 +938,17 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "e42c982f2d955fac81dd7e1d0e1426a7d702acd9c98d19ab01083a6a0328c424"
 dependencies = [
  "memchr",
+]
+
+[[package]]
+name = "ogg-sys"
+version = "0.0.9"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "a95b8c172e17df1a41bf8d666301d3b2c4efeb90d9d0415e2a4dc0668b35fdb2"
+dependencies = [
+ "gcc",
+ "libc",
+ "pkg-config",
 ]
 
 [[package]]
@@ -1562,6 +1579,40 @@ name = "vec_map"
 version = "0.8.2"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "f1bddf1187be692e79c5ffeab891132dfb0f236ed36a43c7ed39f1165ee20191"
+
+[[package]]
+name = "vorbis"
+version = "0.1.0"
+dependencies = [
+ "hound",
+ "itertools",
+ "vorbis-encoder",
+]
+
+[[package]]
+name = "vorbis-encoder"
+version = "0.1.4"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "3fb66bcdde056dd230991bb86669a1269778fe8ad1f6cee403428ac7985391bc"
+dependencies = [
+ "gcc",
+ "libc",
+ "ogg-sys",
+ "pkg-config",
+ "vorbis-sys",
+]
+
+[[package]]
+name = "vorbis-sys"
+version = "0.0.8"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "729e1f15395850b4e6d19ca0cd1d42ef44707503a53b69d40ff49182b3c5589d"
+dependencies = [
+ "gcc",
+ "libc",
+ "ogg-sys",
+ "pkg-config",
+]
 
 [[package]]
 name = "walkdir"

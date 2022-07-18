@@ -3,10 +3,8 @@
     pass in settings/rate on render_manager creation
 
 # Simplify
-    - Move application stuff out of repo? 
-    - remove songs folder
-        - fix tests that rely on songs folder
-    - remove "scripts" folder
+    [x] Move application stuff out of repo? 
+    [x] remove "scripts" folder
     - cleanup/remove todo folder
     - remove unnecessary fields from op4d?
         - better name
