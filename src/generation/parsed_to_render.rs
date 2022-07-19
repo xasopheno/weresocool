@@ -35,6 +35,7 @@ const SETTINGS: Settings = default_settings();
 pub enum WavType {
     Wav { cli: bool, output_dir: PathBuf },
     Mp3 { cli: bool, output_dir: PathBuf },
+    OggVorbis { cli: bool, output_dir: PathBuf },
 }
 
 #[derive(Clone, PartialEq, Debug)]
@@ -265,6 +266,18 @@ pub fn parsed_to_render(
                     write_audio_to_file(&audio, output_dir);
                 };
                 Ok(render_return)
+            }
+            WavType::OggVorbis {cli, mut output_dir} {
+                // let stereo_waveform = render(&basis, &nf, &mut parsed_composition.defs)?;
+                // let render_return = RenderReturn::Wav(write_composition_to_wav(stereo_waveform)?);
+                // if cli {
+                    // let audio: Vec<u8> = Vec::try_from(render_return.clone())?;
+                    // let f = filename_to_renderpath(filename);
+                    // output_dir.push(format!("{}.wav", f));
+                    // write_audio_to_file(&audio, output_dir);
+                // };
+                // Ok(render_return)
+
             }
         },
     }

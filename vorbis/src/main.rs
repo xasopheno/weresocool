@@ -1,7 +1,19 @@
-use itertools::Itertools;
+use std::io::prelude::*;
+use weresocool_vorbis::encode_lr_channels_to_ogg_vorbis;
 
 fn main() {
-    let file = std::fs::File::open("test.wav").unwrap();
+    println!("Hello, Vorbis");
+
+    let (l, r) = wav_filename_to_lr_channels("test.wav");
+    let encoded = encode_lr_channels_to_ogg_vorbis(l, r);
+
+    let mut file = std::fs::File::create("result.ogg").unwrap();
+    file.write_all(&encoded).unwrap();
+    println!("Finished");
+}
+
+fn wav_filename_to_lr_channels(filename: &str) -> (Vec<f32>, Vec<f32>) {
+    let file = std::fs::File::open(filename).unwrap();
     let mut reader = hound::WavReader::new(file).unwrap();
     let mut count = 0;
 
@@ -16,20 +28,28 @@ fn main() {
             result
         });
 
-    let interleaved = l.iter().interleave(r.as_slice());
+    (l, r)
+}
 
-    let spec = hound::WavSpec {
-        channels: 2,
-        sample_rate: 44100,
-        bits_per_sample: 32,
-        sample_format: hound::SampleFormat::Float,
-    };
-    let mut writer = hound::WavWriter::create("out.wav", spec).unwrap();
-    for t in interleaved {
-        writer.write_sample(*t).unwrap();
+#[cfg(test)]
+mod test {
+    use super::*;
+    use hamcrest2::prelude::*;
+    use weresocool_vorbis::*;
+
+    #[test]
+    fn test_interleaving() {
+        let (l, r) = wav_filename_to_lr_channels("test.wav");
+        let interleaved: Vec<f32> = interleave_channels(l, r);
+
+        let test_file = std::fs::File::open("test.wav").unwrap();
+        let mut test_reader = hound::WavReader::new(test_file).unwrap();
+        assert_that!(
+            &test_reader
+                .samples::<f32>()
+                .map(|v| v.unwrap())
+                .collect::<Vec<f32>>(),
+            contains(interleaved).exactly()
+        );
     }
-    writer.finalize().unwrap();
-
-    // https://docs.rs/vorbis-encoder/0.1.4/src/vorbis_encoder/lib.rs.html#18-20
-    println!("Hello, world!");
 }
