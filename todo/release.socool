@@ -12,6 +12,9 @@
             - others to render 3d
             - midi
 
+# CLI 
+    - Add OggVorbis, silly, but almost done. 
+
 # CI/CD
     auto release to when merged to main? 
         main/danny

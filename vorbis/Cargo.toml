@@ -8,7 +8,7 @@ edition = "2021"
 [dependencies]
 hound = "3.4.0"
 itertools = "0.10.3"
-vorbis = "0.1.0"
+vorbis-encoder = "0.1.4"
 
 [dev-dependencies]
 hamcrest2 = "0.3.0"

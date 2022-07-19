@@ -12,15 +12,15 @@ fn main() {
     println!("Finished");
 }
 
-fn wav_filename_to_lr_channels(filename: &str) -> (Vec<f32>, Vec<f32>) {
+fn wav_filename_to_lr_channels(filename: &str) -> (Vec<f64>, Vec<f64>) {
     let file = std::fs::File::open(filename).unwrap();
     let mut reader = hound::WavReader::new(file).unwrap();
     let mut count = 0;
 
-    let (l, r): (Vec<f32>, Vec<f32>) = reader
+    let (l, r): (Vec<f64>, Vec<f64>) = reader
         .samples::<f32>()
-        .map(|v| v.unwrap())
-        .collect::<Vec<f32>>()
+        .map(|v| v.unwrap() as f64)
+        .collect::<Vec<f64>>()
         .iter()
         .partition(|_v| {
             let result = count % 2 == 0;
@@ -40,15 +40,15 @@ mod test {
     #[test]
     fn test_interleaving() {
         let (l, r) = wav_filename_to_lr_channels("test.wav");
-        let interleaved: Vec<f32> = interleave_channels(l, r);
+        let interleaved: Vec<f64> = interleave_channels(l, r);
 
         let test_file = std::fs::File::open("test.wav").unwrap();
         let mut test_reader = hound::WavReader::new(test_file).unwrap();
         assert_that!(
             &test_reader
                 .samples::<f32>()
-                .map(|v| v.unwrap())
-                .collect::<Vec<f32>>(),
+                .map(|v| v.unwrap() as f64)
+                .collect::<Vec<f64>>(),
             contains(interleaved).exactly()
         );
     }
