@@ -1,7 +1,7 @@
 use std::collections::BTreeMap;
 
 /// Set of Names associated with a PointOp
-#[derive(Debug, Clone, Hash, Eq, Ord, PartialOrd, Default)]
+#[derive(Debug, Clone, Hash, Eq, Ord, PartialOrd, Default, PartialEq)]
 pub struct NameSet {
     index: usize,
     map: BTreeMap<String, usize>,
@@ -32,7 +32,7 @@ impl NameSet {
     pub fn to_vec_str(&self) -> Vec<&str> {
         let count_b: BTreeMap<&usize, &str> =
             self.map.iter().map(|(k, v)| (v, k.as_str())).collect();
-        count_b.values().into_iter().map(|v| *v).collect()
+        count_b.values().into_iter().copied().collect()
     }
 
     pub fn last(&self) -> Option<String> {
@@ -46,12 +46,6 @@ impl NameSet {
 
     pub fn contains(&self, value: &str) -> bool {
         self.map.contains_key(value)
-    }
-}
-
-impl PartialEq for NameSet {
-    fn eq(&self, other: &Self) -> bool {
-        self.map.len() == other.map.len() && self.map.keys().all(|k| other.map.contains_key(k))
     }
 }
 

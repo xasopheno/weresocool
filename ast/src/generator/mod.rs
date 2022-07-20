@@ -32,7 +32,7 @@ impl GenOp {
             name,
             seed: match seed {
                 None => rng.gen::<u64>(),
-                Some(s) => s.1.abs() as u64,
+                Some(s) => s.1.unsigned_abs() as u64,
             },
         }
     }
@@ -42,7 +42,7 @@ impl GenOp {
             gen,
             seed: match seed {
                 None => rng.gen::<u64>(),
-                Some(s) => s.1.abs() as u64,
+                Some(s) => s.1.unsigned_abs() as u64,
             },
         }
     }
@@ -52,7 +52,7 @@ impl GenOp {
             gen: Box::new(gen),
             seed: match seed {
                 None => rng.gen::<u64>(),
-                Some(s) => s.1.abs() as u64,
+                Some(s) => s.1.unsigned_abs() as u64,
             },
             n,
         }
@@ -87,7 +87,7 @@ impl CoefState {
         Self {
             state: start,
             state_bak: start,
-            div: div.abs() as usize,
+            div: div.unsigned_abs() as usize,
             idx: 0,
             coefs,
             axis,

@@ -403,13 +403,13 @@ fn make_visuals(
 ) -> Result<(Vec<Op4D>, f64), Error> {
     let normalizer = Normalizer::default();
 
-    let renderables = nf_to_vec_renderable(nf, &mut parsed_composition.defs, &basis)?;
+    let renderables = nf_to_vec_renderable(nf, &mut parsed_composition.defs, basis)?;
     let render_voices = renderables_to_render_voices(renderables);
 
     let mut visual: Vec<Op4D> = render_voices
         .iter()
         .flat_map(|render_voice| &render_voice.ops)
-        .flat_map(|op| render_op_to_normalized_op4d(&op, &normalizer))
+        .flat_map(|op| render_op_to_normalized_op4d(op, &normalizer))
         .collect();
 
     let (_, length) = get_min_max_op4d_1d(&visual);
@@ -439,13 +439,13 @@ pub fn sum_all_waveforms(mut vec_wav: Vec<StereoWaveform>) -> StereoWaveform {
 
 /// Sort a vec of StereoWaveform by length. Assumes both channels have the same
 /// buffer length
-fn sort_vecs(vec_wav: &mut Vec<StereoWaveform>) {
+fn sort_vecs(vec_wav: &mut [StereoWaveform]) {
     vec_wav.sort_unstable_by(|a, b| b.l_buffer.len().cmp(&a.l_buffer.len()));
 }
 
 /// Sum two vectors. Assumes vector a is longer than or of the same length
 /// as vector b.
-pub fn sum_vec(a: &mut Vec<f64>, b: &[f64]) {
+pub fn sum_vec(a: &mut [f64], b: &[f64]) {
     for (ai, bi) in a.iter_mut().zip(b) {
         *ai += *bi;
     }

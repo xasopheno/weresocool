@@ -116,7 +116,7 @@ pub struct Normalizer {
 
 impl Normalizer {
     pub const fn default() -> Self {
-        Normalizer {
+        Self {
             x: MinMax {
                 min: -1.0,
                 max: 1.0,
@@ -182,7 +182,7 @@ fn normalize_value(value: f64, min: f64, max: f64) -> f64 {
     (value - min) / d
 }
 
-fn normalize_op4d_1d(op4d_1d: &mut Vec<Op4D>, n: Normalizer) {
+fn normalize_op4d_1d(op4d_1d: &mut [Op4D], n: Normalizer) {
     op4d_1d.iter_mut().for_each(|op| {
         op.normalize(&n);
     })
@@ -256,7 +256,7 @@ pub fn get_min_max_op4d_1d(vec_op4d: &[Op4D]) -> (Normalizer, f64) {
             max: max_state.z,
         },
     };
-    dbg!(n.clone());
+    dbg!(n);
     dbg!(max_len);
     (n, max_len)
 }
