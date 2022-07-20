@@ -112,7 +112,7 @@ fn write_composition_to_wav_test() {
     assert_eq!(wav.unwrap().len(), 148)
 }
 
-pub fn normalize_waveform(buffer: &mut Vec<f32>) {
+pub fn normalize_waveform(buffer: &mut [f32]) {
     let mut max = 0.0;
     for sample in buffer.iter() {
         if (*sample).abs() > max {

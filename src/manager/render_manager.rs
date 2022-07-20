@@ -64,7 +64,7 @@ pub fn render_op_to_normalized_op4d(render_op: &RenderOp, normalizer: &Normalize
         event_type: EventType::On,
     };
 
-    op4d.normalize(&normalizer);
+    op4d.normalize(normalizer);
 
     Some(op4d)
 }
@@ -152,7 +152,7 @@ impl RenderManager {
 
         let next = self.exists_next_render();
         let vtx = self.visualization.channel.clone();
-        let normalizer = self.visualization.normalizer.clone();
+        let normalizer = self.visualization.normalizer;
         let current = self.current_render();
 
         match current {
@@ -171,7 +171,7 @@ impl RenderManager {
                                     batch
                                         .iter()
                                         .filter(|op| op.index == 0)
-                                        .map(|v| v.clone())
+                                        .cloned()
                                         .collect::<Vec<_>>()
                                 } else {
                                     vec![]
@@ -189,11 +189,7 @@ impl RenderManager {
                     let mut opmap: OpMap<Op4D> = OpMap::default();
 
                     ops.iter().flatten().for_each(|v| {
-                        let name = if let Some(last) = v.names.last() {
-                            last
-                        } else {
-                            "nameless"
-                        };
+                        let name = v.names.last().map_or("nameless", |n| n);
 
                         let op = render_op_to_normalized_op4d(v, &normalizer);
                         if let Some(o) = op {
