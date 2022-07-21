@@ -5,17 +5,13 @@ format:
 	#!/usr/bin/env bash
 	set -euo pipefail
 
-	cargo fmt
-	pushd parser && cargo fmt && popd
-	pushd ast && cargo fmt && popd
+	cargo fmt --all
 
 format_ci:
 	#!/usr/bin/env bash
 	set -euo pipefail
 
-	cargo fmt
-	pushd parser && cargo fmt -- --check && popd
-	pushd ast && cargo fmt -- --check && popd
+	cargo fmt --all --check
 
 clippy:
 	# cargo +nightly clippy --all-targets -- -D warnings
