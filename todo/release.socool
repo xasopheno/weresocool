@@ -13,13 +13,15 @@
             - midi
 
 # CLI 
-    - Add OggVorbis, silly, but almost done. 
+    [x] Add OggVorbis, silly, but almost done. 
+    - clean up Vorbis crate
 
 # CI/CD
     auto release to when merged to main? 
         main/danny
 
 # Documentation
+    - weresocool crate should be weresocool_cli
     - using the cli
     - how to build
     - run locally
@@ -37,8 +39,8 @@
     cargo install
 
     check licensing? 
-        - all crates - there is a command for this
-        - LAME
+        [x] all crates - there is a command for this
+        [x] LAME
         - Reverb
         - Yin
 
