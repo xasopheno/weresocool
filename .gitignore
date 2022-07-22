@@ -1,10 +1,8 @@
-/target
+/target/
+/debug/
 **/*.rs.bk
 *.makam-cache
 socool_ast/target
 parser/ast
 *.iml
-composition.wav
-application/extraResources/weresocool_server
 *.DS_Store
-application/tsconfig.tsbuildinfo

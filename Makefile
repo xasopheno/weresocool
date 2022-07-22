@@ -1,6 +1,3 @@
-test:
-	make test_rust && make test_application
-
 format:
 	#!/usr/bin/env bash
 	set -euo pipefail
@@ -17,7 +14,7 @@ clippy:
 	# cargo +nightly clippy --all-targets -- -D warnings
 	cargo clippy --all-targets -- -D warnings
 
-test_rust:
+test:
 	cargo test --workspace --release
 	cargo run --release --bin snapshot
 

@@ -3,6 +3,8 @@
     pass in settings/rate on render_manager creation
 
 # Simplify
+    [] Move core into own package
+    [] Move cli into main package?
     [x] Move application stuff out of repo? 
     [x] remove "scripts" folder
     - cleanup/remove todo folder
