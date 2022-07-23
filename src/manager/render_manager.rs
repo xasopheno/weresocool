@@ -1,8 +1,8 @@
-use crate::generation::json::Normalizer;
+use crate::generation::Normalizer;
 use crate::{
-    generation::json::{EventType, Op4D},
     generation::parsed_to_render::{RenderReturn, RenderType},
     generation::sum_all_waveforms,
+    generation::Op4D,
     interpretable::{InputType, Interpretable},
 };
 use opmap::OpMap;
@@ -61,7 +61,6 @@ pub fn render_op_to_normalized_op4d(render_op: &RenderOp, normalizer: &Normalize
         voice: render_op.voice,
         event: render_op.event,
         names: render_op.names.to_vec(),
-        event_type: EventType::On,
     };
 
     op4d.normalize(normalizer);

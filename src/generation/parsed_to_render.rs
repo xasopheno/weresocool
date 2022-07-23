@@ -1,5 +1,5 @@
 use crate::{
-    generation::{json::get_min_max_op4d_1d, json::Normalizer, to_csv, to_json_file},
+    generation::{csv::get_min_max_op4d_1d, to_csv, to_json_file, Normalizer},
     manager::render_op_to_normalized_op4d,
     ui::printed,
     write::{write_composition_to_mp3, write_composition_to_wav},

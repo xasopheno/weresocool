@@ -5,6 +5,7 @@
 # Simplify
     [] Move core into own package
     [] Move cli into main package?
+    [] Tests for parsed_to_render stuff
     [x] Move application stuff out of repo? 
     [x] remove "scripts" folder
     - cleanup/remove todo folder
