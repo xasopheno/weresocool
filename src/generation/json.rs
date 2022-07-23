@@ -1,4 +1,4 @@
-use super::{csv::get_min_max_op4d_1d, op4d::normalize_op4d_1d, Normalizer, TimedOp};
+use super::{csv::get_length_op4d_1d, op4d::normalize_op4d_1d, Normalizer, TimedOp};
 use crate::{
     generation::Op4D,
     ui::{banner, printed},
@@ -71,7 +71,7 @@ pub fn to_normalized_op4d_1d(
         !is_silent
     });
 
-    let (_, max_len) = get_min_max_op4d_1d(&op4d_1d);
+    let max_len = get_length_op4d_1d(&op4d_1d);
     let normalizer = Normalizer::default();
     normalize_op4d_1d(&mut op4d_1d, normalizer);
 

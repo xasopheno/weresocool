@@ -1,5 +1,5 @@
 use crate::{
-    generation::{csv::get_min_max_op4d_1d, to_csv, to_json_file, Normalizer},
+    generation::{csv::get_length_op4d_1d, to_csv, to_json_file, Normalizer},
     manager::render_op_to_normalized_op4d,
     ui::printed,
     write::{write_composition_to_mp3, write_composition_to_wav},
@@ -412,7 +412,7 @@ fn make_visuals(
         .flat_map(|op| render_op_to_normalized_op4d(op, &normalizer))
         .collect();
 
-    let (_, length) = get_min_max_op4d_1d(&visual);
+    let length = get_length_op4d_1d(&visual);
 
     visual.sort_by(|a, b| a.t.partial_cmp(&b.t).unwrap());
 
