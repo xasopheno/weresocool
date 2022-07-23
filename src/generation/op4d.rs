@@ -58,7 +58,8 @@ pub fn normalize_value(value: f64, min: f64, max: f64) -> f64 {
     (value - min) / d
 }
 
-pub fn normalize_op4d_1d(op4d_1d: &mut [Op4D], n: Normalizer) {
+pub fn normalize_op4d_1d(op4d_1d: &mut [Op4D]) {
+    let n = Normalizer::default();
     op4d_1d.iter_mut().for_each(|op| {
         op.normalize(&n);
     })

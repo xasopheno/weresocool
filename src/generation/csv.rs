@@ -1,7 +1,4 @@
-use super::{
-    composition_to_vec_timed_op, op4d::normalize_op4d_1d, vec_timed_op_to_vec_op4d, Normalizer,
-    Op4D,
-};
+use super::{composition_to_vec_timed_op, op4d::normalize_op4d_1d, vec_timed_op_to_vec_op4d, Op4D};
 use crate::{ui::banner, write::write_composition_to_csv};
 use scop::Defs;
 use serde::{Deserialize, Serialize};
@@ -38,7 +35,7 @@ pub fn to_csv(
         !is_silent
     });
 
-    normalize_op4d_1d(&mut op4d_1d, Normalizer::default());
+    normalize_op4d_1d(&mut op4d_1d);
 
     write_composition_to_csv(&mut op4d_1d, &filename, output_dir)?;
 

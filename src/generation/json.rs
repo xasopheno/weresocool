@@ -1,4 +1,4 @@
-use super::{csv::get_length_op4d_1d, op4d::normalize_op4d_1d, Normalizer, TimedOp};
+use super::{csv::get_length_op4d_1d, op4d::normalize_op4d_1d, TimedOp};
 use crate::{
     generation::Op4D,
     ui::{banner, printed},
@@ -65,15 +65,13 @@ pub fn to_normalized_op4d_1d(
     let (vec_timed_op, _) = composition_to_vec_timed_op(composition, defs)?;
     let mut op4d_1d = vec_timed_op_to_vec_op4d(vec_timed_op, basis);
 
-    //TODO: Factor out
     op4d_1d.retain(|op| {
         let is_silent = op.y == 0.0 || op.z <= 0.0;
         !is_silent
     });
 
     let max_len = get_length_op4d_1d(&op4d_1d);
-    let normalizer = Normalizer::default();
-    normalize_op4d_1d(&mut op4d_1d, normalizer);
+    normalize_op4d_1d(&mut op4d_1d);
 
     Ok((op4d_1d, max_len))
 }
