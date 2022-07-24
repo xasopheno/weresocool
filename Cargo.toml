@@ -1,5 +1,5 @@
 [package]
-name = "weresocool_core_orig"
+name = "weresocool"
 version = "1.0.0"
 edition = "2021"
 authors = ["Danny <weresocool@xasopheno.com>"]
