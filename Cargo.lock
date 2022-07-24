@@ -1761,6 +1761,53 @@ dependencies = [
 ]
 
 [[package]]
+name = "weresocool_core_orig"
+version = "1.0.0"
+dependencies = [
+ "bytes",
+ "clap",
+ "colored",
+ "criterion",
+ "crossbeam-channel",
+ "csv",
+ "difference",
+ "env_logger",
+ "failure",
+ "failure_derive",
+ "float-cmp",
+ "futures",
+ "hound",
+ "indexmap",
+ "num 0.3.1",
+ "num-complex 0.3.1",
+ "num-rational 0.3.2",
+ "opmap",
+ "pbr",
+ "portaudio",
+ "pretty_assertions",
+ "rand",
+ "rayon",
+ "scop",
+ "serde",
+ "serde_derive",
+ "serde_json",
+ "term",
+ "test-generator",
+ "uuid",
+ "weresocool_analyze",
+ "weresocool_ast",
+ "weresocool_core",
+ "weresocool_error",
+ "weresocool_instrument",
+ "weresocool_lame",
+ "weresocool_parser",
+ "weresocool_ring_buffer",
+ "weresocool_shared",
+ "weresocool_vorbis",
+ "zip",
+]
+
+[[package]]
 name = "weresocool_error"
 version = "1.0.0"
 dependencies = [

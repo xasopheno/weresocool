@@ -1,5 +1,5 @@
 [package]
-name = "weresocool_core_orig"
+name = "weresocool_core"
 version = "1.0.0"
 edition = "2021"
 authors = ["Danny <weresocool@xasopheno.com>"]
@@ -18,18 +18,17 @@ exclude = [
 ]
 
 [dependencies]
-scop = { path = "scop", version = "1.0.0" }
-opmap = { path = "opmap", version = "0.1.0" }
-weresocool_core = { path = "core", version = "1.0.0" }
-weresocool_ring_buffer = { path = "ring_buffer", version = "1.0.0" }
-weresocool_analyze = { path = "analyze", version = "1.0.0" }
-weresocool_parser = { path = "parser", version = "1.0.0", default_features=false, optional=true }
-weresocool_ast = { path = "ast", version = "1.0.0", default_features=false, optional=true }
-weresocool_error = { path = "error", version = "1.0.0", default_features=false, optional=true } 
-weresocool_instrument = { path = "instrument", version = "1.0.0", default_features=false, optional=true } 
-weresocool_lame = { path = "lame", version = "1.0.0", optional=true } 
-weresocool_shared = { path = "shared", version = "1.0.0" } 
-weresocool_vorbis = { path = "vorbis", version = "0.1.0" } 
+scop = { path = "../scop", version = "1.0.0" }
+opmap = { path = "../opmap", version = "0.1.0" }
+weresocool_ring_buffer = { path = "../ring_buffer", version = "1.0.0" }
+weresocool_analyze = { path = "../analyze", version = "1.0.0" }
+weresocool_parser = { path = "../parser", version = "1.0.0", default_features=false, optional=true }
+weresocool_ast = { path = "../ast", version = "1.0.0", default_features=false, optional=true }
+weresocool_error = { path = "../error", version = "1.0.0", default_features=false, optional=true } 
+weresocool_instrument = { path = "../instrument", version = "1.0.0", default_features=false, optional=true } 
+weresocool_lame = { path = "../lame", version = "1.0.0", optional=true } 
+weresocool_shared = { path = "../shared", version = "1.0.0" } 
+weresocool_vorbis = { path = "../vorbis", version = "0.1.0" } 
 portaudio = { version="0.7.0", optional=true }
 rand = { version="0.7.3", features=["wasm-bindgen"]}
 hound = "3.4.0"
@@ -69,29 +68,6 @@ wasm = ["weresocool_ast/wasm", "weresocool_instrument/wasm", "weresocool_parser/
 [dev-dependencies]
 pretty_assertions = "0.6.1"
 criterion = "0.3.3"
-
-[[bench]]
-name = "render_batch_bench"
-harness = false
-[[bench]]
-name = "nf_to_vec_renderable_bench"
-harness = false
-
-[workspace]
-members = [
-    "analyze",
-    "opmap",
-    "ast",
-    "error",
-    "instrument",
-    "lame",
-    "parser",
-    "shared",
-    "scop",
-    "ring_buffer",
-    "vorbis",
-    "core"
-]
 
 [[bin]]
 name = "stems"
