@@ -1,4 +1,4 @@
-use super::{Normalizer, OpCsv1d};
+use super::{Normalizer, OpCSV};
 use serde::{Deserialize, Serialize};
 
 #[derive(Debug, Clone, Serialize, Deserialize, PartialEq)]
@@ -35,8 +35,8 @@ impl Op4D {
         self.z = normalize_value(self.z, normalizer.z.min, normalizer.z.max);
     }
 
-    pub const fn to_op_csv_1d(&self) -> OpCsv1d {
-        OpCsv1d {
+    pub const fn to_op_csv(&self) -> OpCSV {
+        OpCSV {
             time: self.t,
             length: self.l,
             frequency: self.y,
@@ -55,7 +55,13 @@ pub fn normalize_value(value: f64, min: f64, max: f64) -> f64 {
     } else {
         max - min
     };
-    (value - min) / d
+    let r = (value - min) / d;
+
+    if f64::is_nan(r) {
+        0.0
+    } else {
+        r
+    }
 }
 
 pub fn normalize_op4d_1d(op4d_1d: &mut [Op4D]) {

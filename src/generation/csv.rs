@@ -8,7 +8,7 @@ use weresocool_error::Error;
 use weresocool_instrument::Basis;
 
 #[derive(Debug, Clone, Serialize, Deserialize, PartialEq)]
-pub struct OpCsv1d {
+pub struct OpCSV {
     pub time: f64,
     pub length: f64,
     pub frequency: f64,

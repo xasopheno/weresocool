@@ -7,7 +7,7 @@ pub mod test;
 pub mod timed_op;
 
 pub use self::{
-    csv::{to_csv, OpCsv1d},
+    csv::{to_csv, OpCSV},
     json::{composition_to_vec_timed_op, to_json_file, vec_timed_op_to_vec_op4d},
     normalizer::{MinMax, Normalizer},
     op4d::Op4D,

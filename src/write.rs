@@ -161,9 +161,7 @@ pub fn write_composition_to_csv(
     output_dir.push(filename);
     let mut writer = Writer::from_path(output_dir.as_path())?;
     for op in ops {
-        writer
-            .serialize(op.to_op_csv_1d())
-            .expect("CSV writer error");
+        writer.serialize(op.to_op_csv()).expect("CSV writer error");
     }
 
     Ok(())

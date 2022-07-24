@@ -83,7 +83,7 @@ impl TimedOp {
         voice: usize,
         event: usize,
     ) -> Self {
-        let timed_op = TimedOp {
+        let timed_op = Self {
             fm: point_op.fm,
             fa: point_op.fa,
             pm: point_op.pm,

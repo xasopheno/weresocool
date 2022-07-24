@@ -1,7 +1,7 @@
 use std::collections::BTreeMap;
 
 /// Set of Names associated with a PointOp
-#[derive(Debug, Clone, Hash, Eq, Ord, PartialOrd, Default)]
+#[derive(Debug, Clone, Eq, Ord, PartialOrd, Default)]
 pub struct NameSet {
     index: usize,
     map: BTreeMap<String, usize>,
@@ -52,6 +52,12 @@ impl NameSet {
 impl PartialEq for NameSet {
     fn eq(&self, other: &Self) -> bool {
         self.map.len() == other.map.len() && self.map.keys().all(|k| other.map.contains_key(k))
+    }
+}
+
+impl std::hash::Hash for NameSet {
+    fn hash<H: std::hash::Hasher>(&self, state: &mut H) {
+        self.map.hash(state);
     }
 }
 

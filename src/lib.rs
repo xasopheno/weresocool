@@ -1,7 +1,7 @@
 #![warn(
     clippy::nursery,
     //clippy::restriction,
-    //clippy::pedantic,
+    // clippy::pedantic,
     //clippy::cargo,
 )]
 pub use weresocool_ast as ast;
