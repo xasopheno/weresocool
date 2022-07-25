@@ -4,10 +4,10 @@ use clap::ArgMatches;
 use std::path::PathBuf;
 use std::sync::Arc;
 use std::sync::Mutex;
-use weresocool::core::interpretable::InputType::Filename;
-use weresocool::core::manager::prepare_render_outside;
-use weresocool::core::manager::RenderManager;
-use weresocool::core::portaudio::real_time_render_manager;
+use weresocool::interpretable::InputType::Filename;
+use weresocool::manager::prepare_render_outside;
+use weresocool::manager::RenderManager;
+use weresocool::portaudio::real_time_render_manager;
 use weresocool_instrument::RenderVoice;
 
 pub enum Play {

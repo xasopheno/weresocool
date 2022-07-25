@@ -10,8 +10,8 @@ use crate::play::{
 use notify::Error as NotifyError;
 use std::env;
 use thiserror::Error;
-use weresocool::core::ui::were_so_cool_logo;
 use weresocool::error::Error as WscError;
+use weresocool::ui::were_so_cool_logo;
 
 #[derive(Error, Debug)]
 pub enum Error {

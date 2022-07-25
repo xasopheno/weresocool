@@ -6,7 +6,7 @@
 )]
 pub use weresocool_ast as ast;
 #[cfg(feature = "app")]
-pub use weresocool_core as core;
+pub use weresocool_core::*;
 pub use weresocool_error as error;
 pub use weresocool_instrument as instrument;
 pub use weresocool_parser as parser;

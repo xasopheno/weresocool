@@ -1,9 +1,9 @@
 use crate::Error;
 use clap::ArgMatches;
 use std::path::PathBuf;
-use weresocool::core::generation::{RenderType, WavType};
-use weresocool::core::interpretable::InputType;
-use weresocool::core::interpretable::Interpretable;
+use weresocool::generation::{RenderType, WavType};
+use weresocool::interpretable::InputType;
+use weresocool::interpretable::Interpretable;
 
 pub fn print(print_args: Option<&ArgMatches>) -> Result<(), Error> {
     let args = print_args.ok_or_else(|| Error::Message("No print args".to_string()))?;
