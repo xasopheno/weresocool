@@ -33,9 +33,19 @@ const SETTINGS: Settings = default_settings();
 
 #[derive(Clone, PartialEq, Debug)]
 pub enum WavType {
-    Wav { cli: bool, output_dir: PathBuf },
-    Mp3 { cli: bool, output_dir: PathBuf },
-    OggVorbis { cli: bool, output_dir: PathBuf },
+    Wav {
+        cli: bool,
+        output_dir: PathBuf,
+    },
+    Mp3 {
+        cli: bool,
+        output_dir: PathBuf,
+    },
+    #[cfg(feature = "app")]
+    OggVorbis {
+        cli: bool,
+        output_dir: PathBuf,
+    },
 }
 
 #[derive(Clone, PartialEq, Debug)]
