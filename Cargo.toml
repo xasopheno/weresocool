@@ -57,6 +57,8 @@ test-generator = "0.3.0"
 float-cmp = "0.8.0"
 zip = { version="0.5.12", optional=true }
 crossbeam-channel = "0.5.4"
+thiserror = "1.0.31"
+notify = "5.0.0-pre.14"
 
 [features]
 default=["app"]
@@ -93,23 +95,28 @@ members = [
     "core"
 ]
 
-[[bin]]
-name = "stems"
-path = "bin/stems.rs"
 
 [[bin]]
-name = "real_time"
-path = "bin/real_time.rs"
+name = "main"
+path = "src/main.rs"
 
-[[bin]]
-name = "mic"
-path = "bin/real_time_mic.rs"
+# [[bin]]
+# name = "stems"
+# path = "bin/stems.rs"
 
-[[bin]]
-name = "scratch"
-path = "bin/pad.rs"
+# [[bin]]
+# name = "real_time"
+# path = "bin/real_time.rs"
 
-[[bin]]
-name = "snapshot"
-path = "bin/snapshot.rs"
+# [[bin]]
+# name = "mic"
+# path = "bin/real_time_mic.rs"
+
+# [[bin]]
+# name = "scratch"
+# path = "bin/pad.rs"
+
+# [[bin]]
+# name = "snapshot"
+# path = "bin/snapshot.rs"
 
