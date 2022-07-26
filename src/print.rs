@@ -58,14 +58,14 @@ pub fn print(print_args: Option<&ArgMatches>) -> Result<(), Error> {
     if should_print(&["all", "oggvorbis", "sound"]) {
         println!("printing .ogg...");
 
-        // InputType::Filename(&filename).make(
-        // RenderType::Wav(WavType::OggVorbis {
-        // cli: true,
-        // output_dir: output_dir.clone(),
-        // }),
-        // None,
-        // )?;
-        // printed.push("ogg")
+        InputType::Filename(&filename).make(
+            RenderType::Wav(WavType::OggVorbis {
+                cli: true,
+                output_dir: output_dir.clone(),
+            }),
+            None,
+        )?;
+        printed.push("ogg")
     }
     if should_print(&["all", "csv"]) {
         println!("printing .csv...");

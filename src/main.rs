@@ -1,4 +1,5 @@
 mod app;
+
 mod play;
 mod print;
 mod test;
@@ -8,6 +9,8 @@ use crate::play::{
     Play::{Once, Watch},
 };
 use notify::Error as NotifyError;
+#[cfg(feature = "app")]
+use portaudio::error::Error as PortAudioError;
 use std::env;
 use thiserror::Error;
 use weresocool::error::Error as WscError;
@@ -17,8 +20,9 @@ use weresocool::ui::were_so_cool_logo;
 pub enum Error {
     #[error("WereSoCoolError: `{0}`")]
     WereSoCoolError(#[from] WscError),
+    #[cfg(feature = "app")]
     #[error("PortAudioError: `{0}`")]
-    PortAudioError(#[from] portaudio::error::Error),
+    PortAudioError(#[from] PortAudioError),
     #[error("NotifyError: `{0}`")]
     NotifyError(#[from] NotifyError),
     #[error("IoError: `{0}`")]

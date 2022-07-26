@@ -277,6 +277,7 @@ pub fn parsed_to_render(
                 };
                 Ok(render_return)
             }
+            #[cfg(feature = "app")]
             WavType::OggVorbis {
                 cli,
                 mut output_dir,
