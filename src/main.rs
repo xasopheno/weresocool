@@ -41,7 +41,9 @@ fn main() -> Result<(), Error> {
         ("play", play_args) => play(play_args, cwd, Once)?,
         ("watch", play_args) => play(play_args, cwd, Watch)?,
         ("print", print_args) => print::print(print_args)?,
-        _ => unimplemented!(),
+        e => {
+            app::app().print_help().unwrap();
+        }
     }
     Ok(())
 }

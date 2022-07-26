@@ -176,7 +176,6 @@ pub mod tests {
             Op4D {
                 t: 0.0,
                 l: 1.5,
-                event_type: EventType::On,
                 voice: 0,
                 event: 0,
                 y: 2.3010299956639813,
@@ -187,7 +186,6 @@ pub mod tests {
             Op4D {
                 t: 1.5,
                 l: 1.5,
-                event_type: EventType::Off,
                 voice: 0,
                 event: 0,
                 x: 0.5,

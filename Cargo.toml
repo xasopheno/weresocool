@@ -11,6 +11,7 @@ keywords = ["microtonal", "binaural", "composition",  "audio", "music"]
 categories = ["multimedia::audio"]
 readme = "README.md"
 resolver="2"
+default-run = "main"
 
 exclude = [
     "imgs/*",
