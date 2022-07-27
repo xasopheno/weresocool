@@ -4,6 +4,5 @@ pub mod manager;
 #[cfg(feature = "app")]
 pub mod portaudio;
 pub mod renderable;
-pub mod testing;
 pub mod ui;
 pub mod write;

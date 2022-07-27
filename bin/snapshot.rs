@@ -1,4 +1,4 @@
-use weresocool_core::{
+use weresocool::{
     testing::{
         generate_test_table, read_test_table_from_json_file, show_difference,
         write_test_table_to_json_file,

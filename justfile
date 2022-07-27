@@ -6,12 +6,14 @@ clippy:
 	cargo clippy --all-targets -- -D warnings
 
 test:
-	cargo test --workspace --release
+	cargo nextest run --workspace --release
 	cargo run --release --bin snapshot
 
-test_rust_generated:
-	cargo test --release _generated
+test_generated:
+	cargo nextest run --release _generated
 
+test_snapshot:
+	cargo run --release --bin snapshot
 test_rehash:
 	cargo run --release --bin snapshot -- --rehash
 
