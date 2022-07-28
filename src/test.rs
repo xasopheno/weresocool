@@ -40,8 +40,7 @@ mod test {
     #[test]
     fn it_prints_a_json() {
         let mut cmd = Command::new("cargo");
-        // let tmp_dir = TempDir::new().unwrap();
-        let tmp_dir = "test_stuff";
+        let tmp_dir = TempDir::new().unwrap();
 
         cmd.arg("run")
             .arg("--release")
@@ -49,13 +48,13 @@ mod test {
             .arg("print")
             .arg("src/test_data/play.socool")
             .arg("--output_dir")
-            .arg(tmp_dir)
+            .arg(tmp_dir.path())
             .arg("--json")
             .assert()
             .success();
 
         let expected_filename = "src/test_data/play.socool.json";
-        let written_filename = format!("{}/play.socool.json", tmp_dir);
+        let written_filename = format!("{}/play.socool.json", tmp_dir.path().display());
 
         assert_same_file_contents(expected_filename, &written_filename)
     }
@@ -106,6 +105,7 @@ mod test {
     #[test]
     fn it_prints_stems() {
         let mut cmd = Command::new("cargo");
+        let tmp_dir = TempDir::new().unwrap();
 
         cmd.arg("run")
             .arg("--release")
@@ -113,14 +113,14 @@ mod test {
             .arg("print")
             .arg("src/test_data/play.socool")
             .arg("--output_dir")
-            .arg("test_stuff")
+            .arg(tmp_dir.path())
             .arg("--stems")
             .assert()
             .success();
 
         let expected_filename = "src/test_data/play.socool.stems.zip";
-        let written_filename = "test_stuff/play.socool.stems.zip";
-        assert_same_zip_contents(expected_filename, written_filename).unwrap();
+        let written_filename = format!("{}/play.socool.stems.zip", tmp_dir.path().display());
+        assert_same_zip_contents(expected_filename, &written_filename).unwrap();
     }
 
     fn assert_same_wav_file(

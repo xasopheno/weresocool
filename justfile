@@ -7,7 +7,7 @@ clippy:
 
 test:
 	cargo nextest run --workspace --release
-	cargo run --release --bin snapshot
+	just test_snapshot
 
 test_generated:
 	cargo nextest run --release _generated
