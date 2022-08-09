@@ -1,5 +1,5 @@
 #[cfg(test)]
-mod test {
+mod cli_tests {
     use assert_cmd::Command;
     use temp_dir::TempDir;
 

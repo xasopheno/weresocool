@@ -4,21 +4,28 @@ on: [push]
 
 jobs:
   build:
-
-    runs-on: macos-latest
+    runs-on: ubuntu-latest
 
     steps:
-    - uses: actions/checkout@v2
+    - uses: extractions/setup-just@v1
     - name: install dependancies
-      run: brew install portaudio pkg-config lame
-
-    - name: Add rustfmt
-      run: rustup component add rustfmt
-    - name: add clippy
-      run: rustup component add clippy
+      run: | 
+        sudo apt update
+        sudo apt install -y libasound2-dev portaudio19-dev libportaudio2 libportaudiocpp0 pkg-config lame libmp3lame-dev vorbis-tools lld 
+    - uses: actions-rs/toolchain@v1
+      with:
+          toolchain: stable
+          components: clippy, rustfmt
+          override: true
+    - uses: actions/checkout@v2
     - name: format
-      run: make format_ci 
+      run: just format
     - name: clippy 
-      run: cargo clippy --all-targets -- -D warnings
+      run: just clippy
+    - uses: actions-rs/install@v0.1
+      with:
+          crate: cargo-nextest
+          version: latest
+      # run: brew install portaudio pkg-config lame libvorbis
     - name: run tests
-      run: make test_rust
+      run: just test

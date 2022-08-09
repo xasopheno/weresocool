@@ -1,3 +1,8 @@
+build:
+	cargo build
+build-release:
+	cargo build -- release
+
 format:
 	cargo fmt --all
 
@@ -20,3 +25,5 @@ test_rehash:
 check-licenses: 
   cargo deny check licenses --hide-inclusion-graph
 
+test-github-actions:
+	act
