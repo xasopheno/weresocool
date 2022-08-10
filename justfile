@@ -11,11 +11,11 @@ clippy:
 	cargo clippy --all-targets -- -D warnings
 
 test:
-	cargo nextest run --workspace --release
+	cargo test --workspace --release
 	just test_snapshot
 
 test_generated:
-	cargo nextest run --release _generated
+	cargo test --release _generated
 
 test_snapshot:
 	cargo run --release --bin snapshot

@@ -3,18 +3,18 @@ mod cli_tests {
     use assert_cmd::Command;
     use temp_dir::TempDir;
 
-    #[test]
-    fn it_plays_a_cool_file() {
-        let mut cmd = Command::new("cargo");
+    // #[test]
+    // fn it_plays_a_cool_file() {
+        // let mut cmd = Command::new("cargo");
 
-        cmd.arg("run")
-            .arg("--release")
-            .arg("--")
-            .arg("play")
-            .arg("src/test_data/play.socool")
-            .assert()
-            .success();
-    }
+        // cmd.arg("run")
+            // .arg("--release")
+            // .arg("--")
+            // .arg("play")
+            // .arg("src/test_data/play.socool")
+            // .assert()
+            // .success();
+    // }
 
     #[test]
     fn it_prints_a_csv() {

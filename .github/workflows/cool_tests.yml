@@ -11,21 +11,21 @@ jobs:
     - name: install dependancies
       run: | 
         sudo apt update
-        sudo apt install -y libasound2-dev portaudio19-dev libportaudio2 libportaudiocpp0 pkg-config lame libmp3lame-dev vorbis-tools lld 
+        sudo apt install -y libasound2-dev portaudio19-dev libportaudio2 libportaudiocpp0 pkg-config lame libmp3lame-dev vorbis-tools lld alsa alsa-utils alsa-oss
+    - uses: actions/checkout@v2
     - uses: actions-rs/toolchain@v1
       with:
           toolchain: stable
           components: clippy, rustfmt
           override: true
-    - uses: actions/checkout@v2
     - name: format
       run: just format
     - name: clippy 
       run: just clippy
-    - uses: actions-rs/install@v0.1
-      with:
-          crate: cargo-nextest
-          version: latest
+    # - uses: actions-rs/install@v0.1
+      # with:
+          # crate: cargo-nextest
+          # version: latest
       # run: brew install portaudio pkg-config lame libvorbis
     - name: run tests
       run: just test
