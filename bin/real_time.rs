@@ -1,8 +1,9 @@
+use crossbeam_channel::{Receiver, Sender};
 use std::sync::{Arc, Mutex};
-use weresocool::{
+use weresocool_core::{
     generation::parsed_to_render::{RenderReturn, RenderType},
     interpretable::{InputType::Filename, Interpretable},
-    manager::RenderManager,
+    manager::{RenderManager, VisEvent},
     portaudio::real_time_render_manager,
     ui::{get_args, no_file_name, were_so_cool_logo},
 };
@@ -29,11 +30,22 @@ fn main() -> Result<(), Error> {
     let renderables = nf_to_vec_renderable(&nf, &mut table, &basis)?;
     let render_voices = renderables_to_render_voices(renderables);
 
-    let render_manager = Arc::new(Mutex::new(RenderManager::init(render_voices, None, false)));
+    let (tx, rx): (Sender<VisEvent>, Receiver<VisEvent>) = crossbeam_channel::unbounded();
+
+    let render_manager = Arc::new(Mutex::new(RenderManager::init(
+        render_voices,
+        Some(tx),
+        None,
+        false,
+    )));
 
     let mut stream = real_time_render_manager(Arc::clone(&render_manager))?;
     stream.start()?;
-    while let true = stream.is_active()? {}
+    while let true = stream.is_active()? {
+        if let Ok(x) = rx.recv() {
+            dbg!(x);
+        }
+    }
     stream.stop()?;
 
     Ok(())

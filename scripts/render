@@ -1,6 +1,0 @@
-#!/usr/bin/env sh
-
-FILENAME=$1
-cargo run --release --bin wsc songs/$FILENAME.socool --json
-cargo run --release --bin print songs/$FILENAME.socool
-../ws/client/target/release/client

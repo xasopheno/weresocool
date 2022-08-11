@@ -22,8 +22,8 @@ pub struct Basis {
     pub d: Rational64,
 }
 
-impl From<Init> for Basis {
-    fn from(init: Init) -> Self {
+impl Basis {
+    pub fn from_init(init: &Init) -> Self {
         Self {
             f: init.f,
             g: init.g,

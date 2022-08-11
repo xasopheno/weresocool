@@ -1,0 +1,56 @@
+#Bugs
+    Fix panic that happens when the piece doesn't render the first time on watch.
+    pass in settings/rate on render_manager creation
+
+# Simplify
+    [] Move core into own package
+    [] Move cli into main package?
+    [] Tests for parsed_to_render stuff
+    [x] Move application stuff out of repo? 
+    [x] remove "scripts" folder
+    - cleanup/remove todo folder
+    - remove unnecessary fields from op4d?
+        - better name
+        - pave the way for
+            - others to render 3d
+            - midi
+
+# CLI 
+    [x] Add OggVorbis, silly, but almost done. 
+    - clean up Vorbis crate
+
+# CI/CD
+    auto release to when merged to main? 
+        main/danny
+
+# Documentation
+    - weresocool crate should be weresocool_cli
+    - using the cli
+    - how to build
+    - run locally
+    - concept
+    - run tests
+    - contributing
+    - portuguese documentation
+        - portuguese commands in the cli? 
+    - binaries
+        mac
+            - brew install
+
+    justfile/makefile? 
+
+    cargo install
+
+    check licensing? 
+        [x] all crates - there is a command for this
+        [x] LAME
+        - Reverb
+        - Yin
+
+
+## FUTURE
+    wasm example
+    ASD 
+        Command for Seq [Fm 1, Fm 0 | Lm 1, Fm 0 | Lm 1]
+    Sustain/Decay/Silence
+        SDS(1, 1, 1)

@@ -61,7 +61,7 @@ You'll need also need [portaudio](https://github.com/RustAudio/rust-portaudio) a
 This wouldn't exist in a million years if it wasn't for Antonis Stampoulis'
 help with language design or the help of friends/programmers like
 Sönke Hahn, Hao Lian, Catharine M, Matt Handler, Lee Pender, Amanda Doucette, Khaled Alquaddoomi,
-Alex Kestner, everyone else that has sat down to program with me, and Originate.
+Alex Kestner, everyone else that has sat down to program with me.
 Of course, special thanks to Maria for always listening to my new_weird_sounds
 and programming problems. - Danny
 

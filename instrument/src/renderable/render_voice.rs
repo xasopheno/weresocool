@@ -13,7 +13,6 @@ pub struct RenderVoice {
     pub ops: Vec<RenderOp>,
     pub oscillator: Oscillator,
 }
-
 impl RenderVoice {
     pub fn init(ops: &[RenderOp]) -> Self {
         Self {
@@ -59,6 +58,7 @@ impl RenderVoice {
             result.push(RenderOp {
                 samples: samples_left_in_batch,
                 index: self.sample_index,
+                names: current_op.names.clone(),
                 ..*current_op
             });
             self.sample_index += samples_left_in_batch;
@@ -67,6 +67,7 @@ impl RenderVoice {
             result.push(RenderOp {
                 samples: n_samples,
                 index: self.sample_index,
+                names: current_op.names.clone(),
                 ..*current_op
             });
 
@@ -85,8 +86,9 @@ impl RenderVoice {
         n_samples: usize,
         offset: Option<&Offset>,
     ) -> Option<StereoWaveform> {
-        self.get_batch(n_samples, None)
-            .map(|mut b| b.render(&mut self.oscillator, offset))
+        let batch = self.get_batch(n_samples, None);
+
+        batch.map(|mut b| b.render(&mut self.oscillator, offset))
     }
 }
 

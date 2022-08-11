@@ -175,12 +175,4 @@ pub mod tests {
         assert!(cmp_f32(rb.previous(), 4.4));
         assert!(cmp_vec_f32(rb.to_vec(), vec![3.3, 4.4, 5.5]));
     }
-
-    //    #[test]
-    //    fn ring_buffer_arg_max() {
-    //        let mut rb = RingBuffer::<usize>::new_full(8);
-    //        rb.push_vec(vec![0, 1, 1, 1, 1, 2, 2, 3, 4]);
-    //        let expected = 1;
-    //        assert_eq!(rb.arg_max(), expected);
-    //    }
 }

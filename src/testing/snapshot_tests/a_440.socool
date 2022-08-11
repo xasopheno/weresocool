@@ -1,0 +1,12 @@
+{ f: 440, l: 2, g: 1, p: 0 }
+
+thing1 = {
+    Overlay [
+        Fm 0 | Length 1/5,
+	    Fm 1/5,
+    ]
+}
+
+main = {
+	thing1
+}

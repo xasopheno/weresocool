@@ -3,22 +3,56 @@ name: Cool Tests
 on: [push]
 
 jobs:
-  build:
-
-    runs-on: macos-latest
+  lint:
+    runs-on: ubuntu-latest
 
     steps:
-    - uses: actions/checkout@v2
+    - uses: extractions/setup-just@v1
     - name: install dependancies
-      run: brew install portaudio pkg-config lame
-
-    - name: Add rustfmt
-      run: rustup component add rustfmt
-    - name: add clippy
-      run: rustup component add clippy
+      run: | 
+        sudo apt update
+        sudo apt install -y libasound2-dev portaudio19-dev libportaudio2 libportaudiocpp0 pkg-config lame libmp3lame-dev vorbis-tools lld
+    - uses: actions/checkout@v2
+    - uses: actions-rs/toolchain@v1
+      with:
+          toolchain: stable
+          components: clippy, rustfmt
+          override: true
     - name: format
-      run: make format_ci 
+      run: just format
     - name: clippy 
-      run: cargo clippy --all-targets -- -D warnings
+      run: just clippy
+
+  ubuntu:
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: setup dummy soundcard
+      run: sudo echo "pcm.!default { type plug slave.pcm 'null' }" > $HOME/.asoundrc
+    - uses: extractions/setup-just@v1
+    - name: install dependancies
+      run: | 
+        sudo apt update
+        sudo apt install -y libasound2-dev portaudio19-dev libportaudio2 libportaudiocpp0 pkg-config lame libmp3lame-dev vorbis-tools lld pulseaudio
+    - uses: actions/checkout@v2
+    - uses: actions-rs/toolchain@v1
+      with:
+          toolchain: stable
+          override: true
     - name: run tests
-      run: make test_rust
+      run: just test
+
+  macos:
+      runs-on: macos-latest 
+
+      steps:
+      - uses: extractions/setup-just@v1
+      - name: install dependancies
+        run: brew install portaudio pkg-config lame libvorbis
+      - uses: actions/checkout@v2
+      - uses: actions-rs/toolchain@v1
+        with:
+            toolchain: stable
+            override: true
+      - name: run tests
+        run: just test

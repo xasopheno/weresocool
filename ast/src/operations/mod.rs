@@ -1,8 +1,8 @@
-use crate::{OscType, Term, ASR};
+use crate::{NameSet, OscType, Term, ASR};
 use num_rational::{Ratio, Rational64};
 use scop::Defs;
 use std::{
-    collections::{BTreeSet, HashSet},
+    collections::HashSet,
     ops::{Mul, MulAssign},
 };
 use weresocool_error::Error;
@@ -18,9 +18,6 @@ pub struct NormalForm {
     pub operations: Vec<Vec<PointOp>>,
     pub length_ratio: Rational64,
 }
-
-/// Set of Names associated with a Point
-pub type NameSet = BTreeSet<String>;
 
 #[derive(Debug, Clone, Hash, Eq, Ord, PartialEq, PartialOrd)]
 pub struct PointOp {
@@ -114,7 +111,7 @@ impl Substitute<Term> for NormalForm {
 
 pub fn union_names(b_tree_set: NameSet, left: &NameSet) -> NameSet {
     let mut result = b_tree_set;
-    for val in left {
+    for val in left.to_vec() {
         result.insert(val.clone());
     }
 
@@ -434,7 +431,7 @@ impl NormalForm {
     pub fn names(&self) -> HashSet<String> {
         let mut result = HashSet::new();
         self.fmap_with_state(|op| {
-            for name in op.names.iter() {
+            for name in op.names.to_vec() {
                 result.insert(name.clone());
             }
         });
