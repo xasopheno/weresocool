@@ -69,23 +69,3 @@ wasm = ["weresocool_ast/wasm", "weresocool_instrument/wasm", "weresocool_parser/
 pretty_assertions = "0.6.1"
 criterion = "0.3.3"
 
-# [[bin]]
-# name = "stems"
-# path = "bin/stems.rs"
-
-# [[bin]]
-# name = "real_time"
-# path = "bin/real_time.rs"
-
-# [[bin]]
-# name = "mic"
-# path = "bin/real_time_mic.rs"
-
-# [[bin]]
-# name = "scratch"
-# path = "bin/pad.rs"
-
-# [[bin]]
-# name = "snapshot"
-# path = "bin/snapshot.rs"
-
