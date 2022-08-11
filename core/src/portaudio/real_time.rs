@@ -20,7 +20,6 @@ pub fn real_time(
         let iter = voices.iter_mut();
 
         let result: Vec<(_, _)> = iter
-            // .filter_map(|voice| voice.render_batch(SETTINGS.buffer_size, None))
             .filter_map(|voice| {
                 let ops = voice.get_batch(SETTINGS.buffer_size, None);
                 match ops {

@@ -19,9 +19,6 @@ pub struct NormalForm {
     pub length_ratio: Rational64,
 }
 
-// /// Set of Names associated with a Point
-// pub type NameSet = BTreeSet<String>;
-
 #[derive(Debug, Clone, Hash, Eq, Ord, PartialEq, PartialOrd)]
 pub struct PointOp {
     /// Frequency Multiply
