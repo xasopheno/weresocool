@@ -17,6 +17,12 @@ exclude = [
     "imgs/*",
 ]
 
+[package.metadata.arch]
+arch = ["x86_64"]
+makedepends = ["cargo", "portaudio", "pkg-config","lame", "vorbis-tools"]
+depends = ["portaudio", "pkg-config","lame", "vorbis-tools"]
+provides = ["weresocool"]
+
 [dependencies]
 weresocool_core = { path = "core", version = "1.0.0", default_features=false, optional=true  }
 weresocool_parser = { path = "parser", version = "1.0.0", default_features=false, optional=true }

@@ -3,8 +3,8 @@ build:
 build-release:
 	cargo build -- release
 
-format:
-	cargo fmt --all
+format-ci:
+	cargo fmt --all --check
 
 clippy:
 	# cargo +nightly clippy --all-targets -- -D warnings
