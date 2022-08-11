@@ -30,7 +30,7 @@ jobs:
 
     steps:
     - name: setup dummy soundcard
-      run: sudo echo "pcm.!default { type plug slave.pcm 'null' }" > /etc/asound.conf
+      run: sudo echo "pcm.!default { type plug slave.pcm 'null' }" > $HOME/.asoundrc
     - uses: extractions/setup-just@v1
     - name: install dependancies
       run: | 
