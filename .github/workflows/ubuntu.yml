@@ -35,7 +35,7 @@ jobs:
     - name: install dependancies
       run: | 
         sudo apt update
-        sudo apt install -y libasound2-dev portaudio19-dev libportaudio2 libportaudiocpp0 pkg-config lame libmp3lame-dev vorbis-tools lld
+        sudo apt install -y libasound2-dev portaudio19-dev libportaudio2 libportaudiocpp0 pkg-config lame libmp3lame-dev vorbis-tools lld pulseaudio
     - uses: actions/checkout@v2
     - uses: actions-rs/toolchain@v1
       with:
