@@ -22,8 +22,6 @@ jobs:
       run: just format
     - name: clippy 
       run: just clippy
-    - name: run tests
-      run: just test
 
   ubuntu:
     runs-on: ubuntu-latest
