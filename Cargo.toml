@@ -11,7 +11,7 @@ keywords = ["microtonal", "binaural", "composition",  "audio", "music"]
 categories = ["multimedia::audio"]
 readme = "README.md"
 resolver="2"
-default-run = "main"
+default-run = "weresocool"
 
 exclude = [
     "imgs/*",
@@ -105,7 +105,7 @@ members = [
 
 
 [[bin]]
-name = "main"
+name = "weresocool"
 path = "src/main.rs"
 
 [[bin]]
