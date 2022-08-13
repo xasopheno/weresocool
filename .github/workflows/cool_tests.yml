@@ -19,7 +19,7 @@ jobs:
           components: clippy, rustfmt
           override: true
     - name: format
-      run: just format
+      run: just format-ci
     - name: clippy 
       run: just clippy
 
