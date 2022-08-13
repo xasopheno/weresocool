@@ -1,7 +1,11 @@
 build:
 	cargo build
+
 build-release:
-	cargo build -- release
+	cargo build --release
+
+release-macos: 
+	./scripts/macos.sh
 
 format-ci:
 	cargo fmt --all --check
