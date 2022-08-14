@@ -7,7 +7,7 @@ use std::slice::Iter;
 use thiserror::Error;
 use uuid::Uuid;
 
-#[derive(Error, Debug, PartialEq, Deserialize, Serialize)]
+#[derive(Error, Debug, PartialEq, Deserialize, Serialize, Eq)]
 /// Scope Error
 pub enum ScopError {
     #[error("`{0}`")]
@@ -21,7 +21,7 @@ pub type Def<T> = IndexMap<String, T>;
 ///  a mapping of scope_name to a mapping of an id to T,
 ///  an array of scopes in order of scope creation.
 ///  a set of stem names
-#[derive(Debug, Clone, PartialEq, Deserialize, Serialize)]
+#[derive(Debug, Clone, PartialEq, Deserialize, Serialize, Eq)]
 pub struct Defs<T> {
     defs: IndexMap<String, Def<T>>,
     scopes: Vec<String>,
@@ -60,18 +60,18 @@ where
         self.stems.insert(stem_name.into());
     }
 
-    /// This isn't used or useful, yet. :) Perhaps I'll come back to this when it's needed.
-    pub fn flat_map(
-        &self,
-        f: Box<dyn Fn(&str, &str, &T) -> Result<(), ScopError>>,
-    ) -> Result<(), ScopError> {
-        for (scope_name, scope) in self.iter() {
-            for (name, term) in scope {
-                f(scope_name, name, term)?;
-            }
-        }
-        Ok(())
-    }
+    // /// This isn't used or useful, yet. :) Perhaps I'll come back to this when it's needed.
+    // pub fn flat_map(
+    // &self,
+    // f: Box<dyn Fn(&str, &str, &T) -> Result<(), ScopError>>,
+    // ) -> Result<(), ScopError> {
+    // for (scope_name, scope) in self.iter() {
+    // for (name, term) in scope {
+    // f(scope_name, name, term)?;
+    // }
+    // }
+    // Ok(())
+    // }
 
     /// Iterate through the scope stack from inner to outer scopes.
     pub fn iter_scopes(&self) -> Rev<Iter<String>> {

@@ -11,11 +11,17 @@ keywords = ["microtonal", "binaural", "composition",  "audio", "music"]
 categories = ["multimedia::audio"]
 readme = "README.md"
 resolver="2"
-default-run = "main"
+default-run = "weresocool"
 
 exclude = [
     "imgs/*",
 ]
+
+[package.metadata.arch]
+arch = ["x86_64"]
+makedepends = ["cargo", "portaudio", "pkg-config","lame", "vorbis-tools"]
+depends = ["portaudio", "pkg-config","lame", "vorbis-tools"]
+provides = ["weresocool"]
 
 [dependencies]
 weresocool_core = { path = "core", version = "1.0.0", default_features=false, optional=true  }
@@ -99,7 +105,7 @@ members = [
 
 
 [[bin]]
-name = "main"
+name = "weresocool"
 path = "src/main.rs"
 
 [[bin]]

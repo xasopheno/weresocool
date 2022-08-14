@@ -1,10 +1,14 @@
 build:
 	cargo build
-build-release:
-	cargo build -- release
 
-format:
-	cargo fmt --all
+build-release:
+	cargo build --release
+
+release-macos: 
+	./scripts/macos.sh
+
+format-ci:
+	cargo fmt --all --check
 
 clippy:
 	# cargo +nightly clippy --all-targets -- -D warnings
