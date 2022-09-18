@@ -1,9 +1,9 @@
 name: Continuous Deployment
 
 on:
-  push
-    # tags:
-      # ['*']
+  push:
+    tags:
+      ['*']
       # - 'v[0-9]+.[0-9]+.[0-9]+'
 
 jobs:
@@ -42,7 +42,7 @@ jobs:
         run: ./scripts/package_macos.sh ${{ steps.extract-version.outputs.tag-name }}
 
       - name: Releasing assets
-        uses: softprops/action-gh-release@v1
+        uses: softprops/action-gh-release@cd28b0f5ee8571b76cfdaa62a30d51d752317477
         with:
           files: |
            target/release/weresocool-mac-${{ steps.extract-version.outputs.tag-name }}.tar.gz
@@ -55,7 +55,7 @@ jobs:
           echo ::set-output name=sha::"$(shasum -a 256 ./target/release/weresocool-mac-${{ steps.extract-version.outputs.tag-name }}.tar.gz | awk '{printf $1}')"
 
       - name: Bump Homebrew formula
-        uses: mislav/bump-homebrew-formula-action@178a0d7fac91800ed8016aca0bff357b6b46e951
+        uses: xasopheno/weresocool-bump-homebrew-formula@v0.0.1
         if: "!contains(github.ref, '-')"
         env:
           COMMITTER_TOKEN: ${{ secrets.COMMITTER_TOKEN }}
