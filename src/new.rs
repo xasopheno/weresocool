@@ -32,15 +32,11 @@ const DEFAULT_SOCOOL: &str = indoc! {"
 
 thing1 = {
   O[
-    (9/4, 7, 1/4, 1/10),
-    (9/4, -8, 1/4, -1/10),
-    (3/2, 4, 1, 7/8),
-    (3/2, -3, 1, -7/8),
-    (1/1, 4, 1, 1),
+    (1/1, 2, 1, 1),
     (1/1, 0, 1, -1),
   ]
   | Seq [
-    Fm 1, Fm 9/8, Fm 5/4, Fm 3/2
+    Fm 1, Fm 9/8, Fm 5/4
   ]
 }
 
@@ -50,11 +46,9 @@ thing2 = {
     (1/1, 0, 1, -1),
   ]
   | Seq [
-    Fm 3/4, Fm 1, Fm 4/3, Fm 5/4, Fm 9/8
+    Fm 3/4
   ]
-  | Seq [Repeat 2, Reverse]
   | FitLength thing1
-  
 }
 
 main = {
@@ -62,6 +56,5 @@ main = {
     thing1,
     thing2
   ]
-  | Lm 1/2
 }
 "};

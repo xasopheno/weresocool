@@ -37,7 +37,7 @@ pub fn play_file(filename: String, working_path: PathBuf, play: Play) -> Result<
     }
 }
 
-fn play_once(render_voices: Vec<RenderVoice>) -> Result<(), Error> {
+pub fn play_once(render_voices: Vec<RenderVoice>) -> Result<(), Error> {
     let (tx, rx) = std::sync::mpsc::channel::<bool>();
     let render_manager = Arc::new(Mutex::new(RenderManager::init(
         render_voices,

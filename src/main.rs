@@ -1,4 +1,5 @@
 mod app;
+mod demo;
 mod new;
 mod play;
 mod print;
@@ -39,6 +40,7 @@ fn main() -> Result<(), Error> {
 
     match matches.subcommand() {
         ("new", new_args) => new::new(new_args, cwd)?,
+        ("demo", _) => demo::demo()?,
         ("play", play_args) => play(play_args, cwd, Once)?,
         ("watch", play_args) => play(play_args, cwd, Watch)?,
         ("print", print_args) => print::print(print_args)?,
