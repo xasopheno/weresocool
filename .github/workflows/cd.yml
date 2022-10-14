@@ -3,8 +3,8 @@ name: Continuous Deployment
 on:
   push:
     tags:
-      ['*']
-      # - 'v[0-9]+.[0-9]+.[0-9]+'
+      # ['*']
+      - 'v[0-9]+.[0-9]+.[0-9]+'
 
 jobs:
   publish:
@@ -14,7 +14,6 @@ jobs:
       matrix:
         job:
           - { os: macos-latest,   target: x86_64-apple-darwin,         use-cross: false }
-          # - { os: ubuntu-latest , target: x86_64-unknown-linux-gnu,    use-cross: false }
           # - { os: ubuntu-latest,  target: x86_64-unknown-linux-musl,   use-cross: true }
           # - { os: ubuntu-latest,  target: i686-unknown-linux-gnu,      use-cross: true }
           # - { os: ubuntu-latest,  target: arm-unknown-linux-gnueabihf, use-cross: true }
@@ -22,6 +21,8 @@ jobs:
 
     steps:
       - uses: extractions/setup-just@v1
+        with: 
+          repo-token: ${{ secrets.GITHUB_TOKEN }}
       - name: install macos dependancies
         run: brew install portaudio pkg-config lame libvorbis
       - name: Installing Rust toolchain
@@ -38,35 +39,46 @@ jobs:
         run: |
           printf "::set-output name=%s::%s\n" tag-name "${GITHUB_REF#refs/tags/}"
 
-      - name: Packaging final binary
-        run: ./scripts/package_macos.sh ${{ steps.extract-version.outputs.tag-name }}
+      # - name: Packaging final binary
+        # run: ./scripts/package_macos.sh ${{ steps.extract-version.outputs.tag-name }}
 
-      - name: Releasing assets
-        uses: softprops/action-gh-release@cd28b0f5ee8571b76cfdaa62a30d51d752317477
-        with:
-          files: |
-           target/release/weresocool-mac-${{ steps.extract-version.outputs.tag-name }}.tar.gz
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      # - name: Releasing assets
+        # uses: softprops/action-gh-release@cd28b0f5ee8571b76cfdaa62a30d51d752317477
+        # with:
+          # files: |
+           # target/release/weresocool-mac-${{ steps.extract-version.outputs.tag-name }}.tar.gz
+        # env:
+          # GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
-      - name: Set SHA
-        id: shasum
-        run: |
-          echo ::set-output name=sha::"$(shasum -a 256 ./target/release/weresocool-mac-${{ steps.extract-version.outputs.tag-name }}.tar.gz | awk '{printf $1}')"
+      # - name: Set SHA
+        # id: shasum
+        # run: |
+          # echo ::set-output name=sha::"$(shasum -a 256 ./target/release/weresocool-mac-${{ steps.extract-version.outputs.tag-name }}.tar.gz | awk '{printf $1}')"
 
-      - name: Bump Homebrew formula
-        uses: xasopheno/weresocool-bump-homebrew-formula@v0.0.1
-        if: "!contains(github.ref, '-')"
+      # - name: Bump Homebrew formula
+        # uses: xasopheno/weresocool-bump-homebrew-formula@v0.0.1
+        # if: "!contains(github.ref, '-')"
+        # env:
+          # COMMITTER_TOKEN: ${{ secrets.COMMITTER_TOKEN }}
+        # with:
+          # base-branch: main
+          # formula-name: weresocool
+          # create-pullrequest: true
+          # homebrew-tap: xasopheno/homebrew-weresocool
+          # tag-name: ${{ steps.extract-version.outputs.tag-name }}
+          # download-url: https://github.com/xasopheno/weresocool/releases/latest/download/weresocool-mac-${{ steps.extract-version.outputs.tag-name }}.tar.gz
+
+      - name: bump aur package
+        uses: ./actions/bumper_cool/src
+        # if: "!contains(github.ref, '-')"
         env:
           COMMITTER_TOKEN: ${{ secrets.COMMITTER_TOKEN }}
         with:
           base-branch: main
-          formula-name: weresocool
-          create-pullrequest: true
-          homebrew-tap: weresocool/homebrew-weresocool
+          package-name: weresocool
+          create-pullrequest: false
+          package-repo: xasopheno/weresocool-aur
           tag-name: ${{ steps.extract-version.outputs.tag-name }}
-          download-url: https://github.com/xasopheno/weresocool/releases/latest/download/weresocool-mac-${{ steps.extract-version.outputs.tag-name }}.tar.gz
-
   # publish-to-cargo:
     # name: Publishing to Cargo
     # runs-on: ubuntu-latest

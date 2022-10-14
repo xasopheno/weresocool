@@ -1,0 +1,48 @@
+# name: 'Hello World'
+# description: 'Greet someone and record the time'
+# inputs:
+  # who-to-greet:  # id of input
+    # description: 'Who to greet'
+    # required: true
+    # default: 'World'
+# outputs:
+  # time: # id of output
+    # description: 'The time we greeted you'
+# runs:
+  # using: 'node16'
+  # main: '../dist/index.js'
+
+name: bumper-pool
+description: "Bump AUR package after a new release"
+author: "@xasopheno"
+runs:
+  using: node16
+  main: "../dist/index.js"
+inputs:
+  package-name:
+    description: The name of the AUR package (defaults to lower-cased repository name)
+  pkgbuild-path:
+    description: The path to the PKGBUILD file from the root of the repo (defaults to `./PKGBUILD`)
+  tag-name:
+    description: The git tag name to bump the formula to (defaults to the currently pushed tag)
+  source-url:
+    description: The URL of the package source
+  download-url:
+    description: The package download URL for the package (defaults to the release tarball)
+  download-sha256:
+    description: The SHA256 checksum of the archive at download-url (defaults to calculating it)
+  package-repo:
+    description: The repository where the package should be updated
+  push-to:
+    description: An existing fork of the homebrew-tap repository where the edit should be pushed to (defaults to creating or reusing a personal fork)
+  base-branch:
+    description: The branch name in the package repository to update the package in
+  create-pullrequest:
+    description: Set to a boolean value to either force or prohibit making a pull request to package repo 
+  commit-message:
+    description: The git commit message template to use when updating the formula
+    default: |
+      {{packageName}} {{version}}
+branding:
+  icon: box
+  color: orange
