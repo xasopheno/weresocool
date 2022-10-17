@@ -1,6 +1,6 @@
 [package]
 name = "scop"
-version = "1.0.0"
+version = "1.0.1"
 authors = ["Danny Meyer <weresocool@xasopheno.com>"]
 edition = "2021"
 description = "Lame FFI for WereSoCool"

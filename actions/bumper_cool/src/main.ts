@@ -3,7 +3,6 @@ import type { API } from './api'
 import editGitHubBlob from './editGithubBlob'
 import { Options as EditOptions } from './editGithubBlob'
 import { removeRevisionLine, replaceFields } from './replace'
-import calculateDownloadChecksum from './calculateChecksum'
 import { context } from '@actions/github'
 
 function tarballForRelease(

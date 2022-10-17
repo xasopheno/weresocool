@@ -7,6 +7,9 @@ build-release:
 release-macos: 
 	./scripts/macos.sh
 
+release-cargo:
+	cargo-smart-release smart-release --bump patch
+
 format-ci:
 	cargo fmt --all --check
 

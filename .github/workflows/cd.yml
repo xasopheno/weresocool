@@ -68,29 +68,26 @@ jobs:
           # tag-name: ${{ steps.extract-version.outputs.tag-name }}
           # download-url: https://github.com/xasopheno/weresocool/releases/latest/download/weresocool-mac-${{ steps.extract-version.outputs.tag-name }}.tar.gz
 
-      - name: bump aur package
-        uses: ./actions/bumper_cool/src
-        # if: "!contains(github.ref, '-')"
-        env:
-          COMMITTER_TOKEN: ${{ secrets.COMMITTER_TOKEN }}
+      - name: Publishing to Cargo
+      - uses: actions/checkout@master
+      - uses: actions-rs/toolchain@v1
         with:
-          base-branch: main
-          package-name: weresocool
-          create-pullrequest: false
-          package-repo: xasopheno/weresocool-aur
-          tag-name: ${{ steps.extract-version.outputs.tag-name }}
-  # publish-to-cargo:
-    # name: Publishing to Cargo
-    # runs-on: ubuntu-latest
-    # steps:
-      # - uses: actions/checkout@master
-      # - uses: actions-rs/toolchain@v1
+          toolchain: stable
+          profile: minimal
+          override: true
+      - uses: actions-rs/cargo@v1
+        with:
+          command: publish
+          args: --token ${{ secrets.CARGO_API_KEY }} 
+            
+      # - name: bump aur package
+        # uses: ./actions/bumper_cool/src
+        # if: "!contains(github.ref, '-')"
+        # env:
+          # COMMITTER_TOKEN: ${{ secrets.COMMITTER_TOKEN }}
         # with:
-          # toolchain: stable
-          # profile: minimal
-          # override: true
-      # - uses: actions-rs/cargo@v1
-        # with:
-          # command: publish
-          # args: --token ${{ secrets.CARGO_API_KEY }} 
-            # # --allow-dirty
+          # base-branch: main
+          # package-name: weresocool
+          # create-pullrequest: false
+          # package-repo: xasopheno/weresocool-aur
+          # tag-name: ${{ steps.extract-version.outputs.tag-name }}
