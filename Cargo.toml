@@ -1,6 +1,6 @@
 [package]
 name = "weresocool"
-version = "1.0.1"
+version = "1.0.2"
 edition = "2021"
 authors = ["Danny <weresocool@xasopheno.com>"]
 description = "***** WereSoCool __!Now In Stereo!__ ****** Make cool sounds. Impress your friends."
