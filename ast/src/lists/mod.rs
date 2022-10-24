@@ -4,6 +4,7 @@ pub mod substitute_list;
 
 use crate::{GenOp, Term};
 
+#[allow(clippy::derive_partial_eq_without_eq)]
 #[derive(Clone, PartialEq, Debug, Hash)]
 pub enum ListOp {
     Const {
@@ -25,7 +26,7 @@ pub enum ListOp {
     },
 }
 
-#[derive(Clone, PartialEq, Debug, Hash)]
+#[derive(Clone, Eq, PartialEq, Debug, Hash)]
 pub enum Direction {
     Overlay,
     Sequence,
