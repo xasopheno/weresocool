@@ -3,7 +3,6 @@ name: Continuous Deployment
 on:
   push:
     tags:
-      # ['*']
       - 'v[0-9]+.[0-9]+.[0-9]+'
 
 jobs:
@@ -34,60 +33,68 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v2
 
+      - name: Install publish-cool-workspace
+        uses: baptiste0928/cargo-install@v1
+        with:
+          crate: publish-cool-workspace
+
       - name: Extract version
         id: extract-version
         run: |
           printf "::set-output name=%s::%s\n" tag-name "${GITHUB_REF#refs/tags/}"
 
-      # - name: Packaging final binary
-        # run: ./scripts/package_macos.sh ${{ steps.extract-version.outputs.tag-name }}
+      - name: Setup publish to crates.io
+        run: |
+          git config --global user.email "weresocool_bot@xasopheno.com"
+          git config --global user.name "WereSoCool Bot"
+          cargo login ${{ secrets.CARGO_API_KEY }}
 
-      # - name: Releasing assets
-        # uses: softprops/action-gh-release@cd28b0f5ee8571b76cfdaa62a30d51d752317477
-        # with:
-          # files: |
-           # target/release/weresocool-mac-${{ steps.extract-version.outputs.tag-name }}.tar.gz
-        # env:
-          # GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      - name: publish to crates.io
+        run: 
+          publish-cool-workspace smart-release --bump  "${GITHUB_REF#refs/tags/}" --no-changelog --execute
+      - name: squash bump commit
+        run: |
+          git reset --soft HEAD~1
+          git commit --amend --no-edit
+          git push --force-with-lease
 
-      # - name: Set SHA
-        # id: shasum
-        # run: |
-          # echo ::set-output name=sha::"$(shasum -a 256 ./target/release/weresocool-mac-${{ steps.extract-version.outputs.tag-name }}.tar.gz | awk '{printf $1}')"
+      - name: Package MacOS Binary
+        run: ./scripts/package_macos.sh ${{ steps.extract-version.outputs.tag-name }}
 
-      # - name: Bump Homebrew formula
-        # uses: xasopheno/weresocool-bump-homebrew-formula@v0.0.1
-        # if: "!contains(github.ref, '-')"
-        # env:
-          # COMMITTER_TOKEN: ${{ secrets.COMMITTER_TOKEN }}
-        # with:
-          # base-branch: main
-          # formula-name: weresocool
-          # create-pullrequest: true
-          # homebrew-tap: xasopheno/homebrew-weresocool
-          # tag-name: ${{ steps.extract-version.outputs.tag-name }}
-          # download-url: https://github.com/xasopheno/weresocool/releases/latest/download/weresocool-mac-${{ steps.extract-version.outputs.tag-name }}.tar.gz
-
-      - name: Publishing to Cargo
-      - uses: actions/checkout@master
-      - uses: actions-rs/toolchain@v1
+      - name: Releasing MacOS Binary
+        uses: softprops/action-gh-release@cd28b0f5ee8571b76cfdaa62a30d51d752317477
         with:
-          toolchain: stable
-          profile: minimal
-          override: true
-      - uses: actions-rs/cargo@v1
+          files: |
+           target/release/weresocool-mac-${{ steps.extract-version.outputs.tag-name }}.tar.gz
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Set SHA
+        id: shasum
+        run: |
+          echo ::set-output name=sha::"$(shasum -a 256 ./target/release/weresocool-mac-${{ steps.extract-version.outputs.tag-name }}.tar.gz | awk '{printf $1}')"
+
+      - name: Bump Homebrew formula
+        uses: xasopheno/weresocool-bump-homebrew-formula@v0.0.1
+        if: "!contains(github.ref, '-')"
+        env:
+          COMMITTER_TOKEN: ${{ secrets.COMMITTER_TOKEN }}
         with:
-          command: publish
-          args: --token ${{ secrets.CARGO_API_KEY }} 
+          base-branch: main
+          formula-name: weresocool
+          create-pullrequest: true
+          homebrew-tap: xasopheno/homebrew-weresocool
+          tag-name: ${{ steps.extract-version.outputs.tag-name }}
+          download-url: https://github.com/xasopheno/weresocool/releases/latest/download/weresocool-mac-${{ steps.extract-version.outputs.tag-name }}.tar.gz
             
-      # - name: bump aur package
-        # uses: ./actions/bumper_cool/src
-        # if: "!contains(github.ref, '-')"
-        # env:
-          # COMMITTER_TOKEN: ${{ secrets.COMMITTER_TOKEN }}
-        # with:
-          # base-branch: main
-          # package-name: weresocool
-          # create-pullrequest: false
-          # package-repo: xasopheno/weresocool-aur
-          # tag-name: ${{ steps.extract-version.outputs.tag-name }}
+      - name: Bump Aur Package
+        uses: ./actions/bumper_cool/src
+        if: "!contains(github.ref, '-')"
+        env:
+          COMMITTER_TOKEN: ${{ secrets.COMMITTER_TOKEN }}
+        with:
+          base-branch: main
+          package-name: weresocool
+          create-pullrequest: false
+          package-repo: xasopheno/weresocool-aur
+          tag-name: ${{ steps.extract-version.outputs.tag-name }}
