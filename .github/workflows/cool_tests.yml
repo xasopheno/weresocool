@@ -1,6 +1,6 @@
 name: Cool Tests
 
-on: ["discussion"]
+on: ["push"]
 
 jobs:
   lint:

@@ -1,5 +1,5 @@
 # WereSoCool Parser
 
-Includes the parser generator for WereSoCool
+Parser generator for WereSoCool
 
 

@@ -1,4 +1,4 @@
 # WereSoCool Lame
 
-Includes tools for mp3 lame encoding
+Includes tools for lame mp3 encoding
 

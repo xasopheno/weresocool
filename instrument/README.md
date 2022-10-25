@@ -1,4 +1,4 @@
 # WereSoCool Instrument
 
-Includes all sound generation and RenderVoices
+Includes sound synthesis, RenderVoices
 and reverb 
