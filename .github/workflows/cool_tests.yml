@@ -1,6 +1,6 @@
 name: Cool Tests
 
-on: [push]
+on: ["push"]
 
 jobs:
   lint:
@@ -8,6 +8,8 @@ jobs:
 
     steps:
     - uses: extractions/setup-just@v1
+      with: 
+        repo-token: ${{ secrets.GITHUB_TOKEN }}
     - name: install dependancies
       run: | 
         sudo apt update
@@ -19,7 +21,7 @@ jobs:
           components: clippy, rustfmt
           override: true
     - name: format
-      run: just format
+      run: just format-ci
     - name: clippy 
       run: just clippy
 

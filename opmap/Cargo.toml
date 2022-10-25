@@ -1,7 +1,11 @@
 [package]
 name = "opmap"
-version = "0.1.0"
+version = "1.0.3"
+authors = ["Danny Meyer <weresocool@xasopheno.com>"]
 edition = "2021"
+description = "OpMap Datastructure for WereSoCool"
+license = "GPL-3.0" 
+resolver="2"
 
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 

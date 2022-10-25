@@ -1,6 +1,6 @@
 [package]
 name = "weresocool"
-version = "1.0.0"
+version = "1.0.3"
 edition = "2021"
 authors = ["Danny <weresocool@xasopheno.com>"]
 description = "***** WereSoCool __!Now In Stereo!__ ****** Make cool sounds. Impress your friends."
@@ -11,23 +11,29 @@ keywords = ["microtonal", "binaural", "composition",  "audio", "music"]
 categories = ["multimedia::audio"]
 readme = "README.md"
 resolver="2"
-default-run = "main"
+default-run = "weresocool"
 
 exclude = [
     "imgs/*",
 ]
 
+[package.metadata.arch]
+arch = ["x86_64"]
+makedepends = ["cargo", "portaudio", "pkg-config","lame", "vorbis-tools"]
+depends = ["portaudio", "pkg-config","lame", "vorbis-tools"]
+provides = ["weresocool"]
+
 [dependencies]
-weresocool_core = { path = "core", version = "1.0.0", default_features=false, optional=true  }
-weresocool_parser = { path = "parser", version = "1.0.0", default_features=false, optional=true }
-weresocool_ast = { path = "ast", version = "1.0.0", default_features=false, optional=true }
-weresocool_error = { path = "error", version = "1.0.0", default_features=false, optional=true } 
-weresocool_instrument = { path = "instrument", version = "1.0.0", default_features=false, optional=true } 
-scop = { path = "scop", version = "1.0.0" }
-opmap = { path = "opmap", version = "0.1.0" }
-weresocool_shared = { path = "shared", version = "1.0.0" } 
-weresocool_analyze = { path = "analyze", version = "1.0.0" }
-weresocool_ring_buffer = { path = "ring_buffer", version = "1.0.0" }
+weresocool_core = { path = "core", version = "^1.0.3", default_features=false, optional=true  }
+weresocool_parser = { path = "parser", version = "^1.0.3", default_features=false, optional=true }
+weresocool_ast = { path = "ast", version = "^1.0.3", default_features=false, optional=true }
+weresocool_error = { path = "error", version = "^1.0.3", default_features=false, optional=true } 
+weresocool_instrument = { path = "instrument", version = "^1.0.3", default_features=false, optional=true } 
+scop = { path = "scop", version = "^1.0.3" }
+opmap = { path = "opmap", version = "^1.0.3" }
+weresocool_shared = { path = "shared", version = "^1.0.3" } 
+weresocool_analyze = { path = "analyze", version = "^1.0.3" }
+weresocool_ring_buffer = { path = "ring_buffer", version = "^1.0.3" }
 portaudio = { version="0.7.0", optional=true }
 clap = "2.33.3"
 thiserror = "1.0.31"
@@ -44,6 +50,7 @@ indexmap = { version = "1.7.0", features = ["serde-1"] }
 difference = "2.0.0"
 test-generator = "0.3.0"
 crossbeam-channel = "0.5.6"
+indoc = "1.0.7"
 
 [dev-dependencies]
 pretty_assertions = "0.6.1"
@@ -99,7 +106,7 @@ members = [
 
 
 [[bin]]
-name = "main"
+name = "weresocool"
 path = "src/main.rs"
 
 [[bin]]

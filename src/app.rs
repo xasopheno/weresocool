@@ -7,18 +7,31 @@ pub fn app() -> clap::App<'static, 'static> {
         .about("Make cool sounds and impress your friends/pets/plants.")
         .setting(AppSettings::ColoredHelp)
         .subcommand(
-            SubCommand::with_name("play").help("Play .socool file").arg(
-                Arg::with_name("file")
-                    .multiple(false)
-                    .number_of_values(1)
-                    .index(1)
-                    .help("filename"),
-            ),
+            SubCommand::with_name("new")
+                .help("new [filename.socool]")
+                .arg(
+                    Arg::with_name("file")
+                        .multiple(false)
+                        .number_of_values(1)
+                        .index(1)
+                        .help("filename"),
+                ),
+        )
+        .subcommand(
+            SubCommand::with_name("play")
+                .help("play [filename.socool]")
+                .arg(
+                    Arg::with_name("file")
+                        .multiple(false)
+                        .number_of_values(1)
+                        .index(1)
+                        .help("filename"),
+                ),
         )
         .subcommand(
             SubCommand::with_name("watch")
                 .alias("dev")
-                .help("Develop .socool file")
+                .help("dev [filename.socool]")
                 .arg(
                     Arg::with_name("file")
                         .multiple(false)
@@ -29,7 +42,7 @@ pub fn app() -> clap::App<'static, 'static> {
         )
         .subcommand(
             SubCommand::with_name("print")
-                .usage("weresocool print [FILENAME] [FLAGS]")
+                .usage("weresocool print [filename.socool] [flags]")
                 .arg(
                     Arg::with_name("output_dir")
                         .long("output_dir")
@@ -39,7 +52,7 @@ pub fn app() -> clap::App<'static, 'static> {
                 )
                 .arg(
                     Arg::with_name("file")
-                        .value_name("FILENAME")
+                        .value_name("[filename.socool]")
                         .multiple(false)
                         .number_of_values(1)
                         .index(1)

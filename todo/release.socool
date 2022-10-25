@@ -1,11 +1,30 @@
-#Bugs
+# Publishing
+    [x] vscode syntax highlighting
+    [x] sublimetext syntax highlighting
+    [/] create github organization for weresocool
+            weresocool
+            weresocool_vscool
+            weresocool_sublimetext
+            weresocool_arch
+            brew_weresocool
+    [/] create personal access token for organization
+# CI/CD
+    [x] cargo 
+    [x] arch
+    [x] brew
+    [ ] debian
+    [ ] rpm
+
+
+
+# Bugs
     Fix panic that happens when the piece doesn't render the first time on watch.
     pass in settings/rate on render_manager creation
 
 # Simplify
-    [] Move core into own package
-    [] Move cli into main package?
-    [] Tests for parsed_to_render stuff
+    [x] Move core into own package
+    [x] Move cli into main package?
+    [ ] Tests for parsed_to_render stuff
     [x] Move application stuff out of repo? 
     [x] remove "scripts" folder
     - cleanup/remove todo folder
@@ -19,12 +38,8 @@
     [x] Add OggVorbis, silly, but almost done. 
     - clean up Vorbis crate
 
-# CI/CD
-    auto release to when merged to main? 
-        main/danny
-
 # Documentation
-    - weresocool crate should be weresocool_cli
+    x weresocool crate should be weresocool_cli
     - using the cli
     - how to build
     - run locally
@@ -32,14 +47,9 @@
     - run tests
     - contributing
     - portuguese documentation
-        - portuguese commands in the cli? 
-    - binaries
-        mac
-            - brew install
+      - proofread
 
-    justfile/makefile? 
-
-    cargo install
+    [x] justfile
 
     check licensing? 
         [x] all crates - there is a command for this

@@ -11,7 +11,7 @@ pub mod helpers;
 mod normalize;
 pub mod substitute;
 
-#[derive(Debug, Clone, PartialEq, Hash)]
+#[derive(Debug, Clone, Eq, PartialEq, Hash)]
 /// All operations in the language take a NormalForm as an import and
 /// return a NormalForm.
 pub struct NormalForm {

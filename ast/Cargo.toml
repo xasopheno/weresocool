@@ -1,6 +1,6 @@
 [package]
 name = "weresocool_ast"
-version = "1.0.0"
+version = "1.0.3"
 authors = ["Danny Meyer <weresocool@xasopheno.com>"]
 edition = "2021"
 description = "AST for WereSoCool"
@@ -8,10 +8,10 @@ license = "GPL-3.0"
 resolver="2"
 
 [dependencies]
-weresocool_ring_buffer = { path = "../ring_buffer", version = "1.0.0" }
-weresocool_error = { path = "../error", version = "1.0.0", default_features=false, optional=true }
-weresocool_shared = { path = "../shared", version = "1.0.0" }
-scop = { path = "../scop", version = "1.0.0" }
+weresocool_ring_buffer = { path = "../ring_buffer", version = "^1.0.3" }
+weresocool_error = { path = "../error", version = "^1.0.3", default_features=false, optional=true }
+weresocool_shared = { path = "../shared", version = "^1.0.3" }
+scop = { path = "../scop", version = "^1.0.3" }
 num-rational = { version = "0.3.2", features = ["serde"] } 
 rand = { version="0.7.3", features=["wasm-bindgen"]}
 serde = { version = "1.0.119", features = ["derive"] }

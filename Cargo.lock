@@ -784,6 +784,12 @@ dependencies = [
 ]
 
 [[package]]
+name = "indoc"
+version = "1.0.7"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "adab1eaa3408fb7f0c777a73e7465fd5656136fc93b670eb6df3c88c2c1344e3"
+
+[[package]]
 name = "inotify"
 version = "0.9.6"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -1195,7 +1201,7 @@ checksum = "624a8340c38c1b80fd549087862da4ba43e08858af025b236e509b6649fc13d5"
 
 [[package]]
 name = "opmap"
-version = "0.1.0"
+version = "1.0.3"
 dependencies = [
  "drain-while",
  "hamcrest2",
@@ -1569,7 +1575,7 @@ checksum = "a3f87b73ce11b1619a3c6332f45341e0047173771e8b8b73f87bfeefb7b56244"
 
 [[package]]
 name = "reverb"
-version = "1.0.0"
+version = "1.0.3"
 
 [[package]]
 name = "rustc-demangle"
@@ -1600,7 +1606,7 @@ dependencies = [
 
 [[package]]
 name = "scop"
-version = "1.0.0"
+version = "1.0.3"
 dependencies = [
  "indexmap",
  "serde",
@@ -2058,7 +2064,7 @@ dependencies = [
 
 [[package]]
 name = "weresocool"
-version = "1.0.0"
+version = "1.0.3"
 dependencies = [
  "assert_cmd",
  "clap",
@@ -2067,6 +2073,7 @@ dependencies = [
  "difference",
  "hound",
  "indexmap",
+ "indoc",
  "notify",
  "num-rational 0.3.2",
  "opmap",
@@ -2093,14 +2100,14 @@ dependencies = [
 
 [[package]]
 name = "weresocool_analyze"
-version = "1.0.0"
+version = "1.0.3"
 dependencies = [
  "weresocool_shared",
 ]
 
 [[package]]
 name = "weresocool_ast"
-version = "1.0.0"
+version = "1.0.3"
 dependencies = [
  "colored",
  "csv",
@@ -2121,7 +2128,7 @@ dependencies = [
 
 [[package]]
 name = "weresocool_core"
-version = "1.0.0"
+version = "1.0.3"
 dependencies = [
  "bytes",
  "clap",
@@ -2167,11 +2174,9 @@ dependencies = [
 
 [[package]]
 name = "weresocool_error"
-version = "1.0.0"
+version = "1.0.3"
 dependencies = [
  "csv",
- "failure",
- "failure_derive",
  "hound",
  "portaudio",
  "scop",
@@ -2184,7 +2189,7 @@ dependencies = [
 
 [[package]]
 name = "weresocool_instrument"
-version = "1.0.0"
+version = "1.0.3"
 dependencies = [
  "num-rational 0.3.2",
  "num-traits",
@@ -2201,7 +2206,7 @@ dependencies = [
 
 [[package]]
 name = "weresocool_lame"
-version = "1.0.0"
+version = "1.0.3"
 dependencies = [
  "failure",
  "failure_derive",
@@ -2211,7 +2216,7 @@ dependencies = [
 
 [[package]]
 name = "weresocool_parser"
-version = "1.0.0"
+version = "1.0.3"
 dependencies = [
  "colored",
  "indexmap",
@@ -2229,14 +2234,14 @@ dependencies = [
 
 [[package]]
 name = "weresocool_ring_buffer"
-version = "1.0.0"
+version = "1.0.3"
 dependencies = [
  "weresocool_shared",
 ]
 
 [[package]]
 name = "weresocool_shared"
-version = "1.0.0"
+version = "1.0.3"
 dependencies = [
  "float-cmp",
  "num-rational 0.3.2",
@@ -2244,7 +2249,7 @@ dependencies = [
 
 [[package]]
 name = "weresocool_vorbis"
-version = "0.1.0"
+version = "1.0.3"
 dependencies = [
  "hamcrest2",
  "hound",
