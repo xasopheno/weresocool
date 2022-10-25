@@ -6,19 +6,25 @@ A language for binaural, microtonal composition built in Rust.
 <em>Make cool sounds. Impress your friends/pets/plants.</em>
 
 ![WereSoCool](../main/imgs/application.png)
-**WereSoCool** is a programming language for composing microtonal music geometrically. This language doesn't assume familiarity with either microtonal music or computer programming, but experience with either will certainly help. I recommend starting with the tutorials and when you feel sufficiently confident,  try to make some cool things. There's no better way to learn than to make stuff. If you get stuck, feel free to reach out to me weresocool at xasopheno dot com. 
+**WereSoCool** is a programming language for composing microtonal music geometrically. This language doesn't assume familiarity with either microtonal music or computer programming, but experience with either will certainly help. 
 
 ## Listen:
-
 Watch/Listen to some examples from the language [here](https://www.weresocool.org/play/arcs).
 
-## Make Cool Sounds:
+## Installation:
 ### Macos:
-The most recent version of the Macos application can be downloaded [here](https://www.weresocool.org/downloads).
 
-### Linux:
-Currently on linux, you'll need to compile this locally. See Development. 
+`brew install macos`
 
+### Arch Linux:
+
+Availabe on the AUR here.
+
+### Cargo:
+
+WereSoCool can be installed via on any unix system via cargo
+
+`cargo install weresocool`
 
 ### Windows
 This does not currently work on Windows...<em>sad panda</em>. If you're interested in using this software on a Windows machine, reach out and I'll work on it. 
@@ -29,17 +35,16 @@ This does not currently work on Windows...<em>sad panda</em>. If you're interest
 ### Setup
 You'll need Rust. Rust is a great language. Install it with [Rustup](https://www.rust-lang.org/en-US/install.html).
 
-You'll need also need [portaudio](https://github.com/RustAudio/rust-portaudio) and [lame](https://lame.sourceforge.io/)
+You'll need also need to install the following packages:
 
 #### Macos:
-`brew install portaudio pkg-config lame`
+`brew install portaudio pkg-config lame libvorbis`
 
-#### Linux:
-##### Arch:
-`sudo pacman -S portaudio pkg-config lame`
+##### Arch Linux:
+`sudo pacman -S portaudio pkg-config lame vorbis-tools`
 
 ##### Ubuntu:
-`sudo apt-get portaudio pkg-config lame libmp3lame-dev rpm libasound2-dev`
+`sudo apt-get portaudio pkg-config lame libmp3lame-dev rpm libasound2-dev vorbis-tools`
 
 ### Build
 `make package`
@@ -67,7 +72,7 @@ and programming problems. - Danny
 
 ![WereSoCool](../main/imgs/cover.png)
 
-Copyright (C) 2020 - Danny Meyer
+Copyright (C) 2022 - Danny Meyer
 
 This program is free software, licensed under the GPLv3 (see LICENSE).
 

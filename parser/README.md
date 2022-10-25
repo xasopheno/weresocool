@@ -1,1 +1,5 @@
-# weresocool-parser
+# WereSoCool Parser
+
+Parser generator for WereSoCool
+
+

@@ -1,10 +1,17 @@
 build:
 	cargo build
-build-release:
-	cargo build -- release
 
-format:
-	cargo fmt --all
+build-release:
+	cargo build --release
+
+release-macos: 
+	./scripts/macos.sh
+
+release-cargo:
+	cargo-smart-release smart-release --bump patch
+
+format-ci:
+	cargo fmt --all --check
 
 clippy:
 	# cargo +nightly clippy --all-targets -- -D warnings
@@ -27,3 +34,4 @@ check-licenses:
 
 test-github-actions:
 	act
+

@@ -95,7 +95,7 @@ impl CoefState {
     }
 }
 
-#[derive(Clone, PartialEq, Debug, Hash)]
+#[derive(Clone, Eq, PartialEq, Debug, Hash)]
 pub enum Axis {
     F,
     G,

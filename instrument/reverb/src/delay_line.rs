@@ -3,7 +3,7 @@
 /// can be laid out in a predicatable location in memeory. This can improve
 /// access speeds if many delay-lines are used within another object, like a
 /// reverb
-#[derive(PartialEq)]
+#[derive(PartialEq, Eq)]
 pub struct DelayLine<B> {
     pos: usize,
     buffer: B,

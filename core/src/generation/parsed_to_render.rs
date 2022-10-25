@@ -31,7 +31,7 @@ use super::Op4D;
 
 const SETTINGS: Settings = default_settings();
 
-#[derive(Clone, PartialEq, Debug)]
+#[derive(Clone, Eq, PartialEq, Debug)]
 pub enum WavType {
     Wav {
         cli: bool,
@@ -48,7 +48,7 @@ pub enum WavType {
     },
 }
 
-#[derive(Clone, PartialEq, Debug)]
+#[derive(Clone, Eq, PartialEq, Debug)]
 pub enum RenderType {
     Json4d { cli: bool, output_dir: PathBuf },
     Csv1d { cli: bool, output_dir: PathBuf },
@@ -60,7 +60,7 @@ pub enum RenderType {
     Visual,
 }
 
-#[derive(Clone, PartialEq, Debug, Deserialize, Serialize)]
+#[derive(Clone, Eq, PartialEq, Debug, Deserialize, Serialize)]
 /// A stem is an audio file of a NormalForm which has been solo'd
 /// and the audio rendered only contains operations with the name
 /// in the NameSet.

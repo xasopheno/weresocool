@@ -4,7 +4,7 @@ use rand::{rngs::StdRng, seq::SliceRandom, Rng};
 use std::hash::{Hash, Hasher};
 use weresocool_error::Error;
 
-#[derive(Clone, PartialEq, Debug, Hash)]
+#[derive(Clone, Eq, PartialEq, Debug, Hash)]
 pub enum Coef {
     Int(i64),
     RandRange(std::ops::RangeInclusive<i64>),
@@ -29,6 +29,7 @@ impl Coef {
     }
 }
 
+#[allow(clippy::derive_partial_eq_without_eq)]
 #[derive(Clone, PartialEq, Debug)]
 pub enum Coefs {
     Const(Vec<Coef>),
