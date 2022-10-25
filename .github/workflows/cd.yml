@@ -31,7 +31,11 @@ jobs:
           profile: minimal
           override: true
       - name: Checkout repository
-        uses: actions/checkout@v2
+        uses: actions/checkout@v3
+        with:
+          # ref: ${{ github.event.pull_request.head.ref }}
+          # ref: ${{ github.ref_name }}
+          ref: 'main'
 
       - name: Install publish-cool-workspace
         uses: baptiste0928/cargo-install@v1
