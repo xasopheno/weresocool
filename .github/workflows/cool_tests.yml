@@ -8,6 +8,8 @@ jobs:
 
     steps:
     - uses: extractions/setup-just@v1
+      with: 
+        repo-token: ${{ secrets.GITHUB_TOKEN }}
     - name: install dependancies
       run: | 
         sudo apt update
