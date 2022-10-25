@@ -53,7 +53,7 @@ jobs:
 
       - name: publish to crates.io
         run: 
-          publish-cool-workspace smart-release --bump  "${GITHUB_REF#refs/tags/}" --no-changelog --execute
+          publish-cool-workspace smart-release --bump  "${GITHUB_REF#refs/tags/}" --no-changelog --update-crates-index --execute
       - name: squash bump commit
         run: |
           git reset --soft HEAD~1
