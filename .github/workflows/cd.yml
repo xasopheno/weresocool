@@ -42,6 +42,7 @@ jobs:
           fetch-depth: 0
           # ref: ${{ github.event.pull_request.head.ref }}
           # ref: ${{ github.ref_name }}
+          token: ${{ env.GH_TOKEN }}
           ref: 'main'
 
       - name: Install publish-cool-workspace
@@ -67,7 +68,7 @@ jobs:
         run: |
           git reset --soft HEAD~1
           git commit --amend --no-edit
-          git push --force-with-lease
+          git push --force
 
       - name: Package MacOS Binary
         run: ./scripts/package_macos.sh ${{ steps.extract-version.outputs.tag-name }}
