@@ -73,8 +73,8 @@ jobs:
           # git commit --amend --no-edit
           # git push --force
 
-      # - name: Package MacOS Binary
-        # run: ./scripts/package_macos.sh ${{ steps.extract-version.outputs.tag-name }}
+      - name: Package MacOS Binary
+        run: ./scripts/package_macos.sh ${{ steps.extract-version.outputs.tag-name }}
 
       - name: Releasing MacOS Binary
         uses: "marvinpinto/action-automatic-releases@latest"
