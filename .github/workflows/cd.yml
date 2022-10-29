@@ -46,10 +46,10 @@ jobs:
           token: ${{ env.GH_TOKEN }}
           ref: 'main'
 
-      # - name: Install publish-cool-workspace
-        # uses: baptiste0928/cargo-install@v1
-        # with:
-          # crate: publish-cool-workspace
+      - name: Install publish-cool-workspace
+        uses: baptiste0928/cargo-install@v1
+        with:
+          crate: publish-cool-workspace
 
       - name: Extract version
         id: extract-version
