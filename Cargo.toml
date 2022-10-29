@@ -1,6 +1,6 @@
 [package]
 name = "weresocool"
-version = "1.0.37"
+version = "1.0.38"
 edition = "2021"
 authors = ["Danny <weresocool@xasopheno.com>"]
 description = "***** WereSoCool __!Now In Stereo!__ ****** Make cool sounds. Impress your friends."
@@ -24,16 +24,16 @@ depends = ["portaudio", "pkg-config","lame", "vorbis-tools"]
 provides = ["weresocool"]
 
 [dependencies]
-weresocool_core = { path = "core", version = "^1.0.37", default_features=false, optional=true  }
-weresocool_parser = { path = "parser", version = "^1.0.37", default_features=false, optional=true }
-weresocool_ast = { path = "ast", version = "^1.0.37", default_features=false, optional=true }
-weresocool_error = { path = "error", version = "^1.0.37", default_features=false, optional=true } 
-weresocool_instrument = { path = "instrument", version = "^1.0.37", default_features=false, optional=true } 
-scop = { path = "scop", version = "^1.0.37" }
-opmap = { path = "opmap", version = "^1.0.37" }
-weresocool_shared = { path = "shared", version = "^1.0.37" } 
-weresocool_analyze = { path = "analyze", version = "^1.0.37" }
-weresocool_ring_buffer = { path = "ring_buffer", version = "^1.0.37" }
+weresocool_core = { path = "core", version = "^1.0.38", default_features=false, optional=true  }
+weresocool_parser = { path = "parser", version = "^1.0.38", default_features=false, optional=true }
+weresocool_ast = { path = "ast", version = "^1.0.38", default_features=false, optional=true }
+weresocool_error = { path = "error", version = "^1.0.38", default_features=false, optional=true } 
+weresocool_instrument = { path = "instrument", version = "^1.0.38", default_features=false, optional=true } 
+scop = { path = "scop", version = "^1.0.38" }
+opmap = { path = "opmap", version = "^1.0.38" }
+weresocool_shared = { path = "shared", version = "^1.0.38" } 
+weresocool_analyze = { path = "analyze", version = "^1.0.38" }
+weresocool_ring_buffer = { path = "ring_buffer", version = "^1.0.38" }
 portaudio = { version="0.7.0", optional=true }
 clap = "2.33.3"
 thiserror = "1.0.31"
