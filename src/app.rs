@@ -40,6 +40,7 @@ pub fn app() -> clap::App<'static, 'static> {
                         .help("filename"),
                 ),
         )
+        .subcommand(SubCommand::with_name("demo").help("hear a cool sound"))
         .subcommand(
             SubCommand::with_name("print")
                 .usage("weresocool print [filename.socool] [flags]")
