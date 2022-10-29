@@ -1,6 +1,6 @@
 [package]
 name = "weresocool_shared"
-version = "1.0.36"
+version = "1.0.37"
 authors = ["Danny Meyer <weresocool@xasopheno.com>"]
 edition = "2021"
 description = "shared for WereSoCool"
