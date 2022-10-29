@@ -92,7 +92,7 @@ pub fn app() -> clap::App<'static, 'static> {
                     Arg::with_name("stems")
                         .long("stems")
                         .takes_value(false)
-                        .help("print stems as a zip"),
+                        .help("print stems as a zip file"),
                 )
                 .arg(
                     Arg::with_name("sound")
