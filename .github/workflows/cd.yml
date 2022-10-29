@@ -84,7 +84,6 @@ jobs:
           files: |
            target/release/weresocool-mac-${{ steps.extract-version.outputs.tag-name }}.tar.gz
 
-
       - name: Set SHA
         id: shasum
         run: |
