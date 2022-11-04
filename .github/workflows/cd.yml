@@ -22,10 +22,8 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: echo "GH_TOKEN=${GITHUB_TOKEN}" >> $GITHUB_ENV
 
-      - uses: extractions/setup-just@v1
-
       - name: install macos dependancies
-        run: brew install portaudio pkg-config lame libvorbis
+        run: brew install portaudio pkg-config lame libvorbis just
       - name: Installing Rust toolchain
         uses: actions-rs/toolchain@v1
         with:
