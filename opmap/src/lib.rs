@@ -19,7 +19,7 @@ where
             if self.map.contains_key(k) {
                 self.map
                     .entry(k.to_owned())
-                    .or_insert(vec![])
+                    .or_default()
                     .extend(v.to_owned());
             } else {
                 self.map.insert(k.to_owned(), v.to_owned());
@@ -28,7 +28,7 @@ where
     }
 
     pub fn insert(&mut self, k: &str, v: T) {
-        self.map.entry(k.to_owned()).or_insert(vec![]).push(v);
+        self.map.entry(k.to_owned()).or_default().push(v);
     }
 
     pub fn set(&mut self, k: &str, v: Vec<T>) {
