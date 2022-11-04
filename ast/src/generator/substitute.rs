@@ -5,7 +5,7 @@ use weresocool_error::Error;
 impl Substitute<Term> for GenOp {
     fn substitute(
         &self,
-        normal_form: &mut NormalForm,
+        _normal_form: &mut NormalForm,
         defs: &mut Defs<Term>,
     ) -> Result<Term, Error> {
         match self {
@@ -21,7 +21,7 @@ impl Substitute<Term> for GenOp {
             }
             GenOp::Const { .. } => Ok(Term::Gen(self.to_owned())),
             GenOp::Taken { n, gen, seed } => {
-                let term = gen.substitute(normal_form, defs)?;
+                let term = gen.substitute(_normal_form, defs)?;
                 match term {
                     Term::Gen(gen) => Ok(Term::Gen(GenOp::Taken {
                         n: *n,

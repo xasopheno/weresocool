@@ -5,20 +5,16 @@ A language for binaural, microtonal composition built in Rust.
 
 <em>Make cool sounds. Impress your friends/pets/plants.</em>
 
-![WereSoCool](../main/imgs/application.png)
-**WereSoCool** is a programming language for composing microtonal music geometrically. This language doesn't assume familiarity with either microtonal music or computer programming, but experience with either will certainly help. 
-
-## Listen:
-Watch/Listen to some examples from the language [here](https://www.weresocool.org/play/arcs).
+**WereSoCool** is a programming language for composing microtonal music geometrically. This language doesn't require familiarity with either microtonal music or computer programming, but experience with either will certainly help. 
 
 ## Installation:
 ### Macos:
 
-`brew install macos`
+`brew install weresocool`
 
 ### Arch Linux:
 
-Availabe on the AUR here.
+Available on the AUR [here](https://aur.archlinux.org/packages/weresocool).
 
 ### Cargo:
 
@@ -27,13 +23,40 @@ WereSoCool can be installed via on any unix system via cargo
 `cargo install weresocool`
 
 ### Windows
-This does not currently work on Windows...<em>sad panda</em>. If you're interested in using this software on a Windows machine, reach out and I'll work on it. 
+This does not currently work on Windows 😔. If you're interested in using this software on a Windows machine, reach out and I'll work on it. 
 
+### WereSoCool CLI
+```
+USAGE:
+    weresocool [SUBCOMMAND]
+
+FLAGS:
+    -h, --help       Prints help information
+    -V, --version    Prints version information
+
+SUBCOMMANDS:
+    new      new [filename.socool]
+    play     play [filename.socool]
+    watch    watch [filename.socool]
+    demo     hear a cool sound
+    print    print [filename.socool] [flags]
+        -a, --all          print all file types
+            --csv          print csv file
+            --json         print csv file
+            --mp3          print mp3 file
+            --oggvorbis    print oggvorbis file
+        -s, --sound        print sound file
+            --stems        print stems as a zip file
+            --wav          print wav file
+    help     help of the given subcommand(s)
+```
 
 ## Development:
 
 ### Setup
-You'll need Rust. Rust is a great language. Install it with [Rustup](https://www.rust-lang.org/en-US/install.html).
+Rust: Rust is a great language. Install it with [Rustup](https://www.rust-lang.org/en-US/install.html).
+
+Just: Commands are issued via [Just](https://github.com/casey/just).
 
 You'll need also need to install the following packages:
 
@@ -47,20 +70,10 @@ You'll need also need to install the following packages:
 `sudo apt-get portaudio pkg-config lame libmp3lame-dev rpm libasound2-dev vorbis-tools`
 
 ### Build
-`make package`
-
-## Run: 
-#### Linux
-`make run`
-
-#### Macos
-`make run_osx`
-
-#### Run with Dev Server
-`make dev`
+`just build`
 
 ## Run Tests:
-`make test`
+`just test`
 
 ## Special Thanks:
 This wouldn't exist in a million years if it wasn't for Antonis Stampoulis'

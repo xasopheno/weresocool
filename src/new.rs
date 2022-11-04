@@ -28,7 +28,7 @@ fn new_socool_file(filename: String, working_path: PathBuf) -> Result<(), Error>
 }
 
 const DEFAULT_SOCOOL: &str = indoc! {"
-{ f: 311.127, l: 1, g: 1, p: 0 }
+{ f: 311.127, l: 1, g: 1/3, p: 0 }
 
 thing1 = {
   O[
