@@ -1,14 +1,15 @@
 use clap::{App, AppSettings, Arg, SubCommand};
+const VERSION: &str = env!("CARGO_PKG_VERSION");
 
 pub fn app() -> clap::App<'static, 'static> {
     App::new("WereSoCool CLI")
-        .version("1.0")
+        .version(VERSION)
         .author("Danny Meyer")
         .about("Make cool sounds and impress your friends/pets/plants.")
         .setting(AppSettings::ColoredHelp)
         .subcommand(
             SubCommand::with_name("new")
-                .help("new [filename.socool]")
+                .about("new [filename.socool]")
                 .arg(
                     Arg::with_name("file")
                         .multiple(false)
@@ -19,7 +20,7 @@ pub fn app() -> clap::App<'static, 'static> {
         )
         .subcommand(
             SubCommand::with_name("play")
-                .help("play [filename.socool]")
+                .about("play [filename.socool]")
                 .arg(
                     Arg::with_name("file")
                         .multiple(false)
@@ -31,7 +32,7 @@ pub fn app() -> clap::App<'static, 'static> {
         .subcommand(
             SubCommand::with_name("watch")
                 .alias("dev")
-                .help("dev [filename.socool]")
+                .about("dev [filename.socool]")
                 .arg(
                     Arg::with_name("file")
                         .multiple(false)
@@ -40,10 +41,10 @@ pub fn app() -> clap::App<'static, 'static> {
                         .help("filename"),
                 ),
         )
-        .subcommand(SubCommand::with_name("demo").help("hear a cool sound"))
+        .subcommand(SubCommand::with_name("demo").about("hear a cool sound"))
         .subcommand(
             SubCommand::with_name("print")
-                .usage("weresocool print [filename.socool] [flags]")
+                .about("print [filename.socool] [flags]")
                 .arg(
                     Arg::with_name("output_dir")
                         .long("output_dir")
