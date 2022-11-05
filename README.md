@@ -18,7 +18,9 @@ Available on the AUR [here](https://aur.archlinux.org/packages/weresocool).
 
 ### Cargo:
 
-WereSoCool can be installed via on any unix system via cargo
+WereSoCool can be installed on any unix system via cargo. You'll also need to install the system dependancies listed
+in the development section. 
+are 
 
 `cargo install weresocool`
 
