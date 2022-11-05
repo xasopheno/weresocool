@@ -7,13 +7,14 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-    - uses: extractions/setup-just@v1
-      with: 
-        repo-token: ${{ secrets.GITHUB_TOKEN }}
+    - name: setup pre-built mpr
+      run: | 
+        curl -q 'https://proget.makedeb.org/debian-feeds/prebuilt-mpr.pub' | gpg --dearmor | sudo tee /usr/share/keyrings/prebuilt-mpr-archive-keyring.gpg 1> /dev/null
+        echo "deb [signed-by=/usr/share/keyrings/prebuilt-mpr-archive-keyring.gpg] https://proget.makedeb.org prebuilt-mpr $(lsb_release -cs)" | sudo tee /etc/apt/sources.list.d/prebuilt-mpr.list
+        sudo apt update
     - name: install dependancies
       run: | 
-        sudo apt update
-        sudo apt install -y libasound2-dev portaudio19-dev libportaudio2 libportaudiocpp0 pkg-config lame libmp3lame-dev vorbis-tools lld
+        sudo apt install -y libasound2-dev portaudio19-dev libportaudio2 libportaudiocpp0 pkg-config lame libmp3lame-dev vorbis-tools lld just
     - uses: actions/checkout@v2
     - uses: actions-rs/toolchain@v1
       with:
@@ -29,13 +30,16 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
+    - name: setup pre-built mpr
+      run: | 
+        curl -q 'https://proget.makedeb.org/debian-feeds/prebuilt-mpr.pub' | gpg --dearmor | sudo tee /usr/share/keyrings/prebuilt-mpr-archive-keyring.gpg 1> /dev/null
+        echo "deb [signed-by=/usr/share/keyrings/prebuilt-mpr-archive-keyring.gpg] https://proget.makedeb.org prebuilt-mpr $(lsb_release -cs)" | sudo tee /etc/apt/sources.list.d/prebuilt-mpr.list
+        sudo apt update
     - name: setup dummy soundcard
       run: sudo echo "pcm.!default { type plug slave.pcm 'null' }" > $HOME/.asoundrc
-    - uses: extractions/setup-just@v1
     - name: install dependancies
       run: | 
-        sudo apt update
-        sudo apt install -y libasound2-dev portaudio19-dev libportaudio2 libportaudiocpp0 pkg-config lame libmp3lame-dev vorbis-tools lld pulseaudio
+        sudo apt install -y libasound2-dev portaudio19-dev libportaudio2 libportaudiocpp0 pkg-config lame libmp3lame-dev vorbis-tools lld pulseaudio just
     - uses: actions/checkout@v2
     - uses: actions-rs/toolchain@v1
       with:
@@ -48,9 +52,8 @@ jobs:
       runs-on: macos-latest 
 
       steps:
-      - uses: extractions/setup-just@v1
       - name: install dependancies
-        run: brew install portaudio pkg-config lame libvorbis
+        run: brew install portaudio pkg-config lame libvorbis just
       - uses: actions/checkout@v2
       - uses: actions-rs/toolchain@v1
         with:
