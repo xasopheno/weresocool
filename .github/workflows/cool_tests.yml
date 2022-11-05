@@ -16,8 +16,6 @@ jobs:
       run: | 
         sudo apt install -y libasound2-dev portaudio19-dev libportaudio2 libportaudiocpp0 pkg-config lame libmp3lame-dev vorbis-tools lld just
     - uses: Swatinem/rust-cache@v2
-      with:
-        shared-key: 'weresocool'
     - uses: actions/checkout@v2
 
     - uses: actions-rs/toolchain@v1
@@ -46,8 +44,6 @@ jobs:
         sudo apt install -y libasound2-dev portaudio19-dev libportaudio2 libportaudiocpp0 pkg-config lame libmp3lame-dev vorbis-tools lld pulseaudio just
     - uses: actions/checkout@v2
     - uses: Swatinem/rust-cache@v2
-      with:
-        shared-key: 'weresocool'
     - uses: actions-rs/toolchain@v1
       with:
           toolchain: stable
@@ -63,8 +59,6 @@ jobs:
         run: brew install portaudio pkg-config lame libvorbis just
       - uses: actions/checkout@v2
       - uses: Swatinem/rust-cache@v2
-        with:
-          shared-key: 'weresocool'
       - uses: actions-rs/toolchain@v1
         with:
             toolchain: stable
