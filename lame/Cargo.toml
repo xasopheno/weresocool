@@ -1,6 +1,6 @@
 [package]
 name = "weresocool_lame"
-version = "1.0.39"
+version = "1.0.40"
 authors = ["Danny Meyer <weresocool@xasophenoo.com>"]
 edition = "2021"
 description = "Lame FFI for WereSoCool"
@@ -10,6 +10,4 @@ license = "GPL-3.0"
 
 [dependencies]
 serde = { version = "1.0.111", features = ["derive"] }
-failure = "0.1.8"
-failure_derive = "0.1.8"
 thiserror = "1.0.24"

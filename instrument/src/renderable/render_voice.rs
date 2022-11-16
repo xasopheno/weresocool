@@ -2,9 +2,9 @@ use crate::renderable::{Offset, RenderOp, Renderable};
 use crate::{Oscillator, StereoWaveform};
 #[cfg(feature = "app")]
 use rayon::prelude::*;
-use weresocool_shared::{default_settings, Settings};
+use weresocool_shared::{get_settings, Settings};
 
-const SETTINGS: Settings = default_settings();
+const SETTINGS: Settings = get_settings();
 
 #[derive(Debug, Clone, PartialEq)]
 pub struct RenderVoice {

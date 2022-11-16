@@ -38,7 +38,10 @@ impl Basis {
 impl Oscillator {
     pub fn init(settings: &Settings) -> Self {
         Self {
-            voices: (Voice::init(0), Voice::init(1)),
+            voices: (
+                Voice::init(0, settings.clone()),
+                Voice::init(1, settings.clone()),
+            ),
             settings: settings.clone(),
         }
     }

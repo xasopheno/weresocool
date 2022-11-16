@@ -1,6 +1,6 @@
 [package]
 name = "weresocool_parser"
-version = "1.0.39"
+version = "1.0.40"
 authors = ["Danny Meyer <weresocool@xasopheno.com>"]
 edition = "2021"
 build = "build.rs" # LALRPOP preprocessing
@@ -13,9 +13,9 @@ version = "0.19.6"
 features = ["lexer"]
 
 [dependencies]
-weresocool_ast = { path = "../ast", version = "^1.0.39", default_features=false, optional=true }
-weresocool_error = { path = "../error", version = "^1.0.39", default_features=false, optional=true }
-scop = { path = "../scop", version = "^1.0.39" }
+weresocool_ast = { path = "../ast", version = "^1.0.40", default_features=false, optional=true }
+weresocool_error = { path = "../error", version = "^1.0.40", default_features=false, optional=true }
+scop = { path = "../scop", version = "^1.0.40" }
 lalrpop-util = { version="0.19.6", features=["lexer"]}
 regex = "1.5.4"
 colored = "2.0.0"

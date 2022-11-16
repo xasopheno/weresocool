@@ -8,7 +8,7 @@ impl fmt::Display for PortAudioError {
 }
 
 #[derive(Serialize, Deserialize, Debug)]
-#[serde(remote = "portaudio::error::Error")]
+#[serde(remote = "weresocool_portaudio::error::Error")]
 pub enum PortAudioError {
     /// No Error
     NoError = 0,
@@ -71,4 +71,5 @@ pub enum PortAudioError {
     IncompatibleStreamHostApi,
     /// Invalid buffer
     BadBufferPtr,
+    NoDevice,
 }

@@ -7,6 +7,7 @@ use crate::{
 use scop::Defs;
 use std::path::PathBuf;
 
+use super::Op4D;
 #[cfg(feature = "app")]
 use pbr::ProgressBar;
 #[cfg(feature = "app")]
@@ -25,11 +26,9 @@ use weresocool_instrument::renderable::{
 };
 use weresocool_instrument::{Basis, Oscillator, StereoWaveform};
 use weresocool_parser::ParsedComposition;
-use weresocool_shared::{default_settings, Settings};
+use weresocool_shared::{get_settings, Settings};
 
-use super::Op4D;
-
-const SETTINGS: Settings = default_settings();
+const SETTINGS: Settings = get_settings();
 
 #[derive(Clone, Eq, PartialEq, Debug)]
 pub enum WavType {
@@ -396,7 +395,7 @@ pub fn generate_waveforms(
         .map(|ref mut vec_render_op: &mut Vec<RenderOp>| {
             #[cfg(feature = "app")]
             pb.lock().unwrap().add(1_u64);
-            let mut osc = Oscillator::init(&default_settings());
+            let mut osc = Oscillator::init(&SETTINGS);
             vec_render_op.render(&mut osc, None)
         })
         .collect();

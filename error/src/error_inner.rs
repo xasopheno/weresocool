@@ -13,7 +13,7 @@ pub enum ErrorInner {
 
     #[cfg(feature = "app")]
     #[error("PortAudio error: {0}")]
-    PortAudio(#[from] portaudio::error::Error),
+    PortAudio(#[from] weresocool_portaudio::error::Error),
 
     #[error("SerdeJson error: {0}")]
     SerdeJson(#[from] serde_json::error::Error),
@@ -35,12 +35,11 @@ pub enum ErrorInner {
 
     #[error("Hound error: {0}")]
     HoundError(#[from] hound::Error),
-
-    #[cfg(feature = "app")]
+    #[cfg(all(feature = "app", not(target_os = "windows")))]
     #[error("Lame error: {0}")]
     LameError(#[from] weresocool_lame::Error),
 
-    #[cfg(feature = "app")]
+    #[cfg(all(feature = "app", not(target_os = "windows")))]
     #[error("LameEncode error: {0}")]
     LameEncodeError(#[from] weresocool_lame::EncodeError),
 }

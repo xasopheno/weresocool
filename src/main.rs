@@ -10,12 +10,12 @@ use crate::play::{
     Play::{Once, Watch},
 };
 use notify::Error as NotifyError;
-#[cfg(feature = "app")]
-use portaudio::error::Error as PortAudioError;
 use std::env;
 use thiserror::Error;
 use weresocool::error::Error as WscError;
 use weresocool::ui::were_so_cool_logo;
+#[cfg(feature = "app")]
+use weresocool_portaudio::error::Error as PortAudioError;
 
 #[derive(Error, Debug)]
 pub enum Error {

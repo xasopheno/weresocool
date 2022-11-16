@@ -43,6 +43,8 @@ pub fn print(print_args: Option<&ArgMatches>) -> Result<(), Error> {
         )?;
         printed.push("wav")
     }
+
+    #[cfg(not(target_os = "windows"))]
     if should_print(&["all", "mp3", "sound"]) {
         println!("printing .mp3...");
 
@@ -55,6 +57,14 @@ pub fn print(print_args: Option<&ArgMatches>) -> Result<(), Error> {
         )?;
         printed.push("mp3")
     }
+
+    #[cfg(target_os = "windows")]
+    if should_print(&["all", "mp3", "sound"]) {
+        println!("Printing to mp3 not yet supported on windows");
+        printed.push("mp3");
+    }
+
+    #[cfg(not(target_os = "windows"))]
     if should_print(&["all", "oggvorbis", "sound"]) {
         println!("printing .ogg...");
 
@@ -67,6 +77,13 @@ pub fn print(print_args: Option<&ArgMatches>) -> Result<(), Error> {
         )?;
         printed.push("ogg")
     }
+
+    #[cfg(target_os = "windows")]
+    if should_print(&["all", "oggvorbis", "sound"]) {
+        println!("Printing to oggvorbis not yet supported on windows");
+        printed.push("ogg");
+    }
+
     if should_print(&["all", "csv"]) {
         println!("printing .csv...");
         InputType::Filename(&filename).make(

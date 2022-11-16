@@ -16,7 +16,7 @@ thing2 = {
     (1/1, 0, 1, -1),
   ]
   | Seq [
-    Fm 3/4
+    Fm 3/4 | Lm 2, Fm 1/2,
   ]
   | FitLength thing1
 }

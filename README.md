@@ -8,6 +8,19 @@ A language for binaural, microtonal composition built in Rust.
 **WereSoCool** is a programming language for composing microtonal music geometrically. This language doesn't require familiarity with either microtonal music or computer programming, but experience with either will certainly help. 
 
 ## Installation:
+
+### From Source:
+You'll need Rust and optionally Just.
+
+Rust: Rust is a great language. Install it with [Rustup](https://www.rust-lang.org/en-US/install.html).
+
+You can install from this source code by cloning this repeo and then running:
+
+1) If you have `just` installed, run `just install`
+    - Just is a command runner. Learn how to install just [here](https://github.com/casey/just).
+
+2) Or run `cargo install --path .` from the root of the repo.
+
 ### Macos:
 
 `brew install weresocool`
@@ -18,16 +31,18 @@ Available on the AUR [here](https://aur.archlinux.org/packages/weresocool).
 
 ### Cargo:
 
-WereSoCool can be installed on any unix system via cargo. You'll also need to install the system dependancies listed
-in the development section. 
-are 
+WereSoCool can be installed on any unix system via cargo. You'll also need to install the system dependancies listed in the development section. 
 
 `cargo install weresocool`
 
 ### Windows
-This does not currently work on Windows 😔. If you're interested in using this software on a Windows machine, reach out and I'll work on it. 
+
+This software runs on Windows, but in a slightly limited capacity. On Windows, this software is compiled without mp3 and oggvorbis support. I mostly work on unix and linux machines, so I feel a bit out of my depths in Windows land. If you'd like to help work on the Windows implementation, please reach out. 
+
+You can install WereSoCool from source or via cargo. See above. 
 
 ### WereSoCool CLI
+
 ```
 USAGE:
     weresocool [SUBCOMMAND]
@@ -63,13 +78,13 @@ Just: Commands are issued via [Just](https://github.com/casey/just).
 You'll need also need to install the following packages:
 
 #### Macos:
-`brew install portaudio pkg-config lame libvorbis`
+`brew install lame libvorbis`
 
 ##### Arch Linux:
-`sudo pacman -S portaudio pkg-config lame vorbis-tools`
+`sudo pacman -S lame vorbis-tools`
 
 ##### Ubuntu:
-`sudo apt-get portaudio pkg-config lame libmp3lame-dev rpm libasound2-dev vorbis-tools`
+`sudo apt-get lame libmp3lame-dev rpm libasound2-dev vorbis-tools`
 
 ### Build
 `just build`
@@ -80,8 +95,7 @@ You'll need also need to install the following packages:
 ## Special Thanks:
 This wouldn't exist in a million years if it wasn't for Antonis Stampoulis'
 help with language design or the help of friends/programmers like
-Sönke Hahn, Hao Lian, Catharine M, Matt Handler, Lee Pender, Amanda Doucette, Khaled Alquaddoomi,
-Alex Kestner, everyone else that has sat down to program with me.
+Sönke Hahn, Hao Lian, Catharine M, Matt Handler, Lee Pender, Amanda Doucette, Khaled Alquaddoomi, Alex Kestner, everyone else that has sat down to program with me.
 Of course, special thanks to Maria for always listening to my new_weird_sounds
 and programming problems. - Danny
 

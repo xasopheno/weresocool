@@ -1,4 +1,7 @@
 use itertools::Itertools;
+use weresocool_shared::{get_settings, Settings};
+
+const SETTINGS: Settings = get_settings();
 
 pub fn encode_lr_channels_to_ogg_vorbis(l: Vec<f64>, r: Vec<f64>) -> Vec<u8> {
     if l.len() != r.len() {
@@ -8,7 +11,7 @@ pub fn encode_lr_channels_to_ogg_vorbis(l: Vec<f64>, r: Vec<f64>) -> Vec<u8> {
     let interleaved: Vec<f64> = interleave_channels(l, r);
     let veci16 = pcm_f64_to_i16(interleaved);
 
-    let mut encoder = vorbis_encoder::Encoder::new(2, 44100, 1.0).unwrap();
+    let mut encoder = vorbis_encoder::Encoder::new(2, SETTINGS.sample_rate as u64, 1.0).unwrap();
     let mut encoded = encoder.encode(&veci16).unwrap();
     encoded.append(&mut encoder.flush().unwrap());
     encoded

@@ -14,9 +14,12 @@ jobs:
         sudo apt update
     - name: install dependancies
       run: | 
-        sudo apt install -y libasound2-dev portaudio19-dev libportaudio2 libportaudiocpp0 pkg-config lame libmp3lame-dev vorbis-tools lld just
-    - uses: Swatinem/rust-cache@v2
+        sudo apt install -y libasound2-dev lame libmp3lame-dev vorbis-tools lld just
     - uses: actions/checkout@v2
+    - uses: Swatinem/rust-cache@v2
+      with: 
+        cache-on-failure: true
+        key: "weresocool-lint"
 
     - uses: actions-rs/toolchain@v1
       with:
@@ -37,17 +40,24 @@ jobs:
         curl -q 'https://proget.makedeb.org/debian-feeds/prebuilt-mpr.pub' | gpg --dearmor | sudo tee /usr/share/keyrings/prebuilt-mpr-archive-keyring.gpg 1> /dev/null
         echo "deb [signed-by=/usr/share/keyrings/prebuilt-mpr-archive-keyring.gpg] https://proget.makedeb.org prebuilt-mpr $(lsb_release -cs)" | sudo tee /etc/apt/sources.list.d/prebuilt-mpr.list
         sudo apt update
-    - name: setup dummy soundcard
-      run: sudo echo "pcm.!default { type plug slave.pcm 'null' }" > $HOME/.asoundrc
+    # - name: setup dummy soundcard
+      # run: | 
+        # sudo echo "pcm.!default { type plug slave.pcm 'null' }" > $HOME/.asoundrc
     - name: install dependancies
       run: | 
-        sudo apt install -y libasound2-dev portaudio19-dev libportaudio2 libportaudiocpp0 pkg-config lame libmp3lame-dev vorbis-tools lld pulseaudio just
-    - uses: actions/checkout@v2
-    - uses: Swatinem/rust-cache@v2
+        sudo apt install -y libasound2-dev lame libmp3lame-dev vorbis-tools lld pulseaudio just 
+    - name: start pulseaudio daemon
+      run: |
+        pulseaudio -D --exit-idle-time=-1
     - uses: actions-rs/toolchain@v1
       with:
           toolchain: stable
           override: true
+    - uses: actions/checkout@v2
+    - uses: Swatinem/rust-cache@v2
+      with: 
+        cache-on-failure: true
+        key: "weresocool-ubuntu"
     - name: run tests
       run: just test
 
@@ -56,12 +66,39 @@ jobs:
 
       steps:
       - name: install dependancies
-        run: brew install portaudio pkg-config lame libvorbis just
+        run: brew install lame libvorbis just
       - uses: actions/checkout@v2
-      - uses: Swatinem/rust-cache@v2
       - uses: actions-rs/toolchain@v1
         with:
             toolchain: stable
             override: true
+      - uses: Swatinem/rust-cache@v2
+        with:
+          cache-on-failure: true
+          key: "weresocool-windows"
       - name: run tests
         run: just test
+
+  windows:
+      runs-on: windows-latest 
+      steps:
+      - name: start audiosrv
+        run: net start audiosrv
+      - name: install scream
+        run: |
+                  Invoke-WebRequest https://github.com/duncanthrax/scream/releases/download/3.8/Scream3.8.zip -OutFile Scream3.8.zip
+                  Expand-Archive -Path Scream3.8.zip -DestinationPath Scream
+                  Import-Certificate -FilePath Scream\Install\driver\x64\Scream.cat -CertStoreLocation Cert:\LocalMachine\TrustedPublisher 
+                  Scream\Install\helpers\devcon-x64.exe install Scream\Install\driver\x64\Scream.inf *Scream
+      - uses: actions-rs/toolchain@v1
+        with:
+            toolchain: stable
+            override: true
+
+      - uses: actions/checkout@v2
+      - uses: Swatinem/rust-cache@v2
+        with:
+          cache-on-failure: true
+          key: "weresocool-windows"
+      - name: run tests
+        run: cargo test --release

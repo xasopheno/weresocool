@@ -22,80 +22,83 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: echo "GH_TOKEN=${GITHUB_TOKEN}" >> $GITHUB_ENV
 
-      - name: install macos dependancies
-        run: brew install portaudio pkg-config lame libvorbis just
-      - name: Installing Rust toolchain
-        uses: actions-rs/toolchain@v1
-        with:
-          toolchain: stable
-          profile: minimal
-          override: true
+      # - name: install macos dependancies
+        # run: brew install lame libvorbis just
+      # - name: Installing Rust toolchain
+        # uses: actions-rs/toolchain@v1
+        # with:
+          # toolchain: stable
+          # profile: minimal
+          # override: true
 
       - name: Checkout repository
         uses: actions/checkout@v3
         with:
           fetch-depth: 0
-          # ref: ${{ github.event.pull_request.head.ref }}
-          # ref: ${{ github.ref_name }}
           token: ${{ env.GH_TOKEN }}
           ref: 'main'
 
-      - name: Install publish-cool-workspace
-        uses: baptiste0928/cargo-install@v1
-        with:
-          crate: publish-cool-workspace
+      - uses: Swatinem/rust-cache@v2
+        with: 
+          cache-on-failure: true
+          key: "weresocool-cd"
 
-      - name: Extract version
-        id: extract-version
-        run: |
-          printf "::set-output name=%s::%s\n" tag-name "${GITHUB_REF#refs/tags/}"
+      # - name: Install publish-cool-workspace
+        # uses: baptiste0928/cargo-install@v1
+        # with:
+          # crate: publish-cool-workspace
 
-
-      - name: Setup publish to crates.io
-        run: |
-          git config --global user.email "weresocool_bot@xasopheno.com"
-          git config --global user.name "WereSoCool Bot"
-          cargo login ${{ secrets.CARGO_API_KEY }}
-
-      - name: publish to crates.io
-        run: 
-          publish-cool-workspace smart-release --bump  "${GITHUB_REF#refs/tags/}" --no-changelog --update-crates-index --execute
-
-      - name: squash bump commit
-        run: |
-          git reset --soft HEAD~1
-          git commit --amend --no-edit
-          git push --force
-
-      - name: Package MacOS Binary
-        run: ./scripts/package_macos.sh ${{ steps.extract-version.outputs.tag-name }}
-
-      - name: Releasing MacOS Binary
-        uses: "marvinpinto/action-automatic-releases@latest"
-        with:
-          repo_token: "${{ secrets.GITHUB_TOKEN }}"
-          prerelease: false
-          files: |
-           target/release/weresocool-mac-${{ steps.extract-version.outputs.tag-name }}.tar.gz
+      # - name: Extract version
+        # id: extract-version
+        # run: |
+          # printf "::set-output name=%s::%s\n" tag-name "${GITHUB_REF#refs/tags/}"
 
 
-      - name: Set SHA
-        id: shasum
-        run: |
-          echo ::set-output name=sha::"$(shasum -a 256 ./target/release/weresocool-mac-${{ steps.extract-version.outputs.tag-name }}.tar.gz | awk '{printf $1}')"
+      # - name: Setup publish to crates.io
+        # run: |
+          # git config --global user.email "weresocool_bot@xasopheno.com"
+          # git config --global user.name "WereSoCool Bot"
+          # cargo login ${{ secrets.CARGO_API_KEY }}
 
-      - name: Bump Homebrew formula
-        uses: xasopheno/weresocool-bump-homebrew-formula@v0.0.1
-        if: "!contains(github.ref, '-')"
-        env:
-          COMMITTER_TOKEN: ${{ secrets.HOMEBREW_WERESOCOOL_COMMITER_TOKEN }}
-        with:
-          base-branch: main
-          formula-name: weresocool
-          create-pullrequest: false
-          homebrew-tap: xasopheno/homebrew-weresocool
-          tag-name: ${{ steps.extract-version.outputs.tag-name }}
-          download-url: https://github.com/xasopheno/weresocool/releases/latest/download/weresocool-mac-${{ steps.extract-version.outputs.tag-name }}.tar.gz
+      # - name: publish to crates.io
+        # run: 
+          # publish-cool-workspace smart-release --bump  "${GITHUB_REF#refs/tags/}" --no-changelog --update-crates-index --execute
+
+      # - name: squash bump commit
+        # run: |
+          # git reset --soft HEAD~1
+          # git commit --amend --no-edit
+          # git push --force
+
+      # - name: Package MacOS Binary
+        # run: ./scripts/package_macos.sh ${{ steps.extract-version.outputs.tag-name }}
+
+      # - name: Releasing MacOS Binary
+        # uses: "marvinpinto/action-automatic-releases@latest"
+        # with:
+          # repo_token: "${{ secrets.GITHUB_TOKEN }}"
+          # prerelease: false
+          # files: |
+           # target/release/weresocool-mac-${{ steps.extract-version.outputs.tag-name }}.tar.gz
+
+
+      # - name: Set SHA
+        # id: shasum
+        # run: |
+          # echo ::set-output name=sha::"$(shasum -a 256 ./target/release/weresocool-mac-${{ steps.extract-version.outputs.tag-name }}.tar.gz | awk '{printf $1}')"
+
+      # - name: Bump Homebrew formula
+        # uses: xasopheno/weresocool-bump-homebrew-formula@v0.0.1
+        # if: "!contains(github.ref, '-')"
+        # env:
+          # COMMITTER_TOKEN: ${{ secrets.HOMEBREW_WERESOCOOL_COMMITER_TOKEN }}
+        # with:
+          # base-branch: main
+          # formula-name: weresocool
+          # create-pullrequest: false
+          # homebrew-tap: xasopheno/homebrew-weresocool
+          # tag-name: ${{ steps.extract-version.outputs.tag-name }}
+          # download-url: https://github.com/xasopheno/weresocool/releases/latest/download/weresocool-mac-${{ steps.extract-version.outputs.tag-name }}.tar.gz
             
       - name: Bump Aur Package
         uses: ./actions/bumper_cool/src

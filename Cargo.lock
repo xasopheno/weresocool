@@ -3,15 +3,6 @@
 version = 3
 
 [[package]]
-name = "addr2line"
-version = "0.17.0"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "b9ecd88a8c8378ca913a680cd98f0f13ac67383d35993f86c90a70e3f137816b"
-dependencies = [
- "gimli",
-]
-
-[[package]]
 name = "adler"
 version = "1.0.2"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -97,21 +88,6 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "d468802bab17cbc0cc575e9b053f41e72aa36bfa6b7f55e3529ffa43161b97fa"
 
 [[package]]
-name = "backtrace"
-version = "0.3.66"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "cab84319d616cfb654d03394f38ab7e6f0919e181b1b57e1fd15e7fb4077d9a7"
-dependencies = [
- "addr2line",
- "cc",
- "cfg-if",
- "libc",
- "miniz_oxide",
- "object",
- "rustc-demangle",
-]
-
-[[package]]
 name = "base64ct"
 version = "1.0.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -131,12 +107,6 @@ name = "bit-vec"
 version = "0.6.3"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "349f9b6a179ed607305526ca489b34ad0a41aed5f7980fa90eb03160b69598fb"
-
-[[package]]
-name = "bitflags"
-version = "0.7.0"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "aad18937a628ec6abcd26d1489012cc0e18c21798210f491af69ded9b881106d"
 
 [[package]]
 name = "bitflags"
@@ -242,7 +212,7 @@ checksum = "a0610544180c38b88101fecf2dd634b174a62eef6946f84dfc6a7127512b381c"
 dependencies = [
  "ansi_term 0.12.1",
  "atty",
- "bitflags 1.3.2",
+ "bitflags",
  "strsim",
  "textwrap",
  "unicode-width",
@@ -504,28 +474,6 @@ dependencies = [
 ]
 
 [[package]]
-name = "failure"
-version = "0.1.8"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "d32e9bd16cc02eae7db7ef620b392808b89f6a5e16bb3497d159c6b92a0f4f86"
-dependencies = [
- "backtrace",
- "failure_derive",
-]
-
-[[package]]
-name = "failure_derive"
-version = "0.1.8"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "aa4da3c766cd7a0db8242e326e9e4e081edd567072893ed320008189715366a4"
-dependencies = [
- "proc-macro2 1.0.40",
- "quote 1.0.20",
- "syn 1.0.98",
- "synstructure",
-]
-
-[[package]]
 name = "filetime"
 version = "0.2.17"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -709,12 +657,6 @@ dependencies = [
 ]
 
 [[package]]
-name = "gimli"
-version = "0.26.2"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "22030e2c5a68ec659fde1e949a745124b48e6fa8b045b7ed5bd1fe4ccc5c4e5d"
-
-[[package]]
 name = "glob"
 version = "0.3.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -795,7 +737,7 @@ version = "0.9.6"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "f8069d3ec154eb856955c1c0fbffefbf5f3c40a104ec912d4797314c1801abff"
 dependencies = [
- "bitflags 1.3.2",
+ "bitflags",
  "inotify-sys",
  "libc",
 ]
@@ -864,7 +806,7 @@ version = "1.0.3"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "8367585489f01bc55dd27404dcf56b95e6da061a256a666ab23be9ba96a2e587"
 dependencies = [
- "bitflags 1.3.2",
+ "bitflags",
  "libc",
 ]
 
@@ -995,7 +937,7 @@ version = "5.0.0-pre.15"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "553f9844ad0b0824605c20fb55a661679782680410abfb1a8144c2e7e437e7a7"
 dependencies = [
- "bitflags 1.3.2",
+ "bitflags",
  "crossbeam-channel",
  "filetime",
  "fsevent-sys",
@@ -1005,17 +947,6 @@ dependencies = [
  "mio",
  "walkdir",
  "winapi",
-]
-
-[[package]]
-name = "num"
-version = "0.1.42"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "4703ad64153382334aa8db57c637364c322d3372e097840c72000dabdcf6156e"
-dependencies = [
- "num-integer",
- "num-iter",
- "num-traits",
 ]
 
 [[package]]
@@ -1162,15 +1093,6 @@ dependencies = [
 ]
 
 [[package]]
-name = "object"
-version = "0.29.0"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "21158b2c33aa6d4561f1c0a6ea283ca92bc54802a93b263e910746d679a7eb53"
-dependencies = [
- "memchr",
-]
-
-[[package]]
 name = "ogg-sys"
 version = "0.0.9"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -1201,7 +1123,7 @@ checksum = "624a8340c38c1b80fd549087862da4ba43e08858af025b236e509b6649fc13d5"
 
 [[package]]
 name = "opmap"
-version = "1.0.39"
+version = "1.0.40"
 dependencies = [
  "drain-while",
  "hamcrest2",
@@ -1358,18 +1280,6 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "207353e2f0e42079823f05c218fea7088ec598b276a0b92db11f9a813df2e04d"
 dependencies = [
  "serde",
-]
-
-[[package]]
-name = "portaudio"
-version = "0.7.0"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "0d289315f6155a7608b6d8757786c79ed2243afeab8a5eda8989effda3fdc5c3"
-dependencies = [
- "bitflags 0.7.0",
- "libc",
- "num 0.1.42",
- "pkg-config",
 ]
 
 [[package]]
@@ -1536,7 +1446,7 @@ version = "0.2.13"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "62f25bc4c7e55e0b0b7a1d43fb893f4fa1361d0abe38b9ce4f323c2adfe6ef42"
 dependencies = [
- "bitflags 1.3.2",
+ "bitflags",
 ]
 
 [[package]]
@@ -1575,13 +1485,7 @@ checksum = "a3f87b73ce11b1619a3c6332f45341e0047173771e8b8b73f87bfeefb7b56244"
 
 [[package]]
 name = "reverb"
-version = "1.0.39"
-
-[[package]]
-name = "rustc-demangle"
-version = "0.1.21"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "7ef03e0a2b150c7a90d01faf6254c9c48a41e95fb2a8c2ac1c6f0d2b9aefc342"
+version = "1.0.40"
 
 [[package]]
 name = "rustversion"
@@ -1606,7 +1510,7 @@ dependencies = [
 
 [[package]]
 name = "scop"
-version = "1.0.39"
+version = "1.0.40"
 dependencies = [
  "indexmap",
  "serde",
@@ -1746,18 +1650,6 @@ dependencies = [
  "proc-macro2 1.0.40",
  "quote 1.0.20",
  "unicode-ident",
-]
-
-[[package]]
-name = "synstructure"
-version = "0.12.6"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "f36bdaa60a83aca3921b5259d5400cbf5e90fc51931376a9bd4a0eb79aa7210f"
-dependencies = [
- "proc-macro2 1.0.40",
- "quote 1.0.20",
- "syn 1.0.98",
- "unicode-xid 0.2.3",
 ]
 
 [[package]]
@@ -2064,7 +1956,7 @@ dependencies = [
 
 [[package]]
 name = "weresocool"
-version = "1.0.39"
+version = "1.0.40"
 dependencies = [
  "assert_cmd",
  "clap",
@@ -2077,7 +1969,6 @@ dependencies = [
  "notify",
  "num-rational 0.3.2",
  "opmap",
- "portaudio",
  "pretty_assertions",
  "scop",
  "serde",
@@ -2093,6 +1984,7 @@ dependencies = [
  "weresocool_error",
  "weresocool_instrument",
  "weresocool_parser",
+ "weresocool_portaudio",
  "weresocool_ring_buffer",
  "weresocool_shared",
  "zip 0.6.2",
@@ -2100,14 +1992,14 @@ dependencies = [
 
 [[package]]
 name = "weresocool_analyze"
-version = "1.0.39"
+version = "1.0.40"
 dependencies = [
  "weresocool_shared",
 ]
 
 [[package]]
 name = "weresocool_ast"
-version = "1.0.39"
+version = "1.0.40"
 dependencies = [
  "colored",
  "csv",
@@ -2128,7 +2020,7 @@ dependencies = [
 
 [[package]]
 name = "weresocool_core"
-version = "1.0.39"
+version = "1.0.40"
 dependencies = [
  "bytes",
  "clap",
@@ -2138,8 +2030,6 @@ dependencies = [
  "csv",
  "difference",
  "env_logger",
- "failure",
- "failure_derive",
  "float-cmp",
  "futures",
  "hound",
@@ -2149,7 +2039,6 @@ dependencies = [
  "num-rational 0.3.2",
  "opmap",
  "pbr",
- "portaudio",
  "pretty_assertions",
  "rand",
  "rayon",
@@ -2166,6 +2055,7 @@ dependencies = [
  "weresocool_instrument",
  "weresocool_lame",
  "weresocool_parser",
+ "weresocool_portaudio",
  "weresocool_ring_buffer",
  "weresocool_shared",
  "weresocool_vorbis",
@@ -2174,22 +2064,22 @@ dependencies = [
 
 [[package]]
 name = "weresocool_error"
-version = "1.0.39"
+version = "1.0.40"
 dependencies = [
  "csv",
  "hound",
- "portaudio",
  "scop",
  "serde",
  "serde_json",
  "thiserror",
  "wasm-bindgen",
  "weresocool_lame",
+ "weresocool_portaudio",
 ]
 
 [[package]]
 name = "weresocool_instrument"
-version = "1.0.39"
+version = "1.0.40"
 dependencies = [
  "num-rational 0.3.2",
  "num-traits",
@@ -2206,17 +2096,15 @@ dependencies = [
 
 [[package]]
 name = "weresocool_lame"
-version = "1.0.39"
+version = "1.0.40"
 dependencies = [
- "failure",
- "failure_derive",
  "serde",
  "thiserror",
 ]
 
 [[package]]
 name = "weresocool_parser"
-version = "1.0.39"
+version = "1.0.40"
 dependencies = [
  "colored",
  "indexmap",
@@ -2233,15 +2121,32 @@ dependencies = [
 ]
 
 [[package]]
+name = "weresocool_portaudio"
+version = "1.0.40"
+dependencies = [
+ "bitflags",
+ "libc",
+ "num 0.2.1",
+ "weresocool_portaudio_sys",
+]
+
+[[package]]
+name = "weresocool_portaudio_sys"
+version = "1.0.40"
+dependencies = [
+ "cc",
+]
+
+[[package]]
 name = "weresocool_ring_buffer"
-version = "1.0.39"
+version = "1.0.40"
 dependencies = [
  "weresocool_shared",
 ]
 
 [[package]]
 name = "weresocool_shared"
-version = "1.0.39"
+version = "1.0.40"
 dependencies = [
  "float-cmp",
  "num-rational 0.3.2",
@@ -2249,12 +2154,13 @@ dependencies = [
 
 [[package]]
 name = "weresocool_vorbis"
-version = "1.0.39"
+version = "1.0.40"
 dependencies = [
  "hamcrest2",
  "hound",
  "itertools",
  "vorbis-encoder",
+ "weresocool_shared",
 ]
 
 [[package]]

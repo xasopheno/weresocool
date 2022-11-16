@@ -11,9 +11,9 @@ use scop::Defs;
 use serde::{Deserialize, Serialize};
 use weresocool_ast::{NormalForm, Normalize, OscType, PointOp, Term, ASR};
 use weresocool_error::Error;
-use weresocool_shared::{default_settings, lossy_rational_mul, r_to_f64, Settings};
+use weresocool_shared::{get_settings, lossy_rational_mul, r_to_f64, Settings};
 
-const SETTINGS: Settings = default_settings();
+const SETTINGS: Settings = get_settings();
 
 #[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
 pub struct RenderOp {
@@ -40,7 +40,7 @@ pub struct RenderOp {
 }
 
 impl RenderOp {
-    pub const fn init_fglp(f: f64, g: (f64, f64), l: f64, p: f64) -> Self {
+    pub const fn init_fglp(f: f64, g: (f64, f64), l: f64, p: f64, settings: &Settings) -> Self {
         Self {
             f,
             p,
@@ -48,11 +48,11 @@ impl RenderOp {
             l,
             t: 0.0,
             reverb: None,
-            attack: SETTINGS.sample_rate,
-            decay: SETTINGS.sample_rate,
+            attack: settings.sample_rate,
+            decay: settings.sample_rate,
             asr: ASR::Long,
-            samples: SETTINGS.sample_rate as usize,
-            total_samples: SETTINGS.sample_rate as usize,
+            samples: settings.sample_rate as usize,
+            total_samples: settings.sample_rate as usize,
             index: 0,
             voice: 0,
             event: 0,
@@ -307,7 +307,7 @@ pub fn nf_to_vec_renderable(
                 );
                 result.push(op);
             }
-            if default_settings().pad_end {
+            if SETTINGS.pad_end {
                 result.push(RenderOp::init_silent_with_length_osc_type_and_reverb(
                     1.0,
                     OscType::None,
