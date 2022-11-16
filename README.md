@@ -63,13 +63,13 @@ Just: Commands are issued via [Just](https://github.com/casey/just).
 You'll need also need to install the following packages:
 
 #### Macos:
-`brew install portaudio pkg-config lame libvorbis`
+`brew install lame libvorbis`
 
 ##### Arch Linux:
-`sudo pacman -S portaudio pkg-config lame vorbis-tools`
+`sudo pacman -S lame vorbis-tools`
 
 ##### Ubuntu:
-`sudo apt-get portaudio pkg-config lame libmp3lame-dev rpm libasound2-dev vorbis-tools`
+`sudo apt-get lame libmp3lame-dev rpm libasound2-dev vorbis-tools`
 
 ### Build
 `just build`
