@@ -51,7 +51,6 @@ pub fn generate_test_table() -> TestTable {
 
 pub fn write_test_table_to_json_file(test_table: &TestTable) {
     let pretty = to_string_pretty(test_table).unwrap();
-    //    let mut file = File::create("src/testing/hashes.json").unwrap();
     let mut file = File::create("src/testing/hashes.json").unwrap();
     file.write_all(pretty.as_bytes()).unwrap();
 }

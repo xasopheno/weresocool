@@ -101,4 +101,4 @@ jobs:
           cache-on-failure: true
           key: "weresocool-windows"
       - name: run tests
-        run: cargo test
+        run: just test
