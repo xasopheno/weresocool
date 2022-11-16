@@ -23,7 +23,7 @@ jobs:
         run: echo "GH_TOKEN=${GITHUB_TOKEN}" >> $GITHUB_ENV
 
       - name: install macos dependancies
-        run: brew install portaudio pkg-config lame libvorbis just
+        run: brew install lame libvorbis just
       - name: Installing Rust toolchain
         uses: actions-rs/toolchain@v1
         with:
@@ -35,10 +35,13 @@ jobs:
         uses: actions/checkout@v3
         with:
           fetch-depth: 0
-          # ref: ${{ github.event.pull_request.head.ref }}
-          # ref: ${{ github.ref_name }}
           token: ${{ env.GH_TOKEN }}
           ref: 'main'
+
+      - uses: Swatinem/rust-cache@v2
+        with: 
+          cache-on-failure: true
+          key: "weresocool-cd"
 
       - name: Install publish-cool-workspace
         uses: baptiste0928/cargo-install@v1
