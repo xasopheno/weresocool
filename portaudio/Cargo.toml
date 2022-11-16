@@ -1,0 +1,17 @@
+[package]
+name = "weresocool_portaudio"
+version = "0.7.0"
+authors = ["<letang.jeremy@gmail.com>",
+           "Mitchell Nordine <mitchell.nordine@gmail.com>",
+           "Danny Meyer <weresocool@xasopheno.com>"
+          ]
+description = "PortAudio bindings for Rust."
+license = "MIT"
+homepage = "https://github.com/xasopheno/weresocool"
+repository = "https://github.com/xasopheno/weresocool.git"
+
+[dependencies]
+bitflags = "1.3.2"
+libc = "0.2.51"
+num = { version = "0.2.0", default-features = false }
+portaudio_sys = { path = "./rust-portaudio-sys", version = "0.1.0" }
