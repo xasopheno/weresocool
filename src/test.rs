@@ -75,13 +75,19 @@ mod cli_tests {
             .assert()
             .success();
 
-        let expected_filename = "src/test_data/play.wav";
+        #[cfg(target_os = "windows")]
+        let expected_filename = "src/test_data/play_windows.wav";
+        #[cfg(target_os = "macos")]
+        let expected_filename = "src/test_data/play_unix.wav";
+        #[cfg(target_os = "linux")]
+        let expected_filename = "src/test_data/play_unix.wav";
         let written_filename = format!("{}/play.wav", tmp_dir.path().display());
         assert_same_wav_file(expected_filename, &written_filename)
-            .expect("Wave files are no the same");
+            .expect("Wav files are not the same");
     }
 
     #[test]
+    #[cfg(all(feature = "app", not(target_os = "windows")))]
     fn it_prints_an_mp3() {
         let mut cmd = Command::new("cargo");
         let tmp_dir = TempDir::new().unwrap();
@@ -97,7 +103,13 @@ mod cli_tests {
             .assert()
             .success();
 
-        let expected_filename = "src/test_data/play.mp3";
+        #[cfg(target_os = "windows")]
+        let expected_filename = "src/test_data/play_windows.mp3";
+        #[cfg(target_os = "macos")]
+        let expected_filename = "src/test_data/play_unix.mp3";
+        #[cfg(target_os = "linux")]
+        let expected_filename = "src/test_data/play_unix.mp3";
+
         let written_filename = format!("{}/play.mp3", tmp_dir.path().display());
         assert_same_bytes(expected_filename, &written_filename);
     }
@@ -118,7 +130,12 @@ mod cli_tests {
             .assert()
             .success();
 
-        let expected_filename = "src/test_data/play.socool.stems.zip";
+        #[cfg(target_os = "windows")]
+        let expected_filename = "src/test_data/play_windows.socool.stems.zip";
+        #[cfg(target_os = "macos")]
+        let expected_filename = "src/test_data/play_unix.socool.stems.zip";
+        #[cfg(target_os = "linux")]
+        let expected_filename = "src/test_data/play_unix.socool.stems.zip";
         let written_filename = format!("{}/play.socool.stems.zip", tmp_dir.path().display());
         assert_same_zip_contents(expected_filename, &written_filename).unwrap();
     }
@@ -180,12 +197,12 @@ mod cli_tests {
     }
 
     fn assert_same_file_contents(expected_filename: &str, written_filename: &str) {
-        let expected = std::fs::read_to_string(expected_filename)
+        let mut expected = std::fs::read_to_string(expected_filename)
             .expect("Something went wrong reading the file");
-        let written = std::fs::read_to_string(written_filename)
+        let mut written = std::fs::read_to_string(written_filename)
             .expect("Something went wrong reading the file");
-        println!("{:?}", &expected);
-        println!("{:?}", &written);
+        expected = expected.replace('\r', "");
+        written = written.replace('\r', "");
 
         assert!(expected == written);
     }

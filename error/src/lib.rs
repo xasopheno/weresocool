@@ -27,15 +27,15 @@ pub enum Serializable {
     HoundError(String),
     #[cfg(feature = "app")]
     #[serde(with = "PortAudioError")]
-    PortAudio(portaudio::error::Error),
+    PortAudio(weresocool_portaudio::error::Error),
     SerdeJsonError(String),
     CsvError(String),
     ParseError(ParseError),
     IdError(IdError),
     IndexError(IndexError),
-    #[cfg(feature = "app")]
+    #[cfg(all(feature = "app", not(target_os = "windows")))]
     LameError(weresocool_lame::Error),
-    #[cfg(feature = "app")]
+    #[cfg(all(feature = "app", not(target_os = "windows")))]
     LameEncodeError(weresocool_lame::EncodeError),
 }
 
@@ -49,9 +49,9 @@ impl ErrorInner {
             ErrorInner::IndexError(e) => Serializable::IndexError(e),
             #[cfg(feature = "app")]
             ErrorInner::PortAudio(e) => Serializable::PortAudio(e),
-            #[cfg(feature = "app")]
+            #[cfg(all(feature = "app", not(target_os = "windows")))]
             ErrorInner::LameError(e) => Serializable::LameError(e),
-            #[cfg(feature = "app")]
+            #[cfg(all(feature = "app", not(target_os = "windows")))]
             ErrorInner::LameEncodeError(e) => Serializable::LameEncodeError(e),
             ErrorInner::Io(e) => {
                 println!("{:#?}", e);
@@ -95,9 +95,9 @@ impl From<io::Error> for Error {
     }
 }
 
-#[cfg(feature = "app")]
-impl From<portaudio::error::Error> for Error {
-    fn from(e: portaudio::error::Error) -> Error {
+#[cfg(any(feature = "app", feature = "windows"))]
+impl From<weresocool_portaudio::error::Error> for Error {
+    fn from(e: weresocool_portaudio::error::Error) -> Error {
         Error {
             inner: Box::new(ErrorInner::PortAudio(e)),
         }
@@ -144,7 +144,7 @@ impl From<hound::Error> for Error {
     }
 }
 
-#[cfg(feature = "app")]
+#[cfg(all(feature = "app", not(target_os = "windows")))]
 impl From<weresocool_lame::Error> for Error {
     fn from(e: weresocool_lame::Error) -> Error {
         Error {
@@ -153,7 +153,7 @@ impl From<weresocool_lame::Error> for Error {
     }
 }
 
-#[cfg(feature = "app")]
+#[cfg(all(feature = "app", not(target_os = "windows")))]
 impl From<weresocool_lame::EncodeError> for Error {
     fn from(e: weresocool_lame::EncodeError) -> Error {
         Error {

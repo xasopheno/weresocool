@@ -55,7 +55,7 @@
 extern crate bitflags;
 extern crate libc;
 extern crate num;
-extern crate portaudio_sys as ffi;
+extern crate weresocool_portaudio_sys as ffi;
 
 use num::FromPrimitive;
 use std::option::Option;
