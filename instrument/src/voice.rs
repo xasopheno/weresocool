@@ -5,9 +5,9 @@ use crate::{
 
 use reverb::Reverb;
 use weresocool_ast::{OscType, ASR};
-use weresocool_shared::{default_settings, Settings};
+use weresocool_shared::{get_settings, Settings};
 
-const SETTINGS: Settings = default_settings();
+const SETTINGS: Settings = get_settings();
 
 #[derive(Clone, Debug, PartialEq)]
 pub struct Voice {
@@ -71,7 +71,7 @@ impl ReverbState {
 }
 
 impl Voice {
-    pub fn init(index: usize) -> Self {
+    pub fn init(index: usize, settings: Settings) -> Self {
         Self {
             index,
             reverb: ReverbState::init(),
@@ -81,8 +81,8 @@ impl Voice {
             offset_current: VoiceState::init(),
             phase: 0.0,
             osc_type: OscType::Sine { pow: None },
-            attack: SETTINGS.sample_rate as usize,
-            decay: SETTINGS.sample_rate as usize,
+            attack: settings.sample_rate as usize,
+            decay: settings.sample_rate as usize,
             asr: ASR::Long,
         }
     }

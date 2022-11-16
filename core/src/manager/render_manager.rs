@@ -15,7 +15,9 @@ use weresocool_instrument::renderable::{
     nf_to_vec_renderable, renderables_to_render_voices, RenderOp, RenderVoice, Renderable,
 };
 use weresocool_instrument::StereoWaveform;
-use weresocool_shared::{default_settings, Settings};
+use weresocool_shared::{get_settings, Settings};
+
+const SETTINGS: Settings = get_settings();
 
 pub type KillChannel = Option<Sender<bool>>;
 
@@ -25,8 +27,6 @@ pub enum VisEvent {
     Reset,
 }
 pub type VisualizationChannel = Option<crossbeam_channel::Sender<VisEvent>>;
-
-const SETTINGS: Settings = default_settings();
 
 #[derive(Debug)]
 pub struct Visualization {

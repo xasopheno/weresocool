@@ -8,9 +8,9 @@ use weresocool_error::Error;
 use weresocool_instrument::{Normalize, StereoWaveform};
 #[cfg(feature = "app")]
 use weresocool_lame::Lame;
-use weresocool_shared::{default_settings, Settings};
+use weresocool_shared::{get_settings, Settings};
 
-const SETTINGS: Settings = default_settings();
+const SETTINGS: Settings = get_settings();
 
 pub fn write_output_buffer(out_buffer: &mut [f32], stereo_waveform: StereoWaveform) {
     let mut l_idx = 0;

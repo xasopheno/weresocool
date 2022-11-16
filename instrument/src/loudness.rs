@@ -1,6 +1,6 @@
-use weresocool_shared::{default_settings, Settings};
+use weresocool_shared::{get_settings, Settings};
 
-const SETTINGS: Settings = default_settings();
+const SETTINGS: Settings = get_settings();
 
 pub fn freq_to_sones(frequency: f64) -> f64 {
     // http://www.ukintpress-conferences.com/conf/08txeu_conf/pdf/day_1/01-06-garcia.pdf

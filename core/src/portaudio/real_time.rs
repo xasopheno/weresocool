@@ -1,11 +1,11 @@
 use crate::{generation::parsed_to_render::sum_all_waveforms, write::write_output_buffer};
-use portaudio as pa;
 use rayon::prelude::*;
 use weresocool_error::Error;
 use weresocool_instrument::{renderable::Renderable, RenderVoice};
-use weresocool_shared::{default_settings, Settings};
+use weresocool_portaudio as pa;
+use weresocool_shared::{get_settings, Settings};
 
-const SETTINGS: Settings = default_settings();
+const SETTINGS: Settings = get_settings();
 
 pub fn real_time(
     mut voices: Vec<RenderVoice>,

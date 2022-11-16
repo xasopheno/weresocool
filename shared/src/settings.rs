@@ -1,3 +1,11 @@
+pub const fn get_settings() -> Settings {
+    if cfg!(test) {
+        get_test_settings()
+    } else {
+        default_settings()
+    }
+}
+
 #[derive(Clone, Debug, PartialEq)]
 pub struct Settings {
     pub pad_end: bool,
@@ -19,7 +27,7 @@ pub const fn default_settings() -> Settings {
         loop_play: false,
         pad_end: true,
         mic: false,
-        sample_rate: 44_100.0,
+        sample_rate: 48_000.0,
         yin_buffer_size: 2048,
         buffer_size: 1024 * 8,
         probability_threshold: 0.3,
@@ -33,7 +41,7 @@ pub const fn default_settings() -> Settings {
 
 pub const fn get_test_settings() -> Settings {
     Settings {
-        buffer_size: 10,
+        sample_rate: 44_100.0,
         ..default_settings()
     }
 }

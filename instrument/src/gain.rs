@@ -55,11 +55,12 @@ impl Voice {
 #[cfg(test)]
 mod tests {
     use super::*;
+    use weresocool_shared::get_test_settings;
     use weresocool_shared::helpers::cmp_f64;
     #[test]
     fn test_get_current_gain_from_op() {
-        let v = Voice::init(0);
-        let mut op = RenderOp::init_fglp(200.0, (0.9, 0.9), 1.0, 0.0);
+        let v = Voice::init(0, get_test_settings());
+        let mut op = RenderOp::init_fglp(200.0, (0.9, 0.9), 1.0, 0.0, &get_test_settings());
         op.osc_type = OscType::Noise;
 
         let result = v.current_gain_from_op(&op);
@@ -76,8 +77,8 @@ mod tests {
 
     #[test]
     fn test_get_past_gain_from_op() {
-        let mut v = Voice::init(0);
-        let mut op = RenderOp::init_fglp(200.0, (1.0, 1.0), 1.0, 0.0);
+        let mut v = Voice::init(0, get_test_settings());
+        let mut op = RenderOp::init_fglp(200.0, (1.0, 1.0), 1.0, 0.0, &get_test_settings());
         op.osc_type = OscType::Noise;
 
         v.current.gain = 0.9;
@@ -92,11 +93,11 @@ mod tests {
         let mut op = RenderOp::init_silent_with_length(1.0);
         op.next_r_silent = false;
         op.next_l_silent = true;
-        let v1 = Voice::init(0);
+        let v1 = Voice::init(0, get_test_settings());
         let result = v1.silence_next(&op);
         assert!(result);
 
-        let v2 = Voice::init(1);
+        let v2 = Voice::init(1, get_test_settings());
         let result = v2.silence_next(&op);
         assert!(!result);
     }
@@ -114,7 +115,7 @@ mod tests {
     }
     #[test]
     fn test_silence_now() {
-        let mut v = Voice::init(0);
+        let mut v = Voice::init(0, get_test_settings());
         v.current.frequency = 0.0;
         v.current.gain = 1.0;
         assert!(v.silence_now());
@@ -132,7 +133,7 @@ mod tests {
     }
     #[test]
     fn test_silence_to_sound() {
-        let mut v = Voice::init(0);
+        let mut v = Voice::init(0, get_test_settings());
         v.past.frequency = 0.0;
         v.current.frequency = 100.0;
         v.past.gain = 1.0;

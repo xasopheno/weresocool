@@ -1,5 +1,4 @@
 use crate::{generation::parsed_to_render::sum_all_waveforms, write::write_output_buffer};
-use portaudio as pa;
 use rayon::prelude::*;
 use weresocool_analyze::{Analyze, DetectionResult};
 use weresocool_error::Error;
@@ -7,10 +6,11 @@ use weresocool_instrument::renderable::{
     renderables_to_render_voices, Offset, RenderOp, RenderVoice,
 };
 use weresocool_instrument::StereoWaveform;
+use weresocool_portaudio as pa;
 use weresocool_ring_buffer::RingBuffer;
-use weresocool_shared::{default_settings, Settings};
+use weresocool_shared::{get_settings, Settings};
 
-const SETTINGS: Settings = default_settings();
+const SETTINGS: Settings = get_settings();
 
 fn process_detection_result(result: &mut DetectionResult) -> (f64, f64) {
     if result.gain < 0.005 || result.frequency > 1_000.0 {
@@ -58,11 +58,10 @@ pub fn duplex_setup(
     renderables: Vec<Vec<RenderOp>>,
 ) -> Result<pa::Stream<pa::NonBlocking, pa::Duplex<f32, f32>>, Error> {
     let pa = pa::PortAudio::new()?;
-    let settings = default_settings();
     let duplex_stream_settings = get_duplex_settings(&pa)?;
     let mut voices = renderables_to_render_voices(renderables);
 
-    let mut input_buffer: RingBuffer<f32> = RingBuffer::<f32>::new(settings.yin_buffer_size);
+    let mut input_buffer: RingBuffer<f32> = RingBuffer::<f32>::new(SETTINGS.yin_buffer_size);
 
     let duplex_stream = pa.open_non_blocking_stream(duplex_stream_settings, move |args| {
         sing_along_callback(basis_f, args, &mut input_buffer, &mut voices);

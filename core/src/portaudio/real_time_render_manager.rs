@@ -4,12 +4,12 @@ use crate::{
 };
 use weresocool_instrument::StereoWaveform;
 
-use portaudio as pa;
 use std::sync::{Arc, Mutex};
 use weresocool_error::Error;
-use weresocool_shared::{default_settings, Settings};
+use weresocool_portaudio as pa;
+use weresocool_shared::{get_settings, Settings};
 
-const SETTINGS: Settings = default_settings();
+const SETTINGS: Settings = get_settings();
 
 pub fn real_time_render_manager(
     render_manager: Arc<Mutex<RenderManager>>,
@@ -42,9 +42,10 @@ pub fn get_output_settings(pa: &pa::PortAudio) -> Result<pa::stream::OutputSetti
     let output_params =
         pa::StreamParameters::new(def_output, SETTINGS.channels, SETTINGS.interleaved, latency);
 
+    println!("sample_rate: {}", output_info.default_sample_rate);
     let output_settings = pa::OutputStreamSettings::new(
         output_params,
-        SETTINGS.sample_rate as f64,
+        SETTINGS.sample_rate,
         SETTINGS.buffer_size as u32,
     );
 
