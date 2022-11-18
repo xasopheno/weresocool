@@ -42,7 +42,6 @@ pub fn get_output_settings(pa: &pa::PortAudio) -> Result<pa::stream::OutputSetti
     let output_params =
         pa::StreamParameters::new(def_output, SETTINGS.channels, SETTINGS.interleaved, latency);
 
-    println!("sample_rate: {}", output_info.default_sample_rate);
     let output_settings = pa::OutputStreamSettings::new(
         output_params,
         SETTINGS.sample_rate,

@@ -59,6 +59,7 @@ difference = "2.0.0"
 test-generator = "0.3.0"
 crossbeam-channel = "0.5.6"
 indoc = "1.0.7"
+colored = "2.0.0"
 
 [dev-dependencies]
 pretty_assertions = "0.6.1"

@@ -1960,6 +1960,7 @@ version = "1.0.40"
 dependencies = [
  "assert_cmd",
  "clap",
+ "colored",
  "criterion",
  "crossbeam-channel",
  "difference",

@@ -33,7 +33,7 @@ pub fn play_file(filename: String, working_path: PathBuf, play: Play) -> Result<
 
     match play {
         Play::Once => play_once(render_voices?),
-        Play::Watch => play_watch(filename, working_path, render_voices?),
+        Play::Watch => play_watch(filename, working_path),
     }
 }
 
@@ -67,14 +67,9 @@ pub fn play_once(render_voices: Vec<RenderVoice>) -> Result<(), Error> {
 fn play_watch(
     filename: String,
     working_path: PathBuf,
-    render_voices: Vec<RenderVoice>,
+    // render_voices: Vec<RenderVoice>,
 ) -> Result<(), Error> {
-    let render_manager = Arc::new(Mutex::new(RenderManager::init(
-        render_voices,
-        None,
-        None,
-        false,
-    )));
+    let render_manager = Arc::new(Mutex::new(RenderManager::init(vec![], None, None, false)));
     watch(filename, working_path, render_manager.clone())?;
     let mut stream = real_time_render_manager(Arc::clone(&render_manager))?;
     stream.start()?;

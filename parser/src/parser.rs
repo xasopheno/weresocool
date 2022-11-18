@@ -133,6 +133,7 @@ pub fn parse_file(
             Ok(ParsedComposition { init, defs })
         }
         Err(error) => {
+            println!("\n");
             let location = Arc::new(Mutex::new(Vec::new()));
             error.map_location(|l| location.lock().unwrap().push(l));
             let (line, column) = handle_parse_error(location, &composition);
