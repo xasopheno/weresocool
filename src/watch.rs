@@ -1,7 +1,6 @@
 use crate::Error;
 use colored::*;
 use notify::{RecommendedWatcher, RecursiveMode, Watcher};
-use rand;
 use rand::Rng;
 use std::io;
 use std::io::Write;
@@ -48,9 +47,9 @@ pub fn watch(
     Ok(())
 }
 
-fn render(filename: &str, working_path: &PathBuf, render_manager: &Arc<Mutex<RenderManager>>) {
+fn render(filename: &str, working_path: &Path, render_manager: &Arc<Mutex<RenderManager>>) {
     let render_voices =
-        match prepare_render_outside(Filename(&filename), Some(working_path.clone())) {
+        match prepare_render_outside(Filename(filename), Some(working_path.to_path_buf())) {
             Ok(result) => Some(result),
             Err(error) => {
                 println!("{}", error);

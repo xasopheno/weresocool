@@ -22,7 +22,7 @@ pub fn print(print_args: &ArgMatches) -> Result<(), Error> {
     if should_print(&["all", "wav", "sound"]) {
         println!("printing .wav...");
 
-        InputType::Filename(&filename).make(
+        InputType::Filename(filename).make(
             RenderType::Wav(WavType::Wav {
                 cli: true,
                 output_dir: output_dir.clone(),
@@ -36,7 +36,7 @@ pub fn print(print_args: &ArgMatches) -> Result<(), Error> {
     if should_print(&["all", "mp3", "sound"]) {
         println!("printing .mp3...");
 
-        InputType::Filename(&filename).make(
+        InputType::Filename(filename).make(
             RenderType::Wav(WavType::Mp3 {
                 cli: true,
                 output_dir: output_dir.clone(),
@@ -56,7 +56,7 @@ pub fn print(print_args: &ArgMatches) -> Result<(), Error> {
     if should_print(&["all", "oggvorbis", "sound"]) {
         println!("printing .ogg...");
 
-        InputType::Filename(&filename).make(
+        InputType::Filename(filename).make(
             RenderType::Wav(WavType::OggVorbis {
                 cli: true,
                 output_dir: output_dir.clone(),
@@ -74,7 +74,7 @@ pub fn print(print_args: &ArgMatches) -> Result<(), Error> {
 
     if should_print(&["all", "csv"]) {
         println!("printing .csv...");
-        InputType::Filename(&filename).make(
+        InputType::Filename(filename).make(
             RenderType::Csv1d {
                 cli: true,
                 output_dir: output_dir.clone(),
@@ -85,7 +85,7 @@ pub fn print(print_args: &ArgMatches) -> Result<(), Error> {
     }
     if should_print(&["all", "json"]) {
         println!("printing .json...");
-        InputType::Filename(&filename).make(
+        InputType::Filename(filename).make(
             RenderType::Json4d {
                 cli: true,
                 output_dir: output_dir.clone(),
@@ -96,7 +96,7 @@ pub fn print(print_args: &ArgMatches) -> Result<(), Error> {
     }
     if should_print(&["all", "stems"]) {
         println!("printing .stems...");
-        InputType::Filename(&filename).make(
+        InputType::Filename(filename).make(
             RenderType::Stems {
                 cli: true,
                 output_dir: output_dir.clone(),
@@ -106,7 +106,7 @@ pub fn print(print_args: &ArgMatches) -> Result<(), Error> {
         printed.push("stems")
     }
     if printed.is_empty() {
-        InputType::Filename(&filename).make(
+        InputType::Filename(filename).make(
             RenderType::Wav(WavType::Wav {
                 cli: true,
                 output_dir,

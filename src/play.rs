@@ -23,8 +23,7 @@ pub fn play(filename: &String, cwd: PathBuf, play: Play) -> Result<(), Error> {
 pub fn play_file(filename: String, working_path: PathBuf, play: Play) -> Result<(), Error> {
     match play {
         Play::Once => {
-            let render_voices =
-                prepare_render_outside(Filename(&filename), Some(working_path.clone()));
+            let render_voices = prepare_render_outside(Filename(&filename), Some(working_path));
 
             play_once(render_voices?, filename)
         }
