@@ -1,7 +1,5 @@
-// use crate::env::args;
 use crate::Error;
 use clap::ArgMatches;
-use std::env::args;
 use std::path::PathBuf;
 use weresocool::generation::{RenderType, WavType};
 use weresocool::interpretable::InputType;
@@ -107,16 +105,16 @@ pub fn print(print_args: &ArgMatches) -> Result<(), Error> {
         )?;
         printed.push("stems")
     }
-    // if printed.is_empty() {
-    // InputType::Filename(&filename).make(
-    // RenderType::Wav(WavType::Wav {
-    // cli: true,
-    // output_dir,
-    // }),
-    // None,
-    // )?;
-    // println!("printing .wav (default)...");
-    // }
+    if printed.is_empty() {
+        InputType::Filename(&filename).make(
+            RenderType::Wav(WavType::Wav {
+                cli: true,
+                output_dir,
+            }),
+            None,
+        )?;
+        println!("printing .wav (default)...");
+    }
 
     println!("\tdone");
     Ok(())

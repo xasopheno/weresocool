@@ -1,7 +1,5 @@
 use crate::watch::watch;
 use crate::Error;
-use clap::ArgMatches;
-use colored::*;
 use std::path::PathBuf;
 use std::sync::Arc;
 use std::sync::Mutex;
@@ -18,14 +16,6 @@ pub enum Play {
 }
 
 pub fn play(filename: &String, cwd: PathBuf, play: Play) -> Result<(), Error> {
-    // let filename = play_args
-    // .ok_or_else(|| Error::Message("No play args".to_string()))?
-    // .values_of("file")
-    // .ok_or_else(|| Error::Message("No value of file".to_string()))?
-    // .collect::<Vec<_>>()
-    // .first()
-    // .expect("No filename")
-    // .to_string();
     play_file(filename.to_owned(), cwd, play)?;
     Ok(())
 }
@@ -49,9 +39,7 @@ pub fn play_once(render_voices: Vec<RenderVoice>, filename: String) -> Result<()
     let render_manager = Arc::new(Mutex::new(RenderManager::init(
         render_voices,
         None,
-        // Option<KillChannel>
         Some(tx),
-        // play once
         true,
     )));
     let mut stream = real_time_render_manager(Arc::clone(&render_manager))?;

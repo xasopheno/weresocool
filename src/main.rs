@@ -5,10 +5,8 @@ mod play;
 mod print;
 mod test;
 mod watch;
-use crate::play::{
-    play,
-    Play::{Once, Watch},
-};
+
+use crate::play::Play::{Once, Watch};
 use notify::Error as NotifyError;
 use std::env;
 use thiserror::Error;
