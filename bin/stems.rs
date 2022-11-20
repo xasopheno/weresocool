@@ -10,7 +10,6 @@ use weresocool_error::Error;
 use weresocool_instrument::renderable::nf_to_vec_renderable;
 
 fn main() -> Result<(), Error> {
-    were_so_cool_logo();
     let args = get_args();
 
     let filename = args.value_of("filename");

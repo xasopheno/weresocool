@@ -13,7 +13,6 @@ use notify::Error as NotifyError;
 use std::env;
 use thiserror::Error;
 use weresocool::error::Error as WscError;
-use weresocool::ui::were_so_cool_logo;
 #[cfg(feature = "app")]
 use weresocool_portaudio::error::Error as PortAudioError;
 
@@ -33,17 +32,27 @@ pub enum Error {
 }
 
 fn main() -> Result<(), Error> {
-    were_so_cool_logo();
     let cwd = env::current_dir()?;
 
     let matches = app::app().get_matches();
 
     match matches.subcommand() {
-        ("new", new_args) => new::new(new_args, cwd)?,
-        ("demo", _) => demo::demo()?,
-        ("play", play_args) => play(play_args, cwd, Once)?,
-        ("watch", play_args) => play(play_args, cwd, Watch)?,
-        ("print", print_args) => print::print(print_args)?,
+        Some(("new", sub_matches)) => {
+            new::new(sub_matches.get_one::<String>("filename").unwrap(), cwd)?
+        }
+        Some(("play", sub_matches)) => play::play(
+            sub_matches.get_one::<String>("filename").unwrap(),
+            cwd,
+            Once,
+        )?,
+        Some(("watch", sub_matches)) => play::play(
+            sub_matches.get_one::<String>("filename").unwrap(),
+            cwd,
+            Watch,
+        )?,
+        Some(("demo", _)) => demo::demo()?,
+        Some(("print", sub_matches)) => print::print(sub_matches)?,
+        // ("print", print_args) => print::print(print_args)?,
         _e => {
             app::app().print_help().unwrap();
         }

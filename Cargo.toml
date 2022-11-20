@@ -43,7 +43,7 @@ opmap = { path = "opmap", version = "^1.0.40" }
 weresocool_shared = { path = "shared", version = "^1.0.40" } 
 weresocool_analyze = { path = "analyze", version = "^1.0.40" }
 weresocool_ring_buffer = { path = "ring_buffer", version = "^1.0.40" }
-clap = "2.33.3"
+clap = "4.0.26"
 thiserror = "1.0.31"
 notify = "5.0.0-pre.14"
 zip = { version="0.6.2", optional=true }
@@ -60,6 +60,7 @@ test-generator = "0.3.0"
 crossbeam-channel = "0.5.6"
 indoc = "1.0.7"
 colored = "2.0.0"
+rand = "0.8.5"
 
 [dev-dependencies]
 pretty_assertions = "0.6.1"

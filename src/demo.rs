@@ -6,7 +6,7 @@ use weresocool::manager::prepare_render_outside;
 
 pub fn demo() -> Result<(), Error> {
     let render_voices = prepare_render_outside(Language(DEMO), None);
-    play_once(render_voices?)?;
+    play_once(render_voices?, "demo.socool".to_string())?;
     Ok(())
 }
 

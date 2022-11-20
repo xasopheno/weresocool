@@ -1,33 +1,23 @@
+// use crate::env::args;
 use crate::Error;
 use clap::ArgMatches;
+use std::env::args;
 use std::path::PathBuf;
 use weresocool::generation::{RenderType, WavType};
 use weresocool::interpretable::InputType;
 use weresocool::interpretable::Interpretable;
 
-pub fn print(print_args: Option<&ArgMatches>) -> Result<(), Error> {
-    let args = print_args.ok_or_else(|| Error::Message("No print args".to_string()))?;
-
+pub fn print(print_args: &ArgMatches) -> Result<(), Error> {
     let mut printed: Vec<&str> = vec![];
     let should_print = |target: &[&str]| -> bool {
-        let result = target.iter().any(|arg| args.is_present(arg));
+        let result = target.iter().any(|arg| print_args.get_flag(arg));
         result
     };
-    let filename = args
-        .values_of("file")
-        .ok_or_else(|| {
-            Error::Message(
-                "Filename required. Usage: weresocool print [FILENAME] [FLAGS]".to_string(),
-            )
-        })?
-        .collect::<Vec<_>>()
-        .first()
-        .expect("No Filename")
-        .to_string();
+    let filename = print_args.get_one::<String>("filename").unwrap();
 
     let mut output_dir = PathBuf::new();
-    if let Some(values) = args.values_of("output_dir") {
-        output_dir.push(values.collect::<Vec<_>>().first().expect("No Filename"));
+    if let Some(value) = print_args.get_one::<String>("output_dir") {
+        output_dir.push(value);
     };
 
     println!("Filename: {}", filename);
@@ -117,16 +107,16 @@ pub fn print(print_args: Option<&ArgMatches>) -> Result<(), Error> {
         )?;
         printed.push("stems")
     }
-    if printed.is_empty() {
-        InputType::Filename(&filename).make(
-            RenderType::Wav(WavType::Wav {
-                cli: true,
-                output_dir,
-            }),
-            None,
-        )?;
-        println!("printing .wav (default)...");
-    }
+    // if printed.is_empty() {
+    // InputType::Filename(&filename).make(
+    // RenderType::Wav(WavType::Wav {
+    // cli: true,
+    // output_dir,
+    // }),
+    // None,
+    // )?;
+    // println!("printing .wav (default)...");
+    // }
 
     println!("\tdone");
     Ok(())

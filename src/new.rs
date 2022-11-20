@@ -5,17 +5,17 @@ use indoc::indoc;
 use std::fs;
 use std::path::PathBuf;
 
-pub fn new(play_args: Option<&ArgMatches>, cwd: PathBuf) -> Result<(), Error> {
-    let filename = play_args
-        .ok_or_else(|| Error::Message("filename required".to_string()))?
-        .values_of("file")
-        .ok_or_else(|| Error::Message("No value for filename".to_string()))?
-        .collect::<Vec<_>>()
-        .first()
-        .expect("No filename")
-        .to_string();
+pub fn new(filename: &String, cwd: PathBuf) -> Result<(), Error> {
+    // let filename = play_args
+    // .ok_or_else(|| Error::Message("filename required".to_string()))?
+    // .values_of("file")
+    // .ok_or_else(|| Error::Message("No value for filename".to_string()))?
+    // .collect::<Vec<_>>()
+    // .first()
+    // .expect("No filename")
+    // .to_string();
 
-    new_socool_file(filename, cwd)?;
+    new_socool_file(filename.to_owned(), cwd)?;
     Ok(())
 }
 
