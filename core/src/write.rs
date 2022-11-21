@@ -6,7 +6,7 @@ use std::io::{BufWriter, Cursor};
 use std::path::PathBuf;
 use weresocool_error::Error;
 use weresocool_instrument::{Normalize, StereoWaveform};
-#[cfg(not(target_os = "windows"))]
+#[cfg(not(any(target_os = "windows", feature = "wasm")))]
 use weresocool_lame::Lame;
 use weresocool_shared::{get_settings, Settings};
 
