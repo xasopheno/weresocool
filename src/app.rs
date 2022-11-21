@@ -26,7 +26,7 @@ pub fn app() -> clap::Command {
             Command::new("print")
                 .about("Print a .socool composition to a file")
                 .arg(arg!([filename]).required(false))
-                .arg(arg!([output_dir]).required(false))
+                .arg(arg!(--"output_dir" <output_dir>).required(false))
                 .arg(
                     Arg::new("wav")
                         .long("wav")
