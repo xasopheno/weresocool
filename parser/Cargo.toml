@@ -23,7 +23,7 @@ num-rational = "0.3.2"
 indexmap = "1.6.1"
 rand = { version="0.7.3", features=["wasm-bindgen"]}
 path-clean = "0.1.0"
-uuid = { version = "0.8", features = ["serde", "v4"] }
+uuid = { version = "0.8", features = ["serde", "v4","stdweb"] }
 
 [features]
 default=["app"]
