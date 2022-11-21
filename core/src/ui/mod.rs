@@ -4,11 +4,7 @@ use colored::*;
 const VERSION: &str = env!("CARGO_PKG_VERSION");
 
 pub fn clear_screen() {
-    if cfg!(unix) {
-        std::process::Command::new("clear").status().unwrap();
-    } else if cfg!(windows) {
-        std::process::Command::new("cls").status().unwrap();
-    }
+    std::process::Command::new("clear").status().unwrap();
 }
 
 pub fn were_so_cool_logo(action: Option<&str>, filename: Option<String>) {
