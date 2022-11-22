@@ -50,7 +50,6 @@ fn main() -> Result<(), Error> {
         )?,
         Some(("demo", _)) => demo::demo()?,
         Some(("print", sub_matches)) => print::print(sub_matches)?,
-        // ("print", print_args) => print::print(print_args)?,
         _e => {
             app::app().print_help().unwrap();
         }
