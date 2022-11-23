@@ -34,6 +34,8 @@ weresocool_core = { path="core", version = "^1.0.40", features = ["app"] }
 weresocool_error = { path = "error", version = "^1.0.40", features=["app"] } 
 
 [dependencies]
+weresocool_core = { path="core", version = "^1.0.40", default_features=false }
+weresocool_error = { path = "error", version = "^1.0.40", default_features=false } 
 weresocool_parser = { path = "parser", version = "^1.0.40", default_features=false, optional=true }
 weresocool_ast = { path = "ast", version = "^1.0.40", default_features=false, optional=true }
 weresocool_instrument = { path = "instrument", version = "^1.0.40", default_features=false, optional=true } 
@@ -43,7 +45,7 @@ opmap = { path = "opmap", version = "^1.0.40" }
 weresocool_shared = { path = "shared", version = "^1.0.40" } 
 weresocool_analyze = { path = "analyze", version = "^1.0.40" }
 weresocool_ring_buffer = { path = "ring_buffer", version = "^1.0.40" }
-clap = "2.33.3"
+clap = "4.0.26"
 thiserror = "1.0.31"
 notify = "5.0.0-pre.14"
 zip = { version="0.6.2", optional=true }
@@ -60,6 +62,7 @@ test-generator = "0.3.0"
 crossbeam-channel = "0.5.6"
 indoc = "1.0.7"
 colored = "2.0.0"
+rand = { version="0.7.3", features=["wasm-bindgen"]}
 
 [dev-dependencies]
 pretty_assertions = "0.6.1"

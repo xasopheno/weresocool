@@ -72,8 +72,12 @@ windows=[
   "weresocool_parser/app", "weresocool_instrument/app", "weresocool_ast/app",
   "weresocool_error/windows"
 ]
-wasm = ["weresocool_ast/wasm", "weresocool_instrument/wasm", "weresocool_parser/wasm", "weresocool_error/wasm"]
-
+wasm = [
+  "weresocool_ast/wasm", 
+  "weresocool_instrument/wasm", 
+  "weresocool_parser/wasm", 
+  "weresocool_error/wasm"
+]
 
 [dev-dependencies]
 pretty_assertions = "0.6.1"

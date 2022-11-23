@@ -30,7 +30,7 @@ You can install from this source code by cloning this repo and then running:
 
 ### Macos:
 
-`brew install weresocool`
+`brew tap xasopheno/weresocool && brew install weresocool`
 
 ### Arch Linux:
 

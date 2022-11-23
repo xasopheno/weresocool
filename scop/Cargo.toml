@@ -10,6 +10,6 @@ license = "GPL-3.0"
 
 [dependencies]
 thiserror = "1.0.25"
-uuid = { version = "0.8", features = ["serde", "v4"] }
+uuid = { version = "0.8", features = ["serde", "v4", "stdweb"] }
 serde = { version = "1.0.119", features = ["derive"] }
 indexmap = { version = "1.6.1", features = ["serde-1"] }

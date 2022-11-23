@@ -11,7 +11,7 @@ use weresocool_error::Error;
 use weresocool_instrument::renderable::{nf_to_vec_renderable, renderables_to_render_voices};
 
 fn main() -> Result<(), Error> {
-    were_so_cool_logo();
+    were_so_cool_logo(None, None);
     println!("       )))***=== REAL<COOL>TIME *buffered ===***(((  \n ");
 
     let args = get_args();

@@ -2,7 +2,7 @@ use std::convert::TryFrom;
 use weresocool_core::{
     generation::{generate_waveforms, RenderReturn, RenderType},
     interpretable::{InputType::Filename, Interpretable},
-    ui::{get_args, no_file_name, were_so_cool_logo},
+    ui::{get_args, no_file_name},
     write::write_composition_to_wav,
 };
 
@@ -10,7 +10,6 @@ use weresocool_error::Error;
 use weresocool_instrument::renderable::nf_to_vec_renderable;
 
 fn main() -> Result<(), Error> {
-    were_so_cool_logo();
     let args = get_args();
 
     let filename = args.value_of("filename");

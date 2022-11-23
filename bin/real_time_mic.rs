@@ -9,7 +9,7 @@ use weresocool_instrument::renderable::nf_to_vec_renderable;
 use weresocool_shared::r_to_f64;
 
 fn main() -> Result<(), Error> {
-    were_so_cool_logo();
+    were_so_cool_logo(None, None);
     println!("       )))***=== REAL<GOOD>TIME *mic ===***(((  \n ");
 
     let args = get_args();

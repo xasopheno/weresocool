@@ -1,21 +1,35 @@
 use clap::{App, Arg, ArgMatches};
 use colored::*;
 
-pub fn were_so_cool_logo() {
+const VERSION: &str = env!("CARGO_PKG_VERSION");
+
+pub fn clear_screen() {
+    std::process::Command::new("clear").status().unwrap();
+}
+
+pub fn were_so_cool_logo(action: Option<&str>, filename: Option<String>) {
+    clear_screen();
     println!(
-        "{}",
-        "\n  ****** WereSoCool __!Now In Stereo!__ ****** "
-            .magenta()
-            .bold()
+        "{} {}",
+        "\n**** WereSoCool".truecolor(250, 180, 220).bold(),
+        format!("v{} ****", VERSION).truecolor(250, 180, 220).bold()
     );
     println!(
         "{}",
-        "*** Make cool sounds. Impress your friends/pets/plants ***  ".cyan()
+        "--- Make cool sounds. Impress your friends/pets/plants. ---".truecolor(250, 134, 200)
     );
-    println!(
-        "{}",
-        " ~~~~“Catchy tunes for your next seizure.”~~~~".cyan()
-    );
+    // println!(
+    // "{}",
+    // "~~~ Catchy tunes for your next seizure. ~~~"
+    // .truecolor(10, 180, 250)
+    // .italic(),
+    // );
+
+    if let Some(a) = action {
+        if let Some(f) = filename {
+            println!("{}", format!("~> {}: {} <~", a, f).truecolor(10, 180, 250));
+        }
+    }
 }
 
 pub fn banner(name: String, s: String) {

@@ -16,6 +16,7 @@
     [ ] rpm
 
 
+# [x] windows support
 
 # Bugs
     Fix panic that happens when the piece doesn't render the first time on watch.
@@ -48,6 +49,7 @@
     - contributing
     - portuguese documentation
       - proofread
+    - spanish documentation
 
     [x] justfile
 
