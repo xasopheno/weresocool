@@ -13,13 +13,14 @@ pub fn app() -> clap::Command {
         )
         .subcommand(
             Command::new("play")
-                .about("Render a .socool file")
-                .arg(arg!([filename]).required(true)),
-        )
-        .subcommand(
-            Command::new("watch")
-                .about("Watch a .socool file. On file save, the composition will be re-rendered")
-                .arg(arg!([filename]).required(true)),
+                .about("Render a .socool file. Run with --watch to rerender on file save")
+                .arg(arg!([filename]).required(true))
+                .arg(
+                    Arg::new("watch")
+                        .long("watch")
+                        .action(ArgAction::SetTrue)
+                        .help("On file save, the composition will be re-rendered"),
+                ),
         )
         .subcommand(Command::new("demo").about("Hear a cool sound"))
         .subcommand(

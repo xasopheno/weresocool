@@ -38,11 +38,18 @@ fn main() -> Result<(), Error> {
         Some(("new", sub_matches)) => {
             new::new(sub_matches.get_one::<String>("filename").unwrap(), cwd)?
         }
-        Some(("play", sub_matches)) => play::play(
-            sub_matches.get_one::<String>("filename").unwrap(),
-            cwd,
-            Once,
-        )?,
+        Some(("play", sub_matches)) => {
+            let play_type = if sub_matches.get_flag("watch") {
+                Watch
+            } else {
+                Once
+            };
+            play::play(
+                sub_matches.get_one::<String>("filename").unwrap(),
+                cwd,
+                play_type,
+            )?;
+        }
         Some(("watch", sub_matches)) => play::play(
             sub_matches.get_one::<String>("filename").unwrap(),
             cwd,

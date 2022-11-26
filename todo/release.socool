@@ -1,13 +1,6 @@
 # Publishing
     [x] vscode syntax highlighting
-    [x] sublimetext syntax highlighting
-    [/] create github organization for weresocool
-            weresocool
-            weresocool_vscool
-            weresocool_sublimetext
-            weresocool_arch
-            brew_weresocool
-    [/] create personal access token for organization
+    [ ] sublimetext syntax highlighting
 # CI/CD
     [x] cargo 
     [x] arch
@@ -19,7 +12,8 @@
 # [x] windows support
 
 # Bugs
-    Fix panic that happens when the piece doesn't render the first time on watch.
+    [x] Fix panic that happens when the piece doesn't render the first time on watch.
+    [] --volume, --samplerate
     pass in settings/rate on render_manager creation
 
 # Simplify
@@ -38,18 +32,24 @@
 # CLI 
     [x] Add OggVorbis, silly, but almost done. 
     - clean up Vorbis crate
+    [ ] play/watch should be play and --watch
 
 # Documentation
-    x weresocool crate should be weresocool_cli
-    - using the cli
-    - how to build
-    - run locally
-    - concept
-    - run tests
-    - contributing
-    - portuguese documentation
-      - proofread
-    - spanish documentation
+    [x] weresocool crate should be weresocool_cli
+    [x] using the cli
+    [x] how to build
+    [x] run locally
+    [x] import
+    [/] csv
+    [ ] concept
+    [ ] run tests
+    [ ] contributing
+    [ ] portuguese documentation
+      [ ] cli
+      [ ] import
+      [ ] getting_started/comecando
+      [ ] proofread
+    [ ] spanish documentation
 
     [x] justfile
 

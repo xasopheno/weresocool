@@ -53,30 +53,24 @@ You can install from this source code by cloning this repo and then running:
 ### WereSoCool CLI
 
 ```
-Usage: WereSoCool CLI [COMMAND]
+Usage: weresocool [COMMAND]
 
 Commands:
-  help   Print this message or the help of the given subcommand(s)
   new    Create a new .socool file from the template
-    Usage: weresocool new <filename>
-  play   Render a .socool file
-    Usage: weresocool play <filename>
-  watch  Watch a .socool file. On file save, the composition will be re-rendered
-    Usage: weresocool watch <filename>
+  play   Render a .socool file.
+    --watch                    On file save, the composition will be re-rendered
   demo   Hear a cool sound
-    Usage: weresocool demo
   print  Print a .socool composition to a file
-    Usage: weresocool print [OPTIONS] [filename]
-    Options:
-        --output_dir <output_dir>
-        --wav                      print a wav file (default)
-        --mp3                      print an mp3
-        --oggvorbis                print an oggvorbis file
-        --csv                      print a csv file
-        --json                     print a json file
-        --stems                    print stems as a zip file
-        --sound                    print all sound file types
-        --all                      print all file types
+    --output_dir <output_dir>
+    --wav                      print a wav file (default)
+    --mp3                      print an mp3
+    --oggvorbis                print an oggvorbis file
+    --csv                      print a csv file
+    --json                     print a json file
+    --stems                    print stems as a zip file
+    --sound                    print all sound file types
+    --all                      print all file types
+  help   Help of the given subcommand(s)
 ```
 
 ## Development:
