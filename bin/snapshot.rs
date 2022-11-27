@@ -1,19 +1,16 @@
-use weresocool::{
-    testing::{
-        generate_test_table, read_test_table_from_json_file, show_difference,
-        write_test_table_to_json_file,
-    },
-    ui::get_test_args,
+use weresocool::testing::{
+    generate_test_table, read_test_table_from_json_file, show_difference,
+    write_test_table_to_json_file,
 };
 
 fn main() {
     println!("\nHello Danny's WereSoCool Tests");
-
-    let args = get_test_args();
+    let args: Vec<String> = std::env::args().collect();
+    let should_rehash = args.contains(&"--rehash".to_string());
 
     let test_table = generate_test_table();
 
-    if args.is_present("rehash") {
+    if should_rehash {
         write_test_table_to_json_file(&test_table);
         println!("TestsSoRehashed");
     } else {

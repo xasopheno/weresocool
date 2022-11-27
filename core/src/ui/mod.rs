@@ -1,4 +1,3 @@
-use clap::{App, Arg, ArgMatches};
 use colored::*;
 
 const VERSION: &str = env!("CARGO_PKG_VERSION");
@@ -50,53 +49,4 @@ pub fn printed(file_type: String) {
         file_type.blue().bold(),
         "File ****** \n ".magenta().bold()
     );
-}
-
-pub fn get_args() -> ArgMatches<'static> {
-    App::new("WereSoCool")
-        .about("*** Make cool sounds. Impress your friends ***")
-        .author("Danny Meyer <Danny.Meyer@gmail.com>")
-        .arg(
-            Arg::with_name("filename")
-                .help("filename eg: my_song.socool")
-                .required(false),
-        )
-        .arg(
-            Arg::with_name("print")
-                .help("Prints file to .wav")
-                .short("p")
-                .long("print"),
-        )
-        .arg(
-            Arg::with_name("json")
-                .help("Prints file to .json")
-                .short("j")
-                .long("json"),
-        )
-        .arg(
-            Arg::with_name("csv")
-                .help("Prints file to .csv")
-                .short("c")
-                .long("csv"),
-        )
-        .arg(
-            Arg::with_name("doc")
-                .help("Prints some documentation")
-                .short("d")
-                .long("doc"),
-        )
-        .get_matches()
-}
-
-pub fn get_test_args() -> ArgMatches<'static> {
-    App::new("WereSoCoolTest")
-        .about("*** Make cool tests. Impress your friends ***")
-        .author("Danny Meyer <Danny.Meyer@gmail.com>")
-        .arg(
-            Arg::with_name("rehash")
-                .help("Recalculate Hashes")
-                .short("r")
-                .long("rehash"),
-        )
-        .get_matches()
 }

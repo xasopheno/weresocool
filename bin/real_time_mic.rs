@@ -2,7 +2,7 @@ use weresocool_core::{
     generation::parsed_to_render::{RenderReturn, RenderType},
     interpretable::{InputType::Filename, Interpretable},
     portaudio::duplex_setup,
-    ui::{get_args, no_file_name, were_so_cool_logo},
+    ui::were_so_cool_logo,
 };
 use weresocool_error::Error;
 use weresocool_instrument::renderable::nf_to_vec_renderable;
@@ -12,19 +12,12 @@ fn main() -> Result<(), Error> {
     were_so_cool_logo(None, None);
     println!("       )))***=== REAL<GOOD>TIME *mic ===***(((  \n ");
 
-    let args = get_args();
+    let filename = "test.socool";
 
-    let filename = args.value_of("filename");
-    match filename {
-        Some(_filename) => {}
-        _ => no_file_name(),
-    }
-
-    let (nf, basis, mut table) =
-        match Filename(filename.unwrap()).make(RenderType::NfBasisAndTable, None)? {
-            RenderReturn::NfBasisAndTable(nf, basis, table) => (nf, basis, table),
-            _ => panic!("Error. Unable to generate NormalForm"),
-        };
+    let (nf, basis, mut table) = match Filename(filename).make(RenderType::NfBasisAndTable, None)? {
+        RenderReturn::NfBasisAndTable(nf, basis, table) => (nf, basis, table),
+        _ => panic!("Error. Unable to generate NormalForm"),
+    };
     let renderables = nf_to_vec_renderable(&nf, &mut table, &basis)?;
 
     println!("\nGenerating Composition ");
