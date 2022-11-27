@@ -1,5 +1,5 @@
 install:
-	cargo install --path .
+	cargo install --path . --bin weresocool
 
 build:
 	cargo build
@@ -28,9 +28,9 @@ test_generated:
 	cargo test --release _generated
 
 test_snapshot:
-	cargo run --release --bin snapshot
+	cargo run --release --example snapshot
 test_rehash:
-	cargo run --release --bin snapshot -- --rehash
+	cargo run --release --example snapshot -- --rehash
 
 check-licenses: 
   cargo deny check licenses --hide-inclusion-graph
