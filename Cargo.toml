@@ -1,6 +1,6 @@
 [package]
 name = "weresocool"
-version = "1.0.40"
+version = "1.0.41"
 edition = "2021"
 authors = ["Danny <weresocool@xasopheno.com>"]
 description = "***** WereSoCool __!Now In Stereo!__ ****** Make cool sounds. Impress your friends."
@@ -24,28 +24,28 @@ depends = ["lame", "vorbis-tools"]
 provides = ["weresocool"]
 
 [target.'cfg(target_os = "windows")'.dependencies]
-weresocool_core = { path="core", version = "^1.0.40", features = ["windows"] }
-weresocool_error = { path = "error", version = "^1.0.40", features=["windows"] } 
+weresocool_core = { path="core", version = "^1.0.41", features = ["windows"] }
+weresocool_error = { path = "error", version = "^1.0.41", features=["windows"] } 
 [target.'cfg(target_os = "linux")'.dependencies]
-weresocool_core = { path="core", version = "^1.0.40", features = ["windows"] }
-weresocool_error = { path = "error", version = "^1.0.40", features=["windows"] } 
+weresocool_core = { path="core", version = "^1.0.41", features = ["windows"] }
+weresocool_error = { path = "error", version = "^1.0.41", features=["windows"] } 
 [target.'cfg(target_os = "macos")'.dependencies]
-weresocool_core = { path="core", version = "^1.0.40", features = ["app"] }
-weresocool_error = { path = "error", version = "^1.0.40", features=["app"] } 
+weresocool_core = { path="core", version = "^1.0.41", features = ["app"] }
+weresocool_error = { path = "error", version = "^1.0.41", features=["app"] } 
 
 [dependencies]
-weresocool_core = { path="core", version = "^1.0.40", default_features=false }
-weresocool_error = { path = "error", version = "^1.0.40", default_features=false } 
-weresocool_parser = { path = "parser", version = "^1.0.40", default_features=false, optional=true }
-weresocool_ast = { path = "ast", version = "^1.0.40", default_features=false, optional=true }
-weresocool_instrument = { path = "instrument", version = "^1.0.40", default_features=false, optional=true } 
-weresocool_portaudio = { path = "portaudio", version = "^1.0.40", default_features=false, optional=true } 
-scop = { path = "scop", version = "^1.0.40" }
-opmap = { path = "opmap", version = "^1.0.40" }
-weresocool_shared = { path = "shared", version = "^1.0.40" } 
-weresocool_analyze = { path = "analyze", version = "^1.0.40" }
-weresocool_ring_buffer = { path = "ring_buffer", version = "^1.0.40" }
-clap = "4.0.26"
+weresocool_core = { path="core", version = "^1.0.41", default_features=false }
+weresocool_error = { path = "error", version = "^1.0.41", default_features=false } 
+weresocool_parser = { path = "parser", version = "^1.0.41", default_features=false, optional=true }
+weresocool_ast = { path = "ast", version = "^1.0.41", default_features=false, optional=true }
+weresocool_instrument = { path = "instrument", version = "^1.0.41", default_features=false, optional=true } 
+weresocool_portaudio = { path = "portaudio", version = "^1.0.41", default_features=false, optional=true } 
+scop = { path = "scop", version = "^1.0.41" }
+opmap = { path = "opmap", version = "^1.0.41" }
+weresocool_shared = { path = "shared", version = "^1.0.41" } 
+weresocool_analyze = { path = "analyze", version = "^1.0.41" }
+weresocool_ring_buffer = { path = "ring_buffer", version = "^1.0.41" }
+clap = "4.0.27"
 thiserror = "1.0.31"
 notify = "5.0.0-pre.14"
 zip = { version="0.6.2", optional=true }
@@ -132,23 +132,25 @@ members = [
 name = "weresocool"
 path = "src/main.rs"
 
-[[bin]]
-name = "stems"
-path = "bin/stems.rs"
+# [[bin]]
+# name = "stems"
+# path = "bin/stems.rs"
 
-[[bin]]
-name = "real_time"
-path = "bin/real_time.rs"
+# [[bin]]
+# name = "real_time"
+# path = "bin/real_time.rs"
 
-[[bin]]
-name = "mic"
-path = "bin/real_time_mic.rs"
+# [[bin]]
+# name = "mic"
+# path = "bin/real_time_mic.rs"
 
-[[bin]]
-name = "scratch"
-path = "bin/pad.rs"
+# [[bin]]
+# name = "scratch"
+# path = "bin/pad.rs"
 
-[[bin]]
+## This is a hack. I don't want this binary to be built for users,
+## but I need it to run tests.
+[[example]]
 name = "snapshot"
 path = "bin/snapshot.rs"
 

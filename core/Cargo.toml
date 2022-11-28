@@ -1,6 +1,6 @@
 [package]
 name = "weresocool_core"
-version = "1.0.40"
+version = "1.0.41"
 edition = "2021"
 authors = ["Danny <weresocool@xasopheno.com>"]
 description = "***** WereSoCool __!Now In Stereo!__ ****** Make cool sounds. Impress your friends."
@@ -19,23 +19,23 @@ exclude = [
 
 
 [target.'cfg(target_os = "macos")'.dependencies]
-weresocool_lame = { path = "../lame", version = "^1.0.40" } 
+weresocool_lame = { path = "../lame", version = "^1.0.41" } 
 
 [target.'cfg(target_os = "linux")'.dependencies]
-weresocool_lame = { path = "../lame", version = "^1.0.40" } 
+weresocool_lame = { path = "../lame", version = "^1.0.41" } 
 
 [dependencies]
-scop = { path = "../scop", version = "^1.0.40" }
-opmap = { path = "../opmap", version = "^1.0.40" }
-weresocool_ring_buffer = { path = "../ring_buffer", version = "^1.0.40" }
-weresocool_analyze = { path = "../analyze", version = "^1.0.40" }
-weresocool_parser = { path = "../parser", version = "^1.0.40", default_features=false, optional=true }
-weresocool_ast = { path = "../ast", version = "^1.0.40", default_features=false, optional=true }
-weresocool_error = { path = "../error", version = "^1.0.40", default_features=false, optional=true } 
-weresocool_instrument = { path = "../instrument", version = "^1.0.40", default_features=false, optional=true } 
-weresocool_shared = { path = "../shared", version = "^1.0.40" } 
-weresocool_vorbis = { path = "../vorbis", version = "^1.0.40", optional=true, default_features = false } 
-weresocool_portaudio = { path = "../portaudio", version = "^1.0.40", optional=true } 
+scop = { path = "../scop", version = "^1.0.41" }
+opmap = { path = "../opmap", version = "^1.0.41" }
+weresocool_ring_buffer = { path = "../ring_buffer", version = "^1.0.41" }
+weresocool_analyze = { path = "../analyze", version = "^1.0.41" }
+weresocool_parser = { path = "../parser", version = "^1.0.41", default_features=false, optional=true }
+weresocool_ast = { path = "../ast", version = "^1.0.41", default_features=false, optional=true }
+weresocool_error = { path = "../error", version = "^1.0.41", default_features=false, optional=true } 
+weresocool_instrument = { path = "../instrument", version = "^1.0.41", default_features=false, optional=true } 
+weresocool_shared = { path = "../shared", version = "^1.0.41" } 
+weresocool_vorbis = { path = "../vorbis", version = "^1.0.41", optional=true, default_features = false } 
+weresocool_portaudio = { path = "../portaudio", version = "^1.0.41", optional=true } 
 rand = { version="0.7.3", features=["wasm-bindgen"]}
 hound = "3.4.0"
 serde = { version = "1.0.119", features = ["derive"] }
@@ -43,7 +43,6 @@ serde_json = "1.0.64"
 serde_derive = "1.0.126"
 colored = "2.0.0"
 pbr = { version="1.0.4", optional=true }
-clap = "2.33.3"
 num-rational = "0.3.2"
 rayon = "1.5.1"
 indexmap = { version = "1.7.0", features = ["serde-1"] }

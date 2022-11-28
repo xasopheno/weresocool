@@ -1,6 +1,6 @@
 use crate::Error;
 use colored::*;
-use notify::{RecommendedWatcher, RecursiveMode, Watcher};
+use notify::{Config, RecommendedWatcher, RecursiveMode, Watcher};
 use rand::Rng;
 use std::io;
 use std::io::Write;
@@ -30,7 +30,7 @@ pub fn watch(
 
             let (tx, rx) = channel();
 
-            let mut watcher = RecommendedWatcher::new(tx).unwrap();
+            let mut watcher = RecommendedWatcher::new(tx, Config::default()).unwrap();
 
             let path = Path::new(&working_path).join(Path::new(&filename));
 
