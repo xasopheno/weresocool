@@ -45,7 +45,7 @@ opmap = { path = "opmap", version = "^1.0.40" }
 weresocool_shared = { path = "shared", version = "^1.0.40" } 
 weresocool_analyze = { path = "analyze", version = "^1.0.40" }
 weresocool_ring_buffer = { path = "ring_buffer", version = "^1.0.40" }
-clap = "4.0.26"
+clap = "4.0.27"
 thiserror = "1.0.31"
 notify = "5.0.0-pre.14"
 zip = { version="0.6.2", optional=true }
@@ -132,23 +132,25 @@ members = [
 name = "weresocool"
 path = "src/main.rs"
 
-[[bin]]
-name = "stems"
-path = "bin/stems.rs"
+# [[bin]]
+# name = "stems"
+# path = "bin/stems.rs"
 
-[[bin]]
-name = "real_time"
-path = "bin/real_time.rs"
+# [[bin]]
+# name = "real_time"
+# path = "bin/real_time.rs"
 
-[[bin]]
-name = "mic"
-path = "bin/real_time_mic.rs"
+# [[bin]]
+# name = "mic"
+# path = "bin/real_time_mic.rs"
 
-[[bin]]
-name = "scratch"
-path = "bin/pad.rs"
+# [[bin]]
+# name = "scratch"
+# path = "bin/pad.rs"
 
-[[bin]]
+## This is a hack. I don't want this binary to be built for users,
+## but I need it to run tests.
+[[example]]
 name = "snapshot"
 path = "bin/snapshot.rs"
 
