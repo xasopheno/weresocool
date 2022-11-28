@@ -1,16 +1,20 @@
 # **WereSoCool**
 ![Cool Tests](https://github.com/xasopheno/WereSoCool/workflows/Cool%20Tests/badge.svg)
 
-A language for compositing mictoronal music built in Rust. You might find this language useful if you want to make cool sounds and impress your friends/pets/plants. 
+A language for composing mictoronal music built in Rust. You might find this language useful if you want to make cool sounds and impress your friends/pets/plants. 
 
 This language does not require familiarity with either microtonal music or computer programming, but experience with either will certainly help. 
 
-The **WereSoCool CLI** is availble on **macOS**, **Linux** and **Windows**.  You can also explore the language in a Firefox or Chrome browser on a desktop computer in the [WereSoCool Playground](https://www.weresocool.org/playground). Live coding in the browser currently only works on desktop in a Firefox or Chrome browser. On mobile, you can still view the tutorials, but you won't be able to hear anything.
+The **WereSoCool CLI** is availble on **macOS**, **Linux** and **Windows**.  You can also explore the language in a Firefox or Chrome browser on a desktop computer in the [WereSoCool Playground](https://www.weresocool.org/playground). Live coding in the browser currently only works on desktop in a Firefox or Chrome browser. 
 
 ## Documentation:
-If you want to learn how to make cool sounds using WereSoCool, you'll find cool documentation at [weresocool.org](https://www.weresocool.org/).
+If you want to learn how to make cool sounds using WereSoCool, you'll find cool documentation in English, Portuguêse, and Español
+  at [weresocool.org](https://www.weresocool.org/).
+
 
 My recommended approach to learning the language is to do the tutorials in order and write your own composition after completing each one. I'm currently working on additional documentation as well as a record I've made using WereSoCool featuring a great band. Stay tuned. 
+
+On mobile, you can still view the tutorials, but you won't be able to hear anything.
 
 ## Installation:
 
