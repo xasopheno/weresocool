@@ -328,7 +328,7 @@ PaError PaMacCore_SetError(OSStatus error, int line, int isError)
         str[6] = '\0';
     } else {
         // no, format it as an integer
-        sprintf(str, "%d", (int)error);
+        snprintf(str, sizeof(str), "%d", *str);
     }
 
     DBUG(("%s on line %d: err='%s', msg=%s\n", errorType, line, str, errorText));

@@ -12,12 +12,11 @@ pub fn demo() -> Result<(), Error> {
 
 const DEMO: &str = indoc! {"
 { f: 440, l: 1, g: 1/3, p: 0 }
-
 thing1 = {
   Overlay [
       O[
-        (1/1, 2, 1, 4/5),
-        (1/1, 0, 1, -4/5),
+        (1/1, 2, 1, 2/5),
+        (1/1, 0, 1, -2/5),
       ]
       | Seq [
         Fm 1, Fm 0, Fm 0
@@ -33,18 +32,18 @@ thing1 = {
   | Seq [
     Fm 1, Fm 3/2, Fm 5/6, Fm 1/2, 
     Fm 5/4, Fm 3/4, Fm 15/8, Fm 1/2, 
-    Fm 2, Fm 5/8, Fm 2/3, Fm 9/4, 
+    Fm 2, Fm 5/8, Fm 2/3 | Pa 1, Fm 9/4, 
     Fm 5/6, Fm 2/3, Fm 9/16, Fm 1/2,
     Fm 5/2, Fm 11/4, Fm 1/2, Fm 3,
     Fm 25/12, Fm 5/4, Fm 5/3, Fm 25/24,
-    Fm 9/8, Fm 8/4, Fm 5/6, Fm 2/3,
-    Fm 3/4, Fm 4/3, Fm 15/8, Fm 8/3,
+    Fm 9/8, Fm 8/4, Fm 5/6, Fm 2/3 | Pa -1,
+    Fm 3/4 | Pa -1, Fm 4/3, Fm 15/8, Fm 8/3,
     Fm 7/3, Fm 7/8, Fm 3/4, Fm 9/8,
-    Fm 5/8, Fm 11/8, Fm 5/2, Fm 1/2,
-    Fm 5/2, Fm 2/3, Fm 5/2, Fm 8/3,
-    Fm 9/8, Fm 5/4, Fm 1/2, Fm 8/3, 
+    Fm 5/8 | Pa 1, Fm 11/8, Fm 5/2, Fm 1/2 | Pa -1,
+    Fm 5/2 | Pa -1, Fm 2/3, Fm 5/2, Fm 8/3 | Pa 1,
+    Fm 9/8, Fm 5/4, Fm 1/2, Fm 8/3 | Pa -1, 
     Fm 3/2, Fm 1, Fm 5/8, Fm 3, 
-    Fm 10/3, Fm 4/3, Fm 1/2, Fm 16/5 
+    Fm 10/3 | Pa -1, Fm 4/3, Fm 1/2, Fm 16/5 | Pa 1
   ]
   | Lm 1/8
   | Repeat 3
