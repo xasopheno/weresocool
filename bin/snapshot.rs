@@ -5,8 +5,7 @@ use weresocool::testing::{
 
 fn main() {
     println!("\nHello Danny's WereSoCool Tests");
-    let args: Vec<String> = std::env::args().collect();
-    let should_rehash = args.contains(&"--rehash".to_string());
+    let should_rehash = std::env::args().any(|x| x == "--rehash");
 
     let test_table = generate_test_table();
 
