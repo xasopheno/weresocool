@@ -1,6 +1,6 @@
 [package]
 name = "weresocool_vorbis"
-version = "1.0.41"
+version = "1.0.43"
 edition = "2021"
 description = "Vorbis for WereSoCool"
 license = "GPL-3.0" 
@@ -12,7 +12,7 @@ resolver="2"
 hound = "3.4.0"
 itertools = "0.10.3"
 vorbis-encoder = "0.1.4"
-weresocool_shared = { path = "../shared", version = "^1.0.41" }
+weresocool_shared = { path = "../shared", version = "^1.0.43" }
 
 [dev-dependencies]
 hamcrest2 = "0.3.0"

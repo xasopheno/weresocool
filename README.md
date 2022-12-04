@@ -36,13 +36,13 @@ WereSoCool can be installed on macos, linux, and windows via cargo. You'll also 
 
 #### Necessary Dependancies
 Macos:
-brew install lame libvorbis
+`brew install lame libvorbis`
 
 Arch Linux (ALSA):
-sudo pacman -S lame vorbis-tools
+`sudo pacman -S lame vorbis-tools`
 
 Ubuntu (ALSA):
-sudo apt-get lame vorbis-tools
+`sudo apt-get lame vorbis-tools`
 
 ### Windows
 

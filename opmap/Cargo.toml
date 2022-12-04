@@ -1,6 +1,6 @@
 [package]
 name = "opmap"
-version = "1.0.41"
+version = "1.0.43"
 authors = ["Danny Meyer <weresocool@xasopheno.com>"]
 edition = "2021"
 description = "OpMap Datastructure for WereSoCool"

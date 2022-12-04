@@ -1,20 +1,20 @@
 [package]
 name = "weresocool_error"
-version = "1.0.41"
+version = "1.0.43"
 authors = ["Danny Meyer <weresocool@xasopheno.com>"]
 edition = "2021"
 description = "Errors for WereSoCool"
 license = "GPL-3.0"
 
 [target.'cfg(target_os = "macos")'.dependencies]
-weresocool_lame = { path = "../lame", version = "^1.0.41" } 
+weresocool_lame = { path = "../lame", version = "^1.0.43" } 
 
 [target.'cfg(target_os = "linux")'.dependencies]
-weresocool_lame = { path = "../lame", version = "^1.0.41" } 
+weresocool_lame = { path = "../lame", version = "^1.0.43" } 
 
 [dependencies]
-scop = { path = "../scop", version = "^1.0.41" }
-weresocool_portaudio = { path = "../portaudio", version = "^1.0.41", optional=true } 
+scop = { path = "../scop", version = "^1.0.43" }
+weresocool_portaudio = { path = "../portaudio", version = "^1.0.43", optional=true } 
 hound = "3.4.0"
 serde_json = "1.0.64"
 serde = { version = "1.0.119", features = ["derive"] }
