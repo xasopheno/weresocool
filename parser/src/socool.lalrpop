@@ -17,6 +17,7 @@ use weresocool_ast::{
         GenOp,
         Indices, 
         Index,
+        Scale,
 };
 use crate::parser::{Init, handle_fit_length_recursively};
 use crate::indices::{et, random_seed};
@@ -247,8 +248,12 @@ Composeable: Term = {
   <generator: Generator> => Term::Gen(generator),
 }
 
+Scale: Scale = {
+  <axis: Axis> <value: Rational> => Scale { axis, value }
+}
+
 BaseOperation: Term = {
-    "csv" <scale: Parenthesized<Rational>?> <path: Import>  => Term::Op(CSV { path, scale }),
+    "csv" <scales: Parenthesized<Comma<Scale>>> <path: Import>  => Term::Op(CSV { path, scales }),
     //
     r"\\|Lambda" <input_name: Parenthesized<Name>?> "{" <term: Operation> "}" => Term::Op(Lambda { term: Box::new(term),
         input_name, scope: uuid::Uuid::new_v4().to_string()}),

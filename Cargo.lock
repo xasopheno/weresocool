@@ -1276,6 +1276,12 @@ dependencies = [
 ]
 
 [[package]]
+name = "peekread"
+version = "0.1.1"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "978122cdc72f39ed3c6343907453570570699169aace43dd09d46b52cc5f681d"
+
+[[package]]
 name = "petgraph"
 version = "0.6.2"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -2086,11 +2092,13 @@ version = "1.0.43"
 dependencies = [
  "colored",
  "csv",
+ "hamcrest2",
  "indexmap",
  "meval",
  "num-integer",
  "num-rational 0.3.2",
  "num-traits",
+ "peekread",
  "polynomials",
  "pretty_assertions",
  "rand",

@@ -23,6 +23,8 @@ num-integer = "0.1.44"
 polynomials = "0.2.4"
 meval = "0.2.0"
 csv = "1.1.6"
+hamcrest2 = "0.3.0"
+peekread = "0.1.1"
 
 [features]
 default=["app"]

@@ -9,6 +9,7 @@ pub mod operations;
 pub mod term;
 pub use crate::{
     ast::{FunDef, Op, Op::*, OscType, ASR},
+    datagen::Scale,
     generator::{
         coefs::{Coef, Coefs},
         Axis, CoefState, GenOp, Generator,

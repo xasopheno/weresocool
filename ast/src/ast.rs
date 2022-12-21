@@ -1,3 +1,4 @@
+use crate::datagen::Scale;
 use crate::Term;
 use num_rational::Rational64;
 
@@ -16,7 +17,7 @@ pub enum Op {
     //
     CSV {
         path: String,
-        scale: Option<Rational64>,
+        scales: Vec<Scale>,
     },
     //
     FunctionCall {
