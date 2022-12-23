@@ -65,6 +65,7 @@ pub fn write_composition_to_mp3(mut composition: StereoWaveform) -> Result<Vec<u
     let mp3buf = &mut vec![0_u8; length.ceil() as usize];
 
     let mut l = Lame::new().ok_or(weresocool_lame::Error::InternalError)?;
+
     l.init_params()?;
     l.encode_f32(l_buffer.as_slice(), r_buffer.as_slice(), mp3buf)?;
 

@@ -41,7 +41,7 @@ impl Scale {
     }
 }
 
-pub fn csv_to_normalform(filename: &str, scales: Vec<Scale>) -> Result<NormalForm, Error> {
+pub fn csv_to_normalform(filename: &str, scales: Vec<Scale>) -> Result<Term, Error> {
     let data = get_data(filename.into())?;
     let path = Path::new(&filename);
     Ok(csv_data_to_normal_form(
@@ -55,12 +55,30 @@ pub fn csv_to_normalform(filename: &str, scales: Vec<Scale>) -> Result<NormalFor
     ))
 }
 
-fn csv_data_to_normal_form(data: &Vec<Vec<f32>>, scales: Vec<Scale>, filename: &str) -> NormalForm {
-    let mut length_ratio = Rational64::new(0, 1);
+// fn vec_eeg_data_to_normal_form(
+// data: &Vec<Vec<f32>>,
+// scales: Vec<Scale>,
+// filename: &str,
+// ) -> NormalForm {
+// let nf = csv_data_to_normal_form(data, scales, filename);
+
+// let overlay = Op::Overlay {
+// operations: vec![Term::Nf(nf.to_owned())],
+// };
+
+// let mut nf = NormalForm::init();
+// overlay
+// .apply_to_normal_form(&mut nf, &mut Defs::new())
+// .expect("unable to normalize");
+// nf
+// }
+
+fn csv_data_to_normal_form(data: &Vec<Vec<f32>>, scales: Vec<Scale>, filename: &str) -> Term {
+    // let mut length_ratio = Rational64::new(0, 1);
 
     // let mut buffer = RingBuffer::<f32>::new(50);
 
-    let point_ops: Vec<PointOp> = data
+    let point_ops: Vec<Term> = data
         .iter()
         .map(|value| {
             let op = point_to_point_op(
@@ -71,16 +89,16 @@ fn csv_data_to_normal_form(data: &Vec<Vec<f32>>, scales: Vec<Scale>, filename: &
                 // },
                 &scales, filename,
             );
-            length_ratio += op.l;
+            // length_ratio += op.l;
             op
         })
         .collect();
-    dbg!(&point_ops);
+    // dbg!(&point_ops);
 
-    NormalForm {
-        length_ratio,
-        operations: vec![point_ops],
-    }
+    Term::Op(Op::Sequence {
+        // length_ratio,
+        operations: point_ops,
+    })
 }
 
 pub fn f32_to_rational(mut float: f32) -> Rational64 {
@@ -101,7 +119,7 @@ fn point_to_point_op(
     // buffers: Buffers,
     scales: &Vec<Scale>,
     filename: &str,
-) -> PointOp {
+) -> Term {
     let mut nameset = NameSet::new();
     nameset.insert(filename.to_string());
     let result: Vec<Rational64> = scales
@@ -134,23 +152,29 @@ fn point_to_point_op(
     // }
 
     // let fa = f32_to_rational(fa);
-    PointOp {
-        // fm,
-        fm: Rational64::new(1, 1),
-        fa,
-        l: lm,
-        // l: Rational64::new(2, 100),
-        g: Rational64::new(1, 1),
-        pm: Rational64::new(1, 1),
-        pa: Rational64::new(0, 1),
-        asr: ASR::Long,
-        portamento: Rational64::new(1, 1),
-        attack: Rational64::new(1, 1),
-        decay: Rational64::new(1, 1),
-        reverb: None,
-        osc_type: OscType::None,
-        names: nameset,
-    }
+    Term::Op(Op::Compose {
+        operations: vec![
+            Term::Op(Op::TransposeA { a: fa }),
+            Term::Op(Op::Length { m: lm }),
+        ],
+    })
+    // PointOp {
+    // // fm,
+    // fm: Rational64::new(1, 1),
+    // fa,
+    // l: lm,
+    // // l: Rational64::new(2, 100),
+    // g: Rational64::new(1, 1),
+    // pm: Rational64::new(1, 1),
+    // pa: Rational64::new(0, 1),
+    // asr: ASR::Long,
+    // portamento: Rational64::new(1, 1),
+    // attack: Rational64::new(1, 1),
+    // decay: Rational64::new(1, 1),
+    // reverb: None,
+    // osc_type: OscType::None,
+    // names: nameset,
+    // }
 }
 
 fn get_data(filename: String) -> Result<Vec<Vec<f32>>, Error> {
