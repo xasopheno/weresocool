@@ -55,27 +55,6 @@ pub fn csv_to_normalform(filename: &str, scales: Vec<Scale>) -> Result<NormalFor
     ))
 }
 
-// fn vec_csv_data_to_normal_form(
-// data: Vec<Vec<f32>>,
-// scales: Vec<Scale>,
-// filename: &str,
-// ) -> NormalForm {
-// let mut nfs: Vec<NormalForm> = data
-// .iter()
-// .map(|stream| csv_data_to_normal_form(stream, scales, filename))
-// .collect();
-
-// let overlay = Op::Overlay {
-// operations: nfs.iter_mut().map(|nf| Term::Nf(nf.to_owned())).collect(),
-// };
-
-// let mut nf = NormalForm::init();
-// overlay
-// .apply_to_normal_form(&mut nf, &mut Defs::new())
-// .expect("unable to normalize");
-// nf
-// }
-
 fn csv_data_to_normal_form(data: &Vec<Vec<f32>>, scales: Vec<Scale>, filename: &str) -> NormalForm {
     let mut length_ratio = Rational64::new(0, 1);
 
@@ -96,6 +75,7 @@ fn csv_data_to_normal_form(data: &Vec<Vec<f32>>, scales: Vec<Scale>, filename: &
             op
         })
         .collect();
+    dbg!(&point_ops);
 
     NormalForm {
         length_ratio,
@@ -184,8 +164,8 @@ fn get_data(filename: String) -> Result<Vec<Vec<f32>>, Error> {
         )
     });
     let mut file = SeekPeekReader::new(file);
-    let first_line = file.peek();
-    dbg!(first_line);
+    // let first_line = file.peek();
+    // dbg!(first_line);
 
     let mut rdr = csv::ReaderBuilder::new()
         .has_headers(false)
