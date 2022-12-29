@@ -1,3 +1,26 @@
+use once_cell::sync::OnceCell;
+
+static SETTINGS: OnceCell<Settings> = OnceCell::new();
+
+impl Settings {
+    pub fn global() -> &'static Settings {
+        SETTINGS.get().expect("logger is not initialized")
+    }
+
+    pub fn set() -> Result<(), std::io::Error> {
+        // fn from_cli(args: env::Args) -> Result<Logger, std::io::Error> {
+        // ...
+        // }
+        SETTINGS
+            .set(default_settings())
+            .expect("unable to initialize settings");
+        Ok(())
+    }
+    // fn from_cli(args: env::Args) -> Result<Logger, std::io::Error> {
+    // ...
+    // }
+}
+
 pub const fn get_settings() -> Settings {
     if cfg!(test) {
         get_test_settings()
@@ -30,6 +53,7 @@ pub const fn default_settings() -> Settings {
         sample_rate: 48_000.0,
         yin_buffer_size: 2048,
         buffer_size: 1024 * 8,
+        // buffer_size: 512,
         probability_threshold: 0.3,
         gain_threshold_min: 0.0,
         channels: 2,
