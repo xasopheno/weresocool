@@ -8,9 +8,7 @@ use weresocool_error::Error;
 use weresocool_instrument::{Normalize, StereoWaveform};
 #[cfg(not(any(target_os = "windows", feature = "wasm")))]
 use weresocool_lame::Lame;
-use weresocool_shared::{get_settings, Settings};
-
-const SETTINGS: Settings = get_settings();
+use weresocool_shared::Settings;
 
 pub fn write_output_buffer(out_buffer: &mut [f32], stereo_waveform: StereoWaveform) {
     let mut l_idx = 0;
@@ -83,8 +81,8 @@ pub fn write_composition_to_wav(mut composition: StereoWaveform) -> Result<Vec<u
     composition.normalize();
 
     let spec = hound::WavSpec {
-        channels: SETTINGS.channels as u16,
-        sample_rate: SETTINGS.sample_rate as u32,
+        channels: Settings::global().channels as u16,
+        sample_rate: Settings::global().sample_rate as u32,
         bits_per_sample: 32,
         sample_format: hound::SampleFormat::Float,
     };

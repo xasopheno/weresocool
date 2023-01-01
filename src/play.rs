@@ -40,6 +40,7 @@ pub fn play_once(render_voices: Vec<RenderVoice>, filename: String) -> Result<()
         None,
         Some(tx),
         true,
+        None,
     )));
     let mut stream = real_time_render_manager(Arc::clone(&render_manager))?;
 
@@ -59,7 +60,13 @@ pub fn play_once(render_voices: Vec<RenderVoice>, filename: String) -> Result<()
 }
 
 fn play_watch(filename: String, working_path: PathBuf) -> Result<(), Error> {
-    let render_manager = Arc::new(Mutex::new(RenderManager::init(vec![], None, None, false)));
+    let render_manager = Arc::new(Mutex::new(RenderManager::init(
+        vec![],
+        None,
+        None,
+        false,
+        None,
+    )));
     watch(filename, working_path, render_manager.clone())?;
     let mut stream = real_time_render_manager(Arc::clone(&render_manager))?;
     stream.start()?;

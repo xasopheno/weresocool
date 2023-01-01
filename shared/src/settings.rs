@@ -1,31 +1,40 @@
 use once_cell::sync::OnceCell;
 
-static SETTINGS: OnceCell<Settings> = OnceCell::new();
+static SETTINGS: OnceCell<Settings> = if cfg!(test) {
+    OnceCell::with_value(get_test_settings())
+} else {
+    // OnceCell::with_value(default_settings())
+    OnceCell::new()
+};
 
 impl Settings {
     pub fn global() -> &'static Settings {
-        SETTINGS.get().expect("logger is not initialized")
+        SETTINGS.get().expect("Oh no! Settings are not initialized")
     }
 
-    pub fn set() -> Result<(), std::io::Error> {
-        // fn from_cli(args: env::Args) -> Result<Logger, std::io::Error> {
-        // ...
-        // }
+    pub fn init(sample_rate: f64, buffer_size: usize) -> Result<(), std::io::Error> {
         SETTINGS
-            .set(default_settings())
-            .expect("unable to initialize settings");
+            .set(Settings {
+                sample_rate,
+                buffer_size,
+                ..get_test_settings()
+            })
+            .expect("Settings already initialized");
         Ok(())
     }
-    // fn from_cli(args: env::Args) -> Result<Logger, std::io::Error> {
-    // ...
-    // }
-}
 
-pub const fn get_settings() -> Settings {
-    if cfg!(test) {
-        get_test_settings()
-    } else {
-        default_settings()
+    pub fn init_default() -> Result<(), std::io::Error> {
+        SETTINGS
+            .set(default_settings())
+            .expect("Settings already initialized");
+        Ok(())
+    }
+
+    pub fn init_test() -> Result<(), std::io::Error> {
+        SETTINGS
+            .set(get_test_settings())
+            .expect("Settings already initialized");
+        Ok(())
     }
 }
 

@@ -2,9 +2,7 @@ use crate::renderable::{Offset, RenderOp, Renderable};
 use crate::{Oscillator, StereoWaveform};
 #[cfg(feature = "app")]
 use rayon::prelude::*;
-use weresocool_shared::{get_settings, Settings};
-
-const SETTINGS: Settings = get_settings();
+use weresocool_shared::Settings;
 
 #[derive(Debug, Clone, PartialEq)]
 pub struct RenderVoice {
@@ -19,7 +17,7 @@ impl RenderVoice {
             sample_index: 0,
             op_index: 0,
             ops: ops.to_vec(),
-            oscillator: Oscillator::init(&SETTINGS),
+            oscillator: Oscillator::init(),
         }
     }
 
@@ -40,7 +38,7 @@ impl RenderVoice {
             None => vec![],
         };
 
-        if SETTINGS.loop_play && self.op_index >= self.ops.len() {
+        if Settings::global().loop_play && self.op_index >= self.ops.len() {
             self.op_index = 0;
         }
 

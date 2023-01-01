@@ -8,9 +8,7 @@ use weresocool_instrument::renderable::{
 use weresocool_instrument::StereoWaveform;
 use weresocool_portaudio as pa;
 use weresocool_ring_buffer::RingBuffer;
-use weresocool_shared::{get_settings, Settings};
-
-const SETTINGS: Settings = get_settings();
+use weresocool_shared::Settings;
 
 fn process_detection_result(result: &mut DetectionResult) -> (f64, f64) {
     if result.gain < 0.005 || result.frequency > 1_000.0 {
@@ -30,13 +28,14 @@ fn sing_along_callback(
 ) {
     input_buffer.push_vec(args.in_buffer.to_vec());
 
-    let mut detection_result: DetectionResult = input_buffer
-        .to_vec()
-        .analyze(SETTINGS.sample_rate as f32, SETTINGS.probability_threshold);
+    let mut detection_result: DetectionResult = input_buffer.to_vec().analyze(
+        Settings::global().sample_rate as f32,
+        Settings::global().probability_threshold,
+    );
 
     let (freq, gain) = process_detection_result(&mut detection_result);
 
-    let offset = if SETTINGS.mic {
+    let offset = if Settings::global().mic {
         Some(Offset {
             freq: freq / basis_f,
             gain,
@@ -47,7 +46,7 @@ fn sing_along_callback(
 
     let result: Vec<StereoWaveform> = voices
         .par_iter_mut()
-        .filter_map(|voice| voice.render_batch(SETTINGS.buffer_size, offset.as_ref()))
+        .filter_map(|voice| voice.render_batch(Settings::global().buffer_size, offset.as_ref()))
         .collect();
     let stereo_waveform = sum_all_waveforms(result);
     write_output_buffer(args.out_buffer, stereo_waveform);
@@ -61,7 +60,8 @@ pub fn duplex_setup(
     let duplex_stream_settings = get_duplex_settings(&pa)?;
     let mut voices = renderables_to_render_voices(renderables);
 
-    let mut input_buffer: RingBuffer<f32> = RingBuffer::<f32>::new(SETTINGS.yin_buffer_size);
+    let mut input_buffer: RingBuffer<f32> =
+        RingBuffer::<f32>::new(Settings::global().yin_buffer_size);
 
     let duplex_stream = pa.open_non_blocking_stream(duplex_stream_settings, move |args| {
         sing_along_callback(basis_f, args, &mut input_buffer, &mut voices);
@@ -79,8 +79,8 @@ fn get_duplex_settings(pa: &pa::PortAudio) -> Result<pa::stream::DuplexSettings<
     let latency = input_info.default_low_input_latency;
     let input_params = pa::StreamParameters::<f32>::new(
         def_input,
-        SETTINGS.channels,
-        SETTINGS.interleaved,
+        Settings::global().channels,
+        Settings::global().interleaved,
         latency,
     );
 
@@ -89,14 +89,18 @@ fn get_duplex_settings(pa: &pa::PortAudio) -> Result<pa::stream::DuplexSettings<
     //    println!("Default output device info: {:#?}", &output_info);
 
     let latency = output_info.default_low_output_latency;
-    let output_params =
-        pa::StreamParameters::new(def_output, SETTINGS.channels, SETTINGS.interleaved, latency);
+    let output_params = pa::StreamParameters::new(
+        def_output,
+        Settings::global().channels,
+        Settings::global().interleaved,
+        latency,
+    );
 
     let duplex_settings = pa::DuplexStreamSettings::new(
         input_params,
         output_params,
-        SETTINGS.sample_rate as f64,
-        SETTINGS.buffer_size as u32,
+        Settings::global().sample_rate as f64,
+        Settings::global().buffer_size as u32,
     );
 
     Ok(duplex_settings)

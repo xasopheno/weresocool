@@ -2,8 +2,10 @@ use weresocool::testing::{
     generate_test_table, read_test_table_from_json_file, show_difference,
     write_test_table_to_json_file,
 };
+use weresocool_shared::Settings;
 
 fn main() {
+    Settings::init_test().unwrap();
     println!("\nHello Danny's WereSoCool Tests");
     let should_rehash = std::env::args().any(|x| x == "--rehash");
 

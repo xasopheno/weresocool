@@ -2,12 +2,10 @@ use crate::voice::{SampleInfo, Voice};
 use num_rational::Rational64;
 use rand::{thread_rng, Rng};
 use std::f64::consts::PI;
-use weresocool_shared::{get_settings, r_to_f64, Settings};
-
-const SETTINGS: Settings = get_settings();
+use weresocool_shared::{r_to_f64, Settings};
 
 const TAU: f64 = PI * 2.0;
-const FACTOR: f64 = TAU / SETTINGS.sample_rate;
+// const FACTOR: f64 = TAU / Settings::global().sample_rate;
 
 fn random_offset() -> f64 {
     thread_rng().gen_range(-0.5, 0.5)
@@ -61,7 +59,8 @@ impl Voice {
         if info.gain == 0.0 {
             0.0
         } else {
-            (FACTOR.mul_add(info.frequency, self.phase) + rand) % TAU
+            ((TAU / Settings::global().sample_rate).mul_add(info.frequency, self.phase) + rand)
+                % TAU
         }
     }
 }

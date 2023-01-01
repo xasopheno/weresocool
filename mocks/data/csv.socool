@@ -2,12 +2,11 @@
 
 
 main = {
-    csv(fa: 2.0e14, lm: 1.0) ./mocks/data/data.csv
+    csv(f: 2.0, l: 1.0) ./mocks/data/data.csv
 }
 
 expect = {
     Seq [
-     Fa 1/1, Fa 3/2, Fa 2/1
-    ] | Lm 1/50
-    | #data.csv
+     Fa 2/1, Fa 4/1, Fa 6/1 
+    ]
 }

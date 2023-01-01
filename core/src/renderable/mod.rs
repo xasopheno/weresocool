@@ -15,6 +15,7 @@ mod tests {
         Basis, StereoWaveform,
     };
     use weresocool_shared::helpers::cmp_f64;
+    use weresocool_shared::Settings;
 
     #[test]
     fn test_calculate_fgpl() {
@@ -191,6 +192,7 @@ mod tests {
 
     #[test]
     fn test_small_and_large_render_batch_same_result() {
+        Settings::init_test().unwrap();
         let filename =
             "../src/testing/snapshot_tests/render_op_get_batch_simple.socool".to_string();
         let (nf, basis, mut table) = match Filename(&filename)
