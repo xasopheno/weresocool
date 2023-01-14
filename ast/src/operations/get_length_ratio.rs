@@ -29,7 +29,14 @@ impl GetLengthRatio<Term> for Op {
             | Op::Tag(_)
             | Op::Gain { .. } => Ok(Ratio::from_integer(1)),
 
-            Op::CSV { .. } => {
+            Op::CSV1d { .. } => {
+                let mut nf = NormalForm::init();
+                self.apply_to_normal_form(&mut nf, defs)?;
+
+                nf.get_length_ratio(normal_form, defs)
+            }
+
+            Op::CSV2d { .. } => {
                 let mut nf = NormalForm::init();
                 self.apply_to_normal_form(&mut nf, defs)?;
 

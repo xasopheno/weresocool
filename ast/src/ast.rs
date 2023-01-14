@@ -15,7 +15,11 @@ pub enum Op {
     Id(String),
     Tag(String),
     //
-    CSV {
+    CSV1d {
+        path: String,
+        scales: Vec<Scale>,
+    },
+    CSV2d {
         path: String,
         scales: Vec<Scale>,
     },

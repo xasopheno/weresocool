@@ -253,7 +253,8 @@ Scale: Scale = {
 }
 
 BaseOperation: Term = {
-    "csv" <scales: Parenthesized<Comma<Scale>>> <path: Import>  => Term::Op(CSV { path, scales }),
+    "Csv1d" <scales: Parenthesized<Comma<Scale>>> <path: Import>  => Term::Op(CSV1d { path, scales }),
+    "Csv2d" <scales: Parenthesized<Comma<Scale>>> <path: Import>  => Term::Op(CSV2d { path, scales }),
     //
     r"\\|Lambda" <input_name: Parenthesized<Name>?> "{" <term: Operation> "}" => Term::Op(Lambda { term: Box::new(term),
         input_name, scope: uuid::Uuid::new_v4().to_string()}),

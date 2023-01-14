@@ -22,6 +22,11 @@ pub fn app() -> clap::Command {
                         .help("On file save, the composition will be re-rendered"),
                 ),
         )
+        .subcommand(
+            Command::new("watch")
+                .about("Same as play --watch")
+                .arg(arg!([filename]).required(true)),
+        )
         .subcommand(Command::new("demo").about("Hear a cool sound"))
         .subcommand(
             Command::new("print")

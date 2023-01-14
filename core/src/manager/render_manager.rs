@@ -43,7 +43,6 @@ pub struct RenderManager {
     kill_channel: KillChannel,
     once: bool,
     paused: bool,
-    initialized: bool,
 }
 
 pub fn render_op_to_normalized_op4d(render_op: &RenderOp, normalizer: &Normalizer) -> Option<Op4D> {
@@ -98,7 +97,6 @@ impl RenderManager {
             kill_channel,
             once,
             paused: false,
-            initialized: false,
         }
     }
 
@@ -121,7 +119,6 @@ impl RenderManager {
             kill_channel: None,
             once: false,
             paused: false,
-            initialized: false,
         }
     }
 

@@ -7,7 +7,7 @@ mod test_csv_gen {
 
     #[test]
     fn test_get_data_2d() {
-        let result = get_data("./src/datagen/2d_test_data.csv".to_string()).unwrap();
+        let result = get_data2d("./src/datagen/2d_test_data.csv".to_string()).unwrap();
 
         let expected = vec![vec![2.5, 1.0], vec![1.0, 2.0], vec![1.5, 2.0]];
 
