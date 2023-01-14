@@ -22,26 +22,24 @@ pub fn play(filename: &String, cwd: PathBuf, play: Play) -> Result<(), Error> {
 
 pub fn play_file(filename: String, working_path: PathBuf, play: Play) -> Result<(), Error> {
     match play {
-        Play::Once => {
-            let render_voices = prepare_render_outside(Filename(&filename), Some(working_path));
-
-            play_once(render_voices?, filename)
-        }
+        Play::Once => play_once(filename, working_path),
         Play::Watch => play_watch(filename, working_path),
     }
 }
 
-pub fn play_once(render_voices: Vec<RenderVoice>, filename: String) -> Result<(), Error> {
-    were_so_cool_logo(Some("Playing"), Some(filename));
+pub fn play_once(filename: String, working_path: PathBuf) -> Result<(), Error> {
+    were_so_cool_logo(Some("Playing"), Some(filename.clone()));
 
     let (tx, rx) = std::sync::mpsc::channel::<bool>();
-    let render_manager = Arc::new(Mutex::new(RenderManager::init(
-        render_voices,
-        None,
-        Some(tx),
-        true,
-        None,
-    )));
+    let render_manager = Arc::new(Mutex::new(RenderManager::init(None, Some(tx), true, None)));
+
+    let render_voices = prepare_render_outside(Filename(&filename), Some(working_path))?;
+
+    render_manager
+        .lock()
+        .unwrap()
+        .push_render(render_voices, true);
+
     let mut stream = real_time_render_manager(Arc::clone(&render_manager))?;
 
     stream.start()?;
@@ -60,13 +58,12 @@ pub fn play_once(render_voices: Vec<RenderVoice>, filename: String) -> Result<()
 }
 
 fn play_watch(filename: String, working_path: PathBuf) -> Result<(), Error> {
-    let render_manager = Arc::new(Mutex::new(RenderManager::init(
-        vec![],
-        None,
-        None,
-        false,
-        None,
-    )));
+    let render_manager = Arc::new(Mutex::new(RenderManager::init(None, None, false, None)));
+    let render_voices = prepare_render_outside(Filename(&filename), Some(working_path.clone()))?;
+    render_manager
+        .lock()
+        .unwrap()
+        .push_render(render_voices, false);
     watch(filename, working_path, render_manager.clone())?;
     let mut stream = real_time_render_manager(Arc::clone(&render_manager))?;
     stream.start()?;

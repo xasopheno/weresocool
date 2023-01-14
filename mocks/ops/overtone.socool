@@ -1,0 +1,15 @@
+{ f: 220, l: 1, g: 1, p: 0 } 
+
+main = {
+  Overlay [
+    {2, 2, 1/2, 1},
+    {1, -1, 2/3, -1},
+  ]
+}
+
+expect = {
+    Overlay [
+        Fm 2 | Fa 2 | Gm 1/2 | Pa 1,
+        Fm 1 | Fa -1 | Gm 2/3 | Pa -1,
+    ]
+}

@@ -73,7 +73,7 @@ pub struct RenderManagerSettings {
 
 impl RenderManager {
     pub fn init(
-        render_voices: Vec<RenderVoice>,
+        // render_voices: Vec<RenderVoice>,
         visualization_channel: VisualizationChannel,
         kill_channel: KillChannel,
         once: bool,
@@ -89,7 +89,8 @@ impl RenderManager {
                 channel: visualization_channel,
                 normalizer: Normalizer::default(),
             },
-            renders: [Some(render_voices), None],
+            // renders: [Some(render_voices), None],
+            renders: [None, None],
             past_volume: 0.8,
             current_volume: 0.8,
             render_idx: 0,
@@ -272,7 +273,8 @@ impl RenderManager {
         self.next_render().is_some()
     }
 
-    pub fn push_render(&mut self, render: Vec<RenderVoice>) {
+    pub fn push_render(&mut self, render: Vec<RenderVoice>, once: bool) {
+        self.once = once;
         *self.next_render() = Some(render);
     }
 }

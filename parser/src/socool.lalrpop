@@ -344,6 +344,7 @@ BaseOperation: Term = {
             Term::Op(Length { m: length }),
         ]})
     },
+    BracedOvertone
 };
 
 
@@ -354,6 +355,22 @@ Overtone: Term = {
         <g:Rational> ","
         <p:Rational>
     ")"
+    => Term::Op(Compose { operations: vec! [
+            Term::Op(TransposeM { m: fm }),
+            Term::Op(TransposeA { a: fa }),
+            Term::Op(Gain { m: g }),
+            Term::Op(PanA { a: p }),
+        ]
+    })
+}
+
+BracedOvertone: Term = {
+    "{"
+        <fm:Rational> ","
+        <fa:Rational> ","
+        <g:Rational> ","
+        <p:Rational>
+    "}"
     => Term::Op(Compose { operations: vec! [
             Term::Op(TransposeM { m: fm }),
             Term::Op(TransposeA { a: fa }),
