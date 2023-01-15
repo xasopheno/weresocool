@@ -17,7 +17,7 @@ impl Settings {
             .set(Settings {
                 sample_rate,
                 buffer_size,
-                ..get_test_settings()
+                ..default_settings()
             })
             .expect("Settings already initialized");
         Ok(())

@@ -15,7 +15,7 @@ pub mod tests {
         fn test_voice_init() {
             let index = 1;
             let settings = get_test_settings();
-            let voice = Voice::init(index, settings.clone());
+            let voice = Voice::init(index);
 
             let result = Voice {
                 index,
@@ -57,7 +57,7 @@ pub mod tests {
         #[test]
         fn test_deltas() {
             let index = 1;
-            let mut voice = Voice::init(index, get_test_settings());
+            let mut voice = Voice::init(index);
             let op = RenderOp::init_fglp(200.0, (0.5, 0.5), 1.0, 0.0, &get_test_settings());
 
             voice.update(&op, &Offset::identity());
@@ -72,7 +72,7 @@ pub mod tests {
         #[test]
         fn test_generate_waveform() {
             let index = 1;
-            let mut voice = Voice::init(index, get_test_settings());
+            let mut voice = Voice::init(index);
             let mut op = RenderOp::init_fglp(100.0, (0.5, 0.5), 1.0, 0.0, &get_test_settings());
             op.samples = 3;
             voice.update(&op, &Offset::identity());
@@ -85,7 +85,7 @@ pub mod tests {
 
         #[test]
         fn test_sound_silence() {
-            let mut voice = Voice::init(1, get_test_settings());
+            let mut voice = Voice::init(1);
             let op1 = RenderOp::init_fglp(100.0, (0.5, 0.5), 1.0, 0.0, &get_test_settings());
             let op2 = RenderOp::init_fglp(100.0, (0.5, 0.5), 1.0, 0.0, &get_test_settings());
             voice.update(&op1, &Offset::identity());
@@ -105,9 +105,8 @@ pub mod tests {
 
         #[test]
         fn oscillator_init_test() {
-            let osc = Oscillator::init(&get_test_settings());
+            let osc = Oscillator::init();
             let expected = Oscillator {
-                settings: get_test_settings(),
                 voices: (
                     Voice {
                         index: 0,
@@ -182,7 +181,7 @@ pub mod tests {
 
         #[test]
         fn oscillator_update_test() {
-            let mut osc = Oscillator::init(&get_test_settings());
+            let mut osc = Oscillator::init();
 
             let render_op =
                 RenderOp::init_fglp(100.0, (0.75, 0.25), 1.0, 0.0, &get_test_settings());
@@ -206,7 +205,7 @@ pub mod tests {
         #[ignore]
         #[test]
         fn oscillator_generate_sine_test() {
-            let mut osc = Oscillator::init(&get_test_settings());
+            let mut osc = Oscillator::init();
 
             let mut render_op =
                 RenderOp::init_fglp(100.0, (0.75, 0.25), 1.0, 0.0, &get_test_settings());
@@ -224,12 +223,11 @@ pub mod tests {
             assert_eq!(osc.generate(&render_op, &Offset::identity()), expected);
         }
 
-        // TODO: Pass config around
         #[ignore]
         #[test]
         fn oscillator_generate_sine_power_test() {
             let settings = get_test_settings();
-            let mut osc = Oscillator::init(&settings);
+            let mut osc = Oscillator::init();
 
             let mut render_op = RenderOp::init_fglp(100.0, (0.75, 0.25), 1.0, 0.0, &settings);
 
@@ -262,7 +260,6 @@ pub mod tests {
         use super::*;
         #[test]
         fn test_loudness_normalization() {
-            Settings::init_test().unwrap();
             let expected = loudness_normalization(0.0);
             let result = 0.0;
             assert!(cmp_f64(expected, result));

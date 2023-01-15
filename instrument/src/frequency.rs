@@ -36,7 +36,7 @@ mod tests {
 
     #[test]
     fn test_calculate_portamento_delta() {
-        let v = Voice::init(0, get_test_settings());
+        let v = Voice::init(0);
         let result = v.calculate_portamento_delta(10, 0.0, 100.0);
         assert!(cmp_f64(result, 10.0));
         let result = v.calculate_portamento_delta(10, 100.0, 0.0);
@@ -47,7 +47,7 @@ mod tests {
     #[test]
     fn test_calculate_frequency() {
         for i in 0..10 {
-            let v = Voice::init(0, get_test_settings());
+            let v = Voice::init(0);
             let result = v.calculate_frequency(i, 4, 25.0, 0.0, 100.0);
             let expected = std::cmp::min(100, result as usize);
             assert_eq!(result as usize, expected);

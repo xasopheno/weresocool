@@ -23,11 +23,6 @@ impl RenderVoice {
 
     /// Recursive function to prepare a batch of RenderOps for rendering
     /// Initially pass in None as result
-    /// ```
-    /// # use weresocool_instrument::renderable::{RenderOp, RenderVoice};
-    /// let mut voice = RenderVoice::init(&vec![RenderOp::init_silent_with_length(1.0)]);
-    /// let batch = voice.get_batch(1024, None);
-    /// ```
     pub fn get_batch(
         &mut self,
         samples_left_in_batch: usize,

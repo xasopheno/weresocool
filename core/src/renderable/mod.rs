@@ -91,11 +91,11 @@ mod tests {
                 l: 1.0,
                 t: 0.0,
                 reverb: None,
-                attack: 48_000.0,
-                decay: 48_000.0,
+                attack: 44_100.0,
+                decay: 44_100.0,
                 asr: ASR::Long,
-                samples: 48_000,
-                total_samples: 48_000,
+                samples: 44_100,
+                total_samples: 44_100,
                 index: 0,
                 voice: 0,
                 event: 0,
@@ -112,11 +112,11 @@ mod tests {
                 g: (0.7, 0.3),
                 t: 1.0,
                 reverb: None,
-                attack: 48_000.0,
-                decay: 48_000.0,
+                attack: 44_100.0,
+                decay: 44_100.0,
                 asr: ASR::Long,
-                samples: 48_000,
-                total_samples: 48_000,
+                samples: 44_100,
+                total_samples: 44_100,
                 index: 0,
                 voice: 0,
                 event: 1,
@@ -133,12 +133,12 @@ mod tests {
                 g: (0.0, 0.0),
                 t: 0.0,
                 reverb: None,
-                attack: 48_000.0,
-                decay: 48_000.0,
+                attack: 44_100.0,
+                decay: 44_100.0,
                 asr: ASR::Long,
-                samples: 48_000,
+                samples: 44_100,
                 index: 0,
-                total_samples: 48_000,
+                total_samples: 44_100,
                 voice: 0,
                 event: 0,
                 portamento: 1024,
@@ -167,14 +167,14 @@ mod tests {
         let renderables = nf_to_vec_renderable(&nf, &mut table, &basis).unwrap();
         let voices = renderables_to_render_voices(renderables);
         let mut voice = voices[0].clone();
-        let batch = voice.get_batch(47_900, None).unwrap();
+        let batch = voice.get_batch(44_000, None).unwrap();
         assert_eq!(batch.len(), 1);
         //Use the rest of the first op and start the second op;
         let batch = voice.get_batch(200, None).unwrap();
         assert_eq!(batch.len(), 2);
 
         assert_eq!(batch[0].samples, 100);
-        assert_eq!(batch[0].index, 47_900);
+        assert_eq!(batch[0].index, 44_000);
         assert!(cmp_f64(batch[0].f, 220.0));
 
         assert_eq!(batch[1].samples, 100);
@@ -192,7 +192,6 @@ mod tests {
 
     #[test]
     fn test_small_and_large_render_batch_same_result() {
-        Settings::init_test().unwrap();
         let filename =
             "../src/testing/snapshot_tests/render_op_get_batch_simple.socool".to_string();
         let (nf, basis, mut table) = match Filename(&filename)

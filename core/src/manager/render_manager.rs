@@ -73,23 +73,23 @@ pub struct RenderManagerSettings {
 
 impl RenderManager {
     pub fn init(
-        // render_voices: Vec<RenderVoice>,
         visualization_channel: VisualizationChannel,
         kill_channel: KillChannel,
         once: bool,
         settings: Option<RenderManagerSettings>,
     ) -> Self {
-        if let Some(s) = settings {
-            Settings::init(s.sample_rate, s.buffer_size).unwrap();
-        } else {
-            Settings::init_default().unwrap();
-        };
+        if !cfg!(test) {
+            if let Some(s) = settings {
+                Settings::init(s.sample_rate, s.buffer_size).unwrap();
+            } else {
+                Settings::init_default().unwrap();
+            };
+        }
         Self {
             visualization: Visualization {
                 channel: visualization_channel,
                 normalizer: Normalizer::default(),
             },
-            // renders: [Some(render_voices), None],
             renders: [None, None],
             past_volume: 0.8,
             current_volume: 0.8,
@@ -97,28 +97,6 @@ impl RenderManager {
             _read_idx: 0,
             kill_channel,
             once,
-            paused: false,
-        }
-    }
-
-    pub fn init_silent(settings: Option<RenderManagerSettings>) -> Self {
-        if let Some(s) = settings {
-            Settings::init(s.sample_rate, s.buffer_size).unwrap();
-        } else {
-            Settings::init_default().unwrap();
-        };
-        Self {
-            visualization: Visualization {
-                channel: None,
-                normalizer: Normalizer::default(),
-            },
-            renders: [None, None],
-            past_volume: 0.8,
-            current_volume: 0.8,
-            render_idx: 0,
-            _read_idx: 0,
-            kill_channel: None,
-            once: false,
             paused: false,
         }
     }
@@ -302,7 +280,7 @@ mod render_manager_tests {
 
     #[test]
     fn test_ramp_to_current_value() {
-        let mut rm = RenderManager::init_silent(None);
+        let mut rm = RenderManager::init(None, None, false, None);
         rm.update_volume(0.9);
         assert!(cmp_f32(rm.current_volume, f32::powf(0.9, 2.0)));
         let ramp = rm.ramp_to_current_volume(2);
@@ -315,7 +293,7 @@ mod render_manager_tests {
 
     #[test]
     fn test_inc_render() {
-        let mut r = RenderManager::init_silent(None);
+        let mut r = RenderManager::init(None, None, false, None);
         r.inc_render();
         assert_eq!(r.render_idx, 1);
         r.inc_render();
@@ -328,11 +306,13 @@ mod render_manager_tests {
 
     #[test]
     fn test_push_render() {
-        let mut r = RenderManager::init(render_voices_mock(), None, None, false, None);
-        assert_eq!(*r.current_render(), Some(render_voices_mock()));
+        Settings::init_test().unwrap();
+        let mut r = RenderManager::init(None, None, false, None);
+        assert_eq!(*r.current_render(), None);
         assert_eq!(*r.next_render(), None);
-        r.push_render(render_voices_mock());
-        assert_eq!(*r.current_render(), Some(render_voices_mock()));
+        r.push_render(render_voices_mock(), false);
         assert_eq!(*r.next_render(), Some(render_voices_mock()));
+        assert_eq!(*r.current_render(), None);
+        r.push_render(render_voices_mock(), false);
     }
 }
