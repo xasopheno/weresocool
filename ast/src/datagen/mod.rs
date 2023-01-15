@@ -1,4 +1,4 @@
-use crate::{Axis, NameSet, NormalForm, Normalize, Op, OscType, PointOp, Term, ASR};
+use crate::{Axis, NameSet, Op, Term};
 use num_rational::{Ratio, Rational64};
 use serde::{Deserialize, Serialize};
 use std::str::FromStr;
@@ -60,17 +60,16 @@ pub fn csv2d_to_normalform(filename: &str, scales: Vec<Scale>) -> Result<Term, E
     ))
 }
 
-fn csv_data_to_normal_form(data: &Vec<Vec<f32>>, scales: Vec<Scale>, filename: &str) -> Term {
+fn csv_data_to_normal_form(data: &[Vec<f32>], scales: Vec<Scale>, filename: &str) -> Term {
     // let mut buffer = RingBuffer::<f32>::new(50);
 
     let point_ops: Vec<Term> = data
         .iter()
         .map(|value| {
-            let op = point_to_point_op(
+            point_to_point_op(
                 value, None, // Some(&mut buffer),
                 &scales, filename,
-            );
-            op
+            )
         })
         .collect();
 
@@ -93,14 +92,14 @@ pub fn f32_to_rational(mut float: f32) -> Rational64 {
 }
 
 fn point_to_point_op(
-    point: &Vec<f32>,
+    point: &[f32],
     buffer: Option<&mut RingBuffer<f32>>,
-    scales: &Vec<Scale>,
+    scales: &[Scale],
     filename: &str,
 ) -> Term {
     let mut nameset = NameSet::new();
     nameset.insert(filename.to_string());
-    let result: Vec<f32> = scales.iter().enumerate().map(|(i, s)| point[i]).collect();
+    let result: Vec<f32> = scales.iter().enumerate().map(|(i, _s)| point[i]).collect();
 
     let mut fa = result[0];
     if let Some(b) = buffer {

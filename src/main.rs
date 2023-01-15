@@ -13,7 +13,6 @@ use thiserror::Error;
 use weresocool::error::Error as WscError;
 #[cfg(feature = "app")]
 use weresocool_portaudio::error::Error as PortAudioError;
-use weresocool_shared::Settings;
 
 #[derive(Error, Debug)]
 pub enum Error {

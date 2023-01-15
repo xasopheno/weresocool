@@ -128,7 +128,7 @@ impl Lame {
 
     /// Returns the output bitrate in kilobits per second.
     pub fn kilobitrate(&self) -> i32 {
-        unsafe { ffi::lame_get_brate(self.ptr) as i32 }
+        unsafe { ffi::lame_get_brate(self.ptr) }
     }
 
     /// Sets the target output bitrate. This value is in kilobits per second,

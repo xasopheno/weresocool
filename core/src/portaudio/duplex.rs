@@ -99,7 +99,7 @@ fn get_duplex_settings(pa: &pa::PortAudio) -> Result<pa::stream::DuplexSettings<
     let duplex_settings = pa::DuplexStreamSettings::new(
         input_params,
         output_params,
-        Settings::global().sample_rate as f64,
+        Settings::global().sample_rate,
         Settings::global().buffer_size as u32,
     );
 

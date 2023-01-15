@@ -32,7 +32,7 @@ impl GenOp {
             name,
             seed: match seed {
                 None => rng.gen::<u64>(),
-                Some(s) => s.1.unsigned_abs() as u64,
+                Some(s) => s.1.unsigned_abs(),
             },
         }
     }
@@ -42,7 +42,7 @@ impl GenOp {
             gen,
             seed: match seed {
                 None => rng.gen::<u64>(),
-                Some(s) => s.1.unsigned_abs() as u64,
+                Some(s) => s.1.unsigned_abs(),
             },
         }
     }
@@ -52,7 +52,7 @@ impl GenOp {
             gen: Box::new(gen),
             seed: match seed {
                 None => rng.gen::<u64>(),
-                Some(s) => s.1.unsigned_abs() as u64,
+                Some(s) => s.1.unsigned_abs(),
             },
             n,
         }

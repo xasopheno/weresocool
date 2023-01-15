@@ -56,7 +56,7 @@ pub fn get_output_settings(pa: &pa::PortAudio) -> Result<pa::stream::OutputSetti
 
     let output_settings = pa::OutputStreamSettings::new(
         output_params,
-        Settings::global().sample_rate as f64,
+        Settings::global().sample_rate,
         Settings::global().buffer_size as u32,
     );
 

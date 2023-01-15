@@ -8,7 +8,6 @@ use weresocool::manager::prepare_render_outside;
 use weresocool::manager::RenderManager;
 use weresocool::portaudio::real_time_render_manager;
 use weresocool::ui::were_so_cool_logo;
-use weresocool_instrument::RenderVoice;
 
 pub enum Play {
     Once,
