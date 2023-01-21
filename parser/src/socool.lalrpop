@@ -78,6 +78,7 @@ Operation: Term = {
     <op1: Operation> ">" "FitGain" <op2: ComposeOperation> => {
       unimplemented!()
     },
+
     // TODO: Revisit Focus/Lens
     <op1: Operation> ">" "@" <name: Name> <op2: ComposeOperation> => {
         Term::Op(
@@ -228,11 +229,6 @@ Index: Index = {
   },
   <index: Index> "|" <term: Composeable> => Index::IndexAndTerm {index: Box::new(index), term},
 } 
-
-SuperCompose: Term = {
-  <o: ComposeOperation> => o,
-  <o: Generator> => Term::Gen(o)
-}
 
 ComposeOperation: Term = {
     <terms: Pipe<Composeable>> => {
