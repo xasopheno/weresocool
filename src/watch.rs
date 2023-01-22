@@ -20,14 +20,8 @@ pub fn watch(
     render_manager: Arc<Mutex<RenderManager>>,
 ) -> Result<(), Error> {
     were_so_cool_logo(Some("Watching"), Some(filename.clone()));
-    let mut first_iteration = true;
     std::thread::spawn(move || -> Result<(), Error> {
         loop {
-            if first_iteration {
-                render(&filename, &working_path, &render_manager);
-                first_iteration = false;
-            }
-
             let (tx, rx) = channel();
 
             let mut watcher = RecommendedWatcher::new(tx, Config::default()).unwrap();
