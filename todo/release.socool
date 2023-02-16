@@ -18,8 +18,8 @@
 
 # Bugs
     [x] Fix panic that happens when the piece doesn't render the first time on watch.
-    [] --volume, --samplerate
-    pass in settings/rate on render_manager creation
+    [ ] pass in settings/rate on render_manager creation
+    [ ] --volume, --samplerate
 
 # Simplify
     [x] Move core into own package

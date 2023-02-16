@@ -1,5 +1,7 @@
+use crate::new::DEFAULT_SOCOOL;
 use crate::watch::watch;
 use crate::Error;
+use std::io;
 use std::path::PathBuf;
 use std::sync::Arc;
 use std::sync::Mutex;
@@ -57,6 +59,7 @@ pub fn play_once(filename: String, working_path: PathBuf) -> Result<(), Error> {
 }
 
 fn play_watch(filename: String, working_path: PathBuf) -> Result<(), Error> {
+    maybe_create_file_if_needed(filename.clone(), working_path.clone());
     let render_manager = Arc::new(Mutex::new(RenderManager::init(None, None, false, None)));
     let render_voices = prepare_render_outside(Filename(&filename), Some(working_path.clone()))?;
     render_manager
@@ -68,4 +71,29 @@ fn play_watch(filename: String, working_path: PathBuf) -> Result<(), Error> {
     stream.start()?;
     std::thread::park();
     Ok(())
+}
+
+pub fn maybe_create_file_if_needed(filename: String, working_path: PathBuf) {
+    let mut input = String::new();
+    let path = working_path.join(format!("{filename}"));
+    if !path.exists() {
+        println!("This file does not exist. Create it? (y/n)");
+
+        io::stdin()
+            .read_line(&mut input)
+            .expect("Failed to read input");
+
+        let input = input.trim();
+
+        match input.as_ref() {
+            "y" => {
+                std::fs::write(path, DEFAULT_SOCOOL).expect("Unable to write file");
+            }
+            "n" => {
+                println!("Aborting");
+                std::process::exit(0);
+            }
+            _ => println!("Invalid input"),
+        }
+    }
 }

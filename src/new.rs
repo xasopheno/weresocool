@@ -17,7 +17,7 @@ fn new_socool_file(filename: String, working_path: PathBuf) -> Result<(), Error>
     Ok(())
 }
 
-const DEFAULT_SOCOOL: &str = indoc! {"
+pub const DEFAULT_SOCOOL: &str = indoc! {"
 { f: 311.127, l: 1, g: 1/3, p: 0 }
 
 thing1 = {

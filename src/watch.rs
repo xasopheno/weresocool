@@ -20,13 +20,14 @@ pub fn watch(
     render_manager: Arc<Mutex<RenderManager>>,
 ) -> Result<(), Error> {
     were_so_cool_logo(Some("Watching"), Some(filename.clone()));
+
+    let path = Path::new(&working_path).join(Path::new(&filename));
+
     std::thread::spawn(move || -> Result<(), Error> {
         loop {
             let (tx, rx) = channel();
 
             let mut watcher = RecommendedWatcher::new(tx, Config::default()).unwrap();
-
-            let path = Path::new(&working_path).join(Path::new(&filename));
 
             watcher.watch(path.as_ref(), RecursiveMode::NonRecursive)?;
 
