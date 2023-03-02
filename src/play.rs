@@ -77,7 +77,7 @@ pub fn maybe_create_file_if_needed(filename: String, working_path: PathBuf) {
     let mut input = String::new();
     let path = working_path.join(format!("{filename}"));
     if !path.exists() {
-        println!("This file does not exist. Create it? (y/n)");
+        println!("{}", format!("{filename} does not exist. Create it? (y/n)"));
 
         io::stdin()
             .read_line(&mut input)
