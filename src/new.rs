@@ -10,10 +10,10 @@ pub fn new(filename: &String, cwd: PathBuf) -> Result<(), Error> {
 }
 
 fn new_socool_file(filename: String, working_path: PathBuf) -> Result<(), Error> {
-    let path = working_path.join(format!("{filename}.socool"));
+    let path = working_path.join(format!("{filename}"));
 
     fs::write(path, DEFAULT_SOCOOL).expect("Unable to write file");
-    play_file(format!("{filename}.socool"), working_path, Play::Once)?;
+    play_file(format!("{filename}"), working_path, Play::Once)?;
     Ok(())
 }
 
@@ -32,7 +32,7 @@ thing1 = {
 
 thing2 = {
     Overlay [
-        {1/1, 2, 1, 1},
+        {1/1, 3, 1, 1},
         {1/1, 0, 1, -1},
     ]
     | Seq [
