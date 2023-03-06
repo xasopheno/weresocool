@@ -1,5 +1,5 @@
 // #[cfg(test)]
-// mod eeg_test {
+// weresocool_parser
 // use num_rational::Rational64;
 
 // use crate::{
