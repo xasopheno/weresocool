@@ -1,5 +1,5 @@
 #[cfg(test)]
-mod expect_tests {
+mod generated_tests {
     use crate::{
         generation::{RenderReturn, RenderType},
         interpretable::{InputType::Filename, Interpretable},
