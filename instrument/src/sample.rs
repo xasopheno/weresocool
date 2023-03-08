@@ -5,7 +5,6 @@ use std::f64::consts::PI;
 use weresocool_shared::{r_to_f64, Settings};
 
 const TAU: f64 = PI * 2.0;
-// const FACTOR: f64 = TAU / Settings::global().sample_rate;
 
 fn random_offset() -> f64 {
     thread_rng().gen_range(-0.5, 0.5)
