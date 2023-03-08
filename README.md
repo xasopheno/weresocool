@@ -12,7 +12,7 @@ If you want to learn how to make cool sounds using WereSoCool, you'll find cool 
   at [weresocool.org](https://www.weresocool.org/).
 
 
-My recommend following the tutorials in order and writing your own composition after completing each one. Additional documentation is currently being worked on, as well as a record featuring a great band, so stay tuned. 
+I recommend following the tutorials in order and writing your own composition after completing each one. Additional documentation is currently being worked on, as well as a record featuring a great band, so stay tuned. 
 
 On mobile, you can still view the tutorials, but you won't be able to hear anything.
 

@@ -6,8 +6,9 @@ use std::{fs::File, path::Path};
 use weresocool_error::Error;
 use weresocool_ring_buffer::RingBuffer;
 use weresocool_shared::helpers::r_to_f32;
-mod csv_test;
-mod test;
+mod csv1d_test;
+mod csv2d_test;
+mod mod_1d;
 
 #[derive(Debug, Clone, Serialize, Deserialize, PartialEq, Copy)]
 pub struct Point {
@@ -145,9 +146,7 @@ fn get_data1d(filename: String, length: Rational64) -> Result<Vec<Vec<f32>>, Err
         .deserialize::<Vec<f32>>()
         .map(|datum| datum.expect("Error deserializing datum"))
         .collect();
-    dbg!(&deserialized);
     let result: Vec<Vec<f32>> = deserialized[0].iter().map(|v| vec![*v, length]).collect();
-    dbg!(&result);
 
     Ok(result)
 }

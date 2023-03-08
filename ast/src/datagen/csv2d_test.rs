@@ -14,7 +14,6 @@ mod csv2d_tests {
         assert_that!(&result, contains(expected).exactly());
     }
 
-    //TODO: Fix these
     #[test]
     fn test_point_to_point_op() {
         let mut names = NameSet::new();
