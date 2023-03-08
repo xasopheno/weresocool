@@ -17,7 +17,7 @@ pub enum Op {
     //
     CSV1d {
         path: String,
-        scales: Vec<Scale>,
+        scale: Option<Rational64>,
     },
     CSV2d {
         path: String,

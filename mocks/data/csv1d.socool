@@ -2,11 +2,15 @@
 
 
 main = {
-    Csv1d(f: 2, l: 1/2) ./mocks/data/data1d.csv
+    Csv1d(2.0) ./mocks/data/data1d.csv
 }
 
 expect = {
+    -- remember there is a ring buffer of 50 samples involved here :)
     Seq [
-     Fa 2/1, Fa 4/1, Fa 6/1 
-    ] | Lm 1/2
+     Fa 2/1, Fa 3/1, Fa 4/1 
+    ] 
+    | Lm 1/50
+    | #data1d.csv
+
 }

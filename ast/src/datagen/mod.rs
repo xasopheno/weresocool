@@ -5,10 +5,9 @@ use std::str::FromStr;
 use std::{fs::File, path::Path};
 use weresocool_error::Error;
 use weresocool_ring_buffer::RingBuffer;
-use weresocool_shared::helpers::r_to_f32;
 mod csv1d_test;
 mod csv2d_test;
-mod mod_1d;
+pub mod mod_1d;
 
 #[derive(Debug, Clone, Serialize, Deserialize, PartialEq, Copy)]
 pub struct Point {
@@ -31,20 +30,6 @@ impl Scale {
     fn apply(&self, value: f32) -> Rational64 {
         self.value * f32_to_rational(value)
     }
-}
-
-pub fn csv1d_to_normalform(filename: &str, scales: Vec<Scale>) -> Result<Term, Error> {
-    let data = get_data1d(filename.into(), scales[1].value)?;
-    let path = Path::new(&filename);
-    Ok(csv_data_to_normal_form(
-        &data,
-        scales,
-        path.file_name()
-            .unwrap()
-            .to_string_lossy()
-            .to_string()
-            .as_str(),
-    ))
 }
 
 pub fn csv2d_to_normalform(filename: &str, scales: Vec<Scale>) -> Result<Term, Error> {
@@ -125,31 +110,31 @@ fn point_to_point_op(
     })
 }
 
-fn get_data1d(filename: String, length: Rational64) -> Result<Vec<Vec<f32>>, Error> {
-    let length = r_to_f32(length);
-    let path = Path::new(&filename);
-    let cwd = std::env::current_dir()?;
-    let file = File::open(path).unwrap_or_else(|_| {
-        panic!(
-            "unable to read file: {}. current working directory is: {}",
-            path.display(),
-            cwd.display()
-        )
-    });
+// fn get_data1d(filename: String, length: Rational64) -> Result<Vec<Vec<f32>>, Error> {
+// let length = r_to_f32(length);
+// let path = Path::new(&filename);
+// let cwd = std::env::current_dir()?;
+// let file = File::open(path).unwrap_or_else(|_| {
+// panic!(
+// "unable to read file: {}. current working directory is: {}",
+// path.display(),
+// cwd.display()
+// )
+// });
 
-    let mut rdr = csv::ReaderBuilder::new()
-        .has_headers(false)
-        .delimiter(b',')
-        .from_reader(file);
+// let mut rdr = csv::ReaderBuilder::new()
+// .has_headers(false)
+// .delimiter(b',')
+// .from_reader(file);
 
-    let deserialized: Vec<Vec<f32>> = rdr
-        .deserialize::<Vec<f32>>()
-        .map(|datum| datum.expect("Error deserializing datum"))
-        .collect();
-    let result: Vec<Vec<f32>> = deserialized[0].iter().map(|v| vec![*v, length]).collect();
+// let deserialized: Vec<Vec<f32>> = rdr
+// .deserialize::<Vec<f32>>()
+// .map(|datum| datum.expect("Error deserializing datum"))
+// .collect();
+// let result: Vec<Vec<f32>> = deserialized[0].iter().map(|v| vec![*v, length]).collect();
 
-    Ok(result)
-}
+// Ok(result)
+// }
 
 fn get_data2d(filename: String) -> Result<Vec<Vec<f32>>, Error> {
     let path = Path::new(&filename);

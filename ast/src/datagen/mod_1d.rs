@@ -13,7 +13,7 @@ pub struct CsvData {
     pub data: Vec<f32>,
 }
 
-pub fn csv_to_normalform(filename: &str, scale: Option<Rational64>) -> Result<NormalForm, Error> {
+pub fn csv1d_to_normalform(filename: &str, scale: Option<Rational64>) -> Result<NormalForm, Error> {
     let data = get_data(filename.into())?;
     let path = Path::new(&filename);
     Ok(vec_eeg_data_to_normal_form(

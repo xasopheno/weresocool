@@ -1,4 +1,4 @@
-use crate::datagen::{csv1d_to_normalform, csv2d_to_normalform};
+use crate::datagen::{csv2d_to_normalform, mod_1d::csv1d_to_normalform};
 use crate::operations::Rational64;
 use crate::operations::{
     helpers::*, substitute::insert_function_args, GetLengthRatio, NormalForm, Normalize, Substitute,
@@ -35,8 +35,9 @@ impl Normalize<Term> for Op {
             Op::Id(id) => {
                 handle_id_error(id, defs)?.apply_to_normal_form(input, defs)?;
             }
-            Op::CSV1d { path, scales } => {
-                csv1d_to_normalform(path, scales.clone())?.apply_to_normal_form(input, defs)?;
+
+            Op::CSV1d { path, scale } => {
+                csv1d_to_normalform(path, *scale)?.apply_to_normal_form(input, defs)?;
             }
 
             Op::CSV2d { path, scales } => {

@@ -75,9 +75,9 @@ fn play_watch(filename: String, working_path: PathBuf) -> Result<(), Error> {
 
 pub fn maybe_create_file_if_needed(filename: String, working_path: PathBuf) {
     let mut input = String::new();
-    let path = working_path.join(format!("{filename}"));
+    let path = working_path.join(filename);
     if !path.exists() {
-        println!("{}", format!("{filename} does not exist. Create it? (y/n)"));
+        println!("{{filename}} does not exist. Create it? (y/n)");
 
         io::stdin()
             .read_line(&mut input)
@@ -85,7 +85,7 @@ pub fn maybe_create_file_if_needed(filename: String, working_path: PathBuf) {
 
         let input = input.trim();
 
-        match input.as_ref() {
+        match input {
             "y" => {
                 std::fs::write(path, DEFAULT_SOCOOL).expect("Unable to write file");
             }
