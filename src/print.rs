@@ -7,7 +7,7 @@ use weresocool::interpretable::Interpretable;
 use weresocool_shared::Settings;
 
 pub fn print(print_args: &ArgMatches) -> Result<(), Error> {
-    Settings::init_default()?;
+    Settings::init_default();
     let mut printed: Vec<&str> = vec![];
     let should_print = |target: &[&str]| -> bool {
         let result = target.iter().any(|arg| print_args.get_flag(arg));

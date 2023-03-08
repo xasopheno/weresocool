@@ -5,7 +5,7 @@ use weresocool::testing::{
 use weresocool_shared::Settings;
 
 fn main() {
-    Settings::init_test().unwrap();
+    Settings::init_test();
     println!("\nHello Danny's WereSoCool Tests");
     let should_rehash = std::env::args().any(|x| x == "--rehash");
 

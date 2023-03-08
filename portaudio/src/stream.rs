@@ -1251,7 +1251,8 @@ where
     pub fn read_available(&self) -> Result<Available, Error> {
         match unsafe { ffi::Pa_GetStreamReadAvailable(self.pa_stream) } {
             n if n >= 0 => Ok(Available::Frames(n)),
-            n => match FromPrimitive::from_i64(n) {
+            #[allow(clippy::useless_conversion)]
+            n => match FromPrimitive::from_i64(n.into()) {
                 Some(Error::InputOverflowed) => Ok(Available::InputOverflowed),
                 Some(Error::OutputUnderflowed) => Ok(Available::OutputUnderflowed),
                 Some(err) => Err(err),
@@ -1309,7 +1310,8 @@ where
     pub fn write_available(&self) -> Result<Available, Error> {
         match unsafe { ffi::Pa_GetStreamWriteAvailable(self.pa_stream) } {
             n if n >= 0 => Ok(Available::Frames(n)),
-            n => match FromPrimitive::from_i64(n) {
+            #[allow(clippy::useless_conversion)]
+            n => match FromPrimitive::from_i64(n.into()) {
                 Some(Error::InputOverflowed) => Ok(Available::InputOverflowed),
                 Some(Error::OutputUnderflowed) => Ok(Available::OutputUnderflowed),
                 Some(err) => Err(err),

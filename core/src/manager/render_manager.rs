@@ -80,9 +80,9 @@ impl RenderManager {
     ) -> Self {
         if !cfg!(test) {
             if let Some(s) = settings {
-                Settings::init(s.sample_rate, s.buffer_size).unwrap();
+                Settings::init(s.sample_rate, s.buffer_size);
             } else {
-                Settings::init_default().unwrap();
+                Settings::init_default();
             };
         }
         Self {
@@ -306,7 +306,7 @@ mod render_manager_tests {
 
     #[test]
     fn test_push_render() {
-        Settings::init_test().unwrap();
+        Settings::init_test();
         let mut r = RenderManager::init(None, None, false, None);
         assert_eq!(*r.current_render(), None);
         assert_eq!(*r.next_render(), None);

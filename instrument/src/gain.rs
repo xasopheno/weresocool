@@ -63,7 +63,7 @@ mod tests {
 
     fn setup() {
         INIT.call_once(|| {
-            Settings::init_test().unwrap();
+            Settings::init_test();
         });
     }
 

@@ -15,7 +15,6 @@ mod tests {
         Basis, StereoWaveform,
     };
     use weresocool_shared::helpers::cmp_f64;
-    use weresocool_shared::Settings;
 
     #[test]
     fn test_calculate_fgpl() {

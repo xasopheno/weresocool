@@ -12,29 +12,20 @@ impl Settings {
         SETTINGS.get().expect("Oh no! Settings are not initialized")
     }
 
-    pub fn init(sample_rate: f64, buffer_size: usize) -> Result<(), std::io::Error> {
-        SETTINGS
-            .set(Settings {
-                sample_rate,
-                buffer_size,
-                ..default_settings()
-            })
-            .expect("Settings already initialized");
-        Ok(())
+    pub fn init(sample_rate: f64, buffer_size: usize) {
+        _ = SETTINGS.set(Settings {
+            sample_rate,
+            buffer_size,
+            ..default_settings()
+        });
     }
 
-    pub fn init_default() -> Result<(), std::io::Error> {
-        SETTINGS
-            .set(default_settings())
-            .expect("Settings already initialized");
-        Ok(())
+    pub fn init_default() {
+        _ = SETTINGS.set(default_settings());
     }
 
-    pub fn init_test() -> Result<(), std::io::Error> {
-        SETTINGS
-            .set(get_test_settings())
-            .expect("Settings already initialized");
-        Ok(())
+    pub fn init_test() {
+        _ = SETTINGS.set(get_test_settings());
     }
 }
 
