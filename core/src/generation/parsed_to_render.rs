@@ -180,7 +180,6 @@ pub fn parsed_to_render(
             if !names.is_subset(&nf_names) {
                 let difference = names
                     .difference(&nf_names)
-                    .into_iter()
                     .cloned()
                     .collect::<Vec<String>>()
                     .join(", ");

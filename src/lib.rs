@@ -1,8 +1,11 @@
 #![warn(
     clippy::nursery,
-    //clippy::restriction,
+    clippy::suspicious,
+    clippy::correctness,
+    clippy::complexity,
+    // clippy::restriction,
     // clippy::pedantic,
-    //clippy::cargo,
+    // clippy::cargo,
 )]
 
 pub use weresocool_ast as ast;

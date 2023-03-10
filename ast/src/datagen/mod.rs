@@ -5,6 +5,7 @@ use std::str::FromStr;
 use std::{fs::File, path::Path};
 use weresocool_error::Error;
 use weresocool_ring_buffer::RingBuffer;
+use weresocool_shared::helpers::r_to_f32;
 mod csv1d_test;
 mod csv2d_test;
 pub mod mod_1d;
@@ -110,31 +111,31 @@ fn point_to_point_op(
     })
 }
 
-// fn get_data1d(filename: String, length: Rational64) -> Result<Vec<Vec<f32>>, Error> {
-// let length = r_to_f32(length);
-// let path = Path::new(&filename);
-// let cwd = std::env::current_dir()?;
-// let file = File::open(path).unwrap_or_else(|_| {
-// panic!(
-// "unable to read file: {}. current working directory is: {}",
-// path.display(),
-// cwd.display()
-// )
-// });
+fn _get_data1d(filename: String, length: Rational64) -> Result<Vec<Vec<f32>>, Error> {
+    let length = r_to_f32(length);
+    let path = Path::new(&filename);
+    let cwd = std::env::current_dir()?;
+    let file = File::open(path).unwrap_or_else(|_| {
+        panic!(
+            "unable to read file: {}. current working directory is: {}",
+            path.display(),
+            cwd.display()
+        )
+    });
 
-// let mut rdr = csv::ReaderBuilder::new()
-// .has_headers(false)
-// .delimiter(b',')
-// .from_reader(file);
+    let mut rdr = csv::ReaderBuilder::new()
+        .has_headers(false)
+        .delimiter(b',')
+        .from_reader(file);
 
-// let deserialized: Vec<Vec<f32>> = rdr
-// .deserialize::<Vec<f32>>()
-// .map(|datum| datum.expect("Error deserializing datum"))
-// .collect();
-// let result: Vec<Vec<f32>> = deserialized[0].iter().map(|v| vec![*v, length]).collect();
+    let deserialized: Vec<Vec<f32>> = rdr
+        .deserialize::<Vec<f32>>()
+        .map(|datum| datum.expect("Error deserializing datum"))
+        .collect();
+    let result: Vec<Vec<f32>> = deserialized[0].iter().map(|v| vec![*v, length]).collect();
 
-// Ok(result)
-// }
+    Ok(result)
+}
 
 fn get_data2d(filename: String) -> Result<Vec<Vec<f32>>, Error> {
     let path = Path::new(&filename);

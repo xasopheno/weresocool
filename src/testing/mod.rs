@@ -129,7 +129,7 @@ fn calculate_hash<T: Hash>(t: &T) -> u64 {
 }
 
 #[allow(unused_must_use)]
-pub fn show_difference(tt1: TestTable, tt2: TestTable) {
+pub fn show_difference(tt1: &TestTable, tt2: &TestTable) {
     let Changeset { diffs, .. } = Changeset::new(
         &to_string_pretty(&tt1).unwrap(),
         &to_string_pretty(&tt2).unwrap(),
@@ -139,45 +139,42 @@ pub fn show_difference(tt1: TestTable, tt2: TestTable) {
     let mut terminal = term::stdout().unwrap();
 
     for i in 0..diffs.len() {
-        match diffs[i] {
+        match diffs.get(i).unwrap() {
             Difference::Same(ref x) => {
                 terminal.reset().unwrap();
-                writeln!(terminal, " {}", x);
+                writeln!(terminal, " {x}");
             }
             Difference::Add(ref x) => {
-                match diffs[i - 1] {
-                    Difference::Rem(ref y) => {
-                        terminal.fg(term::color::GREEN).unwrap();
-                        write!(terminal, "+");
-                        let Changeset { diffs, .. } = Changeset::new(y, x, " ");
-                        for c in diffs {
-                            match c {
-                                Difference::Same(ref z) => {
-                                    terminal.fg(term::color::GREEN).unwrap();
-                                    write!(terminal, "{}", z);
-                                    write!(terminal, " ");
-                                }
-                                Difference::Add(ref z) => {
-                                    terminal.fg(term::color::WHITE).unwrap();
-                                    terminal.bg(term::color::GREEN).unwrap();
-                                    write!(terminal, "{}", z);
-                                    terminal.reset().unwrap();
-                                    write!(terminal, " ");
-                                }
-                                _ => (),
+                if let Difference::Rem(ref y) = diffs.get(i - 1).unwrap() {
+                    terminal.fg(term::color::GREEN).unwrap();
+                    write!(terminal, "+");
+                    let Changeset { diffs, .. } = Changeset::new(y, x, " ");
+                    for c in diffs {
+                        match c {
+                            Difference::Same(ref z) => {
+                                terminal.fg(term::color::GREEN).unwrap();
+                                write!(terminal, "{z}");
+                                write!(terminal, " ");
                             }
+                            Difference::Add(ref z) => {
+                                terminal.fg(term::color::WHITE).unwrap();
+                                terminal.bg(term::color::GREEN).unwrap();
+                                write!(terminal, "{z}");
+                                terminal.reset().unwrap();
+                                write!(terminal, " ");
+                            }
+                            Difference::Rem(_) => (),
                         }
-                        writeln!(terminal);
                     }
-                    _ => {
-                        terminal.fg(term::color::BRIGHT_GREEN).unwrap();
-                        writeln!(terminal, "+{}", x);
-                    }
+                    writeln!(terminal);
+                } else {
+                    terminal.fg(term::color::BRIGHT_GREEN).unwrap();
+                    writeln!(terminal, "+{x}");
                 };
             }
             Difference::Rem(ref x) => {
                 terminal.fg(term::color::RED).unwrap();
-                writeln!(terminal, "-{}", x);
+                writeln!(terminal, "-{x}");
             }
         }
     }

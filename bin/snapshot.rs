@@ -20,7 +20,7 @@ fn main() {
         if test_table == decoded {
             println!("All Snapshot Tests Passed");
         } else {
-            show_difference(decoded, test_table);
+            show_difference(&decoded, &test_table);
             panic!()
         }
     }
