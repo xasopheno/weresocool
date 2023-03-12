@@ -26,9 +26,7 @@ use weresocool_instrument::renderable::{
 };
 use weresocool_instrument::{Basis, Oscillator, StereoWaveform};
 use weresocool_parser::ParsedComposition;
-use weresocool_shared::{get_settings, Settings};
-
-const SETTINGS: Settings = get_settings();
+use weresocool_shared::Settings;
 
 #[derive(Clone, Eq, PartialEq, Debug)]
 pub enum WavType {
@@ -182,7 +180,6 @@ pub fn parsed_to_render(
             if !names.is_subset(&nf_names) {
                 let difference = names
                     .difference(&nf_names)
-                    .into_iter()
                     .cloned()
                     .collect::<Vec<String>>()
                     .join(", ");
@@ -325,7 +322,7 @@ pub fn render(
         #[cfg(feature = "wasm")]
         let iter = voices.iter_mut();
         let batch: Vec<StereoWaveform> = iter
-            .filter_map(|voice| voice.render_batch(SETTINGS.buffer_size, None))
+            .filter_map(|voice| voice.render_batch(Settings::global().buffer_size, None))
             .collect();
 
         if !batch.is_empty() {
@@ -395,7 +392,7 @@ pub fn generate_waveforms(
         .map(|ref mut vec_render_op: &mut Vec<RenderOp>| {
             #[cfg(feature = "app")]
             pb.lock().unwrap().add(1_u64);
-            let mut osc = Oscillator::init(&SETTINGS);
+            let mut osc = Oscillator::init();
             vec_render_op.render(&mut osc, None)
         })
         .collect();

@@ -11,9 +11,7 @@ use scop::Defs;
 use serde::{Deserialize, Serialize};
 use weresocool_ast::{NormalForm, Normalize, OscType, PointOp, Term, ASR};
 use weresocool_error::Error;
-use weresocool_shared::{get_settings, lossy_rational_mul, r_to_f64, Settings};
-
-const SETTINGS: Settings = get_settings();
+pub(crate) use weresocool_shared::{lossy_rational_mul, r_to_f64, Settings};
 
 #[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
 pub struct RenderOp {
@@ -63,7 +61,7 @@ impl RenderOp {
             names: vec![],
         }
     }
-    pub const fn init_silent_with_length(l: f64) -> Self {
+    pub fn init_silent_with_length(l: f64) -> Self {
         Self {
             f: 0.0,
             g: (0.0, 0.0),
@@ -71,11 +69,11 @@ impl RenderOp {
             l,
             t: 0.0,
             reverb: None,
-            attack: SETTINGS.sample_rate,
-            decay: SETTINGS.sample_rate,
+            attack: Settings::global().sample_rate,
+            decay: Settings::global().sample_rate,
             asr: ASR::Long,
-            samples: SETTINGS.sample_rate as usize,
-            total_samples: SETTINGS.sample_rate as usize,
+            samples: Settings::global().sample_rate as usize,
+            total_samples: Settings::global().sample_rate as usize,
             index: 0,
             voice: 0,
             event: 0,
@@ -91,6 +89,7 @@ impl RenderOp {
         l: f64,
         osc_type: OscType,
         reverb: Option<f64>,
+        settings: &Settings,
     ) -> Self {
         Self {
             f: 0.0,
@@ -99,11 +98,11 @@ impl RenderOp {
             l,
             t: 0.0,
             reverb,
-            attack: SETTINGS.sample_rate,
-            decay: SETTINGS.sample_rate,
+            attack: settings.sample_rate,
+            decay: settings.sample_rate,
             asr: ASR::Long,
-            samples: SETTINGS.sample_rate as usize,
-            total_samples: SETTINGS.sample_rate as usize,
+            samples: settings.sample_rate as usize,
+            total_samples: settings.sample_rate as usize,
             index: 0,
             voice: 0,
             event: 0,
@@ -177,6 +176,7 @@ fn pointop_to_renderop(
     basis: &Basis,
     next: Option<PointOp>,
 ) -> RenderOp {
+    let settings = Settings::global();
     let mut next_l_gain = 0.0;
     let mut next_r_gain = 0.0;
     let next_silent;
@@ -209,10 +209,10 @@ fn pointop_to_renderop(
             None
         },
         index: 0,
-        samples: (l * SETTINGS.sample_rate).round() as usize,
-        total_samples: (l * SETTINGS.sample_rate).round() as usize,
-        attack: r_to_f64(point_op.attack * basis.a) * SETTINGS.sample_rate,
-        decay: r_to_f64(point_op.decay * basis.d) * SETTINGS.sample_rate,
+        samples: (l * settings.sample_rate).round() as usize,
+        total_samples: (l * settings.sample_rate).round() as usize,
+        attack: r_to_f64(point_op.attack * basis.a) * settings.sample_rate,
+        decay: r_to_f64(point_op.decay * basis.d) * settings.sample_rate,
         osc_type: point_op.osc_type,
         asr: point_op.asr,
         portamento: (r_to_f64(point_op.portamento) * 1024_f64) as usize,
@@ -257,6 +257,7 @@ pub fn m_a_and_basis_to_f64(basis: Rational64, m: Rational64, a: Rational64) -> 
 }
 
 pub fn calculate_fgpl(basis: &Basis, point_op: &PointOp) -> (f64, (f64, f64), f64, f64) {
+    let settings = Settings::global();
     let (mut f, mut g) = if point_op.is_silent() {
         (0.0, (0.0, 0.0))
     } else {
@@ -265,7 +266,7 @@ pub fn calculate_fgpl(basis: &Basis, point_op: &PointOp) -> (f64, (f64, f64), f6
     };
     let p = m_a_and_basis_to_f64(basis.p, point_op.pm, point_op.pa);
     let l = r_to_f64(point_op.l * basis.l);
-    if f < SETTINGS.min_freq {
+    if f < settings.min_freq {
         f = 0.0;
         g = (0.0, 0.0);
     };
@@ -278,6 +279,7 @@ pub fn nf_to_vec_renderable(
     defs: &mut Defs<Term>,
     basis: &Basis,
 ) -> Result<Vec<Vec<RenderOp>>, Error> {
+    let settings = Settings::global();
     let mut normal_form = NormalForm::init();
     composition.apply_to_normal_form(&mut normal_form, defs)?;
 
@@ -307,11 +309,12 @@ pub fn nf_to_vec_renderable(
                 );
                 result.push(op);
             }
-            if SETTINGS.pad_end {
+            if settings.pad_end {
                 result.push(RenderOp::init_silent_with_length_osc_type_and_reverb(
                     1.0,
                     OscType::None,
                     None,
+                    settings,
                 ));
             }
             result

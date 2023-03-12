@@ -4,12 +4,10 @@ use crate::{
 };
 use num_rational::Rational64;
 use weresocool_parser::Init;
-use weresocool_shared::Settings;
 
 #[derive(Clone, Debug, PartialEq)]
 pub struct Oscillator {
     pub voices: (Voice, Voice),
-    pub settings: Settings,
 }
 
 #[derive(Copy, Clone, Debug, Eq, PartialEq)]
@@ -36,13 +34,9 @@ impl Basis {
 }
 
 impl Oscillator {
-    pub fn init(settings: &Settings) -> Self {
+    pub fn init() -> Self {
         Self {
-            voices: (
-                Voice::init(0, settings.clone()),
-                Voice::init(1, settings.clone()),
-            ),
-            settings: settings.clone(),
+            voices: (Voice::init(0), Voice::init(1)),
         }
     }
 

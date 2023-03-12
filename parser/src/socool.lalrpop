@@ -17,6 +17,7 @@ use weresocool_ast::{
         GenOp,
         Indices, 
         Index,
+        Scale,
 };
 use crate::parser::{Init, handle_fit_length_recursively};
 use crate::indices::{et, random_seed};
@@ -77,6 +78,7 @@ Operation: Term = {
     <op1: Operation> ">" "FitGain" <op2: ComposeOperation> => {
       unimplemented!()
     },
+
     // TODO: Revisit Focus/Lens
     <op1: Operation> ">" "@" <name: Name> <op2: ComposeOperation> => {
         Term::Op(
@@ -228,11 +230,6 @@ Index: Index = {
   <index: Index> "|" <term: Composeable> => Index::IndexAndTerm {index: Box::new(index), term},
 } 
 
-SuperCompose: Term = {
-  <o: ComposeOperation> => o,
-  <o: Generator> => Term::Gen(o)
-}
-
 ComposeOperation: Term = {
     <terms: Pipe<Composeable>> => {
       Term::Op(Compose { operations: handle_fit_length_recursively(terms) })
@@ -247,8 +244,14 @@ Composeable: Term = {
   <generator: Generator> => Term::Gen(generator),
 }
 
+Scale: Scale = {
+  <axis: Axis> <value: Rational> => Scale { axis, value }
+}
+
 BaseOperation: Term = {
-    "csv" <scale: Parenthesized<Rational>?> <path: Import>  => Term::Op(CSV { path, scale }),
+
+    "Csv1d" <scale: Parenthesized<Rational>?> <path: Import>  => Term::Op(CSV1d { path, scale }),
+    "Csv2d" <scales: Parenthesized<Comma<Scale>>> <path: Import>  => Term::Op(CSV2d { path, scales }),
     //
     r"\\|Lambda" <input_name: Parenthesized<Name>?> "{" <term: Operation> "}" => Term::Op(Lambda { term: Box::new(term),
         input_name, scope: uuid::Uuid::new_v4().to_string()}),
@@ -338,6 +341,7 @@ BaseOperation: Term = {
             Term::Op(Length { m: length }),
         ]})
     },
+    BracedOvertone
 };
 
 
@@ -348,6 +352,22 @@ Overtone: Term = {
         <g:Rational> ","
         <p:Rational>
     ")"
+    => Term::Op(Compose { operations: vec! [
+            Term::Op(TransposeM { m: fm }),
+            Term::Op(TransposeA { a: fa }),
+            Term::Op(Gain { m: g }),
+            Term::Op(PanA { a: p }),
+        ]
+    })
+}
+
+BracedOvertone: Term = {
+    "{"
+        <fm:Rational> ","
+        <fa:Rational> ","
+        <g:Rational> ","
+        <p:Rational>
+    "}"
     => Term::Op(Compose { operations: vec! [
             Term::Op(TransposeM { m: fm }),
             Term::Op(TransposeA { a: fa }),

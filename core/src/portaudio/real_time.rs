@@ -3,9 +3,7 @@ use rayon::prelude::*;
 use weresocool_error::Error;
 use weresocool_instrument::{renderable::Renderable, RenderVoice};
 use weresocool_portaudio as pa;
-use weresocool_shared::{get_settings, Settings};
-
-const SETTINGS: Settings = get_settings();
+use weresocool_shared::Settings;
 
 pub fn real_time(
     mut voices: Vec<RenderVoice>,
@@ -21,7 +19,7 @@ pub fn real_time(
 
         let result: Vec<(_, _)> = iter
             .filter_map(|voice| {
-                let ops = voice.get_batch(SETTINGS.buffer_size, None);
+                let ops = voice.get_batch(Settings::global().buffer_size, None);
                 match ops {
                     Some(mut batch) => {
                         Some((batch.clone(), batch.render(&mut voice.oscillator, None)))
@@ -49,13 +47,17 @@ pub fn get_output_settings(pa: &pa::PortAudio) -> Result<pa::stream::OutputSetti
     let output_info = pa.device_info(def_output)?;
     // println!("Default output device info: {:#?}", &output_info);
     let latency = output_info.default_low_output_latency;
-    let output_params =
-        pa::StreamParameters::new(def_output, SETTINGS.channels, SETTINGS.interleaved, latency);
+    let output_params = pa::StreamParameters::new(
+        def_output,
+        Settings::global().channels,
+        Settings::global().interleaved,
+        latency,
+    );
 
     let output_settings = pa::OutputStreamSettings::new(
         output_params,
-        SETTINGS.sample_rate as f64,
-        SETTINGS.buffer_size as u32,
+        Settings::global().sample_rate,
+        Settings::global().buffer_size as u32,
     );
 
     Ok(output_settings)

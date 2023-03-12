@@ -20,19 +20,14 @@ pub fn watch(
     render_manager: Arc<Mutex<RenderManager>>,
 ) -> Result<(), Error> {
     were_so_cool_logo(Some("Watching"), Some(filename.clone()));
-    let mut first_iteration = true;
+
+    let path = Path::new(&working_path).join(Path::new(&filename));
+
     std::thread::spawn(move || -> Result<(), Error> {
         loop {
-            if first_iteration {
-                render(&filename, &working_path, &render_manager);
-                first_iteration = false;
-            }
-
             let (tx, rx) = channel();
 
             let mut watcher = RecommendedWatcher::new(tx, Config::default()).unwrap();
-
-            let path = Path::new(&working_path).join(Path::new(&filename));
 
             watcher.watch(path.as_ref(), RecursiveMode::NonRecursive)?;
 
@@ -58,7 +53,7 @@ fn render(filename: &str, working_path: &Path, render_manager: &Arc<Mutex<Render
         };
 
     if let Some(voices) = render_voices {
-        render_manager.lock().unwrap().push_render(voices);
+        render_manager.lock().unwrap().push_render(voices, false);
         let mut rng = rand::thread_rng();
 
         print!(

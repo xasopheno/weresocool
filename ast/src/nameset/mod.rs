@@ -22,17 +22,13 @@ impl NameSet {
 
     pub fn to_vec(&self) -> Vec<String> {
         let count_b: BTreeMap<&usize, &String> = self.map.iter().map(|(k, v)| (v, k)).collect();
-        count_b
-            .values()
-            .into_iter()
-            .map(|v| v.to_string())
-            .collect()
+        count_b.values().map(|v| v.to_string()).collect()
     }
 
     pub fn to_vec_str(&self) -> Vec<&str> {
         let count_b: BTreeMap<&usize, &str> =
             self.map.iter().map(|(k, v)| (v, k.as_str())).collect();
-        count_b.values().into_iter().copied().collect()
+        count_b.values().copied().collect()
     }
 
     pub fn last(&self) -> Option<String> {

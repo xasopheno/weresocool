@@ -10,20 +10,20 @@ pub fn new(filename: &String, cwd: PathBuf) -> Result<(), Error> {
 }
 
 fn new_socool_file(filename: String, working_path: PathBuf) -> Result<(), Error> {
-    let path = working_path.join(format!("{filename}.socool"));
+    let path = working_path.join(filename.clone());
 
     fs::write(path, DEFAULT_SOCOOL).expect("Unable to write file");
-    play_file(format!("{filename}.socool"), working_path, Play::Once)?;
+    play_file(filename, working_path, Play::Once)?;
     Ok(())
 }
 
-const DEFAULT_SOCOOL: &str = indoc! {"
+pub const DEFAULT_SOCOOL: &str = indoc! {"
 { f: 311.127, l: 1, g: 1/3, p: 0 }
 
 thing1 = {
-    O[
-        (1/1, 2, 1, 1),
-        (1/1, 0, 1, -1),
+    Overlay [
+        {1/1, 2, 1, 1},
+        {1/1, 0, 1, -1},
     ]
     | Seq [
         Fm 1, Fm 9/8, Fm 5/4
@@ -31,9 +31,9 @@ thing1 = {
 }
 
 thing2 = {
-    O[
-        (1/1, 2, 1, 1),
-        (1/1, 0, 1, -1),
+    Overlay [
+        {1/1, 3, 1, 1},
+        {1/1, 0, 1, -1},
     ]
     | Seq [
         Fm 3/4

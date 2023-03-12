@@ -1,0 +1,12 @@
+{ f: 220, l: 1, g: 1, p: 0 } 
+
+
+main = {
+    Csv2d(f: 2.0, l: 1.0) ./mocks/data/data2d.csv
+}
+
+expect = {
+    Seq [
+     Fa 2/1, Fa 4/1, Fa 6/1 
+    ]
+}

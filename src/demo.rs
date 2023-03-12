@@ -1,185 +1,243 @@
-use crate::play::play_once;
 use crate::Error;
 use indoc::indoc;
+use std::sync::Arc;
+use std::sync::Mutex;
 use weresocool::interpretable::InputType::Language;
 use weresocool::manager::prepare_render_outside;
+use weresocool::manager::RenderManager;
+use weresocool::portaudio::real_time_render_manager;
+use weresocool::ui::were_so_cool_logo;
 
 pub fn demo() -> Result<(), Error> {
-    let render_voices = prepare_render_outside(Language(DEMO), None);
-    play_once(render_voices?, "demo.socool".to_string())?;
+    were_so_cool_logo(Some("Playing"), Some("Demo".to_owned()));
+
+    let (tx, rx) = std::sync::mpsc::channel::<bool>();
+    let render_manager = Arc::new(Mutex::new(RenderManager::init(None, Some(tx), true, None)));
+
+    let render_voices = prepare_render_outside(Language(DEMO), None)?;
+
+    render_manager
+        .lock()
+        .unwrap()
+        .push_render(render_voices, true);
+
+    let mut stream = real_time_render_manager(Arc::clone(&render_manager))?;
+
+    stream.start()?;
+    // rx.recv blocks until it receives data and
+    // after that, the function will complete,
+    // stream will be dropped, and the application
+    // will exit.
+    match rx.recv() {
+        Ok(_) => {}
+        Err(e) => {
+            println!("{}", e);
+            std::process::exit(1);
+        }
+    };
     Ok(())
 }
 
 const DEMO: &str = indoc! {"
-{ f: 440, l: 1, g: 1/3, p: 0 }
-thing1 = {
-  Overlay [
-      O[
-        (1/1, 2, 1, 2/5),
-        (1/1, 0, 1, -2/5),
-      ]
-      | Seq [
-        Fm 1, Fm 0, Fm 0
-      ] | Lm 1/3,
-      Seq [
-          O[
-            (1/2, 0.1, 1, 1/8),
-            (1/2, 0, 1, -1/8),
-          ]
-          | Seq [Lm 7, Lm 0] | Lm 1/8
-      ]
-  ]
-  | Seq [
-    Fm 1, Fm 3/2, Fm 5/6, Fm 1/2, 
-    Fm 5/4, Fm 3/4, Fm 15/8, Fm 1/2, 
-    Fm 2, Fm 5/8, Fm 2/3 | Pa 1, Fm 9/4, 
-    Fm 5/6, Fm 2/3, Fm 9/16, Fm 1/2,
-    Fm 5/2, Fm 11/4, Fm 1/2, Fm 3,
-    Fm 25/12, Fm 5/4, Fm 5/3, Fm 25/24,
-    Fm 9/8, Fm 8/4, Fm 5/6, Fm 2/3 | Pa -1,
-    Fm 3/4 | Pa -1, Fm 4/3, Fm 15/8, Fm 8/3,
-    Fm 7/3, Fm 7/8, Fm 3/4, Fm 9/8,
-    Fm 5/8 | Pa 1, Fm 11/8, Fm 5/2, Fm 1/2 | Pa -1,
-    Fm 5/2 | Pa -1, Fm 2/3, Fm 5/2, Fm 8/3 | Pa 1,
-    Fm 9/8, Fm 5/4, Fm 1/2, Fm 8/3 | Pa -1, 
-    Fm 3/2, Fm 1, Fm 5/8, Fm 3, 
-    Fm 10/3 | Pa -1, Fm 4/3, Fm 1/2, Fm 16/5 | Pa 1
-  ]
-  | Lm 1/8
-  | Repeat 3
+{ f: 311.127, l: 1, g: 1/3, p: 0 }
+
+chord = {
+    Overlay [
+        {9/2, 0, 1/2, -1},
+        {9/2, 0, 1/2, -1},
+        {4, 0, 1/2, -1},
+        {4, 0, 1/2, -1},
+        {10/3, 0, 1/2, -1},
+        {16/5, 0, 1/2, -1},
+        {5/4, 4, 1/2, 1},
+        {8/3, 0, 1/2, -1},
+        {5/4, 4, 1/2, 1},
+        {7/3, 0, 1/2, -1},
+        {9/4, 4, 1/2, 1},
+        {3/2, 4, 1/2, 1},
+        {11/8, 0, 1/2, -1},
+        {5/4, 7, 1/2, 1},
+        {7/6, 0, 1/2, -1},
+        {3/2, 4, 1, 1/4},
+        {3/2, 0, 1, -1/4},
+        {1/3, 4, 1, 1/4},
+        {1/3, 0, 1, -1/4},
+    ]
+    | Fm 9/8 
 }
 
-thing2 = {
-  Overlay [
-    Seq [
-      Fm 0 | Lm 4, Fm 1, Fm 0 | Lm 3
-    ],
-    Seq [
-      Fm 0 | Lm 5, Fm 2, Fm 0 | Lm 3
-    ] | Gm 1/8,
-    Seq [
-      Fm 0 | Lm 6, Fm 3, Fm 0 | Lm 3
-    ] | Gm 1/32,
-    Seq [
-      Fm 0 | Lm 7, Fm 4, Fm 0 | Lm 3
-    ] | Gm 1/64,
-    Seq [
-      Fm 0 | Lm 8, Fm 1/2, Fm 0 | Lm 3
-    ] | Gm 1/32
-  ]
-  | Seq [
-      O[
-        (3, 0, 1/8, 1/8),
-        (5/4, 2, 1, 1/2),
-        (1/2, 0, 1, -1/2),
-        (1/4, 0, 1, 1/2),
-      ],
-      O[
-        (10/3, 0, 1/8, -1/8),
-        (4/3, 2, 1, 1/2),
-        (9/16, 0, 1, -1/2),
-        (3/16, 0, 1, 1/2),
-      ],
-      O[
-        (15/4, 0, 1/8, -1/8),
-        (3/2, 2, 1, 1/2),
-        (5/8, 0, 1, -1/2),
-        (3/8, 0, 1, 1/2),
-      ],
-      O[
-        (15/4, 0, 1/8, 1/8),
-        (3/2, 2, 1, 1/2),
-        (3/8, 0, 1, -1/2),
-        (3/16, 0, 1, 1/2),
-      ],
-      O[
-        (5/2, 0, 1/8, 1/8),
-        (5/3, 2, 1, 1/2),
-        (1/3, 0, 1, -1/2),
-        (5/12, 0, 1, -1/2),
-      ],
-      O[
-        (8/3, 0, 1/8, -1/8),
-        (15/8, 2, 1, 1/2),
-        (9/16, 0, 1, -1/2),
-        (3/8, 0, 1, -1/2),
-      ],
-      O[
-        (9/4, 0, 1/4, 1/8),
-        (2, 2, 1, 1/2),
-        (2/3, 0, 1, -1/2),
-        (1/3, 0, 1, -1/2),
-      ],
-      O[
-        (5/2, 0, 1, -1/8),
-        (2, 2, 1, 1/2),
-        (5/8, 0, 1, -1/2),
-        (1/2, 0, 1, 0),
-        (1/4, 0, 1, 0),
-      ] | Lm 2,
-  ]
-  | Overlay [
-    Sine | Fa -3 | Pm -1 | Gm 1/5, 
-    Sine | Gm 1/2, 
-    Sine 1.6 | Gm 1/8 | Fm 1/2 | Fa -7,
-    Pm -1/8 | Sine 1.75 | Gm 1/8 | Fm 1/2,
-  ]
-  | FitLength thing1
+overtones1 = {
+    Overlay [
+        {1/1, 2, 1, 1/2},
+        {1/1, 0, 1, -1/2},
+        {3/4, 3, 1/8, 1},
+        {3/4, 0, 1/8, -1},
+        {0/1, 7, 1, 1},
+        {0/1, 0, 1, -1},
+    ]
+}
+
+overtones2 = {
+    Overlay [
+        {4, -9, 1/7, 1/4},
+        {4, 0, 1/7, -1/4},
+        {1/2, 2, 1, 1},
+        {1/2, 0, 1, -1},
+        {1/4, 2, 1, 1},
+        {1/4, 0, 1, -1},
+    ]
 }
 
 bass = {
-  O[
-    (3/4, 2, 1, 1),
-    (3/4, 0, 1, 1),
-    (1/1, 1, 1, -1),
-    (1/1, 0, 1, -1),
-  ]
-  | Fa 10
-  | Fm 2
-  | Gm 1/2
-  | Seq [Fm 1, Fm 0, Fm 0] | Repeat 8
-  | Seq [
-    Fm 1
-  ]
-  | Seq [Pm 1, Pm -1]
-  | Repeat 2
-  | Repeat 4 
-  | FitLength thing1
+    Seq [
+        Fm 7/8, Fm 1, Fm 3/2, Fm 9/8, Fm 5/4, Fm 4/3 | Lm 2, Fm 5/4, Fm 7/8,
+        Fm 1, Fm 5/4, Fm 4/3, Fm 1, Fm 5/4, Fm 5/3, Fm 9/8, Fm 5/6, Fm 7/8,
+   ]
+   | Overlay [Sine, Sine 3/2 | Fm 1/2 | Gm 1/7]
+   | Seq [Repeat 2, Fm 5/6, Reverse]
 }
 
-drums = {
-  Noise | 
-  O[
-    (1/1, 1, 1, 1/6),
-    (2, 0, 1, 1/8),
-  ]
-  | Gm 1/2
-  | Seq [Fm 1, Fm 0, Fm 0]
-  | Seq [Fm 1, Fm 1/4]
-  | Seq [
-    Fm 1
-  ]
-  | Seq [Pm 1, Pm -1]
-  | Repeat 6
-  | Repeat 8
-  | ModBy [
-    Gm 0, Gm 1
-  ]
-  | Gm 1/6
-  | FitLength thing1
+thing2 = {
+    Overlay [
+        {2, 7, 1/2, 1/5},
+        {2, 0, 1/2, -1/5},
+        {3/2, 4, 1, 1/4},
+        {3/2, 0, 1, -1/4},
+        {1/1, -7, 1, 1/7},
+        {1/1, 0, 1, -1/7},
+    ]
+    | Overlay [
+        Square | Gm 1/7,
+        Sine | Gm 1/7 | Pm 2,
+    ]
+    | Seq [
+        Fm 3/4, Fm 5/6, Fm 7/8, Fm 9/8, Fm 1, Fm 7/8, Fm 9/8, Fm 1, Fm 5/6
+    ]
+    | Overlay [
+        {1/1, -3, 1, 1},
+        {1/1, 0, 1, -1},
+    ]
+    | Gm 1/2
+    | Repeat 2
+    | FitLength bass
 }
 
+thing6 = {
+    Overlay [
+        {1/1, 3, 1/2, -1},
+        {1/1, -2, 1/2, 1},
+    ] 
+    | Seq [
+        Fm 2, Fm 2, Fm 2, Fm 2, Fm 5/2, Fm 5/2, Fm 9/4, Fm 9/4,
+        Fm 3, Fm 2, Fm 2, Fm 9/4, Fm 5/2, Fm 5/2, Fm 9/4, Fm 9/4,
+    ]
+    | Lm 2
+}
+
+thing3 = {
+    Overlay [
+        {1/1, 5, 1/2, -1},
+        {1/1, -2, 1/2, 1},
+    ] 
+    | Seq [
+        Fm 3/2, Fm 4/3, Fm 5/3, Fm 3/2, Fm 2, Fm 3/2, Fm 5/3, Fm 15/8,
+        Fm 1, Fm 1, Fm 4/3, Fm 5/3, Fm 4/3, Fm 3/2, Fm 5/3, Fm 15/8,
+    ]
+    | Lm 2
+}
+
+thing4 = {
+    Overlay [
+        {1/1, 2, 1/2, -1},
+        {1/1, 0, 1/2, 1},
+        {1/2, 4, 1/2, 1},
+        {1/2, 0, 1/2, -1},
+    ] 
+    | Seq [
+        Fm 5/4, Fm 9/8, Fm 4/3, Fm 5/4, Fm 5/3, Fm 5/4, Fm 4/3, Fm 3/2,
+        Fm 1, Fm 5/6, Fm 9/8, Fm 4/3, Fm 9/8, Fm 5/4, Fm 4/3, Fm 3/2,
+    ]
+    | Lm 2
+}
+
+thing5 = {
+    Overlay [
+        {1/2, -1, 1/2, 1},
+        {1/2, 0, 1/2, -1},
+        {1/4, -1, 1/2, 1},
+        {1/4, 0, 1/2, -1},
+    ] 
+    | Seq [
+        Fm 1, Fm 1, Fm 1, Fm 3/4, Fm 2/3, Fm 5/8, Fm 9/16, Fm 9/16,
+        Fm 2/3, Fm 2/3, Fm 3/4, Fm 3/4, Fm 9/16, Fm 5/8, Fm 2/3, Fm 3/4,
+    ]
+    | Lm 2
+}
 
 main = {
-  Overlay [
-    thing1,
-    thing2,
-    bass,
-    drums
-  ]
-  | Seq[
-    Lm 1, 
-    Fa 8 | Lm 9/11
-  ]
+    Seq [
+        Seq [
+            Fm 25/24 | chord | Lm 1/4 | ModBy [Fm 1, Fm 3/4, Fm 1/2, Fm 1/3, Fm 1/4] | Gm 1/3,
+            Fm 0 | Lm 1/100,
+            Overlay [
+                Overlay [
+                    Seq [
+                        Fm 0, Fm 1 
+                    ] | Lm 1/2,
+                    Seq [
+                        Fm 1, Fm 0 
+                    ] | Lm 1/3
+                ]
+                | overtones1 | bass,
+                thing2
+            ] 
+            | Fm 25/24 
+            | Lm 1/7,
+            Fm 0 | Lm 1/100,
+            chord | Lm 1/4 | ModBy [Fm 1, Fm 3/4, Fm 1/2, Fm 1/3, Fm 1/4] | Gm 1/3,
+            Fm 0 | Lm 1/8,
+            Overlay [
+                overtones2 | bass,
+                thing2
+            ] 
+            | Repeat 2
+            | Lm 1/5,
+            Fm 0 | Lm 1/100,
+        ]
+        | Repeat 2,
+        Seq [
+            Overlay [
+                thing6,
+                thing3,
+                thing4,
+                thing5,
+            ]
+            | Repeat 2
+            | Overlay [
+                {1/1, -0.07, 1/3, -1},
+                {1/1, 0, 1/2, 0},
+                {1/1, 0.03, 1/3, 1},
+            ],
+        ],
+        Fm 0 | Lm 1/100,
+        Fm 25/24 | chord | Lm 1/4 | ModBy [Fm 1, Fm 3/4, Fm 1/2, Fm 1/3, Fm 1/4] | Gm 1/3,
+        Fm 0 | Lm 1/100,
+        Overlay [
+            Overlay [
+                Seq [
+                    Fm 0, Fm 1 
+                ] | Lm 1/2,
+                Seq [
+                    Fm 1, Fm 0 
+                ] | Lm 1/3
+            ]
+            | overtones1 | bass,
+            thing2
+        ] 
+        | Fm 25/24 
+        | Lm 1/7,
+        Fm 0 | Lm 1/100,
+        chord | Lm 1/4 | ModBy [Fm 1, Fm 3/4, Fm 1/2, Fm 1/3, Fm 1/4] | Gm 1/3,
+    ]
 }
 "};

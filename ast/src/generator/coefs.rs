@@ -40,7 +40,7 @@ pub enum Coefs {
     },
 }
 
-#[allow(clippy::derive_hash_xor_eq)]
+#[allow(clippy::derive_ord_xor_partial_ord)]
 impl Hash for Coefs {
     fn hash<H: Hasher>(&self, state: &mut H) {
         match self {

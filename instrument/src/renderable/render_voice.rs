@@ -2,9 +2,7 @@ use crate::renderable::{Offset, RenderOp, Renderable};
 use crate::{Oscillator, StereoWaveform};
 #[cfg(feature = "app")]
 use rayon::prelude::*;
-use weresocool_shared::{get_settings, Settings};
-
-const SETTINGS: Settings = get_settings();
+use weresocool_shared::Settings;
 
 #[derive(Debug, Clone, PartialEq)]
 pub struct RenderVoice {
@@ -19,17 +17,12 @@ impl RenderVoice {
             sample_index: 0,
             op_index: 0,
             ops: ops.to_vec(),
-            oscillator: Oscillator::init(&SETTINGS),
+            oscillator: Oscillator::init(),
         }
     }
 
     /// Recursive function to prepare a batch of RenderOps for rendering
     /// Initially pass in None as result
-    /// ```
-    /// # use weresocool_instrument::renderable::{RenderOp, RenderVoice};
-    /// let mut voice = RenderVoice::init(&vec![RenderOp::init_silent_with_length(1.0)]);
-    /// let batch = voice.get_batch(1024, None);
-    /// ```
     pub fn get_batch(
         &mut self,
         samples_left_in_batch: usize,
@@ -40,7 +33,7 @@ impl RenderVoice {
             None => vec![],
         };
 
-        if SETTINGS.loop_play && self.op_index >= self.ops.len() {
+        if Settings::global().loop_play && self.op_index >= self.ops.len() {
             self.op_index = 0;
         }
 

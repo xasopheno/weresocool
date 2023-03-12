@@ -1,8 +1,31 @@
-pub const fn get_settings() -> Settings {
-    if cfg!(test) {
-        get_test_settings()
-    } else {
-        default_settings()
+use once_cell::sync::OnceCell;
+
+static SETTINGS: OnceCell<Settings> = if cfg!(test) {
+    OnceCell::with_value(get_test_settings())
+} else {
+    // OnceCell::with_value(default_settings())
+    OnceCell::new()
+};
+
+impl Settings {
+    pub fn global() -> &'static Settings {
+        SETTINGS.get().expect("Oh no! Settings are not initialized")
+    }
+
+    pub fn init(sample_rate: f64, buffer_size: usize) {
+        _ = SETTINGS.set(Settings {
+            sample_rate,
+            buffer_size,
+            ..default_settings()
+        });
+    }
+
+    pub fn init_default() {
+        _ = SETTINGS.set(default_settings());
+    }
+
+    pub fn init_test() {
+        _ = SETTINGS.set(get_test_settings());
     }
 }
 

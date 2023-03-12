@@ -7,9 +7,7 @@ use weresocool_instrument::StereoWaveform;
 use std::sync::{Arc, Mutex};
 use weresocool_error::Error;
 use weresocool_portaudio as pa;
-use weresocool_shared::{get_settings, Settings};
-
-const SETTINGS: Settings = get_settings();
+use weresocool_shared::Settings;
 
 pub fn real_time_render_manager(
     render_manager: Arc<Mutex<RenderManager>>,
@@ -18,14 +16,19 @@ pub fn real_time_render_manager(
     let output_stream_settings = get_output_settings(&pa)?;
 
     let output_stream = pa.open_non_blocking_stream(output_stream_settings, move |args| {
-        let batch: Option<(StereoWaveform, Vec<f32>)> =
-            render_manager.lock().unwrap().read(SETTINGS.buffer_size);
+        let batch: Option<(StereoWaveform, Vec<f32>)> = render_manager
+            .lock()
+            .unwrap()
+            .read(Settings::global().buffer_size);
 
         if let Some((b, ramp)) = batch {
             new_write_output_buffer(args.buffer, b, ramp);
             pa::Continue
         } else {
-            write_output_buffer(args.buffer, StereoWaveform::new(SETTINGS.buffer_size));
+            write_output_buffer(
+                args.buffer,
+                StereoWaveform::new(Settings::global().buffer_size),
+            );
 
             pa::Continue
         }
@@ -39,13 +42,17 @@ pub fn get_output_settings(pa: &pa::PortAudio) -> Result<pa::stream::OutputSetti
     let output_info = pa.device_info(def_output)?;
     // println!("Default output device info: {:#?}", &output_info);
     let latency = output_info.default_low_output_latency;
-    let output_params =
-        pa::StreamParameters::new(def_output, SETTINGS.channels, SETTINGS.interleaved, latency);
+    let output_params = pa::StreamParameters::new(
+        def_output,
+        Settings::global().channels,
+        Settings::global().interleaved,
+        latency,
+    );
 
     let output_settings = pa::OutputStreamSettings::new(
         output_params,
-        SETTINGS.sample_rate,
-        SETTINGS.buffer_size as u32,
+        Settings::global().sample_rate,
+        Settings::global().buffer_size as u32,
     );
 
     Ok(output_settings)

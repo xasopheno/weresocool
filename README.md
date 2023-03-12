@@ -3,7 +3,7 @@
 
 A language for composing mictoronal music built in Rust. You might find this language useful if you want to make cool sounds and impress your friends/pets/plants. 
 
-This language does not require familiarity with either microtonal music or computer programming, but experience with either will certainly help. 
+This language is designed to be easy to use, and you don't need any prior knowledge of microtonal music or computer programming. However, experience in either area will certainly be helpful.
 
 The **WereSoCool CLI** is availble on **macOS**, **Linux** and **Windows**.  You can also explore the language in a Firefox or Chrome browser on a desktop computer in the [WereSoCool Playground](https://www.weresocool.org/playground). Live coding in the browser currently only works on desktop in a Firefox or Chrome browser. 
 
@@ -12,7 +12,7 @@ If you want to learn how to make cool sounds using WereSoCool, you'll find cool 
   at [weresocool.org](https://www.weresocool.org/).
 
 
-My recommended approach to learning the language is to do the tutorials in order and write your own composition after completing each one. I'm currently working on additional documentation as well as a record I've made using WereSoCool featuring a great band. Stay tuned. 
+I recommend following the tutorials in order and writing your own composition after completing each one. Additional documentation is currently being worked on, as well as a record featuring a great band, so stay tuned. 
 
 On mobile, you can still view the tutorials, but you won't be able to hear anything.
 

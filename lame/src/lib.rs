@@ -79,6 +79,11 @@ impl Lame {
     pub fn new() -> Option<Self> {
         let ctx = unsafe { ffi::lame_init() };
 
+        unsafe {
+            crate::ffi::lame_set_in_samplerate(ctx, 48000);
+            dbg!(crate::ffi::lame_get_in_samplerate(ctx));
+        }
+
         if ctx.is_null() {
             None
         } else {
@@ -123,7 +128,7 @@ impl Lame {
 
     /// Returns the output bitrate in kilobits per second.
     pub fn kilobitrate(&self) -> i32 {
-        unsafe { ffi::lame_get_brate(self.ptr) as i32 }
+        unsafe { ffi::lame_get_brate(self.ptr) }
     }
 
     /// Sets the target output bitrate. This value is in kilobits per second,

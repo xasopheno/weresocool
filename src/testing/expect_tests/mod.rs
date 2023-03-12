@@ -1,5 +1,5 @@
 #[cfg(test)]
-mod expect {
+mod generated_tests {
     use crate::{
         generation::{RenderReturn, RenderType},
         interpretable::{InputType::Filename, Interpretable},
@@ -64,6 +64,11 @@ mod expect {
 
     #[test_resources("mocks/tags/*.socool")]
     fn __tags_generated_(resource: &str) {
+        expect(resource);
+    }
+
+    #[test_resources("mocks/ops/*.socool")]
+    fn __ops_generated_(resource: &str) {
         expect(resource);
     }
 

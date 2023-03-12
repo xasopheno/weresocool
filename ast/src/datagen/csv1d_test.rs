@@ -3,7 +3,9 @@ mod eeg_test {
     use num_rational::Rational64;
 
     use crate::{
-        datagen::{csv_to_normalform, eeg_data_to_normal_form, eeg_datum_to_point_op, CsvData},
+        datagen::mod_1d::{
+            csv1d_to_normalform, eeg_data_to_normal_form, eeg_datum_to_point_op, CsvData,
+        },
         NameSet, NormalForm, PointOp,
     };
     #[test]
@@ -55,7 +57,7 @@ mod eeg_test {
     }
     #[test]
     fn test_csv_to_normalform() {
-        let result = csv_to_normalform(
+        let result = csv1d_to_normalform(
             "./src/datagen/test_data.csv",
             Some(Rational64::new(200_000_000_000_000, 1)),
         )

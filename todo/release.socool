@@ -1,3 +1,4 @@
+
 # Publishing
     [x] vscode syntax highlighting
     [ ] sublimetext syntax highlighting
@@ -18,8 +19,8 @@
 
 # Bugs
     [x] Fix panic that happens when the piece doesn't render the first time on watch.
-    [] --volume, --samplerate
-    pass in settings/rate on render_manager creation
+    [x] pass in settings/rate on render_manager creation
+    [ ] --volume, --samplerate
 
 # Simplify
     [x] Move core into own package
@@ -37,9 +38,10 @@
 # CLI 
     [x] Add OggVorbis, silly, but almost done. 
     - clean up Vorbis crate
-    [ ] play/watch should be play and --watch
+    [x] play/watch should be play and --watch
 
 # Documentation
+    [ ] Fix O operation in docks
     [x] weresocool crate should be weresocool_cli
     [x] using the cli
     [x] how to build

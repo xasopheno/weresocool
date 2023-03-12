@@ -98,7 +98,7 @@ impl Index {
                 .filter_map(|(i, n)| {
                     if i % *skip as usize == 0 {
                         Some(IndexVector {
-                            index: *n as usize,
+                            index: *n,
                             index_terms: vec![],
                         })
                     } else {

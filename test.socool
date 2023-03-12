@@ -22,9 +22,10 @@ thing2 = {
 }
 
 main = {
-  Overlay [
-    thing1,
-    thing2
-  ]
+    csv(f: 1.0, l: 1.0) ./test.csv
+  -- Overlay [
+    -- thing1,
+    -- thing2
+  -- ]
 }
 

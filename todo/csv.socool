@@ -1,0 +1,5 @@
+CSV(f: 2.0e14, l: 2.0) ./filename.socool
+CSV(f: 2.0, g: 2.0, l: 1.0, p: 1.0) ./filename.socool
+
+
+    -- csv(2.0e14) ./mocks/data/data.csv
