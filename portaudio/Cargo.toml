@@ -1,6 +1,6 @@
 [package]
 name = "weresocool_portaudio"
-version = "1.0.44"
+version = "1.0.45"
 authors = ["<letang.jeremy@gmail.com>",
            "Mitchell Nordine <mitchell.nordine@gmail.com>",
            "Danny Meyer <weresocool@xasopheno.com>"
@@ -14,4 +14,4 @@ repository = "https://github.com/xasopheno/weresocool.git"
 bitflags = "1.3.2"
 libc = "0.2.51"
 num = { version = "0.2.0", default-features = false }
-weresocool_portaudio_sys = { path = "./rust-portaudio-sys", version = "^1.0.44" }
+weresocool_portaudio_sys = { path = "./rust-portaudio-sys", version = "^1.0.45" }
