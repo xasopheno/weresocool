@@ -3,7 +3,15 @@ use colored::*;
 const VERSION: &str = env!("CARGO_PKG_VERSION");
 
 pub fn clear_screen() {
-    std::process::Command::new("clear").status().unwrap();
+    if let Err(e) = if cfg!(target_os = "windows") {
+        std::process::Command::new("cmd")
+            .args(["/C", "cls"])
+            .status()
+    } else {
+        std::process::Command::new("clear").status()
+    } {
+        eprintln!("Failed to clear the screen: {:?}", e);
+    }
 }
 
 pub fn were_so_cool_logo(action: Option<&str>, filename: Option<String>) {
