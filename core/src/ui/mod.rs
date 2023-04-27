@@ -5,7 +5,7 @@ const VERSION: &str = env!("CARGO_PKG_VERSION");
 pub fn clear_screen() {
     if let Err(e) = if cfg!(target_os = "windows") {
         std::process::Command::new("cmd")
-            .args(&["/C", "cls"])
+            .args(["/C", "cls"])
             .status()
     } else {
         std::process::Command::new("clear").status()
