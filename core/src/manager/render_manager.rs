@@ -101,6 +101,30 @@ impl RenderManager {
         }
     }
 
+    pub fn init_wasm(settings: Option<RenderManagerSettings>) -> Self {
+        if !cfg!(test) {
+            if let Some(s) = settings {
+                Settings::init(s.sample_rate, s.buffer_size);
+            } else {
+                Settings::init_default();
+            };
+        }
+        Self {
+            visualization: Visualization {
+                channel: None,
+                normalizer: Normalizer::default(),
+            },
+            renders: [None, None],
+            past_volume: 0.8,
+            current_volume: 0.8,
+            render_idx: 0,
+            _read_idx: 0,
+            kill_channel: None,
+            once: false,
+            paused: false,
+        }
+    }
+
     pub fn kill(&self) -> Result<(), SendError<bool>> {
         if let Some(kc) = &self.kill_channel {
             kc.send(true)?;
