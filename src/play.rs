@@ -75,9 +75,9 @@ fn play_watch(filename: String, working_path: PathBuf) -> Result<(), Error> {
 
 pub fn maybe_create_file_if_needed(filename: String, working_path: PathBuf) {
     let mut input = String::new();
-    let path = working_path.join(filename);
+    let path = working_path.join(filename.clone());
     if !path.exists() {
-        println!("{{filename}} does not exist. Create it? (y/n)");
+        println!("{filename} does not exist. Create it? (y/n)");
 
         io::stdin()
             .read_line(&mut input)
