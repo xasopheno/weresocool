@@ -103,11 +103,13 @@ impl Voice {
             op.total_samples,
         ) * loudness_normalization(self.offset_current.frequency);
 
-        self.reverb.model.update(if self.current.reverb.is_some() {
-            self.current.reverb.unwrap() as f32
-        } else {
-            0.0
-        });
+        self.reverb
+            .model
+            .update(self.current.reverb.unwrap_or(0.0) as f32);
+
+        let gain_factor = op_gain * offset.gain;
+        let sample_limit = if op.samples > 250 { op.samples } else { 250 };
+        let apply_reverb = self.reverb.state.map_or(false, |s| s > 0.0);
 
         for (index, sample) in buffer.iter_mut().enumerate() {
             let frequency = self.calculate_frequency(
@@ -117,24 +119,19 @@ impl Voice {
                 self.offset_past.frequency,
                 self.offset_current.frequency,
             );
-            let gain = gain_at_index(
-                self.offset_past.gain,
-                op_gain * offset.gain,
-                index,
-                if op.samples > 250 { op.samples } else { 250 },
-            );
-
+            let gain = gain_at_index(self.offset_past.gain, gain_factor, index, sample_limit);
             let info = SampleInfo { frequency, gain };
 
             let mut new_sample = match self.osc_type {
                 OscType::None => self.generate_sine_sample(info, None),
                 OscType::Sine { pow } => self.generate_sine_sample(info, pow),
+
                 OscType::Triangle { pow } => self.generate_triangle_sample(info, pow),
                 OscType::Square { width } => self.generate_square_sample(info, width),
                 OscType::Noise => self.generate_random_sample(info),
             };
 
-            if self.reverb.state.is_some() && self.reverb.state.unwrap() > 0.0 && gain > 0.0 {
+            if apply_reverb && gain > 0.0 {
                 new_sample = self
                     .reverb
                     .model
@@ -150,7 +147,7 @@ impl Voice {
             *sample += new_sample
         }
 
-        buffer.to_vec()
+        buffer
     }
 
     pub fn update(&mut self, op: &RenderOp, offset: &Offset) {
