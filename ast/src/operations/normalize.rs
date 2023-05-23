@@ -124,6 +124,8 @@ impl Normalize<Term> for Op {
                 input.fmap_mut(|op| op.osc_type = OscType::Triangle { pow: *pow })
             }
 
+            Op::Saw => input.fmap_mut(|op| op.osc_type = OscType::Saw),
+
             Op::Square { width } => {
                 input.fmap_mut(|op| op.osc_type = OscType::Square { width: *width })
             }

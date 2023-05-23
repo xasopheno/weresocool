@@ -1,4 +1,5 @@
 use crate::{
+    filters::*,
     renderable::{Offset, RenderOp},
     {gain::gain_at_index, loudness::loudness_normalization},
 };
@@ -20,6 +21,7 @@ pub struct Voice {
     pub attack: usize,
     pub decay: usize,
     pub asr: ASR,
+    pub filters: Vec<BiquadFilter>,
 }
 
 #[derive(Clone, Debug, PartialEq)]
@@ -70,6 +72,9 @@ impl ReverbState {
 
 impl Voice {
     pub fn init(index: usize) -> Self {
+        let coefs = lowpass(100.0, 1.0);
+        let filter = BiquadFilter::new(coefs.0, coefs.1);
+
         Self {
             index,
             reverb: ReverbState::init(),
@@ -82,6 +87,7 @@ impl Voice {
             attack: Settings::global().sample_rate as usize,
             decay: Settings::global().sample_rate as usize,
             asr: ASR::Long,
+            filters: vec![filter],
         }
     }
 
@@ -125,9 +131,9 @@ impl Voice {
             let mut new_sample = match self.osc_type {
                 OscType::None => self.generate_sine_sample(info, None),
                 OscType::Sine { pow } => self.generate_sine_sample(info, pow),
-
                 OscType::Triangle { pow } => self.generate_triangle_sample(info, pow),
                 OscType::Square { width } => self.generate_square_sample(info, width),
+                OscType::Saw => self.generate_sawtooth_sample(info),
                 OscType::Noise => self.generate_random_sample(info),
             };
 
@@ -143,6 +149,8 @@ impl Voice {
                 self.offset_current.frequency = frequency;
                 self.offset_current.gain = gain;
             };
+
+            new_sample = self.filters[0].process(new_sample);
 
             *sample += new_sample
         }

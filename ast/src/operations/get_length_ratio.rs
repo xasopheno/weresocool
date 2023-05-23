@@ -18,6 +18,7 @@ impl GetLengthRatio<Term> for Op {
             | Op::Sine { .. }
             | Op::Triangle { .. }
             | Op::Square { .. }
+            | Op::Saw
             | Op::Noise {}
             | Op::FInvert {}
             | Op::Reverse {}
