@@ -70,16 +70,19 @@ pub fn lowpass(cutoff_frequency: f64, quality_factor: f64) -> ([f64; 3], [f64; 3
 }
 
 pub fn highpass(cutoff_frequency: f64, quality_factor: f64) -> ([f64; 3], [f64; 3]) {
+    // Calculate normalized cutoff frequency (w_c) and intermediate term alpha
     let normalized_cutoff = TAU * cutoff_frequency / Settings::global().sample_rate;
     let alpha = normalized_cutoff.sin() / (2.0 * quality_factor);
     let normalization_factor = 1.0 + alpha;
 
+    // Calculate feedforward coefficients (b values)
     let feedforward_coefs = [
         (1.0 + normalized_cutoff.cos()) / 2.0 / normalization_factor,
         -(1.0 + normalized_cutoff.cos()) / normalization_factor,
         (1.0 + normalized_cutoff.cos()) / 2.0 / normalization_factor,
     ];
 
+    // Calculate feedback coefficients (a values)
     let feedback_coefs = [
         1.0,
         -2.0 * normalized_cutoff.cos() / normalization_factor,
@@ -90,12 +93,24 @@ pub fn highpass(cutoff_frequency: f64, quality_factor: f64) -> ([f64; 3], [f64; 
 }
 
 pub fn bandpass(center_frequency: f64, quality_factor: f64) -> ([f64; 3], [f64; 3]) {
+    // Calculate normalized center frequency (w_0) and intermediate term alpha
     let normalized_center = TAU * center_frequency / Settings::global().sample_rate;
     let alpha = normalized_center.sin() / (2.0 * quality_factor);
 
-    let feedforward_coefs = [alpha, 0.0, -alpha];
+    // Calculate feedforward coefficients (b values)
+    let mut feedforward_coefs = [alpha, 0.0, -alpha];
 
-    let feedback_coefs = [1.0 + alpha, -2.0 * normalized_center.cos(), 1.0 - alpha];
+    // Calculate feedback coefficients (a values)
+    let mut feedback_coefs = [1.0 + alpha, -2.0 * normalized_center.cos(), 1.0 - alpha];
+
+    // Normalize coefficients
+    let normalization_factor = feedback_coefs[0];
+    for coef in &mut feedforward_coefs {
+        *coef /= normalization_factor;
+    }
+    for coef in &mut feedback_coefs {
+        *coef /= normalization_factor;
+    }
 
     (feedforward_coefs, feedback_coefs)
 }

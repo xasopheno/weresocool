@@ -72,7 +72,7 @@ impl ReverbState {
 
 impl Voice {
     pub fn init(index: usize) -> Self {
-        let coefs = lowpass(100.0, 1.0);
+        let coefs = highpass(400.0, 0.707);
         let filter = BiquadFilter::new(coefs.0, coefs.1);
 
         Self {
