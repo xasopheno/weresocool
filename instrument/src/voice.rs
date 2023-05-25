@@ -72,8 +72,10 @@ impl ReverbState {
 
 impl Voice {
     pub fn init(index: usize) -> Self {
-        let coefs = lowpass(100.0, 1.0);
-        let filter = BiquadFilter::new(coefs.0, coefs.1);
+        let coefs1 = lowpass(800.0, 10.0);
+        let coefs2 = highpass(1000.0, 10.0);
+        let filter1 = BiquadFilter::new(coefs1.0, coefs1.1);
+        let filter2 = BiquadFilter::new(coefs2.0, coefs2.1);
 
         Self {
             index,
@@ -87,7 +89,7 @@ impl Voice {
             attack: Settings::global().sample_rate as usize,
             decay: Settings::global().sample_rate as usize,
             asr: ASR::Long,
-            filters: vec![filter],
+            filters: vec![filter1, filter2],
         }
     }
 
@@ -150,7 +152,10 @@ impl Voice {
                 self.offset_current.gain = gain;
             };
 
-            new_sample = self.filters[0].process(new_sample);
+            new_sample = self
+                .filters
+                .iter_mut()
+                .fold(new_sample, |acc, filter| filter.process(acc));
 
             *sample += new_sample
         }
