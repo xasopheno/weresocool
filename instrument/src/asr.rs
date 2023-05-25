@@ -47,16 +47,17 @@ pub fn calculate_short_gain(
     if short {
         attack_length = total_length / 2;
         decay_length = total_length / 2;
-    };
+    }
 
     if index < attack_length {
         gain_at_index(past_gain, current_gain, index, attack_length)
-    } else if index > total_length - decay_length && silence_next {
-        gain_at_index(current_gain, 0.0, total_length - index, decay_length)
+    } else if index >= attack_length && index < total_length - decay_length && silence_next {
+        gain_at_index(current_gain, 0.0, index - attack_length, decay_length)
     } else {
         current_gain
     }
 }
+
 /// Calculate gain when decay happens during next op
 pub fn calculate_long_gain(
     past_gain: f64,
@@ -71,10 +72,11 @@ pub fn calculate_long_gain(
     if short {
         attack_length = total_length;
         decay_length = total_length;
-    };
+    }
+
     if index < attack_length {
         gain_at_index(past_gain, current_gain, index, attack_length)
-    } else if index < decay_length && silence_now {
+    } else if silence_now && index < decay_length {
         gain_at_index(current_gain, 0.0, index, decay_length)
     } else {
         current_gain
