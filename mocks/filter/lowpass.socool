@@ -1,0 +1,13 @@
+{ f: 220, l: 1, g: 1, p: 0 } 
+
+main = {
+  Overlay [
+    Fm 1
+  ]
+  | Lowpass 400.0 0.707
+}
+
+expect = {
+    Fm 1
+    | Lowpass 400.0 0.707
+}
