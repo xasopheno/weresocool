@@ -24,6 +24,11 @@ pub enum Op {
         scales: Vec<Scale>,
     },
     //
+    Lowpass {
+        cutoff_frequency: Rational64,
+        q_factor: Rational64,
+    },
+    //
     FunctionCall {
         name: String,
         args: Vec<Term>,

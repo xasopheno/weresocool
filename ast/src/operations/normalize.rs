@@ -36,6 +36,14 @@ impl Normalize<Term> for Op {
                 handle_id_error(id, defs)?.apply_to_normal_form(input, defs)?;
             }
 
+            Op::Lowpass {
+                cutoff_frequency,
+                q_factor,
+            } => {
+                let x = 1.0;
+                input.fmap_mut(|op| op.filters.push(filter));
+            }
+
             Op::CSV1d { path, scale } => {
                 csv1d_to_normalform(path, *scale)?.apply_to_normal_form(input, defs)?;
             }

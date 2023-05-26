@@ -1,3 +1,4 @@
+use crate::filter::BiquadFilter;
 use crate::{NameSet, OscType, Term, ASR};
 use num_rational::{Ratio, Rational64};
 use scop::Defs;
@@ -47,6 +48,7 @@ pub struct PointOp {
     pub osc_type: OscType,
     /// Set of Names
     pub names: NameSet,
+    pub filters: Vec<BiquadFilter>,
 }
 
 impl Default for PointOp {
