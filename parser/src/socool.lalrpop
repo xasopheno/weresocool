@@ -262,6 +262,7 @@ BaseOperation: Term = {
     <pa: Pa>   <a:Rational> => Term::Op(PanA {a}),
     <lm: Lm> <m:Rational> => Term::Op(Length {m}),
     <gain: Gm> <m:Rational> => Term::Op(Gain {m}),
+    "Lowpass" <c:Rational> <q:Rational> => Term::Op(Lowpass {cutoff_frequency: c, q_factor: q}),
     "AsIs" => Term::Op(AsIs {}),
     "Sine" <pow: Rational?> => {
       Term::Op(Sine { pow })

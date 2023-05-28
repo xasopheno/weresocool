@@ -1,6 +1,24 @@
 use float_cmp::ApproxEq;
+use hex;
 use num_rational::{Ratio, Rational64};
+use rand::RngCore;
 use std::str::FromStr;
+
+pub fn generate_random_hash_string() -> String {
+    // Create a byte array
+    let mut bytes = [0u8; 16]; // for 128-bit value
+
+    // Fill the array with random bytes
+    rand::thread_rng().fill_bytes(&mut bytes);
+
+    // Convert the byte array to a hexadecimal string
+    hex::encode(bytes)
+}
+
+fn main() {
+    let hash_string = generate_random_hash_string();
+    println!("Generated hash string: {}", hash_string);
+}
 
 pub fn r_to_f64(r: Rational64) -> f64 {
     *r.numer() as f64 / *r.denom() as f64

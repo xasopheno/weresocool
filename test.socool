@@ -33,8 +33,8 @@ main = {
   | Overlay [
     Saw,
     Square,
-    Sine
+    Sine 1.66 
   ]
-  | Gm 1/4
+  | Lowpass 1000.0 0.707
 }
 

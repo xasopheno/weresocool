@@ -11,6 +11,7 @@ use scop::Defs;
 use serde::{Deserialize, Serialize};
 use weresocool_ast::{NormalForm, Normalize, OscType, PointOp, Term, ASR};
 use weresocool_error::Error;
+use weresocool_filter::BiquadFilterDef;
 pub(crate) use weresocool_shared::{lossy_rational_mul, r_to_f64, Settings};
 
 #[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
@@ -35,6 +36,7 @@ pub struct RenderOp {
     pub next_l_silent: bool,
     pub next_r_silent: bool,
     pub names: Vec<String>,
+    pub filters: Vec<BiquadFilterDef>,
 }
 
 impl RenderOp {
@@ -58,7 +60,8 @@ impl RenderOp {
             osc_type: OscType::None,
             next_l_silent: false,
             next_r_silent: false,
-            names: vec![],
+            names: Vec::new(),
+            filters: Vec::new(),
         }
     }
     pub fn init_silent_with_length(l: f64) -> Self {
@@ -81,7 +84,8 @@ impl RenderOp {
             osc_type: OscType::None,
             next_l_silent: true,
             next_r_silent: true,
-            names: vec![],
+            names: Vec::new(),
+            filters: Vec::new(),
         }
     }
 
@@ -111,6 +115,7 @@ impl RenderOp {
             next_l_silent: true,
             next_r_silent: true,
             names: vec![],
+            filters: Vec::new(),
         }
     }
 }
@@ -221,6 +226,7 @@ fn pointop_to_renderop(
         next_l_silent,
         next_r_silent,
         names: point_op.names.to_vec(),
+        filters: point_op.filters.to_vec(),
     };
 
     *time += point_op.l * basis.l;

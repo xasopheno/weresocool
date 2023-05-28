@@ -1,12 +1,12 @@
 use crate::{
-    filters::*,
     renderable::{Offset, RenderOp},
     {gain::gain_at_index, loudness::loudness_normalization},
 };
 
 use reverb::Reverb;
 use weresocool_ast::{OscType, ASR};
-use weresocool_shared::Settings;
+use weresocool_filter::*;
+use weresocool_shared::*;
 
 #[derive(Clone, Debug, PartialEq)]
 pub struct Voice {
@@ -72,10 +72,10 @@ impl ReverbState {
 
 impl Voice {
     pub fn init(index: usize) -> Self {
-        let coefs1 = lowpass(800.0, 10.0);
-        let coefs2 = highpass(1000.0, 10.0);
-        let filter1 = BiquadFilter::new(coefs1.0, coefs1.1);
-        let filter2 = BiquadFilter::new(coefs2.0, coefs2.1);
+        // let coefs1 = lowpass(800.0, 10.0);
+        // let coefs2 = highpass(1000.0, 10.0);
+        // let filter1 = BiquadFilter::new(coefs1.0, coefs1.1);
+        // let filter2 = BiquadFilter::new(coefs2.0, coefs2.1);
 
         Self {
             index,
@@ -89,7 +89,7 @@ impl Voice {
             attack: Settings::global().sample_rate as usize,
             decay: Settings::global().sample_rate as usize,
             asr: ASR::Long,
-            filters: vec![filter1, filter2],
+            filters: vec![],
         }
     }
 
@@ -190,6 +190,18 @@ impl Voice {
             self.asr = op.asr;
             self.current.osc_type = op.osc_type;
             self.current.reverb = op.reverb;
+            for filter in op.filters.iter() {
+                if self.filters.iter().any(|f| f.hash == filter.hash) {
+                    continue;
+                } else {
+                    let new_filter = lowpass_filter(
+                        filter.hash.clone(),
+                        r_to_f64(filter.cutoff_frequency),
+                        r_to_f64(filter.q_factor),
+                    );
+                    self.filters.push(new_filter.clone());
+                }
+            }
         };
         self.offset_past.gain = self.offset_current.gain;
         self.offset_past.frequency = self.offset_current.frequency;

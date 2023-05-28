@@ -8,7 +8,8 @@ use num_rational::Ratio;
 use num_traits::CheckedMul;
 use scop::Defs;
 use weresocool_error::Error;
-use weresocool_shared::lossy_rational_mul;
+use weresocool_filter::BiquadFilterDef;
+use weresocool_shared::{generate_random_hash_string, lossy_rational_mul};
 
 impl Normalize<Term> for Op {
     #[allow(clippy::cognitive_complexity)]
@@ -40,8 +41,12 @@ impl Normalize<Term> for Op {
                 cutoff_frequency,
                 q_factor,
             } => {
-                let x = 1.0;
-                input.fmap_mut(|op| op.filters.push(filter));
+                let filter_def = BiquadFilterDef {
+                    hash: generate_random_hash_string(),
+                    cutoff_frequency: *cutoff_frequency,
+                    q_factor: *q_factor,
+                };
+                input.fmap_mut(|op| op.filters.push(filter_def.clone()));
             }
 
             Op::CSV1d { path, scale } => {

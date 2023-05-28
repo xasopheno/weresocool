@@ -1,4 +1,3 @@
-use crate::filter::BiquadFilter;
 use crate::{NameSet, OscType, Term, ASR};
 use num_rational::{Ratio, Rational64};
 use scop::Defs;
@@ -7,6 +6,7 @@ use std::{
     ops::{Mul, MulAssign},
 };
 use weresocool_error::Error;
+use weresocool_filter::BiquadFilterDef;
 mod get_length_ratio;
 pub mod helpers;
 mod normalize;
@@ -26,7 +26,7 @@ pub struct PointOp {
     pub fm: Rational64,
     /// Frequency Add
     pub fa: Rational64,
-    /// Pan Multiply
+    /// Pan Multiplys
     pub pm: Rational64,
     /// Pan Add
     pub pa: Rational64,
@@ -48,7 +48,8 @@ pub struct PointOp {
     pub osc_type: OscType,
     /// Set of Names
     pub names: NameSet,
-    pub filters: Vec<BiquadFilter>,
+    /// Filters
+    pub filters: Vec<BiquadFilterDef>,
 }
 
 impl Default for PointOp {
@@ -67,6 +68,7 @@ impl Default for PointOp {
             portamento: Ratio::new(1, 1),
             osc_type: OscType::None,
             names: NameSet::new(),
+            filters: vec![],
         }
     }
 }
@@ -221,6 +223,12 @@ impl Mul<PointOp> for PointOp {
             asr: other.asr,
             portamento: self.portamento * other.portamento,
             names,
+            filters: self
+                .filters
+                .iter()
+                .chain(&other.filters)
+                .map(|f| f.to_owned())
+                .collect(),
         }
     }
 }
@@ -253,6 +261,12 @@ impl<'a, 'b> Mul<&'b PointOp> for &'a PointOp {
             asr: other.asr,
             portamento: self.portamento * other.portamento,
             names,
+            filters: self
+                .filters
+                .iter()
+                .chain(&other.filters)
+                .map(|f| f.to_owned())
+                .collect(),
         }
     }
 }
@@ -283,6 +297,12 @@ impl MulAssign for PointOp {
             asr: other.asr,
             portamento: self.portamento * other.portamento,
             names,
+            filters: self
+                .filters
+                .iter()
+                .chain(&other.filters)
+                .map(|f| f.to_owned())
+                .collect(),
         }
     }
 }
@@ -323,6 +343,12 @@ impl PointOp {
             asr: other.asr,
             portamento: self.portamento * other.portamento,
             names,
+            filters: self
+                .filters
+                .iter()
+                .chain(&other.filters)
+                .map(|f| f.to_owned())
+                .collect(),
         }
     }
 
@@ -341,6 +367,7 @@ impl PointOp {
             portamento: Ratio::new(1, 1),
             osc_type: OscType::None,
             names: NameSet::new(),
+            filters: vec![],
         }
     }
     pub fn init_silent() -> PointOp {
@@ -358,6 +385,7 @@ impl PointOp {
             asr: ASR::Long,
             osc_type: OscType::None,
             names: NameSet::new(),
+            filters: vec![],
         }
     }
 
