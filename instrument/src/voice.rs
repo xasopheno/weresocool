@@ -22,6 +22,9 @@ pub struct Voice {
     pub decay: usize,
     pub asr: ASR,
     pub filters: Vec<BiquadFilter>,
+    pub old_filters: Vec<BiquadFilter>, // Hold onto the old filters for the duration of the crossfade
+    pub crossfade_index: usize,         // Keep track of the current position in the crossfade
+    pub crossfade_period: usize,
 }
 
 #[derive(Clone, Debug, PartialEq)]
@@ -72,11 +75,6 @@ impl ReverbState {
 
 impl Voice {
     pub fn init(index: usize) -> Self {
-        // let coefs1 = lowpass(800.0, 10.0);
-        // let coefs2 = highpass(1000.0, 10.0);
-        // let filter1 = BiquadFilter::new(coefs1.0, coefs1.1);
-        // let filter2 = BiquadFilter::new(coefs2.0, coefs2.1);
-
         Self {
             index,
             reverb: ReverbState::init(),
@@ -90,6 +88,9 @@ impl Voice {
             decay: Settings::global().sample_rate as usize,
             asr: ASR::Long,
             filters: vec![],
+            old_filters: Vec::new(),
+            crossfade_index: 0,
+            crossfade_period: 0usize,
         }
     }
 
@@ -157,6 +158,21 @@ impl Voice {
                 .iter_mut()
                 .fold(new_sample, |acc, filter| filter.process(acc));
 
+            let old_sample = self
+                .old_filters
+                .iter_mut()
+                .fold(new_sample, |acc, filter| filter.process(acc));
+
+            let crossfade_gain = if self.crossfade_index < self.crossfade_period {
+                self.crossfade_index as f64 / self.crossfade_period as f64
+            } else {
+                1.0
+            };
+
+            new_sample = crossfade_gain * new_sample + (1.0 - crossfade_gain) * old_sample;
+
+            self.crossfade_index += 1;
+
             *sample += new_sample
         }
 
@@ -164,6 +180,17 @@ impl Voice {
     }
 
     pub fn update(&mut self, op: &RenderOp, offset: &Offset) {
+        let will_update_filters = self
+            .filters
+            .iter()
+            .map(|f| f.hash.clone())
+            .collect::<Vec<String>>()
+            == op
+                .filters
+                .iter()
+                .map(|f| f.hash.clone())
+                .collect::<Vec<String>>();
+
         if op.index == 0 {
             self.past.frequency = self.current.frequency;
             self.current.frequency = op.f;
@@ -190,17 +217,21 @@ impl Voice {
             self.asr = op.asr;
             self.current.osc_type = op.osc_type;
             self.current.reverb = op.reverb;
-            for filter in op.filters.iter() {
-                if self.filters.iter().any(|f| f.hash == filter.hash) {
-                    continue;
-                } else {
-                    let new_filter = lowpass_filter(
-                        filter.hash.clone(),
-                        r_to_f64(filter.cutoff_frequency),
-                        r_to_f64(filter.q_factor),
-                    );
-                    self.filters.push(new_filter.clone());
-                }
+            if !(will_update_filters) {
+                self.old_filters = self.filters.clone(); // Save the old filters
+                self.crossfade_index = 0; // Reset the crossfade index
+                self.crossfade_period = 2048 * 2; // Set the length of the crossfade
+                self.filters = op
+                    .filters
+                    .iter()
+                    .map(|f| {
+                        lowpass_filter(
+                            f.hash.clone(),
+                            r_to_f64(f.cutoff_frequency),
+                            r_to_f64(f.q_factor),
+                        )
+                    })
+                    .collect();
             }
         };
         self.offset_past.gain = self.offset_current.gain;
