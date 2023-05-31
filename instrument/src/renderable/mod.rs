@@ -89,10 +89,11 @@ impl RenderOp {
         }
     }
 
-    pub const fn init_silent_with_length_osc_type_and_reverb(
+    pub const fn init_silent_with_length_osc_type_reverb_and_filters(
         l: f64,
         osc_type: OscType,
         reverb: Option<f64>,
+        filters: Vec<BiquadFilterDef>,
         settings: &Settings,
     ) -> Self {
         Self {
@@ -115,7 +116,7 @@ impl RenderOp {
             next_l_silent: true,
             next_r_silent: true,
             names: vec![],
-            filters: Vec::new(),
+            filters,
         }
     }
 }
@@ -316,12 +317,20 @@ pub fn nf_to_vec_renderable(
                 result.push(op);
             }
             if settings.pad_end {
-                result.push(RenderOp::init_silent_with_length_osc_type_and_reverb(
-                    1.0,
-                    OscType::None,
-                    None,
-                    settings,
-                ));
+                let filters = if let Some(last_op) = vec_point_op.last() {
+                    last_op.filters.to_vec()
+                } else {
+                    vec![]
+                };
+                result.push(
+                    RenderOp::init_silent_with_length_osc_type_reverb_and_filters(
+                        1.0,
+                        OscType::None,
+                        None,
+                        filters,
+                        settings,
+                    ),
+                );
             }
             result
         })

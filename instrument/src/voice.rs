@@ -8,6 +8,11 @@ use weresocool_ast::{OscType, ASR};
 use weresocool_filter::*;
 use weresocool_shared::*;
 
+use rand::{thread_rng, Rng};
+pub fn random_offset() -> f64 {
+    thread_rng().gen_range(-0.5, 0.5)
+}
+
 #[derive(Clone, Debug, PartialEq)]
 pub struct Voice {
     pub reverb: ReverbState,
@@ -22,9 +27,9 @@ pub struct Voice {
     pub decay: usize,
     pub asr: ASR,
     pub filters: Vec<BiquadFilter>,
-    pub old_filters: Vec<BiquadFilter>, // Hold onto the old filters for the duration of the crossfade
-    pub crossfade_index: usize,         // Keep track of the current position in the crossfade
-    pub crossfade_period: usize,
+    pub old_filters: Vec<BiquadFilter>,
+    pub filter_crossfade_index: usize,
+    pub filter_crossfade_period: usize,
 }
 
 #[derive(Clone, Debug, PartialEq)]
@@ -89,8 +94,8 @@ impl Voice {
             asr: ASR::Long,
             filters: vec![],
             old_filters: Vec::new(),
-            crossfade_index: 0,
-            crossfade_period: 0usize,
+            filter_crossfade_index: 0,
+            filter_crossfade_period: 0usize,
         }
     }
 
@@ -131,6 +136,11 @@ impl Voice {
             let gain = gain_at_index(self.offset_past.gain, gain_factor, index, sample_limit);
             let info = SampleInfo { frequency, gain };
 
+            self.phase = match self.osc_type {
+                OscType::Noise => self.calculate_current_phase(&info, random_offset()),
+                _ => self.calculate_current_phase(&info, 0.0),
+            };
+
             let mut new_sample = match self.osc_type {
                 OscType::None => self.generate_sine_sample(info, None),
                 OscType::Sine { pow } => self.generate_sine_sample(info, pow),
@@ -163,15 +173,15 @@ impl Voice {
                 .iter_mut()
                 .fold(new_sample, |acc, filter| filter.process(acc));
 
-            let crossfade_gain = if self.crossfade_index < self.crossfade_period {
-                self.crossfade_index as f64 / self.crossfade_period as f64
+            let crossfade_gain = if self.filter_crossfade_index < self.filter_crossfade_period {
+                self.filter_crossfade_index as f64 / self.filter_crossfade_period as f64
             } else {
                 1.0
             };
 
             new_sample = crossfade_gain * new_sample + (1.0 - crossfade_gain) * old_sample;
 
-            self.crossfade_index += 1;
+            self.filter_crossfade_index += 1;
 
             *sample += new_sample
         }
@@ -219,8 +229,8 @@ impl Voice {
             self.current.reverb = op.reverb;
             if !(will_update_filters) {
                 self.old_filters = self.filters.clone(); // Save the old filters
-                self.crossfade_index = 0; // Reset the crossfade index
-                self.crossfade_period = 2048 * 2; // Set the length of the crossfade
+                self.filter_crossfade_index = 0; // Reset the crossfade index
+                self.filter_crossfade_period = 2048 * 2; // Set the length of the crossfade
                 self.filters = op
                     .filters
                     .iter()

@@ -1,19 +1,12 @@
-use crate::distortion::*;
 use crate::voice::{SampleInfo, Voice};
 use num_rational::Rational64;
-use rand::{thread_rng, Rng};
 use std::f64::consts::PI;
 use weresocool_shared::{r_to_f64, Settings};
 
 const TAU: f64 = PI * 2.0;
 
-fn random_offset() -> f64 {
-    thread_rng().gen_range(-0.5, 0.5)
-}
-
 impl Voice {
-    pub fn generate_sine_sample(&mut self, info: SampleInfo, pow: Option<Rational64>) -> f64 {
-        self.phase = self.calculate_current_phase(&info, 0.0);
+    pub fn generate_sine_sample(&self, info: SampleInfo, pow: Option<Rational64>) -> f64 {
         let value = match pow {
             Some(p) => {
                 let power = r_to_f64(p);
@@ -24,13 +17,11 @@ impl Voice {
         value * info.gain
     }
 
-    pub fn generate_sawtooth_sample(&mut self, info: SampleInfo) -> f64 {
-        self.phase = self.calculate_current_phase(&info, 0.0);
+    pub fn generate_sawtooth_sample(&self, info: SampleInfo) -> f64 {
         2.0 * (self.phase / TAU - 0.5_f64.floor()) * info.gain
     }
 
-    pub fn generate_triangle_sample(&mut self, info: SampleInfo, pow: Option<Rational64>) -> f64 {
-        self.phase = self.calculate_current_phase(&info, 0.0);
+    pub fn generate_triangle_sample(&self, info: SampleInfo, pow: Option<Rational64>) -> f64 {
         let value = match pow {
             Some(p) => {
                 let power = r_to_f64(p);
@@ -41,8 +32,7 @@ impl Voice {
         value * info.gain
     }
 
-    pub fn generate_square_sample(&mut self, info: SampleInfo, width: Option<Rational64>) -> f64 {
-        self.phase = self.calculate_current_phase(&info, 0.0);
+    pub fn generate_square_sample(&self, info: SampleInfo, width: Option<Rational64>) -> f64 {
         let pulse_width = if let Some(w) = width {
             r_to_f64(w)
         } else {
@@ -54,13 +44,11 @@ impl Voice {
         sign * info.gain
     }
 
-    pub fn generate_random_sample(&mut self, info: SampleInfo) -> f64 {
-        self.phase = self.calculate_current_phase(&info, random_offset());
-
+    pub fn generate_random_sample(&self, info: SampleInfo) -> f64 {
         self.phase.sin() * info.gain
     }
 
-    pub fn calculate_current_phase(&mut self, info: &SampleInfo, rand: f64) -> f64 {
+    pub fn calculate_current_phase(&self, info: &SampleInfo, rand: f64) -> f64 {
         if info.gain == 0.0 {
             0.0
         } else {

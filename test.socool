@@ -32,16 +32,17 @@ main = {
   ]
   | Overlay [
     Saw,
-    -- Square,
-    -- Sine 1.66 
+    Square,
+    Sine 1.66 
   ]
   | Seq [
     AsIs | Gm 1/3,
     Fm 1
-      -- | Lowpass 1400.0 0.707
+      | Lowpass 1400.0 0.707
       | Lowpass 400.0 8.107
   ]
   | Repeat 4
+  | Gm 1/4
   | Lm 1/8
 }
 
