@@ -1,5 +1,6 @@
 use crate::{
     renderable::{Offset, RenderOp},
+    sample::Waveform,
     {gain::gain_at_index, loudness::loudness_normalization},
 };
 
@@ -141,14 +142,7 @@ impl Voice {
                 _ => self.calculate_current_phase(&info, 0.0),
             };
 
-            let mut new_sample = match self.osc_type {
-                OscType::None => self.generate_sine_sample(info, None),
-                OscType::Sine { pow } => self.generate_sine_sample(info, pow),
-                OscType::Triangle { pow } => self.generate_triangle_sample(info, pow),
-                OscType::Square { width } => self.generate_square_sample(info, width),
-                OscType::Saw => self.generate_sawtooth_sample(info),
-                OscType::Noise => self.generate_random_sample(info),
-            };
+            let mut new_sample = self.osc_type.generate_sample(info, self.phase);
 
             if apply_reverb && gain > 0.0 {
                 new_sample = self
