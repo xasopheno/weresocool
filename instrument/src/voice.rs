@@ -23,17 +23,21 @@ pub struct Voice {
     pub offset_past: VoiceState,
     pub offset_current: VoiceState,
     pub phase: f64,
+    pub old_phase: f64,
     pub osc_type: OscType,
+    pub old_osc_type: Option<OscType>,
     pub attack: usize,
     pub decay: usize,
     pub asr: ASR,
     pub filters: Vec<BiquadFilter>,
-    pub old_filters: Vec<BiquadFilter>,
+    pub old_filters: Option<Vec<BiquadFilter>>,
     pub filter_crossfade_index: usize,
     pub filter_crossfade_period: usize,
+    pub osc_crossfade_index: usize,
+    pub osc_crossfade_period: usize,
 }
 
-#[derive(Clone, Debug, PartialEq)]
+#[derive(Clone, Debug, PartialEq, Copy)]
 pub struct SampleInfo {
     pub frequency: f64,
     pub gain: f64,
@@ -89,14 +93,18 @@ impl Voice {
             offset_past: VoiceState::init(),
             offset_current: VoiceState::init(),
             phase: 0.0,
+            old_phase: 0.0,
             osc_type: OscType::Sine { pow: None },
+            old_osc_type: None,
             attack: Settings::global().sample_rate as usize,
             decay: Settings::global().sample_rate as usize,
             asr: ASR::Long,
             filters: vec![],
-            old_filters: Vec::new(),
+            old_filters: None,
             filter_crossfade_index: 0,
             filter_crossfade_period: 0usize,
+            osc_crossfade_index: 0,
+            osc_crossfade_period: 0usize,
         }
     }
 
@@ -144,6 +152,29 @@ impl Voice {
 
             let mut new_sample = self.osc_type.generate_sample(info, self.phase);
 
+            // If we're in the middle of a crossfade
+            if self.old_osc_type.is_some() && self.osc_crossfade_index < self.osc_crossfade_period {
+                self.old_phase = match self.osc_type {
+                    OscType::Noise => self.calculate_current_phase(&info, random_offset()),
+                    _ => self.calculate_current_phase(&info, 0.0),
+                };
+                // Generate the old oscillator sample
+                let old_sample = self
+                    .old_osc_type
+                    .unwrap()
+                    .generate_sample(info, self.old_phase);
+
+                // Calculate the crossfade gain
+                let crossfade_gain =
+                    self.osc_crossfade_index as f64 / self.osc_crossfade_period as f64;
+
+                // Crossfade the old and new samples
+                new_sample = crossfade_gain * new_sample + (1.0 - crossfade_gain) * old_sample;
+
+                // Increment the crossfade index
+                self.osc_crossfade_index += 1;
+            }
+
             if apply_reverb && gain > 0.0 {
                 new_sample = self
                     .reverb
@@ -157,27 +188,32 @@ impl Voice {
                 self.offset_current.gain = gain;
             };
 
-            new_sample = self
+            let new_filtered_sample = self
                 .filters
                 .iter_mut()
                 .fold(new_sample, |acc, filter| filter.process(acc));
 
-            let old_sample = self
-                .old_filters
-                .iter_mut()
-                .fold(new_sample, |acc, filter| filter.process(acc));
+            if self.old_filters.is_some() {
+                let old_filtered_sample = self
+                    .old_filters
+                    .as_mut()
+                    .unwrap()
+                    .iter_mut()
+                    .fold(new_sample, |acc, filter| filter.process(acc));
 
-            let crossfade_gain = if self.filter_crossfade_index < self.filter_crossfade_period {
-                self.filter_crossfade_index as f64 / self.filter_crossfade_period as f64
-            } else {
-                1.0
-            };
+                let crossfade_gain = if self.filter_crossfade_index < self.filter_crossfade_period {
+                    self.filter_crossfade_index as f64 / self.filter_crossfade_period as f64
+                } else {
+                    1.0
+                };
 
-            new_sample = crossfade_gain * new_sample + (1.0 - crossfade_gain) * old_sample;
+                new_sample = crossfade_gain * new_filtered_sample
+                    + (1.0 - crossfade_gain) * old_filtered_sample;
 
-            self.filter_crossfade_index += 1;
+                self.filter_crossfade_index += 1;
+            }
 
-            *sample += new_sample
+            *sample += new_sample;
         }
 
         buffer
@@ -204,6 +240,15 @@ impl Voice {
             self.past.gain = self.past_gain_from_op(op);
             self.current.gain = self.current_gain_from_op(op);
 
+            if self.osc_type != op.osc_type {
+                // Save the old oscillator type
+                self.old_osc_type = Some(self.osc_type);
+
+                // Initialize the crossfade
+                self.osc_crossfade_index = 0;
+                self.osc_crossfade_period = 2048 * 2; // This value could be adjusted as needed
+            }
+
             self.osc_type = if self.past.osc_type.is_some() && op.osc_type.is_none() {
                 self.past.osc_type
             } else {
@@ -222,7 +267,7 @@ impl Voice {
             self.current.osc_type = op.osc_type;
             self.current.reverb = op.reverb;
             if !(will_update_filters) {
-                self.old_filters = self.filters.clone(); // Save the old filters
+                self.old_filters = Some(self.filters.clone()); // Save the old filters
                 self.filter_crossfade_index = 0; // Reset the crossfade index
                 self.filter_crossfade_period = 2048 * 2; // Set the length of the crossfade
                 self.filters = op
