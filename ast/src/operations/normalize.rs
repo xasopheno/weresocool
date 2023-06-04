@@ -43,6 +43,7 @@ impl Normalize<Term> for Op {
             } => {
                 let filter_def = BiquadFilterDef {
                     hash: generate_random_hash_string(),
+                    filter_type: weresocool_filter::BiquadFilterType::Lowpass,
                     cutoff_frequency: *cutoff_frequency,
                     q_factor: *q_factor,
                 };

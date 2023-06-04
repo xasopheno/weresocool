@@ -3,16 +3,40 @@ use serde::{Deserialize, Serialize};
 use std::cmp::Ordering;
 use std::f64::consts::PI;
 use std::hash::{Hash, Hasher};
-use weresocool_shared::{generate_random_hash_string, Settings};
+use weresocool_shared::{r_to_f64, Settings};
 
 const TAU: f64 = PI * 2.0;
+
+#[derive(Clone, Debug, PartialEq, PartialOrd, Eq, Hash, Ord, Serialize, Deserialize)]
+pub enum BiquadFilterType {
+    Lowpass,
+    // HighPass,
+    // BandPass,
+    // Notch,
+    // Peak,
+    // LowShelf,
+    // HighShelf,
+}
 
 #[derive(Clone, Debug, PartialEq, PartialOrd, Eq, Hash, Ord, Serialize, Deserialize)]
 
 pub struct BiquadFilterDef {
     pub hash: String,
+    pub filter_type: BiquadFilterType,
     pub cutoff_frequency: Rational64,
     pub q_factor: Rational64,
+}
+
+impl BiquadFilterDef {
+    pub fn to_filter(&self) -> BiquadFilter {
+        match self.filter_type {
+            BiquadFilterType::Lowpass => lowpass_filter(
+                self.hash.clone(),
+                r_to_f64(self.cutoff_frequency),
+                r_to_f64(self.q_factor),
+            ),
+        }
+    }
 }
 
 #[derive(Clone, Debug, PartialEq, PartialOrd)]

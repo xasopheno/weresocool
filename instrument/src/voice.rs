@@ -9,11 +9,6 @@ use weresocool_ast::{OscType, ASR};
 use weresocool_filter::*;
 use weresocool_shared::*;
 
-use rand::{thread_rng, Rng};
-pub fn random_offset() -> f64 {
-    thread_rng().gen_range(-0.5, 0.5)
-}
-
 #[derive(Clone, Debug, PartialEq)]
 pub struct Voice {
     pub reverb: ReverbState,
@@ -94,7 +89,7 @@ impl Voice {
             offset_current: VoiceState::init(),
             phase: 0.0,
             old_phase: 0.0,
-            osc_type: OscType::Sine { pow: None },
+            osc_type: OscType::None,
             old_osc_type: None,
             attack: Settings::global().sample_rate as usize,
             decay: Settings::global().sample_rate as usize,
@@ -102,9 +97,9 @@ impl Voice {
             filters: vec![],
             old_filters: None,
             filter_crossfade_index: 0,
-            filter_crossfade_period: 0usize,
+            filter_crossfade_period: 2048 * 2,
             osc_crossfade_index: 0,
-            osc_crossfade_period: 0usize,
+            osc_crossfade_period: 2048 * 2,
         }
     }
 
@@ -145,34 +140,27 @@ impl Voice {
             let gain = gain_at_index(self.offset_past.gain, gain_factor, index, sample_limit);
             let info = SampleInfo { frequency, gain };
 
-            self.phase = match self.osc_type {
-                OscType::Noise => self.calculate_current_phase(&info, random_offset()),
-                _ => self.calculate_current_phase(&info, 0.0),
-            };
+            self.phase = self.calculate_current_phase(&info, self.osc_type);
 
             let mut new_sample = self.osc_type.generate_sample(info, self.phase);
 
             // If we're in the middle of a crossfade
             if self.old_osc_type.is_some() && self.osc_crossfade_index < self.osc_crossfade_period {
-                self.old_phase = match self.osc_type {
-                    OscType::Noise => self.calculate_current_phase(&info, random_offset()),
-                    _ => self.calculate_current_phase(&info, 0.0),
-                };
-                // Generate the old oscillator sample
+                self.old_phase = self.calculate_current_phase(&info, self.old_osc_type.unwrap());
+
                 let old_sample = self
                     .old_osc_type
                     .unwrap()
                     .generate_sample(info, self.old_phase);
 
-                // Calculate the crossfade gain
                 let crossfade_gain =
                     self.osc_crossfade_index as f64 / self.osc_crossfade_period as f64;
-
-                // Crossfade the old and new samples
                 new_sample = crossfade_gain * new_sample + (1.0 - crossfade_gain) * old_sample;
 
-                // Increment the crossfade index
                 self.osc_crossfade_index += 1;
+                if self.osc_crossfade_index == self.osc_crossfade_period {
+                    self.old_osc_type = None;
+                }
             }
 
             if apply_reverb && gain > 0.0 {
@@ -188,11 +176,15 @@ impl Voice {
                 self.offset_current.gain = gain;
             };
 
-            let new_filtered_sample = self
-                .filters
-                .iter_mut()
-                .fold(new_sample, |acc, filter| filter.process(acc));
+            let new_filtered_sample = if !self.filters.is_empty() {
+                self.filters
+                    .iter_mut()
+                    .fold(new_sample, |acc, filter| filter.process(acc))
+            } else {
+                new_sample
+            };
 
+            // if we're in the middle of a filter crossfade
             if self.old_filters.is_some() {
                 let old_filtered_sample = self
                     .old_filters
@@ -211,6 +203,11 @@ impl Voice {
                     + (1.0 - crossfade_gain) * old_filtered_sample;
 
                 self.filter_crossfade_index += 1;
+                if self.filter_crossfade_index == self.filter_crossfade_period {
+                    self.old_filters = None;
+                }
+            } else {
+                new_sample = new_filtered_sample
             }
 
             *sample += new_sample;
@@ -220,16 +217,11 @@ impl Voice {
     }
 
     pub fn update(&mut self, op: &RenderOp, offset: &Offset) {
-        let will_update_filters = self
+        let will_update_filters = !self
             .filters
             .iter()
-            .map(|f| f.hash.clone())
-            .collect::<Vec<String>>()
-            == op
-                .filters
-                .iter()
-                .map(|f| f.hash.clone())
-                .collect::<Vec<String>>();
+            .map(|f| &f.hash)
+            .eq(op.filters.iter().map(|f| &f.hash));
 
         if op.index == 0 {
             self.past.frequency = self.current.frequency;
@@ -240,13 +232,9 @@ impl Voice {
             self.past.gain = self.past_gain_from_op(op);
             self.current.gain = self.current_gain_from_op(op);
 
-            if self.osc_type != op.osc_type {
-                // Save the old oscillator type
+            if self.osc_type != op.osc_type && self.osc_type.is_some() {
                 self.old_osc_type = Some(self.osc_type);
-
-                // Initialize the crossfade
                 self.osc_crossfade_index = 0;
-                self.osc_crossfade_period = 2048 * 2; // This value could be adjusted as needed
             }
 
             self.osc_type = if self.past.osc_type.is_some() && op.osc_type.is_none() {
@@ -266,21 +254,10 @@ impl Voice {
             self.asr = op.asr;
             self.current.osc_type = op.osc_type;
             self.current.reverb = op.reverb;
-            if !(will_update_filters) {
+            if will_update_filters {
                 self.old_filters = Some(self.filters.clone()); // Save the old filters
                 self.filter_crossfade_index = 0; // Reset the crossfade index
-                self.filter_crossfade_period = 2048 * 2; // Set the length of the crossfade
-                self.filters = op
-                    .filters
-                    .iter()
-                    .map(|f| {
-                        lowpass_filter(
-                            f.hash.clone(),
-                            r_to_f64(f.cutoff_frequency),
-                            r_to_f64(f.q_factor),
-                        )
-                    })
-                    .collect();
+                self.filters = op.filters.iter().map(|f| f.to_filter()).collect();
             }
         };
         self.offset_past.gain = self.offset_current.gain;

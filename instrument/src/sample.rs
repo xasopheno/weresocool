@@ -5,8 +5,19 @@ use weresocool_shared::{r_to_f64, Settings};
 
 const TAU: f64 = PI * 2.0;
 
+use rand::{thread_rng, Rng};
+pub fn random_offset() -> f64 {
+    thread_rng().gen_range(-0.5, 0.5)
+}
+
 impl Voice {
-    pub fn calculate_current_phase(&mut self, info: &SampleInfo, rand: f64) -> f64 {
+    pub fn calculate_current_phase(&mut self, info: &SampleInfo, osc_type: OscType) -> f64 {
+        let rand = if osc_type == OscType::Noise {
+            random_offset()
+        } else {
+            0.0
+        };
+
         if info.gain == 0.0 {
             0.0
         } else {
