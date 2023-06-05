@@ -35,7 +35,7 @@ main = {
     thing1,
     thing2
   ]
-  | Seq [
+  | Overlay [
       Saw,
       Sine, 
       Square,
@@ -43,8 +43,9 @@ main = {
   ]
   | Seq [
      -- AsIs,
-     Lowpass 1400.0 0.707,
+     Highpass 800.0 1.707,
      Lowpass 400.0 8.107,
+     Bandpass 600.0 8.107,
   ]
   | Repeat 8
   | Gm 1/8

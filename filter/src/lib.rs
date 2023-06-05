@@ -10,8 +10,8 @@ const TAU: f64 = PI * 2.0;
 #[derive(Clone, Debug, PartialEq, PartialOrd, Eq, Hash, Ord, Serialize, Deserialize)]
 pub enum BiquadFilterType {
     Lowpass,
-    // HighPass,
-    // BandPass,
+    Highpass,
+    Bandpass,
     // Notch,
     // Peak,
     // LowShelf,
@@ -31,6 +31,16 @@ impl BiquadFilterDef {
     pub fn to_filter(&self) -> BiquadFilter {
         match self.filter_type {
             BiquadFilterType::Lowpass => lowpass_filter(
+                self.hash.clone(),
+                r_to_f64(self.cutoff_frequency),
+                r_to_f64(self.q_factor),
+            ),
+            BiquadFilterType::Highpass => highpass_filter(
+                self.hash.clone(),
+                r_to_f64(self.cutoff_frequency),
+                r_to_f64(self.q_factor),
+            ),
+            BiquadFilterType::Bandpass => highpass_filter(
                 self.hash.clone(),
                 r_to_f64(self.cutoff_frequency),
                 r_to_f64(self.q_factor),
@@ -112,6 +122,16 @@ impl BiquadFilter {
 
 pub fn lowpass_filter(hash: String, cutoff_frequency: f64, quality_factor: f64) -> BiquadFilter {
     let (feedforward_coefs, feedback_coefs) = lowpass_coefs(cutoff_frequency, quality_factor);
+    BiquadFilter::new(hash, feedforward_coefs, feedback_coefs)
+}
+
+pub fn highpass_filter(hash: String, cutoff_frequency: f64, quality_factor: f64) -> BiquadFilter {
+    let (feedforward_coefs, feedback_coefs) = highpass_coefs(cutoff_frequency, quality_factor);
+    BiquadFilter::new(hash, feedforward_coefs, feedback_coefs)
+}
+
+pub fn bandpass_filter(hash: String, cutoff_frequency: f64, quality_factor: f64) -> BiquadFilter {
+    let (feedforward_coefs, feedback_coefs) = bandpass_coefs(cutoff_frequency, quality_factor);
     BiquadFilter::new(hash, feedforward_coefs, feedback_coefs)
 }
 

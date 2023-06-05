@@ -14,6 +14,8 @@ impl GetLengthRatio<Term> for Op {
         match self {
             Op::AsIs {}
             | Op::Lowpass { .. }
+            | Op::Highpass { .. }
+            | Op::Bandpass { .. }
             | Op::AD { .. }
             | Op::Portamento { .. }
             | Op::Sine { .. }

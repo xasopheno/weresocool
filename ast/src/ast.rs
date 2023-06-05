@@ -28,6 +28,14 @@ pub enum Op {
         cutoff_frequency: Rational64,
         q_factor: Rational64,
     },
+    Highpass {
+        cutoff_frequency: Rational64,
+        q_factor: Rational64,
+    },
+    Bandpass {
+        cutoff_frequency: Rational64,
+        q_factor: Rational64,
+    },
     //
     FunctionCall {
         name: String,

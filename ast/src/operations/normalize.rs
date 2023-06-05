@@ -50,6 +50,32 @@ impl Normalize<Term> for Op {
                 input.fmap_mut(|op| op.filters.push(filter_def.clone()));
             }
 
+            Op::Highpass {
+                cutoff_frequency,
+                q_factor,
+            } => {
+                let filter_def = BiquadFilterDef {
+                    hash: generate_random_hash_string(),
+                    filter_type: weresocool_filter::BiquadFilterType::Highpass,
+                    cutoff_frequency: *cutoff_frequency,
+                    q_factor: *q_factor,
+                };
+                input.fmap_mut(|op| op.filters.push(filter_def.clone()));
+            }
+
+            Op::Bandpass {
+                cutoff_frequency,
+                q_factor,
+            } => {
+                let filter_def = BiquadFilterDef {
+                    hash: generate_random_hash_string(),
+                    filter_type: weresocool_filter::BiquadFilterType::Bandpass,
+                    cutoff_frequency: *cutoff_frequency,
+                    q_factor: *q_factor,
+                };
+                input.fmap_mut(|op| op.filters.push(filter_def.clone()));
+            }
+
             Op::CSV1d { path, scale } => {
                 csv1d_to_normalform(path, *scale)?.apply_to_normal_form(input, defs)?;
             }
