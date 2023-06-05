@@ -227,13 +227,14 @@ impl Voice {
     }
 
     pub fn update(&mut self, op: &RenderOp, offset: &Offset) {
-        let will_update_filters = if let Some(self_filters) = &self.filters {
-            let self_hashes = self_filters.iter().map(|f| &f.hash);
-            let op_hashes = op.filters.iter().map(|f| &f.hash);
-            !self_hashes.eq(op_hashes)
-        } else {
-            true
-        };
+        // defaults to true
+        let will_update_filters = self.filters.as_ref().map_or(true, |self_filters| {
+            self_filters.len() != op.filters.len()
+                || self_filters
+                    .iter()
+                    .zip(op.filters.iter())
+                    .any(|(self_filter, op_filter)| self_filter.hash != op_filter.hash)
+        });
 
         if op.index == 0 {
             self.past.frequency = self.current.frequency;

@@ -91,22 +91,22 @@ impl BiquadFilter {
         }
     }
 
-    // The process function filters a sample and returns the filtered value
     pub fn process(&mut self, input_sample: f64) -> f64 {
-        // Filter equation
         let filtered_output = self.feedforward_coefs[0] * input_sample
             + self.feedforward_coefs[1] * self.input_history[0]
             + self.feedforward_coefs[2] * self.input_history[1]
             - self.feedback_coefs[1] * self.output_history[0]
             - self.feedback_coefs[2] * self.output_history[1];
 
-        // Update the history of inputs and outputs
-        self.input_history[1] = self.input_history[0];
-        self.input_history[0] = input_sample;
-        self.output_history[1] = self.output_history[0];
-        self.output_history[0] = filtered_output;
-
+        self.update_history(input_sample, filtered_output);
         filtered_output
+    }
+
+    fn update_history(&mut self, input_sample: f64, filtered_output: f64) {
+        self.input_history.rotate_right(1);
+        self.input_history[0] = input_sample;
+        self.output_history.rotate_right(1);
+        self.output_history[0] = filtered_output;
     }
 }
 
