@@ -16,6 +16,7 @@ impl GetLengthRatio<Term> for Op {
             | Op::Lowpass { .. }
             | Op::Highpass { .. }
             | Op::Bandpass { .. }
+            | Op::ASDR { .. }
             | Op::AD { .. }
             | Op::Portamento { .. }
             | Op::Sine { .. }

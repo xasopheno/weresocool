@@ -24,6 +24,12 @@ pub enum Op {
         scales: Vec<Scale>,
     },
     //
+    ASDR {
+        a: Rational64,
+        s: Rational64,
+        d: Rational64,
+        r: Rational64,
+    },
     Lowpass {
         cutoff_frequency: Rational64,
         q_factor: Rational64,

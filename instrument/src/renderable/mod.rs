@@ -11,7 +11,7 @@ use scop::Defs;
 use serde::{Deserialize, Serialize};
 use weresocool_ast::{NormalForm, Normalize, OscType, PointOp, Term, ASR};
 use weresocool_error::Error;
-use weresocool_filter::BiquadFilterDef;
+use weresocool_filter::FilterDef;
 pub(crate) use weresocool_shared::{lossy_rational_mul, r_to_f64, Settings};
 
 #[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
@@ -36,7 +36,7 @@ pub struct RenderOp {
     pub next_l_silent: bool,
     pub next_r_silent: bool,
     pub names: Vec<String>,
-    pub filters: Vec<BiquadFilterDef>,
+    pub filters: Vec<FilterDef>,
 }
 
 impl RenderOp {
@@ -93,7 +93,7 @@ impl RenderOp {
         l: f64,
         osc_type: OscType,
         reverb: Option<f64>,
-        filters: Vec<BiquadFilterDef>,
+        filters: Vec<FilterDef>,
         settings: &Settings,
     ) -> Self {
         Self {

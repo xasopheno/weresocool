@@ -24,8 +24,8 @@ pub struct Voice {
     pub attack: usize,
     pub decay: usize,
     pub asr: ASR,
-    pub filters: Option<Vec<BiquadFilter>>,
-    pub old_filters: Option<Vec<BiquadFilter>>,
+    pub filters: Option<Vec<Filter>>,
+    pub old_filters: Option<Vec<Filter>>,
     pub filter_crossfade_index: usize,
     pub filter_crossfade_period: usize,
     pub osc_crossfade_index: usize,
@@ -233,7 +233,7 @@ impl Voice {
                 || self_filters
                     .iter()
                     .zip(op.filters.iter())
-                    .any(|(self_filter, op_filter)| self_filter.hash != op_filter.hash)
+                    .any(|(self_filter, op_filter)| self_filter.hash() != op_filter.hash())
         });
 
         if op.index == 0 {

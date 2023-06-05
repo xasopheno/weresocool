@@ -6,7 +6,7 @@ use std::{
     ops::{Mul, MulAssign},
 };
 use weresocool_error::Error;
-use weresocool_filter::BiquadFilterDef;
+use weresocool_filter::*;
 mod get_length_ratio;
 pub mod helpers;
 mod normalize;
@@ -49,7 +49,7 @@ pub struct PointOp {
     /// Set of Names
     pub names: NameSet,
     /// Filters
-    pub filters: Vec<BiquadFilterDef>,
+    pub filters: Vec<FilterDef>,
 }
 
 impl Default for PointOp {

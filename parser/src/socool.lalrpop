@@ -265,6 +265,7 @@ BaseOperation: Term = {
     "Lowpass" <c:Rational> <q:Rational> => Term::Op(Lowpass {cutoff_frequency: c, q_factor: q}),
     "Highpass" <c:Rational> <q:Rational> => Term::Op(Highpass {cutoff_frequency: c, q_factor: q}),
     "Bandpass" <c:Rational> <q:Rational> => Term::Op(Highpass {cutoff_frequency: c, q_factor: q}),
+    "ASDR" <a:Rational> <s:Rational> <d:Rational> <r:Rational> => Term::Op(ASDR {a, s, d, r}),
     "AsIs" => Term::Op(AsIs {}),
     "Sine" <pow: Rational?> => {
       Term::Op(Sine { pow })

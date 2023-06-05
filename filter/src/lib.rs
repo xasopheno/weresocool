@@ -1,3 +1,5 @@
+pub mod asdr;
+use asdr::AdsrEnvelope;
 use num_rational::Rational64;
 use serde::{Deserialize, Serialize};
 use std::cmp::Ordering;
@@ -20,39 +22,92 @@ pub enum BiquadFilterType {
 
 #[derive(Clone, Debug, PartialEq, PartialOrd, Eq, Hash, Ord, Serialize, Deserialize)]
 
+pub struct ASDRFilterDef {
+    pub a: Rational64,
+    pub s: Rational64,
+    pub d: Rational64,
+    pub r: Rational64,
+}
+
+#[derive(Clone, Debug, PartialEq, PartialOrd, Eq, Hash, Ord, Serialize, Deserialize)]
+
 pub struct BiquadFilterDef {
-    pub hash: String,
     pub filter_type: BiquadFilterType,
     pub cutoff_frequency: Rational64,
     pub q_factor: Rational64,
 }
 
-impl BiquadFilterDef {
-    pub fn to_filter(&self) -> BiquadFilter {
-        match self.filter_type {
-            BiquadFilterType::Lowpass => lowpass_filter(
-                self.hash.clone(),
-                r_to_f64(self.cutoff_frequency),
-                r_to_f64(self.q_factor),
-            ),
-            BiquadFilterType::Highpass => highpass_filter(
-                self.hash.clone(),
-                r_to_f64(self.cutoff_frequency),
-                r_to_f64(self.q_factor),
-            ),
-            BiquadFilterType::Bandpass => highpass_filter(
-                self.hash.clone(),
-                r_to_f64(self.cutoff_frequency),
-                r_to_f64(self.q_factor),
-            ),
+#[derive(Clone, Debug, PartialEq, PartialOrd, Eq, Hash, Ord, Serialize, Deserialize)]
+pub enum FilterDef {
+    Biquad { hash: String, def: BiquadFilterDef },
+    ASDR { hash: String, def: ASDRFilterDef },
+}
+
+#[derive(Clone, Debug, PartialEq, PartialOrd, Eq, Hash, Ord)]
+pub enum Filter {
+    Biquad { hash: String, def: BiquadFilter },
+    ASDR { hash: String, def: AdsrEnvelope },
+}
+
+impl Filter {
+    pub fn hash(&self) -> &String {
+        match self {
+            Filter::Biquad { hash, .. } => hash,
+            Filter::ASDR { hash, .. } => hash,
+        }
+    }
+    pub fn process(&mut self, sample: f64) -> f64 {
+        match self {
+            Filter::Biquad { def, .. } => def.process(sample),
+            Filter::ASDR { def, .. } => def.process(sample),
+        }
+    }
+}
+
+impl FilterDef {
+    pub fn hash(&self) -> &String {
+        match self {
+            FilterDef::Biquad { hash, .. } => hash,
+            FilterDef::ASDR { hash, .. } => hash,
+        }
+    }
+
+    pub fn to_filter(&self) -> Filter {
+        match self {
+            FilterDef::Biquad { def, hash } => match def.filter_type {
+                BiquadFilterType::Lowpass => Filter::Biquad {
+                    hash: hash.clone(),
+                    def: lowpass_filter(r_to_f64(def.cutoff_frequency), r_to_f64(def.q_factor)),
+                },
+                BiquadFilterType::Highpass => Filter::Biquad {
+                    hash: hash.clone(),
+                    def: highpass_filter(r_to_f64(def.cutoff_frequency), r_to_f64(def.q_factor)),
+                },
+                BiquadFilterType::Bandpass => Filter::Biquad {
+                    hash: hash.clone(),
+                    def: bandpass_filter(r_to_f64(def.cutoff_frequency), r_to_f64(def.q_factor)),
+                },
+                // BiquadFilterType::Highpass => highpass_filter(
+                // biquad.hash.clone(),
+                // r_to_f64(biquad.cutoff_frequency),
+                // r_to_f64(biquad.q_factor),
+                // ),
+                // BiquadFilterType::Bandpass => highpass_filter(
+                // biquad.hash.clone(),
+                // r_to_f64(biquad.cutoff_frequency),
+                // r_to_f64(biquad.q_factor),
+                // ),
+            },
+            // Filter::ASDR(asdr) => asdr.to_filter(),
+            _ => {
+                panic!()
+            }
         }
     }
 }
 
 #[derive(Clone, Debug, PartialEq, PartialOrd)]
 pub struct BiquadFilter {
-    pub hash: String,
-    // Feedforward coefficients for the current and two previous inputs
     feedforward_coefs: [f64; 3],
     // Feedback coefficients for the two previous outputs
     feedback_coefs: [f64; 3],
@@ -69,6 +124,8 @@ impl Ord for BiquadFilter {
             .unwrap_or(Ordering::Equal)
     }
 }
+
+impl Eq for BiquadFilter {}
 
 impl Hash for BiquadFilter {
     fn hash<H: Hasher>(&self, state: &mut H) {
@@ -87,13 +144,10 @@ impl Hash for BiquadFilter {
     }
 }
 
-impl Eq for BiquadFilter {}
-
 impl BiquadFilter {
     // The new function creates a BiquadFilter with given feedforward and feedback coefficients
-    pub fn new(hash: String, feedforward_coefs: [f64; 3], feedback_coefs: [f64; 3]) -> Self {
+    pub fn new(feedforward_coefs: [f64; 3], feedback_coefs: [f64; 3]) -> Self {
         BiquadFilter {
-            hash,
             feedforward_coefs,
             feedback_coefs,
             input_history: [0.0; 2],
@@ -120,19 +174,19 @@ impl BiquadFilter {
     }
 }
 
-pub fn lowpass_filter(hash: String, cutoff_frequency: f64, quality_factor: f64) -> BiquadFilter {
+pub fn lowpass_filter(cutoff_frequency: f64, quality_factor: f64) -> BiquadFilter {
     let (feedforward_coefs, feedback_coefs) = lowpass_coefs(cutoff_frequency, quality_factor);
-    BiquadFilter::new(hash, feedforward_coefs, feedback_coefs)
+    BiquadFilter::new(feedforward_coefs, feedback_coefs)
 }
 
-pub fn highpass_filter(hash: String, cutoff_frequency: f64, quality_factor: f64) -> BiquadFilter {
+pub fn highpass_filter(cutoff_frequency: f64, quality_factor: f64) -> BiquadFilter {
     let (feedforward_coefs, feedback_coefs) = highpass_coefs(cutoff_frequency, quality_factor);
-    BiquadFilter::new(hash, feedforward_coefs, feedback_coefs)
+    BiquadFilter::new(feedforward_coefs, feedback_coefs)
 }
 
-pub fn bandpass_filter(hash: String, cutoff_frequency: f64, quality_factor: f64) -> BiquadFilter {
+pub fn bandpass_filter(cutoff_frequency: f64, quality_factor: f64) -> BiquadFilter {
     let (feedforward_coefs, feedback_coefs) = bandpass_coefs(cutoff_frequency, quality_factor);
-    BiquadFilter::new(hash, feedforward_coefs, feedback_coefs)
+    BiquadFilter::new(feedforward_coefs, feedback_coefs)
 }
 
 pub fn lowpass_coefs(cutoff_frequency: f64, quality_factor: f64) -> ([f64; 3], [f64; 3]) {

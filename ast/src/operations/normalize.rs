@@ -8,7 +8,7 @@ use num_rational::Ratio;
 use num_traits::CheckedMul;
 use scop::Defs;
 use weresocool_error::Error;
-use weresocool_filter::BiquadFilterDef;
+use weresocool_filter::*;
 use weresocool_shared::{generate_random_hash_string, lossy_rational_mul};
 
 impl Normalize<Term> for Op {
@@ -37,15 +37,32 @@ impl Normalize<Term> for Op {
                 handle_id_error(id, defs)?.apply_to_normal_form(input, defs)?;
             }
 
+            Op::ASDR { a, s, d, r } => {
+                let hash = generate_random_hash_string();
+                input.fmap_mut(|op| {
+                    op.filters.push(FilterDef::ASDR {
+                        hash: hash.clone(),
+                        def: ASDRFilterDef {
+                            a: *a,
+                            s: *s,
+                            d: *d,
+                            r: *r,
+                        },
+                    })
+                });
+            }
+
             Op::Lowpass {
                 cutoff_frequency,
                 q_factor,
             } => {
-                let filter_def = BiquadFilterDef {
+                let filter_def = FilterDef::Biquad {
                     hash: generate_random_hash_string(),
-                    filter_type: weresocool_filter::BiquadFilterType::Lowpass,
-                    cutoff_frequency: *cutoff_frequency,
-                    q_factor: *q_factor,
+                    def: BiquadFilterDef {
+                        filter_type: weresocool_filter::BiquadFilterType::Lowpass,
+                        cutoff_frequency: *cutoff_frequency,
+                        q_factor: *q_factor,
+                    },
                 };
                 input.fmap_mut(|op| op.filters.push(filter_def.clone()));
             }
@@ -54,11 +71,13 @@ impl Normalize<Term> for Op {
                 cutoff_frequency,
                 q_factor,
             } => {
-                let filter_def = BiquadFilterDef {
+                let filter_def = FilterDef::Biquad {
                     hash: generate_random_hash_string(),
-                    filter_type: weresocool_filter::BiquadFilterType::Highpass,
-                    cutoff_frequency: *cutoff_frequency,
-                    q_factor: *q_factor,
+                    def: BiquadFilterDef {
+                        filter_type: weresocool_filter::BiquadFilterType::Highpass,
+                        cutoff_frequency: *cutoff_frequency,
+                        q_factor: *q_factor,
+                    },
                 };
                 input.fmap_mut(|op| op.filters.push(filter_def.clone()));
             }
@@ -67,11 +86,13 @@ impl Normalize<Term> for Op {
                 cutoff_frequency,
                 q_factor,
             } => {
-                let filter_def = BiquadFilterDef {
+                let filter_def = FilterDef::Biquad {
                     hash: generate_random_hash_string(),
-                    filter_type: weresocool_filter::BiquadFilterType::Bandpass,
-                    cutoff_frequency: *cutoff_frequency,
-                    q_factor: *q_factor,
+                    def: BiquadFilterDef {
+                        filter_type: weresocool_filter::BiquadFilterType::Bandpass,
+                        cutoff_frequency: *cutoff_frequency,
+                        q_factor: *q_factor,
+                    },
                 };
                 input.fmap_mut(|op| op.filters.push(filter_def.clone()));
             }
