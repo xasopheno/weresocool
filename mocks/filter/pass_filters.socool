@@ -1,0 +1,18 @@
+{ f: 220, l: 1, g: 1, p: 0 } 
+
+main = {
+  Overlay [
+    Lowpass 400.0 0.707
+  ]
+  | Highpass 400.0 0.707
+  | Seq [
+    Bandpass 400.0 0.707
+  ]
+}
+
+expect = {
+    Fm 1
+    | Lowpass 400.0 0.707
+    | Highpass 400.0 0.707
+    | Bandpass 400.0 0.707
+}
