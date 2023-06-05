@@ -24,7 +24,7 @@ pub struct Voice {
     pub attack: usize,
     pub decay: usize,
     pub asr: ASR,
-    pub filters: Vec<BiquadFilter>,
+    pub filters: Option<Vec<BiquadFilter>>,
     pub old_filters: Option<Vec<BiquadFilter>>,
     pub filter_crossfade_index: usize,
     pub filter_crossfade_period: usize,
@@ -94,7 +94,7 @@ impl Voice {
             attack: Settings::global().sample_rate as usize,
             decay: Settings::global().sample_rate as usize,
             asr: ASR::Long,
-            filters: vec![],
+            filters: None,
             old_filters: None,
             filter_crossfade_index: 0,
             filter_crossfade_period: 2048 * 2,
@@ -129,6 +129,14 @@ impl Voice {
         let sample_limit = if op.samples > 250 { op.samples } else { 250 };
         let apply_reverb = self.reverb.state.map_or(false, |s| s > 0.0);
 
+        let should_osc_crossfade = self.old_osc_type.is_some() && !self.silence_to_sound();
+
+        let has_filters = if let Some(filters) = &mut self.filters {
+            !filters.is_empty()
+        } else {
+            false
+        };
+
         for (index, sample) in buffer.iter_mut().enumerate() {
             let frequency = self.calculate_frequency(
                 index,
@@ -145,7 +153,7 @@ impl Voice {
             let mut new_sample = self.osc_type.generate_sample(info, self.phase);
 
             // If we're in the middle of a crossfade
-            if self.old_osc_type.is_some() && self.osc_crossfade_index < self.osc_crossfade_period {
+            if should_osc_crossfade && self.osc_crossfade_index < self.osc_crossfade_period {
                 self.old_phase = self.calculate_current_phase(&info, self.old_osc_type.unwrap());
 
                 let old_sample = self
@@ -176,38 +184,40 @@ impl Voice {
                 self.offset_current.gain = gain;
             };
 
-            let new_filtered_sample = if !self.filters.is_empty() {
-                self.filters
-                    .iter_mut()
-                    .fold(new_sample, |acc, filter| filter.process(acc))
-            } else {
-                new_sample
-            };
-
-            // if we're in the middle of a filter crossfade
-            if self.old_filters.is_some() {
-                let old_filtered_sample = self
-                    .old_filters
+            if has_filters {
+                let new_filtered_sample = self
+                    .filters
                     .as_mut()
                     .unwrap()
                     .iter_mut()
                     .fold(new_sample, |acc, filter| filter.process(acc));
 
-                let crossfade_gain = if self.filter_crossfade_index < self.filter_crossfade_period {
-                    self.filter_crossfade_index as f64 / self.filter_crossfade_period as f64
+                // if we're in the middle of a filter crossfade
+                if self.old_filters.is_some() && !self.silence_to_sound() {
+                    let old_filtered_sample = self
+                        .old_filters
+                        .as_mut()
+                        .unwrap()
+                        .iter_mut()
+                        .fold(new_sample, |acc, filter| filter.process(acc));
+
+                    let crossfade_gain =
+                        if self.filter_crossfade_index < self.filter_crossfade_period {
+                            self.filter_crossfade_index as f64 / self.filter_crossfade_period as f64
+                        } else {
+                            1.0
+                        };
+
+                    new_sample = crossfade_gain * new_filtered_sample
+                        + (1.0 - crossfade_gain) * old_filtered_sample;
+
+                    self.filter_crossfade_index += 1;
+                    if self.filter_crossfade_index == self.filter_crossfade_period {
+                        self.old_filters = None;
+                    }
                 } else {
-                    1.0
-                };
-
-                new_sample = crossfade_gain * new_filtered_sample
-                    + (1.0 - crossfade_gain) * old_filtered_sample;
-
-                self.filter_crossfade_index += 1;
-                if self.filter_crossfade_index == self.filter_crossfade_period {
-                    self.old_filters = None;
+                    new_sample = new_filtered_sample
                 }
-            } else {
-                new_sample = new_filtered_sample
             }
 
             *sample += new_sample;
@@ -217,11 +227,13 @@ impl Voice {
     }
 
     pub fn update(&mut self, op: &RenderOp, offset: &Offset) {
-        let will_update_filters = !self
-            .filters
-            .iter()
-            .map(|f| &f.hash)
-            .eq(op.filters.iter().map(|f| &f.hash));
+        let will_update_filters = if let Some(self_filters) = &self.filters {
+            let self_hashes = self_filters.iter().map(|f| &f.hash);
+            let op_hashes = op.filters.iter().map(|f| &f.hash);
+            !self_hashes.eq(op_hashes)
+        } else {
+            true
+        };
 
         if op.index == 0 {
             self.past.frequency = self.current.frequency;
@@ -255,9 +267,11 @@ impl Voice {
             self.current.osc_type = op.osc_type;
             self.current.reverb = op.reverb;
             if will_update_filters {
-                self.old_filters = Some(self.filters.clone()); // Save the old filters
-                self.filter_crossfade_index = 0; // Reset the crossfade index
-                self.filters = op.filters.iter().map(|f| f.to_filter()).collect();
+                if self.filters.is_some() {
+                    std::mem::swap(&mut self.old_filters, &mut self.filters);
+                    self.filter_crossfade_index = 0;
+                }
+                self.filters = Some(op.filters.iter().map(|f| f.to_filter()).collect());
             }
         };
         self.offset_past.gain = self.offset_current.gain;
