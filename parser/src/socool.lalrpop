@@ -250,7 +250,6 @@ Scale: Scale = {
 }
 
 BaseOperation: Term = {
-
     "Csv1d" <scale: Parenthesized<Rational>?> <path: Import>  => Term::Op(CSV1d { path, scale }),
     "Csv2d" <scales: Parenthesized<Comma<Scale>>> <path: Import>  => Term::Op(CSV2d { path, scales }),
     //
@@ -268,12 +267,12 @@ BaseOperation: Term = {
       cutoff_frequency: c, 
       q_factor: q
     }),
-    "Highpass|HighPass" <c:Rational> <q:Rational> => Term::Op(Highpass {
+    r"Highpass|HighPass" <c:Rational> <q:Rational> => Term::Op(Highpass {
       hash: generate_random_hash_string(),
       cutoff_frequency: c, 
       q_factor: q
     }),
-    "Bandpass|BandPass" <c:Rational> <q:Rational> => Term::Op(Bandpass {
+    r"Bandpass|BandPass" <c:Rational> <q:Rational> => Term::Op(Bandpass {
       hash: generate_random_hash_string(),
       cutoff_frequency: c, 
       q_factor: q
