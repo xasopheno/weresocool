@@ -10,6 +10,7 @@ resolver="2"
 [dependencies]
 weresocool_ring_buffer = { path = "../ring_buffer", version = "^1.0.45" }
 weresocool_error = { path = "../error", version = "^1.0.45", default_features=false, optional=true }
+weresocool_filter = { path = "../filter", version = "^1.0.45" } 
 weresocool_shared = { path = "../shared", version = "^1.0.45" }
 scop = { path = "../scop", version = "^1.0.45" }
 num-rational = { version = "0.3.2", features = ["serde"] } 

@@ -19,7 +19,7 @@ hound = "3.4.0"
 serde_json = "1.0.64"
 serde = { version = "1.0.119", features = ["derive"] }
 csv = "1.1.5"
-wasm-bindgen = { version="0.2.74", optional=true, features=["serde-serialize"] }
+wasm-bindgen = { version="0.2.86", optional=true, features=["serde-serialize"] }
 thiserror = "1.0.24"
 
 [features]

@@ -62,6 +62,11 @@ mod generated_tests {
     // expect(resource);
     // }
 
+    #[test_resources("mocks/filter/*.socool")]
+    fn __filter_generated_(resource: &str) {
+        expect(resource);
+    }
+
     #[test_resources("mocks/tags/*.socool")]
     fn __tags_generated_(resource: &str) {
         expect(resource);

@@ -43,6 +43,7 @@ pub struct Settings {
     pub interleaved: bool,
     pub max_freq: f64,
     pub min_freq: f64,
+    pub crossfade_period: usize,
 }
 
 pub const fn default_settings() -> Settings {
@@ -52,7 +53,8 @@ pub const fn default_settings() -> Settings {
         mic: false,
         sample_rate: 48_000.0,
         yin_buffer_size: 2048,
-        buffer_size: 1024 * 8,
+        buffer_size: 1024 * 12,
+        crossfade_period: 1024 * 4,
         probability_threshold: 0.3,
         gain_threshold_min: 0.0,
         channels: 2,

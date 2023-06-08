@@ -48,7 +48,7 @@ weresocool_ring_buffer = { path = "ring_buffer", version = "^1.0.45" }
 clap = "4.0.27"
 thiserror = "1.0.31"
 notify = "5.0.0-pre.14"
-zip = { version="0.6.2", optional=true }
+zip = { version="0.6.6", optional=true }
 hound = { version="3.4.0", optional=true }
 assert_cmd = { version="2.0.4", optional=true }
 serde = { version = "1.0.119", features = ["derive"] }
@@ -114,6 +114,7 @@ harness = false
 members = [
     "core",
     "analyze",
+    "filter",
     "opmap",
     "ast",
     "error",
