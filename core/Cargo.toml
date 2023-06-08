@@ -42,7 +42,7 @@ serde = { version = "1.0.119", features = ["derive"] }
 serde_json = "1.0.64"
 serde_derive = "1.0.126"
 colored = "2.0.0"
-pbr = { version="1.0.4", optional=true }
+pbr = { version="1.1.1", optional=true }
 num-rational = "0.3.2"
 rayon = "1.5.1"
 indexmap = { version = "1.7.0", features = ["serde-1"] }
@@ -57,7 +57,7 @@ bytes = "1.0.1"
 env_logger = "0.8.2"
 test-generator = "0.3.0"
 float-cmp = "0.8.0"
-zip = { version="0.5.12", optional=true }
+zip = { version="0.6.6", optional=true }
 crossbeam-channel = "0.5.4"
 
 [features]

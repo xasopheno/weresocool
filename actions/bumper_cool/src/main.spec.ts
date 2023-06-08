@@ -1,56 +1,71 @@
-import test from 'ava'
 import api from './api'
 import { commitForRelease, prepareEdit } from './main'
 import { Response } from 'node-fetch'
 
-test('commitForRelease()', (t) => {
-  t.is(
-    commitForRelease('This is a fixed commit message', {
-      packageName: 'test package',
-    }),
-    'This is a fixed commit message'
-  )
-  t.is(
-    commitForRelease('chore({{packageName}}): version {{version}}', {
-      packageName: 'test package',
-    }),
-    'chore(test package): version {{version}}'
-  )
-  t.is(
-    commitForRelease('{packageName} {version}', {
-      packageName: 'test package',
-      version: 'v1.2.3',
-    }),
-    '{packageName} {version}'
-  )
-  t.is(
-    commitForRelease('chore({{packageName}}): upgrade to version {{version}}', {
-      packageName: 'test package',
-      version: 'v1.2.3',
-    }),
-    'chore(test package): upgrade to version v1.2.3'
-  )
-  t.is(
-    commitForRelease(
-      '{{packageName}} {{version}}: upgrade {{packageName}} to version {{version}}',
-      {
+describe('commitForRelease()', () => {
+  it('Should handle fixed commit message', () => {
+    expect(
+      commitForRelease('This is a fixed commit message', {
+        packageName: 'test package',
+      })
+    ).toBe('This is a fixed commit message')
+  })
+
+  it('Should handle template with package name', () => {
+    expect(
+      commitForRelease('chore({{packageName}}): version {{version}}', {
+        packageName: 'test package',
+      })
+    ).toBe('chore(test package): version {{version}}')
+  })
+
+  it('Should handle template with package name and version', () => {
+    expect(
+      commitForRelease('{packageName} {version}', {
         packageName: 'test package',
         version: 'v1.2.3',
-      }
-    ),
-    'test package v1.2.3: upgrade test package to version v1.2.3'
-  )
-  t.is(
-    commitForRelease('{{constructor}}{{__proto__}}', {}),
-    '{{constructor}}{{__proto__}}'
-  )
-  t.is(
-    commitForRelease('{{version}}', { version: '{{version}}' }),
-    '{{version}}'
-  )
+      })
+    ).toBe('{packageName} {version}')
+  })
+
+  it('Should handle upgrade version template', () => {
+    expect(
+      commitForRelease(
+        'chore({{packageName}}): upgrade to version {{version}}',
+        {
+          packageName: 'test package',
+          version: 'v1.2.3',
+        }
+      )
+    ).toBe('chore(test package): upgrade to version v1.2.3')
+  })
+
+  it('Should handle complex template with package name and version', () => {
+    expect(
+      commitForRelease(
+        '{{packageName}} {{version}}: upgrade {{packageName}} to version {{version}}',
+        {
+          packageName: 'test package',
+          version: 'v1.2.3',
+        }
+      )
+    ).toBe('test package v1.2.3: upgrade test package to version v1.2.3')
+  })
+
+  it('Should handle constructor and proto', () => {
+    expect(commitForRelease('{{constructor}}{{__proto__}}', {})).toBe(
+      '{{constructor}}{{__proto__}}'
+    )
+  })
+
+  it('Should handle template with only version', () => {
+    expect(commitForRelease('{{version}}', { version: '{{version}}' })).toBe(
+      '{{version}}'
+    )
+  })
 })
 
-test('prepareEdit()', async (t) => {
+describe('prepareEdit()', () => {
   const ctx = {
     sha: 'TAGSHA',
     ref: 'refs/tags/v0.8.2',
@@ -81,27 +96,26 @@ test('prepareEdit()', async (t) => {
   }
   const apiClient = api('ATOKEN', { fetch: stubbedFetch, logRequests: false })
 
-  const opts = await prepareEdit(ctx, apiClient, apiClient)
-  t.is(opts.owner, 'xasopheno')
-  t.is(opts.repo, 'weresocool')
-  t.is(opts.branch, '')
-  t.is(opts.filePath, 'PKGBUILD')
-  t.is(opts.commitMessage, 'Upgrade repo to 0.8.2')
+  it('should prepare edits correctly', async () => {
+    const opts = await prepareEdit(ctx, apiClient, apiClient)
+    expect(opts.owner).toBe('xasopheno')
+    expect(opts.repo).toBe('weresocool')
+    expect(opts.branch).toBe('')
+    expect(opts.filePath).toBe('PKGBUILD')
+    expect(opts.commitMessage).toBe('Upgrade repo to 0.8.2')
 
-  const oldFormula = `
-    class MyProgram <package 
-      revision 12
-      head "git://example.com/repo.git",
-        revision: "GITSHA"
-    end
-  `
-  t.is(
-    `
-    class MyProgram <package 
-      head "git://example.com/repo.git",
-        revision: "GITSHA"
-    end
-  `,
-    opts.replace(oldFormula)
-  )
+    const oldFormula = `
+class MyProgram <package
+revision 12
+head "git://example.com/repo.git",
+revision: "GITSHA"
+end
+`
+    expect(opts.replace(oldFormula)).toBe(`
+class MyProgram <package
+head "git://example.com/repo.git",
+revision: "GITSHA"
+end
+`)
+  })
 })
