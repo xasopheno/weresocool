@@ -11,6 +11,7 @@ use scop::Defs;
 use serde::{Deserialize, Serialize};
 use weresocool_ast::{NormalForm, Normalize, OscType, PointOp, Term, ASR};
 use weresocool_error::Error;
+use weresocool_filter::BiquadFilterDef;
 pub(crate) use weresocool_shared::{lossy_rational_mul, r_to_f64, Settings};
 
 #[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
@@ -35,6 +36,7 @@ pub struct RenderOp {
     pub next_l_silent: bool,
     pub next_r_silent: bool,
     pub names: Vec<String>,
+    pub filters: Vec<BiquadFilterDef>,
 }
 
 impl RenderOp {
@@ -58,7 +60,8 @@ impl RenderOp {
             osc_type: OscType::None,
             next_l_silent: false,
             next_r_silent: false,
-            names: vec![],
+            names: Vec::new(),
+            filters: Vec::new(),
         }
     }
     pub fn init_silent_with_length(l: f64) -> Self {
@@ -81,14 +84,16 @@ impl RenderOp {
             osc_type: OscType::None,
             next_l_silent: true,
             next_r_silent: true,
-            names: vec![],
+            names: Vec::new(),
+            filters: Vec::new(),
         }
     }
 
-    pub const fn init_silent_with_length_osc_type_and_reverb(
+    pub const fn init_silent_with_length_osc_type_reverb_and_filters(
         l: f64,
         osc_type: OscType,
         reverb: Option<f64>,
+        filters: Vec<BiquadFilterDef>,
         settings: &Settings,
     ) -> Self {
         Self {
@@ -111,6 +116,7 @@ impl RenderOp {
             next_l_silent: true,
             next_r_silent: true,
             names: vec![],
+            filters,
         }
     }
 }
@@ -183,7 +189,7 @@ fn pointop_to_renderop(
 
     match next {
         Some(op) => {
-            let (l, r) = point_op_to_gains(&op, basis);
+            let (l, r) = point_op_to_gains(&op, basis, 1.0, 1.0);
             next_l_gain = l;
             next_r_gain = r;
             next_silent = op.is_silent();
@@ -221,6 +227,7 @@ fn pointop_to_renderop(
         next_l_silent,
         next_r_silent,
         names: point_op.names.to_vec(),
+        filters: point_op.filters.to_vec(),
     };
 
     *time += point_op.l * basis.l;
@@ -228,24 +235,38 @@ fn pointop_to_renderop(
     render_op
 }
 
-pub fn point_op_to_gains(point_op: &PointOp, basis: &Basis) -> (f64, f64) {
+pub fn point_op_to_gains(
+    point_op: &PointOp,
+    basis: &Basis,
+    angle: f64,
+    frequency: f64,
+) -> (f64, f64) {
+    if *point_op.g.numer() == 0 {
+        return (0.0, 0.0);
+    }
+
     let pm = r_to_f64(point_op.pm);
     let pa = r_to_f64(point_op.pa);
     let g = r_to_f64(point_op.g);
+    let base_p = r_to_f64(basis.p);
+    let base_g = r_to_f64(basis.g);
 
-    let l_gain = if *point_op.g.numer() == 0 {
-        0.0
-    } else {
-        g * (((pa.mul_add(pm, 1.0)) + r_to_f64(basis.p)) / 2.0) * r_to_f64(basis.g)
-    };
+    let ild = calculate_ild(angle, frequency);
 
-    let r_gain = if *point_op.g.numer() == 0 {
-        0.0
-    } else {
-        g * (((pa.mul_add(pm, -1.0)) + r_to_f64(basis.p)) / -2.0) * r_to_f64(basis.g)
-    };
+    let l_gain = g * (((pa.mul_add(pm, 1.0 + ild)) + base_p) / 2.0) * base_g;
+    let r_gain = g * (((pa.mul_add(pm, -1.0 - ild)) + base_p) / -2.0) * base_g;
 
     (l_gain, r_gain)
+}
+
+fn calculate_ild(angle: f64, frequency: f64) -> f64 {
+    const MAX_ILD: f64 = 1.0;
+    const FREQUENCY_FACTOR: f64 = 0.001;
+
+    let angle_factor = (angle / 90.0).cos();
+    let frequency_factor = frequency * FREQUENCY_FACTOR;
+
+    MAX_ILD * angle_factor * frequency_factor
 }
 
 pub fn m_a_and_basis_to_f64(basis: Rational64, m: Rational64, a: Rational64) -> f64 {
@@ -256,15 +277,22 @@ pub fn m_a_and_basis_to_f64(basis: Rational64, m: Rational64, a: Rational64) -> 
     ) + r_to_f64(a)
 }
 
+pub fn float_to_angle(input: f64) -> f64 {
+    // Map the input in the range -1 to 1 into the range -90 to 90.
+    input * 90.0
+}
+
 pub fn calculate_fgpl(basis: &Basis, point_op: &PointOp) -> (f64, (f64, f64), f64, f64) {
     let settings = Settings::global();
+    let p = m_a_and_basis_to_f64(basis.p, point_op.pm, point_op.pa);
+
     let (mut f, mut g) = if point_op.is_silent() {
         (0.0, (0.0, 0.0))
     } else {
-        let g = point_op_to_gains(point_op, basis);
-        (m_a_and_basis_to_f64(basis.f, point_op.fm, point_op.fa), g)
+        let f = m_a_and_basis_to_f64(basis.f, point_op.fm, point_op.fa);
+        let g = point_op_to_gains(point_op, basis, f, float_to_angle(p));
+        (f, g)
     };
-    let p = m_a_and_basis_to_f64(basis.p, point_op.pm, point_op.pa);
     let l = r_to_f64(point_op.l * basis.l);
     if f < settings.min_freq {
         f = 0.0;
@@ -310,12 +338,20 @@ pub fn nf_to_vec_renderable(
                 result.push(op);
             }
             if settings.pad_end {
-                result.push(RenderOp::init_silent_with_length_osc_type_and_reverb(
-                    1.0,
-                    OscType::None,
-                    None,
-                    settings,
-                ));
+                let filters = if let Some(last_op) = vec_point_op.last() {
+                    last_op.filters.to_vec()
+                } else {
+                    vec![]
+                };
+                result.push(
+                    RenderOp::init_silent_with_length_osc_type_reverb_and_filters(
+                        1.0,
+                        OscType::None,
+                        None,
+                        filters,
+                        settings,
+                    ),
+                );
             }
             result
         })

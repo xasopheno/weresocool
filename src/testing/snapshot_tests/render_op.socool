@@ -4,7 +4,7 @@
 thing1 = {
 	Sequence [
 		AsIs,
-        Tm 3/2 | PanA 0.4
+        Fm 3/2 | PanA 0
 	] 
 }
 

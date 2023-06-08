@@ -74,6 +74,7 @@ impl TimedOp {
             portamento: self.portamento,
             osc_type: self.osc_type,
             names: NameSet::new(),
+            filters: Vec::new(),
         }
     }
 

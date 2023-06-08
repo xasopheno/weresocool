@@ -11,12 +11,13 @@ pub struct RenderVoice {
     pub ops: Vec<RenderOp>,
     pub oscillator: Oscillator,
 }
+
 impl RenderVoice {
     pub fn init(ops: &[RenderOp]) -> Self {
         Self {
             sample_index: 0,
             op_index: 0,
-            ops: ops.to_vec(),
+            ops: ops.to_owned(),
             oscillator: Oscillator::init(),
         }
     }
@@ -28,10 +29,7 @@ impl RenderVoice {
         samples_left_in_batch: usize,
         result: Option<Vec<RenderOp>>,
     ) -> Option<Vec<RenderOp>> {
-        let mut result: Vec<RenderOp> = match result {
-            Some(result) => result.to_vec(),
-            None => vec![],
-        };
+        let mut result = result.unwrap_or_default();
 
         if Settings::global().loop_play && self.op_index >= self.ops.len() {
             self.op_index = 0;
@@ -52,6 +50,7 @@ impl RenderVoice {
                 samples: samples_left_in_batch,
                 index: self.sample_index,
                 names: current_op.names.clone(),
+                filters: current_op.filters.clone(),
                 ..*current_op
             });
             self.sample_index += samples_left_in_batch;
@@ -61,6 +60,7 @@ impl RenderVoice {
                 samples: n_samples,
                 index: self.sample_index,
                 names: current_op.names.clone(),
+                filters: current_op.filters.clone(),
                 ..*current_op
             });
 

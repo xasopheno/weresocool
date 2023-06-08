@@ -114,6 +114,7 @@ harness = false
 members = [
     "core",
     "analyze",
+    "filter",
     "opmap",
     "ast",
     "error",

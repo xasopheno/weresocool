@@ -81,6 +81,7 @@ pub fn pad_length(
                 portamento: Ratio::new(1, 1),
                 osc_type: OscType::None,
                 names: NameSet::new(),
+                filters: vec![],
             });
         }
     }
@@ -112,6 +113,7 @@ pub fn join_sequence(mut l: NormalForm, mut r: NormalForm) -> NormalForm {
                     portamento: Ratio::new(1, 1),
                     osc_type: OscType::None,
                     names: NameSet::new(),
+                    filters: vec![],
                 }])
             }
         }
@@ -131,6 +133,7 @@ pub fn join_sequence(mut l: NormalForm, mut r: NormalForm) -> NormalForm {
                     portamento: Ratio::new(1, 1),
                     osc_type: OscType::None,
                     names: NameSet::new(),
+                    filters: vec![],
                 }])
             }
         }

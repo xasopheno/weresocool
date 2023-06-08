@@ -7,8 +7,8 @@ pub mod tests {
         voice::{ReverbState, Voice, VoiceState},
     };
     use weresocool_ast::ast::{OscType, ASR};
+    use weresocool_shared::get_test_settings;
     use weresocool_shared::helpers::{cmp_f64, cmp_vec_f64};
-    use weresocool_shared::{get_test_settings, Settings};
     pub mod voice {
         use super::*;
         #[test]
@@ -45,10 +45,16 @@ pub mod tests {
                     reverb: None,
                 },
                 phase: 0.0,
-                osc_type: OscType::Sine { pow: None },
+                osc_type: OscType::None,
                 attack: settings.sample_rate as usize,
                 decay: settings.sample_rate as usize,
                 asr: ASR::Long,
+                filters: None,
+                old_filters: None,
+                filter_crossfade_index: 0,
+                osc_crossfade_index: 0,
+                old_phase: 0.0,
+                old_osc_type: None,
             };
 
             assert_eq!(voice, result);
@@ -136,10 +142,16 @@ pub mod tests {
                             osc_type: OscType::None,
                             reverb: None,
                         },
-                        osc_type: OscType::Sine { pow: None },
+                        osc_type: OscType::None,
                         attack: 44100,
                         decay: 44100,
                         asr: ASR::Long,
+                        filters: None,
+                        old_filters: None,
+                        filter_crossfade_index: 0,
+                        osc_crossfade_index: 0,
+                        old_phase: 0.0,
+                        old_osc_type: None,
                     },
                     Voice {
                         index: 1,
@@ -169,10 +181,16 @@ pub mod tests {
                             osc_type: OscType::None,
                             reverb: None,
                         },
-                        osc_type: OscType::Sine { pow: None },
+                        osc_type: OscType::None,
                         attack: 44100,
                         decay: 44100,
                         asr: ASR::Long,
+                        filters: None,
+                        old_filters: None,
+                        filter_crossfade_index: 0,
+                        osc_crossfade_index: 0,
+                        old_phase: 0.0,
+                        old_osc_type: None,
                     },
                 ),
             };

@@ -2,6 +2,7 @@ use num_rational::{Rational64};
 use std::str::FromStr;
 use std::string::String;
 use scop::Defs;
+use weresocool_shared::helpers::generate_random_hash_string;
 use weresocool_ast::{
         Op::*,
         Term, 
@@ -262,6 +263,21 @@ BaseOperation: Term = {
     <pa: Pa>   <a:Rational> => Term::Op(PanA {a}),
     <lm: Lm> <m:Rational> => Term::Op(Length {m}),
     <gain: Gm> <m:Rational> => Term::Op(Gain {m}),
+    r"Lowpass|LowPass" <c:Rational> <q:Rational> => Term::Op(Lowpass {
+      hash: generate_random_hash_string(),
+      cutoff_frequency: c, 
+      q_factor: q
+    }),
+    "Highpass|HighPass" <c:Rational> <q:Rational> => Term::Op(Highpass {
+      hash: generate_random_hash_string(),
+      cutoff_frequency: c, 
+      q_factor: q
+    }),
+    "Bandpass|BandPass" <c:Rational> <q:Rational> => Term::Op(Bandpass {
+      hash: generate_random_hash_string(),
+      cutoff_frequency: c, 
+      q_factor: q
+    }),
     "AsIs" => Term::Op(AsIs {}),
     "Sine" <pow: Rational?> => {
       Term::Op(Sine { pow })
@@ -275,6 +291,9 @@ BaseOperation: Term = {
     },
     r"Triangle|Tri" <pow: Rational?> => {
       Term::Op(Triangle { pow })
+    },
+    r"Saw" => {
+      Term::Op(Saw)
     },
     r"Triangle|Tri" "[" <pows: Comma<Rational>> "]" => {
         let mut operations = Vec::new();

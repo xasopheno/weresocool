@@ -1,4 +1,5 @@
 mod asr;
+mod distortion;
 mod frequency;
 mod gain;
 mod loudness;

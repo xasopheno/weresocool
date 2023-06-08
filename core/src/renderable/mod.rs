@@ -14,10 +14,12 @@ mod tests {
         },
         Basis, StereoWaveform,
     };
-    use weresocool_shared::helpers::cmp_f64;
+    use weresocool_shared::{helpers::cmp_f64, Settings};
 
     #[test]
     fn test_calculate_fgpl() {
+        Settings::init_test();
+
         let basis = Basis {
             f: Rational64::new(100, 1),
             g: Rational64::new(1, 1),
@@ -103,12 +105,13 @@ mod tests {
                 next_l_silent: false,
                 next_r_silent: false,
                 names: vec![],
+                filters: vec![],
             },
             RenderOp {
                 f: 330.0,
-                p: 0.4,
+                p: 0.0,
                 l: 1.0,
-                g: (0.7, 0.3),
+                g: (0.5, 0.5),
                 t: 1.0,
                 reverb: None,
                 attack: 44_100.0,
@@ -124,6 +127,7 @@ mod tests {
                 next_l_silent: false,
                 next_r_silent: false,
                 names: vec![],
+                filters: vec![],
             },
             RenderOp {
                 f: 0.0,
@@ -145,6 +149,7 @@ mod tests {
                 next_l_silent: true,
                 next_r_silent: true,
                 names: vec![],
+                filters: vec![],
             },
         ]];
         assert_eq!(result, expected);

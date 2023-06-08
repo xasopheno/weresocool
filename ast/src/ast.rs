@@ -24,6 +24,22 @@ pub enum Op {
         scales: Vec<Scale>,
     },
     //
+    Lowpass {
+        hash: String,
+        cutoff_frequency: Rational64,
+        q_factor: Rational64,
+    },
+    Highpass {
+        hash: String,
+        cutoff_frequency: Rational64,
+        q_factor: Rational64,
+    },
+    Bandpass {
+        hash: String,
+        cutoff_frequency: Rational64,
+        q_factor: Rational64,
+    },
+    //
     FunctionCall {
         name: String,
         args: Vec<Term>,
@@ -35,6 +51,7 @@ pub enum Op {
     },
     //
     Noise,
+    Saw,
     Sine {
         pow: Option<Rational64>,
     },
@@ -116,6 +133,7 @@ pub enum OscType {
     Triangle { pow: Option<Rational64> },
     Square { width: Option<Rational64> },
     Noise,
+    Saw,
 }
 
 impl OscType {

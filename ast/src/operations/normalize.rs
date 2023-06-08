@@ -8,6 +8,7 @@ use num_rational::Ratio;
 use num_traits::CheckedMul;
 use scop::Defs;
 use weresocool_error::Error;
+use weresocool_filter::BiquadFilterDef;
 use weresocool_shared::lossy_rational_mul;
 
 impl Normalize<Term> for Op {
@@ -34,6 +35,48 @@ impl Normalize<Term> for Op {
 
             Op::Id(id) => {
                 handle_id_error(id, defs)?.apply_to_normal_form(input, defs)?;
+            }
+
+            Op::Lowpass {
+                hash,
+                cutoff_frequency,
+                q_factor,
+            } => {
+                let filter_def = BiquadFilterDef {
+                    hash: hash.to_owned(),
+                    filter_type: weresocool_filter::BiquadFilterType::Lowpass,
+                    cutoff_frequency: *cutoff_frequency,
+                    q_factor: *q_factor,
+                };
+                input.fmap_mut(|op| op.filters.push(filter_def.clone()));
+            }
+
+            Op::Highpass {
+                hash,
+                cutoff_frequency,
+                q_factor,
+            } => {
+                let filter_def = BiquadFilterDef {
+                    hash: hash.to_owned(),
+                    filter_type: weresocool_filter::BiquadFilterType::Highpass,
+                    cutoff_frequency: *cutoff_frequency,
+                    q_factor: *q_factor,
+                };
+                input.fmap_mut(|op| op.filters.push(filter_def.clone()));
+            }
+
+            Op::Bandpass {
+                hash,
+                cutoff_frequency,
+                q_factor,
+            } => {
+                let filter_def = BiquadFilterDef {
+                    hash: hash.to_owned(),
+                    filter_type: weresocool_filter::BiquadFilterType::Bandpass,
+                    cutoff_frequency: *cutoff_frequency,
+                    q_factor: *q_factor,
+                };
+                input.fmap_mut(|op| op.filters.push(filter_def.clone()));
             }
 
             Op::CSV1d { path, scale } => {
@@ -123,6 +166,8 @@ impl Normalize<Term> for Op {
             Op::Triangle { pow } => {
                 input.fmap_mut(|op| op.osc_type = OscType::Triangle { pow: *pow })
             }
+
+            Op::Saw => input.fmap_mut(|op| op.osc_type = OscType::Saw),
 
             Op::Square { width } => {
                 input.fmap_mut(|op| op.osc_type = OscType::Square { width: *width })

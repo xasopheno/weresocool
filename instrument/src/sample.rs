@@ -1,65 +1,66 @@
 use crate::voice::{SampleInfo, Voice};
-use num_rational::Rational64;
-use rand::{thread_rng, Rng};
 use std::f64::consts::PI;
+use weresocool_ast::OscType;
 use weresocool_shared::{r_to_f64, Settings};
 
 const TAU: f64 = PI * 2.0;
 
-fn random_offset() -> f64 {
+use rand::{thread_rng, Rng};
+pub fn random_offset() -> f64 {
     thread_rng().gen_range(-0.5, 0.5)
 }
 
 impl Voice {
-    pub fn generate_sine_sample(&mut self, info: SampleInfo, pow: Option<Rational64>) -> f64 {
-        self.phase = self.calculate_current_phase(&info, 0.0);
-        let value = match pow {
-            Some(p) => {
-                let power = r_to_f64(p);
-                f64::powf(self.phase, power).sin() / power
-            }
-            None => self.phase.sin(),
-        };
-        value * info.gain
-    }
-
-    pub fn generate_triangle_sample(&mut self, info: SampleInfo, pow: Option<Rational64>) -> f64 {
-        self.phase = self.calculate_current_phase(&info, 0.0);
-        let value = match pow {
-            Some(p) => {
-                let power = r_to_f64(p);
-                (f64::powf(self.phase, power).sin().abs() * 2.0 - 1.0) / power
-            }
-            None => self.phase.sin().abs() * 2.0 - 1.0,
-        };
-        value * info.gain
-    }
-
-    pub fn generate_square_sample(&mut self, info: SampleInfo, width: Option<Rational64>) -> f64 {
-        self.phase = self.calculate_current_phase(&info, 0.0);
-        let pulse_width = if let Some(w) = width {
-            r_to_f64(w)
+    pub fn calculate_current_phase(&mut self, info: &SampleInfo, osc_type: OscType) -> f64 {
+        let rand = if osc_type == OscType::Noise {
+            random_offset()
         } else {
             0.0
         };
 
-        let s = self.phase.sin();
-        let sign = if s > pulse_width { -1. } else { 1. };
-        sign * info.gain
-    }
-
-    pub fn generate_random_sample(&mut self, info: SampleInfo) -> f64 {
-        self.phase = self.calculate_current_phase(&info, random_offset());
-
-        self.phase.sin() * info.gain
-    }
-
-    pub fn calculate_current_phase(&mut self, info: &SampleInfo, rand: f64) -> f64 {
         if info.gain == 0.0 {
             0.0
         } else {
             ((TAU / Settings::global().sample_rate).mul_add(info.frequency, self.phase) + rand)
                 % TAU
+        }
+    }
+}
+pub trait Waveform {
+    fn generate_sample(&self, info: SampleInfo, phase: f64) -> f64;
+}
+
+impl Waveform for OscType {
+    fn generate_sample(&self, info: SampleInfo, phase: f64) -> f64 {
+        match self {
+            OscType::None => phase.sin() * info.gain,
+            OscType::Sine { pow } => {
+                let value = match pow {
+                    Some(p) => {
+                        let power = r_to_f64(*p);
+                        f64::powf(phase, power).sin() / power
+                    }
+                    None => phase.sin(),
+                };
+                value * info.gain
+            }
+            OscType::Triangle { pow } => {
+                let value = match pow {
+                    Some(p) => {
+                        let power = r_to_f64(*p);
+                        (f64::powf(phase, power).sin().abs() * 2.0 - 1.0) / power
+                    }
+                    None => phase.sin().abs() * 2.0 - 1.0,
+                };
+                value * info.gain
+            }
+            OscType::Square { width } => {
+                let pulse_width = width.map_or(0.0, r_to_f64);
+                let sign = if phase.sin() > pulse_width { -1. } else { 1. };
+                sign * info.gain
+            }
+            OscType::Saw => 2.0 * (phase / TAU - 0.5_f64.floor()) * info.gain,
+            OscType::Noise => phase.sin() * info.gain,
         }
     }
 }
