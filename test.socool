@@ -42,12 +42,12 @@ main = {
       Sine 3/2,
   ]
   | Seq [
-     Lowpass 400.0 8.107,
-     Lowpass 1400.0 0.707,
+     Lowpass 13/10 8.107,
+     Lowpass 7/2 0.707,
   ]
   | Overlay [
      AsIs,
-     Bandpass 1000.0 2.107,
+     -- Bandpass 2/1 2.107,
   ]
   | Seq [
     Pm 3/4, Pm -1

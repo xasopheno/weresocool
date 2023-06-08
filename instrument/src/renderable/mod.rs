@@ -227,7 +227,16 @@ fn pointop_to_renderop(
         next_l_silent,
         next_r_silent,
         names: point_op.names.to_vec(),
-        filters: point_op.filters.to_vec(),
+        filters: point_op
+            .filters
+            .iter()
+            .map(|f| BiquadFilterDef {
+                hash: f.hash.clone(),
+                filter_type: f.filter_type,
+                cutoff_frequency: f.cutoff_frequency * basis.f,
+                q_factor: f.q_factor,
+            })
+            .collect(),
     };
 
     *time += point_op.l * basis.l;

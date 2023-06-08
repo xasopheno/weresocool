@@ -8,7 +8,7 @@ use weresocool_shared::{r_to_f64, Settings};
 
 const TAU: f64 = PI * 2.0;
 
-#[derive(Clone, Debug, PartialEq, PartialOrd, Eq, Hash, Ord, Serialize, Deserialize)]
+#[derive(Clone, Debug, PartialEq, PartialOrd, Eq, Hash, Ord, Serialize, Deserialize, Copy)]
 pub enum BiquadFilterType {
     Lowpass,
     Highpass,
