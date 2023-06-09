@@ -1,6 +1,6 @@
 [package]
 name = "reverb"
-version = "1.0.45"
+version = "1.0.47"
 authors = ["josh, mitchell.nordine@gmail.com"]
 description = "A super-fast mono-to-stereo plate reverberator."
 readme = "README.md"

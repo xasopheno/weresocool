@@ -1,6 +1,6 @@
 [package]
 name = "weresocool"
-version = "1.0.45"
+version = "1.0.47"
 edition = "2021"
 authors = ["Danny <weresocool@xasopheno.com>"]
 description = "***** WereSoCool __!Now In Stereo!__ ****** Make cool sounds. Impress your friends."
@@ -24,27 +24,27 @@ depends = ["lame", "vorbis-tools"]
 provides = ["weresocool"]
 
 [target.'cfg(target_os = "windows")'.dependencies]
-weresocool_core = { path="core", version = "^1.0.45", features = ["windows"] }
-weresocool_error = { path = "error", version = "^1.0.45", features=["windows"] } 
+weresocool_core = { path="core", version = "^1.0.47", features = ["windows"] }
+weresocool_error = { path = "error", version = "^1.0.47", features=["windows"] } 
 [target.'cfg(target_os = "linux")'.dependencies]
-weresocool_core = { path="core", version = "^1.0.45", features = ["windows"] }
-weresocool_error = { path = "error", version = "^1.0.45", features=["windows"] } 
+weresocool_core = { path="core", version = "^1.0.47", features = ["windows"] }
+weresocool_error = { path = "error", version = "^1.0.47", features=["windows"] } 
 [target.'cfg(target_os = "macos")'.dependencies]
-weresocool_core = { path="core", version = "^1.0.45", features = ["app"] }
-weresocool_error = { path = "error", version = "^1.0.45", features=["app"] } 
+weresocool_core = { path="core", version = "^1.0.47", features = ["app"] }
+weresocool_error = { path = "error", version = "^1.0.47", features=["app"] } 
 
 [dependencies]
-weresocool_core = { path="core", version = "^1.0.45", default_features=false }
-weresocool_error = { path = "error", version = "^1.0.45", default_features=false } 
-weresocool_parser = { path = "parser", version = "^1.0.45", default_features=false, optional=true }
-weresocool_ast = { path = "ast", version = "^1.0.45", default_features=false, optional=true }
-weresocool_instrument = { path = "instrument", version = "^1.0.45", default_features=false, optional=true } 
-weresocool_portaudio = { path = "portaudio", version = "^1.0.45", default_features=false, optional=true } 
-scop = { path = "scop", version = "^1.0.45" }
-opmap = { path = "opmap", version = "^1.0.45" }
-weresocool_shared = { path = "shared", version = "^1.0.45" } 
-weresocool_analyze = { path = "analyze", version = "^1.0.45" }
-weresocool_ring_buffer = { path = "ring_buffer", version = "^1.0.45" }
+weresocool_core = { path="core", version = "^1.0.47", default_features=false }
+weresocool_error = { path = "error", version = "^1.0.47", default_features=false } 
+weresocool_parser = { path = "parser", version = "^1.0.47", default_features=false, optional=true }
+weresocool_ast = { path = "ast", version = "^1.0.47", default_features=false, optional=true }
+weresocool_instrument = { path = "instrument", version = "^1.0.47", default_features=false, optional=true } 
+weresocool_portaudio = { path = "portaudio", version = "^1.0.47", default_features=false, optional=true } 
+scop = { path = "scop", version = "^1.0.47" }
+opmap = { path = "opmap", version = "^1.0.47" }
+weresocool_shared = { path = "shared", version = "^1.0.47" } 
+weresocool_analyze = { path = "analyze", version = "^1.0.47" }
+weresocool_ring_buffer = { path = "ring_buffer", version = "^1.0.47" }
 clap = "4.0.27"
 thiserror = "1.0.31"
 notify = "5.0.0-pre.14"

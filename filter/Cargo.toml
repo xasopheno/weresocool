@@ -2,10 +2,11 @@
 name = "weresocool_filter"
 version = "1.0.45"
 edition = "2021"
-
-# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
+authors = ["Danny Meyer <weresocool@xasopheno.com>"]
+description = "filters for WereSoCool"
+license = "GPL-3.0"
 
 [dependencies]
-weresocool_shared = { path = "../shared", version = "^1.0.45" } 
+weresocool_shared = { path = "../shared", version = "^1.0.47" } 
 num-rational = { version = "0.3.2", features = ["serde"] } 
 serde = { version = "1.0.119", features = ["derive"] }

@@ -1196,7 +1196,7 @@ checksum = "0ab1bc2a289d34bd04a330323ac98a1b4bc82c9d9fcb1e66b63caa84da26b575"
 
 [[package]]
 name = "opmap"
-version = "1.0.45"
+version = "1.0.47"
 dependencies = [
  "drain-while",
  "hamcrest2",
@@ -1593,7 +1593,7 @@ checksum = "a3f87b73ce11b1619a3c6332f45341e0047173771e8b8b73f87bfeefb7b56244"
 
 [[package]]
 name = "reverb"
-version = "1.0.45"
+version = "1.0.47"
 
 [[package]]
 name = "rustix"
@@ -1632,7 +1632,7 @@ dependencies = [
 
 [[package]]
 name = "scop"
-version = "1.0.45"
+version = "1.0.47"
 dependencies = [
  "indexmap",
  "serde",
@@ -2058,7 +2058,7 @@ dependencies = [
 
 [[package]]
 name = "weresocool"
-version = "1.0.45"
+version = "1.0.47"
 dependencies = [
  "assert_cmd",
  "clap 4.0.27",
@@ -2096,14 +2096,14 @@ dependencies = [
 
 [[package]]
 name = "weresocool_analyze"
-version = "1.0.45"
+version = "1.0.47"
 dependencies = [
  "weresocool_shared",
 ]
 
 [[package]]
 name = "weresocool_ast"
-version = "1.0.45"
+version = "1.0.47"
 dependencies = [
  "colored",
  "csv",
@@ -2127,7 +2127,7 @@ dependencies = [
 
 [[package]]
 name = "weresocool_core"
-version = "1.0.45"
+version = "1.0.47"
 dependencies = [
  "bytes",
  "colored",
@@ -2170,7 +2170,7 @@ dependencies = [
 
 [[package]]
 name = "weresocool_error"
-version = "1.0.45"
+version = "1.0.47"
 dependencies = [
  "csv",
  "hound",
@@ -2194,7 +2194,7 @@ dependencies = [
 
 [[package]]
 name = "weresocool_instrument"
-version = "1.0.45"
+version = "1.0.47"
 dependencies = [
  "num-rational 0.3.2",
  "num-traits",
@@ -2212,7 +2212,7 @@ dependencies = [
 
 [[package]]
 name = "weresocool_lame"
-version = "1.0.45"
+version = "1.0.47"
 dependencies = [
  "serde",
  "thiserror",
@@ -2220,7 +2220,7 @@ dependencies = [
 
 [[package]]
 name = "weresocool_parser"
-version = "1.0.45"
+version = "1.0.47"
 dependencies = [
  "colored",
  "indexmap",
@@ -2239,7 +2239,7 @@ dependencies = [
 
 [[package]]
 name = "weresocool_portaudio"
-version = "1.0.45"
+version = "1.0.47"
 dependencies = [
  "bitflags",
  "libc",
@@ -2249,21 +2249,21 @@ dependencies = [
 
 [[package]]
 name = "weresocool_portaudio_sys"
-version = "1.0.45"
+version = "1.0.47"
 dependencies = [
  "cc",
 ]
 
 [[package]]
 name = "weresocool_ring_buffer"
-version = "1.0.45"
+version = "1.0.47"
 dependencies = [
  "weresocool_shared",
 ]
 
 [[package]]
 name = "weresocool_shared"
-version = "1.0.45"
+version = "1.0.47"
 dependencies = [
  "float-cmp",
  "hex",
@@ -2274,7 +2274,7 @@ dependencies = [
 
 [[package]]
 name = "weresocool_vorbis"
-version = "1.0.45"
+version = "1.0.47"
 dependencies = [
  "hamcrest2",
  "hound",
