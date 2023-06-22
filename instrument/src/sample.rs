@@ -11,8 +11,8 @@ pub fn random_offset() -> f64 {
 }
 
 impl Voice {
-    pub fn calculate_current_phase(&mut self, info: &SampleInfo, osc_type: OscType) -> f64 {
-        let rand = if osc_type == OscType::Noise {
+    pub fn calculate_current_phase(info: &SampleInfo, osc_type: &OscType, prev_phase: f64) -> f64 {
+        let rand = if *osc_type == OscType::Noise {
             random_offset()
         } else {
             0.0
@@ -21,7 +21,7 @@ impl Voice {
         if info.gain == 0.0 {
             0.0
         } else {
-            ((TAU / Settings::global().sample_rate).mul_add(info.frequency, self.phase) + rand)
+            ((TAU / Settings::global().sample_rate).mul_add(info.frequency, prev_phase) + rand)
                 % TAU
         }
     }
@@ -43,6 +43,27 @@ impl Waveform for OscType {
                     None => phase.sin(),
                 };
                 value * info.gain
+            }
+            OscType::Fm { defs } => {
+                let carrier_freq = info.frequency;
+                let rate_factor = TAU / Settings::global().sample_rate;
+
+                let modulator_samples = defs
+                    .iter()
+                    .map(|def| {
+                        let modulation_index = r_to_f64(def.depth);
+                        let modulator_frequency_multiple = r_to_f64(def.fm);
+                        let modulator_freq = carrier_freq * modulator_frequency_multiple;
+                        let modulator_phase = (rate_factor.mul_add(modulator_freq, phase)) % TAU;
+
+                        modulator_phase.sin() * modulation_index
+                    })
+                    .sum::<f64>();
+
+                let carrier_phase =
+                    (rate_factor.mul_add(carrier_freq, phase + modulator_samples)) % TAU;
+
+                carrier_phase.sin() * info.gain
             }
             OscType::Triangle { pow } => {
                 let value = match pow {

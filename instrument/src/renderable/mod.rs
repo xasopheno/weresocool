@@ -37,6 +37,7 @@ pub struct RenderOp {
     pub next_r_silent: bool,
     pub names: Vec<String>,
     pub filters: Vec<BiquadFilterDef>,
+    pub next_out: bool,
 }
 
 impl RenderOp {
@@ -60,6 +61,7 @@ impl RenderOp {
             osc_type: OscType::None,
             next_l_silent: false,
             next_r_silent: false,
+            next_out: false,
             names: Vec::new(),
             filters: Vec::new(),
         }
@@ -84,6 +86,7 @@ impl RenderOp {
             osc_type: OscType::None,
             next_l_silent: true,
             next_r_silent: true,
+            next_out: false,
             names: Vec::new(),
             filters: Vec::new(),
         }
@@ -115,6 +118,7 @@ impl RenderOp {
             osc_type,
             next_l_silent: true,
             next_r_silent: true,
+            next_out: false,
             names: vec![],
             filters,
         }
@@ -185,6 +189,8 @@ fn pointop_to_renderop(
     let settings = Settings::global();
     let mut next_l_gain = 0.0;
     let mut next_r_gain = 0.0;
+    let mut next_out = false;
+    let _next_ = false;
     let next_silent;
 
     match next {
@@ -193,6 +199,7 @@ fn pointop_to_renderop(
             next_l_gain = l;
             next_r_gain = r;
             next_silent = op.is_silent();
+            next_out = op.is_out;
         }
 
         None => next_silent = true,
@@ -219,7 +226,7 @@ fn pointop_to_renderop(
         total_samples: (l * settings.sample_rate).round() as usize,
         attack: r_to_f64(point_op.attack * basis.a) * settings.sample_rate,
         decay: r_to_f64(point_op.decay * basis.d) * settings.sample_rate,
-        osc_type: point_op.osc_type,
+        osc_type: point_op.osc_type.clone(),
         asr: point_op.asr,
         portamento: (r_to_f64(point_op.portamento) * 1024_f64) as usize,
         voice,
@@ -237,6 +244,7 @@ fn pointop_to_renderop(
                 q_factor: f.q_factor,
             })
             .collect(),
+        next_out,
     };
 
     *time += point_op.l * basis.l;

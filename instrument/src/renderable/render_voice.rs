@@ -51,6 +51,7 @@ impl RenderVoice {
                 index: self.sample_index,
                 names: current_op.names.clone(),
                 filters: current_op.filters.clone(),
+                osc_type: current_op.osc_type.clone(),
                 ..*current_op
             });
             self.sample_index += samples_left_in_batch;
@@ -61,6 +62,7 @@ impl RenderVoice {
                 index: self.sample_index,
                 names: current_op.names.clone(),
                 filters: current_op.filters.clone(),
+                osc_type: current_op.osc_type.clone(),
                 ..*current_op
             });
 

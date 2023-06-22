@@ -15,6 +15,7 @@ pub fn generate_random_hash_string() -> String {
     hex::encode(bytes)
 }
 
+#[inline]
 pub fn r_to_f64(r: Rational64) -> f64 {
     *r.numer() as f64 / *r.denom() as f64
 }

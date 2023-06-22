@@ -50,6 +50,8 @@ pub struct PointOp {
     pub names: NameSet,
     /// Filters
     pub filters: Vec<BiquadFilterDef>,
+    /// Should fade out to nothing
+    pub is_out: bool,
 }
 
 impl Default for PointOp {
@@ -69,6 +71,7 @@ impl Default for PointOp {
             osc_type: OscType::None,
             names: NameSet::new(),
             filters: vec![],
+            is_out: false,
         }
     }
 }
@@ -229,6 +232,7 @@ impl Mul<PointOp> for PointOp {
                 .chain(&other.filters)
                 .map(|f| f.to_owned())
                 .collect(),
+            is_out: other.is_out,
         }
     }
 }
@@ -252,9 +256,9 @@ impl<'a, 'b> Mul<&'b PointOp> for &'a PointOp {
                 other.reverb
             },
             osc_type: if other.osc_type.is_none() {
-                self.osc_type
+                self.osc_type.clone()
             } else {
-                other.osc_type
+                other.osc_type.clone()
             },
             attack: self.attack * other.attack,
             decay: self.decay * other.decay,
@@ -267,6 +271,7 @@ impl<'a, 'b> Mul<&'b PointOp> for &'a PointOp {
                 .chain(&other.filters)
                 .map(|f| f.to_owned())
                 .collect(),
+            is_out: other.is_out,
         }
     }
 }
@@ -288,7 +293,7 @@ impl MulAssign for PointOp {
                 other.reverb
             },
             osc_type: if other.osc_type == OscType::None {
-                self.osc_type
+                self.osc_type.clone()
             } else {
                 other.osc_type
             },
@@ -303,6 +308,7 @@ impl MulAssign for PointOp {
                 .chain(&other.filters)
                 .map(|f| f.to_owned())
                 .collect(),
+            is_out: other.is_out,
         }
     }
 }
@@ -334,7 +340,7 @@ impl PointOp {
                 other.reverb
             },
             osc_type: if other.osc_type.is_none() {
-                self.osc_type
+                self.osc_type.clone()
             } else {
                 other.osc_type
             },
@@ -349,6 +355,7 @@ impl PointOp {
                 .chain(&other.filters)
                 .map(|f| f.to_owned())
                 .collect(),
+            is_out: other.is_out,
         }
     }
 
@@ -368,6 +375,7 @@ impl PointOp {
             osc_type: OscType::None,
             names: NameSet::new(),
             filters: vec![],
+            is_out: false,
         }
     }
     pub fn init_silent() -> PointOp {
@@ -386,6 +394,7 @@ impl PointOp {
             osc_type: OscType::None,
             names: NameSet::new(),
             filters: vec![],
+            is_out: false,
         }
     }
 

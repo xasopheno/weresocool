@@ -106,6 +106,7 @@ mod tests {
                 next_r_silent: false,
                 names: vec![],
                 filters: vec![],
+                next_out: false,
             },
             RenderOp {
                 f: 330.0,
@@ -128,6 +129,7 @@ mod tests {
                 next_r_silent: false,
                 names: vec![],
                 filters: vec![],
+                next_out: false,
             },
             RenderOp {
                 f: 0.0,
@@ -150,6 +152,7 @@ mod tests {
                 next_r_silent: true,
                 names: vec![],
                 filters: vec![],
+                next_out: false,
             },
         ]];
         assert_eq!(result, expected);

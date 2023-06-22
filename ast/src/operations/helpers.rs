@@ -82,6 +82,7 @@ pub fn pad_length(
                 osc_type: OscType::None,
                 names: NameSet::new(),
                 filters: vec![],
+                is_out: false,
             });
         }
     }
@@ -114,6 +115,7 @@ pub fn join_sequence(mut l: NormalForm, mut r: NormalForm) -> NormalForm {
                     osc_type: OscType::None,
                     names: NameSet::new(),
                     filters: vec![],
+                    is_out: false,
                 }])
             }
         }
@@ -134,6 +136,7 @@ pub fn join_sequence(mut l: NormalForm, mut r: NormalForm) -> NormalForm {
                     osc_type: OscType::None,
                     names: NameSet::new(),
                     filters: vec![],
+                    is_out: false,
                 }])
             }
         }

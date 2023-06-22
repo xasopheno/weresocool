@@ -39,14 +39,17 @@ impl Voice {
         }
     }
 
+    #[inline]
     pub fn silence_now(&self) -> bool {
         self.current.silent()
     }
 
+    #[inline]
     pub fn silence_to_sound(&self) -> bool {
         self.past.silent() && !self.current.silent()
     }
 
+    #[inline]
     pub fn sound_to_silence(&self) -> bool {
         !self.past.silent() && self.current.silent()
     }

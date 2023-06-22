@@ -20,6 +20,15 @@ impl Normalize<Term> for Op {
     ) -> Result<(), Error> {
         match self {
             Op::AsIs => {}
+            Op::Out => {
+                input.fmap_mut(|op| {
+                    op.is_out = true;
+                    op.fm = Ratio::new(0, 1);
+                    op.fa = Ratio::new(0, 1);
+                    op.g = Ratio::new(0, 1);
+                    op.l = Ratio::new(0, 1)
+                });
+            }
             Op::Lambda {
                 term,
                 input_name,
@@ -37,6 +46,11 @@ impl Normalize<Term> for Op {
                 handle_id_error(id, defs)?.apply_to_normal_form(input, defs)?;
             }
 
+            Op::FMOsc { defs } => input.fmap_mut(|op| {
+                op.osc_type = OscType::Fm {
+                    defs: defs.to_owned(),
+                }
+            }),
             Op::Lowpass {
                 hash,
                 cutoff_frequency,

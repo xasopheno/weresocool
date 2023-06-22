@@ -13,7 +13,9 @@ impl GetLengthRatio<Term> for Op {
     ) -> Result<Rational64, Error> {
         match self {
             Op::AsIs {}
+            | Op::Out {}
             | Op::Lowpass { .. }
+            | Op::FMOsc { .. }
             | Op::Highpass { .. }
             | Op::Bandpass { .. }
             | Op::AD { .. }
