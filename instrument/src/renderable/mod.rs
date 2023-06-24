@@ -97,7 +97,7 @@ impl RenderOp {
         osc_type: OscType,
         reverb: Option<f64>,
         filters: Vec<BiquadFilterDef>,
-        settings: &Settings,
+        sample_rate: f64,
     ) -> Self {
         Self {
             f: 0.0,
@@ -106,11 +106,11 @@ impl RenderOp {
             l,
             t: 0.0,
             reverb,
-            attack: settings.sample_rate,
-            decay: settings.sample_rate,
+            attack: sample_rate,
+            decay: sample_rate,
             asr: ASR::Long,
-            samples: settings.sample_rate as usize,
-            total_samples: settings.sample_rate as usize,
+            samples: sample_rate as usize,
+            total_samples: sample_rate as usize,
             index: 0,
             voice: 0,
             event: 0,
@@ -324,7 +324,6 @@ pub fn nf_to_vec_renderable(
     defs: &mut Defs<Term>,
     basis: &Basis,
 ) -> Result<Vec<Vec<RenderOp>>, Error> {
-    let settings = Settings::global();
     let mut normal_form = NormalForm::init();
     composition.apply_to_normal_form(&mut normal_form, defs)?;
 
@@ -333,46 +332,67 @@ pub fn nf_to_vec_renderable(
     #[cfg(feature = "wasm")]
     let iter = normal_form.operations.iter();
 
+    let settings = Settings::global();
+
     let result: Vec<Vec<RenderOp>> = iter
         .enumerate()
         .map(|(voice, vec_point_op)| {
-            let mut time = Rational64::new(0, 1);
-            let mut result: Vec<RenderOp> = vec![];
-            for (event, p_op) in vec_point_op.iter().enumerate() {
-                let mut next_e = event;
-                if event == vec_point_op.len() {
-                    next_e = 0;
-                };
-
-                let op = pointop_to_renderop(
-                    p_op,
-                    &mut time,
-                    voice,
-                    event,
-                    basis,
-                    Some(vec_point_op[next_e].clone()),
-                );
-                result.push(op);
-            }
-            if settings.pad_end {
-                let filters = if let Some(last_op) = vec_point_op.last() {
-                    last_op.filters.to_vec()
-                } else {
-                    vec![]
-                };
-                result.push(
-                    RenderOp::init_silent_with_length_osc_type_reverb_and_filters(
-                        1.0,
-                        OscType::None,
-                        None,
-                        filters,
-                        settings,
-                    ),
-                );
-            }
-            result
+            create_render_ops(
+                voice,
+                vec_point_op,
+                basis,
+                settings.sample_rate,
+                settings.pad_end,
+            )
         })
         .collect();
 
     Ok(result)
+}
+
+fn create_render_ops(
+    voice: usize,
+    vec_point_op: &[PointOp],
+    basis: &Basis,
+    sample_rate: f64,
+    pad_end: bool,
+) -> Vec<RenderOp> {
+    let mut time = Rational64::new(0, 1);
+    let mut result: Vec<RenderOp> = vec![];
+
+    for (event, p_op) in vec_point_op.iter().enumerate() {
+        let next_e = if event == vec_point_op.len() - 1 {
+            0
+        } else {
+            event + 1
+        };
+        let op = pointop_to_renderop(
+            p_op,
+            &mut time,
+            voice,
+            event,
+            basis,
+            Some(vec_point_op[next_e].clone()),
+        );
+        result.push(op);
+    }
+
+    if pad_end {
+        let filters = if let Some(last_op) = vec_point_op.last() {
+            last_op.filters.to_vec()
+        } else {
+            vec![]
+        };
+        result.push(
+            RenderOp::init_silent_with_length_osc_type_reverb_and_filters(
+                1.0,
+                OscType::None,
+                None,
+                filters,
+                sample_rate,
+            ),
+        );
+    }
+
+    result
 }

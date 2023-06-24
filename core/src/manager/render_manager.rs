@@ -178,31 +178,25 @@ impl RenderManager {
                 #[cfg(feature = "wasm")]
                 let iter = render_voices.iter_mut();
 
-                let result: Vec<(_, _)> = iter
+                let (ops, rendered): (Vec<_>, Vec<_>) = iter
                     .filter_map(|voice| {
-                        let ops = voice.get_batch(Settings::global().buffer_size, None);
-                        match ops {
-                            Some(mut batch) => Some((
-                                if vtx.is_some() {
-                                    batch
-                                        .iter()
-                                        .filter(|op| op.index == 0)
-                                        .cloned()
-                                        .collect::<Vec<_>>()
-                                } else {
-                                    vec![]
-                                },
-                                batch.render(&mut voice.oscillator, None),
-                            )),
-                            None => None,
-                        }
+                        voice
+                            .get_batch(Settings::global().buffer_size, None)
+                            .map(|mut batch| {
+                                (
+                                    if vtx.is_some() {
+                                        batch.iter().filter(|op| op.index == 0).cloned().collect()
+                                    } else {
+                                        vec![]
+                                    },
+                                    batch.render(&mut voice.oscillator, None),
+                                )
+                            })
                     })
-                    .collect();
-                let (ops, rendered): (Vec<_>, Vec<_>) =
-                    result.into_iter().map(|(a, b)| (a, b)).unzip();
+                    .unzip();
 
                 if let Some(tx) = vtx {
-                    let mut opmap: OpMap<Op4D> = OpMap::default();
+                    let mut opmap: OpMap<Op4D> = OpMap::with_capacity(ops.len());
 
                     ops.iter().flatten().for_each(|v| {
                         let name = v.names.last().map_or("nameless", |n| n);

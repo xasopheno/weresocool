@@ -20,6 +20,7 @@ pub fn r_to_f64(r: Rational64) -> f64 {
     *r.numer() as f64 / *r.denom() as f64
 }
 
+#[inline]
 pub fn r_to_f32(r: Rational64) -> f32 {
     *r.numer() as f32 / *r.denom() as f32
 }

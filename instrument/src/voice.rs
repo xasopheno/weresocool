@@ -198,65 +198,95 @@ impl Voice {
     }
 
     pub fn update(&mut self, op: &RenderOp, offset: &Offset) {
-        // defaults to true
-        let will_update_filters = self.filters.as_ref().map_or(true, |self_filters| {
+        if op.index == 0 && op.next_out {
+            self.reset();
+            return;
+        }
+
+        if op.index == 0 {
+            self.update_current_and_past(op);
+            self.update_osc_type(op);
+            self.update_reverb(op);
+            self.update_attack_decay_asr(op);
+
+            if self.should_update_filters(op) {
+                self.update_filters(op);
+            }
+        };
+
+        self.update_offset_gain_and_frequency(offset);
+    }
+
+    fn should_update_filters(&self, op: &RenderOp) -> bool {
+        self.filters.as_ref().map_or(true, |self_filters| {
             self_filters.len() != op.filters.len()
                 || self_filters
                     .iter()
                     .zip(op.filters.iter())
                     .any(|(self_filter, op_filter)| self_filter.hash != op_filter.hash)
-        });
+        })
+    }
 
-        if op.index == 0 {
-            if op.next_out {
-                self.filters = None;
-                self.old_filters = None;
-                self.old_osc_type = None;
-                self.current.gain = 0.0;
-                self.current.frequency = 0.0;
-                return;
-            }
-            self.past.frequency = self.current.frequency;
-            self.current.frequency = op.f;
-            self.past.osc_type = self.current.osc_type.clone();
-            self.past.reverb = self.current.reverb;
+    fn reset(&mut self) {
+        self.filters = None;
+        self.old_filters = None;
+        self.old_osc_type = None;
+        self.current.gain = 0.0;
+        self.current.frequency = 0.0;
+    }
 
-            self.past.gain = self.past_gain_from_op(op);
-            self.current.gain = self.current_gain_from_op(op);
+    fn update_current_and_past(&mut self, op: &RenderOp) {
+        self.past.frequency = self.current.frequency;
+        self.current.frequency = op.f;
+        self.past.osc_type = self.current.osc_type.clone();
+        self.past.reverb = self.current.reverb;
 
-            if self.osc_type != op.osc_type && self.osc_type.is_some() {
-                self.old_osc_type = Some(self.osc_type.clone());
-                self.osc_crossfade_index = 0;
-            }
+        self.past.gain = self.past_gain_from_op(op);
+        self.current.gain = self.current_gain_from_op(op);
+    }
 
-            self.osc_type = if self.past.osc_type.is_some() && op.osc_type.is_none() {
-                self.past.osc_type.clone()
-            } else {
-                op.osc_type.clone()
-            };
+    fn update_osc_type(&mut self, op: &RenderOp) {
+        if self.osc_type != op.osc_type && self.osc_type.is_some() {
+            self.old_osc_type = Some(self.osc_type.clone());
+            self.osc_crossfade_index = 0;
+        }
 
-            self.reverb.state = if self.past.reverb.is_some() && op.reverb.is_none() {
-                self.past.reverb
-            } else {
-                op.reverb
-            };
-
-            self.attack = op.attack.trunc() as usize;
-            self.decay = op.decay.trunc() as usize;
-            self.asr = op.asr;
-            self.current.osc_type = op.osc_type.clone();
-            self.current.reverb = op.reverb;
-
-            if will_update_filters {
-                if self.filters.is_some() {
-                    std::mem::swap(&mut self.old_filters, &mut self.filters);
-                    self.filter_crossfade_index = 0;
-                    self.filters = None;
-                }
-
-                self.filters = Some(op.filters.iter().map(|f| f.to_filter()).collect());
-            }
+        self.osc_type = if self.past.osc_type.is_some() && op.osc_type.is_none() {
+            self.past.osc_type.clone()
+        } else {
+            op.osc_type.clone()
         };
+
+        self.current.osc_type = op.osc_type.clone();
+    }
+
+    fn update_reverb(&mut self, op: &RenderOp) {
+        self.reverb.state = if self.past.reverb.is_some() && op.reverb.is_none() {
+            self.past.reverb
+        } else {
+            op.reverb
+        };
+
+        self.current.reverb = op.reverb;
+    }
+
+    fn update_attack_decay_asr(&mut self, op: &RenderOp) {
+        self.attack = op.attack.trunc() as usize;
+        self.decay = op.decay.trunc() as usize;
+        self.asr = op.asr;
+    }
+
+    fn update_filters(&mut self, op: &RenderOp) {
+        if self.filters.is_some() {
+            std::mem::swap(&mut self.old_filters, &mut self.filters);
+            self.filter_crossfade_index = 0;
+            self.filters = None;
+        }
+
+        self.filters = Some(op.filters.iter().map(|f| f.to_filter()).collect());
+    }
+
+    fn update_offset_gain_and_frequency(&mut self, offset: &Offset) {
         self.offset_past.gain = self.offset_current.gain;
         self.offset_past.frequency = self.offset_current.frequency;
 

@@ -14,12 +14,11 @@ pub fn real_time_render_manager(
 ) -> Result<pa::Stream<pa::NonBlocking, pa::Output<f32>>, Error> {
     let pa = pa::PortAudio::new()?;
     let output_stream_settings = get_output_settings(&pa)?;
+    let buffer_size = Settings::global().buffer_size;
 
     let output_stream = pa.open_non_blocking_stream(output_stream_settings, move |args| {
-        let batch: Option<(StereoWaveform, Vec<f32>)> = render_manager
-            .lock()
-            .unwrap()
-            .read(Settings::global().buffer_size);
+        let batch: Option<(StereoWaveform, Vec<f32>)> =
+            render_manager.lock().unwrap().read(buffer_size);
 
         if let Some((b, ramp)) = batch {
             new_write_output_buffer(args.buffer, b, ramp);
