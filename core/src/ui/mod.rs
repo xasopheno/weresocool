@@ -11,10 +11,8 @@ pub fn clear_screen() {
         {
             eprintln!("Failed to clear the screen: Command 'cls' is not recognized");
         }
-    } else {
-        if std::process::Command::new("clear").status().is_err() {
-            eprintln!("Failed to clear the screen: Command 'clear' is not recognized");
-        }
+    } else if std::process::Command::new("clear").status().is_err() {
+        eprintln!("Failed to clear the screen: Command 'clear' is not recognized");
     }
 }
 
