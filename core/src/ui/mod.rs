@@ -23,12 +23,15 @@ pub fn were_so_cool_logo(action: Option<&str>, filename: Option<String>) {
         "\n**** WereSoCool".truecolor(250, 180, 220).bold(),
         format!("v{} ****", VERSION).truecolor(250, 180, 220).bold()
     );
+    println!(
+        "{}",
+        "~~~ https://weresocool.org ~~~".truecolor(150, 150, 150)
+    );
     println!("{}", "--- Make cool sounds. ---".truecolor(250, 134, 200));
     println!(
         "{}",
         "--- Impress your friends/pets/plants. ---".truecolor(250, 134, 200)
     );
-    println!("{}", "https://weresocool.org".truecolor(150, 150, 150));
     // println!(
     // "{}",
     // "~~~ Catchy tunes for your next seizure. ~~~"
