@@ -70,36 +70,9 @@ temp-dir = "0.1.11"
 
 [features]
 default=["app"]
-app=[
-    "weresocool_error/app", 
-    "weresocool_core/app",
-    "weresocool_parser/app", 
-    "weresocool_instrument/app", 
-    "weresocool_ast/app",
-    "weresocool_core/app",
-    "weresocool_portaudio",
-    "zip",
-    "hound",
-    "assert_cmd",
-]
-windows=[
-    "weresocool_error/windows", 
-    "weresocool_core/windows",
-    "weresocool_parser/app", 
-    "weresocool_instrument/app", 
-    "weresocool_ast/app",
-    "weresocool_portaudio",
-    "zip",
-    "hound",
-    "assert_cmd",
-]
-wasm = [
-    "weresocool_core/wasm",
-    "weresocool_ast/wasm", 
-    "weresocool_instrument/wasm", 
-    "weresocool_parser/wasm", 
-    "weresocool_error/wasm", 
-]
+app=["weresocool_error/app", "weresocool_core/app", "weresocool_parser/app", "weresocool_instrument/app", "weresocool_ast/app", "weresocool_core/app", "weresocool_portaudio", "zip", "hound", "assert_cmd"]
+windows=["weresocool_error/windows", "weresocool_core/windows", "weresocool_parser/app", "weresocool_instrument/app", "weresocool_ast/app", "weresocool_portaudio", "zip", "hound", "assert_cmd"]
+wasm = ["weresocool_core/wasm", "weresocool_ast/wasm", "weresocool_instrument/wasm", "weresocool_parser/wasm", "weresocool_error/wasm"]
 
 
 [[bench]]
