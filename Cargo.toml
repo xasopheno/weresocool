@@ -62,6 +62,11 @@ crossbeam-channel = "0.5.6"
 indoc = "1.0.7"
 colored = "2.0.0"
 rand = { version="0.7.3", features=["wasm-bindgen"]}
+wgpu = {version="0.16.1", features=["spirv"]}
+winit = "0.28.6"
+rustfft = "6.1.0"
+futures = "0.3.28"
+shaderc = "0.8.2"
 
 [dev-dependencies]
 pretty_assertions = "0.6.1"

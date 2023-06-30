@@ -59,11 +59,6 @@ test-generator = "0.3.0"
 float-cmp = "0.8.0"
 zip = { version="0.6.6", optional=true }
 crossbeam-channel = "0.5.4"
-audio-visualizer = "0.3.1"
-spectrum-analyzer = "1.4.0"
-wgpu = {version="0.16.1", features=["spirv"]}
-winit = "0.28.6"
-rustfft = "6.1.0"
 
 [features]
 default=["app"]

@@ -10,6 +10,7 @@ use weresocool::manager::prepare_render_outside;
 use weresocool::manager::RenderManager;
 use weresocool::portaudio::real_time_render_manager;
 use weresocool::ui::were_so_cool_logo;
+use weresocool::visualizer::start_visualizer;
 
 pub enum Play {
     Once,
@@ -69,7 +70,10 @@ fn play_watch(filename: String, working_path: PathBuf) -> Result<(), Error> {
     watch(filename, working_path, render_manager.clone())?;
     let mut stream = real_time_render_manager(Arc::clone(&render_manager))?;
     stream.start()?;
+
+    start_visualizer();
     std::thread::park();
+
     Ok(())
 }
 

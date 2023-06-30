@@ -1,4 +1,4 @@
-#version 450
+# version 450
 
 const vec2 positions[4] = vec2[](
     vec2(-1.0, -1.0),
