@@ -109,6 +109,9 @@ harness = false
 [[bench]]
 name = "nf_to_vec_renderable_bench"
 harness = false
+[[bench]]
+name = "generate_waveform_bench"
+harness = false
 
 [workspace]
 members = [
