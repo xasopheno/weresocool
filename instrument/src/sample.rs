@@ -34,6 +34,7 @@ impl Waveform for OscType {
     fn generate_sample(&self, info: SampleInfo, phase: f64) -> f64 {
         match self {
             OscType::None => phase.sin() * info.gain,
+            // OscType::None => fastapprox::faster::sin(phase as f32) as f64 * info.gain,
             OscType::Sine { pow } => {
                 let value = match pow {
                     Some(p) => {

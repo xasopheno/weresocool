@@ -146,11 +146,11 @@ impl Offset {
 }
 
 pub trait Renderable<T> {
-    fn render(&mut self, oscillator: &mut Oscillator, _offset: Option<&Offset>) -> StereoWaveform;
+    fn render(&self, oscillator: &mut Oscillator, _offset: Option<&Offset>) -> StereoWaveform;
 }
 
 impl Renderable<RenderOp> for RenderOp {
-    fn render(&mut self, oscillator: &mut Oscillator, offset: Option<&Offset>) -> StereoWaveform {
+    fn render(&self, oscillator: &mut Oscillator, offset: Option<&Offset>) -> StereoWaveform {
         let o = match offset {
             Some(o) => Offset {
                 freq: o.freq * 2.0,
@@ -164,12 +164,12 @@ impl Renderable<RenderOp> for RenderOp {
     }
 }
 impl Renderable<Vec<RenderOp>> for Vec<RenderOp> {
-    fn render(&mut self, oscillator: &mut Oscillator, offset: Option<&Offset>) -> StereoWaveform {
+    fn render(&self, oscillator: &mut Oscillator, offset: Option<&Offset>) -> StereoWaveform {
         let mut result: StereoWaveform = StereoWaveform::new(0);
 
         for op in self.iter() {
             if op.samples > 0 {
-                let stereo_waveform = op.clone().render(oscillator, offset);
+                let stereo_waveform = op.render(oscillator, offset);
                 result.append(stereo_waveform);
             }
         }

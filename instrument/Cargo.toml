@@ -21,6 +21,7 @@ num-rational = "0.4.1"
 rayon = "1.7.0"
 rand = { version="0.7.3", features=["wasm-bindgen"]}
 num-traits = "0.2.14"
+fastapprox = "0.3.0"
 
 [features]
 default=["app"]

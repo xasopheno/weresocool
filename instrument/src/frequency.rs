@@ -18,13 +18,12 @@ impl Voice {
         start: f64,
         target: f64,
     ) -> f64 {
-        if self.sound_to_silence() {
-            start
-        } else if index < portamento_length && !self.silence_to_sound() && !self.sound_to_silence()
-        {
-            (index as f64).mul_add(p_delta, start)
-        } else {
-            target
+        match self.sound_to_silence() {
+            true => start,
+            false => match index < portamento_length && !self.silence_to_sound() {
+                true => (index as f64).mul_add(p_delta, start),
+                false => target,
+            },
         }
     }
 }

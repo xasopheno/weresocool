@@ -46,6 +46,17 @@ impl Oscillator {
         r_voice.update(op, offset);
     }
 
+    // pub fn generate(&mut self, op: &RenderOp, offset: &Offset) -> StereoWaveform {
+    // let (ref mut l_voice, ref mut r_voice) = self.voices;
+
+    // let (l_buffer, r_buffer) = rayon::join(
+    // || l_voice.generate_waveform(op, offset),
+    // || r_voice.generate_waveform(op, offset),
+    // );
+
+    // StereoWaveform { l_buffer, r_buffer }
+    // }
+
     pub fn generate(&mut self, op: &RenderOp, offset: &Offset) -> StereoWaveform {
         let (ref mut l_voice, ref mut r_voice) = self.voices;
 

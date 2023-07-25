@@ -145,7 +145,7 @@ impl Voice {
 
             if let Some(old_osc_type) = &self.old_osc_type {
                 self.old_phase = Voice::calculate_current_phase(&info, old_osc_type, self.phase);
-                let old_sample = old_osc_type.clone().generate_sample(info, self.old_phase);
+                let old_sample = old_osc_type.generate_sample(info, self.old_phase);
                 new_sample = if sound_to_silence {
                     old_sample
                 } else {
@@ -238,7 +238,7 @@ impl Voice {
     fn update_current_and_past(&mut self, op: &RenderOp) {
         self.past.frequency = self.current.frequency;
         self.current.frequency = op.f;
-        self.past.osc_type = self.current.osc_type.clone();
+        self.past.osc_type = self.current.osc_type.to_owned();
         self.past.reverb = self.current.reverb;
 
         self.past.gain = self.past_gain_from_op(op);
@@ -247,7 +247,7 @@ impl Voice {
 
     fn update_osc_type(&mut self, op: &RenderOp) {
         if self.osc_type != op.osc_type && self.osc_type.is_some() {
-            self.old_osc_type = Some(self.osc_type.clone());
+            self.old_osc_type = Some(self.osc_type.to_owned());
             self.osc_crossfade_index = 0;
         }
 
