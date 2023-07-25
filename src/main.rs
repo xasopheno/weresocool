@@ -6,7 +6,7 @@ mod print;
 mod test;
 mod watch;
 
-use crate::play::Play::{Once, Watch};
+use crate::play::Play::{Once, Vis, Watch};
 use notify::Error as NotifyError;
 use std::env;
 use thiserror::Error;
@@ -55,6 +55,9 @@ fn main() -> Result<(), Error> {
             cwd,
             Watch,
         )?,
+        Some(("vis", sub_matches)) => {
+            play::play(sub_matches.get_one::<String>("filename").unwrap(), cwd, Vis)?
+        }
         Some(("demo", _)) => demo::demo()?,
         Some(("print", sub_matches)) => print::print(sub_matches)?,
         _e => {

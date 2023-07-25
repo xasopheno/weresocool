@@ -10,10 +10,12 @@ use weresocool::manager::prepare_render_outside;
 use weresocool::manager::RenderManager;
 use weresocool::portaudio::real_time_render_manager;
 use weresocool::ui::were_so_cool_logo;
+use weresocool_core::portaudio::real_time_render_manager::real_time_audio_visual_render_manager;
 
 pub enum Play {
     Once,
     Watch,
+    Vis,
 }
 
 pub fn play(filename: &String, cwd: PathBuf, play: Play) -> Result<(), Error> {
@@ -25,6 +27,7 @@ pub fn play_file(filename: String, working_path: PathBuf, play: Play) -> Result<
     match play {
         Play::Once => play_once(filename, working_path),
         Play::Watch => play_watch(filename, working_path),
+        Play::Vis => play_vis(filename, working_path),
     }
 }
 
@@ -69,6 +72,24 @@ fn play_watch(filename: String, working_path: PathBuf) -> Result<(), Error> {
     watch(filename, working_path, render_manager.clone())?;
     let mut stream = real_time_render_manager(Arc::clone(&render_manager))?;
     stream.start()?;
+    std::thread::park();
+    Ok(())
+}
+
+fn play_vis(filename: String, working_path: PathBuf) -> Result<(), Error> {
+    maybe_create_file_if_needed(filename.clone(), working_path.clone());
+    let render_manager = Arc::new(Mutex::new(RenderManager::init(None, None, false, None)));
+    let render_voices = prepare_render_outside(Filename(&filename), Some(working_path.clone()))?;
+    render_manager
+        .lock()
+        .unwrap()
+        .push_render(render_voices, false);
+    watch(filename, working_path, render_manager.clone())?;
+    let (mut stream, mut visualizer) =
+        real_time_audio_visual_render_manager(Arc::clone(&render_manager))?;
+    stream.start()?;
+
+    visualizer.run().unwrap();
     std::thread::park();
     Ok(())
 }

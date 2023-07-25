@@ -36,6 +36,7 @@ weresocool_instrument = { path = "../instrument", version = "^1.0.47", default_f
 weresocool_shared = { path = "../shared", version = "^1.0.47" } 
 weresocool_vorbis = { path = "../vorbis", version = "^1.0.47", optional=true, default_features = false } 
 weresocool_portaudio = { path = "../portaudio", version = "^1.0.47", optional=true } 
+weresocool_visualizer = { path = "../../weresocool_visualizer/pixel", version = "^1.0.47", default_features=false, optional=true } 
 rand = { version="0.7.3", features=["wasm-bindgen"]}
 hound = "3.4.0"
 serde = { version = "1.0.164", features = ["derive"] }
@@ -44,8 +45,8 @@ serde_derive = "1.0.164"
 colored = "2.0.0"
 pbr = { version="1.1.1", optional=true }
 num-rational = "0.4.1"
-rayon = "1.5.1"
 indexmap = { version = "2.0.0", features = ["serde"] }
+rayon = "1.7.0"
 difference = "2.0.0"
 term = "0.7.0"
 uuid = { version = "0.8.2", features = ["v4", "stdweb"] }
@@ -64,7 +65,8 @@ crossbeam-channel = "0.5.4"
 default=["app"]
 app=["weresocool_portaudio", 
   "pbr", "zip", "weresocool_error/app", 
-  "weresocool_parser/app", "weresocool_instrument/app", "weresocool_ast/app", "weresocool_vorbis"]
+  "weresocool_parser/app", "weresocool_instrument/app", "weresocool_ast/app", "weresocool_vorbis",
+  "weresocool_visualizer"]
 windows=[
   "weresocool_portaudio", 
   "pbr", "zip", "weresocool_error/app", 

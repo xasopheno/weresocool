@@ -17,8 +17,8 @@ weresocool_shared = { path = "../shared", version = "^1.0.47" }
 scop = { path = "../scop", version = "^1.0.47" }
 serde = { version = "1.0.164", features = ["derive"] }
 reverb = { path = "reverb", version = "^1.0.47" }
-rayon = "1.5.1"
 num-rational = "0.4.1"
+rayon = "1.7.0"
 rand = { version="0.7.3", features=["wasm-bindgen"]}
 num-traits = "0.2.14"
 
