@@ -14,7 +14,7 @@ fn setup_op_and_offset() -> RenderOp {
 
 fn generate_waveform_benchmark(c: &mut Criterion) {
     let op = setup_op_and_offset();
-    let mut voice = Voice::init(0); // Or your own setup
+    let mut voice = Voice::init(0);
 
     c.bench_function("generate_waveform_bench", |b| {
         b.iter(|| {
