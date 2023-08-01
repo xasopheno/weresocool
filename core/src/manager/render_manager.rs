@@ -182,7 +182,7 @@ impl RenderManager {
                     .filter_map(|voice| {
                         voice
                             .get_batch(Settings::global().buffer_size, None)
-                            .map(|mut batch| {
+                            .map(|batch| {
                                 (
                                     if vtx.is_some() {
                                         batch.iter().filter(|op| op.index == 0).cloned().collect()

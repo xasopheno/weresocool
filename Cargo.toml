@@ -17,6 +17,12 @@ exclude = [
     "imgs/*",
 ]
 
+[build]
+rustflags = ["-Z", "sanitizer=leak"]
+
+[profile.release]
+debug = true
+
 [package.metadata.arch]
 arch = ["x86_64"]
 makedepends = ["cargo", "lame", "vorbis-tools"]

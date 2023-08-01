@@ -21,9 +21,7 @@ pub fn real_time(
             .filter_map(|voice| {
                 let ops = voice.get_batch(Settings::global().buffer_size, None);
                 match ops {
-                    Some(mut batch) => {
-                        Some((batch.clone(), batch.render(&mut voice.oscillator, None)))
-                    }
+                    Some(batch) => Some((batch.clone(), batch.render(&mut voice.oscillator, None))),
                     None => None,
                 }
             })
