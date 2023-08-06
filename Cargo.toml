@@ -84,6 +84,9 @@ wasm = ["weresocool_core/wasm", "weresocool_ast/wasm", "weresocool_instrument/wa
 
 
 [[bench]]
+name = "render_manager_read_bench"
+harness = false
+[[bench]]
 name = "render_op_render_bench"
 harness = false
 [[bench]]

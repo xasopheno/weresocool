@@ -9,7 +9,7 @@ use weresocool_shared::Settings;
 pub fn render_op_render_bench(c: &mut Criterion) {
     Settings::init_default();
     let mut oscillator = Oscillator::init();
-    let mut render_op = RenderOp::init_fglp(400.0, (1.0, 1.0), 10.0, 0.0, Settings::global());
+    let render_op = RenderOp::init_fglp(400.0, (1.0, 1.0), 10.0, 0.0, Settings::global());
 
     let offset = Offset {
         freq: 1.0,
