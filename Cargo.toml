@@ -17,11 +17,11 @@ exclude = [
     "imgs/*",
 ]
 
-[build]
-rustflags = ["-Z", "sanitizer=leak"]
+# [build]
+# rustflags = ["-Z", "sanitizer=leak"]
 
-[profile.release]
-debug = true
+# [profile.release]
+# debug = true
 
 [package.metadata.arch]
 arch = ["x86_64"]
