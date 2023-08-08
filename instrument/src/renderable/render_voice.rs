@@ -22,6 +22,10 @@ impl RenderVoice {
         }
     }
 
+    pub fn push_ops(&mut self, ops: &[RenderOp]) {
+        self.ops.extend_from_slice(ops);
+    }
+
     /// Recursive function to prepare a batch of RenderOps for rendering
     /// Initially pass in None as result
     pub fn get_batch(

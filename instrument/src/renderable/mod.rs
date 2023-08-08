@@ -262,7 +262,7 @@ pub fn point_op_to_gains(
         return (0.0, 0.0);
     }
 
-    let f = m_a_and_basis_to_f64(basis.f, point_op.fm, point_op.fa);
+    // let f = m_a_and_basis_to_f64(basis.f, point_op.fm, point_op.fa);
 
     let pm = r_to_f64(point_op.pm);
     let pa = r_to_f64(point_op.pa);
@@ -270,10 +270,21 @@ pub fn point_op_to_gains(
     let base_p = r_to_f64(basis.p);
     let base_g = r_to_f64(basis.g);
 
-    let ild = calculate_ild(angle, f);
+    // let ild = calculate_ild(angle, f);
 
-    let l_gain = g * (((pa.mul_add(pm, 1.0 + ild)) + base_p) / 2.0) * base_g;
-    let r_gain = g * (((pa.mul_add(pm, -1.0 - ild)) + base_p) / -2.0) * base_g;
+    // let l_gain = g * (((pa.mul_add(pm, 1.0 + ild)) + base_p) / 2.0) * base_g;
+    // let r_gain = g * (((pa.mul_add(pm, -1.0 - ild)) + base_p) / -2.0) * base_g;
+    let l_gain = if *point_op.g.numer() == 0 {
+        0.0
+    } else {
+        g * (((pa.mul_add(pm, 1.0)) + r_to_f64(basis.p)) / 2.0) * r_to_f64(basis.g)
+    };
+
+    let r_gain = if *point_op.g.numer() == 0 {
+        0.0
+    } else {
+        g * (((pa.mul_add(pm, -1.0)) + r_to_f64(basis.p)) / -2.0) * r_to_f64(basis.g)
+    };
 
     (l_gain, r_gain)
 }

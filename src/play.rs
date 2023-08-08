@@ -10,6 +10,7 @@ use weresocool::manager::prepare_render_outside;
 use weresocool::manager::RenderManager;
 use weresocool::portaudio::real_time_render_manager;
 use weresocool::ui::were_so_cool_logo;
+use weresocool::RenderVoice;
 use weresocool_core::portaudio::real_time_render_manager::real_time_audio_visual_render_manager;
 
 pub enum Play {
@@ -31,6 +32,32 @@ pub fn play_file(filename: String, working_path: PathBuf, play: Play) -> Result<
     }
 }
 
+pub fn play_once_render_voices(render_voices: Vec<RenderVoice>) -> Result<(), Error> {
+    let (tx, rx) = std::sync::mpsc::channel::<bool>();
+    let render_manager = Arc::new(Mutex::new(RenderManager::init(None, Some(tx), true, None)));
+
+    render_manager
+        .lock()
+        .unwrap()
+        .push_render(render_voices, true);
+
+    let mut stream = real_time_render_manager(Arc::clone(&render_manager))?;
+
+    stream.start()?;
+    // rx.recv blocks until it receives data and
+    // after that, the function will complete,
+    // stream will be dropped, and the application
+    // will exit
+    match rx.recv() {
+        Ok(_) => {}
+        Err(e) => {
+            println!("{}", e);
+            std::process::exit(1);
+        }
+    };
+    Ok(())
+}
+
 pub fn play_once(filename: String, working_path: PathBuf) -> Result<(), Error> {
     were_so_cool_logo(Some("Playing"), Some(filename.clone()));
 
@@ -50,7 +77,7 @@ pub fn play_once(filename: String, working_path: PathBuf) -> Result<(), Error> {
     // rx.recv blocks until it receives data and
     // after that, the function will complete,
     // stream will be dropped, and the application
-    // will exit.
+    // will exit
     match rx.recv() {
         Ok(_) => {}
         Err(e) => {
