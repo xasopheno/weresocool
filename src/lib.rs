@@ -8,6 +8,7 @@
     // clippy::cargo,
 )]
 
+pub use crate::manager::RenderManager;
 pub use weresocool_ast as ast;
 pub use weresocool_core::generation::*;
 pub use weresocool_core::interpretable::*;
