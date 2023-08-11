@@ -22,7 +22,7 @@ impl RenderVoice {
         }
     }
 
-    pub fn push_ops(&mut self, ops: &[RenderOp]) {
+    pub fn push(&mut self, ops: &[RenderOp]) {
         self.ops.extend_from_slice(ops);
     }
 

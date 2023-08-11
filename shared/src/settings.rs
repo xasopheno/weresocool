@@ -53,7 +53,7 @@ pub const fn default_settings() -> Settings {
         mic: false,
         sample_rate: 48_000.0,
         yin_buffer_size: 2048,
-        buffer_size: 1024,
+        buffer_size: 1024 * 12,
         crossfade_period: 1024 * 4,
         probability_threshold: 0.3,
         gain_threshold_min: 0.0,

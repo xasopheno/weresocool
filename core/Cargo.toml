@@ -36,7 +36,7 @@ weresocool_instrument = { path = "../instrument", version = "^1.0.47", default_f
 weresocool_shared = { path = "../shared", version = "^1.0.47" } 
 weresocool_vorbis = { path = "../vorbis", version = "^1.0.47", optional=true, default_features = false } 
 weresocool_portaudio = { path = "../portaudio", version = "^1.0.47", optional=true } 
-weresocool_visualizer = { path = "../../weresocool_visualizer/pixel", version = "^1.0.47", default_features=false, optional=true } 
+weresocool_visualizer = { path = "../../weresocool_visualizer", version = "^1.0.47", default_features=false, optional=true } 
 rand = { version="0.7.3", features=["wasm-bindgen"]}
 hound = "3.4.0"
 serde = { version = "1.0.164", features = ["derive"] }

@@ -66,6 +66,40 @@ impl RenderOp {
             filters: Vec::new(),
         }
     }
+
+    pub const fn init_fglp_samples(
+        f: f64,
+        g: (f64, f64),
+        l: f64,
+        p: f64,
+        total_samples: usize,
+        settings: &Settings,
+    ) -> Self {
+        Self {
+            f,
+            p,
+            g,
+            l,
+            t: 0.0,
+            reverb: None,
+            attack: settings.sample_rate,
+            decay: settings.sample_rate,
+            asr: ASR::Long,
+            samples: total_samples,
+            total_samples,
+            index: 0,
+            voice: 0,
+            event: 0,
+            portamento: 1024,
+            osc_type: OscType::None,
+            next_l_silent: false,
+            next_r_silent: false,
+            next_out: false,
+            names: Vec::new(),
+            filters: Vec::new(),
+        }
+    }
+
     pub fn init_silent_with_length(l: f64) -> Self {
         Self {
             f: 0.0,
