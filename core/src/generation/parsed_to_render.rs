@@ -278,19 +278,20 @@ pub fn parsed_to_render(
                 cli,
                 mut output_dir,
             } => {
-                let stereo_waveform = render(&basis, &nf, &mut parsed_composition.defs)?;
-                let render_return =
-                    RenderReturn::Wav(weresocool_vorbis::encode_lr_channels_to_ogg_vorbis(
-                        stereo_waveform.l_buffer,
-                        stereo_waveform.r_buffer,
-                    ));
-                if cli {
-                    let audio: Vec<u8> = Vec::try_from(render_return.clone())?;
-                    let f = filename_to_renderpath(filename);
-                    output_dir.push(format!("{}.ogg", f));
-                    write_audio_to_file(&audio, output_dir);
-                };
-                Ok(render_return)
+                unimplemented!()
+                // let stereo_waveform = render(&basis, &nf, &mut parsed_composition.defs)?;
+                // let render_return =
+                // RenderReturn::Wav(weresocool_vorbis::encode_lr_channels_to_ogg_vorbis(
+                // stereo_waveform.l_buffer,
+                // stereo_waveform.r_buffer,
+                // ));
+                // if cli {
+                // let audio: Vec<u8> = Vec::try_from(render_return.clone())?;
+                // let f = filename_to_renderpath(filename);
+                // output_dir.push(format!("{}.ogg", f));
+                // write_audio_to_file(&audio, output_dir);
+                // };
+                // Ok(render_return)
             }
         },
     }

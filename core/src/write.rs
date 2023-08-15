@@ -38,27 +38,27 @@ pub fn filename_from_string(s: &str) -> &str {
     filename[filename.len() - 1]
 }
 
-#[cfg(any(feature = "wasm", target_os = "windows"))]
+// #[cfg(any(feature = "wasm", target_os = "windows"))]
 pub fn write_composition_to_mp3(_composition: StereoWaveform) -> Result<Vec<u8>, Error> {
     Err(Error::with_msg("Mp3 not available on this platform"))
 }
 
-#[cfg(all(feature = "app", not(target_os = "windows")))]
-pub fn write_composition_to_mp3(mut composition: StereoWaveform) -> Result<Vec<u8>, Error> {
-    composition.normalize();
+// #[cfg(all(feature = "app", not(target_os = "windows")))]
+// pub fn write_composition_to_mp3(mut composition: StereoWaveform) -> Result<Vec<u8>, Error> {
+// composition.normalize();
 
-    let l_buffer = composition.l_buffer;
-    let r_buffer = composition.r_buffer;
-    let length: f32 = l_buffer.len() as f32 * (0.37);
-    let mp3buf = &mut vec![0_u8; length.ceil() as usize];
+// let l_buffer = composition.l_buffer;
+// let r_buffer = composition.r_buffer;
+// let length: f32 = l_buffer.len() as f32 * (0.37);
+// let mp3buf = &mut vec![0_u8; length.ceil() as usize];
 
-    let mut l = Lame::new().ok_or(weresocool_lame::Error::InternalError)?;
+// let mut l = Lame::new().ok_or(weresocool_lame::Error::InternalError)?;
 
-    l.init_params()?;
-    l.encode_f32(l_buffer.as_slice(), r_buffer.as_slice(), mp3buf)?;
+// l.init_params()?;
+// l.encode_f32(l_buffer.as_slice(), r_buffer.as_slice(), mp3buf)?;
 
-    Ok(mp3buf.to_vec())
-}
+// Ok(mp3buf.to_vec())
+// }
 
 #[test]
 fn write_composition_to_mp3_test() {

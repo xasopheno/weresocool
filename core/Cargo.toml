@@ -24,6 +24,10 @@ weresocool_lame = { path = "../lame", version = "^1.0.47" }
 [target.'cfg(target_os = "linux")'.dependencies]
 weresocool_lame = { path = "../lame", version = "^1.0.47" } 
 
+[target.'cfg(not(feature = "wasm"))'.dependencies]
+weresocool_vorbis = { path = "../vorbis", version = "^1.0.47", optional=true, default_features = false } 
+
+
 [dependencies]
 scop = { path = "../scop", version = "^1.0.47" }
 opmap = { path = "../opmap", version = "^1.0.47" }
@@ -34,7 +38,6 @@ weresocool_ast = { path = "../ast", version = "^1.0.47", default_features=false,
 weresocool_error = { path = "../error", version = "^1.0.47", default_features=false, optional=true } 
 weresocool_instrument = { path = "../instrument", version = "^1.0.47", default_features=false, optional=true } 
 weresocool_shared = { path = "../shared", version = "^1.0.47" } 
-weresocool_vorbis = { path = "../vorbis", version = "^1.0.47", optional=true, default_features = false } 
 weresocool_portaudio = { path = "../portaudio", version = "^1.0.47", optional=true } 
 weresocool_visualizer = { path = "../../weresocool_visualizer", version = "^1.0.47", default_features=false, optional=true } 
 rand = { version="0.7.3", features=["wasm-bindgen"]}
