@@ -2,7 +2,6 @@ use crate::renderable::{Offset, RenderOp, Renderable};
 use crate::{Oscillator, StereoWaveform};
 #[cfg(feature = "app")]
 use rayon::prelude::*;
-use weresocool_shared::Settings;
 
 #[derive(Debug, Clone, PartialEq)]
 pub struct RenderVoice {
@@ -10,15 +9,17 @@ pub struct RenderVoice {
     pub op_index: usize,
     pub ops: Vec<RenderOp>,
     pub oscillator: Oscillator,
+    pub looped: bool,
 }
 
 impl RenderVoice {
-    pub fn init(ops: &[RenderOp]) -> Self {
+    pub fn init(ops: &[RenderOp], looped: bool) -> Self {
         Self {
             sample_index: 0,
             op_index: 0,
             ops: ops.to_owned(),
             oscillator: Oscillator::init(),
+            looped,
         }
     }
 
@@ -35,7 +36,7 @@ impl RenderVoice {
     ) -> Option<Vec<RenderOp>> {
         let mut result = result.unwrap_or_default();
 
-        if Settings::global().loop_play && self.op_index >= self.ops.len() {
+        if self.looped && self.op_index >= self.ops.len() {
             self.op_index = 0;
         }
 
@@ -96,6 +97,18 @@ pub fn renderables_to_render_voices(renderables: Vec<Vec<RenderOp>>) -> Vec<Rend
     let iter = renderables.par_iter();
     #[cfg(feature = "wasm")]
     let iter = renderables.iter();
-    iter.map(|voice| RenderVoice::init(voice))
+    iter.map(|voice| RenderVoice::init(voice, false))
+        .collect::<Vec<RenderVoice>>()
+}
+
+pub fn renderables_to_render_voices_loopable(
+    renderables: Vec<Vec<RenderOp>>,
+    looped: bool,
+) -> Vec<RenderVoice> {
+    #[cfg(feature = "app")]
+    let iter = renderables.par_iter();
+    #[cfg(feature = "wasm")]
+    let iter = renderables.iter();
+    iter.map(|voice| RenderVoice::init(voice, looped))
         .collect::<Vec<RenderVoice>>()
 }

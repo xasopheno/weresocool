@@ -136,6 +136,33 @@ impl RenderManager {
         }
     }
 
+    pub fn init_wasm_with_channel(
+        settings: Option<RenderManagerSettings>,
+        sender: Sender<bool>,
+    ) -> Self {
+        if !cfg!(test) {
+            if let Some(s) = settings {
+                Settings::init(s.sample_rate, s.buffer_size);
+            } else {
+                Settings::init_default();
+            };
+        }
+        Self {
+            visualization: Visualization {
+                channel: None,
+                normalizer: Normalizer::default(),
+            },
+            renders: [None, None],
+            past_volume: 0.8,
+            current_volume: 0.8,
+            render_idx: 0,
+            _read_idx: 0,
+            kill_channel: Some(sender),
+            once: false,
+            paused: false,
+        }
+    }
+
     pub fn play(&mut self) {
         self.paused = false;
     }
@@ -145,7 +172,8 @@ impl RenderManager {
     }
 
     pub fn update_volume(&mut self, volume: f32) {
-        self.current_volume = f32::powf(volume, 2.0)
+        // self.current_volume = f32::powf(volume, 2.0)
+        self.current_volume = volume;
     }
 
     fn ramp_to_current_volume(&mut self, buffer_size: usize) -> Vec<f32> {
@@ -319,7 +347,10 @@ mod render_manager_tests {
     }
 
     fn render_voices_mock() -> Vec<RenderVoice> {
-        vec![RenderVoice::init(&[RenderOp::init_silent_with_length(1.0)])]
+        vec![RenderVoice::init(
+            &[RenderOp::init_silent_with_length(1.0)],
+            false,
+        )]
     }
 
     #[test]

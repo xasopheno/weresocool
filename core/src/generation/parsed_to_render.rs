@@ -275,8 +275,9 @@ pub fn parsed_to_render(
             }
             #[cfg(feature = "app")]
             WavType::OggVorbis {
-                cli,
-                mut output_dir,
+                ..
+                //cli,
+                // mut output_dir,
             } => {
                 unimplemented!()
                 // let stereo_waveform = render(&basis, &nf, &mut parsed_composition.defs)?;

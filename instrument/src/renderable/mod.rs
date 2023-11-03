@@ -397,6 +397,32 @@ pub fn nf_to_vec_renderable(
     Ok(result)
 }
 
+pub fn nf_to_vec_renderable_loopable(
+    composition: &NormalForm,
+    defs: &mut Defs<Term>,
+    basis: &Basis,
+    looped: bool,
+) -> Result<Vec<Vec<RenderOp>>, Error> {
+    let mut normal_form = NormalForm::init();
+    composition.apply_to_normal_form(&mut normal_form, defs)?;
+
+    #[cfg(feature = "app")]
+    let iter = normal_form.operations.par_iter();
+    #[cfg(feature = "wasm")]
+    let iter = normal_form.operations.iter();
+
+    let settings = Settings::global();
+
+    let result: Vec<Vec<RenderOp>> = iter
+        .enumerate()
+        .map(|(voice, vec_point_op)| {
+            create_render_ops(voice, vec_point_op, basis, settings.sample_rate, !looped)
+        })
+        .collect();
+
+    Ok(result)
+}
+
 fn create_render_ops(
     voice: usize,
     vec_point_op: &[PointOp],
