@@ -27,6 +27,11 @@ pub fn app() -> clap::Command {
                 .about("Same as play --watch")
                 .arg(arg!([filename]).required(true)),
         )
+        .subcommand(
+            Command::new("vis")
+                .about("run watch with visualizer")
+                .arg(arg!([filename]).required(true)),
+        )
         .subcommand(Command::new("demo").about("Hear a cool sound"))
         .subcommand(
             Command::new("print")

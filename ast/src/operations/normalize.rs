@@ -20,6 +20,15 @@ impl Normalize<Term> for Op {
     ) -> Result<(), Error> {
         match self {
             Op::AsIs => {}
+            Op::Out => {
+                input.fmap_mut(|op| {
+                    op.is_out = true;
+                    op.fm = Ratio::new(0, 1);
+                    op.fa = Ratio::new(0, 1);
+                    op.g = Ratio::new(0, 1);
+                    op.l = Ratio::new(0, 1)
+                });
+            }
             Op::Lambda {
                 term,
                 input_name,
@@ -37,6 +46,11 @@ impl Normalize<Term> for Op {
                 handle_id_error(id, defs)?.apply_to_normal_form(input, defs)?;
             }
 
+            Op::FMOsc { defs } => input.fmap_mut(|op| {
+                op.osc_type = OscType::Fm {
+                    defs: defs.to_owned(),
+                }
+            }),
             Op::Lowpass {
                 hash,
                 cutoff_frequency,
@@ -294,35 +308,44 @@ impl Normalize<Term> for Op {
                 }
                 .apply_to_normal_form(&mut modulator, defs)?;
 
-                let mut result = NormalForm::init_empty();
-
-                for modulation_line in modulator.operations.iter() {
-                    for input_line in input.operations.iter() {
-                        result
+                let result_operations: Vec<_> = modulator
+                    .operations
+                    .iter()
+                    .flat_map(|modulation_line| {
+                        input
                             .operations
-                            .push(modulate(input_line, modulation_line));
-                    }
-                }
+                            .iter()
+                            .map(|input_line| modulate(input_line, modulation_line))
+                            .collect::<Vec<_>>()
+                    })
+                    .collect();
 
+                let mut result = NormalForm::init_empty();
+                result.operations = result_operations;
                 result.length_ratio = input.length_ratio;
+
                 *input = result
             }
 
             Op::Overlay { operations } => {
+                if operations.is_empty() {
+                    return Err(Error::with_msg("Empty Overlay!"));
+                }
+
                 let normal_forms = operations
                     .iter()
                     .map(|op| {
                         let mut input_clone = input.clone();
-                        op.apply_to_normal_form(&mut input_clone, defs)?;
-                        Ok(input_clone)
+                        op.apply_to_normal_form(&mut input_clone, defs)
+                            .map(|_| input_clone)
                     })
                     .collect::<Result<Vec<NormalForm>, Error>>()?;
 
                 let max_lr = normal_forms
                     .iter()
-                    .map(|nf| nf.length_ratio)
+                    .map(|nf: &NormalForm| nf.length_ratio)
                     .max()
-                    .expect("Normalize, max_lr not working");
+                    .ok_or_else(|| Error::with_msg("Failed to compute max length ratio"))?;
 
                 let mut result = vec![];
 

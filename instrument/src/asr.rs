@@ -4,12 +4,13 @@ use weresocool_ast::ASR;
 impl Voice {
     pub fn calculate_op_gain(
         &mut self,
+        next_out: bool,
         silence_now: bool,
         silence_next: bool,
         index: usize,
         total_length: usize,
     ) -> f64 {
-        if self.asr == ASR::Long {
+        if next_out || self.asr == ASR::Long {
             calculate_long_gain(
                 self.past.gain,
                 self.current.gain,

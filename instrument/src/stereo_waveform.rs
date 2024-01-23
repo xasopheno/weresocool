@@ -80,6 +80,38 @@ impl StereoWaveform {
             None
         }
     }
+
+    /// Sum a vec of StereoWaveform to a single stereo_waveform.
+    pub fn sum_many(mut vec_wav: Vec<Self>) -> StereoWaveform {
+        // Sort the vectors by length
+        StereoWaveform::sort_vecs(&mut vec_wav);
+
+        // Get the length of the longest vector
+        let max_len = vec_wav[0].l_buffer.len();
+
+        let mut result = StereoWaveform::new(max_len);
+
+        for wav in vec_wav {
+            StereoWaveform::sum_vec(&mut result.l_buffer, &wav.l_buffer[..]);
+            StereoWaveform::sum_vec(&mut result.r_buffer, &wav.r_buffer[..])
+        }
+
+        result
+    }
+
+    /// Sort a vec of StereoWaveform by length. Assumes both channels have the same
+    /// buffer length
+    fn sort_vecs(vec_wav: &mut [StereoWaveform]) {
+        vec_wav.sort_unstable_by(|a, b| b.l_buffer.len().cmp(&a.l_buffer.len()));
+    }
+
+    /// Sum two vectors. Assumes vector a is longer than or of the same length
+    /// as vector b.
+    pub fn sum_vec(a: &mut [f64], b: &[f64]) {
+        for (ai, bi) in a.iter_mut().zip(b) {
+            *ai += *bi;
+        }
+    }
 }
 
 impl Normalize for StereoWaveform {

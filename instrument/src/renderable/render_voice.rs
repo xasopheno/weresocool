@@ -22,6 +22,10 @@ impl RenderVoice {
         }
     }
 
+    pub fn push(&mut self, ops: &[RenderOp]) {
+        self.ops.extend_from_slice(ops);
+    }
+
     /// Recursive function to prepare a batch of RenderOps for rendering
     /// Initially pass in None as result
     pub fn get_batch(
@@ -51,6 +55,7 @@ impl RenderVoice {
                 index: self.sample_index,
                 names: current_op.names.clone(),
                 filters: current_op.filters.clone(),
+                osc_type: current_op.osc_type.clone(),
                 ..*current_op
             });
             self.sample_index += samples_left_in_batch;
@@ -61,6 +66,7 @@ impl RenderVoice {
                 index: self.sample_index,
                 names: current_op.names.clone(),
                 filters: current_op.filters.clone(),
+                osc_type: current_op.osc_type.clone(),
                 ..*current_op
             });
 
@@ -81,7 +87,7 @@ impl RenderVoice {
     ) -> Option<StereoWaveform> {
         let batch = self.get_batch(n_samples, None);
 
-        batch.map(|mut b| b.render(&mut self.oscillator, offset))
+        batch.map(|b| b.render(&mut self.oscillator, offset))
     }
 }
 

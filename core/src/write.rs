@@ -11,16 +11,11 @@ use weresocool_lame::Lame;
 use weresocool_shared::Settings;
 
 pub fn write_output_buffer(out_buffer: &mut [f32], stereo_waveform: StereoWaveform) {
-    let mut l_idx = 0;
-    let mut r_idx = 0;
-    for (n, sample) in out_buffer.iter_mut().enumerate() {
-        if n % 2 == 0 {
-            *sample = stereo_waveform.l_buffer[l_idx] as f32;
-            l_idx += 1
-        } else {
-            *sample = stereo_waveform.r_buffer[r_idx] as f32;
-            r_idx += 1
-        }
+    let len = stereo_waveform.l_buffer.len();
+
+    for i in 0..len {
+        out_buffer[i * 2] = stereo_waveform.l_buffer[i] as f32;
+        out_buffer[i * 2 + 1] = stereo_waveform.r_buffer[i] as f32;
     }
 }
 
@@ -29,16 +24,11 @@ pub fn new_write_output_buffer(
     stereo_waveform: StereoWaveform,
     offset: Vec<f32>,
 ) {
-    let mut l_idx = 0;
-    let mut r_idx = 0;
-    for (n, sample) in out_buffer.iter_mut().enumerate() {
-        if n % 2 == 0 {
-            *sample = offset[n] * stereo_waveform.l_buffer[l_idx] as f32;
-            l_idx += 1
-        } else {
-            *sample = offset[n] * stereo_waveform.r_buffer[r_idx] as f32;
-            r_idx += 1
-        }
+    let len = stereo_waveform.l_buffer.len();
+
+    for i in 0..len {
+        out_buffer[i * 2] = offset[i * 2] * stereo_waveform.l_buffer[i] as f32;
+        out_buffer[i * 2 + 1] = offset[i * 2 + 1] * stereo_waveform.r_buffer[i] as f32;
     }
 }
 

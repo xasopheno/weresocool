@@ -38,3 +38,5 @@ check-licenses:
 test-github-actions:
 	act
 
+bench-flamegraph
+  cargo bench --bench generate_waveform_bench -- --profile-time=5

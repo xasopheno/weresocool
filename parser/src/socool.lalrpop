@@ -19,6 +19,7 @@ use weresocool_ast::{
         Indices, 
         Index,
         Scale,
+        FmOscDef
 };
 use crate::parser::{Init, handle_fit_length_recursively};
 use crate::indices::{et, random_seed};
@@ -278,6 +279,7 @@ BaseOperation: Term = {
       q_factor: q
     }),
     "AsIs" => Term::Op(AsIs {}),
+    "Out" => Term::Op(Out {}),
     "Sine" <pow: Rational?> => {
       Term::Op(Sine { pow })
     },
@@ -288,6 +290,12 @@ BaseOperation: Term = {
         }
         Term::Op(Sequence { operations  })
     },
+    "FmOsc" "[" <osc_defs: Comma<FMOvertoneDef>> "]" => Term::Op(FMOsc { 
+        defs: osc_defs.iter().map(|d| FmOscDef {
+          fm: d.0, 
+          depth: d.1
+        }).collect()
+      }),
     r"Triangle|Tri" <pow: Rational?> => {
       Term::Op(Triangle { pow })
     },
@@ -362,6 +370,9 @@ BaseOperation: Term = {
     BracedOvertone
 };
 
+FMOvertoneDef: (Rational64, Rational64) = {
+   "(" <overtone: Rational> "," <strength:Rational> ")" => (overtone, strength),
+}
 
 Overtone: Term = {
     "("

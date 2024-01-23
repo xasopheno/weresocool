@@ -3,14 +3,16 @@ use colored::*;
 const VERSION: &str = env!("CARGO_PKG_VERSION");
 
 pub fn clear_screen() {
-    if let Err(e) = if cfg!(target_os = "windows") {
-        std::process::Command::new("cmd")
+    if cfg!(target_os = "windows") {
+        if std::process::Command::new("cmd")
             .args(["/C", "cls"])
             .status()
-    } else {
-        std::process::Command::new("clear").status()
-    } {
-        eprintln!("Failed to clear the screen: {:?}", e);
+            .is_err()
+        {
+            eprintln!("Failed to clear the screen: Command 'cls' is not recognized");
+        }
+    } else if std::process::Command::new("clear").status().is_err() {
+        eprintln!("Failed to clear the screen: Command 'clear' is not recognized");
     }
 }
 
@@ -20,6 +22,10 @@ pub fn were_so_cool_logo(action: Option<&str>, filename: Option<String>) {
         "{} {}",
         "\n**** WereSoCool".truecolor(250, 180, 220).bold(),
         format!("v{} ****", VERSION).truecolor(250, 180, 220).bold()
+    );
+    println!(
+        "{}",
+        "~~~ https://weresocool.org ~~~".truecolor(150, 150, 150)
     );
     println!("{}", "--- Make cool sounds. ---".truecolor(250, 134, 200));
     println!(

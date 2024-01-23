@@ -72,9 +72,11 @@ impl TimedOp {
             decay: self.decay,
             asr: self.asr,
             portamento: self.portamento,
-            osc_type: self.osc_type,
+            osc_type: self.osc_type.clone(),
             names: NameSet::new(),
             filters: Vec::new(),
+            //TODO
+            is_out: false,
         }
     }
 
@@ -90,7 +92,7 @@ impl TimedOp {
             pm: point_op.pm,
             pa: point_op.pa,
             attack: point_op.attack,
-            osc_type: point_op.osc_type,
+            osc_type: point_op.osc_type.clone(),
             decay: point_op.decay,
             reverb: point_op
                 .reverb

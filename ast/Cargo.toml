@@ -13,11 +13,11 @@ weresocool_error = { path = "../error", version = "^1.0.47", default_features=fa
 weresocool_filter = { path = "../filter", version = "^1.0.45" } 
 weresocool_shared = { path = "../shared", version = "^1.0.47" }
 scop = { path = "../scop", version = "^1.0.47" }
-num-rational = { version = "0.3.2", features = ["serde"] } 
+num-rational = { version = "0.4.1", features = ["serde"] } 
 rand = { version="0.7.3", features=["wasm-bindgen"]}
-serde = { version = "1.0.119", features = ["derive"] }
+serde = { version = "1.0.164", features = ["derive"] }
 pretty_assertions = "0.6.1"
-indexmap = "1.6.1"
+indexmap = "2.0.0"
 colored = "2.0.0"
 num-traits = "0.2.14"
 num-integer = "0.1.44"
