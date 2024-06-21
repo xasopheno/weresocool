@@ -1,4 +1,7 @@
-use crate::Error;
+use crate::interpretable::InputType::Filename;
+use crate::manager::prepare_render_outside;
+use crate::manager::RenderManager;
+use crate::ui::were_so_cool_logo;
 use colored::*;
 use notify::{Config, RecommendedWatcher, RecursiveMode, Watcher};
 use rand::Rng;
@@ -9,10 +12,7 @@ use std::path::PathBuf;
 use std::sync::mpsc::channel;
 use std::sync::Arc;
 use std::sync::Mutex;
-use weresocool::interpretable::InputType::Filename;
-use weresocool::manager::prepare_render_outside;
-use weresocool::manager::RenderManager;
-use weresocool::ui::were_so_cool_logo;
+use weresocool_error::Error;
 
 pub fn watch(
     filename: String,
@@ -29,7 +29,10 @@ pub fn watch(
 
             let mut watcher = RecommendedWatcher::new(tx, Config::default()).unwrap();
 
-            watcher.watch(path.as_ref(), RecursiveMode::NonRecursive)?;
+            // should be ?
+            watcher
+                .watch(path.as_ref(), RecursiveMode::NonRecursive)
+                .unwrap();
 
             if let Ok(_event) = rx.recv() {
                 std::thread::sleep(std::time::Duration::from_millis(100));

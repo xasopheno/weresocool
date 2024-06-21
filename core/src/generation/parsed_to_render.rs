@@ -306,7 +306,6 @@ fn filename_to_renderpath(filename: &str) -> String {
 pub fn write_audio_to_file(audio: &[u8], filename: PathBuf) {
     let mut file = File::create(filename.clone()).unwrap();
     file.write_all(audio).unwrap();
-    printed(filename.display().to_string());
 }
 
 pub fn render(

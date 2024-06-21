@@ -208,18 +208,16 @@ impl RenderManager {
 
                 let (ops, rendered): (Vec<_>, Vec<_>) = iter
                     .filter_map(|voice| {
-                        voice
-                            .get_batch(Settings::global().buffer_size, None)
-                            .map(|batch| {
-                                (
-                                    if vtx.is_some() {
-                                        batch.iter().filter(|op| op.index == 0).cloned().collect()
-                                    } else {
-                                        vec![]
-                                    },
-                                    batch.render(&mut voice.oscillator, None),
-                                )
-                            })
+                        voice.get_batch(buffer_size, None).map(|batch| {
+                            (
+                                if vtx.is_some() {
+                                    batch.iter().filter(|op| op.index == 0).cloned().collect()
+                                } else {
+                                    vec![]
+                                },
+                                batch.render(&mut voice.oscillator, None),
+                            )
+                        })
                     })
                     .unzip();
 

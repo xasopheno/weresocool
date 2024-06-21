@@ -1,16 +1,16 @@
+use crate::error::Error;
+use crate::interpretable::InputType::Filename;
+use crate::manager::prepare_render_outside;
+use crate::manager::RenderManager;
 use crate::new::DEFAULT_SOCOOL;
+use crate::portaudio::real_time_render_manager;
+use crate::ui::were_so_cool_logo;
 use crate::watch::watch;
-use crate::Error;
+use crate::RenderVoice;
 use std::io;
 use std::path::PathBuf;
 use std::sync::Arc;
 use std::sync::Mutex;
-use weresocool::interpretable::InputType::Filename;
-use weresocool::manager::prepare_render_outside;
-use weresocool::manager::RenderManager;
-use weresocool::portaudio::real_time_render_manager;
-use weresocool::ui::were_so_cool_logo;
-use weresocool::RenderVoice;
 use weresocool_core::portaudio::real_time_render_manager::real_time_audio_visual_render_manager;
 
 pub enum Play {

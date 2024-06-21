@@ -378,6 +378,7 @@ impl PointOp {
             is_out: false,
         }
     }
+
     pub fn init_silent() -> PointOp {
         PointOp {
             fm: Ratio::new(0, 1),

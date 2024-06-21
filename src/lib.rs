@@ -8,6 +8,9 @@
     // clippy::cargo,
 )]
 
+pub mod new;
+pub mod play;
+pub mod watch;
 pub use crate::manager::RenderManager;
 pub use weresocool_ast as ast;
 pub use weresocool_core::generation::*;

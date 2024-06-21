@@ -1,5 +1,5 @@
+use crate::error::Error;
 use crate::play::{play_file, Play};
-use crate::Error;
 use indoc::indoc;
 use std::fs;
 use std::path::PathBuf;

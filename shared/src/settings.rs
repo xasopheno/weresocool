@@ -55,7 +55,7 @@ pub const fn default_settings() -> Settings {
         yin_buffer_size: 2048,
         buffer_size: 1024 * 12,
         crossfade_period: 1024 * 4,
-        probability_threshold: 0.3,
+        probability_threshold: 0.2,
         gain_threshold_min: 0.0,
         channels: 2,
         interleaved: true,
