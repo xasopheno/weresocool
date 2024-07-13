@@ -41,6 +41,9 @@ Macos:
 Arch Linux (ALSA):
 `sudo pacman -S lame vorbis-tools`
 
+Fedora Linux (ALSA):
+`sudo dnf install lame vorbis-tools`
+
 Ubuntu (ALSA):
 `sudo apt-get install lame vorbis-tools`
 
