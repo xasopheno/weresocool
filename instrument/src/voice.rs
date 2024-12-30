@@ -11,7 +11,7 @@ use weresocool_shared::*;
 
 #[derive(Clone, Debug, PartialEq)]
 pub struct Voice {
-    pub reverb: ReverbState,
+    // pub reverb: ReverbState,
     pub index: usize,
     pub past: VoiceState,
     pub current: VoiceState,
@@ -42,7 +42,7 @@ pub struct VoiceState {
     pub frequency: f64,
     pub gain: f64,
     pub osc_type: OscType,
-    pub reverb: Option<f64>,
+    // pub reverb: Option<f64>,
 }
 
 impl VoiceState {
@@ -51,7 +51,7 @@ impl VoiceState {
             frequency: 0.0,
             gain: 0.0,
             osc_type: OscType::None,
-            reverb: None,
+            // reverb: None,
         }
     }
 
@@ -80,7 +80,7 @@ impl Voice {
     pub fn init(index: usize) -> Self {
         Self {
             index,
-            reverb: ReverbState::init(),
+            // reverb: ReverbState::init(),
             past: VoiceState::init(),
             current: VoiceState::init(),
             offset_past: VoiceState::init(),
@@ -97,6 +97,10 @@ impl Voice {
             filter_crossfade_index: 0,
             osc_crossfade_index: 0,
         }
+    }
+
+    pub fn copy_state_from(&mut self, other: &Voice) {
+        *self = other.clone();
     }
 
     /// Renders a single RenderOp given an Offset
@@ -118,13 +122,13 @@ impl Voice {
             op.total_samples,
         ) * loudness_normalization(self.offset_current.frequency);
 
-        self.reverb
-            .model
-            .update(self.current.reverb.unwrap_or(0.0) as f32);
+        // self.reverb
+        // .model
+        // .update(self.current.reverb.unwrap_or(0.0) as f32);
 
         let gain_factor = op_gain * offset.gain;
         let sample_limit = if op.samples > 250 { op.samples } else { 250 };
-        let apply_reverb = self.reverb.state.map_or(false, |s| s > 0.0);
+        // let apply_reverb = self.reverb.state.map_or(false, |s| s > 0.0);
 
         let sound_to_silence = self.sound_to_silence();
 
@@ -183,13 +187,13 @@ impl Voice {
                 }
             }
 
-            if apply_reverb && gain > 0.0 {
-                new_sample = self
-                    .reverb
-                    .model
-                    .calc_sample(new_sample as f32, gain as f32)
-                    .into();
-            }
+            // if apply_reverb && gain > 0.0 {
+            // new_sample = self
+            // .reverb
+            // .model
+            // .calc_sample(new_sample as f32, gain as f32)
+            // .into();
+            // }
 
             *sample += new_sample;
         }
@@ -206,7 +210,7 @@ impl Voice {
         if op.index == 0 {
             self.update_current_and_past(op);
             self.update_osc_type(op);
-            self.update_reverb(op);
+            // self.update_reverb(op);
             self.update_attack_decay_asr(op);
 
             if self.should_update_filters(op) {
@@ -239,7 +243,7 @@ impl Voice {
         self.past.frequency = self.current.frequency;
         self.current.frequency = op.f;
         self.past.osc_type = self.current.osc_type.clone();
-        self.past.reverb = self.current.reverb;
+        // self.past.reverb = self.current.reverb;
 
         self.past.gain = self.past_gain_from_op(op);
         self.current.gain = self.current_gain_from_op(op);
@@ -260,15 +264,15 @@ impl Voice {
         self.current.osc_type = op.osc_type.clone();
     }
 
-    fn update_reverb(&mut self, op: &RenderOp) {
-        self.reverb.state = if self.past.reverb.is_some() && op.reverb.is_none() {
-            self.past.reverb
-        } else {
-            op.reverb
-        };
+    // fn update_reverb(&mut self, op: &RenderOp) {
+    // self.reverb.state = if self.past.reverb.is_some() && op.reverb.is_none() {
+    // self.past.reverb
+    // } else {
+    // op.reverb
+    // };
 
-        self.current.reverb = op.reverb;
-    }
+    // self.current.reverb = op.reverb;
+    // }
 
     fn update_attack_decay_asr(&mut self, op: &RenderOp) {
         self.attack = op.attack.trunc() as usize;

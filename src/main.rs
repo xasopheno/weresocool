@@ -11,7 +11,6 @@ use notify::Error as NotifyError;
 use std::env;
 use thiserror::Error;
 use weresocool::error::Error as WscError;
-#[cfg(feature = "app")]
 use weresocool_portaudio::error::Error as PortAudioError;
 
 #[derive(Error, Debug)]

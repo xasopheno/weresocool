@@ -19,30 +19,30 @@ pub mod tests {
 
             let result = Voice {
                 index,
-                reverb: ReverbState::init(),
+                // reverb: ReverbState::init(),
                 past: VoiceState {
                     frequency: 0.0,
                     gain: 0.0,
                     osc_type: OscType::None,
-                    reverb: None,
+                    // reverb: None,
                 },
                 current: VoiceState {
                     frequency: 0.0,
                     gain: 0.0,
                     osc_type: OscType::None,
-                    reverb: None,
+                    // reverb: None,
                 },
                 offset_past: VoiceState {
                     frequency: 0.0,
                     gain: 0.0,
                     osc_type: OscType::None,
-                    reverb: None,
+                    // reverb: None,
                 },
                 offset_current: VoiceState {
                     frequency: 0.0,
                     gain: 0.0,
                     osc_type: OscType::None,
-                    reverb: None,
+                    // reverb: None,
                 },
                 phase: 0.0,
                 osc_type: OscType::None,
@@ -66,7 +66,7 @@ pub mod tests {
             let mut voice = Voice::init(index);
             let op = RenderOp::init_fglp(200.0, (0.5, 0.5), 1.0, 0.0, &get_test_settings());
 
-            voice.update(&op, &Offset::identity());
+            voice.update(&op, &Offset::default());
             let p_delta =
                 voice.calculate_portamento_delta(10, voice.past.frequency, voice.current.frequency);
 
@@ -81,8 +81,8 @@ pub mod tests {
             let mut voice = Voice::init(index);
             let mut op = RenderOp::init_fglp(100.0, (0.5, 0.5), 1.0, 0.0, &get_test_settings());
             op.samples = 3;
-            voice.update(&op, &Offset::identity());
-            let buffer = voice.generate_waveform(&op, &Offset::identity());
+            voice.update(&op, &Offset::default());
+            let buffer = voice.generate_waveform(&op, &Offset::default());
             assert!(cmp_vec_f64(
                 buffer.to_vec(),
                 [0.0, 0.0000000019383814567487256, 0.000000007752738881862574].to_vec()
@@ -94,10 +94,10 @@ pub mod tests {
             let mut voice = Voice::init(1);
             let op1 = RenderOp::init_fglp(100.0, (0.5, 0.5), 1.0, 0.0, &get_test_settings());
             let op2 = RenderOp::init_fglp(100.0, (0.5, 0.5), 1.0, 0.0, &get_test_settings());
-            voice.update(&op1, &Offset::identity());
+            voice.update(&op1, &Offset::default());
             let silence_to_sound = voice.silence_to_sound();
 
-            voice.update(&op2, &Offset::identity());
+            voice.update(&op2, &Offset::default());
             let sound_to_silence = voice.sound_to_silence();
 
             assert_eq!(silence_to_sound, true);
@@ -116,31 +116,31 @@ pub mod tests {
                 voices: (
                     Voice {
                         index: 0,
-                        reverb: ReverbState::init(),
+                        // reverb: ReverbState::init(),
                         phase: 0.0,
                         past: VoiceState {
                             frequency: 0.0,
                             gain: 0.0,
                             osc_type: OscType::None,
-                            reverb: None,
+                            // reverb: None,
                         },
                         current: VoiceState {
                             frequency: 0.0,
                             gain: 0.0,
                             osc_type: OscType::None,
-                            reverb: None,
+                            // reverb: None,
                         },
                         offset_past: VoiceState {
                             frequency: 0.0,
                             gain: 0.0,
                             osc_type: OscType::None,
-                            reverb: None,
+                            // reverb: None,
                         },
                         offset_current: VoiceState {
                             frequency: 0.0,
                             gain: 0.0,
                             osc_type: OscType::None,
-                            reverb: None,
+                            // reverb: None,
                         },
                         osc_type: OscType::None,
                         attack: 44100,
@@ -155,31 +155,31 @@ pub mod tests {
                     },
                     Voice {
                         index: 1,
-                        reverb: ReverbState::init(),
+                        // reverb: ReverbState::init(),
                         phase: 0.0,
                         past: VoiceState {
                             frequency: 0.0,
                             gain: 0.0,
                             osc_type: OscType::None,
-                            reverb: None,
+                            // reverb: None,
                         },
                         current: VoiceState {
                             frequency: 0.0,
                             gain: 0.0,
                             osc_type: OscType::None,
-                            reverb: None,
+                            // reverb: None,
                         },
                         offset_past: VoiceState {
                             frequency: 0.0,
                             gain: 0.0,
                             osc_type: OscType::None,
-                            reverb: None,
+                            // reverb: None,
                         },
                         offset_current: VoiceState {
                             frequency: 0.0,
                             gain: 0.0,
                             osc_type: OscType::None,
-                            reverb: None,
+                            // reverb: None,
                         },
                         osc_type: OscType::None,
                         attack: 44100,
@@ -204,7 +204,7 @@ pub mod tests {
             let render_op =
                 RenderOp::init_fglp(100.0, (0.75, 0.25), 1.0, 0.0, &get_test_settings());
 
-            osc.update(&render_op, &Offset::identity());
+            osc.update(&render_op, &Offset::default());
 
             assert!(cmp_f64(osc.voices.0.past.frequency, 0.0));
             assert!(cmp_f64(osc.voices.0.past.gain, 0.0));
@@ -232,13 +232,13 @@ pub mod tests {
             render_op.samples = 3;
             render_op.total_samples = 44_100;
 
-            osc.update(&render_op, &Offset::identity());
+            osc.update(&render_op, &Offset::default());
 
             let expected = StereoWaveform {
                 l_buffer: vec![0.0, 0.000000002907572185123089, 0.000000011629108322793864],
                 r_buffer: vec![0.0, 0.0000000009691907283743628, 0.000000003876369440931287],
             };
-            assert_eq!(osc.generate(&render_op, &Offset::identity()), expected);
+            assert_eq!(osc.generate(&render_op, &Offset::default()), expected);
         }
 
         #[ignore]
@@ -256,7 +256,7 @@ pub mod tests {
             render_op.samples = 3;
             render_op.total_samples = settings.sample_rate as usize;
 
-            osc.update(&render_op, &Offset::identity());
+            osc.update(&render_op, &Offset::default());
 
             let expected = StereoWaveform {
                 l_buffer: vec![
@@ -270,7 +270,7 @@ pub mod tests {
                     0.000000000055236374651455554,
                 ],
             };
-            assert_eq!(osc.generate(&render_op, &Offset::identity()), expected);
+            assert_eq!(osc.generate(&render_op, &Offset::default()), expected);
         }
     }
 

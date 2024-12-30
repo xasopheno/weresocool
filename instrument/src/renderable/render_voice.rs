@@ -1,15 +1,24 @@
 use crate::renderable::{Offset, RenderOp, Renderable};
 use crate::{Oscillator, StereoWaveform};
-#[cfg(feature = "app")]
-use rayon::prelude::*;
-use weresocool_shared::Settings;
 
+#[cfg(feature = "app")]
 #[derive(Debug, Clone, PartialEq)]
 pub struct RenderVoice {
     pub sample_index: usize,
     pub op_index: usize,
     pub ops: Vec<RenderOp>,
     pub oscillator: Oscillator,
+}
+
+impl Default for RenderVoice {
+    fn default() -> Self {
+        Self {
+            sample_index: 0,
+            op_index: 0,
+            ops: vec![],
+            oscillator: Oscillator::init(),
+        }
+    }
 }
 
 impl RenderVoice {
@@ -28,10 +37,11 @@ impl RenderVoice {
         &mut self,
         samples_left_in_batch: usize,
         result: Option<Vec<RenderOp>>,
+        loop_play: bool,
     ) -> Option<Vec<RenderOp>> {
         let mut result = result.unwrap_or_default();
 
-        if Settings::global().loop_play && self.op_index >= self.ops.len() {
+        if loop_play && self.op_index >= self.ops.len() {
             self.op_index = 0;
         }
 
@@ -70,7 +80,7 @@ impl RenderVoice {
 
             self.sample_index = 0;
 
-            return self.get_batch(samples_left_in_batch - n_samples, Some(result));
+            return self.get_batch(samples_left_in_batch - n_samples, Some(result), loop_play);
         }
 
         Some(result)
@@ -81,17 +91,15 @@ impl RenderVoice {
         n_samples: usize,
         offset: Option<&Offset>,
     ) -> Option<StereoWaveform> {
-        let batch = self.get_batch(n_samples, None);
+        let batch = self.get_batch(n_samples, None, false);
 
         batch.map(|mut b| b.render(&mut self.oscillator, offset))
     }
 }
 
 pub fn renderables_to_render_voices(renderables: Vec<Vec<RenderOp>>) -> Vec<RenderVoice> {
-    #[cfg(feature = "app")]
-    let iter = renderables.par_iter();
-    #[cfg(feature = "wasm")]
-    let iter = renderables.iter();
-    iter.map(|voice| RenderVoice::init(voice))
+    renderables
+        .iter()
+        .map(|voice| RenderVoice::init(voice))
         .collect::<Vec<RenderVoice>>()
 }

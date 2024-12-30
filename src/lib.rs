@@ -8,6 +8,7 @@
     // clippy::cargo,
 )]
 
+pub use weresocool_analyze as analyze;
 pub use weresocool_ast as ast;
 pub use weresocool_core::*;
 pub use weresocool_error as error;

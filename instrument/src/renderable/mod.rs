@@ -5,7 +5,6 @@ use num_rational::Rational64;
 use num_traits::CheckedMul;
 use rand::{thread_rng, Rng};
 #[cfg(feature = "app")]
-use rayon::prelude::*;
 pub use render_voice::{renderables_to_render_voices, RenderVoice};
 use scop::Defs;
 use serde::{Deserialize, Serialize};
@@ -38,9 +37,37 @@ pub struct RenderOp {
     pub names: Vec<String>,
     pub filters: Vec<BiquadFilterDef>,
     pub next_out: bool,
+    pub follow: bool,
 }
 
 impl RenderOp {
+    pub fn init_fglps(f: f64, g: (f64, f64), l: f64, p: f64, s: usize) -> Self {
+        Self {
+            f,
+            p,
+            g,
+            l,
+            t: 0.0,
+            reverb: None,
+            attack: 512_f64,
+            decay: 512_f64,
+            asr: ASR::Long,
+            samples: s,
+            total_samples: s,
+            index: 0,
+            voice: 0,
+            event: 0,
+            portamento: 512,
+            osc_type: OscType::None,
+            next_l_silent: false,
+            next_r_silent: false,
+            next_out: false,
+            names: Vec::new(),
+            filters: Vec::new(),
+            follow: true,
+        }
+    }
+
     pub const fn init_fglp(f: f64, g: (f64, f64), l: f64, p: f64, settings: &Settings) -> Self {
         Self {
             f,
@@ -64,6 +91,7 @@ impl RenderOp {
             next_out: false,
             names: Vec::new(),
             filters: Vec::new(),
+            follow: true,
         }
     }
     pub fn init_silent_with_length(l: f64) -> Self {
@@ -89,6 +117,7 @@ impl RenderOp {
             next_out: false,
             names: Vec::new(),
             filters: Vec::new(),
+            follow: true,
         }
     }
 
@@ -121,6 +150,7 @@ impl RenderOp {
             next_out: false,
             names: vec![],
             filters,
+            follow: true,
         }
     }
 }
@@ -131,7 +161,7 @@ pub struct Offset {
     pub gain: f64,
 }
 impl Offset {
-    pub const fn identity() -> Self {
+    pub const fn default() -> Self {
         Self {
             freq: 1.0,
             gain: 1.0,
@@ -152,11 +182,17 @@ pub trait Renderable<T> {
 impl Renderable<RenderOp> for RenderOp {
     fn render(&mut self, oscillator: &mut Oscillator, offset: Option<&Offset>) -> StereoWaveform {
         let o = match offset {
-            Some(o) => Offset {
-                freq: o.freq * 2.0,
-                gain: o.gain,
-            },
-            None => Offset::identity(),
+            Some(o) => {
+                if self.follow {
+                    Offset {
+                        freq: o.freq,
+                        gain: o.gain,
+                    }
+                } else {
+                    Offset::default()
+                }
+            }
+            None => Offset::default(),
         };
 
         oscillator.update(self, &o);
@@ -245,6 +281,7 @@ fn pointop_to_renderop(
             })
             .collect(),
         next_out,
+        follow: true,
     };
 
     *time += point_op.l * basis.l;
@@ -327,14 +364,11 @@ pub fn nf_to_vec_renderable(
     let mut normal_form = NormalForm::init();
     composition.apply_to_normal_form(&mut normal_form, defs)?;
 
-    #[cfg(feature = "app")]
-    let iter = normal_form.operations.par_iter();
-    #[cfg(feature = "wasm")]
-    let iter = normal_form.operations.iter();
-
     let settings = Settings::global();
 
-    let result: Vec<Vec<RenderOp>> = iter
+    let result: Vec<Vec<RenderOp>> = normal_form
+        .operations
+        .iter()
         .enumerate()
         .map(|(voice, vec_point_op)| {
             create_render_ops(

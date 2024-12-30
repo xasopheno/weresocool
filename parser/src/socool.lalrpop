@@ -407,7 +407,22 @@ BracedOvertone: Term = {
 }
 
 
+
+Parenthesized<T>: T = {
+    <t: T> => t,
+    "(" <t: T> ")" => t,
+};
+
+Lets<T>: Vec<T> = {
+  <v:(<T>)*> => v
+};
 Overtones = Comma<Overtone>;
+Compose = Pipe<Operation>;
+Operations = Comma<Operation>;
+CoefStart: (i64, i64) = {
+    <n: Int> "|" <d:Int> => (n, d),
+}
+
 
 Comma<T>: Vec<T> = {
     <v:(<T> ",")*> <e:T?> => match e {
@@ -418,16 +433,6 @@ Comma<T>: Vec<T> = {
             v
         }
     }
-};
-
-Parenthesized<T>: T = {
-    <t: T> => t,
-    "(" <t: T> ")" => t,
-};
-
-
-Lets<T>: Vec<T> = {
-  <v:(<T>)*> => v
 };
 
 Pipe<T>: Vec<T> = {
@@ -452,10 +457,6 @@ Concat<T>: Vec<T> = {
     }
 };
 
-Compose = Pipe<Operation>;
-
-Operations = Comma<Operation>;
-
 Ints = Comma<Int>;
 
 Rational: Rational64 = {
@@ -466,9 +467,6 @@ Rational: Rational64 = {
 };
 
 
-CoefStart: (i64, i64) = {
-    <n: Int> "|" <d:Int> => (n, d),
-}
 
 
 Axis: Axis = {

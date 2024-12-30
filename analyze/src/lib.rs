@@ -2,12 +2,12 @@ pub mod fourier;
 
 pub trait Analyze {
     fn yin_pitch_detection(&mut self, sample_rate: f32, threshold: f32) -> (f32, f32);
-    fn get_better_tau(&mut self, tau: usize, sample_rate: f32) -> f32;
+    fn get_better_tau(&self, tau: usize, sample_rate: f32) -> f32;
     fn yin_difference(&mut self);
-    fn yin_absolute_threshold(&mut self, threshold: f32) -> Option<usize>;
-    fn yin_parabolic_interpolation(&mut self, tau_estimate: usize) -> f32;
+    fn yin_absolute_threshold(&self, threshold: f32) -> Option<usize>;
+    fn yin_parabolic_interpolation(&self, tau_estimate: usize) -> f32;
     fn yin_cumulative_mean_normalized_difference(&mut self);
-    fn gain(&mut self) -> f32;
+    fn gain(&self) -> f32;
     fn analyze(&mut self, sample_rate: f32, threshold: f32) -> DetectionResult;
 }
 
@@ -29,38 +29,31 @@ impl Analyze for Vec<f32> {
         }
     }
 
-    fn gain(&mut self) -> f32 {
-        let mean_squared: f32 = self.iter().cloned().fold(0.0, |mut sum, x: f32| {
-            sum += x.powi(2);
-            sum
-        });
-
-        let root_mean_squared = mean_squared.sqrt() / 100.0;
-        if root_mean_squared < 1.0 {
-            root_mean_squared
-        } else {
-            1.0
-        }
+    fn gain(&self) -> f32 {
+        let sum_of_squares: f32 = self.iter().map(|&x| x.powi(2)).sum();
+        let root_sum_of_squares = sum_of_squares.sqrt() / 100.0;
+        root_sum_of_squares.min(1.0)
     }
 
     fn yin_pitch_detection(&mut self, sample_rate: f32, threshold: f32) -> (f32, f32) {
+        // Scale samples
         for sample in self.iter_mut() {
             *sample *= 1000.0;
         }
 
         self.yin_difference();
         self.yin_cumulative_mean_normalized_difference();
-        let (probability, pitch_in_hertz) =
-            if let Some(tau) = self.yin_absolute_threshold(threshold) {
-                (1.0 - self[tau], self.get_better_tau(tau, sample_rate))
-            } else {
-                (-1.0, 0.0)
-            };
 
-        (pitch_in_hertz, probability)
+        if let Some(tau) = self.yin_absolute_threshold(threshold) {
+            let frequency = self.get_better_tau(tau, sample_rate);
+            let probability = 1.0 - self[tau];
+            (frequency, probability)
+        } else {
+            (0.0, -1.0)
+        }
     }
 
-    fn get_better_tau(&mut self, tau: usize, sample_rate: f32) -> f32 {
+    fn get_better_tau(&self, tau: usize, sample_rate: f32) -> f32 {
         let better_tau = self.yin_parabolic_interpolation(tau);
         sample_rate / better_tau
     }
@@ -80,70 +73,54 @@ impl Analyze for Vec<f32> {
     }
 
     fn yin_cumulative_mean_normalized_difference(&mut self) {
-        let buffer_size = self.len();
-        let mut running_sum: f32 = 0.0;
+        let mut running_sum = 0.0;
 
-        for (tau, sample) in self.iter_mut().enumerate().take(buffer_size).skip(1) {
-            running_sum += *sample;
-            *sample *= tau as f32 / running_sum;
+        for (tau, value) in self.iter_mut().enumerate() {
+            running_sum += *value;
+            if running_sum != 0.0 {
+                *value *= tau as f32 / running_sum;
+            } else {
+                *value = 0.0;
+            }
         }
     }
 
-    fn yin_absolute_threshold(&mut self, threshold: f32) -> Option<usize> {
-        let mut iter = self
-            .iter()
-            .enumerate()
-            .skip(2)
-            .skip_while(|(_, &sample)| sample > threshold);
-        let tripped_threshold = iter.next()?;
-
-        let (_, mut previous_sample) = tripped_threshold;
-        for (index, sample) in iter {
-            if sample > previous_sample {
-                return Some(index - 1);
-            };
-            previous_sample = sample;
+    fn yin_absolute_threshold(&self, threshold: f32) -> Option<usize> {
+        let len = self.len();
+        for tau in 2..len {
+            if self[tau] < threshold {
+                let mut tau_min = tau;
+                while tau_min + 1 < len && self[tau_min + 1] < self[tau_min] {
+                    tau_min += 1;
+                }
+                return Some(tau_min);
+            }
         }
-
-        Some(self.len() - 1)
+        Some(len - 1)
     }
 
-    fn yin_parabolic_interpolation(&mut self, tau_estimate: usize) -> f32 {
-        let better_tau: f32;
-
-        let x0: usize = if tau_estimate < 1 {
-            tau_estimate
-        } else {
+    fn yin_parabolic_interpolation(&self, tau_estimate: usize) -> f32 {
+        let x0 = if tau_estimate > 0 {
             tau_estimate - 1
+        } else {
+            tau_estimate
         };
-
-        let x2: usize = if tau_estimate + 1 < self.len() {
+        let x2 = if tau_estimate + 1 < self.len() {
             tau_estimate + 1
         } else {
             tau_estimate
         };
 
-        if x0 == tau_estimate {
-            better_tau = if self[tau_estimate] <= self[x2] {
-                tau_estimate as f32
-            } else {
-                x2 as f32
-            }
-        } else if x2 == tau_estimate {
-            better_tau = if self[tau_estimate] <= self[x0] {
-                tau_estimate as f32
-            } else {
-                x0 as f32
-            }
+        let s0 = self[x0];
+        let s1 = self[tau_estimate];
+        let s2 = self[x2];
+
+        let denom = 2.0 * (2.0 * s1 - s2 - s0);
+        if denom.abs() < f32::EPSILON {
+            tau_estimate as f32
         } else {
-            let s0: f32 = self[x0];
-            let s1: f32 = self[tau_estimate];
-            let s2: f32 = self[x2];
-
-            better_tau = tau_estimate as f32 + (s2 - s0) / (2.0 * (2.0 * s1 - s2 - s0));
+            tau_estimate as f32 + (s2 - s0) / denom
         }
-
-        better_tau
     }
 }
 
