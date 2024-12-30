@@ -2,7 +2,7 @@ use crate::{
     manager::RenderManager,
     write::{new_write_output_buffer, write_output_buffer},
 };
-use weresocool_instrument::StereoWaveform;
+use weresocool_instrument::{renderable::Offset, RenderOp, StereoWaveform};
 
 use std::sync::{Arc, Mutex};
 use weresocool_error::Error;
@@ -14,13 +14,18 @@ pub fn real_time_render_manager(
 ) -> Result<pa::Stream<pa::NonBlocking, pa::Output<f32>>, Error> {
     let pa = pa::PortAudio::new()?;
     let output_stream_settings = get_output_settings(&pa)?;
-    let buffer_size = Settings::global().buffer_size;
 
     let output_stream = pa.open_non_blocking_stream(output_stream_settings, move |args| {
-        let batch: Option<(StereoWaveform, Vec<f32>)> =
-            render_manager.lock().unwrap().read(buffer_size);
+        let batch: Option<(StereoWaveform, Vec<f32>, Vec<Vec<RenderOp>>)> =
+            render_manager.lock().unwrap().read(
+                Settings::global().buffer_size,
+                Offset {
+                    freq: 1.0,
+                    gain: 1.0,
+                },
+            );
 
-        if let Some((b, ramp)) = batch {
+        if let Some((b, ramp, _ops)) = batch {
             new_write_output_buffer(args.buffer, b, ramp);
             pa::Continue
         } else {

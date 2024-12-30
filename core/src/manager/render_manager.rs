@@ -1,18 +1,18 @@
 use crate::generation::Normalizer;
+use crate::manager::resizeable_2d_vec::Resizeable2DVec;
 use crate::{
     generation::parsed_to_render::{RenderReturn, RenderType},
     generation::sum_all_waveforms,
     generation::Op4D,
     interpretable::{InputType, Interpretable},
 };
+use log::info;
 use opmap::OpMap;
-#[cfg(feature = "app")]
-use rayon::prelude::*;
 use std::sync::mpsc::Sender;
 use std::{path::PathBuf, sync::mpsc::SendError};
 use weresocool_error::Error;
 use weresocool_instrument::renderable::{
-    nf_to_vec_renderable, renderables_to_render_voices, RenderOp, RenderVoice, Renderable,
+    nf_to_vec_renderable, renderables_to_render_voices, Offset, RenderOp, RenderVoice, Renderable,
 };
 use weresocool_instrument::StereoWaveform;
 use weresocool_shared::Settings;
@@ -36,6 +36,7 @@ pub struct Visualization {
 pub struct RenderManager {
     pub visualization: Visualization,
     pub renders: [Option<Vec<RenderVoice>>; 2],
+    pub store: Option<Vec<Vec<RenderOp>>>,
     pub current_volume: f32,
     pub past_volume: f32,
     render_idx: usize,
@@ -43,6 +44,8 @@ pub struct RenderManager {
     kill_channel: KillChannel,
     once: bool,
     paused: bool,
+    total_samples_per_loop: usize,
+    samples_processed: usize,
 }
 
 pub fn render_op_to_normalized_op4d(render_op: &RenderOp, normalizer: &Normalizer) -> Option<Op4D> {
@@ -91,6 +94,7 @@ impl RenderManager {
                 normalizer: Normalizer::default(),
             },
             renders: [None, None],
+            store: None,
             past_volume: 0.8,
             current_volume: 0.8,
             render_idx: 0,
@@ -98,6 +102,8 @@ impl RenderManager {
             kill_channel,
             once,
             paused: false,
+            total_samples_per_loop: 0,
+            samples_processed: 0,
         }
     }
 
@@ -115,6 +121,7 @@ impl RenderManager {
                 normalizer: Normalizer::default(),
             },
             renders: [None, None],
+            store: None,
             past_volume: 0.8,
             current_volume: 0.8,
             render_idx: 0,
@@ -122,6 +129,8 @@ impl RenderManager {
             kill_channel: None,
             once: false,
             paused: false,
+            total_samples_per_loop: 0,
+            samples_processed: 0,
         }
     }
 
@@ -161,96 +170,255 @@ impl RenderManager {
         offset
     }
 
-    pub fn read(&mut self, buffer_size: usize) -> Option<(StereoWaveform, Vec<f32>)> {
+    pub fn push_ops_to_store(&mut self, to_store: Vec<Vec<RenderOp>>) {
+        if let Some(store) = &mut self.store {
+            if store.len() < to_store.len() {
+                // Extend the store to match the size of `to_store`
+                store.extend((store.len()..to_store.len()).map(|_| Vec::new()));
+            }
+
+            store.iter_mut().zip(to_store).for_each(|(voice, ops)| {
+                voice.extend(ops.into_iter().map(|mut op| {
+                    op.follow = false;
+                    op
+                }));
+            });
+        } else {
+            self.store = Some(to_store);
+        }
+    }
+
+    pub fn push_store_to_current_render(&mut self) {
+        // Take the store out temporarily
+        if let Some(store) = self.store.take() {
+            if let Some(current_render) = self.current_render().as_mut() {
+                current_render.extend(store.into_iter().map(|ops| RenderVoice::init(&ops.clone())));
+            }
+            self.store = None
+        }
+    }
+
+    pub fn read(
+        &mut self,
+        buffer_size: usize,
+        offset: Offset,
+    ) -> Option<(StereoWaveform, Vec<f32>, Vec<Vec<RenderOp>>)> {
         if self.paused {
             return None;
-        };
+        }
 
-        let next = self.exists_next_render();
+        let mut remaining_buffer_size = buffer_size;
+        let mut total_rendered_per_batch: Vec<Vec<StereoWaveform>> = Vec::new();
+        let mut total_ops: Resizeable2DVec<RenderOp> = Resizeable2DVec::new(1);
+
         let vtx = self.visualization.channel.clone();
         let normalizer = self.visualization.normalizer;
-        let current = self.current_render();
 
-        match current {
-            Some(render_voices) => {
-                #[cfg(feature = "app")]
-                let iter = render_voices.par_iter_mut();
-                #[cfg(feature = "wasm")]
-                let iter = render_voices.iter_mut();
+        while remaining_buffer_size > 0 {
+            // Compute next_exists before mutable borrow
+            let next_exists = self.exists_next_render();
 
-                let (ops, rendered): (Vec<_>, Vec<_>) = iter
-                    .filter_map(|voice| {
-                        voice
-                            .get_batch(Settings::global().buffer_size, None)
-                            .map(|mut batch| {
-                                (
-                                    if vtx.is_some() {
-                                        batch.iter().filter(|op| op.index == 0).cloned().collect()
-                                    } else {
-                                        vec![]
-                                    },
-                                    batch.render(&mut voice.oscillator, None),
-                                )
-                            })
-                    })
-                    .unzip();
+            // Start mutable borrow scope
+            let (samples_processed, render_finished) = {
+                let current_render_option = self.current_render();
 
-                if let Some(tx) = vtx {
-                    let mut opmap: OpMap<Op4D> = OpMap::with_capacity(ops.len());
+                match current_render_option {
+                    Some(render_voices) => {
+                        let mut any_data_rendered = false;
+                        let mut rendered_per_voice: Vec<StereoWaveform> = Vec::new();
 
-                    ops.iter().flatten().for_each(|v| {
-                        let name = v.names.last().map_or("nameless", |n| n);
+                        let mut min_samples_processed = remaining_buffer_size;
 
-                        let op = render_op_to_normalized_op4d(v, &normalizer);
-                        if let Some(o) = op {
-                            opmap.insert(name, o);
-                        };
-                    });
-                    tx.send(VisEvent::Ops(opmap)).unwrap();
-                }
+                        for (i, voice) in render_voices.iter_mut().enumerate() {
+                            // TODO: Should return if it looped and reset store
+                            // TODO: or should it just push the store to the current render?
+                            // TODO: This is getting super complicated...what should I do?
+                            // TODO: Maybe factor this out?
+                            // TODO: How do I save the state so I can print?
+                            // TODO: The store stuff should be behind a feature flag
+                            match voice.get_batch(
+                                remaining_buffer_size,
+                                None,
+                                !next_exists && Settings::global().loop_play,
+                            ) {
+                                Some(mut batch) => {
+                                    any_data_rendered = true;
+                                    let samples = batch.iter().map(|op| op.samples).sum::<usize>();
+                                    min_samples_processed = min_samples_processed.min(samples);
 
-                if !rendered.is_empty() {
-                    let mut sw: StereoWaveform = sum_all_waveforms(rendered);
+                                    let voice_rendered =
+                                        batch.render(&mut voice.oscillator, Some(&offset));
+                                    rendered_per_voice.push(voice_rendered);
 
-                    if next {
-                        sw.fade_out();
+                                    if let Some(_vtx) = &vtx {
+                                        // let b = batch
+                                        // .clone()
+                                        // .into_iter()
+                                        // .map(|mut op| {
+                                        // if op.follow {
+                                        // op.f = op.f * offset.freq;
+                                        // op.g = (
+                                        // op.g.0 * offset.gain,
+                                        // op.g.1 * offset.gain,
+                                        // );
+                                        // }
+                                        // op
+                                        // })
+                                        // .collect();
+                                        let b: Vec<_> = batch
+                                            .iter()
+                                            .filter(|op| op.index % 6 == 0)
+                                            .cloned()
+                                            .map(|mut op| {
+                                                if op.follow {
+                                                    op.f *= offset.freq;
+                                                    op.g = (
+                                                        op.g.0 * offset.gain,
+                                                        op.g.1 * offset.gain,
+                                                    );
+                                                }
+                                                op
+                                            })
+                                            .collect();
 
-                        *current = None;
-                        self.inc_render();
+                                        total_ops.extend_at(i, b);
+                                        // ops_per_voice.push(voice_ops);
+                                    }
+                                }
+                                None => {
+                                    // Voice has finished
+                                }
+                            }
+                        }
+
+                        if any_data_rendered && min_samples_processed > 0 {
+                            // Store the per-voice rendered waveforms for this batch
+                            total_rendered_per_batch.push(rendered_per_voice);
+
+                            (min_samples_processed, false)
+                        } else if any_data_rendered {
+                            // Some data rendered, but min_samples_processed is zero
+                            (0, false)
+                        } else {
+                            // All voices have finished
+                            (0, true)
+                        }
                     }
-
-                    sw.pad(buffer_size);
-
-                    let ramp = self.ramp_to_current_volume(buffer_size);
-                    Some((sw, ramp))
-                } else {
-                    *self.current_render() = None;
-
-                    if self.once {
-                        self.kill().expect("Not able to kill");
-                        None
-                    } else {
-                        None
+                    None => {
+                        // No current render
+                        (0, true)
                     }
                 }
+            }; // End of mutable borrow
+
+            if samples_processed > 0 {
+                remaining_buffer_size = remaining_buffer_size.saturating_sub(samples_processed);
             }
-            None => {
-                if next {
+
+            if render_finished {
+                if self.exists_next_render() {
                     self.inc_render();
-                    self.read(buffer_size)
+                    // self.push_store_to_current_render();
+                    continue; // Continue processing with next render
                 } else {
-                    None
+                    if self.once {
+                        self.kill().expect("Unable to kill");
+                    }
+                    break; // No more renders, exit loop
                 }
             }
+
+            if samples_processed == 0 {
+                // No samples processed, break to avoid infinite loop
+                break;
+            }
+        }
+
+        // Now, we have total_rendered_per_batch: Vec<Vec<StereoWaveform>>
+        // Each inner Vec<StereoWaveform> corresponds to per-voice waveforms for a batch
+        // Now, we need to sum the per-voice waveforms for each batch and append them to build the final combined waveform
+
+        if !total_rendered_per_batch.is_empty() {
+            let mut combined_sw = StereoWaveform::new_empty();
+
+            for rendered_per_voice in total_rendered_per_batch {
+                let batch_sw = sum_all_waveforms(rendered_per_voice);
+                combined_sw.append(batch_sw);
+            }
+
+            combined_sw.pad(buffer_size);
+
+            // Visualization
+            if let Some(tx) = vtx {
+                let ops = total_ops.to_vec_flat();
+                let mut opmap: OpMap<Op4D> = OpMap::with_capacity(ops.len());
+                ops.iter().for_each(|v| {
+                    let name = v.names.last().map_or("nameless", |n| n);
+
+                    let op = render_op_to_normalized_op4d(v, &normalizer);
+                    if let Some(o) = op {
+                        opmap.insert(name, o);
+                    };
+                });
+
+                if tx.send(VisEvent::Ops(opmap)).is_err() {
+                    info!("Visualization channel closed");
+                    std::process::exit(0);
+                }
+            }
+
+            let ramp = self.ramp_to_current_volume(buffer_size);
+            Some((combined_sw, ramp, total_ops.to_vec()))
+        } else {
+            None
         }
     }
 
     pub fn inc_render(&mut self) {
-        self.render_idx = (self.render_idx + 1) % 2;
+        info!("Incrementing render");
+        // Update the render index
+
+        // Since self.renders has length 2, we can split it at index 1
+        let (first, second) = self.renders.split_at_mut(1);
+
+        let (current_render_option, next_render_option) = if self.render_idx == 0 {
+            (&first[0], &mut second[0])
+        } else {
+            (&second[0], &mut first[0])
+        };
+
+        if let (Some(current_voices), Some(next_voices)) =
+            (current_render_option.as_ref(), next_render_option.as_mut())
+        {
+            // Ensure that both renders have the same number of voices
+            let min_length = std::cmp::min(current_voices.len(), next_voices.len());
+            for i in 0..min_length {
+                let current_oscillator = &current_voices[i].oscillator;
+                let next_oscillator = &mut next_voices[i].oscillator;
+
+                // Copy the oscillator state
+                next_oscillator.copy_state_from(current_oscillator);
+            }
+        }
+
+        // Reset samples processed for the new render
+        self.samples_processed = 0;
+
+        // Update total_samples_per_loop for the new render
+        if let Some(next_render) = next_render_option.as_ref() {
+            if !next_render.is_empty() {
+                self.total_samples_per_loop = next_render[0].ops.iter().map(|op| op.samples).sum();
+            }
+        }
+
+        // Send visualization reset event if necessary
         if let Some(vtx) = self.visualization.channel.clone() {
             vtx.send(VisEvent::Reset)
-                .expect("couldn't send VisEvent::Reset");
-        };
+                .expect("Couldn't send VisEvent::Reset");
+        }
+
+        *self.current_render() = None;
+        self.render_idx = (self.render_idx + 1) % 2;
     }
 
     pub fn current_render(&mut self) -> &mut Option<Vec<RenderVoice>> {
@@ -261,12 +429,16 @@ impl RenderManager {
         &mut self.renders[(self.render_idx + 1) % 2]
     }
 
-    pub fn exists_current_render(&mut self) -> bool {
-        self.current_render().is_some()
+    pub fn current_render_ref(&self) -> &Option<Vec<RenderVoice>> {
+        &self.renders[self.render_idx]
     }
 
-    pub fn exists_next_render(&mut self) -> bool {
-        self.next_render().is_some()
+    pub fn exists_current_render(&self) -> bool {
+        self.renders[(self.render_idx) % 2].is_some()
+    }
+
+    pub fn exists_next_render(&self) -> bool {
+        self.renders[(self.render_idx + 1) % 2].is_some()
     }
 
     pub fn push_render(&mut self, render: Vec<RenderVoice>, once: bool) {
