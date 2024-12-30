@@ -116,7 +116,7 @@ impl PortAudio {
     /// Construct a **PortAudio** instance.
     ///
     /// This calls PortAudio's `Pa_Initialize` function which initializes internal data structures
-    /// and prepares underlying host APIs for use.
+    ///     and prepares underlying host APIs for use.
     ///
     /// Using the C API, a user would normally have to call `Pa_Terminate` when shutting down
     /// PortAudio, however this **PortAudio** type will automatically take care of cleanup when
@@ -321,7 +321,7 @@ impl PortAudio {
     ///
     /// - `host_api` - A valid host API index ranging from 0 to (get_host_api_count()-1)
     /// - `host_api_device_index` - A valid per-host device index in the range 0 to
-    /// (get_host_api_info(host_api).device_count-1)
+    ///     (get_host_api_info(host_api).device_count-1)
     ///
     /// Return a non-negative `DeviceIndex` ranging from 0 to (get_device_count()-1)
     /// or an `Error` if an error is encountered.
@@ -653,13 +653,14 @@ fn terminate() -> Result<(), Error> {
 ///
 /// # Arguments
 /// * input_parameters - A structure that describes the input parameters used to open a stream.
+///
 /// The suggestedLatency field is ignored. See StreamParameters for a description of these
-/// parameters. inputParameters must be None for output-only streams.
+///     parameters. inputParameters must be None for output-only streams.
 /// * output_parameters - A structure that describes the output parameters used to open a stream.
+///
 /// The suggestedLatency field is ignored. See StreamParameters for a description of these
-/// parameters. outputParameters must be None for input-only streams.
-/// * sample_rate - The required sampleRate. For full-duplex streams it is the sample rate for both
-/// input and output.
+///     parameters. outputParameters must be None for input-only streams.
+/// * sample_rate - The required sampleRate. For full-duplex streams it is the sample rate for both input and output.
 ///
 /// Return Ok(()) if the format is supported, and an Error indicating why the format is not
 /// supported otherwise. The constant PaFormatIsSupported is provided to compare with the return

@@ -23,7 +23,6 @@
 
 #![allow(dead_code)]
 
-use ffi;
 use num::FromPrimitive;
 use std::os::raw;
 
@@ -110,14 +109,14 @@ pub enum SampleFormat {
     /// The following e-mail by Bencina (2004) touches on the topic of custom formats:
     ///
     /// > "It is theoretically possible to pass "custom" data formats to PortAudio using the
-    /// paCustomFormat SampleFormat flag. I think the general idea is that when this bit is set,
-    /// the low word of the sample format byte is device specific. I know of no implementation that
-    /// has ever used this feature so it has not been extensively developed. That said, much of
-    /// PortAudio (V19 at least) assumes a frame based sample format, accomodating a block based
-    /// format such as mpeg would probably require bypassing some of the internal infrastructure
-    /// (such as the block adapter in pa_process). PortAudio has been designed for linear, frame
-    /// based i/o, so it would be up to you to propose/suggest ways in which to accomodate your
-    /// requirements." - http://music.columbia.edu/pipermail/portaudio/2004-February/003237.html
+    /// > paCustomFormat SampleFormat flag. I think the general idea is that when this bit is set,
+    /// > the low word of the sample format byte is device specific. I know of no implementation that
+    /// > has ever used this feature so it has not been extensively developed. That said, much of
+    /// > PortAudio (V19 at least) assumes a frame based sample format, accomodating a block based
+    /// > format such as mpeg would probably require bypassing some of the internal infrastructure
+    /// > (such as the block adapter in pa_process). PortAudio has been designed for linear, frame
+    /// > based i/o, so it would be up to you to propose/suggest ways in which to accomodate your requirements."
+    /// > http://music.columbia.edu/pipermail/portaudio/2004-February/003237.html
     Custom,
     /// This variant is used when none of the above variants can be inferred from a given
     /// set of **SampleFormatFlags** via the `SampleFormat::from_flags` function.

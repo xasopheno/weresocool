@@ -5,12 +5,7 @@
                        --blacklist-type PaStreamCallbackResult
 */
 
-#[cfg(any(
-    target_os = "macos",
-    target_os = "linux",
-    target_os = "win32",
-    target_os = "windows"
-))]
+#[cfg(any(target_os = "macos", target_os = "linux", target_os = "windows"))]
 mod c_library {
     #[link(name = "portaudio")]
     extern "C" {}

@@ -64,14 +64,14 @@
 /* Support for the atomic library was added in C11.
  */
 #   if (__STDC_VERSION__ < 201112L) || defined(__STDC_NO_ATOMICS__)
-#       include <libkern/OSAtomic.h>
         /* Here are the memory barrier functions. Mac OS X only provides
            full memory barriers, so the three types of barriers are the same,
            however, these barriers are superior to compiler-based ones.
            These were deprecated in MacOS 10.12. */
-#       define PaUtil_FullMemoryBarrier()  OSMemoryBarrier()
-#       define PaUtil_ReadMemoryBarrier()  OSMemoryBarrier()
-#       define PaUtil_WriteMemoryBarrier() OSMemoryBarrier()
+#       include <stdatomic.h>
+#       define PaUtil_FullMemoryBarrier()  atomic_thread_fence(memory_order_seq_cst)
+#       define PaUtil_ReadMemoryBarrier()  atomic_thread_fence(memory_order_acquire)
+#       define PaUtil_WriteMemoryBarrier() atomic_thread_fence(memory_order_release)
 #   else
 #       include <stdatomic.h>
 #       define PaUtil_FullMemoryBarrier()  atomic_thread_fence(memory_order_seq_cst)

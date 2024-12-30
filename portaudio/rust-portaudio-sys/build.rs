@@ -76,8 +76,8 @@ fn main() {
             cc.file(src);
         }
         cc.flag("-DPA_USE_COREAUDIO=1");
-        cc.flag("-mmacosx-version-min=10.4");
-        cc.flag("-std=c99");
+        cc.flag("-mmacosx-version-min=15.1");
+        cc.flag("-std=c11");
         cc.flag("-Wno-unused-parameter");
         cc.flag("-Wno-sign-compare");
     } else if target.contains("windows") {

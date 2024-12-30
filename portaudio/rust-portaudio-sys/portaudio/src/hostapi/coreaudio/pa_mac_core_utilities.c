@@ -58,17 +58,17 @@
 
 #include "pa_mac_core_utilities.h"
 #include "pa_mac_core_internal.h"
-#include <libkern/OSAtomic.h>
 #include <strings.h>
 #include <pthread.h>
 #include <sys/time.h>
+#include <stdatomic.h>
 
 OSStatus PaMacCore_AudioHardwareGetProperty(
         AudioHardwarePropertyID inPropertyID,
         UInt32*                 ioPropertyDataSize,
         void*                   outPropertyData )
 {
-    AudioObjectPropertyAddress address = { inPropertyID, kAudioObjectPropertyScopeGlobal, kAudioObjectPropertyElementMaster };
+    AudioObjectPropertyAddress address = { inPropertyID, kAudioObjectPropertyScopeGlobal, kAudioObjectPropertyElementMain };
     return AudioObjectGetPropertyData(kAudioObjectSystemObject, &address, 0, NULL, ioPropertyDataSize, outPropertyData);
 }
 
@@ -76,7 +76,7 @@ OSStatus PaMacCore_AudioHardwareGetPropertySize(
         AudioHardwarePropertyID inPropertyID,
         UInt32*                 outSize )
 {
-    AudioObjectPropertyAddress address = { inPropertyID, kAudioObjectPropertyScopeGlobal, kAudioObjectPropertyElementMaster };
+    AudioObjectPropertyAddress address = { inPropertyID, kAudioObjectPropertyScopeGlobal, kAudioObjectPropertyElementMain };
     return AudioObjectGetPropertyDataSize(kAudioObjectSystemObject, &address, 0, NULL, outSize);
 }
 
@@ -152,7 +152,7 @@ OSStatus PaMacCore_AudioStreamGetProperty(
         UInt32*               ioPropertyDataSize,
         void*                 outPropertyData )
 {
-    AudioObjectPropertyAddress address = { inPropertyID, kAudioObjectPropertyScopeGlobal, kAudioObjectPropertyElementMaster };
+    AudioObjectPropertyAddress address = { inPropertyID, kAudioObjectPropertyScopeGlobal, kAudioObjectPropertyElementMain };
     return AudioObjectGetPropertyData(inStream, &address, 0, NULL, ioPropertyDataSize, outPropertyData);
 }
 
@@ -744,10 +744,10 @@ OSStatus xrunCallback(
 
             if( isInput ) {
                 if( stream->inputDevice == inDevice )
-                    OSAtomicOr32( paInputOverflow, &stream->xrunFlags );
+                    atomic_fetch_or(&stream->xrunFlags, paInputOverflow);
             } else {
                 if( stream->outputDevice == inDevice )
-                    OSAtomicOr32( paOutputUnderflow, &stream->xrunFlags );
+                    atomic_fetch_or(&stream->xrunFlags, paOutputUnderflow);
             }
         }
 

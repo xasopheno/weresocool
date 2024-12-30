@@ -214,19 +214,19 @@ pub struct NonBlocking {
 /// **M** is the stream's [**Mode**][5]:
 ///
 /// - [**Blocking**][6] - The stream will be run on the caller's thread. For [**Blocking**][6]
-/// streams, a user can read from [**Input**][2] and [**Duplex**][4] streams using the
-/// [**Stream::read_available**][8] and [**Stream::read**][9] methods and write to [**Output**][3]
-/// and [**Duplex**][4] streams using the [**Stream::write_available**][10] and
-/// [**Stream::write**][11] methods. A [**Blocking**][6] **Stream** can be opened using the
-/// [**PortAudio::open_blocking_stream][12]** method.
+///     streams, a user can read from [**Input**][2] and [**Duplex**][4] streams using the
+///     [**Stream::read_available**][8] and [**Stream::read**][9] methods and write to [**Output**][3]
+///     and [**Duplex**][4] streams using the [**Stream::write_available**][10] and
+///     [**Stream::write**][11] methods. A [**Blocking**][6] **Stream** can be opened using the
+///     [**PortAudio::open_blocking_stream][12]** method.
 /// - [**NonBlocking**][7] - The stream will be run on a separate thread. [**NonBlocking][7]
-/// streams are read and written to via the callback arguments that are associated with the
-/// **Stream**'s [**Flow**][1] type:
-///     - **Input** -> [**InputCallbackArgs**](./struct.InputCallbackArgs.html)
-///     - **Output** -> [**OutputCallbackArgs**](./struct.OutputCallbackArgs.html)
-///     - **Duplex** -> [**DuplexCallbackArgs**](./struct.DuplexCallbackArgs.html)
-/// A [**NonBlocking**][7] **Stream** can be opened using the
-/// [**PortAudio::open_non_blocking_stream][13]** method.
+///     streams are read and written to via the callback arguments that are associated with the
+///     **Stream**'s [**Flow**][1] type:
+///         - **Input** -> [**InputCallbackArgs**](./struct.InputCallbackArgs.html)
+///         - **Output** -> [**OutputCallbackArgs**](./struct.OutputCallbackArgs.html)
+///         - **Duplex** -> [**DuplexCallbackArgs**](./struct.DuplexCallbackArgs.html)
+///             A [**NonBlocking**][7] **Stream** can be opened using the
+///                 [**PortAudio::open_non_blocking_stream][13]** method.
 ///
 /// A **Stream** may only live as long as the **PortAudio** instance from which it was spawned and
 /// no longer.
@@ -702,8 +702,6 @@ pub mod flags {
         /// See the [bitflags repo](https://github.com/rust-lang/bitflags/blob/master/src/lib.rs)
         /// for examples of composing flags together.
         pub struct Flags: ::std::os::raw::c_ulong {
-            /// No flags.
-            const NO_FLAG =                                       ffi::PA_NO_FLAG;
             /// Disable default clipping of out of range samples.
             const CLIP_OFF =                                      ffi::PA_CLIP_OFF;
             /// Disable default dithering.
@@ -752,13 +750,10 @@ pub enum Available {
 }
 
 pub mod callback_flags {
-    //! A type safe wrapper around PortAudio's stream callback flags.
-    use ffi;
+    //! A type safe wrapper around PortAudio's stream callback flags. use ffi;
     bitflags! {
         /// Flag bit constants for the status flags passed to the stream's callback function.
-        pub struct CallbackFlags:  ::std::os::raw::c_ulong {
-            /// No flags.
-            const NO_FLAG          = ffi::PA_NO_FLAG;
+        pub struct CallbackFlags: ::std::os::raw::c_ulong {
             /// In a stream opened with paFramesPerBufferUnspecified, indicates that input data is
             /// all silence (zeros) because no real data is available. In a stream opened without
             /// `FramesPerBufferUnspecified`, it indicates that one or more zero samples have been
@@ -951,7 +946,7 @@ impl Buffer {
         let n_channels = channel_count as libc::size_t;
         let malloc_size = sample_format_bytes * n_frames * n_channels;
         Buffer {
-            data: unsafe { libc::malloc(malloc_size) as *mut libc::c_void },
+            data: unsafe { libc::malloc(malloc_size) },
         }
     }
 
