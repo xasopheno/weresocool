@@ -28,13 +28,13 @@ Available on the AUR [here](https://aur.archlinux.org/packages/weresocool).
 
 ### Cargo:
 
-WereSoCool can be installed on macos, linux, and windows via cargo. You'll also need to install the "Necessary Dependancies".
+WereSoCool can be installed on macos, linux, and windows via cargo. You'll also need to install the "Necessary Dependencies".
 
  Install cargo by installing [Rustup](https://www.rust-lang.org/en-US/install.html).
 
 `cargo install weresocool`
 
-#### Necessary Dependancies
+#### Necessary Dependencies
 Macos:
 `brew install lame libvorbis`
 
@@ -42,7 +42,10 @@ Arch Linux (ALSA):
 `sudo pacman -S lame vorbis-tools`
 
 Ubuntu (ALSA):
-`sudo apt-get lame vorbis-tools`
+`sudo apt-get install lame vorbis-tools`
+
+Raspberry Pi OS:
+`sudo apt-get install libmp3lame-dev libasound2-dev`
 
 ### Windows
 
@@ -103,7 +106,10 @@ You'll need also need to install the following packages:
 `sudo pacman -S lame vorbis-tools`
 
 ##### Ubuntu:
-`sudo apt-get lame vorbis-tools`
+`sudo apt-get install lame vorbis-tools`
+
+##### Raspberry Pi OS:
+`sudo apt-get install libmp3lame-dev libasound2-dev`
 
 ### Build
 `just build`
