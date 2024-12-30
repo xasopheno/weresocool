@@ -96,10 +96,7 @@ where
 
     /// Insert a into a given scope under the name provided.
     pub fn insert<S: Into<String>>(&mut self, scope: &str, name: S, value: T) {
-        let current_scope = self
-            .defs
-            .entry(scope.to_string())
-            .or_insert_with(IndexMap::new);
+        let current_scope = self.defs.entry(scope.to_string()).or_default();
         current_scope.insert(name.into(), value);
         if !self.scopes.contains(&scope.into()) {
             self.scopes.push(scope.into());

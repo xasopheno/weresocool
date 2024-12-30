@@ -1,4 +1,4 @@
-use delay_line::{Buffer, DelayLine};
+use crate::delay_line::{Buffer, DelayLine};
 
 #[derive(Copy, Clone, Debug, PartialEq)]
 struct OnePole {

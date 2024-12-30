@@ -238,10 +238,10 @@ impl Mul<PointOp> for PointOp {
 }
 
 #[allow(clippy::suspicious_arithmetic_impl)]
-impl<'a, 'b> Mul<&'b PointOp> for &'a PointOp {
+impl<'a> Mul<&'a PointOp> for &PointOp {
     type Output = PointOp;
 
-    fn mul(self, other: &'b PointOp) -> PointOp {
+    fn mul(self, other: &'a PointOp) -> PointOp {
         let names = union_names(self.names.clone(), &other.names);
         PointOp {
             fm: self.fm * other.fm,

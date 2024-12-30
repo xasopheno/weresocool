@@ -60,7 +60,7 @@ fn handle_simple_error(retn: c_int) -> Result<(), Error> {
 }
 
 fn int_size(sz: usize) -> c_int {
-    if sz > c_int::max_value() as usize {
+    if sz > c_int::MAX as usize {
         panic!("converting {} to c_int would overflow", sz);
     }
 
