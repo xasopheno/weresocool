@@ -9,15 +9,15 @@ license = "GPL-3.0"
 resolver="2"
 
 [build-dependencies.lalrpop]
-version = "0.19.12"
+version = "0.22.0"
 features = ["lexer"]
 
 [dependencies]
-weresocool_ast = { path = "../ast", version = "^1.0.47", default_features=false, optional=true }
-weresocool_error = { path = "../error", version = "^1.0.47", default_features=false, optional=true }
+weresocool_ast = { path = "../ast", version = "^1.0.47", default-features=false, optional=true }
+weresocool_error = { path = "../error", version = "^1.0.47", default-features=false, optional=true }
 weresocool_shared = { path = "../shared", version = "^1.0.47" }
 scop = { path = "../scop", version = "^1.0.47" }
-lalrpop-util = { version="0.19.12", features=["lexer"]}
+lalrpop-util = { version="0.22.0", features=["lexer"]}
 regex = "1.5.4"
 colored = "2.0.0"
 num-rational = "0.4.1"
