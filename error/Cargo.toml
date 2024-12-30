@@ -14,7 +14,7 @@ weresocool_lame = { path = "../lame", version = "^1.0.47" }
 
 [dependencies]
 scop = { path = "../scop", version = "^1.0.47" }
-weresocool_portaudio = { path = "../portaudio", version = "^1.0.47", optional=true } 
+weresocool_portaudio = { version = "1.0.47", optional = true, git = "https://github.com/xasopheno/weresocool_portaudio"}
 hound = "3.4.0"
 serde = { version = "1.0.164", features = ["derive"] }
 serde_json = "1.0.99"

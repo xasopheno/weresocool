@@ -39,7 +39,7 @@ weresocool_error = { path = "error", version = "^1.0.47", default-features=false
 weresocool_parser = { path = "parser", version = "^1.0.47", default-features=false, optional=true }
 weresocool_ast = { path = "ast", version = "^1.0.47", default-features=false, optional=true }
 weresocool_instrument = { path = "instrument", version = "^1.0.47", default-features=false, optional=true } 
-weresocool_portaudio = { path = "portaudio", version = "^1.0.47", default-features=false, optional=true } 
+weresocool_portaudio = { version = "1.0.47", optional = true, git = "https://github.com/xasopheno/weresocool_portaudio"}
 scop = { path = "scop", version = "^1.0.47" }
 opmap = { path = "opmap", version = "^1.0.47" }
 weresocool_shared = { path = "shared", version = "^1.0.47" } 
@@ -120,7 +120,6 @@ members = [
     "instrument",
     "lame",
     "parser",
-    "portaudio",
     "shared",
     "scop",
     "ring_buffer",
