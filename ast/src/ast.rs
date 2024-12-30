@@ -12,6 +12,7 @@ pub struct FunDef {
 #[derive(Clone, PartialEq, Debug, Hash)]
 pub enum Op {
     AsIs,
+    Out,
     Id(String),
     Tag(String),
     //
@@ -24,6 +25,9 @@ pub enum Op {
         scales: Vec<Scale>,
     },
     //
+    FMOsc {
+        defs: Vec<FmOscDef>,
+    },
     Lowpass {
         hash: String,
         cutoff_frequency: Rational64,
@@ -125,7 +129,13 @@ pub enum Op {
     },
 }
 
-#[derive(Copy, Clone, Debug, PartialEq, Serialize, Deserialize, Ord, PartialOrd, Hash, Eq)]
+#[derive(Clone, Debug, PartialEq, Serialize, Deserialize, Hash, Ord, PartialOrd, Eq)]
+pub struct FmOscDef {
+    pub fm: Rational64,
+    pub depth: Rational64,
+}
+
+#[derive(Clone, Debug, PartialEq, Serialize, Deserialize, Hash, Ord, PartialOrd, Eq)]
 /// Oscillator Type
 pub enum OscType {
     None,
@@ -134,6 +144,7 @@ pub enum OscType {
     Square { width: Option<Rational64> },
     Noise,
     Saw,
+    Fm { defs: Vec<FmOscDef> },
 }
 
 impl OscType {

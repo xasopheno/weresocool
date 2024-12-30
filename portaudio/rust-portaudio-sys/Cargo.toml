@@ -1,6 +1,7 @@
 [package]
 name = "weresocool_portaudio_sys"
 version = "1.0.47"
+edition = "2021"
 authors = ["Jeremy Letang <letang.jeremy@gmail.com>",
            "Mitchell Nordine <mitchell.nordine@gmail.com>",
            "Danny Meyer <weresocool@xasopheno.com>"

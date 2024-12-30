@@ -13,6 +13,12 @@ impl<T> OpMap<T>
 where
     T: Clone + std::default::Default,
 {
+    pub fn with_capacity(capacity: usize) -> Self {
+        OpMap {
+            map: HashMap::with_capacity(capacity),
+        }
+    }
+
     pub fn join(&mut self, mut other: OpMap<T>, sort_fn: fn(&T, &T) -> std::cmp::Ordering) {
         for (k, v) in other.map.iter_mut() {
             v.sort_by(sort_fn);

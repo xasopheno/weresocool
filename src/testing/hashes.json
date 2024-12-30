@@ -1,157 +1,145 @@
 {
   "./src/testing/snapshot_tests/a_440.socool": {
-    "op": 10898864861701303882,
-    "normal_form": 13329554377071621700,
+    "op": 3855909780466507095,
+    "normal_form": 2199401168971524135,
     "stereo_waveform": -0.000904277,
     "pop_check": true
   },
   "./src/testing/snapshot_tests/asd_test_4.socool": {
-    "op": 2649993079002760228,
-    "normal_form": 2293847353788499575,
+    "op": 12361790061898060413,
+    "normal_form": 12074112617545148570,
     "stereo_waveform": 0.0224631703,
     "pop_check": true
   },
   "./src/testing/snapshot_tests/asr_test.socool": {
-    "op": 7739773232523469291,
-    "normal_form": 16347336177640291734,
+    "op": 13034595835442558095,
+    "normal_form": 1792480709047872900,
     "stereo_waveform": 2.1628597625,
     "pop_check": true
   },
   "./src/testing/snapshot_tests/asr_test_2.socool": {
-    "op": 2649993079002760228,
-    "normal_form": 2293847353788499575,
+    "op": 12361790061898060413,
+    "normal_form": 12074112617545148570,
     "stereo_waveform": 0.0224631703,
     "pop_check": true
   },
   "./src/testing/snapshot_tests/asr_test_3.socool": {
-    "op": 1053722626981519444,
-    "normal_form": 4614183508346154812,
+    "op": 4900158676710985721,
+    "normal_form": 3356645118105032441,
     "stereo_waveform": 0.0002979293,
     "pop_check": true
   },
-  "./src/testing/snapshot_tests/drew_test.socool": {
-    "op": 341228296927605341,
-    "normal_form": 3389351858700141532,
-    "stereo_waveform": 2.8524666192,
-    "pop_check": true
-  },
   "./src/testing/snapshot_tests/fit_length_ratio.socool": {
-    "op": 11970067646666392085,
-    "normal_form": 13692942281025530603,
+    "op": 2157960161272987905,
+    "normal_form": 11929737472930500233,
     "stereo_waveform": -0.231264336,
     "pop_check": true
   },
   "./src/testing/snapshot_tests/fun1.socool": {
-    "op": 4073845994264445307,
-    "normal_form": 705762337528194078,
+    "op": 17082311836456090165,
+    "normal_form": 10943298019091358929,
     "stereo_waveform": -235.4584507,
     "pop_check": true
   },
   "./src/testing/snapshot_tests/fun2.socool": {
-    "op": 6611992857107941136,
-    "normal_form": 575004968207696688,
-    "stereo_waveform": 10.02697954,
+    "op": 4588282227313205269,
+    "normal_form": 4198989986854393035,
+    "stereo_waveform": -13.30098862,
     "pop_check": true
   },
   "./src/testing/snapshot_tests/fun_and_focus.socool": {
-    "op": 13197363473033286265,
-    "normal_form": 18181170802609559198,
+    "op": 4250492992510862906,
+    "normal_form": 11766923836807865795,
     "stereo_waveform": 1.8521813235,
     "pop_check": true
   },
   "./src/testing/snapshot_tests/fun_simple.socool": {
-    "op": 6861687330546767447,
-    "normal_form": 9511482113190354914,
+    "op": 16644297904545009484,
+    "normal_form": 7040642583115682677,
     "stereo_waveform": 0.0140725211,
     "pop_check": true
   },
   "./src/testing/snapshot_tests/gain_test.socool": {
-    "op": 5534093927537715744,
-    "normal_form": 9011429311790481433,
+    "op": 10584792332740334899,
+    "normal_form": 2600925394109287801,
     "stereo_waveform": 0.8915591543,
     "pop_check": true
   },
   "./src/testing/snapshot_tests/import_test.socool": {
-    "op": 3359228456085101119,
-    "normal_form": 3486506701574885365,
+    "op": 6398656720698664253,
+    "normal_form": 9349832611673482839,
     "stereo_waveform": -0.093617003,
     "pop_check": true
   },
   "./src/testing/snapshot_tests/import_test_2.socool": {
-    "op": 18186834557956042303,
-    "normal_form": 11378051703734852764,
+    "op": 45895859799278962,
+    "normal_form": 15525058993649479888,
     "stereo_waveform": -0.00044999,
     "pop_check": true
   },
-  "./src/testing/snapshot_tests/lee_test.socool": {
-    "op": 473784060971016146,
-    "normal_form": 4744864300745577073,
-    "stereo_waveform": -0.185573482,
-    "pop_check": true
-  },
   "./src/testing/snapshot_tests/length_test.socool": {
-    "op": 1505457219789617838,
-    "normal_form": 15164782715639392023,
+    "op": 11492093808996625867,
+    "normal_form": 7525331372153348006,
     "stereo_waveform": -0.410002616,
     "pop_check": true
   },
   "./src/testing/snapshot_tests/live.socool": {
-    "op": 9173890564367099854,
-    "normal_form": 17579710260173462377,
+    "op": 5964105201989768102,
+    "normal_form": 15622809776287791078,
     "stereo_waveform": -0.007485638,
     "pop_check": true
   },
   "./src/testing/snapshot_tests/mod_by_test.socool": {
-    "op": 9665814421242683318,
-    "normal_form": 464781254315829631,
+    "op": 4620894569616450956,
+    "normal_form": 3721069099480212480,
     "stereo_waveform": 8.9159018922,
     "pop_check": true
   },
   "./src/testing/snapshot_tests/pan_test.socool": {
-    "op": 11203079925662845998,
-    "normal_form": 1261375187262145460,
+    "op": 750710439355957581,
+    "normal_form": 7298993183746526194,
     "stereo_waveform": -0.001248027,
     "pop_check": true
   },
   "./src/testing/snapshot_tests/render_op.socool": {
-    "op": 16059566731349235767,
-    "normal_form": 1838321596626765987,
+    "op": 8517252262355362673,
+    "normal_form": 1030376519010826010,
     "stereo_waveform": -0.080921758,
     "pop_check": true
   },
   "./src/testing/snapshot_tests/render_op_get_batch.socool": {
-    "op": 16262278045267879607,
-    "normal_form": 1485388901875674755,
-    "stereo_waveform": -2094.852498,
+    "op": 9843144898735445641,
+    "normal_form": 18014217463891415857,
+    "stereo_waveform": 6453.7776007,
     "pop_check": false
   },
   "./src/testing/snapshot_tests/render_op_get_batch_simple.socool": {
-    "op": 5421366424708957137,
-    "normal_form": 3700904845999283271,
+    "op": 11723055343361046665,
+    "normal_form": 7627296603483638110,
     "stereo_waveform": -0.009089222,
     "pop_check": true
   },
   "./src/testing/snapshot_tests/std_test.socool": {
-    "op": 18186834557956042303,
-    "normal_form": 11378051703734852764,
+    "op": 45895859799278962,
+    "normal_form": 15525058993649479888,
     "stereo_waveform": -0.00044999,
     "pop_check": true
   },
   "./src/testing/snapshot_tests/ta_test.socool": {
-    "op": 8531126928886620737,
-    "normal_form": 7070233541126333272,
+    "op": 7232196294367356615,
+    "normal_form": 2261453239834803603,
     "stereo_waveform": 0.4862787636,
     "pop_check": true
   },
   "./src/testing/snapshot_tests/template.socool": {
-    "op": 12138733851323157837,
-    "normal_form": 7728798240049894463,
+    "op": 6414881758782305518,
+    "normal_form": 5272605672881164880,
     "stereo_waveform": 0.0254833671,
     "pop_check": true
   },
   "./src/testing/snapshot_tests/tm_test.socool": {
-    "op": 12724619781112857219,
-    "normal_form": 862578579311627229,
+    "op": 307217686714573673,
+    "normal_form": 1585386199858422931,
     "stereo_waveform": -0.418864025,
     "pop_check": true
   }

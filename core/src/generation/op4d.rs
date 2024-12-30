@@ -50,7 +50,7 @@ impl Op4D {
 
 pub fn normalize_value(value: f64, min: f64, max: f64) -> f64 {
     // equivilance check for floats. max == min.
-    let d = if (max - min).abs() < std::f64::EPSILON {
+    let d = if (max - min).abs() < f64::EPSILON {
         1.0
     } else {
         max - min

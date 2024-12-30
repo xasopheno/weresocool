@@ -72,7 +72,7 @@ impl Ord for BiquadFilter {
 
 impl PartialOrd for BiquadFilter {
     fn partial_cmp(&self, other: &Self) -> Option<Ordering> {
-        self.feedforward_coefs[0].partial_cmp(&other.feedforward_coefs[0])
+        Some(self.cmp(other))
     }
 }
 

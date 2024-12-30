@@ -16,16 +16,20 @@ impl Settings {
         _ = SETTINGS.set(Settings {
             sample_rate,
             buffer_size,
-            ..default_settings()
+            ..Default::default()
         });
     }
 
     pub fn init_default() {
-        _ = SETTINGS.set(default_settings());
+        _ = SETTINGS.set(Default::default());
     }
 
     pub fn init_test() {
         _ = SETTINGS.set(get_test_settings());
+    }
+
+    pub fn set(&self) {
+        _ = SETTINGS.set(self.clone());
     }
 }
 
@@ -44,6 +48,12 @@ pub struct Settings {
     pub max_freq: f64,
     pub min_freq: f64,
     pub crossfade_period: usize,
+}
+
+impl Default for Settings {
+    fn default() -> Self {
+        default_settings()
+    }
 }
 
 pub const fn default_settings() -> Settings {

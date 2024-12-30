@@ -62,43 +62,59 @@ jobs:
       run: just test
 
   macos:
-      runs-on: macos-latest 
+    runs-on: macos-latest 
 
-      steps:
-      - name: install dependancies
-        run: brew install lame libvorbis just
+    steps:
+      - name: Install dependencies
+        run: |
+          brew update
+          brew install lame libvorbis just
+
+      - name: Debug environment
+        run: |
+          which lame
+
+      - name: Set library path
+        run: |
+          export LIBRARY_PATH=/opt/homebrew/lib:$LIBRARY_PATH
+          export LD_LIBRARY_PATH=/opt/homebrew/lib:$LD_LIBRARY_PATH
+
       - uses: actions/checkout@v2
+
       - uses: actions-rs/toolchain@v1
         with:
-            toolchain: stable
-            override: true
+          toolchain: stable
+          override: true
+
       - uses: Swatinem/rust-cache@v2
         with:
           cache-on-failure: true
-          key: "weresocool-windows"
-      - name: run tests
+          key: "weresocool-macos"
+
+      - name: Run tests
+        env:
+          LIBRARY_PATH: /opt/homebrew/lib:$LIBRARY_PATH
+          LD_LIBRARY_PATH: /opt/homebrew/lib:$LD_LIBRARY_PATH
         run: just test
 
   windows:
-      runs-on: windows-latest 
-      steps:
-      - name: start audiosrv
-        run: net start audiosrv
-      - name: install scream
-        run: |
-                  Invoke-WebRequest https://github.com/duncanthrax/scream/releases/download/3.8/Scream3.8.zip -OutFile Scream3.8.zip
-                  Expand-Archive -Path Scream3.8.zip -DestinationPath Scream
-                  Import-Certificate -FilePath Scream\Install\driver\x64\Scream.cat -CertStoreLocation Cert:\LocalMachine\TrustedPublisher 
-                  Scream\Install\helpers\devcon-x64.exe install Scream\Install\driver\x64\Scream.inf *Scream
-      - uses: actions-rs/toolchain@v1
-        with:
-            toolchain: stable
-            override: true
+    runs-on: windows-latest
+
+    steps:
+      - name: Install VB-CABLE
+        uses: alekseymartynov/action-vbcable-win@main
 
       - uses: actions/checkout@v2
+
+      - uses: actions-rs/toolchain@v1
+        with:
+          toolchain: stable
+          override: true
+
       - uses: Swatinem/rust-cache@v2
         with:
           cache-on-failure: true
           key: "weresocool-windows"
-      - name: run tests
+
+      - name: Run tests
         run: cargo test --release

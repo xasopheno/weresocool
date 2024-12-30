@@ -106,6 +106,8 @@ mod tests {
                 next_r_silent: false,
                 names: vec![],
                 filters: vec![],
+                next_out: false,
+                follow: true,
             },
             RenderOp {
                 f: 330.0,
@@ -128,6 +130,8 @@ mod tests {
                 next_r_silent: false,
                 names: vec![],
                 filters: vec![],
+                next_out: false,
+                follow: true,
             },
             RenderOp {
                 f: 0.0,
@@ -150,6 +154,8 @@ mod tests {
                 next_r_silent: true,
                 names: vec![],
                 filters: vec![],
+                next_out: false,
+                follow: true,
             },
         ]];
         assert_eq!(result, expected);
@@ -171,10 +177,10 @@ mod tests {
         let renderables = nf_to_vec_renderable(&nf, &mut table, &basis).unwrap();
         let voices = renderables_to_render_voices(renderables);
         let mut voice = voices[0].clone();
-        let batch = voice.get_batch(44_000, None).unwrap();
+        let batch = voice.get_batch(44_000, None, false).unwrap();
         assert_eq!(batch.len(), 1);
         //Use the rest of the first op and start the second op;
-        let batch = voice.get_batch(200, None).unwrap();
+        let batch = voice.get_batch(200, None, false).unwrap();
         assert_eq!(batch.len(), 2);
 
         assert_eq!(batch[0].samples, 100);

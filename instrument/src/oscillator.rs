@@ -40,6 +40,11 @@ impl Oscillator {
         }
     }
 
+    pub fn copy_state_from(&mut self, other: &Oscillator) {
+        self.voices.0.copy_state_from(&other.voices.0);
+        self.voices.1.copy_state_from(&other.voices.1);
+    }
+
     pub fn update(&mut self, op: &RenderOp, offset: &Offset) {
         let (ref mut l_voice, ref mut r_voice) = self.voices;
         l_voice.update(op, offset);

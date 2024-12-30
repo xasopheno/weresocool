@@ -1,1 +1,2 @@
-portaudio/rust-portaudio-sys/portaudio linguist-detectable=false
+portaudio/rust-portaudio-sys/portaudio linguist-vendored
+portaudio/rust-portaudio-sys/portaudio -linguist-detectable

@@ -16,11 +16,11 @@ weresocool_lame = { path = "../lame", version = "^1.0.47" }
 scop = { path = "../scop", version = "^1.0.47" }
 weresocool_portaudio = { path = "../portaudio", version = "^1.0.47", optional=true } 
 hound = "3.4.0"
-serde_json = "1.0.64"
-serde = { version = "1.0.119", features = ["derive"] }
+serde = { version = "1.0.164", features = ["derive"] }
+serde_json = "1.0.99"
 csv = "1.1.5"
 wasm-bindgen = { version="0.2.86", optional=true, features=["serde-serialize"] }
-thiserror = "1.0.24"
+thiserror = "1.0.4"
 
 [features]
 default= ["app"]

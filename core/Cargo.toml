@@ -29,23 +29,23 @@ scop = { path = "../scop", version = "^1.0.47" }
 opmap = { path = "../opmap", version = "^1.0.47" }
 weresocool_ring_buffer = { path = "../ring_buffer", version = "^1.0.47" }
 weresocool_analyze = { path = "../analyze", version = "^1.0.47" }
-weresocool_parser = { path = "../parser", version = "^1.0.47", default_features=false, optional=true }
-weresocool_ast = { path = "../ast", version = "^1.0.47", default_features=false, optional=true }
-weresocool_error = { path = "../error", version = "^1.0.47", default_features=false, optional=true } 
-weresocool_instrument = { path = "../instrument", version = "^1.0.47", default_features=false, optional=true } 
+weresocool_parser = { path = "../parser", version = "^1.0.47", default-features=false, optional=true }
+weresocool_ast = { path = "../ast", version = "^1.0.47", default-features=false, optional=true }
+weresocool_error = { path = "../error", version = "^1.0.47", default-features=false, optional=true } 
+weresocool_instrument = { path = "../instrument", version = "^1.0.47", default-features=false, optional=true } 
 weresocool_shared = { path = "../shared", version = "^1.0.47" } 
-weresocool_vorbis = { path = "../vorbis", version = "^1.0.47", optional=true, default_features = false } 
+weresocool_vorbis = { path = "../vorbis", version = "^1.0.47", optional=true, default-features = false } 
 weresocool_portaudio = { path = "../portaudio", version = "^1.0.47", optional=true } 
 rand = { version="0.7.3", features=["wasm-bindgen"]}
 hound = "3.4.0"
-serde = { version = "1.0.119", features = ["derive"] }
-serde_json = "1.0.64"
-serde_derive = "1.0.126"
+serde = { version = "1.0.164", features = ["derive"] }
+serde_json = "1.0.99"
+serde_derive = "1.0.164"
 colored = "2.0.0"
 pbr = { version="1.1.1", optional=true }
-num-rational = "0.3.2"
+num-rational = "0.4.1"
 rayon = "1.5.1"
-indexmap = { version = "1.7.0", features = ["serde-1"] }
+indexmap = { version = "2.0.0", features = ["serde"] }
 difference = "2.0.0"
 term = "0.7.0"
 uuid = { version = "0.8.2", features = ["v4", "stdweb"] }
@@ -59,6 +59,7 @@ test-generator = "0.3.0"
 float-cmp = "0.8.0"
 zip = { version="0.6.6", optional=true }
 crossbeam-channel = "0.5.4"
+log = "0.4.22"
 
 [features]
 default=["app"]
