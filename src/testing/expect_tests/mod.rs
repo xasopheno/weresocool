@@ -15,7 +15,6 @@ mod generated_tests {
     ///     expect("mocks/input.socool");
     /// }
     /// ```
-
     fn expect_eq_internal(input: &str) -> Result<(), Error> {
         let input_render_return = Filename(input).make(RenderType::NfBasisAndTable, None)?;
 
