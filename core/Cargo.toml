@@ -35,7 +35,7 @@ weresocool_error = { path = "../error", version = "^1.0.47", default-features=fa
 weresocool_instrument = { path = "../instrument", version = "^1.0.47", default-features=false, optional=true } 
 weresocool_shared = { path = "../shared", version = "^1.0.47" } 
 weresocool_vorbis = { path = "../vorbis", version = "^1.0.47", optional=true, default-features = false } 
-weresocool_portaudio = { path = "../portaudio", version = "^1.0.47", optional=true } 
+weresocool_portaudio = { version = "1.0.47", optional = true, git = "https://github.com/xasopheno/weresocool_portaudio"}
 rand = { version="0.7.3", features=["wasm-bindgen"]}
 hound = "3.4.0"
 serde = { version = "1.0.164", features = ["derive"] }
