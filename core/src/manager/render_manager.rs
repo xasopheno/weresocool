@@ -400,7 +400,6 @@ impl RenderManager {
                 let current_oscillator = &current_voices[i].oscillator;
                 let next_oscillator = &mut next_voices[i].oscillator;
 
-                // Copy the oscillator state
                 next_oscillator.copy_state_from(current_oscillator);
             }
         }

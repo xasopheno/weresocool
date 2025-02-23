@@ -69,7 +69,7 @@ pub const fn default_settings() -> Settings {
         gain_threshold_min: 0.0,
         channels: 2,
         interleaved: true,
-        max_freq: 2_500.0,
+        max_freq: 4_500.0,
         min_freq: 20.0,
     }
 }

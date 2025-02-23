@@ -11,6 +11,13 @@ use weresocool_portaudio as pa;
 use weresocool_ring_buffer::RingBuffer;
 use weresocool_shared::Settings;
 
+    // let (mut render_manager, mut stream) = real_time_render_manager_new(
+        // Some(vis_event_sender),
+        // mic_receiver_sync,
+        // basis.f.to_f64().unwrap(),
+    // )?;
+
+
 pub fn real_time_render_manager_mic(
     render_manager: Arc<Mutex<RenderManager>>,
 ) -> Result<pa::Stream<pa::NonBlocking, pa::Duplex<f32, f32>>, Error> {
@@ -39,8 +46,8 @@ pub fn real_time_render_manager_mic(
                 buffer_size,
                 Offset {
                     freq: freq / f_basis,
-                    // gain: gain * 0.1,
-                    gain,
+                    gain: gain * 0.1,
+                    // gain,
                 },
             );
 

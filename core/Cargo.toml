@@ -60,6 +60,7 @@ float-cmp = "0.8.0"
 zip = { version="0.6.6", optional=true }
 crossbeam-channel = "0.5.4"
 log = "0.4.22"
+cpal = "0.15.3"
 
 [features]
 default=["app"]
