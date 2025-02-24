@@ -24,6 +24,7 @@ use weresocool_ast::{
 use weresocool_ast::follow::types::{
   Follow, FollowRule, FollowCondition, FollowAction, FollowVariable, FollowExpr, FollowComparison, FollowSimpleCondition, FollowAndCondition
 };
+use weresocool_ast::color::types::*;
 use crate::parser::{Init, handle_fit_length_recursively};
 use crate::indices::{et, random_seed};
 use crate::float_to_rational::helpers::*;
@@ -471,6 +472,17 @@ FollowExpr: FollowExpr = {
     <var: FollowVariable> => FollowExpr::Variable(var),
 };
 
+ColorValue: ColorValue = {
+    "Grad[" <colors: Comma<CssOrHex>> "]" => ColorValue::ColorGrad { colors },
+    "Set[" <colors: Comma<CssOrHex>> "]" => ColorValue::ColorSet { colors },
+    "Color(" <color: CssOrHex> ")" => ColorValue::Color(color),
+    "RandColor" => ColorValue::RandColor(),
+};
+
+CssOrHex: CssOrHex = {
+    <hex: r#"#[0-9a-fA-F]{6}"#>  => CssOrHex::Hex(hex.to_string()),
+    <css: Name> => CssOrHex::Css(css),
+};
 
 Comma<T>: Vec<T> = {
     <v:(<T> ",")*> <e:T?> => match e {

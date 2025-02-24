@@ -26,6 +26,7 @@ meval = { git = "https://github.com/xasopheno/meval-rs"}
 csv = "1.1.6"
 hamcrest2 = "0.3.0"
 peekread = "0.1.1"
+bimap = "0.6.3"
 
 [features]
 default=["app"]
