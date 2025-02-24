@@ -6,7 +6,7 @@ use rand::SeedableRng;
 use scop::Defs;
 use weresocool_error::Error;
 
-impl Normalize<Term> for GenOp {
+impl Normalize for GenOp {
     fn apply_to_normal_form(
         &self,
         input: &mut NormalForm,

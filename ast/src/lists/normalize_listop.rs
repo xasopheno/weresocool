@@ -157,7 +157,7 @@ impl ListOp {
     }
 }
 
-impl Normalize<Term> for ListOp {
+impl Normalize for ListOp {
     fn apply_to_normal_form(
         &self,
         input: &mut NormalForm,

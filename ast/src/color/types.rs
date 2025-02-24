@@ -2,11 +2,12 @@ use std::hash::{Hash, Hasher};
 use bimap::BiHashMap;
 use std::collections::hash_map::DefaultHasher;
 
-pub struct ColorMap {
+#[derive(Debug, Clone, PartialEq)]
+pub struct ColorValueMap {
     map: BiHashMap<u64, ColorValue>,
 }
 
-impl ColorMap {
+impl ColorValueMap {
     pub fn new() -> Self {
         Self {
             map: BiHashMap::new(),
@@ -41,7 +42,7 @@ pub enum ColorValue {
     ColorGrad { colors: Vec<CssOrHex> },
     ColorSet { colors: Vec<CssOrHex> },
     Color(CssOrHex),
-    RandColor(),
+    RandColor(String),
 }
 
 impl Hash for ColorValue {
@@ -59,8 +60,9 @@ impl Hash for ColorValue {
                 2.hash(state);
                 color.hash(state);
             }
-            ColorValue::RandColor() => {
+            ColorValue::RandColor(id) => {
                 3.hash(state);
+                id.hash(state);
             }
         }
     }

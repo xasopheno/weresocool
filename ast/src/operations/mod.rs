@@ -1,4 +1,4 @@
-use crate::{NameSet, OscType, Term, ASR};
+use crate::{color::types::ColorValueMap, NameSet, OscType, Term, ASR};
 use num_rational::{Ratio, Rational64};
 use scop::Defs;
 use std::{
@@ -11,6 +11,8 @@ mod get_length_ratio;
 pub mod helpers;
 mod normalize;
 pub mod substitute;
+
+pub type TermDefs = Defs<Term>;
 
 #[derive(Debug, Clone, Eq, PartialEq, Hash)]
 /// All operations in the language take a NormalForm as an import and
@@ -78,11 +80,12 @@ impl Default for PointOp {
     }
 }
 
-pub trait Normalize<T> {
+pub trait Normalize {
     fn apply_to_normal_form(
         &self,
         normal_form: &mut NormalForm,
-        defs: &mut Defs<T>,
+        defs: &mut TermDefs,
+        colors: &ColorValueMap,
     ) -> Result<(), Error>;
 }
 
@@ -189,7 +192,7 @@ impl MulAssign<&NormalForm> for NormalForm {
     }
 }
 
-impl Normalize<Term> for NormalForm {
+impl Normalize for NormalForm {
     fn apply_to_normal_form(
         &self,
         input: &mut NormalForm,

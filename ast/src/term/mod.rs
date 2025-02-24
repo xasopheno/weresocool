@@ -12,7 +12,7 @@ pub enum Term {
     Gen(GenOp),
 }
 
-impl Normalize<Term> for Term {
+impl Normalize for Term {
     fn apply_to_normal_form(
         &self,
         input: &mut NormalForm,

@@ -476,7 +476,7 @@ ColorValue: ColorValue = {
     "Grad[" <colors: Comma<CssOrHex>> "]" => ColorValue::ColorGrad { colors },
     "Set[" <colors: Comma<CssOrHex>> "]" => ColorValue::ColorSet { colors },
     "Color(" <color: CssOrHex> ")" => ColorValue::Color(color),
-    "RandColor" => ColorValue::RandColor(),
+    "RandColor" => ColorValue::RandColor(generate_random_hash_string()),
 };
 
 CssOrHex: CssOrHex = {

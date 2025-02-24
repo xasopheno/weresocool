@@ -12,7 +12,7 @@ use weresocool_error::Error;
 use weresocool_filter::BiquadFilterDef;
 use weresocool_shared::lossy_rational_mul;
 
-impl Normalize<Term> for Op {
+impl Normalize for Op {
     #[allow(clippy::cognitive_complexity)]
     fn apply_to_normal_form(
         &self,
