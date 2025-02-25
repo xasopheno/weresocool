@@ -12,6 +12,7 @@ impl GetLengthRatio for Op {
     ) -> Result<Rational64, Error> {
         match self {
             Op::AsIs {}
+            | Op::Color(_)
             | Op::Follow(..)
             | Op::Out {}
             | Op::Lowpass { .. }

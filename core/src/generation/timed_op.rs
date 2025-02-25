@@ -78,6 +78,7 @@ impl TimedOp {
             //TODO
             is_out: false,
             follows: vec![],
+            colors: vec![],
         }
     }
 

@@ -73,16 +73,7 @@ pub fn pad_length(
                 pa: Ratio::new(0, 1),
                 g: Ratio::new(0, 1),
                 l: max_len - input_lr,
-                reverb: None,
-                attack: Ratio::new(1, 1),
-                decay: Ratio::new(1, 1),
-                asr: ASR::Long,
-                portamento: Ratio::new(1, 1),
-                osc_type: OscType::None,
-                names: NameSet::new(),
-                filters: vec![],
-                is_out: false,
-                follows: vec![],
+                ..Default::default()
             });
         }
     }
@@ -107,16 +98,7 @@ pub fn join_sequence(mut l: NormalForm, mut r: NormalForm) -> NormalForm {
                     pa: Ratio::new(0, 1),
                     g: Ratio::new(0, 1),
                     l: r.length_ratio,
-                    reverb: None,
-                    attack: Ratio::new(1, 1),
-                    decay: Ratio::new(1, 1),
-                    asr: ASR::Long,
-                    portamento: Ratio::new(1, 1),
-                    osc_type: OscType::None,
-                    names: NameSet::new(),
-                    filters: vec![],
-                    is_out: false,
-                    follows: vec![],
+                    ..Default::default()
                 }])
             }
         }
@@ -129,16 +111,7 @@ pub fn join_sequence(mut l: NormalForm, mut r: NormalForm) -> NormalForm {
                     pa: Ratio::new(0, 1),
                     g: Ratio::new(0, 1),
                     l: l.length_ratio,
-                    reverb: None,
-                    attack: Ratio::new(1, 1),
-                    decay: Ratio::new(1, 1),
-                    asr: ASR::Long,
-                    portamento: Ratio::new(1, 1),
-                    osc_type: OscType::None,
-                    names: NameSet::new(),
-                    filters: vec![],
-                    is_out: false,
-                    follows: vec![],
+                    ..Default::default()
                 }])
             }
         }

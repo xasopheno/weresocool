@@ -1,4 +1,4 @@
-use crate::{color::types::ColorValueMap, NameSet, OscType, Term, ASR};
+use crate::{color::ColorMap, NameSet, OscType, Term, ASR};
 use num_rational::{Ratio, Rational64};
 use scop::Defs as ScopDefs;
 use std::{
@@ -15,14 +15,14 @@ pub mod substitute;
 #[derive(Clone, Debug, PartialEq)]
 pub struct Defs {
     pub ops: ScopDefs<Term>,
-    pub color_map: ColorValueMap,
+    pub colors: ColorMap,
 }
 
 impl Default for Defs {
     fn default() -> Self {
         Defs {
             ops: ScopDefs::new(),
-            color_map: ColorValueMap::new(),
+            colors: ColorMap::new(),
         }
     }
 }
@@ -68,6 +68,7 @@ pub struct PointOp {
     /// Should fade out to nothing
     pub is_out: bool,
     pub follows: Vec<crate::follow::types::FollowNF>,
+    pub colors: Vec<u64>,
 }
 
 impl Default for PointOp {
@@ -89,6 +90,7 @@ impl Default for PointOp {
             filters: vec![],
             is_out: false,
             follows: vec![],
+            colors: vec![],
         }
     }
 }
@@ -256,6 +258,7 @@ impl Mul<PointOp> for PointOp {
                 .cloned()
                 .chain(other.follows.iter().cloned())
                 .collect(),
+            colors: self.colors.iter().chain(&other.colors).map(|c| c.to_owned()).collect(),
         }
     }
 }
@@ -301,6 +304,12 @@ impl<'a> Mul<&'a PointOp> for &PointOp {
                 .cloned()
                 .chain(other.follows.iter().cloned())
                 .collect(),
+            colors: self
+                .colors
+                .iter()
+                .chain(&other.colors)
+                .map(|c| c.to_owned())
+                .collect(),
         }
     }
 }
@@ -343,6 +352,12 @@ impl MulAssign for PointOp {
                 .iter()
                 .cloned()
                 .chain(other.follows.iter().cloned())
+                .collect(),
+            colors: self
+                .colors
+                .iter()
+                .chain(&other.colors)
+                .map(|c| c.to_owned())
                 .collect(),
         }
     }
@@ -397,6 +412,12 @@ impl PointOp {
                 .cloned()
                 .chain(other.follows.iter().cloned())
                 .collect(),
+            colors: self
+                .colors
+                .iter()
+                .chain(&other.colors)
+                .map(|c| c.to_owned())
+                .collect(),
         }
     }
 
@@ -408,16 +429,7 @@ impl PointOp {
             pa: Ratio::new(0, 1),
             g: Ratio::new(1, 1),
             l: Ratio::new(1, 1),
-            reverb: None,
-            attack: Ratio::new(1, 1),
-            decay: Ratio::new(1, 1),
-            asr: ASR::Long,
-            portamento: Ratio::new(1, 1),
-            osc_type: OscType::None,
-            names: NameSet::new(),
-            filters: vec![],
-            is_out: false,
-            follows: vec![],
+            ..Default::default()
         }
     }
     pub fn init_silent() -> PointOp {
@@ -428,16 +440,7 @@ impl PointOp {
             pa: Ratio::new(0, 1),
             g: Ratio::new(0, 1),
             l: Ratio::new(1, 1),
-            reverb: None,
-            attack: Ratio::new(1, 1),
-            decay: Ratio::new(1, 1),
-            portamento: Ratio::new(1, 1),
-            asr: ASR::Long,
-            osc_type: OscType::None,
-            names: NameSet::new(),
-            filters: vec![],
-            is_out: false,
-            follows: vec![],
+            ..Default::default()
         }
     }
 

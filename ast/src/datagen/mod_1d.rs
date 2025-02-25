@@ -101,23 +101,13 @@ pub fn eeg_datum_to_point_op(
 
     let fa = f32_to_rational(datum);
     PointOp {
-        // fm,
         fm: Rational64::new(1, 1),
         fa,
         l: Rational64::new(2, 100),
         g: Rational64::new(1, 1),
         pm: Rational64::new(1, 1),
         pa: Rational64::new(0, 1),
-        asr: ASR::Long,
-        portamento: Rational64::new(1, 1),
-        attack: Rational64::new(1, 1),
-        decay: Rational64::new(1, 1),
-        reverb: None,
-        osc_type: OscType::None,
-        names: nameset,
-        filters: vec![],
-        is_out: false,
-        follows: vec![],
+        ..Default::default()
     }
 }
 

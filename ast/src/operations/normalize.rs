@@ -19,6 +19,11 @@ impl Normalize for Op {
         defs: &mut Defs,
     ) -> Result<(), Error> {
         match self {
+            Op::Color(color) => {
+                input.fmap_mut(|op| {
+                    op.colors.push(*color);
+                });
+            }
             Op::Follow(follow) => {
                 let fnf = follow.to_nf(Some(Default::default()));
                 input.fmap_mut(|op| {
