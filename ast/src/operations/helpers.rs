@@ -1,7 +1,6 @@
-use crate::{GetLengthRatio, NameSet, NormalForm, OscType, PointOp, Term, ASR};
+use crate::{GetLengthRatio, NameSet, NormalForm, OscType, PointOp, Term, ASR, Defs};
 use colored::*;
 use num_rational::{Ratio, Rational64};
-use scop::Defs;
 use std::{
     cmp::Ordering::{Equal, Greater, Less},
     fmt::Display,
@@ -10,9 +9,9 @@ use weresocool_error::{Error, IdError};
 
 pub fn handle_id_error<S: Into<String> + Clone + Display + std::fmt::Debug>(
     id: S,
-    defs: &Defs<Term>,
+    defs: &Defs,
 ) -> Result<Term, Error> {
-    match defs.get(&id.clone().into()) {
+    match defs.ops.get(&id.clone().into()) {
         Some(result) => Ok(result.to_owned()),
         None => {
             println!(
@@ -62,7 +61,7 @@ pub fn modulate(input: &[PointOp], modulator: &[PointOp]) -> Vec<PointOp> {
 pub fn pad_length(
     input: &mut NormalForm,
     max_len: Rational64,
-    defs: &mut Defs<Term>,
+    defs: &mut Defs,
 ) -> Result<(), Error> {
     let input_lr = input.get_length_ratio(input, defs)?;
     if max_len > Rational64::new(0, 1) && input_lr < max_len {

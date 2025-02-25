@@ -1,7 +1,6 @@
 use num_rational::{Rational64};
 use std::str::FromStr;
 use std::string::String;
-use scop::Defs;
 use weresocool_shared::helpers::generate_random_hash_string;
 use weresocool_ast::{
         Op::*,
@@ -19,7 +18,8 @@ use weresocool_ast::{
         Indices, 
         Index,
         Scale,
-        FmOscDef
+        FmOscDef,
+        Defs
 };
 use weresocool_ast::follow::types::{
   Follow, FollowRule, FollowCondition, FollowAction, FollowVariable, FollowExpr, FollowComparison, FollowSimpleCondition, FollowAndCondition
@@ -31,7 +31,7 @@ use crate::float_to_rational::helpers::*;
 use regex::Regex;
 
 grammar<'defs, 'err>(
-    defs: &'defs mut Defs<Term>,
+    defs: &'defs mut Defs,
 );
 
 pub SoCool: Init = {
@@ -51,7 +51,7 @@ Point: Init = {
 LetDefs = Lets<LetDef>;
 LetDef: () = {
     <s: Name> "(" <vars: Comma<Name>>  ")" "=" "{" <o: Operation> "}" => {
-        defs.insert("global", 
+        defs.ops.insert("global", 
              s.to_owned(),
              Term::FunDef(FunDef {
                  name: s,
@@ -63,19 +63,19 @@ LetDef: () = {
     },
 
     <s: Name> "=" "{" <o: Operation> "}" => {
-        defs.insert("global", s.to_owned(), o); ()
+        defs.ops.insert("global", s.to_owned(), o); ()
     },
 
     <name: Name> "=" <list: List> => {
-        defs.insert("global", name.to_owned(), Term::Lop(list)); ()
+        defs.ops.insert("global", name.to_owned(), Term::Lop(list)); ()
     },
     
     <name: Name> "=" <generator: Generator> => {
-        defs.insert("global", name.to_owned(), Term::Gen(generator)); ()
+        defs.ops.insert("global", name.to_owned(), Term::Gen(generator)); ()
     },
 
     <stems: Stems> =>{
-      defs.stems.extend(stems); ()
+      defs.ops.stems.extend(stems); ()
     }
 };
 
@@ -372,7 +372,8 @@ BaseOperation: Term = {
             Term::Op(Length { m: length }),
         ]})
     },
-    BracedOvertone
+    BracedOvertone,
+    ColorValue,
 };
 
 FMOvertoneDef: (Rational64, Rational64) = {
@@ -472,11 +473,11 @@ FollowExpr: FollowExpr = {
     <var: FollowVariable> => FollowExpr::Variable(var),
 };
 
-ColorValue: ColorValue = {
-    "Grad[" <colors: Comma<CssOrHex>> "]" => ColorValue::ColorGrad { colors },
-    "Set[" <colors: Comma<CssOrHex>> "]" => ColorValue::ColorSet { colors },
-    "Color(" <color: CssOrHex> ")" => ColorValue::Color(color),
-    "RandColor" => ColorValue::RandColor(generate_random_hash_string()),
+ColorValue: Term = {
+    "Grad[" <colors: Comma<CssOrHex>> "]" => todo!(),
+    "Set[" <colors: Comma<CssOrHex>> "]" => todo!(),
+    "Color(" <color: CssOrHex> ")" => todo!(),
+    "RandColor" => todo!(),
 };
 
 CssOrHex: CssOrHex = {

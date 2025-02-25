@@ -2,12 +2,11 @@ use crate::datagen::{csv2d_to_normalform, mod_1d::csv1d_to_normalform};
 use crate::follow::normalize::ToNF;
 use crate::operations::Rational64;
 use crate::operations::{
-    helpers::*, substitute::insert_function_args, GetLengthRatio, NormalForm, Normalize, Substitute,
+    helpers::*, substitute::insert_function_args, GetLengthRatio, NormalForm, Normalize, Substitute, Defs,
 };
 use crate::{FunDef, Op, OscType, Term, Term::*};
 use num_rational::Ratio;
 use num_traits::CheckedMul;
-use scop::Defs;
 use weresocool_error::Error;
 use weresocool_filter::BiquadFilterDef;
 use weresocool_shared::lossy_rational_mul;
@@ -17,7 +16,7 @@ impl Normalize for Op {
     fn apply_to_normal_form(
         &self,
         input: &mut NormalForm,
-        defs: &mut Defs<Term>,
+        defs: &mut Defs,
     ) -> Result<(), Error> {
         match self {
             Op::Follow(follow) => {
@@ -42,7 +41,7 @@ impl Normalize for Op {
                 scope,
             } => {
                 if let Some(name) = input_name {
-                    defs.insert(scope, name, Term::Nf(input.to_owned()));
+                    defs.ops.insert(scope, name, Term::Nf(input.to_owned()));
                 }
                 let mut nf = NormalForm::init();
                 term.apply_to_normal_form(&mut nf, defs)?;

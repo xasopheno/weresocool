@@ -1,15 +1,14 @@
-use crate::operations::{helpers::handle_id_error, NormalForm, Normalize, Substitute};
+use crate::operations::{helpers::handle_id_error, NormalForm, Normalize, Substitute, Defs};
 use crate::{FunDef, Op, Term};
-use scop::Defs;
 use weresocool_error::Error;
 
-pub fn insert_function_args(f: &Term, args: &[Term], defs: &mut Defs<Term>) -> Result<(), Error> {
+pub fn insert_function_args(f: &Term, args: &[Term], defs: &mut Defs) -> Result<(), Error> {
     match f {
         Term::FunDef(fun) => {
             let FunDef { vars, .. } = fun;
-            let new_scope = defs.create_uuid_scope();
+            let new_scope = defs.ops.create_uuid_scope();
             for (var, arg) in vars.iter().zip(args.iter()) {
-                defs.insert(&new_scope, var.to_string(), arg.clone());
+                defs.ops.insert(&new_scope, var.to_string(), arg.clone());
             }
         }
         _ => {
@@ -23,11 +22,11 @@ pub fn insert_function_args(f: &Term, args: &[Term], defs: &mut Defs<Term>) -> R
     Ok(())
 }
 
-impl Substitute<Term> for Op {
+impl Substitute for Op {
     fn substitute(
         &self,
         normal_form: &mut NormalForm,
-        defs: &mut Defs<Term>,
+        defs: &mut Defs,
     ) -> Result<Term, Error> {
         match self {
             Op::Id(id) => handle_id_error(id, defs),
@@ -95,7 +94,7 @@ impl Substitute<Term> for Op {
                 scope,
             } => {
                 if let Some(name) = input_name {
-                    defs.insert(scope, name, Term::Nf(normal_form.to_owned()));
+                    defs.ops.insert(scope, name, Term::Nf(normal_form.to_owned()));
                 }
                 Ok(Term::Op(Op::Lambda {
                     input_name: input_name.to_owned(),
@@ -111,7 +110,7 @@ impl Substitute<Term> for Op {
 pub fn substitute_operations(
     operations: Vec<Term>,
     normal_form: &mut NormalForm,
-    defs: &mut Defs<Term>,
+    defs: &mut Defs,
 ) -> Result<Vec<Term>, Error> {
     let mut result = vec![];
     for term in operations {

@@ -6,11 +6,11 @@ use num_traits::CheckedMul;
 use rand::{thread_rng, Rng};
 #[cfg(feature = "app")]
 pub use render_voice::{renderables_to_render_voices, RenderVoice};
-use scop::Defs;
 use serde::{Deserialize, Serialize};
 use weresocool_ast::{
     follow::evaluate::EvaluateAction, follow::types::FollowNF, NormalForm, Normalize, OscType,
     PointOp, Term, ASR,
+    Defs,
 };
 use weresocool_error::Error;
 use weresocool_filter::BiquadFilterDef;
@@ -358,7 +358,7 @@ pub fn calculate_fgpl(basis: &Basis, point_op: &PointOp) -> (f64, (f64, f64), f6
 
 pub fn nf_to_vec_renderable(
     composition: &NormalForm,
-    defs: &mut Defs<Term>,
+    defs: &mut Defs,
     basis: &Basis,
 ) -> Result<Vec<Vec<RenderOp>>, Error> {
     let mut normal_form = NormalForm::init();

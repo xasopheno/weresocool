@@ -1,12 +1,11 @@
-use crate::{generator::error_non_generator, handle_id_error, GenOp, NormalForm, Substitute, Term};
-use scop::Defs;
+use crate::{generator::error_non_generator, handle_id_error, operations::Defs, GenOp, NormalForm, Substitute, Term};
 use weresocool_error::Error;
 
-impl Substitute<Term> for GenOp {
+impl Substitute for GenOp {
     fn substitute(
         &self,
         _normal_form: &mut NormalForm,
-        defs: &mut Defs<Term>,
+        defs: &mut Defs,
     ) -> Result<Term, Error> {
         match self {
             GenOp::Named { name, seed } => {

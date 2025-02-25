@@ -1,6 +1,6 @@
+use crate::operations::Defs;
 use crate::{NameSet, NormalForm, Normalize, Op, OscType, PointOp, Term, ASR};
 use num_rational::{Ratio, Rational64};
-use scop::Defs;
 use serde::{Deserialize, Serialize};
 use std::str::FromStr;
 use std::{fs::File, path::Path};
@@ -43,7 +43,7 @@ fn vec_eeg_data_to_normal_form(data: Vec<CsvData>, scale: f32, filename: &str) -
 
     let mut nf = NormalForm::init();
     overlay
-        .apply_to_normal_form(&mut nf, &mut Defs::new())
+        .apply_to_normal_form(&mut nf, &mut Defs::default())
         .expect("unable to normalize");
     nf
 }

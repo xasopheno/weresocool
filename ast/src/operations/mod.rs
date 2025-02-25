@@ -1,6 +1,6 @@
 use crate::{color::types::ColorValueMap, NameSet, OscType, Term, ASR};
 use num_rational::{Ratio, Rational64};
-use scop::Defs;
+use scop::Defs as ScopDefs;
 use std::{
     collections::HashSet,
     ops::{Mul, MulAssign},
@@ -12,7 +12,20 @@ pub mod helpers;
 mod normalize;
 pub mod substitute;
 
-pub type TermDefs = Defs<Term>;
+#[derive(Clone, Debug, PartialEq)]
+pub struct Defs {
+    pub ops: ScopDefs<Term>,
+    pub color_map: ColorValueMap,
+}
+
+impl Default for Defs {
+    fn default() -> Self {
+        Defs {
+            ops: ScopDefs::new(),
+            color_map: ColorValueMap::new(),
+        }
+    }
+}
 
 #[derive(Debug, Clone, Eq, PartialEq, Hash)]
 /// All operations in the language take a NormalForm as an import and
@@ -84,38 +97,37 @@ pub trait Normalize {
     fn apply_to_normal_form(
         &self,
         normal_form: &mut NormalForm,
-        defs: &mut TermDefs,
-        colors: &ColorValueMap,
+        defs: &mut Defs,
     ) -> Result<(), Error>;
 }
 
-pub trait GetLengthRatio<T> {
+pub trait GetLengthRatio {
     fn get_length_ratio(
         &self,
         normal_form: &NormalForm,
-        defs: &mut Defs<T>,
+        defs: &mut Defs,
     ) -> Result<Rational64, Error>;
 }
 
-pub trait Substitute<T> {
-    fn substitute(&self, normal_form: &mut NormalForm, defs: &mut Defs<T>) -> Result<Term, Error>;
+pub trait Substitute {
+    fn substitute(&self, normal_form: &mut NormalForm, defs: &mut Defs) -> Result<Term, Error>;
 }
 
-impl GetLengthRatio<Term> for NormalForm {
+impl GetLengthRatio for NormalForm {
     fn get_length_ratio(
         &self,
         _normal_form: &NormalForm,
-        _defs: &mut Defs<Term>,
+        _defs: &mut Defs,
     ) -> Result<Rational64, Error> {
         Ok(self.length_ratio)
     }
 }
 
-impl Substitute<Term> for NormalForm {
+impl Substitute for NormalForm {
     fn substitute(
         &self,
         _normal_form: &mut NormalForm,
-        _defs: &mut Defs<Term>,
+        _defs: &mut Defs,
     ) -> Result<Term, Error> {
         Ok(Term::Nf(self.clone()))
     }
@@ -196,7 +208,7 @@ impl Normalize for NormalForm {
     fn apply_to_normal_form(
         &self,
         input: &mut NormalForm,
-        _defs: &mut Defs<Term>,
+        _defs: &mut Defs,
     ) -> Result<(), Error> {
         *input *= self;
         Ok(())

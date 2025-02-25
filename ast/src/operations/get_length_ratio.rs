@@ -1,15 +1,14 @@
 use crate::ast::Op;
-use crate::operations::{helpers::*, GetLengthRatio, NormalForm, Normalize};
+use crate::operations::{helpers::*, GetLengthRatio, NormalForm, Normalize, Defs};
 use crate::Term;
 use num_rational::{Ratio, Rational64};
-use scop::Defs;
 use weresocool_error::Error;
 
-impl GetLengthRatio<Term> for Op {
+impl GetLengthRatio for Op {
     fn get_length_ratio(
         &self,
         normal_form: &NormalForm,
-        defs: &mut Defs<Term>,
+        defs: &mut Defs,
     ) -> Result<Rational64, Error> {
         match self {
             Op::AsIs {}
@@ -56,7 +55,7 @@ impl GetLengthRatio<Term> for Op {
                 scope,
             } => {
                 if let Some(name) = input_name {
-                    defs.insert(scope, name, Term::Nf(normal_form.to_owned()));
+                    defs.ops.insert(scope, name, Term::Nf(normal_form.to_owned()));
                 };
                 term.get_length_ratio(normal_form, defs)
             }

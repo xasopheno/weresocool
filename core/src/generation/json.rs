@@ -5,11 +5,10 @@ use crate::{
     write::write_composition_to_json,
 };
 use num_rational::Rational64;
-use scop::Defs;
 use serde::{Deserialize, Serialize};
 use serde_json::to_string;
 use std::path::PathBuf;
-use weresocool_ast::{NormalForm, Normalize, Term};
+use weresocool_ast::{NormalForm, Normalize, Term, Defs};
 use weresocool_error::Error;
 use weresocool_instrument::Basis;
 
@@ -19,7 +18,7 @@ pub fn vec_timed_op_to_vec_op4d(timed_ops: Vec<TimedOp>, basis: &Basis) -> Vec<O
 
 pub fn composition_to_vec_timed_op(
     composition: &NormalForm,
-    defs: &mut Defs<Term>,
+    defs: &mut Defs,
 ) -> Result<(Vec<TimedOp>, usize), Error> {
     let mut normal_form = NormalForm::init();
 
@@ -57,7 +56,7 @@ struct Json1d {
 pub fn to_normalized_op4d_1d(
     basis: &Basis,
     composition: &NormalForm,
-    defs: &mut Defs<Term>,
+    defs: &mut Defs,
     filename: String,
 ) -> Result<(Vec<Op4D>, f64), Error> {
     banner("JSONIFY-ing".to_string(), filename);
@@ -79,7 +78,7 @@ pub fn to_normalized_op4d_1d(
 pub fn to_json_file(
     basis: &Basis,
     composition: &NormalForm,
-    defs: &mut Defs<Term>,
+    defs: &mut Defs,
     filename: String,
     output_dir: PathBuf,
 ) -> Result<(), Error> {

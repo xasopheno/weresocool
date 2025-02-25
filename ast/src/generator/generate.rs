@@ -1,11 +1,9 @@
 use crate::{
-    generator::error_non_generator, handle_id_error, Axis, CoefState, Coefs, GenOp, Generator,
-    NormalForm, Normalize, Op, Term,
+    generator::error_non_generator, handle_id_error, operations::Defs, Axis, CoefState, Coefs, GenOp, Generator, NormalForm, Normalize, Op, Term
 };
 use num_rational::Rational64;
 use polynomials::Polynomial;
 use rand::{rngs::StdRng, SeedableRng};
-use scop::Defs;
 use weresocool_error::Error;
 use weresocool_shared::helpers::{et_to_rational, f32_to_rational, r_to_f64};
 
@@ -201,7 +199,7 @@ impl Generator {
         &mut self,
         nf: &NormalForm,
         n: usize,
-        defs: &mut Defs<Term>,
+        defs: &mut Defs,
         rng: &mut rand::rngs::StdRng,
     ) -> Result<Vec<NormalForm>, Error> {
         let mut result: Vec<NormalForm> = vec![];
@@ -223,7 +221,7 @@ impl GenOp {
     pub fn term_vectors_from_genop(
         self,
         n: Option<usize>,
-        defs: &mut Defs<Term>,
+        defs: &mut Defs,
     ) -> Result<Vec<Op>, Error> {
         match self {
             GenOp::Named { name, seed } => {
@@ -251,7 +249,7 @@ impl GenOp {
         self,
         input: &mut NormalForm,
         n: Option<usize>,
-        defs: &mut Defs<Term>,
+        defs: &mut Defs,
     ) -> Result<Vec<NormalForm>, Error> {
         match self {
             GenOp::Named { name, seed } => {

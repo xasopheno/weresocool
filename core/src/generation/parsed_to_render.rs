@@ -4,7 +4,6 @@ use crate::{
     ui::printed,
     write::{write_composition_to_mp3, write_composition_to_wav},
 };
-use scop::Defs;
 use std::path::PathBuf;
 
 use super::Op4D;
@@ -19,7 +18,7 @@ use std::io::Write;
 use std::path::Path;
 #[cfg(feature = "app")]
 use std::sync::{Arc, Mutex};
-use weresocool_ast::{NormalForm, Term};
+use weresocool_ast::{NormalForm, Term, Defs};
 use weresocool_error::{Error, IdError};
 use weresocool_instrument::renderable::{
     nf_to_vec_renderable, renderables_to_render_voices, RenderOp, Renderable,
@@ -99,7 +98,7 @@ pub enum RenderReturn {
     Csv1d(String),
     StereoWaveform(StereoWaveform),
     /// NormalForm, Basis, and Definition Table
-    NfBasisAndTable(NormalForm, Basis, Defs<Term>),
+    NfBasisAndTable(NormalForm, Basis, Defs),
     /// Wav or Mp3
     Wav(Vec<u8>),
     /// A vector of audio solo'd by names
@@ -127,7 +126,7 @@ pub fn parsed_to_render(
     mut parsed_composition: ParsedComposition,
     return_type: RenderType,
 ) -> Result<RenderReturn, Error> {
-    let parsed_main = parsed_composition.defs.get("main");
+    let parsed_main = parsed_composition.defs.ops.get("main");
 
     if parsed_main.is_none() {
         return Err(IdError { id: "main".into() }.into_error());
@@ -176,7 +175,7 @@ pub fn parsed_to_render(
 
         RenderType::Stems { cli, output_dir } => {
             let nf_names = nf.names();
-            let names = parsed_composition.defs.stems.clone();
+            let names = parsed_composition.defs.ops.stems.clone();
             if !names.is_subset(&nf_names) {
                 let difference = names
                     .difference(&nf_names)
@@ -310,7 +309,7 @@ pub fn write_audio_to_file(audio: &[u8], filename: PathBuf) {
 pub fn render(
     basis: &Basis,
     composition: &NormalForm,
-    defs: &mut Defs<Term>,
+    defs: &mut Defs,
 ) -> Result<StereoWaveform, Error> {
     let renderables = nf_to_vec_renderable(composition, defs, basis)?;
     let mut voices = renderables_to_render_voices(renderables);
