@@ -11,6 +11,7 @@ pub struct Op4D {
     pub z: f64,
     pub l: f64,
     pub names: Vec<String>,
+    pub colors: Vec<String>,
 }
 
 impl std::default::Default for Op4D {
@@ -24,6 +25,7 @@ impl std::default::Default for Op4D {
             voice: 0,
             event: 0,
             names: vec![],
+            colors: vec![],
         }
     }
 }

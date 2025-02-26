@@ -6,13 +6,13 @@ use rand::prelude::*;
 use rand::seq::SliceRandom;
 use std::fmt::Debug;
 use bimap::BiHashMap;
-use indexmap::IndexMap;
+// use indexmap::IndexMap;
 
-pub type GenColorMap = IndexMap<String, Box<dyn GenColor>>;
+// pub type GenColorMap = IndexMap<String, Box<dyn GenColor>>;
 
 #[derive(Debug, Clone, PartialEq)]
 pub struct ColorMap {
-    map: BiHashMap<u64, ColorValue>,
+    pub map: BiHashMap<u64, ColorValue>,
 }
 
 impl ColorMap {
@@ -21,6 +21,20 @@ impl ColorMap {
             map: BiHashMap::new(),
         }
     }
+
+// pub fn to_gen_color_map(&self) -> GenColorMap {
+    // let mut map = IndexMap::new();
+    
+    // for (hash, value) in self.map.iter() {
+        // let gen_color: Box<dyn GenColor> = match value {
+            // ColorValue::ColorSet { colors } => Box::new(ColorSet { colors: colors.clone() }),
+        // };
+
+        // map.insert(hash.to_string(), gen_color);
+    // }
+
+    // map
+// }
 
     /// Insert only if hash is not present. Returns hash either way.
     pub fn insert(&mut self, value: ColorValue) -> u64 {
@@ -36,14 +50,13 @@ impl ColorMap {
         self.map.get_by_left(&hash)
     }
 
-    /// Retrieve a hash by ColorValue.
-    pub fn get_hash(&self, value: &ColorValue) -> Option<u64> {
-        self.map.get_by_right(value).copied()
+    pub fn get_color(&self, color: &ColorValue) -> Option<u64> {
+        self.map.get_by_right(color).copied()
     }
 
-    fn calculate_hash(value: &ColorValue) -> u64 {
+    fn calculate_hash(color: &ColorValue) -> u64 {
         let mut hasher = DefaultHasher::new();
-        value.hash(&mut hasher);
+        color.hash(&mut hasher);
         hasher.finish()
     }
 }

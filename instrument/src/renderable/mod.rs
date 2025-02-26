@@ -41,6 +41,7 @@ pub struct RenderOp {
     pub filters: Vec<BiquadFilterDef>,
     pub next_out: bool,
     pub follows: Vec<FollowNF>,
+    pub colors: Vec<String>,
 }
 
 impl RenderOp {
@@ -68,6 +69,7 @@ impl RenderOp {
             names: Vec::new(),
             filters: Vec::new(),
             follows: Vec::new(),
+            colors: Vec::new(),
         }
     }
 
@@ -95,6 +97,7 @@ impl RenderOp {
             names: Vec::new(),
             filters: Vec::new(),
             follows: Vec::new(),
+            colors: Vec::new(),
         }
     }
     pub fn init_silent_with_length(l: f64) -> Self {
@@ -121,6 +124,7 @@ impl RenderOp {
             names: Vec::new(),
             filters: Vec::new(),
             follows: Vec::new(),
+            colors: Vec::new(),
         }
     }
 
@@ -154,6 +158,7 @@ impl RenderOp {
             names: vec![],
             filters,
             follows: vec![],
+            colors: vec![],
         }
     }
 }
@@ -282,6 +287,7 @@ fn pointop_to_renderop(
             .collect(),
         next_out,
         follows: point_op.follows.clone(),
+        colors: point_op.colors.iter().map(|c| c.to_string()).collect(),
     };
 
     *time += point_op.l * basis.l;

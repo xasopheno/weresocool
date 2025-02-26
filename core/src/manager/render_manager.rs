@@ -63,6 +63,7 @@ pub fn render_op_to_normalized_op4d(render_op: &RenderOp, normalizer: &Normalize
         voice: render_op.voice,
         event: render_op.event,
         names: render_op.names.to_vec(),
+        colors: render_op.colors.to_vec()
     };
 
     op4d.normalize(normalizer);
@@ -357,7 +358,7 @@ impl RenderManager {
                 let ops = total_ops.to_vec_flat();
                 let mut opmap: OpMap<Op4D> = OpMap::with_capacity(ops.len());
                 ops.iter().for_each(|v| {
-                    let name = v.names.last().map_or("nameless", |n| n);
+                    let name = v.colors.last().map_or("nameless", |n| n);
 
                     let op = render_op_to_normalized_op4d(v, &normalizer);
                     if let Some(o) = op {

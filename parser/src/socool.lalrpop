@@ -476,7 +476,7 @@ FollowExpr: FollowExpr = {
 
 ColorValue: Term = {
     //"ColorGrad[" <colors: Comma<CssOrHex>> "]" => todo!(),
-    "ColorSet[" <colors: Comma<CssOrHex>> "]" =>
+    "Color" "[" <colors: Comma<CssOrHex>> "]" =>
       Term::Op(Color(defs.colors.insert(parse_color_set(colors)))),
     //"Color(" <color: CssOrHex> ")" => defs.colors.insert(color.clone()),
     "RandColor" => todo!(),

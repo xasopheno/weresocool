@@ -28,6 +28,7 @@ pub struct ParsedComposition {
 
 fn process_op_table(mut defs: &mut Defs) -> Result<Defs, Error> {
     let mut result: Defs = Defs::default();
+    result.colors = defs.colors.clone();
 
     // TODO: Is this correct?
     for (scope_name, scope) in defs.ops.clone().iter_mut() {
