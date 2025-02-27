@@ -12,7 +12,7 @@ use bimap::BiHashMap;
 
 #[derive(Debug, Clone, PartialEq)]
 pub struct ColorMap {
-    pub map: BiHashMap<u64, ColorValue>,
+    pub map: BiHashMap<String, ColorValue>,
 }
 
 impl ColorMap {
@@ -39,19 +39,23 @@ impl ColorMap {
     /// Insert only if hash is not present. Returns hash either way.
     pub fn insert(&mut self, value: ColorValue) -> u64 {
         let hash = Self::calculate_hash(&value);
-        if !self.map.contains_left(&hash) {
-            self.map.insert(hash, value);
+        if !self.map.contains_left(&hash.to_string()) {
+            self.map.insert(hash.to_string(), value);
         }
         hash
     }
 
+    pub fn insert_by_name(&mut self, name: String, value: ColorValue) {
+        self.map.insert(name, value);
+    }
+
     /// Retrieve a ColorValue by hash.
-    pub fn get_by_hash(&self, hash: u64) -> Option<&ColorValue> {
+    pub fn get_by_hash(&self, hash: String) -> Option<&ColorValue> {
         self.map.get_by_left(&hash)
     }
 
-    pub fn get_color(&self, color: &ColorValue) -> Option<u64> {
-        self.map.get_by_right(color).copied()
+    pub fn get_id_for_color(&self, color: &ColorValue) -> Option<String> {
+        self.map.get_by_right(color).cloned()
     }
 
     fn calculate_hash(color: &ColorValue) -> u64 {
@@ -95,7 +99,7 @@ pub enum ColorValue {
     // ColorGrad { colors: Vec<CssOrHex> },
     // TODO: Should use the ColorSet directly
     ColorSet { colors: Vec<Color> },
-    // Color(CssOrHex),
+    Color(CssOrHex),
     // RandColor(String),
 }
 
@@ -112,10 +116,10 @@ impl Hash for ColorValue {
                 1.hash(state);
                 colors.hash(state);
             }
-            // ColorValue::Color(color) => {
-                // 2.hash(state);
-                // color.hash(state);
-            // }
+            ColorValue::Color(color) => {
+                2.hash(state);
+                color.hash(state);
+            }
             // ColorValue::RandColor(id) => {
                 // 3.hash(state);
                 // id.hash(state);
@@ -137,6 +141,19 @@ impl PartialEq for CssOrHex {
             (CssOrHex::Hex(a), CssOrHex::Hex(b)) => a.eq_ignore_ascii_case(b),
             _ => false,
         }
+    }
+}
+
+impl CssOrHex {
+    pub fn to_color(&self) -> [f32; 4] {
+        let s = match self {
+            CssOrHex::Css(s) => s,
+            CssOrHex::Hex(s) => s,
+        };
+
+        let color = csscolorparser::Color::from_str(s).unwrap();
+
+        color.to_array()
     }
 }
 

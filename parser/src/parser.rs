@@ -4,6 +4,7 @@ use crate::imports::{get_filepath_and_import_name, is_import};
 use colored::*;
 use num_rational::Rational64;
 use path_clean::PathClean;
+use weresocool_ast::color::{ColorValue, CssOrHex};
 use std::fs::File;
 use std::io::prelude::*;
 use std::io::BufReader;
@@ -18,6 +19,7 @@ pub struct Init {
     pub l: Rational64,
     pub g: Rational64,
     pub p: Rational64,
+    pub background_color: Option<ColorValue>
 }
 
 #[derive(Clone, PartialEq, Debug)]
@@ -127,10 +129,13 @@ pub fn parse_file(
     }
 
     let init = socool::SoCoolParser::new().parse(&mut defs, &composition);
-
     match init {
         Ok(init) => {
-            let defs = process_op_table(&mut defs)?;
+            let mut defs = process_op_table(&mut defs)?;
+            if let Some(background_color) = init.background_color.clone() {
+                defs.colors.insert_by_name("background_color".to_string(), background_color);
+            }
+
             Ok(ParsedComposition { init, defs })
         }
         Err(error) => {

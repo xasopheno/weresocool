@@ -45,8 +45,10 @@ Point: Init = {
          <f_axis: F> <f: Rational> ","
          <l_axis: L> <l: Rational> ","
          <g_axis: G> <g: Rational> ","
-         <p_axis: P> <p: Rational>
-    "}" ";"? => Init { f, l, g, p }
+         <p_axis: P> <p: Rational> ","?
+         "background_color:" <background_color: CssOrHex?>
+    "}" ";"? => Init { f, l, g, p, background_color: if let Some(ref bg) = background_color
+      {Some(ColorValue::Color(background_color.unwrap())) } else {None} }
 }
 
 LetDefs = Lets<LetDef>;
@@ -478,7 +480,6 @@ ColorValue: Term = {
     //"ColorGrad[" <colors: Comma<CssOrHex>> "]" => todo!(),
     "Color" "[" <colors: Comma<CssOrHex>> "]" =>
       Term::Op(Color(defs.colors.insert(parse_color_set(colors)))),
-    //"Color(" <color: CssOrHex> ")" => defs.colors.insert(color.clone()),
     "RandColor" => todo!(),
 };
 
