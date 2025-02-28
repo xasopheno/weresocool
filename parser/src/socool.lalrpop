@@ -45,11 +45,21 @@ Point: Init = {
          <f_axis: F> <f: Rational> ","
          <l_axis: L> <l: Rational> ","
          <g_axis: G> <g: Rational> ","
-         <p_axis: P> <p: Rational> ","?
-         "background_color:"? <background_color: CssOrHex?>
-    "}" ";"? => Init { f, l, g, p, background_color: if let Some(ref bg) = background_color
-      {Some(ColorValue::Color(background_color.unwrap())) } else {None} }
+         <p_axis: P> <p: Rational>
+         <opt_bg: OptionalBackgroundColor>  
+    "}" ";"? => Init {
+         f,
+         l,
+         g,
+         p,
+         background_color: opt_bg
+    }
 }
+
+OptionalBackgroundColor: Option<ColorValue> = {
+    "," "background_color:" <bg: CssOrHex> => Some(ColorValue::Color(bg)),
+    => None
+};
 
 LetDefs = Lets<LetDef>;
 LetDef: () = {

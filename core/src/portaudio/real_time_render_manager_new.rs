@@ -3,7 +3,7 @@ use crate::{
     write::{new_write_output_buffer, write_output_buffer},
 };
 use weresocool_instrument::{renderable::Offset, StereoWaveform};
-use std::sync::mpsc::Receiver;
+use crossbeam_channel::Receiver;
 use std::sync::{Arc, Mutex};
 use weresocool_error::Error;
 use cpal::{traits::{DeviceTrait, HostTrait}, StreamConfig};
