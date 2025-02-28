@@ -11,6 +11,7 @@ pub struct FunDef {
 
 #[derive(Clone, PartialEq, Debug, Hash)]
 pub enum Op {
+    Color(u64),
     Follow(crate::follow::types::Follow),
     AsIs,
     Out,

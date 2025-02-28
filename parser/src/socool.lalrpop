@@ -1,7 +1,6 @@
 use num_rational::{Rational64};
 use std::str::FromStr;
 use std::string::String;
-use scop::Defs;
 use weresocool_shared::helpers::generate_random_hash_string;
 use weresocool_ast::{
         Op::*,
@@ -19,18 +18,21 @@ use weresocool_ast::{
         Indices, 
         Index,
         Scale,
-        FmOscDef
+        FmOscDef,
+        Defs
 };
 use weresocool_ast::follow::types::{
   Follow, FollowRule, FollowCondition, FollowAction, FollowVariable, FollowExpr, FollowComparison, FollowSimpleCondition, FollowAndCondition
 };
+use weresocool_ast::color::*;
+use weresocool_ast::color_set;
 use crate::parser::{Init, handle_fit_length_recursively};
 use crate::indices::{et, random_seed};
 use crate::float_to_rational::helpers::*;
 use regex::Regex;
 
 grammar<'defs, 'err>(
-    defs: &'defs mut Defs<Term>,
+    defs: &'defs mut Defs,
 );
 
 pub SoCool: Init = {
@@ -43,14 +45,16 @@ Point: Init = {
          <f_axis: F> <f: Rational> ","
          <l_axis: L> <l: Rational> ","
          <g_axis: G> <g: Rational> ","
-         <p_axis: P> <p: Rational>
-    "}" ";"? => Init { f, l, g, p }
+         <p_axis: P> <p: Rational> ","?
+         "background_color:"? <background_color: CssOrHex?>
+    "}" ";"? => Init { f, l, g, p, background_color: if let Some(ref bg) = background_color
+      {Some(ColorValue::Color(background_color.unwrap())) } else {None} }
 }
 
 LetDefs = Lets<LetDef>;
 LetDef: () = {
     <s: Name> "(" <vars: Comma<Name>>  ")" "=" "{" <o: Operation> "}" => {
-        defs.insert("global", 
+        defs.ops.insert("global", 
              s.to_owned(),
              Term::FunDef(FunDef {
                  name: s,
@@ -62,19 +66,19 @@ LetDef: () = {
     },
 
     <s: Name> "=" "{" <o: Operation> "}" => {
-        defs.insert("global", s.to_owned(), o); ()
+        defs.ops.insert("global", s.to_owned(), o); ()
     },
 
     <name: Name> "=" <list: List> => {
-        defs.insert("global", name.to_owned(), Term::Lop(list)); ()
+        defs.ops.insert("global", name.to_owned(), Term::Lop(list)); ()
     },
     
     <name: Name> "=" <generator: Generator> => {
-        defs.insert("global", name.to_owned(), Term::Gen(generator)); ()
+        defs.ops.insert("global", name.to_owned(), Term::Gen(generator)); ()
     },
 
     <stems: Stems> =>{
-      defs.stems.extend(stems); ()
+      defs.ops.stems.extend(stems); ()
     }
 };
 
@@ -371,7 +375,8 @@ BaseOperation: Term = {
             Term::Op(Length { m: length }),
         ]})
     },
-    BracedOvertone
+    BracedOvertone,
+    ColorValue,
 };
 
 FMOvertoneDef: (Rational64, Rational64) = {
@@ -471,6 +476,17 @@ FollowExpr: FollowExpr = {
     <var: FollowVariable> => FollowExpr::Variable(var),
 };
 
+ColorValue: Term = {
+    //"ColorGrad[" <colors: Comma<CssOrHex>> "]" => todo!(),
+    "Color" "[" <colors: Comma<CssOrHex>> "]" =>
+      Term::Op(Color(defs.colors.insert(parse_color_set(colors)))),
+    "RandColor" => todo!(),
+};
+
+CssOrHex: CssOrHex = {
+    <hex: r#"#[0-9a-fA-F]{6}"#>  => CssOrHex::Hex(hex.to_string()),
+    <css: Name> => CssOrHex::Css(css),
+};
 
 Comma<T>: Vec<T> = {
     <v:(<T> ",")*> <e:T?> => match e {

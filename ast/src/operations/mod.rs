@@ -1,6 +1,6 @@
-use crate::{NameSet, OscType, Term, ASR};
+use crate::{color::ColorMap, NameSet, OscType, Term, ASR};
 use num_rational::{Ratio, Rational64};
-use scop::Defs;
+use scop::Defs as ScopDefs;
 use std::{
     collections::HashSet,
     ops::{Mul, MulAssign},
@@ -11,6 +11,21 @@ mod get_length_ratio;
 pub mod helpers;
 mod normalize;
 pub mod substitute;
+
+#[derive(Clone, Debug, PartialEq)]
+pub struct Defs {
+    pub ops: ScopDefs<Term>,
+    pub colors: ColorMap,
+}
+
+impl Default for Defs {
+    fn default() -> Self {
+        Defs {
+            ops: ScopDefs::new(),
+            colors: ColorMap::new(),
+        }
+    }
+}
 
 #[derive(Debug, Clone, Eq, PartialEq, Hash)]
 /// All operations in the language take a NormalForm as an import and
@@ -53,6 +68,7 @@ pub struct PointOp {
     /// Should fade out to nothing
     pub is_out: bool,
     pub follows: Vec<crate::follow::types::FollowNF>,
+    pub colors: Vec<u64>,
 }
 
 impl Default for PointOp {
@@ -74,45 +90,46 @@ impl Default for PointOp {
             filters: vec![],
             is_out: false,
             follows: vec![],
+            colors: vec![],
         }
     }
 }
 
-pub trait Normalize<T> {
+pub trait Normalize {
     fn apply_to_normal_form(
         &self,
         normal_form: &mut NormalForm,
-        defs: &mut Defs<T>,
+        defs: &mut Defs,
     ) -> Result<(), Error>;
 }
 
-pub trait GetLengthRatio<T> {
+pub trait GetLengthRatio {
     fn get_length_ratio(
         &self,
         normal_form: &NormalForm,
-        defs: &mut Defs<T>,
+        defs: &mut Defs,
     ) -> Result<Rational64, Error>;
 }
 
-pub trait Substitute<T> {
-    fn substitute(&self, normal_form: &mut NormalForm, defs: &mut Defs<T>) -> Result<Term, Error>;
+pub trait Substitute {
+    fn substitute(&self, normal_form: &mut NormalForm, defs: &mut Defs) -> Result<Term, Error>;
 }
 
-impl GetLengthRatio<Term> for NormalForm {
+impl GetLengthRatio for NormalForm {
     fn get_length_ratio(
         &self,
         _normal_form: &NormalForm,
-        _defs: &mut Defs<Term>,
+        _defs: &mut Defs,
     ) -> Result<Rational64, Error> {
         Ok(self.length_ratio)
     }
 }
 
-impl Substitute<Term> for NormalForm {
+impl Substitute for NormalForm {
     fn substitute(
         &self,
         _normal_form: &mut NormalForm,
-        _defs: &mut Defs<Term>,
+        _defs: &mut Defs,
     ) -> Result<Term, Error> {
         Ok(Term::Nf(self.clone()))
     }
@@ -189,11 +206,11 @@ impl MulAssign<&NormalForm> for NormalForm {
     }
 }
 
-impl Normalize<Term> for NormalForm {
+impl Normalize for NormalForm {
     fn apply_to_normal_form(
         &self,
         input: &mut NormalForm,
-        _defs: &mut Defs<Term>,
+        _defs: &mut Defs,
     ) -> Result<(), Error> {
         *input *= self;
         Ok(())
@@ -241,6 +258,7 @@ impl Mul<PointOp> for PointOp {
                 .cloned()
                 .chain(other.follows.iter().cloned())
                 .collect(),
+            colors: self.colors.iter().chain(&other.colors).map(|c| c.to_owned()).collect(),
         }
     }
 }
@@ -286,6 +304,12 @@ impl<'a> Mul<&'a PointOp> for &PointOp {
                 .cloned()
                 .chain(other.follows.iter().cloned())
                 .collect(),
+            colors: self
+                .colors
+                .iter()
+                .chain(&other.colors)
+                .map(|c| c.to_owned())
+                .collect(),
         }
     }
 }
@@ -328,6 +352,12 @@ impl MulAssign for PointOp {
                 .iter()
                 .cloned()
                 .chain(other.follows.iter().cloned())
+                .collect(),
+            colors: self
+                .colors
+                .iter()
+                .chain(&other.colors)
+                .map(|c| c.to_owned())
                 .collect(),
         }
     }
@@ -382,6 +412,12 @@ impl PointOp {
                 .cloned()
                 .chain(other.follows.iter().cloned())
                 .collect(),
+            colors: self
+                .colors
+                .iter()
+                .chain(&other.colors)
+                .map(|c| c.to_owned())
+                .collect(),
         }
     }
 
@@ -393,16 +429,7 @@ impl PointOp {
             pa: Ratio::new(0, 1),
             g: Ratio::new(1, 1),
             l: Ratio::new(1, 1),
-            reverb: None,
-            attack: Ratio::new(1, 1),
-            decay: Ratio::new(1, 1),
-            asr: ASR::Long,
-            portamento: Ratio::new(1, 1),
-            osc_type: OscType::None,
-            names: NameSet::new(),
-            filters: vec![],
-            is_out: false,
-            follows: vec![],
+            ..Default::default()
         }
     }
     pub fn init_silent() -> PointOp {
@@ -413,16 +440,7 @@ impl PointOp {
             pa: Ratio::new(0, 1),
             g: Ratio::new(0, 1),
             l: Ratio::new(1, 1),
-            reverb: None,
-            attack: Ratio::new(1, 1),
-            decay: Ratio::new(1, 1),
-            portamento: Ratio::new(1, 1),
-            asr: ASR::Long,
-            osc_type: OscType::None,
-            names: NameSet::new(),
-            filters: vec![],
-            is_out: false,
-            follows: vec![],
+            ..Default::default()
         }
     }
 

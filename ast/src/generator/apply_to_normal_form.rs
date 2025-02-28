@@ -1,16 +1,14 @@
 use crate::{
-    generator::error_non_generator, handle_id_error, join_list_nf, GenOp, NormalForm, Normalize,
-    Term,
+    generator::error_non_generator, handle_id_error, join_list_nf, operations::Defs, GenOp, NormalForm, Normalize, Term
 };
 use rand::SeedableRng;
-use scop::Defs;
 use weresocool_error::Error;
 
-impl Normalize<Term> for GenOp {
+impl Normalize for GenOp {
     fn apply_to_normal_form(
         &self,
         input: &mut NormalForm,
-        defs: &mut Defs<Term>,
+        defs: &mut Defs,
     ) -> Result<(), Error> {
         match self {
             GenOp::Named { name, seed } => {

@@ -47,6 +47,7 @@ pub fn render_op_to_normalized_op4d(render_op: &RenderOp, normalizer: &Normalize
         voice: render_op.voice,
         event: render_op.event,
         names: render_op.names.to_vec(),
+        colors: render_op.colors.to_vec(),
     };
 
     op4d.normalize(normalizer);

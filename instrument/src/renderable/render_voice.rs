@@ -65,6 +65,7 @@ impl RenderVoice {
                 filters: current_op.filters.clone(),
                 osc_type: current_op.osc_type.clone(),
                 follows: current_op.follows.clone(),
+                colors: current_op.colors.clone(),
                 ..*current_op
             });
             self.sample_index += samples_left_in_batch;
@@ -77,6 +78,7 @@ impl RenderVoice {
                 filters: current_op.filters.clone(),
                 osc_type: current_op.osc_type.clone(),
                 follows: current_op.follows.clone(),
+                colors: current_op.colors.clone(),
                 ..*current_op
             });
 

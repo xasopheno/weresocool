@@ -1,6 +1,5 @@
-use crate::{FunDef, GenOp, GetLengthRatio, ListOp, NormalForm, Normalize, Op, Substitute};
+use crate::{FunDef, GenOp, GetLengthRatio, ListOp, NormalForm, Normalize, Op, Substitute, Defs};
 use num_rational::Rational64;
-use scop::Defs;
 use weresocool_error::Error;
 
 #[derive(Clone, PartialEq, Debug, Hash)]
@@ -12,11 +11,11 @@ pub enum Term {
     Gen(GenOp),
 }
 
-impl Normalize<Term> for Term {
+impl Normalize for Term {
     fn apply_to_normal_form(
         &self,
         input: &mut NormalForm,
-        defs: &mut Defs<Term>,
+        defs: &mut Defs,
     ) -> Result<(), Error> {
         match self {
             Term::Op(op) => op.apply_to_normal_form(input, defs),
@@ -28,11 +27,11 @@ impl Normalize<Term> for Term {
     }
 }
 
-impl Substitute<Term> for Term {
+impl Substitute for Term {
     fn substitute(
         &self,
         normal_form: &mut NormalForm,
-        defs: &mut Defs<Term>,
+        defs: &mut Defs,
     ) -> Result<Term, Error> {
         match self {
             Term::Op(op) => op.substitute(normal_form, defs),
@@ -44,11 +43,11 @@ impl Substitute<Term> for Term {
     }
 }
 
-impl GetLengthRatio<Term> for Term {
+impl GetLengthRatio for Term {
     fn get_length_ratio(
         &self,
         normal_form: &NormalForm,
-        defs: &mut Defs<Term>,
+        defs: &mut Defs,
     ) -> Result<Rational64, Error> {
         match self {
             Term::Op(op) => op.get_length_ratio(normal_form, defs),

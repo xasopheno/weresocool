@@ -30,6 +30,7 @@ pub struct TimedOp {
     pub g: Rational64,
     pub l: Rational64,
     pub names: Vec<String>,
+    pub colors: Vec<String>,
 }
 
 impl TimedOp {
@@ -55,6 +56,7 @@ impl TimedOp {
             voice: self.voice,
             event: self.event,
             names: self.names.to_owned(),
+            colors: self.colors.to_owned(),
         }
     }
 
@@ -78,6 +80,7 @@ impl TimedOp {
             //TODO
             is_out: false,
             follows: vec![],
+            colors: vec![],
         }
     }
 
@@ -107,6 +110,7 @@ impl TimedOp {
             voice,
             event,
             names: point_op.names.to_vec(),
+            colors: point_op.colors.iter().map(|c| c.to_string()).collect(),
         };
 
         *time += point_op.l;

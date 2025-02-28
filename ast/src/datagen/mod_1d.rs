@@ -1,6 +1,6 @@
+use crate::operations::Defs;
 use crate::{NameSet, NormalForm, Normalize, Op, OscType, PointOp, Term, ASR};
 use num_rational::{Ratio, Rational64};
-use scop::Defs;
 use serde::{Deserialize, Serialize};
 use std::str::FromStr;
 use std::{fs::File, path::Path};
@@ -43,7 +43,7 @@ fn vec_eeg_data_to_normal_form(data: Vec<CsvData>, scale: f32, filename: &str) -
 
     let mut nf = NormalForm::init();
     overlay
-        .apply_to_normal_form(&mut nf, &mut Defs::new())
+        .apply_to_normal_form(&mut nf, &mut Defs::default())
         .expect("unable to normalize");
     nf
 }
@@ -101,23 +101,13 @@ pub fn eeg_datum_to_point_op(
 
     let fa = f32_to_rational(datum);
     PointOp {
-        // fm,
         fm: Rational64::new(1, 1),
         fa,
         l: Rational64::new(2, 100),
         g: Rational64::new(1, 1),
         pm: Rational64::new(1, 1),
         pa: Rational64::new(0, 1),
-        asr: ASR::Long,
-        portamento: Rational64::new(1, 1),
-        attack: Rational64::new(1, 1),
-        decay: Rational64::new(1, 1),
-        reverb: None,
-        osc_type: OscType::None,
-        names: nameset,
-        filters: vec![],
-        is_out: false,
-        follows: vec![],
+        ..Default::default()
     }
 }
 

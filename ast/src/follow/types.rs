@@ -107,6 +107,7 @@ impl serde::Serialize for FollowTransformFn {
 }
 
 impl<'a> serde::Deserialize<'a> for FollowTransformFn {
+    // TODO: This doesn't work
     fn deserialize<D: serde::Deserializer<'a>>(d: D) -> Result<Self, D::Error> {
         Ok(FollowTransformFn::new(|_, _| 1.0))
     }

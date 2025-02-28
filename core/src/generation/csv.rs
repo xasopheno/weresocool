@@ -1,9 +1,8 @@
 use super::{composition_to_vec_timed_op, op4d::normalize_op4d_1d, vec_timed_op_to_vec_op4d, Op4D};
 use crate::{ui::banner, write::write_composition_to_csv};
-use scop::Defs;
 use serde::{Deserialize, Serialize};
 use std::path::PathBuf;
-use weresocool_ast::{NormalForm, Term};
+use weresocool_ast::{NormalForm, Term, Defs};
 use weresocool_error::Error;
 use weresocool_instrument::Basis;
 
@@ -21,7 +20,7 @@ pub struct OpCSV {
 pub fn to_csv(
     basis: &Basis,
     composition: &NormalForm,
-    defs: &mut Defs<Term>,
+    defs: &mut Defs,
     filename: String,
     output_dir: PathBuf,
 ) -> Result<(), Error> {

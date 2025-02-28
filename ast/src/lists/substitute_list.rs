@@ -1,14 +1,14 @@
+use crate::operations::Defs;
 use crate::operations::{helpers::handle_id_error, NormalForm, Normalize, Substitute};
 use crate::substitute_operations;
 use crate::{ListOp, Term};
-use scop::Defs;
 use weresocool_error::Error;
 
-impl Substitute<Term> for ListOp {
+impl Substitute for ListOp {
     fn substitute(
         &self,
         normal_form: &mut NormalForm,
-        defs: &mut Defs<Term>,
+        defs: &mut Defs,
     ) -> Result<Term, Error> {
         match self {
             ListOp::Const { terms } => Ok(Term::Lop(ListOp::Const {

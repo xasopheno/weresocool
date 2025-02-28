@@ -1,6 +1,7 @@
 #[macro_use]
 extern crate serde;
 pub mod ast;
+pub mod color;
 pub mod datagen;
 pub mod follow;
 pub mod generator;
@@ -23,6 +24,7 @@ pub use crate::{
         helpers::{handle_id_error, join_sequence},
         substitute::substitute_operations,
         GetLengthRatio, NormalForm, Normalize, PointOp, Substitute,
+        Defs,
     },
     term::Term,
 };
