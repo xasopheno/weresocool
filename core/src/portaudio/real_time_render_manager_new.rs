@@ -9,6 +9,7 @@ use weresocool_error::Error;
 use cpal::{traits::{DeviceTrait, HostTrait}, StreamConfig};
 use crate::manager::VisualizationChannel;
 use weresocool_shared::Settings;
+use log::info;
 
 
 pub fn real_time_render_manager_new(
@@ -22,6 +23,7 @@ pub fn real_time_render_manager_new(
     let sample_rate = cpal::SampleRate(settings.sample_rate as u32);
     let buffer_size = cpal::BufferSize::Fixed(settings.buffer_size as u32);
 
+
     let host = cpal::default_host();
     let output_device = host.default_output_device().expect("Failed to get default output device");
 
@@ -30,6 +32,10 @@ pub fn real_time_render_manager_new(
         sample_rate,
         buffer_size,
     };
+
+    dbg!(&output_config);
+    info!("Output sample_rate: {:?}", output_config.sample_rate.0);
+    info!("Output buffer_size: {:?}", output_config.buffer_size);
 
     let render_manager_clone = Arc::clone(&render_manager);
     let mic_receiver_sync = Arc::new(Mutex::new(mic_receiver_sync));

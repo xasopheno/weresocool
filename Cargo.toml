@@ -62,6 +62,7 @@ crossbeam-channel = "0.5.6"
 indoc = "1.0.7"
 colored = "2.0.0"
 rand = { version="0.7.3", features=["wasm-bindgen"]}
+log = "0.4.26"
 
 [dev-dependencies]
 pretty_assertions = "0.6.1"
