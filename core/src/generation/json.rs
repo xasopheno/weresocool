@@ -21,30 +21,58 @@ pub fn composition_to_vec_timed_op(
     defs: &mut Defs,
 ) -> Result<(Vec<TimedOp>, usize), Error> {
     let mut normal_form = NormalForm::init();
-
-    println!("Generating Composition \n");
+    println!("Generating Composition\n");
     composition.apply_to_normal_form(&mut normal_form, defs)?;
 
     let n_voices = normal_form.operations.len();
-    let mut result: Vec<TimedOp> = normal_form
+    
+    // Example: 30 FPS => each frame is 1/30 (as a Rational64).
+    let frame_length = Rational64::new(1, 30);
+
+    let mut all_timed_ops: Vec<TimedOp> = normal_form
         .operations
         .iter()
         .enumerate()
-        .flat_map(|(voice, vec_point_op)| {
+        .flat_map(|(voice_idx, ops_for_this_voice)| {
             let mut time = Rational64::new(0, 1);
-            let mut result = vec![];
-            let iter = vec_point_op.iter();
-            for (event, p_op) in iter.enumerate() {
-                let op = TimedOp::from_point_op(p_op, &mut time, voice, event);
-                result.push(op);
+            let mut out = Vec::new();
+
+            for (event_idx, p_op) in ops_for_this_voice.iter().enumerate() {
+                // The total length of the original PointOp
+                let mut leftover = p_op.l;
+
+                // Subdivide leftover into increments of frame_length
+                while leftover > Rational64::from_integer(0) {
+                    // We'll slice off either a full frame or whatever remains
+                    let slice_len = if leftover >= frame_length {
+                        frame_length
+                    } else {
+                        leftover
+                    };
+
+                    // Clone the original PointOp but override .l to our slice
+                    let mut sub_op = p_op.clone();
+                    sub_op.l = slice_len;
+
+                    // from_point_op will create the TimedOp at the current `time`
+                    // and then increment `time` by `sub_op.l`.
+                    let timed_op =
+                        TimedOp::from_point_op(&sub_op, &mut time, voice_idx, event_idx);
+                    
+                    out.push(timed_op);
+
+                    leftover -= slice_len;
+                }
             }
-            result
+
+            out
         })
         .collect();
 
-    result.sort_unstable_by_key(|a| a.t);
+    // Sort by start time so the TimedOps are in chronological order:
+    all_timed_ops.sort_unstable_by_key(|op| op.t);
 
-    Ok((result, n_voices))
+    Ok((all_timed_ops, n_voices))
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]

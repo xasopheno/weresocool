@@ -7,7 +7,7 @@ pub use self::{
     buffer_manager::BufferManager,
     render_manager::{
         prepare_render_outside, render_op_to_normalized_op4d, KillChannel, RenderManager,
-        RenderManagerSettings, VisEvent, VisualizationChannel,
+        RenderManagerSettings, VisEvent, VisualizationChannel, render_op_to_normalized_op4d_list
     },
     resizeable_2d_vec::Resizeable2DVec,
     server_manager::{ServerRenderManager, ServerRenderManagerSettings},

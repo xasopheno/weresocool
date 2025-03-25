@@ -1,6 +1,6 @@
 use crate::{
     generation::{csv::get_length_op4d_1d, to_csv, to_json_file, Normalizer},
-    manager::render_op_to_normalized_op4d,
+    manager::render_op_to_normalized_op4d, manager::render_op_to_normalized_op4d_list,
     ui::printed,
     write::{write_composition_to_mp3, write_composition_to_wav},
 };
@@ -78,6 +78,8 @@ pub struct AudioVisual {
     pub audio: Vec<u8>,
     /// visual data
     pub visual: Vec<Op4D>,
+
+    pub defs: Defs,
 }
 
 #[derive(Clone, PartialEq, Debug)]
@@ -415,7 +417,7 @@ fn make_visuals(
     let mut visual: Vec<Op4D> = render_voices
         .iter()
         .flat_map(|render_voice| &render_voice.ops)
-        .flat_map(|op| render_op_to_normalized_op4d(op, &normalizer))
+        .flat_map(|op| render_op_to_normalized_op4d_list(op, &normalizer, 1.0/30.0))
         .collect();
 
     let length = get_length_op4d_1d(&visual);

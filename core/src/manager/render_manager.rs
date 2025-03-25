@@ -49,6 +49,63 @@ pub struct RenderManager {
     samples_processed: usize,
 }
 
+
+pub fn render_op_to_normalized_op4d_list(
+    render_op: &RenderOp,
+    normalizer: &Normalizer,
+    frame_length: f64,  // The size of each chunk, e.g. 1/30 = 0.0333 for 30 FPS
+) -> Vec<Op4D> {
+    // If these conditions fail, just return an empty Vec:
+    if render_op.f == 0.0 || render_op.g == (0.0, 0.0) {
+        return vec![];
+    }
+
+    // We'll subdivide render_op.l in multiples of frame_length
+    let total_length = render_op.l;
+    if total_length <= 0.0 {
+        return vec![]; 
+    }
+
+    let mut out_ops = Vec::new();
+
+    let mut current_time = render_op.t;
+    let mut remaining = total_length;
+
+    while remaining > 0.0 {
+        // Take either a full frame_length or whatever leftover remains
+        let slice_len = if remaining >= frame_length {
+            frame_length
+        } else {
+            remaining
+        };
+
+        // Build a brand-new Op4D for just this slice
+        let mut op4d = Op4D {
+            y: render_op.f,
+            z: (render_op.g.0 + render_op.g.1) / 2.0,
+            x: render_op.p,
+            l: slice_len,
+            t: current_time,
+            voice: render_op.voice,
+            event: render_op.event,
+            names: render_op.names.clone(),
+            colors: render_op.colors.clone(),
+        };
+
+        // Apply your normalization
+        op4d.normalize(normalizer);
+
+        out_ops.push(op4d);
+
+        // Advance current_time for the next slice
+        current_time += slice_len;
+        // Subtract this slice from the remaining length
+        remaining -= slice_len;
+    }
+
+    out_ops
+}
+
 pub fn render_op_to_normalized_op4d(render_op: &RenderOp, normalizer: &Normalizer) -> Option<Op4D> {
     if render_op.f == 0.0 || render_op.g == (0.0, 0.0) {
         return None;
@@ -270,7 +327,7 @@ impl RenderManager {
                                         // .collect();
                                         let b: Vec<_> = batch
                                             .iter()
-                                            .filter(|op| op.index % 6 == 0)
+                                            .filter(|op| op.index % 5 == 0)
                                             .cloned()
                                             .map(|mut op| {
                                                 let follow_offset = op.follows.eval_value(
