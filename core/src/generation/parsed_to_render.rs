@@ -67,7 +67,7 @@ pub struct Stem {
     pub audio: Vec<u8>,
 }
 
-#[derive(Clone, PartialEq, Debug, Deserialize, Serialize)]
+#[derive(Clone, PartialEq, Debug)]
 /// AudioVisual is the datatype for audiovisualization
 pub struct AudioVisual {
     /// Composition name
@@ -155,23 +155,25 @@ pub fn parsed_to_render(
 
     match return_type {
         RenderType::Visual => {
-            let (visual, length) = make_visuals(&basis, &nf, parsed_composition)?;
+            let (visual, length) = make_visuals(&basis, &nf, &mut parsed_composition)?;
             Ok(RenderReturn::AudioVisual(AudioVisual {
                 name: filename.to_string(),
                 length: length as f32,
                 visual,
                 audio: vec![],
+                defs: parsed_composition.defs,
             }))
         }
         RenderType::AudioVisual => {
             let stereo_waveform = render(&basis, &nf, &mut parsed_composition.defs)?;
-            let (visual, length) = make_visuals(&basis, &nf, parsed_composition)?;
+            let (visual, length) = make_visuals(&basis, &nf, &mut parsed_composition)?;
             let audio = write_composition_to_wav(stereo_waveform)?;
             Ok(RenderReturn::AudioVisual(AudioVisual {
                 name: filename.to_string(),
                 length: length as f32,
                 audio,
                 visual,
+                defs: parsed_composition.defs,
             }))
         }
 
@@ -407,7 +409,7 @@ pub fn generate_waveforms(
 fn make_visuals(
     basis: &Basis,
     nf: &NormalForm,
-    mut parsed_composition: ParsedComposition,
+    parsed_composition: &mut ParsedComposition,
 ) -> Result<(Vec<Op4D>, f64), Error> {
     let normalizer = Normalizer::default();
 
