@@ -83,7 +83,7 @@ impl TimedOp {
             is_out: false,
             follows: vec![],
             colors: vec![],
-            wgsl: self.wgsl.clone(),
+            wgsl: vec![],
         }
     }
 

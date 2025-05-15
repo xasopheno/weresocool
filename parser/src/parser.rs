@@ -100,22 +100,30 @@ pub fn language_to_vec_string(language: &str) -> Vec<String> {
 }
 
 // Extract WGSL code blocks from source code and replace with IDs
-pub fn process_wgsl_blocks(composition: &str, defs: &mut Defs) -> String {
+// If skip_validation is true, validation will be skipped (used in tests)
+pub fn process_wgsl_blocks(composition: &str, defs: &mut Defs, skip_validation: bool) -> String {
     let mut result = composition.to_string();
     
     // Extract WGSL blocks with regex pattern that's flexible with whitespace
-    let regex_pattern = r"WGSL\s*\{([^{}]*(?:\{[^{}]*\}[^{}]*)*)\}";
+    // This pattern matches:
+    // 1. WGSL keyword followed by optional whitespace and an opening brace
+    // 2. The content inside (including any nested braces)
+    // 3. The closing brace
+    // The (?:\{[^{}]*\}[^{}]*)* part handles nested braces like if-else blocks
+    let regex_pattern = r"wgsl\s*\{([^{}]*(?:\{[^{}]*\}[^{}]*)*)\}";
     let re = regex::Regex::new(regex_pattern).unwrap();
     
     // Find all WGSL blocks and replace them with tokens
-    for cap in re.captures_iter(composition) {
+    for cap in re.captures_iter(&composition) {
         let full_match = cap.get(0).unwrap().as_str();
         let wgsl_code = cap.get(1).unwrap().as_str().trim();
         
-        // Validate the WGSL code
-        if let Err(e) = weresocool_ast::wgsl::validate_wgsl(wgsl_code) {
-            eprintln!("\nWGSL validation error:\n{}\n", e);
-            panic!("WGSL validation error - see details above");
+        // Validate the WGSL code (unless skipped for tests)
+        if !skip_validation {
+            if let Err(e) = weresocool_ast::wgsl::validate_wgsl(wgsl_code) {
+                eprintln!("\nWGSL validation error:\n{}\n", e);
+                panic!("WGSL validation error - see details above");
+            }
         }
         
         // Insert the WGSL code and get its ID
@@ -128,6 +136,12 @@ pub fn process_wgsl_blocks(composition: &str, defs: &mut Defs) -> String {
     }
     
     result
+}
+
+// For backwards compatibility with existing code
+// This wrapper calls the new function with skip_validation set to false
+pub fn process_wgsl_blocks_with_validation(composition: &str, defs: &mut Defs) -> String {
+    process_wgsl_blocks(composition, defs, false)
 }
 
 pub fn parse_file(
@@ -144,7 +158,7 @@ pub fn parse_file(
     let (imports_needed, composition) = handle_whitespace_and_imports(vec_string)?;
     
     // Process WGSL blocks - extract them and replace with IDs
-    let processed_composition = process_wgsl_blocks(&composition, &mut defs);
+    let processed_composition = process_wgsl_blocks(&composition, &mut defs, false);
     
     for import in imports_needed {
         let (mut filepath, import_name) = get_filepath_and_import_name(import);

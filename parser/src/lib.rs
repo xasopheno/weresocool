@@ -6,5 +6,9 @@ pub mod imports;
 pub mod indices;
 #[allow(clippy::all)]
 pub mod parser;
+pub mod tests;
 
-pub use self::parser::{filename_to_vec_string, parse_file, Init, ParsedComposition};
+pub use self::parser::{
+    filename_to_vec_string, parse_file, process_wgsl_blocks, process_wgsl_blocks_with_validation,
+    Init, ParsedComposition,
+};
