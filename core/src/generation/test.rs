@@ -6,8 +6,7 @@ pub mod tests {
     };
     use num_rational::Rational64;
     use pretty_assertions::assert_eq;
-    use scop::Defs;
-    use weresocool_ast::{NormalForm, Normalize, Op::*, OscType, Term, Term::Op, ASR};
+    use weresocool_ast::{NormalForm, Normalize, Op::*, OscType, Term, Term::Op, ASR, Defs};
     use weresocool_instrument::Basis;
     use weresocool_shared::helpers::cmp_vec_f64;
 
@@ -32,7 +31,7 @@ pub mod tests {
     #[test]
     fn to_vec_timed_op_test() {
         let mut normal_form = NormalForm::init();
-        let mut pt: Defs<Term> = Default::default();
+        let mut pt: Defs = Default::default();
 
         Overlay {
             operations: vec![
@@ -82,6 +81,8 @@ pub mod tests {
             portamento: Rational64::new(1, 1),
             osc_type: OscType::None,
             names: vec![],
+            colors: vec![],
+            wgsl: vec![],
         };
 
         assert_eq!(
@@ -155,6 +156,8 @@ pub mod tests {
             portamento: Rational64::new(1, 1),
             osc_type: OscType::None,
             names: vec![],
+            colors: vec![],
+            wgsl: vec![],
         };
 
         let vec_timed_op = vec![
@@ -182,6 +185,8 @@ pub mod tests {
                 x: 0.5,
                 z: 0.5,
                 names: vec![],
+                colors: vec![],
+                wgsl: vec![],
             },
             Op4D {
                 t: 1.5,
@@ -192,6 +197,8 @@ pub mod tests {
                 y: 2.3010299956639813,
                 z: 0.5,
                 names: vec![],
+                colors: vec![],
+                wgsl: vec![],
             },
         ];
         assert_eq!(result, expected);

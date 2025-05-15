@@ -9,8 +9,13 @@ pub mod lists;
 pub mod nameset;
 pub mod operations;
 pub mod term;
+pub mod wgsl;
 pub use crate::{
     ast::{FmOscDef, FunDef, Op, Op::*, OscType, ASR},
+    color::{
+        CssOrHex, Color, ColorMap, ColorSet, ColorSets, ColorValue, GradientColor, GenColor,
+        RandColor, RandColorSet,
+    },
     datagen::Scale,
     generator::{
         coefs::{Coef, Coefs},
@@ -27,4 +32,5 @@ pub use crate::{
         Defs,
     },
     term::Term,
+    wgsl::{WgslMap, validate_wgsl},
 };

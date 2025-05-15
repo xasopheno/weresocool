@@ -22,7 +22,7 @@ regex = "1.5.4"
 colored = "2.0.0"
 num-rational = "0.4.1"
 indexmap = "2.0.0"
-rand = { version="0.7.3", features=["wasm-bindgen"]}
+rand = { version="0.7.3", features=["wasm-bindgen", "std"]}
 path-clean = "0.1.0"
 uuid = { version = "0.8", features = ["serde", "v4","stdweb"] }
 num-traits = "0.2.19"

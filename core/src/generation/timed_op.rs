@@ -31,6 +31,7 @@ pub struct TimedOp {
     pub l: Rational64,
     pub names: Vec<String>,
     pub colors: Vec<String>,
+    pub wgsl: Vec<u64>,
 }
 
 impl TimedOp {
@@ -57,6 +58,7 @@ impl TimedOp {
             event: self.event,
             names: self.names.to_owned(),
             colors: self.colors.to_owned(),
+            wgsl: self.wgsl.to_owned(),
         }
     }
 
@@ -81,6 +83,7 @@ impl TimedOp {
             is_out: false,
             follows: vec![],
             colors: vec![],
+            wgsl: self.wgsl.clone(),
         }
     }
 
@@ -111,6 +114,7 @@ impl TimedOp {
             event,
             names: point_op.names.to_vec(),
             colors: point_op.colors.iter().map(|c| c.to_string()).collect(),
+            wgsl: point_op.wgsl.clone(),
         };
 
         *time += point_op.l;

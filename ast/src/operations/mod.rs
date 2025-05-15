@@ -1,8 +1,8 @@
-use crate::{color::ColorMap, NameSet, OscType, Term, ASR};
+use crate::{color::ColorMap, NameSet, OscType, Term, ASR, wgsl::WgslMap};
 use num_rational::{Ratio, Rational64};
 use scop::Defs as ScopDefs;
 use std::{
-    collections::HashSet,
+    collections::{HashMap, HashSet},
     ops::{Mul, MulAssign},
 };
 use weresocool_error::Error;
@@ -16,6 +16,7 @@ pub mod substitute;
 pub struct Defs {
     pub ops: ScopDefs<Term>,
     pub colors: ColorMap,
+    pub wgsl: WgslMap,
 }
 
 impl Default for Defs {
@@ -23,6 +24,7 @@ impl Default for Defs {
         Defs {
             ops: ScopDefs::new(),
             colors: ColorMap::new(),
+            wgsl: WgslMap::new(),
         }
     }
 }
@@ -69,6 +71,8 @@ pub struct PointOp {
     pub is_out: bool,
     pub follows: Vec<crate::follow::types::FollowNF>,
     pub colors: Vec<u64>,
+    /// WGSL block IDs
+    pub wgsl: Vec<u64>,
 }
 
 impl Default for PointOp {
@@ -91,6 +95,7 @@ impl Default for PointOp {
             is_out: false,
             follows: vec![],
             colors: vec![],
+            wgsl: vec![],
         }
     }
 }
@@ -259,6 +264,7 @@ impl Mul<PointOp> for PointOp {
                 .chain(other.follows.iter().cloned())
                 .collect(),
             colors: self.colors.iter().chain(&other.colors).map(|c| c.to_owned()).collect(),
+            wgsl: self.wgsl.iter().chain(&other.wgsl).map(|c| c.to_owned()).collect(),
         }
     }
 }
@@ -310,6 +316,12 @@ impl<'a> Mul<&'a PointOp> for &PointOp {
                 .chain(&other.colors)
                 .map(|c| c.to_owned())
                 .collect(),
+            wgsl: self
+                .wgsl
+                .iter()
+                .chain(&other.wgsl)
+                .map(|c| c.to_owned())
+                .collect(),
         }
     }
 }
@@ -357,6 +369,12 @@ impl MulAssign for PointOp {
                 .colors
                 .iter()
                 .chain(&other.colors)
+                .map(|c| c.to_owned())
+                .collect(),
+            wgsl: self
+                .wgsl
+                .iter()
+                .chain(&other.wgsl)
                 .map(|c| c.to_owned())
                 .collect(),
         }
@@ -418,6 +436,12 @@ impl PointOp {
                 .chain(&other.colors)
                 .map(|c| c.to_owned())
                 .collect(),
+            wgsl: self
+                .wgsl
+                .iter()
+                .chain(&other.wgsl)
+                .map(|c| c.to_owned())
+                .collect(),
         }
     }
 
@@ -429,6 +453,7 @@ impl PointOp {
             pa: Ratio::new(0, 1),
             g: Ratio::new(1, 1),
             l: Ratio::new(1, 1),
+            wgsl: vec![],
             ..Default::default()
         }
     }
@@ -440,6 +465,7 @@ impl PointOp {
             pa: Ratio::new(0, 1),
             g: Ratio::new(0, 1),
             l: Ratio::new(1, 1),
+            wgsl: vec![],
             ..Default::default()
         }
     }

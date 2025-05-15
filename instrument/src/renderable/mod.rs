@@ -42,6 +42,7 @@ pub struct RenderOp {
     pub next_out: bool,
     pub follows: Vec<FollowNF>,
     pub colors: Vec<String>,
+    pub wgsl: Vec<u64>,
 }
 
 impl RenderOp {
@@ -70,6 +71,7 @@ impl RenderOp {
             filters: Vec::new(),
             follows: Vec::new(),
             colors: Vec::new(),
+            wgsl: Vec::new(),
         }
     }
 
@@ -98,6 +100,7 @@ impl RenderOp {
             filters: Vec::new(),
             follows: Vec::new(),
             colors: Vec::new(),
+            wgsl: Vec::new(),
         }
     }
     pub fn init_silent_with_length(l: f64) -> Self {
@@ -125,6 +128,7 @@ impl RenderOp {
             filters: Vec::new(),
             follows: Vec::new(),
             colors: Vec::new(),
+            wgsl: Vec::new(),
         }
     }
 
@@ -159,6 +163,7 @@ impl RenderOp {
             filters,
             follows: vec![],
             colors: vec![],
+            wgsl: Vec::new(),
         }
     }
 }
@@ -288,6 +293,7 @@ fn pointop_to_renderop(
         next_out,
         follows: point_op.follows.clone(),
         colors: point_op.colors.iter().map(|c| c.to_string()).collect(),
+        wgsl: point_op.wgsl.clone(),
     };
 
     *time += point_op.l * basis.l;

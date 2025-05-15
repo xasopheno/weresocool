@@ -5,13 +5,16 @@ use colored::*;
 use num_rational::Rational64;
 use path_clean::PathClean;
 use weresocool_ast::color::{ColorValue, CssOrHex};
+use weresocool_ast::{Defs, ListOp, NormalForm, Normalize, Op, Term};
 use std::fs::File;
 use std::io::prelude::*;
 use std::io::BufReader;
 use std::path::PathBuf;
 use std::sync::{Arc, Mutex};
-use weresocool_ast::{Defs, NormalForm, Normalize, Op, Term};
 use weresocool_error::{Error, ParseError};
+use regex;
+use std::collections::HashMap;
+use rand::{thread_rng, Rng};
 
 #[derive(Clone, PartialEq, Debug)]
 pub struct Init {
@@ -96,6 +99,37 @@ pub fn language_to_vec_string(language: &str) -> Vec<String> {
     language.split('\n').map(|l| l.to_string()).collect()
 }
 
+// Extract WGSL code blocks from source code and replace with IDs
+pub fn process_wgsl_blocks(composition: &str, defs: &mut Defs) -> String {
+    let mut result = composition.to_string();
+    
+    // Extract WGSL blocks with regex pattern that's flexible with whitespace
+    let regex_pattern = r"WGSL\s*\{([^{}]*(?:\{[^{}]*\}[^{}]*)*)\}";
+    let re = regex::Regex::new(regex_pattern).unwrap();
+    
+    // Find all WGSL blocks and replace them with tokens
+    for cap in re.captures_iter(composition) {
+        let full_match = cap.get(0).unwrap().as_str();
+        let wgsl_code = cap.get(1).unwrap().as_str().trim();
+        
+        // Validate the WGSL code
+        if let Err(e) = weresocool_ast::wgsl::validate_wgsl(wgsl_code) {
+            eprintln!("\nWGSL validation error:\n{}\n", e);
+            panic!("WGSL validation error - see details above");
+        }
+        
+        // Insert the WGSL code and get its ID
+        let id = defs.wgsl.insert(wgsl_code.to_string());
+        
+        // Replace the WGSL block with a token the parser can recognize
+        // Using @WGSL@ prefix to clearly distinguish from regular identifiers
+        let token = format!("@WGSL@{}", id);
+        result = result.replace(full_match, &token);
+    }
+    
+    result
+}
+
 pub fn parse_file(
     vec_string: Vec<String>,
     prev_defs: Option<Defs>,
@@ -108,6 +142,10 @@ pub fn parse_file(
     };
 
     let (imports_needed, composition) = handle_whitespace_and_imports(vec_string)?;
+    
+    // Process WGSL blocks - extract them and replace with IDs
+    let processed_composition = process_wgsl_blocks(&composition, &mut defs);
+    
     for import in imports_needed {
         let (mut filepath, import_name) = get_filepath_and_import_name(import);
         if let Some(mut wd) = working_path.clone() {
@@ -117,6 +155,11 @@ pub fn parse_file(
         // dbg!(&filepath);
         let vec_string = filename_to_vec_string(&filepath.to_string())?;
         let parsed_composition = parse_file(vec_string, Some(defs.clone()), working_path.clone())?;
+
+        // Merge WGSL blocks from imported files
+        for (id, code) in &parsed_composition.defs.wgsl.map {
+            defs.wgsl.map.insert(*id, code.clone());
+        }
 
         for (scope_name, scope) in parsed_composition.defs.ops.iter() {
             for (n, term) in scope {
@@ -128,15 +171,19 @@ pub fn parse_file(
         }
     }
 
-    let init = socool::SoCoolParser::new().parse(&mut defs, &composition);
+    let init = socool::SoCoolParser::new().parse(&mut defs, &processed_composition);
     match init {
         Ok(init) => {
-            let mut defs = process_op_table(&mut defs)?;
+            let mut result_defs = process_op_table(&mut defs)?;
+            
+            // Ensure WGSL blocks are preserved in the final result
+            result_defs.wgsl = defs.wgsl.clone();
+            
             if let Some(background_color) = init.background_color.clone() {
-                defs.colors.insert_by_name("background_color".to_string(), background_color);
+                result_defs.colors.insert_by_name("background_color".to_string(), background_color);
             }
 
-            Ok(ParsedComposition { init, defs })
+            Ok(ParsedComposition { init, defs: result_defs })
         }
         Err(error) => {
             println!("\n");

@@ -1,7 +1,7 @@
 #[cfg(test)]
 mod tests {
 
-    use crate::types::*;
+    use crate::follow::types::*;
     use num_rational::Rational64;
 
     #[test]

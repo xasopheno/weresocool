@@ -107,7 +107,18 @@ pub fn eeg_datum_to_point_op(
         g: Rational64::new(1, 1),
         pm: Rational64::new(1, 1),
         pa: Rational64::new(0, 1),
-        ..Default::default()
+        names: nameset,
+        attack: Ratio::new(1, 1),
+        decay: Ratio::new(1, 1),
+        asr: ASR::Long,
+        portamento: Ratio::new(1, 1),
+        reverb: None,
+        osc_type: OscType::None,
+        filters: vec![],
+        is_out: false,
+        follows: vec![],
+        colors: vec![],
+        wgsl: vec![],
     }
 }
 

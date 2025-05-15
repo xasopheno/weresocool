@@ -48,6 +48,7 @@ pub fn render_op_to_normalized_op4d(render_op: &RenderOp, normalizer: &Normalize
         event: render_op.event,
         names: render_op.names.to_vec(),
         colors: render_op.colors.to_vec(),
+        wgsl: render_op.wgsl.clone(),
     };
 
     op4d.normalize(normalizer);

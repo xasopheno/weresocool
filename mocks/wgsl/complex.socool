@@ -1,0 +1,34 @@
+{ f: 200, l: 1.0, g: 1.0, p: 0.0 }
+
+main = {
+  WGSL {
+    // Complex particle transformation
+    // Calculate distance from origin
+    let dist = sqrt(x*x + y*y + z*z);
+    
+    // Apply rotation around Y axis
+    let theta = time * 0.2;
+    let new_x = x * cos(theta) - z * sin(theta);
+    let new_z = x * sin(theta) + z * cos(theta);
+    
+    // Apply a wave effect based on distance
+    let wave = sin(dist * 3.0 + time) * 0.1;
+    
+    // Scale based on life and time
+    let scalar = life * (0.8 + sin(time * 0.3) * 0.2);
+    
+    // Apply transformations
+    x = new_x * scalar + wave;
+    y = y * scalar + wave;
+    z = new_z * scalar;
+    
+    // Adjust scale based on distance
+    scale = 1.0 + dist * 0.05;
+    
+    // Slowly decrease life
+    life = life * 0.999;
+    
+    // Adjust rotation speed
+    r = 0.01 + dist * 0.002;
+  } | AsIs
+} 

@@ -1,0 +1,33 @@
+{ f: 200, l: 1.0, g: 1.0, p: 0.0 }
+
+main = {
+  WGSL {
+    // Spiral effect with time-based variations
+    var new_x = x;
+    var new_y = y;
+    var new_z = z;
+
+    // Apply spiral effect
+    let angle = time * 0.1;
+    new_x = x * cos(angle) - y * sin(angle);
+    new_y = x * sin(angle) + y * cos(angle);
+
+    // Add z oscillation
+    new_z = z + sin(time * 0.5) * 0.2;
+
+    // Apply modifications
+    x = new_x;
+    y = new_y;
+    z = new_z;
+
+    // Adjust rotation speed based on time
+    r = 0.01 + sin(time * 0.05) * 0.005;
+
+    // Life slowly decays
+    life = life * 0.9998;
+
+    // Scale pulses over time
+    let pulse = sin(time * 0.1) * 0.5 + 0.5;
+    scale = scale * (1.0 + pulse * 0.05) * 10.0;
+  } | AsIs
+} 

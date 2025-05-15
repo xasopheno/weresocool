@@ -1,0 +1,9 @@
+{ f: 200, l: 1.0, g: 1.0, p: 0.0 }
+
+main = {
+  WGSL {
+    // This contains a syntax error:
+    let x = 1.0  // Missing semicolon
+    y = 2.0;
+  } | AsIs
+} 

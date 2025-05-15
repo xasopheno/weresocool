@@ -107,7 +107,9 @@ mod tests {
                 names: vec![],
                 filters: vec![],
                 next_out: false,
-                follows: true,
+                follows: vec![],
+                colors: vec![],
+                wgsl: vec![],
             },
             RenderOp {
                 f: 330.0,
@@ -131,7 +133,9 @@ mod tests {
                 names: vec![],
                 filters: vec![],
                 next_out: false,
-                follows: true,
+                follows: vec![],
+                colors: vec![],
+                wgsl: vec![],
             },
             RenderOp {
                 f: 0.0,
@@ -155,7 +159,9 @@ mod tests {
                 names: vec![],
                 filters: vec![],
                 next_out: false,
-                follows: true,
+                follows: vec![],
+                colors: vec![],
+                wgsl: vec![],
             },
         ]];
         assert_eq!(result, expected);

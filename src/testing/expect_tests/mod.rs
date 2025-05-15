@@ -23,7 +23,7 @@ mod generated_tests {
             _ => panic!(),
         };
 
-        let expect_term = defs
+        let expect_term = defs.ops
             .get("expect")
             .unwrap_or_else(|| panic!("\n\n  No expect in: \n  {}\n\n", input));
 
@@ -33,7 +33,7 @@ mod generated_tests {
         };
 
         println!("\n\n\t{}\n\n", input);
-        assert_eq!(nf, *expected);
+        assert_eq!(nf, expected.clone());
         Ok(())
     }
 

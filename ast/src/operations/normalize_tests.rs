@@ -2,11 +2,10 @@
 pub mod tests {
     extern crate num_rational;
     extern crate pretty_assertions;
-    use crate::{NameSet, NormalForm, Normalize, Op::*, OscType, PointOp, Term, Term::*};
+    use crate::{NameSet, NormalForm, Normalize, Op::*, OscType, PointOp, Term, Term::*, Defs};
     use num_rational::{Ratio, Rational64};
-    use scop::Defs;
 
-    fn make_parse_table() -> Defs<Term> {
+    fn make_parse_table() -> Defs {
         Default::default()
     }
 
@@ -51,8 +50,8 @@ pub mod tests {
             ],
         });
 
-        pt.insert("global", "foo", foo_tag);
-        pt.insert("global", "bar", bar_tag.clone());
+        pt.ops.insert("global", "foo", foo_tag);
+        pt.ops.insert("global", "bar", bar_tag.clone());
 
         bar_tag.apply_to_normal_form(&mut a, &mut pt).unwrap();
 

@@ -18,6 +18,8 @@ pub enum Op {
     Id(String),
     Tag(String),
     //
+    WGSL(u64),
+    //
     CSV1d {
         path: String,
         scale: Option<Rational64>,

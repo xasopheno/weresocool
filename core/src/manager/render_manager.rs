@@ -90,6 +90,7 @@ pub fn render_op_to_normalized_op4d_list(
             event: render_op.event,
             names: render_op.names.clone(),
             colors: render_op.colors.clone(),
+            wgsl: render_op.wgsl.clone(),
         };
 
         // Apply your normalization
@@ -120,7 +121,8 @@ pub fn render_op_to_normalized_op4d(render_op: &RenderOp, normalizer: &Normalize
         voice: render_op.voice,
         event: render_op.event,
         names: render_op.names.to_vec(),
-        colors: render_op.colors.to_vec()
+        colors: render_op.colors.to_vec(),
+        wgsl: render_op.wgsl.clone(),
     };
 
     op4d.normalize(normalizer);

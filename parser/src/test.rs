@@ -4,8 +4,7 @@ pub mod test {
         parser::*,
     };
     use num_rational::Ratio;
-    use scop::Defs;
-    use weresocool_ast::{Op, Op::*, Term, Term::*};
+    use weresocool_ast::{Op, Op::*, Term::*};
 
     fn mock_init() -> String {
         "{ f: 200, l: 1.0, g: 1.0, p: 0.0 }
@@ -14,13 +13,13 @@ pub mod test {
     }
 
     fn test_parsed_operation(mut parse_str: String, expected: Op) {
-        let mut defs: Defs<Term> = Default::default();
+        let mut defs: weresocool_ast::Defs = Default::default();
 
         parse_str.push_str("}");
 
         let _result = socool::SoCoolParser::new().parse(&mut defs, &parse_str);
 
-        let main = defs.get(&"main".to_string()).unwrap();
+        let main = defs.ops.get("main").unwrap();
         assert_eq!(*main, Op(expected));
     }
 
@@ -77,7 +76,7 @@ pub mod test {
     #[test]
     fn init_test() {
         let mut parse_str = mock_init();
-        let mut defs: Defs<Term> = Default::default();
+        let mut defs: weresocool_ast::Defs = Default::default();
         parse_str.push_str("AsIs }");
         let init = socool::SoCoolParser::new()
             .parse(&mut defs, &parse_str)
@@ -89,6 +88,7 @@ pub mod test {
                 l: Ratio::from_integer(1),
                 g: Ratio::from_integer(1),
                 p: Ratio::from_integer(0),
+                background_color: None,
             }
         );
     }
@@ -279,7 +279,7 @@ pub mod test {
 
     #[test]
     fn let_insert() {
-        let mut defs: Defs<Term> = Default::default();
+        let mut defs: weresocool_ast::Defs = Default::default();
         socool::SoCoolParser::new()
             .parse(
                 &mut defs,
@@ -293,7 +293,7 @@ pub mod test {
                     ",
             )
             .unwrap();
-        let thing = defs.get(&"thing".to_string()).unwrap();
+        let thing = defs.ops.get("thing").unwrap();
         assert_eq!(
             *thing,
             Op(Compose {
@@ -331,7 +331,7 @@ pub mod test {
 
     #[test]
     fn fit_length_test() {
-        let mut defs: Defs<Term> = Default::default();
+        let mut defs: weresocool_ast::Defs = Default::default();
 
         let _result = socool::SoCoolParser::new().parse(
             &mut defs,
@@ -356,7 +356,7 @@ pub mod test {
                             }
                         ",
         );
-        let thing = defs.get(&"main".to_string()).unwrap();
+        let thing = defs.ops.get("main").unwrap();
         assert_eq!(
             *thing,
             Op(Compose {
@@ -403,5 +403,73 @@ pub mod test {
                 })]
             })
         )
+    }
+
+    #[test]
+    fn wgsl_test() {
+        let mut parse_str = mock_init();
+        parse_str.push_str(
+            r#"
+                WGSL {
+                    // Spiral effect with time-based variations
+                    var new_x = x;
+                    var new_y = y;
+                    var new_z = z;
+
+                    // Apply spiral effect
+                    let angle = time * 0.1;
+                    new_x = x * cos(angle) - y * sin(angle);
+                    new_y = x * sin(angle) + y * cos(angle);
+
+                    // Apply modifications
+                    x = new_x;
+                    y = new_y;
+                    z = new_z;
+                }
+            "#,
+        );
+        
+        // We can only test that it's a WGSL operation, but can't test the exact code_id
+        // since it's dynamically generated
+        let mut defs: weresocool_ast::Defs = Default::default();
+        parse_str.push_str("}");
+        let _result = socool::SoCoolParser::new().parse(&mut defs, &parse_str);
+        
+        let main = defs.ops.get("main").unwrap();
+        
+        // Verify that an ID was assigned for the WGSL code
+        if let Op(WGSL(id)) = main {
+            assert!(*id > 0, "WGSL id should be greater than 0");
+        } else {
+            panic!("Expected WGSL operation, got something else")
+        }
+    }
+}
+
+mod tests {
+    use crate::parser::process_wgsl_blocks;
+    use weresocool_ast::Defs;
+    
+    #[test]
+    fn test_wgsl_parsing() {
+        // Test WGSL block parsing
+        let mut defs = Defs::default();
+        let input = r#"
+            WGSL {
+                @compute @workgroup_size(1) 
+                fn main() {
+                    let x = 42;
+                }
+            }
+        "#;
+        
+        let processed = process_wgsl_blocks(input, &mut defs);
+        
+        // Verify that the WGSL code was extracted and replaced with a token
+        assert!(!processed.contains("WGSL {"));
+        assert!(processed.contains("@WGSL@"));
+        
+        // Verify that the WGSL code was inserted into the defs.wgsl map
+        assert_eq!(defs.wgsl.map.len(), 1);
     }
 }

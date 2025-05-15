@@ -31,6 +31,12 @@ impl Normalize for Op {
                 });
             }
             Op::AsIs => {}
+            Op::WGSL(wgsl_id) => {
+                // Add the WGSL id to the wgsl array of each PointOp
+                input.fmap_mut(|op| {
+                    op.wgsl.push(*wgsl_id);
+                });
+            },
             Op::Out => {
                 input.fmap_mut(|op| {
                     op.is_out = true;
