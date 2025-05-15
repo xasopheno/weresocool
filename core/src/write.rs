@@ -124,7 +124,7 @@ pub fn write_composition_to_json(
     mut output_dir: PathBuf,
 ) -> std::io::Result<()> {
     let filename = filename_from_string(filename);
-    let filename = &format!("{}.socool.json", filename);
+    let filename = &format!("{}.socool.data.json", filename);
     output_dir.push(filename);
     let mut file = File::create(output_dir)?;
 
