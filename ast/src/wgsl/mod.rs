@@ -14,7 +14,7 @@ impl WgslMap {
     pub fn new() -> Self {
         Self {
             map: HashMap::new(),
-            next_id: 0,
+            next_id: 1,
         }
     }
 
@@ -135,11 +135,11 @@ mod tests {
         let mut map = WgslMap::new();
         let code = "x = x * 2.0;";
         let id = map.insert(code.to_string());
-        assert_eq!(id, 0, "First ID should be 0");
+        assert_eq!(id, 1, "First ID should be 1");
         assert_eq!(map.get(&id), Some(&code.to_string()));
         let code2 = "y = y + 1.0;";
         let id2 = map.insert(code2.to_string());
-        assert_eq!(id2, 1, "Second ID should be 1");
+        assert_eq!(id2, 2, "Second ID should be 2");
         assert_eq!(map.get(&id2), Some(&code2.to_string()));
     }
 } 
