@@ -6,32 +6,29 @@ pub const MAX_STEPS: u32 = 4; // compile-time bound for recipe size
 
 #[derive(Clone, Debug, PartialEq)]
 pub struct WgslMap {
-    pub map: HashMap<u64, String>,
+    pub map: HashMap<u8, String>,
+    next_id: u8,
 }
 
 impl WgslMap {
     pub fn new() -> Self {
         Self {
             map: HashMap::new(),
+            next_id: 0,
         }
     }
 
-    /// Insert WGSL code and return its ID
-    pub fn insert(&mut self, code: String) -> u64 {
-        let hash = Self::calculate_hash(&code);
-        self.map.insert(hash, code);
-        hash
+    /// Insert WGSL code and return its sequential u8 ID
+    pub fn insert(&mut self, code: String) -> u8 {
+        let id = self.next_id;
+        self.map.insert(id, code);
+        self.next_id = self.next_id.wrapping_add(1);
+        id
     }
 
-    /// Retrieve WGSL code by ID
-    pub fn get(&self, id: &u64) -> Option<&String> {
+    /// Retrieve WGSL code by u8 ID
+    pub fn get(&self, id: &u8) -> Option<&String> {
         self.map.get(id)
-    }
-
-    fn calculate_hash(code: &str) -> u64 {
-        let mut hasher = DefaultHasher::new();
-        code.hash(&mut hasher);
-        hasher.finish()
     }
 }
 
@@ -138,8 +135,11 @@ mod tests {
         let mut map = WgslMap::new();
         let code = "x = x * 2.0;";
         let id = map.insert(code.to_string());
-        
-        assert!(id > 0, "ID should be non-zero");
+        assert_eq!(id, 0, "First ID should be 0");
         assert_eq!(map.get(&id), Some(&code.to_string()));
+        let code2 = "y = y + 1.0;";
+        let id2 = map.insert(code2.to_string());
+        assert_eq!(id2, 1, "Second ID should be 1");
+        assert_eq!(map.get(&id2), Some(&code2.to_string()));
     }
 } 
