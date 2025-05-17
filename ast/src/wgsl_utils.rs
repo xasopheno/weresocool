@@ -18,18 +18,6 @@ var life: f32 = 1.0;
 var scale: f32 = 1.0;
 var time: f32 = 0.0;
 
-// Helper functions
-fn cos(v: f32) -> f32 { return 1.0; }
-fn sin(v: f32) -> f32 { return 0.0; }
-fn sqrt(v: f32) -> f32 { return 1.0; }
-fn pow(v: f32, p: f32) -> f32 { return 1.0; }
-fn abs(v: f32) -> f32 { return 1.0; }
-fn min(a: f32, b: f32) -> f32 { return a; }
-fn max(a: f32, b: f32) -> f32 { return a; }
-fn floor(v: f32) -> f32 { return 1.0; }
-fn ceil(v: f32) -> f32 { return 1.0; }
-fn fract(v: f32) -> f32 { return 0.0; }
-
 fn dummy_function() {
 ");
 

@@ -52,7 +52,7 @@ fn render(filename: &str, working_path: &Path, render_manager: &Arc<Mutex<Render
             }
         };
 
-    if let Some(voices) = render_voices {
+    if let Some((voices, _)) = render_voices {
         render_manager.lock().unwrap().push_render(voices, false);
         let mut rng = rand::thread_rng();
 

@@ -10,6 +10,7 @@ use log::info;
 use opmap::OpMap;
 use std::sync::mpsc::Sender;
 use std::{path::PathBuf, sync::mpsc::SendError};
+use weresocool_ast::{Defs};
 use weresocool_ast::follow::evaluate::EvaluateAction;
 use weresocool_error::Error;
 use weresocool_instrument::renderable::{
@@ -513,7 +514,7 @@ impl RenderManager {
 pub fn prepare_render_outside(
     input: InputType<'_>,
     working_path: Option<PathBuf>,
-) -> Result<Vec<RenderVoice>, Error> {
+) -> Result<(Vec<RenderVoice>, Defs), Error> {
     let (nf, basis, mut table) = match input.make(RenderType::NfBasisAndTable, working_path)? {
         RenderReturn::NfBasisAndTable(nf, basis, table) => (nf, basis, table),
         _ => return Err(Error::with_msg("Failed Parse/Render")),
@@ -522,7 +523,7 @@ pub fn prepare_render_outside(
 
     let render_voices = renderables_to_render_voices(renderables);
 
-    Ok(render_voices)
+    Ok((render_voices, table))
 }
 
 #[cfg(test)]

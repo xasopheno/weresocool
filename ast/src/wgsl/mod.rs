@@ -39,17 +39,8 @@ impl WgslMap {
 pub fn prepare_for_naga(src: &str) -> String {
     let mut out = String::new();
     
-    // Add necessary variable declarations that would be available in the shader
+    // Define helper functions at global scope
     out.push_str("
-// Variables that would be available in the actual shader
-var x: f32 = 0.0;
-var y: f32 = 0.0;
-var z: f32 = 0.0;
-var r: f32 = 0.0;
-var life: f32 = 1.0;
-var scale: f32 = 1.0;
-var time: f32 = 0.0;
-
 // Helper functions
 fn cos(v: f32) -> f32 { return 1.0; }
 fn sin(v: f32) -> f32 { return 0.0; }
@@ -63,6 +54,14 @@ fn ceil(v: f32) -> f32 { return 1.0; }
 fn fract(v: f32) -> f32 { return 0.0; }
 
 fn dummy_function() {
+    // Variables that are modifiable
+    var x: f32 = 0.0;
+    var y: f32 = 0.0;
+    var z: f32 = 0.0;
+    var r: f32 = 0.01;
+    var life: f32 = 1.0;
+    var scale: f32 = 1.0;
+    var time: f32 = 0.0;
 ");
 
     // Add the user's code

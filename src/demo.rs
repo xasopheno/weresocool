@@ -13,7 +13,7 @@ pub fn demo() -> Result<(), Error> {
 
     let (tx, rx) = std::sync::mpsc::channel::<bool>();
     let render_manager = Arc::new(Mutex::new(RenderManager::init(None, Some(tx), true, None)));
-    let render_voices = prepare_render_outside(Language(DEMO), None)?;
+    let (render_voices, _ )= prepare_render_outside(Language(DEMO), None)?;
 
     render_manager
         .lock()

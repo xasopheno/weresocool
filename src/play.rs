@@ -34,7 +34,7 @@ pub fn play_once(filename: String, working_path: PathBuf) -> Result<(), Error> {
     let (tx, rx) = std::sync::mpsc::channel::<bool>();
     let render_manager = Arc::new(Mutex::new(RenderManager::init(None, Some(tx), true, None)));
 
-    let render_voices = prepare_render_outside(Filename(&filename), Some(working_path))?;
+    let (render_voices, _ )= prepare_render_outside(Filename(&filename), Some(working_path))?;
 
     render_manager
         .lock()
@@ -61,7 +61,7 @@ pub fn play_once(filename: String, working_path: PathBuf) -> Result<(), Error> {
 fn play_watch(filename: String, working_path: PathBuf) -> Result<(), Error> {
     maybe_create_file_if_needed(filename.clone(), working_path.clone());
     let render_manager = Arc::new(Mutex::new(RenderManager::init(None, None, false, None)));
-    let render_voices = prepare_render_outside(Filename(&filename), Some(working_path.clone()))?;
+    let (render_voices , _)= prepare_render_outside(Filename(&filename), Some(working_path.clone()))?;
     render_manager
         .lock()
         .unwrap()
