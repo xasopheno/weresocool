@@ -13,55 +13,50 @@ use bimap::BiHashMap;
 #[derive(Debug, Clone, PartialEq)]
 pub struct ColorMap {
     pub map: BiHashMap<String, ColorValue>,
+    next_id: u64,
 }
 
 impl ColorMap {
     pub fn new() -> Self {
         Self {
             map: BiHashMap::new(),
+            next_id: 0,
         }
     }
 
-// pub fn to_gen_color_map(&self) -> GenColorMap {
-    // let mut map = IndexMap::new();
-    
-    // for (hash, value) in self.map.iter() {
-        // let gen_color: Box<dyn GenColor> = match value {
-            // ColorValue::ColorSet { colors } => Box::new(ColorSet { colors: colors.clone() }),
-        // };
+    // ─────────────────────────────────────────────
+    //  PUBLIC API (unchanged signatures)
+    // ─────────────────────────────────────────────
 
-        // map.insert(hash.to_string(), gen_color);
-    // }
-
-    // map
-// }
-
-    /// Insert only if hash is not present. Returns hash either way.
+    /// Return an id for the colour, reusing an existing one if present.
     pub fn insert(&mut self, value: ColorValue) -> u64 {
-        let hash = Self::calculate_hash(&value);
-        if !self.map.contains_left(&hash.to_string()) {
-            self.map.insert(hash.to_string(), value);
+        // fast path: have we seen this colour before?
+        if let Some(id_str) = self.map.get_by_right(&value) {
+            return id_str.parse::<u64>().expect("ids stay numeric");
         }
-        hash
+
+        // new colour – assign next available id
+        let id = self.next_id;
+        self.next_id += 1;
+        self.map.insert(id.to_string(), value);
+        id
     }
 
+    /// Associate an *explicit* name (“red”, “my_accent_colour”, …) with a colour.
+    /// Overwrites silently if the name was already present.
     pub fn insert_by_name(&mut self, name: String, value: ColorValue) {
         self.map.insert(name, value);
     }
 
-    /// Retrieve a ColorValue by hash.
+    /// Look up a colour by the string id you got from `insert()`.
     pub fn get_by_hash(&self, hash: String) -> Option<&ColorValue> {
         self.map.get_by_left(&hash)
     }
 
+    /// Get the string id that `insert()` (or a previous call to this fn) produced
+    /// for the given colour, if any.
     pub fn get_id_for_color(&self, color: &ColorValue) -> Option<String> {
         self.map.get_by_right(color).cloned()
-    }
-
-    fn calculate_hash(color: &ColorValue) -> u64 {
-        let mut hasher = DefaultHasher::new();
-        color.hash(&mut hasher);
-        hasher.finish()
     }
 }
 

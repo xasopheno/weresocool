@@ -330,7 +330,7 @@ impl RenderManager {
                                         // .collect();
                                         let b: Vec<_> = batch
                                             .iter()
-                                            .filter(|op| op.index % 5 == 0)
+                                            .filter(|op| op.index % 10 == 0)
                                             .cloned()
                                             .map(|mut op| {
                                                 let follow_offset = op.follows.eval_value(
