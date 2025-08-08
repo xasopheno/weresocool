@@ -46,13 +46,14 @@ impl ListOp {
 
                 Ok(result)
             }
-            ListOp::GenOp { gen } => {
-                let result = gen
+            ListOp::GenOp { generator } => {
+                let mut input = NormalForm::init();
+                let result = generator
                     .to_owned()
-                    .term_vectors_from_genop(None, defs)?
-                    .iter()
-                    .map(|term| TermVector {
-                        term: Term::Op(term.to_owned()),
+                    .generate_from_genop(&mut input, None, defs)?
+                    .into_iter()
+                    .map(|nf| TermVector {
+                        term: Term::Nf(nf),
                         index_terms: vec![],
                     })
                     .collect();
@@ -93,7 +94,7 @@ impl GetLengthRatio for ListOp {
                 .try_fold(Rational64::from_integer(0), |acc, term| {
                     Ok(acc + term.get_length_ratio(normal_form, defs)?)
                 }),
-            ListOp::GenOp { gen } => gen.get_length_ratio(normal_form, defs),
+            ListOp::GenOp { generator } => generator.get_length_ratio(normal_form, defs),
         }
     }
 }
@@ -150,7 +151,7 @@ impl ListOp {
                     Ok(nf)
                 })
                 .collect(),
-            ListOp::GenOp { gen } => gen.to_owned().generate_from_genop(input, None, defs),
+            ListOp::GenOp { generator } => generator.to_owned().generate_from_genop(input, None, defs),
         }
     }
 }

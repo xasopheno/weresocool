@@ -2,14 +2,14 @@
 name = "weresocool_parser"
 version = "1.0.47"
 authors = ["Danny Meyer <weresocool@xasopheno.com>"]
-edition = "2021"
+edition = "2024"
 build = "build.rs" # LALRPOP preprocessing
 description = "Parser for WereSoCool"
 license = "GPL-3.0" 
 resolver="2"
 
 [build-dependencies.lalrpop]
-version = "0.22.0"
+version = "0.22.2"
 features = ["lexer"]
 
 [dependencies]
@@ -17,15 +17,15 @@ weresocool_ast = { path = "../ast", version = "^1.0.47", default-features=false,
 weresocool_error = { path = "../error", version = "^1.0.47", default-features=false, optional=true }
 weresocool_shared = { path = "../shared", version = "^1.0.47" }
 scop = { path = "../scop", version = "^1.0.47" }
-lalrpop-util = { version="0.22.0", features=["lexer"]}
-regex = "1.5.4"
-colored = "2.0.0"
-num-rational = "0.4.1"
-indexmap = "2.0.0"
-rand = { version="0.7.3", features=["wasm-bindgen", "std"]}
-path-clean = "0.1.0"
-uuid = { version = "0.8", features = ["serde", "v4","stdweb"] }
-num-traits = "0.2.19"
+lalrpop-util = { version="0.22.2", features=["lexer"]}
+regex = "1.11"
+colored = "2.1"
+num-rational = "0.4"
+indexmap = "2.6"
+rand = { version="0.8", features=["std"]}
+path-clean = "1.0"
+uuid = { version = "1.11", features = ["serde", "v4"] }
+num-traits = "0.2"
 
 [features]
 default=["app"]

@@ -14,25 +14,25 @@ impl Normalize for GenOp {
             GenOp::Named { name, seed } => {
                 let term = handle_id_error(name, defs)?;
                 match term {
-                    Term::Gen(gen) => {
-                        gen.to_owned().set_seed(*seed);
-                        gen.apply_to_normal_form(input, defs)
+                    Term::Gen(generator) => {
+                        generator.to_owned().set_seed(*seed);
+                        generator.apply_to_normal_form(input, defs)
                     }
                     _ => Err(error_non_generator()),
                 }
             }
-            GenOp::Const { gen, seed } => {
-                *input = join_list_nf(gen.to_owned().generate(
+            GenOp::Const { generator, seed } => {
+                *input = join_list_nf(generator.to_owned().generate(
                     input,
-                    gen.lcm_length(),
+                    generator.lcm_length(),
                     defs,
                     &mut SeedableRng::seed_from_u64(*seed),
                 )?);
                 Ok(())
             }
-            GenOp::Taken { n, gen, seed } => {
-                gen.to_owned().set_seed(*seed);
-                *input = join_list_nf(gen.to_owned().generate_from_genop(input, Some(*n), defs)?);
+            GenOp::Taken { n, generator, seed } => {
+                generator.to_owned().set_seed(*seed);
+                *input = join_list_nf(generator.to_owned().generate_from_genop(input, Some(*n), defs)?);
                 Ok(())
             }
         }

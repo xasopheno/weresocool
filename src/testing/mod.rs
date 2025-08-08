@@ -140,12 +140,12 @@ pub fn show_difference(tt1: &TestTable, tt2: &TestTable) {
 
     for i in 0..diffs.len() {
         match diffs.get(i).unwrap() {
-            Difference::Same(ref x) => {
+            Difference::Same(x) => {
                 terminal.reset().unwrap();
                 writeln!(terminal, " {x}");
             }
-            Difference::Add(ref x) => {
-                if let Difference::Rem(ref y) = diffs.get(i - 1).unwrap() {
+            Difference::Add(x) => {
+                if let Difference::Rem(y) = diffs.get(i - 1).unwrap() {
                     terminal.fg(term::color::GREEN).unwrap();
                     write!(terminal, "+");
                     let Changeset { diffs, .. } = Changeset::new(y, x, " ");
@@ -172,7 +172,7 @@ pub fn show_difference(tt1: &TestTable, tt2: &TestTable) {
                     writeln!(terminal, "+{x}");
                 };
             }
-            Difference::Rem(ref x) => {
+            Difference::Rem(x) => {
                 terminal.fg(term::color::RED).unwrap();
                 writeln!(terminal, "-{x}");
             }

@@ -1,7 +1,6 @@
 use crate::Error;
 use colored::*;
 use notify::{Config, RecommendedWatcher, RecursiveMode, Watcher};
-use rand::Rng;
 use std::io;
 use std::io::Write;
 use std::path::Path;
@@ -54,11 +53,10 @@ fn render(filename: &str, working_path: &Path, render_manager: &Arc<Mutex<Render
 
     if let Some((voices, _)) = render_voices {
         render_manager.lock().unwrap().push_render(voices, false);
-        let mut rng = rand::thread_rng();
 
         print!(
             "{} ",
-            "* ".truecolor(rng.gen::<u8>(), rng.gen::<u8>(), rng.gen::<u8>())
+            "* ".truecolor(rand::random::<u8>(), rand::random::<u8>(), rand::random::<u8>())
                 .bold()
         );
         io::stdout().flush().unwrap();

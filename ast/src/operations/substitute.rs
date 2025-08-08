@@ -127,8 +127,8 @@ pub fn substitute_operations(
                 let subbed = lop.substitute(normal_form, defs)?;
                 result.push(subbed)
             }
-            Term::Gen(gen) => {
-                let subbed = gen.substitute(normal_form, defs)?;
+            Term::Gen(r#gen) => {
+                let subbed = r#gen.substitute(normal_form, defs)?;
                 result.push(subbed)
             }
         }

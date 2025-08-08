@@ -19,7 +19,7 @@ pub enum ListOp {
         direction: Direction,
     },
     GenOp {
-        gen: GenOp,
+        generator: GenOp,
     },
     Concat {
         listops: Vec<ListOp>,

@@ -1,7 +1,7 @@
 [package]
 name = "weresocool_core"
 version = "1.0.47"
-edition = "2021"
+edition = "2024"
 authors = ["Danny <weresocool@xasopheno.com>"]
 description = "***** WereSoCool __!Now In Stereo!__ ****** Make cool sounds. Impress your friends."
 license = "GPL-3.0" 
@@ -36,37 +36,37 @@ weresocool_instrument = { path = "../instrument", version = "^1.0.47", default-f
 weresocool_shared = { path = "../shared", version = "^1.0.47" } 
 weresocool_vorbis = { path = "../vorbis", version = "^1.0.47", optional=true, default-features = false } 
 weresocool_portaudio = { version = "1.0.47", optional = true, git = "https://github.com/xasopheno/weresocool_portaudio"}
-rand = { version="0.7.3", features=["wasm-bindgen"]}
-hound = "3.4.0"
-serde = { version = "1.0.164", features = ["derive"] }
-serde_json = "1.0.99"
-serde_derive = "1.0.164"
-colored = "2.0.0"
-pbr = { version="1.1.1", optional=true }
-num-rational = "0.4.1"
-rayon = "1.5.1"
-indexmap = { version = "2.0.0", features = ["serde"] }
-difference = "2.0.0"
-term = "0.7.0"
-uuid = { version = "0.8.2", features = ["v4", "stdweb"] }
-num-complex = "0.3.1"
-num = "0.3.1"
-csv = "1.1.5"
-futures = "0.3.12"
-bytes = "1.0.1"
-env_logger = "0.8.2"
-test-generator = "0.3.0"
-float-cmp = "0.8.0"
-zip = { version="0.6.6", optional=true }
-crossbeam-channel = "0.5.4"
-log = "0.4.22"
-cpal = "0.15.3"
+rand = { version="0.8", features=["std"]}
+hound = "3.5"
+serde = { version = "1.0", features = ["derive"] }
+serde_json = "1.0"
+serde_derive = "1.0"
+colored = "2.1"
+pbr = { version="1.1", optional=true }
+num-rational = "0.4"
+rayon = "1.10"
+indexmap = { version = "2.6", features = ["serde"] }
+difference = "2.0"
+term = "1.0"
+uuid = { version = "1.11", features = ["v4"] }
+num-complex = "0.4"
+num = "0.4"
+csv = "1.3"
+futures = "0.3"
+bytes = "1.8"
+env_logger = "0.11"
+test-generator = "0.3"
+float-cmp = "0.10"
+zip = { version="2.2", optional=true }
+crossbeam-channel = "0.5"
+log = "0.4"
+cpal = "0.15"
 
 [features]
 default=["app"]
 app=["weresocool_portaudio", 
   "pbr", "zip", "weresocool_error/app", 
-  "weresocool_parser/app", "weresocool_instrument/app", "weresocool_ast/app", "weresocool_vorbis"]
+  "weresocool_parser/app", "weresocool_instrument/app", "weresocool_ast/app"]
 windows=[
   "weresocool_portaudio", 
   "pbr", "zip", "weresocool_error/app", 
@@ -81,6 +81,10 @@ wasm = [
 ]
 
 [dev-dependencies]
-pretty_assertions = "0.6.1"
-criterion = "0.3.3"
+pretty_assertions = "1.4"
+criterion = "0.5"
+
+[[bench]]
+name = "render_bench"
+harness = false
 

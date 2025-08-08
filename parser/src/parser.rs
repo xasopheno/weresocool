@@ -56,9 +56,9 @@ fn process_op_table(mut defs: &mut Defs) -> Result<Defs, Error> {
                     lop.apply_to_normal_form(&mut nf, &mut defs.clone())?;
                     result.ops.insert(scope_name, name, Term::Nf(nf));
                 }
-                Term::Gen(gen) => {
+                Term::Gen(generator) => {
                     let mut nf = NormalForm::init();
-                    gen.apply_to_normal_form(&mut nf, &mut defs.clone())?;
+                    generator.apply_to_normal_form(&mut nf, &mut defs.clone())?;
 
                     result.ops.insert(scope_name, name, Term::Nf(nf));
                 }

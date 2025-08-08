@@ -18,11 +18,11 @@ impl Normalize for Term {
         defs: &mut Defs,
     ) -> Result<(), Error> {
         match self {
-            Term::Op(op) => op.apply_to_normal_form(input, defs),
             Term::Nf(nf) => nf.apply_to_normal_form(input, defs),
-            Term::FunDef(_fun) => Err(Error::with_msg("Cannot normalize FunDef.")),
+            Term::Op(op) => op.apply_to_normal_form(input, defs),
+            Term::FunDef(_) => Err(Error::with_msg("FunDef should not be normalized")),
             Term::Lop(lop) => lop.apply_to_normal_form(input, defs),
-            Term::Gen(gen) => gen.apply_to_normal_form(input, defs),
+            Term::Gen(generator) => generator.apply_to_normal_form(input, defs),
         }
     }
 }
@@ -35,10 +35,10 @@ impl Substitute for Term {
     ) -> Result<Term, Error> {
         match self {
             Term::Op(op) => op.substitute(normal_form, defs),
-            Term::Nf(nf) => nf.substitute(normal_form, defs),
-            Term::FunDef(_fun) => Err(Error::with_msg("Cannot call substitute on FunDef.")),
+            Term::Nf(_) => Ok(self.to_owned()),
+            Term::FunDef(_) => Ok(self.to_owned()),
             Term::Lop(lop) => lop.substitute(normal_form, defs),
-            Term::Gen(gen) => gen.substitute(normal_form, defs),
+            Term::Gen(generator) => generator.substitute(normal_form, defs),
         }
     }
 }
@@ -52,9 +52,9 @@ impl GetLengthRatio for Term {
         match self {
             Term::Op(op) => op.get_length_ratio(normal_form, defs),
             Term::Nf(nf) => nf.get_length_ratio(normal_form, defs),
-            Term::FunDef(_fun) => Err(Error::with_msg("Cannot get length_ratio of FunDef.")),
+            Term::FunDef(_) => Err(Error::with_msg("Cannot get length ratio of FunDef.")),
             Term::Lop(lop) => lop.get_length_ratio(normal_form, defs),
-            Term::Gen(gen) => gen.get_length_ratio(normal_form, defs),
+            Term::Gen(generator) => generator.get_length_ratio(normal_form, defs),
         }
     }
 }

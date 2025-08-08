@@ -43,7 +43,7 @@ pub fn write_composition_to_mp3(_composition: StereoWaveform) -> Result<Vec<u8>,
     Err(Error::with_msg("Mp3 not available on this platform"))
 }
 
-#[cfg(all(feature = "app", not(target_os = "windows")))]
+#[cfg(all(feature = "app", not(target_os = "windows"), not(feature = "wasm")))]
 pub fn write_composition_to_mp3(mut composition: StereoWaveform) -> Result<Vec<u8>, Error> {
     composition.normalize();
 
@@ -83,6 +83,7 @@ pub fn write_composition_to_wav(mut composition: StereoWaveform) -> Result<Vec<u
     let mut buffer = vec![0.0; composition.r_buffer.len() * 2];
     normalize_waveform(&mut buffer);
     write_output_buffer(&mut buffer, composition);
+    // Optionally normalize here if desired; currently writing as-is after prior normalization
     for sample in &buffer {
         writer
             .write_sample(*sample)

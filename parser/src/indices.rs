@@ -1,6 +1,5 @@
 use crate::float_to_rational::helpers::f32_to_rational;
 use num_rational::Rational64;
-use rand::{thread_rng, Rng};
 use weresocool_ast::{Op, Term};
 
 pub fn et(d: i64) -> Vec<Term> {
@@ -18,5 +17,5 @@ pub fn et(d: i64) -> Vec<Term> {
 }
 
 pub fn random_seed() -> i64 {
-    thread_rng().gen::<i64>()
+    rand::random()
 }

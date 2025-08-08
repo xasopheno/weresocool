@@ -4,7 +4,6 @@ use crate::{Basis, Oscillator, StereoWaveform};
 use num_rational::Rational64;
 use num_traits::CheckedMul;
 use rand::{thread_rng, Rng};
-#[cfg(feature = "app")]
 pub use render_voice::{renderables_to_render_voices, RenderVoice};
 use serde::{Deserialize, Serialize};
 use weresocool_ast::{

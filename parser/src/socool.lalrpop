@@ -118,10 +118,10 @@ Operation: Term = {
 }
 
 Generator: GenOp = {
-  <gen: GeneratorBase> "Take" <n: Int> <seed: ("Seed" Int)?> => {
-    GenOp::init_taken(gen, n as usize, seed)
+  <generator: GeneratorBase> "Take" <n: Int> <seed: ("Seed" Int)?> => {
+    GenOp::init_taken(generator, n as usize, seed)
   },
-  <gen: GeneratorBase> => gen
+  <generator: GeneratorBase> => generator
 
 }
 
@@ -221,7 +221,7 @@ ListBase: ListOp = {
     ListOp::Const{ terms: et(n) }
   },
 
-  r"(List|&)" <gen: Generator> => ListOp::GenOp { gen }
+  r"(List|&)" <generator: Generator> => ListOp::GenOp { generator }
 }
 
 Indices: Indices = {

@@ -61,7 +61,7 @@ impl ColorMap {
 }
 
 pub trait GenColor: DynClone + Debug + Send + Sync {
-    fn gen(&self) -> Color;
+    fn generate_color(&self) -> Color;
     fn update(&mut self);
 }
 dyn_clone::clone_trait_object!(GenColor);
@@ -185,9 +185,8 @@ impl Hash for Color {
 pub struct RandColor;
 
 impl GenColor for RandColor {
-    fn gen(&self) -> Color {
-        let mut rng = rand::thread_rng();
-        let mut r = || rng.gen::<f32>() * 2.0 - 1.0;
+    fn generate_color(&self) -> Color {
+        let r = || rand::random::<f32>() * 2.0 - 1.0;
 
         Color {
             r: r(),
@@ -207,8 +206,7 @@ pub struct RandColorSet {
 #[allow(dead_code)]
 impl RandColorSet {
     pub fn init(n: usize) -> Self {
-        let mut rng = rand::thread_rng();
-        let mut r = || rng.gen::<f32>() * 2.0 - 1.0;
+        let r = || rand::random::<f32>() * 2.0 - 1.0;
 
         RandColorSet {
             colors: (0..n)
@@ -224,7 +222,7 @@ impl RandColorSet {
 }
 
 impl GenColor for RandColorSet {
-    fn gen(&self) -> Color {
+    fn generate_color(&self) -> Color {
         self.colors
             .choose(&mut rand::thread_rng())
             .expect("Color choice failed")
@@ -254,7 +252,7 @@ pub fn vec_hex_to_vec_color(hex_strings: Vec<&str>) -> Vec<Color> {
 }
 
 impl GenColor for ColorSet {
-    fn gen(&self) -> Color {
+    fn generate_color(&self) -> Color {
         self.colors
             .choose(&mut rand::thread_rng())
             .expect("Color choice failed")
@@ -281,14 +279,14 @@ impl<'a> GradientColor {
 }
 
 impl GenColor for GradientColor {
-    fn gen(&self) -> Color {
+    fn generate_color(&self) -> Color {
         let gradient = colorgrad::GradientBuilder::new()
             .html_colors(self.colors.as_slice())
             .build::<colorgrad::LinearGradient>()
             .unwrap();
 
         let mut rng = thread_rng();
-        let position: f32 = rng.gen_range(0.0, 1.0);
+        let position: f32 = rng.gen_range(0.0..1.0);
         let grad_color = gradient.at(position);
 
         Color {
@@ -319,8 +317,8 @@ impl ColorSets {
 }
 
 impl GenColor for ColorSets {
-    fn gen(&self) -> Color {
-        self.colorsets[self.current].gen()
+    fn generate_color(&self) -> Color {
+        self.colorsets[self.current].generate_color()
     }
     fn update(&mut self) {
         self.current = (self.current + 1) % self.colorsets.len();

@@ -277,24 +277,30 @@ pub fn parsed_to_render(
                 Ok(render_return)
             }
             #[cfg(feature = "app")]
-            WavType::OggVorbis {
-                cli,
-                mut output_dir,
-            } => {
-                let stereo_waveform = render(&basis, &nf, &mut parsed_composition.defs)?;
-                let render_return =
-                    RenderReturn::Wav(weresocool_vorbis::encode_lr_channels_to_ogg_vorbis(
-                        stereo_waveform.l_buffer,
-                        stereo_waveform.r_buffer,
-                    ));
-                if cli {
-                    let audio: Vec<u8> = Vec::try_from(render_return.clone())?;
-                    let f = filename_to_renderpath(filename);
-                    output_dir.push(format!("{}.ogg", f));
-                    write_audio_to_file(&audio, output_dir);
-                };
-                Ok(render_return)
+            WavType::OggVorbis { cli, output_dir } 
+            => {
+                todo!()
             }
+
+            // #[cfg(feature = "app")]
+            // WavType::OggVorbis {
+                // cli,
+                // mut output_dir,
+            // } => {
+                // let stereo_waveform = render(&basis, &nf, &mut parsed_composition.defs)?;
+                // let render_return =
+                    // RenderReturn::Wav(weresocool_vorbis::encode_lr_channels_to_ogg_vorbis(
+                        // stereo_waveform.l_buffer,
+                        // stereo_waveform.r_buffer,
+                    // ));
+                // if cli {
+                    // let audio: Vec<u8> = Vec::try_from(render_return.clone())?;
+                    // let f = filename_to_renderpath(filename);
+                    // output_dir.push(format!("{}.ogg", f));
+                    // write_audio_to_file(&audio, output_dir);
+                // };
+                // Ok(render_return)
+            // }
         },
     }
 }
@@ -355,7 +361,7 @@ fn stems_to_zip(
     let file = File::create(std::path::Path::new(&output_dir))?;
     let mut zip = zip::ZipWriter::new(file);
 
-    let options =
+    let options: zip::write::FileOptions<()> =
         zip::write::FileOptions::default().compression_method(zip::CompressionMethod::Stored);
     for stem in stems {
         zip.start_file(format!("{}.stem.wav", stem.name), options)?;

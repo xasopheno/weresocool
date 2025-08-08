@@ -46,7 +46,7 @@ impl Substitute for ListOp {
 
                 Ok(Term::Lop(ListOp::Const { terms: result }))
             }
-            ListOp::GenOp { gen, .. } => gen.substitute(normal_form, defs),
+            ListOp::GenOp { generator, .. } => generator.substitute(normal_form, defs),
         }
     }
 }

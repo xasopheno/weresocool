@@ -3,7 +3,7 @@ use crate::{generation::sum_all_waveforms, generation::Op4D};
 use opmap::OpMap;
 use std::sync::mpsc::SendError;
 use std::sync::mpsc::Sender;
-use weresocool_instrument::renderable::{RenderOp, RenderVoice, Renderable};
+use weresocool_instrument::renderable::{RenderOp, render_voice::RenderVoice, Renderable};
 use weresocool_instrument::StereoWaveform;
 use weresocool_shared::Settings;
 

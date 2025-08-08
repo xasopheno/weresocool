@@ -89,7 +89,7 @@ jobs:
 
       - name: Bump Homebrew formula
         uses: xasopheno/weresocool-bump-homebrew-formula@v0.0.1
-        if: "!contains(github.ref, '-')"
+        if: ${{ !contains(github.ref, '-') }}
         env:
           COMMITTER_TOKEN: ${{ secrets.HOMEBREW_WERESOCOOL_COMMITER_TOKEN }}
         with:
@@ -102,7 +102,7 @@ jobs:
             
       - name: Bump Aur Package
         uses: ./actions/bumper_cool/src
-        if: "!contains(github.ref, '-')"
+        if: ${{ !contains(github.ref, '-') }}
         env:
           COMMITTER_TOKEN: ${{ secrets.WERESOCOOL_AUR_COMMITER_TOKEN }}
         with:

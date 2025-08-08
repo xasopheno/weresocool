@@ -227,21 +227,21 @@ impl GenOp {
             GenOp::Named { name, seed } => {
                 let generator = handle_id_error(name, defs)?;
                 match generator {
-                    Term::Gen(mut gen) => {
-                        gen.set_seed(seed);
-                        gen.term_vectors_from_genop(n, defs)
+                    Term::Gen(mut r#gen) => {
+                        r#gen.set_seed(seed);
+                        r#gen.term_vectors_from_genop(n, defs)
                     }
                     _ => Err(error_non_generator()),
                 }
             }
-            GenOp::Const { mut gen, seed } => {
-                let length = if let Some(n) = n { n } else { gen.lcm_length() };
-                gen.term_vectors(length, &mut SeedableRng::seed_from_u64(seed))
+            GenOp::Const { mut generator, seed } => {
+                let length = if let Some(n) = n { n } else { generator.lcm_length() };
+                generator.term_vectors(length, &mut SeedableRng::seed_from_u64(seed))
             }
 
-            GenOp::Taken { mut gen, n, seed } => {
-                gen.set_seed(seed);
-                gen.term_vectors_from_genop(Some(n), defs)
+            GenOp::Taken { mut generator, n, seed } => {
+                generator.set_seed(seed);
+                generator.term_vectors_from_genop(Some(n), defs)
             }
         }
     }
@@ -255,17 +255,17 @@ impl GenOp {
             GenOp::Named { name, seed } => {
                 let generator = handle_id_error(name, defs)?;
                 match generator {
-                    Term::Gen(mut gen) => {
-                        gen.set_seed(seed);
-                        gen.generate_from_genop(input, n, defs)
+                    Term::Gen(mut r#gen) => {
+                        r#gen.set_seed(seed);
+                        r#gen.generate_from_genop(input, n, defs)
                     }
                     _ => Err(error_non_generator()),
                 }
             }
-            GenOp::Const { mut gen, seed } => {
-                let length = if let Some(n) = n { n } else { gen.lcm_length() };
+            GenOp::Const { mut generator, seed } => {
+                let length = if let Some(n) = n { n } else { generator.lcm_length() };
 
-                gen.generate(
+                generator.generate(
                     input,
                     length,
                     defs,
@@ -273,9 +273,9 @@ impl GenOp {
                 )
             }
 
-            GenOp::Taken { mut gen, n, seed } => {
-                gen.set_seed(seed);
-                gen.generate_from_genop(input, Some(n), defs)
+            GenOp::Taken { mut generator, n, seed } => {
+                generator.set_seed(seed);
+                generator.generate_from_genop(input, Some(n), defs)
             }
         }
     }

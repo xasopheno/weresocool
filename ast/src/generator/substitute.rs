@@ -11,24 +11,23 @@ impl Substitute for GenOp {
             GenOp::Named { name, seed } => {
                 let term = handle_id_error(name, defs)?;
                 match term {
-                    Term::Gen(gen) => {
-                        gen.to_owned().set_seed(*seed);
-                        Ok(Term::Gen(gen))
+                    Term::Gen(r#gen) => {
+                        r#gen.to_owned().set_seed(*seed);
+                        Ok(Term::Gen(r#gen))
                     }
                     _ => Err(error_non_generator()),
                 }
             }
             GenOp::Const { .. } => Ok(Term::Gen(self.to_owned())),
-            GenOp::Taken { n, gen, seed } => {
-                let term = gen.substitute(_normal_form, defs)?;
+            GenOp::Taken { n, generator, seed } => {
+                let term = generator.substitute(_normal_form, defs)?;
                 match term {
-                    Term::Gen(gen) => Ok(Term::Gen(GenOp::Taken {
+                    Term::Gen(gen_op) => Ok(Term::Gen(GenOp::Taken {
                         n: *n,
-                        gen: Box::new(gen),
                         seed: *seed,
+                        generator: Box::new(gen_op),
                     })),
-
-                    _ => Err(error_non_generator()),
+                    _ => Ok(term),
                 }
             }
         }

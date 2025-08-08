@@ -17,21 +17,21 @@ impl GetLengthRatio for GenOp {
             GenOp::Named { name, seed } => {
                 let generator = handle_id_error(name, defs)?;
                 match generator {
-                    Term::Gen(mut gen) => {
-                        gen.set_seed(*seed);
-                        gen.get_length_ratio_genop(None, normal_form, defs)
+                    Term::Gen(mut r#gen) => {
+                        r#gen.set_seed(*seed);
+                        r#gen.get_length_ratio_genop(None, normal_form, defs)
                     }
                     _ => Err(error_non_generator()),
                 }
             }
-            GenOp::Const { gen, seed } => {
-                let n = gen.lcm_length();
-                Ok(gen.get_length(n, *seed, normal_form, defs)?)
+            GenOp::Const { generator, seed } => {
+                let n = generator.lcm_length();
+                Ok(generator.get_length(n, *seed, normal_form, defs)?)
             }
-            GenOp::Taken { gen, n, seed } => {
-                let mut gen = gen.to_owned();
-                gen.set_seed(*seed);
-                gen.get_length_ratio_genop(Some(*n), normal_form, defs)
+            GenOp::Taken { generator, n, seed } => {
+                let mut gen_op = generator.to_owned();
+                gen_op.set_seed(*seed);
+                gen_op.get_length_ratio_genop(Some(*n), normal_form, defs)
             }
         }
     }
@@ -43,14 +43,14 @@ impl GenOp {
             GenOp::Named { name, seed } => {
                 let generator = handle_id_error(name, defs)?;
                 match generator {
-                    Term::Gen(mut gen) => {
-                        gen.set_seed(*seed);
-                        gen.length(defs)
+                    Term::Gen(mut r#gen) => {
+                        r#gen.set_seed(*seed);
+                        r#gen.length(defs)
                     }
                     _ => Err(error_non_generator()),
                 }
             }
-            GenOp::Const { gen, .. } => Ok(gen.lcm_length()),
+            GenOp::Const { generator, .. } => Ok(generator.lcm_length()),
             GenOp::Taken { n, .. } => Ok(*n),
         }
     }
@@ -65,21 +65,21 @@ impl GenOp {
             GenOp::Named { name, seed } => {
                 let generator = handle_id_error(name, defs)?;
                 match generator {
-                    Term::Gen(mut gen) => {
-                        gen.set_seed(*seed);
-                        gen.get_length_ratio_genop(n, normal_form, defs)
+                    Term::Gen(mut r#gen) => {
+                        r#gen.set_seed(*seed);
+                        r#gen.get_length_ratio_genop(n, normal_form, defs)
                     }
                     _ => Err(error_non_generator()),
                 }
             }
-            GenOp::Const { gen, seed } => {
-                let n = if let Some(n) = n { n } else { gen.lcm_length() };
-                Ok(gen.get_length(n, *seed, normal_form, defs)?)
+            GenOp::Const { generator, seed } => {
+                let n = if let Some(n) = n { n } else { generator.lcm_length() };
+                Ok(generator.get_length(n, *seed, normal_form, defs)?)
             }
-            GenOp::Taken { n, gen, seed } => {
-                let mut gen = gen.to_owned();
-                gen.set_seed(*seed);
-                gen.get_length_ratio_genop(Some(*n), normal_form, defs)
+            GenOp::Taken { generator, n, seed } => {
+                let mut gen_op = generator.to_owned();
+                gen_op.set_seed(*seed);
+                gen_op.get_length_ratio_genop(Some(*n), normal_form, defs)
             }
         }
     }

@@ -123,7 +123,7 @@ This wouldn't exist in a million years if it wasn't for Antonis Stampoulis' help
 Of course, special thanks to Maria for always listening to my new_weird_sounds
 and programming problems. - Danny
 
-Copyright (C) 2023 - Danny Meyer
+Copyright (C) 2024 - Danny Meyer
 
 This program is free software, licensed under the GPLv3 (see LICENSE).
 

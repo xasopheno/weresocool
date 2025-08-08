@@ -5,7 +5,6 @@ mod get_length_ratio;
 mod substitute;
 
 use coefs::*;
-use rand::Rng;
 use weresocool_error::Error;
 
 #[derive(Clone, PartialEq, Debug, Hash)]
@@ -15,11 +14,11 @@ pub enum GenOp {
         seed: u64,
     },
     Const {
-        gen: Generator,
+        generator: Generator,
         seed: u64,
     },
     Taken {
-        gen: Box<GenOp>,
+        generator: Box<GenOp>,
         n: usize,
         seed: u64,
     },
@@ -27,34 +26,31 @@ pub enum GenOp {
 
 impl GenOp {
     pub fn init_named(name: String, seed: Option<(&str, i64)>) -> Self {
-        let mut rng = rand::thread_rng();
         GenOp::Named {
             name,
             seed: match seed {
-                None => rng.gen::<u64>(),
-                Some(s) => s.1.unsigned_abs(),
+                None => rand::random(),
+                Some((_name, seed)) => seed as u64,
             },
         }
     }
-    pub fn init_const(gen: Generator, seed: Option<(&str, i64)>) -> Self {
-        let mut rng = rand::thread_rng();
+    pub fn init_const(generator: Generator, seed: Option<(&str, i64)>) -> Self {
         GenOp::Const {
-            gen,
+            generator,
             seed: match seed {
-                None => rng.gen::<u64>(),
-                Some(s) => s.1.unsigned_abs(),
+                None => rand::random(),
+                Some((_name, seed)) => seed as u64,
             },
         }
     }
-    pub fn init_taken(gen: GenOp, n: usize, seed: Option<(&str, i64)>) -> Self {
-        let mut rng = rand::thread_rng();
+    pub fn init_taken(generator: GenOp, n: usize, seed: Option<(&str, i64)>) -> Self {
         GenOp::Taken {
-            gen: Box::new(gen),
-            seed: match seed {
-                None => rng.gen::<u64>(),
-                Some(s) => s.1.unsigned_abs(),
-            },
+            generator: Box::new(generator),
             n,
+            seed: match seed {
+                None => rand::random(),
+                Some((_name, seed)) => seed as u64,
+            },
         }
     }
 

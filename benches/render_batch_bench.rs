@@ -8,9 +8,17 @@ use weresocool_instrument::{
     renderable::{nf_to_vec_renderable, render_voice::renderables_to_render_voices},
     StereoWaveform,
 };
+use std::path::Path;
 
 fn render_batch_bench(c: &mut Criterion) {
     let filename = "songs/test/render_op_get_batch.socool".to_string();
+    if !Path::new(&filename).exists() {
+        eprintln!(
+            "Skipping render_batch_bench: missing test file {}",
+            filename
+        );
+        return;
+    }
     c.bench_function("render_batch", |b| {
         b.iter(|| {
             let (nf, basis, mut table) = match Filename(&filename)

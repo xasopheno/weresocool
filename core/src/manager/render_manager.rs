@@ -14,7 +14,7 @@ use weresocool_ast::{Defs};
 use weresocool_ast::follow::evaluate::EvaluateAction;
 use weresocool_error::Error;
 use weresocool_instrument::renderable::{
-    nf_to_vec_renderable, renderables_to_render_voices, Offset, RenderOp, RenderVoice, Renderable,
+    nf_to_vec_renderable, render_voice::renderables_to_render_voices, Offset, RenderOp, render_voice::RenderVoice, Renderable,
 };
 use weresocool_instrument::StereoWaveform;
 use weresocool_shared::Settings;
@@ -220,15 +220,13 @@ impl RenderManager {
     }
 
     fn ramp_to_current_volume(&mut self, buffer_size: usize) -> Vec<f32> {
-        let offset: Vec<f32> = (0..buffer_size * 2)
-            .map(|i| {
-                let distance = self.current_volume - self.past_volume;
-                self.past_volume + (distance * i as f32 / (buffer_size * 2) as f32)
-            })
-            .collect();
-
+        let mut offset: Vec<f32> = Vec::with_capacity(buffer_size * 2);
+        let distance = self.current_volume - self.past_volume;
+        let denom = (buffer_size * 2) as f32;
+        for i in 0..(buffer_size * 2) {
+            offset.push(self.past_volume + (distance * i as f32 / denom));
+        }
         self.past_volume = self.current_volume;
-
         offset
     }
 
@@ -270,8 +268,10 @@ impl RenderManager {
         }
 
         let mut remaining_buffer_size = buffer_size;
-        let mut total_rendered_per_batch: Vec<Vec<StereoWaveform>> = Vec::new();
+        // Collect ops for visualization only
         let mut total_ops: Resizeable2DVec<RenderOp> = Resizeable2DVec::new(1);
+        // Final combined waveform we build progressively
+        let mut combined_sw = StereoWaveform::new_empty();
 
         let vtx = self.visualization.channel.clone();
         let normalizer = self.visualization.normalizer;
@@ -357,9 +357,9 @@ impl RenderManager {
                         }
 
                         if any_data_rendered && min_samples_processed > 0 {
-                            // Store the per-voice rendered waveforms for this batch
-                            total_rendered_per_batch.push(rendered_per_voice);
-
+                            // Mix this batch now into the running stereo waveform
+                            let batch_sw = sum_all_waveforms(rendered_per_voice);
+                            combined_sw.append(batch_sw);
                             (min_samples_processed, false)
                         } else if any_data_rendered {
                             // Some data rendered, but min_samples_processed is zero
@@ -399,18 +399,8 @@ impl RenderManager {
             }
         }
 
-        // Now, we have total_rendered_per_batch: Vec<Vec<StereoWaveform>>
-        // Each inner Vec<StereoWaveform> corresponds to per-voice waveforms for a batch
-        // Now, we need to sum the per-voice waveforms for each batch and append them to build the final combined waveform
-
-        if !total_rendered_per_batch.is_empty() {
-            let mut combined_sw = StereoWaveform::new_empty();
-
-            for rendered_per_voice in total_rendered_per_batch {
-                let batch_sw = sum_all_waveforms(rendered_per_voice);
-                combined_sw.append(batch_sw);
-            }
-
+        // If we rendered anything, pad to the buffer size and return
+        if combined_sw.l_buffer.len() > 0 {
             combined_sw.pad(buffer_size);
 
             // Visualization

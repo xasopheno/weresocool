@@ -1,9 +1,6 @@
-use weresocool_ast::follow::types::FollowNF;
-
 use crate::renderable::{Offset, RenderOp, Renderable};
 use crate::{Oscillator, StereoWaveform};
 
-#[cfg(feature = "app")]
 #[derive(Debug, Clone, PartialEq)]
 pub struct RenderVoice {
     pub sample_index: usize,

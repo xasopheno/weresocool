@@ -173,8 +173,7 @@ impl Voice {
                 let new_filtered_sample = Voice::process_filter(&mut self.filters, new_sample);
 
                 if self.old_filters.is_some() {
-                    let old_filtered_sample =
-                        Voice::process_filter(&mut self.old_filters, new_sample);
+                    let old_filtered_sample = Voice::process_filter(&mut self.old_filters, new_sample);
 
                     new_sample = Voice::process_crossfade(
                         &mut self.filter_crossfade_index,

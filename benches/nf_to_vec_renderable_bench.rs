@@ -6,9 +6,17 @@ use weresocool::{
 };
 
 use weresocool_instrument::renderable::nf_to_vec_renderable;
+use std::path::Path;
 
 fn nf_to_vec_renderable_bench(c: &mut Criterion) {
     let filename = "songs/test/render_op_get_batch.socool".to_string();
+    if !Path::new(&filename).exists() {
+        eprintln!(
+            "Skipping nf_to_vec_renderable_bench: missing test file {}",
+            filename
+        );
+        return;
+    }
     c.bench_function("nf_to_vec_renderable_bench", |b| {
         b.iter(|| {
             let (nf, basis, mut table) = match Filename(&filename)
