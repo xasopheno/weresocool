@@ -272,6 +272,14 @@ impl Normalize for Op {
                 }
             }
 
+            Op::Midi { channels } => {
+                // Attach midi channels to each PointOp
+                let chans = channels.clone();
+                input.fmap_mut(|op| {
+                    op.midi.extend(chans.iter().cloned());
+                });
+            }
+
             Op::WithLengthRatioOf {
                 with_length_of,
                 main,

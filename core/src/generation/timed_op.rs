@@ -84,6 +84,7 @@ impl TimedOp {
             follows: vec![],
             colors: vec![],
             wgsl: vec![],
+            midi: vec![],
         }
     }
 

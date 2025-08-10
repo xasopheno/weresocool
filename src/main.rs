@@ -43,17 +43,38 @@ fn main() -> Result<(), Error> {
             } else {
                 Once
             };
+            #[cfg(target_os = "macos")]
+            if sub_matches.get_flag("midi") {
+                // Best-effort spawn of weresocool_midi UDP bridge (direct, so stdout is visible)
+                let server_path = std::env::var("WSC_MIDI_SERVER")
+                    .unwrap_or_else(|_| "/Users/danny/code/weresocool_midi/target/debug/rust-midi2-ump-jit".to_string());
+                match std::process::Command::new(&server_path).spawn() {
+                    Ok(_) => {}
+                    Err(e) => eprintln!("Failed to start MIDI server at '{}': {}", server_path, e),
+                }
+            }
             play::play(
                 sub_matches.get_one::<String>("filename").unwrap(),
                 cwd,
                 play_type,
             )?;
         }
-        Some(("watch", sub_matches)) => play::play(
-            sub_matches.get_one::<String>("filename").unwrap(),
-            cwd,
-            Watch,
-        )?,
+        Some(("watch", sub_matches)) => {
+            #[cfg(target_os = "macos")]
+            if sub_matches.get_flag("midi") {
+                let server_path = std::env::var("WSC_MIDI_SERVER")
+                    .unwrap_or_else(|_| "/Users/danny/code/weresocool_midi/target/debug/rust-midi2-ump-jit".to_string());
+                match std::process::Command::new(&server_path).spawn() {
+                    Ok(_) => {}
+                    Err(e) => eprintln!("Failed to start MIDI server at '{}': {}", server_path, e),
+                }
+            }
+            play::play(
+                sub_matches.get_one::<String>("filename").unwrap(),
+                cwd,
+                Watch,
+            )?
+        }
         Some(("demo", _)) => demo::demo()?,
         Some(("print", sub_matches)) => print::print(sub_matches)?,
         _e => {

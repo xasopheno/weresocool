@@ -64,6 +64,7 @@ impl RenderVoice {
                 follows: current_op.follows.clone(),
                 colors: current_op.colors.clone(),
                 wgsl: current_op.wgsl.clone(),
+                midi: current_op.midi.clone(),
                 ..*current_op
             });
             self.sample_index += samples_left_in_batch;
@@ -78,6 +79,7 @@ impl RenderVoice {
                 follows: current_op.follows.clone(),
                 colors: current_op.colors.clone(),
                 wgsl: current_op.wgsl.clone(),
+                midi: current_op.midi.clone(),
                 ..*current_op
             });
 

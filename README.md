@@ -1,3 +1,7 @@
+## MIDI Output
+
+See `midi.md` for the approach and notes on the UDP bridge to `weresocool_midi`.
+
 # **WereSoCool**
 ![Cool Tests](https://github.com/xasopheno/WereSoCool/workflows/Cool%20Tests/badge.svg)
 

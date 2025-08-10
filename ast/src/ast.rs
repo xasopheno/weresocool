@@ -2,6 +2,12 @@ use crate::datagen::Scale;
 use crate::Term;
 use num_rational::Rational64;
 
+#[derive(Clone, Debug, PartialEq, Serialize, Deserialize, Hash, Ord, PartialOrd, Eq)]
+pub struct MidiTarget {
+    /// Zero-based MIDI channel (0..15)
+    pub channel: u8,
+}
+
 #[derive(Debug, Clone, PartialEq, Hash)]
 pub struct FunDef {
     pub name: String,
@@ -119,6 +125,10 @@ pub enum Op {
     },
     ModulateBy {
         operations: Vec<Term>,
+    },
+    /// Annotate ops to be sent to MIDI channels
+    Midi {
+        channels: Vec<u8>,
     },
     //
     WithLengthRatioOf {

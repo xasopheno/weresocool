@@ -20,12 +20,24 @@ pub fn app() -> clap::Command {
                         .long("watch")
                         .action(ArgAction::SetTrue)
                         .help("On file save, the composition will be re-rendered"),
+                )
+                .arg(
+                    Arg::new("midi")
+                        .long("midi")
+                        .action(ArgAction::SetTrue)
+                        .help("Enable MIDI output bridge and auto-run weresocool_midi server"),
                 ),
         )
         .subcommand(
             Command::new("watch")
                 .about("Same as play --watch")
-                .arg(arg!([filename]).required(true)),
+                .arg(arg!([filename]).required(true))
+                .arg(
+                    Arg::new("midi")
+                        .long("midi")
+                        .action(ArgAction::SetTrue)
+                        .help("Enable MIDI output bridge and auto-run weresocool_midi server"),
+                ),
         )
         .subcommand(Command::new("demo").about("Hear a cool sound"))
         .subcommand(

@@ -73,6 +73,8 @@ pub struct PointOp {
     pub colors: Vec<u64>,
     /// WGSL block IDs
     pub wgsl: Vec<u64>,
+    /// MIDI targets (channels)
+    pub midi: Vec<u8>,
 }
 
 impl Default for PointOp {
@@ -96,6 +98,7 @@ impl Default for PointOp {
             follows: vec![],
             colors: vec![],
             wgsl: vec![],
+            midi: vec![],
         }
     }
 }
@@ -265,6 +268,7 @@ impl Mul<PointOp> for PointOp {
                 .collect(),
             colors: self.colors.iter().chain(&other.colors).map(|c| c.to_owned()).collect(),
             wgsl: self.wgsl.iter().chain(&other.wgsl).map(|c| c.to_owned()).collect(),
+            midi: self.midi.iter().chain(&other.midi).cloned().collect(),
         }
     }
 }
@@ -322,6 +326,7 @@ impl<'a> Mul<&'a PointOp> for &PointOp {
                 .chain(&other.wgsl)
                 .map(|c| c.to_owned())
                 .collect(),
+            midi: self.midi.iter().chain(&other.midi).cloned().collect(),
         }
     }
 }
@@ -377,6 +382,7 @@ impl MulAssign for PointOp {
                 .chain(&other.wgsl)
                 .map(|c| c.to_owned())
                 .collect(),
+            midi: self.midi.iter().chain(&other.midi).cloned().collect(),
         }
     }
 }
@@ -442,6 +448,7 @@ impl PointOp {
                 .chain(&other.wgsl)
                 .map(|c| c.to_owned())
                 .collect(),
+            midi: self.midi.iter().chain(&other.midi).cloned().collect(),
         }
     }
 
@@ -454,6 +461,7 @@ impl PointOp {
             g: Ratio::new(1, 1),
             l: Ratio::new(1, 1),
             wgsl: vec![],
+            midi: vec![],
             ..Default::default()
         }
     }
@@ -466,6 +474,7 @@ impl PointOp {
             g: Ratio::new(0, 1),
             l: Ratio::new(1, 1),
             wgsl: vec![],
+            midi: vec![],
             ..Default::default()
         }
     }

@@ -35,7 +35,8 @@ impl GetLengthRatio for Op {
             | Op::PanM { .. }
             | Op::Tag(_)
             | Op::WGSL(_)
-            | Op::Gain { .. } => Ok(Ratio::from_integer(1)),
+            | Op::Gain { .. }
+            | Op::Midi { .. } => Ok(Ratio::from_integer(1)),
 
             Op::CSV1d { .. } => {
                 let mut nf = NormalForm::init();

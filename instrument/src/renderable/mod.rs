@@ -42,6 +42,9 @@ pub struct RenderOp {
     pub follows: Vec<FollowNF>,
     pub colors: Vec<String>,
     pub wgsl: Vec<u64>,
+    pub midi: Vec<u8>,
+    /// Scalar gain (pre-pan), derived from g * basis.g
+    pub gain_scalar: f64,
 }
 
 impl RenderOp {
@@ -71,6 +74,8 @@ impl RenderOp {
             follows: Vec::new(),
             colors: Vec::new(),
             wgsl: Vec::new(),
+            midi: Vec::new(),
+            gain_scalar: 1.0,
         }
     }
 
@@ -100,6 +105,8 @@ impl RenderOp {
             follows: Vec::new(),
             colors: Vec::new(),
             wgsl: Vec::new(),
+            midi: Vec::new(),
+            gain_scalar: 1.0,
         }
     }
     pub fn init_silent_with_length(l: f64) -> Self {
@@ -128,6 +135,8 @@ impl RenderOp {
             follows: Vec::new(),
             colors: Vec::new(),
             wgsl: Vec::new(),
+            midi: Vec::new(),
+            gain_scalar: 0.0,
         }
     }
 
@@ -163,6 +172,8 @@ impl RenderOp {
             follows: vec![],
             colors: vec![],
             wgsl: Vec::new(),
+            midi: Vec::new(),
+            gain_scalar: 0.0,
         }
     }
 }
@@ -293,6 +304,8 @@ fn pointop_to_renderop(
         follows: point_op.follows.clone(),
         colors: point_op.colors.iter().map(|c| c.to_string()).collect(),
         wgsl: point_op.wgsl.clone(),
+        midi: point_op.midi.clone(),
+        gain_scalar: r_to_f64(point_op.g * basis.g).clamp(0.0, 2.0),
     };
 
     *time += point_op.l * basis.l;

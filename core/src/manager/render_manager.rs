@@ -8,6 +8,7 @@ use crate::{
 };
 use log::info;
 use opmap::OpMap;
+use std::collections::{HashMap, HashSet};
 use std::sync::mpsc::Sender;
 use std::{path::PathBuf, sync::mpsc::SendError};
 use weresocool_ast::{Defs};
@@ -18,6 +19,52 @@ use weresocool_instrument::renderable::{
 };
 use weresocool_instrument::StereoWaveform;
 use weresocool_shared::Settings;
+
+mod midi_client {
+    use serde::Serialize;
+    use std::net::UdpSocket;
+
+    #[derive(Debug)]
+    pub struct MidiClient {
+        socket: UdpSocket,
+        addr: String,
+    }
+
+    impl MidiClient {
+        pub fn new(addr: &str) -> std::io::Result<Self> {
+            let socket = UdpSocket::bind("127.0.0.1:0")?; // ephemeral port
+            socket.set_nonblocking(true)?;
+            Ok(Self { socket, addr: addr.to_string() })
+        }
+
+        pub fn send(&self, msg: &impl Serialize) {
+            if let Ok(buf) = serde_json::to_vec(msg) {
+                if let Err(e) = self.socket.send_to(&buf, &self.addr) {
+                    eprintln!("weresocool: failed to send MIDI UDP: {}", e);
+                }
+            }
+        }
+    }
+
+    #[derive(Serialize)]
+    #[serde(tag = "type")]
+    pub enum MidiMsg {
+        NoteOn { ch: u8, note: u8, vel: u8 },
+        NoteOff { ch: u8, note: u8, vel: u8 },
+        Pan { ch: u8, value: u8 },
+        NoteOnAt { ch: u8, note: u8, vel: u8, delay_ms: u64 },
+        NoteOffAt { ch: u8, note: u8, vel: u8, delay_ms: u64 },
+        PanAt { ch: u8, value: u8, delay_ms: u64 },
+        Expr { ch: u8, value: u8 },
+        ExprAt { ch: u8, value: u8, delay_ms: u64 },
+    }
+
+    pub fn freq_to_midi_note(freq_hz: f64, a4: f64) -> u8 {
+        if freq_hz <= 0.0 { return 0; }
+        let midi = 69.0 + 12.0 * (freq_hz / a4).log2();
+        midi.round().clamp(0.0, 127.0) as u8
+    }
+}
 
 pub type KillChannel = Option<Sender<bool>>;
 
@@ -48,6 +95,10 @@ pub struct RenderManager {
     paused: bool,
     total_samples_per_loop: usize,
     samples_processed: usize,
+    // MIDI
+    midi_client: Option<midi_client::MidiClient>,
+    midi_on: HashSet<(usize, usize, i64)>, // (voice, event, channel)
+    midi_notes: HashMap<(usize, usize, i64), u8>, // note per key
 }
 
 
@@ -166,6 +217,9 @@ impl RenderManager {
             paused: false,
             total_samples_per_loop: 0,
             samples_processed: 0,
+            midi_client: midi_client::MidiClient::new("127.0.0.1:6479").ok(),
+            midi_on: HashSet::new(),
+            midi_notes: HashMap::new(),
         }
     }
 
@@ -193,6 +247,9 @@ impl RenderManager {
             paused: false,
             total_samples_per_loop: 0,
             samples_processed: 0,
+            midi_client: None,
+            midi_on: HashSet::new(),
+            midi_notes: HashMap::new(),
         }
     }
 
@@ -272,10 +329,14 @@ impl RenderManager {
         let mut total_ops: Resizeable2DVec<RenderOp> = Resizeable2DVec::new(1);
         // Final combined waveform we build progressively
         let mut combined_sw = StereoWaveform::new_empty();
+        // MIDI ops accumulated for this read window
+        let mut midi_ops: Vec<RenderOp> = Vec::new();
 
         let vtx = self.visualization.channel.clone();
         let normalizer = self.visualization.normalizer;
 
+        // Track absolute sample position at the start of this read
+        let mut read_start_samples = self.samples_processed;
         while remaining_buffer_size > 0 {
             // Compute next_exists before mutable borrow
             let next_exists = self.exists_next_render();
@@ -309,8 +370,15 @@ impl RenderManager {
                                     let samples = batch.iter().map(|op| op.samples).sum::<usize>();
                                     min_samples_processed = min_samples_processed.min(samples);
 
+                                    // Split MIDI-directed ops from audio-directed
+                                    let (midi_batch, mut audio_batch): (Vec<_>, Vec<_>) = batch
+                                        .into_iter()
+                                        .partition(|op| !op.midi.is_empty());
+
+                                    midi_ops.extend(midi_batch.into_iter());
+
                                     let voice_rendered =
-                                        batch.render(&mut voice.oscillator, Some(&offset));
+                                        audio_batch.render(&mut voice.oscillator, Some(&offset));
                                     rendered_per_voice.push(voice_rendered);
 
                                     if let Some(_vtx) = &vtx {
@@ -328,7 +396,7 @@ impl RenderManager {
                                         // op
                                         // })
                                         // .collect();
-                                        let b: Vec<_> = batch
+                                        let b: Vec<_> = audio_batch
                                             .iter()
                                             .filter(|op| op.index % 10 == 0)
                                             .cloned()
@@ -360,6 +428,8 @@ impl RenderManager {
                             // Mix this batch now into the running stereo waveform
                             let batch_sw = sum_all_waveforms(rendered_per_voice);
                             combined_sw.append(batch_sw);
+                            // Advance absolute playhead samples
+                            self.samples_processed = self.samples_processed.saturating_add(min_samples_processed);
                             (min_samples_processed, false)
                         } else if any_data_rendered {
                             // Some data rendered, but min_samples_processed is zero
@@ -396,6 +466,54 @@ impl RenderManager {
             if samples_processed == 0 {
                 // No samples processed, break to avoid infinite loop
                 break;
+            }
+        }
+
+        // Fire MIDI for current window using op.t timing (NoteOn only at op start; NoteOff at op end)
+        if let Some(client) = &self.midi_client {
+            let a4 = 440.0f64;
+            let sr = Settings::global().sample_rate as f64;
+            for op in &midi_ops {
+                if op.midi.is_empty() { continue; }
+
+                // Voice→channel mapping (overlay):
+                let ch1: u8 = if op.midi.len() == 1 {
+                    let base = op.midi[0].max(1).min(16);
+                    (((base - 1) as usize + op.voice) % 16) as u8 + 1
+                } else {
+                    op.midi[op.voice % op.midi.len()]
+                };
+                let ch = (ch1.saturating_sub(1)).min(15);
+
+                let note = midi_client::freq_to_midi_note(op.f, a4);
+                let pan_val = (((op.p + 1.0) / 2.0) * 127.0).round().clamp(0.0, 127.0) as u8;
+
+                let is_start = op.index == 0;
+                let is_end = op.index + op.samples >= op.total_samples;
+
+                // Compute delays relative to this read start, based on op.t (seconds)
+                let start_samples = (op.t * sr).round() as usize;
+                let end_samples = start_samples.saturating_add(op.total_samples);
+                let delay_on_ms = if start_samples > read_start_samples {
+                    ((start_samples - read_start_samples) as f64 / sr * 1000.0).round() as u64
+                } else { 0 };
+                let delay_off_ms = if end_samples > read_start_samples {
+                    ((end_samples - read_start_samples) as f64 / sr * 1000.0).round() as u64
+                } else { 0 };
+
+                if is_start {
+                    // Use velocity to control per-hit loudness (works best for drums)
+                    // Map op.gain_scalar in [0.0..2.0] to [1..127], with Gm 1.0 -> 100
+                    let mut vel_f = (op.gain_scalar * 100.0).round();
+                    if vel_f < 1.0 { vel_f = 1.0; }
+                    if vel_f > 127.0 { vel_f = 127.0; }
+                    let vel = vel_f as u8;
+                    client.send(&midi_client::MidiMsg::PanAt { ch, value: pan_val, delay_ms: delay_on_ms });
+                    client.send(&midi_client::MidiMsg::NoteOnAt { ch, note, vel: vel, delay_ms: delay_on_ms });
+                }
+                if is_end {
+                    client.send(&midi_client::MidiMsg::NoteOffAt { ch, note, vel: 64, delay_ms: delay_off_ms });
+                }
             }
         }
 

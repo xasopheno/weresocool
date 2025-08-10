@@ -119,6 +119,7 @@ pub fn eeg_datum_to_point_op(
         follows: vec![],
         colors: vec![],
         wgsl: vec![],
+        midi: vec![],
     }
 }
 
