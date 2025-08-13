@@ -1,5 +1,5 @@
 use crate::generation::Op4D;
-use num_rational::Rational64;
+use num_rational::{Rational64, Ratio};
 use serde::{Deserialize, Serialize};
 use weresocool_ast::{NameSet, OscType, PointOp, ASR};
 use weresocool_instrument::Basis;
@@ -74,6 +74,8 @@ impl TimedOp {
             reverb: Some(self.reverb),
             attack: self.decay,
             decay: self.decay,
+            sustain: Ratio::new(1,1),
+            release: self.decay,
             asr: self.asr,
             portamento: self.portamento,
             osc_type: self.osc_type.clone(),

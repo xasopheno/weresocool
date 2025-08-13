@@ -55,6 +55,10 @@ pub struct PointOp {
     pub attack: Rational64,
     /// Decay Length
     pub decay: Rational64,
+    /// Sustain level (1.0 keeps current_gain)
+    pub sustain: Rational64,
+    /// Release Length
+    pub release: Rational64,
     /// Attack/Sustain/Release Type
     pub asr: ASR,
     /// Portamento Length
@@ -89,6 +93,8 @@ impl Default for PointOp {
             reverb: None,
             attack: Ratio::new(1, 1),
             decay: Ratio::new(1, 1),
+            sustain: Ratio::new(1, 1),
+            release: Ratio::new(1, 1),
             asr: ASR::Long,
             portamento: Ratio::new(1, 1),
             osc_type: OscType::None,
@@ -250,6 +256,8 @@ impl Mul<PointOp> for PointOp {
             },
             attack: self.attack * other.attack,
             decay: self.decay * other.decay,
+            sustain: self.sustain * other.sustain,
+            release: self.release * other.release,
             asr: other.asr,
             portamento: self.portamento * other.portamento,
             names,
@@ -298,6 +306,8 @@ impl<'a> Mul<&'a PointOp> for &PointOp {
             },
             attack: self.attack * other.attack,
             decay: self.decay * other.decay,
+            sustain: self.sustain * other.sustain,
+            release: self.release * other.release,
             asr: other.asr,
             portamento: self.portamento * other.portamento,
             names,
@@ -354,6 +364,8 @@ impl MulAssign for PointOp {
             },
             attack: self.attack * other.attack,
             decay: self.decay * other.decay,
+            sustain: self.sustain * other.sustain,
+            release: self.release * other.release,
             asr: other.asr,
             portamento: self.portamento * other.portamento,
             names,
@@ -420,6 +432,8 @@ impl PointOp {
             },
             attack: self.attack * other.attack,
             decay: self.decay * other.decay,
+            sustain: self.sustain * other.sustain,
+            release: self.release * other.release,
             asr: other.asr,
             portamento: self.portamento * other.portamento,
             names,

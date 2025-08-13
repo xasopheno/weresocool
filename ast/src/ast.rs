@@ -82,6 +82,14 @@ pub enum Op {
         decay: Rational64,
         asr: ASR,
     },
+    #[allow(clippy::upper_case_acronyms)]
+    ASDR {
+        attack: Rational64,
+        decay: Rational64,
+        sustain: Rational64,
+        release: Rational64,
+        asr: ASR,
+    },
     Portamento {
         m: Rational64,
     },

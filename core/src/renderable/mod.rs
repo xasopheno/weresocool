@@ -94,6 +94,8 @@ mod tests {
                 reverb: None,
                 attack: 44_100.0,
                 decay: 44_100.0,
+                sustain: 1.0,
+                release: 44_100.0,
                 asr: ASR::Long,
                 samples: 44_100,
                 total_samples: 44_100,
@@ -110,6 +112,8 @@ mod tests {
                 follows: vec![],
                 colors: vec![],
                 wgsl: vec![],
+                midi: vec![],
+                gain_scalar: 1.0,
             },
             RenderOp {
                 f: 330.0,
@@ -120,6 +124,8 @@ mod tests {
                 reverb: None,
                 attack: 44_100.0,
                 decay: 44_100.0,
+                sustain: 1.0,
+                release: 44_100.0,
                 asr: ASR::Long,
                 samples: 44_100,
                 total_samples: 44_100,
@@ -136,6 +142,8 @@ mod tests {
                 follows: vec![],
                 colors: vec![],
                 wgsl: vec![],
+                midi: vec![],
+                gain_scalar: 1.0,
             },
             RenderOp {
                 f: 0.0,
@@ -146,6 +154,8 @@ mod tests {
                 reverb: None,
                 attack: 44_100.0,
                 decay: 44_100.0,
+                sustain: 1.0,
+                release: 44_100.0,
                 asr: ASR::Long,
                 samples: 44_100,
                 index: 0,
@@ -162,6 +172,8 @@ mod tests {
                 follows: vec![],
                 colors: vec![],
                 wgsl: vec![],
+                midi: vec![],
+                gain_scalar: 0.0,
             },
         ]];
         assert_eq!(result, expected);

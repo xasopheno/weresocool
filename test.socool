@@ -9,11 +9,11 @@ thing1 = {
         Fm 4/3,
         Fm 6/5,
         Fm 6/5,
+        Fm 9/8,
     ]
     | Fm 1/2
     | Lm 1/4
     | Gm 2
-    | Midi(1)
     | Repeat 16
 }
 
@@ -36,6 +36,7 @@ thing3 = {
         {1/1, 2, 1, 1},
         {1/1, 0, 1, -1},
     ]
+    | Seq [Fm 1, Fm 0]
     | Seq [
         Fm 3/4, Fm 9/8, Fm 5/4, Fm 1/2
     ]
@@ -67,13 +68,30 @@ thing2 = {
     | FitLength thing1
 }
 
+thing5 = {
+    Overlay [
+        {9/4, 9, 1, 1},
+        {9/4, 0, 1, -1},
+        {2/1, 8, 1, 1},
+        {2/1, 0, 1, -1},
+        {5/3, 3, 1, 1},
+        {5/3, 0, 1, -1},
+    ]
+    | Seq [
+        Fm 1
+    ]
+    | FitLength thing1
+}
+
 main = {
     Overlay [
-        thing1,
-        thing2,
+        -- thing1,
+        -- thing2,
         thing3,
-        thing4,
+        -- thing4,
+        -- thing5,
     ] 
     | Lm 3/4
     | Repeat 36
+    | ASDR(0.01, 1, 0, 0)
 }

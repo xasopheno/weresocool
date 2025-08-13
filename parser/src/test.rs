@@ -463,7 +463,7 @@ mod tests {
             }
         "#;
         
-        let processed = process_wgsl_blocks(input, &mut defs);
+        let processed = process_wgsl_blocks(input, &mut defs, true);
         
         // Verify that the WGSL code was extracted and replaced with a token
         assert!(!processed.contains("WGSL {"));

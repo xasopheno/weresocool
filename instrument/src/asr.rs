@@ -14,6 +14,8 @@ impl Voice {
             calculate_long_gain(
                 self.past.gain,
                 self.current.gain,
+                self.sustain,
+                self.release,
                 silence_now,
                 index,
                 self.attack,
@@ -24,6 +26,8 @@ impl Voice {
             calculate_short_gain(
                 self.past.gain,
                 self.current.gain,
+                self.sustain,
+                self.release,
                 silence_next,
                 index,
                 self.attack,
@@ -38,47 +42,84 @@ impl Voice {
 pub fn calculate_short_gain(
     past_gain: f64,
     current_gain: f64,
+    sustain_level: f64,
+    release_length: usize,
     silence_next: bool,
     index: usize,
     mut attack_length: usize,
     mut decay_length: usize,
     total_length: usize,
 ) -> f64 {
-    let short = is_short(total_length, attack_length, decay_length);
-    if short {
-        attack_length = total_length / 2;
-        decay_length = total_length / 2;
+    // Scale A/D/(optional R) to fit within total_length when needed
+    let mut release_len = if silence_next { release_length } else { 0 };
+    let needed = attack_length + decay_length + release_len;
+    if needed > total_length && needed > 0 {
+        let scale = total_length as f64 / needed as f64;
+        attack_length = ((attack_length as f64 * scale).max(1.0)).round() as usize;
+        decay_length = ((decay_length as f64 * scale).max(1.0)).round() as usize;
+        release_len = ((release_len as f64 * scale).max(0.0)).round() as usize;
+    }
+
+    // Phase boundaries
+    let sustain_gain = current_gain * sustain_level;
+    let attack_end = attack_length;
+    let decay_end = attack_length + decay_length;
+    let release_start = if silence_next {
+        total_length.saturating_sub(release_len)
+    } else {
+        usize::MAX // no release inside this op
     };
 
-    if index < attack_length {
+    if index < attack_end {
         gain_at_index(past_gain, current_gain, index, attack_length)
-    } else if index > total_length - decay_length && silence_next {
-        gain_at_index(current_gain, 0.0, total_length - index, decay_length)
+    } else if index < decay_end {
+        let local_index = index - attack_end;
+        gain_at_index(current_gain, sustain_gain, local_index, decay_length)
+    } else if index >= release_start {
+        let time_into_release = index - release_start;
+        gain_at_index(sustain_gain, 0.0, time_into_release, release_len)
     } else {
-        current_gain
+        sustain_gain
     }
 }
 /// Calculate gain when decay happens during next op
 pub fn calculate_long_gain(
     past_gain: f64,
     current_gain: f64,
+    sustain_level: f64,
+    release_length: usize,
     silence_now: bool,
     index: usize,
     mut attack_length: usize,
     mut decay_length: usize,
     total_length: usize,
 ) -> f64 {
-    let short = is_short(total_length, attack_length, decay_length);
-    if short {
-        attack_length = total_length;
-        decay_length = total_length;
-    };
-    if index < attack_length {
-        gain_at_index(past_gain, current_gain, index, attack_length)
-    } else if index < decay_length && silence_now {
-        gain_at_index(current_gain, 0.0, index, decay_length)
+    if silence_now {
+        // Silent op: perform release only, starting immediately, from previous op's sustain level
+        let base_gain = past_gain;
+        let sustain_gain = base_gain * sustain_level;
+        if index < release_length {
+            gain_at_index(sustain_gain, 0.0, index, release_length)
+        } else {
+            0.0
+        }
     } else {
-        current_gain
+        // Sounding op: perform A/D then hold sustain; release handled in following silent op
+        let short = is_short(total_length, attack_length, decay_length);
+        if short {
+            attack_length = total_length;
+            decay_length = total_length;
+        };
+        let sustain_gain = current_gain * sustain_level;
+
+        if index < attack_length {
+            gain_at_index(past_gain, current_gain, index, attack_length)
+        } else if index < attack_length + decay_length {
+            let local_index = index - attack_length;
+            gain_at_index(current_gain, sustain_gain, local_index, decay_length)
+        } else {
+            sustain_gain
+        }
     }
 }
 

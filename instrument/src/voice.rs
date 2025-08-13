@@ -23,11 +23,14 @@ pub struct Voice {
     pub old_osc_type: Option<OscType>,
     pub attack: usize,
     pub decay: usize,
+    pub sustain: f64,
+    pub release: usize,
     pub asr: ASR,
     pub filters: Option<Vec<BiquadFilter>>,
     pub old_filters: Option<Vec<BiquadFilter>>,
     pub filter_crossfade_index: usize,
     pub osc_crossfade_index: usize,
+    pub loudness_factor: f64,
 }
 
 #[derive(Clone, Debug, PartialEq, Copy)]
@@ -91,11 +94,14 @@ impl Voice {
             old_osc_type: None,
             attack: Settings::global().sample_rate as usize,
             decay: Settings::global().sample_rate as usize,
+            sustain: 1.0,
+            release: Settings::global().sample_rate as usize,
             asr: ASR::Long,
             filters: None,
             old_filters: None,
             filter_crossfade_index: 0,
             osc_crossfade_index: 0,
+            loudness_factor: 1.0,
         }
     }
 
@@ -114,20 +120,12 @@ impl Voice {
             self.offset_current.frequency,
         );
 
-        let op_gain = self.calculate_op_gain(
-            op.next_out,
-            self.silence_now(),
-            self.silence_next(op),
-            op.index + op.samples,
-            op.total_samples,
-        ) * loudness_normalization(self.offset_current.frequency);
-
         // self.reverb
         // .model
         // .update(self.current.reverb.unwrap_or(0.0) as f32);
 
-        let gain_factor = op_gain * offset.gain;
-        let sample_limit = if op.samples > 250 { op.samples } else { 250 };
+        // Smooth only a tiny window to avoid masking short attacks
+        let sample_limit = if op.samples > 64 { 64 } else { op.samples.max(1) };
         // let apply_reverb = self.reverb.state.map_or(false, |s| s > 0.0);
 
         let sound_to_silence = self.sound_to_silence();
@@ -140,7 +138,17 @@ impl Voice {
                 self.offset_past.frequency,
                 self.offset_current.frequency,
             );
-            let gain = gain_at_index(self.offset_past.gain, gain_factor, index, sample_limit);
+            // Per-sample envelope gain with proper attack/decay/sustain/release
+            let op_env = self.calculate_op_gain(
+                op.next_out,
+                self.silence_now(),
+                self.silence_next(op),
+                op.index + index,
+                op.total_samples,
+            ) * self.loudness_factor;
+            let target_gain = op_env * offset.gain;
+            // Smooth transition from previous op's end to current target gain
+            let gain = gain_at_index(self.offset_past.gain, target_gain, index, sample_limit);
             let info = SampleInfo { frequency, gain };
 
             self.phase = Voice::calculate_current_phase(&info, &self.osc_type, self.phase);
@@ -246,6 +254,9 @@ impl Voice {
 
         self.past.gain = self.past_gain_from_op(op);
         self.current.gain = self.current_gain_from_op(op);
+
+        // Precompute a stable loudness normalization factor per op
+        self.loudness_factor = loudness_normalization(self.current.frequency);
     }
 
     fn update_osc_type(&mut self, op: &RenderOp) {
@@ -276,6 +287,8 @@ impl Voice {
     fn update_attack_decay_asr(&mut self, op: &RenderOp) {
         self.attack = op.attack.trunc() as usize;
         self.decay = op.decay.trunc() as usize;
+        self.sustain = op.sustain;
+        self.release = op.release.trunc() as usize;
         self.asr = op.asr;
     }
 

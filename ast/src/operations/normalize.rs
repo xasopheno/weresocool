@@ -185,6 +185,17 @@ impl Normalize for Op {
             Op::AD { attack, decay, asr } => input.fmap_mut(|op| {
                 op.attack *= attack;
                 op.decay *= decay;
+                // AD maps to ADSR with sustain=1 and release=decay
+                op.sustain *= Ratio::new(1, 1);
+                op.release *= decay;
+                op.asr = *asr;
+            }),
+
+            Op::ASDR { attack, decay, sustain, release, asr } => input.fmap_mut(|op| {
+                op.attack *= attack;
+                op.decay *= decay;
+                op.sustain *= sustain;
+                op.release *= release;
                 op.asr = *asr;
             }),
 
