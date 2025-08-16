@@ -20,6 +20,7 @@ pub enum Op {
     Color(u64),
     Follow(crate::follow::types::Follow),
     AsIs,
+    Keep,
     Out,
     Id(String),
     Tag(String),
@@ -132,6 +133,9 @@ pub enum Op {
         operations: Vec<Term>,
     },
     ModulateBy {
+        operations: Vec<Term>,
+    },
+    Trim {
         operations: Vec<Term>,
     },
     /// Annotate ops to be sent to MIDI channels

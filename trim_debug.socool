@@ -1,0 +1,21 @@
+{ f: 220, l: 1, g: 1.0, p: 0.0}
+
+thing1 = {
+    Sequence [
+        AsIs,
+        Fm 9/8,
+        Fm 5/4,
+        Fm 3/2
+    ]
+}
+
+test1 = {
+    thing1 
+    | Trim [Keep, Lm 1, Keep, Lm 1]
+}
+
+main = {
+    test1
+    | Repeat 4
+    | Lm 1/4
+}

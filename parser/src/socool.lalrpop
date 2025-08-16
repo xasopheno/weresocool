@@ -304,6 +304,7 @@ BaseOperation: Term = {
       q_factor: q
     }),
     "AsIs" => Term::Op(AsIs {}),
+    "Keep" => Term::Op(Keep {}),
     "Out" => Term::Op(Out {}),
     "Sine" <pow: Rational?> => {
       Term::Op(Sine { pow })
@@ -384,6 +385,7 @@ BaseOperation: Term = {
     r"(Sequence|Seq)" "[" <operations: Operations> "]" => Term::Op(Sequence { operations: operations }),
     "Overlay" "[" <operations: Operations> "]" => Term::Op(Overlay { operations: operations }),
     r"(ModulateBy|ModBy)" "[" <operations: Operations> "]" => Term::Op(ModulateBy { operations: operations }),
+    "Trim" "[" <operations: Operations> "]" => Term::Op(Trim { operations: operations }),
     // Midi pipe: Midi(10) or Midi[10,11]
     r"Midi" "(" <ch: Int> ")" => Term::Op(Midi { channels: vec![(ch as i64).clamp(1, 16) as u8] }),
     r"Midi" "[" <chs: Comma<Int>> "]" => Term::Op(Midi { channels: chs.into_iter().map(|c| (c as i64).clamp(1,16) as u8).collect() }),

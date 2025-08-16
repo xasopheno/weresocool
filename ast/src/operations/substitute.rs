@@ -88,6 +88,9 @@ impl Substitute for Op {
             Op::ModulateBy { operations } => Ok(Term::Op(Op::ModulateBy {
                 operations: substitute_operations(operations.to_vec(), normal_form, defs)?,
             })),
+            Op::Trim { operations } => Ok(Term::Op(Op::Trim {
+                operations: substitute_operations(operations.to_vec(), normal_form, defs)?,
+            })),
             Op::Lambda {
                 term,
                 input_name,

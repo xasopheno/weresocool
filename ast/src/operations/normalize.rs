@@ -31,6 +31,7 @@ impl Normalize for Op {
                 });
             }
             Op::AsIs => {}
+            Op::Keep => {}
             Op::WGSL(wgsl_id) => {
                 // Add the WGSL id to the wgsl array of each PointOp
                 input.fmap_mut(|op| {
@@ -361,6 +362,144 @@ impl Normalize for Op {
                 result.length_ratio = input.length_ratio;
 
                 *input = result
+            }
+
+            Op::Trim { operations } => {
+                // Find all positions of Keep in the operations list
+                let keep_positions: Vec<usize> = operations
+                    .iter()
+                    .enumerate()
+                    .filter_map(|(i, op)| {
+                        if matches!(op, Term::Op(Op::Keep)) {
+                            Some(i)
+                        } else {
+                            None
+                        }
+                    })
+                    .collect();
+                
+                if keep_positions.is_empty() {
+                    return Err(Error::with_msg("Trim operation requires at least one Keep marker"));
+                }
+
+                // Calculate segment lengths - operations are ONLY used for their length ratios
+                let mut segment_lengths = Vec::new();
+                let mut total_length = Rational64::from_integer(0);
+                
+                for op in operations.iter() {
+                    // All operations just contribute their length ratio for segmenting
+                    // They are NOT applied to the audio content
+                    let length = match op {
+                        Term::Op(Op::Keep) => Rational64::from_integer(1),
+                        Term::Op(Op::Length { m }) => *m,
+                        Term::Op(Op::Silence { m }) => *m,
+                        // For other operations, get their length effect
+                        _ => {
+                            let mut nf = NormalForm::init();
+                            op.apply_to_normal_form(&mut nf, defs)?;
+                            nf.length_ratio
+                        }
+                    };
+                    segment_lengths.push(length);
+                    total_length += length;
+                }
+
+                // Extract each Keep segment and then overlay them
+                let mut extracted_segments = Vec::new();
+                let input_length = input.length_ratio;
+                let mut max_segment_length = Rational64::from_integer(0);
+                
+                for &keep_position in &keep_positions {
+                    // Calculate where this Keep starts and ends as ratios of the total
+                    let mut length_before_keep = Rational64::from_integer(0);
+                    for i in 0..keep_position {
+                        length_before_keep += segment_lengths[i];
+                    }
+                    let keep_length = segment_lengths[keep_position];
+                    
+                    let segment_start_ratio = length_before_keep / total_length;
+                    let segment_end_ratio = (length_before_keep + keep_length) / total_length;
+
+                    // Calculate actual positions in the input based on ratios
+                    let segment_start = segment_start_ratio * input_length;
+                    let segment_end = segment_end_ratio * input_length;
+                    let segment_length = segment_end - segment_start;
+                    
+                    if segment_length > max_segment_length {
+                        max_segment_length = segment_length;
+                    }
+
+                    // Extract operation lines that fall within this segment
+                    let mut segment_result = NormalForm::init_empty();
+                    let mut current_time = Rational64::from_integer(0);
+                    
+                    for op_line in &input.operations {
+                        let line_length: Rational64 = op_line.iter().map(|point_op| point_op.l).sum();
+                        let op_end = current_time + line_length;
+                        
+                        // Check if this operation line overlaps with our target segment
+                        if op_end > segment_start && current_time < segment_end {
+                            let mut trimmed_line = Vec::new();
+                            let mut line_time = current_time;
+                            
+                            for point_op in op_line {
+                                let point_end = line_time + point_op.l;
+                                
+                                // Check if this point overlaps with our target segment
+                                if point_end > segment_start && line_time < segment_end {
+                                    let mut trimmed_point = point_op.clone();
+                                    
+                                    // Adjust point length if it extends beyond segment
+                                    let point_start_in_segment = if line_time < segment_start {
+                                        segment_start
+                                    } else {
+                                        line_time
+                                    };
+                                    
+                                    let point_end_in_segment = if point_end > segment_end {
+                                        segment_end
+                                    } else {
+                                        point_end
+                                    };
+                                    
+                                    trimmed_point.l = point_end_in_segment - point_start_in_segment;
+                                    
+                                    if trimmed_point.l > Rational64::from_integer(0) {
+                                        trimmed_line.push(trimmed_point);
+                                    }
+                                }
+                                
+                                line_time = point_end;
+                            }
+                            
+                            if !trimmed_line.is_empty() {
+                                segment_result.operations.push(trimmed_line);
+                            }
+                        }
+                        
+                        current_time = op_end;
+                    }
+
+                    segment_result.length_ratio = segment_length;
+                    extracted_segments.push(segment_result);
+                }
+                
+                // If there's only one Keep, just use that segment
+                // If there are multiple Keeps, sequence them
+                if extracted_segments.len() == 1 {
+                    *input = extracted_segments.into_iter().next().unwrap();
+                } else {
+                    // Sequence multiple segments using the Sequence operation
+                    let sequence_terms: Vec<Term> = extracted_segments
+                        .into_iter()
+                        .map(|seg| Term::Nf(seg))
+                        .collect();
+                    
+                    let sequence_op = Op::Sequence { operations: sequence_terms };
+                    let mut result = NormalForm::init();
+                    sequence_op.apply_to_normal_form(&mut result, defs)?;
+                    *input = result;
+                }
             }
 
             Op::Overlay { operations } => {

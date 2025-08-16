@@ -37,6 +37,7 @@ impl GetLengthRatio for Op {
             | Op::Tag(_)
             | Op::WGSL(_)
             | Op::Gain { .. }
+            | Op::Keep
             | Op::Midi { .. } => Ok(Ratio::from_integer(1)),
 
             Op::CSV1d { .. } => {
@@ -109,6 +110,33 @@ impl GetLengthRatio for Op {
             }
 
             Op::ModulateBy { .. } => Ok(Ratio::from_integer(1)),
+
+            Op::Trim { operations } => {
+                // Find Keep position and calculate length ratio for that segment
+                let keep_position = operations
+                    .iter()
+                    .position(|op| matches!(op, Term::Op(Op::Keep)))
+                    .unwrap_or(0); // Default to first segment if no Keep found
+
+                // Calculate total length of all segments
+                let mut total_length = Ratio::from_integer(0);
+                let mut segment_length = Ratio::from_integer(0);
+                
+                for (i, op) in operations.iter().enumerate() {
+                    let op_length = op.get_length_ratio(normal_form, defs)?;
+                    if i == keep_position {
+                        segment_length = op_length;
+                    }
+                    total_length += op_length;
+                }
+
+                // Return the proportion of the total that this segment represents
+                if total_length == Ratio::from_integer(0) {
+                    Ok(Ratio::from_integer(0))
+                } else {
+                    Ok(segment_length / total_length)
+                }
+            }
 
             Op::Focus {
                 main, op_to_apply, ..
