@@ -48,6 +48,7 @@ pub struct Settings {
     pub max_freq: f64,
     pub min_freq: f64,
     pub crossfade_period: usize,
+    pub lookahead_buffers: usize,
 }
 
 impl Default for Settings {
@@ -63,7 +64,7 @@ pub const fn default_settings() -> Settings {
         mic: false,
         sample_rate: 48_000.0,
         yin_buffer_size: 2048,
-        buffer_size: 1024 * 24,
+        buffer_size: 1024 * 12,
         crossfade_period: 1024 * 4,
         probability_threshold: 0.3,
         gain_threshold_min: 0.0,
@@ -71,6 +72,7 @@ pub const fn default_settings() -> Settings {
         interleaved: true,
         max_freq: 4_500.0,
         min_freq: 20.0,
+        lookahead_buffers: 2,
     }
 }
 

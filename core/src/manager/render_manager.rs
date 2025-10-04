@@ -9,7 +9,7 @@ use crate::{
 use log::info;
 use opmap::OpMap;
 use std::collections::{HashMap, HashSet};
-use std::sync::mpsc::Sender;
+use std::sync::{mpsc::Sender, Arc, Mutex};
 use std::{path::PathBuf, sync::mpsc::SendError};
 use weresocool_ast::{Defs};
 use weresocool_ast::follow::evaluate::EvaluateAction;
@@ -75,6 +75,13 @@ pub enum VisEvent {
 }
 pub type VisualizationChannel = Option<crossbeam_channel::Sender<VisEvent>>;
 
+#[derive(Debug, Clone)]
+pub struct PrerenderedBuffer {
+    pub waveform: StereoWaveform,
+    pub ramp: Vec<f32>,
+    pub ops: Vec<Vec<RenderOp>>,
+}
+
 #[derive(Debug)]
 pub struct Visualization {
     normalizer: Normalizer,
@@ -99,6 +106,10 @@ pub struct RenderManager {
     midi_client: Option<midi_client::MidiClient>,
     midi_on: HashSet<(usize, usize, i64)>, // (voice, event, channel)
     midi_notes: HashMap<(usize, usize, i64), u8>, // note per key
+    // Double buffering
+    buffer_sender: Option<crossbeam_channel::Sender<PrerenderedBuffer>>,
+    buffer_receiver: Option<crossbeam_channel::Receiver<PrerenderedBuffer>>,
+    render_thread: Option<std::thread::JoinHandle<()>>,
 }
 
 
@@ -201,6 +212,15 @@ impl RenderManager {
                 Settings::init_default();
             };
         }
+
+        let lookahead_buffers = Settings::global().lookahead_buffers;
+        let (buffer_sender, buffer_receiver) = if lookahead_buffers > 0 {
+            let (s, r) = crossbeam_channel::bounded(lookahead_buffers);
+            (Some(s), Some(r))
+        } else {
+            (None, None)
+        };
+
         Self {
             visualization: Visualization {
                 channel: visualization_channel,
@@ -220,6 +240,9 @@ impl RenderManager {
             midi_client: midi_client::MidiClient::new("127.0.0.1:6479").ok(),
             midi_on: HashSet::new(),
             midi_notes: HashMap::new(),
+            buffer_sender,
+            buffer_receiver,
+            render_thread: None,
         }
     }
 
@@ -231,6 +254,15 @@ impl RenderManager {
                 Settings::init_default();
             };
         }
+
+        let lookahead_buffers = Settings::global().lookahead_buffers;
+        let (buffer_sender, buffer_receiver) = if lookahead_buffers > 0 {
+            let (s, r) = crossbeam_channel::bounded(lookahead_buffers);
+            (Some(s), Some(r))
+        } else {
+            (None, None)
+        };
+
         Self {
             visualization: Visualization {
                 channel: None,
@@ -250,6 +282,9 @@ impl RenderManager {
             midi_client: None,
             midi_on: HashSet::new(),
             midi_notes: HashMap::new(),
+            buffer_sender,
+            buffer_receiver,
+            render_thread: None,
         }
     }
 
@@ -313,6 +348,76 @@ impl RenderManager {
             }
             self.store = None
         }
+    }
+
+    /// Pop a pre-rendered buffer from the queue (non-blocking, for audio thread)
+    pub fn pop_buffer(&self) -> Option<PrerenderedBuffer> {
+        if let Some(receiver) = &self.buffer_receiver {
+            receiver.try_recv().ok()
+        } else {
+            None
+        }
+    }
+
+    /// Start background rendering thread that pre-renders buffers
+    /// Returns the JoinHandle for the rendering thread
+    pub fn start_background_rendering(render_manager: Arc<Mutex<RenderManager>>) -> std::thread::JoinHandle<()> {
+        let rm_clone = Arc::clone(&render_manager);
+
+        // Get the sender once at the start, outside the loop
+        let sender = {
+            let rm = rm_clone.lock().unwrap();
+            rm.buffer_sender.clone()
+        };
+
+        std::thread::Builder::new()
+            .name("weresocool-render".to_string())
+            .spawn(move || {
+                let Some(sender) = sender else {
+                    return; // No sender, exit thread
+                };
+
+                loop {
+                    // Try to render the next buffer
+                    let (should_continue, buffer_result) = {
+                        let mut rm = rm_clone.lock().unwrap();
+
+                        // Check if we should stop
+                        if rm.paused {
+                            std::thread::sleep(std::time::Duration::from_millis(10));
+                            (true, None)
+                        } else {
+                            // Render a buffer
+                            let buffer_size = Settings::global().buffer_size;
+                            let result = rm.read(
+                                buffer_size,
+                                Offset {
+                                    freq: 1.0,
+                                    gain: 1.0,
+                                },
+                            );
+
+                            let should_continue = result.is_some() || rm.exists_current_render();
+                            (should_continue, result)
+                        }
+                    }; // Lock is released here
+
+                    // Send buffer WITHOUT holding the lock
+                    if let Some((waveform, ramp, ops)) = buffer_result {
+                        // This will block if the queue is full, which is what we want
+                        // But we're not holding the lock, so audio thread can still pop
+                        if sender.send(PrerenderedBuffer { waveform, ramp, ops }).is_err() {
+                            break; // Channel closed, exit thread
+                        }
+                    }
+
+                    if !should_continue {
+                        // No more data to render
+                        std::thread::sleep(std::time::Duration::from_millis(10));
+                    }
+                }
+            })
+            .expect("Failed to spawn render thread")
     }
 
     pub fn read(

@@ -2,7 +2,7 @@ use crate::{
     manager::RenderManager,
     write::{new_write_output_buffer, write_output_buffer},
 };
-use weresocool_instrument::{renderable::Offset, RenderOp, StereoWaveform};
+use weresocool_instrument::{renderable::Offset, StereoWaveform};
 
 use std::sync::{Arc, Mutex};
 use weresocool_error::Error;
@@ -15,9 +15,35 @@ pub fn real_time_render_manager(
     let pa = pa::PortAudio::new()?;
     let output_stream_settings = get_output_settings(&pa)?;
 
-    let output_stream = pa.open_non_blocking_stream(output_stream_settings, move |args| {
-        let batch: Option<(StereoWaveform, Vec<f32>, Vec<Vec<RenderOp>>)> =
-            render_manager.lock().unwrap().read(
+    let use_lookahead = Settings::global().lookahead_buffers > 0;
+
+    if use_lookahead {
+        // Use background rendering with lookahead buffers
+        let _render_thread = RenderManager::start_background_rendering(Arc::clone(&render_manager));
+
+        let output_stream = pa.open_non_blocking_stream(output_stream_settings, move |args| {
+            // Try to pop a pre-rendered buffer from the queue
+            let buffer = render_manager.lock().unwrap().pop_buffer();
+
+            if let Some(prerendered) = buffer {
+                new_write_output_buffer(args.buffer, prerendered.waveform, prerendered.ramp);
+                pa::Continue
+            } else {
+                // No buffer available (underrun) - output silence
+                write_output_buffer(
+                    args.buffer,
+                    StereoWaveform::new(Settings::global().buffer_size),
+                );
+
+                pa::Continue
+            }
+        })?;
+
+        Ok(output_stream)
+    } else {
+        // Original behavior: render directly on audio thread (no lookahead)
+        let output_stream = pa.open_non_blocking_stream(output_stream_settings, move |args| {
+            let batch = render_manager.lock().unwrap().read(
                 Settings::global().buffer_size,
                 Offset {
                     freq: 1.0,
@@ -25,20 +51,21 @@ pub fn real_time_render_manager(
                 },
             );
 
-        if let Some((b, ramp, _ops)) = batch {
-            new_write_output_buffer(args.buffer, b, ramp);
-            pa::Continue
-        } else {
-            write_output_buffer(
-                args.buffer,
-                StereoWaveform::new(Settings::global().buffer_size),
-            );
+            if let Some((b, ramp, _ops)) = batch {
+                new_write_output_buffer(args.buffer, b, ramp);
+                pa::Continue
+            } else {
+                write_output_buffer(
+                    args.buffer,
+                    StereoWaveform::new(Settings::global().buffer_size),
+                );
 
-            pa::Continue
-        }
-    })?;
+                pa::Continue
+            }
+        })?;
 
-    Ok(output_stream)
+        Ok(output_stream)
+    }
 }
 
 pub fn get_output_settings(pa: &pa::PortAudio) -> Result<pa::stream::OutputSettings<f32>, Error> {
