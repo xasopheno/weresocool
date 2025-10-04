@@ -398,7 +398,7 @@ impl RenderManager {
                                         // .collect();
                                         let b: Vec<_> = audio_batch
                                             .iter()
-                                            .filter(|op| op.index % 10 == 0)
+                                            // .filter(|op| op.index % 8 == 0)
                                             .cloned()
                                             .map(|mut op| {
                                                 let follow_offset = op.follows.eval_value(
