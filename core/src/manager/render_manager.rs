@@ -314,11 +314,33 @@ impl RenderManager {
     fn ramp_to_current_volume(&mut self, buffer_size: usize) -> Vec<f32> {
         let mut offset: Vec<f32> = Vec::with_capacity(buffer_size * 2);
         let distance = self.current_volume - self.past_volume;
-        let denom = (buffer_size * 2) as f32;
+
+        // Use crossfade_period for smoother volume transitions
+        let crossfade_samples = weresocool_shared::Settings::global().crossfade_period;
+
+        // If we're far from target volume, use longer crossfade
+        let ramp_length = if distance.abs() > 0.3 {
+            crossfade_samples.max(buffer_size * 2)
+        } else {
+            buffer_size * 2
+        };
+
+        let denom = ramp_length as f32;
         for i in 0..(buffer_size * 2) {
-            offset.push(self.past_volume + (distance * i as f32 / denom));
+            if i < ramp_length {
+                offset.push(self.past_volume + (distance * i as f32 / denom));
+            } else {
+                offset.push(self.current_volume);
+            }
         }
-        self.past_volume = self.current_volume;
+
+        // Only update past_volume if we've reached the target
+        if buffer_size * 2 >= ramp_length {
+            self.past_volume = self.current_volume;
+        } else {
+            self.past_volume += distance * (buffer_size * 2) as f32 / denom;
+        }
+
         offset
     }
 
@@ -356,6 +378,15 @@ impl RenderManager {
             receiver.try_recv().ok()
         } else {
             None
+        }
+    }
+
+    /// Drain all buffers from the queue (use when switching renders to clear stale audio)
+    pub fn drain_buffer_queue(&self) {
+        if let Some(receiver) = &self.buffer_receiver {
+            while receiver.try_recv().is_ok() {
+                // Discard all buffers
+            }
         }
     }
 
@@ -403,12 +434,22 @@ impl RenderManager {
                     }; // Lock is released here
 
                     // Send buffer WITHOUT holding the lock
-                    if let Some((waveform, ramp, ops)) = buffer_result {
-                        // This will block if the queue is full, which is what we want
-                        // But we're not holding the lock, so audio thread can still pop
-                        if sender.send(PrerenderedBuffer { waveform, ramp, ops }).is_err() {
-                            break; // Channel closed, exit thread
+                    let buffer = if let Some((waveform, ramp, ops)) = buffer_result {
+                        PrerenderedBuffer { waveform, ramp, ops }
+                    } else {
+                        // No audio to render - send silence to keep queue full and prevent crackling
+                        let buffer_size = Settings::global().buffer_size;
+                        PrerenderedBuffer {
+                            waveform: StereoWaveform::new(buffer_size),
+                            ramp: vec![1.0; buffer_size * 2],
+                            ops: vec![],
                         }
+                    };
+
+                    // This will block if the queue is full, which is what we want
+                    // But we're not holding the lock, so audio thread can still pop
+                    if sender.send(buffer).is_err() {
+                        break; // Channel closed, exit thread
                     }
 
                     if !should_continue {
@@ -501,9 +542,13 @@ impl RenderManager {
                                         // op
                                         // })
                                         // .collect();
+                                        let vis_threshold = (Settings::global().vis_filter_rate * 100.0) as usize;
                                         let b: Vec<_> = audio_batch
                                             .iter()
-                                            // .filter(|op| op.index % 8 == 0)
+                                            .filter(|op| {
+                                                let hash = op.index.wrapping_mul(2654435761) % 100;
+                                                hash < vis_threshold
+                                            })
                                             .cloned()
                                             .map(|mut op| {
                                                 let follow_offset = op.follows.eval_value(
@@ -557,7 +602,7 @@ impl RenderManager {
 
             if render_finished || (next_exists && !Settings::global().loop_play) {
                 if self.exists_next_render() {
-                    self.inc_render();
+                    self.inc_render(true); // Copy oscillators for seamless transitions
                     // self.push_store_to_current_render();
                     continue; // Continue processing with next render
                 } else {
@@ -652,8 +697,7 @@ impl RenderManager {
         }
     }
 
-    pub fn inc_render(&mut self) {
-        info!("Incrementing render");
+    pub fn inc_render(&mut self, copy_oscillators: bool) {
         // Update the render index
 
         // Since self.renders has length 2, we can split it at index 1
@@ -665,33 +709,28 @@ impl RenderManager {
             (&second[0], &mut first[0])
         };
 
-        if let (Some(current_voices), Some(next_voices)) =
-            (current_render_option.as_ref(), next_render_option.as_mut())
-        {
-            // Ensure that both renders have the same number of voices
-            let min_length = std::cmp::min(current_voices.len(), next_voices.len());
-            for i in 0..min_length {
-                let current_oscillator = &current_voices[i].oscillator;
-                let next_oscillator = &mut next_voices[i].oscillator;
+        // Only copy oscillators if requested (for seamless transitions)
+        if copy_oscillators {
+            if let (Some(current_voices), Some(next_voices)) =
+                (current_render_option.as_ref(), next_render_option.as_mut())
+            {
+                // Ensure that both renders have the same number of voices
+                let min_length = std::cmp::min(current_voices.len(), next_voices.len());
+                for i in 0..min_length {
+                    let current_oscillator = &current_voices[i].oscillator;
+                    let next_oscillator = &mut next_voices[i].oscillator;
 
-                next_oscillator.copy_state_from(current_oscillator);
+                    next_oscillator.copy_state_from(current_oscillator);
+                }
             }
         }
 
         // Reset samples processed for the new render
         self.samples_processed = 0;
 
-        // Update total_samples_per_loop for the new render
-        if let Some(next_render) = next_render_option.as_ref() {
-            if !next_render.is_empty() {
-                self.total_samples_per_loop = next_render[0].ops.iter().map(|op| op.samples).sum();
-            }
-        }
-
-        // Send visualization reset event if necessary
+        // Send visualization reset event if necessary (non-blocking to prevent audio glitches)
         if let Some(vtx) = self.visualization.channel.clone() {
-            vtx.send(VisEvent::Reset)
-                .expect("Couldn't send VisEvent::Reset");
+            let _ = vtx.try_send(VisEvent::Reset);
         }
 
         *self.current_render() = None;
@@ -761,9 +800,9 @@ mod render_manager_tests {
     #[test]
     fn test_inc_render() {
         let mut r = RenderManager::init(None, None, false, None);
-        r.inc_render();
+        r.inc_render(true);
         assert_eq!(r.render_idx, 1);
-        r.inc_render();
+        r.inc_render(true);
         assert_eq!(r.render_idx, 0);
     }
 

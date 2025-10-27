@@ -1,6 +1,5 @@
 use crate::parser::process_wgsl_blocks;
 use weresocool_ast::Defs;
-use regex;
 
 #[test]
 fn test_extract_nested_wgsl_blocks() {

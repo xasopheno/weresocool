@@ -58,6 +58,19 @@ impl ColorMap {
     pub fn get_id_for_color(&self, color: &ColorValue) -> Option<String> {
         self.map.get_by_right(color).cloned()
     }
+
+    /// Update next_id to be at least the given value
+    /// Used when merging ColorMaps to ensure unique IDs
+    pub fn update_next_id(&mut self, next_id: u64) {
+        if next_id > self.next_id {
+            self.next_id = next_id;
+        }
+    }
+
+    /// Get the current next_id value
+    pub fn next_id(&self) -> u64 {
+        self.next_id
+    }
 }
 
 pub trait GenColor: DynClone + Debug + Send + Sync {

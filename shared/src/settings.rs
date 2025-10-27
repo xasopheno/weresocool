@@ -49,6 +49,7 @@ pub struct Settings {
     pub min_freq: f64,
     pub crossfade_period: usize,
     pub lookahead_buffers: usize,
+    pub vis_filter_rate: f32,
 }
 
 impl Default for Settings {
@@ -73,6 +74,7 @@ pub const fn default_settings() -> Settings {
         max_freq: 4_500.0,
         min_freq: 20.0,
         lookahead_buffers: 2,
+        vis_filter_rate: 0.125,
     }
 }
 

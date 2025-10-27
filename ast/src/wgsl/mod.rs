@@ -30,6 +30,19 @@ impl WgslMap {
     pub fn get(&self, id: &u8) -> Option<&String> {
         self.map.get(id)
     }
+
+    /// Update next_id to be at least the given value
+    /// Used when merging WgslMaps to ensure unique IDs
+    pub fn update_next_id(&mut self, next_id: u8) {
+        if next_id > self.next_id {
+            self.next_id = next_id;
+        }
+    }
+
+    /// Get the current next_id value
+    pub fn next_id(&self) -> u8 {
+        self.next_id
+    }
 }
 
 // Helper function to prepare WGSL code for naga validation

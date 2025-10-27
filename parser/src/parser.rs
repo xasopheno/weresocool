@@ -174,6 +174,15 @@ pub fn parse_file(
         for (id, code) in &parsed_composition.defs.wgsl.map {
             defs.wgsl.map.insert(*id, code.clone());
         }
+        // Update next_id to ensure subsequent imports get unique IDs
+        defs.wgsl.update_next_id(parsed_composition.defs.wgsl.next_id());
+
+        // Merge colors from imported files
+        for (name, value) in parsed_composition.defs.colors.map.iter() {
+            defs.colors.map.insert(name.clone(), value.clone());
+        }
+        // Update next_id to ensure subsequent imports get unique IDs
+        defs.colors.update_next_id(parsed_composition.defs.colors.next_id());
 
         for (scope_name, scope) in parsed_composition.defs.ops.iter() {
             for (n, term) in scope {
@@ -189,10 +198,11 @@ pub fn parse_file(
     match init {
         Ok(init) => {
             let mut result_defs = process_op_table(&mut defs)?;
-            
-            // Ensure WGSL blocks are preserved in the final result
+
+            // Ensure WGSL blocks and colors are preserved in the final result
             result_defs.wgsl = defs.wgsl.clone();
-            
+            result_defs.colors = defs.colors.clone();
+
             if let Some(background_color) = init.background_color.clone() {
                 result_defs.colors.insert_by_name("background_color".to_string(), background_color);
             }
