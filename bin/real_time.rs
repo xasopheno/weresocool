@@ -22,11 +22,14 @@ fn main() -> Result<(), Error> {
     let (tx, rx): (Sender<VisEvent>, Receiver<VisEvent>) = crossbeam_channel::unbounded();
 
     let render_manager = Arc::new(Mutex::new(RenderManager::init(
-        render_voices,
         Some(tx),
         None,
+        None,
         false,
+        None,
     )));
+
+    render_manager.lock().unwrap().push_render(render_voices, false);
 
     let mut stream = real_time_render_manager(Arc::clone(&render_manager))?;
     stream.start()?;

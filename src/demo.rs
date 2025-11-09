@@ -12,7 +12,7 @@ pub fn demo() -> Result<(), Error> {
     were_so_cool_logo(Some("Playing"), Some("Demo".to_owned()));
 
     let (tx, rx) = std::sync::mpsc::channel::<bool>();
-    let render_manager = Arc::new(Mutex::new(RenderManager::init(None, Some(tx), true, None)));
+    let render_manager = Arc::new(Mutex::new(RenderManager::init(None, None, Some(tx), true, None)));
     let (render_voices, _ )= prepare_render_outside(Language(DEMO), None)?;
 
     render_manager

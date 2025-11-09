@@ -72,6 +72,8 @@ pub type KillChannel = Option<Sender<bool>>;
 pub enum VisEvent {
     Ops(opmap::OpMap<Op4D>),
     Reset,
+    AudioReady,
+    VisReady,
 }
 pub type VisualizationChannel = Option<crossbeam_channel::Sender<VisEvent>>;
 
@@ -86,6 +88,7 @@ pub struct PrerenderedBuffer {
 pub struct Visualization {
     normalizer: Normalizer,
     channel: VisualizationChannel,
+    reverse_channel: Option<crossbeam_channel::Receiver<VisEvent>>,
 }
 
 #[derive(Debug)]
@@ -201,6 +204,7 @@ pub struct RenderManagerSettings {
 impl RenderManager {
     pub fn init(
         visualization_channel: VisualizationChannel,
+        reverse_channel: Option<crossbeam_channel::Receiver<VisEvent>>,
         kill_channel: KillChannel,
         once: bool,
         settings: Option<RenderManagerSettings>,
@@ -224,6 +228,7 @@ impl RenderManager {
         Self {
             visualization: Visualization {
                 channel: visualization_channel,
+                reverse_channel,
                 normalizer: Normalizer::default(),
             },
             renders: [None, None],
@@ -267,6 +272,7 @@ impl RenderManager {
             visualization: Visualization {
                 channel: None,
                 normalizer: Normalizer::default(),
+                reverse_channel: None,
             },
             renders: [None, None],
             store: None,
@@ -305,6 +311,19 @@ impl RenderManager {
 
     pub fn pause(&mut self) {
         self.paused = true;
+    }
+
+    /// Check for VisReady event and unpause if received (non-blocking)
+    pub fn check_vis_ready(&mut self) -> bool {
+        if let Some(rx) = &self.visualization.reverse_channel {
+            if let Ok(event) = rx.try_recv() {
+                if matches!(event, VisEvent::VisReady) {
+                    self.play();
+                    return true;
+                }
+            }
+        }
+        false
     }
 
     pub fn update_volume(&mut self, volume: f32) {
@@ -728,9 +747,12 @@ impl RenderManager {
         // Reset samples processed for the new render
         self.samples_processed = 0;
 
-        // Send visualization reset event if necessary (non-blocking to prevent audio glitches)
+        // Send visualization reset and audio ready events (non-blocking to prevent audio glitches)
         if let Some(vtx) = self.visualization.channel.clone() {
             let _ = vtx.try_send(VisEvent::Reset);
+            let _ = vtx.try_send(VisEvent::AudioReady);
+            // Pause until VisReady is received
+            self.pause();
         }
 
         *self.current_render() = None;
@@ -786,7 +808,7 @@ mod render_manager_tests {
 
     #[test]
     fn test_ramp_to_current_value() {
-        let mut rm = RenderManager::init(None, None, false, None);
+        let mut rm = RenderManager::init(None, None, None, false, None);
         rm.update_volume(0.9);
         assert!(cmp_f32(rm.current_volume, f32::powf(0.9, 2.0)));
         let ramp = rm.ramp_to_current_volume(2);
@@ -799,7 +821,7 @@ mod render_manager_tests {
 
     #[test]
     fn test_inc_render() {
-        let mut r = RenderManager::init(None, None, false, None);
+        let mut r = RenderManager::init(None, None, None, false, None);
         r.inc_render(true);
         assert_eq!(r.render_idx, 1);
         r.inc_render(true);
@@ -813,7 +835,7 @@ mod render_manager_tests {
     #[test]
     fn test_push_render() {
         Settings::init_test();
-        let mut r = RenderManager::init(None, None, false, None);
+        let mut r = RenderManager::init(None, None, None, false, None);
         assert_eq!(*r.current_render(), None);
         assert_eq!(*r.next_render(), None);
         r.push_render(render_voices_mock(), false);

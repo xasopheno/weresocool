@@ -1,7 +1,11 @@
 {
   "permissions": {
     "allow": [
-      "Bash(cargo build:*)"
+      "Bash(cargo build:*)",
+      "Bash(cargo test:*)",
+      "Bash(cargo run:*)",
+      "Bash(timeout 5 cargo run:*)",
+      "Bash(timeout 10 cargo run:*)"
     ],
     "deny": [],
     "ask": []

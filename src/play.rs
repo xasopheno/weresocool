@@ -32,7 +32,7 @@ pub fn play_once(filename: String, working_path: PathBuf) -> Result<(), Error> {
     were_so_cool_logo(Some("Playing"), Some(filename.clone()));
 
     let (tx, rx) = std::sync::mpsc::channel::<bool>();
-    let render_manager = Arc::new(Mutex::new(RenderManager::init(None, Some(tx), true, None)));
+    let render_manager = Arc::new(Mutex::new(RenderManager::init(None, None, Some(tx), true, None)));
 
     let (render_voices, _ )= prepare_render_outside(Filename(&filename), Some(working_path))?;
 
@@ -60,7 +60,7 @@ pub fn play_once(filename: String, working_path: PathBuf) -> Result<(), Error> {
 
 fn play_watch(filename: String, working_path: PathBuf) -> Result<(), Error> {
     maybe_create_file_if_needed(filename.clone(), working_path.clone());
-    let render_manager = Arc::new(Mutex::new(RenderManager::init(None, None, false, None)));
+    let render_manager = Arc::new(Mutex::new(RenderManager::init(None, None, None, false, None)));
     let (render_voices , _)= prepare_render_outside(Filename(&filename), Some(working_path.clone()))?;
     render_manager
         .lock()

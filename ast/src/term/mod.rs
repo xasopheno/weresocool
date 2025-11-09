@@ -52,7 +52,12 @@ impl GetLengthRatio for Term {
         match self {
             Term::Op(op) => op.get_length_ratio(normal_form, defs),
             Term::Nf(nf) => nf.get_length_ratio(normal_form, defs),
-            Term::FunDef(_) => Err(Error::with_msg("Cannot get length ratio of FunDef.")),
+            Term::FunDef(fun) => {
+                // Evaluate the function body to get its length ratio
+                let mut nf = NormalForm::init();
+                fun.term.apply_to_normal_form(&mut nf, defs)?;
+                nf.get_length_ratio(normal_form, defs)
+            }
             Term::Lop(lop) => lop.get_length_ratio(normal_form, defs),
             Term::Gen(generator) => generator.get_length_ratio(normal_form, defs),
         }

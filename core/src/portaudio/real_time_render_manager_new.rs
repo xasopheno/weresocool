@@ -17,7 +17,7 @@ pub fn real_time_render_manager_new(
     mic_receiver_sync: Receiver<(f32, f32)>,
     basis_f: f32,
 ) -> Result<(Arc<Mutex<RenderManager>>, cpal::Stream), Error> {
-    let render_manager = Arc::new(Mutex::new(RenderManager::init(vis_event_sender, None, false, None)));
+    let render_manager = Arc::new(Mutex::new(RenderManager::init(vis_event_sender, None, None, false, None)));
 
     let settings = Settings::global();
     let sample_rate = cpal::SampleRate(settings.sample_rate as u32);
