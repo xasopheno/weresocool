@@ -85,6 +85,7 @@ impl TimedOp {
             colors: vec![],
             wgsl: vec![],
             midi: vec![],
+            color_grading: Default::default(),
         }
     }
 

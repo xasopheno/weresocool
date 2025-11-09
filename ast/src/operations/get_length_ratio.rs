@@ -36,7 +36,14 @@ impl GetLengthRatio for Op {
             | Op::Tag(_)
             | Op::WGSL(_)
             | Op::Gain { .. }
-            | Op::Midi { .. } => Ok(Ratio::from_integer(1)),
+            | Op::Midi { .. }
+            | Op::Hue { .. }
+            | Op::Saturation { .. }
+            | Op::Brightness { .. }
+            | Op::Vibrance { .. }
+            | Op::Gamma { .. }
+            | Op::ColorBlend { .. }
+            | Op::ColorAdd { .. } => Ok(Ratio::from_integer(1)),
 
             Op::CSV1d { .. } => {
                 let mut nf = NormalForm::init();

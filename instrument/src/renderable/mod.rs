@@ -241,6 +241,7 @@ fn pointop_to_renderop(
     event: usize,
     basis: &Basis,
     next: Option<PointOp>,
+    color_map: &mut weresocool_ast::color::ColorMap,
 ) -> RenderOp {
     let settings = Settings::global();
     let mut next_l_gain = 0.0;
@@ -302,7 +303,7 @@ fn pointop_to_renderop(
             .collect(),
         next_out,
         follows: point_op.follows.clone(),
-        colors: point_op.colors.iter().map(|c| c.to_string()).collect(),
+        colors: point_op.get_transformed_colors(color_map).iter().map(|c| c.to_string()).collect(),
         wgsl: point_op.wgsl.clone(),
         midi: point_op.midi.clone(),
         gain_scalar: r_to_f64(point_op.g * basis.g).clamp(0.0, 2.0),
@@ -401,6 +402,7 @@ pub fn nf_to_vec_renderable(
                 basis,
                 settings.sample_rate,
                 settings.pad_end,
+                &mut defs.colors,
             )
         })
         .collect();
@@ -414,6 +416,7 @@ fn create_render_ops(
     basis: &Basis,
     sample_rate: f64,
     pad_end: bool,
+    color_map: &mut weresocool_ast::color::ColorMap,
 ) -> Vec<RenderOp> {
     let mut time = Rational64::new(0, 1);
     let mut result: Vec<RenderOp> = vec![];
@@ -431,6 +434,7 @@ fn create_render_ops(
             event,
             basis,
             Some(vec_point_op[next_e].clone()),
+            color_map,
         );
         result.push(op);
     }

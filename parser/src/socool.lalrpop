@@ -370,6 +370,19 @@ BaseOperation: Term = {
     // Midi pipe: Midi(10) or Midi[10,11]
     r"Midi" "(" <ch: Int> ")" => Term::Op(Midi { channels: vec![(ch as i64).clamp(1, 16) as u8] }),
     r"Midi" "[" <chs: Comma<Int>> "]" => Term::Op(Midi { channels: chs.into_iter().map(|c| (c as i64).clamp(1,16) as u8).collect() }),
+    // Color grading operations
+    "Hue" <value: Rational> => Term::Op(Hue { value }),
+    "Saturation" <value: Rational> => Term::Op(Saturation { value }),
+    "Brightness" <value: Rational> => Term::Op(Brightness { value }),
+    "Vibrance" <value: Rational> => Term::Op(Vibrance { value }),
+    "Gamma" <value: Rational> => Term::Op(Gamma { value }),
+    "Blend" <color: CssOrHex> <amount: Rational> => Term::Op(ColorBlend {
+        color_id: defs.colors.insert(parse_color_set(vec![color])),
+        amount
+    }),
+    "AddColor" <color: CssOrHex> => Term::Op(ColorAdd {
+        color_id: defs.colors.insert(parse_color_set(vec![color]))
+    }),
     "FitLength" <op: Composeable> => {
         Term::Op(
             WithLengthRatioOf { with_length_of: Box::new(op), main: None }

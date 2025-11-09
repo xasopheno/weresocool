@@ -131,6 +131,30 @@ pub enum Op {
         channels: Vec<u8>,
     },
     //
+    // Color grading operations
+    Hue {
+        value: Rational64,
+    },
+    Saturation {
+        value: Rational64,
+    },
+    Brightness {
+        value: Rational64,
+    },
+    Vibrance {
+        value: Rational64,
+    },
+    Gamma {
+        value: Rational64,
+    },
+    ColorBlend {
+        color_id: u64,
+        amount: Rational64,
+    },
+    ColorAdd {
+        color_id: u64,
+    },
+    //
     WithLengthRatioOf {
         main: Option<Box<Term>>,
         with_length_of: Box<Term>,

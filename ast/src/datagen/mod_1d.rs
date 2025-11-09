@@ -120,6 +120,7 @@ pub fn eeg_datum_to_point_op(
         colors: vec![],
         wgsl: vec![],
         midi: vec![],
+        color_grading: Default::default(),
     }
 }
 

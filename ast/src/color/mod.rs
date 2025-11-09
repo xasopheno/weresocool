@@ -6,6 +6,7 @@ use rand::prelude::*;
 use rand::seq::SliceRandom;
 use std::fmt::Debug;
 use bimap::BiHashMap;
+use num_rational::Rational64;
 // use indexmap::IndexMap;
 
 // pub type GenColorMap = IndexMap<String, Box<dyn GenColor>>;
@@ -42,7 +43,7 @@ impl ColorMap {
         id
     }
 
-    /// Associate an *explicit* name (“red”, “my_accent_colour”, …) with a colour.
+    /// Associate an *explicit* name ("red", "my_accent_colour", …) with a colour.
     /// Overwrites silently if the name was already present.
     pub fn insert_by_name(&mut self, name: String, value: ColorValue) {
         self.map.insert(name, value);
@@ -102,82 +103,47 @@ pub fn parse_color_set(colors: Vec<CssOrHex>) -> ColorValue {
     }
 }
 
-#[derive(Debug, Clone, PartialEq, Eq)]
+#[derive(Clone, Debug, PartialEq, Eq, Hash)]
 pub enum ColorValue {
-    // ColorGrad { colors: Vec<CssOrHex> },
-    // TODO: Should use the ColorSet directly
     ColorSet { colors: Vec<Color> },
     Color(CssOrHex),
-    // RandColor(String),
 }
 
-impl Eq for Color {} 
-
-impl Hash for ColorValue {
-    fn hash<H: Hasher>(&self, state: &mut H) {
+impl ColorValue {
+    /// Extract a single Color from this ColorValue.
+    /// For ColorSet, picks the first color (could be random).
+    pub fn extract_color(&self) -> Color {
         match self {
-            // ColorValue::ColorGrad { colors } => {
-                // 0.hash(state);
-                // colors.hash(state);
-            // }
+            ColorValue::Color(css_or_hex) => {
+                let s = match css_or_hex {
+                    CssOrHex::Css(name) => name.as_str(),
+                    CssOrHex::Hex(hex) => hex.as_str(),
+                };
+                parse_css_color(s)
+            }
             ColorValue::ColorSet { colors } => {
-                1.hash(state);
-                colors.hash(state);
+                // Pick first color for deterministic results
+                colors.first().cloned().unwrap_or(Color {
+                    r: 0.0,
+                    g: 0.0,
+                    b: 0.0,
+                    a: 1.0,
+                })
             }
-            ColorValue::Color(color) => {
-                2.hash(state);
-                color.hash(state);
-            }
-            // ColorValue::RandColor(id) => {
-                // 3.hash(state);
-                // id.hash(state);
-            // }
         }
     }
 }
 
-#[derive(Debug, Clone, Eq)]
+#[derive(Clone, Debug, PartialEq, Hash, Eq, Ord, PartialOrd)]
 pub enum CssOrHex {
     Css(String),
     Hex(String),
 }
 
-impl PartialEq for CssOrHex {
-    fn eq(&self, other: &Self) -> bool {
-        match (self, other) {
-            (CssOrHex::Css(a), CssOrHex::Css(b)) => a.eq_ignore_ascii_case(b),
-            (CssOrHex::Hex(a), CssOrHex::Hex(b)) => a.eq_ignore_ascii_case(b),
-            _ => false,
-        }
-    }
-}
-
-impl CssOrHex {
-    pub fn to_color(&self) -> [f32; 4] {
-        let s = match self {
-            CssOrHex::Css(s) => s,
-            CssOrHex::Hex(s) => s,
-        };
-
-        let color = csscolorparser::Color::from_str(s).unwrap();
-
-        color.to_array()
-    }
-}
-
-impl Hash for CssOrHex {
-    fn hash<H: Hasher>(&self, state: &mut H) {
-        match self {
-            CssOrHex::Css(s) => {
-                0.hash(state);
-                s.to_lowercase().hash(state);
-            }
-            CssOrHex::Hex(s) => {
-                1.hash(state);
-                s.to_lowercase().hash(state);
-            }
-        }
-    }
+#[derive(Serialize, Deserialize, Debug, Clone, PartialEq)]
+pub enum NumberOrPoint {
+    Number(f32),
+    Point { value: f32, time: f32 },
 }
 
 #[derive(Clone, Debug, PartialEq)]
@@ -191,8 +157,13 @@ pub struct Color {
 impl Hash for Color {
     fn hash<H: Hasher>(&self, state: &mut H) {
         self.r.to_bits().hash(state);
+        self.g.to_bits().hash(state);
+        self.b.to_bits().hash(state);
+        self.a.to_bits().hash(state);
     }
 }
+
+impl Eq for Color {}
 
 #[derive(Clone, Debug)]
 pub struct RandColor;
@@ -391,5 +362,154 @@ macro_rules! color {
     }};
 }
 
+// ============================================================================
+// Color Grading Functions
+// ============================================================================
 
+/// Apply color grading adjustments to a Color
+/// Applies: Hue, Brightness, Gamma, Saturation, Vibrance
+pub fn apply_color_grading(color: &Color, grading: &crate::operations::ColorGrading) -> Color {
+    let mut c = color.clone();
 
+    // Helper to convert Rational64 to f32
+    let r64_to_f32 = |r: &Rational64| -> f32 {
+        (*r.numer() as f64 / *r.denom() as f64) as f32
+    };
+
+    // 1. Brightness (additive offset)
+    let brightness = r64_to_f32(&grading.brightness);
+    c = apply_brightness(c, brightness);
+
+    // 2. Gamma (power curve)
+    let gamma = r64_to_f32(&grading.gamma);
+    c = apply_gamma(c, gamma);
+
+    // 3. Hue shift (in HSL space)
+    let hue_shift = r64_to_f32(&grading.hue);
+    c = apply_hue(c, hue_shift);
+
+    // 4. Saturation (standard HSL saturation)
+    let saturation = r64_to_f32(&grading.saturation);
+    c = apply_saturation(c, saturation);
+
+    // 5. Vibrance (smart saturation boost)
+    let vibrance = r64_to_f32(&grading.vibrance);
+    c = apply_vibrance(c, vibrance);
+
+    c
+}
+
+fn apply_brightness(mut c: Color, brightness: f32) -> Color {
+    // Simple additive offset to all RGB channels
+    c.r = (c.r + brightness).clamp(0.0, 1.0);
+    c.g = (c.g + brightness).clamp(0.0, 1.0);
+    c.b = (c.b + brightness).clamp(0.0, 1.0);
+    c
+}
+
+fn apply_gamma(mut c: Color, gamma: f32) -> Color {
+    // Power curve adjustment
+    // gamma < 1.0 = brighter, gamma > 1.0 = darker
+    if gamma > 0.0 {
+        c.r = c.r.powf(gamma).clamp(0.0, 1.0);
+        c.g = c.g.powf(gamma).clamp(0.0, 1.0);
+        c.b = c.b.powf(gamma).clamp(0.0, 1.0);
+    }
+    c
+}
+
+fn apply_hue(c: Color, hue_shift: f32) -> Color {
+    // Convert to HSL, rotate hue, convert back
+    let (h, s, l) = rgb_to_hsl(c.r, c.g, c.b);
+    let new_h = (h + hue_shift).rem_euclid(1.0); // Wrap around 0..1
+    let (r, g, b) = hsl_to_rgb(new_h, s, l);
+    Color { r, g, b, a: c.a }
+}
+
+fn apply_vibrance(c: Color, vibrance: f32) -> Color {
+    // Vibrance: boost saturation for less saturated colors
+    let (h, s, l) = rgb_to_hsl(c.r, c.g, c.b);
+
+    // Calculate boost amount: more boost for less saturated colors
+    let boost = vibrance * (1.0 - s);
+    let new_s = (s + boost).clamp(0.0, 1.0);
+
+    let (r, g, b) = hsl_to_rgb(h, new_s, l);
+    Color { r, g, b, a: c.a }
+}
+
+fn apply_saturation(c: Color, saturation: f32) -> Color {
+    // Convert to HSL, adjust saturation, convert back
+    let (h, s, l) = rgb_to_hsl(c.r, c.g, c.b);
+    let new_s = (s * saturation).clamp(0.0, 1.0);
+    let (r, g, b) = hsl_to_rgb(h, new_s, l);
+    Color { r, g, b, a: c.a }
+}
+
+fn rgb_to_hsl(r: f32, g: f32, b: f32) -> (f32, f32, f32) {
+    let max = r.max(g).max(b);
+    let min = r.min(g).min(b);
+    let delta = max - min;
+
+    let l = (max + min) / 2.0;
+
+    if delta == 0.0 {
+        return (0.0, 0.0, l); // achromatic
+    }
+
+    let s = if l < 0.5 {
+        delta / (max + min)
+    } else {
+        delta / (2.0 - max - min)
+    };
+
+    let h = if max == r {
+        ((g - b) / delta + if g < b { 6.0 } else { 0.0 }) / 6.0
+    } else if max == g {
+        ((b - r) / delta + 2.0) / 6.0
+    } else {
+        ((r - g) / delta + 4.0) / 6.0
+    };
+
+    (h, s, l)
+}
+
+fn hsl_to_rgb(h: f32, s: f32, l: f32) -> (f32, f32, f32) {
+    if s == 0.0 {
+        return (l, l, l); // achromatic
+    }
+
+    let q = if l < 0.5 {
+        l * (1.0 + s)
+    } else {
+        l + s - l * s
+    };
+
+    let p = 2.0 * l - q;
+
+    let hue_to_rgb = |p: f32, q: f32, mut t: f32| -> f32 {
+        if t < 0.0 { t += 1.0; }
+        if t > 1.0 { t -= 1.0; }
+        if t < 1.0/6.0 { return p + (q - p) * 6.0 * t; }
+        if t < 1.0/2.0 { return q; }
+        if t < 2.0/3.0 { return p + (q - p) * (2.0/3.0 - t) * 6.0; }
+        p
+    };
+
+    let r = hue_to_rgb(p, q, h + 1.0/3.0);
+    let g = hue_to_rgb(p, q, h);
+    let b = hue_to_rgb(p, q, h - 1.0/3.0);
+
+    (r, g, b)
+}
+
+/// Convert a Color to a hex string
+pub fn color_to_hex(color: &Color) -> String {
+    format!(
+        "#{:02x}{:02x}{:02x}{:02x}",
+        (color.r * 255.0).round() as u8,
+        (color.g * 255.0).round() as u8,
+        (color.b * 255.0).round() as u8,
+        (color.a * 255.0).round() as u8,
+    )
+}

@@ -280,6 +280,62 @@ impl Normalize for Op {
                 });
             }
 
+            // Color grading operations
+            Op::Hue { value } => {
+                input.fmap_mut(|op| {
+                    op.color_grading.hue += value;
+                });
+            }
+
+            Op::Saturation { value } => {
+                input.fmap_mut(|op| {
+                    op.color_grading.saturation = op
+                        .color_grading
+                        .saturation
+                        .checked_mul(value)
+                        .unwrap_or_else(|| lossy_rational_mul(op.color_grading.saturation, *value));
+                });
+            }
+
+            Op::Brightness { value } => {
+                input.fmap_mut(|op| {
+                    op.color_grading.brightness += value;
+                });
+            }
+
+            Op::Vibrance { value } => {
+                input.fmap_mut(|op| {
+                    op.color_grading.vibrance += value;
+                });
+            }
+
+            Op::Gamma { value } => {
+                input.fmap_mut(|op| {
+                    op.color_grading.gamma = op
+                        .color_grading
+                        .gamma
+                        .checked_mul(value)
+                        .unwrap_or_else(|| lossy_rational_mul(op.color_grading.gamma, *value));
+                });
+            }
+
+            Op::ColorBlend { color_id, amount } => {
+                // Add the blend color and amount to colors
+                // We'll store the color_id and handle blending at render time
+                input.fmap_mut(|op| {
+                    op.colors.push(*color_id);
+                    // Store blend amount in a special way - we'll need to track this
+                    // For now, just add the color; blending logic will be in render
+                });
+            }
+
+            Op::ColorAdd { color_id } => {
+                // Simply add the color to the palette
+                input.fmap_mut(|op| {
+                    op.colors.push(*color_id);
+                });
+            }
+
             Op::WithLengthRatioOf {
                 with_length_of,
                 main,

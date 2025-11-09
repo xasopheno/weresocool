@@ -12,6 +12,55 @@ pub mod helpers;
 mod normalize;
 pub mod substitute;
 
+#[derive(Debug, Clone, Hash, Eq, Ord, PartialEq, PartialOrd)]
+pub struct ColorGrading {
+    pub hue: Rational64,
+    pub saturation: Rational64,
+    pub brightness: Rational64,
+    pub vibrance: Rational64,
+    pub gamma: Rational64,
+}
+
+impl Default for ColorGrading {
+    fn default() -> Self {
+        ColorGrading {
+            hue: Ratio::new(0, 1),
+            saturation: Ratio::new(1, 1),
+            brightness: Ratio::new(0, 1),
+            vibrance: Ratio::new(0, 1),
+            gamma: Ratio::new(1, 1),
+        }
+    }
+}
+
+impl ColorGrading {
+    /// Check if this ColorGrading is at identity/default values (no transformation)
+    pub fn is_identity(&self) -> bool {
+        let zero = Ratio::new(0, 1);
+        let one = Ratio::new(1, 1);
+
+        self.hue == zero
+            && self.saturation == one
+            && self.brightness == zero
+            && self.vibrance == zero
+            && self.gamma == one
+    }
+}
+
+impl Mul<ColorGrading> for ColorGrading {
+    type Output = ColorGrading;
+
+    fn mul(self, other: ColorGrading) -> ColorGrading {
+        ColorGrading {
+            hue: self.hue + other.hue,
+            saturation: self.saturation * other.saturation,
+            brightness: self.brightness + other.brightness,
+            vibrance: self.vibrance + other.vibrance,
+            gamma: self.gamma * other.gamma,
+        }
+    }
+}
+
 #[derive(Clone, Debug, PartialEq)]
 pub struct Defs {
     pub ops: ScopDefs<Term>,
@@ -75,6 +124,8 @@ pub struct PointOp {
     pub wgsl: Vec<u64>,
     /// MIDI targets (channels)
     pub midi: Vec<u8>,
+    /// Color grading adjustments
+    pub color_grading: ColorGrading,
 }
 
 impl Default for PointOp {
@@ -99,6 +150,7 @@ impl Default for PointOp {
             colors: vec![],
             wgsl: vec![],
             midi: vec![],
+            color_grading: ColorGrading::default(),
         }
     }
 }
@@ -269,6 +321,7 @@ impl Mul<PointOp> for PointOp {
             colors: self.colors.iter().chain(&other.colors).map(|c| c.to_owned()).collect(),
             wgsl: self.wgsl.iter().chain(&other.wgsl).map(|c| c.to_owned()).collect(),
             midi: self.midi.iter().chain(&other.midi).cloned().collect(),
+            color_grading: self.color_grading * other.color_grading,
         }
     }
 }
@@ -327,6 +380,7 @@ impl<'a> Mul<&'a PointOp> for &PointOp {
                 .map(|c| c.to_owned())
                 .collect(),
             midi: self.midi.iter().chain(&other.midi).cloned().collect(),
+            color_grading: self.color_grading.clone() * other.color_grading.clone(),
         }
     }
 }
@@ -383,6 +437,7 @@ impl MulAssign for PointOp {
                 .map(|c| c.to_owned())
                 .collect(),
             midi: self.midi.iter().chain(&other.midi).cloned().collect(),
+            color_grading: self.color_grading.clone() * other.color_grading,
         }
     }
 }
@@ -449,6 +504,7 @@ impl PointOp {
                 .map(|c| c.to_owned())
                 .collect(),
             midi: self.midi.iter().chain(&other.midi).cloned().collect(),
+            color_grading: self.color_grading.clone() * other.color_grading,
         }
     }
 
@@ -477,6 +533,43 @@ impl PointOp {
             midi: vec![],
             ..Default::default()
         }
+    }
+
+    /// Get transformed color IDs by applying color grading to each color
+    /// and inserting the result back into the ColorMap.
+    /// This ensures same color + same grading = same ID (deduplication).
+    pub fn get_transformed_colors(&self, color_map: &mut ColorMap) -> Vec<u64> {
+        use crate::color::{apply_color_grading, ColorValue};
+
+        // Check if color grading is at default (identity) - if so, skip transformation
+        if self.color_grading.is_identity() {
+            return self.colors.clone();
+        }
+
+        self.colors
+            .iter()
+            .map(|color_id| {
+                // Look up the original color
+                let color_value = color_map.get_by_hash(color_id.to_string());
+
+                if let Some(cv) = color_value {
+                    // Extract a Color from the ColorValue
+                    let color = cv.extract_color();
+
+                    // Apply color grading transformations
+                    let transformed = apply_color_grading(&color, &self.color_grading);
+
+                    // Insert back into ColorMap as a ColorSet with single element
+                    // This will reuse existing ID if same transformed color exists
+                    color_map.insert(ColorValue::ColorSet {
+                        colors: vec![transformed],
+                    })
+                } else {
+                    // If color not found, return original ID
+                    *color_id
+                }
+            })
+            .collect()
     }
 
     //        pub fn to_op(&self) -> Op {

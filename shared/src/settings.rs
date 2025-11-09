@@ -73,7 +73,7 @@ pub const fn default_settings() -> Settings {
         interleaved: true,
         max_freq: 4_500.0,
         min_freq: 20.0,
-        lookahead_buffers: 2,
+        lookahead_buffers: 5,
         vis_filter_rate: 0.125,
     }
 }
