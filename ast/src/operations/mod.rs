@@ -1,4 +1,4 @@
-use crate::{color::ColorMap, NameSet, OscType, Term, ASR, wgsl::WgslMap};
+use crate::{color::ColorMap, NameSet, OscType, Term, ASR, wgsl::WgslMap, rand_ctx::RandCtx};
 use num_rational::{Ratio, Rational64};
 use scop::Defs as ScopDefs;
 use std::{
@@ -66,6 +66,7 @@ pub struct Defs {
     pub ops: ScopDefs<Term>,
     pub colors: ColorMap,
     pub wgsl: WgslMap,
+    pub rand_ctx: RandCtx,
 }
 
 impl Default for Defs {
@@ -74,6 +75,7 @@ impl Default for Defs {
             ops: ScopDefs::new(),
             colors: ColorMap::new(),
             wgsl: WgslMap::new(),
+            rand_ctx: RandCtx::from_u128(0xFEED_FACE_CAFE_BEEF),
         }
     }
 }

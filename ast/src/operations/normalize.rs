@@ -257,19 +257,27 @@ impl Normalize for Op {
 
             Op::Sequence { operations } => {
                 let mut result = NormalForm::init_empty();
-                for op in operations {
+                let saved_rand_ctx = defs.rand_ctx;
+                for (i, op) in operations.iter().enumerate() {
+                    // Each sequence item gets a unique rand_ctx based on its index
+                    defs.rand_ctx = saved_rand_ctx.child_ord(i as u64);
                     let mut input_clone = input.clone();
                     op.apply_to_normal_form(&mut input_clone, defs)?;
                     result = join_sequence(result, input_clone);
                 }
+                defs.rand_ctx = saved_rand_ctx;
 
                 *input = result
             }
 
             Op::Compose { operations } => {
-                for op in operations {
+                let saved_rand_ctx = defs.rand_ctx;
+                for (i, op) in operations.iter().enumerate() {
+                    // Each composed operation gets a unique rand_ctx based on its position
+                    defs.rand_ctx = saved_rand_ctx.child_ord(i as u64);
                     op.apply_to_normal_form(input, defs)?;
                 }
+                defs.rand_ctx = saved_rand_ctx;
             }
 
             Op::Midi { channels } => {
@@ -338,12 +346,11 @@ impl Normalize for Op {
 
             Op::WithLengthRatioOf {
                 with_length_of,
-                main,
+                main: _,
             } => {
-                let main_length = match main {
-                    Some(m) => m.get_length_ratio(input, defs)?,
-                    None => Rational64::from_integer(1),
-                };
+                // Use the actual length of the already-normalized input
+                // (not re-evaluated from main, which would make different random choices)
+                let main_length = input.length_ratio;
                 let target_length = with_length_of.get_length_ratio(input, defs)?;
                 let ratio = target_length / main_length;
                 let new_op = Op::Length { m: ratio };
@@ -408,19 +415,57 @@ impl Normalize for Op {
                 *input = result
             }
 
+            Op::Choose { operations } => {
+                if operations.is_empty() {
+                    return Err(Error::with_msg("Empty Choose!"));
+                }
+                // Use rand_ctx to select an index
+                let n = std::num::NonZeroUsize::new(operations.len())
+                    .ok_or_else(|| Error::with_msg("Choose with zero operations"))?;
+                let idx = defs.rand_ctx.index(n, 0);
+                // Normalize the selected operation
+                operations[idx].apply_to_normal_form(input, defs)?;
+            }
+
+            Op::Repeat { operations, count } => {
+                let mut result = NormalForm::init_empty();
+                let saved_rand_ctx = defs.rand_ctx;
+
+                for _ in 0..*count {
+                    // Bump epoch for each iteration so Choose gets fresh randomness
+                    defs.rand_ctx = defs.rand_ctx.bump_epoch();
+                    let mut input_clone = input.clone();
+
+                    // Apply all operations in the repeat chain
+                    for op in operations {
+                        op.apply_to_normal_form(&mut input_clone, defs)?;
+                    }
+
+                    result = join_sequence(result, input_clone);
+                }
+
+                defs.rand_ctx = saved_rand_ctx;
+                *input = result
+            }
+
             Op::Overlay { operations } => {
                 if operations.is_empty() {
                     return Err(Error::with_msg("Empty Overlay!"));
                 }
 
+                let saved_rand_ctx = defs.rand_ctx;
                 let normal_forms = operations
                     .iter()
-                    .map(|op| {
+                    .enumerate()
+                    .map(|(i, op)| {
+                        // Each overlay item gets a unique rand_ctx based on its index
+                        defs.rand_ctx = saved_rand_ctx.child_ord(i as u64);
                         let mut input_clone = input.clone();
                         op.apply_to_normal_form(&mut input_clone, defs)
                             .map(|_| input_clone)
                     })
                     .collect::<Result<Vec<NormalForm>, Error>>()?;
+                defs.rand_ctx = saved_rand_ctx;
 
                 let max_lr = normal_forms
                     .iter()

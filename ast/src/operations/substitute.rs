@@ -88,6 +88,21 @@ impl Substitute for Op {
             Op::ModulateBy { operations } => Ok(Term::Op(Op::ModulateBy {
                 operations: substitute_operations(operations.to_vec(), normal_form, defs)?,
             })),
+            Op::Choose { operations } => {
+                // Select one operation using rand_ctx
+                if operations.is_empty() {
+                    return Err(Error::with_msg("Empty Choose!"));
+                }
+                let n = std::num::NonZeroUsize::new(operations.len())
+                    .ok_or_else(|| Error::with_msg("Choose with zero operations"))?;
+                let idx = defs.rand_ctx.index(n, 0);
+                // Substitute only the selected operation
+                operations[idx].substitute(normal_form, defs)
+            }
+            Op::Repeat { operations, count } => Ok(Term::Op(Op::Repeat {
+                operations: substitute_operations(operations.to_vec(), normal_form, defs)?,
+                count: *count,
+            })),
             Op::Lambda {
                 term,
                 input_name,

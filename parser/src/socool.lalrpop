@@ -26,7 +26,7 @@ use weresocool_ast::follow::types::{
 };
 use weresocool_ast::color::*;
 use weresocool_ast::color_set;
-use crate::parser::{Init, handle_fit_length_recursively};
+use crate::parser::{Init, handle_fit_length_recursively, handle_repeat_recursively};
 use crate::indices::{et, random_seed};
 use crate::float_to_rational::helpers::*;
 use regex::Regex;
@@ -252,7 +252,7 @@ Index: Index = {
 
 ComposeOperation: Term = {
     <terms: Pipe<Composeable>> => {
-      Term::Op(Compose { operations: handle_fit_length_recursively(terms) })
+      Term::Op(Compose { operations: handle_fit_length_recursively(handle_repeat_recursively(terms)) })
     },
     <o: BaseOperation> => o,
 }
@@ -367,6 +367,7 @@ BaseOperation: Term = {
     r"(Sequence|Seq)" "[" <operations: Operations> "]" => Term::Op(Sequence { operations: operations }),
     "Overlay" "[" <operations: Operations> "]" => Term::Op(Overlay { operations: operations }),
     r"(ModulateBy|ModBy)" "[" <operations: Operations> "]" => Term::Op(ModulateBy { operations: operations }),
+    "Choose" "[" <operations: Operations> "]" => Term::Op(Choose { operations: operations }),
     // Midi pipe: Midi(10) or Midi[10,11]
     r"Midi" "(" <ch: Int> ")" => Term::Op(Midi { channels: vec![(ch as i64).clamp(1, 16) as u8] }),
     r"Midi" "[" <chs: Comma<Int>> "]" => Term::Op(Midi { channels: chs.into_iter().map(|c| (c as i64).clamp(1,16) as u8).collect() }),

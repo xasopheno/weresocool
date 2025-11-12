@@ -126,12 +126,18 @@ pub enum Op {
     ModulateBy {
         operations: Vec<Term>,
     },
+    Choose {
+        operations: Vec<Term>,
+    },
+    Repeat {
+        operations: Vec<Term>,
+        count: i64,
+    },
     /// Annotate ops to be sent to MIDI channels
     Midi {
         channels: Vec<u8>,
     },
     //
-    // Color grading operations
     Hue {
         value: Rational64,
     },

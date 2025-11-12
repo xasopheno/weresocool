@@ -1,0 +1,32 @@
+{ f: 311.127, l: 1, g: 1/3, p: 0 }
+
+thing1 = {
+    Overlay [
+        {1/1, 2, 1, 1},
+        {1/1, 0, 1, -1}
+    ]
+    | Choose [
+        Fm 1, Fm 9/8, Fm 5/4
+    ] | Repeat 8
+}
+
+thing2 = {
+    Overlay [
+        {1/1, 3, 1, 1},
+        {1/1, 0, 1, -1}
+    ]
+    | Choose [
+        Fm 3/4, Fm 5/8, Fm 1/2, Fm 2/3
+    ] | Repeat 5
+    | FitLength thing1
+}
+
+main = {
+    Overlay [
+        thing1 | Fm 3,
+        thing1 | Fm 2,
+        thing2
+    ]
+    | Lm 1/8
+    | Repeat 3
+}

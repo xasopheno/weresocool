@@ -281,6 +281,46 @@ pub fn handle_fit_length_recursively(terms: Vec<Term>) -> Vec<Term> {
     result
 }
 
+pub fn handle_repeat_recursively(terms: Vec<Term>) -> Vec<Term> {
+    let mut result = vec![];
+    let mut i = 0;
+
+    for term in terms.iter() {
+        match term {
+            Term::Op(Op::Sequence { operations }) => {
+                // Check if this Sequence is all AsIs operations (i.e., a Repeat)
+                let all_asis = operations.iter().all(|op| {
+                    matches!(op, Term::Op(Op::AsIs))
+                });
+
+                if all_asis && !operations.is_empty() && i > 0 {
+                    // This is a Repeat! Take all previous operations and wrap them
+                    let count = operations.len() as i64;
+                    let ops_to_repeat = result.drain(0..i).collect();
+
+                    result.push(Term::Op(Op::Repeat {
+                        operations: ops_to_repeat,
+                        count,
+                    }));
+
+                    // Reset index since we collapsed everything into a Repeat
+                    i = 1;
+                } else {
+                    // Normal Sequence, just add it
+                    result.push(term.to_owned());
+                    i += 1;
+                }
+            }
+            _ => {
+                result.push(term.to_owned());
+                i += 1;
+            }
+        }
+    }
+
+    result
+}
+
 mod tests {
     #[test]
     fn filename_and_language_to_vec_string() {

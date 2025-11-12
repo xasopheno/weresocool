@@ -8,6 +8,7 @@ pub mod generator;
 pub mod lists;
 pub mod nameset;
 pub mod operations;
+pub mod rand_ctx;
 pub mod term;
 pub mod wgsl;
 pub use crate::{

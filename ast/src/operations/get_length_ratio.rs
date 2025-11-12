@@ -131,6 +131,28 @@ impl GetLengthRatio for Op {
                 }
                 Ok(max)
             }
+
+            Op::Choose { operations } => {
+                if operations.is_empty() {
+                    return Err(Error::with_msg("Empty Choose!"));
+                }
+                // Use rand_ctx to select an index
+                let n = std::num::NonZeroUsize::new(operations.len())
+                    .ok_or_else(|| Error::with_msg("Choose with zero operations"))?;
+                let idx = defs.rand_ctx.index(n, 0);
+                // Get length of the selected operation
+                operations[idx].get_length_ratio(normal_form, defs)
+            }
+
+            Op::Repeat { operations, count } => {
+                // Calculate length of one iteration
+                let mut total_ratio = Ratio::from_integer(1);
+                for op in operations {
+                    total_ratio *= op.get_length_ratio(normal_form, defs)?;
+                }
+                // Multiply by repeat count
+                Ok(total_ratio * Ratio::from_integer(*count))
+            }
         }
     }
 }
