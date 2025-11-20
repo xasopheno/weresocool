@@ -1,0 +1,10 @@
+{ f: 220, l: 1, g: 1, p: 0 }
+
+-- Basic keeper: skip 8, keep 1 (last 1/9th)
+main = {
+    ModBy [Lm 8, $a]
+}
+
+expect = {
+    Lm 1/9
+}

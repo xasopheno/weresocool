@@ -34,6 +34,7 @@ impl GetLengthRatio for Op {
             | Op::PanA { .. }
             | Op::PanM { .. }
             | Op::Tag(_)
+            | Op::Keeper(_)
             | Op::WGSL(_)
             | Op::Gain { .. }
             | Op::Midi { .. }
@@ -114,7 +115,43 @@ impl GetLengthRatio for Op {
                 Ok(target_length / main_length)
             }
 
-            Op::ModulateBy { .. } => Ok(Ratio::from_integer(1)),
+            Op::ModulateBy { operations, output } => {
+                // Check if any keepers exist
+                let mut has_keepers = false;
+                let mut keeper_total = Ratio::from_integer(0);
+
+                for operation in operations {
+                    let is_keeper = match operation {
+                        Term::Op(Op::Keeper(_)) => true,
+                        Term::Op(Op::Compose { operations }) if !operations.is_empty() => {
+                            matches!(&operations[0], Term::Op(Op::Keeper(_)))
+                        }
+                        _ => false,
+                    };
+                    if is_keeper {
+                        has_keepers = true;
+                        keeper_total += operation.get_length_ratio(normal_form, defs)?;
+                    }
+                }
+
+                if has_keepers {
+                    if let Some(output_ops) = output {
+                        // Output mapping - sum lengths of output operations
+                        // This is approximate since we can't resolve names here
+                        let mut total = Ratio::from_integer(0);
+                        for op in output_ops {
+                            total += op.get_length_ratio(normal_form, defs)?;
+                        }
+                        Ok(total)
+                    } else {
+                        // Slice behavior - return sum of keeper lengths
+                        Ok(keeper_total)
+                    }
+                } else {
+                    // Normal ModulateBy - doesn't change length
+                    Ok(Ratio::from_integer(1))
+                }
+            }
 
             Op::Focus {
                 main, op_to_apply, ..

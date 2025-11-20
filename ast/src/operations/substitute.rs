@@ -85,8 +85,12 @@ impl Substitute for Op {
             Op::Compose { operations } => Ok(Term::Op(Op::Compose {
                 operations: substitute_operations(operations.to_vec(), normal_form, defs)?,
             })),
-            Op::ModulateBy { operations } => Ok(Term::Op(Op::ModulateBy {
+            Op::ModulateBy { operations, output } => Ok(Term::Op(Op::ModulateBy {
                 operations: substitute_operations(operations.to_vec(), normal_form, defs)?,
+                output: match output {
+                    Some(ops) => Some(substitute_operations(ops.to_vec(), normal_form, defs)?),
+                    None => None,
+                },
             })),
             Op::Choose { operations } => {
                 // Select one operation using rand_ctx

@@ -1,0 +1,10 @@
+{ f: 220, l: 1, g: 1, p: 0 }
+
+-- Keeper with custom length: first 2/7 kept
+main = {
+    ModBy [$a | Lm 2, Lm 5]
+}
+
+expect = {
+    Lm 2/7
+}

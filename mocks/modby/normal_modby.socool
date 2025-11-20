@@ -1,0 +1,10 @@
+{ f: 220, l: 1, g: 1, p: 0 }
+
+-- Normal ModBy (no keepers) should still work
+main = {
+    ModBy [Fm 2, AsIs]
+}
+
+expect = {
+    Seq [Fm 2 | Lm 1/2, Lm 1/2]
+}

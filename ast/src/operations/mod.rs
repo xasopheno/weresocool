@@ -71,11 +71,19 @@ pub struct Defs {
 
 impl Default for Defs {
     fn default() -> Self {
+        let random_seed: u128 = {
+            use std::time::{SystemTime, UNIX_EPOCH};
+            match SystemTime::now().duration_since(UNIX_EPOCH) {
+                Ok(n) => n.as_nanos() as u128,
+                Err(_) => panic!("SystemTime before UNIX EPOCH!"),
+            }
+        };
+
         Defs {
             ops: ScopDefs::new(),
             colors: ColorMap::new(),
             wgsl: WgslMap::new(),
-            rand_ctx: RandCtx::from_u128(0xFEED_FACE_CAFE_BEEF),
+            rand_ctx: RandCtx::from_u128(random_seed),
         }
     }
 }

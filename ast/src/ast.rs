@@ -23,6 +23,8 @@ pub enum Op {
     Out,
     Id(String),
     Tag(String),
+    /// Marker for Slice keepers - $name syntax
+    Keeper(String),
     //
     WGSL(u64),
     //
@@ -125,6 +127,9 @@ pub enum Op {
     },
     ModulateBy {
         operations: Vec<Term>,
+        /// Optional output mapping for reordering/transforming keepers
+        /// e.g., ModBy [$a, $b] -> [b, a | Fm 2]
+        output: Option<Vec<Term>>,
     },
     Choose {
         operations: Vec<Term>,

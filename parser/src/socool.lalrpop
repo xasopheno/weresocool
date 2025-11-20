@@ -366,7 +366,8 @@ BaseOperation: Term = {
     "Silence" <m:Rational> => Term::Op(Silence {m}),
     r"(Sequence|Seq)" "[" <operations: Operations> "]" => Term::Op(Sequence { operations: operations }),
     "Overlay" "[" <operations: Operations> "]" => Term::Op(Overlay { operations: operations }),
-    r"(ModulateBy|ModBy)" "[" <operations: Operations> "]" => Term::Op(ModulateBy { operations: operations }),
+    r"(ModulateBy|ModBy)" "[" <operations: Operations> "]" "->" "[" <output: Operations> "]" => Term::Op(ModulateBy { operations: operations, output: Some(output) }),
+    r"(ModulateBy|ModBy)" "[" <operations: Operations> "]" => Term::Op(ModulateBy { operations: operations, output: None }),
     "Choose" "[" <operations: Operations> "]" => Term::Op(Choose { operations: operations }),
     // Midi pipe: Midi(10) or Midi[10,11]
     r"Midi" "(" <ch: Int> ")" => Term::Op(Midi { channels: vec![(ch as i64).clamp(1, 16) as u8] }),
@@ -394,7 +395,8 @@ BaseOperation: Term = {
         Term::Op(Id(id))
     },
     "#"<name: Name> => Term::Op(Tag(name)),
-    
+    "$"<name: Name> => Term::Op(Keeper(name)),
+
     <name: Name> "(" <args: Comma<Operation>>  ")" => {
         Term::Op(
             FunctionCall {

@@ -1,0 +1,10 @@
+{ f: 220, l: 1, g: 1, p: 0 }
+
+-- Reorder keepers: [$a, $b] -> [b, a]
+main = {
+    ModBy [$a, $b] -> [b, a]
+}
+
+expect = {
+    Seq [Lm 1/2, Lm 1/2]
+}

@@ -72,6 +72,11 @@ fn dummy_function() {
     var life: f32 = 1.0;
     var scale: f32 = 1.0;
     var time: f32 = 0.0;
+    var velocity: f32 = 1.0;
+    var red: f32 = 1.0;
+    var green: f32 = 1.0;
+    var blue: f32 = 1.0;
+    var alpha: f32 = 1.0;
 ");
 
     // Add the user's code

@@ -1,0 +1,10 @@
+{ f: 220, l: 1, g: 1, p: 0 }
+
+-- Reorder and apply ops: [$a, $b] -> [b | Fm 2, a]
+main = {
+    ModBy [$a, $b] -> [b | Fm 2, a]
+}
+
+expect = {
+    Seq [Fm 2 | Lm 1/2, Lm 1/2]
+}

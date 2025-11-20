@@ -1,0 +1,10 @@
+{ f: 220, l: 1, g: 1, p: 0 }
+
+-- Skip spacer and reorder: [Lm 8, $a, $b] -> [b, a]
+main = {
+    ModBy [Lm 8, $a, $b] -> [b, a]
+}
+
+expect = {
+    Seq [Lm 1/10, Lm 1/10]
+}

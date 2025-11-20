@@ -1,0 +1,10 @@
+{ f: 220, l: 1, g: 1, p: 0 }
+
+-- Multiple keepers: keep 1, skip 2, keep 1 (first and last quarters)
+main = {
+    ModBy [$a, Lm 2, $b]
+}
+
+expect = {
+    Seq [Lm 1/4, Lm 1/4]
+}

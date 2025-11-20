@@ -115,4 +115,9 @@ mod generated_tests {
     fn __function_generated_(resource: &str) {
         expect(resource);
     }
+
+    #[test_resources("mocks/modby/*.socool")]
+    fn __modby_generated_(resource: &str) {
+        expect(resource);
+    }
 }

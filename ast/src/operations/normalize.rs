@@ -164,6 +164,10 @@ impl Normalize for Op {
                 })
             }
 
+            Op::Keeper(_) => {
+                // Keeper acts like AsIs - it's just a marker for Slice
+            }
+
             Op::FInvert => input.fmap_mut(|op| {
                 if *op.fm.numer() != 0 {
                     op.fm = op.fm.recip();
@@ -382,37 +386,145 @@ impl Normalize for Op {
                 *input = result
             }
 
-            Op::ModulateBy { operations } => {
+            Op::ModulateBy { operations, output } => {
+                // Build the modulator and track which operations are "keepers" ($a syntax)
                 let mut modulator = NormalForm::init_empty();
+                let mut keeper_indices: Vec<usize> = vec![];
+                let mut keeper_names: Vec<String> = vec![];
 
-                for op in operations {
+                for (idx, op) in operations.iter().enumerate() {
                     let mut nf = NormalForm::init();
+
+                    // Extract keeper name if this is a keeper
+                    let keeper_name = match op {
+                        Term::Op(Op::Keeper(name)) => Some(name.clone()),
+                        Term::Op(Op::Compose { operations }) if !operations.is_empty() => {
+                            match &operations[0] {
+                                Term::Op(Op::Keeper(name)) => Some(name.clone()),
+                                _ => None,
+                            }
+                        }
+                        _ => None,
+                    };
+
+                    if let Some(name) = keeper_name {
+                        keeper_indices.push(idx);
+                        keeper_names.push(name);
+                    }
+
                     op.apply_to_normal_form(&mut nf, defs)?;
                     modulator = join_sequence(modulator, nf);
                 }
 
+                // Scale modulator to match input length
                 Op::Length {
                     m: input.length_ratio / modulator.length_ratio,
                 }
                 .apply_to_normal_form(&mut modulator, defs)?;
 
-                let result_operations: Vec<_> = modulator
-                    .operations
-                    .iter()
-                    .flat_map(|modulation_line| {
-                        input
+                // If we have keepers, use slice behavior; otherwise normal modulate
+                if keeper_indices.is_empty() {
+                    // Normal ModulateBy behavior
+                    let result_operations: Vec<_> = modulator
+                        .operations
+                        .iter()
+                        .flat_map(|modulation_line| {
+                            input
+                                .operations
+                                .iter()
+                                .map(|input_line| modulate(input_line, modulation_line))
+                                .collect::<Vec<_>>()
+                        })
+                        .collect();
+
+                    let mut result = NormalForm::init_empty();
+                    result.operations = result_operations;
+                    result.length_ratio = input.length_ratio;
+
+                    *input = result
+                } else {
+                    // Slice behavior - only return keeper pieces
+                    // Compute the lengths of each original operation (after scaling)
+                    let mut op_lengths: Vec<Rational64> = vec![];
+                    let scale = input.length_ratio / operations.iter().try_fold(
+                        Ratio::from_integer(0),
+                        |acc, op| -> Result<Rational64, Error> {
+                            Ok(acc + op.get_length_ratio(input, defs)?)
+                        }
+                    )?;
+
+                    for op in operations.iter() {
+                        let len = op.get_length_ratio(input, defs)? * scale;
+                        op_lengths.push(len);
+                    }
+
+                    if let Some(output_ops) = output {
+                        // Output mapping mode - extract each keeper separately and bind by name
+                        let scope = defs.ops.create_uuid_scope();
+
+                        // Extract each keeper slice individually
+                        for (i, &keeper_idx) in keeper_indices.iter().enumerate() {
+                            let single_keeper = vec![keeper_idx];
+                            let keeper_ops: Vec<_> = modulator
+                                .operations
+                                .iter()
+                                .flat_map(|modulation_line| {
+                                    input
+                                        .operations
+                                        .iter()
+                                        .map(|input_line| {
+                                            slice_modulate(input_line, modulation_line, &op_lengths, &single_keeper)
+                                        })
+                                        .collect::<Vec<_>>()
+                                })
+                                .collect();
+
+                            let mut keeper_nf = NormalForm::init_empty();
+                            keeper_nf.operations = keeper_ops;
+                            keeper_nf.length_ratio = op_lengths[keeper_idx];
+
+                            // Bind this keeper to its name in the scope
+                            defs.ops.insert(&scope, &keeper_names[i], Nf(keeper_nf));
+                        }
+
+                        // Now resolve the output operations against the bound names
+                        let mut result = NormalForm::init_empty();
+                        for output_op in output_ops {
+                            let mut nf = NormalForm::init();
+                            output_op.apply_to_normal_form(&mut nf, defs)?;
+                            result = join_sequence(result, nf);
+                        }
+
+                        *input = result
+                    } else {
+                        // No output mapping - return all keepers in order
+                        let result_operations: Vec<_> = modulator
                             .operations
                             .iter()
-                            .map(|input_line| modulate(input_line, modulation_line))
-                            .collect::<Vec<_>>()
-                    })
-                    .collect();
+                            .flat_map(|modulation_line| {
+                                input
+                                    .operations
+                                    .iter()
+                                    .map(|input_line| {
+                                        slice_modulate(input_line, modulation_line, &op_lengths, &keeper_indices)
+                                    })
+                                    .collect::<Vec<_>>()
+                            })
+                            .collect();
 
-                let mut result = NormalForm::init_empty();
-                result.operations = result_operations;
-                result.length_ratio = input.length_ratio;
+                        // Calculate the length of just the keeper pieces
+                        let keeper_length: Rational64 = keeper_indices
+                            .iter()
+                            .map(|&idx| op_lengths[idx])
+                            .sum();
 
-                *input = result
+                        let mut result = NormalForm::init_empty();
+                        result.operations = result_operations;
+                        result.length_ratio = keeper_length;
+
+                        *input = result
+                    }
+                }
             }
 
             Op::Choose { operations } => {
