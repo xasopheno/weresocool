@@ -12,9 +12,9 @@ fn test_fitlength_with_different_length_options() {
 main = {
     Choose [
         Fm 1,
-        { Fm 2/3, 2, 1, 0 },
-        { Fm 3/2, 1/2, 1, 0 }
-    ] 
+        { 2/3, 2, 1, 0 },
+        { 3/2, 1/2, 1, 0 }
+    ]
     | Repeat 8
     | FitLength Lm 8
 }"#;
@@ -78,9 +78,9 @@ fn test_fitlength_deterministic_failure() {
     let parse_str = r#"{ f: 200, l: 1.0, g: 1.0, p: 0.0 }
 main = {
     Choose [
-        { Fm 1, 1, 1, 0 },
-        { Fm 1, 4, 1, 0 }
-    ] 
+        { 1, 1, 1, 0 },
+        { 1, 4, 1, 0 }
+    ]
     | Repeat 20
     | FitLength Lm 20
 }"#;

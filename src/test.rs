@@ -54,7 +54,7 @@ mod cli_tests {
             .success();
 
         let expected_filename = "src/test_data/play.socool.json";
-        let written_filename = format!("{}/play.socool.json", tmp_dir.path().display());
+        let written_filename = format!("{}/play.socool.data.json", tmp_dir.path().display());
 
         assert_same_file_contents(expected_filename, &written_filename)
     }

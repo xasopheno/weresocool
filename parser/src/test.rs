@@ -364,26 +364,8 @@ pub mod test {
                     operations: vec![
                         Op(Compose {
                             operations: vec![
-                                Op(Sequence {
-                                    operations: vec![
-                                        Op(TransposeM {
-                                            m: Ratio::new(5, 4)
-                                        }),
-                                        Op(TransposeM {
-                                            m: Ratio::new(3, 2)
-                                        })
-                                    ]
-                                }),
-                                Op(Sequence {
-                                    operations: vec![Op(AsIs), Op(AsIs)]
-                                })
-                            ]
-                        }),
-                        Op(WithLengthRatioOf {
-                            with_length_of: Box::new(Op(Id("thing".to_string()))),
-                            main: Some(Box::new(Op(Compose {
-                                operations: vec![
-                                    Op(Sequence {
+                                Op(Repeat {
+                                    operations: vec![Op(Sequence {
                                         operations: vec![
                                             Op(TransposeM {
                                                 m: Ratio::new(5, 4)
@@ -392,9 +374,27 @@ pub mod test {
                                                 m: Ratio::new(3, 2)
                                             })
                                         ]
-                                    }),
-                                    Op(Sequence {
-                                        operations: vec![Op(AsIs), Op(AsIs)]
+                                    })],
+                                    count: 2
+                                })
+                            ]
+                        }),
+                        Op(WithLengthRatioOf {
+                            with_length_of: Box::new(Op(Id("thing".to_string()))),
+                            main: Some(Box::new(Op(Compose {
+                                operations: vec![
+                                    Op(Repeat {
+                                        operations: vec![Op(Sequence {
+                                            operations: vec![
+                                                Op(TransposeM {
+                                                    m: Ratio::new(5, 4)
+                                                }),
+                                                Op(TransposeM {
+                                                    m: Ratio::new(3, 2)
+                                                })
+                                            ]
+                                        })],
+                                        count: 2
                                     })
                                 ]
                             })))
@@ -433,9 +433,14 @@ pub mod test {
         // since it's dynamically generated
         let mut defs: weresocool_ast::Defs = Default::default();
         parse_str.push_str("}");
-        let _result = socool::SoCoolParser::new().parse(&mut defs, &parse_str);
-        
-        let main = defs.ops.get("main").unwrap();
+
+        // Process WGSL blocks before parsing (just like the normal parse flow)
+        let processed = process_wgsl_blocks(&parse_str, &mut defs, false);
+
+        let result = socool::SoCoolParser::new().parse(&mut defs, &processed);
+        assert!(result.is_ok(), "Parse failed: {:?}", result);
+
+        let main = defs.ops.get("main").expect("main not found in defs");
         
         // Verify that an ID was assigned for the WGSL code
         if let Op(WGSL(id)) = main {
@@ -464,11 +469,11 @@ mod tests {
         "#;
         
         let processed = process_wgsl_blocks(input, &mut defs, false);
-        
+
         // Verify that the WGSL code was extracted and replaced with a token
         assert!(!processed.contains("WGSL {"));
         assert!(processed.contains("@WGSL@"));
-        
+
         // Verify that the WGSL code was inserted into the defs.wgsl map
         assert_eq!(defs.wgsl.map.len(), 1);
     }

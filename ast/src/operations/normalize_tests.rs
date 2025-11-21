@@ -733,6 +733,7 @@ pub mod tests {
                     m: Ratio::new(1, 2),
                 }),
             ],
+            output: None,
         };
 
         modulator.apply_to_normal_form(&mut input, &mut pt).unwrap();

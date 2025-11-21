@@ -103,14 +103,14 @@ pub fn language_to_vec_string(language: &str) -> Vec<String> {
 // If skip_validation is true, validation will be skipped (used in tests)
 pub fn process_wgsl_blocks(composition: &str, defs: &mut Defs, skip_validation: bool) -> String {
     let mut result = composition.to_string();
-    
+
     // Extract WGSL blocks with regex pattern that's flexible with whitespace
     // This pattern matches:
-    // 1. WGSL keyword followed by optional whitespace and an opening brace
+    // 1. WGSL keyword (case-insensitive) followed by optional whitespace and an opening brace
     // 2. The content inside (including any nested braces)
     // 3. The closing brace
     // The (?:\{[^{}]*\}[^{}]*)* part handles nested braces like if-else blocks
-    let regex_pattern = r"wgsl\s*\{([^{}]*(?:\{[^{}]*\}[^{}]*)*)\}";
+    let regex_pattern = r"(?i)wgsl\s*\{([^{}]*(?:\{[^{}]*\}[^{}]*)*)\}";
     let re = regex::Regex::new(regex_pattern).unwrap();
     
     // Find all WGSL blocks and replace them with tokens

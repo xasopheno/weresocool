@@ -808,6 +808,7 @@ mod render_manager_tests {
 
     #[test]
     fn test_ramp_to_current_value() {
+        Settings::init_test();
         let mut rm = RenderManager::init(None, None, None, false, None);
         rm.update_volume(0.9);
         assert!(cmp_f32(rm.current_volume, f32::powf(0.9, 2.0)));
@@ -821,6 +822,7 @@ mod render_manager_tests {
 
     #[test]
     fn test_inc_render() {
+        Settings::init_test();
         let mut r = RenderManager::init(None, None, None, false, None);
         r.inc_render(true);
         assert_eq!(r.render_idx, 1);

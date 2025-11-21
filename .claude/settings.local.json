@@ -6,7 +6,9 @@
       "Bash(cargo run:*)",
       "Bash(timeout 5 cargo run:*)",
       "Bash(timeout 10 cargo run:*)",
-      "Bash(rustc:*)"
+      "Bash(rustc:*)",
+      "Bash(just test)",
+      "Bash(git checkout:*)"
     ],
     "deny": [],
     "ask": []

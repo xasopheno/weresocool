@@ -73,6 +73,7 @@ mod tests {
 
     #[test]
     fn test_nf_to_vec_renderable() {
+        Settings::init_test();
         let (nf, basis, mut table) =
             match Filename("../src/testing/snapshot_tests/render_op.socool")
                 .make(RenderType::NfBasisAndTable, None)
@@ -110,6 +111,8 @@ mod tests {
                 follows: vec![],
                 colors: vec![],
                 wgsl: vec![],
+                midi: vec![],
+                gain_scalar: 1.0,
             },
             RenderOp {
                 f: 330.0,
@@ -136,6 +139,8 @@ mod tests {
                 follows: vec![],
                 colors: vec![],
                 wgsl: vec![],
+                midi: vec![],
+                gain_scalar: 1.0,
             },
             RenderOp {
                 f: 0.0,
@@ -162,6 +167,8 @@ mod tests {
                 follows: vec![],
                 colors: vec![],
                 wgsl: vec![],
+                midi: vec![],
+                gain_scalar: 0.0,
             },
         ]];
         assert_eq!(result, expected);

@@ -1,5 +1,6 @@
 use weresocool_parser::parser::*;
 use weresocool_ast::{Defs, NormalForm, Normalize};
+use weresocool_ast::rand_ctx::RandCtx;
 use num_rational::Ratio;
 use num_traits::Signed;
 
@@ -166,8 +167,20 @@ main = {
     | FitLength Lm 10
 }"#;
 
-    let mut defs1: Defs = Default::default();
-    let mut defs2: Defs = Default::default();
+    // Create both defs with the same seed to ensure determinism
+    let seed = 0x1234_5678_9ABC_DEF0;
+    let mut defs1 = Defs {
+        ops: Default::default(),
+        colors: weresocool_ast::color::ColorMap::new(),
+        wgsl: weresocool_ast::wgsl::WgslMap::new(),
+        rand_ctx: RandCtx::from_u128(seed),
+    };
+    let mut defs2 = Defs {
+        ops: Default::default(),
+        colors: weresocool_ast::color::ColorMap::new(),
+        wgsl: weresocool_ast::wgsl::WgslMap::new(),
+        rand_ctx: RandCtx::from_u128(seed),
+    };
 
     let _init1 = socool::SoCoolParser::new().parse(&mut defs1, parse_str).unwrap();
     let _init2 = socool::SoCoolParser::new().parse(&mut defs2, parse_str).unwrap();
