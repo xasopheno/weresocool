@@ -1,0 +1,10 @@
+[package]
+name = "weresocool_events"
+version = "1.0.47"
+authors = ["Danny Meyer <weresocool@xasopheno.com>"]
+edition = "2021"
+description = "Generic event system with multi-subscriber support - standalone and reusable"
+license = "GPL-3.0"
+
+[dependencies]
+crossbeam-channel = "0.5"

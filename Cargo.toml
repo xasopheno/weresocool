@@ -1,7 +1,7 @@
 [package]
 name = "weresocool"
 version = "1.0.47"
-edition = "2024"
+edition = "2021"
 authors = ["Danny <weresocool@xasopheno.com>"]
 description = "***** WereSoCool __!Now In Stereo!__ ****** Make cool sounds. Impress your friends."
 license = "GPL-3.0" 
@@ -125,6 +125,8 @@ members = [
     "scop",
     "ring_buffer",
     "vorbis",
+    "weresocool_synth",
+    "weresocool_events",
 ]
 
 

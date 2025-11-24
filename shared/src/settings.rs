@@ -1,38 +1,13 @@
+#[cfg(not(test))]
 use once_cell::sync::OnceCell;
 
-static SETTINGS: OnceCell<Settings> = if cfg!(test) {
-    OnceCell::with_value(get_test_settings())
-} else {
-    // OnceCell::with_value(default_settings())
-    OnceCell::new()
-};
+#[cfg(not(test))]
+static SETTINGS: OnceCell<Settings> = OnceCell::new();
 
-impl Settings {
-    pub fn global() -> &'static Settings {
-        SETTINGS.get().expect("Oh no! Settings are not initialized")
-    }
+#[cfg(test)]
+static SETTINGS: std::sync::RwLock<Settings> = std::sync::RwLock::new(get_test_settings());
 
-    pub fn init(sample_rate: f64, buffer_size: usize) {
-        _ = SETTINGS.set(Settings {
-            sample_rate,
-            buffer_size,
-            ..Default::default()
-        });
-    }
-
-    pub fn init_default() {
-        _ = SETTINGS.set(Default::default());
-    }
-
-    pub fn init_test() {
-        _ = SETTINGS.set(get_test_settings());
-    }
-
-    pub fn set(&self) {
-        _ = SETTINGS.set(self.clone());
-    }
-}
-
+/// Global settings for WereSoCool audio rendering
 #[derive(Clone, Debug, PartialEq)]
 pub struct Settings {
     pub pad_end: bool,
@@ -52,12 +27,82 @@ pub struct Settings {
     pub vis_filter_rate: f32,
 }
 
+impl Settings {
+    /// Get global settings
+    #[cfg(not(test))]
+    pub fn global() -> &'static Settings {
+        SETTINGS.get_or_init(|| {
+            eprintln!("WARNING: Settings accessed before initialization, using defaults");
+            default_settings()
+        })
+    }
+
+    /// Get global settings (test version returns a guard that derefs to Settings)
+    #[cfg(test)]
+    pub fn global() -> std::sync::RwLockReadGuard<'static, Settings> {
+        SETTINGS.read().expect("Failed to read Settings lock")
+    }
+
+    /// Initialize settings with sample_rate and buffer_size
+    #[cfg(not(test))]
+    pub fn init(sample_rate: f64, buffer_size: usize) {
+        let mut settings = default_settings();
+        settings.sample_rate = sample_rate;
+        settings.buffer_size = buffer_size;
+        _ = SETTINGS.set(settings);
+    }
+
+    #[cfg(test)]
+    pub fn init(sample_rate: f64, buffer_size: usize) {
+        let mut settings = default_settings();
+        settings.sample_rate = sample_rate;
+        settings.buffer_size = buffer_size;
+        *SETTINGS.write().expect("Failed to write Settings lock") = settings;
+    }
+
+    /// Initialize with default settings
+    #[cfg(not(test))]
+    pub fn init_default() {
+        _ = SETTINGS.set(default_settings());
+    }
+
+    #[cfg(test)]
+    pub fn init_default() {
+        *SETTINGS.write().expect("Failed to write Settings lock") = default_settings();
+    }
+
+    /// Initialize with test settings
+    #[cfg(not(test))]
+    pub fn init_test() {
+        _ = SETTINGS.set(get_test_settings());
+    }
+
+    #[cfg(test)]
+    pub fn init_test() {
+        *SETTINGS.write().expect("Failed to write Settings lock") = get_test_settings();
+    }
+
+    /// Set settings (production only - tests should use set_for_test)
+    #[cfg(not(test))]
+    pub fn set(&self) {
+        _ = SETTINGS.set(self.clone());
+    }
+
+    /// Update settings in test mode
+    /// This allows tests to reconfigure Settings between assertions
+    #[cfg(test)]
+    pub fn set_for_test(settings: Settings) {
+        *SETTINGS.write().expect("Failed to write Settings lock") = settings;
+    }
+}
+
 impl Default for Settings {
     fn default() -> Self {
         default_settings()
     }
 }
 
+/// Get default settings
 pub const fn default_settings() -> Settings {
     Settings {
         loop_play: false,
@@ -78,6 +123,7 @@ pub const fn default_settings() -> Settings {
     }
 }
 
+/// Get test settings
 pub const fn get_test_settings() -> Settings {
     Settings {
         sample_rate: 44_100.0,

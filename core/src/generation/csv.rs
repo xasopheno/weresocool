@@ -2,7 +2,7 @@ use super::{composition_to_vec_timed_op, op4d::normalize_op4d_1d, vec_timed_op_t
 use crate::{ui::banner, write::write_composition_to_csv};
 use serde::{Deserialize, Serialize};
 use std::path::PathBuf;
-use weresocool_ast::{NormalForm, Term, Defs};
+use weresocool_ast::{NormalForm, Defs};
 use weresocool_error::Error;
 use weresocool_instrument::Basis;
 

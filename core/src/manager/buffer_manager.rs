@@ -1,207 +1,135 @@
-use weresocool_instrument::StereoWaveform;
+/// Buffer Manager for WereSoCool
+///
+/// Manages background rendering thread and pre-rendered audio buffer queue.
 
-#[derive(Clone, Debug)]
-pub struct Buffer {
-    pub stereo_waveform: StereoWaveform,
-    pub write_idx: usize,
-    pub read_idx: usize,
-}
+use std::sync::{Arc, Mutex};
+use weresocool_instrument::{Offset, StereoWaveform, RenderOp};
+use weresocool_shared::Settings;
 
-/// This assumes that all buffers are the same size
-impl Buffer {
-    pub fn init() -> Self {
-        Self {
-            stereo_waveform: StereoWaveform::new(0),
-            write_idx: 0,
-            read_idx: 0,
-        }
-    }
+use super::render_manager::PrerenderedBuffer;
 
-    pub const fn init_with_buffer(stereo_waveform: StereoWaveform) -> Self {
-        Self {
-            stereo_waveform,
-            write_idx: 0,
-            read_idx: 0,
-        }
-    }
-
-    pub fn write(&mut self, stereo_waveform: StereoWaveform) {
-        self.stereo_waveform.append(stereo_waveform);
-        self.write_idx += 1;
-    }
-
-    pub fn read(&mut self, buffer_size: usize) -> Option<StereoWaveform> {
-        let sw = self.stereo_waveform.get_buffer(self.read_idx, buffer_size);
-        if sw.is_some() {
-            self.read_idx += 1;
-        };
-        sw
-    }
-}
-
-#[derive(Clone, Debug)]
+#[derive(Debug)]
 pub struct BufferManager {
-    pub buffers: [Option<Buffer>; 2],
-    renderer_write_idx: usize,
-    buffer_idx: usize,
+    sender: Option<crossbeam_channel::Sender<PrerenderedBuffer>>,
+    receiver: Option<crossbeam_channel::Receiver<PrerenderedBuffer>>,
 }
 
 impl BufferManager {
-    pub const fn init_silent() -> Self {
-        Self {
-            buffers: [None, None],
-            renderer_write_idx: 0,
-            buffer_idx: 0,
+    /// Create a new BufferManager with the specified number of lookahead buffers
+    ///
+    /// If lookahead_buffers is 0, returns None (no buffering).
+    pub fn new(lookahead_buffers: usize) -> Option<Self> {
+        if lookahead_buffers > 0 {
+            let (sender, receiver) = crossbeam_channel::bounded(lookahead_buffers);
+            Some(Self {
+                sender: Some(sender),
+                receiver: Some(receiver),
+            })
+        } else {
+            None
         }
     }
 
-    pub const fn init_wth_buffer(buffer: Buffer) -> Self {
-        Self {
-            buffers: [Some(buffer), None],
-            renderer_write_idx: 0,
-            buffer_idx: 0,
+    /// Pop a pre-rendered buffer from the queue (non-blocking, for audio thread)
+    pub fn pop_buffer(&self) -> Option<PrerenderedBuffer> {
+        if let Some(receiver) = &self.receiver {
+            receiver.try_recv().ok()
+        } else {
+            None
         }
     }
 
-    pub fn inc_buffer(&mut self) {
-        self.buffer_idx = (self.buffer_idx + 1) % 2;
-    }
-
-    pub fn inc_render_write_buffer(&mut self) {
-        self.renderer_write_idx = (self.renderer_write_idx + 1) % 2;
-    }
-
-    pub fn current_buffer(&mut self) -> &mut Option<Buffer> {
-        &mut self.buffers[self.buffer_idx]
-    }
-
-    pub fn current_render_write_buffer(&mut self) -> &mut Option<Buffer> {
-        &mut self.buffers[self.renderer_write_idx]
-    }
-
-    pub fn next_buffer(&mut self) -> &mut Option<Buffer> {
-        &mut self.buffers[(self.buffer_idx + 1) % 2]
-    }
-
-    pub fn exists_current_buffer(&mut self) -> bool {
-        self.current_buffer().is_some()
-    }
-
-    pub fn exists_next_buffer(&mut self) -> bool {
-        self.next_buffer().is_some()
-    }
-
-    pub fn read(&mut self, buffer_size: usize) -> Option<StereoWaveform> {
-        let next = self.exists_next_buffer();
-        let current = self.current_buffer();
-
-        match current {
-            Some(buffer) => {
-                let mut sw = buffer.read(buffer_size);
-
-                if next {
-                    if let Some(s) = sw.as_mut() {
-                        s.fade_out()
-                    }
-
-                    *current = None;
-                    self.inc_buffer();
-                }
-                sw
-            }
-            None => {
-                if next {
-                    self.inc_buffer();
-                    self.read(buffer_size)
-                } else {
-                    None
-                }
+    /// Drain all buffers from the queue (use when switching renders to clear stale audio)
+    pub fn drain_buffer_queue(&self) {
+        if let Some(receiver) = &self.receiver {
+            while receiver.try_recv().is_ok() {
+                // Discard all buffers
             }
         }
     }
 
-    pub fn write(&mut self, stereo_waveform: StereoWaveform) {
-        let current = self.current_render_write_buffer();
-        match current {
-            Some(buffer) => buffer.write(stereo_waveform),
-            None => {
-                let mut new_buffer = Buffer::init();
-                new_buffer.write(stereo_waveform);
-                *current = Some(new_buffer);
-            }
-        }
+    /// Get a clone of the sender for use in background thread
+    pub fn sender(&self) -> Option<crossbeam_channel::Sender<PrerenderedBuffer>> {
+        self.sender.clone()
     }
 }
 
-#[cfg(test)]
-mod buffer_manager_tests {
-    use super::*;
-    #[test]
-    fn test_inc_buffer() {
-        let mut r = BufferManager::init_silent();
-        r.inc_buffer();
-        assert_eq!(r.buffer_idx, 1);
-        r.inc_buffer();
-        assert_eq!(r.buffer_idx, 0);
-    }
+/// Trait for types that can be rendered in background thread
+///
+/// This allows BufferManager to be independent of RenderManager's full implementation
+pub trait BackgroundRenderable {
+    fn is_paused(&self) -> bool;
+    fn render_buffer(&mut self, buffer_size: usize, offset: Offset) -> Option<(StereoWaveform, Vec<f32>, Vec<Vec<RenderOp>>)>;
+    fn has_current_render(&self) -> bool;
+}
 
-    #[test]
-    fn test_inc_render_write_buffer() {
-        let mut r = BufferManager::init_silent();
-        r.inc_render_write_buffer();
-        assert_eq!(r.renderer_write_idx, 1);
-        r.inc_render_write_buffer();
-        assert_eq!(r.renderer_write_idx, 0);
-    }
+/// Start background rendering thread that pre-renders buffers
+///
+/// Takes a renderable (typically Arc<Mutex<RenderManager>>) and a sender.
+/// Returns the JoinHandle for the rendering thread.
+pub fn start_background_rendering<R>(
+    renderable: Arc<Mutex<R>>,
+    sender: crossbeam_channel::Sender<PrerenderedBuffer>,
+) -> std::thread::JoinHandle<()>
+where
+    R: BackgroundRenderable + Send + 'static,
+{
+    std::thread::Builder::new()
+        .name("weresocool-render".to_string())
+        .spawn(move || {
+            loop {
+                // Try to render the next buffer
+                let (should_continue, buffer_result) = match renderable.lock() {
+                    Ok(mut rm) => {
+                        // Check if we should stop
+                        if rm.is_paused() {
+                            std::thread::sleep(std::time::Duration::from_millis(10));
+                            (true, None)
+                        } else {
+                            // Render a buffer
+                            let buffer_size = Settings::global().buffer_size;
+                            let result = rm.render_buffer(
+                                buffer_size,
+                                Offset {
+                                    freq: 1.0,
+                                    gain: 1.0,
+                                },
+                            );
 
-    fn buffer_manager_mock() -> BufferManager {
-        BufferManager::init_wth_buffer(Buffer::init_with_buffer(StereoWaveform::new_with_buffer(
-            vec![1.0, 1.0, 1.0, 1.0],
-        )))
-    }
+                            let should_continue = result.is_some() || rm.has_current_render();
+                            (should_continue, result)
+                        }
+                    }
+                    Err(e) => {
+                        eprintln!("ERROR: RenderManager lock poisoned in render loop: {}", e);
+                        break; // Exit thread on lock failure
+                    }
+                }; // Lock is released here
 
-    #[test]
-    fn test_read_normal() {
-        let mut b = buffer_manager_mock();
-        let read = b.read(2);
+                // Send buffer WITHOUT holding the lock
+                let buffer = if let Some((waveform, ramp, ops)) = buffer_result {
+                    PrerenderedBuffer { waveform, ramp, ops }
+                } else {
+                    // No audio to render - send silence to keep queue full and prevent crackling
+                    let buffer_size = Settings::global().buffer_size;
+                    PrerenderedBuffer {
+                        waveform: StereoWaveform::new(buffer_size),
+                        ramp: vec![1.0; buffer_size * 2],
+                        ops: vec![],
+                    }
+                };
 
-        let expected = StereoWaveform::new_with_buffer(vec![1.0, 1.0]);
-        assert_eq!(read.unwrap(), expected);
-    }
+                // This will block if the queue is full, which is what we want
+                // But we're not holding the lock, so audio thread can still pop
+                if sender.send(buffer).is_err() {
+                    break; // Channel closed, exit thread
+                }
 
-    #[test]
-    fn test_read_with_next_fade() {
-        let mut b = buffer_manager_mock();
-        *b.next_buffer() = Some(Buffer::init_with_buffer(StereoWaveform::new_with_buffer(
-            vec![1.0, 1.0],
-        )));
-        let read = b.read(2);
-
-        let expected = StereoWaveform::new_with_buffer(vec![0.5, 0.0]);
-        assert_eq!(read.unwrap(), expected);
-    }
-
-    #[test]
-    fn test_read_with_empty_current() {
-        let mut b = buffer_manager_mock();
-        b.inc_buffer();
-        assert!(!b.exists_current_buffer());
-        assert!(b.exists_next_buffer());
-
-        let read = b.read(2);
-
-        let expected = StereoWaveform::new_with_buffer(vec![1.0, 1.0]);
-        assert_eq!(read.unwrap(), expected);
-    }
-
-    #[test]
-    fn test_read_empty_buffer_manager() {
-        let mut b = BufferManager::init_silent();
-        assert!(!b.exists_current_buffer());
-        assert!(!b.exists_next_buffer());
-
-        let read = b.read(2);
-
-        assert_eq!(read, None);
-    }
+                if !should_continue {
+                    // No more data to render
+                    std::thread::sleep(std::time::Duration::from_millis(10));
+                }
+            }
+        })
+        .expect("Failed to spawn render thread")
 }

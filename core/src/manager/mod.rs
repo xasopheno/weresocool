@@ -1,14 +1,16 @@
 mod buffer_manager;
+mod midi_controller;
 mod render_manager;
 mod resizeable_2d_vec;
-mod server_manager;
+mod volume_controller;
 
+#[allow(deprecated)]
 pub use self::{
-    buffer_manager::BufferManager,
+    midi_controller::{MidiClient, MidiController},
     render_manager::{
         prepare_render_outside, render_op_to_normalized_op4d, KillChannel, RenderManager,
-        RenderManagerSettings, VisEvent, VisualizationChannel, render_op_to_normalized_op4d_list
+        RenderManagerSettings, VisEvent, render_op_to_normalized_op4d_list
     },
     resizeable_2d_vec::Resizeable2DVec,
-    server_manager::{ServerRenderManager, ServerRenderManagerSettings},
+    volume_controller::VolumeController,
 };

@@ -64,7 +64,7 @@ fn bench_render_manager_read(c: &mut Criterion) {
             b.iter_batched(
                 || {
                     let settings = RenderManagerSettings { sample_rate, buffer_size: buffer };
-                    let mut rm = RenderManager::init(None, None, None, false, Some(settings));
+                    let mut rm = RenderManager::init(None, None, false, Some(settings));
 
                     let mut all_voices: Vec<RenderVoice> = Vec::with_capacity(voices);
                     for v in 0..voices {

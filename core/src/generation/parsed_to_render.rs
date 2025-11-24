@@ -1,6 +1,5 @@
 use crate::{
-    generation::{csv::get_length_op4d_1d, to_csv, to_json_file, Normalizer},
-    manager::render_op_to_normalized_op4d, manager::render_op_to_normalized_op4d_list,
+    generation::{csv::get_length_op4d_1d, to_csv, to_json_file, Normalizer}, manager::render_op_to_normalized_op4d_list,
     ui::printed,
     write::{write_composition_to_mp3, write_composition_to_wav},
 };
@@ -255,10 +254,10 @@ pub fn parsed_to_render(
                 let render_return = RenderReturn::Wav(write_composition_to_mp3(stereo_waveform)?);
                 if cli {
                     let audio: Vec<u8> = Vec::try_from(render_return.clone())?;
-                    let f = filename_to_renderpath(filename);
+                    let f = filename_to_renderpath(filename)?;
                     // println!("filename: {}", &output_dir);
                     output_dir.push(format!("{}.mp3", f));
-                    write_audio_to_file(&audio, output_dir);
+                    write_audio_to_file(&audio, output_dir)?;
                 };
                 Ok(render_return)
             }
@@ -270,14 +269,14 @@ pub fn parsed_to_render(
                 let render_return = RenderReturn::Wav(write_composition_to_wav(stereo_waveform)?);
                 if cli {
                     let audio: Vec<u8> = Vec::try_from(render_return.clone())?;
-                    let f = filename_to_renderpath(filename);
+                    let f = filename_to_renderpath(filename)?;
                     output_dir.push(format!("{}.wav", f));
-                    write_audio_to_file(&audio, output_dir);
+                    write_audio_to_file(&audio, output_dir)?;
                 };
                 Ok(render_return)
             }
             #[cfg(feature = "app")]
-            WavType::OggVorbis { cli, output_dir } 
+            WavType::OggVorbis { cli: _, output_dir: _ } 
             => {
                 todo!()
             }
@@ -305,15 +304,23 @@ pub fn parsed_to_render(
     }
 }
 
-fn filename_to_renderpath(filename: &str) -> String {
-    let path = Path::new(filename).file_stem().unwrap();
-    path.to_str().unwrap().to_string()
+fn filename_to_renderpath(filename: &str) -> Result<String, Error> {
+    let path = Path::new(filename)
+        .file_stem()
+        .ok_or_else(|| Error::with_msg(format!("Invalid filename: no file stem in '{}'", filename)))?;
+    let path_str = path
+        .to_str()
+        .ok_or_else(|| Error::with_msg(format!("Invalid UTF-8 in filename: '{:?}'", path)))?;
+    Ok(path_str.to_string())
 }
 
-pub fn write_audio_to_file(audio: &[u8], filename: PathBuf) {
-    let mut file = File::create(filename.clone()).unwrap();
-    file.write_all(audio).unwrap();
+pub fn write_audio_to_file(audio: &[u8], filename: PathBuf) -> Result<(), Error> {
+    let mut file = File::create(&filename)
+        .map_err(|e| Error::with_msg(format!("Failed to create file '{}': {}", filename.display(), e)))?;
+    file.write_all(audio)
+        .map_err(|e| Error::with_msg(format!("Failed to write to file '{}': {}", filename.display(), e)))?;
     printed(filename.display().to_string());
+    Ok(())
 }
 
 pub fn render(
@@ -400,14 +407,18 @@ pub fn generate_waveforms(
     let vec_wav = iter
         .map(|ref mut vec_render_op: &mut Vec<RenderOp>| {
             #[cfg(feature = "app")]
-            pb.lock().unwrap().add(1_u64);
+            if let Ok(mut pb) = pb.lock() {
+                pb.add(1_u64);
+            }
             let mut osc = Oscillator::init();
             vec_render_op.render(&mut osc, None)
         })
         .collect();
 
     #[cfg(feature = "app")]
-    pb.lock().unwrap().finish_print("");
+    if let Ok(mut pb) = pb.lock() {
+        pb.finish_print("");
+    }
 
     vec_wav
 }
@@ -430,7 +441,8 @@ fn make_visuals(
 
     let length = get_length_op4d_1d(&visual);
 
-    visual.sort_by(|a, b| a.t.partial_cmp(&b.t).unwrap());
+    // Handle NaN values gracefully - treat them as equal for sorting
+    visual.sort_by(|a, b| a.t.partial_cmp(&b.t).unwrap_or(std::cmp::Ordering::Equal));
 
     Ok((visual, length))
 }

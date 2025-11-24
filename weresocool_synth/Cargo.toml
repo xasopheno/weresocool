@@ -1,0 +1,22 @@
+[package]
+name = "weresocool_synth"
+version = "1.0.47"
+authors = ["Danny Meyer <weresocool@xasopheno.com>"]
+edition = "2021"
+description = "Generic audio synthesis engine - standalone and reusable"
+license = "GPL-3.0"
+
+[dependencies]
+weresocool_filter = { path = "../filter", version = "^1.0.45" }
+weresocool_shared = { path = "../shared", version = "^1.0.47" }
+weresocool_ast = { path = "../ast", version = "^1.0.47", features = ["app"] }
+weresocool_error = { path = "../error", version = "^1.0.47", features = ["app"] }
+weresocool_parser = { path = "../parser", version = "^1.0.47", features = ["app"] }
+reverb = { path = "../instrument/reverb", version = "^1.0.47" }
+rand = { version="0.7.3", features=["wasm-bindgen"]}
+num-traits = "0.2.14"
+num-rational = "0.4.1"
+serde = { version = "1.0.164", features = ["derive"] }
+
+[features]
+default=[]

@@ -2,7 +2,7 @@ use crate::{color::ColorMap, NameSet, OscType, Term, ASR, wgsl::WgslMap, rand_ct
 use num_rational::{Ratio, Rational64};
 use scop::Defs as ScopDefs;
 use std::{
-    collections::{HashMap, HashSet},
+    collections::HashSet,
     ops::{Mul, MulAssign},
 };
 use weresocool_error::Error;

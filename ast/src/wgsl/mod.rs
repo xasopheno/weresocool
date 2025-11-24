@@ -1,4 +1,3 @@
-use std::hash::{DefaultHasher, Hash, Hasher};
 use std::collections::HashMap;
 use naga::front::wgsl::Frontend;
 

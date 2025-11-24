@@ -1,4 +1,4 @@
-use crate::{GetLengthRatio, NameSet, NormalForm, OscType, PointOp, Term, ASR, Defs};
+use crate::{GetLengthRatio, NormalForm, PointOp, Term, Defs};
 use colored::*;
 use num_rational::{Ratio, Rational64};
 use std::{

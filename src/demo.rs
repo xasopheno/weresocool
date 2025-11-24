@@ -5,14 +5,14 @@ use std::sync::Mutex;
 use weresocool::interpretable::InputType::Language;
 use weresocool::manager::prepare_render_outside;
 use weresocool::manager::RenderManager;
-use weresocool::portaudio::real_time_render_manager;
+use weresocool::portaudio::create_portaudio_stream;
 use weresocool::ui::were_so_cool_logo;
 
 pub fn demo() -> Result<(), Error> {
     were_so_cool_logo(Some("Playing"), Some("Demo".to_owned()));
 
     let (tx, rx) = std::sync::mpsc::channel::<bool>();
-    let render_manager = Arc::new(Mutex::new(RenderManager::init(None, None, Some(tx), true, None)));
+    let render_manager = Arc::new(Mutex::new(RenderManager::init(None, Some(tx), true, None)));
     let (render_voices, _ )= prepare_render_outside(Language(DEMO), None)?;
 
     render_manager
@@ -20,7 +20,7 @@ pub fn demo() -> Result<(), Error> {
         .unwrap()
         .push_render(render_voices, true);
 
-    let mut stream = real_time_render_manager(Arc::clone(&render_manager))?;
+    let mut stream = create_portaudio_stream(Arc::clone(&render_manager))?;
 
     stream.start()?;
     // rx.recv blocks until it receives data and

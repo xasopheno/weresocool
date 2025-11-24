@@ -1,0 +1,35 @@
+# WereSoCool Configuration File
+# Place this file as:
+#  - ./weresocool.toml (project directory)
+#  - ~/.weresocool/config.toml (user home)
+# Or set WSC_CONFIG_PATH environment variable
+
+[audio]
+sample_rate = 48000.0
+buffer_size = 12288  # 1024 * 12
+channels = 2
+interleaved = true
+
+[rendering]
+lookahead_buffers = 3
+crossfade_period = 4096  # 1024 * 4
+
+[midi]
+enabled = false
+# server_path = "/path/to/midi/server"
+udp_port = 6666
+
+[mic]
+enabled = false
+yin_buffer_size = 2048
+probability_threshold = 0.3
+gain_threshold_min = 0.0
+max_freq = 4500.0
+min_freq = 20.0
+
+[playback]
+loop_play = false
+pad_end = true
+
+[visualization]
+filter_rate = 0.125

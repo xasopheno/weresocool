@@ -2,7 +2,7 @@
 name = "weresocool_error"
 version = "1.0.47"
 authors = ["Danny Meyer <weresocool@xasopheno.com>"]
-edition = "2024"
+edition = "2021"
 description = "Errors for WereSoCool"
 license = "GPL-3.0"
 

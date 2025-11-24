@@ -2,7 +2,7 @@
 name = "weresocool_parser"
 version = "1.0.47"
 authors = ["Danny Meyer <weresocool@xasopheno.com>"]
-edition = "2024"
+edition = "2021"
 build = "build.rs" # LALRPOP preprocessing
 description = "Parser for WereSoCool"
 license = "GPL-3.0" 

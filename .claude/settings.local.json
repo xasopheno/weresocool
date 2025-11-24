@@ -8,7 +8,16 @@
       "Bash(timeout 10 cargo run:*)",
       "Bash(rustc:*)",
       "Bash(just test)",
-      "Bash(git checkout:*)"
+      "Bash(git checkout:*)",
+      "Bash(cp:*)",
+      "Bash(cargo clippy:*)",
+      "Bash(git log:*)",
+      "Bash(xargs -I {} sh -c 'echo \"\"\"\"=== {} ===\"\"\"\" && head -50 {}')",
+      "Bash(git grep:*)",
+      "Bash(cargo tree:*)",
+      "WebSearch",
+      "Bash(cargo check:*)",
+      "Bash(find:*)"
     ],
     "deny": [],
     "ask": []

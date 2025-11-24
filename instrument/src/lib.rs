@@ -1,23 +1,15 @@
-mod asr;
-mod distortion;
-mod frequency;
-mod gain;
-mod loudness;
-pub mod oscillator;
+// Synthesis modules provided by weresocool_synth
+
+// Bridge layer - converts WereSoCool AST to synthesis operations
 pub mod renderable;
-mod sample;
-pub mod stereo_waveform;
-pub mod voice;
 
-#[cfg(test)]
-mod asr_test;
-#[cfg(test)]
-#[allow(clippy::unreadable_literal)]
-mod test;
+// Re-export types from weresocool_synth
+pub use weresocool_synth::{
+    Basis, Oscillator, StereoWaveform, Normalize, Voice, SynthOp, Offset,
+};
 
+// Re-export instrument-specific types (bridge layer)
 pub use self::{
-    oscillator::{Basis, Oscillator},
     renderable::render_voice::{renderables_to_render_voices, RenderVoice},
     renderable::RenderOp,
-    stereo_waveform::{Normalize, StereoWaveform},
 };

@@ -5,7 +5,7 @@ fn main() {
     println!("Hello, Vorbis");
 
     let (l, r) = wav_filename_to_lr_channels("test.wav");
-    let encoded = encode_lr_channels_to_ogg_vorbis(l, r);
+    let encoded = encode_lr_channels_to_ogg_vorbis(l, r).expect("Failed to encode OGG");
 
     let mut file = std::fs::File::create("result.ogg").unwrap();
     file.write_all(&encoded).unwrap();

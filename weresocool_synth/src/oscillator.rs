@@ -1,7 +1,4 @@
-use crate::{
-    renderable::{Offset, RenderOp},
-    {stereo_waveform::StereoWaveform, voice::Voice},
-};
+use crate::{stereo_waveform::StereoWaveform, voice::Voice, Offset, SynthOp};
 use num_rational::Rational64;
 use weresocool_parser::Init;
 
@@ -45,13 +42,13 @@ impl Oscillator {
         self.voices.1.copy_state_from(&other.voices.1);
     }
 
-    pub fn update(&mut self, op: &RenderOp, offset: &Offset) {
+    pub fn update<Op: SynthOp>(&mut self, op: &Op, offset: &Offset) {
         let (ref mut l_voice, ref mut r_voice) = self.voices;
         l_voice.update(op, offset);
         r_voice.update(op, offset);
     }
 
-    pub fn generate(&mut self, op: &RenderOp, offset: &Offset) -> StereoWaveform {
+    pub fn generate<Op: SynthOp>(&mut self, op: &Op, offset: &Offset) -> StereoWaveform {
         let (ref mut l_voice, ref mut r_voice) = self.voices;
 
         let l_buffer = l_voice.generate_waveform(op, offset);

@@ -3,17 +3,17 @@ pub mod render_voice;
 use crate::{Basis, Oscillator, StereoWaveform};
 use num_rational::Rational64;
 use num_traits::CheckedMul;
-use rand::{thread_rng, Rng};
 pub use render_voice::{renderables_to_render_voices, RenderVoice};
 use serde::{Deserialize, Serialize};
 use weresocool_ast::{
     follow::evaluate::EvaluateAction, follow::types::FollowNF, NormalForm, Normalize, OscType,
-    PointOp, Term, ASR,
+    PointOp, ASR,
     Defs,
 };
 use weresocool_error::Error;
 use weresocool_filter::BiquadFilterDef;
 pub(crate) use weresocool_shared::{lossy_rational_mul, r_to_f64, Settings};
+use weresocool_synth::Offset;
 
 #[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
 pub struct RenderOp {
@@ -178,25 +178,9 @@ impl RenderOp {
     }
 }
 
-#[derive(Debug)]
-pub struct Offset {
-    pub freq: f64,
-    pub gain: f64,
-}
-impl Offset {
-    pub const fn default() -> Self {
-        Self {
-            freq: 1.0,
-            gain: 1.0,
-        }
-    }
-    pub fn random() -> Self {
-        Self {
-            freq: thread_rng().gen_range(0.95, 1.05),
-            gain: 1.0,
-        }
-    }
-}
+// SynthOp trait implementation is at the end of the file
+
+// Offset moved to weresocool_synth
 
 pub trait Renderable<T> {
     fn render(&mut self, oscillator: &mut Oscillator, _offset: Option<&Offset>) -> StereoWaveform;
@@ -231,6 +215,94 @@ impl Renderable<Vec<RenderOp>> for Vec<RenderOp> {
         }
 
         result
+    }
+}
+
+// Implement SynthOp trait from weresocool_synth
+impl weresocool_synth::SynthOp for RenderOp {
+    #[inline(always)]
+    fn frequency(&self) -> f64 {
+        self.f
+    }
+
+    #[inline(always)]
+    fn gain_left(&self) -> f64 {
+        self.g.0
+    }
+
+    #[inline(always)]
+    fn gain_right(&self) -> f64 {
+        self.g.1
+    }
+
+    #[inline(always)]
+    fn pan(&self) -> f64 {
+        self.p
+    }
+
+    #[inline(always)]
+    fn duration_samples(&self) -> usize {
+        self.samples
+    }
+
+    #[inline(always)]
+    fn oscillator_type(&self) -> &OscType {
+        &self.osc_type
+    }
+
+    #[inline(always)]
+    fn filters(&self) -> &[BiquadFilterDef] {
+        &self.filters
+    }
+
+    #[inline(always)]
+    fn envelope_attack(&self) -> f64 {
+        self.attack
+    }
+
+    #[inline(always)]
+    fn envelope_decay(&self) -> f64 {
+        self.decay
+    }
+
+    #[inline(always)]
+    fn asr_type(&self) -> ASR {
+        self.asr
+    }
+
+    #[inline(always)]
+    fn portamento(&self) -> usize {
+        self.portamento
+    }
+
+    #[inline(always)]
+    fn reverb(&self) -> Option<f64> {
+        self.reverb
+    }
+
+    #[inline(always)]
+    fn sample_index(&self) -> usize {
+        self.index
+    }
+
+    #[inline(always)]
+    fn total_samples(&self) -> usize {
+        self.total_samples
+    }
+
+    #[inline(always)]
+    fn next_left_silent(&self) -> bool {
+        self.next_l_silent
+    }
+
+    #[inline(always)]
+    fn next_right_silent(&self) -> bool {
+        self.next_r_silent
+    }
+
+    #[inline(always)]
+    fn next_out(&self) -> bool {
+        self.next_out
     }
 }
 
@@ -273,11 +345,7 @@ fn pointop_to_renderop(
         p,
         l,
         t: r_to_f64(*time),
-        reverb: if point_op.reverb.is_some() {
-            Some(r_to_f64(point_op.reverb.unwrap()))
-        } else {
-            None
-        },
+        reverb: point_op.reverb.map(r_to_f64),
         index: 0,
         samples: (l * settings.sample_rate).round() as usize,
         total_samples: (l * settings.sample_rate).round() as usize,

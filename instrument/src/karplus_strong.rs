@@ -20,10 +20,16 @@ impl KarplusStrong {
     }
 
     pub fn generate_sample(&mut self) -> f64 {
-        let first = self.buffer.pop_front().unwrap();
-        let second = *self.buffer.front().unwrap();
+        // Buffer should always have >= 2 elements due to initialization
+        // Use unwrap_or to handle unexpected edge cases gracefully
+        let first = self.buffer.pop_front().unwrap_or(0.0);
+        let second = *self.buffer.front().unwrap_or(&0.0);
         let new_sample = self.decay * 0.5 * (first + second);
         self.buffer.push_back(new_sample);
+
+        // Debug check: buffer should never be empty after initialization
+        debug_assert!(!self.buffer.is_empty(), "KarplusStrong buffer became empty");
+
         new_sample
     }
 }

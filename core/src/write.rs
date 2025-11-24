@@ -87,12 +87,15 @@ pub fn write_composition_to_wav(mut composition: StereoWaveform) -> Result<Vec<u
     for sample in &buffer {
         writer
             .write_sample(*sample)
-            .expect("Error writing wave file.");
+            .map_err(|e| Error::with_msg(format!("Error writing WAV sample: {}", e)))?;
     }
     writer.flush()?;
     writer.finalize()?;
 
-    Ok(buf_writer.into_inner().unwrap().into_inner())
+    Ok(buf_writer
+        .into_inner()
+        .map_err(|e| Error::with_msg(format!("Error finalizing WAV buffer: {}", e)))?
+        .into_inner())
 }
 
 #[test]

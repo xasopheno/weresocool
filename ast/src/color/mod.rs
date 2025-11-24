@@ -1,5 +1,5 @@
 use std::str::FromStr;
-use std::hash::{Hash, Hasher, DefaultHasher};
+use std::hash::{Hash, Hasher};
 use colorgrad::Gradient;
 use dyn_clone::DynClone;
 use rand::prelude::*;

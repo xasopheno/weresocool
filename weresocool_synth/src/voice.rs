@@ -1,7 +1,7 @@
 use crate::{
-    renderable::{Offset, RenderOp},
     sample::Waveform,
     {gain::gain_at_index, loudness::loudness_normalization},
+    Offset, SynthOp,
 };
 
 use reverb::Reverb;
@@ -103,23 +103,23 @@ impl Voice {
         *self = other.clone();
     }
 
-    /// Renders a single RenderOp given an Offset
-    /// This is where all of the rendering logic for a single render_op happens
-    pub fn generate_waveform(&mut self, op: &RenderOp, offset: &Offset) -> Vec<f64> {
-        let mut buffer: Vec<f64> = vec![0.0; op.samples];
+    /// Renders a single SynthOp given an Offset
+    /// This is where all of the rendering logic for a single synth_op happens
+    pub fn generate_waveform<Op: SynthOp>(&mut self, op: &Op, offset: &Offset) -> Vec<f64> {
+        let mut buffer: Vec<f64> = vec![0.0; op.duration_samples()];
 
         let p_delta = self.calculate_portamento_delta(
-            op.portamento,
+            op.portamento(),
             self.offset_past.frequency,
             self.offset_current.frequency,
         );
 
         let op_gain = self.calculate_op_gain(
-            op.next_out,
+            op.next_out(),
             self.silence_now(),
             self.silence_next(op),
-            op.index + op.samples,
-            op.total_samples,
+            op.sample_index() + op.duration_samples(),
+            op.total_samples(),
         ) * loudness_normalization(self.offset_current.frequency);
 
         // self.reverb
@@ -127,7 +127,7 @@ impl Voice {
         // .update(self.current.reverb.unwrap_or(0.0) as f32);
 
         let gain_factor = op_gain * offset.gain;
-        let sample_limit = if op.samples > 250 { op.samples } else { 250 };
+        let sample_limit = if op.duration_samples() > 250 { op.duration_samples() } else { 250 };
         // let apply_reverb = self.reverb.state.map_or(false, |s| s > 0.0);
 
         let sound_to_silence = self.sound_to_silence();
@@ -135,7 +135,7 @@ impl Voice {
         for (index, sample) in buffer.iter_mut().enumerate() {
             let frequency = self.calculate_frequency(
                 index,
-                op.portamento,
+                op.portamento(),
                 p_delta,
                 self.offset_past.frequency,
                 self.offset_current.frequency,
@@ -162,7 +162,7 @@ impl Voice {
                 };
             }
 
-            if index == op.samples - 1 {
+            if index == op.duration_samples() - 1 {
                 self.offset_current.frequency = frequency;
                 self.offset_current.gain = gain;
             };
@@ -200,13 +200,13 @@ impl Voice {
         buffer
     }
 
-    pub fn update(&mut self, op: &RenderOp, offset: &Offset) {
-        if op.index == 0 && op.next_out {
+    pub fn update<Op: SynthOp>(&mut self, op: &Op, offset: &Offset) {
+        if op.sample_index() == 0 && op.next_out() {
             self.reset();
             return;
         }
 
-        if op.index == 0 {
+        if op.sample_index() == 0 {
             self.update_current_and_past(op);
             self.update_osc_type(op);
             // self.update_reverb(op);
@@ -220,12 +220,12 @@ impl Voice {
         self.update_offset_gain_and_frequency(offset);
     }
 
-    fn should_update_filters(&self, op: &RenderOp) -> bool {
+    fn should_update_filters<Op: SynthOp>(&self, op: &Op) -> bool {
         self.filters.as_ref().map_or(true, |self_filters| {
-            self_filters.len() != op.filters.len()
+            self_filters.len() != op.filters().len()
                 || self_filters
                     .iter()
-                    .zip(op.filters.iter())
+                    .zip(op.filters().iter())
                     .any(|(self_filter, op_filter)| self_filter.hash != op_filter.hash)
         })
     }
@@ -238,9 +238,9 @@ impl Voice {
         self.current.frequency = 0.0;
     }
 
-    fn update_current_and_past(&mut self, op: &RenderOp) {
+    fn update_current_and_past<Op: SynthOp>(&mut self, op: &Op) {
         self.past.frequency = self.current.frequency;
-        self.current.frequency = op.f;
+        self.current.frequency = op.frequency();
         self.past.osc_type = self.current.osc_type.clone();
         // self.past.reverb = self.current.reverb;
 
@@ -248,45 +248,45 @@ impl Voice {
         self.current.gain = self.current_gain_from_op(op);
     }
 
-    fn update_osc_type(&mut self, op: &RenderOp) {
-        if self.osc_type != op.osc_type && self.osc_type.is_some() {
+    fn update_osc_type<Op: SynthOp>(&mut self, op: &Op) {
+        if self.osc_type != *op.oscillator_type() && self.osc_type.is_some() {
             self.old_osc_type = Some(self.osc_type.clone());
             self.osc_crossfade_index = 0;
         }
 
-        self.osc_type = if self.past.osc_type.is_some() && op.osc_type.is_none() {
+        self.osc_type = if self.past.osc_type.is_some() && op.oscillator_type().is_none() {
             self.past.osc_type.clone()
         } else {
-            op.osc_type.clone()
+            op.oscillator_type().clone()
         };
 
-        self.current.osc_type = op.osc_type.clone();
+        self.current.osc_type = op.oscillator_type().clone();
     }
 
-    // fn update_reverb(&mut self, op: &RenderOp) {
-    // self.reverb.state = if self.past.reverb.is_some() && op.reverb.is_none() {
+    // fn update_reverb<Op: SynthOp>(&mut self, op: &Op) {
+    // self.reverb.state = if self.past.reverb.is_some() && op.reverb().is_none() {
     // self.past.reverb
     // } else {
-    // op.reverb
+    // op.reverb()
     // };
 
-    // self.current.reverb = op.reverb;
+    // self.current.reverb = op.reverb();
     // }
 
-    fn update_attack_decay_asr(&mut self, op: &RenderOp) {
-        self.attack = op.attack.trunc() as usize;
-        self.decay = op.decay.trunc() as usize;
-        self.asr = op.asr;
+    fn update_attack_decay_asr<Op: SynthOp>(&mut self, op: &Op) {
+        self.attack = op.envelope_attack().trunc() as usize;
+        self.decay = op.envelope_decay().trunc() as usize;
+        self.asr = op.asr_type();
     }
 
-    fn update_filters(&mut self, op: &RenderOp) {
+    fn update_filters<Op: SynthOp>(&mut self, op: &Op) {
         if self.filters.is_some() {
             std::mem::swap(&mut self.old_filters, &mut self.filters);
             self.filter_crossfade_index = 0;
             self.filters = None;
         }
 
-        self.filters = Some(op.filters.iter().map(|f| f.to_filter()).collect());
+        self.filters = Some(op.filters().iter().map(|f| f.to_filter()).collect());
     }
 
     fn update_offset_gain_and_frequency(&mut self, offset: &Offset) {
@@ -328,10 +328,9 @@ impl Voice {
     }
 
     fn process_filter(filters: &mut Option<Vec<BiquadFilter>>, sample: f64) -> f64 {
-        filters
-            .as_mut()
-            .unwrap()
-            .iter_mut()
-            .fold(sample, |acc, filter| filter.process(acc))
+        match filters.as_mut() {
+            Some(filters) => filters.iter_mut().fold(sample, |acc, filter| filter.process(acc)),
+            None => sample, // Return unfiltered sample if no filters configured
+        }
     }
 }

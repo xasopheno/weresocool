@@ -8,7 +8,7 @@ use num_rational::Rational64;
 use serde::{Deserialize, Serialize};
 use serde_json::to_string;
 use std::path::PathBuf;
-use weresocool_ast::{NormalForm, Normalize, Term, Defs};
+use weresocool_ast::{NormalForm, Normalize, Defs};
 use weresocool_error::Error;
 use weresocool_instrument::Basis;
 

@@ -130,8 +130,8 @@ fn _get_data1d(filename: String, length: Rational64) -> Result<Vec<Vec<f32>>, Er
 
     let deserialized: Vec<Vec<f32>> = rdr
         .deserialize::<Vec<f32>>()
-        .map(|datum| datum.expect("Error deserializing datum"))
-        .collect();
+        .collect::<Result<Vec<Vec<f32>>, _>>()
+        .map_err(|e| Error::with_msg(format!("Error deserializing CSV datum: {}", e)))?;
     let result: Vec<Vec<f32>> = deserialized[0].iter().map(|v| vec![*v, length]).collect();
 
     Ok(result)
@@ -155,8 +155,8 @@ fn get_data2d(filename: String) -> Result<Vec<Vec<f32>>, Error> {
 
     let deserialized: Vec<Vec<f32>> = rdr
         .deserialize::<Vec<f32>>()
-        .map(|datum| datum.expect("Error deserializing datum"))
-        .collect();
+        .collect::<Result<Vec<Vec<f32>>, _>>()
+        .map_err(|e| Error::with_msg(format!("Error deserializing CSV datum: {}", e)))?;
 
     Ok(deserialized)
 }

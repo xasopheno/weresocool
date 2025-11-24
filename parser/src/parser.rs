@@ -4,8 +4,8 @@ use crate::imports::{get_filepath_and_import_name, is_import};
 use colored::*;
 use num_rational::Rational64;
 use path_clean::PathClean;
-use weresocool_ast::color::{ColorValue, CssOrHex};
-use weresocool_ast::{Defs, ListOp, NormalForm, Normalize, Op, Term};
+use weresocool_ast::color::ColorValue;
+use weresocool_ast::{Defs, NormalForm, Normalize, Op, Term};
 use std::fs::File;
 use std::io::prelude::*;
 use std::io::BufReader;
@@ -13,8 +13,6 @@ use std::path::PathBuf;
 use std::sync::{Arc, Mutex};
 use weresocool_error::{Error, ParseError};
 use regex;
-use std::collections::HashMap;
-use rand::{thread_rng, Rng};
 
 #[derive(Clone, PartialEq, Debug)]
 pub struct Init {

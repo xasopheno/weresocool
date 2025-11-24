@@ -331,7 +331,7 @@ impl Normalize for Op {
                 });
             }
 
-            Op::ColorBlend { color_id, amount } => {
+            Op::ColorBlend { color_id, amount: _ } => {
                 // Add the blend color and amount to colors
                 // We'll store the color_id and handle blending at render time
                 input.fmap_mut(|op| {
