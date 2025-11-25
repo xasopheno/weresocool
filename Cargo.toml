@@ -23,13 +23,13 @@ makedepends = ["cargo", "lame", "vorbis-tools"]
 depends = ["lame", "vorbis-tools"]
 provides = ["weresocool"]
 
-[target.'cfg(target_os = "windows")'.dependencies]
+[target.'cfg(all(target_os = "windows", not(target_arch = "wasm32")))'.dependencies]
 weresocool_core = { path="core", version = "^2.0.0", features = ["windows"] }
-weresocool_error = { path = "error", version = "^2.0.0", features=["windows"] } 
-[target.'cfg(target_os = "linux")'.dependencies]
+weresocool_error = { path = "error", version = "^2.0.0", features=["windows"] }
+[target.'cfg(all(target_os = "linux", not(target_arch = "wasm32")))'.dependencies]
 weresocool_core = { path="core", version = "^2.0.0", features = ["windows"] }
-weresocool_error = { path = "error", version = "^2.0.0", features=["windows"] } 
-[target.'cfg(target_os = "macos")'.dependencies]
+weresocool_error = { path = "error", version = "^2.0.0", features=["windows"] }
+[target.'cfg(all(target_os = "macos", not(target_arch = "wasm32")))'.dependencies]
 weresocool_core = { path="core", version = "^2.0.0", features = ["app"] }
 weresocool_error = { path = "error", version = "^2.0.0", features=["app"] }
 

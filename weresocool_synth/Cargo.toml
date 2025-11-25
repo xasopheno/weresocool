@@ -9,9 +9,9 @@ license = "GPL-3.0"
 [dependencies]
 weresocool_filter = { path = "../filter", version = "^2.0.0" }
 weresocool_shared = { path = "../shared", version = "^2.0.0" }
-weresocool_ast = { path = "../ast", version = "^2.0.0", features = ["app"] }
-weresocool_error = { path = "../error", version = "^2.0.0", features = ["app"] }
-weresocool_parser = { path = "../parser", version = "^2.0.0", features = ["app"] }
+weresocool_ast = { path = "../ast", version = "^2.0.0", default-features=false }
+weresocool_error = { path = "../error", version = "^2.0.0", default-features=false }
+weresocool_parser = { path = "../parser", version = "^2.0.0", default-features=false }
 reverb = { path = "../instrument/reverb", version = "^2.0.0" }
 rand = { version="0.7.3", features=["wasm-bindgen"]}
 num-traits = "0.2.14"

@@ -18,7 +18,10 @@
       "WebSearch",
       "Bash(cargo check:*)",
       "Bash(find:*)",
-      "Bash(cargo update)"
+      "Bash(cargo update)",
+      "Bash(wasm-pack build:*)",
+      "Bash(cargo clean:*)",
+      "Bash(cargo metadata:*)"
     ],
     "deny": [],
     "ask": []

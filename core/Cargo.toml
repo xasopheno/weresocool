@@ -18,11 +18,14 @@ exclude = [
 ]
 
 
-[target.'cfg(target_os = "macos")'.dependencies]
-weresocool_lame = { path = "../lame", version = "^2.0.0" } 
+[target.'cfg(all(target_os = "macos", not(target_arch = "wasm32")))'.dependencies]
+weresocool_lame = { path = "../lame", version = "^2.0.0", optional = true }
 
-[target.'cfg(target_os = "linux")'.dependencies]
-weresocool_lame = { path = "../lame", version = "^2.0.0" } 
+[target.'cfg(all(target_os = "linux", not(target_arch = "wasm32")))'.dependencies]
+weresocool_lame = { path = "../lame", version = "^2.0.0", optional = true }
+
+[target.'cfg(target_arch = "wasm32")'.dependencies]
+uuid = { version = "1.11", features = ["v4", "js"] }
 
 [dependencies]
 scop = { path = "../scop", version = "^2.0.0" }
@@ -65,12 +68,12 @@ cpal = "0.15"
 
 [features]
 default=["app"]
-app=["weresocool_portaudio", 
-  "pbr", "zip", "weresocool_error/app", 
+app=["weresocool_portaudio", "weresocool_lame",
+  "pbr", "zip", "weresocool_error/app",
   "weresocool_parser/app", "weresocool_instrument/app", "weresocool_ast/app"]
 windows=[
-  "weresocool_portaudio", 
-  "pbr", "zip", "weresocool_error/app", 
+  "weresocool_portaudio", "weresocool_lame",
+  "pbr", "zip", "weresocool_error/app",
   "weresocool_parser/app", "weresocool_instrument/app", "weresocool_ast/app",
   "weresocool_error/windows"
 ]

@@ -12,7 +12,7 @@ resolver="2"
 hound = "3.4.0"
 itertools = "0.10.3"
 vorbis-encoder = "0.1.4"
-weresocool_error = { path = "../error", version = "^2.0.0" }
+weresocool_error = { path = "../error", version = "^2.0.0", default-features=false }
 weresocool_shared = { path = "../shared", version = "^2.0.0" }
 
 [dev-dependencies]
