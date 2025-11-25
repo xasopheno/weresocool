@@ -17,7 +17,8 @@
       "Bash(cargo tree:*)",
       "WebSearch",
       "Bash(cargo check:*)",
-      "Bash(find:*)"
+      "Bash(find:*)",
+      "Bash(cargo update)"
     ],
     "deny": [],
     "ask": []

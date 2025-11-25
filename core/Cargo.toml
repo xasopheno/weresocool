@@ -1,6 +1,6 @@
 [package]
 name = "weresocool_core"
-version = "1.0.47"
+version = "2.0.0"
 edition = "2021"
 authors = ["Danny <weresocool@xasopheno.com>"]
 description = "***** WereSoCool __!Now In Stereo!__ ****** Make cool sounds. Impress your friends."
@@ -19,24 +19,24 @@ exclude = [
 
 
 [target.'cfg(target_os = "macos")'.dependencies]
-weresocool_lame = { path = "../lame", version = "^1.0.47" } 
+weresocool_lame = { path = "../lame", version = "^2.0.0" } 
 
 [target.'cfg(target_os = "linux")'.dependencies]
-weresocool_lame = { path = "../lame", version = "^1.0.47" } 
+weresocool_lame = { path = "../lame", version = "^2.0.0" } 
 
 [dependencies]
-scop = { path = "../scop", version = "^1.0.47" }
-opmap = { path = "../opmap", version = "^1.0.47" }
-weresocool_ring_buffer = { path = "../ring_buffer", version = "^1.0.47" }
-weresocool_analyze = { path = "../analyze", version = "^1.0.47" }
-weresocool_parser = { path = "../parser", version = "^1.0.47", default-features=false, optional=true }
-weresocool_ast = { path = "../ast", version = "^1.0.47", default-features=false, optional=true }
-weresocool_error = { path = "../error", version = "^1.0.47", default-features=false, optional=true }
-weresocool_instrument = { path = "../instrument", version = "^1.0.47", default-features=false, optional=true }
-weresocool_shared = { path = "../shared", version = "^1.0.47" }
-weresocool_vorbis = { path = "../vorbis", version = "^1.0.47", optional=true, default-features = false }
+scop = { path = "../scop", version = "^2.0.0" }
+opmap = { path = "../opmap", version = "^2.0.0" }
+weresocool_ring_buffer = { path = "../ring_buffer", version = "^2.0.0" }
+weresocool_analyze = { path = "../analyze", version = "^2.0.0" }
+weresocool_parser = { path = "../parser", version = "^2.0.0", default-features=false, optional=true }
+weresocool_ast = { path = "../ast", version = "^2.0.0", default-features=false, optional=true }
+weresocool_error = { path = "../error", version = "^2.0.0", default-features=false, optional=true }
+weresocool_instrument = { path = "../instrument", version = "^2.0.0", default-features=false, optional=true }
+weresocool_shared = { path = "../shared", version = "^2.0.0" }
+weresocool_vorbis = { path = "../vorbis", version = "^2.0.0", optional=true, default-features = false }
 weresocool_portaudio = { version = "1.0.47", optional = true, git = "https://github.com/xasopheno/weresocool_portaudio"}
-weresocool_events = { path = "../weresocool_events", version = "^1.0.47" }
+weresocool_events = { path = "../weresocool_events", version = "^2.0.0" }
 rand = { version="0.8", features=["std"]}
 hound = "3.5"
 serde = { version = "1.0", features = ["derive"] }

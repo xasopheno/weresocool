@@ -1,0 +1,81 @@
+# WereSoCool Configuration File
+#
+# This file shows all available configuration options with their default values.
+# Copy this to one of these locations:
+#   - Global config: ~/.config/weresocool/config.toml
+#   - Project config: ./weresocool.toml or ./.weresocool.toml
+#
+# Configuration priority (highest to lowest):
+#   1. Project local config (./weresocool.toml)
+#   2. Global config (~/.config/weresocool/config.toml)
+#   3. Programmatic Settings::init() values
+#   4. Hardcoded defaults
+#
+# All fields are optional - omit any you want to keep at default.
+
+# Audio Settings
+# --------------
+
+# Sample rate in Hz
+# Note: Will be validated by audio device - unsupported rates will cause errors
+sample_rate = 48000.0
+
+# Buffer size in samples (affects latency)
+buffer_size = 12288
+
+# YIN algorithm buffer size for pitch detection
+yin_buffer_size = 2048
+
+# Number of channels (typically 2 for stereo)
+channels = 2
+
+# Whether audio data is interleaved (left, right, left, right...)
+interleaved = true
+
+
+# Playback Settings
+# -----------------
+
+# Loop audio playback
+loop_play = false
+
+# Pad silence at end of audio
+pad_end = true
+
+# Enable microphone input (required for "follow" mode pitch tracking)
+mic = false
+
+
+# Performance Settings
+# --------------------
+
+# Number of pre-rendered buffers for lookahead (0 = disabled, 3 = recommended)
+lookahead_buffers = 3
+
+# Crossfade period in samples (smooths volume transitions)
+crossfade_period = 4096
+
+
+# Frequency Analysis Settings
+# ----------------------------
+
+# Maximum frequency for analysis/rendering (Hz)
+max_freq = 4500.0
+
+# Minimum frequency for analysis/rendering (Hz)
+min_freq = 20.0
+
+# Probability threshold for pitch detection (0.0 - 1.0)
+probability_threshold = 0.3
+
+# Minimum gain threshold (0.0 - 1.0)
+gain_threshold_min = 0.0
+
+
+# Visualization Settings
+# ----------------------
+
+# Filter rate for visualization events (0.0 - 1.0)
+# Lower = fewer events (better performance), Higher = more events (smoother visuals)
+# 0.125 = 12.5% of operations sent to visualization
+vis_filter_rate = 0.125

@@ -691,6 +691,27 @@ dependencies = [
 ]
 
 [[package]]
+name = "dirs"
+version = "5.0.1"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "44c45a9d03d6676652bcb5e724c7e988de1acad23a711b5217ab9cbecbec2225"
+dependencies = [
+ "dirs-sys",
+]
+
+[[package]]
+name = "dirs-sys"
+version = "0.4.1"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "520f05a5cbd335fae5a99ff7a6ab8627577660ee5cfd6a94a6a929b52ff0321c"
+dependencies = [
+ "libc",
+ "option-ext",
+ "redox_users",
+ "windows-sys 0.48.0",
+]
+
+[[package]]
 name = "displaydoc"
 version = "0.2.5"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -1714,11 +1735,17 @@ checksum = "d6790f58c7ff633d8771f42965289203411a5e5c68388703c06e14f24770b41e"
 
 [[package]]
 name = "opmap"
-version = "1.0.47"
+version = "2.0.0"
 dependencies = [
  "drain-while",
  "hamcrest2",
 ]
+
+[[package]]
+name = "option-ext"
+version = "0.2.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "04744f49eae99ab78e0d5c0b603ab218f515ea8cfe5a456d7629ad883a3b6e7d"
 
 [[package]]
 name = "parking_lot"
@@ -1968,7 +1995,7 @@ version = "3.4.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "219cb19e96be00ab2e37d6e299658a0cfa83e52429179969b0f0121b4ac46983"
 dependencies = [
- "toml_edit",
+ "toml_edit 0.23.7",
 ]
 
 [[package]]
@@ -2114,6 +2141,17 @@ dependencies = [
 ]
 
 [[package]]
+name = "redox_users"
+version = "0.4.6"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "ba009ff324d1fc1b900bd1fdb31564febe58a8ccc8a6fdbb93b543d33b13ca43"
+dependencies = [
+ "getrandom 0.2.16",
+ "libredox",
+ "thiserror 1.0.69",
+]
+
+[[package]]
 name = "regex"
 version = "1.12.2"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -2144,7 +2182,7 @@ checksum = "7a2d987857b319362043e95f5353c0535c1f58eec5336fdfcf626430af7def58"
 
 [[package]]
 name = "reverb"
-version = "1.0.47"
+version = "2.0.0"
 
 [[package]]
 name = "rustc-hash"
@@ -2181,7 +2219,7 @@ dependencies = [
 
 [[package]]
 name = "scop"
-version = "1.0.47"
+version = "2.0.0"
 dependencies = [
  "indexmap",
  "serde",
@@ -2236,6 +2274,15 @@ dependencies = [
  "ryu",
  "serde",
  "serde_core",
+]
+
+[[package]]
+name = "serde_spanned"
+version = "0.6.9"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "bf41e0cfaf7226dca15e8197172c295a782857fcb97fad1808a166870dee75a3"
+dependencies = [
+ "serde",
 ]
 
 [[package]]
@@ -2469,6 +2516,27 @@ dependencies = [
 ]
 
 [[package]]
+name = "toml"
+version = "0.8.23"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "dc1beb996b9d83529a9e75c17a1686767d148d70663143c7854d8b4a09ced362"
+dependencies = [
+ "serde",
+ "serde_spanned",
+ "toml_datetime 0.6.11",
+ "toml_edit 0.22.27",
+]
+
+[[package]]
+name = "toml_datetime"
+version = "0.6.11"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "22cddaf88f4fbc13c51aebbf5f8eceb5c7c5a9da2ac40a13519eb5b0a0e8f11c"
+dependencies = [
+ "serde",
+]
+
+[[package]]
 name = "toml_datetime"
 version = "0.7.3"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -2479,12 +2547,26 @@ dependencies = [
 
 [[package]]
 name = "toml_edit"
+version = "0.22.27"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "41fe8c660ae4257887cf66394862d21dbca4a6ddd26f04a3560410406a2f819a"
+dependencies = [
+ "indexmap",
+ "serde",
+ "serde_spanned",
+ "toml_datetime 0.6.11",
+ "toml_write",
+ "winnow",
+]
+
+[[package]]
+name = "toml_edit"
 version = "0.23.7"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "6485ef6d0d9b5d0ec17244ff7eb05310113c3f316f2d14200d4de56b3cb98f8d"
 dependencies = [
  "indexmap",
- "toml_datetime",
+ "toml_datetime 0.7.3",
  "toml_parser",
  "winnow",
 ]
@@ -2497,6 +2579,12 @@ checksum = "c0cbe268d35bdb4bb5a56a2de88d0ad0eb70af5384a99d648cd4b3d04039800e"
 dependencies = [
  "winnow",
 ]
+
+[[package]]
+name = "toml_write"
+version = "0.1.2"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "5d99f8c9a7727884afe522e9bd5edbfc91a3312b36a77b5fb8926e4c31a41801"
 
 [[package]]
 name = "typenum"
@@ -2699,7 +2787,7 @@ dependencies = [
 
 [[package]]
 name = "weresocool"
-version = "1.0.47"
+version = "2.0.0"
 dependencies = [
  "assert_cmd",
  "clap",
@@ -2737,14 +2825,14 @@ dependencies = [
 
 [[package]]
 name = "weresocool_analyze"
-version = "1.0.47"
+version = "2.0.0"
 dependencies = [
  "weresocool_shared",
 ]
 
 [[package]]
 name = "weresocool_ast"
-version = "1.0.47"
+version = "2.0.0"
 dependencies = [
  "bimap",
  "colored",
@@ -2774,7 +2862,7 @@ dependencies = [
 
 [[package]]
 name = "weresocool_core"
-version = "1.0.47"
+version = "2.0.0"
 dependencies = [
  "bytes",
  "colored",
@@ -2820,7 +2908,7 @@ dependencies = [
 
 [[package]]
 name = "weresocool_error"
-version = "1.0.47"
+version = "2.0.0"
 dependencies = [
  "csv",
  "hound",
@@ -2835,14 +2923,14 @@ dependencies = [
 
 [[package]]
 name = "weresocool_events"
-version = "1.0.47"
+version = "2.0.0"
 dependencies = [
  "crossbeam-channel",
 ]
 
 [[package]]
 name = "weresocool_filter"
-version = "1.0.45"
+version = "2.0.0"
 dependencies = [
  "num-rational 0.4.2",
  "serde",
@@ -2851,7 +2939,7 @@ dependencies = [
 
 [[package]]
 name = "weresocool_instrument"
-version = "1.0.47"
+version = "2.0.0"
 dependencies = [
  "num-rational 0.4.2",
  "num-traits",
@@ -2870,7 +2958,7 @@ dependencies = [
 
 [[package]]
 name = "weresocool_lame"
-version = "1.0.47"
+version = "2.0.0"
 dependencies = [
  "serde",
  "thiserror 1.0.69",
@@ -2878,7 +2966,7 @@ dependencies = [
 
 [[package]]
 name = "weresocool_parser"
-version = "1.0.47"
+version = "2.0.0"
 dependencies = [
  "colored",
  "indexmap",
@@ -2917,25 +3005,28 @@ dependencies = [
 
 [[package]]
 name = "weresocool_ring_buffer"
-version = "1.0.47"
+version = "2.0.0"
 dependencies = [
  "weresocool_shared",
 ]
 
 [[package]]
 name = "weresocool_shared"
-version = "1.0.47"
+version = "2.0.0"
 dependencies = [
+ "dirs",
  "float-cmp",
  "hex",
  "num-rational 0.4.2",
  "once_cell",
  "rand 0.8.5",
+ "serde",
+ "toml",
 ]
 
 [[package]]
 name = "weresocool_synth"
-version = "1.0.47"
+version = "2.0.0"
 dependencies = [
  "num-rational 0.4.2",
  "num-traits",
@@ -2951,7 +3042,7 @@ dependencies = [
 
 [[package]]
 name = "weresocool_vorbis"
-version = "1.0.47"
+version = "2.0.0"
 dependencies = [
  "hamcrest2",
  "hound",
@@ -3347,18 +3438,18 @@ checksum = "cfe53a6657fd280eaa890a3bc59152892ffa3e30101319d168b781ed6529b049"
 
 [[package]]
 name = "zerocopy"
-version = "0.8.28"
+version = "0.8.30"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "43fa6694ed34d6e57407afbccdeecfa268c470a7d2a5b0cf49ce9fcc345afb90"
+checksum = "4ea879c944afe8a2b25fef16bb4ba234f47c694565e97383b36f3a878219065c"
 dependencies = [
  "zerocopy-derive",
 ]
 
 [[package]]
 name = "zerocopy-derive"
-version = "0.8.28"
+version = "0.8.30"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "c640b22cd9817fae95be82f0d2f90b11f7605f6c319d16705c459b27ac2cbc26"
+checksum = "cf955aa904d6040f70dc8e9384444cb1030aed272ba3cb09bbc4ab9e7c1f34f5"
 dependencies = [
  "proc-macro2 1.0.103",
  "quote 1.0.42",

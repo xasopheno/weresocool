@@ -72,6 +72,11 @@ impl CpalBackend {
                 .build_output_stream(
                     &config,
                     move |output: &mut [f32], _| {
+                        // Check for VisReady or timeout before reading buffer
+                        if let Ok(mut rm) = render_manager.lock() {
+                            rm.check_vis_ready();
+                        }
+
                         // Try to pop a pre-rendered buffer from the queue
                         // Handle lock failure gracefully - output silence instead of panicking
                         let buffer = match render_manager.lock() {
@@ -103,13 +108,18 @@ impl CpalBackend {
                     move |output: &mut [f32], _| {
                         // Handle lock failure gracefully - output silence instead of panicking
                         let batch = match render_manager.lock() {
-                            Ok(mut rm) => rm.read(
-                                settings.buffer_size,
-                                Offset {
-                                    freq: 1.0,
-                                    gain: 1.0,
-                                },
-                            ),
+                            Ok(mut rm) => {
+                                // Check for VisReady or timeout before rendering
+                                rm.check_vis_ready();
+
+                                rm.read(
+                                    settings.buffer_size,
+                                    Offset {
+                                        freq: 1.0,
+                                        gain: 1.0,
+                                    },
+                                )
+                            },
                             Err(e) => {
                                 eprintln!("ERROR: RenderManager lock poisoned in CPAL audio callback: {}", e);
                                 None

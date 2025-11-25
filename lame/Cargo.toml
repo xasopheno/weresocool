@@ -1,6 +1,6 @@
 [package]
 name = "weresocool_lame"
-version = "1.0.47"
+version = "2.0.0"
 authors = ["Danny Meyer <weresocool@xasophenoo.com>"]
 edition = "2021"
 description = "Lame FFI for WereSoCool"

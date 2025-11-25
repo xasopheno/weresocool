@@ -57,6 +57,11 @@ impl PortAudioBackend {
                 RenderManager::start_background_rendering(Arc::clone(&render_manager));
 
             let stream = self.pa.open_non_blocking_stream(output_settings, move |args| {
+                // Check for VisReady or timeout before reading buffer
+                if let Ok(mut rm) = render_manager.lock() {
+                    rm.check_vis_ready();
+                }
+
                 // Handle lock failure gracefully - output silence instead of panicking
                 let buffer = match render_manager.lock() {
                     Ok(rm) => rm.pop_buffer(),
@@ -84,13 +89,18 @@ impl PortAudioBackend {
             let stream = self.pa.open_non_blocking_stream(output_settings, move |args| {
                 // Handle lock failure gracefully - output silence instead of panicking
                 let batch = match render_manager.lock() {
-                    Ok(mut rm) => rm.read(
-                        Settings::global().buffer_size,
-                        Offset {
-                            freq: 1.0,
-                            gain: 1.0,
-                        },
-                    ),
+                    Ok(mut rm) => {
+                        // Check for VisReady or timeout before rendering
+                        rm.check_vis_ready();
+
+                        rm.read(
+                            Settings::global().buffer_size,
+                            Offset {
+                                freq: 1.0,
+                                gain: 1.0,
+                            },
+                        )
+                    },
                     Err(e) => {
                         eprintln!("ERROR: RenderManager lock poisoned in audio callback: {}", e);
                         None
@@ -164,13 +174,18 @@ impl PortAudioBackend {
             // Render audio with detected frequency/gain as offset
             // Handle lock failure gracefully - output silence instead of panicking
             let batch = match render_manager.lock() {
-                Ok(mut rm) => rm.read(
-                    buffer_size,
-                    Offset {
-                        freq: freq / f_basis,
-                        gain: gain * 0.1,
-                    },
-                ),
+                Ok(mut rm) => {
+                    // Check for VisReady or timeout before rendering
+                    rm.check_vis_ready();
+
+                    rm.read(
+                        buffer_size,
+                        Offset {
+                            freq: freq / f_basis,
+                            gain: gain * 0.1,
+                        },
+                    )
+                },
                 Err(e) => {
                     eprintln!("ERROR: RenderManager lock poisoned in duplex audio callback: {}", e);
                     None

@@ -1,6 +1,6 @@
 [package]
 name = "weresocool_instrument"
-version = "1.0.47"
+version = "2.0.0"
 authors = ["Danny Meyer <weresocool@xasopheno.com>"]
 edition = "2021"
 description = "audio renderer for WereSoCool"
@@ -9,15 +9,15 @@ license = "GPL-3.0"
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
 [dependencies]
-weresocool_ast = { path = "../ast", version = "^1.0.47", default-features=false, optional=true }
-weresocool_error = { path = "../error", version = "^1.0.47", default-features=false, optional=true }
-weresocool_filter = { path = "../filter", version = "^1.0.45" }
-weresocool_parser = { path = "../parser", version = "^1.0.47", default-features=false, optional=true }
-weresocool_shared = { path = "../shared", version = "^1.0.47" }
-weresocool_synth = { path = "../weresocool_synth", version = "^1.0.47" }
-scop = { path = "../scop", version = "^1.0.47" }
+weresocool_ast = { path = "../ast", version = "^2.0.0", default-features=false, optional=true }
+weresocool_error = { path = "../error", version = "^2.0.0", default-features=false, optional=true }
+weresocool_filter = { path = "../filter", version = "^2.0.0" }
+weresocool_parser = { path = "../parser", version = "^2.0.0", default-features=false, optional=true }
+weresocool_shared = { path = "../shared", version = "^2.0.0" }
+weresocool_synth = { path = "../weresocool_synth", version = "^2.0.0" }
+scop = { path = "../scop", version = "^2.0.0" }
 serde = { version = "1.0.164", features = ["derive"] }
-reverb = { path = "reverb", version = "^1.0.47" }
+reverb = { path = "reverb", version = "^2.0.0" }
 rayon = "1.5.1"
 num-rational = "0.4.1"
 rand = { version="0.7.3", features=["wasm-bindgen"]}
