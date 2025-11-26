@@ -3,7 +3,7 @@ mod csv2d_tests {
     use hamcrest2::prelude::*;
     use num_rational::Rational64;
 
-    use crate::{datagen::*, NameSet, NormalForm, PointOp};
+    use crate::datagen::*;
 
     #[test]
     fn test_get_data_2d() {
@@ -16,9 +16,6 @@ mod csv2d_tests {
 
     #[test]
     fn test_point_to_point_op() {
-        let mut names = NameSet::new();
-        names.insert("2d_test_data.csv".to_string());
-
         let result = point_to_point_op(
             &vec![1.0, 2.0],
             None,
@@ -52,7 +49,6 @@ mod csv2d_tests {
     fn test_csv_data_to_normal_form() {
         let csv_data = vec![vec![1.0, 1.0], vec![1.0, 1.0], vec![1.0, 1.0]];
 
-        let mut names = NameSet::new();
         let filename = "2d_test_data.csv";
         let scales = vec![
             Scale {
@@ -64,7 +60,6 @@ mod csv2d_tests {
                 value: Rational64::new(1, 2),
             },
         ];
-        names.insert(filename.to_string());
 
         let result = csv_data_to_normal_form(&csv_data, scales, "2d_test_data.csv");
         let expected = Term::Op(Op::Sequence {
@@ -73,30 +68,30 @@ mod csv2d_tests {
                     operations: vec![
                         Term::Op(Op::TransposeA {
                             a: Rational64::new(2, 1),
-                        }),
+                                }),
                         Term::Op(Op::Length {
                             m: Rational64::new(1, 1),
-                        }),
+                                }),
                     ],
                 }),
                 Term::Op(Op::Compose {
                     operations: vec![
                         Term::Op(Op::TransposeA {
                             a: Rational64::new(2, 1),
-                        }),
+                                }),
                         Term::Op(Op::Length {
                             m: Rational64::new(1, 1),
-                        }),
+                                }),
                     ],
                 }),
                 Term::Op(Op::Compose {
                     operations: vec![
                         Term::Op(Op::TransposeA {
                             a: Rational64::new(2, 1),
-                        }),
+                                }),
                         Term::Op(Op::Length {
                             m: Rational64::new(1, 1),
-                        }),
+                                }),
                     ],
                 }),
             ],
@@ -120,38 +115,36 @@ mod csv2d_tests {
 
         let result = csv2d_to_normalform("./src/datagen/2d_test_data.csv", scales).unwrap();
 
-        let mut names = NameSet::new();
-        names.insert("2d_test_data.csv".to_string());
         let expected = Term::Op(Op::Sequence {
             operations: vec![
                 Term::Op(Op::Compose {
                     operations: vec![
                         Term::Op(Op::TransposeA {
                             a: Rational64::new(5, 1),
-                        }),
+                                }),
                         Term::Op(Op::Length {
                             m: Rational64::new(1, 1),
-                        }),
+                                }),
                     ],
                 }),
                 Term::Op(Op::Compose {
                     operations: vec![
                         Term::Op(Op::TransposeA {
                             a: Rational64::new(2, 1),
-                        }),
+                                }),
                         Term::Op(Op::Length {
                             m: Rational64::new(2, 1),
-                        }),
+                                }),
                     ],
                 }),
                 Term::Op(Op::Compose {
                     operations: vec![
                         Term::Op(Op::TransposeA {
                             a: Rational64::new(3, 1),
-                        }),
+                                }),
                         Term::Op(Op::Length {
                             m: Rational64::new(2, 1),
-                        }),
+                                }),
                     ],
                 }),
             ],

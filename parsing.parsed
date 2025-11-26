@@ -1,0 +1,113 @@
+{ f: 311127/1000, l: 1, g: 1/3, p: 0 }
+
+thing1 = {
+  Repeat 10 [
+    Overlay [
+      { Fm 1 | Fa 2 | Gain 1 | PanA 1 },
+      { Fm 1 | Fa 0 | Gain 1 | PanA -1 },
+      { Fm 1 | Fa 0 | Gain 1 | PanA 0 }
+    ],
+    Choose [
+      { Seq [Fm 1, Fm 9/8, Fm 5/4] | Overlay [Fm 1, Fm 2] | Color 0 },
+      {
+        Seq [
+          Fm 2,
+          Fm 3/2,
+          Fm 5/4,
+          Fm 4/3,
+          Fm 5/4,
+          Fm 9/8,
+          Fm 3/4,
+          { Fm 3/4 | Lm 1/4 },
+          Fm 0
+        ]
+        | Lm 1/5
+        | Color 1
+        | Fm 2
+        | Overlay [Fa 0, Fa 7]
+      },
+      { Fm 1/2 | Lm 3 | Color 2 },
+      { Seq [Fm 3/2, Fm 9/4, Fm 5/4, Fm 5/3, { Fm 0 | Lm 6 }] | Lm 1/3 | Color 3
+      },
+      { Fm 3/2 | Overlay [Fm 1/2, Fm 3/2, Fm 1] | Color 4 },
+      { Fm 2/3 | Lm 2 | Color 5 },
+      { Repeat 4 | Lm 1/4 | Color 6 },
+      {
+        Seq [{ Fm 0 | Lm 2 }, Fm 3/2, Fm 3/4, { Fm 0 | Lm 2 }]
+        | Lm 1/2
+        | Color 7
+      }
+    ],
+    Choose [AsIs, Reverse]
+  ]
+  | Repeat 10 [
+    Overlay [
+      { Fm 1 | Fa 2 | Gain 1 | PanA 1 },
+      { Fm 1 | Fa 0 | Gain 1 | PanA -1 },
+      { Fm 1 | Fa 0 | Gain 1 | PanA 0 }
+    ],
+    Choose [
+      { Seq [Fm 1, Fm 9/8, Fm 5/4] | Overlay [Fm 1, Fm 2] | Color 0 },
+      {
+        Seq [
+          Fm 2,
+          Fm 3/2,
+          Fm 5/4,
+          Fm 4/3,
+          Fm 5/4,
+          Fm 9/8,
+          Fm 3/4,
+          { Fm 3/4 | Lm 1/4 },
+          Fm 0
+        ]
+        | Lm 1/5
+        | Color 1
+        | Fm 2
+        | Overlay [Fa 0, Fa 7]
+      },
+      { Fm 1/2 | Lm 3 | Color 2 },
+      { Seq [Fm 3/2, Fm 9/4, Fm 5/4, Fm 5/3, { Fm 0 | Lm 6 }] | Lm 1/3 | Color 3
+      },
+      { Fm 3/2 | Overlay [Fm 1/2, Fm 3/2, Fm 1] | Color 4 },
+      { Fm 2/3 | Lm 2 | Color 5 },
+      { Repeat 4 | Lm 1/4 | Color 6 },
+      {
+        Seq [{ Fm 0 | Lm 2 }, Fm 3/2, Fm 3/4, { Fm 0 | Lm 2 }]
+        | Lm 1/2
+        | Color 7
+      }
+    ],
+    Choose [AsIs, Reverse]
+  ] | FitLength Lm 16
+}
+
+f = f(a) = a
+
+main = {
+  Repeat 1 [
+    Overlay [{ Seq [Fm 1, Fm 0, Fm 0] | Lm 1/8 }, Fm 0, Gm 1/8],
+    Overlay [
+      { thing1 | Fm 2 | Pm 1/2 | wgsl { /* block 1 */ } },
+      { thing1 | Fm 3/2 | Pm 3/4 | wgsl { /* block 2 */ } },
+      { thing1 | Fm 1 | Pm 1/3 | wgsl { /* block 3 */ } },
+      { thing1 | Fm 1/2 | wgsl { /* block 4 */ } }
+    ],
+    Lm 2,
+    Seq [AsIs, Reverse]
+  ]
+  | wgsl { /* block 5 */ }
+  | Hue 1/10
+  | Seq [Fm 1, Fm 9/8, Fm 5/4]
+  | Overlay [
+    Sine,
+    Tanh { input_gain: 5, output_gain: 1/2 },
+    {
+      Square
+      | Wavefolder { threshold: 1/5, stages: 8, input_gain: 2, output_gain: 1/4 }
+    },
+    {
+      Sine 3/2
+      | Wavefolder { threshold: 1/5, stages: 8, input_gain: 2, output_gain: 1/4 }
+    }
+  ]
+}

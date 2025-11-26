@@ -62,7 +62,6 @@ fn csv_data_to_normal_form(data: &[Vec<f32>], scales: Vec<Scale>, filename: &str
 
     Term::Op(Op::Sequence {
         operations: point_ops,
-        syntax: Default::default(),
     })
 }
 
@@ -104,11 +103,9 @@ fn point_to_point_op(
         operations: vec![
             Term::Op(Op::TransposeA {
                 a: scales[0].apply(fa),
-                syntax: Default::default(),
             }),
             Term::Op(Op::Length {
                 m: f32_to_rational(lm),
-                syntax: Default::default(),
             }),
         ],
     })

@@ -14,17 +14,32 @@
 mod config;
 mod error;
 mod format;
+mod format_ast;
 
 pub use config::FormatConfig;
 pub use error::FormatError;
+pub use format_ast::{FormatDef, FormatNode, FormatParseResult, FormatTerm, Span};
 
-use weresocool_parser::{Init, ParsedComposition, parse_to_raw_ast};
+use weresocool_parser::{Comment, Init, ParsedComposition, parse_for_format};
 
 /// Format source code string
 pub fn format_source(source: &str, config: &FormatConfig) -> Result<String, FormatError> {
     let lines: Vec<String> = source.lines().map(|s| s.to_string()).collect();
-    let parsed = parse_to_raw_ast(lines)?;
-    Ok(format_parsed(&parsed, config))
+    let result = parse_for_format(lines)?;
+    // Use original source for final output, but processed_source for span lookups
+    // (spans are captured from processed source where WGSL is replaced with tokens)
+    let span_source = result.processed_source.as_deref().unwrap_or(&result.source);
+    Ok(format_with_source_and_spans(&result.composition, &result.source, span_source, &result.comments, config))
+}
+
+/// Format with access to original source (for span-based text extraction)
+pub fn format_with_source(parsed: &ParsedComposition, source: &str, config: &FormatConfig) -> String {
+    format::format_composition_with_source(parsed, source, source, config)
+}
+
+/// Format with separate original and span source
+fn format_with_source_and_spans(parsed: &ParsedComposition, original_source: &str, span_source: &str, comments: &[Comment], config: &FormatConfig) -> String {
+    format::format_composition_with_source_and_comments(parsed, original_source, span_source, comments, config)
 }
 
 /// Format a parsed composition

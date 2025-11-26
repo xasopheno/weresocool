@@ -14,8 +14,6 @@ pub mod wgsl;
 pub use crate::{
     ast::{
         Distortion, FmOscDef, FunDef, Op, Op::*, OscType, ASR,
-        FmSyntax, FaSyntax, GainSyntax, LengthSyntax, PanMSyntax, PanASyntax,
-        SeqSyntax, OverlaySyntax,
     },
     color::{
         CssOrHex, Color, ColorMap, ColorSet, ColorSets, ColorValue, GradientColor, GenColor,
@@ -34,7 +32,7 @@ pub use crate::{
         helpers::{handle_id_error, join_sequence},
         substitute::substitute_operations,
         GetLengthRatio, NormalForm, Normalize, PointOp, Substitute,
-        Defs,
+        Defs, Span, SpanMap,
     },
     term::Term,
     wgsl::{WgslMap, validate_wgsl},

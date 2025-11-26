@@ -20,14 +20,7 @@ use weresocool_ast::{
         Scale,
         FmOscDef,
         Defs,
-        FmSyntax,
-        FaSyntax,
-        GainSyntax,
-        LengthSyntax,
-        PanMSyntax,
-        PanASyntax,
-        SeqSyntax,
-        OverlaySyntax,
+        Span,
 };
 use weresocool_ast::follow::types::{
   Follow, FollowRule, FollowCondition, FollowAction, FollowVariable, FollowExpr, FollowComparison, FollowSimpleCondition, FollowAndCondition
@@ -72,8 +65,9 @@ OptionalBackgroundColor: Option<ColorValue> = {
 
 LetDefs = Lets<LetDef>;
 LetDef: () = {
-    <s: Name> "(" <vars: Comma<Name>>  ")" "=" "{" <o: Operation> "}" => {
-        defs.ops.insert("global", 
+    <start: @L> <s: Name> "(" <vars: Comma<Name>>  ")" "=" "{" <o: Operation> "}" <end: @R> => {
+        defs.spans.insert_def(s.clone(), Span::new(start, end));
+        defs.ops.insert("global",
              s.to_owned(),
              Term::FunDef(FunDef {
                  name: s,
@@ -84,15 +78,18 @@ LetDef: () = {
         ()
     },
 
-    <s: Name> "=" "{" <o: Operation> "}" => {
+    <start: @L> <s: Name> "=" "{" <o: Operation> "}" <end: @R> => {
+        defs.spans.insert_def(s.clone(), Span::new(start, end));
         defs.ops.insert("global", s.to_owned(), o); ()
     },
 
-    <name: Name> "=" <list: List> => {
+    <start: @L> <name: Name> "=" <list: List> <end: @R> => {
+        defs.spans.insert_def(name.clone(), Span::new(start, end));
         defs.ops.insert("global", name.to_owned(), Term::Lop(list)); ()
     },
-    
-    <name: Name> "=" <generator: Generator> => {
+
+    <start: @L> <name: Name> "=" <generator: Generator> <end: @R> => {
+        defs.spans.insert_def(name.clone(), Span::new(start, end));
         defs.ops.insert("global", name.to_owned(), Term::Gen(generator)); ()
     },
 
@@ -290,12 +287,12 @@ BaseOperation: Term = {
         input_name, scope: uuid::Uuid::new_v4().to_string()}),
     "(" <o: Operation> ")" => o,
     <follow: Follow> => Term::Op(Follow(follow)),
-    <fm: Fm> <m:Rational> => Term::Op(TransposeM {m, syntax: if fm == "Fm" { FmSyntax::Fm } else { FmSyntax::Tm }}),
-    <fa: Fa> <a:Rational> => Term::Op(TransposeA {a, syntax: if fa == "Fa" { FaSyntax::Fa } else { FaSyntax::Ta }}),
-    <pm: Pm>  <m:Rational> => Term::Op(PanM {m, syntax: if pm == "PanM" { PanMSyntax::PanM } else { PanMSyntax::Pm }}),
-    <pa: Pa>   <a:Rational> => Term::Op(PanA {a, syntax: if pa == "PanA" { PanASyntax::PanA } else { PanASyntax::Pa }}),
-    <lm: Lm> <m:Rational> => Term::Op(Length {m, syntax: if lm == "Length" { LengthSyntax::Length } else { LengthSyntax::Lm }}),
-    <gain: Gm> <m:Rational> => Term::Op(Gain {m, syntax: if gain == "Gain" { GainSyntax::Gain } else { GainSyntax::Gm }}),
+    <fm: Fm> <m:Rational> => Term::Op(TransposeM {m}),
+    <fa: Fa> <a:Rational> => Term::Op(TransposeA {a}),
+    <pm: Pm>  <m:Rational> => Term::Op(PanM {m}),
+    <pa: Pa>   <a:Rational> => Term::Op(PanA {a}),
+    <lm: Lm> <m:Rational> => Term::Op(Length {m}),
+    <gain: Gm> <m:Rational> => Term::Op(Gain {m}),
     r"Lowpass|LowPass" <c:Rational> <q:Rational> => Term::Op(Lowpass {
       hash: generate_random_hash_string(),
       cutoff_frequency: c, 
@@ -321,7 +318,7 @@ BaseOperation: Term = {
         for pow in pows {
             operations.push(Term::Op(Sine { pow: Some(pow) }))
         }
-        Term::Op(Sequence { operations, syntax: Default::default() })
+        Term::Op(Sequence { operations })
     },
     "FmOsc" "[" <osc_defs: Comma<FMOvertoneDef>> "]" => Term::Op(FMOsc { 
         defs: osc_defs.iter().map(|d| FmOscDef {
@@ -340,7 +337,7 @@ BaseOperation: Term = {
         for pow in pows {
             operations.push(Term::Op(Triangle { pow: Some(pow) }))
         }
-        Term::Op(Sequence { operations, syntax: Default::default() })
+        Term::Op(Sequence { operations })
     },
     r"Square|Pulse" <width: Rational?> => {
       Term::Op(Square { width })
@@ -350,7 +347,7 @@ BaseOperation: Term = {
         for width in widths {
             operations.push(Term::Op(Square { width: Some(width) }))
         }
-        Term::Op(Sequence { operations, syntax: Default::default() })
+        Term::Op(Sequence { operations })
     },
     "Noise" => Term::Op(Noise {}),
     "Reverse" => Term::Op(Reverse {}),
@@ -360,7 +357,7 @@ BaseOperation: Term = {
         for x in 0..i {
             vec.push(Term::Op(AsIs))
         }
-        Term::Op(Sequence { operations: vec, syntax: Default::default() })
+        Term::Op(Sequence { operations: vec })
     },
     "AD" "("
         <attack:Rational> ","
@@ -399,10 +396,9 @@ BaseOperation: Term = {
     },
     "Silence" <m:Rational> => Term::Op(Silence {m}),
     <seq_kw: r"Sequence|Seq"> "[" <operations: Operations> "]" => Term::Op(Sequence {
-        operations: operations,
-        syntax: if seq_kw == "Seq" { SeqSyntax::Seq } else { SeqSyntax::Sequence }
+        operations: operations
     }),
-    "Overlay" "[" <operations: Operations> "]" => Term::Op(Overlay { operations: operations, syntax: OverlaySyntax::Overlay }),
+    "Overlay" "[" <operations: Operations> "]" => Term::Op(Overlay { operations: operations }),
     r"(ModulateBy|ModBy)" "[" <operations: Operations> "]" "->" "[" <output: Operations> "]" => Term::Op(ModulateBy { operations: operations, output: Some(output) }),
     r"(ModulateBy|ModBy)" "[" <operations: Operations> "]" => Term::Op(ModulateBy { operations: operations, output: None }),
     "Choose" "[" <operations: Operations> "]" => Term::Op(Choose { operations: operations }),
@@ -427,7 +423,7 @@ BaseOperation: Term = {
             WithLengthRatioOf { with_length_of: Box::new(op), main: None }
         )
     },
-    "O" "[" <o: Overtones> "]" => Term::Op(Overlay { operations: o, syntax: OverlaySyntax::O }),
+    "O" "[" <o: Overtones> "]" => Term::Op(Overlay { operations: o }),
     <id: Name> => {
         Term::Op(Id(id))
     },
@@ -444,8 +440,8 @@ BaseOperation: Term = {
     },
     <fm: Rational>"^"<length: Rational> => {
         Term::Op(Compose { operations: vec! [
-            Term::Op(TransposeM { m: fm, syntax: Default::default() }),
-            Term::Op(Length { m: length, syntax: Default::default() }),
+            Term::Op(TransposeM { m: fm }),
+            Term::Op(Length { m: length }),
         ]})
     },
     BracedOvertone,
@@ -464,10 +460,10 @@ Overtone: Term = {
         <p:Rational>
     ")"
     => Term::Op(Compose { operations: vec! [
-            Term::Op(TransposeM { m: fm, syntax: Default::default() }),
-            Term::Op(TransposeA { a: fa, syntax: Default::default() }),
-            Term::Op(Gain { m: g, syntax: Default::default() }),
-            Term::Op(PanA { a: p, syntax: Default::default() }),
+            Term::Op(TransposeM { m: fm }),
+            Term::Op(TransposeA { a: fa }),
+            Term::Op(Gain { m: g }),
+            Term::Op(PanA { a: p }),
         ]
     })
 }
@@ -480,10 +476,10 @@ BracedOvertone: Term = {
         <p:Rational>
     "}"
     => Term::Op(Compose { operations: vec! [
-            Term::Op(TransposeM { m: fm, syntax: Default::default() }),
-            Term::Op(TransposeA { a: fa, syntax: Default::default() }),
-            Term::Op(Gain { m: g, syntax: Default::default() }),
-            Term::Op(PanA { a: p, syntax: Default::default() }),
+            Term::Op(TransposeM { m: fm }),
+            Term::Op(TransposeA { a: fa }),
+            Term::Op(Gain { m: g }),
+            Term::Op(PanA { a: p }),
         ]
     })
 }

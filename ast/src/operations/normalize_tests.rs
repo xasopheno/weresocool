@@ -2,7 +2,7 @@
 pub mod tests {
     extern crate num_rational;
     extern crate pretty_assertions;
-    use crate::{NameSet, NormalForm, Normalize, Op::*, OscType, PointOp, Term, Term::*, Defs};
+    use crate::{NameSet, NormalForm, Normalize, Op::*, OscType, PointOp, Term::*, Defs};
     use num_rational::{Ratio, Rational64};
 
     fn make_parse_table() -> Defs {
@@ -40,11 +40,11 @@ pub mod tests {
                     operations: vec![
                         Op(TransposeM {
                             m: Rational64::new(3, 2),
-                        }),
+                                }),
                         Op(Id("foo".to_string())),
                         Op(Length {
                             m: Rational64::new(2, 1),
-                        }),
+                                }),
                     ],
                 }),
             ],
@@ -629,18 +629,18 @@ pub mod tests {
                 operations: vec![
                     Op(Length {
                         m: Ratio::new(2, 1),
-                    }),
+                        }),
                     Op(Length {
                         m: Ratio::new(4, 1),
-                    }),
+                        }),
                     Op(Length {
                         m: Ratio::new(3, 1),
-                    }),
+                        }),
                 ],
-            })),
+                })),
             main: Some(Box::new(Op(TransposeM {
                 m: Ratio::new(2, 1),
-            }))),
+                }))),
         }
         .apply_to_normal_form(&mut input, &mut pt)
         .unwrap();
@@ -668,13 +668,13 @@ pub mod tests {
                     operations: vec![
                         Op(TransposeM {
                             m: Ratio::new(1, 1),
-                        }),
+                                }),
                         Op(TransposeM {
                             m: Ratio::new(9, 8),
-                        }),
+                                }),
                         Op(TransposeM {
                             m: Ratio::new(5, 4),
-                        }),
+                                }),
                     ],
                 }),
                 Op(FInvert),

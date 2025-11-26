@@ -74,9 +74,18 @@ impl WgslError {
     }
 }
 
+/// Entry storing both compiled WGSL and original source (for formatting)
+#[derive(Clone, Debug, PartialEq)]
+pub struct WgslEntry {
+    /// Compiled WGSL code (used at runtime)
+    pub compiled: String,
+    /// Original source code (may include DSL syntax like Ym 2/3)
+    pub original: String,
+}
+
 #[derive(Clone, Debug, PartialEq)]
 pub struct WgslMap {
-    pub map: HashMap<u8, String>,
+    pub map: HashMap<u8, WgslEntry>,
     next_id: u8,
 }
 
@@ -89,16 +98,27 @@ impl WgslMap {
     }
 
     /// Insert WGSL code and return its sequential u8 ID
-    pub fn insert(&mut self, code: String) -> u8 {
+    /// Both the compiled and original source are stored
+    pub fn insert(&mut self, compiled: String, original: String) -> u8 {
         let id = self.next_id;
-        self.map.insert(id, code);
+        self.map.insert(id, WgslEntry { compiled, original });
         self.next_id = self.next_id.wrapping_add(1);
         id
     }
 
-    /// Retrieve WGSL code by u8 ID
+    /// Insert with same source for both compiled and original (legacy interface)
+    pub fn insert_raw(&mut self, code: String) -> u8 {
+        self.insert(code.clone(), code)
+    }
+
+    /// Retrieve compiled WGSL code by u8 ID
     pub fn get(&self, id: &u8) -> Option<&String> {
-        self.map.get(id)
+        self.map.get(id).map(|e| &e.compiled)
+    }
+
+    /// Retrieve original source code by u8 ID (for formatting)
+    pub fn get_original(&self, id: &u8) -> Option<&String> {
+        self.map.get(id).map(|e| &e.original)
     }
 
     /// Update next_id to be at least the given value
@@ -283,13 +303,17 @@ mod tests {
     #[test]
     fn test_wgsl_map() {
         let mut map = WgslMap::new();
-        let code = "x = x * 2.0;";
-        let id = map.insert(code.to_string());
+        let compiled = "x = x * 2.0;";
+        let original = "Xm 2";
+        let id = map.insert(compiled.to_string(), original.to_string());
         assert_eq!(id, 1, "First ID should be 1");
-        assert_eq!(map.get(&id), Some(&code.to_string()));
+        assert_eq!(map.get(&id), Some(&compiled.to_string()));
+        assert_eq!(map.get_original(&id), Some(&original.to_string()));
         let code2 = "y = y + 1.0;";
-        let id2 = map.insert(code2.to_string());
+        let id2 = map.insert_raw(code2.to_string());
         assert_eq!(id2, 2, "Second ID should be 2");
         assert_eq!(map.get(&id2), Some(&code2.to_string()));
+        // When using insert_raw, original == compiled
+        assert_eq!(map.get_original(&id2), Some(&code2.to_string()));
     }
 } 

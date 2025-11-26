@@ -4,7 +4,11 @@ pub mod test {
         parser::*,
     };
     use num_rational::Ratio;
-    use weresocool_ast::{Op, Op::*, Term::*};
+    use weresocool_ast::{
+        Op, Op::*, Term::*,
+        FmSyntax, FaSyntax, GainSyntax, LengthSyntax,
+        PanASyntax, PanMSyntax, SeqSyntax, OverlaySyntax,
+    };
 
     fn mock_init() -> String {
         "{ f: 200, l: 1.0, g: 1.0, p: 0.0 }
@@ -99,7 +103,7 @@ pub mod test {
         parse_str.push_str("Tm 3/2");
         test_parsed_operation(
             parse_str,
-            TransposeM {
+            TransposeM { syntax: FmSyntax::Tm,
                 m: Ratio::new(3, 2),
             },
         );
@@ -111,7 +115,7 @@ pub mod test {
         parse_str.push_str("Ta 2.0");
         test_parsed_operation(
             parse_str,
-            TransposeA {
+            TransposeA { syntax: FaSyntax::Ta,
                 a: Ratio::new(2, 1),
             },
         );
@@ -123,7 +127,7 @@ pub mod test {
         parse_str.push_str("PanA 2.0");
         test_parsed_operation(
             parse_str,
-            PanA {
+            PanA { syntax: PanASyntax::PanA,
                 a: Ratio::new(2, 1),
             },
         );
@@ -135,7 +139,7 @@ pub mod test {
         parse_str.push_str("PanM 3/2");
         test_parsed_operation(
             parse_str,
-            PanM {
+            PanM { syntax: PanMSyntax::PanM,
                 m: Ratio::new(3, 2),
             },
         );
@@ -147,7 +151,7 @@ pub mod test {
         parse_str.push_str("Gain 0.25");
         test_parsed_operation(
             parse_str,
-            Gain {
+            Gain { syntax: GainSyntax::Gain,
                 m: Ratio::new(1, 4),
             },
         );
@@ -159,7 +163,7 @@ pub mod test {
         parse_str.push_str("Length 0.5");
         test_parsed_operation(
             parse_str,
-            Length {
+            Length { syntax: LengthSyntax::Length,
                 m: Ratio::new(1, 2),
             },
         );
@@ -192,10 +196,10 @@ pub mod test {
         );
         test_parsed_operation(
             parse_str,
-            Sequence {
+            Sequence { syntax: SeqSyntax::Sequence,
                 operations: vec![
                     Op(AsIs),
-                    Op(TransposeM {
+                    Op(TransposeM { syntax: FmSyntax::Tm,
                         m: Ratio::new(3, 2),
                     }),
                 ],
@@ -216,10 +220,10 @@ pub mod test {
         );
         test_parsed_operation(
             parse_str,
-            Overlay {
+            Overlay { syntax: OverlaySyntax::Overlay,
                 operations: vec![
                     Op(AsIs),
-                    Op(TransposeM {
+                    Op(TransposeM { syntax: FmSyntax::Tm,
                         m: Ratio::new(3, 2),
                     }),
                 ],
@@ -238,36 +242,36 @@ pub mod test {
         );
         test_parsed_operation(
             parse_str,
-            Overlay {
+            Overlay { syntax: OverlaySyntax::O,
                 operations: vec![
                     Op(Compose {
                         operations: vec![
-                            Op(TransposeM {
+                            Op(TransposeM { syntax: FmSyntax::Fm,
                                 m: Ratio::new(3, 2),
                             }),
-                            Op(TransposeA {
+                            Op(TransposeA { syntax: FaSyntax::Fa,
                                 a: Ratio::new(3, 1),
                             }),
-                            Op(Gain {
+                            Op(Gain { syntax: GainSyntax::Gain,
                                 m: Ratio::new(1, 1),
                             }),
-                            Op(PanA {
+                            Op(PanA { syntax: PanASyntax::PanA,
                                 a: Ratio::new(3, 10),
                             }),
                         ],
                     }),
                     Op(Compose {
                         operations: vec![
-                            Op(TransposeM {
+                            Op(TransposeM { syntax: FmSyntax::Fm,
                                 m: Ratio::new(1, 1),
                             }),
-                            Op(TransposeA {
+                            Op(TransposeA { syntax: FaSyntax::Fa,
                                 a: Ratio::new(0, 1),
                             }),
-                            Op(Gain {
+                            Op(Gain { syntax: GainSyntax::Gain,
                                 m: Ratio::new(1, 2),
                             }),
-                            Op(PanA {
+                            Op(PanA { syntax: PanASyntax::PanA,
                                 a: Ratio::new(0, 1),
                             }),
                         ],
@@ -298,10 +302,10 @@ pub mod test {
             *thing,
             Op(Compose {
                 operations: vec![
-                    Op(TransposeM {
+                    Op(TransposeM { syntax: FmSyntax::Tm,
                         m: Ratio::new(3, 2)
                     }),
-                    Op(Gain {
+                    Op(Gain { syntax: GainSyntax::Gain,
                         m: Ratio::new(3, 10)
                     })
                 ]
@@ -365,12 +369,12 @@ pub mod test {
                         Op(Compose {
                             operations: vec![
                                 Op(Repeat {
-                                    operations: vec![Op(Sequence {
+                                    operations: vec![Op(Sequence { syntax: SeqSyntax::Sequence,
                                         operations: vec![
-                                            Op(TransposeM {
+                                            Op(TransposeM { syntax: FmSyntax::Tm,
                                                 m: Ratio::new(5, 4)
                                             }),
-                                            Op(TransposeM {
+                                            Op(TransposeM { syntax: FmSyntax::Tm,
                                                 m: Ratio::new(3, 2)
                                             })
                                         ]
@@ -384,12 +388,12 @@ pub mod test {
                             main: Some(Box::new(Op(Compose {
                                 operations: vec![
                                     Op(Repeat {
-                                        operations: vec![Op(Sequence {
+                                        operations: vec![Op(Sequence { syntax: SeqSyntax::Sequence,
                                             operations: vec![
-                                                Op(TransposeM {
+                                                Op(TransposeM { syntax: FmSyntax::Tm,
                                                     m: Ratio::new(5, 4)
                                                 }),
-                                                Op(TransposeM {
+                                                Op(TransposeM { syntax: FmSyntax::Tm,
                                                     m: Ratio::new(3, 2)
                                                 })
                                             ]

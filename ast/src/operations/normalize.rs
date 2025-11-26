@@ -328,7 +328,7 @@ impl Normalize for Op {
                 *input = result
             }
 
-            Op::Compose { operations } => {
+            Op::Compose { operations, .. } => {
                 let saved_rand_ctx = defs.rand_ctx;
                 for (i, op) in operations.iter().enumerate() {
                     // Each composed operation gets a unique rand_ctx based on its position
@@ -411,7 +411,7 @@ impl Normalize for Op {
                 let main_length = input.length_ratio;
                 let target_length = with_length_of.get_length_ratio(input, defs)?;
                 let ratio = target_length / main_length;
-                let new_op = Op::Length { m: ratio, syntax: Default::default() };
+                let new_op = Op::Length { m: ratio };
 
                 new_op.apply_to_normal_form(input, defs)?;
 
@@ -434,7 +434,6 @@ impl Normalize for Op {
 
                 Op::Overlay {
                     operations: vec![Nf(rest), Nf(named_applied)],
-                    syntax: Default::default(),
                 }
                 .apply_to_normal_form(&mut result, defs)?;
 
@@ -453,7 +452,7 @@ impl Normalize for Op {
                     // Extract keeper name if this is a keeper
                     let keeper_name = match op {
                         Term::Op(Op::Keeper(name)) => Some(name.clone()),
-                        Term::Op(Op::Compose { operations }) if !operations.is_empty() => {
+                        Term::Op(Op::Compose { operations, .. }) if !operations.is_empty() => {
                             match &operations[0] {
                                 Term::Op(Op::Keeper(name)) => Some(name.clone()),
                                 _ => None,
@@ -474,7 +473,6 @@ impl Normalize for Op {
                 // Scale modulator to match input length
                 Op::Length {
                     m: input.length_ratio / modulator.length_ratio,
-                    syntax: Default::default(),
                 }
                 .apply_to_normal_form(&mut modulator, defs)?;
 

@@ -1,5 +1,7 @@
 { f: 220, l: 1, g: 1, p: 0 }
 
-melody = Seq [Fm 1, Fm 9/8, Fm 5/4, Fm 3/2]
+melody = {
+  Seq [Fm 1, Fm 9/8, Fm 5/4, Fm 3/2]
+}
 
-main = melody
+main = { melody }

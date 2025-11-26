@@ -23,7 +23,8 @@
       "Bash(cargo clean:*)",
       "Bash(cargo metadata:*)",
       "Bash(cat:*)",
-      "Bash(./target/debug/weresocool fmt:*)"
+      "Bash(./target/debug/weresocool fmt:*)",
+      "Bash(./target/release/weresocool fmt:*)"
     ],
     "deny": [],
     "ask": []

@@ -2,7 +2,7 @@ use crate::{color::ColorMap, NameSet, OscType, Term, ASR, Distortion, wgsl::Wgsl
 use num_rational::{Ratio, Rational64};
 use scop::Defs as ScopDefs;
 use std::{
-    collections::HashSet,
+    collections::{HashMap, HashSet},
     ops::{Mul, MulAssign},
 };
 use weresocool_error::Error;
@@ -61,12 +61,53 @@ impl Mul<ColorGrading> for ColorGrading {
     }
 }
 
+/// Span in source code (byte offsets)
+#[derive(Clone, Copy, Debug, Default, PartialEq, Eq, Hash)]
+pub struct Span {
+    pub start: usize,
+    pub end: usize,
+}
+
+impl Span {
+    pub fn new(start: usize, end: usize) -> Self {
+        Self { start, end }
+    }
+}
+
+/// Map storing spans for definitions and expressions during parsing
+#[derive(Clone, Debug, Default, PartialEq)]
+pub struct SpanMap {
+    /// Spans for named definitions: name -> span of the whole definition
+    pub defs: HashMap<String, Span>,
+    /// Spans for the init block fields
+    pub init_f: Option<Span>,
+    pub init_l: Option<Span>,
+    pub init_g: Option<Span>,
+    pub init_p: Option<Span>,
+}
+
+impl SpanMap {
+    pub fn new() -> Self {
+        Self::default()
+    }
+
+    pub fn insert_def(&mut self, name: String, span: Span) {
+        self.defs.insert(name, span);
+    }
+
+    pub fn get_def(&self, name: &str) -> Option<Span> {
+        self.defs.get(name).copied()
+    }
+}
+
 #[derive(Clone, Debug, PartialEq)]
 pub struct Defs {
     pub ops: ScopDefs<Term>,
     pub colors: ColorMap,
     pub wgsl: WgslMap,
     pub rand_ctx: RandCtx,
+    /// Spans captured during parsing for formatting
+    pub spans: SpanMap,
 }
 
 impl Default for Defs {
@@ -82,6 +123,7 @@ impl Default for Defs {
             colors: ColorMap::new(),
             wgsl: WgslMap::new(),
             rand_ctx: RandCtx::from_u128(random_seed),
+            spans: SpanMap::new(),
         }
     }
 }

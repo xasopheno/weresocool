@@ -16,7 +16,7 @@ main = {
 
     // The transformation should convert Compose[Tm 1/1, Sequence[AsIs×4]] to Repeat{[Tm 1/1], 4}
     match main {
-        Term::Op(Op::Compose { operations }) => {
+        Term::Op(Op::Compose { operations, .. }) => {
             println!("Compose operations: {:#?}", operations);
 
             // After transformation, there should be one Repeat operation
@@ -53,7 +53,7 @@ main = {
     let main = defs.ops.get("main").unwrap();
 
     match main {
-        Term::Op(Op::Compose { operations }) => {
+        Term::Op(Op::Compose { operations, .. }) => {
             println!("Compose operations for Choose + Repeat: {:#?}", operations);
 
             // Should be transformed to Repeat{[Choose[...]], 2}

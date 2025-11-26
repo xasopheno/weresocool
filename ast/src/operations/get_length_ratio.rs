@@ -98,7 +98,7 @@ impl GetLengthRatio for Op {
                 Ok(new_total)
             }
 
-            Op::Compose { operations } => {
+            Op::Compose { operations, .. } => {
                 let mut new_total = Ratio::from_integer(1);
                 for operation in operations {
                     new_total *= operation.get_length_ratio(normal_form, defs)?;
@@ -132,7 +132,7 @@ impl GetLengthRatio for Op {
 
                     let keeper_name = match operation {
                         Term::Op(Op::Keeper(name)) => Some(name.clone()),
-                        Term::Op(Op::Compose { operations }) if !operations.is_empty() => {
+                        Term::Op(Op::Compose { operations, .. }) if !operations.is_empty() => {
                             match &operations[0] {
                                 Term::Op(Op::Keeper(name)) => Some(name.clone()),
                                 _ => None,
@@ -162,7 +162,7 @@ impl GetLengthRatio for Op {
                         // Bind keeper names to their scaled lengths via substitute
                         let scope = defs.ops.create_uuid_scope();
                         for (i, name) in keeper_names.iter().enumerate() {
-                            let length_op = Op::Length { m: scaled_keeper_lengths[i], syntax: Default::default() };
+                            let length_op = Op::Length { m: scaled_keeper_lengths[i] };
                             defs.ops.insert(&scope, name, Term::Op(length_op));
                         }
 
