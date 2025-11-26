@@ -115,6 +115,30 @@ pub enum Op {
     Reverb {
         m: Option<Rational64>,
     },
+    Wavefolder {
+        threshold: Rational64,
+        stages: i64,
+        input_gain: Rational64,
+        output_gain: Rational64,
+    },
+    SoftClip {
+        threshold: Rational64,
+        input_gain: Rational64,
+        output_gain: Rational64,
+    },
+    Overdrive {
+        input_gain: Rational64,
+        output_gain: Rational64,
+    },
+    Bitcrusher {
+        bits: i64,
+        input_gain: Rational64,
+        output_gain: Rational64,
+    },
+    Tanh {
+        input_gain: Rational64,
+        output_gain: Rational64,
+    },
     //
     Sequence {
         operations: Vec<Term>,
@@ -212,4 +236,33 @@ impl OscType {
 pub enum ASR {
     Short,
     Long,
+}
+
+/// Distortion effect type - stackable, applied after oscillator before filters
+#[derive(Copy, Clone, Debug, PartialEq, Serialize, Deserialize, Ord, PartialOrd, Hash, Eq)]
+pub enum Distortion {
+    Wavefolder {
+        threshold: Rational64,
+        stages: u8,
+        input_gain: Rational64,
+        output_gain: Rational64,
+    },
+    SoftClip {
+        threshold: Rational64,
+        input_gain: Rational64,
+        output_gain: Rational64,
+    },
+    Overdrive {
+        input_gain: Rational64,
+        output_gain: Rational64,
+    },
+    Bitcrusher {
+        bits: u8,
+        input_gain: Rational64,
+        output_gain: Rational64,
+    },
+    Tanh {
+        input_gain: Rational64,
+        output_gain: Rational64,
+    },
 }

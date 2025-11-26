@@ -7,13 +7,13 @@ pub use render_voice::{renderables_to_render_voices, RenderVoice};
 use serde::{Deserialize, Serialize};
 use weresocool_ast::{
     follow::evaluate::EvaluateAction, follow::types::FollowNF, NormalForm, Normalize, OscType,
-    PointOp, ASR,
+    PointOp, ASR, Distortion,
     Defs,
 };
 use weresocool_error::Error;
 use weresocool_filter::BiquadFilterDef;
 pub(crate) use weresocool_shared::{lossy_rational_mul, r_to_f64, Settings};
-use weresocool_synth::Offset;
+use weresocool_synth::{DistortionDef, Offset};
 
 #[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
 pub struct RenderOp {
@@ -38,6 +38,7 @@ pub struct RenderOp {
     pub next_r_silent: bool,
     pub names: Vec<String>,
     pub filters: Vec<BiquadFilterDef>,
+    pub distortions: Vec<DistortionDef>,
     pub next_out: bool,
     pub follows: Vec<FollowNF>,
     pub colors: Vec<String>,
@@ -71,6 +72,7 @@ impl RenderOp {
             next_out: false,
             names: Vec::new(),
             filters: Vec::new(),
+            distortions: Vec::new(),
             follows: Vec::new(),
             colors: Vec::new(),
             wgsl: Vec::new(),
@@ -102,6 +104,7 @@ impl RenderOp {
             next_out: false,
             names: Vec::new(),
             filters: Vec::new(),
+            distortions: Vec::new(),
             follows: Vec::new(),
             colors: Vec::new(),
             wgsl: Vec::new(),
@@ -132,6 +135,7 @@ impl RenderOp {
             next_out: false,
             names: Vec::new(),
             filters: Vec::new(),
+            distortions: Vec::new(),
             follows: Vec::new(),
             colors: Vec::new(),
             wgsl: Vec::new(),
@@ -169,6 +173,7 @@ impl RenderOp {
             next_out: false,
             names: vec![],
             filters,
+            distortions: vec![],
             follows: vec![],
             colors: vec![],
             wgsl: Vec::new(),
@@ -304,6 +309,11 @@ impl weresocool_synth::SynthOp for RenderOp {
     fn next_out(&self) -> bool {
         self.next_out
     }
+
+    #[inline(always)]
+    fn distortions(&self) -> &[DistortionDef] {
+        &self.distortions
+    }
 }
 
 fn pointop_to_renderop(
@@ -367,6 +377,36 @@ fn pointop_to_renderop(
                 filter_type: f.filter_type,
                 cutoff_frequency: f.cutoff_frequency * basis.f,
                 q_factor: f.q_factor,
+            })
+            .collect(),
+        distortions: point_op
+            .distortions
+            .iter()
+            .map(|d| match d {
+                Distortion::Wavefolder { threshold, stages, input_gain, output_gain } => DistortionDef::Wavefolder {
+                    threshold: r_to_f64(*threshold),
+                    stages: *stages,
+                    input_gain: r_to_f64(*input_gain),
+                    output_gain: r_to_f64(*output_gain),
+                },
+                Distortion::SoftClip { threshold, input_gain, output_gain } => DistortionDef::SoftClip {
+                    threshold: r_to_f64(*threshold),
+                    input_gain: r_to_f64(*input_gain),
+                    output_gain: r_to_f64(*output_gain),
+                },
+                Distortion::Overdrive { input_gain, output_gain } => DistortionDef::Overdrive {
+                    input_gain: r_to_f64(*input_gain),
+                    output_gain: r_to_f64(*output_gain),
+                },
+                Distortion::Bitcrusher { bits, input_gain, output_gain } => DistortionDef::Bitcrusher {
+                    bits: *bits,
+                    input_gain: r_to_f64(*input_gain),
+                    output_gain: r_to_f64(*output_gain),
+                },
+                Distortion::Tanh { input_gain, output_gain } => DistortionDef::Tanh {
+                    input_gain: r_to_f64(*input_gain),
+                    output_gain: r_to_f64(*output_gain),
+                },
             })
             .collect(),
         next_out,

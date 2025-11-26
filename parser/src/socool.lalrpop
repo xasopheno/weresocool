@@ -363,6 +363,32 @@ BaseOperation: Term = {
         },
     "Portamento" <m:Rational> => Term::Op(Portamento {m}),
     "Reverb" <m:Rational> => Term::Op(Reverb {m: Some(m)}),
+    "Wavefolder" "(" <threshold:Rational> "," <stages:Int> <gains:("," Rational "," Rational)?> ")" => {
+        let (input_gain, output_gain) = gains
+            .map(|(_, i, _, o)| (i, o))
+            .unwrap_or((Rational64::new(1, 1), Rational64::new(1, 1)));
+        Term::Op(Wavefolder { threshold, stages, input_gain, output_gain })
+    },
+    "SoftClip" "(" <threshold:Rational> <gains:("," Rational "," Rational)?> ")" => {
+        let (input_gain, output_gain) = gains
+            .map(|(_, i, _, o)| (i, o))
+            .unwrap_or((Rational64::new(1, 1), Rational64::new(1, 1)));
+        Term::Op(SoftClip { threshold, input_gain, output_gain })
+    },
+    "Overdrive" "(" <input_gain:Rational> <output_gain:("," Rational)?> ")" => {
+        let output_gain = output_gain.map(|(_, o)| o).unwrap_or(Rational64::new(1, 1));
+        Term::Op(Overdrive { input_gain, output_gain })
+    },
+    "Bitcrusher" "(" <bits:Int> <gains:("," Rational "," Rational)?> ")" => {
+        let (input_gain, output_gain) = gains
+            .map(|(_, i, _, o)| (i, o))
+            .unwrap_or((Rational64::new(1, 1), Rational64::new(1, 1)));
+        Term::Op(Bitcrusher { bits, input_gain, output_gain })
+    },
+    "Tanh" "(" <input_gain:Rational> <output_gain:("," Rational)?> ")" => {
+        let output_gain = output_gain.map(|(_, o)| o).unwrap_or(Rational64::new(1, 1));
+        Term::Op(Tanh { input_gain, output_gain })
+    },
     "Silence" <m:Rational> => Term::Op(Silence {m}),
     r"(Sequence|Seq)" "[" <operations: Operations> "]" => Term::Op(Sequence { operations: operations }),
     "Overlay" "[" <operations: Operations> "]" => Term::Op(Overlay { operations: operations }),

@@ -1,4 +1,4 @@
-use crate::{color::ColorMap, NameSet, OscType, Term, ASR, wgsl::WgslMap, rand_ctx::RandCtx};
+use crate::{color::ColorMap, NameSet, OscType, Term, ASR, Distortion, wgsl::WgslMap, rand_ctx::RandCtx};
 use num_rational::{Ratio, Rational64};
 use scop::Defs as ScopDefs;
 use std::{
@@ -72,11 +72,9 @@ pub struct Defs {
 impl Default for Defs {
     fn default() -> Self {
         let random_seed: u128 = {
-            use std::time::{SystemTime, UNIX_EPOCH};
-            match SystemTime::now().duration_since(UNIX_EPOCH) {
-                Ok(n) => n.as_nanos() as u128,
-                Err(_) => panic!("SystemTime before UNIX EPOCH!"),
-            }
+            let mut buf = [0u8; 16];
+            getrandom::getrandom(&mut buf).expect("Failed to get random bytes");
+            u128::from_le_bytes(buf)
         };
 
         Defs {
@@ -126,6 +124,8 @@ pub struct PointOp {
     pub names: NameSet,
     /// Filters
     pub filters: Vec<BiquadFilterDef>,
+    /// Distortion effects (wavefolder, etc.)
+    pub distortions: Vec<Distortion>,
     /// Should fade out to nothing
     pub is_out: bool,
     pub follows: Vec<crate::follow::types::FollowNF>,
@@ -155,6 +155,7 @@ impl Default for PointOp {
             osc_type: OscType::None,
             names: NameSet::new(),
             filters: vec![],
+            distortions: vec![],
             is_out: false,
             follows: vec![],
             colors: vec![],
@@ -321,6 +322,12 @@ impl Mul<PointOp> for PointOp {
                 .chain(&other.filters)
                 .map(|f| f.to_owned())
                 .collect(),
+            distortions: self
+                .distortions
+                .iter()
+                .chain(&other.distortions)
+                .copied()
+                .collect(),
             is_out: other.is_out,
             follows: self
                 .follows
@@ -369,6 +376,12 @@ impl<'a> Mul<&'a PointOp> for &PointOp {
                 .iter()
                 .chain(&other.filters)
                 .map(|f| f.to_owned())
+                .collect(),
+            distortions: self
+                .distortions
+                .iter()
+                .chain(&other.distortions)
+                .copied()
                 .collect(),
             is_out: other.is_out,
             follows: self
@@ -426,6 +439,12 @@ impl MulAssign for PointOp {
                 .iter()
                 .chain(&other.filters)
                 .map(|f| f.to_owned())
+                .collect(),
+            distortions: self
+                .distortions
+                .iter()
+                .chain(&other.distortions)
+                .copied()
                 .collect(),
             is_out: other.is_out,
             follows: self
@@ -493,6 +512,12 @@ impl PointOp {
                 .iter()
                 .chain(&other.filters)
                 .map(|f| f.to_owned())
+                .collect(),
+            distortions: self
+                .distortions
+                .iter()
+                .chain(&other.distortions)
+                .copied()
                 .collect(),
             is_out: other.is_out,
             follows: self

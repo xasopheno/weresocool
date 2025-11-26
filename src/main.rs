@@ -7,28 +7,40 @@ mod test;
 mod watch;
 
 use crate::play::Play::{Once, Watch};
+use colored::*;
 use notify::Error as NotifyError;
 use std::env;
+use std::process::ExitCode;
 use thiserror::Error;
 use weresocool::error::Error as WscError;
 use weresocool_portaudio::error::Error as PortAudioError;
 
 #[derive(Error, Debug)]
 pub enum Error {
-    #[error("WereSoCoolError: `{0}`")]
+    #[error("{0}")]
     WereSoCoolError(#[from] WscError),
     #[cfg(feature = "app")]
-    #[error("PortAudioError: `{0}`")]
+    #[error("{0}")]
     PortAudioError(#[from] PortAudioError),
-    #[error("NotifyError: `{0}`")]
+    #[error("File watch error: {0}")]
     NotifyError(#[from] NotifyError),
-    #[error("IoError: `{0}`")]
+    #[error("I/O error: {0}")]
     IoError(#[from] std::io::Error),
-    #[error("`{0}")]
+    #[error("{0}")]
     Message(String),
 }
 
-fn main() -> Result<(), Error> {
+fn main() -> ExitCode {
+    match run() {
+        Ok(()) => ExitCode::SUCCESS,
+        Err(e) => {
+            eprintln!("\n{}\n", e.to_string().red());
+            ExitCode::FAILURE
+        }
+    }
+}
+
+fn run() -> Result<(), Error> {
     let cwd = env::current_dir()?;
 
     let matches = app::app().get_matches();

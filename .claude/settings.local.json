@@ -21,7 +21,8 @@
       "Bash(cargo update)",
       "Bash(wasm-pack build:*)",
       "Bash(cargo clean:*)",
-      "Bash(cargo metadata:*)"
+      "Bash(cargo metadata:*)",
+      "Bash(cat:*)"
     ],
     "deny": [],
     "ask": []

@@ -44,7 +44,12 @@ impl GetLengthRatio for Op {
             | Op::Vibrance { .. }
             | Op::Gamma { .. }
             | Op::ColorBlend { .. }
-            | Op::ColorAdd { .. } => Ok(Ratio::from_integer(1)),
+            | Op::ColorAdd { .. }
+            | Op::Wavefolder { .. }
+            | Op::SoftClip { .. }
+            | Op::Overdrive { .. }
+            | Op::Bitcrusher { .. }
+            | Op::Tanh { .. } => Ok(Ratio::from_integer(1)),
 
             Op::CSV1d { .. } => {
                 let mut nf = NormalForm::init();

@@ -167,6 +167,13 @@ impl Voice {
                 self.offset_current.gain = gain;
             };
 
+            // Apply distortion effects (after oscillator, before filters)
+            // Distortion is stateless - no Voice state needed
+            let distortions = op.distortions();
+            if !distortions.is_empty() {
+                new_sample = crate::distortion::process_distortions(new_sample, distortions);
+            }
+
             if sound_to_silence && self.old_filters.is_some() {
                 new_sample = Voice::process_filter(&mut self.old_filters, new_sample);
             } else if self.filters.is_some() || self.old_filters.is_some() {

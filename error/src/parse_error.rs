@@ -22,7 +22,7 @@ impl fmt::Display for ParseError {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
         write!(
             f,
-            "message: {}, line: {}, column: {}",
+            "{}\n  → line {}, column {}",
             self.message, self.line, self.column
         )
     }

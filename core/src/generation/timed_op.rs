@@ -79,6 +79,7 @@ impl TimedOp {
             osc_type: self.osc_type.clone(),
             names: NameSet::new(),
             filters: Vec::new(),
+            distortions: Vec::new(),
             //TODO
             is_out: false,
             follows: vec![],

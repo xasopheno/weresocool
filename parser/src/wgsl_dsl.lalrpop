@@ -1,0 +1,75 @@
+// WGSL DSL Grammar
+// Compiles a simple DSL to WGSL code
+//
+// Position: Xm, Xa, Ym, Ya, Zm, Za (multiply/add)
+// Scale: Sm, Sa
+// Velocity: Vm, Va
+//
+// Examples:
+//   Xm 2           ->  x = x * 2.0;
+//   Ya 10          ->  y = y + 10.0;
+//   Xm 2, Ya 10    ->  x = x * 2.0;\n    y = y + 10.0;
+//   Sm (sin(time) * 0.5 + 1.0)  ->  scale = scale * (sin(time) * 0.5 + 1.0);
+
+grammar;
+
+// Entry point - comma-separated DSL commands
+pub DslLine: Vec<String> = {
+    <cmds:Comma<DslCommand>> => cmds,
+};
+
+DslCommand: String = {
+    // Position operations
+    "Xm" <v:Value> => format!("x = x * {};", v),
+    "Xa" <v:Value> => format!("x = x + {};", v),
+    "Ym" <v:Value> => format!("y = y * {};", v),
+    "Ya" <v:Value> => format!("y = y + {};", v),
+    "Zm" <v:Value> => format!("z = z * {};", v),
+    "Za" <v:Value> => format!("z = z + {};", v),
+
+    // Scale
+    "Sm" <v:Value> => format!("scale = scale * {};", v),
+    "Sa" <v:Value> => format!("scale = scale + {};", v),
+
+    // Velocity
+    "Vm" <v:Value> => format!("velocity = velocity * {};", v),
+    "Va" <v:Value> => format!("velocity = velocity + {};", v),
+};
+
+Value: String = {
+    // Rational: n/d (must come before plain Int to avoid ambiguity)
+    <n:Int> "/" <d:Int> => format!("{}.0 / {}.0", n, d),
+    // Float
+    <f:Float> => f,
+    // Integer (becomes float)
+    <n:Int> => format!("{}.0", n),
+    // Parenthesized expression (passed through as-is)
+    <expr:ParenExpr> => expr,
+    // Variable reference
+    <id:Ident> => id,
+};
+
+Float: String = {
+    <s:r"-?[0-9]+\.[0-9]*"> => s.to_string(),
+};
+
+Int: i64 = {
+    <s:r"-?[0-9]+"> => s.parse().unwrap(),
+};
+
+Ident: String = {
+    <s:r"[a-z_][a-zA-Z0-9_]*"> => s.to_string(),
+};
+
+// Parenthesized expression - captures everything including nested parens
+ParenExpr: String = {
+    <s:r"\([^()]*(?:\([^()]*\)[^()]*)*\)"> => s.to_string(),
+};
+
+// Helper macro for comma-separated lists
+Comma<T>: Vec<T> = {
+    <mut v:(<T> ",")*> <e:T> => {
+        v.push(e);
+        v
+    }
+};

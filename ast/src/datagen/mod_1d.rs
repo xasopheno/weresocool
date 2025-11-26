@@ -115,6 +115,7 @@ pub fn eeg_datum_to_point_op(
         reverb: None,
         osc_type: OscType::None,
         filters: vec![],
+        distortions: vec![],
         is_out: false,
         follows: vec![],
         colors: vec![],

@@ -4,7 +4,7 @@ use crate::operations::Rational64;
 use crate::operations::{
     helpers::*, substitute::insert_function_args, GetLengthRatio, NormalForm, Normalize, Substitute, Defs,
 };
-use crate::{FunDef, Op, OscType, Term, Term::*};
+use crate::{Distortion, FunDef, Op, OscType, Term, Term::*};
 use num_rational::Ratio;
 use num_traits::CheckedMul;
 use weresocool_error::Error;
@@ -185,6 +185,60 @@ impl Normalize for Op {
                     op.reverb = *m
                 }
             }),
+
+            Op::Wavefolder {
+                threshold,
+                stages,
+                input_gain,
+                output_gain,
+            } => {
+                input.fmap_mut(|op| {
+                    op.distortions.push(Distortion::Wavefolder {
+                        threshold: *threshold,
+                        stages: (*stages).clamp(1, 8) as u8,
+                        input_gain: *input_gain,
+                        output_gain: *output_gain,
+                    });
+                });
+            }
+
+            Op::SoftClip { threshold, input_gain, output_gain } => {
+                input.fmap_mut(|op| {
+                    op.distortions.push(Distortion::SoftClip {
+                        threshold: *threshold,
+                        input_gain: *input_gain,
+                        output_gain: *output_gain,
+                    });
+                });
+            }
+
+            Op::Overdrive { input_gain, output_gain } => {
+                input.fmap_mut(|op| {
+                    op.distortions.push(Distortion::Overdrive {
+                        input_gain: *input_gain,
+                        output_gain: *output_gain,
+                    });
+                });
+            }
+
+            Op::Bitcrusher { bits, input_gain, output_gain } => {
+                input.fmap_mut(|op| {
+                    op.distortions.push(Distortion::Bitcrusher {
+                        bits: (*bits).clamp(1, 16) as u8,
+                        input_gain: *input_gain,
+                        output_gain: *output_gain,
+                    });
+                });
+            }
+
+            Op::Tanh { input_gain, output_gain } => {
+                input.fmap_mut(|op| {
+                    op.distortions.push(Distortion::Tanh {
+                        input_gain: *input_gain,
+                        output_gain: *output_gain,
+                    });
+                });
+            }
 
             Op::AD { attack, decay, asr } => input.fmap_mut(|op| {
                 op.attack *= attack;

@@ -27,8 +27,8 @@ main {
 
     let mut defs = Defs::default();
     // Skip validation for tests
-    let result = process_wgsl_blocks(input, &mut defs, true);
-    
+    let (result, _source_map) = process_wgsl_blocks(input, &mut defs, true).unwrap();
+
     // Check that the WGSL blocks were extracted and replaced with tokens
     assert!(result.contains("@WGSL@"));
     assert!(!result.contains("x = x * 2.0"));
@@ -63,8 +63,8 @@ main {
 
     let mut defs = Defs::default();
     // Skip validation for tests
-    let result = process_wgsl_blocks(input, &mut defs, true);
-    
+    let (result, _source_map) = process_wgsl_blocks(input, &mut defs, true).unwrap();
+
     // Check that the WGSL block was extracted
     assert!(result.contains("@WGSL@"));
     assert!(!result.contains("if (time > 10.0)"));
@@ -90,8 +90,8 @@ main {
 
     let mut defs = Defs::default();
     // Skip validation for tests
-    let result = process_wgsl_blocks(input, &mut defs, true);
-    
+    let (_result, _source_map) = process_wgsl_blocks(input, &mut defs, true).unwrap();
+
     // Check that all WGSL blocks were extracted
     assert_eq!(defs.wgsl.map.len(), 3);
     

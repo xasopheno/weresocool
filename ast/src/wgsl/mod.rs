@@ -1,7 +1,78 @@
 use std::collections::HashMap;
 use naga::front::wgsl::Frontend;
+use colored::*;
 
 pub const MAX_STEPS: u32 = 4; // compile-time bound for recipe size
+
+/// Error from WGSL validation with position mapped to original source
+#[derive(Clone, Debug)]
+pub struct WgslError {
+    pub message: String,
+    pub line: usize,      // Line in original source (1-based)
+    pub column: usize,    // Column in original source (1-based)
+    pub context: String,  // The problematic line of code
+}
+
+impl WgslError {
+    /// Display the error with colored output matching the main parser style
+    pub fn display_colored(&self, original_source: &str) {
+        let start_offset = 125;
+        let end_offset = 50;
+
+        // Find the byte offset in original_source for the error line
+        // Count newlines until we reach the target line
+        let mut current_line = 0;
+        let mut line_start = 0;
+        for (i, c) in original_source.char_indices() {
+            if c == '\n' {
+                current_line += 1;
+                if current_line == self.line {
+                    // The line content starts after this newline
+                    line_start = i + 1;
+                    break;
+                }
+            }
+        }
+        let error_pos = line_start + self.column.saturating_sub(1);
+
+        // Calculate display window
+        let feed_start = error_pos.saturating_sub(start_offset);
+        let mut feed_end = (error_pos + end_offset).min(original_source.len());
+        if feed_end - feed_start > 300 {
+            feed_end = feed_start + 300;
+        }
+
+        // Show context with colors: light blue before error, red from error
+        // Using cyan/bright_blue to distinguish WGSL errors from regular parse errors
+        println!(
+            "{}{}",
+            &original_source[feed_start..error_pos].cyan(),
+            &original_source[error_pos..feed_end].red(),
+        );
+
+        println!(
+            "
+            {}
+            WGSL errors at line {}
+            {}
+            ",
+            "working".cyan().underline(),
+            self.line.to_string().red().bold(),
+            "broken".red().underline(),
+        );
+    }
+
+    pub fn display(&self) -> String {
+        format!(
+            "WGSL error at line {}, column {}:\n  {}\n  {}^ {}",
+            self.line,
+            self.column,
+            self.context.trim_end(),
+            " ".repeat(self.column.saturating_sub(1)),
+            self.message
+        )
+    }
+}
 
 #[derive(Clone, Debug, PartialEq)]
 pub struct WgslMap {
@@ -45,11 +116,12 @@ impl WgslMap {
 }
 
 // Helper function to prepare WGSL code for naga validation
-pub fn prepare_for_naga(src: &str) -> String {
+// Returns (patched_code, preamble_line_count)
+pub fn prepare_for_naga(src: &str) -> (String, usize) {
     let mut out = String::new();
-    
+
     // Define helper functions at global scope
-    out.push_str("
+    let preamble = "
 // Helper functions
 fn cos(v: f32) -> f32 { return 1.0; }
 fn sin(v: f32) -> f32 { return 0.0; }
@@ -76,24 +148,85 @@ fn dummy_function() {
     var green: f32 = 1.0;
     var blue: f32 = 1.0;
     var alpha: f32 = 1.0;
-");
+";
 
+    // Count preamble lines (lines before user code)
+    let preamble_lines = preamble.chars().filter(|&c| c == '\n').count();
+
+    out.push_str(preamble);
     // Add the user's code
     out.push_str(src);
-    
+
     // Close the function
     out.push_str("\n}\n");
-    
-    out
+
+    (out, preamble_lines)
 }
 
-// Validate WGSL code
+// Validate WGSL code (legacy interface)
 pub fn validate_wgsl(src: &str) -> Result<(), String> {
-    let patched = prepare_for_naga(src);
+    let (patched, _) = prepare_for_naga(src);
     let mut parser = Frontend::new();
     match parser.parse(&patched) {
         Ok(_) => Ok(()),
         Err(e) => Err(e.emit_to_string(&patched)),
+    }
+}
+
+/// Validate WGSL code and return errors with positions mapped to original source
+///
+/// Note: DSL syntax should already be compiled to WGSL before calling this function.
+/// DSL compilation is done in the parser crate during process_wgsl_blocks.
+///
+/// # Arguments
+/// * `src` - The WGSL code to validate (already compiled from DSL if applicable)
+/// * `original_line` - The 1-based line number where the WGSL block starts in the original source
+/// * `original_source` - The original full source (for extracting context)
+pub fn validate_wgsl_with_position(
+    src: &str,
+    original_line: usize,
+    original_source: &str,
+) -> Result<(), WgslError> {
+    let (patched, preamble_lines) = prepare_for_naga(src);
+    let mut parser = Frontend::new();
+
+    match parser.parse(&patched) {
+        Ok(_) => Ok(()),
+        Err(e) => {
+            // Get structured location info from naga
+            let (error_line, error_column) = if let Some(loc) = e.location(&patched) {
+                (loc.line_number as usize, loc.line_position as usize)
+            } else {
+                (1, 1)
+            };
+
+            // Map line number back to original source:
+            // error_line is in the patched source (with preamble)
+            // original_line is the line number of "wgsl {" in the source
+            // User line 1 is at original_line + 1, user line 2 at original_line + 2, etc.
+            // So: mapped_line = original_line + (error_line - preamble_lines)
+            let mapped_line = if error_line > preamble_lines {
+                original_line + (error_line - preamble_lines)
+            } else {
+                // Error is in preamble (shouldn't happen normally)
+                original_line
+            };
+
+            // Extract the context line from original source
+            // Note: original_source (composition) starts with \n, so line N is at index N in .lines()
+            let context = original_source
+                .lines()
+                .nth(mapped_line)
+                .unwrap_or("")
+                .to_string();
+
+            Err(WgslError {
+                message: e.message().to_string(),
+                line: mapped_line,
+                column: error_column,
+                context,
+            })
+        }
     }
 }
 

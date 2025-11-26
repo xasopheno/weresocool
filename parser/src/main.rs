@@ -1,25 +1,40 @@
 use colored::*;
 use std::env;
+use std::process::ExitCode;
 use weresocool_parser::parser::filename_to_vec_string;
 use weresocool_parser::*;
 
-fn main() {
+fn main() -> ExitCode {
     let args: Vec<String> = env::args().collect();
     let filename;
     if args.len() == 2 {
         filename = &args[1];
     } else {
-        println!("\n{}\n", "Forgot to pass in a filename.".red().bold());
-        println!("{}", "Example:".cyan());
-        println!("{}\n", "./weresocool song.socool".cyan().italic());
-        panic!("Wrong number of arguments.")
+        eprintln!("\n{}\n", "Forgot to pass in a filename.".red().bold());
+        eprintln!("{}", "Example:".cyan());
+        eprintln!("{}\n", "./weresocool song.socool".cyan().italic());
+        return ExitCode::FAILURE;
     }
 
-    let vec_string = filename_to_vec_string(filename).unwrap();
-    let parsed = parse_file(vec_string, None, None);
+    let vec_string = match filename_to_vec_string(filename) {
+        Ok(v) => v,
+        Err(e) => {
+            eprintln!("\n{}\n", e.to_string().red());
+            return ExitCode::FAILURE;
+        }
+    };
 
-    for (key, _val) in parsed.unwrap().defs.ops.iter() {
-        println!("{}", key);
+    match parse_file(vec_string, None, None) {
+        Ok(parsed) => {
+            for (key, _val) in parsed.defs.ops.iter() {
+                println!("{}", key);
+            }
+            ExitCode::SUCCESS
+        }
+        Err(e) => {
+            eprintln!("\n{}\n", e.to_string().red());
+            ExitCode::FAILURE
+        }
     }
 }
 

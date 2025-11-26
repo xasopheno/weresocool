@@ -14,6 +14,40 @@ use std::sync::{Arc, Mutex};
 use weresocool_error::{Error, ParseError};
 use regex;
 
+/// Tracks offset adjustments when WGSL blocks are replaced with tokens.
+/// Used to map error positions back to the original source.
+#[derive(Clone, Debug, Default)]
+pub struct SourceMap {
+    /// Sorted list of (processed_pos, cumulative_delta)
+    /// where cumulative_delta = original_pos - processed_pos at that point
+    adjustments: Vec<(usize, isize)>,
+}
+
+impl SourceMap {
+    pub fn new() -> Self {
+        Self { adjustments: vec![] }
+    }
+
+    /// Record a replacement: original text of `original_len` was replaced with text of `replacement_len`
+    /// at position `processed_pos` in the processed string.
+    pub fn add_replacement(&mut self, processed_pos: usize, original_len: usize, replacement_len: usize) {
+        let delta = (original_len as isize) - (replacement_len as isize);
+        let prev_delta = self.adjustments.last().map(|(_, d)| *d).unwrap_or(0);
+        self.adjustments.push((processed_pos, prev_delta + delta));
+    }
+
+    /// Convert a position in the processed string back to the original source position.
+    pub fn to_original(&self, processed_pos: usize) -> usize {
+        let delta = self.adjustments
+            .iter()
+            .take_while(|(pos, _)| *pos <= processed_pos)
+            .last()
+            .map(|(_, d)| *d)
+            .unwrap_or(0);
+        (processed_pos as isize + delta) as usize
+    }
+}
+
 #[derive(Clone, PartialEq, Debug)]
 pub struct Init {
     pub f: Rational64,
@@ -97,10 +131,19 @@ pub fn language_to_vec_string(language: &str) -> Vec<String> {
     language.split('\n').map(|l| l.to_string()).collect()
 }
 
+/// Helper to count lines (1-based) before a given byte offset
+/// Note: composition is built with a leading \n for each line, so newline count equals original line number
+fn count_lines_before(text: &str, offset: usize) -> usize {
+    text[..offset].chars().filter(|&c| c == '\n').count()
+}
+
 // Extract WGSL code blocks from source code and replace with IDs
 // If skip_validation is true, validation will be skipped (used in tests)
-pub fn process_wgsl_blocks(composition: &str, defs: &mut Defs, skip_validation: bool) -> String {
-    let mut result = composition.to_string();
+// Returns the processed string and a SourceMap for error position mapping
+// Fails fast on the first WGSL validation error
+pub fn process_wgsl_blocks(composition: &str, defs: &mut Defs, skip_validation: bool) -> Result<(String, SourceMap), Error> {
+    let mut result = String::new();
+    let mut source_map = SourceMap::new();
 
     // Extract WGSL blocks with regex pattern that's flexible with whitespace
     // This pattern matches:
@@ -110,35 +153,116 @@ pub fn process_wgsl_blocks(composition: &str, defs: &mut Defs, skip_validation: 
     // The (?:\{[^{}]*\}[^{}]*)* part handles nested braces like if-else blocks
     let regex_pattern = r"(?i)wgsl\s*\{([^{}]*(?:\{[^{}]*\}[^{}]*)*)\}";
     let re = regex::Regex::new(regex_pattern).unwrap();
-    
+
+    let mut last_end = 0;
+    let mut processed_pos = 0;
+
     // Find all WGSL blocks and replace them with tokens
-    for cap in re.captures_iter(&composition) {
-        let full_match = cap.get(0).unwrap().as_str();
-        let wgsl_code = cap.get(1).unwrap().as_str().trim();
-        
+    for cap in re.captures_iter(composition) {
+        let full_match = cap.get(0).unwrap();
+        let wgsl_capture = cap.get(1).unwrap().as_str();
+        let raw_wgsl_code = wgsl_capture.trim();
+
+        // Copy text before this match
+        let before_match = &composition[last_end..full_match.start()];
+        result.push_str(before_match);
+        processed_pos += before_match.len();
+
+        // Compile DSL syntax to WGSL (if any DSL commands are present)
+        let wgsl_content_start = cap.get(1).unwrap().start();
+        let block_start_line = count_lines_before(composition, wgsl_content_start);
+
+        let wgsl_code = match crate::wgsl_dsl::compile_dsl_to_wgsl(raw_wgsl_code) {
+            Ok(compiled) => compiled,
+            Err(e) => {
+                // Calculate the actual line in original source
+                let actual_line = block_start_line + e.line;
+
+                // Calculate the correct column in the original source
+                // The DSL column is relative to the line in raw_wgsl_code (which has first line trimmed)
+                // We need to find the actual indentation in the original composition
+                let lines: Vec<&str> = composition.split('\n').collect();
+                let actual_column = if actual_line < lines.len() {
+                    let orig_line = lines[actual_line];
+                    let orig_leading_ws = orig_line.len() - orig_line.trim_start().len();
+
+                    // For line 1 of the block, raw_wgsl_code has no leading whitespace
+                    // For other lines, raw_wgsl_code preserves the indentation
+                    if e.line == 1 {
+                        // First line: DSL column is relative to trimmed content
+                        // Need to add back the original indentation
+                        orig_leading_ws + e.column
+                    } else {
+                        // Other lines: DSL already accounts for leading_ws in the line
+                        e.column
+                    }
+                } else {
+                    e.column
+                };
+
+                // Print the error with colored output (same style as WGSL errors)
+                println!("\n");
+                e.display_colored(composition, actual_line, actual_column);
+
+                return Err(ParseError {
+                    message: e.message.clone(),
+                    line: actual_line,
+                    column: actual_column,
+                }
+                .into_error());
+            }
+        };
+
         // Validate the WGSL code (unless skipped for tests)
+        // Fail fast: return immediately on first error
         if !skip_validation {
-            // if let Err(e) = weresocool_ast::wgsl::validate_wgsl(wgsl_code) {
-                // eprintln!("\nWGSL validation error:\n{}\n", e);
-                // panic!("WGSL validation error - see details above");
-            // }
+            // Calculate the line number where this WGSL block's content starts
+            // (the line after "wgsl {")
+            let wgsl_content_start = cap.get(1).unwrap().start();
+            let block_start_line = count_lines_before(composition, wgsl_content_start);
+
+            if let Err(e) = weresocool_ast::wgsl::validate_wgsl_with_position(
+                &wgsl_code,
+                block_start_line,
+                composition,
+            ) {
+                // Print the error with colored output
+                println!("\n");
+                e.display_colored(composition);
+                return Err(ParseError {
+                    message: format!("WGSL error: {}", e.message),
+                    line: e.line,
+                    column: e.column,
+                }
+                .into_error());
+            }
         }
-        
-        // Insert the WGSL code and get its ID
+
+        // Insert the compiled WGSL code and get its ID
         let id = defs.wgsl.insert(wgsl_code.to_string());
-        
+
         // Replace the WGSL block with a token the parser can recognize
         // Using @WGSL@ prefix to clearly distinguish from regular identifiers
         let token = format!("@WGSL@{}", id);
-        result = result.replace(full_match, &token);
+        result.push_str(&token);
+
+        // Record the adjustment: original length vs token length
+        let original_len = full_match.end() - full_match.start();
+        source_map.add_replacement(processed_pos, original_len, token.len());
+
+        processed_pos += token.len();
+        last_end = full_match.end();
     }
-    
-    result
+
+    // Copy remaining text after last match
+    result.push_str(&composition[last_end..]);
+
+    Ok((result, source_map))
 }
 
 // For backwards compatibility with existing code
 // This wrapper calls the new function with skip_validation set to false
-pub fn process_wgsl_blocks_with_validation(composition: &str, defs: &mut Defs) -> String {
+pub fn process_wgsl_blocks_with_validation(composition: &str, defs: &mut Defs) -> Result<(String, SourceMap), Error> {
     process_wgsl_blocks(composition, defs, false)
 }
 
@@ -156,7 +280,8 @@ pub fn parse_file(
     let (imports_needed, composition) = handle_whitespace_and_imports(vec_string)?;
     
     // Process WGSL blocks - extract them and replace with IDs
-    let processed_composition = process_wgsl_blocks(&composition, &mut defs, false);
+    // This validates each WGSL block and fails fast on the first error
+    let (processed_composition, source_map) = process_wgsl_blocks(&composition, &mut defs, false)?;
     
     for import in imports_needed {
         let (mut filepath, import_name) = get_filepath_and_import_name(import);
@@ -211,7 +336,7 @@ pub fn parse_file(
             println!("\n");
             let location = Arc::new(Mutex::new(Vec::new()));
             error.map_location(|l| location.lock().unwrap().push(l));
-            let (line, column) = handle_parse_error(location, &composition);
+            let (line, column) = handle_parse_error(location, &composition, &source_map);
 
             Err(ParseError {
                 message: "Unexpected Token".to_string(),

@@ -2,7 +2,7 @@
 // Standalone and reusable, independent of WereSoCool language types
 
 mod asr;
-mod distortion;
+pub mod distortion;
 mod frequency;
 mod gain;
 mod loudness;
@@ -16,6 +16,7 @@ mod asr_test;
 
 // Re-export key types
 pub use self::{
+    distortion::{DistortionDef, process_distortions},
     oscillator::{Basis, Oscillator},
     stereo_waveform::{Normalize, StereoWaveform},
     voice::Voice,
@@ -72,6 +73,9 @@ pub trait SynthOp: Send + Sync {
 
     /// Reverb amount (0.0 to 1.0), None = no reverb
     fn reverb(&self) -> Option<f64>;
+
+    /// Distortion effects to apply (wavefolder, etc.) - stackable
+    fn distortions(&self) -> &[DistortionDef];
 
     // State tracking
 

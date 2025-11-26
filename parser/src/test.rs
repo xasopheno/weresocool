@@ -434,8 +434,8 @@ pub mod test {
         let mut defs: weresocool_ast::Defs = Default::default();
         parse_str.push_str("}");
 
-        // Process WGSL blocks before parsing (just like the normal parse flow)
-        let processed = process_wgsl_blocks(&parse_str, &mut defs, false);
+        // Process WGSL blocks before parsing (skip validation in test)
+        let (processed, _source_map) = process_wgsl_blocks(&parse_str, &mut defs, true).unwrap();
 
         let result = socool::SoCoolParser::new().parse(&mut defs, &processed);
         assert!(result.is_ok(), "Parse failed: {:?}", result);
@@ -468,7 +468,8 @@ mod tests {
             }
         "#;
         
-        let processed = process_wgsl_blocks(input, &mut defs, false);
+        // Skip validation - this test is only about extraction
+        let (processed, _source_map) = process_wgsl_blocks(input, &mut defs, true).unwrap();
 
         // Verify that the WGSL code was extracted and replaced with a token
         assert!(!processed.contains("WGSL {"));
