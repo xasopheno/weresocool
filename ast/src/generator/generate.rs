@@ -116,15 +116,19 @@ impl Axis {
         match self {
             Axis::F => Ok(Op::TransposeM {
                 m: self.at_least_axis_minimum(f32_to_rational(2.0_f64.powf(eval) as f32), div),
+                syntax: Default::default(),
             }),
             Axis::L => Ok(Op::Length {
                 m: self.at_least_axis_minimum(f32_to_rational(eval as f32), div),
+                syntax: Default::default(),
             }),
             Axis::G => Ok(Op::Gain {
                 m: self.at_least_axis_minimum(f32_to_rational(eval as f32), div),
+                syntax: Default::default(),
             }),
             Axis::P => Ok(Op::PanA {
                 a: self.at_least_axis_minimum(f32_to_rational(eval as f32), div),
+                syntax: Default::default(),
             }),
         }
     }
@@ -144,16 +148,20 @@ impl Axis {
                 let rational = f32_to_rational(eval_in_log);
                 Ok(Op::TransposeM {
                     m: self.at_least_axis_minimum(rational, div),
+                    syntax: Default::default(),
                 })
             }
             Axis::L => Ok(Op::Length {
                 m: self.at_least_axis_minimum(eval, div),
+                syntax: Default::default(),
             }),
             Axis::G => Ok(Op::Gain {
                 m: self.at_least_axis_minimum(eval, div),
+                syntax: Default::default(),
             }),
             Axis::P => Ok(Op::PanA {
                 a: self.at_least_axis_minimum(eval, div),
+                syntax: Default::default(),
             }),
         }
     }
@@ -161,15 +169,19 @@ impl Axis {
         match self {
             Axis::F => Op::TransposeM {
                 m: self.at_least_axis_minimum(et_to_rational(state, div), div),
+                syntax: Default::default(),
             },
             Axis::L => Op::Length {
                 m: self.at_least_axis_minimum(Rational64::new(state, div as i64), div),
+                syntax: Default::default(),
             },
             Axis::G => Op::Gain {
                 m: self.at_least_axis_minimum(Rational64::new(state, div as i64), div),
+                syntax: Default::default(),
             },
             Axis::P => Op::PanA {
                 a: Rational64::new(state, div as i64),
+                syntax: Default::default(),
             },
         }
     }

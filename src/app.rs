@@ -41,6 +41,30 @@ pub fn app() -> clap::Command {
         )
         .subcommand(Command::new("demo").about("Hear a cool sound"))
         .subcommand(
+            Command::new("fmt")
+                .about("Format a .socool file")
+                .arg(arg!([filename]).required(true))
+                .arg(
+                    Arg::new("inplace")
+                        .short('i')
+                        .long("inplace")
+                        .action(ArgAction::SetTrue)
+                        .help("Edit file in place"),
+                )
+                .arg(
+                    Arg::new("check")
+                        .long("check")
+                        .action(ArgAction::SetTrue)
+                        .help("Check if file is formatted (exit 1 if not)"),
+                )
+                .arg(
+                    Arg::new("stdin")
+                        .long("stdin")
+                        .action(ArgAction::SetTrue)
+                        .help("Read from stdin instead of file"),
+                ),
+        )
+        .subcommand(
             Command::new("print")
                 .about("Print a .socool composition to a file")
                 .arg(arg!([filename]).required(false))

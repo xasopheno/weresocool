@@ -12,7 +12,11 @@ pub mod rand_ctx;
 pub mod term;
 pub mod wgsl;
 pub use crate::{
-    ast::{Distortion, FmOscDef, FunDef, Op, Op::*, OscType, ASR},
+    ast::{
+        Distortion, FmOscDef, FunDef, Op, Op::*, OscType, ASR,
+        FmSyntax, FaSyntax, GainSyntax, LengthSyntax, PanMSyntax, PanASyntax,
+        SeqSyntax, OverlaySyntax,
+    },
     color::{
         CssOrHex, Color, ColorMap, ColorSet, ColorSets, ColorValue, GradientColor, GenColor,
         RandColor, RandColorSet,

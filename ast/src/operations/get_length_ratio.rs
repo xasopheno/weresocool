@@ -1,5 +1,5 @@
 use crate::ast::Op;
-use crate::operations::{helpers::*, GetLengthRatio, NormalForm, Normalize, Defs};
+use crate::operations::{helpers::*, GetLengthRatio, NormalForm, Normalize, Substitute, Defs};
 use crate::Term;
 use num_rational::{Ratio, Rational64};
 use weresocool_error::Error;
@@ -88,9 +88,9 @@ impl GetLengthRatio for Op {
                 op.get_length_ratio(normal_form, defs)
             }
 
-            Op::Length { m } | Op::Silence { m } => Ok(*m),
+            Op::Length { m, .. } | Op::Silence { m } => Ok(*m),
 
-            Op::Sequence { operations } => {
+            Op::Sequence { operations, .. } => {
                 let mut new_total = Ratio::from_integer(0);
                 for operation in operations {
                     new_total += operation.get_length_ratio(normal_form, defs)?;
@@ -121,31 +121,57 @@ impl GetLengthRatio for Op {
             }
 
             Op::ModulateBy { operations, output } => {
-                // Check if any keepers exist
-                let mut has_keepers = false;
-                let mut keeper_total = Ratio::from_integer(0);
+                // Collect keeper names and their lengths
+                let mut keeper_names: Vec<String> = vec![];
+                let mut keeper_lengths: Vec<Rational64> = vec![];
+                let mut total_modulator_length = Ratio::from_integer(0);
 
                 for operation in operations {
-                    let is_keeper = match operation {
-                        Term::Op(Op::Keeper(_)) => true,
+                    let op_length = operation.get_length_ratio(normal_form, defs)?;
+                    total_modulator_length += op_length;
+
+                    let keeper_name = match operation {
+                        Term::Op(Op::Keeper(name)) => Some(name.clone()),
                         Term::Op(Op::Compose { operations }) if !operations.is_empty() => {
-                            matches!(&operations[0], Term::Op(Op::Keeper(_)))
+                            match &operations[0] {
+                                Term::Op(Op::Keeper(name)) => Some(name.clone()),
+                                _ => None,
+                            }
                         }
-                        _ => false,
+                        _ => None,
                     };
-                    if is_keeper {
-                        has_keepers = true;
-                        keeper_total += operation.get_length_ratio(normal_form, defs)?;
+                    if let Some(name) = keeper_name {
+                        keeper_names.push(name);
+                        keeper_lengths.push(op_length);
                     }
                 }
 
+                let has_keepers = !keeper_names.is_empty();
+
                 if has_keepers {
+                    // Scale to fit input (which has length 1 in this context)
+                    let scale = Ratio::from_integer(1) / total_modulator_length;
+                    let scaled_keeper_lengths: Vec<_> = keeper_lengths
+                        .iter()
+                        .map(|l| *l * scale)
+                        .collect();
+
+                    let keeper_total: Rational64 = scaled_keeper_lengths.iter().sum();
+
                     if let Some(output_ops) = output {
-                        // Output mapping - sum lengths of output operations
-                        // This is approximate since we can't resolve names here
+                        // Bind keeper names to their scaled lengths via substitute
+                        let scope = defs.ops.create_uuid_scope();
+                        for (i, name) in keeper_names.iter().enumerate() {
+                            let length_op = Op::Length { m: scaled_keeper_lengths[i], syntax: Default::default() };
+                            defs.ops.insert(&scope, name, Term::Op(length_op));
+                        }
+
+                        // Substitute to resolve name references, then get length
+                        let mut nf_clone = normal_form.clone();
                         let mut total = Ratio::from_integer(0);
                         for op in output_ops {
-                            total += op.get_length_ratio(normal_form, defs)?;
+                            let substituted = op.substitute(&mut nf_clone, defs)?;
+                            total += substituted.get_length_ratio(normal_form, defs)?;
                         }
                         Ok(total)
                     } else {
@@ -163,7 +189,7 @@ impl GetLengthRatio for Op {
             } => Ok(main.get_length_ratio(normal_form, defs)?
                 * op_to_apply.get_length_ratio(normal_form, defs)?),
 
-            Op::Overlay { operations } => {
+            Op::Overlay { operations, .. } => {
                 let mut max = Ratio::new(0, 1);
                 for op in operations {
                     let next = op.get_length_ratio(normal_form, defs)?;

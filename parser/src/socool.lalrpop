@@ -4,7 +4,7 @@ use std::string::String;
 use weresocool_shared::helpers::generate_random_hash_string;
 use weresocool_ast::{
         Op::*,
-        Term, 
+        Term,
         ASR,
         FunDef,
         ListOp,
@@ -15,11 +15,19 @@ use weresocool_ast::{
         Axis,
         Generator,
         GenOp,
-        Indices, 
+        Indices,
         Index,
         Scale,
         FmOscDef,
-        Defs
+        Defs,
+        FmSyntax,
+        FaSyntax,
+        GainSyntax,
+        LengthSyntax,
+        PanMSyntax,
+        PanASyntax,
+        SeqSyntax,
+        OverlaySyntax,
 };
 use weresocool_ast::follow::types::{
   Follow, FollowRule, FollowCondition, FollowAction, FollowVariable, FollowExpr, FollowComparison, FollowSimpleCondition, FollowAndCondition
@@ -282,12 +290,12 @@ BaseOperation: Term = {
         input_name, scope: uuid::Uuid::new_v4().to_string()}),
     "(" <o: Operation> ")" => o,
     <follow: Follow> => Term::Op(Follow(follow)),
-    <fm: Fm> <m:Rational> => Term::Op(TransposeM {m}),
-    <fa: Fa> <a:Rational> => Term::Op(TransposeA {a}),
-    <pm: Pm>  <m:Rational> => Term::Op(PanM {m}),
-    <pa: Pa>   <a:Rational> => Term::Op(PanA {a}),
-    <lm: Lm> <m:Rational> => Term::Op(Length {m}),
-    <gain: Gm> <m:Rational> => Term::Op(Gain {m}),
+    <fm: Fm> <m:Rational> => Term::Op(TransposeM {m, syntax: if fm == "Fm" { FmSyntax::Fm } else { FmSyntax::Tm }}),
+    <fa: Fa> <a:Rational> => Term::Op(TransposeA {a, syntax: if fa == "Fa" { FaSyntax::Fa } else { FaSyntax::Ta }}),
+    <pm: Pm>  <m:Rational> => Term::Op(PanM {m, syntax: if pm == "PanM" { PanMSyntax::PanM } else { PanMSyntax::Pm }}),
+    <pa: Pa>   <a:Rational> => Term::Op(PanA {a, syntax: if pa == "PanA" { PanASyntax::PanA } else { PanASyntax::Pa }}),
+    <lm: Lm> <m:Rational> => Term::Op(Length {m, syntax: if lm == "Length" { LengthSyntax::Length } else { LengthSyntax::Lm }}),
+    <gain: Gm> <m:Rational> => Term::Op(Gain {m, syntax: if gain == "Gain" { GainSyntax::Gain } else { GainSyntax::Gm }}),
     r"Lowpass|LowPass" <c:Rational> <q:Rational> => Term::Op(Lowpass {
       hash: generate_random_hash_string(),
       cutoff_frequency: c, 
@@ -313,7 +321,7 @@ BaseOperation: Term = {
         for pow in pows {
             operations.push(Term::Op(Sine { pow: Some(pow) }))
         }
-        Term::Op(Sequence { operations  })
+        Term::Op(Sequence { operations, syntax: Default::default() })
     },
     "FmOsc" "[" <osc_defs: Comma<FMOvertoneDef>> "]" => Term::Op(FMOsc { 
         defs: osc_defs.iter().map(|d| FmOscDef {
@@ -332,7 +340,7 @@ BaseOperation: Term = {
         for pow in pows {
             operations.push(Term::Op(Triangle { pow: Some(pow) }))
         }
-        Term::Op(Sequence { operations  })
+        Term::Op(Sequence { operations, syntax: Default::default() })
     },
     r"Square|Pulse" <width: Rational?> => {
       Term::Op(Square { width })
@@ -342,7 +350,7 @@ BaseOperation: Term = {
         for width in widths {
             operations.push(Term::Op(Square { width: Some(width) }))
         }
-        Term::Op(Sequence { operations  })
+        Term::Op(Sequence { operations, syntax: Default::default() })
     },
     "Noise" => Term::Op(Noise {}),
     "Reverse" => Term::Op(Reverse {}),
@@ -352,7 +360,7 @@ BaseOperation: Term = {
         for x in 0..i {
             vec.push(Term::Op(AsIs))
         }
-        Term::Op(Sequence { operations: vec })
+        Term::Op(Sequence { operations: vec, syntax: Default::default() })
     },
     "AD" "("
         <attack:Rational> ","
@@ -390,8 +398,11 @@ BaseOperation: Term = {
         Term::Op(Tanh { input_gain, output_gain })
     },
     "Silence" <m:Rational> => Term::Op(Silence {m}),
-    r"(Sequence|Seq)" "[" <operations: Operations> "]" => Term::Op(Sequence { operations: operations }),
-    "Overlay" "[" <operations: Operations> "]" => Term::Op(Overlay { operations: operations }),
+    <seq_kw: r"Sequence|Seq"> "[" <operations: Operations> "]" => Term::Op(Sequence {
+        operations: operations,
+        syntax: if seq_kw == "Seq" { SeqSyntax::Seq } else { SeqSyntax::Sequence }
+    }),
+    "Overlay" "[" <operations: Operations> "]" => Term::Op(Overlay { operations: operations, syntax: OverlaySyntax::Overlay }),
     r"(ModulateBy|ModBy)" "[" <operations: Operations> "]" "->" "[" <output: Operations> "]" => Term::Op(ModulateBy { operations: operations, output: Some(output) }),
     r"(ModulateBy|ModBy)" "[" <operations: Operations> "]" => Term::Op(ModulateBy { operations: operations, output: None }),
     "Choose" "[" <operations: Operations> "]" => Term::Op(Choose { operations: operations }),
@@ -416,7 +427,7 @@ BaseOperation: Term = {
             WithLengthRatioOf { with_length_of: Box::new(op), main: None }
         )
     },
-    "O" "[" <o: Overtones> "]" => Term::Op(Overlay { operations: o }),
+    "O" "[" <o: Overtones> "]" => Term::Op(Overlay { operations: o, syntax: OverlaySyntax::O }),
     <id: Name> => {
         Term::Op(Id(id))
     },
@@ -433,8 +444,8 @@ BaseOperation: Term = {
     },
     <fm: Rational>"^"<length: Rational> => {
         Term::Op(Compose { operations: vec! [
-            Term::Op(TransposeM { m: fm }),
-            Term::Op(Length { m: length }),
+            Term::Op(TransposeM { m: fm, syntax: Default::default() }),
+            Term::Op(Length { m: length, syntax: Default::default() }),
         ]})
     },
     BracedOvertone,
@@ -453,10 +464,10 @@ Overtone: Term = {
         <p:Rational>
     ")"
     => Term::Op(Compose { operations: vec! [
-            Term::Op(TransposeM { m: fm }),
-            Term::Op(TransposeA { a: fa }),
-            Term::Op(Gain { m: g }),
-            Term::Op(PanA { a: p }),
+            Term::Op(TransposeM { m: fm, syntax: Default::default() }),
+            Term::Op(TransposeA { a: fa, syntax: Default::default() }),
+            Term::Op(Gain { m: g, syntax: Default::default() }),
+            Term::Op(PanA { a: p, syntax: Default::default() }),
         ]
     })
 }
@@ -469,10 +480,10 @@ BracedOvertone: Term = {
         <p:Rational>
     "}"
     => Term::Op(Compose { operations: vec! [
-            Term::Op(TransposeM { m: fm }),
-            Term::Op(TransposeA { a: fa }),
-            Term::Op(Gain { m: g }),
-            Term::Op(PanA { a: p }),
+            Term::Op(TransposeM { m: fm, syntax: Default::default() }),
+            Term::Op(TransposeA { a: fa, syntax: Default::default() }),
+            Term::Op(Gain { m: g, syntax: Default::default() }),
+            Term::Op(PanA { a: p, syntax: Default::default() }),
         ]
     })
 }

@@ -1,0 +1,18 @@
+{ f: 220, l: 1, g: 1, p: 0 }
+
+-- Test FitLength with ModBy extension output
+-- ModBy [$a, Lm 2, $b] -> [a, a, b, b | Fm 2] should have length 4 * (1/4 + 2/4 + 1/4) / 4 = 1
+-- The keepers have scaled lengths: a = 1/4, (spacer) = 2/4, b = 1/4
+-- Output is: a, a, b, b = 1/4 + 1/4 + 1/4 + 1/4 = 1
+
+thing1 = {
+    ModBy [$a, Lm 2, $b] -> [a, a, b, b | Fm 2]
+}
+
+main = {
+    Seq [Fm 1, Fm 2] | FitLength thing1
+}
+
+expect = {
+    Seq [Fm 1 | Lm 1/2, Fm 2 | Lm 1/2]
+}

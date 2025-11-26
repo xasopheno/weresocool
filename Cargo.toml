@@ -45,6 +45,7 @@ opmap = { path = "opmap", version = "^2.0.0" }
 weresocool_shared = { path = "shared", version = "^2.0.0" } 
 weresocool_analyze = { path = "analyze", version = "^2.0.0" }
 weresocool_ring_buffer = { path = "ring_buffer", version = "^2.0.0" }
+weresocool_formatter = { path = "formatter", version = "^2.0.0", default-features=false, optional=true }
 clap = "4.5"
 thiserror = "2.0"
 notify = "6.1"
@@ -72,12 +73,13 @@ temp-dir = "0.1"
 [features]
 default=["app"]
 app=[
-    "weresocool_error/app", 
+    "weresocool_error/app",
     "weresocool_core/app",
-    "weresocool_parser/app", 
-    "weresocool_instrument/app", 
+    "weresocool_parser/app",
+    "weresocool_instrument/app",
     "weresocool_ast/app",
     "weresocool_core/app",
+    "weresocool_formatter/app",
     "weresocool_portaudio",
     "zip",
     "hound",
@@ -118,6 +120,7 @@ members = [
     "opmap",
     "ast",
     "error",
+    "formatter",
     "instrument",
     "lame",
     "parser",

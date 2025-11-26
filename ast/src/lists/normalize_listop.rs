@@ -171,6 +171,7 @@ impl Normalize for ListOp {
                             .iter()
                             .map(|nf| Term::Nf(nf.to_owned()))
                             .collect(),
+                        syntax: Default::default(),
                     }
                     .apply_to_normal_form(input, defs)?;
                 }

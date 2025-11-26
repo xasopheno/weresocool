@@ -22,7 +22,8 @@
       "Bash(wasm-pack build:*)",
       "Bash(cargo clean:*)",
       "Bash(cargo metadata:*)",
-      "Bash(cat:*)"
+      "Bash(cat:*)",
+      "Bash(./target/debug/weresocool fmt:*)"
     ],
     "deny": [],
     "ask": []

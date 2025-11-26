@@ -10,7 +10,7 @@ pub mod tests;
 pub mod wgsl_dsl;
 
 pub use self::parser::{
-    filename_to_vec_string, parse_file, process_wgsl_blocks, process_wgsl_blocks_with_validation,
+    filename_to_vec_string, parse_file, parse_to_raw_ast, process_wgsl_blocks, process_wgsl_blocks_with_validation,
     Init, ParsedComposition,
 };
 pub use self::wgsl_dsl::compile_dsl_to_wgsl;

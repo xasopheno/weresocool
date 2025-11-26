@@ -117,6 +117,12 @@ dependencies = [
 
 [[package]]
 name = "arrayvec"
+version = "0.5.2"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "23b62fc65de8e4e7f52534fb52b0f3ed04746ae267519eef2a83941e8085068b"
+
+[[package]]
+name = "arrayvec"
 version = "0.7.6"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "7c02d123df017efcdfbd739ef81735b36c5ba83ec3c59c80a9d7ecc718f92e50"
@@ -1438,7 +1444,7 @@ version = "25.0.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "2b977c445f26e49757f9aca3631c3b8b836942cb278d69a92e7b80d3b24da632"
 dependencies = [
- "arrayvec",
+ "arrayvec 0.7.6",
  "bit-set",
  "bitflags 2.10.0",
  "cfg_aliases",
@@ -1977,6 +1983,17 @@ checksum = "72dd2d6d381dfb73a193c7fca536518d7caee39fc8503f74e7dc0be0531b425c"
 dependencies = [
  "predicates-core",
  "termtree",
+]
+
+[[package]]
+name = "pretty"
+version = "0.12.5"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "0d22152487193190344590e4f30e219cf3fe140d9e7a3fdb683d82aa2c5f4156"
+dependencies = [
+ "arrayvec 0.5.2",
+ "typed-arena",
+ "unicode-width",
 ]
 
 [[package]]
@@ -2587,6 +2604,12 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "5d99f8c9a7727884afe522e9bd5edbfc91a3312b36a77b5fb8926e4c31a41801"
 
 [[package]]
+name = "typed-arena"
+version = "2.0.2"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "6af6ae20167a9ece4bcb41af5b80f8a1f1df981f6391189ce00fd257af04126a"
+
+[[package]]
 name = "typenum"
 version = "1.19.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -2815,6 +2838,7 @@ dependencies = [
  "weresocool_ast",
  "weresocool_core",
  "weresocool_error",
+ "weresocool_formatter",
  "weresocool_instrument",
  "weresocool_parser",
  "weresocool_portaudio",
@@ -2840,6 +2864,7 @@ dependencies = [
  "csscolorparser",
  "csv",
  "dyn-clone",
+ "getrandom 0.2.16",
  "hamcrest2",
  "indexmap",
  "meval",
@@ -2935,6 +2960,19 @@ dependencies = [
  "num-rational 0.4.2",
  "serde",
  "weresocool_shared",
+]
+
+[[package]]
+name = "weresocool_formatter"
+version = "2.0.0"
+dependencies = [
+ "num-rational 0.4.2",
+ "pretty",
+ "pretty_assertions",
+ "thiserror 2.0.17",
+ "weresocool_ast",
+ "weresocool_error",
+ "weresocool_parser",
 ]
 
 [[package]]

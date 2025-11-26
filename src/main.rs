@@ -1,5 +1,6 @@
 mod app;
 mod demo;
+mod fmt;
 mod new;
 mod play;
 mod print;
@@ -88,6 +89,7 @@ fn run() -> Result<(), Error> {
             )?
         }
         Some(("demo", _)) => demo::demo()?,
+        Some(("fmt", sub_matches)) => fmt::fmt(sub_matches)?,
         Some(("print", sub_matches)) => print::print(sub_matches)?,
         _e => {
             app::app().print_help().unwrap();

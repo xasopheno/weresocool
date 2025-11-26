@@ -39,6 +39,7 @@ fn vec_eeg_data_to_normal_form(data: Vec<CsvData>, scale: f32, filename: &str) -
 
     let overlay = Op::Overlay {
         operations: nfs.iter_mut().map(|nf| Term::Nf(nf.to_owned())).collect(),
+        syntax: Default::default(),
     };
 
     let mut nf = NormalForm::init();

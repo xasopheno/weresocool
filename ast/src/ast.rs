@@ -2,6 +2,71 @@ use crate::datagen::Scale;
 use crate::Term;
 use num_rational::Rational64;
 
+/// Tracks the original syntax used for frequency/transpose operations
+#[derive(Copy, Clone, Debug, PartialEq, Hash, Default)]
+pub enum FmSyntax {
+    #[default]
+    Fm,
+    Tm,
+}
+
+/// Tracks the original syntax used for frequency add operations
+#[derive(Copy, Clone, Debug, PartialEq, Hash, Default)]
+pub enum FaSyntax {
+    #[default]
+    Fa,
+    Ta,
+}
+
+/// Tracks the original syntax used for Gain operations
+#[derive(Copy, Clone, Debug, PartialEq, Hash, Default)]
+pub enum GainSyntax {
+    #[default]
+    Gain,
+    Gm,
+}
+
+/// Tracks the original syntax used for Length operations
+#[derive(Copy, Clone, Debug, PartialEq, Hash, Default)]
+pub enum LengthSyntax {
+    #[default]
+    Length,
+    Lm,
+}
+
+/// Tracks the original syntax used for PanM operations
+#[derive(Copy, Clone, Debug, PartialEq, Hash, Default)]
+pub enum PanMSyntax {
+    #[default]
+    PanM,
+    Pm,
+}
+
+/// Tracks the original syntax used for PanA operations
+#[derive(Copy, Clone, Debug, PartialEq, Hash, Default)]
+pub enum PanASyntax {
+    #[default]
+    PanA,
+    Pa,
+}
+
+/// Tracks the original syntax used for Sequence operations
+#[derive(Copy, Clone, Debug, PartialEq, Hash, Default)]
+pub enum SeqSyntax {
+    #[default]
+    Seq,
+    Sequence,
+}
+
+/// Tracks the original syntax used for Overlay operations
+#[derive(Copy, Clone, Debug, PartialEq, Hash, Default)]
+pub enum OverlaySyntax {
+    #[default]
+    Overlay,
+    /// O[...] overtone shorthand
+    O,
+}
+
 #[derive(Clone, Debug, PartialEq, Serialize, Deserialize, Hash, Ord, PartialOrd, Eq)]
 pub struct MidiTarget {
     /// Zero-based MIDI channel (0..15)
@@ -96,21 +161,33 @@ pub enum Op {
     },
     TransposeM {
         m: Rational64,
+        #[allow(dead_code)]
+        syntax: FmSyntax,
     },
     TransposeA {
         a: Rational64,
+        #[allow(dead_code)]
+        syntax: FaSyntax,
     },
     PanM {
         m: Rational64,
+        #[allow(dead_code)]
+        syntax: PanMSyntax,
     },
     PanA {
         a: Rational64,
+        #[allow(dead_code)]
+        syntax: PanASyntax,
     },
     Gain {
         m: Rational64,
+        #[allow(dead_code)]
+        syntax: GainSyntax,
     },
     Length {
         m: Rational64,
+        #[allow(dead_code)]
+        syntax: LengthSyntax,
     },
     Reverb {
         m: Option<Rational64>,
@@ -142,9 +219,13 @@ pub enum Op {
     //
     Sequence {
         operations: Vec<Term>,
+        #[allow(dead_code)]
+        syntax: SeqSyntax,
     },
     Overlay {
         operations: Vec<Term>,
+        #[allow(dead_code)]
+        syntax: OverlaySyntax,
     },
     Compose {
         operations: Vec<Term>,

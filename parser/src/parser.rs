@@ -266,6 +266,52 @@ pub fn process_wgsl_blocks_with_validation(composition: &str, defs: &mut Defs) -
     process_wgsl_blocks(composition, defs, false)
 }
 
+/// Parse source code to raw AST without evaluating to NormalForm.
+/// This is useful for formatting where we want to preserve the source structure.
+pub fn parse_to_raw_ast(
+    vec_string: Vec<String>,
+) -> Result<ParsedComposition, Error> {
+    let mut defs: Defs = Default::default();
+
+    let (imports_needed, composition) = handle_whitespace_and_imports(vec_string)?;
+
+    // For formatting, we skip imports and just parse the current file
+    if !imports_needed.is_empty() {
+        // TODO: Handle imports for formatting
+    }
+
+    // Process WGSL blocks - extract them and replace with IDs
+    let (processed_composition, source_map) = process_wgsl_blocks(&composition, &mut defs, true)?;
+
+    let init = socool::SoCoolParser::new().parse(&mut defs, &processed_composition);
+    match init {
+        Ok(init) => {
+            // Don't process to NormalForm - keep raw AST
+            // Just copy WGSL and colors
+            let mut result_defs = defs.clone();
+
+            if let Some(background_color) = init.background_color.clone() {
+                result_defs.colors.insert_by_name("background_color".to_string(), background_color);
+            }
+
+            Ok(ParsedComposition { init, defs: result_defs })
+        }
+        Err(error) => {
+            println!("\n");
+            let location = Arc::new(Mutex::new(Vec::new()));
+            error.map_location(|l| location.lock().unwrap().push(l));
+            let (line, column) = handle_parse_error(location, &composition, &source_map);
+
+            Err(ParseError {
+                message: "Unexpected Token".to_string(),
+                line,
+                column,
+            }
+            .into_error())
+        }
+    }
+}
+
 pub fn parse_file(
     vec_string: Vec<String>,
     prev_defs: Option<Defs>,
@@ -410,7 +456,7 @@ pub fn handle_repeat_recursively(terms: Vec<Term>) -> Vec<Term> {
 
     for term in terms.iter() {
         match term {
-            Term::Op(Op::Sequence { operations }) => {
+            Term::Op(Op::Sequence { operations, .. }) => {
                 // Check if this Sequence is all AsIs operations (i.e., a Repeat)
                 let all_asis = operations.iter().all(|op| {
                     matches!(op, Term::Op(Op::AsIs))

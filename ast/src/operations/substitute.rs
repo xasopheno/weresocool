@@ -67,6 +67,7 @@ impl Substitute for Op {
 
                 Op::Overlay {
                     operations: vec![Term::Nf(named_applied), Term::Nf(rest)],
+                    syntax: Default::default(),
                 }
                 .apply_to_normal_form(&mut result, defs)?;
 
@@ -76,11 +77,13 @@ impl Substitute for Op {
                 name: name.to_string(),
                 args: substitute_operations(args.to_vec(), normal_form, defs)?,
             })),
-            Op::Sequence { operations } => Ok(Term::Op(Op::Sequence {
+            Op::Sequence { operations, syntax } => Ok(Term::Op(Op::Sequence {
                 operations: substitute_operations(operations.to_vec(), normal_form, defs)?,
+                syntax: *syntax,
             })),
-            Op::Overlay { operations } => Ok(Term::Op(Op::Overlay {
+            Op::Overlay { operations, syntax } => Ok(Term::Op(Op::Overlay {
                 operations: substitute_operations(operations.to_vec(), normal_form, defs)?,
+                syntax: *syntax,
             })),
             Op::Compose { operations } => Ok(Term::Op(Op::Compose {
                 operations: substitute_operations(operations.to_vec(), normal_form, defs)?,
