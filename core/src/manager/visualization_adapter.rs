@@ -41,7 +41,7 @@ impl VisualizationAdapter {
         }
 
         let mut op4d = Op4D {
-            y: render_op.f,
+            y: render_op.f.log10(),  // Convert to log scale before normalization
             z: (render_op.g.0 + render_op.g.1) / 2.0,
             x: render_op.p,
             l: render_op.l,
@@ -102,7 +102,7 @@ impl VisualizationAdapter {
 
             // Build a brand-new Op4D for just this slice
             let mut op4d = Op4D {
-                y: render_op.f,
+                y: render_op.f.log10(),  // Convert to log scale before normalization
                 z: (render_op.g.0 + render_op.g.1) / 2.0,
                 x: render_op.p,
                 l: slice_len,
