@@ -39,7 +39,7 @@ main {
     assert_eq!(defs.wgsl.map.len(), 3);
     
     // Verify the extracted code is correct
-    let wgsl_codes: Vec<&String> = defs.wgsl.map.values().collect();
+    let wgsl_codes: Vec<&String> = defs.wgsl.map.values().map(|e| &e.compiled).collect();
     assert!(wgsl_codes.iter().any(|code| code.contains("x = x * 2.0")));
     assert!(wgsl_codes.iter().any(|code| code.contains("z = z - 0.5")));
     assert!(wgsl_codes.iter().any(|code| code.contains("scale = scale * 1.1")));
@@ -74,8 +74,8 @@ main {
     
     // Verify the extracted code includes the nested braces
     let wgsl_code = defs.wgsl.map.values().next().unwrap();
-    assert!(wgsl_code.contains("if (time > 10.0) {"));
-    assert!(wgsl_code.contains("} else {"));
+    assert!(wgsl_code.compiled.contains("if (time > 10.0) {"));
+    assert!(wgsl_code.compiled.contains("} else {"));
 }
 
 #[test]
@@ -96,7 +96,7 @@ main {
     assert_eq!(defs.wgsl.map.len(), 3);
     
     // Verify the extracted code is correct
-    let wgsl_codes: Vec<&String> = defs.wgsl.map.values().collect();
+    let wgsl_codes: Vec<&String> = defs.wgsl.map.values().map(|e| &e.compiled).collect();
     assert!(wgsl_codes.iter().any(|code| code.contains("x = 1.0")));
     assert!(wgsl_codes.iter().any(|code| code.contains("y = 2.0")));
     assert!(wgsl_codes.iter().any(|code| code.contains("z = 3.0")));

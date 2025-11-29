@@ -32,9 +32,10 @@ impl Normalize for Op {
             }
             Op::AsIs => {}
             Op::WGSL(wgsl_id) => {
-                // Add the WGSL id to the wgsl array of each PointOp
+                // Prepend the WGSL id so outer transforms run first
+                // This allows outer Vm/Xm/etc to affect inner transforms
                 input.fmap_mut(|op| {
-                    op.wgsl.push(*wgsl_id);
+                    op.wgsl.insert(0, *wgsl_id);
                 });
             },
             Op::Out => {

@@ -20,7 +20,7 @@ impl Normalizer {
             },
             y: MinMax {
                 min: 1.301,  // log10(20) - lowest audible freq
-                max: 3.477,  // log10(3000) - top of visual range
+                max: 3.301,  // log10(2000) - top of visual range
             },
             z: MinMax { min: 0.0, max: 1.0 },
         }

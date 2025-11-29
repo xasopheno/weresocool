@@ -1,75 +1,102 @@
 // WGSL DSL Grammar
-// Compiles a simple DSL to WGSL code
+// Compiles a DSL to WGSL code using VisualOp AST
 //
 // Position: Xm, Xa, Ym, Ya, Zm, Za (multiply/add)
 // Scale: Sm, Sa
 // Velocity: Vm, Va
+// Length: Lm - duration in seconds
+// Direction: Direction(x, y, z) - sets normalized direction vector
+// Bend: Bend(bx, by, bz, k) - curves path toward vector with strength k
+// Composition: A | B | C - compose operations
+// Sequence: Seq [ A | Lm 1, B | Lm 2 ] - time-sequenced operations
 //
 // Examples:
-//   Xm 2           ->  x = x * 2.0;
-//   Ya 10          ->  y = y + 10.0;
-//   Xm 2, Ya 10    ->  x = x * 2.0;\n    y = y + 10.0;
-//   Sm (sin(time) * 0.5 + 1.0)  ->  scale = scale * (sin(time) * 0.5 + 1.0);
+//   Xm 2                       ->  x = x * 2.0;
+//   Direction(0, -1, 0)        ->  direction = normalize(vec3<f32>(0.0, -1.0, 0.0)); velocity = 1.0;
+//   Direction(0, -1, 0) | Vm 2 ->  direction = ...; velocity = 1.0; velocity = velocity * 2.0;
+//   Direction(1, 0, 0) | Bend(0, 1, 0, 0.5) ->  cubic Bézier bulging upward
+//   Seq [ Direction(0, -1, 0) | Lm 1, Direction(1, 0, 0) | Lm 1 ]
+//                              ->  if (time < 1.0) { ... } else if (time < 2.0) { ... }
+
+use num_rational::Rational64;
+use weresocool_ast::wgsl::{VisualOp, float_to_rational};
 
 grammar;
 
-// Entry point - comma-separated DSL commands
-pub DslLine: Vec<String> = {
-    <cmds:Comma<DslCommand>> => cmds,
+// Entry point - returns WGSL string
+pub DslLine: String = {
+    <op:Expr> => op.to_wgsl(0.0),
 };
 
-DslCommand: String = {
-    // Position operations
-    "Xm" <v:Value> => format!("x = x * {};", v),
-    "Xa" <v:Value> => format!("x = x + {};", v),
-    "Ym" <v:Value> => format!("y = y * {};", v),
-    "Ya" <v:Value> => format!("y = y + {};", v),
-    "Zm" <v:Value> => format!("z = z * {};", v),
-    "Za" <v:Value> => format!("z = z + {};", v),
-
-    // Scale
-    "Sm" <v:Value> => format!("scale = scale * {};", v),
-    "Sa" <v:Value> => format!("scale = scale + {};", v),
-
-    // Velocity
-    "Vm" <v:Value> => format!("velocity = velocity * {};", v),
-    "Va" <v:Value> => format!("velocity = velocity + {};", v),
+// Expression: composed operations separated by |
+Expr: VisualOp = {
+    <first:Term> <rest:("|" <Term>)*> => {
+        rest.into_iter().fold(first, |acc, m| acc.compose(m))
+    },
 };
 
-Value: String = {
-    // Rational: n/d (must come before plain Int to avoid ambiguity)
-    <n:Int> "/" <d:Int> => format!("{}.0 / {}.0", n, d),
-    // Float
-    <f:Float> => f,
-    // Integer (becomes float)
-    <n:Int> => format!("{}.0", n),
-    // Parenthesized expression (passed through as-is)
-    <expr:ParenExpr> => expr,
-    // Variable reference
-    <id:Ident> => id,
+// Term: base operation or Seq
+Term: VisualOp = {
+    <op:BaseOp> => op,
+    <seq:SeqExpr> => seq,
 };
 
-Float: String = {
-    <s:r"-?[0-9]+\.[0-9]*"> => s.to_string(),
+// Base operations (create Simple variant)
+BaseOp: VisualOp = {
+    "Direction" "(" <x:RatioValue> "," <y:RatioValue> "," <z:RatioValue> ")" =>
+        VisualOp::direction(x, y, z),
+    "Bend" "(" <bx:RatioValue> "," <by:RatioValue> "," <bz:RatioValue> "," <k:RatioValue> ")" =>
+        VisualOp::bend(bx, by, bz, k),
+    "Xm" <v:RatioValue> => VisualOp::xm(v),
+    "Xa" <v:RatioValue> => VisualOp::xa(v),
+    "Ym" <v:RatioValue> => VisualOp::ym(v),
+    "Ya" <v:RatioValue> => VisualOp::ya(v),
+    "Zm" <v:RatioValue> => VisualOp::zm(v),
+    "Za" <v:RatioValue> => VisualOp::za(v),
+    "Sm" <v:RatioValue> => VisualOp::sm(v),
+    "Sa" <v:RatioValue> => VisualOp::sa(v),
+    "Vm" <v:RatioValue> => VisualOp::vm(v),
+    "Va" <v:RatioValue> => VisualOp::va(v),
+    "Lm" <v:RatioValue> => VisualOp::lm(v),
+    "Alpha" <v:RatioValue> => VisualOp::alpha(v),
+    "Am" <v:RatioValue> => VisualOp::am(v),
+};
+
+// Seq expression (contains comma-separated expressions)
+SeqExpr: VisualOp = {
+    "Seq" "[" <items:SeqItems> "]" =>
+        VisualOp::Seq { items },
+};
+
+// Items inside a Seq - comma or semicolon separated, with optional trailing separator
+SeqItems: Vec<VisualOp> = {
+    <v:(<Expr> SeqSep)*> <e:Expr?> => match e {
+        None => v,
+        Some(e) => {
+            let mut v = v;
+            v.push(e);
+            v
+        }
+    },
+};
+
+// Separator for Seq items - comma or semicolon
+SeqSep: () = {
+    "," => (),
+    ";" => (),
+};
+
+// Parse rational values: 1/2, 0.5, 2, -1
+RatioValue: Rational64 = {
+    <n:Int> "/" <d:Int> => Rational64::new(n, d),
+    <f:Float> => float_to_rational(f),
+    <n:Int> => Rational64::new(n, 1),
+};
+
+Float: f64 = {
+    <s:r"-?[0-9]+\.[0-9]*"> => s.parse().unwrap(),
 };
 
 Int: i64 = {
     <s:r"-?[0-9]+"> => s.parse().unwrap(),
-};
-
-Ident: String = {
-    <s:r"[a-z_][a-zA-Z0-9_]*"> => s.to_string(),
-};
-
-// Parenthesized expression - captures everything including nested parens
-ParenExpr: String = {
-    <s:r"\([^()]*(?:\([^()]*\)[^()]*)*\)"> => s.to_string(),
-};
-
-// Helper macro for comma-separated lists
-Comma<T>: Vec<T> = {
-    <mut v:(<T> ",")*> <e:T> => {
-        v.push(e);
-        v
-    }
 };

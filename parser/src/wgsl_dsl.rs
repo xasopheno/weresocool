@@ -66,61 +66,114 @@ impl DslError {
 
 /// Compile DSL syntax to WGSL code
 ///
-/// Processes each line:
-/// - Lines starting with DSL commands (Xm, Ya, etc.) are parsed and compiled
-/// - Other lines are passed through as raw WGSL
+/// Processes semicolon-separated statements:
+/// - Statements starting with DSL commands (Xm, Ya, Seq, etc.) are parsed and compiled
+/// - Other statements are passed through as raw WGSL
+///
+/// Multi-line constructs like Seq [...] are supported.
+/// Semicolons separate statements (like WGSL).
 ///
 /// Returns the compiled WGSL code or a DslError with position info
 pub fn compile_dsl_to_wgsl(src: &str) -> Result<String, DslError> {
     let parser = DslLineParser::new();
     let mut result = Vec::new();
 
-    for (line_num, line) in src.lines().enumerate() {
-        let trimmed = line.trim();
+    // Normalize: collapse whitespace but preserve structure
+    // Split by semicolons to get statements
+    let statements = split_by_semicolons(src);
 
-        // Skip empty lines and comments
+    for (stmt_idx, (statement, start_line)) in statements.iter().enumerate() {
+        let trimmed = statement.trim();
+
+        // Skip empty statements and comments
         if trimmed.is_empty() {
-            result.push(String::new());
             continue;
         }
         if trimmed.starts_with("//") {
-            result.push(line.to_string());
+            result.push(trimmed.to_string());
             continue;
         }
 
-        // Check if line starts with a DSL command
+        // Check if statement starts with a DSL command
         if starts_with_dsl_command(trimmed) {
-            // Remove trailing semicolon if present for parsing
-            let to_parse = trimmed.trim_end_matches(';').trim();
-
-            // Calculate leading whitespace offset for accurate column reporting
-            let leading_ws = line.len() - line.trim_start().len();
-
-            match parser.parse(to_parse) {
-                Ok(wgsl_lines) => {
-                    for wgsl_line in wgsl_lines {
+            match parser.parse(trimmed) {
+                Ok(wgsl_code) => {
+                    // The parser returns a WGSL string
+                    for wgsl_line in wgsl_code.lines() {
                         result.push(format!("    {}", wgsl_line));
                     }
                 }
                 Err(e) => {
-                    // Extract column from LALRPOP error and add leading whitespace offset
                     let raw_column = extract_error_column(&e);
-                    let column = raw_column + leading_ws;
                     return Err(DslError {
-                        message: format_lalrpop_error(&e, to_parse),
-                        line: line_num + 1,  // 1-based
-                        column,
-                        context: line.to_string(),
+                        message: format_lalrpop_error(&e, trimmed),
+                        line: *start_line,
+                        column: raw_column,
+                        context: trimmed.to_string(),
                     });
                 }
             }
         } else {
-            // Pass through as raw WGSL
-            result.push(line.to_string());
+            // Pass through as raw WGSL (add semicolon back)
+            result.push(format!("    {};", trimmed));
         }
     }
 
     Ok(result.join("\n"))
+}
+
+/// Split source by semicolons, tracking which line each statement starts on.
+/// Handles multi-line statements by collapsing them.
+/// Returns Vec of (statement, start_line_number)
+fn split_by_semicolons(src: &str) -> Vec<(String, usize)> {
+    let mut statements = Vec::new();
+    let mut current_stmt = String::new();
+    let mut bracket_depth: i32 = 0;
+    let mut stmt_start_line = 1;
+    let mut current_line = 1;
+
+    for ch in src.chars() {
+        match ch {
+            '\n' => {
+                current_line += 1;
+                // Replace newlines with spaces to collapse multi-line statements
+                if !current_stmt.trim().is_empty() {
+                    current_stmt.push(' ');
+                }
+            }
+            '[' => {
+                bracket_depth += 1;
+                current_stmt.push(ch);
+            }
+            ']' => {
+                bracket_depth = bracket_depth.saturating_sub(1);
+                current_stmt.push(ch);
+            }
+            ';' if bracket_depth == 0 => {
+                // End of statement (not inside brackets)
+                let trimmed = current_stmt.trim();
+                if !trimmed.is_empty() {
+                    statements.push((trimmed.to_string(), stmt_start_line));
+                }
+                current_stmt.clear();
+                stmt_start_line = current_line;
+            }
+            _ => {
+                if current_stmt.is_empty() && !ch.is_whitespace() {
+                    stmt_start_line = current_line;
+                }
+                current_stmt.push(ch);
+            }
+        }
+    }
+
+    // Don't forget the last statement (if no trailing semicolon)
+    let trimmed = current_stmt.trim();
+    if !trimmed.is_empty() {
+        statements.push((trimmed.to_string(), stmt_start_line));
+    }
+
+    statements
 }
 
 /// Extract column position from LALRPOP error
@@ -170,15 +223,19 @@ fn format_lalrpop_error<T: std::fmt::Debug>(e: &lalrpop_util::ParseError<usize, 
 
 /// Check if a line starts with a DSL command
 fn starts_with_dsl_command(line: &str) -> bool {
-    let commands = ["Xm", "Xa", "Ym", "Ya", "Zm", "Za", "Sm", "Sa", "Vm", "Va"];
-    for cmd in &commands {
+    // Short commands need whitespace/comma check to avoid false matches
+    let short_commands = ["Xm", "Xa", "Ym", "Ya", "Zm", "Za", "Sm", "Sa", "Vm", "Va", "Lm", "Am"];
+    for cmd in &short_commands {
         if line.starts_with(cmd) {
-            // Make sure it's followed by whitespace or end of line
             let rest = &line[cmd.len()..];
             if rest.is_empty() || rest.starts_with(char::is_whitespace) || rest.starts_with(',') {
                 return true;
             }
         }
+    }
+    // Longer commands - just check prefix
+    if line.starts_with("Direction") || line.starts_with("Seq") || line.starts_with("Bend") || line.starts_with("Alpha") {
+        return true;
     }
     false
 }
@@ -191,46 +248,29 @@ mod tests {
     fn test_simple_multiply() {
         let input = "Xm 2";
         let output = compile_dsl_to_wgsl(input).unwrap();
-        assert!(output.contains("x = x * 2.0;"));
+        assert!(output.contains("x = x * 2"));
     }
 
     #[test]
     fn test_simple_add() {
         let input = "Ya 10";
         let output = compile_dsl_to_wgsl(input).unwrap();
-        assert!(output.contains("y = y + 10.0;"));
+        assert!(output.contains("y = y + 10"));
     }
 
     #[test]
     fn test_float_value() {
         let input = "Zm 0.5";
         let output = compile_dsl_to_wgsl(input).unwrap();
-        assert!(output.contains("z = z * 0.5;"));
+        assert!(output.contains("z = z * 0.5"));
     }
 
     #[test]
-    fn test_expression_value() {
-        let input = "Sm (sin(time) * 0.5 + 1.0)";
+    fn test_composition() {
+        let input = "Xm 2 | Ya 10";
         let output = compile_dsl_to_wgsl(input).unwrap();
-        assert!(output.contains("scale = scale * (sin(time) * 0.5 + 1.0);"));
-    }
-
-    #[test]
-    fn test_comma_separated() {
-        let input = "Xm 2, Ya 10, Zm 0.5";
-        let output = compile_dsl_to_wgsl(input).unwrap();
-        assert!(output.contains("x = x * 2.0;"));
-        assert!(output.contains("y = y + 10.0;"));
-        assert!(output.contains("z = z * 0.5;"));
-    }
-
-    #[test]
-    fn test_mixed_dsl_and_wgsl() {
-        let input = "Xm 2\nlet temp = x * 2.0;\nYa temp";
-        let output = compile_dsl_to_wgsl(input).unwrap();
-        assert!(output.contains("x = x * 2.0;"));
-        assert!(output.contains("let temp = x * 2.0;"));
-        assert!(output.contains("y = y + temp;"));
+        assert!(output.contains("x = x * 2"));
+        assert!(output.contains("y = y + 10"));
     }
 
     #[test]
@@ -243,30 +283,164 @@ mod tests {
 
     #[test]
     fn test_comments_preserved() {
-        let input = "// This is a comment\nXm 2";
+        // Comments must be on their own statement (semicolon-separated)
+        let input = "// This is a comment;\nXm 2";
         let output = compile_dsl_to_wgsl(input).unwrap();
         assert!(output.contains("// This is a comment"));
-        assert!(output.contains("x = x * 2.0;"));
-    }
-
-    #[test]
-    fn test_variable_value() {
-        let input = "Ya time";
-        let output = compile_dsl_to_wgsl(input).unwrap();
-        assert!(output.contains("y = y + time;"));
+        assert!(output.contains("x = x * 2"));
     }
 
     #[test]
     fn test_rational() {
         let input = "Ym 2/3";
         let output = compile_dsl_to_wgsl(input).unwrap();
-        assert!(output.contains("y = y * 2.0 / 3.0;"));
+        // Rational 2/3 is converted to float
+        assert!(output.contains("y = y * 0.666"));
+    }
+
+    #[test]
+    fn test_direction() {
+        let input = "Direction(0, -1, 0)";
+        let output = compile_dsl_to_wgsl(input).unwrap();
+        assert!(output.contains("direction = normalize"));
+        // Direction now uses runtime velocity
+        assert!(output.contains("time * velocity"));
+    }
+
+    #[test]
+    fn test_direction_with_velocity() {
+        let input = "Direction(0, -1, 0) | Vm 2";
+        let output = compile_dsl_to_wgsl(input).unwrap();
+        assert!(output.contains("direction = normalize"));
+        assert!(output.contains("velocity = velocity * 2"));
+    }
+
+    #[test]
+    fn test_seq() {
+        let input = "Seq [ Direction(0, -1, 0) | Lm 1, Direction(1, 0, 0) | Lm 1 ]";
+        let output = compile_dsl_to_wgsl(input).unwrap();
+        // Seq now uses accumulating segments, not if/else
+        assert!(output.contains("// Segment 0"));
+        assert!(output.contains("// Segment 1"));
+    }
+
+    #[test]
+    fn test_seq_multiline() {
+        // Test multi-line Seq with semicolon terminator
+        let input = r#"
+            Seq [
+                Vm 1,
+                Vm 2
+            ];
+        "#;
+        let output = compile_dsl_to_wgsl(input).unwrap();
+        assert!(output.contains("// Segment 0"));
+        assert!(output.contains("// Segment 1"));
+    }
+
+    #[test]
+    fn test_multiple_statements() {
+        // Semicolons separate statements
+        let input = "Xm 2; Ym 3";
+        let output = compile_dsl_to_wgsl(input).unwrap();
+        assert!(output.contains("x = x * 2"));
+        assert!(output.contains("y = y * 3"));
     }
 
     #[test]
     fn test_error_has_line_info() {
-        let input = "Xm 2\nYm\nZm 3";
+        let input = "Xm 2;\nYm;\nZm 3";
         let err = compile_dsl_to_wgsl(input).unwrap_err();
         assert_eq!(err.line, 2);  // Error on line 2
+    }
+
+    #[test]
+    fn test_seq_with_semicolons() {
+        // Seq items can be separated by semicolons (for future raw WGSL support)
+        let input = "Seq [ Vm 1; Vm 2 ]";
+        let output = compile_dsl_to_wgsl(input).unwrap();
+        assert!(output.contains("// Segment 0"));
+        assert!(output.contains("// Segment 1"));
+    }
+
+    #[test]
+    fn test_seq_multiline_with_semicolons() {
+        let input = r#"
+            Seq [
+                Vm 1;
+                Vm 2
+            ]
+        "#;
+        let output = compile_dsl_to_wgsl(input).unwrap();
+        assert!(output.contains("// Segment 0"));
+        assert!(output.contains("// Segment 1"));
+    }
+
+    #[test]
+    fn test_seq_trailing_semicolon() {
+        // Trailing semicolons should be allowed
+        let input = r#"
+            Seq [
+                Vm 1;
+                Vm 2;
+            ]
+        "#;
+        let output = compile_dsl_to_wgsl(input).unwrap();
+        assert!(output.contains("// Segment 0"));
+        assert!(output.contains("// Segment 1"));
+    }
+
+    #[test]
+    fn test_bend_basic() {
+        // Bend creates a curved path
+        let input = "Direction(1, 0, 0) | Bend(0, 1, 0, 0.5)";
+        let output = compile_dsl_to_wgsl(input).unwrap();
+        // Should contain Bézier curve code
+        assert!(output.contains("Bézier"), "Output should mention Bézier");
+        assert!(output.contains("b_perp"), "Output should have perpendicular bend vector");
+        assert!(output.contains("bend_raw"), "Output should have raw bend vector");
+    }
+
+    #[test]
+    fn test_bend_in_seq() {
+        // Bend works inside Seq
+        let input = r#"
+            Seq [
+                Direction(1, 0, 0) | Bend(0, 1, 0, 0.5) | Lm 1;
+                Direction(0, 0, -1) | Bend(1, 0, 0, -0.3) | Lm 1;
+            ]
+        "#;
+        let output = compile_dsl_to_wgsl(input).unwrap();
+        assert!(output.contains("// Segment 0"));
+        assert!(output.contains("// Segment 1"));
+        assert!(output.contains("b_perp"));
+    }
+
+    #[test]
+    fn test_alpha_set() {
+        let input = "Alpha 0";
+        let output = compile_dsl_to_wgsl(input).unwrap();
+        assert!(output.contains("alpha = 0"));
+    }
+
+    #[test]
+    fn test_alpha_multiply() {
+        let input = "Am 0.5";
+        let output = compile_dsl_to_wgsl(input).unwrap();
+        assert!(output.contains("alpha = alpha * 0.5"));
+    }
+
+    #[test]
+    fn test_alpha_in_seq() {
+        let input = r#"
+            Seq [
+                Vm 2 | Lm 1;
+                Alpha 0 | Lm 1;
+            ]
+        "#;
+        let output = compile_dsl_to_wgsl(input).unwrap();
+        assert!(output.contains("// Segment 0"));
+        assert!(output.contains("// Segment 1"));
+        assert!(output.contains("alpha = 0"));
     }
 }
