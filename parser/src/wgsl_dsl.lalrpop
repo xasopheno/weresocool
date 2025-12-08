@@ -6,7 +6,8 @@
 // Velocity: Vm, Va
 // Length: Lm - duration in seconds
 // Direction: Direction(x, y, z) - sets normalized direction vector
-// Bend: Bend(bx, by, bz, k) - curves path toward vector with strength k
+// Bend: Bend(bx, by, bz, k) - symmetric bulge toward vector (same start/end direction)
+// ArcTo: ArcTo(tx, ty, tz, k) - changes end direction toward target (steering)
 // Composition: A | B | C - compose operations
 // Sequence: Seq [ A | Lm 1, B | Lm 2 ] - time-sequenced operations
 //
@@ -14,7 +15,8 @@
 //   Xm 2                       ->  x = x * 2.0;
 //   Direction(0, -1, 0)        ->  direction = normalize(vec3<f32>(0.0, -1.0, 0.0)); velocity = 1.0;
 //   Direction(0, -1, 0) | Vm 2 ->  direction = ...; velocity = 1.0; velocity = velocity * 2.0;
-//   Direction(1, 0, 0) | Bend(0, 1, 0, 0.5) ->  cubic Bézier bulging upward
+//   Direction(1, 0, 0) | Bend(0, 1, 0, 0.5) ->  cubic Bézier bulging upward (symmetric)
+//   Direction(1, 0, 0) | ArcTo(0, 1, 0, 1.0) ->  cubic Bézier ending pointing up
 //   Seq [ Direction(0, -1, 0) | Lm 1, Direction(1, 0, 0) | Lm 1 ]
 //                              ->  if (time < 1.0) { ... } else if (time < 2.0) { ... }
 
@@ -24,8 +26,18 @@ use weresocool_ast::wgsl::{VisualOp, float_to_rational};
 grammar;
 
 // Entry point - returns WGSL string
+// Multiple semicolon-separated items run in parallel (each generates independent WGSL)
 pub DslLine: String = {
-    <op:Expr> => op.to_wgsl(0.0),
+    <items:(<Expr> ";")*> <last:Expr?> => {
+        let mut all_items: Vec<VisualOp> = items;
+        if let Some(l) = last {
+            all_items.push(l);
+        }
+        all_items.iter()
+            .map(|op| op.to_wgsl(0.0))
+            .collect::<Vec<_>>()
+            .join("\n")
+    },
 };
 
 // Expression: composed operations separated by |
@@ -35,10 +47,21 @@ Expr: VisualOp = {
     },
 };
 
-// Term: base operation or Seq
+// Term: base operation, Seq, or raw WGSL
 Term: VisualOp = {
     <op:BaseOp> => op,
     <seq:SeqExpr> => seq,
+    <raw:RawWgsl> => VisualOp::Raw { wgsl: raw },
+};
+
+// Raw WGSL: anything that looks like an assignment or function call
+// Must not start with a DSL keyword
+// Note: [^;|]+ stops at semicolon or pipe (so pipes can be used with DSL commands)
+RawWgsl: String = {
+    // Assignment: identifier = expression (stops at ; or | for pipe composition)
+    <s:r"[a-z_][a-zA-Z0-9_]*\s*=\s*[^;|]+"> => s.to_string(),
+    // Function call: identifier(...)
+    <s:r"[a-z_][a-zA-Z0-9_]*\s*\([^)]*\)"> => s.to_string(),
 };
 
 // Base operations (create Simple variant)
@@ -47,6 +70,8 @@ BaseOp: VisualOp = {
         VisualOp::direction(x, y, z),
     "Bend" "(" <bx:RatioValue> "," <by:RatioValue> "," <bz:RatioValue> "," <k:RatioValue> ")" =>
         VisualOp::bend(bx, by, bz, k),
+    "ArcTo" "(" <tx:RatioValue> "," <ty:RatioValue> "," <tz:RatioValue> "," <k:RatioValue> ")" =>
+        VisualOp::arc_to(tx, ty, tz, k),
     "Xm" <v:RatioValue> => VisualOp::xm(v),
     "Xa" <v:RatioValue> => VisualOp::xa(v),
     "Ym" <v:RatioValue> => VisualOp::ym(v),
@@ -82,7 +107,6 @@ SeqItems: Vec<VisualOp> = {
 
 // Separator for Seq items - comma or semicolon
 SeqSep: () = {
-    "," => (),
     ";" => (),
 };
 

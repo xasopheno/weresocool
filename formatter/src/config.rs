@@ -11,7 +11,7 @@ impl Default for FormatConfig {
     fn default() -> Self {
         Self {
             max_width: 80,
-            indent_size: 2,
+            indent_size: 4,
         }
     }
 }

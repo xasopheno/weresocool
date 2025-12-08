@@ -1,9 +1,64 @@
 use std::collections::HashMap;
+use std::ops::Mul;
 use naga::front::wgsl::Frontend;
 use colored::*;
 use num_rational::Rational64;
 
 pub const MAX_STEPS: u32 = 4; // compile-time bound for recipe size
+
+// ============================================================================
+// WgslValue - can be a compile-time rational or a runtime WGSL expression
+// ============================================================================
+
+/// A value that can be either a compile-time rational number or a WGSL expression string
+#[derive(Clone, Debug, PartialEq)]
+pub enum WgslValue {
+    /// Compile-time rational number (e.g., 1/2, 3, 0.5)
+    Rational(Rational64),
+    /// Runtime WGSL expression (e.g., "x * time", "sin(y)")
+    Expr(String),
+}
+
+impl WgslValue {
+    /// Convert to WGSL code string
+    pub fn to_wgsl(&self) -> String {
+        match self {
+            WgslValue::Rational(r) => format!("{:.6}", rational_to_f32(*r)),
+            WgslValue::Expr(s) => s.clone(),
+        }
+    }
+
+    /// Check if this is a compile-time constant
+    pub fn is_constant(&self) -> bool {
+        matches!(self, WgslValue::Rational(_))
+    }
+
+    /// Get as rational if it's a constant
+    pub fn as_rational(&self) -> Option<Rational64> {
+        match self {
+            WgslValue::Rational(r) => Some(*r),
+            WgslValue::Expr(_) => None,
+        }
+    }
+}
+
+impl From<Rational64> for WgslValue {
+    fn from(r: Rational64) -> Self {
+        WgslValue::Rational(r)
+    }
+}
+
+impl From<String> for WgslValue {
+    fn from(s: String) -> Self {
+        WgslValue::Expr(s)
+    }
+}
+
+impl From<&str> for WgslValue {
+    fn from(s: &str) -> Self {
+        WgslValue::Expr(s.to_string())
+    }
+}
 
 /// Error from WGSL validation with position mapped to original source
 #[derive(Clone, Debug)]
@@ -159,6 +214,10 @@ pub enum VisualOp {
         /// Bend: (bend_vector_x, bend_vector_y, bend_vector_z, strength)
         /// Creates a curved path that bulges toward bend_vector while maintaining direction
         bend: Option<(Rational64, Rational64, Rational64, Rational64)>,
+        /// ArcTo: (target_dir_x, target_dir_y, target_dir_z, strength)
+        /// Creates a curved path that ends pointing toward target_dir
+        /// k=1 fully commits to new direction, k=0.5 is halfway, etc.
+        arc_to: Option<(Rational64, Rational64, Rational64, Rational64)>,
         /// Alpha set: sets alpha directly (Alpha 0 = invisible, Alpha 1 = visible)
         alpha_set: Option<Rational64>,
         /// Alpha multiply: multiplies alpha (Am 0.5 = fade to 50%)
@@ -172,6 +231,10 @@ pub enum VisualOp {
     /// Compose multiple ops (apply in order)
     Compose {
         operations: Vec<VisualOp>,
+    },
+    /// Raw WGSL code (passed through directly)
+    Raw {
+        wgsl: String,
     },
 }
 
@@ -190,10 +253,343 @@ impl Default for VisualOp {
             velocity_mul: None,
             velocity_add: None,
             bend: None,
+            arc_to: None,
             alpha_set: None,
             alpha_mul: None,
             length: Rational64::new(1, 1),
         }
+    }
+}
+
+// ============================================================================
+// VisualPointOp - Normalized form for visual operations (analogous to PointOp)
+// ============================================================================
+
+/// Space warp functions that modify direction over time
+#[derive(Clone, Debug, PartialEq)]
+pub enum Warp {
+    /// Bend: rotate direction around an axis, angle proportional to progress
+    Bend {
+        axis: (Rational64, Rational64, Rational64),
+        strength: Rational64,
+    },
+    /// ArcTo: steer direction toward a target, angle proportional to progress
+    ArcTo {
+        target: (Rational64, Rational64, Rational64),
+        strength: Rational64,
+    },
+}
+
+/// Normalized visual operation - carries all state for a single time segment
+#[derive(Clone, Debug, PartialEq)]
+pub struct VisualPointOp {
+    // Position transforms (multiplicative + additive)
+    pub x_mul: Rational64,
+    pub x_add: Rational64,
+    pub y_mul: Rational64,
+    pub y_add: Rational64,
+    pub z_mul: Rational64,
+    pub z_add: Rational64,
+
+    // Direction (base direction before warps)
+    pub direction: Option<(Rational64, Rational64, Rational64)>,
+
+    // Scalar modifiers
+    pub scale_mul: Rational64,
+    pub scale_add: Rational64,
+    pub velocity_mul: Rational64,
+    pub velocity_add: Rational64,
+    pub alpha_mul: Rational64,
+    pub alpha_set: Option<Rational64>,
+
+    // Space warps - CHAIN like audio filters
+    pub warps: Vec<Warp>,
+
+    // Duration
+    pub length: Rational64,
+}
+
+impl Default for VisualPointOp {
+    fn default() -> Self {
+        VisualPointOp {
+            x_mul: Rational64::new(1, 1),
+            x_add: Rational64::new(0, 1),
+            y_mul: Rational64::new(1, 1),
+            y_add: Rational64::new(0, 1),
+            z_mul: Rational64::new(1, 1),
+            z_add: Rational64::new(0, 1),
+            direction: None,
+            scale_mul: Rational64::new(1, 1),
+            scale_add: Rational64::new(0, 1),
+            velocity_mul: Rational64::new(1, 1),
+            velocity_add: Rational64::new(0, 1),
+            alpha_mul: Rational64::new(1, 1),
+            alpha_set: None,
+            warps: Vec::new(),
+            length: Rational64::new(1, 1),
+        }
+    }
+}
+
+/// Composition: multiply two VisualPointOps
+/// - Multiplicative fields: multiply
+/// - Additive fields: add
+/// - Direction: right-biased (last wins)
+/// - Warps: concatenate (chain like filters)
+impl Mul for VisualPointOp {
+    type Output = VisualPointOp;
+
+    fn mul(self, other: VisualPointOp) -> VisualPointOp {
+        VisualPointOp {
+            // Multiplicative fields
+            x_mul: self.x_mul * other.x_mul,
+            y_mul: self.y_mul * other.y_mul,
+            z_mul: self.z_mul * other.z_mul,
+            scale_mul: self.scale_mul * other.scale_mul,
+            velocity_mul: self.velocity_mul * other.velocity_mul,
+            alpha_mul: self.alpha_mul * other.alpha_mul,
+
+            // Additive fields
+            x_add: self.x_add + other.x_add,
+            y_add: self.y_add + other.y_add,
+            z_add: self.z_add + other.z_add,
+            scale_add: self.scale_add + other.scale_add,
+            velocity_add: self.velocity_add + other.velocity_add,
+
+            // Right-biased (last wins)
+            direction: other.direction.or(self.direction),
+            alpha_set: other.alpha_set.or(self.alpha_set),
+
+            // Chain (concatenate)
+            warps: [self.warps, other.warps].concat(),
+
+            // Multiply lengths
+            length: self.length * other.length,
+        }
+    }
+}
+
+// ============================================================================
+// VisualNormalForm - Container for normalized operations
+// ============================================================================
+
+/// Normalized form for visual operations
+#[derive(Clone, Debug, PartialEq)]
+pub struct VisualNormalForm {
+    /// Flat list of point operations (each represents a time segment)
+    pub operations: Vec<VisualPointOp>,
+    /// Total duration
+    pub length: Rational64,
+}
+
+impl Default for VisualNormalForm {
+    fn default() -> Self {
+        VisualNormalForm {
+            operations: vec![VisualPointOp::default()],
+            length: Rational64::new(1, 1),
+        }
+    }
+}
+
+impl VisualNormalForm {
+    /// Create an empty normal form
+    pub fn empty() -> Self {
+        VisualNormalForm {
+            operations: Vec::new(),
+            length: Rational64::new(0, 1),
+        }
+    }
+
+    /// Apply a VisualPointOp to all operations in this normal form
+    pub fn apply(&mut self, modifier: &VisualPointOp) {
+        for op in &mut self.operations {
+            *op = op.clone() * modifier.clone();
+        }
+        self.length = self.length * modifier.length;
+    }
+
+    /// Join two normal forms in sequence (like Seq)
+    pub fn join_sequence(mut self, other: VisualNormalForm) -> VisualNormalForm {
+        self.operations.extend(other.operations);
+        self.length = self.length + other.length;
+        self
+    }
+
+    /// Generate WGSL code from this normalized form
+    pub fn to_wgsl(&self) -> String {
+        let mut wgsl = String::new();
+        let total_length = rational_to_f64(self.length);
+
+        if self.operations.is_empty() {
+            return wgsl;
+        }
+
+        // Single operation - no time gating needed
+        if self.operations.len() == 1 {
+            wgsl.push_str(&self.operations[0].to_wgsl_segment(0.0, total_length, total_length));
+            return wgsl;
+        }
+
+        // Multiple operations - create time-gated segments
+        wgsl.push_str("// Sequence of operations\n");
+
+        let mut current_time = 0.0;
+        for (i, op) in self.operations.iter().enumerate() {
+            let seg_duration = rational_to_f64(op.length);
+            let seg_end = current_time + seg_duration;
+
+            if i == 0 {
+                wgsl.push_str(&format!(
+                    "if (time < {:.6}) {{\n",
+                    seg_end
+                ));
+            } else if i == self.operations.len() - 1 {
+                wgsl.push_str(&format!(
+                    "}} else {{\n"
+                ));
+            } else {
+                wgsl.push_str(&format!(
+                    "}} else if (time < {:.6}) {{\n",
+                    seg_end
+                ));
+            }
+
+            wgsl.push_str(&op.to_wgsl_segment(current_time, seg_end, total_length));
+            current_time = seg_end;
+        }
+
+        wgsl.push_str("}\n");
+        wgsl
+    }
+}
+
+impl VisualPointOp {
+    /// Generate WGSL for a single segment
+    fn to_wgsl_segment(&self, seg_start: f64, seg_end: f64, total_length: f64) -> String {
+        let mut lines = Vec::new();
+        let seg_duration = seg_end - seg_start;
+
+        // Calculate progress within this segment
+        lines.push(format!(
+            "    let seg_start = {:.6};",
+            seg_start
+        ));
+        lines.push(format!(
+            "    let seg_duration = {:.6};",
+            seg_duration
+        ));
+        lines.push("    let local_time = time - seg_start;".to_string());
+        lines.push("    let progress = local_time / seg_duration;".to_string());
+
+        // Set direction if specified
+        if let Some((dx, dy, dz)) = self.direction {
+            lines.push(format!(
+                "    direction = normalize(vec3<f32>({:.6}, {:.6}, {:.6}));",
+                rational_to_f32(dx),
+                rational_to_f32(dy),
+                rational_to_f32(dz)
+            ));
+        }
+
+        // Apply warps to direction (this is the key part!)
+        for warp in &self.warps {
+            match warp {
+                Warp::Bend { axis: (ax, ay, az), strength } => {
+                    lines.push(format!(
+                        r#"    // Bend warp: rotate direction around axis
+    {{
+        let bend_axis = normalize(vec3<f32>({:.6}, {:.6}, {:.6}));
+        let bend_k = {:.6};
+        let angle = bend_k * progress * 1.5708;  // k * progress * π/2
+        let cos_a = cos(angle);
+        let sin_a = sin(angle);
+        // Rodrigues' rotation formula
+        direction = direction * cos_a
+                  + cross(bend_axis, direction) * sin_a
+                  + bend_axis * dot(bend_axis, direction) * (1.0 - cos_a);
+    }}"#,
+                        rational_to_f32(*ax),
+                        rational_to_f32(*ay),
+                        rational_to_f32(*az),
+                        rational_to_f32(*strength)
+                    ));
+                }
+                Warp::ArcTo { target: (tx, ty, tz), strength } => {
+                    lines.push(format!(
+                        r#"    // ArcTo warp: steer direction toward target
+    {{
+        let target_dir = normalize(vec3<f32>({:.6}, {:.6}, {:.6}));
+        let arc_k = {:.6};
+        let rot_axis_raw = cross(direction, target_dir);
+        let rot_axis_len = length(rot_axis_raw);
+        if (rot_axis_len > 0.001) {{
+            let rot_axis = rot_axis_raw / rot_axis_len;
+            let max_angle = acos(clamp(dot(direction, target_dir), -1.0, 1.0));
+            let angle = arc_k * progress * max_angle;
+            let cos_a = cos(angle);
+            let sin_a = sin(angle);
+            // Rodrigues' rotation formula
+            direction = direction * cos_a
+                      + cross(rot_axis, direction) * sin_a
+                      + rot_axis * dot(rot_axis, direction) * (1.0 - cos_a);
+        }}
+    }}"#,
+                        rational_to_f32(*tx),
+                        rational_to_f32(*ty),
+                        rational_to_f32(*tz),
+                        rational_to_f32(*strength)
+                    ));
+                }
+            }
+        }
+
+        // Move using direction
+        if self.direction.is_some() || !self.warps.is_empty() {
+            lines.push("    // Move along direction".to_string());
+            lines.push("    x += direction.x * local_time * velocity;".to_string());
+            lines.push("    y += direction.y * local_time * velocity;".to_string());
+            lines.push("    z += direction.z * local_time * velocity;".to_string());
+        }
+
+        // Apply scalar modifiers
+        if self.x_mul != Rational64::new(1, 1) {
+            lines.push(format!("    x = x * {:.6};", rational_to_f32(self.x_mul)));
+        }
+        if self.x_add != Rational64::new(0, 1) {
+            lines.push(format!("    x = x + {:.6};", rational_to_f32(self.x_add)));
+        }
+        if self.y_mul != Rational64::new(1, 1) {
+            lines.push(format!("    y = y * {:.6};", rational_to_f32(self.y_mul)));
+        }
+        if self.y_add != Rational64::new(0, 1) {
+            lines.push(format!("    y = y + {:.6};", rational_to_f32(self.y_add)));
+        }
+        if self.z_mul != Rational64::new(1, 1) {
+            lines.push(format!("    z = z * {:.6};", rational_to_f32(self.z_mul)));
+        }
+        if self.z_add != Rational64::new(0, 1) {
+            lines.push(format!("    z = z + {:.6};", rational_to_f32(self.z_add)));
+        }
+        if self.scale_mul != Rational64::new(1, 1) {
+            lines.push(format!("    scale = scale * {:.6};", rational_to_f32(self.scale_mul)));
+        }
+        if self.scale_add != Rational64::new(0, 1) {
+            lines.push(format!("    scale = scale + {:.6};", rational_to_f32(self.scale_add)));
+        }
+        if self.velocity_mul != Rational64::new(1, 1) {
+            lines.push(format!("    velocity = velocity * {:.6};", rational_to_f32(self.velocity_mul)));
+        }
+        if self.velocity_add != Rational64::new(0, 1) {
+            lines.push(format!("    velocity = velocity + {:.6};", rational_to_f32(self.velocity_add)));
+        }
+        if let Some(alpha) = self.alpha_set {
+            lines.push(format!("    alpha = {:.6};", rational_to_f32(alpha)));
+        }
+        if self.alpha_mul != Rational64::new(1, 1) {
+            lines.push(format!("    alpha = alpha * {:.6};", rational_to_f32(self.alpha_mul)));
+        }
+
+        lines.join("\n") + "\n"
     }
 }
 
@@ -211,6 +607,8 @@ impl VisualOp {
                     .max()
                     .unwrap_or_else(|| Rational64::new(1, 1))
             }
+            // Raw WGSL has no duration concept - use default of 1
+            VisualOp::Raw { .. } => Rational64::new(1, 1),
         }
     }
 
@@ -222,6 +620,118 @@ impl VisualOp {
             VisualOp::Compose { operations } => {
                 // Find the last operation that has a direction
                 operations.iter().rev().find_map(|op| op.last_direction())
+            }
+            // Raw WGSL has no direction
+            VisualOp::Raw { .. } => None,
+        }
+    }
+
+    /// Convert this VisualOp to a VisualNormalForm
+    /// This flattens the AST into a list of VisualPointOps that can generate WGSL
+    pub fn normalize(&self) -> VisualNormalForm {
+        match self {
+            VisualOp::Simple {
+                x_mul,
+                x_add,
+                y_mul,
+                y_add,
+                z_mul,
+                z_add,
+                direction,
+                scale_mul,
+                scale_add,
+                velocity_mul,
+                velocity_add,
+                bend,
+                arc_to,
+                alpha_set,
+                alpha_mul,
+                length,
+            } => {
+                // Convert Simple to a single VisualPointOp
+                let mut warps = Vec::new();
+
+                // Extract bend/arc_to as warps (they apply as path modifiers)
+                if let Some((bx, by, bz, k)) = bend {
+                    warps.push(Warp::Bend {
+                        axis: (*bx, *by, *bz),
+                        strength: *k,
+                    });
+                }
+                if let Some((tx, ty, tz, k)) = arc_to {
+                    warps.push(Warp::ArcTo {
+                        target: (*tx, *ty, *tz),
+                        strength: *k,
+                    });
+                }
+
+                let point_op = VisualPointOp {
+                    x_mul: x_mul.unwrap_or_else(|| Rational64::new(1, 1)),
+                    x_add: x_add.unwrap_or_else(|| Rational64::new(0, 1)),
+                    y_mul: y_mul.unwrap_or_else(|| Rational64::new(1, 1)),
+                    y_add: y_add.unwrap_or_else(|| Rational64::new(0, 1)),
+                    z_mul: z_mul.unwrap_or_else(|| Rational64::new(1, 1)),
+                    z_add: z_add.unwrap_or_else(|| Rational64::new(0, 1)),
+                    direction: *direction,
+                    scale_mul: scale_mul.unwrap_or_else(|| Rational64::new(1, 1)),
+                    scale_add: scale_add.unwrap_or_else(|| Rational64::new(0, 1)),
+                    velocity_mul: velocity_mul.unwrap_or_else(|| Rational64::new(1, 1)),
+                    velocity_add: velocity_add.unwrap_or_else(|| Rational64::new(0, 1)),
+                    alpha_mul: alpha_mul.unwrap_or_else(|| Rational64::new(1, 1)),
+                    alpha_set: *alpha_set,
+                    warps,
+                    length: *length,
+                };
+
+                VisualNormalForm {
+                    operations: vec![point_op],
+                    length: *length,
+                }
+            }
+
+            VisualOp::Seq { items } => {
+                // Seq: join all items in sequence
+                let mut result = VisualNormalForm::empty();
+                for item in items {
+                    let item_nf = item.normalize();
+                    result = result.join_sequence(item_nf);
+                }
+                result
+            }
+
+            VisualOp::Compose { operations } => {
+                // Compose: apply each operation in order
+                // Start with the first, then apply the rest as modifiers
+                if operations.is_empty() {
+                    return VisualNormalForm::default();
+                }
+
+                let mut result = operations[0].normalize();
+
+                for op in &operations[1..] {
+                    let modifier_nf = op.normalize();
+                    // Apply each modifier's PointOps to the result
+                    // For a single-PointOp modifier (like Bend alone), apply to all
+                    if modifier_nf.operations.len() == 1 {
+                        result.apply(&modifier_nf.operations[0]);
+                    } else {
+                        // For multi-PointOp modifiers, this is more complex
+                        // For now, apply each modifier op to corresponding result op
+                        for (i, mod_op) in modifier_nf.operations.iter().enumerate() {
+                            if i < result.operations.len() {
+                                result.operations[i] = result.operations[i].clone() * mod_op.clone();
+                            }
+                        }
+                    }
+                }
+
+                result
+            }
+
+            VisualOp::Raw { .. } => {
+                // Raw WGSL can't be normalized - return empty
+                // (Raw is only used for pass-through code)
+                VisualNormalForm::default()
             }
         }
     }
@@ -242,6 +752,7 @@ impl VisualOp {
                 velocity_mul,
                 velocity_add,
                 bend,
+                arc_to,
                 alpha_set,
                 alpha_mul,
                 ..
@@ -258,6 +769,7 @@ impl VisualOp {
                 velocity_mul,
                 velocity_add,
                 bend,
+                arc_to,
                 alpha_set,
                 alpha_mul,
                 length: new_length,
@@ -269,8 +781,36 @@ impl VisualOp {
 
     /// Compose: self | other
     /// Applies `other` to `self`
+    ///
+    /// Composition semantics (order matters for match arms):
+    /// - Seq | Seq → distribute left Seq into each right Seq item
+    /// - Seq | Simple → distribute Simple into each Seq item
+    /// - Simple | Simple → merge fields
+    /// - Simple | Seq → Compose { [Simple, Seq] } (Simple runs BEFORE Seq, NOT distributed)
+    /// - Compose | Seq → compose last item with Seq (enables recursive Seq | Seq)
+    /// - Compose | anything → compose last item with other
+    /// - anything | Compose → prepend self to Compose
     pub fn compose(self, other: VisualOp) -> VisualOp {
         match (self, other) {
+            // Seq | Seq → distribute left into each item of right (like WereSoCool)
+            (seq1 @ VisualOp::Seq { .. }, VisualOp::Seq { items: items2 }) => {
+                let distributed_items = items2
+                    .into_iter()
+                    .map(|item| seq1.clone().compose(item))
+                    .collect();
+                VisualOp::Seq { items: distributed_items }
+            }
+
+            // Seq | Simple → distribute Simple into each Seq item
+            // This means Seq [A, B] | Vm 1 becomes Seq [A | Vm 1, B | Vm 1]
+            (VisualOp::Seq { items }, simple @ VisualOp::Simple { .. }) => {
+                let distributed_items = items
+                    .into_iter()
+                    .map(|item| item.compose(simple.clone()))
+                    .collect();
+                VisualOp::Seq { items: distributed_items }
+            }
+
             // Simple | Simple → merge fields
             (
                 VisualOp::Simple {
@@ -286,6 +826,7 @@ impl VisualOp {
                     velocity_mul: vel_mul1,
                     velocity_add: vel_add1,
                     bend: bend1,
+                    arc_to: arc_to1,
                     alpha_set: alpha_set1,
                     alpha_mul: alpha_mul1,
                     length: len1,
@@ -303,6 +844,7 @@ impl VisualOp {
                     velocity_mul: vel_mul2,
                     velocity_add: vel_add2,
                     bend: bend2,
+                    arc_to: arc_to2,
                     alpha_set: alpha_set2,
                     alpha_mul: alpha_mul2,
                     length: len2,
@@ -320,30 +862,14 @@ impl VisualOp {
                 velocity_mul: compose_mul(vel_mul1, vel_mul2),
                 velocity_add: compose_add(vel_add1, vel_add2),
                 bend: bend2.or(bend1), // Later wins
+                arc_to: arc_to2.or(arc_to1), // Later wins
                 alpha_set: alpha_set2.or(alpha_set1), // Later wins
                 alpha_mul: compose_mul(alpha_mul1, alpha_mul2),
                 length: len1 * len2, // Multiply lengths
             },
 
-            // Seq | Simple → apply Simple's length modifier to the Seq
-            (VisualOp::Seq { items }, VisualOp::Simple { length, .. }) => {
-                // Scale all items by the length modifier
-                let scaled_items: Vec<VisualOp> = items
-                    .into_iter()
-                    .map(|op| {
-                        let new_len = op.length() * length;
-                        op.with_length(new_len)
-                    })
-                    .collect();
-                VisualOp::Seq { items: scaled_items }
-            }
-
-            // Seq | Seq → Compose
-            (seq1 @ VisualOp::Seq { .. }, seq2 @ VisualOp::Seq { .. }) => VisualOp::Compose {
-                operations: vec![seq1, seq2],
-            },
-
-            // Simple | Seq → apply Simple's length modifier to Seq, keep other Simple fields
+            // Simple | Seq → apply Simple's modifiers before Seq runs
+            // This creates Compose { [Simple, Seq] } so Simple runs first (NOT distributed!)
             (
                 VisualOp::Simple {
                     x_mul,
@@ -358,6 +884,7 @@ impl VisualOp {
                     velocity_mul,
                     velocity_add,
                     bend,
+                    arc_to,
                     alpha_set,
                     alpha_mul,
                     length,
@@ -388,6 +915,7 @@ impl VisualOp {
                     velocity_mul,
                     velocity_add,
                     bend,
+                    arc_to,
                     alpha_set,
                     alpha_mul,
                     length: Rational64::new(1, 1), // Length already applied
@@ -407,6 +935,7 @@ impl VisualOp {
                     || velocity_mul.is_some()
                     || velocity_add.is_some()
                     || bend.is_some()
+                    || arc_to.is_some()
                     || alpha_set.is_some()
                     || alpha_mul.is_some();
 
@@ -417,21 +946,60 @@ impl VisualOp {
                 } else {
                     scaled_seq
                 }
-            },
-
-            // Compose | anything → add to existing compose
-            (VisualOp::Compose { mut operations }, other) => {
-                operations.push(other);
-                VisualOp::Compose { operations }
             }
 
-            // anything | Compose → create new compose
+            // Compose | Seq → compose last item with Seq (enables recursive Seq | Seq)
+            (VisualOp::Compose { mut operations }, right_seq @ VisualOp::Seq { .. }) => {
+                if let Some(last) = operations.pop() {
+                    let composed_last = last.compose(right_seq);
+                    operations.push(composed_last);
+                    if operations.len() == 1 {
+                        operations.pop().unwrap()
+                    } else {
+                        VisualOp::Compose { operations }
+                    }
+                } else {
+                    right_seq
+                }
+            }
+
+            // Compose | anything → compose last item with other
+            (VisualOp::Compose { mut operations }, other) => {
+                if let Some(last) = operations.pop() {
+                    let composed_last = last.compose(other);
+                    operations.push(composed_last);
+                    if operations.len() == 1 {
+                        operations.pop().unwrap()
+                    } else {
+                        VisualOp::Compose { operations }
+                    }
+                } else {
+                    other
+                }
+            }
+
+            // anything | Compose → prepend self to Compose
             (other, VisualOp::Compose { operations }) => {
                 let mut new_ops = vec![other];
                 new_ops.extend(operations);
                 VisualOp::Compose { operations: new_ops }
             }
+
+            // Raw | anything or anything | Raw → wrap in Compose (Raw is pass-through)
+            (raw @ VisualOp::Raw { .. }, other) => {
+                VisualOp::Compose { operations: vec![raw, other] }
+            }
+            (other, raw @ VisualOp::Raw { .. }) => {
+                VisualOp::Compose { operations: vec![other, raw] }
+            }
         }
+    }
+
+    /// Generate WGSL code using the new NormalForm approach
+    /// This normalizes the AST first, then generates code with proper warp chaining
+    pub fn to_wgsl_normalized(&self) -> String {
+        let nf = self.normalize();
+        nf.to_wgsl()
     }
 
     /// Generate WGSL code
@@ -451,6 +1019,7 @@ impl VisualOp {
                 velocity_mul,
                 velocity_add,
                 bend,
+                arc_to,
                 alpha_set,
                 alpha_mul,
                 length,
@@ -470,6 +1039,7 @@ impl VisualOp {
                     && velocity_mul.is_none()
                     && velocity_add.is_none()
                     && bend.is_none()
+                    && arc_to.is_none()
                     && alpha_set.is_none()
                     && alpha_mul.is_none()
                     && *length != Rational64::new(1, 1);
@@ -480,9 +1050,39 @@ impl VisualOp {
                     return lines.join("\n");
                 }
 
-                // Direction with optional Bend (cubic Bézier curve)
+                // Direction with optional Bend or ArcTo (cubic Bézier curve)
                 if let Some((dx, dy, dz)) = direction {
-                    if let Some((bx, by, bz, k)) = bend {
+                    if let Some((tx, ty, tz, k)) = arc_to {
+                        // ArcTo with explicit Direction: set direction then arc
+                        lines.push(format!(
+                            r#"// ArcTo: curve that ends pointing toward target direction
+direction = normalize(vec3<f32>({}, {}, {}));
+let target_dir = normalize(vec3<f32>({}, {}, {}));
+let arc_k = {:.6};
+let L = time * velocity;
+// End direction: lerp from current toward target by k
+let dT = normalize(mix(direction, target_dir, arc_k));
+// Bézier control points for smooth arc
+let p0 = vec3<f32>(0.0, 0.0, 0.0);
+let p3 = p0 + direction * L;  // End position (straight line distance)
+let p1 = p0 + direction * (L / 3.0);  // Start tangent = original direction
+let p2 = p3 - dT * (L / 3.0);  // End tangent = new direction
+// At t=1, position is p3
+let pos = p3;
+x += pos.x;
+y += pos.y;
+z += pos.z;
+// Update direction to the new end direction
+direction = dT;"#,
+                            rational_to_f32(*dx),
+                            rational_to_f32(*dy),
+                            rational_to_f32(*dz),
+                            rational_to_f32(*tx),
+                            rational_to_f32(*ty),
+                            rational_to_f32(*tz),
+                            rational_to_f32(*k)
+                        ));
+                    } else if let Some((bx, by, bz, k)) = bend {
                         // Bend: create a symmetric cubic Bézier curve that bulges toward bend vector
                         // Note: if bend is parallel to dir, perp_len will be ~0 and we fall back to linear
                         lines.push(format!(
@@ -531,6 +1131,82 @@ z += pos.z;"#,
                         lines.push("y += direction.y * time * velocity;".to_string());
                         lines.push("z += direction.z * time * velocity;".to_string());
                     }
+                } else if let Some((tx, ty, tz, k)) = arc_to {
+                    // Standalone ArcTo: space warp transform
+                    // Rotates position toward target direction, steering through space
+                    lines.push(format!(
+                        r#"// ArcTo space warp: rotate position toward target direction
+{{
+    let pos = vec3<f32>(x, y, z);
+    let target_dir = normalize(vec3<f32>({}, {}, {}));
+    let arc_k = {:.6};
+    let t = time / seg_length;  // progress 0→1
+
+    // Current direction approximated from position
+    let pos_len = length(pos);
+    if (pos_len > 0.001) {{
+        let current_dir = pos / pos_len;
+        // Rotation axis: perpendicular to both current and target
+        let rot_axis_raw = cross(current_dir, target_dir);
+        let rot_axis_len = length(rot_axis_raw);
+
+        if (rot_axis_len > 0.001) {{
+            let rot_axis = rot_axis_raw / rot_axis_len;
+            // Angle between current and target
+            let max_angle = acos(clamp(dot(current_dir, target_dir), -1.0, 1.0));
+            // Rotate by k * t * max_angle
+            let angle = arc_k * t * max_angle;
+            let cos_a = cos(angle);
+            let sin_a = sin(angle);
+            // Rodrigues' rotation formula
+            let rotated = pos * cos_a
+                        + cross(rot_axis, pos) * sin_a
+                        + rot_axis * dot(rot_axis, pos) * (1.0 - cos_a);
+            x = rotated.x;
+            y = rotated.y;
+            z = rotated.z;
+        }}
+    }}
+}}"#,
+                        rational_to_f32(*tx),
+                        rational_to_f32(*ty),
+                        rational_to_f32(*tz),
+                        rational_to_f32(*k)
+                    ));
+                } else if let Some((bx, by, bz, k)) = bend {
+                    // Standalone Bend: space warp transform
+                    // Bends the accumulated path around an axis
+                    // The angle of rotation is proportional to distance from origin
+                    // This curves the path while preserving its shape
+                    lines.push(format!(
+                        r#"// Bend space warp: curve the path around an axis
+{{
+    let pos = vec3<f32>(x, y, z);
+    let bend_axis = normalize(vec3<f32>({}, {}, {}));
+    let bend_k = {:.6};
+
+    // Use distance from origin as the "arc length" parameter
+    let dist = length(pos);
+    if (dist > 0.001) {{
+        // Angle proportional to distance traveled (k=1 → 90° per unit distance)
+        let angle = bend_k * dist * 1.5708;
+        let cos_a = cos(angle);
+        let sin_a = sin(angle);
+
+        // Rodrigues' rotation formula
+        let rotated = pos * cos_a
+                    + cross(bend_axis, pos) * sin_a
+                    + bend_axis * dot(bend_axis, pos) * (1.0 - cos_a);
+        x = rotated.x;
+        y = rotated.y;
+        z = rotated.z;
+    }}
+}}"#,
+                        rational_to_f32(*bx),
+                        rational_to_f32(*by),
+                        rational_to_f32(*bz),
+                        rational_to_f32(*k)
+                    ));
                 }
 
                 if let Some(v) = x_mul {
@@ -594,22 +1270,26 @@ z += pos.z;"#,
                     let (base_start, base_end) = base_times[i];
 
                     // Generate segment block - times are scaled by seg_length at runtime
+                    // State persists across segments (x,y,z, direction, velocity, scale, alpha, colors)
                     wgsl.push_str(&format!("    // Segment {}\n    {{\n", i));
                     wgsl.push_str(&op.to_wgsl_segment_runtime(base_start, base_end));
                     wgsl.push_str("\n    }\n");
                 }
 
-                // Continue in the last direction after Seq ends (using runtime velocity)
-                if let Some(last_dir) = items.last().and_then(|op| op.last_direction()) {
-                    let base_seq_end = current_base_time;
-                    wgsl.push_str(&format!(
-                        "    // Continue after Seq\n    {{\n        let seq_end = {:.6} * seg_length;\n        if (time > seq_end) {{\n            let dt = time - seq_end;\n            let dir = normalize(vec3<f32>({}, {}, {}));\n            x += dir.x * dt * velocity;\n            y += dir.y * dt * velocity;\n            z += dir.z * dt * velocity;\n        }}\n    }}\n",
-                        base_seq_end,
-                        rational_to_f32(last_dir.0),
-                        rational_to_f32(last_dir.1),
-                        rational_to_f32(last_dir.2)
-                    ));
-                }
+                // After Seq ends, continue moving in the final direction
+                let seq_end = current_base_time; // Total duration of all segments
+                wgsl.push_str(&format!(
+                    r#"    // Continue moving after Seq ends
+    {{
+        let seq_end = {:.6} * seg_length;
+        if (time >= seq_end) {{
+            let extra_time = time - seq_end;
+            x += direction.x * extra_time * velocity;
+            y += direction.y * extra_time * velocity;
+            z += direction.z * extra_time * velocity;
+        }}
+    }}
+"#, seq_end));
 
                 // Restore parent context (seg_length unchanged - Seq is its own context)
                 wgsl.push_str("}\n");
@@ -624,6 +1304,11 @@ z += pos.z;"#,
                     .map(|op| op.to_wgsl(time_offset))
                     .collect::<Vec<_>>()
                     .join("\n")
+            }
+
+            VisualOp::Raw { wgsl } => {
+                // Raw WGSL passes through directly
+                wgsl.clone()
             }
         }
     }
@@ -643,6 +1328,7 @@ z += pos.z;"#,
             velocity_mul: None,
             velocity_add: None,
             bend: None,
+            arc_to: None,
             alpha_set: None,
             alpha_mul: None,
             length: Rational64::new(1, 1),
@@ -752,6 +1438,17 @@ z += pos.z;"#,
         let mut op = Self::simple_default();
         if let VisualOp::Simple { bend: ref mut b, .. } = op {
             *b = Some((bx, by, bz, k));
+        }
+        op
+    }
+
+    /// Create an ArcTo operation
+    /// tx, ty, tz: target direction vector (where you want to end up pointing)
+    /// k: strength factor (1 = fully commit to new direction, 0.5 = halfway)
+    pub fn arc_to(tx: Rational64, ty: Rational64, tz: Rational64, k: Rational64) -> Self {
+        let mut op = Self::simple_default();
+        if let VisualOp::Simple { arc_to: ref mut a, .. } = op {
+            *a = Some((tx, ty, tz, k));
         }
         op
     }
@@ -958,6 +1655,11 @@ z += pos.z;"#,
                     .collect::<Vec<_>>()
                     .join("\n")
             }
+
+            VisualOp::Raw { wgsl } => {
+                // Raw WGSL passes through directly
+                wgsl.clone()
+            }
         }
     }
 
@@ -978,6 +1680,7 @@ z += pos.z;"#,
                 velocity_mul,
                 velocity_add,
                 bend,
+                arc_to,
                 alpha_set,
                 alpha_mul,
                 ..
@@ -1002,9 +1705,48 @@ z += pos.z;"#,
                         .to_string(),
                 );
 
-                // Direction with optional Bend (cubic Bézier curve)
+                // Direction with optional Bend or ArcTo (cubic Bézier curve)
                 if let Some((dx, dy, dz)) = direction {
-                    if let Some((bx, by, bz, k)) = bend {
+                    if let Some((tx, ty, tz, k)) = arc_to {
+                        // ArcTo: cubic Bézier that changes end direction toward target
+                        lines.push(format!(
+                            r#"        // ArcTo: curve that ends pointing toward target direction
+        let dir = normalize(vec3<f32>({}, {}, {}));
+        let target_dir = normalize(vec3<f32>({}, {}, {}));
+        let arc_k = {:.6};
+        let L = duration * velocity;
+        // End direction: lerp from current toward target by k
+        let dT = normalize(mix(dir, target_dir, arc_k));
+        // Bézier control points: P1 starts in dir, P2 ends in dT
+        let p0 = vec3<f32>(0.0, 0.0, 0.0);
+        let p3 = dir * L;  // End position (straight line distance)
+        let p1 = p0 + dir * (L / 3.0);  // Start tangent = original direction
+        let p2 = p3 - dT * (L / 3.0);  // End tangent = new direction
+        // Cubic Bézier: (1-t)³P0 + 3(1-t)²tP1 + 3(1-t)t²P2 + t³P3
+        let t = progress;
+        let mt = 1.0 - t;
+        let mt2 = mt * mt;
+        let mt3 = mt2 * mt;
+        let t2 = t * t;
+        let t3 = t2 * t;
+        let pos = mt3 * p0 + 3.0 * mt2 * t * p1 + 3.0 * mt * t2 * p2 + t3 * p3;
+        if (time >= seg_start) {{
+            x += pos.x;
+            y += pos.y;
+            z += pos.z;
+            // Update direction to the new end direction
+            direction = dT;
+        }}"#,
+                            rational_to_f32(*dx),
+                            rational_to_f32(*dy),
+                            rational_to_f32(*dz),
+                            rational_to_f32(*tx),
+                            rational_to_f32(*ty),
+                            rational_to_f32(*tz),
+                            rational_to_f32(*k)
+                        ));
+                    } else if let Some((bx, by, bz, k)) = bend {
+                        // Bend is symmetric - exit direction same as entry direction
                         lines.push(format!(
                             r#"        // Bézier curve with bend (symmetric bulge)
         let dir = normalize(vec3<f32>({}, {}, {}));
@@ -1029,9 +1771,12 @@ z += pos.z;"#,
         let t2 = t * t;
         let t3 = t2 * t;
         let pos = mt3 * p0 + 3.0 * mt2 * t * p1 + 3.0 * mt * t2 * p2 + t3 * p3;
-        x += pos.x;
-        y += pos.y;
-        z += pos.z;"#,
+        if (time >= seg_start) {{
+            x += pos.x;
+            y += pos.y;
+            z += pos.z;
+            direction = dir;
+        }}"#,
                             rational_to_f32(*dx),
                             rational_to_f32(*dy),
                             rational_to_f32(*dz),
@@ -1042,13 +1787,79 @@ z += pos.z;"#,
                         ));
                     } else {
                         // No bend: simple linear displacement
+                        // Update global direction so Seq continuation knows which way to go
                         lines.push(format!(
-                            "        let dir = normalize(vec3<f32>({}, {}, {}));\n        x += dir.x * dt * velocity;\n        y += dir.y * dt * velocity;\n        z += dir.z * dt * velocity;",
+                            "        let dir = normalize(vec3<f32>({}, {}, {}));\n        if (time >= seg_start) {{\n            x += dir.x * dt * velocity;\n            y += dir.y * dt * velocity;\n            z += dir.z * dt * velocity;\n            direction = dir;\n        }}",
                             rational_to_f32(*dx),
                             rational_to_f32(*dy),
                             rational_to_f32(*dz)
                         ));
                     }
+                } else if let Some((tx, ty, tz, k)) = arc_to {
+                    // Standalone ArcTo: use existing runtime direction
+                    lines.push(format!(
+                        r#"        // ArcTo: curve using current direction, ending toward target
+        let target_dir = normalize(vec3<f32>({}, {}, {}));
+        let arc_k = {:.6};
+        let L = duration * velocity;
+        let dT = normalize(mix(direction, target_dir, arc_k));
+        let p0 = vec3<f32>(0.0, 0.0, 0.0);
+        let p3 = p0 + direction * L;
+        let p1 = p0 + direction * (L / 3.0);
+        let p2 = p3 - dT * (L / 3.0);
+        let t = progress;
+        let mt = 1.0 - t;
+        let mt2 = mt * mt;
+        let mt3 = mt2 * mt;
+        let t2 = t * t;
+        let t3 = t2 * t;
+        let pos = mt3 * p0 + 3.0 * mt2 * t * p1 + 3.0 * mt * t2 * p2 + t3 * p3;
+        if (time >= seg_start) {{
+            x += pos.x;
+            y += pos.y;
+            z += pos.z;
+            direction = dT;
+        }}"#,
+                        rational_to_f32(*tx),
+                        rational_to_f32(*ty),
+                        rational_to_f32(*tz),
+                        rational_to_f32(*k)
+                    ));
+                } else if let Some((bx, by, bz, k)) = bend {
+                    // Standalone Bend: use existing runtime direction
+                    lines.push(format!(
+                        r#"        // Bézier curve with bend using current direction (symmetric bulge)
+        let bend_raw = vec3<f32>({}, {}, {});
+        let k = {:.6};
+        let L = duration * velocity;
+        let bend_perp = bend_raw - dot(bend_raw, direction) * direction;
+        let perp_len = length(bend_perp);
+        var offset = vec3<f32>(0.0, 0.0, 0.0);
+        if (perp_len > 0.001) {{
+            let b_perp = bend_perp / perp_len;
+            offset = b_perp * k * L * 0.5;
+        }}
+        let p0 = vec3<f32>(0.0, 0.0, 0.0);
+        let p3 = direction * L;
+        let p1 = direction * (L / 3.0) + offset;
+        let p2 = direction * (L * 2.0 / 3.0) + offset;
+        let t = progress;
+        let mt = 1.0 - t;
+        let mt2 = mt * mt;
+        let mt3 = mt2 * mt;
+        let t2 = t * t;
+        let t3 = t2 * t;
+        let pos = mt3 * p0 + 3.0 * mt2 * t * p1 + 3.0 * mt * t2 * p2 + t3 * p3;
+        if (time >= seg_start) {{
+            x += pos.x;
+            y += pos.y;
+            z += pos.z;
+        }}"#,
+                        rational_to_f32(*bx),
+                        rational_to_f32(*by),
+                        rational_to_f32(*bz),
+                        rational_to_f32(*k)
+                    ));
                 }
 
                 // Collect ops that should only apply when we've reached this segment
@@ -1105,31 +1916,76 @@ z += pos.z;"#,
 
             VisualOp::Seq { items } => {
                 // Nested Seq: recursively generate inner segments
+                // Each inner segment needs its own scope to avoid variable redefinitions
+                // State persists across segments (no save/restore)
                 let mut wgsl = String::new();
                 let mut inner_base_time = base_start;
                 let total_len = rational_to_f64(self.length());
                 let outer_base_duration = base_end - base_start;
 
-                for op in items {
+                for (i, op) in items.iter().enumerate() {
                     let inner_duration = rational_to_f64(op.length());
                     let scaled = if total_len > 0.0 {
                         (inner_duration / total_len) * outer_base_duration
                     } else {
                         0.0
                     };
+                    // Wrap each inner segment in its own scope (for variable scoping)
+                    // State persists across segments
+                    wgsl.push_str(&format!("        // Inner segment {}\n        {{\n", i));
                     wgsl.push_str(&op.to_wgsl_segment_runtime(inner_base_time, inner_base_time + scaled));
-                    wgsl.push('\n');
+                    wgsl.push_str("\n        }\n");
                     inner_base_time += scaled;
                 }
                 wgsl
             }
 
             VisualOp::Compose { operations } => {
-                operations
-                    .iter()
-                    .map(|op| op.to_wgsl_segment_runtime(base_start, base_end))
-                    .collect::<Vec<_>>()
-                    .join("\n")
+                // Generate code for ALL operations in the Compose
+                // Each operation is wrapped in a block scope to allow re-declaration of timing vars
+                let mut result = String::new();
+                for (i, op) in operations.iter().enumerate() {
+                    result.push_str(&format!("        // Compose op {}\n        {{\n", i));
+                    // Indent the operation's code
+                    let op_code = op.to_wgsl_segment_runtime(base_start, base_end);
+                    for line in op_code.lines() {
+                        result.push_str("    ");
+                        result.push_str(line);
+                        result.push('\n');
+                    }
+                    result.push_str("        }\n");
+                }
+                result
+            }
+
+            VisualOp::Raw { wgsl } => {
+                // Raw WGSL needs time-gated execution in a Seq context
+                // Generate segment timing and wrap in time check
+                // IMPORTANT: Raw WGSL only runs DURING its segment (not after)
+                // This differs from position ops which accumulate over time
+                let base_duration = base_end - base_start;
+                let trimmed = wgsl.trim();
+                let with_semi = if trimmed.ends_with(';') || trimmed.ends_with('}') {
+                    trimmed.to_string()
+                } else {
+                    format!("{};", trimmed)
+                };
+                format!(
+                    r#"        let seg_start = {:.6} * seg_length;
+        let seg_end = {:.6} * seg_length;
+        let duration = {:.6} * seg_length;
+        var dt: f32 = 0.0;
+        if (time >= seg_end) {{
+            dt = duration;
+        }} else if (time >= seg_start) {{
+            dt = time - seg_start;
+        }}
+        let progress = select(0.0, dt / duration, duration > 0.0);
+        if (time >= seg_start && time < seg_end) {{
+            {}
+        }}"#,
+                    base_start, base_end, base_duration, with_semi
+                )
             }
         }
     }
@@ -1189,6 +2045,11 @@ fn fract(v: f32) -> f32 { return 0.0; }
 fn normalize(v: vec3<f32>) -> vec3<f32> { return v; }
 fn length(v: vec3<f32>) -> f32 { return 1.0; }
 fn select(a: f32, b: f32, c: bool) -> f32 { if c { return b; } else { return a; } }
+fn mix(a: vec3<f32>, b: vec3<f32>, t: f32) -> vec3<f32> { return a * (1.0 - t) + b * t; }
+fn cross(a: vec3<f32>, b: vec3<f32>) -> vec3<f32> { return vec3<f32>(a.y * b.z - a.z * b.y, a.z * b.x - a.x * b.z, a.x * b.y - a.y * b.x); }
+fn dot(a: vec3<f32>, b: vec3<f32>) -> f32 { return a.x * b.x + a.y * b.y + a.z * b.z; }
+fn acos(v: f32) -> f32 { return 1.0; }
+fn clamp(v: f32, lo: f32, hi: f32) -> f32 { return v; }
 
 fn dummy_function() {
     // Variables that are modifiable
@@ -1238,11 +2099,11 @@ pub fn validate_wgsl(src: &str) -> Result<(), String> {
 ///
 /// # Arguments
 /// * `src` - The WGSL code to validate (already compiled from DSL if applicable)
-/// * `original_line` - The 1-based line number where the WGSL block starts in the original source
+/// * `block_start_line` - The line number where the WGSL block content starts in the original source
 /// * `original_source` - The original full source (for extracting context)
 pub fn validate_wgsl_with_position(
     src: &str,
-    original_line: usize,
+    block_start_line: usize,
     original_source: &str,
 ) -> Result<(), WgslError> {
     let (patched, preamble_lines) = prepare_for_naga(src);
@@ -1258,29 +2119,46 @@ pub fn validate_wgsl_with_position(
                 (1, 1)
             };
 
-            // Map line number back to original source:
-            // error_line is in the patched source (with preamble)
-            // original_line is the line number of "wgsl {" in the source
-            // User line 1 is at original_line + 1, user line 2 at original_line + 2, etc.
-            // So: mapped_line = original_line + (error_line - preamble_lines)
-            let mapped_line = if error_line > preamble_lines {
-                original_line + (error_line - preamble_lines)
+            // The error_line is in the compiled/patched WGSL (which may differ from source
+            // due to DSL expansion). We can't map back to exact DSL positions easily,
+            // so we report the error at the WGSL block start and show the compiled line.
+
+            // Extract the error line from compiled code for context
+            let user_code_line = if error_line > preamble_lines {
+                error_line - preamble_lines
             } else {
-                // Error is in preamble (shouldn't happen normally)
-                original_line
+                1
             };
 
-            // Extract the context line from original source
-            // Note: original_source (composition) starts with \n, so line N is at index N in .lines()
-            let context = original_source
+            // Get the actual line from compiled src that has the error
+            let compiled_context = src
                 .lines()
-                .nth(mapped_line)
+                .nth(user_code_line.saturating_sub(1))
+                .unwrap_or("")
+                .trim()
+                .to_string();
+
+            // Use the block start line for reporting (this is accurate in original source)
+            // Add 1 to point to first line inside the block
+            let report_line = block_start_line + 1;
+
+            // Get original source context at the block start
+            let original_context = original_source
+                .lines()
+                .nth(report_line)
                 .unwrap_or("")
                 .to_string();
 
+            // Combine error info: show both the error message and where it occurred in compiled code
+            let context = if !compiled_context.is_empty() && compiled_context != original_context.trim() {
+                format!("{}\n    (in compiled WGSL: {})", original_context, compiled_context)
+            } else {
+                original_context
+            };
+
             Err(WgslError {
                 message: e.message().to_string(),
-                line: mapped_line,
+                line: report_line,
                 column: error_column,
                 context,
             })
@@ -1609,4 +2487,267 @@ mod tests {
         // Seq should use seg_length for runtime scaling
         assert!(wgsl.contains("1.000000 * seg_length"), "Segment times should be scaled by seg_length");
     }
-} 
+
+    #[test]
+    fn test_visual_op_arc_to() {
+        // Test ArcTo creates curve code that changes end direction
+        let dir = VisualOp::direction(
+            Rational64::new(1, 1),
+            Rational64::new(0, 1),
+            Rational64::new(0, 1),
+        );
+        let arc = VisualOp::arc_to(
+            Rational64::new(0, 1),
+            Rational64::new(1, 1),
+            Rational64::new(0, 1),
+            Rational64::new(1, 1), // k = 1.0 (fully commit to new direction)
+        );
+        let composed = dir.compose(arc);
+        let wgsl = composed.to_wgsl(0.0);
+
+        println!("ArcTo WGSL:\n{}", wgsl);
+
+        // Should have ArcTo components
+        assert!(wgsl.contains("ArcTo"), "Output should mention ArcTo");
+        assert!(wgsl.contains("target_dir"), "Output should have target direction");
+        assert!(wgsl.contains("mix"), "Output should use mix for direction lerp");
+        assert!(wgsl.contains("dT"), "Output should have end direction dT");
+        assert!(wgsl.contains("direction = dT"), "Should update direction to new end direction");
+    }
+
+    #[test]
+    fn test_visual_op_arc_to_in_seq() {
+        // Test ArcTo works inside Seq with proper Bézier evaluation
+        let segment = VisualOp::direction(
+            Rational64::new(1, 1),
+            Rational64::new(0, 1),
+            Rational64::new(0, 1),
+        ).compose(VisualOp::arc_to(
+            Rational64::new(0, 1),
+            Rational64::new(1, 1),
+            Rational64::new(0, 1),
+            Rational64::new(1, 2), // k = 0.5
+        )).compose(VisualOp::lm(Rational64::new(1, 1)));
+
+        let seq = VisualOp::Seq { items: vec![segment] };
+        let wgsl = seq.to_wgsl(0.0);
+
+        println!("ArcTo in Seq WGSL:\n{}", wgsl);
+
+        // Should have ArcTo curve with Bézier components
+        assert!(wgsl.contains("ArcTo"), "Output should mention ArcTo");
+        assert!(wgsl.contains("target_dir"), "Output should have target direction");
+        assert!(wgsl.contains("mt3"), "Output should have (1-t)^3 component");
+        assert!(wgsl.contains("t3"), "Output should have t^3 component");
+    }
+
+    #[test]
+    fn test_arc_to_validates() {
+        // Ensure generated WGSL code compiles
+        let dir = VisualOp::direction(
+            Rational64::new(1, 1),
+            Rational64::new(0, 1),
+            Rational64::new(0, 1),
+        );
+        let arc = VisualOp::arc_to(
+            Rational64::new(0, 1),
+            Rational64::new(1, 1),
+            Rational64::new(0, 1),
+            Rational64::new(1, 1),
+        );
+        let composed = dir.compose(arc);
+        let wgsl = composed.to_wgsl(0.0);
+
+        assert!(validate_wgsl(&wgsl).is_ok(), "ArcTo WGSL should validate");
+    }
+
+    #[test]
+    fn test_standalone_arcto() {
+        // Standalone ArcTo should generate space warp transform code
+        let arc = VisualOp::arc_to(
+            Rational64::new(0, 1),
+            Rational64::new(1, 1),
+            Rational64::new(0, 1),
+            Rational64::new(1, 1),
+        );
+        let wgsl = arc.to_wgsl(0.0);
+
+        println!("Standalone ArcTo WGSL:\n{}", wgsl);
+
+        // Should be a space warp transform
+        assert!(wgsl.contains("ArcTo space warp"), "Should be space warp mode");
+        assert!(wgsl.contains("let target_dir = normalize"), "Should have target direction");
+        assert!(wgsl.contains("Rodrigues"), "Should use Rodrigues rotation");
+        assert!(wgsl.contains("cross(rot_axis, pos)"), "Should rotate position");
+
+        let validation_result = validate_wgsl(&wgsl);
+        if let Err(ref e) = validation_result {
+            eprintln!("Validation error: {}", e);
+        }
+        assert!(validation_result.is_ok(), "Standalone ArcTo should validate");
+    }
+
+    #[test]
+    fn test_standalone_bend() {
+        // Standalone Bend should generate space warp transform code
+        let bend = VisualOp::bend(
+            Rational64::new(0, 1),
+            Rational64::new(1, 1),
+            Rational64::new(0, 1),
+            Rational64::new(1, 2),
+        );
+        let wgsl = bend.to_wgsl(0.0);
+
+        println!("Standalone Bend WGSL:\n{}", wgsl);
+
+        // Should be a space warp transform
+        assert!(wgsl.contains("Bend space warp"), "Should be space warp mode");
+        assert!(wgsl.contains("bend_axis = normalize"), "Should have bend axis");
+        assert!(wgsl.contains("Rodrigues"), "Should use Rodrigues rotation");
+
+        assert!(validate_wgsl(&wgsl).is_ok(), "Standalone Bend should validate");
+    }
+
+    #[test]
+    fn test_seq_with_bend_warp_normalized() {
+        // Test Seq | Bend using the new NormalForm approach
+        // The Bend should apply as a warp to the direction in each segment
+
+        // Create a simple Seq with two directions
+        let seg1 = VisualOp::direction(
+            Rational64::new(1, 1),
+            Rational64::new(0, 1),
+            Rational64::new(0, 1),
+        ).compose(VisualOp::lm(Rational64::new(1, 1)));
+
+        let seg2 = VisualOp::direction(
+            Rational64::new(1, 1),
+            Rational64::new(0, 1),
+            Rational64::new(0, 1),
+        ).compose(VisualOp::lm(Rational64::new(1, 1)));
+
+        let seq = VisualOp::Seq { items: vec![seg1, seg2] };
+
+        // Compose with a Bend warp
+        let bend = VisualOp::bend(
+            Rational64::new(0, 1),
+            Rational64::new(1, 1),
+            Rational64::new(0, 1),
+            Rational64::new(1, 2), // k = 0.5
+        );
+
+        let composed = seq.compose(bend);
+
+        // Normalize and generate WGSL
+        let nf = composed.normalize();
+        println!("NormalForm: {} operations, length={:?}", nf.operations.len(), nf.length);
+
+        // Each segment should have the Bend warp
+        assert_eq!(nf.operations.len(), 2, "Should have 2 segments");
+        assert_eq!(nf.operations[0].warps.len(), 1, "First segment should have 1 warp");
+        assert_eq!(nf.operations[1].warps.len(), 1, "Second segment should have 1 warp");
+
+        // Generate WGSL
+        let wgsl = nf.to_wgsl();
+        println!("Normalized WGSL:\n{}", wgsl);
+
+        // Should contain Bend warp code
+        assert!(wgsl.contains("Bend warp"), "Should have Bend warp code");
+        assert!(wgsl.contains("Rodrigues"), "Should use Rodrigues rotation");
+        assert!(wgsl.contains("direction ="), "Should modify direction");
+
+        // Validate the WGSL
+        let validation_result = validate_wgsl(&wgsl);
+        if let Err(ref e) = validation_result {
+            eprintln!("Validation error: {}", e);
+        }
+        assert!(validation_result.is_ok(), "Normalized Seq|Bend should validate");
+    }
+
+    #[test]
+    fn test_chained_warps_normalized() {
+        // Test chaining multiple warps: Seq | Bend | ArcTo
+        let seg = VisualOp::direction(
+            Rational64::new(1, 1),
+            Rational64::new(0, 1),
+            Rational64::new(0, 1),
+        ).compose(VisualOp::lm(Rational64::new(2, 1)));
+
+        let seq = VisualOp::Seq { items: vec![seg] };
+
+        // Chain two warps
+        let bend = VisualOp::bend(
+            Rational64::new(0, 1),
+            Rational64::new(1, 1),
+            Rational64::new(0, 1),
+            Rational64::new(1, 2),
+        );
+        let arc_to = VisualOp::arc_to(
+            Rational64::new(0, 1),
+            Rational64::new(0, 1),
+            Rational64::new(1, 1),
+            Rational64::new(1, 4),
+        );
+
+        let composed = seq.compose(bend).compose(arc_to);
+        let nf = composed.normalize();
+
+        println!("Chained warps NormalForm: {} operations", nf.operations.len());
+        for (i, op) in nf.operations.iter().enumerate() {
+            println!("  Segment {}: {} warps", i, op.warps.len());
+        }
+
+        // Should have both warps chained
+        assert_eq!(nf.operations.len(), 1, "Should have 1 segment");
+        assert_eq!(nf.operations[0].warps.len(), 2, "Segment should have 2 chained warps");
+
+        // Generate and validate WGSL
+        let wgsl = nf.to_wgsl();
+        println!("Chained warps WGSL:\n{}", wgsl);
+
+        assert!(wgsl.contains("Bend warp"), "Should have Bend warp code");
+        assert!(wgsl.contains("ArcTo warp"), "Should have ArcTo warp code");
+
+        let validation_result = validate_wgsl(&wgsl);
+        if let Err(ref e) = validation_result {
+            eprintln!("Validation error: {}", e);
+        }
+        assert!(validation_result.is_ok(), "Chained warps should validate");
+    }
+
+    #[test]
+    fn test_seq_compose_seq() {
+        // Test Seq | Seq behavior
+        // Inner Seq plays twice with different modifiers
+        let inner_seq = VisualOp::Seq {
+            items: vec![
+                VisualOp::direction(
+                    Rational64::new(1, 1),
+                    Rational64::new(0, 1),
+                    Rational64::new(0, 1),
+                ).compose(VisualOp::lm(Rational64::new(1, 1))),
+            ],
+        };
+
+        let outer_seq = VisualOp::Seq {
+            items: vec![
+                VisualOp::vm(Rational64::new(1, 1)),
+                VisualOp::vm(Rational64::new(2, 1)),
+            ],
+        };
+
+        let composed = inner_seq.compose(outer_seq);
+
+        println!("=== Composed AST ===");
+        println!("{:#?}", composed);
+        println!("\n=== Generated WGSL ===");
+        let wgsl = composed.to_wgsl(0.0);
+        println!("{}", wgsl);
+
+        // The Seq should appear twice with different time ranges
+        // First iteration: time 0-1 with Vm 1
+        // Second iteration: time 1-2 with Vm 2
+        assert!(wgsl.contains("Segment 0"), "Should have segment 0");
+        assert!(wgsl.contains("Segment 1"), "Should have segment 1");
+    }
+}

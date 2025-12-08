@@ -267,13 +267,6 @@ pub fn process_wgsl_blocks_with_validation(composition: &str, defs: &mut Defs) -
     process_wgsl_blocks(composition, defs, false)
 }
 
-/// A comment with its line number (0-indexed)
-#[derive(Clone, Debug)]
-pub struct Comment {
-    pub line: usize,
-    pub text: String,
-}
-
 /// Result from parsing for formatting - includes source for span extraction
 #[derive(Clone, Debug)]
 pub struct FormatParseResult {
@@ -282,8 +275,6 @@ pub struct FormatParseResult {
     pub source: String,
     /// Processed source (WGSL replaced with @WGSL@N tokens) - spans match this
     pub processed_source: Option<String>,
-    /// Comments extracted during preprocessing (with their line numbers)
-    pub comments: Vec<Comment>,
 }
 
 /// Parse source code to raw AST without evaluating to NormalForm.
@@ -305,7 +296,7 @@ pub fn parse_for_format(
 ) -> Result<FormatParseResult, Error> {
     let mut defs: Defs = Default::default();
 
-    let (imports_needed, composition, comments) = handle_whitespace_and_imports(vec_string)?;
+    let (imports_needed, composition) = handle_whitespace_and_imports(vec_string)?;
 
     // For formatting, we skip imports and just parse the current file
     if !imports_needed.is_empty() {
@@ -334,7 +325,6 @@ pub fn parse_for_format(
                 source: composition,
                 // Also return processed source for span-accurate lookups
                 processed_source: Some(processed_composition),
-                comments,
             })
         }
         Err(error) => {
@@ -364,7 +354,7 @@ pub fn parse_file(
         Default::default()
     };
 
-    let (imports_needed, composition, _comments) = handle_whitespace_and_imports(vec_string)?;
+    let (imports_needed, composition) = handle_whitespace_and_imports(vec_string)?;
 
     // Process WGSL blocks - extract them and replace with IDs
     // This validates each WGSL block and fails fast on the first error
@@ -435,17 +425,17 @@ pub fn parse_file(
     }
 }
 
-fn handle_whitespace_and_imports(lines: Vec<String>) -> Result<(Vec<String>, String, Vec<Comment>), Error> {
+fn handle_whitespace_and_imports(lines: Vec<String>) -> Result<(Vec<String>, String), Error> {
     let mut composition = String::new();
     let mut imports_needed: Vec<String> = vec![];
-    let mut comments: Vec<Comment> = vec![];
-    for (line_num, line) in lines.into_iter().enumerate() {
+
+    for line in lines.into_iter() {
         let l = line;
         let copy_l = l.trim_start();
-        if copy_l.starts_with("--") {
-            comments.push(Comment { line: line_num, text: l.clone() });
-            composition.push_str("\n");
-        } else if is_import(copy_l.to_string()) {
+
+        // Only strip imports - pass everything else through (including comments)
+        // Comments will be handled by the formatter
+        if is_import(copy_l.to_string()) {
             imports_needed.push(copy_l.to_owned());
             composition.push_str("\n");
         } else {
@@ -454,7 +444,7 @@ fn handle_whitespace_and_imports(lines: Vec<String>) -> Result<(Vec<String>, Str
         }
     }
 
-    Ok((imports_needed, composition, comments))
+    Ok((imports_needed, composition))
 }
 
 pub fn handle_fit_length_recursively(terms: Vec<Term>) -> Vec<Term> {

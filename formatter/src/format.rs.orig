@@ -10,7 +10,7 @@ use weresocool_ast::{
     FunDef, ListOp, GenOp, Op, Term,
     operations::Defs,
 };
-use weresocool_parser::{Init, ParsedComposition};
+use weresocool_parser::{Comment, Init, ParsedComposition};
 
 /// Context for formatting that carries defs for lookups (colors, wgsl, etc.)
 struct FormatContext<'a> {
@@ -27,12 +27,28 @@ pub fn format_composition(parsed: &ParsedComposition, config: &FormatConfig) -> 
 }
 
 /// Format with access to original source for better preservation
-/// Comments are preserved through normalize_def_whitespace - no separate extraction needed
 pub fn format_composition_with_source(parsed: &ParsedComposition, original_source: &str, span_source: &str, config: &FormatConfig) -> String {
+    format_composition_with_source_and_comments(parsed, original_source, span_source, &[], config)
+}
+
+/// Format with access to original source and comments
+pub fn format_composition_with_source_and_comments(
+    parsed: &ParsedComposition,
+    original_source: &str,
+    span_source: &str,
+    comments: &[Comment],
+    config: &FormatConfig,
+) -> String {
     let arena = Arena::new();
     let doc = format_composition_doc(&arena, parsed, original_source, span_source, config);
     let mut output = String::new();
     doc.render_fmt(config.max_width, &mut output).unwrap();
+
+    // Re-insert comments at appropriate positions
+    if !comments.is_empty() {
+        output = insert_comments(&output, original_source, comments);
+    }
+
     output
 }
 
@@ -67,6 +83,8 @@ fn format_composition_doc<'a>(
             for (name, term) in scope.iter() {
                 // Try to use span-based source preservation first
                 // Use span_source for lookups (it matches the spans), but original_source for content
+                eprintln!("DEBUG: orig_src first 60 chars: {:?}", ctx.original_source.map(|s| &s[..std::cmp::min(60, s.len())]));
+                eprintln!("DEBUG: span_src first 60 chars: {:?}", ctx.span_source.map(|s| &s[..std::cmp::min(60, s.len())]));
                 if let (Some(orig_src), Some(span_src)) = (ctx.original_source, ctx.span_source) {
                     if let Some(span) = parsed.defs.spans.get_def(name) {
                         if span.end <= span_src.len() {
@@ -75,6 +93,8 @@ fn format_composition_doc<'a>(
                             // This works because definition names are the same in both sources
                             if let Some(orig_span) = find_def_in_source(orig_src, name) {
                                 let def_text = &orig_src[orig_span.0..orig_span.1];
+                                eprintln!("DEBUG: Extracting def '{}' from span {}..{}", name, orig_span.0, orig_span.1);
+                                eprintln!("DEBUG: def_text = {:?}", &def_text[..std::cmp::min(200, def_text.len())]);
                                 let normalized = normalize_def_whitespace(def_text);
                                 defs_docs.push(arena.text(normalized));
                                 continue;
@@ -410,6 +430,7 @@ fn find_def_in_source(source: &str, name: &str) -> Option<(usize, usize)> {
     // Find matching closing brace
     let mut depth = 1;
     let mut pos = brace_pos + 1;
+    eprintln!("DEBUG find_def: name={}, start={}, brace_pos={}", name, start, brace_pos);
     let bytes = source.as_bytes();
     let mut in_string = false;
 
@@ -431,6 +452,9 @@ fn find_def_in_source(source: &str, name: &str) -> Option<(usize, usize)> {
 
         pos += 1;
     }
+
+    eprintln!("DEBUG find_def: final pos={}, depth={}", pos, depth);
+    eprintln!("DEBUG find_def: context around pos: {:?}", &source[pos.saturating_sub(20)..std::cmp::min(pos+20, source.len())]);
 
     if depth == 0 {
         Some((start, pos))
@@ -563,7 +587,7 @@ fn format_fundef<'a>(arena: &'a Arena<'a>, ctx: &FormatContext, fun: &FunDef) ->
             .append(arena.text("("))
             .append(args)
             .append(arena.text(") = {"))
-            .append(arena.line().append(body).nest(2).group())
+            .append(arena.line().append(body).nest(INDENT).group())
             .append(arena.line())
             .append(arena.text("}"))
             .group()
@@ -667,7 +691,7 @@ fn format_op<'a>(arena: &'a Arena<'a>, ctx: &FormatContext, op: &Op) -> DocBuild
                     .append(arena.text(count.to_string()))
                     .append(arena.line())
                     .append(arena.text("}"))
-                    .nest(2)
+                    .nest(INDENT)
                     .group()
             } else {
                 // Multiple operations: format as pipe chain ending with Repeat N
@@ -737,17 +761,19 @@ fn format_op<'a>(arena: &'a Arena<'a>, ctx: &FormatContext, op: &Op) -> DocBuild
         // WGSL - lookup the ORIGINAL source from defs (preserves DSL syntax like Ym 2/3)
         Op::WGSL(id) => {
             if let Some(code) = ctx.defs.wgsl.get_original(&(*id as u8)) {
-                // Normalize WGSL code: trim each line
+                // Collect non-empty lines, trimmed
                 let lines: Vec<String> = code.lines()
                     .map(|l| l.trim().to_string())
                     .filter(|l| !l.is_empty())
                     .collect();
 
-                if lines.len() == 1 {
+                if lines.is_empty() {
+                    arena.text("wgsl {}")
+                } else if lines.len() == 1 {
                     // Single line - keep compact
                     arena.text(format!("wgsl {{ {} }}", lines[0]))
                 } else {
-                    // Multiple lines - use pretty.rs for proper nesting
+                    // All lines get same base indentation (4 spaces)
                     let line_docs: Vec<_> = lines.iter()
                         .map(|l| arena.text(l.clone()))
                         .collect();
@@ -755,8 +781,7 @@ fn format_op<'a>(arena: &'a Arena<'a>, ctx: &FormatContext, op: &Op) -> DocBuild
 
                     arena.text("wgsl {")
                         .append(arena.hardline())
-                        .append(inner)
-                        .nest(4)
+                        .append(inner.nest(INDENT))
                         .append(arena.hardline())
                         .append(arena.text("}"))
                 }
@@ -948,7 +973,7 @@ fn format_overtone_overlay<'a>(
 
     arena
         .text("O [")
-        .append(arena.line_().append(inner).nest(2).group())
+        .append(arena.line_().append(inner).nest(INDENT).group())
         .append(arena.line_())
         .append(arena.text("]"))
         .group()
@@ -1011,7 +1036,7 @@ fn format_term_list<'a>(arena: &'a Arena<'a>, ctx: &FormatContext, items: &[Term
 
         arena
             .text("[")
-            .append(arena.hardline().append(inner).nest(2))
+            .append(arena.hardline().append(inner).nest(INDENT))
             .append(arena.hardline())
             .append(arena.text("]"))
     } else {
@@ -1021,7 +1046,7 @@ fn format_term_list<'a>(arena: &'a Arena<'a>, ctx: &FormatContext, items: &[Term
 
         arena
             .text("[")
-            .append(arena.line_().append(inner).nest(2).group())
+            .append(arena.line_().append(inner).nest(INDENT).group())
             .append(arena.line_())
             .append(arena.text("]"))
             .group()
@@ -1075,7 +1100,7 @@ fn format_compose<'a>(arena: &'a Arena<'a>, ctx: &FormatContext, operations: &[T
 
     arena
         .text("{")
-        .append(arena.line().append(inner).nest(2).group())
+        .append(arena.line().append(inner).nest(INDENT).group())
         .append(arena.line())
         .append(arena.text("}"))
         .group()
@@ -1199,3 +1224,131 @@ fn format_color_value<'a>(arena: &'a Arena<'a>, color: &ColorValue) -> DocBuilde
     }
 }
 
+/// Insert comments back into formatted output.
+/// Comments are mapped to their original line positions.
+fn insert_comments(formatted: &str, original_source: &str, comments: &[Comment]) -> String {
+    if comments.is_empty() {
+        return formatted.to_string();
+    }
+
+    // Build a map of original line number -> what the line starts with (for matching)
+    let original_lines: Vec<&str> = original_source.lines().collect();
+    let formatted_lines: Vec<&str> = formatted.lines().collect();
+
+    // For each comment, find where to insert it in the formatted output
+    // Strategy: look at what non-comment line follows the comment in the original,
+    // then find that line (or similar) in the formatted output
+    let mut result_lines: Vec<String> = Vec::new();
+    let mut formatted_idx = 0;
+    let mut comment_idx = 0;
+
+    // Sort comments by line number
+    let mut sorted_comments: Vec<&Comment> = comments.iter().collect();
+    sorted_comments.sort_by_key(|c| c.line);
+
+    while formatted_idx < formatted_lines.len() || comment_idx < sorted_comments.len() {
+        // Check if we have a comment that should be inserted here
+        if comment_idx < sorted_comments.len() {
+            let comment = sorted_comments[comment_idx];
+
+            // Find the next non-comment, non-blank line after this comment in the original
+            let mut next_content_line = comment.line + 1;
+            while next_content_line < original_lines.len() {
+                let line = original_lines[next_content_line].trim();
+                if !line.is_empty() && !line.starts_with("--") {
+                    break;
+                }
+                next_content_line += 1;
+            }
+
+            // Get the content that should follow the comment
+            let following_content = if next_content_line < original_lines.len() {
+                // Get first significant token from the line
+                extract_first_token(original_lines[next_content_line])
+            } else {
+                None
+            };
+
+            // Check if current formatted line matches what should follow the comment
+            let should_insert = if let Some(token) = following_content {
+                formatted_idx < formatted_lines.len() &&
+                    extract_first_token(formatted_lines[formatted_idx]) == Some(token)
+            } else {
+                // Comment is at the end of file
+                formatted_idx >= formatted_lines.len()
+            };
+
+            if should_insert {
+                // Get indentation - if the next line is a closing bracket, use previous line's indent
+                let indent = if formatted_idx < formatted_lines.len() {
+                    let next_line = formatted_lines[formatted_idx].trim();
+                    if next_line.starts_with(']') || next_line.starts_with('}') {
+                        // Comment before closing bracket - use indent of previous content line
+                        if !result_lines.is_empty() {
+                            get_leading_whitespace(&result_lines[result_lines.len() - 1])
+                        } else {
+                            get_leading_whitespace(formatted_lines[formatted_idx])
+                        }
+                    } else {
+                        get_leading_whitespace(formatted_lines[formatted_idx])
+                    }
+                } else if !result_lines.is_empty() {
+                    // Use indentation from previous line
+                    get_leading_whitespace(&result_lines[result_lines.len() - 1])
+                } else {
+                    ""
+                };
+                // Re-indent the comment to match
+                let comment_text = comment.text.trim_start();
+                result_lines.push(format!("{}{}", indent, comment_text));
+                comment_idx += 1;
+                continue;
+            }
+        }
+
+        // Add the next formatted line
+        if formatted_idx < formatted_lines.len() {
+            result_lines.push(formatted_lines[formatted_idx].to_string());
+            formatted_idx += 1;
+        } else {
+            break;
+        }
+    }
+
+    // Add any remaining comments at the end
+    while comment_idx < sorted_comments.len() {
+        result_lines.push(sorted_comments[comment_idx].text.clone());
+        comment_idx += 1;
+    }
+
+    result_lines.join("\n")
+}
+
+/// Get the leading whitespace from a line
+fn get_leading_whitespace(line: &str) -> &str {
+    let trimmed = line.trim_start();
+    &line[..line.len() - trimmed.len()]
+}
+
+/// Extract the first significant token from a line for matching purposes
+fn extract_first_token(line: &str) -> Option<&str> {
+    let trimmed = line.trim();
+    if trimmed.is_empty() {
+        return None;
+    }
+
+    // Find the first word/identifier
+    let end = trimmed.find(|c: char| c.is_whitespace() || c == '=' || c == '(' || c == '{')
+        .unwrap_or(trimmed.len());
+
+    let token = &trimmed[..end];
+    if token.is_empty() {
+        // Handle special cases like "{ f:" for init block
+        if trimmed.starts_with('{') {
+            return Some("{");
+        }
+        None
+    } else {
+        Some(token)
+    }
+}

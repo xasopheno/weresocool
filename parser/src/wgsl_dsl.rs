@@ -89,8 +89,9 @@ pub fn compile_dsl_to_wgsl(src: &str) -> Result<String, DslError> {
         if trimmed.is_empty() {
             continue;
         }
-        if trimmed.starts_with("//") {
-            result.push(trimmed.to_string());
+        // Preserve both // and -- style comments
+        if trimmed.starts_with("//") || trimmed.starts_with("--") {
+            result.push(format!("    {}", trimmed));
             continue;
         }
 
@@ -124,47 +125,74 @@ pub fn compile_dsl_to_wgsl(src: &str) -> Result<String, DslError> {
 
 /// Split source by semicolons, tracking which line each statement starts on.
 /// Handles multi-line statements by collapsing them.
+/// Preserves comment lines (-- or //) as separate statements at top level.
+/// Skips comment lines inside brackets (they're preserved in the original source).
 /// Returns Vec of (statement, start_line_number)
 fn split_by_semicolons(src: &str) -> Vec<(String, usize)> {
     let mut statements = Vec::new();
     let mut current_stmt = String::new();
     let mut bracket_depth: i32 = 0;
-    let mut stmt_start_line = 1;
-    let mut current_line = 1;
+    // Start at 0 so line numbers are offsets from block start (added to block_start_line in caller)
+    let mut stmt_start_line = 0;
+    let mut current_line = 0;
 
-    for ch in src.chars() {
-        match ch {
-            '\n' => {
-                current_line += 1;
-                // Replace newlines with spaces to collapse multi-line statements
-                if !current_stmt.trim().is_empty() {
-                    current_stmt.push(' ');
-                }
-            }
-            '[' => {
-                bracket_depth += 1;
-                current_stmt.push(ch);
-            }
-            ']' => {
-                bracket_depth = bracket_depth.saturating_sub(1);
-                current_stmt.push(ch);
-            }
-            ';' if bracket_depth == 0 => {
-                // End of statement (not inside brackets)
+    for line in src.lines() {
+        let trimmed_line = line.trim();
+
+        // Check if this line is a comment
+        let is_comment = trimmed_line.starts_with("--") || trimmed_line.starts_with("//");
+
+        if is_comment {
+            if bracket_depth == 0 {
+                // Top-level comment: emit any pending statement, then emit comment
                 let trimmed = current_stmt.trim();
                 if !trimmed.is_empty() {
                     statements.push((trimmed.to_string(), stmt_start_line));
+                    current_stmt.clear();
                 }
-                current_stmt.clear();
-                stmt_start_line = current_line;
+                // Emit the comment as its own statement
+                statements.push((trimmed_line.to_string(), current_line));
+                stmt_start_line = current_line + 1;
             }
-            _ => {
-                if current_stmt.is_empty() && !ch.is_whitespace() {
+            // Comments inside brackets are skipped (they're in the original source for formatting)
+            current_line += 1;
+            continue;
+        }
+
+        // Process the line character by character
+        for ch in line.chars() {
+            match ch {
+                '[' => {
+                    bracket_depth += 1;
+                    current_stmt.push(ch);
+                }
+                ']' => {
+                    bracket_depth = bracket_depth.saturating_sub(1);
+                    current_stmt.push(ch);
+                }
+                ';' if bracket_depth == 0 => {
+                    // End of statement (not inside brackets)
+                    let trimmed = current_stmt.trim();
+                    if !trimmed.is_empty() {
+                        statements.push((trimmed.to_string(), stmt_start_line));
+                    }
+                    current_stmt.clear();
                     stmt_start_line = current_line;
                 }
-                current_stmt.push(ch);
+                _ => {
+                    if current_stmt.is_empty() && !ch.is_whitespace() {
+                        stmt_start_line = current_line;
+                    }
+                    current_stmt.push(ch);
+                }
             }
         }
+
+        // Add space between lines (for multi-line statements)
+        if !current_stmt.trim().is_empty() {
+            current_stmt.push(' ');
+        }
+        current_line += 1;
     }
 
     // Don't forget the last statement (if no trailing semicolon)
@@ -187,33 +215,75 @@ fn extract_error_column<T: std::fmt::Debug>(e: &lalrpop_util::ParseError<usize, 
     }
 }
 
+/// Simplify LALRPOP expected token names to human-readable form
+fn simplify_expected_tokens(expected: &[String]) -> String {
+    let simplified: Vec<&str> = expected.iter()
+        .filter_map(|s| {
+            match s.as_str() {
+                r#""|""# => Some("|"),
+                r#"",""# => Some(","),
+                r#"";""# => Some(";"),
+                r#""]""# => Some("]"),
+                r#""[""# => Some("["),
+                r#""(""# => Some("("),
+                r#"")""# => Some(")"),
+                r#""/""# => Some("/"),
+                r#""Seq""# => Some("Seq"),
+                r#""Direction""# => Some("Direction"),
+                r#""Bend""# => Some("Bend"),
+                r#""ArcTo""# => Some("ArcTo"),
+                r#""Alpha""# => Some("Alpha"),
+                r#""Xm""# => Some("Xm"),
+                r#""Xa""# => Some("Xa"),
+                r#""Ym""# => Some("Ym"),
+                r#""Ya""# => Some("Ya"),
+                r#""Zm""# => Some("Zm"),
+                r#""Za""# => Some("Za"),
+                r#""Sm""# => Some("Sm"),
+                r#""Sa""# => Some("Sa"),
+                r#""Vm""# => Some("Vm"),
+                r#""Va""# => Some("Va"),
+                r#""Lm""# => Some("Lm"),
+                r#""Am""# => Some("Am"),
+                s if s.contains("[0-9]") => Some("<number>"),
+                _ => None
+            }
+        })
+        .collect();
+
+    if simplified.is_empty() {
+        "valid token".to_string()
+    } else {
+        simplified.join(", ")
+    }
+}
+
 /// Format LALRPOP error into a human-readable message
 fn format_lalrpop_error<T: std::fmt::Debug>(e: &lalrpop_util::ParseError<usize, T, &str>, input: &str) -> String {
     match e {
         lalrpop_util::ParseError::InvalidToken { location } => {
-            let context = &input[*location..].chars().take(10).collect::<String>();
+            let context = &input[*location..].chars().take(20).collect::<String>();
             format!("Invalid token at '{}...'", context)
         }
         lalrpop_util::ParseError::UnrecognizedEof { expected, .. } => {
-            // Simplify expected tokens for DSL
-            if expected.iter().any(|s| s.contains("[0-9]")) {
-                "Unexpected end of input, expected a value (number, rational like 2/3, or variable)".to_string()
-            } else {
-                "Unexpected end of input".to_string()
-            }
+            let expected_str = simplify_expected_tokens(expected);
+            format!("Unexpected end of input\nExpected: {}", expected_str)
         }
         lalrpop_util::ParseError::UnrecognizedToken { token: (loc, _, _), expected, .. } => {
-            // Show the actual character(s) at the error location
-            let bad_char = &input[*loc..].chars().next().map(|c| c.to_string()).unwrap_or_default();
-            if expected.iter().any(|s| s.contains("[0-9]")) {
-                format!("Unexpected '{}', expected a value (number, rational like 2/3, or variable)", bad_char)
-            } else {
-                format!("Unexpected token '{}'", bad_char)
-            }
+            // Show the actual token at the error location (first word or character)
+            let bad_token: String = input[*loc..].chars()
+                .take_while(|c| !c.is_whitespace() && *c != ',' && *c != ';' && *c != ')' && *c != ']')
+                .take(20)
+                .collect();
+            let expected_str = simplify_expected_tokens(expected);
+            format!("Unexpected '{}'\nExpected: {}", bad_token, expected_str)
         }
         lalrpop_util::ParseError::ExtraToken { token: (loc, _, _) } => {
-            let bad_char = &input[*loc..].chars().next().map(|c| c.to_string()).unwrap_or_default();
-            format!("Extra token '{}'", bad_char)
+            let bad_token: String = input[*loc..].chars()
+                .take_while(|c| !c.is_whitespace())
+                .take(20)
+                .collect();
+            format!("Extra token '{}' after valid expression", bad_token)
         }
         lalrpop_util::ParseError::User { error } => {
             format!("Parse error: {}", error)
@@ -234,7 +304,7 @@ fn starts_with_dsl_command(line: &str) -> bool {
         }
     }
     // Longer commands - just check prefix
-    if line.starts_with("Direction") || line.starts_with("Seq") || line.starts_with("Bend") || line.starts_with("Alpha") {
+    if line.starts_with("Direction") || line.starts_with("Seq") || line.starts_with("Bend") || line.starts_with("ArcTo") || line.starts_with("Alpha") {
         return true;
     }
     false
@@ -291,6 +361,37 @@ mod tests {
     }
 
     #[test]
+    fn test_double_dash_comments_preserved() {
+        // -- style comments should also be preserved
+        let input = "Xm 2;\n-- this is a comment\nYm 3";
+        let output = compile_dsl_to_wgsl(input).unwrap();
+        println!("Output:\n{}", output);
+        assert!(output.contains("-- this is a comment"), "-- comment should be preserved");
+        assert!(output.contains("x = x * 2"));
+        assert!(output.contains("y = y * 3"));
+    }
+
+    #[test]
+    fn test_comment_in_seq() {
+        // Comments inside Seq are skipped in compiled output (they're preserved in original source)
+        // The formatter uses the original source, so comments are preserved for display
+        let input = r#"
+            Seq [
+                Direction(1, 0, 0) | Lm 8;
+                -- commented out line
+                x = sin(x);
+            ]
+        "#;
+        let output = compile_dsl_to_wgsl(input).unwrap();
+        println!("Output:\n{}", output);
+        // Comment is NOT in compiled output (it's stripped for runtime)
+        // But the formatter uses the original source which has the comment
+        assert!(output.contains("x = sin(x)"), "Code after comment should be preserved");
+        assert!(output.contains("Segment 0"), "Seq should have segment 0");
+        assert!(output.contains("Segment 1"), "Seq should have segment 1 (raw WGSL)");
+    }
+
+    #[test]
     fn test_rational() {
         let input = "Ym 2/3";
         let output = compile_dsl_to_wgsl(input).unwrap();
@@ -317,7 +418,7 @@ mod tests {
 
     #[test]
     fn test_seq() {
-        let input = "Seq [ Direction(0, -1, 0) | Lm 1, Direction(1, 0, 0) | Lm 1 ]";
+        let input = "Seq [ Direction(0, -1, 0) | Lm 1; Direction(1, 0, 0) | Lm 1 ]";
         let output = compile_dsl_to_wgsl(input).unwrap();
         // Seq now uses accumulating segments, not if/else
         assert!(output.contains("// Segment 0"));
@@ -329,7 +430,7 @@ mod tests {
         // Test multi-line Seq with semicolon terminator
         let input = r#"
             Seq [
-                Vm 1,
+                Vm 1;
                 Vm 2
             ];
         "#;
@@ -351,7 +452,8 @@ mod tests {
     fn test_error_has_line_info() {
         let input = "Xm 2;\nYm;\nZm 3";
         let err = compile_dsl_to_wgsl(input).unwrap_err();
-        assert_eq!(err.line, 2);  // Error on line 2
+        // Line numbers are 0-based offsets from block start (added to block_start_line in caller)
+        assert_eq!(err.line, 1);  // Error on second line (index 1)
     }
 
     #[test]
@@ -442,5 +544,279 @@ mod tests {
         assert!(output.contains("// Segment 0"));
         assert!(output.contains("// Segment 1"));
         assert!(output.contains("alpha = 0"));
+    }
+
+    #[test]
+    fn test_arcto_basic() {
+        // ArcTo creates a curved path that changes end direction
+        let input = "Direction(1, 0, 0) | ArcTo(0, 1, 0, 1.0)";
+        let output = compile_dsl_to_wgsl(input).unwrap();
+        // Should contain ArcTo curve code
+        assert!(output.contains("ArcTo"), "Output should mention ArcTo");
+        assert!(output.contains("target_dir"), "Output should have target direction");
+        assert!(output.contains("mix"), "Output should use mix for direction lerp");
+        assert!(output.contains("dT"), "Output should have end direction dT");
+    }
+
+    #[test]
+    fn test_arcto_in_seq() {
+        // ArcTo works inside Seq
+        let input = r#"
+            Seq [
+                Direction(1, 0, 0) | ArcTo(0, 1, 0, 0.5) | Lm 1;
+                Direction(0, 1, 0) | Lm 1;
+            ]
+        "#;
+        let output = compile_dsl_to_wgsl(input).unwrap();
+        assert!(output.contains("// Segment 0"));
+        assert!(output.contains("// Segment 1"));
+        assert!(output.contains("target_dir"));
+    }
+
+    #[test]
+    fn test_seq_compose_seq_real_case() {
+        // Test the user's real case: Seq | Seq distribution
+        // Simplified: Just Seq | Seq
+        let input = r#"
+            Seq [
+                Direction(1, 0, 0) | Lm 1;
+                Direction(0, 1, 0) | Lm 1;
+            ]
+            | Seq [
+                Vm 1;
+                Vm 2;
+            ]
+        "#;
+        let output = compile_dsl_to_wgsl(input).unwrap();
+        println!("=== Generated WGSL ===\n{}", output);
+        // Seq | Seq distributes left into right:
+        // Seq[A, B] | Seq[C, D] → Seq[Seq[A,B] | C, Seq[A,B] | D]
+        // Then Seq[A,B] | C distributes C into each:
+        // Seq[A,B] | Vm 1 → Seq[A | Vm 1, B | Vm 1]
+        // So final should be Seq[Seq[A|Vm1, B|Vm1], Seq[A|Vm2, B|Vm2]]
+        // The outer Seq generates Segment 0 and Segment 1
+        // Each segment contains a nested Seq that generates inline code
+        // The result is 4 direction movements total:
+        // - Segment 0: Direction(1,0,0) with Vm1, Direction(0,1,0) with Vm1
+        // - Segment 1: Direction(1,0,0) with Vm2, Direction(0,1,0) with Vm2
+
+        // Check for velocity multipliers - should see Vm 1 and Vm 2 each applied
+        assert!(output.contains("velocity = velocity * 1.0"), "Should apply Vm 1");
+        assert!(output.contains("velocity = velocity * 2.0"), "Should apply Vm 2");
+
+        // Should have both directions appearing twice (once per iteration)
+        let dir_1_0_0_count = output.matches("vec3<f32>(1, 0, 0)").count();
+        let dir_0_1_0_count = output.matches("vec3<f32>(0, 1, 0)").count();
+        println!("Direction (1,0,0) count: {}, Direction (0,1,0) count: {}", dir_1_0_0_count, dir_0_1_0_count);
+
+        // Each direction should appear at least twice (once in each iteration)
+        assert!(dir_1_0_0_count >= 2, "Direction (1,0,0) should appear twice");
+        assert!(dir_0_1_0_count >= 2, "Direction (0,1,0) should appear twice");
+    }
+
+    #[test]
+    fn test_simple_pipe_seq_with_arcto() {
+        // Test case that was failing: Simple | Seq with ArcTo
+        let input = r#"
+            Ym 1/2
+            | Sm 8
+            | Vm 8
+            | Xa -1
+            | Seq [
+                Direction(0, 0, -1) | Lm 1
+                | ArcTo (2, 2, -2/5, 1);
+                Am 0;
+            ]
+        "#;
+        let result = compile_dsl_to_wgsl(input);
+        match &result {
+            Ok(output) => {
+                println!("=== Generated WGSL ===\n{}", output);
+                // Validate that the WGSL is valid
+                let validation = weresocool_ast::wgsl::validate_wgsl(output);
+                if let Err(e) = &validation {
+                    println!("Validation error: {}", e);
+                }
+                assert!(validation.is_ok(), "Generated WGSL should be valid");
+            }
+            Err(e) => {
+                println!("Parse error: {:?}", e);
+                panic!("Should parse successfully");
+            }
+        }
+    }
+
+    #[test]
+    fn test_seq_with_raw_wgsl() {
+        // Raw WGSL inside Seq should work
+        let input = r#"
+            Seq [
+                Direction(1, 0, 0) | Lm 1;
+                x = sin(x * time * 2);
+            ]
+        "#;
+        let result = compile_dsl_to_wgsl(input);
+        match &result {
+            Ok(output) => {
+                println!("=== Generated WGSL ===\n{}", output);
+                assert!(output.contains("// Segment 0"));
+                assert!(output.contains("x = sin(x * time * 2)"));
+                // Raw WGSL should be time-gated
+                assert!(output.contains("if (time >= seg_start) {"));
+            }
+            Err(e) => {
+                println!("Parse error: {:?}", e);
+                panic!("Should parse successfully");
+            }
+        }
+    }
+
+    #[test]
+    fn test_seq_with_raw_wgsl_user_case() {
+        // User's exact case: Direction with Bend, then raw WGSL
+        // The raw WGSL should only run after Lm 8 (at time >= 8)
+        let input = r#"
+            Seq [
+                Direction (1, 0, 0) | Bend (0, -0.1, -0.1, 1) | Lm 8;
+                x = sin(x * time * 2);
+            ]
+        "#;
+        let result = compile_dsl_to_wgsl(input);
+        match &result {
+            Ok(output) => {
+                println!("=== Generated WGSL (user case) ===\n{}", output);
+                // Segment 0 should have duration 8
+                assert!(output.contains("let seg_end = 8.000000"), "First segment should end at 8");
+                // Segment 1 (raw WGSL) should start at 8
+                assert!(output.contains("let seg_start = 8.000000"), "Second segment should start at 8");
+                // Raw WGSL should be time-gated
+                assert!(output.contains("if (time >= seg_start) {\n                x = sin(x * time * 2);"),
+                    "Raw WGSL should be time-gated");
+            }
+            Err(e) => {
+                println!("Parse error: {:?}", e);
+                panic!("Should parse successfully");
+            }
+        }
+    }
+
+    #[test]
+    fn test_nested_seq_seq_complex() {
+        // Test thing3's wgsl block: Seq | Seq with multiple segments
+        let input = r#"
+            Lm 1/5
+            | Sm 9
+            | Vm 1
+            | Za 1
+            | Seq [
+                Direction(1, 0, 0)
+                | Lm 1
+                | Bend (0, 1, 0, 1);
+                Direction(1, 0, 0)
+                | Lm 1
+                | Bend (0, -1, 0, 1);
+                Direction(0, 1, 0)
+                | Lm 2;
+                Direction(1, 0, 0)
+                | Lm 2;
+                Am 0.0;
+            ]
+            | Seq [
+                Vm 1;
+                Vm 2 | Xa 1;
+            ]
+        "#;
+        let result = compile_dsl_to_wgsl(input);
+        match &result {
+            Ok(output) => {
+                println!("=== Generated WGSL ===\n{}", output);
+                // Validate that the WGSL is valid
+                let validation = weresocool_ast::wgsl::validate_wgsl(output);
+                if let Err(e) = &validation {
+                    println!("Validation error: {}", e);
+                }
+                assert!(validation.is_ok(), "Generated WGSL should be valid");
+            }
+            Err(e) => {
+                println!("Parse error: {:?}", e);
+                panic!("Should parse successfully");
+            }
+        }
+    }
+
+    #[test]
+    fn test_raw_wgsl_piped_with_direction_and_bend() {
+        // This was failing: raw WGSL (y = y + sin(time * 2)) piped with Direction and Bend
+        let input = r#"
+            Seq [
+                Direction (1, 0, 0)
+                | y = y + sin(time * 2)
+                | Bend (0, -0.1, -0.1, 1) | Lm 2;
+                Direction (1, 0, 0)
+                | y = y + sin(time * 2);
+            ]
+        "#;
+        let result = compile_dsl_to_wgsl(input);
+        match &result {
+            Ok(output) => {
+                println!("=== Generated WGSL ===\n{}", output);
+                assert!(output.contains("y = y + sin(time * 2)"), "Raw WGSL should be included");
+                // Validate that the WGSL is valid
+                let validation = weresocool_ast::wgsl::validate_wgsl(output);
+                if let Err(e) = &validation {
+                    println!("Validation error: {}", e);
+                }
+                assert!(validation.is_ok(), "Generated WGSL should be valid");
+            }
+            Err(e) => {
+                println!("Parse error: {:?}", e);
+                panic!("Should parse successfully");
+            }
+        }
+    }
+
+    #[test]
+    fn test_different_raw_wgsl_per_seq_segment() {
+        // Each segment should have its own raw WGSL - segment 1 should NOT have sin
+        let input = r#"
+            Seq [
+                Direction (1, 0, 0)
+                | y = y + sin(time * 2)
+                | Bend (0, -0.1, -0.1, 1) | Lm 2;
+                Direction (1, 0, 0)
+                | y = y * 2;
+            ]
+        "#;
+        let result = compile_dsl_to_wgsl(input);
+        match &result {
+            Ok(output) => {
+                println!("=== Generated WGSL ===\n{}", output);
+
+                // Should have sin in segment 0
+                assert!(output.contains("y = y + sin(time * 2)"), "Segment 0 should have sin");
+                // Should have y * 2 in segment 1
+                assert!(output.contains("y = y * 2"), "Segment 1 should have y * 2");
+
+                // Count occurrences - sin should appear only in segment 0
+                let sin_count = output.matches("y = y + sin(time * 2)").count();
+                let mult_count = output.matches("y = y * 2").count();
+                println!("sin count: {}, mult count: {}", sin_count, mult_count);
+
+                // Each should appear exactly once (in their respective segments)
+                assert_eq!(sin_count, 1, "sin should appear exactly once (in segment 0)");
+                assert_eq!(mult_count, 1, "y * 2 should appear exactly once (in segment 1)");
+
+                // Validate that the WGSL is valid
+                let validation = weresocool_ast::wgsl::validate_wgsl(output);
+                if let Err(e) = &validation {
+                    println!("Validation error: {}", e);
+                }
+                assert!(validation.is_ok(), "Generated WGSL should be valid");
+            }
+            Err(e) => {
+                println!("Parse error: {:?}", e);
+                panic!("Should parse successfully");
+            }
+        }
     }
 }
