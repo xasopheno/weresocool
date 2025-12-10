@@ -1,4 +1,4 @@
-use crate::{color::ColorMap, NameSet, OscType, Term, ASR, Distortion, wgsl::WgslMap, rand_ctx::RandCtx};
+use crate::{color::{ColorMap, ColorDistribution}, NameSet, OscType, Term, ASR, Distortion, wgsl::WgslMap, rand_ctx::RandCtx};
 use num_rational::{Ratio, Rational64};
 use scop::Defs as ScopDefs;
 use std::{
@@ -178,6 +178,8 @@ pub struct PointOp {
     pub midi: Vec<u8>,
     /// Color grading adjustments
     pub color_grading: ColorGrading,
+    /// Color distribution (gradient direction + randomness mix)
+    pub color_distribution: ColorDistribution,
 }
 
 impl Default for PointOp {
@@ -204,6 +206,7 @@ impl Default for PointOp {
             wgsl: vec![],
             midi: vec![],
             color_grading: ColorGrading::default(),
+            color_distribution: ColorDistribution::default(),
         }
     }
 }
@@ -381,6 +384,11 @@ impl Mul<PointOp> for PointOp {
             wgsl: self.wgsl.iter().chain(&other.wgsl).map(|c| c.to_owned()).collect(),
             midi: self.midi.iter().chain(&other.midi).cloned().collect(),
             color_grading: self.color_grading * other.color_grading,
+            color_distribution: if other.color_distribution.gradient.is_some() {
+                other.color_distribution
+            } else {
+                self.color_distribution.clone()
+            },
         }
     }
 }
@@ -446,6 +454,11 @@ impl<'a> Mul<&'a PointOp> for &PointOp {
                 .collect(),
             midi: self.midi.iter().chain(&other.midi).cloned().collect(),
             color_grading: self.color_grading.clone() * other.color_grading.clone(),
+            color_distribution: if other.color_distribution.gradient.is_some() {
+                other.color_distribution.clone()
+            } else {
+                self.color_distribution.clone()
+            },
         }
     }
 }
@@ -509,6 +522,11 @@ impl MulAssign for PointOp {
                 .collect(),
             midi: self.midi.iter().chain(&other.midi).cloned().collect(),
             color_grading: self.color_grading.clone() * other.color_grading,
+            color_distribution: if other.color_distribution.gradient.is_some() {
+                other.color_distribution
+            } else {
+                self.color_distribution.clone()
+            },
         }
     }
 }
@@ -582,6 +600,11 @@ impl PointOp {
                 .collect(),
             midi: self.midi.iter().chain(&other.midi).cloned().collect(),
             color_grading: self.color_grading.clone() * other.color_grading,
+            color_distribution: if other.color_distribution.gradient.is_some() {
+                other.color_distribution
+            } else {
+                self.color_distribution.clone()
+            },
         }
     }
 

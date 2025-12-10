@@ -45,13 +45,13 @@ impl DslError {
         }
 
         // Show context with colors: cyan before error, red from error
-        println!(
+        eprintln!(
             "{}{}",
             &original_source[feed_start..error_pos].cyan(),
             &original_source[error_pos..feed_end].red(),
         );
 
-        println!(
+        eprintln!(
             "
             {}
             DSL error at line {}
@@ -159,8 +159,17 @@ fn split_by_semicolons(src: &str) -> Vec<(String, usize)> {
             continue;
         }
 
+        // Strip trailing comments from the line (-- or //)
+        let line_without_comment = if let Some(pos) = line.find("--") {
+            &line[..pos]
+        } else if let Some(pos) = line.find("//") {
+            &line[..pos]
+        } else {
+            line
+        };
+
         // Process the line character by character
-        for ch in line.chars() {
+        for ch in line_without_comment.chars() {
             match ch {
                 '[' => {
                     bracket_depth += 1;
@@ -372,6 +381,24 @@ mod tests {
     }
 
     #[test]
+    fn test_trailing_comment_stripped() {
+        // Trailing -- comments should be stripped from code lines
+        let input = r#"
+            Seq [
+                Direction(1, 0, 0) | Lm 1;
+                Direction(0, 1, 0) | Lm 1;
+            ] -- this is a trailing comment
+        "#;
+        let result = compile_dsl_to_wgsl(input);
+        assert!(result.is_ok(), "Trailing comment should not cause parse error: {:?}", result.err());
+        let output = result.unwrap();
+        println!("Output:\n{}", output);
+        // Should have 2 segments
+        assert!(output.contains("// Segment 0"));
+        assert!(output.contains("// Segment 1"));
+    }
+
+    #[test]
     fn test_comment_in_seq() {
         // Comments inside Seq are skipped in compiled output (they're preserved in original source)
         // The formatter uses the original source, so comments are preserved for display
@@ -575,8 +602,9 @@ mod tests {
 
     #[test]
     fn test_seq_compose_seq_real_case() {
-        // Test the user's real case: Seq | Seq distribution
-        // Simplified: Just Seq | Seq
+        // Test Seq | Seq Cartesian product
+        // Seq [A, B] | Seq [C, D] → Seq [A|C, B|C, A|D, B|D]
+        // Right-side items iterate first, then left items within each
         let input = r#"
             Seq [
                 Direction(1, 0, 0) | Lm 1;
@@ -589,29 +617,31 @@ mod tests {
         "#;
         let output = compile_dsl_to_wgsl(input).unwrap();
         println!("=== Generated WGSL ===\n{}", output);
-        // Seq | Seq distributes left into right:
-        // Seq[A, B] | Seq[C, D] → Seq[Seq[A,B] | C, Seq[A,B] | D]
-        // Then Seq[A,B] | C distributes C into each:
-        // Seq[A,B] | Vm 1 → Seq[A | Vm 1, B | Vm 1]
-        // So final should be Seq[Seq[A|Vm1, B|Vm1], Seq[A|Vm2, B|Vm2]]
-        // The outer Seq generates Segment 0 and Segment 1
-        // Each segment contains a nested Seq that generates inline code
-        // The result is 4 direction movements total:
-        // - Segment 0: Direction(1,0,0) with Vm1, Direction(0,1,0) with Vm1
-        // - Segment 1: Direction(1,0,0) with Vm2, Direction(0,1,0) with Vm2
 
-        // Check for velocity multipliers - should see Vm 1 and Vm 2 each applied
-        assert!(output.contains("velocity = velocity * 1.0"), "Should apply Vm 1");
-        assert!(output.contains("velocity = velocity * 2.0"), "Should apply Vm 2");
+        // Cartesian product: 2 items × 2 items = 4 segments
+        // Segment 0: Direction(1,0,0) | Vm 1
+        // Segment 1: Direction(0,1,0) | Vm 1
+        // Segment 2: Direction(1,0,0) | Vm 2
+        // Segment 3: Direction(0,1,0) | Vm 2
 
-        // Should have both directions appearing twice (once per iteration)
-        let dir_1_0_0_count = output.matches("vec3<f32>(1, 0, 0)").count();
-        let dir_0_1_0_count = output.matches("vec3<f32>(0, 1, 0)").count();
+        // Should have 4 segments
+        let segment_count = output.matches("// Segment").count();
+        println!("Segment count: {}", segment_count);
+        assert_eq!(segment_count, 4, "Should have 4 segments (2 × 2 Cartesian)");
+
+        // Check for velocity multipliers - should see Vm 1 and Vm 2 each applied twice
+        let vm1_count = output.matches("velocity = velocity * 1.0").count();
+        let vm2_count = output.matches("velocity = velocity * 2.0").count();
+        println!("Vm 1 count: {}, Vm 2 count: {}", vm1_count, vm2_count);
+        assert_eq!(vm1_count, 2, "Vm 1 should appear twice (once for each left item)");
+        assert_eq!(vm2_count, 2, "Vm 2 should appear twice (once for each left item)");
+
+        // Should have both directions appearing twice (once per right item)
+        let dir_1_0_0_count = output.matches("vec3<f32>(1.000000, 0.000000, 0.000000)").count();
+        let dir_0_1_0_count = output.matches("vec3<f32>(0.000000, 1.000000, 0.000000)").count();
         println!("Direction (1,0,0) count: {}, Direction (0,1,0) count: {}", dir_1_0_0_count, dir_0_1_0_count);
-
-        // Each direction should appear at least twice (once in each iteration)
-        assert!(dir_1_0_0_count >= 2, "Direction (1,0,0) should appear twice");
-        assert!(dir_0_1_0_count >= 2, "Direction (0,1,0) should appear twice");
+        assert_eq!(dir_1_0_0_count, 2, "Direction (1,0,0) should appear twice");
+        assert_eq!(dir_0_1_0_count, 2, "Direction (0,1,0) should appear twice");
     }
 
     #[test]
@@ -674,7 +704,7 @@ mod tests {
     #[test]
     fn test_seq_with_raw_wgsl_user_case() {
         // User's exact case: Direction with Bend, then raw WGSL
-        // The raw WGSL should only run after Lm 8 (at time >= 8)
+        // The raw WGSL should only run DURING its segment (time >= start && time < end)
         let input = r#"
             Seq [
                 Direction (1, 0, 0) | Bend (0, -0.1, -0.1, 1) | Lm 8;
@@ -689,9 +719,9 @@ mod tests {
                 assert!(output.contains("let seg_end = 8.000000"), "First segment should end at 8");
                 // Segment 1 (raw WGSL) should start at 8
                 assert!(output.contains("let seg_start = 8.000000"), "Second segment should start at 8");
-                // Raw WGSL should be time-gated
-                assert!(output.contains("if (time >= seg_start) {\n                x = sin(x * time * 2);"),
-                    "Raw WGSL should be time-gated");
+                // Raw WGSL should be time-gated to ONLY run during its segment
+                assert!(output.contains("if (time >= seg_start && time < seg_end)"),
+                    "Raw WGSL should be time-gated to only run during its segment");
             }
             Err(e) => {
                 println!("Parse error: {:?}", e);
@@ -820,3 +850,131 @@ mod tests {
         }
     }
 }
+
+    #[test]
+    fn test_am0_sm0_segments() {
+        let input = r#"
+            Seq [
+                Am 1
+                | Direction (1, 0, 0)
+                | Bend (0, -0.1, -0.1, 1) | Lm 4;
+                Direction (1, 0, 0) | Lm 3;
+                Am 0
+                | Sm 0 | Lm 2;
+            ]
+            | Seq [Ya 0; Ya 2]
+        "#;
+        let result = compile_dsl_to_wgsl(input);
+        assert!(result.is_ok(), "Should parse: {:?}", result.err());
+        let output = result.unwrap();
+        println!("=== Am0 Sm0 Test ===\n{}", output);
+        
+        // Should have 6 segments (3 items × 2 Ya items)
+        let segment_count = output.matches("// Segment").count();
+        println!("Segment count: {}", segment_count);
+        assert_eq!(segment_count, 6, "Should have 6 segments (3 × 2 Cartesian)");
+    }
+
+    #[test]
+    fn test_wgsl_expression_in_sm() {
+        // Test WGSL expression as value: Sm time
+        let result = compile_dsl_to_wgsl("Sm time");
+        assert!(result.is_ok(), "Should parse Sm with expression: {:?}", result.err());
+        let output = result.unwrap();
+        println!("=== Sm time ===\n{}", output);
+        assert!(output.contains("scale = scale * time"), "Should have scale = scale * time");
+    }
+
+    #[test]
+    fn test_wgsl_expression_function_call() {
+        // Test function call as value: Ya sin(time)
+        let result = compile_dsl_to_wgsl("Ya sin(time)");
+        assert!(result.is_ok(), "Should parse Ya with function call: {:?}", result.err());
+        let output = result.unwrap();
+        println!("=== Ya sin(time) ===\n{}", output);
+        assert!(output.contains("y = y + sin(time)"), "Should have y = y + sin(time)");
+    }
+
+    #[test]
+    fn test_wgsl_expression_binary() {
+        // Test binary expression: Sm time * 2
+        let result = compile_dsl_to_wgsl("Sm time * 2");
+        assert!(result.is_ok(), "Should parse Sm with binary expression: {:?}", result.err());
+        let output = result.unwrap();
+        println!("=== Sm time * 2 ===\n{}", output);
+        assert!(output.contains("scale = scale * time * 2"), "Should have scale = scale * time * 2");
+    }
+
+    #[test]
+    fn test_wgsl_expression_in_direction() {
+        // Test expressions in Direction: Direction(sin(time), cos(time), 0)
+        let result = compile_dsl_to_wgsl("Direction(sin(time), cos(time), 0)");
+        assert!(result.is_ok(), "Should parse Direction with expressions: {:?}", result.err());
+        let output = result.unwrap();
+        println!("=== Direction with expressions ===\n{}", output);
+        assert!(output.contains("sin(time)"), "Should have sin(time) in direction");
+        assert!(output.contains("cos(time)"), "Should have cos(time) in direction");
+    }
+
+    #[test]
+    fn test_wgsl_expression_with_literals() {
+        // Test mixing expressions and literals
+        let result = compile_dsl_to_wgsl("Direction(1, sin(time), 0) | Sm 2 | Vm progress");
+        assert!(result.is_ok(), "Should parse mixed expression/literal: {:?}", result.err());
+        let output = result.unwrap();
+        println!("=== Mixed expression/literal ===\n{}", output);
+        assert!(output.contains("1.000000"), "Should have literal 1 in direction");
+        assert!(output.contains("sin(time)"), "Should have sin(time) in direction");
+        assert!(output.contains("scale = scale * 2.000000"), "Should have scale * 2");
+        assert!(output.contains("velocity = velocity * progress"), "Should have velocity * progress");
+    }
+
+    #[test]
+    fn test_quoted_expression_number_first() {
+        // Quoted string allows number-first expressions
+        let result = compile_dsl_to_wgsl(r#"Sm "2 * time""#);
+        assert!(result.is_ok(), "Should parse quoted number-first: {:?}", result.err());
+        let output = result.unwrap();
+        println!("=== Quoted number-first ===\n{}", output);
+        assert!(output.contains("scale = scale * 2 * time"), "Should have 2 * time");
+    }
+
+    #[test]
+    fn test_quoted_expression_nested_parens() {
+        // Quoted string allows nested function calls
+        let result = compile_dsl_to_wgsl(r#"Sm "sin(cos(time))""#);
+        assert!(result.is_ok(), "Should parse quoted nested parens: {:?}", result.err());
+        let output = result.unwrap();
+        println!("=== Quoted nested parens ===\n{}", output);
+        assert!(output.contains("scale = scale * sin(cos(time))"), "Should have sin(cos(time))");
+    }
+
+    #[test]
+    fn test_quoted_expression_negative() {
+        // Quoted string allows negative identifiers
+        let result = compile_dsl_to_wgsl(r#"Sm "-time""#);
+        assert!(result.is_ok(), "Should parse quoted negative: {:?}", result.err());
+        let output = result.unwrap();
+        println!("=== Quoted negative ===\n{}", output);
+        assert!(output.contains("scale = scale * -time"), "Should have -time");
+    }
+
+    #[test]
+    fn test_quoted_expression_grouping_parens() {
+        // Quoted string allows grouping parentheses
+        let result = compile_dsl_to_wgsl(r#"Sm "(x + y) * 0.5""#);
+        assert!(result.is_ok(), "Should parse quoted grouping: {:?}", result.err());
+        let output = result.unwrap();
+        println!("=== Quoted grouping ===\n{}", output);
+        assert!(output.contains("scale = scale * (x + y) * 0.5"), "Should have (x + y) * 0.5");
+    }
+
+    #[test]
+    fn test_quoted_in_direction_with_comma() {
+        // Quoted string in Direction allows commas inside functions
+        let result = compile_dsl_to_wgsl(r#"Direction("max(x, y)", 0, 0)"#);
+        assert!(result.is_ok(), "Should parse quoted with comma: {:?}", result.err());
+        let output = result.unwrap();
+        println!("=== Quoted with comma ===\n{}", output);
+        assert!(output.contains("max(x, y)"), "Should have max(x, y)");
+    }

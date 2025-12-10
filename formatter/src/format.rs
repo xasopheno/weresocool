@@ -788,6 +788,12 @@ fn format_op<'a>(arena: &'a Arena<'a>, ctx: &FormatContext, op: &Op) -> DocBuild
         Op::ColorAdd { color_id } => {
             arena.text("ColorAdd ").append(arena.text(color_id.to_string()))
         }
+        Op::ColorGradient { x, y, z } => {
+            arena.text(format!("Gradient({}, {}, {})", x, y, z))
+        }
+        Op::ColorMix { amount } => {
+            format_single_rational_op(arena, "Mix", amount)
+        }
 
         // MIDI
         Op::Midi { channels } => {

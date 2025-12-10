@@ -4,7 +4,7 @@ use crate::operations::Rational64;
 use crate::operations::{
     helpers::*, substitute::insert_function_args, GetLengthRatio, NormalForm, Normalize, Substitute, Defs,
 };
-use crate::{Distortion, FunDef, Op, OscType, Term, Term::*};
+use crate::{Distortion, FunDef, Op, OscType, Term, Term::*, wgsl::rational_to_f32};
 use num_rational::Ratio;
 use num_traits::CheckedMul;
 use weresocool_error::Error;
@@ -400,6 +400,29 @@ impl Normalize for Op {
                 // Simply add the color to the palette
                 input.fmap_mut(|op| {
                     op.colors.push(*color_id);
+                });
+            }
+
+            Op::ColorGradient { x, y, z } => {
+                // Set gradient direction for color distribution
+                // Default to some randomness (mix=0.3) when gradient is applied
+                let gx = rational_to_f32(*x);
+                let gy = rational_to_f32(*y);
+                let gz = rational_to_f32(*z);
+                input.fmap_mut(|op| {
+                    op.color_distribution.gradient = Some((gx, gy, gz));
+                    // Only set default mix if this is the first gradient applied
+                    if op.color_distribution.mix == 1.0 {
+                        op.color_distribution.mix = 0.3;
+                    }
+                });
+            }
+
+            Op::ColorMix { amount } => {
+                // Set the mix amount for color distribution (0 = pure gradient, 1 = pure random)
+                let mix = rational_to_f32(*amount);
+                input.fmap_mut(|op| {
+                    op.color_distribution.mix = mix;
                 });
             }
 

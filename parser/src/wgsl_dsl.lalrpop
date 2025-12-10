@@ -7,21 +7,19 @@
 // Length: Lm - duration in seconds
 // Direction: Direction(x, y, z) - sets normalized direction vector
 // Bend: Bend(bx, by, bz, k) - symmetric bulge toward vector (same start/end direction)
-// ArcTo: ArcTo(tx, ty, tz, k) - changes end direction toward target (steering)
 // Composition: A | B | C - compose operations
-// Sequence: Seq [ A | Lm 1, B | Lm 2 ] - time-sequenced operations
+// Sequence: Seq [ A | Lm 1; B | Lm 2 ] - time-sequenced operations
 //
 // Examples:
 //   Xm 2                       ->  x = x * 2.0;
 //   Direction(0, -1, 0)        ->  direction = normalize(vec3<f32>(0.0, -1.0, 0.0)); velocity = 1.0;
 //   Direction(0, -1, 0) | Vm 2 ->  direction = ...; velocity = 1.0; velocity = velocity * 2.0;
 //   Direction(1, 0, 0) | Bend(0, 1, 0, 0.5) ->  cubic Bézier bulging upward (symmetric)
-//   Direction(1, 0, 0) | ArcTo(0, 1, 0, 1.0) ->  cubic Bézier ending pointing up
-//   Seq [ Direction(0, -1, 0) | Lm 1, Direction(1, 0, 0) | Lm 1 ]
+//   Seq [ Direction(0, -1, 0) | Lm 1; Direction(1, 0, 0) | Lm 1 ]
 //                              ->  if (time < 1.0) { ... } else if (time < 2.0) { ... }
 
 use num_rational::Rational64;
-use weresocool_ast::wgsl::{VisualOp, float_to_rational};
+use weresocool_ast::wgsl::{VisualOp, WgslValue, float_to_rational};
 
 grammar;
 
@@ -65,26 +63,25 @@ RawWgsl: String = {
 };
 
 // Base operations (create Simple variant)
+// All commands now accept WgslVal which can be either a literal or a WGSL expression
 BaseOp: VisualOp = {
-    "Direction" "(" <x:RatioValue> "," <y:RatioValue> "," <z:RatioValue> ")" =>
+    "Direction" "(" <x:WgslVal> "," <y:WgslVal> "," <z:WgslVal> ")" =>
         VisualOp::direction(x, y, z),
-    "Bend" "(" <bx:RatioValue> "," <by:RatioValue> "," <bz:RatioValue> "," <k:RatioValue> ")" =>
+    "Bend" "(" <bx:WgslVal> "," <by:WgslVal> "," <bz:WgslVal> "," <k:WgslVal> ")" =>
         VisualOp::bend(bx, by, bz, k),
-    "ArcTo" "(" <tx:RatioValue> "," <ty:RatioValue> "," <tz:RatioValue> "," <k:RatioValue> ")" =>
-        VisualOp::arc_to(tx, ty, tz, k),
-    "Xm" <v:RatioValue> => VisualOp::xm(v),
-    "Xa" <v:RatioValue> => VisualOp::xa(v),
-    "Ym" <v:RatioValue> => VisualOp::ym(v),
-    "Ya" <v:RatioValue> => VisualOp::ya(v),
-    "Zm" <v:RatioValue> => VisualOp::zm(v),
-    "Za" <v:RatioValue> => VisualOp::za(v),
-    "Sm" <v:RatioValue> => VisualOp::sm(v),
-    "Sa" <v:RatioValue> => VisualOp::sa(v),
-    "Vm" <v:RatioValue> => VisualOp::vm(v),
-    "Va" <v:RatioValue> => VisualOp::va(v),
-    "Lm" <v:RatioValue> => VisualOp::lm(v),
-    "Alpha" <v:RatioValue> => VisualOp::alpha(v),
-    "Am" <v:RatioValue> => VisualOp::am(v),
+    "Xm" <v:WgslVal> => VisualOp::xm(v),
+    "Xa" <v:WgslVal> => VisualOp::xa(v),
+    "Ym" <v:WgslVal> => VisualOp::ym(v),
+    "Ya" <v:WgslVal> => VisualOp::ya(v),
+    "Zm" <v:WgslVal> => VisualOp::zm(v),
+    "Za" <v:WgslVal> => VisualOp::za(v),
+    "Sm" <v:WgslVal> => VisualOp::sm(v),
+    "Sa" <v:WgslVal> => VisualOp::sa(v),
+    "Vm" <v:WgslVal> => VisualOp::vm(v),
+    "Va" <v:WgslVal> => VisualOp::va(v),
+    "Lm" <v:WgslVal> => VisualOp::lm(v),
+    "Alpha" <v:WgslVal> => VisualOp::alpha(v),
+    "Am" <v:WgslVal> => VisualOp::am(v),
 };
 
 // Seq expression (contains comma-separated expressions)
@@ -108,6 +105,34 @@ SeqItems: Vec<VisualOp> = {
 // Separator for Seq items - comma or semicolon
 SeqSep: () = {
     ";" => (),
+};
+
+// Parse WGSL values: either a compile-time rational or a runtime expression
+// Expressions include: identifiers (time, x), function calls (sin(time)), binary ops (time * 2)
+// Quoted strings are a fallback for edge cases (number-first, nested parens, commas)
+WgslVal: WgslValue = {
+    <r:RatioValue> => WgslValue::Rational(r),
+    <e:WgslExpr> => WgslValue::Expr(e),
+    <s:QuotedStr> => WgslValue::Expr(s),
+};
+
+// Quoted string: anything in double quotes passes through as WGSL expression
+// Use for: "2 * time", "sin(cos(x))", "max(a, b)", "-time"
+QuotedStr: String = {
+    <s:r#""[^"]*""#> => s[1..s.len()-1].to_string(),
+};
+
+// WGSL expression: identifier, function call, or compound expression
+// Matches things like: sin(time), time * x * 2, x + y, etc.
+// Must start with a letter (not a digit) to distinguish from literals
+WgslExpr: String = {
+    // Function call: identifier(args) - matches sin(time), cos(x * 2), etc.
+    <s:r"[a-z_][a-zA-Z0-9_]*\s*\([^)]*\)"> => s.to_string(),
+    // Binary expression: identifier followed by operators and operands
+    // Matches: time * 2, x + y * z, progress * 0.5
+    <s:r"[a-z_][a-zA-Z0-9_]*(\s*[\+\-\*\/]\s*[a-zA-Z0-9_\.]+)+"> => s.to_string(),
+    // Simple identifier: time, x, y, progress, etc. (at least 2 chars to avoid single-letter numbers being captured)
+    <s:r"[a-z_][a-zA-Z0-9_]+"> => s.to_string(),
 };
 
 // Parse rational values: 1/2, 0.5, 2, -1

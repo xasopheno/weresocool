@@ -37,6 +37,15 @@ grammar<'defs, 'err>(
     defs: &'defs mut Defs,
 );
 
+match {
+    // Skip whitespace and comments
+    r"\s*" => {},
+    r"--[^\n\r]*" => {},  // -- style comments (to end of line)
+    r"//[^\n\r]*" => {},  // // style comments (to end of line)
+    // Match everything else
+    _
+}
+
 pub SoCool: Init = {
   <init: Point>
   <l: LetDefs> => init 
@@ -418,6 +427,8 @@ BaseOperation: Term = {
     "AddColor" <color: CssOrHex> => Term::Op(ColorAdd {
         color_id: defs.colors.insert(parse_color_set(vec![color]))
     }),
+    "Gradient" "(" <x: Rational> "," <y: Rational> "," <z: Rational> ")" => Term::Op(ColorGradient { x, y, z }),
+    "Mix" <amount: Rational> => Term::Op(ColorMix { amount }),
     "FitLength" <op: Composeable> => {
         Term::Op(
             WithLengthRatioOf { with_length_of: Box::new(op), main: None }

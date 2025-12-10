@@ -189,6 +189,14 @@ pub enum Op {
     ColorAdd {
         color_id: u64,
     },
+    ColorGradient {
+        x: Rational64,
+        y: Rational64,
+        z: Rational64,
+    },
+    ColorMix {
+        amount: Rational64,
+    },
     //
     WithLengthRatioOf {
         main: Option<Box<Term>>,

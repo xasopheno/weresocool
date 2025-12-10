@@ -200,10 +200,6 @@ pub fn process_wgsl_blocks(composition: &str, defs: &mut Defs, skip_validation: 
                     e.column
                 };
 
-                // Print the error with colored output (same style as WGSL errors)
-                println!("\n");
-                e.display_colored(composition, actual_line, actual_column);
-
                 return Err(ParseError {
                     message: e.message.clone(),
                     line: actual_line,
@@ -226,9 +222,6 @@ pub fn process_wgsl_blocks(composition: &str, defs: &mut Defs, skip_validation: 
                 block_start_line,
                 composition,
             ) {
-                // Print the error with colored output
-                println!("\n");
-                e.display_colored(composition);
                 return Err(ParseError {
                     message: format!("WGSL error: {}", e.message),
                     line: e.line,
@@ -294,6 +287,13 @@ pub fn parse_to_raw_ast(
 pub fn parse_for_format(
     vec_string: Vec<String>,
 ) -> Result<FormatParseResult, Error> {
+    parse_for_format_inner(vec_string, true)  // quiet=true for formatter
+}
+
+fn parse_for_format_inner(
+    vec_string: Vec<String>,
+    quiet: bool,
+) -> Result<FormatParseResult, Error> {
     let mut defs: Defs = Default::default();
 
     let (imports_needed, composition) = handle_whitespace_and_imports(vec_string)?;
@@ -328,10 +328,12 @@ pub fn parse_for_format(
             })
         }
         Err(error) => {
-            println!("\n");
+            if !quiet {
+                eprintln!("\n");
+            }
             let location = Arc::new(Mutex::new(Vec::new()));
             error.map_location(|l| location.lock().unwrap().push(l));
-            let (line, column) = handle_parse_error(location, &composition, &source_map);
+            let (line, column) = handle_parse_error(location, &composition, &source_map, quiet);
 
             Err(ParseError {
                 message: "Unexpected Token".to_string(),
@@ -410,10 +412,10 @@ pub fn parse_file(
             Ok(ParsedComposition { init, defs: result_defs })
         }
         Err(error) => {
-            println!("\n");
+            eprintln!("\n");
             let location = Arc::new(Mutex::new(Vec::new()));
             error.map_location(|l| location.lock().unwrap().push(l));
-            let (line, column) = handle_parse_error(location, &composition, &source_map);
+            let (line, column) = handle_parse_error(location, &composition, &source_map, false);
 
             Err(ParseError {
                 message: "Unexpected Token".to_string(),
@@ -428,19 +430,25 @@ pub fn parse_file(
 fn handle_whitespace_and_imports(lines: Vec<String>) -> Result<(Vec<String>, String), Error> {
     let mut composition = String::new();
     let mut imports_needed: Vec<String> = vec![];
+    let mut first_content = true;
 
     for line in lines.into_iter() {
         let l = line;
         let copy_l = l.trim_start();
 
-        // Only strip imports - pass everything else through (including comments)
-        // Comments will be handled by the formatter
         if is_import(copy_l.to_string()) {
             imports_needed.push(copy_l.to_owned());
-            composition.push_str("\n");
+            // Add newline placeholder for import lines (but not before first content)
+            if !first_content {
+                composition.push_str("\n");
+            }
         } else {
-            composition.push_str("\n");
+            // Don't add newline before the first line of content
+            if !first_content {
+                composition.push_str("\n");
+            }
             composition.push_str(&l);
+            first_content = false;
         }
     }
 

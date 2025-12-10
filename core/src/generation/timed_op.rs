@@ -59,6 +59,8 @@ impl TimedOp {
             names: self.names.to_owned(),
             colors: self.colors.to_owned(),
             wgsl: self.wgsl.to_owned(),
+            color_gradient: None,
+            color_mix: 1.0,
         }
     }
 
@@ -87,6 +89,7 @@ impl TimedOp {
             wgsl: vec![],
             midi: vec![],
             color_grading: Default::default(),
+            color_distribution: Default::default(),
         }
     }
 

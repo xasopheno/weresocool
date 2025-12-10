@@ -513,3 +513,88 @@ pub fn color_to_hex(color: &Color) -> String {
         (color.a * 255.0).round() as u8,
     )
 }
+
+// ============================================================================
+// Color Distribution - spatial arrangement of colors
+// ============================================================================
+
+/// Describes how colors are distributed spatially
+#[derive(Clone, Debug)]
+pub struct ColorDistribution {
+    /// Direction vector for gradient distribution. None = pure random.
+    pub gradient: Option<(f32, f32, f32)>,
+    /// Mix amount: 0.0 = pure gradient, 1.0 = pure random
+    pub mix: f32,
+}
+
+impl PartialEq for ColorDistribution {
+    fn eq(&self, other: &Self) -> bool {
+        self.gradient == other.gradient && self.mix == other.mix
+    }
+}
+
+impl Eq for ColorDistribution {}
+
+impl std::hash::Hash for ColorDistribution {
+    fn hash<H: std::hash::Hasher>(&self, state: &mut H) {
+        // Hash gradient as bits
+        match self.gradient {
+            Some((x, y, z)) => {
+                1u8.hash(state);
+                x.to_bits().hash(state);
+                y.to_bits().hash(state);
+                z.to_bits().hash(state);
+            }
+            None => 0u8.hash(state),
+        }
+        self.mix.to_bits().hash(state);
+    }
+}
+
+impl PartialOrd for ColorDistribution {
+    fn partial_cmp(&self, other: &Self) -> Option<std::cmp::Ordering> {
+        Some(self.cmp(other))
+    }
+}
+
+impl Ord for ColorDistribution {
+    fn cmp(&self, other: &Self) -> std::cmp::Ordering {
+        // Compare gradient first
+        match (&self.gradient, &other.gradient) {
+            (None, None) => {}
+            (None, Some(_)) => return std::cmp::Ordering::Less,
+            (Some(_), None) => return std::cmp::Ordering::Greater,
+            (Some((ax, ay, az)), Some((bx, by, bz))) => {
+                match ax.to_bits().cmp(&bx.to_bits()) {
+                    std::cmp::Ordering::Equal => {}
+                    ord => return ord,
+                }
+                match ay.to_bits().cmp(&by.to_bits()) {
+                    std::cmp::Ordering::Equal => {}
+                    ord => return ord,
+                }
+                match az.to_bits().cmp(&bz.to_bits()) {
+                    std::cmp::Ordering::Equal => {}
+                    ord => return ord,
+                }
+            }
+        }
+        self.mix.to_bits().cmp(&other.mix.to_bits())
+    }
+}
+
+impl Default for ColorDistribution {
+    fn default() -> Self {
+        ColorDistribution {
+            gradient: None,
+            mix: 1.0, // default = pure random (current behavior)
+        }
+    }
+}
+
+impl ColorDistribution {
+    /// Check if this is the default (pure random) distribution
+    pub fn is_random(&self) -> bool {
+        self.gradient.is_none()
+    }
+}

@@ -45,6 +45,8 @@ impl GetLengthRatio for Op {
             | Op::Gamma { .. }
             | Op::ColorBlend { .. }
             | Op::ColorAdd { .. }
+            | Op::ColorGradient { .. }
+            | Op::ColorMix { .. }
             | Op::Wavefolder { .. }
             | Op::SoftClip { .. }
             | Op::Overdrive { .. }

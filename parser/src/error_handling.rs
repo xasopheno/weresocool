@@ -7,6 +7,7 @@ pub fn handle_parse_error(
     location: Arc<Mutex<Vec<usize>>>,
     original_composition: &str,
     source_map: &SourceMap,
+    quiet: bool,
 ) -> (usize, usize) {
     let start_offset = 125;
     let end_offset = 50;
@@ -40,22 +41,25 @@ pub fn handle_parse_error(
 
         columns += 1;
     }
-    println!(
-        "{}{}",
-        &original_composition[feed_start..start].yellow(),
-        &original_composition[start..feed_end].red(),
-    );
 
-    println!(
-        "
+    if !quiet {
+        eprintln!(
+            "{}{}",
+            &original_composition[feed_start..start].yellow(),
+            &original_composition[start..feed_end].red(),
+        );
+
+        eprintln!(
+            "
             {}
             errors at line {}
             {}
             ",
-        "working".yellow().underline(),
-        lines.to_string().red().bold(),
-        "broken".red().underline(),
-    );
+            "working".yellow().underline(),
+            lines.to_string().red().bold(),
+            "broken".red().underline(),
+        );
+    }
 
     (lines, columns - 2)
 }

@@ -17,8 +17,14 @@ pub fn fmt(matches: &ArgMatches) -> Result<(), Error> {
         (source, Some(filename.clone()))
     };
 
-    let formatted = format_source(&source, &config)
-        .map_err(|e| Error::Message(e.to_string()))?;
+    let formatted = match format_source(&source, &config) {
+        Ok(f) => f,
+        Err(_) => {
+            // Silently return original source if formatting fails
+            io::stdout().write_all(source.as_bytes())?;
+            return Ok(());
+        }
+    };
 
     if matches.get_flag("check") {
         // Check mode: exit 1 if not formatted

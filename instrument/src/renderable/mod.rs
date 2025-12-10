@@ -46,6 +46,10 @@ pub struct RenderOp {
     pub midi: Vec<u8>,
     /// Scalar gain (pre-pan), derived from g * basis.g
     pub gain_scalar: f64,
+    /// Color gradient direction (if Some, use gradient distribution)
+    pub color_gradient: Option<(f32, f32, f32)>,
+    /// Color mix: 0 = pure gradient, 1 = pure random
+    pub color_mix: f32,
 }
 
 impl RenderOp {
@@ -78,6 +82,8 @@ impl RenderOp {
             wgsl: Vec::new(),
             midi: Vec::new(),
             gain_scalar: 1.0,
+            color_gradient: None,
+            color_mix: 1.0,
         }
     }
 
@@ -110,6 +116,8 @@ impl RenderOp {
             wgsl: Vec::new(),
             midi: Vec::new(),
             gain_scalar: 1.0,
+            color_gradient: None,
+            color_mix: 1.0,
         }
     }
     pub fn init_silent_with_length(l: f64) -> Self {
@@ -141,6 +149,8 @@ impl RenderOp {
             wgsl: Vec::new(),
             midi: Vec::new(),
             gain_scalar: 0.0,
+            color_gradient: None,
+            color_mix: 1.0,
         }
     }
 
@@ -179,6 +189,8 @@ impl RenderOp {
             wgsl: Vec::new(),
             midi: Vec::new(),
             gain_scalar: 0.0,
+            color_gradient: None,
+            color_mix: 1.0,
         }
     }
 }
@@ -415,6 +427,8 @@ fn pointop_to_renderop(
         wgsl: point_op.wgsl.clone(),
         midi: point_op.midi.clone(),
         gain_scalar: r_to_f64(point_op.g * basis.g).clamp(0.0, 2.0),
+        color_gradient: point_op.color_distribution.gradient,
+        color_mix: point_op.color_distribution.mix,
     };
 
     *time += point_op.l * basis.l;

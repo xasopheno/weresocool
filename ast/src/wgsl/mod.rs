@@ -40,6 +40,44 @@ impl WgslValue {
             WgslValue::Expr(_) => None,
         }
     }
+
+    /// Multiply two WgslValues
+    /// - Rational * Rational = Rational (compile-time multiplication)
+    /// - Anything else = Expr (runtime multiplication)
+    pub fn mul(&self, other: &WgslValue) -> WgslValue {
+        match (self, other) {
+            (WgslValue::Rational(a), WgslValue::Rational(b)) => {
+                WgslValue::Rational(*a * *b)
+            }
+            _ => {
+                WgslValue::Expr(format!("({}) * ({})", self.to_wgsl(), other.to_wgsl()))
+            }
+        }
+    }
+
+    /// Add two WgslValues
+    /// - Rational + Rational = Rational (compile-time addition)
+    /// - Anything else = Expr (runtime addition)
+    pub fn add(&self, other: &WgslValue) -> WgslValue {
+        match (self, other) {
+            (WgslValue::Rational(a), WgslValue::Rational(b)) => {
+                WgslValue::Rational(*a + *b)
+            }
+            _ => {
+                WgslValue::Expr(format!("({}) + ({})", self.to_wgsl(), other.to_wgsl()))
+            }
+        }
+    }
+
+    /// Create a default WgslValue (1.0 for multipliers)
+    pub fn one() -> WgslValue {
+        WgslValue::Rational(Rational64::new(1, 1))
+    }
+
+    /// Create a zero WgslValue (for adders)
+    pub fn zero() -> WgslValue {
+        WgslValue::Rational(Rational64::new(0, 1))
+    }
 }
 
 impl From<Rational64> for WgslValue {
@@ -199,30 +237,27 @@ impl WgslMap {
 #[derive(Clone, Debug, PartialEq)]
 pub enum VisualOp {
     /// Simple operation with modifiers
+    /// All values can be either compile-time rationals or runtime WGSL expressions
     Simple {
-        x_mul: Option<Rational64>,
-        x_add: Option<Rational64>,
-        y_mul: Option<Rational64>,
-        y_add: Option<Rational64>,
-        z_mul: Option<Rational64>,
-        z_add: Option<Rational64>,
-        direction: Option<(Rational64, Rational64, Rational64)>,
-        scale_mul: Option<Rational64>,
-        scale_add: Option<Rational64>,
-        velocity_mul: Option<Rational64>,
-        velocity_add: Option<Rational64>,
+        x_mul: Option<WgslValue>,
+        x_add: Option<WgslValue>,
+        y_mul: Option<WgslValue>,
+        y_add: Option<WgslValue>,
+        z_mul: Option<WgslValue>,
+        z_add: Option<WgslValue>,
+        direction: Option<(WgslValue, WgslValue, WgslValue)>,
+        scale_mul: Option<WgslValue>,
+        scale_add: Option<WgslValue>,
+        velocity_mul: Option<WgslValue>,
+        velocity_add: Option<WgslValue>,
         /// Bend: (bend_vector_x, bend_vector_y, bend_vector_z, strength)
         /// Creates a curved path that bulges toward bend_vector while maintaining direction
-        bend: Option<(Rational64, Rational64, Rational64, Rational64)>,
-        /// ArcTo: (target_dir_x, target_dir_y, target_dir_z, strength)
-        /// Creates a curved path that ends pointing toward target_dir
-        /// k=1 fully commits to new direction, k=0.5 is halfway, etc.
-        arc_to: Option<(Rational64, Rational64, Rational64, Rational64)>,
+        bend: Option<(WgslValue, WgslValue, WgslValue, WgslValue)>,
         /// Alpha set: sets alpha directly (Alpha 0 = invisible, Alpha 1 = visible)
-        alpha_set: Option<Rational64>,
+        alpha_set: Option<WgslValue>,
         /// Alpha multiply: multiplies alpha (Am 0.5 = fade to 50%)
-        alpha_mul: Option<Rational64>,
-        length: Rational64, // duration in seconds (Lm modifier)
+        alpha_mul: Option<WgslValue>,
+        length: WgslValue, // duration in seconds (Lm modifier)
     },
     /// Sequence of operations (time-divided)
     Seq {
@@ -253,10 +288,9 @@ impl Default for VisualOp {
             velocity_mul: None,
             velocity_add: None,
             bend: None,
-            arc_to: None,
             alpha_set: None,
             alpha_mul: None,
-            length: Rational64::new(1, 1),
+            length: WgslValue::one(),
         }
     }
 }
@@ -271,11 +305,6 @@ pub enum Warp {
     /// Bend: rotate direction around an axis, angle proportional to progress
     Bend {
         axis: (Rational64, Rational64, Rational64),
-        strength: Rational64,
-    },
-    /// ArcTo: steer direction toward a target, angle proportional to progress
-    ArcTo {
-        target: (Rational64, Rational64, Rational64),
         strength: Rational64,
     },
 }
@@ -514,32 +543,6 @@ impl VisualPointOp {
                         rational_to_f32(*strength)
                     ));
                 }
-                Warp::ArcTo { target: (tx, ty, tz), strength } => {
-                    lines.push(format!(
-                        r#"    // ArcTo warp: steer direction toward target
-    {{
-        let target_dir = normalize(vec3<f32>({:.6}, {:.6}, {:.6}));
-        let arc_k = {:.6};
-        let rot_axis_raw = cross(direction, target_dir);
-        let rot_axis_len = length(rot_axis_raw);
-        if (rot_axis_len > 0.001) {{
-            let rot_axis = rot_axis_raw / rot_axis_len;
-            let max_angle = acos(clamp(dot(direction, target_dir), -1.0, 1.0));
-            let angle = arc_k * progress * max_angle;
-            let cos_a = cos(angle);
-            let sin_a = sin(angle);
-            // Rodrigues' rotation formula
-            direction = direction * cos_a
-                      + cross(rot_axis, direction) * sin_a
-                      + rot_axis * dot(rot_axis, direction) * (1.0 - cos_a);
-        }}
-    }}"#,
-                        rational_to_f32(*tx),
-                        rational_to_f32(*ty),
-                        rational_to_f32(*tz),
-                        rational_to_f32(*strength)
-                    ));
-                }
             }
         }
 
@@ -595,9 +598,13 @@ impl VisualPointOp {
 
 impl VisualOp {
     /// Get the length (duration) of this operation in seconds
+    /// For expressions, returns default 1.0 (can't calculate at compile time)
     pub fn length(&self) -> Rational64 {
         match self {
-            VisualOp::Simple { length, .. } => *length,
+            VisualOp::Simple { length, .. } => {
+                // Extract rational if constant, otherwise default to 1
+                length.as_rational().unwrap_or_else(|| Rational64::new(1, 1))
+            }
             VisualOp::Seq { items } => items.iter().map(|op| op.length()).sum(),
             VisualOp::Compose { operations } => {
                 // Compose takes the max length of all operations
@@ -613,9 +620,18 @@ impl VisualOp {
     }
 
     /// Get the last direction from this operation (for Seq continuation)
+    /// Returns None if direction contains expressions (can't evaluate at compile time)
     pub fn last_direction(&self) -> Option<(Rational64, Rational64, Rational64)> {
         match self {
-            VisualOp::Simple { direction, .. } => *direction,
+            VisualOp::Simple { direction, .. } => {
+                // Extract rationals if all are constants
+                direction.as_ref().and_then(|(x, y, z)| {
+                    match (x.as_rational(), y.as_rational(), z.as_rational()) {
+                        (Some(rx), Some(ry), Some(rz)) => Some((rx, ry, rz)),
+                        _ => None,
+                    }
+                })
+            }
             VisualOp::Seq { items } => items.last().and_then(|op| op.last_direction()),
             VisualOp::Compose { operations } => {
                 // Find the last operation that has a direction
@@ -628,6 +644,7 @@ impl VisualOp {
 
     /// Convert this VisualOp to a VisualNormalForm
     /// This flattens the AST into a list of VisualPointOps that can generate WGSL
+    /// NOTE: Only works with constant (Rational) values. Returns default for expressions.
     pub fn normalize(&self) -> VisualNormalForm {
         match self {
             VisualOp::Simple {
@@ -643,49 +660,60 @@ impl VisualOp {
                 velocity_mul,
                 velocity_add,
                 bend,
-                arc_to,
                 alpha_set,
                 alpha_mul,
                 length,
             } => {
+                // Helper to extract rational or default
+                let get_rational = |v: &Option<WgslValue>, default: Rational64| -> Rational64 {
+                    v.as_ref().and_then(|w| w.as_rational()).unwrap_or(default)
+                };
+                let one = Rational64::new(1, 1);
+                let zero = Rational64::new(0, 1);
+
                 // Convert Simple to a single VisualPointOp
                 let mut warps = Vec::new();
 
-                // Extract bend/arc_to as warps (they apply as path modifiers)
+                // Extract bend as warps (only if all values are constants)
                 if let Some((bx, by, bz, k)) = bend {
-                    warps.push(Warp::Bend {
-                        axis: (*bx, *by, *bz),
-                        strength: *k,
-                    });
-                }
-                if let Some((tx, ty, tz, k)) = arc_to {
-                    warps.push(Warp::ArcTo {
-                        target: (*tx, *ty, *tz),
-                        strength: *k,
-                    });
+                    if let (Some(rbx), Some(rby), Some(rbz), Some(rk)) =
+                        (bx.as_rational(), by.as_rational(), bz.as_rational(), k.as_rational()) {
+                        warps.push(Warp::Bend {
+                            axis: (rbx, rby, rbz),
+                            strength: rk,
+                        });
+                    }
                 }
 
+                // Extract direction if all components are constants
+                let dir = direction.as_ref().and_then(|(x, y, z)| {
+                    match (x.as_rational(), y.as_rational(), z.as_rational()) {
+                        (Some(rx), Some(ry), Some(rz)) => Some((rx, ry, rz)),
+                        _ => None,
+                    }
+                });
+
                 let point_op = VisualPointOp {
-                    x_mul: x_mul.unwrap_or_else(|| Rational64::new(1, 1)),
-                    x_add: x_add.unwrap_or_else(|| Rational64::new(0, 1)),
-                    y_mul: y_mul.unwrap_or_else(|| Rational64::new(1, 1)),
-                    y_add: y_add.unwrap_or_else(|| Rational64::new(0, 1)),
-                    z_mul: z_mul.unwrap_or_else(|| Rational64::new(1, 1)),
-                    z_add: z_add.unwrap_or_else(|| Rational64::new(0, 1)),
-                    direction: *direction,
-                    scale_mul: scale_mul.unwrap_or_else(|| Rational64::new(1, 1)),
-                    scale_add: scale_add.unwrap_or_else(|| Rational64::new(0, 1)),
-                    velocity_mul: velocity_mul.unwrap_or_else(|| Rational64::new(1, 1)),
-                    velocity_add: velocity_add.unwrap_or_else(|| Rational64::new(0, 1)),
-                    alpha_mul: alpha_mul.unwrap_or_else(|| Rational64::new(1, 1)),
-                    alpha_set: *alpha_set,
+                    x_mul: get_rational(x_mul, one),
+                    x_add: get_rational(x_add, zero),
+                    y_mul: get_rational(y_mul, one),
+                    y_add: get_rational(y_add, zero),
+                    z_mul: get_rational(z_mul, one),
+                    z_add: get_rational(z_add, zero),
+                    direction: dir,
+                    scale_mul: get_rational(scale_mul, one),
+                    scale_add: get_rational(scale_add, zero),
+                    velocity_mul: get_rational(velocity_mul, one),
+                    velocity_add: get_rational(velocity_add, zero),
+                    alpha_mul: get_rational(alpha_mul, one),
+                    alpha_set: alpha_set.as_ref().and_then(|w| w.as_rational()),
                     warps,
-                    length: *length,
+                    length: length.as_rational().unwrap_or(one),
                 };
 
                 VisualNormalForm {
                     operations: vec![point_op],
-                    length: *length,
+                    length: length.as_rational().unwrap_or(one),
                 }
             }
 
@@ -737,7 +765,8 @@ impl VisualOp {
     }
 
     /// Set the length for a Simple variant
-    pub fn with_length(self, new_length: Rational64) -> Self {
+    pub fn with_length(self, new_length: impl Into<WgslValue>) -> Self {
+        let new_length = new_length.into();
         match self {
             VisualOp::Simple {
                 x_mul,
@@ -752,7 +781,6 @@ impl VisualOp {
                 velocity_mul,
                 velocity_add,
                 bend,
-                arc_to,
                 alpha_set,
                 alpha_mul,
                 ..
@@ -769,7 +797,6 @@ impl VisualOp {
                 velocity_mul,
                 velocity_add,
                 bend,
-                arc_to,
                 alpha_set,
                 alpha_mul,
                 length: new_length,
@@ -792,13 +819,17 @@ impl VisualOp {
     /// - anything | Compose → prepend self to Compose
     pub fn compose(self, other: VisualOp) -> VisualOp {
         match (self, other) {
-            // Seq | Seq → distribute left into each item of right (like WereSoCool)
-            (seq1 @ VisualOp::Seq { .. }, VisualOp::Seq { items: items2 }) => {
-                let distributed_items = items2
-                    .into_iter()
-                    .map(|item| seq1.clone().compose(item))
-                    .collect();
-                VisualOp::Seq { items: distributed_items }
+            // Seq | Seq → Cartesian product (like WereSoCool)
+            // Seq [A, B] | Seq [C, D] → Seq [A|C, B|C, A|D, B|D]
+            // Iterate right-side first (C, then D), then left items within each
+            (VisualOp::Seq { items: items1 }, VisualOp::Seq { items: items2 }) => {
+                let mut new_items = Vec::new();
+                for item2 in &items2 {
+                    for item1 in &items1 {
+                        new_items.push(item1.clone().compose(item2.clone()));
+                    }
+                }
+                VisualOp::Seq { items: new_items }
             }
 
             // Seq | Simple → distribute Simple into each Seq item
@@ -826,7 +857,6 @@ impl VisualOp {
                     velocity_mul: vel_mul1,
                     velocity_add: vel_add1,
                     bend: bend1,
-                    arc_to: arc_to1,
                     alpha_set: alpha_set1,
                     alpha_mul: alpha_mul1,
                     length: len1,
@@ -844,108 +874,38 @@ impl VisualOp {
                     velocity_mul: vel_mul2,
                     velocity_add: vel_add2,
                     bend: bend2,
-                    arc_to: arc_to2,
                     alpha_set: alpha_set2,
                     alpha_mul: alpha_mul2,
                     length: len2,
                 },
-            ) => VisualOp::Simple {
-                x_mul: compose_mul(x_mul1, x_mul2),
-                x_add: compose_add(x_add1, x_add2),
-                y_mul: compose_mul(y_mul1, y_mul2),
-                y_add: compose_add(y_add1, y_add2),
-                z_mul: compose_mul(z_mul1, z_mul2),
-                z_add: compose_add(z_add1, z_add2),
-                direction: dir2.or(dir1), // Later wins
-                scale_mul: compose_mul(scale_mul1, scale_mul2),
-                scale_add: compose_add(scale_add1, scale_add2),
-                velocity_mul: compose_mul(vel_mul1, vel_mul2),
-                velocity_add: compose_add(vel_add1, vel_add2),
-                bend: bend2.or(bend1), // Later wins
-                arc_to: arc_to2.or(arc_to1), // Later wins
-                alpha_set: alpha_set2.or(alpha_set1), // Later wins
-                alpha_mul: compose_mul(alpha_mul1, alpha_mul2),
-                length: len1 * len2, // Multiply lengths
-            },
-
-            // Simple | Seq → apply Simple's modifiers before Seq runs
-            // This creates Compose { [Simple, Seq] } so Simple runs first (NOT distributed!)
-            (
-                VisualOp::Simple {
-                    x_mul,
-                    x_add,
-                    y_mul,
-                    y_add,
-                    z_mul,
-                    z_add,
-                    direction,
-                    scale_mul,
-                    scale_add,
-                    velocity_mul,
-                    velocity_add,
-                    bend,
-                    arc_to,
-                    alpha_set,
-                    alpha_mul,
-                    length,
-                },
-                VisualOp::Seq { items },
             ) => {
-                // Scale all Seq items by the Simple's length modifier
-                let scaled_items: Vec<VisualOp> = items
-                    .into_iter()
-                    .map(|op| {
-                        let new_len = op.length() * length;
-                        op.with_length(new_len)
-                    })
-                    .collect();
-                let scaled_seq = VisualOp::Seq { items: scaled_items };
-
-                // Create a Simple with the other fields (length already applied to Seq)
-                let simple_remainder = VisualOp::Simple {
-                    x_mul,
-                    x_add,
-                    y_mul,
-                    y_add,
-                    z_mul,
-                    z_add,
-                    direction,
-                    scale_mul,
-                    scale_add,
-                    velocity_mul,
-                    velocity_add,
-                    bend,
-                    arc_to,
-                    alpha_set,
-                    alpha_mul,
-                    length: Rational64::new(1, 1), // Length already applied
-                };
-
-                // If Simple has meaningful fields, wrap both in Compose
-                // Otherwise just return the scaled Seq
-                let has_fields = x_mul.is_some()
-                    || x_add.is_some()
-                    || y_mul.is_some()
-                    || y_add.is_some()
-                    || z_mul.is_some()
-                    || z_add.is_some()
-                    || direction.is_some()
-                    || scale_mul.is_some()
-                    || scale_add.is_some()
-                    || velocity_mul.is_some()
-                    || velocity_add.is_some()
-                    || bend.is_some()
-                    || arc_to.is_some()
-                    || alpha_set.is_some()
-                    || alpha_mul.is_some();
-
-                if has_fields {
-                    VisualOp::Compose {
-                        operations: vec![simple_remainder, scaled_seq],
-                    }
-                } else {
-                    scaled_seq
+                VisualOp::Simple {
+                    x_mul: compose_mul(x_mul1, x_mul2),
+                    x_add: compose_add(x_add1, x_add2),
+                    y_mul: compose_mul(y_mul1, y_mul2),
+                    y_add: compose_add(y_add1, y_add2),
+                    z_mul: compose_mul(z_mul1, z_mul2),
+                    z_add: compose_add(z_add1, z_add2),
+                    direction: dir2.or(dir1), // Later wins
+                    scale_mul: compose_mul(scale_mul1, scale_mul2),
+                    scale_add: compose_add(scale_add1, scale_add2),
+                    velocity_mul: compose_mul(vel_mul1, vel_mul2),
+                    velocity_add: compose_add(vel_add1, vel_add2),
+                    bend: bend2.or(bend1), // Later wins
+                    alpha_set: alpha_set2.or(alpha_set1), // Later wins
+                    alpha_mul: compose_mul(alpha_mul1, alpha_mul2),
+                    length: len1.mul(&len2), // Multiply lengths
                 }
+            }
+
+            // Simple | Seq → distribute Simple into each Seq item (like WereSoCool)
+            // Vm 2 | Seq [A, B] → Seq [Vm 2 | A, Vm 2 | B]
+            (simple @ VisualOp::Simple { .. }, VisualOp::Seq { items }) => {
+                let distributed_items = items
+                    .into_iter()
+                    .map(|item| simple.clone().compose(item))
+                    .collect();
+                VisualOp::Seq { items: distributed_items }
             }
 
             // Compose | Seq → compose last item with Seq (enables recursive Seq | Seq)
@@ -1019,7 +979,6 @@ impl VisualOp {
                 velocity_mul,
                 velocity_add,
                 bend,
-                arc_to,
                 alpha_set,
                 alpha_mul,
                 length,
@@ -1039,50 +998,19 @@ impl VisualOp {
                     && velocity_mul.is_none()
                     && velocity_add.is_none()
                     && bend.is_none()
-                    && arc_to.is_none()
                     && alpha_set.is_none()
                     && alpha_mul.is_none()
-                    && *length != Rational64::new(1, 1);
+                    && *length != WgslValue::one();
 
                 if is_standalone_lm {
                     // Standalone Lm: modify the runtime seg_length variable
-                    lines.push(format!("seg_length = seg_length * {:.6};", rational_to_f32(*length)));
+                    lines.push(format!("seg_length = seg_length * {};", length.to_wgsl()));
                     return lines.join("\n");
                 }
 
-                // Direction with optional Bend or ArcTo (cubic Bézier curve)
+                // Direction with optional Bend (cubic Bézier curve)
                 if let Some((dx, dy, dz)) = direction {
-                    if let Some((tx, ty, tz, k)) = arc_to {
-                        // ArcTo with explicit Direction: set direction then arc
-                        lines.push(format!(
-                            r#"// ArcTo: curve that ends pointing toward target direction
-direction = normalize(vec3<f32>({}, {}, {}));
-let target_dir = normalize(vec3<f32>({}, {}, {}));
-let arc_k = {:.6};
-let L = time * velocity;
-// End direction: lerp from current toward target by k
-let dT = normalize(mix(direction, target_dir, arc_k));
-// Bézier control points for smooth arc
-let p0 = vec3<f32>(0.0, 0.0, 0.0);
-let p3 = p0 + direction * L;  // End position (straight line distance)
-let p1 = p0 + direction * (L / 3.0);  // Start tangent = original direction
-let p2 = p3 - dT * (L / 3.0);  // End tangent = new direction
-// At t=1, position is p3
-let pos = p3;
-x += pos.x;
-y += pos.y;
-z += pos.z;
-// Update direction to the new end direction
-direction = dT;"#,
-                            rational_to_f32(*dx),
-                            rational_to_f32(*dy),
-                            rational_to_f32(*dz),
-                            rational_to_f32(*tx),
-                            rational_to_f32(*ty),
-                            rational_to_f32(*tz),
-                            rational_to_f32(*k)
-                        ));
-                    } else if let Some((bx, by, bz, k)) = bend {
+                    if let Some((bx, by, bz, k)) = bend {
                         // Bend: create a symmetric cubic Bézier curve that bulges toward bend vector
                         // Note: if bend is parallel to dir, perp_len will be ~0 and we fall back to linear
                         lines.push(format!(
@@ -1110,69 +1038,27 @@ let pos = p3;
 x += pos.x;
 y += pos.y;
 z += pos.z;"#,
-                            rational_to_f32(*dx),
-                            rational_to_f32(*dy),
-                            rational_to_f32(*dz),
-                            rational_to_f32(*bx),
-                            rational_to_f32(*by),
-                            rational_to_f32(*bz),
-                            rational_to_f32(*k)
+                            dx.to_wgsl(),
+                            dy.to_wgsl(),
+                            dz.to_wgsl(),
+                            bx.to_wgsl(),
+                            by.to_wgsl(),
+                            bz.to_wgsl(),
+                            k.to_wgsl()
                         ));
                     } else {
                         // No bend: simple linear movement
                         lines.push(format!(
                             "direction = normalize(vec3<f32>({}, {}, {}));",
-                            rational_to_f32(*dx),
-                            rational_to_f32(*dy),
-                            rational_to_f32(*dz)
+                            dx.to_wgsl(),
+                            dy.to_wgsl(),
+                            dz.to_wgsl()
                         ));
                         // Apply movement based on time using runtime velocity
                         lines.push("x += direction.x * time * velocity;".to_string());
                         lines.push("y += direction.y * time * velocity;".to_string());
                         lines.push("z += direction.z * time * velocity;".to_string());
                     }
-                } else if let Some((tx, ty, tz, k)) = arc_to {
-                    // Standalone ArcTo: space warp transform
-                    // Rotates position toward target direction, steering through space
-                    lines.push(format!(
-                        r#"// ArcTo space warp: rotate position toward target direction
-{{
-    let pos = vec3<f32>(x, y, z);
-    let target_dir = normalize(vec3<f32>({}, {}, {}));
-    let arc_k = {:.6};
-    let t = time / seg_length;  // progress 0→1
-
-    // Current direction approximated from position
-    let pos_len = length(pos);
-    if (pos_len > 0.001) {{
-        let current_dir = pos / pos_len;
-        // Rotation axis: perpendicular to both current and target
-        let rot_axis_raw = cross(current_dir, target_dir);
-        let rot_axis_len = length(rot_axis_raw);
-
-        if (rot_axis_len > 0.001) {{
-            let rot_axis = rot_axis_raw / rot_axis_len;
-            // Angle between current and target
-            let max_angle = acos(clamp(dot(current_dir, target_dir), -1.0, 1.0));
-            // Rotate by k * t * max_angle
-            let angle = arc_k * t * max_angle;
-            let cos_a = cos(angle);
-            let sin_a = sin(angle);
-            // Rodrigues' rotation formula
-            let rotated = pos * cos_a
-                        + cross(rot_axis, pos) * sin_a
-                        + rot_axis * dot(rot_axis, pos) * (1.0 - cos_a);
-            x = rotated.x;
-            y = rotated.y;
-            z = rotated.z;
-        }}
-    }}
-}}"#,
-                        rational_to_f32(*tx),
-                        rational_to_f32(*ty),
-                        rational_to_f32(*tz),
-                        rational_to_f32(*k)
-                    ));
                 } else if let Some((bx, by, bz, k)) = bend {
                     // Standalone Bend: space warp transform
                     // Bends the accumulated path around an axis
@@ -1183,7 +1069,7 @@ z += pos.z;"#,
 {{
     let pos = vec3<f32>(x, y, z);
     let bend_axis = normalize(vec3<f32>({}, {}, {}));
-    let bend_k = {:.6};
+    let bend_k = {};
 
     // Use distance from origin as the "arc length" parameter
     let dist = length(pos);
@@ -1202,48 +1088,48 @@ z += pos.z;"#,
         z = rotated.z;
     }}
 }}"#,
-                        rational_to_f32(*bx),
-                        rational_to_f32(*by),
-                        rational_to_f32(*bz),
-                        rational_to_f32(*k)
+                        bx.to_wgsl(),
+                        by.to_wgsl(),
+                        bz.to_wgsl(),
+                        k.to_wgsl()
                     ));
                 }
 
                 if let Some(v) = x_mul {
-                    lines.push(format!("x = x * {};", rational_to_f32(*v)));
+                    lines.push(format!("x = x * {};", v.to_wgsl()));
                 }
                 if let Some(v) = x_add {
-                    lines.push(format!("x = x + {};", rational_to_f32(*v)));
+                    lines.push(format!("x = x + {};", v.to_wgsl()));
                 }
                 if let Some(v) = y_mul {
-                    lines.push(format!("y = y * {};", rational_to_f32(*v)));
+                    lines.push(format!("y = y * {};", v.to_wgsl()));
                 }
                 if let Some(v) = y_add {
-                    lines.push(format!("y = y + {};", rational_to_f32(*v)));
+                    lines.push(format!("y = y + {};", v.to_wgsl()));
                 }
                 if let Some(v) = z_mul {
-                    lines.push(format!("z = z * {};", rational_to_f32(*v)));
+                    lines.push(format!("z = z * {};", v.to_wgsl()));
                 }
                 if let Some(v) = z_add {
-                    lines.push(format!("z = z + {};", rational_to_f32(*v)));
+                    lines.push(format!("z = z + {};", v.to_wgsl()));
                 }
                 if let Some(v) = scale_mul {
-                    lines.push(format!("scale = scale * {};", rational_to_f32(*v)));
+                    lines.push(format!("scale = scale * {};", v.to_wgsl()));
                 }
                 if let Some(v) = scale_add {
-                    lines.push(format!("scale = scale + {};", rational_to_f32(*v)));
+                    lines.push(format!("scale = scale + {};", v.to_wgsl()));
                 }
                 if let Some(v) = velocity_mul {
-                    lines.push(format!("velocity = velocity * {};", rational_to_f32(*v)));
+                    lines.push(format!("velocity = velocity * {};", v.to_wgsl()));
                 }
                 if let Some(v) = velocity_add {
-                    lines.push(format!("velocity = velocity + {};", rational_to_f32(*v)));
+                    lines.push(format!("velocity = velocity + {};", v.to_wgsl()));
                 }
                 if let Some(v) = alpha_set {
-                    lines.push(format!("alpha = {:.6};", rational_to_f32(*v)));
+                    lines.push(format!("alpha = {};", v.to_wgsl()));
                 }
                 if let Some(v) = alpha_mul {
-                    lines.push(format!("alpha = alpha * {:.6};", rational_to_f32(*v)));
+                    lines.push(format!("alpha = alpha * {};", v.to_wgsl()));
                 }
 
                 lines.join("\n")
@@ -1266,13 +1152,19 @@ z += pos.z;"#,
                     current_base_time += base_duration;
                 }
 
+                let last_idx = items.len().saturating_sub(1);
                 for (i, op) in items.iter().enumerate() {
                     let (base_start, base_end) = base_times[i];
 
                     // Generate segment block - times are scaled by seg_length at runtime
                     // State persists across segments (x,y,z, direction, velocity, scale, alpha, colors)
                     wgsl.push_str(&format!("    // Segment {}\n    {{\n", i));
-                    wgsl.push_str(&op.to_wgsl_segment_runtime(base_start, base_end));
+                    // Last segment uses _last variant so multipliers persist after Seq ends
+                    if i == last_idx {
+                        wgsl.push_str(&op.to_wgsl_segment_runtime_last(base_start, base_end));
+                    } else {
+                        wgsl.push_str(&op.to_wgsl_segment_runtime(base_start, base_end));
+                    }
                     wgsl.push_str("\n    }\n");
                 }
 
@@ -1328,105 +1220,104 @@ z += pos.z;"#,
             velocity_mul: None,
             velocity_add: None,
             bend: None,
-            arc_to: None,
             alpha_set: None,
             alpha_mul: None,
-            length: Rational64::new(1, 1),
+            length: WgslValue::one(),
         }
     }
 
-    pub fn direction(x: Rational64, y: Rational64, z: Rational64) -> Self {
+    pub fn direction(x: impl Into<WgslValue>, y: impl Into<WgslValue>, z: impl Into<WgslValue>) -> Self {
         let mut op = Self::simple_default();
         if let VisualOp::Simple { direction: ref mut d, .. } = op {
-            *d = Some((x, y, z));
+            *d = Some((x.into(), y.into(), z.into()));
         }
         op
     }
 
-    pub fn xm(v: Rational64) -> Self {
+    pub fn xm(v: impl Into<WgslValue>) -> Self {
         let mut op = Self::simple_default();
         if let VisualOp::Simple { x_mul: ref mut f, .. } = op {
-            *f = Some(v);
+            *f = Some(v.into());
         }
         op
     }
 
-    pub fn xa(v: Rational64) -> Self {
+    pub fn xa(v: impl Into<WgslValue>) -> Self {
         let mut op = Self::simple_default();
         if let VisualOp::Simple { x_add: ref mut f, .. } = op {
-            *f = Some(v);
+            *f = Some(v.into());
         }
         op
     }
 
-    pub fn ym(v: Rational64) -> Self {
+    pub fn ym(v: impl Into<WgslValue>) -> Self {
         let mut op = Self::simple_default();
         if let VisualOp::Simple { y_mul: ref mut f, .. } = op {
-            *f = Some(v);
+            *f = Some(v.into());
         }
         op
     }
 
-    pub fn ya(v: Rational64) -> Self {
+    pub fn ya(v: impl Into<WgslValue>) -> Self {
         let mut op = Self::simple_default();
         if let VisualOp::Simple { y_add: ref mut f, .. } = op {
-            *f = Some(v);
+            *f = Some(v.into());
         }
         op
     }
 
-    pub fn zm(v: Rational64) -> Self {
+    pub fn zm(v: impl Into<WgslValue>) -> Self {
         let mut op = Self::simple_default();
         if let VisualOp::Simple { z_mul: ref mut f, .. } = op {
-            *f = Some(v);
+            *f = Some(v.into());
         }
         op
     }
 
-    pub fn za(v: Rational64) -> Self {
+    pub fn za(v: impl Into<WgslValue>) -> Self {
         let mut op = Self::simple_default();
         if let VisualOp::Simple { z_add: ref mut f, .. } = op {
-            *f = Some(v);
+            *f = Some(v.into());
         }
         op
     }
 
-    pub fn sm(v: Rational64) -> Self {
+    pub fn sm(v: impl Into<WgslValue>) -> Self {
         let mut op = Self::simple_default();
         if let VisualOp::Simple { scale_mul: ref mut f, .. } = op {
-            *f = Some(v);
+            *f = Some(v.into());
         }
         op
     }
 
-    pub fn sa(v: Rational64) -> Self {
+    pub fn sa(v: impl Into<WgslValue>) -> Self {
         let mut op = Self::simple_default();
         if let VisualOp::Simple { scale_add: ref mut f, .. } = op {
-            *f = Some(v);
+            *f = Some(v.into());
         }
         op
     }
 
-    pub fn vm(v: Rational64) -> Self {
+    pub fn vm(v: impl Into<WgslValue>) -> Self {
         let mut op = Self::simple_default();
         if let VisualOp::Simple { velocity_mul: ref mut f, .. } = op {
-            *f = Some(v);
+            *f = Some(v.into());
         }
         op
     }
 
-    pub fn va(v: Rational64) -> Self {
+    pub fn va(v: impl Into<WgslValue>) -> Self {
         let mut op = Self::simple_default();
         if let VisualOp::Simple { velocity_add: ref mut f, .. } = op {
-            *f = Some(v);
+            *f = Some(v.into());
         }
         op
     }
 
-    pub fn lm(v: Rational64) -> Self {
+    pub fn lm(v: impl Into<WgslValue>) -> Self {
         let mut op = Self::simple_default();
         if let VisualOp::Simple { length: ref mut f, .. } = op {
-            *f = v;
+            *f = v.into();
         }
         op
     }
@@ -1434,39 +1325,28 @@ z += pos.z;"#,
     /// Create a Bend operation
     /// bx, by, bz: bend direction vector (will be made perpendicular to Direction)
     /// k: curvature strength (positive = toward bend vector, negative = away)
-    pub fn bend(bx: Rational64, by: Rational64, bz: Rational64, k: Rational64) -> Self {
+    pub fn bend(bx: impl Into<WgslValue>, by: impl Into<WgslValue>, bz: impl Into<WgslValue>, k: impl Into<WgslValue>) -> Self {
         let mut op = Self::simple_default();
         if let VisualOp::Simple { bend: ref mut b, .. } = op {
-            *b = Some((bx, by, bz, k));
-        }
-        op
-    }
-
-    /// Create an ArcTo operation
-    /// tx, ty, tz: target direction vector (where you want to end up pointing)
-    /// k: strength factor (1 = fully commit to new direction, 0.5 = halfway)
-    pub fn arc_to(tx: Rational64, ty: Rational64, tz: Rational64, k: Rational64) -> Self {
-        let mut op = Self::simple_default();
-        if let VisualOp::Simple { arc_to: ref mut a, .. } = op {
-            *a = Some((tx, ty, tz, k));
+            *b = Some((bx.into(), by.into(), bz.into(), k.into()));
         }
         op
     }
 
     /// Set alpha directly (Alpha 0 = invisible, Alpha 1 = visible)
-    pub fn alpha(v: Rational64) -> Self {
+    pub fn alpha(v: impl Into<WgslValue>) -> Self {
         let mut op = Self::simple_default();
         if let VisualOp::Simple { alpha_set: ref mut f, .. } = op {
-            *f = Some(v);
+            *f = Some(v.into());
         }
         op
     }
 
     /// Multiply alpha (Am 0.5 = fade to 50%)
-    pub fn am(v: Rational64) -> Self {
+    pub fn am(v: impl Into<WgslValue>) -> Self {
         let mut op = Self::simple_default();
         if let VisualOp::Simple { alpha_mul: ref mut f, .. } = op {
-            *f = Some(v);
+            *f = Some(v.into());
         }
         op
     }
@@ -1551,21 +1431,21 @@ z += pos.z;"#,
     x += pos.x;
     y += pos.y;
     z += pos.z;"#,
-                            rational_to_f32(*dx),
-                            rational_to_f32(*dy),
-                            rational_to_f32(*dz),
-                            rational_to_f32(*bx),
-                            rational_to_f32(*by),
-                            rational_to_f32(*bz),
-                            rational_to_f32(*k)
+                            dx.to_wgsl(),
+                            dy.to_wgsl(),
+                            dz.to_wgsl(),
+                            bx.to_wgsl(),
+                            by.to_wgsl(),
+                            bz.to_wgsl(),
+                            k.to_wgsl()
                         ));
                     } else {
                         // No bend: simple linear displacement
                         lines.push(format!(
                             "    let dir = normalize(vec3<f32>({}, {}, {}));\n    x += dir.x * dt * velocity;\n    y += dir.y * dt * velocity;\n    z += dir.z * dt * velocity;",
-                            rational_to_f32(*dx),
-                            rational_to_f32(*dy),
-                            rational_to_f32(*dz)
+                            dx.to_wgsl(),
+                            dy.to_wgsl(),
+                            dz.to_wgsl()
                         ));
                     }
                 }
@@ -1575,44 +1455,44 @@ z += pos.z;"#,
 
                 // Multiply ops: set at segment start
                 if let Some(v) = x_mul {
-                    segment_ops.push(format!("        x = x * {:.6};", rational_to_f32(*v)));
+                    segment_ops.push(format!("        x = x * {};", v.to_wgsl()));
                 }
                 if let Some(v) = y_mul {
-                    segment_ops.push(format!("        y = y * {:.6};", rational_to_f32(*v)));
+                    segment_ops.push(format!("        y = y * {};", v.to_wgsl()));
                 }
                 if let Some(v) = z_mul {
-                    segment_ops.push(format!("        z = z * {:.6};", rational_to_f32(*v)));
+                    segment_ops.push(format!("        z = z * {};", v.to_wgsl()));
                 }
                 if let Some(v) = scale_mul {
-                    segment_ops.push(format!("        scale = scale * {:.6};", rational_to_f32(*v)));
+                    segment_ops.push(format!("        scale = scale * {};", v.to_wgsl()));
                 }
                 if let Some(v) = velocity_mul {
-                    segment_ops.push(format!("        velocity = velocity * {:.6};", rational_to_f32(*v)));
+                    segment_ops.push(format!("        velocity = velocity * {};", v.to_wgsl()));
                 }
 
                 // Add ops: set at segment start
                 if let Some(v) = x_add {
-                    segment_ops.push(format!("        x = x + {:.6};", rational_to_f32(*v)));
+                    segment_ops.push(format!("        x = x + {};", v.to_wgsl()));
                 }
                 if let Some(v) = y_add {
-                    segment_ops.push(format!("        y = y + {:.6};", rational_to_f32(*v)));
+                    segment_ops.push(format!("        y = y + {};", v.to_wgsl()));
                 }
                 if let Some(v) = z_add {
-                    segment_ops.push(format!("        z = z + {:.6};", rational_to_f32(*v)));
+                    segment_ops.push(format!("        z = z + {};", v.to_wgsl()));
                 }
                 if let Some(v) = scale_add {
-                    segment_ops.push(format!("        scale = scale + {:.6};", rational_to_f32(*v)));
+                    segment_ops.push(format!("        scale = scale + {};", v.to_wgsl()));
                 }
                 if let Some(v) = velocity_add {
-                    segment_ops.push(format!("        velocity = velocity + {:.6};", rational_to_f32(*v)));
+                    segment_ops.push(format!("        velocity = velocity + {};", v.to_wgsl()));
                 }
 
                 // Alpha: set directly or multiply
                 if let Some(v) = alpha_set {
-                    segment_ops.push(format!("        alpha = {:.6};", rational_to_f32(*v)));
+                    segment_ops.push(format!("        alpha = {};", v.to_wgsl()));
                 }
                 if let Some(v) = alpha_mul {
-                    segment_ops.push(format!("        alpha = alpha * {:.6};", rational_to_f32(*v)));
+                    segment_ops.push(format!("        alpha = alpha * {};", v.to_wgsl()));
                 }
 
                 // Wrap ops in time check - only apply when we've reached this segment
@@ -1665,7 +1545,16 @@ z += pos.z;"#,
 
     /// Generate WGSL code for a time segment using runtime seg_length
     /// base_start/base_end: compile-time segment times (will be scaled by seg_length at runtime)
+    /// is_last: true if this is the last segment in a Seq (multipliers should persist)
     fn to_wgsl_segment_runtime(&self, base_start: f64, base_end: f64) -> String {
+        self.to_wgsl_segment_runtime_impl(base_start, base_end, false)
+    }
+
+    fn to_wgsl_segment_runtime_last(&self, base_start: f64, base_end: f64) -> String {
+        self.to_wgsl_segment_runtime_impl(base_start, base_end, true)
+    }
+
+    fn to_wgsl_segment_runtime_impl(&self, base_start: f64, base_end: f64, is_last: bool) -> String {
         match self {
             VisualOp::Simple {
                 direction,
@@ -1680,7 +1569,6 @@ z += pos.z;"#,
                 velocity_mul,
                 velocity_add,
                 bend,
-                arc_to,
                 alpha_set,
                 alpha_mul,
                 ..
@@ -1705,53 +1593,15 @@ z += pos.z;"#,
                         .to_string(),
                 );
 
-                // Direction with optional Bend or ArcTo (cubic Bézier curve)
+                // Direction with optional Bend (cubic Bézier curve)
                 if let Some((dx, dy, dz)) = direction {
-                    if let Some((tx, ty, tz, k)) = arc_to {
-                        // ArcTo: cubic Bézier that changes end direction toward target
-                        lines.push(format!(
-                            r#"        // ArcTo: curve that ends pointing toward target direction
-        let dir = normalize(vec3<f32>({}, {}, {}));
-        let target_dir = normalize(vec3<f32>({}, {}, {}));
-        let arc_k = {:.6};
-        let L = duration * velocity;
-        // End direction: lerp from current toward target by k
-        let dT = normalize(mix(dir, target_dir, arc_k));
-        // Bézier control points: P1 starts in dir, P2 ends in dT
-        let p0 = vec3<f32>(0.0, 0.0, 0.0);
-        let p3 = dir * L;  // End position (straight line distance)
-        let p1 = p0 + dir * (L / 3.0);  // Start tangent = original direction
-        let p2 = p3 - dT * (L / 3.0);  // End tangent = new direction
-        // Cubic Bézier: (1-t)³P0 + 3(1-t)²tP1 + 3(1-t)t²P2 + t³P3
-        let t = progress;
-        let mt = 1.0 - t;
-        let mt2 = mt * mt;
-        let mt3 = mt2 * mt;
-        let t2 = t * t;
-        let t3 = t2 * t;
-        let pos = mt3 * p0 + 3.0 * mt2 * t * p1 + 3.0 * mt * t2 * p2 + t3 * p3;
-        if (time >= seg_start) {{
-            x += pos.x;
-            y += pos.y;
-            z += pos.z;
-            // Update direction to the new end direction
-            direction = dT;
-        }}"#,
-                            rational_to_f32(*dx),
-                            rational_to_f32(*dy),
-                            rational_to_f32(*dz),
-                            rational_to_f32(*tx),
-                            rational_to_f32(*ty),
-                            rational_to_f32(*tz),
-                            rational_to_f32(*k)
-                        ));
-                    } else if let Some((bx, by, bz, k)) = bend {
+                    if let Some((bx, by, bz, k)) = bend {
                         // Bend is symmetric - exit direction same as entry direction
                         lines.push(format!(
                             r#"        // Bézier curve with bend (symmetric bulge)
         let dir = normalize(vec3<f32>({}, {}, {}));
         let bend_raw = vec3<f32>({}, {}, {});
-        let k = {:.6};
+        let k = {};
         let L = duration * velocity;
         let bend_perp = bend_raw - dot(bend_raw, dir) * dir;
         let perp_len = length(bend_perp);
@@ -1777,60 +1627,30 @@ z += pos.z;"#,
             z += pos.z;
             direction = dir;
         }}"#,
-                            rational_to_f32(*dx),
-                            rational_to_f32(*dy),
-                            rational_to_f32(*dz),
-                            rational_to_f32(*bx),
-                            rational_to_f32(*by),
-                            rational_to_f32(*bz),
-                            rational_to_f32(*k)
+                            dx.to_wgsl(),
+                            dy.to_wgsl(),
+                            dz.to_wgsl(),
+                            bx.to_wgsl(),
+                            by.to_wgsl(),
+                            bz.to_wgsl(),
+                            k.to_wgsl()
                         ));
                     } else {
                         // No bend: simple linear displacement
                         // Update global direction so Seq continuation knows which way to go
                         lines.push(format!(
                             "        let dir = normalize(vec3<f32>({}, {}, {}));\n        if (time >= seg_start) {{\n            x += dir.x * dt * velocity;\n            y += dir.y * dt * velocity;\n            z += dir.z * dt * velocity;\n            direction = dir;\n        }}",
-                            rational_to_f32(*dx),
-                            rational_to_f32(*dy),
-                            rational_to_f32(*dz)
+                            dx.to_wgsl(),
+                            dy.to_wgsl(),
+                            dz.to_wgsl()
                         ));
                     }
-                } else if let Some((tx, ty, tz, k)) = arc_to {
-                    // Standalone ArcTo: use existing runtime direction
-                    lines.push(format!(
-                        r#"        // ArcTo: curve using current direction, ending toward target
-        let target_dir = normalize(vec3<f32>({}, {}, {}));
-        let arc_k = {:.6};
-        let L = duration * velocity;
-        let dT = normalize(mix(direction, target_dir, arc_k));
-        let p0 = vec3<f32>(0.0, 0.0, 0.0);
-        let p3 = p0 + direction * L;
-        let p1 = p0 + direction * (L / 3.0);
-        let p2 = p3 - dT * (L / 3.0);
-        let t = progress;
-        let mt = 1.0 - t;
-        let mt2 = mt * mt;
-        let mt3 = mt2 * mt;
-        let t2 = t * t;
-        let t3 = t2 * t;
-        let pos = mt3 * p0 + 3.0 * mt2 * t * p1 + 3.0 * mt * t2 * p2 + t3 * p3;
-        if (time >= seg_start) {{
-            x += pos.x;
-            y += pos.y;
-            z += pos.z;
-            direction = dT;
-        }}"#,
-                        rational_to_f32(*tx),
-                        rational_to_f32(*ty),
-                        rational_to_f32(*tz),
-                        rational_to_f32(*k)
-                    ));
                 } else if let Some((bx, by, bz, k)) = bend {
                     // Standalone Bend: use existing runtime direction
                     lines.push(format!(
                         r#"        // Bézier curve with bend using current direction (symmetric bulge)
         let bend_raw = vec3<f32>({}, {}, {});
-        let k = {:.6};
+        let k = {};
         let L = duration * velocity;
         let bend_perp = bend_raw - dot(bend_raw, direction) * direction;
         let perp_len = length(bend_perp);
@@ -1855,56 +1675,73 @@ z += pos.z;"#,
             y += pos.y;
             z += pos.z;
         }}"#,
-                        rational_to_f32(*bx),
-                        rational_to_f32(*by),
-                        rational_to_f32(*bz),
-                        rational_to_f32(*k)
+                        bx.to_wgsl(),
+                        by.to_wgsl(),
+                        bz.to_wgsl(),
+                        k.to_wgsl()
                     ));
+                } else {
+                    // No direction/bend: continue moving in current direction
+                    // This ensures segments like "Am 0 | Sm 0" still move the point
+                    lines.push(
+                        r#"        // Continue in current direction
+        if (time >= seg_start) {
+            x += direction.x * dt * velocity;
+            y += direction.y * dt * velocity;
+            z += direction.z * dt * velocity;
+        }"#.to_string()
+                    );
                 }
 
                 // Collect ops that should only apply when we've reached this segment
                 let mut segment_ops = Vec::new();
 
                 if let Some(v) = x_mul {
-                    segment_ops.push(format!("            x = x * {:.6};", rational_to_f32(*v)));
+                    segment_ops.push(format!("            x = x * {};", v.to_wgsl()));
                 }
                 if let Some(v) = y_mul {
-                    segment_ops.push(format!("            y = y * {:.6};", rational_to_f32(*v)));
+                    segment_ops.push(format!("            y = y * {};", v.to_wgsl()));
                 }
                 if let Some(v) = z_mul {
-                    segment_ops.push(format!("            z = z * {:.6};", rational_to_f32(*v)));
+                    segment_ops.push(format!("            z = z * {};", v.to_wgsl()));
                 }
                 if let Some(v) = scale_mul {
-                    segment_ops.push(format!("            scale = scale * {:.6};", rational_to_f32(*v)));
+                    segment_ops.push(format!("            scale = scale * {};", v.to_wgsl()));
                 }
                 if let Some(v) = velocity_mul {
-                    segment_ops.push(format!("            velocity = velocity * {:.6};", rational_to_f32(*v)));
+                    segment_ops.push(format!("            velocity = velocity * {};", v.to_wgsl()));
                 }
                 if let Some(v) = x_add {
-                    segment_ops.push(format!("            x = x + {:.6};", rational_to_f32(*v)));
+                    segment_ops.push(format!("            x = x + {};", v.to_wgsl()));
                 }
                 if let Some(v) = y_add {
-                    segment_ops.push(format!("            y = y + {:.6};", rational_to_f32(*v)));
+                    segment_ops.push(format!("            y = y + {};", v.to_wgsl()));
                 }
                 if let Some(v) = z_add {
-                    segment_ops.push(format!("            z = z + {:.6};", rational_to_f32(*v)));
+                    segment_ops.push(format!("            z = z + {};", v.to_wgsl()));
                 }
                 if let Some(v) = scale_add {
-                    segment_ops.push(format!("            scale = scale + {:.6};", rational_to_f32(*v)));
+                    segment_ops.push(format!("            scale = scale + {};", v.to_wgsl()));
                 }
                 if let Some(v) = velocity_add {
-                    segment_ops.push(format!("            velocity = velocity + {:.6};", rational_to_f32(*v)));
+                    segment_ops.push(format!("            velocity = velocity + {};", v.to_wgsl()));
                 }
                 if let Some(v) = alpha_set {
-                    segment_ops.push(format!("            alpha = {:.6};", rational_to_f32(*v)));
+                    segment_ops.push(format!("            alpha = {};", v.to_wgsl()));
                 }
                 if let Some(v) = alpha_mul {
-                    segment_ops.push(format!("            alpha = alpha * {:.6};", rational_to_f32(*v)));
+                    segment_ops.push(format!("            alpha = alpha * {};", v.to_wgsl()));
                 }
 
-                // Wrap ops in time check - only apply when we've reached this segment
+                // Wrap ops in time check
+                // For last segment: use >= seg_start so multipliers persist after Seq ends
+                // For other segments: use >= && < so only one segment's multipliers apply at a time
                 if !segment_ops.is_empty() {
-                    lines.push("        if (time >= seg_start) {".to_string());
+                    if is_last {
+                        lines.push("        if (time >= seg_start) {".to_string());
+                    } else {
+                        lines.push("        if (time >= seg_start && time < seg_end) {".to_string());
+                    }
                     for op in segment_ops {
                         lines.push(op);
                     }
@@ -1922,6 +1759,7 @@ z += pos.z;"#,
                 let mut inner_base_time = base_start;
                 let total_len = rational_to_f64(self.length());
                 let outer_base_duration = base_end - base_start;
+                let last_idx = items.len().saturating_sub(1);
 
                 for (i, op) in items.iter().enumerate() {
                     let inner_duration = rational_to_f64(op.length());
@@ -1933,7 +1771,12 @@ z += pos.z;"#,
                     // Wrap each inner segment in its own scope (for variable scoping)
                     // State persists across segments
                     wgsl.push_str(&format!("        // Inner segment {}\n        {{\n", i));
-                    wgsl.push_str(&op.to_wgsl_segment_runtime(inner_base_time, inner_base_time + scaled));
+                    // Last segment uses _last variant so multipliers persist after Seq ends
+                    if i == last_idx {
+                        wgsl.push_str(&op.to_wgsl_segment_runtime_last(inner_base_time, inner_base_time + scaled));
+                    } else {
+                        wgsl.push_str(&op.to_wgsl_segment_runtime(inner_base_time, inner_base_time + scaled));
+                    }
                     wgsl.push_str("\n        }\n");
                     inner_base_time += scaled;
                 }
@@ -1992,21 +1835,21 @@ z += pos.z;"#,
 }
 
 // Helper functions for composition
-fn compose_mul(a: Option<Rational64>, b: Option<Rational64>) -> Option<Rational64> {
+fn compose_mul(a: Option<WgslValue>, b: Option<WgslValue>) -> Option<WgslValue> {
     match (a, b) {
-        (Some(a), Some(b)) => Some(a * b),
+        (Some(a), Some(b)) => Some(a.mul(&b)),
         (a, b) => a.or(b),
     }
 }
 
-fn compose_add(a: Option<Rational64>, b: Option<Rational64>) -> Option<Rational64> {
+fn compose_add(a: Option<WgslValue>, b: Option<WgslValue>) -> Option<WgslValue> {
     match (a, b) {
-        (Some(a), Some(b)) => Some(a + b),
+        (Some(a), Some(b)) => Some(a.add(&b)),
         (a, b) => a.or(b),
     }
 }
 
-fn rational_to_f32(r: Rational64) -> f32 {
+pub fn rational_to_f32(r: Rational64) -> f32 {
     *r.numer() as f32 / *r.denom() as f32
 }
 
@@ -2489,105 +2332,6 @@ mod tests {
     }
 
     #[test]
-    fn test_visual_op_arc_to() {
-        // Test ArcTo creates curve code that changes end direction
-        let dir = VisualOp::direction(
-            Rational64::new(1, 1),
-            Rational64::new(0, 1),
-            Rational64::new(0, 1),
-        );
-        let arc = VisualOp::arc_to(
-            Rational64::new(0, 1),
-            Rational64::new(1, 1),
-            Rational64::new(0, 1),
-            Rational64::new(1, 1), // k = 1.0 (fully commit to new direction)
-        );
-        let composed = dir.compose(arc);
-        let wgsl = composed.to_wgsl(0.0);
-
-        println!("ArcTo WGSL:\n{}", wgsl);
-
-        // Should have ArcTo components
-        assert!(wgsl.contains("ArcTo"), "Output should mention ArcTo");
-        assert!(wgsl.contains("target_dir"), "Output should have target direction");
-        assert!(wgsl.contains("mix"), "Output should use mix for direction lerp");
-        assert!(wgsl.contains("dT"), "Output should have end direction dT");
-        assert!(wgsl.contains("direction = dT"), "Should update direction to new end direction");
-    }
-
-    #[test]
-    fn test_visual_op_arc_to_in_seq() {
-        // Test ArcTo works inside Seq with proper Bézier evaluation
-        let segment = VisualOp::direction(
-            Rational64::new(1, 1),
-            Rational64::new(0, 1),
-            Rational64::new(0, 1),
-        ).compose(VisualOp::arc_to(
-            Rational64::new(0, 1),
-            Rational64::new(1, 1),
-            Rational64::new(0, 1),
-            Rational64::new(1, 2), // k = 0.5
-        )).compose(VisualOp::lm(Rational64::new(1, 1)));
-
-        let seq = VisualOp::Seq { items: vec![segment] };
-        let wgsl = seq.to_wgsl(0.0);
-
-        println!("ArcTo in Seq WGSL:\n{}", wgsl);
-
-        // Should have ArcTo curve with Bézier components
-        assert!(wgsl.contains("ArcTo"), "Output should mention ArcTo");
-        assert!(wgsl.contains("target_dir"), "Output should have target direction");
-        assert!(wgsl.contains("mt3"), "Output should have (1-t)^3 component");
-        assert!(wgsl.contains("t3"), "Output should have t^3 component");
-    }
-
-    #[test]
-    fn test_arc_to_validates() {
-        // Ensure generated WGSL code compiles
-        let dir = VisualOp::direction(
-            Rational64::new(1, 1),
-            Rational64::new(0, 1),
-            Rational64::new(0, 1),
-        );
-        let arc = VisualOp::arc_to(
-            Rational64::new(0, 1),
-            Rational64::new(1, 1),
-            Rational64::new(0, 1),
-            Rational64::new(1, 1),
-        );
-        let composed = dir.compose(arc);
-        let wgsl = composed.to_wgsl(0.0);
-
-        assert!(validate_wgsl(&wgsl).is_ok(), "ArcTo WGSL should validate");
-    }
-
-    #[test]
-    fn test_standalone_arcto() {
-        // Standalone ArcTo should generate space warp transform code
-        let arc = VisualOp::arc_to(
-            Rational64::new(0, 1),
-            Rational64::new(1, 1),
-            Rational64::new(0, 1),
-            Rational64::new(1, 1),
-        );
-        let wgsl = arc.to_wgsl(0.0);
-
-        println!("Standalone ArcTo WGSL:\n{}", wgsl);
-
-        // Should be a space warp transform
-        assert!(wgsl.contains("ArcTo space warp"), "Should be space warp mode");
-        assert!(wgsl.contains("let target_dir = normalize"), "Should have target direction");
-        assert!(wgsl.contains("Rodrigues"), "Should use Rodrigues rotation");
-        assert!(wgsl.contains("cross(rot_axis, pos)"), "Should rotate position");
-
-        let validation_result = validate_wgsl(&wgsl);
-        if let Err(ref e) = validation_result {
-            eprintln!("Validation error: {}", e);
-        }
-        assert!(validation_result.is_ok(), "Standalone ArcTo should validate");
-    }
-
-    #[test]
     fn test_standalone_bend() {
         // Standalone Bend should generate space warp transform code
         let bend = VisualOp::bend(
@@ -2662,57 +2406,6 @@ mod tests {
             eprintln!("Validation error: {}", e);
         }
         assert!(validation_result.is_ok(), "Normalized Seq|Bend should validate");
-    }
-
-    #[test]
-    fn test_chained_warps_normalized() {
-        // Test chaining multiple warps: Seq | Bend | ArcTo
-        let seg = VisualOp::direction(
-            Rational64::new(1, 1),
-            Rational64::new(0, 1),
-            Rational64::new(0, 1),
-        ).compose(VisualOp::lm(Rational64::new(2, 1)));
-
-        let seq = VisualOp::Seq { items: vec![seg] };
-
-        // Chain two warps
-        let bend = VisualOp::bend(
-            Rational64::new(0, 1),
-            Rational64::new(1, 1),
-            Rational64::new(0, 1),
-            Rational64::new(1, 2),
-        );
-        let arc_to = VisualOp::arc_to(
-            Rational64::new(0, 1),
-            Rational64::new(0, 1),
-            Rational64::new(1, 1),
-            Rational64::new(1, 4),
-        );
-
-        let composed = seq.compose(bend).compose(arc_to);
-        let nf = composed.normalize();
-
-        println!("Chained warps NormalForm: {} operations", nf.operations.len());
-        for (i, op) in nf.operations.iter().enumerate() {
-            println!("  Segment {}: {} warps", i, op.warps.len());
-        }
-
-        // Should have both warps chained
-        assert_eq!(nf.operations.len(), 1, "Should have 1 segment");
-        assert_eq!(nf.operations[0].warps.len(), 2, "Segment should have 2 chained warps");
-
-        // Generate and validate WGSL
-        let wgsl = nf.to_wgsl();
-        println!("Chained warps WGSL:\n{}", wgsl);
-
-        assert!(wgsl.contains("Bend warp"), "Should have Bend warp code");
-        assert!(wgsl.contains("ArcTo warp"), "Should have ArcTo warp code");
-
-        let validation_result = validate_wgsl(&wgsl);
-        if let Err(ref e) = validation_result {
-            eprintln!("Validation error: {}", e);
-        }
-        assert!(validation_result.is_ok(), "Chained warps should validate");
     }
 
     #[test]

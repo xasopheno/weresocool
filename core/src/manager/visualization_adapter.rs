@@ -51,6 +51,8 @@ impl VisualizationAdapter {
             names: render_op.names.to_vec(),
             colors: render_op.colors.to_vec(),
             wgsl: render_op.wgsl.clone(),
+            color_gradient: render_op.color_gradient,
+            color_mix: render_op.color_mix,
         };
 
         op4d.normalize(normalizer);
@@ -112,6 +114,8 @@ impl VisualizationAdapter {
                 names: render_op.names.clone(),
                 colors: render_op.colors.clone(),
                 wgsl: render_op.wgsl.clone(),
+                color_gradient: render_op.color_gradient,
+                color_mix: render_op.color_mix,
             };
 
             // Apply normalization

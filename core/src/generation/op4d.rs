@@ -13,6 +13,10 @@ pub struct Op4D {
     pub names: Vec<String>,
     pub colors: Vec<String>,
     pub wgsl: Vec<u64>,
+    /// Color gradient direction (if Some, use gradient-based color selection)
+    pub color_gradient: Option<(f32, f32, f32)>,
+    /// Color mix: 0 = pure gradient, 1 = pure random
+    pub color_mix: f32,
 }
 
 impl std::default::Default for Op4D {
@@ -28,6 +32,8 @@ impl std::default::Default for Op4D {
             names: vec![],
             colors: vec![],
             wgsl: vec![],
+            color_gradient: None,
+            color_mix: 1.0,
         }
     }
 }
