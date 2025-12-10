@@ -1178,8 +1178,8 @@ fn format_color_value<'a>(arena: &'a Arena<'a>, color: &ColorValue) -> DocBuilde
             };
             arena.text(format!("Color [{}]", name))
         }
-        ColorValue::ColorSet { colors } => {
-            if colors.len() == 1 {
+        ColorValue::ColorSet { colors, gradient } => {
+            let color_part = if colors.len() == 1 {
                 // Single color - format as hex
                 let c = &colors[0];
                 let hex = format!(
@@ -1188,7 +1188,7 @@ fn format_color_value<'a>(arena: &'a Arena<'a>, color: &ColorValue) -> DocBuilde
                     (c.g * 255.0).round() as u8,
                     (c.b * 255.0).round() as u8
                 );
-                arena.text(format!("Color [{}]", hex))
+                format!("Color [{}]", hex)
             } else {
                 // Multiple colors - format as list
                 let color_strs: Vec<String> = colors.iter().map(|c| {
@@ -1199,7 +1199,14 @@ fn format_color_value<'a>(arena: &'a Arena<'a>, color: &ColorValue) -> DocBuilde
                         (c.b * 255.0).round() as u8
                     )
                 }).collect();
-                arena.text(format!("Color [{}]", color_strs.join(", ")))
+                format!("Color [{}]", color_strs.join(", "))
+            };
+
+            // Add gradient if present
+            if let Some((gx, gy, gz)) = gradient {
+                arena.text(format!("{} | Gradient({}, {}, {})", color_part, gx, gy, gz))
+            } else {
+                arena.text(color_part)
             }
         }
     }

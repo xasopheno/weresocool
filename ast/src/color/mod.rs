@@ -72,6 +72,24 @@ impl ColorMap {
     pub fn next_id(&self) -> u64 {
         self.next_id
     }
+
+    /// Update the gradient of a ColorValue::ColorSet by its id
+    /// Returns true if the update was successful
+    pub fn set_gradient(&mut self, id: u64, gradient: (f32, f32, f32)) -> bool {
+        let id_str = id.to_string();
+        if let Some(value) = self.map.get_by_left(&id_str).cloned() {
+            if let ColorValue::ColorSet { colors, .. } = value {
+                // Remove old entry and insert updated one
+                self.map.remove_by_left(&id_str);
+                self.map.insert(id_str, ColorValue::ColorSet {
+                    colors,
+                    gradient: Some(gradient),
+                });
+                return true;
+            }
+        }
+        false
+    }
 }
 
 pub trait GenColor: DynClone + Debug + Send + Sync {
@@ -80,7 +98,7 @@ pub trait GenColor: DynClone + Debug + Send + Sync {
 }
 dyn_clone::clone_trait_object!(GenColor);
 
-pub fn parse_color_set(colors: Vec<CssOrHex>) -> ColorValue {
+pub fn parse_color_set(colors: Vec<CssOrHex>, gradient: Option<(f32, f32, f32)>) -> ColorValue {
     let color_strings: Vec<String> = colors
         .iter()
         .map(|color| match color {
@@ -100,13 +118,43 @@ pub fn parse_color_set(colors: Vec<CssOrHex>) -> ColorValue {
 
     ColorValue::ColorSet {
         colors: vec_hex_to_vec_color(color_refs),
+        gradient,
     }
 }
 
-#[derive(Clone, Debug, PartialEq, Eq, Hash)]
+#[derive(Clone, Debug, PartialEq)]
 pub enum ColorValue {
-    ColorSet { colors: Vec<Color> },
+    ColorSet {
+        colors: Vec<Color>,
+        gradient: Option<(f32, f32, f32)>,
+    },
     Color(CssOrHex),
+}
+
+impl Eq for ColorValue {}
+
+impl std::hash::Hash for ColorValue {
+    fn hash<H: std::hash::Hasher>(&self, state: &mut H) {
+        match self {
+            ColorValue::ColorSet { colors, gradient } => {
+                0u8.hash(state);
+                colors.hash(state);
+                match gradient {
+                    Some((x, y, z)) => {
+                        1u8.hash(state);
+                        x.to_bits().hash(state);
+                        y.to_bits().hash(state);
+                        z.to_bits().hash(state);
+                    }
+                    None => 0u8.hash(state),
+                }
+            }
+            ColorValue::Color(css_or_hex) => {
+                1u8.hash(state);
+                css_or_hex.hash(state);
+            }
+        }
+    }
 }
 
 impl ColorValue {
@@ -121,7 +169,7 @@ impl ColorValue {
                 };
                 parse_css_color(s)
             }
-            ColorValue::ColorSet { colors } => {
+            ColorValue::ColorSet { colors, .. } => {
                 // Pick first color for deterministic results
                 colors.first().cloned().unwrap_or(Color {
                     r: 0.0,

@@ -421,11 +421,11 @@ BaseOperation: Term = {
     "Vibrance" <value: Rational> => Term::Op(Vibrance { value }),
     "Gamma" <value: Rational> => Term::Op(Gamma { value }),
     "Blend" <color: CssOrHex> <amount: Rational> => Term::Op(ColorBlend {
-        color_id: defs.colors.insert(parse_color_set(vec![color])),
+        color_id: defs.colors.insert(parse_color_set(vec![color], None)),
         amount
     }),
     "AddColor" <color: CssOrHex> => Term::Op(ColorAdd {
-        color_id: defs.colors.insert(parse_color_set(vec![color]))
+        color_id: defs.colors.insert(parse_color_set(vec![color], None))
     }),
     "Gradient" "(" <x: Rational> "," <y: Rational> "," <z: Rational> ")" => Term::Op(ColorGradient { x, y, z }),
     "Mix" <amount: Rational> => Term::Op(ColorMix { amount }),
@@ -559,7 +559,7 @@ FollowExpr: FollowExpr = {
 ColorValue: Term = {
     //"ColorGrad[" <colors: Comma<CssOrHex>> "]" => todo!(),
     "Color" "[" <colors: Comma<CssOrHex>> "]" =>
-      Term::Op(Color(defs.colors.insert(parse_color_set(colors)))),
+      Term::Op(Color(defs.colors.insert(parse_color_set(colors, None)))),
     "RandColor" => todo!(),
 };
 

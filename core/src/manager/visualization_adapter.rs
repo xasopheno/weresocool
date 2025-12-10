@@ -57,6 +57,10 @@ impl VisualizationAdapter {
 
         op4d.normalize(normalizer);
 
+        // Note: Color selection based on gradient happens in kintaro,
+        // which has access to the full ColorMap with actual RGB values.
+        // We just pass the gradient direction via op4d.color_gradient.
+
         Some(op4d)
     }
 
@@ -121,6 +125,7 @@ impl VisualizationAdapter {
             // Apply normalization
             op4d.normalize(normalizer);
 
+            // Note: Color selection based on gradient happens in kintaro
             out_ops.push(op4d);
 
             // Advance current_time for the next slice

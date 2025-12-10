@@ -661,8 +661,14 @@ impl PointOp {
 
                     // Insert back into ColorMap as a ColorSet with single element
                     // This will reuse existing ID if same transformed color exists
+                    // Preserve gradient from original ColorValue if it was a ColorSet
+                    let gradient = match color_value {
+                        Some(ColorValue::ColorSet { gradient, .. }) => *gradient,
+                        _ => None,
+                    };
                     color_map.insert(ColorValue::ColorSet {
                         colors: vec![transformed],
+                        gradient,
                     })
                 } else {
                     // If color not found, return original ID

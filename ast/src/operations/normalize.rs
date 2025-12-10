@@ -405,15 +405,30 @@ impl Normalize for Op {
 
             Op::ColorGradient { x, y, z } => {
                 // Set gradient direction for color distribution
-                // Default to some randomness (mix=0.3) when gradient is applied
                 let gx = rational_to_f32(*x);
                 let gy = rational_to_f32(*y);
                 let gz = rational_to_f32(*z);
+                let gradient = (gx, gy, gz);
+
+                // Collect color_ids that need gradient update
+                let color_ids_to_update: Vec<u64> = input.operations
+                    .iter()
+                    .flat_map(|seq| seq.iter())
+                    .filter_map(|op| op.colors.last().copied())
+                    .collect();
+
+                // Update the gradient on colors in the ColorMap
+                // This associates the gradient with the brush definition, not per-operation
+                for color_id in color_ids_to_update {
+                    defs.colors.set_gradient(color_id, gradient);
+                }
+
+                // Also keep setting op.color_distribution for backwards compatibility
                 input.fmap_mut(|op| {
-                    op.color_distribution.gradient = Some((gx, gy, gz));
-                    // Only set default mix if this is the first gradient applied
+                    op.color_distribution.gradient = Some(gradient);
+                    // Set mix to 0 (pure gradient) when gradient is applied
                     if op.color_distribution.mix == 1.0 {
-                        op.color_distribution.mix = 0.3;
+                        op.color_distribution.mix = 0.0;
                     }
                 });
             }
