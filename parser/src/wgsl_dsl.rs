@@ -89,8 +89,13 @@ pub fn compile_dsl_to_wgsl(src: &str) -> Result<String, DslError> {
         if trimmed.is_empty() {
             continue;
         }
-        // Preserve both // and -- style comments
-        if trimmed.starts_with("//") || trimmed.starts_with("--") {
+        // Convert -- style comments to // for WGSL compatibility
+        if trimmed.starts_with("--") {
+            result.push(format!("    //{}", &trimmed[2..]));
+            continue;
+        }
+        // Preserve // style comments
+        if trimmed.starts_with("//") {
             result.push(format!("    {}", trimmed));
             continue;
         }
@@ -370,12 +375,13 @@ mod tests {
     }
 
     #[test]
-    fn test_double_dash_comments_preserved() {
-        // -- style comments should also be preserved
+    fn test_double_dash_comments_converted() {
+        // -- style comments should be converted to // for WGSL compatibility
         let input = "Xm 2;\n-- this is a comment\nYm 3";
         let output = compile_dsl_to_wgsl(input).unwrap();
         println!("Output:\n{}", output);
-        assert!(output.contains("-- this is a comment"), "-- comment should be preserved");
+        assert!(output.contains("// this is a comment"), "-- comment should be converted to //");
+        assert!(!output.contains("--"), "-- should not appear in WGSL output");
         assert!(output.contains("x = x * 2"));
         assert!(output.contains("y = y * 3"));
     }
