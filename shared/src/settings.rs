@@ -1,14 +1,8 @@
-#[cfg(not(test))]
-use once_cell::sync::OnceCell;
-
 use serde::Deserialize;
 use std::path::PathBuf;
+use std::sync::RwLock;
 
-#[cfg(not(test))]
-static SETTINGS: OnceCell<Settings> = OnceCell::new();
-
-#[cfg(test)]
-static SETTINGS: std::sync::RwLock<Settings> = std::sync::RwLock::new(get_test_settings());
+static SETTINGS: RwLock<Option<Settings>> = RwLock::new(None);
 
 /// Global settings for WereSoCool audio rendering
 #[derive(Clone, Debug, PartialEq)]
@@ -28,28 +22,27 @@ pub struct Settings {
     pub crossfade_period: usize,
     pub lookahead_buffers: usize,
     pub vis_filter_rate: f32,
+    // TUI/Kintaro settings
+    pub visual_mode: bool,
+    pub window_width: Option<u32>,
+    pub window_height: Option<u32>,
+    pub window_x: Option<i32>,
+    pub window_y: Option<i32>,
 }
 
 impl Settings {
-    /// Get global settings
-    #[cfg(not(test))]
-    pub fn global() -> &'static Settings {
-        SETTINGS.get_or_init(|| {
+    /// Get global settings (cloned)
+    pub fn global() -> Settings {
+        let guard = SETTINGS.read().expect("Failed to read Settings lock");
+        guard.clone().unwrap_or_else(|| {
             eprintln!("WARNING: Settings accessed before initialization, using defaults");
             default_settings()
         })
     }
 
-    /// Get global settings (test version returns a guard that derefs to Settings)
-    #[cfg(test)]
-    pub fn global() -> std::sync::RwLockReadGuard<'static, Settings> {
-        SETTINGS.read().expect("Failed to read Settings lock")
-    }
-
     /// Initialize settings with sample_rate and buffer_size
     /// Loads config files and merges them with provided values
     /// Priority: hardcoded defaults < init params < global config < local config
-    #[cfg(not(test))]
     pub fn init(sample_rate: f64, buffer_size: usize) {
         let mut settings = default_settings();
 
@@ -62,20 +55,11 @@ impl Settings {
             config.apply_to(&mut settings);
         }
 
-        _ = SETTINGS.set(settings);
-    }
-
-    /// Initialize settings in test mode (skips config file loading for test isolation)
-    #[cfg(test)]
-    pub fn init(sample_rate: f64, buffer_size: usize) {
-        let mut settings = default_settings();
-        settings.sample_rate = sample_rate;
-        settings.buffer_size = buffer_size;
-        *SETTINGS.write().expect("Failed to write Settings lock") = settings;
+        *SETTINGS.write().expect("Failed to write Settings lock") = Some(settings);
     }
 
     /// Initialize with default settings (loads config files)
-    #[cfg(not(test))]
+    /// Can be called multiple times to reload config
     pub fn init_default() {
         let mut settings = default_settings();
 
@@ -84,37 +68,22 @@ impl Settings {
             config.apply_to(&mut settings);
         }
 
-        _ = SETTINGS.set(settings);
-    }
-
-    /// Initialize with default settings in test mode (skips config loading)
-    #[cfg(test)]
-    pub fn init_default() {
-        *SETTINGS.write().expect("Failed to write Settings lock") = default_settings();
+        *SETTINGS.write().expect("Failed to write Settings lock") = Some(settings);
     }
 
     /// Initialize with test settings
-    #[cfg(not(test))]
     pub fn init_test() {
-        _ = SETTINGS.set(get_test_settings());
+        *SETTINGS.write().expect("Failed to write Settings lock") = Some(get_test_settings());
     }
 
-    #[cfg(test)]
-    pub fn init_test() {
-        *SETTINGS.write().expect("Failed to write Settings lock") = get_test_settings();
-    }
-
-    /// Set settings (production only - tests should use set_for_test)
-    #[cfg(not(test))]
+    /// Set settings directly
     pub fn set(&self) {
-        _ = SETTINGS.set(self.clone());
+        *SETTINGS.write().expect("Failed to write Settings lock") = Some(self.clone());
     }
 
-    /// Update settings in test mode
-    /// This allows tests to reconfigure Settings between assertions
-    #[cfg(test)]
-    pub fn set_for_test(settings: Settings) {
-        *SETTINGS.write().expect("Failed to write Settings lock") = settings;
+    /// Check if settings have been initialized
+    pub fn is_initialized() -> bool {
+        SETTINGS.read().expect("Failed to read Settings lock").is_some()
     }
 }
 
@@ -122,6 +91,59 @@ impl Default for Settings {
     fn default() -> Self {
         default_settings()
     }
+}
+
+/// Get the path to the global config file
+pub fn config_path() -> Option<std::path::PathBuf> {
+    dirs::config_dir().map(|d| d.join("weresocool").join("config.toml"))
+}
+
+/// Ensure the config file exists, creating a default one if not
+pub fn ensure_config_exists() -> Option<std::path::PathBuf> {
+    let path = config_path()?;
+    if !path.exists() {
+        // Create parent directory
+        if let Some(parent) = path.parent() {
+            let _ = std::fs::create_dir_all(parent);
+        }
+        // Write default config
+        let default_config = r#"# WereSoCool Configuration
+
+# Playback
+loop_play = false
+pad_end = true
+
+# Audio
+sample_rate = 48000.0
+buffer_size = 12288
+channels = 2
+interleaved = true
+
+# Rendering
+crossfade_period = 4096
+lookahead_buffers = 3
+
+# Mic input
+mic = false
+yin_buffer_size = 2048
+probability_threshold = 0.3
+gain_threshold_min = 0.0
+max_freq = 4500.0
+min_freq = 20.0
+
+# Visualization
+vis_filter_rate = 0.125
+visual_mode = true
+
+# Window (optional)
+# window_width = 1280
+# window_height = 720
+# window_x = 100
+# window_y = 100
+"#;
+        let _ = std::fs::write(&path, default_config);
+    }
+    Some(path)
 }
 
 /// Get default settings
@@ -142,6 +164,11 @@ pub const fn default_settings() -> Settings {
         min_freq: 20.0,
         lookahead_buffers: 3,
         vis_filter_rate: 0.125,
+        visual_mode: true,
+        window_width: None,
+        window_height: None,
+        window_x: None,
+        window_y: None,
     }
 }
 
@@ -173,6 +200,12 @@ struct SettingsConfig {
     crossfade_period: Option<usize>,
     lookahead_buffers: Option<usize>,
     vis_filter_rate: Option<f32>,
+    // TUI/Kintaro settings
+    visual_mode: Option<bool>,
+    window_width: Option<u32>,
+    window_height: Option<u32>,
+    window_x: Option<i32>,
+    window_y: Option<i32>,
 }
 
 impl SettingsConfig {
@@ -193,6 +226,11 @@ impl SettingsConfig {
         if let Some(v) = self.crossfade_period { settings.crossfade_period = v; }
         if let Some(v) = self.lookahead_buffers { settings.lookahead_buffers = v; }
         if let Some(v) = self.vis_filter_rate { settings.vis_filter_rate = v; }
+        if let Some(v) = self.visual_mode { settings.visual_mode = v; }
+        if self.window_width.is_some() { settings.window_width = self.window_width; }
+        if self.window_height.is_some() { settings.window_height = self.window_height; }
+        if self.window_x.is_some() { settings.window_x = self.window_x; }
+        if self.window_y.is_some() { settings.window_y = self.window_y; }
     }
 }
 
@@ -250,6 +288,11 @@ fn load_all_configs() -> Option<SettingsConfig> {
             merged.crossfade_period = Some(temp_settings.crossfade_period);
             merged.lookahead_buffers = Some(temp_settings.lookahead_buffers);
             merged.vis_filter_rate = Some(temp_settings.vis_filter_rate);
+            merged.visual_mode = Some(temp_settings.visual_mode);
+            merged.window_width = temp_settings.window_width;
+            merged.window_height = temp_settings.window_height;
+            merged.window_x = temp_settings.window_x;
+            merged.window_y = temp_settings.window_y;
             has_config = true;
         }
     }
@@ -296,4 +339,9 @@ fn merge_configs(dest: &mut SettingsConfig, source: SettingsConfig) {
     if source.crossfade_period.is_some() { dest.crossfade_period = source.crossfade_period; }
     if source.lookahead_buffers.is_some() { dest.lookahead_buffers = source.lookahead_buffers; }
     if source.vis_filter_rate.is_some() { dest.vis_filter_rate = source.vis_filter_rate; }
+    if source.visual_mode.is_some() { dest.visual_mode = source.visual_mode; }
+    if source.window_width.is_some() { dest.window_width = source.window_width; }
+    if source.window_height.is_some() { dest.window_height = source.window_height; }
+    if source.window_x.is_some() { dest.window_x = source.window_x; }
+    if source.window_y.is_some() { dest.window_y = source.window_y; }
 }

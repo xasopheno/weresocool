@@ -13,7 +13,7 @@ fn new_socool_file(filename: String, working_path: PathBuf) -> Result<(), Error>
     let path = working_path.join(filename.clone());
 
     fs::write(path, DEFAULT_SOCOOL).expect("Unable to write file");
-    play_file(filename, working_path, Play::Once)?;
+    play_file(filename, working_path, Play::Once, false)?;
     Ok(())
 }
 

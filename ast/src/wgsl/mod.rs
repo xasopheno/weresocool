@@ -138,13 +138,13 @@ impl WgslError {
 
         // Show context with colors: light blue before error, red from error
         // Using cyan/bright_blue to distinguish WGSL errors from regular parse errors
-        println!(
+        eprintln!(
             "{}{}",
             &original_source[feed_start..error_pos].cyan(),
             &original_source[error_pos..feed_end].red(),
         );
 
-        println!(
+        eprintln!(
             "
             {}
             WGSL errors at line {}

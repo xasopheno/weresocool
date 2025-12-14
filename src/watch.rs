@@ -17,8 +17,11 @@ pub fn watch(
     filename: String,
     working_path: PathBuf,
     render_manager: Arc<Mutex<RenderManager>>,
+    quiet: bool,
 ) -> Result<(), Error> {
-    were_so_cool_logo(Some("Watching"), Some(filename.clone()));
+    if !quiet {
+        were_so_cool_logo(Some("Watching"), Some(filename.clone()));
+    }
 
     let path = Path::new(&working_path).join(Path::new(&filename));
 

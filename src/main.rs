@@ -66,10 +66,12 @@ fn run() -> Result<(), Error> {
                     Err(e) => eprintln!("Failed to start MIDI server at '{}': {}", server_path, e),
                 }
             }
+            let quiet = sub_matches.get_flag("quiet");
             play::play(
                 sub_matches.get_one::<String>("filename").unwrap(),
                 cwd,
                 play_type,
+                quiet,
             )?;
         }
         Some(("watch", sub_matches)) => {
@@ -82,10 +84,12 @@ fn run() -> Result<(), Error> {
                     Err(e) => eprintln!("Failed to start MIDI server at '{}': {}", server_path, e),
                 }
             }
+            let quiet = sub_matches.get_flag("quiet");
             play::play(
                 sub_matches.get_one::<String>("filename").unwrap(),
                 cwd,
                 Watch,
+                quiet,
             )?
         }
         Some(("demo", _)) => demo::demo()?,

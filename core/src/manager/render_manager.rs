@@ -59,7 +59,8 @@ impl RenderManager {
         once: bool,
         settings: Option<RenderManagerSettings>,
     ) -> Self {
-        if !cfg!(test) {
+        // Only initialize settings if not already set (allows caller to pre-configure)
+        if !cfg!(test) && !Settings::is_initialized() {
             if let Some(s) = settings {
                 Settings::init(s.sample_rate, s.buffer_size);
             } else {

@@ -200,6 +200,9 @@ pub fn process_wgsl_blocks(composition: &str, defs: &mut Defs, skip_validation: 
                     e.column
                 };
 
+                // Print colored error output
+                e.display_colored(composition, actual_line, actual_column);
+
                 return Err(ParseError {
                     message: e.message.clone(),
                     line: actual_line,
@@ -222,6 +225,9 @@ pub fn process_wgsl_blocks(composition: &str, defs: &mut Defs, skip_validation: 
                 block_start_line,
                 composition,
             ) {
+                // Print colored error output
+                e.display_colored(composition);
+
                 return Err(ParseError {
                     message: format!("WGSL error: {}", e.message),
                     line: e.line,

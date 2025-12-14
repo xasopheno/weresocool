@@ -26,6 +26,13 @@ pub fn app() -> clap::Command {
                         .long("midi")
                         .action(ArgAction::SetTrue)
                         .help("Enable MIDI output bridge and auto-run weresocool_midi server"),
+                )
+                .arg(
+                    Arg::new("quiet")
+                        .long("quiet")
+                        .short('q')
+                        .action(ArgAction::SetTrue)
+                        .help("Suppress banner output"),
                 ),
         )
         .subcommand(
@@ -37,6 +44,13 @@ pub fn app() -> clap::Command {
                         .long("midi")
                         .action(ArgAction::SetTrue)
                         .help("Enable MIDI output bridge and auto-run weresocool_midi server"),
+                )
+                .arg(
+                    Arg::new("quiet")
+                        .long("quiet")
+                        .short('q')
+                        .action(ArgAction::SetTrue)
+                        .help("Suppress banner output"),
                 ),
         )
         .subcommand(Command::new("demo").about("Hear a cool sound"))
