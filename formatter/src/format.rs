@@ -6,6 +6,7 @@ const INDENT: isize = 4;
 use crate::FormatConfig;
 use num_rational::Rational64;
 use pretty::{Arena, DocAllocator, DocBuilder};
+use std::collections::HashSet;
 use weresocool_ast::{
     FunDef, ListOp, GenOp, Op, Term,
     operations::Defs,
@@ -19,6 +20,26 @@ struct FormatContext<'a> {
     original_source: Option<&'a str>,
     /// Span source (processed, for span lookups - may differ from original if WGSL was processed)
     span_source: Option<&'a str>,
+}
+
+/// Append stems syntax to a definition if it's "main" and stems exist
+fn append_stems_if_main<'a>(
+    arena: &'a Arena<'a>,
+    base_doc: DocBuilder<'a, Arena<'a>>,
+    name: &str,
+    stems: &HashSet<String>,
+) -> DocBuilder<'a, Arena<'a>> {
+    if name == "main" && !stems.is_empty() {
+        let mut stems_vec: Vec<_> = stems.iter().collect();
+        stems_vec.sort();
+        let stems_str = stems_vec.into_iter().cloned().collect::<Vec<_>>().join(", ");
+        base_doc
+            .append(arena.text(" -> ["))
+            .append(arena.text(stems_str))
+            .append(arena.text("]"))
+    } else {
+        base_doc
+    }
 }
 
 /// Format a complete parsed composition
@@ -76,7 +97,10 @@ fn format_composition_doc<'a>(
                             if let Some(orig_span) = find_def_in_source(orig_src, name) {
                                 let def_text = &orig_src[orig_span.0..orig_span.1];
                                 let normalized = normalize_def_whitespace(def_text);
-                                defs_docs.push(arena.text(normalized));
+                                let base_doc = arena.text(normalized);
+                                // Append stems from parsed data (not from source string)
+                                let def_doc = append_stems_if_main(arena, base_doc, name, &parsed.defs.ops.stems);
+                                defs_docs.push(def_doc);
                                 continue;
                             }
                         }
@@ -88,10 +112,11 @@ fn format_composition_doc<'a>(
                     Term::FunDef(fun) => format_fundef(arena, &ctx, fun),
                     _ => {
                         let term_doc = format_term(arena, &ctx, term);
-                        arena
+                        let base_doc = arena
                             .text(name.clone())
                             .append(arena.text(" = "))
-                            .append(term_doc)
+                            .append(term_doc);
+                        append_stems_if_main(arena, base_doc, name, &parsed.defs.ops.stems)
                     }
                 };
                 defs_docs.push(def_doc);

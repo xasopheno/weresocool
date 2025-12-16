@@ -1,8 +1,10 @@
 use serde::Deserialize;
 use std::path::PathBuf;
-use std::sync::RwLock;
+use std::sync::atomic::{AtomicPtr, Ordering};
 
-static SETTINGS: RwLock<Option<Settings>> = RwLock::new(None);
+// Use atomic pointer for lock-free access in hot paths
+// Settings are leaked to get 'static lifetime - this is fine since settings rarely change
+static SETTINGS: AtomicPtr<Settings> = AtomicPtr::new(std::ptr::null_mut());
 
 /// Global settings for WereSoCool audio rendering
 #[derive(Clone, Debug, PartialEq)]
@@ -31,13 +33,32 @@ pub struct Settings {
 }
 
 impl Settings {
-    /// Get global settings (cloned)
-    pub fn global() -> Settings {
-        let guard = SETTINGS.read().expect("Failed to read Settings lock");
-        guard.clone().unwrap_or_else(|| {
+    /// Get global settings (fast, returns reference)
+    /// Falls back to defaults if not initialized
+    pub fn global() -> &'static Settings {
+        let ptr = SETTINGS.load(Ordering::Acquire);
+        if ptr.is_null() {
             eprintln!("WARNING: Settings accessed before initialization, using defaults");
-            default_settings()
-        })
+            // Initialize with defaults - this leaks memory but only once
+            let settings = Box::new(default_settings());
+            let ptr = Box::into_raw(settings);
+            // Try to set it, but if another thread beat us, use theirs
+            match SETTINGS.compare_exchange(
+                std::ptr::null_mut(),
+                ptr,
+                Ordering::Release,
+                Ordering::Acquire,
+            ) {
+                Ok(_) => unsafe { &*ptr },
+                Err(other) => {
+                    // Another thread set it first, free our allocation and use theirs
+                    unsafe { drop(Box::from_raw(ptr)) };
+                    unsafe { &*other }
+                }
+            }
+        } else {
+            unsafe { &*ptr }
+        }
     }
 
     /// Initialize settings with sample_rate and buffer_size
@@ -55,7 +76,7 @@ impl Settings {
             config.apply_to(&mut settings);
         }
 
-        *SETTINGS.write().expect("Failed to write Settings lock") = Some(settings);
+        Self::set_static(settings);
     }
 
     /// Initialize with default settings (loads config files)
@@ -68,22 +89,32 @@ impl Settings {
             config.apply_to(&mut settings);
         }
 
-        *SETTINGS.write().expect("Failed to write Settings lock") = Some(settings);
+        Self::set_static(settings);
     }
 
     /// Initialize with test settings
     pub fn init_test() {
-        *SETTINGS.write().expect("Failed to write Settings lock") = Some(get_test_settings());
+        Self::set_static(get_test_settings());
     }
 
     /// Set settings directly
     pub fn set(&self) {
-        *SETTINGS.write().expect("Failed to write Settings lock") = Some(self.clone());
+        Self::set_static(self.clone());
+    }
+
+    /// Internal: set the static settings pointer
+    /// Leaks the old settings if any (acceptable for rarely-changed config)
+    fn set_static(settings: Settings) {
+        let new_ptr = Box::into_raw(Box::new(settings));
+        let old_ptr = SETTINGS.swap(new_ptr, Ordering::AcqRel);
+        // Note: we intentionally leak the old settings to avoid use-after-free
+        // This is fine since settings are rarely changed
+        let _ = old_ptr; // Suppress unused warning
     }
 
     /// Check if settings have been initialized
     pub fn is_initialized() -> bool {
-        SETTINGS.read().expect("Failed to read Settings lock").is_some()
+        !SETTINGS.load(Ordering::Acquire).is_null()
     }
 }
 
@@ -93,9 +124,9 @@ impl Default for Settings {
     }
 }
 
-/// Get the path to the global config file
+/// Get the path to the global config file (~/.config/weresocool/config.toml)
 pub fn config_path() -> Option<std::path::PathBuf> {
-    dirs::config_dir().map(|d| d.join("weresocool").join("config.toml"))
+    dirs::home_dir().map(|d| d.join(".config").join("weresocool").join("config.toml"))
 }
 
 /// Ensure the config file exists, creating a default one if not
@@ -242,10 +273,7 @@ fn load_config_file(path: PathBuf) -> Option<SettingsConfig> {
 
     match std::fs::read_to_string(&path) {
         Ok(contents) => match toml::from_str(&contents) {
-            Ok(config) => {
-                eprintln!("Loaded config from: {}", path.display());
-                Some(config)
-            }
+            Ok(config) => Some(config),
             Err(e) => {
                 eprintln!("WARNING: Failed to parse config file {}: {}", path.display(), e);
                 None
@@ -258,41 +286,44 @@ fn load_config_file(path: PathBuf) -> Option<SettingsConfig> {
     }
 }
 
+/// Helper to apply a loaded config to the merged config
+fn apply_config_to_merged(config: &SettingsConfig, merged: &mut SettingsConfig) {
+    let mut temp_settings = default_settings();
+    config.apply_to(&mut temp_settings);
+
+    merged.pad_end = Some(temp_settings.pad_end);
+    merged.loop_play = Some(temp_settings.loop_play);
+    merged.mic = Some(temp_settings.mic);
+    merged.sample_rate = Some(temp_settings.sample_rate);
+    merged.yin_buffer_size = Some(temp_settings.yin_buffer_size);
+    merged.buffer_size = Some(temp_settings.buffer_size);
+    merged.probability_threshold = Some(temp_settings.probability_threshold);
+    merged.gain_threshold_min = Some(temp_settings.gain_threshold_min);
+    merged.channels = Some(temp_settings.channels);
+    merged.interleaved = Some(temp_settings.interleaved);
+    merged.max_freq = Some(temp_settings.max_freq);
+    merged.min_freq = Some(temp_settings.min_freq);
+    merged.crossfade_period = Some(temp_settings.crossfade_period);
+    merged.lookahead_buffers = Some(temp_settings.lookahead_buffers);
+    merged.vis_filter_rate = Some(temp_settings.vis_filter_rate);
+    merged.visual_mode = Some(temp_settings.visual_mode);
+    merged.window_width = temp_settings.window_width;
+    merged.window_height = temp_settings.window_height;
+    merged.window_x = temp_settings.window_x;
+    merged.window_y = temp_settings.window_y;
+}
+
 /// Load and merge all config files
-/// Priority: global config < local config (local overrides global)
+/// Priority: global (~/.config) < local config
 fn load_all_configs() -> Option<SettingsConfig> {
     let mut has_config = false;
     let mut merged = SettingsConfig::default();
 
-    // Load global config: ~/.config/weresocool/config.toml
-    if let Some(config_dir) = dirs::config_dir() {
-        let global_config_path = config_dir.join("weresocool").join("config.toml");
-        if let Some(global_config) = load_config_file(global_config_path) {
-            // Apply global config to a temporary Settings, then extract back
-            let mut temp_settings = default_settings();
-            global_config.apply_to(&mut temp_settings);
-
-            // Store the values in merged
-            merged.pad_end = Some(temp_settings.pad_end);
-            merged.loop_play = Some(temp_settings.loop_play);
-            merged.mic = Some(temp_settings.mic);
-            merged.sample_rate = Some(temp_settings.sample_rate);
-            merged.yin_buffer_size = Some(temp_settings.yin_buffer_size);
-            merged.buffer_size = Some(temp_settings.buffer_size);
-            merged.probability_threshold = Some(temp_settings.probability_threshold);
-            merged.gain_threshold_min = Some(temp_settings.gain_threshold_min);
-            merged.channels = Some(temp_settings.channels);
-            merged.interleaved = Some(temp_settings.interleaved);
-            merged.max_freq = Some(temp_settings.max_freq);
-            merged.min_freq = Some(temp_settings.min_freq);
-            merged.crossfade_period = Some(temp_settings.crossfade_period);
-            merged.lookahead_buffers = Some(temp_settings.lookahead_buffers);
-            merged.vis_filter_rate = Some(temp_settings.vis_filter_rate);
-            merged.visual_mode = Some(temp_settings.visual_mode);
-            merged.window_width = temp_settings.window_width;
-            merged.window_height = temp_settings.window_height;
-            merged.window_x = temp_settings.window_x;
-            merged.window_y = temp_settings.window_y;
+    // Load global config from ~/.config/weresocool/config.toml
+    if let Some(home) = dirs::home_dir() {
+        let config_path = home.join(".config").join("weresocool").join("config.toml");
+        if let Some(config) = load_config_file(config_path) {
+            apply_config_to_merged(&config, &mut merged);
             has_config = true;
         }
     }

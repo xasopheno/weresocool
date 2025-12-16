@@ -331,6 +331,8 @@ pub fn render(
     let renderables = nf_to_vec_renderable(composition, defs, basis)?;
     let mut voices = renderables_to_render_voices(renderables);
 
+    let buffer_size = Settings::global().buffer_size;
+
     let mut result = StereoWaveform::new(0);
     loop {
         #[cfg(feature = "app")]
@@ -338,7 +340,7 @@ pub fn render(
         #[cfg(feature = "wasm")]
         let iter = voices.iter_mut();
         let batch: Vec<StereoWaveform> = iter
-            .filter_map(|voice| voice.render_batch(Settings::global().buffer_size, None))
+            .filter_map(|voice| voice.render_batch(buffer_size, None))
             .collect();
 
         if !batch.is_empty() {
