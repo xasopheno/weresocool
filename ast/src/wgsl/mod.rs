@@ -1,7 +1,6 @@
 use std::collections::HashMap;
 use std::ops::Mul;
 use naga::front::wgsl::Frontend;
-use colored::*;
 use num_rational::Rational64;
 
 pub const MAX_STEPS: u32 = 4; // compile-time bound for recipe size
@@ -109,51 +108,14 @@ pub struct WgslError {
 
 impl WgslError {
     /// Display the error with colored output matching the main parser style
-    pub fn display_colored(&self, original_source: &str) {
-        let start_offset = 125;
-        let end_offset = 50;
-
-        // Find the byte offset in original_source for the error line
-        // Count newlines until we reach the target line
-        let mut current_line = 0;
-        let mut line_start = 0;
-        for (i, c) in original_source.char_indices() {
-            if c == '\n' {
-                current_line += 1;
-                if current_line == self.line {
-                    // The line content starts after this newline
-                    line_start = i + 1;
-                    break;
-                }
-            }
-        }
-        let error_pos = line_start + self.column.saturating_sub(1);
-
-        // Calculate display window
-        let feed_start = error_pos.saturating_sub(start_offset);
-        let mut feed_end = (error_pos + end_offset).min(original_source.len());
-        if feed_end - feed_start > 300 {
-            feed_end = feed_start + 300;
-        }
-
-        // Show context with colors: light blue before error, red from error
-        // Using cyan/bright_blue to distinguish WGSL errors from regular parse errors
-        eprintln!(
-            "{}{}",
-            &original_source[feed_start..error_pos].cyan(),
-            &original_source[error_pos..feed_end].red(),
-        );
-
-        eprintln!(
-            "
-            {}
-            WGSL errors at line {}
-            {}
-            ",
-            "working".cyan().underline(),
-            self.line.to_string().red().bold(),
-            "broken".red().underline(),
-        );
+    pub fn display_colored(&self, original_source: &str, quiet: bool) {
+        weresocool_error::ErrorDisplay {
+            source: original_source,
+            line: self.line,
+            column: self.column,
+            label: "WGSL errors",
+            use_cyan: true,
+        }.display(quiet);
     }
 
     pub fn display(&self) -> String {

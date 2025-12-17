@@ -1,4 +1,4 @@
-use crate::{IdError, IndexError, ParseError};
+use crate::{ColorError, IdError, IndexError, ParseError};
 use scop::ScopError;
 use std::io;
 use thiserror::Error;
@@ -32,6 +32,9 @@ pub enum ErrorInner {
 
     #[error("Index error: {0}")]
     IndexError(#[from] IndexError),
+
+    #[error("Color error: {0}")]
+    ColorError(#[from] ColorError),
 
     #[error("Hound error: {0}")]
     HoundError(#[from] hound::Error),

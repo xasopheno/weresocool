@@ -11,7 +11,7 @@ use std::io::prelude::*;
 use std::io::BufReader;
 use std::path::PathBuf;
 use std::sync::{Arc, Mutex};
-use weresocool_error::{Error, ParseError};
+use weresocool_error::{ColorError, Error, ParseError};
 use regex;
 
 /// Tracks offset adjustments when WGSL blocks are replaced with tokens.
@@ -139,9 +139,10 @@ fn count_lines_before(text: &str, offset: usize) -> usize {
 
 // Extract WGSL code blocks from source code and replace with IDs
 // If skip_validation is true, validation will be skipped (used in tests)
+// If quiet is true, error display is suppressed (used in formatter)
 // Returns the processed string and a SourceMap for error position mapping
 // Fails fast on the first WGSL validation error
-pub fn process_wgsl_blocks(composition: &str, defs: &mut Defs, skip_validation: bool) -> Result<(String, SourceMap), Error> {
+pub fn process_wgsl_blocks(composition: &str, defs: &mut Defs, skip_validation: bool, quiet: bool) -> Result<(String, SourceMap), Error> {
     let mut result = String::new();
     let mut source_map = SourceMap::new();
 
@@ -201,7 +202,7 @@ pub fn process_wgsl_blocks(composition: &str, defs: &mut Defs, skip_validation: 
                 };
 
                 // Print colored error output
-                e.display_colored(composition, actual_line, actual_column);
+                e.display_colored(composition, actual_line, actual_column, quiet);
 
                 return Err(ParseError {
                     message: e.message.clone(),
@@ -226,7 +227,7 @@ pub fn process_wgsl_blocks(composition: &str, defs: &mut Defs, skip_validation: 
                 composition,
             ) {
                 // Print colored error output
-                e.display_colored(composition);
+                e.display_colored(composition, quiet);
 
                 return Err(ParseError {
                     message: format!("WGSL error: {}", e.message),
@@ -261,9 +262,9 @@ pub fn process_wgsl_blocks(composition: &str, defs: &mut Defs, skip_validation: 
 }
 
 // For backwards compatibility with existing code
-// This wrapper calls the new function with skip_validation set to false
+// This wrapper calls the new function with skip_validation=false, quiet=false
 pub fn process_wgsl_blocks_with_validation(composition: &str, defs: &mut Defs) -> Result<(String, SourceMap), Error> {
-    process_wgsl_blocks(composition, defs, false)
+    process_wgsl_blocks(composition, defs, false, false)
 }
 
 /// Result from parsing for formatting - includes source for span extraction
@@ -311,7 +312,8 @@ fn parse_for_format_inner(
 
     // Process WGSL blocks - extract them and replace with IDs
     // We use the PROCESSED source for spans because that's what the parser operates on
-    let (processed_composition, source_map) = process_wgsl_blocks(&composition, &mut defs, true)?;
+    // skip_validation=true for formatting (we just want to format, not validate WGSL)
+    let (processed_composition, source_map) = process_wgsl_blocks(&composition, &mut defs, true, quiet)?;
 
     let init = socool::SoCoolParser::new().parse(&mut defs, &processed_composition);
     match init {
@@ -337,6 +339,48 @@ fn parse_for_format_inner(
             if !quiet {
                 eprintln!("\n");
             }
+
+            // Check if this is a color error (format: "location:colorname")
+            if let lalrpop_util::ParseError::User { error: err_str } = &error {
+                if let Some((loc_str, bad_color)) = err_str.split_once(':') {
+                    if let Ok(loc) = loc_str.parse::<usize>() {
+                        let start = source_map.to_original(loc);
+                        // Calculate line and column from position
+                        let mut line: usize = 0;
+                        let mut column: usize = 0;
+                        for (n_c, c) in composition.chars().enumerate() {
+                            if n_c >= start {
+                                break;
+                            }
+                            if c == '\n' {
+                                line += 1;
+                                column = 0;
+                            } else {
+                                column += 1;
+                            }
+                        }
+
+                        // Display error
+                        if !quiet {
+                            weresocool_error::ErrorDisplay {
+                                source: &composition,
+                                line,
+                                column,
+                                label: &format!("Invalid color '{}'", bad_color),
+                                use_cyan: false,
+                            }.display(false);
+                        }
+
+                        return Err(ColorError {
+                            color: bad_color.to_string(),
+                            line,
+                            column,
+                        }
+                        .into_error());
+                    }
+                }
+            }
+
             let location = Arc::new(Mutex::new(Vec::new()));
             error.map_location(|l| location.lock().unwrap().push(l));
             let (line, column) = handle_parse_error(location, &composition, &source_map, quiet);
@@ -366,7 +410,8 @@ pub fn parse_file(
 
     // Process WGSL blocks - extract them and replace with IDs
     // This validates each WGSL block and fails fast on the first error
-    let (processed_composition, source_map) = process_wgsl_blocks(&composition, &mut defs, false)?;
+    // quiet=false to show errors during actual parsing
+    let (processed_composition, source_map) = process_wgsl_blocks(&composition, &mut defs, false, false)?;
     
     for import in imports_needed {
         let (mut filepath, import_name) = get_filepath_and_import_name(import);
@@ -419,6 +464,46 @@ pub fn parse_file(
         }
         Err(error) => {
             eprintln!("\n");
+
+            // Check if this is a color error (format: "location:colorname")
+            if let lalrpop_util::ParseError::User { error: err_str } = &error {
+                if let Some((loc_str, bad_color)) = err_str.split_once(':') {
+                    if let Ok(loc) = loc_str.parse::<usize>() {
+                        let start = source_map.to_original(loc);
+                        // Calculate line and column from position
+                        let mut line: usize = 0;
+                        let mut column: usize = 0;
+                        for (n_c, c) in composition.chars().enumerate() {
+                            if n_c >= start {
+                                break;
+                            }
+                            if c == '\n' {
+                                line += 1;
+                                column = 0;
+                            } else {
+                                column += 1;
+                            }
+                        }
+
+                        // Display error
+                        weresocool_error::ErrorDisplay {
+                            source: &composition,
+                            line,
+                            column,
+                            label: &format!("Invalid color '{}'", bad_color),
+                            use_cyan: false,
+                        }.display(false);
+
+                        return Err(ColorError {
+                            color: bad_color.to_string(),
+                            line,
+                            column,
+                        }
+                        .into_error());
+                    }
+                }
+            }
+
             let location = Arc::new(Mutex::new(Vec::new()));
             error.map_location(|l| location.lock().unwrap().push(l));
             let (line, column) = handle_parse_error(location, &composition, &source_map, false);

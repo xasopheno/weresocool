@@ -174,12 +174,14 @@ main = {
         colors: weresocool_ast::color::ColorMap::new(),
         wgsl: weresocool_ast::wgsl::WgslMap::new(),
         rand_ctx: RandCtx::from_u128(seed),
+        spans: weresocool_ast::SpanMap::new(),
     };
     let mut defs2 = Defs {
         ops: Default::default(),
         colors: weresocool_ast::color::ColorMap::new(),
         wgsl: weresocool_ast::wgsl::WgslMap::new(),
         rand_ctx: RandCtx::from_u128(seed),
+        spans: weresocool_ast::SpanMap::new(),
     };
 
     let _init1 = socool::SoCoolParser::new().parse(&mut defs1, parse_str).unwrap();

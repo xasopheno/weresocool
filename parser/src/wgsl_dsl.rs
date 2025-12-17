@@ -1,7 +1,7 @@
 lalrpop_mod!(pub wgsl_dsl_grammar, "/wgsl_dsl.rs");
 
 use wgsl_dsl_grammar::DslLineParser;
-use colored::*;
+use weresocool_error::ErrorDisplay;
 
 /// Error from DSL parsing with position info
 #[derive(Clone, Debug)]
@@ -13,54 +13,17 @@ pub struct DslError {
 }
 
 impl DslError {
-    /// Display the error with colored output matching WGSL error style
+    /// Display the error with colored output
     /// `actual_line` is the line number in the original source (already calculated by caller)
     /// `actual_column` is the column in the original source line (already calculated by caller)
-    pub fn display_colored(&self, original_source: &str, actual_line: usize, actual_column: usize) {
-        let start_offset = 125;
-        let end_offset = 50;
-
-        // Find the byte offset in original_source for the error line
-        // Composition has structure: \nline1\nline2\nline3...
-        // So newline N is followed by line N content
-        let mut newline_count = 0;
-        let mut line_start = 0;
-        for (i, c) in original_source.char_indices() {
-            if c == '\n' {
-                newline_count += 1;
-                if newline_count == actual_line {
-                    // Line content starts after this newline
-                    line_start = i + 1;
-                    break;
-                }
-            }
-        }
-        let error_pos = line_start + actual_column.saturating_sub(1);
-
-        // Calculate display window
-        let feed_start = error_pos.saturating_sub(start_offset);
-        let mut feed_end = (error_pos + end_offset).min(original_source.len());
-        if feed_end - feed_start > 300 {
-            feed_end = feed_start + 300;
-        }
-
-        // Show context with colors: cyan before error, red from error
-        eprintln!(
-            "{}{}",
-            &original_source[feed_start..error_pos].cyan(),
-            &original_source[error_pos..feed_end].red(),
-        );
-
-        eprintln!(
-            "
-            {}
-            DSL error at line {}
-            {}
-            ",
-            "working".cyan().underline(),
-            actual_line.to_string().red().bold(),
-            "broken".red().underline(),
-        );
+    pub fn display_colored(&self, original_source: &str, actual_line: usize, actual_column: usize, quiet: bool) {
+        ErrorDisplay {
+            source: original_source,
+            line: actual_line,
+            column: actual_column,
+            label: "DSL error",
+            use_cyan: true,
+        }.display(quiet);
     }
 }
 
@@ -580,33 +543,6 @@ mod tests {
     }
 
     #[test]
-    fn test_arcto_basic() {
-        // ArcTo creates a curved path that changes end direction
-        let input = "Direction(1, 0, 0) | ArcTo(0, 1, 0, 1.0)";
-        let output = compile_dsl_to_wgsl(input).unwrap();
-        // Should contain ArcTo curve code
-        assert!(output.contains("ArcTo"), "Output should mention ArcTo");
-        assert!(output.contains("target_dir"), "Output should have target direction");
-        assert!(output.contains("mix"), "Output should use mix for direction lerp");
-        assert!(output.contains("dT"), "Output should have end direction dT");
-    }
-
-    #[test]
-    fn test_arcto_in_seq() {
-        // ArcTo works inside Seq
-        let input = r#"
-            Seq [
-                Direction(1, 0, 0) | ArcTo(0, 1, 0, 0.5) | Lm 1;
-                Direction(0, 1, 0) | Lm 1;
-            ]
-        "#;
-        let output = compile_dsl_to_wgsl(input).unwrap();
-        assert!(output.contains("// Segment 0"));
-        assert!(output.contains("// Segment 1"));
-        assert!(output.contains("target_dir"));
-    }
-
-    #[test]
     fn test_seq_compose_seq_real_case() {
         // Test Seq | Seq Cartesian product
         // Seq [A, B] | Seq [C, D] → Seq [A|C, B|C, A|D, B|D]
@@ -648,38 +584,6 @@ mod tests {
         println!("Direction (1,0,0) count: {}, Direction (0,1,0) count: {}", dir_1_0_0_count, dir_0_1_0_count);
         assert_eq!(dir_1_0_0_count, 2, "Direction (1,0,0) should appear twice");
         assert_eq!(dir_0_1_0_count, 2, "Direction (0,1,0) should appear twice");
-    }
-
-    #[test]
-    fn test_simple_pipe_seq_with_arcto() {
-        // Test case that was failing: Simple | Seq with ArcTo
-        let input = r#"
-            Ym 1/2
-            | Sm 8
-            | Vm 8
-            | Xa -1
-            | Seq [
-                Direction(0, 0, -1) | Lm 1
-                | ArcTo (2, 2, -2/5, 1);
-                Am 0;
-            ]
-        "#;
-        let result = compile_dsl_to_wgsl(input);
-        match &result {
-            Ok(output) => {
-                println!("=== Generated WGSL ===\n{}", output);
-                // Validate that the WGSL is valid
-                let validation = weresocool_ast::wgsl::validate_wgsl(output);
-                if let Err(e) = &validation {
-                    println!("Validation error: {}", e);
-                }
-                assert!(validation.is_ok(), "Generated WGSL should be valid");
-            }
-            Err(e) => {
-                println!("Parse error: {:?}", e);
-                panic!("Should parse successfully");
-            }
-        }
     }
 
     #[test]

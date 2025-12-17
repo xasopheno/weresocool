@@ -33,9 +33,13 @@ use crate::float_to_rational::helpers::*;
 use regex::Regex;
 use weresocool_ast::wgsl::validate_wgsl;
 
-grammar<'defs, 'err>(
+grammar<'defs>(
     defs: &'defs mut Defs,
 );
+
+extern {
+    type Error = String;
+}
 
 match {
     // Skip whitespace and comments
@@ -420,13 +424,27 @@ BaseOperation: Term = {
     "Brightness" <value: Rational> => Term::Op(Brightness { value }),
     "Vibrance" <value: Rational> => Term::Op(Vibrance { value }),
     "Gamma" <value: Rational> => Term::Op(Gamma { value }),
-    "Blend" <color: CssOrHex> <amount: Rational> => Term::Op(ColorBlend {
-        color_id: defs.colors.insert(parse_color_set(vec![color], None)),
-        amount
-    }),
-    "AddColor" <color: CssOrHex> => Term::Op(ColorAdd {
-        color_id: defs.colors.insert(parse_color_set(vec![color], None))
-    }),
+    <start:@L> "Blend" <color: CssOrHex> <amount: Rational> =>? {
+        match parse_color_set(vec![color], None) {
+            Ok(cv) => Ok(Term::Op(ColorBlend {
+                color_id: defs.colors.insert(cv),
+                amount
+            })),
+            Err(bad_color) => Err(lalrpop_util::ParseError::User {
+                error: format!("{}:{}", start, bad_color)
+            })
+        }
+    },
+    <start:@L> "AddColor" <color: CssOrHex> =>? {
+        match parse_color_set(vec![color], None) {
+            Ok(cv) => Ok(Term::Op(ColorAdd {
+                color_id: defs.colors.insert(cv)
+            })),
+            Err(bad_color) => Err(lalrpop_util::ParseError::User {
+                error: format!("{}:{}", start, bad_color)
+            })
+        }
+    },
     "Gradient" "(" <x: Rational> "," <y: Rational> "," <z: Rational> ")" => Term::Op(ColorGradient { x, y, z }),
     "Mix" <amount: Rational> => Term::Op(ColorMix { amount }),
     "FitLength" <op: Composeable> => {
@@ -558,8 +576,14 @@ FollowExpr: FollowExpr = {
 
 ColorValue: Term = {
     //"ColorGrad[" <colors: Comma<CssOrHex>> "]" => todo!(),
-    "Color" "[" <colors: Comma<CssOrHex>> "]" =>
-      Term::Op(Color(defs.colors.insert(parse_color_set(colors, None)))),
+    <start:@L> "Color" "[" <colors: Comma<CssOrHex>> "]" =>? {
+        match parse_color_set(colors, None) {
+            Ok(cv) => Ok(Term::Op(Color(defs.colors.insert(cv)))),
+            Err(bad_color) => Err(lalrpop_util::ParseError::User {
+                error: format!("{}:{}", start, bad_color)
+            })
+        }
+    },
     "RandColor" => todo!(),
 };
 

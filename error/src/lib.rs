@@ -1,12 +1,17 @@
+pub mod color_error;
 pub mod error;
+pub mod error_display;
 pub mod error_inner;
 pub mod id_error;
 pub mod index_error;
 pub mod parse_error;
 
+pub use error_display::ErrorDisplay;
+
 #[cfg(feature = "app")]
 pub mod portaudio_error;
 
+pub use color_error::ColorError;
 pub use error::Error;
 pub use error_inner::ErrorInner;
 pub use id_error::IdError;
@@ -33,6 +38,7 @@ pub enum Serializable {
     ParseError(ParseError),
     IdError(IdError),
     IndexError(IndexError),
+    ColorError(ColorError),
     #[cfg(all(feature = "app", not(target_os = "windows")))]
     LameError(weresocool_lame::Error),
     #[cfg(all(feature = "app", not(target_os = "windows")))]
@@ -47,6 +53,7 @@ impl ErrorInner {
             ErrorInner::ParseError(e) => Serializable::ParseError(e),
             ErrorInner::IdError(e) => Serializable::IdError(e),
             ErrorInner::IndexError(e) => Serializable::IndexError(e),
+            ErrorInner::ColorError(e) => Serializable::ColorError(e),
             #[cfg(feature = "app")]
             ErrorInner::PortAudio(e) => Serializable::PortAudio(e),
             #[cfg(all(feature = "app", not(target_os = "windows")))]
@@ -83,6 +90,14 @@ impl From<IdError> for Error {
     fn from(e: IdError) -> Error {
         Error {
             inner: Box::new(ErrorInner::IdError(e)),
+        }
+    }
+}
+
+impl From<ColorError> for Error {
+    fn from(e: ColorError) -> Error {
+        Error {
+            inner: Box::new(ErrorInner::ColorError(e)),
         }
     }
 }

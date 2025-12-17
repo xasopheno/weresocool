@@ -98,7 +98,7 @@ pub trait GenColor: DynClone + Debug + Send + Sync {
 }
 dyn_clone::clone_trait_object!(GenColor);
 
-pub fn parse_color_set(colors: Vec<CssOrHex>, gradient: Option<(f32, f32, f32)>) -> ColorValue {
+pub fn parse_color_set(colors: Vec<CssOrHex>, gradient: Option<(f32, f32, f32)>) -> Result<ColorValue, String> {
     let color_strings: Vec<String> = colors
         .iter()
         .map(|color| match color {
@@ -107,19 +107,19 @@ pub fn parse_color_set(colors: Vec<CssOrHex>, gradient: Option<(f32, f32, f32)>)
         })
         .collect();
 
-    // Validate colors: Ensure they are all parseable
+    // Validate colors: Return error with invalid color name
     for color in &color_strings {
         if csscolorparser::Color::from_str(color).is_err() {
-            panic!("Invalid color: {}", color);
+            return Err(color.clone());
         }
     }
 
     let color_refs: Vec<&str> = color_strings.iter().map(|s| s.as_str()).collect();
 
-    ColorValue::ColorSet {
+    Ok(ColorValue::ColorSet {
         colors: vec_hex_to_vec_color(color_refs),
         gradient,
-    }
+    })
 }
 
 #[derive(Clone, Debug, PartialEq)]

@@ -2935,6 +2935,7 @@ dependencies = [
 name = "weresocool_error"
 version = "2.0.0"
 dependencies = [
+ "colored",
  "csv",
  "hound",
  "scop",
