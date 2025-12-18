@@ -219,6 +219,12 @@ pub enum VisualOp {
         alpha_set: Option<WgslValue>,
         /// Alpha multiply: multiplies alpha (Am 0.5 = fade to 50%)
         alpha_mul: Option<WgslValue>,
+        /// Rotation around X axis (in full rotations: 1 = 360°)
+        rx: Option<WgslValue>,
+        /// Rotation around Y axis (in full rotations: 1 = 360°)
+        ry: Option<WgslValue>,
+        /// Rotation around Z axis (in full rotations: 1 = 360°)
+        rz: Option<WgslValue>,
         length: WgslValue, // duration in seconds (Lm modifier)
     },
     /// Sequence of operations (time-divided)
@@ -252,6 +258,9 @@ impl Default for VisualOp {
             bend: None,
             alpha_set: None,
             alpha_mul: None,
+            rx: None,
+            ry: None,
+            rz: None,
             length: WgslValue::one(),
         }
     }
@@ -624,6 +633,9 @@ impl VisualOp {
                 bend,
                 alpha_set,
                 alpha_mul,
+                rx: _,
+                ry: _,
+                rz: _,
                 length,
             } => {
                 // Helper to extract rational or default
@@ -761,6 +773,9 @@ impl VisualOp {
                 bend,
                 alpha_set,
                 alpha_mul,
+                rx: None,
+                ry: None,
+                rz: None,
                 length: new_length,
             },
             // For Seq/Compose, we could scale all children, but for now just return unchanged
@@ -821,6 +836,9 @@ impl VisualOp {
                     bend: bend1,
                     alpha_set: alpha_set1,
                     alpha_mul: alpha_mul1,
+                    rx: rx1,
+                    ry: ry1,
+                    rz: rz1,
                     length: len1,
                 },
                 VisualOp::Simple {
@@ -838,6 +856,9 @@ impl VisualOp {
                     bend: bend2,
                     alpha_set: alpha_set2,
                     alpha_mul: alpha_mul2,
+                    rx: rx2,
+                    ry: ry2,
+                    rz: rz2,
                     length: len2,
                 },
             ) => {
@@ -856,6 +877,9 @@ impl VisualOp {
                     bend: bend2.or(bend1), // Later wins
                     alpha_set: alpha_set2.or(alpha_set1), // Later wins
                     alpha_mul: compose_mul(alpha_mul1, alpha_mul2),
+                    rx: compose_add(rx1, rx2), // Rotations add
+                    ry: compose_add(ry1, ry2),
+                    rz: compose_add(rz1, rz2),
                     length: len1.mul(&len2), // Multiply lengths
                 }
             }
@@ -943,6 +967,9 @@ impl VisualOp {
                 bend,
                 alpha_set,
                 alpha_mul,
+                rx,
+                ry,
+                rz,
                 length,
             } => {
                 let mut lines = Vec::new();
@@ -962,6 +989,9 @@ impl VisualOp {
                     && bend.is_none()
                     && alpha_set.is_none()
                     && alpha_mul.is_none()
+                    && rx.is_none()
+                    && ry.is_none()
+                    && rz.is_none()
                     && *length != WgslValue::one();
 
                 if is_standalone_lm {
@@ -1094,6 +1124,58 @@ z += pos.z;"#,
                     lines.push(format!("alpha = alpha * {};", v.to_wgsl()));
                 }
 
+                // Global rotation - rotates entire composition around origin
+                // Values are in full rotations (1 = 360°), converted to radians
+                let has_rotation = rx.is_some() || ry.is_some() || rz.is_some();
+                if has_rotation {
+                    lines.push("// Global rotation".to_string());
+                    lines.push("{".to_string());
+                    lines.push("    let pos = vec3<f32>(x, y, z);".to_string());
+
+                    // Build rotation angles (default to 0 if not set)
+                    let rx_val = rx.as_ref().map(|v| v.to_wgsl()).unwrap_or_else(|| "0.0".to_string());
+                    let ry_val = ry.as_ref().map(|v| v.to_wgsl()).unwrap_or_else(|| "0.0".to_string());
+                    let rz_val = rz.as_ref().map(|v| v.to_wgsl()).unwrap_or_else(|| "0.0".to_string());
+
+                    lines.push(format!("    let angle_x = ({}) * 6.28318;", rx_val));
+                    lines.push(format!("    let angle_y = ({}) * 6.28318;", ry_val));
+                    lines.push(format!("    let angle_z = ({}) * 6.28318;", rz_val));
+
+                    // Apply rotations: Z first, then Y, then X (standard Euler order)
+                    lines.push(r#"
+    // Rotation around Z axis
+    let cz = cos(angle_z);
+    let sz = sin(angle_z);
+    let rz_pos = vec3<f32>(
+        pos.x * cz - pos.y * sz,
+        pos.x * sz + pos.y * cz,
+        pos.z
+    );
+
+    // Rotation around Y axis
+    let cy = cos(angle_y);
+    let sy = sin(angle_y);
+    let ry_pos = vec3<f32>(
+        rz_pos.x * cy + rz_pos.z * sy,
+        rz_pos.y,
+        -rz_pos.x * sy + rz_pos.z * cy
+    );
+
+    // Rotation around X axis
+    let cx = cos(angle_x);
+    let sx = sin(angle_x);
+    let rotated = vec3<f32>(
+        ry_pos.x,
+        ry_pos.y * cx - ry_pos.z * sx,
+        ry_pos.y * sx + ry_pos.z * cx
+    );
+
+    x = rotated.x;
+    y = rotated.y;
+    z = rotated.z;"#.to_string());
+                    lines.push("}".to_string());
+                }
+
                 lines.join("\n")
             }
 
@@ -1184,6 +1266,9 @@ z += pos.z;"#,
             bend: None,
             alpha_set: None,
             alpha_mul: None,
+            rx: None,
+            ry: None,
+            rz: None,
             length: WgslValue::one(),
         }
     }
@@ -1308,6 +1393,33 @@ z += pos.z;"#,
     pub fn am(v: impl Into<WgslValue>) -> Self {
         let mut op = Self::simple_default();
         if let VisualOp::Simple { alpha_mul: ref mut f, .. } = op {
+            *f = Some(v.into());
+        }
+        op
+    }
+
+    /// Rotation around X axis (in full rotations: 1 = 360°)
+    pub fn rx(v: impl Into<WgslValue>) -> Self {
+        let mut op = Self::simple_default();
+        if let VisualOp::Simple { rx: ref mut f, .. } = op {
+            *f = Some(v.into());
+        }
+        op
+    }
+
+    /// Rotation around Y axis (in full rotations: 1 = 360°)
+    pub fn ry(v: impl Into<WgslValue>) -> Self {
+        let mut op = Self::simple_default();
+        if let VisualOp::Simple { ry: ref mut f, .. } = op {
+            *f = Some(v.into());
+        }
+        op
+    }
+
+    /// Rotation around Z axis (in full rotations: 1 = 360°)
+    pub fn rz(v: impl Into<WgslValue>) -> Self {
+        let mut op = Self::simple_default();
+        if let VisualOp::Simple { rz: ref mut f, .. } = op {
             *f = Some(v.into());
         }
         op
@@ -1533,6 +1645,9 @@ z += pos.z;"#,
                 bend,
                 alpha_set,
                 alpha_mul,
+                rx,
+                ry,
+                rz,
                 ..
             } => {
                 let base_duration = base_end - base_start;
@@ -1693,6 +1808,51 @@ z += pos.z;"#,
                 }
                 if let Some(v) = alpha_mul {
                     segment_ops.push(format!("            alpha = alpha * {};", v.to_wgsl()));
+                }
+
+                // Global rotation - rotates entire composition around origin
+                let has_rotation = rx.is_some() || ry.is_some() || rz.is_some();
+                if has_rotation {
+                    segment_ops.push("            // Global rotation".to_string());
+                    segment_ops.push("            {".to_string());
+                    segment_ops.push("                let pos = vec3<f32>(x, y, z);".to_string());
+
+                    let rx_val = rx.as_ref().map(|v| v.to_wgsl()).unwrap_or_else(|| "0.0".to_string());
+                    let ry_val = ry.as_ref().map(|v| v.to_wgsl()).unwrap_or_else(|| "0.0".to_string());
+                    let rz_val = rz.as_ref().map(|v| v.to_wgsl()).unwrap_or_else(|| "0.0".to_string());
+
+                    segment_ops.push(format!("                let angle_x = ({}) * 6.28318;", rx_val));
+                    segment_ops.push(format!("                let angle_y = ({}) * 6.28318;", ry_val));
+                    segment_ops.push(format!("                let angle_z = ({}) * 6.28318;", rz_val));
+
+                    segment_ops.push(r#"                // Rotation around Z axis
+                let cz = cos(angle_z);
+                let sz = sin(angle_z);
+                let rz_pos = vec3<f32>(
+                    pos.x * cz - pos.y * sz,
+                    pos.x * sz + pos.y * cz,
+                    pos.z
+                );
+                // Rotation around Y axis
+                let cy = cos(angle_y);
+                let sy = sin(angle_y);
+                let ry_pos = vec3<f32>(
+                    rz_pos.x * cy + rz_pos.z * sy,
+                    rz_pos.y,
+                    -rz_pos.x * sy + rz_pos.z * cy
+                );
+                // Rotation around X axis
+                let cx = cos(angle_x);
+                let sx = sin(angle_x);
+                let rotated = vec3<f32>(
+                    ry_pos.x,
+                    ry_pos.y * cx - ry_pos.z * sx,
+                    ry_pos.y * sx + ry_pos.z * cx
+                );
+                x = rotated.x;
+                y = rotated.y;
+                z = rotated.z;"#.to_string());
+                    segment_ops.push("            }".to_string());
                 }
 
                 // Wrap ops in time check

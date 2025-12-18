@@ -82,6 +82,9 @@ BaseOp: VisualOp = {
     "Lm" <v:WgslVal> => VisualOp::lm(v),
     "Alpha" <v:WgslVal> => VisualOp::alpha(v),
     "Am" <v:WgslVal> => VisualOp::am(v),
+    "Rx" <v:WgslVal> => VisualOp::rx(v),
+    "Ry" <v:WgslVal> => VisualOp::ry(v),
+    "Rz" <v:WgslVal> => VisualOp::rz(v),
 };
 
 // Seq expression (contains comma-separated expressions)

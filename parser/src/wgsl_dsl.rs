@@ -271,7 +271,7 @@ fn format_lalrpop_error<T: std::fmt::Debug>(e: &lalrpop_util::ParseError<usize, 
 /// Check if a line starts with a DSL command
 fn starts_with_dsl_command(line: &str) -> bool {
     // Short commands need whitespace/comma check to avoid false matches
-    let short_commands = ["Xm", "Xa", "Ym", "Ya", "Zm", "Za", "Sm", "Sa", "Vm", "Va", "Lm", "Am"];
+    let short_commands = ["Xm", "Xa", "Ym", "Ya", "Zm", "Za", "Sm", "Sa", "Vm", "Va", "Lm", "Am", "Rx", "Ry", "Rz"];
     for cmd in &short_commands {
         if line.starts_with(cmd) {
             let rest = &line[cmd.len()..];
@@ -887,4 +887,55 @@ mod tests {
         let output = result.unwrap();
         println!("=== Quoted with comma ===\n{}", output);
         assert!(output.contains("max(x, y)"), "Should have max(x, y)");
+    }
+
+    #[test]
+    fn test_rotation_ry() {
+        // Test Ry rotation (spin around Y axis)
+        let result = compile_dsl_to_wgsl("Ry 1");
+        assert!(result.is_ok(), "Should parse Ry: {:?}", result.err());
+        let output = result.unwrap();
+        println!("=== Ry 1 ===\n{}", output);
+        assert!(output.contains("Global rotation"), "Should have rotation comment");
+        assert!(output.contains("angle_y"), "Should have angle_y");
+        assert!(output.contains("6.28318"), "Should convert to radians");
+    }
+
+    #[test]
+    fn test_rotation_all_axes() {
+        // Test all rotation axes composed
+        let result = compile_dsl_to_wgsl("Rx 0.25 | Ry 0.5 | Rz 0.1");
+        assert!(result.is_ok(), "Should parse all rotation axes: {:?}", result.err());
+        let output = result.unwrap();
+        println!("=== Rx | Ry | Rz ===\n{}", output);
+        assert!(output.contains("angle_x"), "Should have angle_x");
+        assert!(output.contains("angle_y"), "Should have angle_y");
+        assert!(output.contains("angle_z"), "Should have angle_z");
+    }
+
+    #[test]
+    fn test_rotation_in_seq() {
+        // Test rotation in a sequence
+        let result = compile_dsl_to_wgsl(r#"
+            Seq [
+                Ry 0.25 | Lm 1;
+                Ry 0.5 | Lm 1;
+            ]
+        "#);
+        assert!(result.is_ok(), "Should parse rotation in seq: {:?}", result.err());
+        let output = result.unwrap();
+        println!("=== Rotation in Seq ===\n{}", output);
+        assert!(output.contains("// Segment 0"), "Should have segment 0");
+        assert!(output.contains("// Segment 1"), "Should have segment 1");
+        assert!(output.contains("angle_y"), "Should have rotation in segments");
+    }
+
+    #[test]
+    fn test_rotation_with_expression() {
+        // Test rotation with WGSL expression
+        let result = compile_dsl_to_wgsl("Ry time");
+        assert!(result.is_ok(), "Should parse Ry with expression: {:?}", result.err());
+        let output = result.unwrap();
+        println!("=== Ry time ===\n{}", output);
+        assert!(output.contains("angle_y = (time) * 6.28318"), "Should have time expression");
     }
