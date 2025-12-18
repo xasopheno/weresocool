@@ -2873,6 +2873,7 @@ dependencies = [
  "num-integer",
  "num-rational 0.4.2",
  "num-traits",
+ "once_cell",
  "peekread",
  "polynomials",
  "pretty_assertions",

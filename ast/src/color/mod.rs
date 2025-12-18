@@ -9,6 +9,9 @@ use bimap::BiHashMap;
 use num_rational::Rational64;
 // use indexmap::IndexMap;
 
+pub mod xkcd;
+pub use xkcd::{lookup_xkcd_color, all_xkcd_colors, XKCD_COLORS};
+
 // pub type GenColorMap = IndexMap<String, Box<dyn GenColor>>;
 
 #[derive(Debug, Clone, PartialEq)]
@@ -107,9 +110,9 @@ pub fn parse_color_set(colors: Vec<CssOrHex>, gradient: Option<(f32, f32, f32)>)
         })
         .collect();
 
-    // Validate colors: Return error with invalid color name
+    // Validate colors: Accept XKCD names OR csscolorparser-valid colors
     for color in &color_strings {
-        if csscolorparser::Color::from_str(color).is_err() {
+        if lookup_xkcd_color(color).is_none() && csscolorparser::Color::from_str(color).is_err() {
             return Err(color.clone());
         }
     }
@@ -358,6 +361,15 @@ impl GenColor for ColorSets {
 }
 
 pub fn parse_css_color(s: &str) -> Color {
+    // Try XKCD lookup first
+    if let Some(hex) = lookup_xkcd_color(s) {
+        if let Ok(parsed) = csscolorparser::Color::from_str(hex) {
+            let [r, g, b, a] = parsed.to_array();
+            return Color { r, g, b, a };
+        }
+    }
+
+    // Fallback to csscolorparser (handles hex, rgb(), hsl(), CSS named colors)
     match csscolorparser::Color::from_str(s) {
         Ok(parsed_color) => {
             let [r, g, b, a] = parsed_color.to_array();
