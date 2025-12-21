@@ -47,6 +47,5 @@ pub fn get_length_op4d_1d(vec_op4d: &[Op4D]) -> f64 {
         max_len = max_len.max(op.t + op.l);
     }
 
-    dbg!(max_len);
     max_len
 }

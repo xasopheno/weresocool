@@ -5,7 +5,19 @@ use weresocool_error::Error;
 pub fn insert_function_args(f: &Term, args: &[Term], defs: &mut Defs) -> Result<(), Error> {
     match f {
         Term::FunDef(fun) => {
-            let FunDef { vars, .. } = fun;
+            let FunDef { name, vars, .. } = fun;
+
+            // Arity check: ensure argument count matches parameter count
+            if vars.len() != args.len() {
+                return Err(Error::with_msg(format!(
+                    "Function '{}' expects {} argument(s) ({}), got {}",
+                    name,
+                    vars.len(),
+                    vars.join(", "),
+                    args.len()
+                )));
+            }
+
             let new_scope = defs.ops.create_uuid_scope();
             for (var, arg) in vars.iter().zip(args.iter()) {
                 defs.ops.insert(&new_scope, var.to_string(), arg.clone());

@@ -118,8 +118,6 @@ pub fn normalize_waveform(buffer: &mut [f32]) {
     for sample in buffer.iter_mut() {
         *sample *= normalization_ratio
     }
-
-    println!("Normalized by {}", normalization_ratio);
 }
 
 pub fn write_composition_to_json(

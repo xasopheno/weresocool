@@ -30,6 +30,9 @@ pub struct Settings {
     pub window_height: Option<u32>,
     pub window_x: Option<i32>,
     pub window_y: Option<i32>,
+    // Mesh settings
+    pub mesh_vertices: usize,
+    pub mesh_triangles: usize,
 }
 
 impl Settings {
@@ -171,6 +174,10 @@ visual_mode = true
 # window_height = 720
 # window_x = 100
 # window_y = 100
+
+# Mesh detail (vertices per brush)
+# mesh_vertices = 20
+# mesh_triangles = 40
 "#;
         let _ = std::fs::write(&path, default_config);
     }
@@ -200,6 +207,8 @@ pub const fn default_settings() -> Settings {
         window_height: None,
         window_x: None,
         window_y: None,
+        mesh_vertices: 20,
+        mesh_triangles: 40,
     }
 }
 
@@ -237,6 +246,9 @@ struct SettingsConfig {
     window_height: Option<u32>,
     window_x: Option<i32>,
     window_y: Option<i32>,
+    // Mesh settings
+    mesh_vertices: Option<usize>,
+    mesh_triangles: Option<usize>,
 }
 
 impl SettingsConfig {
@@ -262,6 +274,8 @@ impl SettingsConfig {
         if self.window_height.is_some() { settings.window_height = self.window_height; }
         if self.window_x.is_some() { settings.window_x = self.window_x; }
         if self.window_y.is_some() { settings.window_y = self.window_y; }
+        if let Some(v) = self.mesh_vertices { settings.mesh_vertices = v; }
+        if let Some(v) = self.mesh_triangles { settings.mesh_triangles = v; }
     }
 }
 
@@ -311,6 +325,8 @@ fn apply_config_to_merged(config: &SettingsConfig, merged: &mut SettingsConfig) 
     merged.window_height = temp_settings.window_height;
     merged.window_x = temp_settings.window_x;
     merged.window_y = temp_settings.window_y;
+    merged.mesh_vertices = Some(temp_settings.mesh_vertices);
+    merged.mesh_triangles = Some(temp_settings.mesh_triangles);
 }
 
 /// Load and merge all config files
@@ -375,4 +391,6 @@ fn merge_configs(dest: &mut SettingsConfig, source: SettingsConfig) {
     if source.window_height.is_some() { dest.window_height = source.window_height; }
     if source.window_x.is_some() { dest.window_x = source.window_x; }
     if source.window_y.is_some() { dest.window_y = source.window_y; }
+    if source.mesh_vertices.is_some() { dest.mesh_vertices = source.mesh_vertices; }
+    if source.mesh_triangles.is_some() { dest.mesh_triangles = source.mesh_triangles; }
 }
