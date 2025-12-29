@@ -34,8 +34,11 @@ csscolorparser = "0.7"
 naga = { version = "25.0", features = ["wgsl-in"] }
 minijinja = { version = "2.3", optional = true }
 once_cell = "1.20"
+weresocool-from-sound = { path = "../../weresocool_from_sound", optional = true, default-features = false }
+weresocool_analyze = { path = "../analyze", optional = true }
+serde_json = { version = "1.0", optional = true }
 
 [features]
 default=["app"]
-app=["weresocool_error/app"]
+app=["weresocool_error/app", "weresocool-from-sound", "weresocool_analyze", "serde_json"]
 wasm=["weresocool_error/wasm"]

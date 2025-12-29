@@ -36,6 +36,15 @@ pub enum Op {
         path: String,
         scales: Vec<Scale>,
     },
+    FromSound {
+        path: String,
+        voices: usize,
+        fps: usize,
+    },
+    FromSoundYin {
+        path: String,
+        fps: usize,
+    },
     //
     FMOsc {
         defs: Vec<FmOscDef>,

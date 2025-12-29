@@ -10,6 +10,9 @@ mod csv1d_test;
 mod csv2d_test;
 pub mod mod_1d;
 
+#[cfg(feature = "weresocool-from-sound")]
+pub mod from_sound;
+
 #[derive(Debug, Clone, Serialize, Deserialize, PartialEq, Copy)]
 pub struct Point {
     fa: f32,

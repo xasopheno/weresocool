@@ -67,6 +67,20 @@ impl GetLengthRatio for Op {
                 nf.get_length_ratio(normal_form, defs)
             }
 
+            Op::FromSound { .. } => {
+                let mut nf = NormalForm::init();
+                self.apply_to_normal_form(&mut nf, defs)?;
+
+                nf.get_length_ratio(normal_form, defs)
+            }
+
+            Op::FromSoundYin { .. } => {
+                let mut nf = NormalForm::init();
+                self.apply_to_normal_form(&mut nf, defs)?;
+
+                nf.get_length_ratio(normal_form, defs)
+            }
+
             Op::Lambda {
                 term,
                 input_name,

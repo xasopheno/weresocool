@@ -9,6 +9,7 @@ use pretty::{Arena, DocAllocator, DocBuilder};
 use std::collections::HashSet;
 use weresocool_ast::{
     FunDef, ListOp, GenOp, Op, Term,
+    color::{ColorValue, CssOrHex},
     operations::Defs,
 };
 use weresocool_parser::{Init, ParsedComposition};
@@ -479,15 +480,58 @@ fn format_init<'a>(arena: &'a Arena<'a>, init: &Init) -> DocBuilder<'a, Arena<'a
         .text("p: ")
         .append(format_rational(arena, &init.p));
 
-    let fields = arena.intersperse(
+    let base_fields = arena.intersperse(
         [f_doc, l_doc, g_doc, p_doc],
         arena.text(",").append(arena.space()),
     );
+
+    // Add background_color if present
+    let fields = if let Some(ref bg_color) = init.background_color {
+        let bg_doc = arena
+            .text("background_color: ")
+            .append(format_background_color(arena, bg_color));
+        base_fields
+            .append(arena.text(","))
+            .append(arena.space())
+            .append(bg_doc)
+    } else {
+        base_fields
+    };
 
     arena
         .text("{ ")
         .append(fields)
         .append(arena.text(" }"))
+}
+
+/// Format background_color value (just the color name, not wrapped in Color [...])
+fn format_background_color<'a>(
+    arena: &'a Arena<'a>,
+    color: &ColorValue,
+) -> DocBuilder<'a, Arena<'a>> {
+    match color {
+        ColorValue::Color(css_or_hex) => {
+            let name = match css_or_hex {
+                CssOrHex::Css(name) => name.clone(),
+                CssOrHex::Hex(hex) => hex.clone(),
+            };
+            arena.text(name)
+        }
+        ColorValue::ColorSet { colors, .. } => {
+            // For color sets, just use the first color as hex
+            if let Some(c) = colors.first() {
+                let hex = format!(
+                    "#{:02x}{:02x}{:02x}",
+                    (c.r * 255.0).round() as u8,
+                    (c.g * 255.0).round() as u8,
+                    (c.b * 255.0).round() as u8
+                );
+                arena.text(hex)
+            } else {
+                arena.text("black")
+            }
+        }
+    }
 }
 
 fn format_rational<'a>(arena: &'a Arena<'a>, r: &Rational64) -> DocBuilder<'a, Arena<'a>> {
@@ -877,6 +921,8 @@ fn format_op<'a>(arena: &'a Arena<'a>, ctx: &FormatContext, op: &Op) -> DocBuild
             }
         }
         Op::CSV2d { path, .. } => arena.text(format!("CSV2d \"{}\"", path)),
+        Op::FromSound { path, voices, fps } => arena.text(format!("FromSound({}, {}) {}", voices, fps, path)),
+        Op::FromSoundYin { path, fps } => arena.text(format!("FromSoundYin({}) {}", fps, path)),
 
         // WithLengthRatioOf
         // Note: When this appears in a Compose, the `main` content is already
@@ -1190,8 +1236,6 @@ fn format_genop<'a>(arena: &'a Arena<'a>, ctx: &FormatContext, gen: &GenOp) -> D
         }
     }
 }
-
-use weresocool_ast::color::{ColorValue, CssOrHex};
 
 /// Format a ColorValue back to source syntax
 fn format_color_value<'a>(arena: &'a Arena<'a>, color: &ColorValue) -> DocBuilder<'a, Arena<'a>> {

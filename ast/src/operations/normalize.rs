@@ -119,6 +119,30 @@ impl Normalize for Op {
                 csv2d_to_normalform(path, scales.clone())?.apply_to_normal_form(input, defs)?;
             }
 
+            #[cfg(feature = "weresocool-from-sound")]
+            Op::FromSound { path, voices, fps } => {
+                crate::datagen::from_sound::from_sound_to_normalform(path, *voices, *fps)?
+                    .apply_to_normal_form(input, defs)?;
+            }
+            #[cfg(not(feature = "weresocool-from-sound"))]
+            Op::FromSound { .. } => {
+                return Err(weresocool_error::Error::with_msg(
+                    "FromSound requires the weresocool-from-sound feature",
+                ));
+            }
+
+            #[cfg(feature = "weresocool_analyze")]
+            Op::FromSoundYin { path, fps } => {
+                crate::datagen::from_sound::from_sound_yin_to_normalform(path, *fps)?
+                    .apply_to_normal_form(input, defs)?;
+            }
+            #[cfg(not(feature = "weresocool_analyze"))]
+            Op::FromSoundYin { .. } => {
+                return Err(weresocool_error::Error::with_msg(
+                    "FromSoundYin requires the weresocool_analyze feature",
+                ));
+            }
+
             Op::FunctionCall { name, args } => {
                 let f = handle_id_error(name.to_string(), defs)?;
                 insert_function_args(&f, args, defs)?;
