@@ -101,11 +101,12 @@ impl AudioEngine {
                                     rendered_per_voice.push(voice_rendered);
 
                                     if collect_viz_ops {
-                                        let vis_threshold = (Settings::global().vis_filter_rate * 100.0) as usize;
+                                        // Use 1,000,000 scale to support filter rates as low as 0.000001
+                                        let vis_threshold = (Settings::global().vis_filter_rate * 1_000_000.0) as usize;
                                         let b: Vec<_> = audio_batch
                                             .iter()
                                             .filter(|op| {
-                                                let hash = op.index.wrapping_mul(2654435761) % 100;
+                                                let hash = op.index.wrapping_mul(2654435761) % 1_000_000;
                                                 hash < vis_threshold
                                             })
                                             .cloned()

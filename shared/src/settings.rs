@@ -33,6 +33,10 @@ pub struct Settings {
     // Mesh settings
     pub mesh_vertices: usize,
     pub mesh_triangles: usize,
+    // Instance culling settings
+    pub cull_enabled: bool,
+    pub cull_max_distance: f32,
+    pub cull_behind_threshold: f32,
 }
 
 impl Settings {
@@ -178,6 +182,11 @@ visual_mode = true
 # Mesh detail (vertices per brush)
 # mesh_vertices = 20
 # mesh_triangles = 40
+
+# Instance culling (set cull_enabled = false to disable)
+# cull_enabled = true
+# cull_max_distance = 5.0
+# cull_behind_threshold = 0.5
 "#;
         let _ = std::fs::write(&path, default_config);
     }
@@ -209,6 +218,9 @@ pub const fn default_settings() -> Settings {
         window_y: None,
         mesh_vertices: 20,
         mesh_triangles: 40,
+        cull_enabled: true,
+        cull_max_distance: 5.0,
+        cull_behind_threshold: 0.5,
     }
 }
 
@@ -249,6 +261,10 @@ struct SettingsConfig {
     // Mesh settings
     mesh_vertices: Option<usize>,
     mesh_triangles: Option<usize>,
+    // Instance culling settings
+    cull_enabled: Option<bool>,
+    cull_max_distance: Option<f32>,
+    cull_behind_threshold: Option<f32>,
 }
 
 impl SettingsConfig {
@@ -276,6 +292,9 @@ impl SettingsConfig {
         if self.window_y.is_some() { settings.window_y = self.window_y; }
         if let Some(v) = self.mesh_vertices { settings.mesh_vertices = v; }
         if let Some(v) = self.mesh_triangles { settings.mesh_triangles = v; }
+        if let Some(v) = self.cull_enabled { settings.cull_enabled = v; }
+        if let Some(v) = self.cull_max_distance { settings.cull_max_distance = v; }
+        if let Some(v) = self.cull_behind_threshold { settings.cull_behind_threshold = v; }
     }
 }
 
@@ -327,6 +346,9 @@ fn apply_config_to_merged(config: &SettingsConfig, merged: &mut SettingsConfig) 
     merged.window_y = temp_settings.window_y;
     merged.mesh_vertices = Some(temp_settings.mesh_vertices);
     merged.mesh_triangles = Some(temp_settings.mesh_triangles);
+    merged.cull_enabled = Some(temp_settings.cull_enabled);
+    merged.cull_max_distance = Some(temp_settings.cull_max_distance);
+    merged.cull_behind_threshold = Some(temp_settings.cull_behind_threshold);
 }
 
 /// Load and merge all config files
@@ -393,4 +415,7 @@ fn merge_configs(dest: &mut SettingsConfig, source: SettingsConfig) {
     if source.window_y.is_some() { dest.window_y = source.window_y; }
     if source.mesh_vertices.is_some() { dest.mesh_vertices = source.mesh_vertices; }
     if source.mesh_triangles.is_some() { dest.mesh_triangles = source.mesh_triangles; }
+    if source.cull_enabled.is_some() { dest.cull_enabled = source.cull_enabled; }
+    if source.cull_max_distance.is_some() { dest.cull_max_distance = source.cull_max_distance; }
+    if source.cull_behind_threshold.is_some() { dest.cull_behind_threshold = source.cull_behind_threshold; }
 }

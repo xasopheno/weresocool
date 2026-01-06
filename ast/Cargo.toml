@@ -40,5 +40,6 @@ serde_json = { version = "1.0", optional = true }
 
 [features]
 default=["app"]
-app=["weresocool_error/app", "weresocool-from-sound", "weresocool_analyze", "serde_json"]
+app=["weresocool_error/app", "from-sound"]
+from-sound=["weresocool-from-sound", "weresocool_analyze", "serde_json"]
 wasm=["weresocool_error/wasm"]
