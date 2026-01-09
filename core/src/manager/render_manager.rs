@@ -7,6 +7,7 @@ use crate::{
     interpretable::{InputType, Interpretable},
 };
 use std::sync::{mpsc::Sender, Arc, Mutex};
+use std::sync::atomic::{AtomicBool, Ordering};
 use std::time::{Duration, Instant};
 use std::{path::PathBuf, sync::mpsc::SendError};
 use weresocool_ast::Defs;
@@ -46,6 +47,8 @@ pub struct RenderManager {
     midi_controller: Option<MidiController>,
     // Background rendering
     buffer_manager: Option<BufferManager>,
+    // Stream activity control - when false, audio callback skips processing
+    stream_active: Arc<AtomicBool>,
 }
 pub struct RenderManagerSettings {
     pub sample_rate: f64,
@@ -85,6 +88,7 @@ impl RenderManager {
                 .ok()
                 .map(MidiController::new),
             buffer_manager,
+            stream_active: Arc::new(AtomicBool::new(true)),
         }
     }
 
@@ -112,6 +116,7 @@ impl RenderManager {
             paused_at: None,
             midi_controller: None,
             buffer_manager,
+            stream_active: Arc::new(AtomicBool::new(true)),
         }
     }
 
@@ -143,6 +148,17 @@ impl RenderManager {
         if self.events.state.has_subscribers() {
             self.events.state.emit(StateEvent::Paused(true));
         }
+    }
+
+    /// Get the stream_active flag for use in audio callback
+    /// When false, the audio callback should skip all processing
+    pub fn stream_active(&self) -> Arc<AtomicBool> {
+        Arc::clone(&self.stream_active)
+    }
+
+    /// Set the stream active state
+    pub fn set_stream_active(&self, active: bool) {
+        self.stream_active.store(active, Ordering::SeqCst);
     }
 
     /// Check for VisReady event and unpause if received (non-blocking)
@@ -198,7 +214,7 @@ impl RenderManager {
 
     /// Start background rendering thread that pre-renders buffers
     /// Returns the JoinHandle for the rendering thread
-    pub fn start_background_rendering(render_manager: Arc<Mutex<RenderManager>>) -> std::thread::JoinHandle<()> {
+    pub fn start_background_rendering(render_manager: Arc<Mutex<RenderManager>>, stream_active: Arc<AtomicBool>) -> std::thread::JoinHandle<()> {
         // Get the sender once at the start, outside the loop
         let sender = match render_manager.lock() {
             Ok(rm) => rm.buffer_manager.as_ref().and_then(|bm| bm.sender()),
@@ -216,7 +232,7 @@ impl RenderManager {
                 .expect("Failed to spawn dummy thread");
         };
 
-        crate::manager::buffer_manager::start_background_rendering(render_manager, sender)
+        crate::manager::buffer_manager::start_background_rendering(render_manager, sender, stream_active)
     }
 
     pub fn read(
@@ -274,6 +290,7 @@ impl RenderManager {
 
     pub fn push_render(&mut self, render: Vec<RenderVoice>, once: bool) {
         self.once = once;
+        self.set_stream_active(true);  // Activate stream when new render arrives
         self.audio_engine.push_render(render);
         if self.events.state.has_subscribers() {
             self.events.state.emit(StateEvent::Started);

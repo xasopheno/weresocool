@@ -180,7 +180,8 @@ impl AudioEngine {
 
             Some(RenderResult {
                 waveform: combined_sw,
-                ops_per_voice: total_ops.to_vec(),
+                // Use into_vec() to avoid cloning - we no longer need total_ops after this
+                ops_per_voice: total_ops.into_vec(),
                 midi_ops,
                 read_start_samples,
             })

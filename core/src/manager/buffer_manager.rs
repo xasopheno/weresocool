@@ -3,6 +3,7 @@
 /// Manages background rendering thread and pre-rendered audio buffer queue.
 
 use std::sync::{Arc, Mutex};
+use std::sync::atomic::{AtomicBool, Ordering};
 use weresocool_instrument::{Offset, StereoWaveform, RenderOp};
 use weresocool_shared::Settings;
 
@@ -65,11 +66,12 @@ pub trait BackgroundRenderable {
 
 /// Start background rendering thread that pre-renders buffers
 ///
-/// Takes a renderable (typically Arc<Mutex<RenderManager>>) and a sender.
+/// Takes a renderable (typically Arc<Mutex<RenderManager>>), a sender, and stream_active flag.
 /// Returns the JoinHandle for the rendering thread.
 pub fn start_background_rendering<R>(
     renderable: Arc<Mutex<R>>,
     sender: crossbeam_channel::Sender<PrerenderedBuffer>,
+    stream_active: Arc<AtomicBool>,
 ) -> std::thread::JoinHandle<()>
 where
     R: BackgroundRenderable + Send + 'static,
@@ -78,13 +80,19 @@ where
         .name("weresocool-render".to_string())
         .spawn(move || {
             loop {
+                // Fast path: if stream is inactive, sleep long and skip everything
+                if !stream_active.load(Ordering::Relaxed) {
+                    std::thread::sleep(std::time::Duration::from_millis(200));
+                    continue;
+                }
+
                 // Try to render the next buffer
-                let (should_continue, buffer_result) = match renderable.lock() {
+                let (should_continue, buffer_result, is_paused) = match renderable.lock() {
                     Ok(mut rm) => {
-                        // Check if we should stop
-                        if rm.is_paused() {
-                            std::thread::sleep(std::time::Duration::from_millis(10));
-                            (true, None)
+                        let paused = rm.is_paused();
+                        if paused {
+                            // When paused, don't render - just check state periodically
+                            (true, None, true)
                         } else {
                             // Render a buffer
                             let buffer_size = Settings::global().buffer_size;
@@ -97,7 +105,7 @@ where
                             );
 
                             let should_continue = result.is_some() || rm.has_current_render();
-                            (should_continue, result)
+                            (should_continue, result, false)
                         }
                     }
                     Err(e) => {
@@ -106,7 +114,14 @@ where
                     }
                 }; // Lock is released here
 
+                // When paused, sleep long and don't send buffers - nothing needs them
+                if is_paused {
+                    std::thread::sleep(std::time::Duration::from_millis(100));
+                    continue;
+                }
+
                 // Send buffer WITHOUT holding the lock
+                let had_audio = buffer_result.is_some();
                 let buffer = if let Some((waveform, ramp, ops)) = buffer_result {
                     PrerenderedBuffer { waveform, ramp, ops }
                 } else {
@@ -125,9 +140,14 @@ where
                     break; // Channel closed, exit thread
                 }
 
-                if !should_continue {
-                    // No more data to render
-                    std::thread::sleep(std::time::Duration::from_millis(10));
+                // Deactivate stream when render is finished (no more audio to produce)
+                if !should_continue && !had_audio {
+                    stream_active.store(false, Ordering::SeqCst);
+                }
+
+                // Sleep when no real audio was rendered to prevent busy-looping
+                if !should_continue || !had_audio {
+                    std::thread::sleep(std::time::Duration::from_millis(50));
                 }
             }
         })

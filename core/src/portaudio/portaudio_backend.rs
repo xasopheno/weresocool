@@ -15,6 +15,7 @@ use weresocool_portaudio as pa;
 use weresocool_ring_buffer::RingBuffer;
 use weresocool_shared::Settings;
 use std::sync::{Arc, Mutex};
+use std::sync::atomic::Ordering;
 
 pub struct PortAudioBackend {
     pa: pa::PortAudio,
@@ -52,11 +53,22 @@ impl PortAudioBackend {
         let output_settings = self.get_output_settings()?;
 
         if use_lookahead {
+            // Get stream_active flag for fast-path check in callback
+            let stream_active = render_manager.lock().unwrap().stream_active();
+
             // Use background rendering with lookahead buffers
             let _render_thread =
-                RenderManager::start_background_rendering(Arc::clone(&render_manager));
+                RenderManager::start_background_rendering(Arc::clone(&render_manager), Arc::clone(&stream_active));
 
             let stream = self.pa.open_non_blocking_stream(output_settings, move |args| {
+                // Fast path: if stream inactive, just zero buffer - NO locks, NO processing
+                if !stream_active.load(Ordering::Relaxed) {
+                    for sample in args.buffer.iter_mut() {
+                        *sample = 0.0;
+                    }
+                    return pa::Continue;
+                }
+
                 // Check for VisReady or timeout before reading buffer
                 if let Ok(mut rm) = render_manager.lock() {
                     rm.check_vis_ready();
@@ -85,8 +97,19 @@ impl PortAudioBackend {
 
             Ok(stream)
         } else {
+            // Get stream_active flag for fast-path check in callback
+            let stream_active = render_manager.lock().unwrap().stream_active();
+
             // Render directly on audio thread (no lookahead)
             let stream = self.pa.open_non_blocking_stream(output_settings, move |args| {
+                // Fast path: if stream inactive, just zero buffer - NO locks, NO processing
+                if !stream_active.load(Ordering::Relaxed) {
+                    for sample in args.buffer.iter_mut() {
+                        *sample = 0.0;
+                    }
+                    return pa::Continue;
+                }
+
                 // Handle lock failure gracefully - output silence instead of panicking
                 let batch = match render_manager.lock() {
                     Ok(mut rm) => {
@@ -156,10 +179,21 @@ impl PortAudioBackend {
         let duplex_settings = self.get_duplex_settings()?;
         let buffer_size = Settings::global().buffer_size;
 
+        // Get stream_active flag for fast-path check in callback
+        let stream_active = render_manager.lock().unwrap().stream_active();
+
         let mut input_buffer: RingBuffer<f32> =
             RingBuffer::<f32>::new(Settings::global().yin_buffer_size);
 
         let stream = self.pa.open_non_blocking_stream(duplex_settings, move |args| {
+            // Fast path: if stream inactive, just zero buffer - NO locks, NO processing
+            if !stream_active.load(Ordering::Relaxed) {
+                for sample in args.out_buffer.iter_mut() {
+                    *sample = 0.0;
+                }
+                return pa::Continue;
+            }
+
             // Capture mic input
             input_buffer.push_vec(args.in_buffer.to_vec());
 

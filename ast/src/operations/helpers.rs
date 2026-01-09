@@ -3,6 +3,7 @@ use colored::*;
 use num_rational::{Ratio, Rational64};
 use std::{
     cmp::Ordering::{Equal, Greater, Less},
+    collections::VecDeque,
     fmt::Display,
 };
 use weresocool_error::{Error, IdError};
@@ -24,34 +25,35 @@ pub fn handle_id_error<S: Into<String> + Clone + Display + std::fmt::Debug>(
 }
 
 pub fn modulate(input: &[PointOp], modulator: &[PointOp]) -> Vec<PointOp> {
-    let mut m = modulator.to_owned();
-    let mut i = input.to_owned();
-    let mut result = vec![];
-    while !m.is_empty() && !i.is_empty() {
-        let mut inpu = i[0].clone();
-        let modu = m[0].clone();
+    // Use VecDeque for O(1) pop_front instead of O(n) Vec::remove(0)
+    let mut m: VecDeque<PointOp> = modulator.iter().cloned().collect();
+    let mut i: VecDeque<PointOp> = input.iter().cloned().collect();
+    let mut result = Vec::with_capacity(input.len() + modulator.len());
+
+    while let (Some(i_front), Some(m_front)) = (i.front_mut(), m.front()) {
+        let mut inpu = i_front.clone();
+        let modu = m_front.clone();
         let modu_l = modu.l;
         let inpu_l = inpu.l;
+
         if modu_l < inpu_l {
             inpu.mod_by(modu, modu_l);
             result.push(inpu);
-
-            i[0].l -= modu_l;
-
-            m.remove(0);
-        } else if modu.l > inpu.l {
+            i_front.l -= modu_l;
+            m.pop_front();
+        } else if modu_l > inpu_l {
             inpu.mod_by(modu, inpu_l);
             result.push(inpu);
-
-            m[0].l -= inpu_l;
-
-            i.remove(0);
+            // Need to re-borrow m mutably after the immutable borrow ends
+            if let Some(m_front_mut) = m.front_mut() {
+                m_front_mut.l -= inpu_l;
+            }
+            i.pop_front();
         } else {
             inpu.mod_by(modu, inpu_l);
             result.push(inpu);
-
-            i.remove(0);
-            m.remove(0);
+            i.pop_front();
+            m.pop_front();
         }
     }
 
@@ -67,16 +69,17 @@ pub fn slice_modulate(
     op_lengths: &[Rational64],
     keeper_indices: &[usize],
 ) -> Vec<PointOp> {
-    let mut m = modulator.to_owned();
-    let mut i = input.to_owned();
-    let mut result = vec![];
+    // Use VecDeque for O(1) pop_front instead of O(n) Vec::remove(0)
+    let mut m: VecDeque<PointOp> = modulator.iter().cloned().collect();
+    let mut i: VecDeque<PointOp> = input.iter().cloned().collect();
+    let mut result = Vec::with_capacity(input.len() + modulator.len());
 
     // Track our position in the overall timeline to know which operation we're in
     let mut position = Ratio::new(0i64, 1i64);
 
-    while !m.is_empty() && !i.is_empty() {
-        let mut inpu = i[0].clone();
-        let modu = m[0].clone();
+    while let (Some(i_front), Some(m_front)) = (i.front_mut(), m.front()) {
+        let mut inpu = i_front.clone();
+        let modu = m_front.clone();
         let modu_l = modu.l;
         let inpu_l = inpu.l;
 
@@ -89,31 +92,28 @@ pub fn slice_modulate(
             if is_keeper {
                 result.push(inpu);
             }
-
-            i[0].l -= modu_l;
+            i_front.l -= modu_l;
             position += modu_l;
-
-            m.remove(0);
-        } else if modu.l > inpu.l {
+            m.pop_front();
+        } else if modu_l > inpu_l {
             inpu.mod_by(modu, inpu_l);
             if is_keeper {
                 result.push(inpu);
             }
-
-            m[0].l -= inpu_l;
+            // Need to re-borrow m mutably after the immutable borrow ends
+            if let Some(m_front_mut) = m.front_mut() {
+                m_front_mut.l -= inpu_l;
+            }
             position += inpu_l;
-
-            i.remove(0);
+            i.pop_front();
         } else {
             inpu.mod_by(modu, inpu_l);
             if is_keeper {
                 result.push(inpu);
             }
-
             position += inpu_l;
-
-            i.remove(0);
-            m.remove(0);
+            i.pop_front();
+            m.pop_front();
         }
     }
 
@@ -193,11 +193,12 @@ pub fn join_sequence(mut l: NormalForm, mut r: NormalForm) -> NormalForm {
     }
 
     let mut result = NormalForm::init_empty();
+    result.operations.reserve(l.operations.len());
 
     for (left, right) in l.operations.iter_mut().zip(r.operations.iter_mut()) {
         left.append(right);
-
-        result.operations.push(left.clone());
+        // Use std::mem::take to move the Vec instead of cloning
+        result.operations.push(std::mem::take(left));
     }
 
     result.length_ratio += r.length_ratio;

@@ -2,7 +2,8 @@ use criterion::{criterion_group, criterion_main, BatchSize, BenchmarkId, Criteri
 use weresocool_core::generation::sum_all_waveforms;
 use weresocool_core::generation::sum_vec;
 use weresocool_core::manager::{RenderManager, RenderManagerSettings};
-use weresocool_instrument::renderable::{render_voice::RenderVoice, Offset, RenderOp, Renderable};
+use weresocool_instrument::renderable::{render_voice::RenderVoice, RenderOp, Renderable};
+use weresocool_instrument::Offset;
 use weresocool_instrument::{Oscillator, StereoWaveform};
 use weresocool_shared::Settings;
 

@@ -17,6 +17,7 @@ use cpal::{
     StreamConfig,
 };
 use std::sync::{Arc, Mutex};
+use std::sync::atomic::Ordering;
 
 pub struct CpalBackend {
     host: cpal::Host,
@@ -64,14 +65,25 @@ impl CpalBackend {
         };
 
         if use_lookahead {
+            // Get stream_active flag for fast-path check in callback
+            let stream_active = render_manager.lock().unwrap().stream_active();
+
             // Use background rendering with lookahead buffers
             let _render_thread =
-                RenderManager::start_background_rendering(Arc::clone(&render_manager));
+                RenderManager::start_background_rendering(Arc::clone(&render_manager), Arc::clone(&stream_active));
 
             let stream = device
                 .build_output_stream(
                     &config,
                     move |output: &mut [f32], _| {
+                        // Fast path: if stream inactive, just zero buffer - NO locks, NO processing
+                        if !stream_active.load(Ordering::Relaxed) {
+                            for sample in output.iter_mut() {
+                                *sample = 0.0;
+                            }
+                            return;
+                        }
+
                         // Check for VisReady or timeout before reading buffer
                         if let Ok(mut rm) = render_manager.lock() {
                             rm.check_vis_ready();
@@ -101,11 +113,22 @@ impl CpalBackend {
 
             Ok(stream)
         } else {
+            // Get stream_active flag for fast-path check in callback
+            let stream_active = render_manager.lock().unwrap().stream_active();
+
             // Render directly on audio thread (no lookahead)
             let stream = device
                 .build_output_stream(
                     &config,
                     move |output: &mut [f32], _| {
+                        // Fast path: if stream inactive, just zero buffer - NO locks, NO processing
+                        if !stream_active.load(Ordering::Relaxed) {
+                            for sample in output.iter_mut() {
+                                *sample = 0.0;
+                            }
+                            return;
+                        }
+
                         // Handle lock failure gracefully - output silence instead of panicking
                         let batch = match render_manager.lock() {
                             Ok(mut rm) => {

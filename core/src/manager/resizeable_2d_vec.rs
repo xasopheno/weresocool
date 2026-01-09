@@ -48,6 +48,18 @@ impl<T: Clone> Resizeable2DVec<T> {
         self.inner.clone()
     }
 
+    /// Consumes self and returns the inner `Vec<Vec<T>>` without cloning.
+    /// Use this when you no longer need the Resizeable2DVec after conversion.
+    pub fn into_vec(self) -> Vec<Vec<T>> {
+        self.inner
+    }
+
+    /// Consumes self and flattens into a single 1D `Vec<T>` without cloning elements.
+    /// The order of elements is row-by-row, preserving the order of items in each row.
+    pub fn into_vec_flat(self) -> Vec<T> {
+        self.inner.into_iter().flatten().collect()
+    }
+
     /// Ensures the 2D vector has at least `new_size` outer vectors.
     /// If the size is smaller, it extends the outer vector with empty inner vectors.
     fn ensure_size(&mut self, new_size: usize) {
@@ -136,5 +148,29 @@ mod tests {
         let debug_output = format!("{:?}", vec2d);
         assert!(debug_output.contains("Resizable2DVec"));
         assert!(debug_output.contains("42"));
+    }
+
+    #[test]
+    fn test_into_vec() {
+        let mut vec2d: Resizeable2DVec<i32> = Resizeable2DVec::new(3);
+        vec2d.push_at(0, 10);
+        vec2d.push_at(0, 20);
+        vec2d.push_at(2, 30);
+        vec2d.push_at(2, 40);
+
+        let owned = vec2d.into_vec();
+        assert_eq!(owned, vec![vec![10, 20], vec![], vec![30, 40]]);
+    }
+
+    #[test]
+    fn test_into_vec_flat() {
+        let mut vec2d: Resizeable2DVec<i32> = Resizeable2DVec::new(3);
+        vec2d.push_at(0, 10);
+        vec2d.push_at(0, 20);
+        vec2d.push_at(2, 30);
+        vec2d.push_at(2, 40);
+
+        let flat = vec2d.into_vec_flat();
+        assert_eq!(flat, vec![10, 20, 30, 40]);
     }
 }
