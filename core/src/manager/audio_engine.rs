@@ -53,8 +53,14 @@ impl AudioEngine {
         collect_viz_ops: bool,
     ) -> Option<RenderResult> {
         let mut remaining_buffer_size = buffer_size;
-        // Collect ops for visualization only
-        let mut total_ops: Resizeable2DVec<RenderOp> = Resizeable2DVec::new(1);
+        // Get voice count for pre-allocation
+        let num_voices = self.current_render_ref().as_ref().map(|v| v.len()).unwrap_or(0);
+        // Collect ops for visualization only - pre-allocate with voice count if needed
+        let mut total_ops: Resizeable2DVec<RenderOp> = if collect_viz_ops {
+            Resizeable2DVec::new(num_voices)
+        } else {
+            Resizeable2DVec::new(0)
+        };
         // Final combined waveform we build progressively
         let mut combined_sw = StereoWaveform::new_empty();
         // MIDI ops accumulated for this read window
@@ -74,20 +80,20 @@ impl AudioEngine {
                 match current_render_option {
                     Some(render_voices) => {
                         let mut any_data_rendered = false;
-                        let mut rendered_per_voice: Vec<StereoWaveform> = Vec::new();
-
-                        let mut min_samples_processed = remaining_buffer_size;
+                        let mut rendered_per_voice: Vec<StereoWaveform> = Vec::with_capacity(render_voices.len());
+                        let loop_play = !next_exists && Settings::global().loop_play;
+                        let mut samples_rendered = 0usize;
 
                         for (i, voice) in render_voices.iter_mut().enumerate() {
                             match voice.get_batch(
                                 remaining_buffer_size,
                                 None,
-                                !next_exists && Settings::global().loop_play,
+                                loop_play,
                             ) {
                                 Some(batch) => {
                                     any_data_rendered = true;
-                                    let samples = batch.iter().map(|op| op.samples).sum::<usize>();
-                                    min_samples_processed = min_samples_processed.min(samples);
+                                    let batch_samples: usize = batch.iter().map(|op| op.samples).sum();
+                                    samples_rendered = samples_rendered.max(batch_samples);
 
                                     // Split MIDI-directed ops from audio-directed
                                     let (midi_batch, mut audio_batch): (Vec<_>, Vec<_>) = batch
@@ -133,15 +139,14 @@ impl AudioEngine {
                             }
                         }
 
-                        if any_data_rendered && min_samples_processed > 0 {
-                            // Mix this batch now into the running stereo waveform
+                        if any_data_rendered && samples_rendered > 0 {
+                            // Mix all voices (NormalForm ensures they have the same length)
                             let batch_sw = sum_all_waveforms(rendered_per_voice);
                             combined_sw.append(batch_sw);
                             // Advance absolute playhead samples
-                            self.samples_processed = self.samples_processed.saturating_add(min_samples_processed);
-                            (min_samples_processed, false)
+                            self.samples_processed = self.samples_processed.saturating_add(samples_rendered);
+                            (samples_rendered, false)
                         } else if any_data_rendered {
-                            // Some data rendered, but min_samples_processed is zero
                             (0, false)
                         } else {
                             // All voices have finished

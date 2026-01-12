@@ -2,8 +2,9 @@ use crate::{voice::Voice, SynthOp};
 use weresocool_ast::OscType;
 
 pub fn gain_at_index(start: f64, target: f64, index: usize, length: usize) -> f64 {
+    let ratio = (index as f64 / length as f64).min(1.0); // Clamp to prevent overshoot
     let distance = target - start;
-    start + (distance * index as f64 / length as f64)
+    start + distance * ratio
 }
 
 impl Voice {

@@ -544,10 +544,14 @@ fn create_render_ops(
     let mut result: Vec<RenderOp> = vec![];
 
     for (event, p_op) in vec_point_op.iter().enumerate() {
-        let next_e = if event == vec_point_op.len() - 1 {
-            0
+        let is_last = event == vec_point_op.len() - 1;
+        // If pad_end is true and this is the last op, next should be None
+        // so decay envelope applies. Otherwise wrap to first op for looping.
+        let next_op = if is_last && pad_end {
+            None
         } else {
-            event + 1
+            let next_e = if is_last { 0 } else { event + 1 };
+            Some(vec_point_op[next_e].clone())
         };
         let op = pointop_to_renderop(
             p_op,
@@ -555,7 +559,7 @@ fn create_render_ops(
             voice,
             event,
             basis,
-            Some(vec_point_op[next_e].clone()),
+            next_op,
             color_map,
         );
         result.push(op);

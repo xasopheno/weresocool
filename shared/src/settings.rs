@@ -37,6 +37,10 @@ pub struct Settings {
     pub cull_enabled: bool,
     pub cull_max_distance: f32,
     pub cull_behind_threshold: f32,
+    // Instance lifetime
+    pub max_instance_lifetime: f32,
+    // Debug settings
+    pub click_detection: bool,
 }
 
 impl Settings {
@@ -187,6 +191,9 @@ visual_mode = true
 # cull_enabled = true
 # cull_max_distance = 5.0
 # cull_behind_threshold = 0.5
+
+# Instance lifetime (seconds before automatic removal)
+# max_instance_lifetime = 30.0
 "#;
         let _ = std::fs::write(&path, default_config);
     }
@@ -221,6 +228,8 @@ pub const fn default_settings() -> Settings {
         cull_enabled: true,
         cull_max_distance: 5.0,
         cull_behind_threshold: 0.5,
+        max_instance_lifetime: 30.0,
+        click_detection: false,
     }
 }
 
@@ -265,6 +274,10 @@ struct SettingsConfig {
     cull_enabled: Option<bool>,
     cull_max_distance: Option<f32>,
     cull_behind_threshold: Option<f32>,
+    // Instance lifetime
+    max_instance_lifetime: Option<f32>,
+    // Debug settings
+    click_detection: Option<bool>,
 }
 
 impl SettingsConfig {
@@ -295,6 +308,8 @@ impl SettingsConfig {
         if let Some(v) = self.cull_enabled { settings.cull_enabled = v; }
         if let Some(v) = self.cull_max_distance { settings.cull_max_distance = v; }
         if let Some(v) = self.cull_behind_threshold { settings.cull_behind_threshold = v; }
+        if let Some(v) = self.max_instance_lifetime { settings.max_instance_lifetime = v; }
+        if let Some(v) = self.click_detection { settings.click_detection = v; }
     }
 }
 
@@ -349,6 +364,8 @@ fn apply_config_to_merged(config: &SettingsConfig, merged: &mut SettingsConfig) 
     merged.cull_enabled = Some(temp_settings.cull_enabled);
     merged.cull_max_distance = Some(temp_settings.cull_max_distance);
     merged.cull_behind_threshold = Some(temp_settings.cull_behind_threshold);
+    merged.max_instance_lifetime = Some(temp_settings.max_instance_lifetime);
+    merged.click_detection = Some(temp_settings.click_detection);
 }
 
 /// Load and merge all config files
@@ -418,4 +435,6 @@ fn merge_configs(dest: &mut SettingsConfig, source: SettingsConfig) {
     if source.cull_enabled.is_some() { dest.cull_enabled = source.cull_enabled; }
     if source.cull_max_distance.is_some() { dest.cull_max_distance = source.cull_max_distance; }
     if source.cull_behind_threshold.is_some() { dest.cull_behind_threshold = source.cull_behind_threshold; }
+    if source.max_instance_lifetime.is_some() { dest.max_instance_lifetime = source.max_instance_lifetime; }
+    if source.click_detection.is_some() { dest.click_detection = source.click_detection; }
 }

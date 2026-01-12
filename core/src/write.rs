@@ -1,14 +1,24 @@
 use crate::generation::Op4D;
 use csv::Writer;
+use once_cell::sync::Lazy;
 use std::fs::File;
 use std::io::prelude::*;
 use std::io::{BufWriter, Cursor};
 use std::path::PathBuf;
+use std::sync::atomic::{AtomicU64, AtomicI64, Ordering};
 use weresocool_error::Error;
 use weresocool_instrument::{Normalize, StereoWaveform};
 #[cfg(not(any(target_os = "windows", feature = "wasm")))]
 use weresocool_lame::Lame;
 use weresocool_shared::Settings;
+
+// Diagnostic: track samples for discontinuity detection
+static TOTAL_SAMPLES: Lazy<AtomicU64> = Lazy::new(|| AtomicU64::new(0));
+static LAST_L: Lazy<AtomicI64> = Lazy::new(|| AtomicI64::new(0));
+static LAST_R: Lazy<AtomicI64> = Lazy::new(|| AtomicI64::new(0));
+
+fn f32_to_i64(f: f32) -> i64 { (f * 1_000_000.0) as i64 }
+fn i64_to_f32(i: i64) -> f32 { i as f32 / 1_000_000.0 }
 
 pub fn write_output_buffer(out_buffer: &mut [f32], stereo_waveform: StereoWaveform) {
     let len = stereo_waveform.l_buffer.len();
@@ -25,10 +35,44 @@ pub fn new_write_output_buffer(
     offset: Vec<f32>,
 ) {
     let len = stereo_waveform.l_buffer.len();
+    let click_detection = Settings::global().click_detection;
 
-    for i in 0..len {
-        out_buffer[i * 2] = offset[i * 2] * stereo_waveform.l_buffer[i] as f32;
-        out_buffer[i * 2 + 1] = offset[i * 2 + 1] * stereo_waveform.r_buffer[i] as f32;
+    if click_detection {
+        // Track samples for discontinuity detection
+        let start_sample = TOTAL_SAMPLES.fetch_add(len as u64, Ordering::Relaxed);
+        let mut prev_l = i64_to_f32(LAST_L.load(Ordering::Relaxed));
+        let mut prev_r = i64_to_f32(LAST_R.load(Ordering::Relaxed));
+
+        for i in 0..len {
+            let l = offset[i * 2] * stereo_waveform.l_buffer[i] as f32;
+            let r = offset[i * 2 + 1] * stereo_waveform.r_buffer[i] as f32;
+
+            // Detect discontinuity
+            let delta_l = l - prev_l;
+            let delta_r = r - prev_r;
+            if delta_l.abs() > 0.2 || delta_r.abs() > 0.2 {
+                let sample = start_sample + i as u64;
+                let time_sec = sample as f64 / 44100.0;
+                eprintln!("CLICK: sample={} t={:.3}s i={} L[{:.3}->{:.3}]d={:.3} R[{:.3}->{:.3}]d={:.3}",
+                    sample, time_sec, i, prev_l, l, delta_l, prev_r, r, delta_r);
+            }
+
+            out_buffer[i * 2] = l;
+            out_buffer[i * 2 + 1] = r;
+            prev_l = l;
+            prev_r = r;
+        }
+
+        if len > 0 {
+            LAST_L.store(f32_to_i64(prev_l), Ordering::Relaxed);
+            LAST_R.store(f32_to_i64(prev_r), Ordering::Relaxed);
+        }
+    } else {
+        // Fast path: no click detection
+        for i in 0..len {
+            out_buffer[i * 2] = offset[i * 2] * stereo_waveform.l_buffer[i] as f32;
+            out_buffer[i * 2 + 1] = offset[i * 2 + 1] * stereo_waveform.r_buffer[i] as f32;
+        }
     }
 }
 

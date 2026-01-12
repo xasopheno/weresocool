@@ -26,7 +26,22 @@
       "Bash(./target/debug/weresocool fmt:*)",
       "Bash(./target/release/weresocool fmt:*)",
       "Bash(grep:*)",
-      "Bash(cargo bench:*)"
+      "Bash(cargo bench:*)",
+      "Bash(ls:*)",
+      "Bash(git -C /Users/danny/code/weresocool log --oneline -10)",
+      "Bash(git -C /Users/danny/code/weresocool diff HEAD)",
+      "Bash(timeout 5 /Users/danny/code/kintaro/target/release/kintaro watch:*)",
+      "Bash(/bin/bash -c 'cd /Users/danny/code/weresocool_from_sound && /Users/danny/code/kintaro/target/release/kintaro watch --audio --quiet /Users/danny/code/weresocool_from_sound/test_fromsound.socool > /tmp/kintaro_stdout.txt 2>/tmp/kintaro_stderr.txt &\nKPID=$!\nsleep 6\nkill $KPID 2>/dev/null\nwait $KPID 2>/dev/null\necho \"\"=== STDERR ===\"\"\nhead -100 /tmp/kintaro_stderr.txt\necho \"\"\"\"\necho \"\"=== STDOUT ===\"\"\nhead -20 /tmp/kintaro_stdout.txt')",
+      "Bash(python3:*)",
+      "Bash(/bin/bash -c 'cd /Users/danny/code/weresocool_from_sound && /Users/danny/code/kintaro/target/release/kintaro watch --audio --quiet /Users/danny/code/weresocool_from_sound/test_fromsound.socool 2>&1 | head -60 &\nKPID=$!\nsleep 10\nkill $KPID 2>/dev/null')",
+      "Bash(/Users/danny/code/weresocool/target/debug/weresocool print:*)",
+      "Bash(timeout 30 /Users/danny/code/kintaro/target/release/kintaro watch:*)",
+      "Bash(/bin/bash -c 'cd /Users/danny/code/weresocool_from_sound\n/Users/danny/code/kintaro/target/release/kintaro watch --audio /Users/danny/code/weresocool_from_sound/test_fromsound.socool &\nPID=$!\nsleep 20\nkill $PID 2>/dev/null\nwait $PID 2>/dev/null\necho \"\"=== Cache files ===\"\"\nls -la .weresocool_cache/')",
+      "Bash(pkill:*)",
+      "Bash(/Users/danny/code/kintaro/target/release/kintaro:*)",
+      "Bash(ffprobe:*)",
+      "Bash(timeout 15 /Users/danny/code/kintaro/target/release/kintaro watch:*)",
+      "Bash(tee:*)"
     ],
     "deny": [],
     "ask": []

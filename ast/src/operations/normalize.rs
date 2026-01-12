@@ -340,6 +340,7 @@ impl Normalize for Op {
 
             Op::Sequence { operations, .. } => {
                 let mut result = NormalForm::init_empty();
+                result.operations.reserve(operations.len() * input.operations.len());
                 let saved_rand_ctx = defs.rand_ctx;
                 for (i, op) in operations.iter().enumerate() {
                     // Each sequence item gets a unique rand_ctx based on its index
@@ -658,6 +659,7 @@ impl Normalize for Op {
 
             Op::Repeat { operations, count } => {
                 let mut result = NormalForm::init_empty();
+                result.operations.reserve((*count as usize) * input.operations.len());
                 let saved_rand_ctx = defs.rand_ctx;
 
                 for _ in 0..*count {
@@ -702,7 +704,8 @@ impl Normalize for Op {
                     .max()
                     .ok_or_else(|| Error::with_msg("Failed to compute max length ratio"))?;
 
-                let mut result = vec![];
+                let total_ops: usize = normal_forms.iter().map(|nf| nf.operations.len()).sum();
+                let mut result = Vec::with_capacity(total_ops);
 
                 for mut nf in normal_forms {
                     pad_length(&mut nf, max_lr, defs)?;

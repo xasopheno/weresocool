@@ -1,6 +1,6 @@
 use crate::{
     sample::Waveform,
-    {gain::gain_at_index, loudness::loudness_normalization},
+    loudness::loudness_normalization,
     Offset, SynthOp,
 };
 
@@ -28,6 +28,7 @@ pub struct Voice {
     pub old_filters: Option<Vec<BiquadFilter>>,
     pub filter_crossfade_index: usize,
     pub osc_crossfade_index: usize,
+    pub smoothed_gain: f64,  // Exponentially smoothed gain for click-free transitions
 }
 
 #[derive(Clone, Debug, PartialEq, Copy)]
@@ -96,6 +97,7 @@ impl Voice {
             old_filters: None,
             filter_crossfade_index: 0,
             osc_crossfade_index: 0,
+            smoothed_gain: 0.0,
         }
     }
 
@@ -127,10 +129,13 @@ impl Voice {
         // .update(self.current.reverb.unwrap_or(0.0) as f32);
 
         let gain_factor = op_gain * offset.gain;
-        let sample_limit = if op.duration_samples() > 250 { op.duration_samples() } else { 250 };
         // let apply_reverb = self.reverb.state.map_or(false, |s| s > 0.0);
 
         let sound_to_silence = self.sound_to_silence();
+
+        // Exponential smoothing coefficient for click-free gain transitions
+        // ~500 samples (~11ms at 44.1kHz) to reach 63% of target
+        const GAIN_SMOOTHING_COEF: f64 = 0.002;
 
         for (index, sample) in buffer.iter_mut().enumerate() {
             let frequency = self.calculate_frequency(
@@ -140,7 +145,11 @@ impl Voice {
                 self.offset_past.frequency,
                 self.offset_current.frequency,
             );
-            let gain = gain_at_index(self.offset_past.gain, gain_factor, index, sample_limit);
+
+            // Exponential smoothing - continuously approach target gain
+            self.smoothed_gain += GAIN_SMOOTHING_COEF * (gain_factor - self.smoothed_gain);
+            let gain = self.smoothed_gain;
+
             let info = SampleInfo { frequency, gain };
 
             self.phase = Voice::calculate_current_phase(&info, &self.osc_type, self.phase);
@@ -243,6 +252,7 @@ impl Voice {
         self.old_osc_type = None;
         self.current.gain = 0.0;
         self.current.frequency = 0.0;
+        self.smoothed_gain = 0.0;
     }
 
     fn update_current_and_past<Op: SynthOp>(&mut self, op: &Op) {
