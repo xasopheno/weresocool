@@ -452,7 +452,7 @@ fn get_cache_path(audio_path: &str, voices: usize, fps: usize) -> std::path::Pat
     let parent = path.parent().unwrap_or(Path::new("."));
     let stem = path.file_stem().unwrap_or_default().to_string_lossy();
     let cache_dir = parent.join(".weresocool_cache");
-    cache_dir.join(format!("{}_{}_{}.json", stem, voices, fps))
+    cache_dir.join(format!("{}_{}_{}.bin", stem, voices, fps))
 }
 
 /// Load NormalForm from cache if valid
@@ -471,16 +471,16 @@ fn load_from_cache(audio_path: &str, voices: usize, fps: usize) -> Result<Option
         .map(|d| d.as_secs())
         .unwrap_or(0);
 
-    // Read cache
+    // Read cache (binary)
     let read_start = std::time::Instant::now();
-    let cache_data = fs::read_to_string(&cache_path)
+    let cache_data = fs::read(&cache_path)
         .map_err(|e| Error::with_msg(format!("Failed to read cache: {}", e)))?;
     eprintln!("[FromSound] Cache file read: {:?} ({} bytes)", read_start.elapsed(), cache_data.len());
 
     let parse_start = std::time::Instant::now();
-    let cache: FromSoundCache = serde_json::from_str(&cache_data)
+    let cache: FromSoundCache = bincode::deserialize(&cache_data)
         .map_err(|e| Error::with_msg(format!("Failed to parse cache: {}", e)))?;
-    eprintln!("[FromSound] JSON parse: {:?}", parse_start.elapsed());
+    eprintln!("[FromSound] Bincode deserialize: {:?}", parse_start.elapsed());
 
     // Validate cache
     if cache.audio_path != audio_path || cache.audio_mtime != audio_mtime || cache.voices != voices {
@@ -539,7 +539,7 @@ fn save_to_cache(audio_path: &str, voices: usize, fps: usize, nf: &NormalForm) -
         length_ratio_denom: *nf.length_ratio.denom(),
     };
 
-    let cache_data = serde_json::to_string(&cache)
+    let cache_data = bincode::serialize(&cache)
         .map_err(|e| Error::with_msg(format!("Failed to serialize cache: {}", e)))?;
 
     fs::write(&cache_path, cache_data)
