@@ -98,6 +98,8 @@ impl SerializedPointOp {
 
 /// Main entry point: analyze audio file and return NormalForm
 pub fn from_sound_to_normalform(path: &str, voices: usize, fps: usize) -> Result<NormalForm, Error> {
+    let total_start = std::time::Instant::now();
+
     // Validate file exists
     if !Path::new(path).exists() {
         return Err(Error::with_msg(format!(
@@ -107,13 +109,18 @@ pub fn from_sound_to_normalform(path: &str, voices: usize, fps: usize) -> Result
     }
 
     // Try to load from cache first
+    let cache_start = std::time::Instant::now();
     if let Some(nf) = load_from_cache(path, voices, fps)? {
+        eprintln!("[FromSound] Cache load: {:?}, total: {:?}", cache_start.elapsed(), total_start.elapsed());
         return Ok(nf);
     }
+    eprintln!("[FromSound] Cache miss check: {:?}", cache_start.elapsed());
 
     // Analyze the audio file
+    let read_start = std::time::Instant::now();
     let (sample_rate, samples) = read_wav_mono(path)
         .map_err(|e| Error::with_msg(format!("Failed to read WAV file: {}", e)))?;
+    eprintln!("[FromSound] WAV read: {:?}", read_start.elapsed());
 
     let config = AnalysisConfig {
         use_multi_res: true,
@@ -127,6 +134,7 @@ pub fn from_sound_to_normalform(path: &str, voices: usize, fps: usize) -> Result
         use_mq_tracking: true,
     };
 
+    let analysis_start = std::time::Instant::now();
     let analyzer = make_analyzer(
         sample_rate,
         2048, 512,      // FFT params
@@ -145,8 +153,10 @@ pub fn from_sound_to_normalform(path: &str, voices: usize, fps: usize) -> Result
 
     let analysis = analyzer.run(&samples)
         .map_err(|e| Error::with_msg(format!("Analysis failed: {}", e)))?;
+    eprintln!("[FromSound] Analysis: {:?}", analysis_start.elapsed());
 
     // Voice allocation
+    let alloc_start = std::time::Instant::now();
     let selected_tracks = if voices > 0 && analysis.tracks.len() > voices {
         let alloc_config = VoiceAllocConfig {
             frame_duration: 1.0,
@@ -160,13 +170,19 @@ pub fn from_sound_to_normalform(path: &str, voices: usize, fps: usize) -> Result
     } else {
         analysis.tracks.clone()
     };
+    eprintln!("[FromSound] Voice allocation: {:?}", alloc_start.elapsed());
 
     // Convert to NormalForm
+    let convert_start = std::time::Instant::now();
     let nf = tracks_to_normalform(&selected_tracks, analysis.duration_sec, fps)?;
+    eprintln!("[FromSound] Convert to NormalForm: {:?}", convert_start.elapsed());
 
     // Save to cache
+    let save_start = std::time::Instant::now();
     save_to_cache(path, voices, fps, &nf)?;
+    eprintln!("[FromSound] Save cache: {:?}", save_start.elapsed());
 
+    eprintln!("[FromSound] Total (no cache): {:?}", total_start.elapsed());
     Ok(nf)
 }
 
@@ -456,11 +472,15 @@ fn load_from_cache(audio_path: &str, voices: usize, fps: usize) -> Result<Option
         .unwrap_or(0);
 
     // Read cache
+    let read_start = std::time::Instant::now();
     let cache_data = fs::read_to_string(&cache_path)
         .map_err(|e| Error::with_msg(format!("Failed to read cache: {}", e)))?;
+    eprintln!("[FromSound] Cache file read: {:?} ({} bytes)", read_start.elapsed(), cache_data.len());
 
+    let parse_start = std::time::Instant::now();
     let cache: FromSoundCache = serde_json::from_str(&cache_data)
         .map_err(|e| Error::with_msg(format!("Failed to parse cache: {}", e)))?;
+    eprintln!("[FromSound] JSON parse: {:?}", parse_start.elapsed());
 
     // Validate cache
     if cache.audio_path != audio_path || cache.audio_mtime != audio_mtime || cache.voices != voices {
@@ -468,10 +488,15 @@ fn load_from_cache(audio_path: &str, voices: usize, fps: usize) -> Result<Option
     }
 
     // Reconstruct NormalForm
+    let reconstruct_start = std::time::Instant::now();
     let operations: Vec<Vec<PointOp>> = cache.operations
         .iter()
         .map(|voice| voice.iter().map(|op| op.to_point_op()).collect())
         .collect();
+    eprintln!("[FromSound] Reconstruct NormalForm: {:?} ({} voices, {} total ops)",
+        reconstruct_start.elapsed(),
+        operations.len(),
+        operations.iter().map(|v| v.len()).sum::<usize>());
 
     let length_ratio = Rational64::new(cache.length_ratio_num, cache.length_ratio_denom);
 

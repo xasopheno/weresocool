@@ -508,11 +508,17 @@ pub fn nf_to_vec_renderable(
     defs: &mut Defs,
     basis: &Basis,
 ) -> Result<Vec<Vec<RenderOp>>, Error> {
+    let apply_start = std::time::Instant::now();
     let mut normal_form = NormalForm::init();
     composition.apply_to_normal_form(&mut normal_form, defs)?;
+    eprintln!("[nf_to_vec_renderable] apply_to_normal_form: {:?} ({} voices, {} total ops)",
+        apply_start.elapsed(),
+        normal_form.operations.len(),
+        normal_form.operations.iter().map(|v| v.len()).sum::<usize>());
 
     let settings = Settings::global();
 
+    let render_start = std::time::Instant::now();
     let result: Vec<Vec<RenderOp>> = normal_form
         .operations
         .iter()
@@ -528,6 +534,7 @@ pub fn nf_to_vec_renderable(
             )
         })
         .collect();
+    eprintln!("[nf_to_vec_renderable] create_render_ops: {:?}", render_start.elapsed());
 
     Ok(result)
 }

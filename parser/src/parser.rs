@@ -67,35 +67,66 @@ fn process_op_table(mut defs: &mut Defs) -> Result<Defs, Error> {
     let mut result: Defs = Defs::default();
     result.colors = defs.colors.clone();
 
-    // TODO: Is this correct?
-    for (scope_name, scope) in defs.ops.clone().iter_mut() {
-        for (name, term) in scope {
-            match term {
-                Term::Nf(nf) => {
-                    result.ops.insert(scope_name, name, Term::Nf(nf.to_owned()));
-                }
-                Term::Op(op) => {
-                    let mut nf = NormalForm::init();
-                    op.apply_to_normal_form(&mut nf, &mut defs)?;
+    let total_start = std::time::Instant::now();
+    let mut op_count = 0;
+    let mut nf_count = 0;
+    let mut slowest_op: Option<(String, std::time::Duration)> = None;
 
-                    result.ops.insert(scope_name, name, Term::Nf(nf));
-                }
-                Term::FunDef(fun) => {
-                    result.ops.insert(scope_name, name, Term::FunDef(fun.to_owned()));
-                }
-                Term::Lop(lop) => {
-                    let mut nf = NormalForm::init();
-                    lop.apply_to_normal_form(&mut nf, &mut defs.clone())?;
-                    result.ops.insert(scope_name, name, Term::Nf(nf));
-                }
-                Term::Gen(generator) => {
-                    let mut nf = NormalForm::init();
-                    generator.apply_to_normal_form(&mut nf, &mut defs.clone())?;
+    // Collect all (scope_name, name, term) tuples first to avoid borrow issues
+    let entries: Vec<(String, String, Term)> = defs.ops.clone()
+        .iter()
+        .flat_map(|(scope_name, scope)| {
+            scope.iter().map(move |(name, term)| {
+                (scope_name.clone(), name.clone(), term.clone())
+            })
+        })
+        .collect();
 
-                    result.ops.insert(scope_name, name, Term::Nf(nf));
+    for (scope_name, name, term) in entries {
+        let op_start = std::time::Instant::now();
+        match term {
+            Term::Nf(nf) => {
+                result.ops.insert(&scope_name, &name, Term::Nf(nf.to_owned()));
+                nf_count += 1;
+            }
+            Term::Op(op) => {
+                let mut nf = NormalForm::init();
+                op.apply_to_normal_form(&mut nf, &mut defs)?;
+                let elapsed = op_start.elapsed();
+                if elapsed > std::time::Duration::from_millis(100) {
+                    eprintln!("[process_op_table] Op '{}' took {:?}", name, elapsed);
                 }
-            };
-        }
+                if slowest_op.as_ref().map_or(true, |(_, d)| elapsed > *d) {
+                    slowest_op = Some((name.clone(), elapsed));
+                }
+                // MEMOIZATION: Update defs so subsequent lookups get the normalized form
+                defs.ops.insert(&scope_name, &name, Term::Nf(nf.clone()));
+                result.ops.insert(&scope_name, &name, Term::Nf(nf));
+                op_count += 1;
+            }
+            Term::FunDef(fun) => {
+                result.ops.insert(&scope_name, &name, Term::FunDef(fun.to_owned()));
+            }
+            Term::Lop(lop) => {
+                let mut nf = NormalForm::init();
+                lop.apply_to_normal_form(&mut nf, &mut defs.clone())?;
+                // MEMOIZATION: Update defs for Lop too
+                defs.ops.insert(&scope_name, &name, Term::Nf(nf.clone()));
+                result.ops.insert(&scope_name, &name, Term::Nf(nf));
+            }
+            Term::Gen(generator) => {
+                let mut nf = NormalForm::init();
+                generator.apply_to_normal_form(&mut nf, &mut defs.clone())?;
+                // MEMOIZATION: Update defs for Gen too
+                defs.ops.insert(&scope_name, &name, Term::Nf(nf.clone()));
+                result.ops.insert(&scope_name, &name, Term::Nf(nf));
+            }
+        };
+    }
+
+    eprintln!("[process_op_table] Total: {:?} ({} ops, {} pre-normalized)", total_start.elapsed(), op_count, nf_count);
+    if let Some((name, duration)) = slowest_op {
+        eprintln!("[process_op_table] Slowest op: '{}' took {:?}", name, duration);
     }
 
     result.ops.stems = defs.ops.stems.to_owned();
@@ -406,13 +437,17 @@ pub fn parse_file(
         Default::default()
     };
 
+    let ws_start = std::time::Instant::now();
     let (imports_needed, composition) = handle_whitespace_and_imports(vec_string)?;
+    eprintln!("[parse_file] handle_whitespace_and_imports: {:?}", ws_start.elapsed());
 
     // Process WGSL blocks - extract them and replace with IDs
     // This validates each WGSL block and fails fast on the first error
     // quiet=false to show errors during actual parsing
+    let wgsl_start = std::time::Instant::now();
     let (processed_composition, source_map) = process_wgsl_blocks(&composition, &mut defs, false, false)?;
-    
+    eprintln!("[parse_file] process_wgsl_blocks: {:?}", wgsl_start.elapsed());
+
     for import in imports_needed {
         let (mut filepath, import_name) = get_filepath_and_import_name(import);
         if let Some(mut wd) = working_path.clone() {
@@ -447,10 +482,15 @@ pub fn parse_file(
         }
     }
 
+    let parse_start = std::time::Instant::now();
     let init = socool::SoCoolParser::new().parse(&mut defs, &processed_composition);
+    eprintln!("[parse_file] SoCoolParser::parse: {:?}", parse_start.elapsed());
+
     match init {
         Ok(init) => {
+            let op_table_start = std::time::Instant::now();
             let mut result_defs = process_op_table(&mut defs)?;
+            eprintln!("[parse_file] process_op_table: {:?}", op_table_start.elapsed());
 
             // Ensure WGSL blocks and colors are preserved in the final result
             result_defs.wgsl = defs.wgsl.clone();
