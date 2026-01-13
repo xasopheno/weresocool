@@ -241,17 +241,6 @@ fn tracks_to_normalform(tracks: &[TrackOut], duration_sec: f32, fps: usize) -> R
         voice_end_times[voice_idx] += track_duration;
     }
 
-    // Add trailing silence to each voice so the last op applies decay envelope
-    // This ensures next_l_silent and next_r_silent are true for the final audible op
-    for voice in &mut voices {
-        if let Some(last_op) = voice.last() {
-            // Get the frequency from the last op for portamento continuity
-            let last_freq = rational_to_f32(last_op.fm) * base_freq;
-            // Add brief silence (10ms) to trigger decay
-            voice.push(create_silence(0.010, last_freq, base_freq));
-        }
-    }
-
     // Calculate length ratio
     let max_length = voices.iter()
         .map(|voice| voice.iter().map(|op| op.l).sum::<Rational64>())
@@ -286,16 +275,7 @@ fn create_track_pointops(track: &TrackOut, base_freq: f32, fps: usize) -> Vec<Po
         return ops;
     }
 
-    // Fadeout duration - starts BEFORE the last point so fade is complete by track end
-    // This prevents all voices from transitioning at the exact same moment
-    // Using 300ms to ensure full fade before track end
-    let fade_time = 0.300; // 300ms fadeout
-
-    // First pass: collect all raw amplitudes at each time step
-    let last_point_time = track.points.last().map(|p| p.t_sec).unwrap_or(1.0);
-    // Fadeout starts at (last_point_time - fade_time) and ends at last_point_time
-    let track_end_time = last_point_time;
-    let mut raw_samples: Vec<(f32, f32, f32)> = Vec::new(); // (time, freq, amp)
+    let track_end_time = track.points.last().map(|p| p.t_sec).unwrap_or(1.0);
 
     for i in 0..track.points.len() - 1 {
         let point_a = &track.points[i];
@@ -308,97 +288,48 @@ fn create_track_pointops(track: &TrackOut, base_freq: f32, fps: usize) -> Vec<Po
 
         let base_step = 1.0 / fps as f32;
         let num_steps = (segment_duration / base_step).ceil().max(1.0) as usize;
+        let actual_step = segment_duration / num_steps as f32;
 
         for step in 0..num_steps {
             let t = step as f32 / num_steps as f32;
             let current_time = point_a.t_sec + t * segment_duration;
+
+            // Linear interpolation
             let interp_freq = point_a.freq_hz + (point_b.freq_hz - point_a.freq_hz) * t;
             let interp_amp = point_a.amp + (point_b.amp - point_a.amp) * t;
-            raw_samples.push((current_time, interp_freq, interp_amp));
+
+            // Apply fadeout near track end
+            let time_to_end = track_end_time - current_time;
+            let fade_time = 0.020;
+            let fadeout_factor = if time_to_end <= 0.0 {
+                0.0
+            } else if time_to_end < fade_time {
+                time_to_end / fade_time
+            } else {
+                1.0
+            };
+            let final_amp = interp_amp * fadeout_factor;
+
+            // Pre-compensate for loudness normalization
+            let precomp_amp = final_amp * loudness_precompensation(interp_freq);
+
+            let is_first = i == 0 && step == 0;
+
+            ops.push(PointOp {
+                fm: rational_from_f32(interp_freq / base_freq),
+                fa: Rational64::from_integer(0),
+                g: rational_from_f32(precomp_amp),
+                l: rational_from_f32(actual_step),
+                pm: Rational64::from_integer(1),
+                pa: Rational64::from_integer(0),
+                attack: if is_first { rational_from_f32(0.010) } else { Rational64::from_integer(0) },
+                decay: Rational64::from_integer(0),
+                asr: ASR::Long,
+                portamento: rational_from_f32(actual_step),
+                osc_type: OscType::Sine { pow: None },
+                ..Default::default()
+            });
         }
-    }
-
-    if raw_samples.is_empty() {
-        return ops;
-    }
-
-    // Second pass: smooth the amplitudes to prevent clicks
-    // Use exponential smoothing with a time constant matching fadeout
-    // This prevents sudden gain jumps that cause audible clicks
-    let smoothing_time = 0.100; // 100ms smoothing window
-    let mut smoothed_amps: Vec<f32> = Vec::with_capacity(raw_samples.len());
-
-    // Start from zero to create a fade-in from silence
-    let mut smoothed_amp = 0.0_f32;
-
-    for i in 0..raw_samples.len() {
-        let target_amp = raw_samples[i].2;
-
-        // Calculate time delta for adaptive smoothing
-        let dt = if i > 0 {
-            raw_samples[i].0 - raw_samples[i - 1].0
-        } else {
-            1.0 / fps as f32
-        };
-
-        // Exponential smoothing coefficient based on time
-        // alpha = 1 - exp(-dt / tau) where tau is the smoothing time constant
-        let alpha = 1.0 - (-dt / smoothing_time).exp();
-
-        // Smooth towards target
-        smoothed_amp += alpha * (target_amp - smoothed_amp);
-        smoothed_amps.push(smoothed_amp);
-    }
-
-    // Third pass: create PointOps with smoothed amplitudes
-    // Apply fadeout in the last fade_time portion of the track
-    let base_step = 1.0 / fps as f32;
-    let fadeout_start_time = last_point_time - fade_time;
-
-    for (i, &(current_time, interp_freq, _)) in raw_samples.iter().enumerate() {
-        let smoothed_amp = smoothed_amps[i];
-
-        // Apply fadeout in the last fade_time portion of the track
-        let fadeout_factor = if current_time >= fadeout_start_time {
-            let time_into_fadeout = current_time - fadeout_start_time;
-            1.0 - (time_into_fadeout / fade_time).min(1.0)
-        } else {
-            1.0
-        };
-        let final_amp = smoothed_amp * fadeout_factor;
-
-        // Pre-compensate for loudness normalization
-        let precomp_amp = final_amp * loudness_precompensation(interp_freq);
-
-        // Calculate actual step duration
-        let actual_step = if i + 1 < raw_samples.len() {
-            raw_samples[i + 1].0 - current_time
-        } else {
-            base_step
-        };
-
-        let is_first = i == 0;
-        let is_last = i == raw_samples.len() - 1;
-
-        // Use longer attack/decay for track boundaries to ensure smooth transitions
-        // 50ms gives oscillator time to fade in/out when voice changes
-        let attack_time = if is_first { 0.050 } else { 0.0 };
-        let decay_time = if is_last { 0.050 } else { 0.020 };
-
-        ops.push(PointOp {
-            fm: rational_from_f32(interp_freq / base_freq),
-            fa: Rational64::from_integer(0),
-            g: rational_from_f32(precomp_amp),
-            l: rational_from_f32(actual_step),
-            pm: Rational64::from_integer(1),
-            pa: Rational64::from_integer(0),
-            attack: rational_from_f32(attack_time),
-            decay: rational_from_f32(decay_time),
-            asr: ASR::Long,
-            portamento: rational_from_f32(actual_step),
-            osc_type: OscType::Sine { pow: None },
-            ..Default::default()
-        });
     }
 
     ops
