@@ -334,19 +334,18 @@ fn pointop_to_renderop(
     voice: usize,
     event: usize,
     basis: &Basis,
-    next: Option<PointOp>,
+    next: Option<&PointOp>,
     color_map: &mut weresocool_ast::color::ColorMap,
+    sample_rate: f64,
 ) -> RenderOp {
-    let settings = Settings::global();
     let mut next_l_gain = 0.0;
     let mut next_r_gain = 0.0;
     let mut next_out = false;
-    let _next_ = false;
     let next_silent;
 
     match next {
         Some(op) => {
-            let (l, r) = point_op_to_gains(&op, basis, 1.0, 1.0);
+            let (l, r) = point_op_to_gains(op, basis, 1.0, 1.0);
             next_l_gain = l;
             next_r_gain = r;
             next_silent = op.is_silent();
@@ -369,10 +368,10 @@ fn pointop_to_renderop(
         t: r_to_f64(*time),
         reverb: point_op.reverb.map(r_to_f64),
         index: 0,
-        samples: (l * settings.sample_rate).round() as usize,
-        total_samples: (l * settings.sample_rate).round() as usize,
-        attack: r_to_f64(point_op.attack * basis.a) * settings.sample_rate,
-        decay: r_to_f64(point_op.decay * basis.d) * settings.sample_rate,
+        samples: (l * sample_rate).round() as usize,
+        total_samples: (l * sample_rate).round() as usize,
+        attack: r_to_f64(point_op.attack * basis.a) * sample_rate,
+        decay: r_to_f64(point_op.decay * basis.d) * sample_rate,
         osc_type: point_op.osc_type.clone(),
         asr: point_op.asr,
         portamento: (r_to_f64(point_op.portamento) * 1024_f64) as usize,
@@ -508,11 +507,14 @@ pub fn nf_to_vec_renderable(
     defs: &mut Defs,
     basis: &Basis,
 ) -> Result<Vec<Vec<RenderOp>>, Error> {
-    let apply_start = std::time::Instant::now();
-    let mut normal_form = NormalForm::init();
-    composition.apply_to_normal_form(&mut normal_form, defs)?;
-    eprintln!("[nf_to_vec_renderable] apply_to_normal_form: {:?} ({} voices, {} total ops)",
-        apply_start.elapsed(),
+    // No need to apply_to_normal_form - composition is already normalized.
+    // The old code did `NormalForm::init() *= composition` which just copies
+    // through expensive nested loops (O(n*m) for n voices, m ops).
+    // Clone is much faster.
+    let clone_start = std::time::Instant::now();
+    let normal_form = composition.clone();
+    eprintln!("[nf_to_vec_renderable] clone: {:?} ({} voices, {} total ops)",
+        clone_start.elapsed(),
         normal_form.operations.len(),
         normal_form.operations.iter().map(|v| v.len()).sum::<usize>());
 
@@ -548,17 +550,21 @@ fn create_render_ops(
     color_map: &mut weresocool_ast::color::ColorMap,
 ) -> Vec<RenderOp> {
     let mut time = Rational64::new(0, 1);
-    let mut result: Vec<RenderOp> = vec![];
+    // Pre-allocate to avoid reallocations
+    let capacity = vec_point_op.len() + if pad_end { 1 } else { 0 };
+    let mut result: Vec<RenderOp> = Vec::with_capacity(capacity);
 
+    let len = vec_point_op.len();
     for (event, p_op) in vec_point_op.iter().enumerate() {
-        let is_last = event == vec_point_op.len() - 1;
+        let is_last = event == len - 1;
         // If pad_end is true and this is the last op, next should be None
         // so decay envelope applies. Otherwise wrap to first op for looping.
-        let next_op = if is_last && pad_end {
+        // Pass reference instead of cloning to avoid 1.3M clones.
+        let next_op: Option<&PointOp> = if is_last && pad_end {
             None
         } else {
             let next_e = if is_last { 0 } else { event + 1 };
-            Some(vec_point_op[next_e].clone())
+            Some(&vec_point_op[next_e])
         };
         let op = pointop_to_renderop(
             p_op,
@@ -568,6 +574,7 @@ fn create_render_ops(
             basis,
             next_op,
             color_map,
+            sample_rate,
         );
         result.push(op);
     }
