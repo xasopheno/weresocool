@@ -201,7 +201,8 @@ impl Waveform for OscType {
 
                 // Integrate frequency to get phase for pitch-enveloped sine
                 // For freq(t) = f0 * (1 + A*e^(-kt)), phase = 2π * f0 * (t + A/k * (1 - e^(-kt)))
-                let f0 = info.frequency;
+                // Use fixed kick frequency (~60 Hz) - real kicks are 40-80 Hz regardless of musical key
+                let f0 = 60.0;
                 let integrated_time = t + (pitch_range / pitch_decay) * (1.0 - (-pitch_decay * t).exp());
                 let kick_phase = TAU * f0 * integrated_time;
 
@@ -239,15 +240,10 @@ impl Waveform for OscType {
                 // Combine tonal components
                 let tone = fundamental + harmonic2 + sub1 + sub2 + click + attack_noise;
 
-                // Apply soft saturation that increases during decay (membrane nonlinearity)
-                let decay_progress = 1.0 - amp_fundamental;  // 0 at start, 1 at end
-                let saturation_drive = 1.0 + saturation_amount * decay_progress;
-                let saturated = soft_saturate(tone, saturation_drive);
-
                 // Add multi-stage transient
-                let output = saturated + transient * attack_amount * 0.5;
+                let output = tone + transient * attack_amount;
 
-                output * info.gain * 0.8
+                output * info.gain * 8.0
             }
 
             OscType::Snare { params } => {
@@ -310,9 +306,11 @@ impl Waveform for OscType {
 
                 // Shell component: dual-mode for top/bottom head resonance with pitch glide
                 // Shell pitch drops during decay (membrane tension relaxes)
+                // Use fixed snare frequency (~180 Hz base) - real snares are 150-250 Hz
+                let base_freq = 180.0;
                 let shell_pitch_mult = 1.0 + shell_pitch_range * (-t * shell_pitch_decay).exp();
-                let shell_freq_1 = info.frequency * 2.5 * shell_pitch_mult;   // Top head
-                let shell_freq_2 = info.frequency * shell_tune * shell_pitch_mult;  // Bottom head (lower)
+                let shell_freq_1 = base_freq * 1.4 * shell_pitch_mult;   // Top head (~250 Hz)
+                let shell_freq_2 = base_freq * shell_tune * shell_pitch_mult;  // Bottom head (lower)
 
                 // Integrate for pitch envelope on body tone
                 let integrated_time = t + (tone_pitch_range / tone_pitch_decay)
@@ -344,12 +342,7 @@ impl Waveform for OscType {
                 // Mix shell and wire components
                 let tone = shell * (1.0 - wire_mix_vel) + wire * wire_mix_vel + attack_noise;
 
-                // Apply soft saturation
-                let decay_progress = 1.0 - shell_amp_1;
-                let saturation_drive = 1.0 + saturation_amount * decay_progress;
-                let result = soft_saturate(tone, saturation_drive);
-
-                result * info.gain
+                tone * info.gain * 8.0
             }
 
             OscType::HiHat { open, params } => {
@@ -401,9 +394,10 @@ impl Waveform for OscType {
                 // Research-based frequency ratios for metallic sound
                 // Non-integer ratios = inharmonic = metallic quality
                 // Per-mode decay: higher frequencies decay faster (realistic)
+                // Use fixed hi-hat base frequency (~400 Hz * shimmer_mult = ~6-10 kHz range)
                 // Cymbals have slight pitch drop as energy dissipates
                 let pitch_drop_mult = 1.0 + pitch_drop * (-t_norm * 5.0).exp();
-                let base_freq = info.frequency * shimmer_mult * pitch_drop_mult;
+                let base_freq = 400.0 * shimmer_mult * pitch_drop_mult;
                 let modes: [(f64, f64, f64); 6] = [
                     // (freq_ratio, amplitude, decay_multiplier)
                     (1.00,  0.15, 1.0),   // Fundamental (damped)
@@ -438,12 +432,7 @@ impl Waveform for OscType {
                 // Mix shimmer and noise
                 let tone = shimmer * 0.4 + noise * noise_amp * 0.6 + attack_noise;
 
-                // Apply soft saturation
-                let decay_progress = 1.0 - noise_amp;
-                let saturation_drive = 1.0 + saturation_amount * decay_progress;
-                let result = soft_saturate(tone, saturation_drive);
-
-                result * info.gain
+                tone * info.gain * 6.0
             }
         }
     }
