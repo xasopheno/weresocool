@@ -1,7 +1,7 @@
-//! FromSound: Analyze WAV files and convert to WereSoCool NormalForm
+//! FromSound: Analyze audio files and convert to WereSoCool NormalForm
 //!
 //! This module provides the `from_sound_to_normalform` function that:
-//! 1. Analyzes a WAV file using spectral analysis
+//! 1. Analyzes an audio file (WAV or MP3) using spectral analysis
 //! 2. Converts the resulting tracks to PointOps with loudness pre-compensation
 //! 3. Caches results to avoid re-analysis on every render
 
@@ -13,7 +13,7 @@ use std::time::SystemTime;
 use weresocool_error::Error;
 use weresocool_from_sound::{
     Analyzer, AnalysisConfig, make_analyzer,
-    read_wav_mono,
+    read_audio_mono,
     VoiceAllocator, VoiceAllocConfig,
     TrackOut, AnalysisOutput,
 };
@@ -118,8 +118,8 @@ pub fn from_sound_to_normalform(path: &str, voices: usize, fps: usize) -> Result
 
     // Analyze the audio file
     let read_start = std::time::Instant::now();
-    let (sample_rate, samples) = read_wav_mono(path)
-        .map_err(|e| Error::with_msg(format!("Failed to read WAV file: {}", e)))?;
+    let (sample_rate, samples) = read_audio_mono(path)
+        .map_err(|e| Error::with_msg(format!("Failed to read audio file: {}", e)))?;
     eprintln!("[FromSound] WAV read: {:?}", read_start.elapsed());
 
     let config = AnalysisConfig {
@@ -512,8 +512,8 @@ pub fn from_sound_yin_to_normalform(path: &str, fps: usize) -> Result<NormalForm
     }
 
     // Read the audio file
-    let (sample_rate, samples) = read_wav_mono(path)
-        .map_err(|e| Error::with_msg(format!("Failed to read WAV file: {}", e)))?;
+    let (sample_rate, samples) = read_audio_mono(path)
+        .map_err(|e| Error::with_msg(format!("Failed to read audio file: {}", e)))?;
 
     // Convert to NormalForm using YIN
     let nf = yin_to_normalform(&samples, sample_rate, fps)?;
