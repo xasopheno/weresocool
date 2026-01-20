@@ -26,6 +26,9 @@ impl GetLengthRatio for Op {
             | Op::Square { .. }
             | Op::Saw
             | Op::Noise {}
+            | Op::Kick { .. }
+            | Op::Snare { .. }
+            | Op::HiHat { .. }
             | Op::FInvert {}
             | Op::Reverse {}
             | Op::Reverb { .. }

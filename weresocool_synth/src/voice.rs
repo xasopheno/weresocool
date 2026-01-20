@@ -35,6 +35,12 @@ pub struct Voice {
 pub struct SampleInfo {
     pub frequency: f64,
     pub gain: f64,
+    /// Current sample index within the note (0 to total_samples-1)
+    pub sample_index: usize,
+    /// Total number of samples in this note
+    pub total_samples: usize,
+    /// Cached sample rate to avoid per-sample Settings lookup
+    pub sample_rate: f64,
 }
 
 #[derive(Clone, Debug, PartialEq)]
@@ -137,6 +143,9 @@ impl Voice {
         // ~500 samples (~11ms at 44.1kHz) to reach 63% of target
         const GAIN_SMOOTHING_COEF: f64 = 0.002;
 
+        // Cache sample_rate once per op to avoid per-sample Settings lookup
+        let sample_rate = Settings::global().sample_rate;
+
         for (index, sample) in buffer.iter_mut().enumerate() {
             let frequency = self.calculate_frequency(
                 index,
@@ -150,7 +159,13 @@ impl Voice {
             self.smoothed_gain += GAIN_SMOOTHING_COEF * (gain_factor - self.smoothed_gain);
             let gain = self.smoothed_gain;
 
-            let info = SampleInfo { frequency, gain };
+            let info = SampleInfo {
+                frequency,
+                gain,
+                sample_index: op.sample_index() + index,
+                total_samples: op.total_samples(),
+                sample_rate,
+            };
 
             self.phase = Voice::calculate_current_phase(&info, &self.osc_type, self.phase);
 

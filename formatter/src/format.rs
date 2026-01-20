@@ -648,6 +648,72 @@ fn format_op<'a>(arena: &'a Arena<'a>, ctx: &FormatContext, op: &Op) -> DocBuild
         Op::FInvert => arena.text("FInvert"),
         Op::Noise => arena.text("Noise"),
         Op::Saw => arena.text("Saw"),
+        Op::Kick { params } => format_drum_op(arena, "Kick", params.as_ref().map(|p| {
+            let mut v = vec![];
+            // Meta-parameters first
+            if let Some(ref val) = p.punch { v.push(("punch", val)); }
+            if let Some(ref val) = p.body { v.push(("body", val)); }
+            if let Some(ref val) = p.air { v.push(("air", val)); }
+            if let Some(ref val) = p.dynamics { v.push(("dynamics", val)); }
+            // Specific parameters
+            if let Some(ref val) = p.pitch_decay { v.push(("pitch_decay", val)); }
+            if let Some(ref val) = p.pitch_range { v.push(("pitch_range", val)); }
+            if let Some(ref val) = p.amp_decay { v.push(("amp_decay", val)); }
+            if let Some(ref val) = p.sub_amount { v.push(("sub_amount", val)); }
+            if let Some(ref val) = p.click_amount { v.push(("click_amount", val)); }
+            if let Some(ref val) = p.click_freq { v.push(("click_freq", val)); }
+            if let Some(ref val) = p.attack { v.push(("attack", val)); }
+            if let Some(ref val) = p.harmonic_damping { v.push(("harmonic_damping", val)); }
+            if let Some(ref val) = p.saturation { v.push(("saturation", val)); }
+            if let Some(ref val) = p.velocity_tilt { v.push(("velocity_tilt", val)); }
+            if let Some(ref val) = p.transient_curve { v.push(("transient_curve", val)); }
+            v
+        })),
+        Op::Snare { params } => format_drum_op(arena, "Snare", params.as_ref().map(|p| {
+            let mut v = vec![];
+            // Meta-parameters first
+            if let Some(ref val) = p.punch { v.push(("punch", val)); }
+            if let Some(ref val) = p.body { v.push(("body", val)); }
+            if let Some(ref val) = p.air { v.push(("air", val)); }
+            if let Some(ref val) = p.dynamics { v.push(("dynamics", val)); }
+            // Specific parameters
+            if let Some(ref val) = p.pitch_decay { v.push(("pitch_decay", val)); }
+            if let Some(ref val) = p.pitch_range { v.push(("pitch_range", val)); }
+            if let Some(ref val) = p.shell_decay { v.push(("shell_decay", val)); }
+            else if let Some(ref val) = p.tone_decay { v.push(("tone_decay", val)); }
+            if let Some(ref val) = p.wire_decay { v.push(("wire_decay", val)); }
+            else if let Some(ref val) = p.noise_decay { v.push(("noise_decay", val)); }
+            if let Some(ref val) = p.wire_mix { v.push(("wire_mix", val)); }
+            else if let Some(ref val) = p.noise_mix { v.push(("noise_mix", val)); }
+            if let Some(ref val) = p.shell_tune { v.push(("shell_tune", val)); }
+            if let Some(ref val) = p.attack { v.push(("attack", val)); }
+            if let Some(ref val) = p.shell_pitch_decay { v.push(("shell_pitch_decay", val)); }
+            if let Some(ref val) = p.shell_pitch_range { v.push(("shell_pitch_range", val)); }
+            if let Some(ref val) = p.head_damping_ratio { v.push(("head_damping_ratio", val)); }
+            if let Some(ref val) = p.saturation { v.push(("saturation", val)); }
+            if let Some(ref val) = p.velocity_tilt { v.push(("velocity_tilt", val)); }
+            v
+        })),
+        Op::HiHat { open, params } => {
+            let name = if *open { "OpenHat" } else { "HiHat" };
+            format_drum_op(arena, name, params.as_ref().map(|p| {
+                let mut v = vec![];
+                // Meta-parameters first
+                if let Some(ref val) = p.punch { v.push(("punch", val)); }
+                if let Some(ref val) = p.body { v.push(("body", val)); }
+                if let Some(ref val) = p.air { v.push(("air", val)); }
+                if let Some(ref val) = p.dynamics { v.push(("dynamics", val)); }
+                // Specific parameters
+                if let Some(ref val) = p.decay { v.push(("decay", val)); }
+                if let Some(ref val) = p.shimmer { v.push(("shimmer", val)); }
+                if let Some(ref val) = p.brightness { v.push(("brightness", val)); }
+                if let Some(ref val) = p.attack { v.push(("attack", val)); }
+                if let Some(ref val) = p.pitch_drop { v.push(("pitch_drop", val)); }
+                if let Some(ref val) = p.saturation { v.push(("saturation", val)); }
+                if let Some(ref val) = p.velocity_tilt { v.push(("velocity_tilt", val)); }
+                v
+            }))
+        }
 
         // Identifiers
         Op::Id(name) => arena.text(name.clone()),
@@ -960,6 +1026,33 @@ fn format_single_rational_op<'a>(
         .text(name)
         .append(arena.text(" "))
         .append(format_rational(arena, value))
+}
+
+fn format_drum_op<'a>(
+    arena: &'a Arena<'a>,
+    name: &'a str,
+    params: Option<Vec<(&'a str, &Rational64)>>,
+) -> DocBuilder<'a, Arena<'a>> {
+    match params {
+        Some(params) if !params.is_empty() => {
+            let param_docs: Vec<_> = params
+                .into_iter()
+                .map(|(pname, val)| {
+                    arena
+                        .text(pname)
+                        .append(arena.text(": "))
+                        .append(format_rational(arena, val))
+                })
+                .collect();
+            let inner = arena.intersperse(param_docs, arena.text(", "));
+            arena
+                .text(name)
+                .append(arena.text(" { "))
+                .append(inner)
+                .append(arena.text(" }"))
+        }
+        _ => arena.text(name),
+    }
 }
 
 fn format_osc_op<'a>(

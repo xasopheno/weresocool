@@ -291,6 +291,8 @@ impl RenderManager {
     pub fn push_render(&mut self, render: Vec<RenderVoice>, once: bool) {
         self.once = once;
         self.set_stream_active(true);  // Activate stream when new render arrives
+        // Clear any pre-rendered buffers from old render to avoid latency
+        self.drain_buffer_queue();
         self.audio_engine.push_render(render);
         if self.events.state.has_subscribers() {
             self.events.state.emit(StateEvent::Started);

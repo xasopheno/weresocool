@@ -1,0 +1,71 @@
+{ f: 440, l: 1/4, g: 1, p: 0 }
+
+kick_pattern = {
+    Seq [Kick, Silence 1, Kick, Silence 1]
+}
+
+snare_pattern = {
+    Seq [Silence 1, Snare, Snare | Fm 3/2, Silence 1, Snare, Snare]
+}
+
+hihat_pattern = {
+    Seq [HiHat, HiHat, OpenHat, HiHat, HiHat, HiHat, HiHat, HiHat, OpenHat]
+    | Fm 8
+}
+
+kick_high = {
+    Kick | Fm 2
+}
+
+kick_low = {
+    Kick | Fm 1/2
+}
+
+pitched_kicks = {
+    Seq [
+        Kick | Fm 1/2 | Lm 2,
+        Kick | Fm 1/2 | Lm 2,
+        Kick | Fm 9/8,
+        Kick | Fm 5/4,
+        Kick | Fm 3/2,
+        Kick | Fm 2,
+    ]
+    | Fm 1/2
+}
+
+drum_kit = {
+    Overlay [
+        -- Seq [Fm 0, pitched_kicks | Lm 1/2],
+        pitched_kicks | Fm 1/2 | Gm 2,
+        snare_pattern | Gm 1/2,
+        snare_pattern | Gm 1/4 | Repeat 2 | Lm 1/2 | Fm 5/2,
+        hihat_pattern | Gm 1/4
+    ]
+}
+
+chord = {
+    Overlay [
+        { 11/4, 3, 1, 1/5 },
+        { 11/4, 0, 1, -1/5 },
+        { 1/1, 5, 1, 1/6 },
+        { 1/1, 0, 1, -1/6 },
+        { 7/12, 2, 1, 1/8 },
+        { 7/12, 0, 1, -1/8 },
+        { 1/2, 0.2, 1, 1/6 },
+        { 1/2, 0, 1, -1/6 },
+        { 1/4, 0.2, 1, 1/6 },
+        { 1/4, 0, 1, -1/6 },
+    ]
+    | Gm 1/8
+    | FitLength drum_kit
+}
+
+main = {
+    Overlay [
+        chord,
+        drum_kit
+    ]
+    | Fm 1/4
+    | Repeat 16
+    | Reverse
+}

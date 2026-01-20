@@ -12,7 +12,7 @@ use weresocool_ast::{
 };
 use weresocool_error::Error;
 use weresocool_filter::BiquadFilterDef;
-pub(crate) use weresocool_shared::{lossy_rational_mul, r_to_f64, Settings};
+pub(crate) use weresocool_shared::{lossy_rational_mul, r_to_f64, Settings, timing_print};
 use weresocool_synth::{DistortionDef, Offset};
 
 #[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
@@ -513,7 +513,7 @@ pub fn nf_to_vec_renderable(
     // Clone is much faster.
     let clone_start = std::time::Instant::now();
     let normal_form = composition.clone();
-    eprintln!("[nf_to_vec_renderable] clone: {:?} ({} voices, {} total ops)",
+    timing_print!("[nf_to_vec_renderable] clone: {:?} ({} voices, {} total ops)",
         clone_start.elapsed(),
         normal_form.operations.len(),
         normal_form.operations.iter().map(|v| v.len()).sum::<usize>());
@@ -536,7 +536,7 @@ pub fn nf_to_vec_renderable(
             )
         })
         .collect();
-    eprintln!("[nf_to_vec_renderable] create_render_ops: {:?}", render_start.elapsed());
+    timing_print!("[nf_to_vec_renderable] create_render_ops: {:?}", render_start.elapsed());
 
     Ok(result)
 }

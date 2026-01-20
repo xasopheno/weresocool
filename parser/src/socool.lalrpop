@@ -21,6 +21,9 @@ use weresocool_ast::{
         FmOscDef,
         Defs,
         Span,
+        KickParams,
+        SnareParams,
+        HiHatParams,
 };
 use weresocool_ast::follow::types::{
   Follow, FollowRule, FollowCondition, FollowAction, FollowVariable, FollowExpr, FollowComparison, FollowSimpleCondition, FollowAndCondition
@@ -366,6 +369,15 @@ BaseOperation: Term = {
         Term::Op(Sequence { operations })
     },
     "Noise" => Term::Op(Noise {}),
+    // Drum synthesis - with optional configurable parameters
+    "Kick" => Term::Op(Kick { params: None }),
+    "Kick" "{" <params: KickParamList> "}" => Term::Op(Kick { params: Some(params) }),
+    "Snare" => Term::Op(Snare { params: None }),
+    "Snare" "{" <params: SnareParamList> "}" => Term::Op(Snare { params: Some(params) }),
+    "HiHat" => Term::Op(HiHat { open: false, params: None }),
+    "HiHat" "{" <params: HiHatParamList> "}" => Term::Op(HiHat { open: false, params: Some(params) }),
+    "OpenHat" => Term::Op(HiHat { open: true, params: None }),
+    "OpenHat" "{" <params: HiHatParamList> "}" => Term::Op(HiHat { open: true, params: Some(params) }),
     "Reverse" => Term::Op(Reverse {}),
     "Invert" => Term::Op(FInvert),
     "Repeat" <i: Int> => {
@@ -626,6 +638,107 @@ Concat<T>: Vec<T> = {
           v
         }
     }
+};
+
+// Drum parameter lists
+KickParamList: KickParams = {
+    <params: Comma<KickParam>> => {
+        let mut result = KickParams::default();
+        for (name, value) in params {
+            match name.as_str() {
+                // Meta-parameters
+                "punch" => result.punch = Some(value),
+                "body" => result.body = Some(value),
+                "air" => result.air = Some(value),
+                "dynamics" => result.dynamics = Some(value),
+                // Specific parameters
+                "pitch_decay" => result.pitch_decay = Some(value),
+                "pitch_range" => result.pitch_range = Some(value),
+                "amp_decay" => result.amp_decay = Some(value),
+                "sub_amount" => result.sub_amount = Some(value),
+                "click_amount" => result.click_amount = Some(value),
+                "click_freq" => result.click_freq = Some(value),
+                "attack" => result.attack = Some(value),
+                "harmonic_damping" => result.harmonic_damping = Some(value),
+                "saturation" => result.saturation = Some(value),
+                "velocity_tilt" => result.velocity_tilt = Some(value),
+                "transient_curve" => result.transient_curve = Some(value),
+                _ => {}
+            }
+        }
+        result
+    }
+};
+
+KickParam: (String, Rational64) = {
+    <name: Name> ":" <value: Rational> => (name, value),
+};
+
+SnareParamList: SnareParams = {
+    <params: Comma<SnareParam>> => {
+        let mut result = SnareParams::default();
+        for (name, value) in params {
+            match name.as_str() {
+                // Meta-parameters
+                "punch" => result.punch = Some(value),
+                "body" => result.body = Some(value),
+                "air" => result.air = Some(value),
+                "dynamics" => result.dynamics = Some(value),
+                // Specific parameters
+                "pitch_decay" => result.pitch_decay = Some(value),
+                "pitch_range" => result.pitch_range = Some(value),
+                "shell_decay" => result.shell_decay = Some(value),
+                "wire_decay" => result.wire_decay = Some(value),
+                "wire_mix" => result.wire_mix = Some(value),
+                "shell_tune" => result.shell_tune = Some(value),
+                "attack" => result.attack = Some(value),
+                "shell_pitch_decay" => result.shell_pitch_decay = Some(value),
+                "shell_pitch_range" => result.shell_pitch_range = Some(value),
+                "head_damping_ratio" => result.head_damping_ratio = Some(value),
+                "saturation" => result.saturation = Some(value),
+                "velocity_tilt" => result.velocity_tilt = Some(value),
+                // Backwards compatibility aliases
+                "tone_decay" => result.tone_decay = Some(value),
+                "noise_decay" => result.noise_decay = Some(value),
+                "noise_mix" => result.noise_mix = Some(value),
+                _ => {}
+            }
+        }
+        result
+    }
+};
+
+SnareParam: (String, Rational64) = {
+    <name: Name> ":" <value: Rational> => (name, value),
+};
+
+HiHatParamList: HiHatParams = {
+    <params: Comma<HiHatParam>> => {
+        let mut result = HiHatParams::default();
+        for (name, value) in params {
+            match name.as_str() {
+                // Meta-parameters
+                "punch" => result.punch = Some(value),
+                "body" => result.body = Some(value),
+                "air" => result.air = Some(value),
+                "dynamics" => result.dynamics = Some(value),
+                // Specific parameters
+                "decay" => result.decay = Some(value),
+                "shimmer" => result.shimmer = Some(value),
+                "brightness" => result.brightness = Some(value),
+                "attack" => result.attack = Some(value),
+                "pitch_drop" => result.pitch_drop = Some(value),
+                "saturation" => result.saturation = Some(value),
+                "velocity_tilt" => result.velocity_tilt = Some(value),
+                _ => {}
+            }
+        }
+        result
+    }
+};
+
+HiHatParam: (String, Rational64) = {
+    <name: Name> ":" <value: Rational> => (name, value),
 };
 
 Ints = Comma<Int>;

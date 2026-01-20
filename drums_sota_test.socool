@@ -1,0 +1,77 @@
+{ f: 80, l: 1/4, g: 1, p: 0 }
+
+soft_kick = { Kick { velocity_tilt: 0.8 } | Gm 0.3 }
+
+medium_kick = { Kick { velocity_tilt: 0.8 } | Gm 0.6 }
+
+hard_kick = { Kick { velocity_tilt: 0.8 } | Gm 1.0 }
+
+bright_kick = { Kick { harmonic_damping: 1.0 } }
+
+natural_kick = { Kick { harmonic_damping: 1.5 } }
+
+thumpy_kick = { Kick { harmonic_damping: 2.5 } }
+
+clean_kick = { Kick { saturation: 0 } }
+
+warm_kick = { Kick { saturation: 0.3 } }
+
+saturated_kick = { Kick { saturation: 0.6 } }
+
+soft_transient = { Kick { transient_curve: 1.0 } }
+
+normal_transient = { Kick { transient_curve: 2.0 } }
+
+punchy_transient = { Kick { transient_curve: 3.0 } }
+
+clean_snare = { Snare { saturation: 0, velocity_tilt: 0.5 } | Fm 3 }
+
+warm_snare = { Snare { saturation: 0.4, velocity_tilt: 0.5 } | Fm 3 }
+
+static_shell = { Snare { shell_pitch_range: 0 } | Fm 3 }
+
+natural_shell = { Snare { shell_pitch_range: 0.3 } | Fm 3 }
+
+dramatic_shell = { Snare { shell_pitch_range: 0.6 } | Fm 3 }
+
+even_damping = { Snare { head_damping_ratio: 1.0 } | Fm 3 }
+
+natural_damping = { Snare { head_damping_ratio: 1.6 } | Fm 3 }
+
+extreme_damping = { Snare { head_damping_ratio: 2.5 } | Fm 3 }
+
+clean_hat = { HiHat { saturation: 0, pitch_drop: 0 } | Fm 50 }
+
+natural_hat = { HiHat { saturation: 0.1, pitch_drop: 0.02 } | Fm 50 }
+
+warm_hat = { HiHat { saturation: 0.2, pitch_drop: 0.05 } | Fm 50 }
+
+soft_hat = { HiHat { velocity_tilt: 0.5 } | Fm 50 | Gm 0.3 }
+
+hard_hat = { HiHat { velocity_tilt: 0.5 } | Fm 50 | Gm 1.0 }
+
+open_natural = { OpenHat { saturation: 0.1, pitch_drop: 0.02 } | Fm 50 }
+
+rest = { Silence 1 }
+
+main = {
+    Seq [
+        -- Velocity response test
+        soft_kick, rest, medium_kick, rest, hard_kick, rest, rest,
+        -- Harmonic damping test
+        bright_kick, rest, natural_kick, rest, thumpy_kick, rest, rest,
+        -- Saturation test
+        clean_kick, rest, warm_kick, rest, saturated_kick, rest, rest,
+        -- Transient curve test
+        soft_transient, rest, normal_transient, rest, punchy_transient, rest, rest,
+        -- Snare tests
+        clean_snare, rest, warm_snare, rest, rest,
+        static_shell, rest, natural_shell, rest, dramatic_shell, rest, rest,
+        even_damping, rest, natural_damping, rest, extreme_damping, rest, rest,
+        -- HiHat tests
+        clean_hat, rest, natural_hat, rest, warm_hat, rest, rest,
+        soft_hat, rest, hard_hat, rest, rest,
+        -- Open hat
+        open_natural, rest, rest
+    ]
+}

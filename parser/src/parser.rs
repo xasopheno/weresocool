@@ -12,6 +12,7 @@ use std::io::BufReader;
 use std::path::PathBuf;
 use std::sync::{Arc, Mutex};
 use weresocool_error::{ColorError, Error, ParseError};
+use weresocool_shared::timing_print;
 use regex;
 
 /// Tracks offset adjustments when WGSL blocks are replaced with tokens.
@@ -94,7 +95,7 @@ fn process_op_table(mut defs: &mut Defs) -> Result<Defs, Error> {
                 op.apply_to_normal_form(&mut nf, &mut defs)?;
                 let elapsed = op_start.elapsed();
                 if elapsed > std::time::Duration::from_millis(100) {
-                    eprintln!("[process_op_table] Op '{}' took {:?}", name, elapsed);
+                    timing_print!("[process_op_table] Op '{}' took {:?}", name, elapsed);
                 }
                 if slowest_op.as_ref().map_or(true, |(_, d)| elapsed > *d) {
                     slowest_op = Some((name.clone(), elapsed));
@@ -124,9 +125,9 @@ fn process_op_table(mut defs: &mut Defs) -> Result<Defs, Error> {
         };
     }
 
-    eprintln!("[process_op_table] Total: {:?} ({} ops, {} pre-normalized)", total_start.elapsed(), op_count, nf_count);
+    timing_print!("[process_op_table] Total: {:?} ({} ops, {} pre-normalized)", total_start.elapsed(), op_count, nf_count);
     if let Some((name, duration)) = slowest_op {
-        eprintln!("[process_op_table] Slowest op: '{}' took {:?}", name, duration);
+        timing_print!("[process_op_table] Slowest op: '{}' took {:?}", name, duration);
     }
 
     result.ops.stems = defs.ops.stems.to_owned();
@@ -439,14 +440,14 @@ pub fn parse_file(
 
     let ws_start = std::time::Instant::now();
     let (imports_needed, composition) = handle_whitespace_and_imports(vec_string)?;
-    eprintln!("[parse_file] handle_whitespace_and_imports: {:?}", ws_start.elapsed());
+    timing_print!("[parse_file] handle_whitespace_and_imports: {:?}", ws_start.elapsed());
 
     // Process WGSL blocks - extract them and replace with IDs
     // This validates each WGSL block and fails fast on the first error
     // quiet=false to show errors during actual parsing
     let wgsl_start = std::time::Instant::now();
     let (processed_composition, source_map) = process_wgsl_blocks(&composition, &mut defs, false, false)?;
-    eprintln!("[parse_file] process_wgsl_blocks: {:?}", wgsl_start.elapsed());
+    timing_print!("[parse_file] process_wgsl_blocks: {:?}", wgsl_start.elapsed());
 
     for import in imports_needed {
         let (mut filepath, import_name) = get_filepath_and_import_name(import);
@@ -484,13 +485,13 @@ pub fn parse_file(
 
     let parse_start = std::time::Instant::now();
     let init = socool::SoCoolParser::new().parse(&mut defs, &processed_composition);
-    eprintln!("[parse_file] SoCoolParser::parse: {:?}", parse_start.elapsed());
+    timing_print!("[parse_file] SoCoolParser::parse: {:?}", parse_start.elapsed());
 
     match init {
         Ok(init) => {
             let op_table_start = std::time::Instant::now();
             let mut result_defs = process_op_table(&mut defs)?;
-            eprintln!("[parse_file] process_op_table: {:?}", op_table_start.elapsed());
+            timing_print!("[parse_file] process_op_table: {:?}", op_table_start.elapsed());
 
             // Ensure WGSL blocks and colors are preserved in the final result
             result_defs.wgsl = defs.wgsl.clone();

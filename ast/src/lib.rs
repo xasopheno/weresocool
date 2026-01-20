@@ -13,7 +13,7 @@ pub mod term;
 pub mod wgsl;
 pub use crate::{
     ast::{
-        Distortion, FmOscDef, FunDef, Op, Op::*, OscType, ASR,
+        Distortion, FmOscDef, FunDef, HiHatParams, KickParams, Op, Op::*, OscType, SnareParams, ASR,
     },
     color::{
         CssOrHex, Color, ColorMap, ColorSet, ColorSets, ColorValue, GradientColor, GenColor,

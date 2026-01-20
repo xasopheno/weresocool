@@ -1,0 +1,86 @@
+{ f: 80, l: 1/4, g: 1, p: 0 }
+
+kick = { Kick { punch: 3/4, body: 7/8, air: 1/2 } }
+
+ghost_kick = { Kick { punch: 1/4, body: 1/2 } | Gm 1/2 }
+
+big_kick = { Kick { punch: 1, body: 1, air: 1/4 } }
+
+snare = { Snare { punch: 3/4, body: 1/2, air: 3/4, dynamics: 3/4 } | Fm 5/2 }
+
+ghost_snare = { Snare { punch: 1/4, body: 1/2, air: 1/2 } | Fm 5/2 | Gm 1/3 }
+
+hat = { HiHat { punch: 1/2, body: 1/4, air: 1/2 } | Fm 50 | Gm 2/3 }
+
+hat_accent = { HiHat { punch: 3/4, body: 1/3, air: 3/4 } | Fm 50 }
+
+open_hat = { OpenHat { punch: 1/2, body: 3/4, air: 2/3 } | Fm 50 | Gm 3/4 }
+
+x = { Silence 1 }
+
+s = { Lm 1/4 }
+
+kick_pattern = {
+    Seq [
+        kick | s, x | s, x | s, x | s,
+        x | s, x | s, ghost_kick | s, x | s,
+        kick | s, x | s, x | s, kick | s,
+        x | s, ghost_kick | s, x | s, x | s
+    ]
+}
+
+snare_pattern = {
+    Seq [
+        x | s, x | s, x | s, ghost_snare | s,
+        snare | s, x | s, x | s, x | s,
+        x | s, ghost_snare | s, x | s, x | s,
+        snare | s, x | s, x | s, x | s
+    ]
+}
+
+hat_pattern = {
+    Seq [
+        hat_accent | s, hat | s, hat | s, hat | s,
+        hat | s, hat | s, hat | s, hat | s,
+        hat_accent | s, hat | s, hat | s, hat | s,
+        hat | s, hat | s, open_hat | s, x | s
+    ]
+}
+
+bar = {
+    Overlay [
+        kick_pattern,
+        snare_pattern,
+        hat_pattern
+    ]
+}
+
+fill_bar = {
+    Overlay [
+        Seq [
+            big_kick | s, x | s, x | s, x | s,
+            x | s, x | s, kick | s, x | s,
+            big_kick | s, x | s, kick | s, x | s,
+            big_kick | s, kick | s, big_kick | s, big_kick | s
+        ],
+        Seq [
+            x | s, x | s, x | s, x | s,
+            snare | s, x | s, ghost_snare | s, ghost_snare | s,
+            snare | s, ghost_snare | s, snare | s, ghost_snare | s,
+            snare | s, snare | s, snare | s, snare | Gm 5/4 | s
+        ],
+        hat_pattern
+    ]
+}
+
+main = {
+    Seq [
+        bar,
+        bar,
+        bar,
+        fill_bar
+    ]
+    | Repeat 2
+    | Lm 3
+    | Gm 3
+}

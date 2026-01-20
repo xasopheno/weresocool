@@ -86,6 +86,12 @@ pub enum Op {
     Square {
         width: Option<Rational64>,
     },
+    /// Kick drum - low frequency with pitch envelope
+    Kick { params: Option<KickParams> },
+    /// Snare drum - pitched component + noise burst
+    Snare { params: Option<SnareParams> },
+    /// Hi-hat (closed or open)
+    HiHat { open: bool, params: Option<HiHatParams> },
 
     #[allow(clippy::upper_case_acronyms)]
     AD {
@@ -225,6 +231,118 @@ pub struct FmOscDef {
     pub depth: Rational64,
 }
 
+/// Parameters for Kick drum synthesis
+#[derive(Clone, Debug, PartialEq, Serialize, Deserialize, Hash, Ord, PartialOrd, Eq, Default)]
+pub struct KickParams {
+    // High-level meta-parameters (0-1 scale, can exceed 1 to push)
+    /// Transient intensity: click, attack sharpness, transient curve (default: 0.5)
+    pub punch: Option<Rational64>,
+    /// Low-end weight: sub amount, saturation, longer decay (default: 0.5)
+    pub body: Option<Rational64>,
+    /// High-frequency presence: less harmonic damping, more click (default: 0.5)
+    pub air: Option<Rational64>,
+    /// Velocity sensitivity: how much gain affects timbre (default: 0.5)
+    pub dynamics: Option<Rational64>,
+
+    // Specific parameters (override meta-param mappings)
+    /// Pitch envelope decay rate (default: 50)
+    pub pitch_decay: Option<Rational64>,
+    /// Starting pitch multiplier (default: 3, meaning 4x → 1x)
+    pub pitch_range: Option<Rational64>,
+    /// Amplitude decay rate (default: 8)
+    pub amp_decay: Option<Rational64>,
+    /// Sub-harmonic intensity (default: 0.2) - creates "chest thump"
+    pub sub_amount: Option<Rational64>,
+    /// Attack click intensity (default: 0.3)
+    pub click_amount: Option<Rational64>,
+    /// Click frequency multiplier (default: 8)
+    pub click_freq: Option<Rational64>,
+    /// Attack transient amount (default: 0.3)
+    pub attack: Option<Rational64>,
+    /// Decay multiplier for 2nd harmonic - higher = faster decay (default: 1.5)
+    pub harmonic_damping: Option<Rational64>,
+    /// Soft saturation amount during decay (default: 0.3)
+    pub saturation: Option<Rational64>,
+    /// How much velocity affects spectrum (default: 0.5)
+    pub velocity_tilt: Option<Rational64>,
+    /// Attack spike shape curve (1=linear, 2=squared) (default: 2.0)
+    pub transient_curve: Option<Rational64>,
+}
+
+/// Parameters for Snare drum synthesis
+#[derive(Clone, Debug, PartialEq, Serialize, Deserialize, Hash, Ord, PartialOrd, Eq, Default)]
+pub struct SnareParams {
+    // High-level meta-parameters (0-1 scale, can exceed 1 to push)
+    /// Transient intensity: attack sharpness, shell pitch range (default: 0.5)
+    pub punch: Option<Rational64>,
+    /// Resonance weight: saturation, longer shell decay (default: 0.5)
+    pub body: Option<Rational64>,
+    /// High-frequency presence: more wire, brightness (default: 0.5)
+    pub air: Option<Rational64>,
+    /// Velocity sensitivity: how much gain affects timbre (default: 0.5)
+    pub dynamics: Option<Rational64>,
+
+    // Specific parameters (override meta-param mappings)
+    /// Tone pitch decay rate (default: 80)
+    pub pitch_decay: Option<Rational64>,
+    /// Tone pitch range (default: 2)
+    pub pitch_range: Option<Rational64>,
+    /// Shell amplitude decay rate (default: 12)
+    pub shell_decay: Option<Rational64>,
+    /// Wire amplitude decay rate (default: 20)
+    pub wire_decay: Option<Rational64>,
+    /// Wire mix ratio 0=all shell, 1=all wire (default: 0.6)
+    pub wire_mix: Option<Rational64>,
+    /// Bottom head frequency ratio (default: 1.8)
+    pub shell_tune: Option<Rational64>,
+    /// Attack transient amount (default: 0.4)
+    pub attack: Option<Rational64>,
+    /// Shell pitch envelope decay rate (default: 30)
+    pub shell_pitch_decay: Option<Rational64>,
+    /// Shell pitch envelope range (default: 0.3)
+    pub shell_pitch_range: Option<Rational64>,
+    /// Top/bottom head decay ratio (default: 1.6)
+    pub head_damping_ratio: Option<Rational64>,
+    /// Soft saturation amount (default: 0.2)
+    pub saturation: Option<Rational64>,
+    /// How much velocity affects spectrum (default: 0.5)
+    pub velocity_tilt: Option<Rational64>,
+    // Backwards compatibility aliases (deprecated)
+    pub tone_decay: Option<Rational64>,
+    pub noise_decay: Option<Rational64>,
+    pub noise_mix: Option<Rational64>,
+}
+
+/// Parameters for HiHat synthesis
+#[derive(Clone, Debug, PartialEq, Serialize, Deserialize, Hash, Ord, PartialOrd, Eq, Default)]
+pub struct HiHatParams {
+    // High-level meta-parameters (0-1 scale, can exceed 1 to push)
+    /// Transient intensity: attack sharpness (default: 0.5)
+    pub punch: Option<Rational64>,
+    /// Resonance weight: saturation, sustain (default: 0.5)
+    pub body: Option<Rational64>,
+    /// High-frequency presence: brightness, shimmer (default: 0.5)
+    pub air: Option<Rational64>,
+    /// Velocity sensitivity: how much gain affects timbre (default: 0.5)
+    pub dynamics: Option<Rational64>,
+
+    // Specific parameters (override meta-param mappings)
+    /// Amplitude decay rate (default: 25 closed, 4 open)
+    pub decay: Option<Rational64>,
+    /// Metallic shimmer frequency multiplier (default: 20)
+    pub shimmer: Option<Rational64>,
+    /// Scales high mode amplitudes for brightness control (default: 1.0)
+    pub brightness: Option<Rational64>,
+    /// Attack transient amount (default: 0.2)
+    pub attack: Option<Rational64>,
+    /// Pitch drop amount as energy dissipates (default: 0.02)
+    pub pitch_drop: Option<Rational64>,
+    /// Soft saturation amount (default: 0.1)
+    pub saturation: Option<Rational64>,
+    /// How much velocity affects spectrum (default: 0.3)
+    pub velocity_tilt: Option<Rational64>,
+}
+
 #[derive(Clone, Debug, PartialEq, Serialize, Deserialize, Hash, Ord, PartialOrd, Eq)]
 /// Oscillator Type
 pub enum OscType {
@@ -235,6 +353,12 @@ pub enum OscType {
     Noise,
     Saw,
     Fm { defs: Vec<FmOscDef> },
+    /// Kick drum - low sine with pitch envelope
+    Kick { params: Option<KickParams> },
+    /// Snare drum - pitched sine + noise burst
+    Snare { params: Option<SnareParams> },
+    /// Hi-hat - noise with metallic shimmer
+    HiHat { open: bool, params: Option<HiHatParams> },
 }
 
 impl OscType {

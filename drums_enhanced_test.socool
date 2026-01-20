@@ -1,0 +1,77 @@
+{ f: 80, l: 1/4, g: 1, p: 0 }
+
+deep_kick = {
+    Kick { sub_amount: 0.4, click_amount: 0.5, attack: 0.5 }
+}
+
+punchy_kick = {
+    Kick { click_amount: 0.8, click_freq: 12, sub_amount: 0.1 }
+}
+
+tight_snare = {
+    Snare { wire_decay: 30, shell_tune: 2.0, attack: 0.5 }
+    | Fm 3
+}
+
+loose_snare = {
+    Snare { shell_decay: 6, wire_mix: 0.4, shell_tune: 1.5 }
+    | Fm 3
+}
+
+bright_hat = {
+    HiHat { brightness: 1.5, attack: 0.4 }
+    | Fm 8
+}
+
+dark_hat = {
+    HiHat { brightness: 0.5, decay: 30 }
+    | Fm 8
+}
+
+custom_open_hat = {
+    OpenHat { brightness: 1.2, decay: 3, attack: 0.3 }
+    | Fm 8
+}
+
+kick_comparison = {
+    Seq [
+        Kick | Lm 2, -- Default kick
+        deep_kick | Lm 2, -- Deep sub kick
+        punchy_kick | Lm 1/2, -- Punchy click kick
+        Silence 1
+    ] | Overlay [Fm 1, Fm 3/2]
+}
+
+snare_comparison = {
+    Seq [
+        Snare | Fm 3 | Lm 2, -- Default snare
+        tight_snare | Lm 2, -- Tight snare
+        loose_snare | Lm 2, -- Loose snare
+        Silence 1
+    ]
+    | Overlay [AsIs, Lm 1/2 | Repeat 2 | Reverse]
+}
+
+hihat_comparison = {
+    Seq [
+        HiHat | Fm 4, -- Default closed
+        bright_hat, -- Bright closed
+        dark_hat, -- Dark closed
+        OpenHat | Fm 4, -- Default open
+        custom_open_hat -- Custom open
+    ] | Gm 1/2
+    | Overlay [AsIs, Lm 1/2 | Repeat 2 | Fm 1/2]
+}
+
+main = {
+    Seq [
+        Fm 2 | Lm 2 | Overlay [Fm 2, Fm 9/8, Fm 3/4, Fm 1/2],
+        Overlay [
+            kick_comparison,
+            snare_comparison,
+            hihat_comparison | Fm 1/2
+        ]
+        | Repeat 4
+    ]
+    | Repeat 3
+}

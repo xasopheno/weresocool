@@ -1,0 +1,194 @@
+{ f: 80, l: 1/4, g: 1, p: 0 }
+
+kick = {
+    Kick {
+        pitch_decay: 30,
+        pitch_range: 3.5,
+        amp_decay: 7,
+        click_amount: 0.35,
+        sub_amount: 0.9,
+        harmonic_damping: 1.8,
+        saturation: 0.45,
+        velocity_tilt: 0.7,
+        transient_curve: 1.5
+    }
+}
+
+ghost_kick = {
+    Kick {
+        harmonic_damping: 1.5,
+        saturation: 0.2,
+        velocity_tilt: 0.8,
+        transient_curve: 1.5
+    }
+    | Gm 0.4
+}
+
+snare = {
+    Snare {
+        shell_decay: 10,
+        wire_decay: 18,
+        wire_mix: 0.55,
+        shell_pitch_decay: 30,
+        shell_pitch_range: 0.55,
+        head_damping_ratio: 1.8,
+        saturation: 0.3,
+        velocity_tilt: 0.6
+    }
+    | Fm 2
+}
+
+ghost_snare = {
+    Snare {
+        wire_mix: 0.7,
+        shell_pitch_range: 0.15,
+        head_damping_ratio: 1.4,
+        saturation: 0.15,
+        velocity_tilt: 0.8
+    }
+    | Fm 2.5
+    | Gm 0.55
+}
+
+hat = {
+    HiHat {
+        decay: 30,
+        shimmer: 50,
+        brightness: 0.9,
+        pitch_drop: 0.015,
+        saturation: 0.08,
+        velocity_tilt: 0.4
+    }
+    | Fm 50
+    | Gm 0.7
+}
+
+hat_accent = {
+    HiHat {
+        decay: 25,
+        shimmer: 24,
+        brightness: 1.1,
+        pitch_drop: 0.02,
+        saturation: 0.12,
+        velocity_tilt: 0.5
+    }
+    | Fm 50
+    | Gm 1.0
+}
+
+hat_soft = {
+    HiHat {
+        decay: 35,
+        shimmer: 20,
+        brightness: 0.7,
+        pitch_drop: 0.01,
+        saturation: 0.05,
+        velocity_tilt: 0.6
+    }
+    | Fm 50
+    | Gm 0.4
+}
+
+open_hat = {
+    OpenHat {
+        decay: 5,
+        shimmer: 20,
+        brightness: 1.0,
+        pitch_drop: 0.025,
+        saturation: 0.1,
+        velocity_tilt: 0.4
+    }
+    | Fm 50
+    | Gm 0.8
+}
+
+x = { Silence 1 }
+
+s = { Lm 1/4 }
+
+kick_pattern = {
+    Seq [
+        kick | s, x | s, x | s, x | s,
+        x | s, x | s, ghost_kick | s, x | s,
+        kick | s, x | s, x | s, kick | s,
+        x | s, x | s, x | s, x | s
+    ]
+}
+
+snare_pattern = {
+    Seq [
+        x | s, x | s, x | s, ghost_snare | s,
+        snare | s, x | s, x | s, x | s,
+        x | s, ghost_snare | s, x | s, x | s,
+        snare | s, x | s, x | s, x | s
+    ]
+}
+
+hat_pattern = {
+    Seq [
+        hat_accent | s, hat_soft | s, hat | s, hat_soft | s,
+        hat | s, hat_soft | s, hat | s, hat_soft | s,
+        hat_accent | s, hat_soft | s, hat | s, hat_soft | s,
+        hat | s, hat_soft | s, open_hat | s, x | s
+    ]
+}
+
+bar = {
+    Overlay [
+        kick_pattern,
+        snare_pattern,
+        hat_pattern
+    ]
+}
+
+kick_pattern_v2 = {
+    Seq [
+        kick | s, x | s, ghost_kick | s, x | s,
+        x | s, ghost_kick | s, x | s, x | s,
+        kick | s, x | s, x | s, kick | s,
+        ghost_kick | s, x | s, kick | s, x | s
+    ]
+}
+
+bar_v2 = {
+    Overlay [
+        kick_pattern_v2,
+        snare_pattern,
+        hat_pattern
+    ]
+}
+
+snare_fill = {
+    Seq [
+        x | s, x | s, x | s, x | s,
+        snare | s, x | s, ghost_snare | s, ghost_snare | s,
+        snare | s, ghost_snare | s, snare | s, ghost_snare | s,
+        snare | s, snare | s, snare | Gm 1.2 | s, snare | Gm 1.3 | s
+    ]
+}
+
+fill_bar = {
+    Overlay [
+        kick_pattern,
+        snare_fill,
+        hat_pattern
+    ]
+}
+
+main = {
+    Seq [
+        bar,
+        bar,
+        bar_v2,
+        bar,
+        bar,
+        bar_v2,
+        bar,
+        fill_bar
+    ]
+    | Repeat 2
+    | Lm 2
+    | Overlay [
+        Gm 2,
+    ]
+}

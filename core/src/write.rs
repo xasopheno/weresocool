@@ -10,7 +10,7 @@ use weresocool_error::Error;
 use weresocool_instrument::{Normalize, StereoWaveform};
 #[cfg(not(any(target_os = "windows", feature = "wasm")))]
 use weresocool_lame::Lame;
-use weresocool_shared::Settings;
+use weresocool_shared::{Settings, timing_print};
 
 // Diagnostic: track samples for discontinuity detection
 static TOTAL_SAMPLES: Lazy<AtomicU64> = Lazy::new(|| AtomicU64::new(0));
@@ -53,7 +53,7 @@ pub fn new_write_output_buffer(
             if delta_l.abs() > 0.2 || delta_r.abs() > 0.2 {
                 let sample = start_sample + i as u64;
                 let time_sec = sample as f64 / 44100.0;
-                eprintln!("CLICK: sample={} t={:.3}s i={} L[{:.3}->{:.3}]d={:.3} R[{:.3}->{:.3}]d={:.3}",
+                timing_print!("CLICK: sample={} t={:.3}s i={} L[{:.3}->{:.3}]d={:.3} R[{:.3}->{:.3}]d={:.3}",
                     sample, time_sec, i, prev_l, l, delta_l, prev_r, r, delta_r);
             }
 

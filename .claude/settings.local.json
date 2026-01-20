@@ -41,7 +41,13 @@
       "Bash(/Users/danny/code/kintaro/target/release/kintaro:*)",
       "Bash(ffprobe:*)",
       "Bash(timeout 15 /Users/danny/code/kintaro/target/release/kintaro watch:*)",
-      "Bash(tee:*)"
+      "Bash(tee:*)",
+      "Bash(xargs cat:*)",
+      "Bash(xargs ls:*)",
+      "WebFetch(domain:ccrma.stanford.edu)",
+      "WebFetch(domain:www.soundonsound.com)",
+      "Bash(WSC_TIMING=1 cargo run:*)",
+      "Bash(cargo install:*)"
     ],
     "deny": [],
     "ask": []

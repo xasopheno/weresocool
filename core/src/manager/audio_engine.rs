@@ -8,7 +8,7 @@ use weresocool_ast::follow::evaluate::EvaluateAction;
 use weresocool_instrument::{Offset, RenderOp, StereoWaveform};
 use weresocool_instrument::renderable::render_voice::RenderVoice;
 use weresocool_instrument::renderable::Renderable;
-use weresocool_shared::Settings;
+use weresocool_shared::{Settings, timing_print};
 
 #[derive(Debug)]
 pub struct AudioEngine {
@@ -166,6 +166,8 @@ impl AudioEngine {
 
             if render_finished || (next_exists && !Settings::global().loop_play) {
                 if self.exists_next_render() {
+                    weresocool_shared::timing_print!("[audio_engine] switching to next render (render_finished={}, next_exists={}, loop_play={})",
+                        render_finished, next_exists, Settings::global().loop_play);
                     self.inc_render(true); // Copy oscillators for seamless transitions
                     continue; // Continue processing with next render
                 } else {

@@ -45,6 +45,7 @@ pub fn watch(
 }
 
 fn render(filename: &str, working_path: &Path, render_manager: &Arc<Mutex<RenderManager>>) {
+    let start = std::time::Instant::now();
     let render_voices =
         match prepare_render_outside(Filename(filename), Some(working_path.to_path_buf())) {
             Ok(result) => Some(result),
@@ -53,9 +54,12 @@ fn render(filename: &str, working_path: &Path, render_manager: &Arc<Mutex<Render
                 None
             }
         };
+    weresocool_shared::timing_print!("[watch] prepare_render_outside: {:?}", start.elapsed());
 
     if let Some((voices, _)) = render_voices {
+        let lock_start = std::time::Instant::now();
         render_manager.lock().unwrap().push_render(voices, false);
+        weresocool_shared::timing_print!("[watch] lock + push_render: {:?}", lock_start.elapsed());
 
         print!(
             "{} ",

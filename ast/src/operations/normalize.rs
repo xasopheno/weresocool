@@ -289,6 +289,12 @@ impl Normalize for Op {
 
             Op::Noise => input.fmap_mut(|op| op.osc_type = OscType::Noise),
 
+            Op::Kick { params } => input.fmap_mut(|op| op.osc_type = OscType::Kick { params: params.clone() }),
+
+            Op::Snare { params } => input.fmap_mut(|op| op.osc_type = OscType::Snare { params: params.clone() }),
+
+            Op::HiHat { open, params } => input.fmap_mut(|op| op.osc_type = OscType::HiHat { open: *open, params: params.clone() }),
+
             Op::TransposeM { m, .. } => input.fmap_mut(|op| {
                 op.fm = op
                     .fm
