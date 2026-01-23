@@ -646,23 +646,25 @@ KickParamList: KickParams = {
         let mut result = KickParams::default();
         for (name, value) in params {
             match name.as_str() {
-                // Meta-parameters
-                "punch" => result.punch = Some(value),
+                // Spectrum controls (0-1 scale)
+                "attack" => result.attack = Some(value),
                 "body" => result.body = Some(value),
-                "air" => result.air = Some(value),
-                "dynamics" => result.dynamics = Some(value),
-                // Specific parameters
+                "tone" => result.tone = Some(value),
+                "length" => result.length = Some(value),
+                // Specific parameters (override spectrum mappings)
                 "pitch_decay" => result.pitch_decay = Some(value),
                 "pitch_range" => result.pitch_range = Some(value),
                 "amp_decay" => result.amp_decay = Some(value),
                 "sub_amount" => result.sub_amount = Some(value),
                 "click_amount" => result.click_amount = Some(value),
                 "click_freq" => result.click_freq = Some(value),
-                "attack" => result.attack = Some(value),
                 "harmonic_damping" => result.harmonic_damping = Some(value),
                 "saturation" => result.saturation = Some(value),
                 "velocity_tilt" => result.velocity_tilt = Some(value),
                 "transient_curve" => result.transient_curve = Some(value),
+                "tune" => result.tune = Some(value),
+                "resonance" => result.resonance = Some(value),
+                "hump" => result.hump = Some(value),
                 _ => {}
             }
         }
@@ -679,24 +681,26 @@ SnareParamList: SnareParams = {
         let mut result = SnareParams::default();
         for (name, value) in params {
             match name.as_str() {
-                // Meta-parameters
-                "punch" => result.punch = Some(value),
-                "body" => result.body = Some(value),
-                "air" => result.air = Some(value),
-                "dynamics" => result.dynamics = Some(value),
-                // Specific parameters
+                // Spectrum controls (0-1 scale)
+                "attack" => result.attack = Some(value),
+                "wires" => result.wires = Some(value),
+                "tone" => result.tone = Some(value),
+                "length" => result.length = Some(value),
+                // Specific parameters (override spectrum mappings)
                 "pitch_decay" => result.pitch_decay = Some(value),
                 "pitch_range" => result.pitch_range = Some(value),
                 "shell_decay" => result.shell_decay = Some(value),
                 "wire_decay" => result.wire_decay = Some(value),
                 "wire_mix" => result.wire_mix = Some(value),
                 "shell_tune" => result.shell_tune = Some(value),
-                "attack" => result.attack = Some(value),
+                "attack_amount" => result.attack_amount = Some(value),
                 "shell_pitch_decay" => result.shell_pitch_decay = Some(value),
                 "shell_pitch_range" => result.shell_pitch_range = Some(value),
                 "head_damping_ratio" => result.head_damping_ratio = Some(value),
                 "saturation" => result.saturation = Some(value),
                 "velocity_tilt" => result.velocity_tilt = Some(value),
+                "resonance" => result.resonance = Some(value),
+                "crack" => result.crack = Some(value),
                 // Backwards compatibility aliases
                 "tone_decay" => result.tone_decay = Some(value),
                 "noise_decay" => result.noise_decay = Some(value),
@@ -717,19 +721,19 @@ HiHatParamList: HiHatParams = {
         let mut result = HiHatParams::default();
         for (name, value) in params {
             match name.as_str() {
-                // Meta-parameters
-                "punch" => result.punch = Some(value),
-                "body" => result.body = Some(value),
-                "air" => result.air = Some(value),
-                "dynamics" => result.dynamics = Some(value),
-                // Specific parameters
-                "decay" => result.decay = Some(value),
+                // Spectrum controls (0-1 scale)
+                "attack" => result.attack = Some(value),
+                "metal" => result.metal = Some(value),
+                "length" => result.length = Some(value),
+                // Specific parameters (override spectrum mappings)
+                "decay_rate" => result.decay_rate = Some(value),
                 "shimmer" => result.shimmer = Some(value),
                 "brightness" => result.brightness = Some(value),
-                "attack" => result.attack = Some(value),
+                "attack_amount" => result.attack_amount = Some(value),
                 "pitch_drop" => result.pitch_drop = Some(value),
                 "saturation" => result.saturation = Some(value),
                 "velocity_tilt" => result.velocity_tilt = Some(value),
+                "resonance" => result.resonance = Some(value),
                 _ => {}
             }
         }

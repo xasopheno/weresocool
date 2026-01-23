@@ -4,6 +4,7 @@
 
 use crate::generation::{Normalizer, Op4D};
 use opmap::OpMap;
+use weresocool_ast::OscType;
 use weresocool_instrument::renderable::RenderOp;
 
 pub struct VisualizationAdapter;
@@ -40,11 +41,23 @@ impl VisualizationAdapter {
             return None;
         }
 
+        // Override frequency and length for drums to match their actual synthesis
+        // Frequency scaling: kick (f/8) -> snare (f/2.5) -> hihat (f*1.28) gives equal log spacing
+        let (visual_freq, visual_length) = match &render_op.osc_type {
+            OscType::Kick { .. } => (render_op.f / 8.0, 0.01),
+            OscType::Snare { .. } => (render_op.f / 2.5, 0.012),
+            OscType::HiHat { open, .. } => {
+                let decay = if *open { 0.02 } else { 0.008 };
+                (render_op.f * 1.28, decay)
+            }
+            _ => (render_op.f, render_op.l),
+        };
+
         let mut op4d = Op4D {
-            y: render_op.f.log10(),  // Convert to log scale before normalization
+            y: visual_freq.log10(),  // Convert to log scale before normalization
             z: (render_op.g.0 + render_op.g.1) / 2.0,
             x: render_op.p,
-            l: render_op.l,
+            l: visual_length,
             t: render_op.t,
             voice: render_op.voice,
             event: render_op.event,
@@ -87,8 +100,20 @@ impl VisualizationAdapter {
             return vec![];
         }
 
-        // We'll subdivide render_op.l in multiples of frame_length
-        let total_length = render_op.l;
+        // Override frequency and length for drums to match their actual synthesis
+        // Frequency scaling: kick (f/8) -> snare (f/2.5) -> hihat (f*1.28) gives equal log spacing
+        let (visual_freq, visual_length) = match &render_op.osc_type {
+            OscType::Kick { .. } => (render_op.f / 8.0, 0.01),
+            OscType::Snare { .. } => (render_op.f / 2.5, 0.012),
+            OscType::HiHat { open, .. } => {
+                let decay = if *open { 0.02 } else { 0.008 };
+                (render_op.f * 1.28, decay)
+            }
+            _ => (render_op.f, render_op.l),
+        };
+
+        // We'll subdivide visual_length in multiples of frame_length
+        let total_length = visual_length;
         if total_length <= 0.0 {
             return vec![];
         }
@@ -108,7 +133,7 @@ impl VisualizationAdapter {
 
             // Build a brand-new Op4D for just this slice
             let mut op4d = Op4D {
-                y: render_op.f.log10(),  // Convert to log scale before normalization
+                y: visual_freq.log10(),  // Convert to log scale before normalization
                 z: (render_op.g.0 + render_op.g.1) / 2.0,
                 x: render_op.p,
                 l: slice_len,

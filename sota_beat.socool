@@ -2,11 +2,11 @@
 
 kick = {
     Kick {
-        pitch_decay: 30,
-        pitch_range: 3.5,
-        amp_decay: 7,
+        pitch_decay: 0.025,
+        pitch_range: 2.5,
+        amp_decay: 0.15,
         click_amount: 0.35,
-        sub_amount: 0.9,
+        sub_amount: 0.2,
         harmonic_damping: 1.8,
         saturation: 0.45,
         velocity_tilt: 0.7,
@@ -26,13 +26,14 @@ ghost_kick = {
 
 snare = {
     Snare {
-        shell_decay: 10,
-        wire_decay: 18,
-        wire_mix: 0.55,
-        shell_pitch_decay: 30,
-        shell_pitch_range: 0.55,
-        head_damping_ratio: 1.8,
-        saturation: 0.3,
+        shell_decay: 0.1,
+        wire_decay: 0.12,
+        wire_mix: 0.5,
+        shell_pitch_decay: 40,
+        shell_pitch_range: 0.3,
+        crack: 0.9,
+        attack_amount: 0.5,
+        saturation: 0.25,
         velocity_tilt: 0.6
     }
     | Fm 2
@@ -40,10 +41,13 @@ snare = {
 
 ghost_snare = {
     Snare {
-        wire_mix: 0.7,
+        shell_decay: 0.08,
+        wire_decay: 0.10,
+        wire_mix: 0.6,
         shell_pitch_range: 0.15,
-        head_damping_ratio: 1.4,
-        saturation: 0.15,
+        crack: 0.4,
+        attack_amount: 0.3,
+        saturation: 0.1,
         velocity_tilt: 0.8
     }
     | Fm 2.5
@@ -52,53 +56,48 @@ ghost_snare = {
 
 hat = {
     HiHat {
-        decay: 30,
-        shimmer: 50,
+        decay_rate: 25,
+        shimmer: 18,
         brightness: 0.9,
         pitch_drop: 0.015,
         saturation: 0.08,
         velocity_tilt: 0.4
     }
-    | Fm 50
     | Gm 0.7
 }
 
 hat_accent = {
     HiHat {
-        decay: 25,
-        shimmer: 24,
+        decay_rate: 30,
+        shimmer: 22,
         brightness: 1.1,
         pitch_drop: 0.02,
         saturation: 0.12,
         velocity_tilt: 0.5
     }
-    | Fm 50
-    | Gm 1.0
 }
 
 hat_soft = {
     HiHat {
-        decay: 35,
-        shimmer: 20,
+        decay_rate: 35,
+        shimmer: 16,
         brightness: 0.7,
         pitch_drop: 0.01,
         saturation: 0.05,
         velocity_tilt: 0.6
     }
-    | Fm 50
     | Gm 0.4
 }
 
 open_hat = {
     OpenHat {
-        decay: 5,
-        shimmer: 20,
+        decay_rate: 8,
+        shimmer: 18,
         brightness: 1.0,
         pitch_drop: 0.025,
         saturation: 0.1,
         velocity_tilt: 0.4
     }
-    | Fm 50
     | Gm 0.8
 }
 
@@ -187,7 +186,7 @@ main = {
         fill_bar
     ]
     | Repeat 2
-    | Lm 2
+    | Lm 1.8
     | Overlay [
         Gm 2,
     ]

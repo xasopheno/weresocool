@@ -146,51 +146,57 @@ impl Waveform for OscType {
                 let t = info.sample_index as f64 / info.sample_rate; // Time in seconds
                 let t_norm = info.sample_index as f64 / info.total_samples.max(1) as f64;
 
-                // Meta-parameters (0-1 scale, default 0.5, can exceed 1 to push)
-                let punch = params.as_ref().and_then(|p| p.punch.map(r_to_f64)).unwrap_or(0.5);
-                let body = params.as_ref().and_then(|p| p.body.map(r_to_f64)).unwrap_or(0.5);
-                let air = params.as_ref().and_then(|p| p.air.map(r_to_f64)).unwrap_or(0.5);
-                let dynamics = params.as_ref().and_then(|p| p.dynamics.map(r_to_f64)).unwrap_or(0.5);
+                // ═══════════════════════════════════════════════════════════════════
+                // SPECTRUM CONTROLS (0-1 scale)
+                // ═══════════════════════════════════════════════════════════════════
+                // attack: soft/round (0) → hard/clicky (1) - controls click_amount, transient_curve
+                // body:   thin (0) → thick/subby (1) - controls sub_amount, hump
+                // tone:   dark (0) → bright (1) - controls harmonic_damping, click_freq
+                // length: tight (0) → boomy (1) - controls amp_decay
 
-                // Derive specific params from meta-params, allow override
-                // punch → click_amount, attack, transient_curve
-                // body → sub_amount, saturation, amp_decay (inverse - more body = slower decay)
-                // air → harmonic_damping (inverse - more air = less damping), brightness
-                // dynamics → velocity_tilt
+                let attack_spec = params.as_ref().and_then(|p| p.attack.map(r_to_f64)).unwrap_or(0.5);
+                let body_spec = params.as_ref().and_then(|p| p.body.map(r_to_f64)).unwrap_or(0.5);
+                let tone_spec = params.as_ref().and_then(|p| p.tone.map(r_to_f64)).unwrap_or(0.5);
+                let length_spec = params.as_ref().and_then(|p| p.length.map(r_to_f64)).unwrap_or(0.5);
 
+                // ═══════════════════════════════════════════════════════════════════
+                // SPECIFIC PARAMETERS (override spectrum mappings)
+                // ═══════════════════════════════════════════════════════════════════
+
+                // pitch_decay is now in SECONDS (time for pitch to drop to ~5%)
+                // 909-style: 0.02-0.03s (fast click), 808-style: 0.05-0.07s
                 let pitch_decay = params.as_ref()
                     .and_then(|p| p.pitch_decay.map(r_to_f64))
-                    .unwrap_or(50.0);
+                    .unwrap_or(0.03);  // 30ms default (909-style)
                 let pitch_range = params.as_ref()
                     .and_then(|p| p.pitch_range.map(r_to_f64))
                     .unwrap_or(3.0);
+                // amp_decay is now in SECONDS (909-style: 0.1-0.3s, 808-style: 0.3-0.8s)
                 let amp_decay = params.as_ref()
                     .and_then(|p| p.amp_decay.map(r_to_f64))
-                    .unwrap_or(6.0 + (1.0 - body) * 4.0);  // body: more = slower (6-10)
+                    .unwrap_or(0.10 + length_spec * 0.15);  // tight=0.10s (100ms), boomy=0.25s (250ms)
                 let sub_amount = params.as_ref()
                     .and_then(|p| p.sub_amount.map(r_to_f64))
-                    .unwrap_or(body * 0.4);  // body: 0-0.4
+                    .unwrap_or(0.1 + body_spec * 0.4);  // 0.1-0.5
                 let click_amount = params.as_ref()
                     .and_then(|p| p.click_amount.map(r_to_f64))
-                    .unwrap_or(punch * 0.5 + air * 0.1);  // punch + air contribution
+                    .unwrap_or(0.05 + attack_spec * 0.45);  // 0.05-0.5
                 let click_freq_mult = params.as_ref()
                     .and_then(|p| p.click_freq.map(r_to_f64))
-                    .unwrap_or(8.0);
-                let attack_amount = params.as_ref()
-                    .and_then(|p| p.attack.map(r_to_f64))
-                    .unwrap_or(punch * 0.6);  // punch: 0-0.6
+                    .unwrap_or(5.0 + tone_spec * 7.0);  // 5-12
+                let attack_amount = 0.1 + attack_spec * 0.4;  // Derived from attack spectrum
                 let harmonic_damping = params.as_ref()
                     .and_then(|p| p.harmonic_damping.map(r_to_f64))
-                    .unwrap_or(1.0 + (1.0 - air) * 1.5);  // air: less = more damping (1.0-2.5)
+                    .unwrap_or(2.5 - tone_spec * 1.3);  // dark=2.5, bright=1.2
                 let saturation_amount = params.as_ref()
                     .and_then(|p| p.saturation.map(r_to_f64))
-                    .unwrap_or(body * 0.5);  // body: 0-0.5
+                    .unwrap_or(0.2);
                 let velocity_tilt = params.as_ref()
                     .and_then(|p| p.velocity_tilt.map(r_to_f64))
-                    .unwrap_or(dynamics);  // dynamics maps directly
+                    .unwrap_or(0.5);
                 let transient_curve = params.as_ref()
                     .and_then(|p| p.transient_curve.map(r_to_f64))
-                    .unwrap_or(1.0 + punch * 2.0);  // punch: 1-3
+                    .unwrap_or(1.5 + attack_spec * 2.0);  // 1.5-3.5
 
                 // Velocity-dependent spectral tilt: higher velocity = more high-freq content
                 let velocity = info.gain.clamp(0.0, 1.0);
@@ -203,13 +209,15 @@ impl Waveform for OscType {
                 // For freq(t) = f0 * (1 + A*e^(-kt)), phase = 2π * f0 * (t + A/k * (1 - e^(-kt)))
                 // Use fixed kick frequency (~60 Hz) - real kicks are 40-80 Hz regardless of musical key
                 let f0 = 60.0;
-                let integrated_time = t + (pitch_range / pitch_decay) * (1.0 - (-pitch_decay * t).exp());
+                // pitch_decay is in seconds, using -3.0 coefficient for ~95% decay at specified time
+                let integrated_time = t + (pitch_range * pitch_decay / 3.0) * (1.0 - (-t * 3.0 / pitch_decay).exp());
                 let kick_phase = TAU * f0 * integrated_time;
 
                 // Fundamental and second harmonic with frequency-dependent damping
-                let amp_fundamental = (-t_norm * amp_decay).exp();
-                let amp_harmonic2 = (-t_norm * amp_decay * harmonic_damping).exp();  // Faster decay for harmonics
-                let amp_sub = (-t_norm * amp_decay * 0.5).exp();  // Slower decay for subs
+                // Using -3.0 coefficient gives ~95% decay at the specified time (in seconds)
+                let amp_fundamental = (-t * 3.0 / amp_decay).exp();
+                let amp_harmonic2 = (-t * 3.0 * harmonic_damping / amp_decay).exp();  // Faster decay for harmonics
+                let amp_sub = (-t * 3.0 * 0.5 / amp_decay).exp();  // Slower decay for subs
 
                 let fundamental = kick_phase.sin() * amp_fundamental;
                 let harmonic2 = (kick_phase * 2.0).sin() * harmonic2_vel * amp_harmonic2;
@@ -250,141 +258,204 @@ impl Waveform for OscType {
                 let t = info.sample_index as f64 / info.sample_rate;
                 let t_norm = info.sample_index as f64 / info.total_samples.max(1) as f64;
 
-                // Meta-parameters (0-1 scale, default 0.5, can exceed 1 to push)
-                let punch = params.as_ref().and_then(|p| p.punch.map(r_to_f64)).unwrap_or(0.5);
-                let body = params.as_ref().and_then(|p| p.body.map(r_to_f64)).unwrap_or(0.5);
-                let air = params.as_ref().and_then(|p| p.air.map(r_to_f64)).unwrap_or(0.5);
-                let dynamics = params.as_ref().and_then(|p| p.dynamics.map(r_to_f64)).unwrap_or(0.5);
+                // ═══════════════════════════════════════════════════════════════════
+                // SPECTRUM CONTROLS (0-1 scale)
+                // ═══════════════════════════════════════════════════════════════════
+                // attack: soft (0) → cracking (1) - controls attack_amount, crack, shell_pitch_range
+                // wires:  dry/woody (0) → sizzly (1) - controls wire_mix, wire_decay
+                // tone:   dark (0) → bright (1) - controls head_damping_ratio
+                // length: tight (0) → ringy (1) - controls shell_decay
 
-                // Derive specific params from meta-params, allow override
-                // punch → attack, shell_pitch_range
-                // body → saturation, shell_decay (inverse - more body = longer ring)
-                // air → wire_mix (more air = more wires/brightness), head_damping_ratio (inverse)
-                // dynamics → velocity_tilt
+                let attack_spec = params.as_ref().and_then(|p| p.attack.map(r_to_f64)).unwrap_or(0.5);
+                let wires_spec = params.as_ref().and_then(|p| p.wires.map(r_to_f64)).unwrap_or(0.5);
+                let tone_spec = params.as_ref().and_then(|p| p.tone.map(r_to_f64)).unwrap_or(0.5);
+                let length_spec = params.as_ref().and_then(|p| p.length.map(r_to_f64)).unwrap_or(0.5);
 
-                let tone_pitch_decay = params.as_ref()
-                    .and_then(|p| p.pitch_decay.map(r_to_f64))
-                    .unwrap_or(80.0);
-                let tone_pitch_range = params.as_ref()
-                    .and_then(|p| p.pitch_range.map(r_to_f64))
-                    .unwrap_or(2.0);
+                // ═══════════════════════════════════════════════════════════════════
+                // SPECIFIC PARAMETERS (override spectrum mappings)
+                // ═══════════════════════════════════════════════════════════════════
+
+                // Shell decay: now in SECONDS (909-style: 0.10-0.20s, 808-style: 0.25-0.35s)
                 let shell_decay = params.as_ref()
                     .and_then(|p| p.shell_decay.or(p.tone_decay).map(r_to_f64))
-                    .unwrap_or(8.0 + body * 8.0);  // body: 8-16
+                    .unwrap_or(0.10 + length_spec * 0.10);  // tight=0.10s (100ms), ringy=0.20s (200ms)
+
+                // Wire decay: now in SECONDS (909-style: 0.15-0.25s, 808-style: 0.20-0.35s)
                 let wire_decay = params.as_ref()
                     .and_then(|p| p.wire_decay.or(p.noise_decay).map(r_to_f64))
-                    .unwrap_or(20.0);
+                    .unwrap_or(0.15 + wires_spec * 0.10);  // dry=0.15s (150ms), sizzly=0.25s (250ms)
+
+                // Wire mix: 0=all shell, 1=all wire. Default 0.5 (dry=0.3, sizzly=0.7)
                 let wire_mix = params.as_ref()
                     .and_then(|p| p.wire_mix.or(p.noise_mix).map(r_to_f64))
-                    .unwrap_or(0.4 + air * 0.4);  // air: 0.4-0.8
+                    .unwrap_or(0.3 + wires_spec * 0.4);
+
+                // Shell tune: bottom head frequency ratio. Default 1.8
                 let shell_tune = params.as_ref()
                     .and_then(|p| p.shell_tune.map(r_to_f64))
                     .unwrap_or(1.8);
+
+                // Attack amount: noise burst intensity. Default 0.4 (soft=0.2, cracking=0.6)
                 let attack_amount = params.as_ref()
-                    .and_then(|p| p.attack.map(r_to_f64))
-                    .unwrap_or(punch * 0.8);  // punch: 0-0.8
+                    .and_then(|p| p.attack_amount.map(r_to_f64))
+                    .unwrap_or(0.2 + attack_spec * 0.4);
+
+                // Shell pitch envelope decay rate. Default 30
                 let shell_pitch_decay = params.as_ref()
                     .and_then(|p| p.shell_pitch_decay.map(r_to_f64))
                     .unwrap_or(30.0);
+
+                // Shell pitch range: how much pitch drops. Default 0.3 (soft=0.1, cracking=0.5)
                 let shell_pitch_range = params.as_ref()
                     .and_then(|p| p.shell_pitch_range.map(r_to_f64))
-                    .unwrap_or(punch * 0.5);  // punch: 0-0.5
+                    .unwrap_or(0.1 + attack_spec * 0.4);
+
+                // Head damping ratio: top/bottom decay ratio. Default 1.5 (dark=2.0, bright=1.2)
                 let head_damping_ratio = params.as_ref()
                     .and_then(|p| p.head_damping_ratio.map(r_to_f64))
-                    .unwrap_or(1.0 + (1.0 - air) * 1.0);  // air: less = more damping (1.0-2.0)
+                    .unwrap_or(2.0 - tone_spec * 0.8);
+
+                // Saturation amount. Default 0.15
                 let saturation_amount = params.as_ref()
                     .and_then(|p| p.saturation.map(r_to_f64))
-                    .unwrap_or(body * 0.4);  // body: 0-0.4
+                    .unwrap_or(0.15);
+
+                // Velocity tilt: how much velocity affects spectrum. Default 0.5
                 let velocity_tilt = params.as_ref()
                     .and_then(|p| p.velocity_tilt.map(r_to_f64))
-                    .unwrap_or(dynamics);  // dynamics maps directly
+                    .unwrap_or(0.5);
+
+                // Crack amount: tonal transient intensity. Default 0.3 (soft=0.1, cracking=0.5)
+                let crack_amount = params.as_ref()
+                    .and_then(|p| p.crack.map(r_to_f64))
+                    .unwrap_or(0.1 + attack_spec * 0.4);
+
+                // ═══════════════════════════════════════════════════════════════════
+                // SYNTHESIS (909-style snare)
+                // ═══════════════════════════════════════════════════════════════════
 
                 // Velocity-dependent spectral tilt
                 let velocity = info.gain.clamp(0.0, 1.0);
                 let spectral_tilt = velocity.powf(0.5);
-                let wire_mix_vel = wire_mix * (0.7 + 0.6 * spectral_tilt * velocity_tilt);  // More wires at high vel
+                let wire_mix_vel = wire_mix * (0.7 + 0.6 * spectral_tilt * velocity_tilt);
 
-                // Shell component: dual-mode for top/bottom head resonance with pitch glide
-                // Shell pitch drops during decay (membrane tension relaxes)
-                // Use fixed snare frequency (~180 Hz base) - real snares are 150-250 Hz
-                let base_freq = 180.0;
+                // ─────────────────────────────────────────────────────────────────────
+                // SHELL: Two slightly detuned tones for thickness (909-style)
+                // 909 uses ~180-200 Hz fundamental with inharmonic overtones
+                // ─────────────────────────────────────────────────────────────────────
+                let base_freq = 185.0;  // 909-style fundamental
                 let shell_pitch_mult = 1.0 + shell_pitch_range * (-t * shell_pitch_decay).exp();
-                let shell_freq_1 = base_freq * 1.4 * shell_pitch_mult;   // Top head (~250 Hz)
-                let shell_freq_2 = base_freq * shell_tune * shell_pitch_mult;  // Bottom head (lower)
 
-                // Integrate for pitch envelope on body tone
-                let integrated_time = t + (tone_pitch_range / tone_pitch_decay)
-                    * (1.0 - (-tone_pitch_decay * t).exp());
+                // Slightly inharmonic ratios for thickness (not perfect octave)
+                let shell_freq_1 = base_freq * shell_pitch_mult;
+                let shell_freq_2 = base_freq * 1.71 * shell_pitch_mult;  // ~316 Hz (not octave)
+                let shell_freq_3 = base_freq * 2.80 * shell_pitch_mult;  // ~518 Hz (adds body)
 
-                let shell_phase_1 = TAU * shell_freq_1 * integrated_time;
-                let shell_phase_2 = TAU * shell_freq_2 * integrated_time;
+                // Frequency-dependent damping
+                let shell_amp_1 = (-t * 3.0 / shell_decay).exp();
+                let shell_amp_2 = (-t * 3.0 * 1.5 / shell_decay).exp();
+                let shell_amp_3 = (-t * 3.0 * 2.5 / shell_decay).exp();
 
-                // Frequency-dependent damping: top head (higher freq) decays faster
-                let shell_amp_1 = (-t_norm * shell_decay * (head_damping_ratio.sqrt())).exp();  // Top head: faster
-                let shell_amp_2 = (-t_norm * shell_decay / (head_damping_ratio.sqrt())).exp();  // Bottom head: slower
-                let shell = shell_phase_1.sin() * 0.6 * shell_amp_1
-                          + shell_phase_2.sin() * 0.4 * shell_amp_2;
+                let shell = (TAU * shell_freq_1 * t).sin() * 0.5 * shell_amp_1
+                          + (TAU * shell_freq_2 * t).sin() * 0.35 * shell_amp_2
+                          + (TAU * shell_freq_3 * t).sin() * 0.2 * shell_amp_3;
 
-                // Wire component: pink noise (band-limited) for snare wire sound
-                let wire_noise = pink_noise(info.sample_index, 0xDEADBEEFCAFEBABE);
-                let wire_amp = (-t_norm * wire_decay).exp();
-                let wire = wire_noise * wire_amp;
+                // ─────────────────────────────────────────────────────────────────────
+                // CRACK: The defining 909 transient - very fast, punchy, high-mid focus
+                // This is what gives the 909 its "snap"
+                // ─────────────────────────────────────────────────────────────────────
+                let crack_decay = 0.003;  // 3ms - very fast
+                let crack_amp = (-t * 3.0 / crack_decay).exp();
 
-                // Attack transient phase (0-8ms noise burst)
-                let attack_duration = 0.008;
-                let attack_env = if t < attack_duration {
-                    (-t * 150.0).exp()
-                } else {
-                    0.0
-                };
-                let attack_noise = fast_noise(info.sample_index, 0xFEDCBA9876543210) * attack_env * attack_amount;
+                // Multiple crack frequencies for richness (909 has complex transient)
+                let crack_1 = (TAU * 900.0 * t).sin() * 0.6;   // Main crack frequency
+                let crack_2 = (TAU * 1200.0 * t).sin() * 0.3;  // Upper harmonic
+                let crack_3 = (TAU * 600.0 * t).sin() * 0.25;  // Lower body
+                let crack = (crack_1 + crack_2 + crack_3) * crack_amp * crack_amount;
 
-                // Mix shell and wire components
-                let tone = shell * (1.0 - wire_mix_vel) + wire * wire_mix_vel + attack_noise;
+                // ─────────────────────────────────────────────────────────────────────
+                // NOISE: White noise (brighter than pink) with fast attack envelope
+                // Simulates snare wires - should be "snappy" not "hissy"
+                // ─────────────────────────────────────────────────────────────────────
+                // Use white noise (fast_noise) for brighter, crispier wire sound
+                let wire_noise = fast_noise(info.sample_index, 0xDEADBEEFCAFEBABE);
 
-                tone * info.gain * 8.0
+                // Two-stage envelope: fast attack spike + slower tail
+                let wire_attack_amp = (-t * 3.0 / 0.008).exp();  // 8ms fast attack
+                let wire_tail_amp = (-t * 3.0 / wire_decay).exp();  // Longer tail
+                let wire_env = wire_attack_amp * 0.7 + wire_tail_amp * 0.3;
+                let wire = wire_noise * wire_env;
+
+                // ─────────────────────────────────────────────────────────────────────
+                // ATTACK TRANSIENT: Initial broadband noise burst
+                // ─────────────────────────────────────────────────────────────────────
+                let attack_amp = (-t * 3.0 / 0.002).exp();  // 2ms burst
+                let attack_noise = fast_noise(info.sample_index, 0xFEDCBA9876543210) * attack_amp * attack_amount;
+
+                // ─────────────────────────────────────────────────────────────────────
+                // MIX: Crack is always present, shell/wire balance controlled by wire_mix
+                // ─────────────────────────────────────────────────────────────────────
+                let shell_component = shell * (1.0 - wire_mix_vel * 0.5);  // Shell reduced by wire mix
+                let wire_component = (wire + attack_noise) * (0.3 + wire_mix_vel * 0.7);  // Wire boosted by wire mix
+                let tone = shell_component + wire_component + crack;
+
+                // Soft saturation for warmth
+                let decay_progress = 1.0 - shell_amp_1;
+                let saturation_drive = 1.0 + saturation_amount * decay_progress;
+                let saturated = soft_saturate(tone, saturation_drive);
+
+                saturated * info.gain * 8.0
             }
 
             OscType::HiHat { open, params } => {
                 let t = info.sample_index as f64 / info.sample_rate;
                 let t_norm = info.sample_index as f64 / info.total_samples.max(1) as f64;
 
-                // Meta-parameters (0-1 scale, default 0.5, can exceed 1 to push)
-                let punch = params.as_ref().and_then(|p| p.punch.map(r_to_f64)).unwrap_or(0.5);
-                let body = params.as_ref().and_then(|p| p.body.map(r_to_f64)).unwrap_or(0.5);
-                let air = params.as_ref().and_then(|p| p.air.map(r_to_f64)).unwrap_or(0.5);
-                let dynamics = params.as_ref().and_then(|p| p.dynamics.map(r_to_f64)).unwrap_or(0.5);
+                // ═══════════════════════════════════════════════════════════════════
+                // SPECTRUM CONTROLS (0-1 scale)
+                // ═══════════════════════════════════════════════════════════════════
+                // attack: soft (0) → clicky (1) - controls attack_amount, pitch_drop
+                // metal:  dull (0) → shimmery (1) - controls shimmer, brightness
+                // length: choked (0) → open (1) - controls decay_rate
 
-                // Derive specific params from meta-params, allow override
-                // punch → attack
-                // body → saturation, decay (inverse - more body = longer sustain)
-                // air → brightness, shimmer
-                // dynamics → velocity_tilt
+                let attack_spec = params.as_ref().and_then(|p| p.attack.map(r_to_f64)).unwrap_or(0.5);
+                let metal_spec = params.as_ref().and_then(|p| p.metal.map(r_to_f64)).unwrap_or(0.5);
+                let length_spec = params.as_ref().and_then(|p| p.length.map(r_to_f64)).unwrap_or(0.5);
 
-                let default_decay = if *open { 4.0 } else { 25.0 };
-                let decay_base = if *open { 3.0 } else { 15.0 };
-                let decay_range = if *open { 4.0 } else { 20.0 };
+                // ═══════════════════════════════════════════════════════════════════
+                // SPECIFIC PARAMETERS (override spectrum mappings)
+                // ═══════════════════════════════════════════════════════════════════
+
+                // decay_rate: higher = faster decay (uses t_norm, so scales with note length)
+                let decay_base = if *open { 5.0 } else { 20.0 };
+                let decay_range = if *open { 5.0 } else { 15.0 };
                 let decay_rate = params.as_ref()
-                    .and_then(|p| p.decay.map(r_to_f64))
-                    .unwrap_or(decay_base + (1.0 - body) * decay_range);  // body: more = slower decay
+                    .and_then(|p| p.decay_rate.map(r_to_f64))
+                    .unwrap_or(decay_base + (1.0 - length_spec) * decay_range);
+
                 let shimmer_mult = params.as_ref()
                     .and_then(|p| p.shimmer.map(r_to_f64))
-                    .unwrap_or(15.0 + air * 10.0);  // air: 15-25
+                    .unwrap_or(15.0 + metal_spec * 10.0);  // 15-25
+
                 let brightness = params.as_ref()
                     .and_then(|p| p.brightness.map(r_to_f64))
-                    .unwrap_or(0.5 + air);  // air: 0.5-1.5
+                    .unwrap_or(0.5 + metal_spec * 0.5);  // 0.5-1.0
+
                 let attack_amount = params.as_ref()
-                    .and_then(|p| p.attack.map(r_to_f64))
-                    .unwrap_or(punch * 0.4);  // punch: 0-0.4
+                    .and_then(|p| p.attack_amount.map(r_to_f64))
+                    .unwrap_or(0.1 + attack_spec * 0.3);  // 0.1-0.4
+
                 let pitch_drop = params.as_ref()
                     .and_then(|p| p.pitch_drop.map(r_to_f64))
-                    .unwrap_or(0.02);
+                    .unwrap_or(0.01 + attack_spec * 0.02);  // 0.01-0.03
+
                 let saturation_amount = params.as_ref()
                     .and_then(|p| p.saturation.map(r_to_f64))
-                    .unwrap_or(body * 0.2);  // body: 0-0.2
+                    .unwrap_or(0.08);
+
                 let velocity_tilt = params.as_ref()
                     .and_then(|p| p.velocity_tilt.map(r_to_f64))
-                    .unwrap_or(dynamics);  // dynamics maps directly
+                    .unwrap_or(0.4);
 
                 // Velocity-dependent spectral tilt
                 let velocity = info.gain.clamp(0.0, 1.0);

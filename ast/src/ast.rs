@@ -232,81 +232,91 @@ pub struct FmOscDef {
 }
 
 /// Parameters for Kick drum synthesis
+/// Uses drum-specific spectrum controls (0-1 scale) plus specific parameter overrides
 #[derive(Clone, Debug, PartialEq, Serialize, Deserialize, Hash, Ord, PartialOrd, Eq, Default)]
 pub struct KickParams {
-    // High-level meta-parameters (0-1 scale, can exceed 1 to push)
-    /// Transient intensity: click, attack sharpness, transient curve (default: 0.5)
-    pub punch: Option<Rational64>,
-    /// Low-end weight: sub amount, saturation, longer decay (default: 0.5)
+    // Spectrum controls (0-1 scale, can exceed 1 to push)
+    /// Attack spectrum: soft/round (0) → hard/clicky (1). Controls click_amount, transient_curve
+    pub attack: Option<Rational64>,
+    /// Body spectrum: thin (0) → thick/subby (1). Controls sub_amount, hump
     pub body: Option<Rational64>,
-    /// High-frequency presence: less harmonic damping, more click (default: 0.5)
-    pub air: Option<Rational64>,
-    /// Velocity sensitivity: how much gain affects timbre (default: 0.5)
-    pub dynamics: Option<Rational64>,
+    /// Tone spectrum: dark (0) → bright (1). Controls harmonic_damping, click_freq
+    pub tone: Option<Rational64>,
+    /// Length spectrum: tight (0) → boomy (1). Controls amp_decay
+    pub length: Option<Rational64>,
 
-    // Specific parameters (override meta-param mappings)
-    /// Pitch envelope decay rate (default: 50)
+    // Specific parameters (override spectrum mappings)
+    /// Pitch envelope decay time in SECONDS (default: 0.03 = 30ms, 909-style click)
     pub pitch_decay: Option<Rational64>,
-    /// Starting pitch multiplier (default: 3, meaning 4x → 1x)
+    /// Starting pitch multiplier (default: 3)
     pub pitch_range: Option<Rational64>,
-    /// Amplitude decay rate (default: 8)
+    /// Amplitude decay time in SECONDS (default: 0.10-0.25s depending on length)
     pub amp_decay: Option<Rational64>,
-    /// Sub-harmonic intensity (default: 0.2) - creates "chest thump"
+    /// Sub-harmonic intensity (default: 0.5)
     pub sub_amount: Option<Rational64>,
-    /// Attack click intensity (default: 0.3)
+    /// Attack click intensity (default: 0.25)
     pub click_amount: Option<Rational64>,
     /// Click frequency multiplier (default: 8)
     pub click_freq: Option<Rational64>,
-    /// Attack transient amount (default: 0.3)
-    pub attack: Option<Rational64>,
-    /// Decay multiplier for 2nd harmonic - higher = faster decay (default: 1.5)
+    /// Decay multiplier for 2nd harmonic (default: 1.8)
     pub harmonic_damping: Option<Rational64>,
-    /// Soft saturation amount during decay (default: 0.3)
-    pub saturation: Option<Rational64>,
-    /// How much velocity affects spectrum (default: 0.5)
-    pub velocity_tilt: Option<Rational64>,
-    /// Attack spike shape curve (1=linear, 2=squared) (default: 2.0)
-    pub transient_curve: Option<Rational64>,
-}
-
-/// Parameters for Snare drum synthesis
-#[derive(Clone, Debug, PartialEq, Serialize, Deserialize, Hash, Ord, PartialOrd, Eq, Default)]
-pub struct SnareParams {
-    // High-level meta-parameters (0-1 scale, can exceed 1 to push)
-    /// Transient intensity: attack sharpness, shell pitch range (default: 0.5)
-    pub punch: Option<Rational64>,
-    /// Resonance weight: saturation, longer shell decay (default: 0.5)
-    pub body: Option<Rational64>,
-    /// High-frequency presence: more wire, brightness (default: 0.5)
-    pub air: Option<Rational64>,
-    /// Velocity sensitivity: how much gain affects timbre (default: 0.5)
-    pub dynamics: Option<Rational64>,
-
-    // Specific parameters (override meta-param mappings)
-    /// Tone pitch decay rate (default: 80)
-    pub pitch_decay: Option<Rational64>,
-    /// Tone pitch range (default: 2)
-    pub pitch_range: Option<Rational64>,
-    /// Shell amplitude decay rate (default: 12)
-    pub shell_decay: Option<Rational64>,
-    /// Wire amplitude decay rate (default: 20)
-    pub wire_decay: Option<Rational64>,
-    /// Wire mix ratio 0=all shell, 1=all wire (default: 0.6)
-    pub wire_mix: Option<Rational64>,
-    /// Bottom head frequency ratio (default: 1.8)
-    pub shell_tune: Option<Rational64>,
-    /// Attack transient amount (default: 0.4)
-    pub attack: Option<Rational64>,
-    /// Shell pitch envelope decay rate (default: 30)
-    pub shell_pitch_decay: Option<Rational64>,
-    /// Shell pitch envelope range (default: 0.3)
-    pub shell_pitch_range: Option<Rational64>,
-    /// Top/bottom head decay ratio (default: 1.6)
-    pub head_damping_ratio: Option<Rational64>,
     /// Soft saturation amount (default: 0.2)
     pub saturation: Option<Rational64>,
     /// How much velocity affects spectrum (default: 0.5)
     pub velocity_tilt: Option<Rational64>,
+    /// Attack spike shape curve (default: 2.0)
+    pub transient_curve: Option<Rational64>,
+    /// Tuning multiplier for base frequency (default: 1.0)
+    pub tune: Option<Rational64>,
+    /// Filter resonance Q (default: 1.0)
+    pub resonance: Option<Rational64>,
+    /// Envelope hump - sustain level before decay (default: 0.8)
+    pub hump: Option<Rational64>,
+}
+
+/// Parameters for Snare drum synthesis
+/// Uses drum-specific spectrum controls (0-1 scale) plus specific parameter overrides
+#[derive(Clone, Debug, PartialEq, Serialize, Deserialize, Hash, Ord, PartialOrd, Eq, Default)]
+pub struct SnareParams {
+    // Spectrum controls (0-1 scale, can exceed 1 to push)
+    /// Attack spectrum: soft (0) → cracking (1). Controls attack, crack, shell_pitch_range
+    pub attack: Option<Rational64>,
+    /// Wires spectrum: dry/woody (0) → sizzly (1). Controls wire_mix, wire_decay
+    pub wires: Option<Rational64>,
+    /// Tone spectrum: dark (0) → bright (1). Controls head_damping_ratio
+    pub tone: Option<Rational64>,
+    /// Length spectrum: tight (0) → ringy (1). Controls shell_decay
+    pub length: Option<Rational64>,
+
+    // Specific parameters (override spectrum mappings)
+    /// Tone pitch decay rate (default: 80)
+    pub pitch_decay: Option<Rational64>,
+    /// Tone pitch range (default: 2)
+    pub pitch_range: Option<Rational64>,
+    /// Shell amplitude decay time in SECONDS (default: 0.10-0.20s, 909-style)
+    pub shell_decay: Option<Rational64>,
+    /// Wire amplitude decay time in SECONDS (default: 0.15-0.25s, 909-style)
+    pub wire_decay: Option<Rational64>,
+    /// Wire mix ratio 0=all shell, 1=all wire (default: 0.5)
+    pub wire_mix: Option<Rational64>,
+    /// Bottom head frequency ratio (default: 1.8)
+    pub shell_tune: Option<Rational64>,
+    /// Attack transient amount (default: 0.4)
+    pub attack_amount: Option<Rational64>,
+    /// Shell pitch envelope decay rate (default: 30)
+    pub shell_pitch_decay: Option<Rational64>,
+    /// Shell pitch envelope range (default: 0.3)
+    pub shell_pitch_range: Option<Rational64>,
+    /// Top/bottom head decay ratio (default: 1.5)
+    pub head_damping_ratio: Option<Rational64>,
+    /// Soft saturation amount (default: 0.15)
+    pub saturation: Option<Rational64>,
+    /// How much velocity affects spectrum (default: 0.5)
+    pub velocity_tilt: Option<Rational64>,
+    /// Filter resonance Q (default: 0.7)
+    pub resonance: Option<Rational64>,
+    /// Tonal crack amount (default: 0.2)
+    pub crack: Option<Rational64>,
     // Backwards compatibility aliases (deprecated)
     pub tone_decay: Option<Rational64>,
     pub noise_decay: Option<Rational64>,
@@ -314,33 +324,34 @@ pub struct SnareParams {
 }
 
 /// Parameters for HiHat synthesis
+/// Uses drum-specific spectrum controls (0-1 scale) plus specific parameter overrides
 #[derive(Clone, Debug, PartialEq, Serialize, Deserialize, Hash, Ord, PartialOrd, Eq, Default)]
 pub struct HiHatParams {
-    // High-level meta-parameters (0-1 scale, can exceed 1 to push)
-    /// Transient intensity: attack sharpness (default: 0.5)
-    pub punch: Option<Rational64>,
-    /// Resonance weight: saturation, sustain (default: 0.5)
-    pub body: Option<Rational64>,
-    /// High-frequency presence: brightness, shimmer (default: 0.5)
-    pub air: Option<Rational64>,
-    /// Velocity sensitivity: how much gain affects timbre (default: 0.5)
-    pub dynamics: Option<Rational64>,
-
-    // Specific parameters (override meta-param mappings)
-    /// Amplitude decay rate (default: 25 closed, 4 open)
-    pub decay: Option<Rational64>,
-    /// Metallic shimmer frequency multiplier (default: 20)
-    pub shimmer: Option<Rational64>,
-    /// Scales high mode amplitudes for brightness control (default: 1.0)
-    pub brightness: Option<Rational64>,
-    /// Attack transient amount (default: 0.2)
+    // Spectrum controls (0-1 scale, can exceed 1 to push)
+    /// Attack spectrum: soft (0) → clicky (1). Controls attack, pitch_drop
     pub attack: Option<Rational64>,
-    /// Pitch drop amount as energy dissipates (default: 0.02)
+    /// Metal spectrum: dull (0) → shimmery (1). Controls shimmer, brightness
+    pub metal: Option<Rational64>,
+    /// Length spectrum: choked (0) → open (1). Controls decay_rate
+    pub length: Option<Rational64>,
+
+    // Specific parameters (override spectrum mappings)
+    /// Amplitude decay rate - higher = faster decay (default: 20 closed, 5 open)
+    pub decay_rate: Option<Rational64>,
+    /// Metallic shimmer frequency multiplier (default: 25)
+    pub shimmer: Option<Rational64>,
+    /// Scales high mode amplitudes (default: 0.9)
+    pub brightness: Option<Rational64>,
+    /// Attack transient amount (default: 0.25)
+    pub attack_amount: Option<Rational64>,
+    /// Pitch drop amount (default: 0.015)
     pub pitch_drop: Option<Rational64>,
-    /// Soft saturation amount (default: 0.1)
+    /// Soft saturation amount (default: 0.08)
     pub saturation: Option<Rational64>,
-    /// How much velocity affects spectrum (default: 0.3)
+    /// How much velocity affects spectrum (default: 0.4)
     pub velocity_tilt: Option<Rational64>,
+    /// Filter resonance Q (default: 0.5)
+    pub resonance: Option<Rational64>,
 }
 
 #[derive(Clone, Debug, PartialEq, Serialize, Deserialize, Hash, Ord, PartialOrd, Eq)]

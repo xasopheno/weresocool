@@ -650,11 +650,11 @@ fn format_op<'a>(arena: &'a Arena<'a>, ctx: &FormatContext, op: &Op) -> DocBuild
         Op::Saw => arena.text("Saw"),
         Op::Kick { params } => format_drum_op(arena, "Kick", params.as_ref().map(|p| {
             let mut v = vec![];
-            // Meta-parameters first
-            if let Some(ref val) = p.punch { v.push(("punch", val)); }
+            // Spectrum controls first
+            if let Some(ref val) = p.attack { v.push(("attack", val)); }
             if let Some(ref val) = p.body { v.push(("body", val)); }
-            if let Some(ref val) = p.air { v.push(("air", val)); }
-            if let Some(ref val) = p.dynamics { v.push(("dynamics", val)); }
+            if let Some(ref val) = p.tone { v.push(("tone", val)); }
+            if let Some(ref val) = p.length { v.push(("length", val)); }
             // Specific parameters
             if let Some(ref val) = p.pitch_decay { v.push(("pitch_decay", val)); }
             if let Some(ref val) = p.pitch_range { v.push(("pitch_range", val)); }
@@ -662,20 +662,22 @@ fn format_op<'a>(arena: &'a Arena<'a>, ctx: &FormatContext, op: &Op) -> DocBuild
             if let Some(ref val) = p.sub_amount { v.push(("sub_amount", val)); }
             if let Some(ref val) = p.click_amount { v.push(("click_amount", val)); }
             if let Some(ref val) = p.click_freq { v.push(("click_freq", val)); }
-            if let Some(ref val) = p.attack { v.push(("attack", val)); }
             if let Some(ref val) = p.harmonic_damping { v.push(("harmonic_damping", val)); }
             if let Some(ref val) = p.saturation { v.push(("saturation", val)); }
             if let Some(ref val) = p.velocity_tilt { v.push(("velocity_tilt", val)); }
             if let Some(ref val) = p.transient_curve { v.push(("transient_curve", val)); }
+            if let Some(ref val) = p.tune { v.push(("tune", val)); }
+            if let Some(ref val) = p.resonance { v.push(("resonance", val)); }
+            if let Some(ref val) = p.hump { v.push(("hump", val)); }
             v
         })),
         Op::Snare { params } => format_drum_op(arena, "Snare", params.as_ref().map(|p| {
             let mut v = vec![];
-            // Meta-parameters first
-            if let Some(ref val) = p.punch { v.push(("punch", val)); }
-            if let Some(ref val) = p.body { v.push(("body", val)); }
-            if let Some(ref val) = p.air { v.push(("air", val)); }
-            if let Some(ref val) = p.dynamics { v.push(("dynamics", val)); }
+            // Spectrum controls first
+            if let Some(ref val) = p.attack { v.push(("attack", val)); }
+            if let Some(ref val) = p.wires { v.push(("wires", val)); }
+            if let Some(ref val) = p.tone { v.push(("tone", val)); }
+            if let Some(ref val) = p.length { v.push(("length", val)); }
             // Specific parameters
             if let Some(ref val) = p.pitch_decay { v.push(("pitch_decay", val)); }
             if let Some(ref val) = p.pitch_range { v.push(("pitch_range", val)); }
@@ -686,31 +688,33 @@ fn format_op<'a>(arena: &'a Arena<'a>, ctx: &FormatContext, op: &Op) -> DocBuild
             if let Some(ref val) = p.wire_mix { v.push(("wire_mix", val)); }
             else if let Some(ref val) = p.noise_mix { v.push(("noise_mix", val)); }
             if let Some(ref val) = p.shell_tune { v.push(("shell_tune", val)); }
-            if let Some(ref val) = p.attack { v.push(("attack", val)); }
+            if let Some(ref val) = p.attack_amount { v.push(("attack_amount", val)); }
             if let Some(ref val) = p.shell_pitch_decay { v.push(("shell_pitch_decay", val)); }
             if let Some(ref val) = p.shell_pitch_range { v.push(("shell_pitch_range", val)); }
             if let Some(ref val) = p.head_damping_ratio { v.push(("head_damping_ratio", val)); }
             if let Some(ref val) = p.saturation { v.push(("saturation", val)); }
             if let Some(ref val) = p.velocity_tilt { v.push(("velocity_tilt", val)); }
+            if let Some(ref val) = p.resonance { v.push(("resonance", val)); }
+            if let Some(ref val) = p.crack { v.push(("crack", val)); }
             v
         })),
         Op::HiHat { open, params } => {
             let name = if *open { "OpenHat" } else { "HiHat" };
             format_drum_op(arena, name, params.as_ref().map(|p| {
                 let mut v = vec![];
-                // Meta-parameters first
-                if let Some(ref val) = p.punch { v.push(("punch", val)); }
-                if let Some(ref val) = p.body { v.push(("body", val)); }
-                if let Some(ref val) = p.air { v.push(("air", val)); }
-                if let Some(ref val) = p.dynamics { v.push(("dynamics", val)); }
+                // Spectrum controls first
+                if let Some(ref val) = p.attack { v.push(("attack", val)); }
+                if let Some(ref val) = p.metal { v.push(("metal", val)); }
+                if let Some(ref val) = p.length { v.push(("length", val)); }
                 // Specific parameters
-                if let Some(ref val) = p.decay { v.push(("decay", val)); }
+                if let Some(ref val) = p.decay_rate { v.push(("decay_rate", val)); }
                 if let Some(ref val) = p.shimmer { v.push(("shimmer", val)); }
                 if let Some(ref val) = p.brightness { v.push(("brightness", val)); }
-                if let Some(ref val) = p.attack { v.push(("attack", val)); }
+                if let Some(ref val) = p.attack_amount { v.push(("attack_amount", val)); }
                 if let Some(ref val) = p.pitch_drop { v.push(("pitch_drop", val)); }
                 if let Some(ref val) = p.saturation { v.push(("saturation", val)); }
                 if let Some(ref val) = p.velocity_tilt { v.push(("velocity_tilt", val)); }
+                if let Some(ref val) = p.resonance { v.push(("resonance", val)); }
                 v
             }))
         }

@@ -24,12 +24,12 @@ bright_hat = {
 }
 
 dark_hat = {
-    HiHat { brightness: 0.5, decay: 30 }
+    HiHat { brightness: 0.5, decay_rate: 30 }
     | Fm 8
 }
 
 custom_open_hat = {
-    OpenHat { brightness: 1.2, decay: 3, attack: 0.3 }
+    OpenHat { brightness: 1.2, decay_rate: 3, attack: 0.3 }
     | Fm 8
 }
 
