@@ -41,7 +41,11 @@ pub struct RenderOp {
     pub distortions: Vec<DistortionDef>,
     pub next_out: bool,
     pub follows: Vec<FollowNF>,
-    pub colors: Vec<String>,
+    /// Color hash IDs (kept as `Vec<u64>` to avoid ~4.3M stringification allocations
+    /// per render on a typical heavy composition). The conversion to `Vec<String>`
+    /// happens at the visualization boundary in `VisualizationAdapter`, where it's
+    /// memoized over the small set of distinct IDs.
+    pub colors: Vec<u64>,
     pub wgsl: Vec<u64>,
     pub midi: Vec<u8>,
     /// Scalar gain (pre-pan), derived from g * basis.g
@@ -224,9 +228,12 @@ impl Renderable<Vec<RenderOp>> for Vec<RenderOp> {
     fn render(&mut self, oscillator: &mut Oscillator, offset: Option<&Offset>) -> StereoWaveform {
         let mut result: StereoWaveform = StereoWaveform::new(0);
 
-        for op in self.iter() {
+        // `iter_mut` + direct call avoids a deep `RenderOp::clone()` per op per buffer.
+        // `render` only reads `self.follows` and forwards `&Op` into the oscillator, so the
+        // clone was never necessary — it existed to satisfy the `&mut self` receiver.
+        for op in self.iter_mut() {
             if op.samples > 0 {
-                let stereo_waveform = op.clone().render(oscillator, offset);
+                let stereo_waveform = op.render(oscillator, offset);
                 result.append(stereo_waveform);
             }
         }
@@ -422,7 +429,7 @@ fn pointop_to_renderop(
             .collect(),
         next_out,
         follows: point_op.follows.clone(),
-        colors: point_op.get_transformed_colors(color_map).iter().map(|c| c.to_string()).collect(),
+        colors: point_op.get_transformed_colors(color_map).into_owned(),
         wgsl: point_op.wgsl.clone(),
         midi: point_op.midi.clone(),
         gain_scalar: r_to_f64(point_op.g * basis.g).clamp(0.0, 2.0),
@@ -507,24 +514,15 @@ pub fn nf_to_vec_renderable(
     defs: &mut Defs,
     basis: &Basis,
 ) -> Result<Vec<Vec<RenderOp>>, Error> {
-    // No need to apply_to_normal_form - composition is already normalized.
-    // The old code did `NormalForm::init() *= composition` which just copies
-    // through expensive nested loops (O(n*m) for n voices, m ops).
-    // Clone is much faster.
-    #[cfg(not(target_arch = "wasm32"))]
-    let clone_start = std::time::Instant::now();
-    let normal_form = composition.clone();
-    #[cfg(not(target_arch = "wasm32"))]
-    timing_print!("[nf_to_vec_renderable] clone: {:?} ({} voices, {} total ops)",
-        clone_start.elapsed(),
-        normal_form.operations.len(),
-        normal_form.operations.iter().map(|v| v.len()).sum::<usize>());
-
+    // We have `composition: &NormalForm` already and only read `.operations` below,
+    // so cloning the whole NF was pure waste — a previous comment claimed clone was
+    // "much faster than the old approach", but the actual cheapest option is no clone
+    // at all. Saves ~110ms on drum_sounds.socool (634 voices, 714k ops).
     let settings = Settings::global();
 
     #[cfg(not(target_arch = "wasm32"))]
     let render_start = std::time::Instant::now();
-    let result: Vec<Vec<RenderOp>> = normal_form
+    let result: Vec<Vec<RenderOp>> = composition
         .operations
         .iter()
         .enumerate()
@@ -540,7 +538,10 @@ pub fn nf_to_vec_renderable(
         })
         .collect();
     #[cfg(not(target_arch = "wasm32"))]
-    timing_print!("[nf_to_vec_renderable] create_render_ops: {:?}", render_start.elapsed());
+    timing_print!("[nf_to_vec_renderable] create_render_ops: {:?} ({} voices, {} total ops)",
+        render_start.elapsed(),
+        composition.operations.len(),
+        composition.operations.iter().map(|v| v.len()).sum::<usize>());
 
     Ok(result)
 }

@@ -348,12 +348,19 @@ impl Normalize for Op {
                 let mut result = NormalForm::init_empty();
                 result.operations.reserve(operations.len() * input.operations.len());
                 let saved_rand_ctx = defs.rand_ctx;
+                let last_i = operations.len().saturating_sub(1);
                 for (i, op) in operations.iter().enumerate() {
                     // Each sequence item gets a unique rand_ctx based on its index
                     defs.rand_ctx = saved_rand_ctx.child_ord(i as u64);
-                    let mut input_clone = input.clone();
-                    op.apply_to_normal_form(&mut input_clone, defs)?;
-                    result = join_sequence(result, input_clone);
+                    // For the final iteration, move `input` instead of cloning —
+                    // we overwrite it with `result` immediately after the loop.
+                    let mut working = if i == last_i {
+                        std::mem::replace(input, NormalForm::init_empty())
+                    } else {
+                        input.clone()
+                    };
+                    op.apply_to_normal_form(&mut working, defs)?;
+                    result = join_sequence(result, working);
                 }
                 defs.rand_ctx = saved_rand_ctx;
 
@@ -664,21 +671,28 @@ impl Normalize for Op {
             }
 
             Op::Repeat { operations, count } => {
+                let count = *count as usize;
                 let mut result = NormalForm::init_empty();
-                result.operations.reserve((*count as usize) * input.operations.len());
+                result.operations.reserve(count * input.operations.len());
                 let saved_rand_ctx = defs.rand_ctx;
 
-                for _ in 0..*count {
+                let last_i = count.saturating_sub(1);
+                for i in 0..count {
                     // Bump epoch for each iteration so Choose gets fresh randomness
                     defs.rand_ctx = defs.rand_ctx.bump_epoch();
-                    let mut input_clone = input.clone();
+                    // For the final iteration, move `input` instead of cloning —
+                    // we overwrite it with `result` immediately after the loop.
+                    let mut working = if i == last_i {
+                        std::mem::replace(input, NormalForm::init_empty())
+                    } else {
+                        input.clone()
+                    };
 
-                    // Apply all operations in the repeat chain
                     for op in operations {
-                        op.apply_to_normal_form(&mut input_clone, defs)?;
+                        op.apply_to_normal_form(&mut working, defs)?;
                     }
 
-                    result = join_sequence(result, input_clone);
+                    result = join_sequence(result, working);
                 }
 
                 defs.rand_ctx = saved_rand_ctx;
@@ -691,17 +705,21 @@ impl Normalize for Op {
                 }
 
                 let saved_rand_ctx = defs.rand_ctx;
-                let normal_forms = operations
-                    .iter()
-                    .enumerate()
-                    .map(|(i, op)| {
-                        // Each overlay item gets a unique rand_ctx based on its index
-                        defs.rand_ctx = saved_rand_ctx.child_ord(i as u64);
-                        let mut input_clone = input.clone();
-                        op.apply_to_normal_form(&mut input_clone, defs)
-                            .map(|_| input_clone)
-                    })
-                    .collect::<Result<Vec<NormalForm>, Error>>()?;
+                let last_i = operations.len() - 1;
+                let mut normal_forms: Vec<NormalForm> = Vec::with_capacity(operations.len());
+                for (i, op) in operations.iter().enumerate() {
+                    // Each overlay item gets a unique rand_ctx based on its index
+                    defs.rand_ctx = saved_rand_ctx.child_ord(i as u64);
+                    // For the final iteration, move `input` instead of cloning —
+                    // `*input` is unconditionally overwritten at the end of this arm.
+                    let mut working = if i == last_i {
+                        std::mem::replace(input, NormalForm::init_empty())
+                    } else {
+                        input.clone()
+                    };
+                    op.apply_to_normal_form(&mut working, defs)?;
+                    normal_forms.push(working);
+                }
                 defs.rand_ctx = saved_rand_ctx;
 
                 let max_lr = normal_forms

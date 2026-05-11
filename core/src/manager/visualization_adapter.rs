@@ -4,10 +4,27 @@
 
 use crate::generation::{Normalizer, Op4D};
 use opmap::OpMap;
+use std::collections::HashMap;
 use weresocool_ast::OscType;
 use weresocool_instrument::renderable::RenderOp;
 
 pub struct VisualizationAdapter;
+
+/// Memoize `u64` color-hash IDs → their decimal string form. The set of distinct color
+/// IDs in a composition is tiny (~tens at most) while the number of `RenderOp`s that
+/// reference them is in the millions, so a small `HashMap` here turns 4M+ fresh
+/// `String` allocations into <100.
+#[derive(Default)]
+struct ColorStringCache(HashMap<u64, String>);
+
+impl ColorStringCache {
+    fn get(&mut self, id: u64) -> &str {
+        self.0.entry(id).or_insert_with(|| id.to_string())
+    }
+    fn convert(&mut self, ids: &[u64]) -> Vec<String> {
+        ids.iter().map(|id| self.get(*id).to_string()).collect()
+    }
+}
 
 impl VisualizationAdapter {
     /// Convert a batch of RenderOps to an OpMap for visualization
@@ -18,16 +35,32 @@ impl VisualizationAdapter {
         normalizer: &Normalizer,
     ) -> OpMap<Op4D> {
         let mut opmap: OpMap<Op4D> = OpMap::with_capacity(ops.len());
+        let mut color_cache = ColorStringCache::default();
 
         ops.iter().for_each(|v| {
-            let name = v.colors.last().map_or("nameless", |n| n);
-            let op = Self::render_op_to_normalized_op4d(v, normalizer);
+            let op = Self::render_op_to_normalized_op4d_with_cache(v, normalizer, &mut color_cache);
             if let Some(o) = op {
+                // Borrow the cached name *after* the conversion so the two `&mut` borrows
+                // of `color_cache` don't overlap.
+                let name: &str = match v.colors.last() {
+                    Some(id) => color_cache.get(*id),
+                    None => "nameless",
+                };
                 opmap.insert(name, o);
             }
         });
 
         opmap
+    }
+
+    fn render_op_to_normalized_op4d_with_cache(
+        render_op: &RenderOp,
+        normalizer: &Normalizer,
+        color_cache: &mut ColorStringCache,
+    ) -> Option<Op4D> {
+        let mut op4d = Self::render_op_to_normalized_op4d(render_op, normalizer)?;
+        op4d.colors = color_cache.convert(&render_op.colors);
+        Some(op4d)
     }
 
     /// Convert a single RenderOp to a normalized Op4D for visualization
@@ -62,7 +95,9 @@ impl VisualizationAdapter {
             voice: render_op.voice,
             event: render_op.event,
             names: render_op.names.to_vec(),
-            colors: render_op.colors.to_vec(),
+            // Colors filled in by the caller (typically via the cached path); empty here
+            // is fine because the single-op variant is rarely the visualization driver.
+            colors: render_op.colors.iter().map(|c| c.to_string()).collect(),
             wgsl: render_op.wgsl.clone(),
             color_gradient: render_op.color_gradient,
             color_mix: render_op.color_mix,
@@ -123,6 +158,10 @@ impl VisualizationAdapter {
         let mut current_time = render_op.t;
         let mut remaining = total_length;
 
+        // Convert color hash IDs to their decimal-string form once per RenderOp
+        // rather than once per output slice (a single op can produce dozens of slices).
+        let colors_strings: Vec<String> = render_op.colors.iter().map(|c| c.to_string()).collect();
+
         while remaining > 0.0 {
             // Take either a full frame_length or whatever leftover remains
             let slice_len = if remaining >= frame_length {
@@ -141,7 +180,7 @@ impl VisualizationAdapter {
                 voice: render_op.voice,
                 event: render_op.event,
                 names: render_op.names.clone(),
-                colors: render_op.colors.clone(),
+                colors: colors_strings.clone(),
                 wgsl: render_op.wgsl.clone(),
                 color_gradient: render_op.color_gradient,
                 color_mix: render_op.color_mix,

@@ -107,8 +107,16 @@ impl RenderVoice {
 }
 
 pub fn renderables_to_render_voices(renderables: Vec<Vec<RenderOp>>) -> Vec<RenderVoice> {
+    // `into_iter` so each voice's `Vec<RenderOp>` moves into the resulting
+    // `RenderVoice` instead of being cloned. The previous `.iter()` + `RenderVoice::init`
+    // path deep-cloned every `RenderOp` (~178 MB on drum_sounds.socool).
     renderables
-        .iter()
-        .map(|voice| RenderVoice::init(voice))
-        .collect::<Vec<RenderVoice>>()
+        .into_iter()
+        .map(|ops| RenderVoice {
+            sample_index: 0,
+            op_index: 0,
+            ops,
+            oscillator: Oscillator::init(),
+        })
+        .collect()
 }

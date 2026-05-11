@@ -164,8 +164,17 @@ pub fn parsed_to_render(
             }))
         }
         RenderType::AudioVisual => {
-            let stereo_waveform = render(&basis, &nf, &mut parsed_composition.defs)?;
-            let (visual, length) = make_visuals(&basis, &nf, &mut parsed_composition)?;
+            // Build renderables once and share between audio and visual generation.
+            // Previously `render()` and `make_visuals()` each called `nf_to_vec_renderable`
+            // independently — doubling that ~350ms cost on drum_sounds.socool.
+            let renderables = nf_to_vec_renderable(&nf, &mut parsed_composition.defs, &basis)?;
+
+            // Visualization reads renderables by reference, so it must run BEFORE we
+            // move them into the audio voices.
+            let (visual, length) = make_visuals_from_renderables(&renderables);
+
+            let voices = renderables_to_render_voices(renderables);
+            let stereo_waveform = render_from_voices(voices);
             let audio = write_composition_to_wav(stereo_waveform)?;
             Ok(RenderReturn::AudioVisual(AudioVisual {
                 name: filename.to_string(),
@@ -329,8 +338,15 @@ pub fn render(
     defs: &mut Defs,
 ) -> Result<StereoWaveform, Error> {
     let renderables = nf_to_vec_renderable(composition, defs, basis)?;
-    let mut voices = renderables_to_render_voices(renderables);
+    let voices = renderables_to_render_voices(renderables);
+    Ok(render_from_voices(voices))
+}
 
+/// Drive a set of pre-built render voices through the buffer loop.
+/// Factored out of `render` so callers that already have voices in hand
+/// (e.g. the AudioVisual path, which shares renderables with visualization)
+/// can avoid rebuilding them.
+pub fn render_from_voices(mut voices: Vec<weresocool_instrument::renderable::RenderVoice>) -> StereoWaveform {
     let buffer_size = Settings::global().buffer_size;
 
     let mut result = StereoWaveform::new(0);
@@ -351,7 +367,7 @@ pub fn render(
         }
     }
 
-    Ok(result)
+    result
 }
 
 #[cfg(feature = "app")]
@@ -430,15 +446,19 @@ fn make_visuals(
     nf: &NormalForm,
     parsed_composition: &mut ParsedComposition,
 ) -> Result<(Vec<Op4D>, f64), Error> {
+    let renderables = nf_to_vec_renderable(nf, &mut parsed_composition.defs, basis)?;
+    Ok(make_visuals_from_renderables(&renderables))
+}
+
+/// Same as `make_visuals` but consumes already-built renderables. The AudioVisual path
+/// uses this so it only calls `nf_to_vec_renderable` once instead of twice.
+pub fn make_visuals_from_renderables(renderables: &[Vec<RenderOp>]) -> (Vec<Op4D>, f64) {
     let normalizer = Normalizer::default();
 
-    let renderables = nf_to_vec_renderable(nf, &mut parsed_composition.defs, basis)?;
-    let render_voices = renderables_to_render_voices(renderables);
-
-    let mut visual: Vec<Op4D> = render_voices
+    let mut visual: Vec<Op4D> = renderables
         .iter()
-        .flat_map(|render_voice| &render_voice.ops)
-        .flat_map(|op| render_op_to_normalized_op4d_list(op, &normalizer, 1.0/30.0))
+        .flat_map(|voice| voice.iter())
+        .flat_map(|op| render_op_to_normalized_op4d_list(op, &normalizer, 1.0 / 30.0))
         .collect();
 
     let length = get_length_op4d_1d(&visual);
@@ -446,7 +466,7 @@ fn make_visuals(
     // Handle NaN values gracefully - treat them as equal for sorting
     visual.sort_by(|a, b| a.t.partial_cmp(&b.t).unwrap_or(std::cmp::Ordering::Equal));
 
-    Ok((visual, length))
+    (visual, length)
 }
 
 /// Sum a vec of StereoWaveform to a single stereo_waveform.

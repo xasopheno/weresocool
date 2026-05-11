@@ -638,15 +638,18 @@ impl PointOp {
     /// Get transformed color IDs by applying color grading to each color
     /// and inserting the result back into the ColorMap.
     /// This ensures same color + same grading = same ID (deduplication).
-    pub fn get_transformed_colors(&self, color_map: &mut ColorMap) -> Vec<u64> {
+    ///
+    /// Returns `Cow::Borrowed(&self.colors)` when color grading is identity (the
+    /// overwhelmingly common case — including any composition that doesn't use
+    /// `ColorGrading`), so we avoid a fresh `Vec<u64>` allocation per PointOp.
+    pub fn get_transformed_colors<'a>(&'a self, color_map: &mut ColorMap) -> std::borrow::Cow<'a, [u64]> {
         use crate::color::{apply_color_grading, ColorValue};
 
-        // Check if color grading is at default (identity) - if so, skip transformation
         if self.color_grading.is_identity() {
-            return self.colors.clone();
+            return std::borrow::Cow::Borrowed(&self.colors);
         }
 
-        self.colors
+        let transformed: Vec<u64> = self.colors
             .iter()
             .map(|color_id| {
                 // Look up the original color
@@ -675,7 +678,8 @@ impl PointOp {
                     *color_id
                 }
             })
-            .collect()
+            .collect();
+        std::borrow::Cow::Owned(transformed)
     }
 
     //        pub fn to_op(&self) -> Op {

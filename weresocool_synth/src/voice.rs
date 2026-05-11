@@ -201,7 +201,7 @@ impl Voice {
             if has_old_osc {
                 if let Some(old_osc_type) = &self.old_osc_type {
                     self.old_phase = Voice::calculate_current_phase(&info, old_osc_type, self.phase);
-                    let old_sample = old_osc_type.clone().generate_sample(info, self.old_phase);
+                    let old_sample = old_osc_type.generate_sample(info, self.old_phase);
                     new_sample = if sound_to_silence {
                         old_sample
                     } else {
