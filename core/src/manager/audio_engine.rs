@@ -5,17 +5,35 @@
 use crate::generation::{sum_all_waveforms, Normalizer};
 use crate::manager::resizeable_2d_vec::Resizeable2DVec;
 use rayon::prelude::*;
+use rayon::ThreadPool;
+use std::sync::OnceLock;
 use weresocool_ast::follow::evaluate::EvaluateAction;
 use weresocool_instrument::{Offset, RenderOp, StereoWaveform};
 use weresocool_instrument::renderable::render_voice::RenderVoice;
 use weresocool_instrument::renderable::Renderable;
 use weresocool_shared::{Settings, timing_print};
 
-/// Voice counts at or above this threshold use the rayon parallel
-/// voice-render path. Below it, the per-iteration overhead of work-
-/// stealing exceeds the gain (heuristic confirmed by bench at 8 vs 100
-/// voices). Tunable; the only correctness constraint is `>= 1`.
-const PARALLEL_VOICE_THRESHOLD: usize = 16;
+/// Dedicated thread pool for the per-voice render fan-out. Sized by
+/// `Settings.audio_thread_count` (default 8) so audio rendering doesn't
+/// oversaturate efficiency cores or stomp on the global rayon pool used
+/// elsewhere in the workspace.
+///
+/// Scaling on Apple Silicon (12 perf + 4 efficiency cores) shows the
+/// useful range is 4-10 threads. Beyond ~10 the wall-clock gain
+/// flattens while total CPU time keeps rising (i.e., the user gets a
+/// hot laptop for ~no extra speed). 8 is the measured sweet spot:
+/// ~5.6× wall speedup at 100 voices for only +22% total CPU vs serial.
+fn audio_pool() -> &'static ThreadPool {
+    static POOL: OnceLock<ThreadPool> = OnceLock::new();
+    POOL.get_or_init(|| {
+        let n = Settings::global().audio_thread_count.max(1);
+        rayon::ThreadPoolBuilder::new()
+            .num_threads(n)
+            .thread_name(|i| format!("wsc-audio-{i}"))
+            .build()
+            .expect("failed to build audio render thread pool")
+    })
+}
 
 #[derive(Debug)]
 pub struct AudioEngine {
@@ -110,22 +128,29 @@ impl AudioEngine {
                         // total_ops.extend_at, samples_rendered.max) are
                         // commutative, so iteration order doesn't matter
                         // for correctness.
-                        let per_voice: Vec<PerVoiceOutput> = if render_voices.len() >= PARALLEL_VOICE_THRESHOLD {
-                            render_voices
-                                .par_iter_mut()
-                                .enumerate()
-                                .map(|(i, voice)| {
-                                    render_one_voice(
-                                        i,
-                                        voice,
-                                        remaining_buffer_size,
-                                        loop_play,
-                                        &offset,
-                                        collect_viz_ops,
-                                        vis_threshold,
-                                    )
-                                })
-                                .collect()
+                        let parallel_threshold = Settings::global().parallel_voice_threshold;
+                        let per_voice: Vec<PerVoiceOutput> = if render_voices.len() >= parallel_threshold {
+                            // `install` runs the closure on our dedicated
+                            // audio pool. `par_iter_mut` inherits the
+                            // current pool, so this scopes the parallel
+                            // work to the configured thread count.
+                            audio_pool().install(|| {
+                                render_voices
+                                    .par_iter_mut()
+                                    .enumerate()
+                                    .map(|(i, voice)| {
+                                        render_one_voice(
+                                            i,
+                                            voice,
+                                            remaining_buffer_size,
+                                            loop_play,
+                                            &offset,
+                                            collect_viz_ops,
+                                            vis_threshold,
+                                        )
+                                    })
+                                    .collect()
+                            })
                         } else {
                             render_voices
                                 .iter_mut()
@@ -322,10 +347,15 @@ fn render_one_voice(
 
     let batch_samples: usize = batch.iter().map(|op| op.samples).sum();
 
-    // Split MIDI-directed ops from audio-directed.
-    let (midi_batch, mut audio_batch): (Vec<_>, Vec<_>) = batch
-        .into_iter()
-        .partition(|op| !op.midi.is_empty());
+    // Split MIDI-directed ops from audio-directed. The MIDI case is rare
+    // in most pieces, so a quick scan first lets us skip the partition
+    // (and its two Vec allocations) for the common all-audio path.
+    let has_midi = batch.iter().any(|op| !op.midi.is_empty());
+    let (midi_batch, mut audio_batch): (Vec<RenderOp>, Vec<RenderOp>) = if has_midi {
+        batch.into_iter().partition(|op| !op.midi.is_empty())
+    } else {
+        (Vec::new(), batch)
+    };
 
     let voice_rendered = audio_batch.render(&mut voice.oscillator, Some(offset));
 

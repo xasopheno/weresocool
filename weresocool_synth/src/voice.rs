@@ -138,6 +138,7 @@ impl Voice {
         // let apply_reverb = self.reverb.state.map_or(false, |s| s > 0.0);
 
         let sound_to_silence = self.sound_to_silence();
+        let silence_to_sound = self.silence_to_sound();
 
         // Exponential smoothing coefficient for click-free gain transitions
         // ~500 samples (~11ms at 44.1kHz) to reach 63% of target
@@ -146,14 +147,40 @@ impl Voice {
         // Cache sample_rate once per op to avoid per-sample Settings lookup
         let sample_rate = Settings::global().sample_rate;
 
+        // Hoist loop-invariant op + voice state out of the per-sample loop.
+        // All of these are constant within a single buffer render: op
+        // metadata doesn't change, and the Option<...> variants on filter/
+        // osc state are mutated in `update*` methods, not inside this loop.
+        let portamento_length = op.portamento();
+        let duration_samples = op.duration_samples();
+        let last_sample_index = duration_samples.saturating_sub(1);
+        let total_samples_for_info = op.total_samples();
+        let op_sample_index = op.sample_index();
+        let f_past = self.offset_past.frequency;
+        // `f_target` is only mutated on the loop's final iteration via the
+        // index == last_sample_index branch — we replicate that update
+        // after the loop so the per-sample read is just a local.
+        let f_target = self.offset_current.frequency;
+        let distortions_slice: &[crate::DistortionDef] = op.distortions();
+        let has_distortions = !distortions_slice.is_empty();
+        let has_filters = self.filters.is_some();
+        let has_old_filters = self.old_filters.is_some();
+        let has_old_osc = self.old_osc_type.is_some();
+        let filter_branch_active = has_filters || has_old_filters;
+        let mut last_gain_at_end = 0.0_f64;
+        let mut last_freq_at_end = f_target;
+
         for (index, sample) in buffer.iter_mut().enumerate() {
-            let frequency = self.calculate_frequency(
-                index,
-                op.portamento(),
-                p_delta,
-                self.offset_past.frequency,
-                self.offset_current.frequency,
-            );
+            // Inlined `calculate_frequency` so the per-sample call doesn't
+            // re-read `self.sound_to_silence()` / `self.silence_to_sound()`
+            // each iteration (those bools are loop-invariant).
+            let frequency = if sound_to_silence {
+                f_past
+            } else if index < portamento_length && !silence_to_sound {
+                (index as f64).mul_add(p_delta, f_past)
+            } else {
+                f_target
+            };
 
             // Exponential smoothing - continuously approach target gain
             self.smoothed_gain += GAIN_SMOOTHING_COEF * (gain_factor - self.smoothed_gain);
@@ -162,8 +189,8 @@ impl Voice {
             let info = SampleInfo {
                 frequency,
                 gain,
-                sample_index: op.sample_index() + index,
-                total_samples: op.total_samples(),
+                sample_index: op_sample_index + index,
+                total_samples: total_samples_for_info,
                 sample_rate,
             };
 
@@ -171,39 +198,40 @@ impl Voice {
 
             let mut new_sample = self.osc_type.generate_sample(info, self.phase);
 
-            if let Some(old_osc_type) = &self.old_osc_type {
-                self.old_phase = Voice::calculate_current_phase(&info, old_osc_type, self.phase);
-                let old_sample = old_osc_type.clone().generate_sample(info, self.old_phase);
-                new_sample = if sound_to_silence {
-                    old_sample
-                } else {
-                    Voice::process_crossfade(
-                        &mut self.osc_crossfade_index,
-                        &mut self.old_osc_type,
-                        new_sample,
-                        old_sample,
-                    )
-                };
+            if has_old_osc {
+                if let Some(old_osc_type) = &self.old_osc_type {
+                    self.old_phase = Voice::calculate_current_phase(&info, old_osc_type, self.phase);
+                    let old_sample = old_osc_type.clone().generate_sample(info, self.old_phase);
+                    new_sample = if sound_to_silence {
+                        old_sample
+                    } else {
+                        Voice::process_crossfade(
+                            &mut self.osc_crossfade_index,
+                            &mut self.old_osc_type,
+                            new_sample,
+                            old_sample,
+                        )
+                    };
+                }
             }
 
-            if index == op.duration_samples() - 1 {
-                self.offset_current.frequency = frequency;
-                self.offset_current.gain = gain;
-            };
+            if index == last_sample_index {
+                last_freq_at_end = frequency;
+                last_gain_at_end = gain;
+            }
 
             // Apply distortion effects (after oscillator, before filters)
             // Distortion is stateless - no Voice state needed
-            let distortions = op.distortions();
-            if !distortions.is_empty() {
-                new_sample = crate::distortion::process_distortions(new_sample, distortions);
+            if has_distortions {
+                new_sample = crate::distortion::process_distortions(new_sample, distortions_slice);
             }
 
-            if sound_to_silence && self.old_filters.is_some() {
+            if sound_to_silence && has_old_filters {
                 new_sample = Voice::process_filter(&mut self.old_filters, new_sample);
-            } else if self.filters.is_some() || self.old_filters.is_some() {
+            } else if filter_branch_active {
                 let new_filtered_sample = Voice::process_filter(&mut self.filters, new_sample);
 
-                if self.old_filters.is_some() {
+                if has_old_filters {
                     let old_filtered_sample = Voice::process_filter(&mut self.old_filters, new_sample);
 
                     new_sample = Voice::process_crossfade(
@@ -226,6 +254,16 @@ impl Voice {
             // }
 
             *sample += new_sample;
+        }
+
+        // Apply the final-iteration update that originally happened inside
+        // the per-sample `if index == op.duration_samples() - 1` branch.
+        // Only set if the buffer had at least one sample iterated (i.e.
+        // `last_sample_index < duration_samples`), matching the original
+        // semantics where the branch could only fire when the loop ran.
+        if duration_samples > 0 && buffer.len() > last_sample_index {
+            self.offset_current.frequency = last_freq_at_end;
+            self.offset_current.gain = last_gain_at_end;
         }
 
         buffer

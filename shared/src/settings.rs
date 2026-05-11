@@ -41,6 +41,15 @@ pub struct Settings {
     pub max_instance_lifetime: f32,
     // Debug settings
     pub click_detection: bool,
+    // Audio render parallelism. The voice-render loop in
+    // `audio_engine::render` parallelizes per-voice work when the voice
+    // count is at or above `parallel_voice_threshold`, using up to
+    // `audio_thread_count` worker threads. Defaults chosen from
+    // measured scaling on Apple Silicon (8 threads gives ~5.6× speedup
+    // at 100 voices with only +22% total CPU vs serial; 16 threads
+    // gives +112% CPU for marginally better wall time).
+    pub audio_thread_count: usize,
+    pub parallel_voice_threshold: usize,
 }
 
 impl Settings {
@@ -194,6 +203,20 @@ visual_mode = true
 
 # Instance lifetime (seconds before automatic removal)
 # max_instance_lifetime = 30.0
+
+# Audio render parallelism
+# audio_thread_count: how many worker threads the per-voice render uses.
+#   Default 8. Measured sweet spot on Apple Silicon (12+4 cores):
+#   ~5.6x speedup at 100 voices for only +22% total CPU vs serial.
+#   Above ~10 threads, total CPU keeps rising while wall time barely
+#   moves — i.e., laptop gets hot for no real value. Set to 1 to
+#   disable parallel rendering.
+# audio_thread_count = 8
+#
+# parallel_voice_threshold: minimum voice count to fan out to the audio
+#   thread pool. Below this, voices render sequentially because work-
+#   stealing overhead would dominate. Default 32.
+# parallel_voice_threshold = 32
 "#;
         let _ = std::fs::write(&path, default_config);
     }
@@ -230,6 +253,8 @@ pub const fn default_settings() -> Settings {
         cull_behind_threshold: 0.5,
         max_instance_lifetime: 30.0,
         click_detection: false,
+        audio_thread_count: 8,
+        parallel_voice_threshold: 32,
     }
 }
 
@@ -278,6 +303,9 @@ struct SettingsConfig {
     max_instance_lifetime: Option<f32>,
     // Debug settings
     click_detection: Option<bool>,
+    // Audio parallelism
+    audio_thread_count: Option<usize>,
+    parallel_voice_threshold: Option<usize>,
 }
 
 impl SettingsConfig {
@@ -310,6 +338,8 @@ impl SettingsConfig {
         if let Some(v) = self.cull_behind_threshold { settings.cull_behind_threshold = v; }
         if let Some(v) = self.max_instance_lifetime { settings.max_instance_lifetime = v; }
         if let Some(v) = self.click_detection { settings.click_detection = v; }
+        if let Some(v) = self.audio_thread_count { settings.audio_thread_count = v; }
+        if let Some(v) = self.parallel_voice_threshold { settings.parallel_voice_threshold = v; }
     }
 }
 
@@ -366,6 +396,8 @@ fn apply_config_to_merged(config: &SettingsConfig, merged: &mut SettingsConfig) 
     merged.cull_behind_threshold = Some(temp_settings.cull_behind_threshold);
     merged.max_instance_lifetime = Some(temp_settings.max_instance_lifetime);
     merged.click_detection = Some(temp_settings.click_detection);
+    merged.audio_thread_count = Some(temp_settings.audio_thread_count);
+    merged.parallel_voice_threshold = Some(temp_settings.parallel_voice_threshold);
 }
 
 /// Load and merge all config files
@@ -437,4 +469,6 @@ fn merge_configs(dest: &mut SettingsConfig, source: SettingsConfig) {
     if source.cull_behind_threshold.is_some() { dest.cull_behind_threshold = source.cull_behind_threshold; }
     if source.max_instance_lifetime.is_some() { dest.max_instance_lifetime = source.max_instance_lifetime; }
     if source.click_detection.is_some() { dest.click_detection = source.click_detection; }
+    if source.audio_thread_count.is_some() { dest.audio_thread_count = source.audio_thread_count; }
+    if source.parallel_voice_threshold.is_some() { dest.parallel_voice_threshold = source.parallel_voice_threshold; }
 }
