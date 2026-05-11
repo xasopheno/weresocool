@@ -1,5 +1,25 @@
 pub mod fourier;
 
+use ebur128::{EbuR128, Mode};
+
+/// Measure integrated loudness in LUFS (Loudness Units Full Scale)
+/// Uses EBU R128 standard with K-weighting for perceptual loudness measurement.
+pub fn measure_lufs(l: &[f64], r: &[f64], sample_rate: u32) -> f64 {
+    let mut ebu = EbuR128::new(2, sample_rate, Mode::I).expect("Failed to create EbuR128");
+
+    // Interleave stereo samples
+    let interleaved: Vec<f64> = l
+        .iter()
+        .zip(r.iter())
+        .flat_map(|(&left, &right)| [left, right])
+        .collect();
+
+    ebu.add_frames_f64(&interleaved)
+        .expect("Failed to add frames");
+
+    ebu.loudness_global().unwrap_or(f64::NEG_INFINITY)
+}
+
 pub trait Analyze {
     fn yin_pitch_detection(&mut self, sample_rate: f32, threshold: f32) -> (f32, f32);
     fn get_better_tau(&self, tau: usize, sample_rate: f32) -> f32;

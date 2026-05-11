@@ -1,0 +1,50 @@
+{ f: 80, l: 1/4, g: 1, p: 0 }
+
+-- Kit: TR-808 Style
+-- Deep sub kick, longer snare decay, softer hats
+-- Boomy, hip-hop feel
+
+bd = {
+    Kick {
+        pitch_decay: 0.04,
+        pitch_range: 3.5,
+        amp_decay: 0.25,
+        click_amount: 0.2,
+        sub_amount: 0.4,
+        harmonic_damping: 1.2,
+        saturation: 0.3,
+        velocity_tilt: 0.8,
+        transient_curve: 1.2
+    }
+    | Gm 0.5
+}
+
+sn = {
+    Snare {
+        shell_decay: 0.12,
+        wire_decay: 0.08,
+        wire_mix: 0.4,
+        shell_pitch_decay: 30,
+        shell_pitch_range: 0.4,
+        crack: 0.6,
+        attack_amount: 0.4,
+        saturation: 0.2,
+        velocity_tilt: 0.7
+    }
+    | Fm 1.8
+    | Gm 0.55
+}
+
+hh = {
+    HiHat {
+        decay_rate: 45,
+        shimmer: 10,
+        brightness: 0.5,
+        pitch_drop: 0.008,
+        saturation: 0.02,
+        velocity_tilt: 0.6
+    }
+    | Gm 0.18
+}
+
+main = { Silence 1 }

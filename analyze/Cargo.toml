@@ -11,3 +11,4 @@ resolver="2"
 
 [dependencies]
 weresocool_shared = { path = "../shared", version = "^2.0.0" }
+ebur128 = "0.1"

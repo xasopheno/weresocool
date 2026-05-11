@@ -68,9 +68,11 @@ fn process_op_table(mut defs: &mut Defs) -> Result<Defs, Error> {
     let mut result: Defs = Defs::default();
     result.colors = defs.colors.clone();
 
+    #[cfg(not(target_arch = "wasm32"))]
     let total_start = std::time::Instant::now();
     let mut op_count = 0;
     let mut nf_count = 0;
+    #[cfg(not(target_arch = "wasm32"))]
     let mut slowest_op: Option<(String, std::time::Duration)> = None;
 
     // Collect all (scope_name, name, term) tuples first to avoid borrow issues
@@ -84,6 +86,7 @@ fn process_op_table(mut defs: &mut Defs) -> Result<Defs, Error> {
         .collect();
 
     for (scope_name, name, term) in entries {
+        #[cfg(not(target_arch = "wasm32"))]
         let op_start = std::time::Instant::now();
         match term {
             Term::Nf(nf) => {
@@ -93,12 +96,15 @@ fn process_op_table(mut defs: &mut Defs) -> Result<Defs, Error> {
             Term::Op(op) => {
                 let mut nf = NormalForm::init();
                 op.apply_to_normal_form(&mut nf, &mut defs)?;
-                let elapsed = op_start.elapsed();
-                if elapsed > std::time::Duration::from_millis(100) {
-                    timing_print!("[process_op_table] Op '{}' took {:?}", name, elapsed);
-                }
-                if slowest_op.as_ref().map_or(true, |(_, d)| elapsed > *d) {
-                    slowest_op = Some((name.clone(), elapsed));
+                #[cfg(not(target_arch = "wasm32"))]
+                {
+                    let elapsed = op_start.elapsed();
+                    if elapsed > std::time::Duration::from_millis(100) {
+                        timing_print!("[process_op_table] Op '{}' took {:?}", name, elapsed);
+                    }
+                    if slowest_op.as_ref().map_or(true, |(_, d)| elapsed > *d) {
+                        slowest_op = Some((name.clone(), elapsed));
+                    }
                 }
                 // MEMOIZATION: Update defs so subsequent lookups get the normalized form
                 defs.ops.insert(&scope_name, &name, Term::Nf(nf.clone()));
@@ -125,9 +131,16 @@ fn process_op_table(mut defs: &mut Defs) -> Result<Defs, Error> {
         };
     }
 
-    timing_print!("[process_op_table] Total: {:?} ({} ops, {} pre-normalized)", total_start.elapsed(), op_count, nf_count);
-    if let Some((name, duration)) = slowest_op {
-        timing_print!("[process_op_table] Slowest op: '{}' took {:?}", name, duration);
+    #[cfg(not(target_arch = "wasm32"))]
+    {
+        timing_print!("[process_op_table] Total: {:?} ({} ops, {} pre-normalized)", total_start.elapsed(), op_count, nf_count);
+        if let Some((name, duration)) = slowest_op {
+            timing_print!("[process_op_table] Slowest op: '{}' took {:?}", name, duration);
+        }
+    }
+    #[cfg(target_arch = "wasm32")]
+    {
+        let _ = (op_count, nf_count);
     }
 
     result.ops.stems = defs.ops.stems.to_owned();
@@ -307,6 +320,8 @@ pub struct FormatParseResult {
     pub source: String,
     /// Processed source (WGSL replaced with @WGSL@N tokens) - spans match this
     pub processed_source: Option<String>,
+    /// Import statements from the source file
+    pub imports: Vec<String>,
 }
 
 /// Parse source code to raw AST without evaluating to NormalForm.
@@ -365,6 +380,8 @@ fn parse_for_format_inner(
                 source: composition,
                 // Also return processed source for span-accurate lookups
                 processed_source: Some(processed_composition),
+                // Preserve import statements for formatting
+                imports: imports_needed,
             })
         }
         Err(error) => {
@@ -438,15 +455,19 @@ pub fn parse_file(
         Default::default()
     };
 
+    #[cfg(not(target_arch = "wasm32"))]
     let ws_start = std::time::Instant::now();
     let (imports_needed, composition) = handle_whitespace_and_imports(vec_string)?;
+    #[cfg(not(target_arch = "wasm32"))]
     timing_print!("[parse_file] handle_whitespace_and_imports: {:?}", ws_start.elapsed());
 
     // Process WGSL blocks - extract them and replace with IDs
     // This validates each WGSL block and fails fast on the first error
     // quiet=false to show errors during actual parsing
+    #[cfg(not(target_arch = "wasm32"))]
     let wgsl_start = std::time::Instant::now();
     let (processed_composition, source_map) = process_wgsl_blocks(&composition, &mut defs, false, false)?;
+    #[cfg(not(target_arch = "wasm32"))]
     timing_print!("[parse_file] process_wgsl_blocks: {:?}", wgsl_start.elapsed());
 
     for import in imports_needed {
@@ -483,14 +504,18 @@ pub fn parse_file(
         }
     }
 
+    #[cfg(not(target_arch = "wasm32"))]
     let parse_start = std::time::Instant::now();
     let init = socool::SoCoolParser::new().parse(&mut defs, &processed_composition);
+    #[cfg(not(target_arch = "wasm32"))]
     timing_print!("[parse_file] SoCoolParser::parse: {:?}", parse_start.elapsed());
 
     match init {
         Ok(init) => {
+            #[cfg(not(target_arch = "wasm32"))]
             let op_table_start = std::time::Instant::now();
             let mut result_defs = process_op_table(&mut defs)?;
+            #[cfg(not(target_arch = "wasm32"))]
             timing_print!("[parse_file] process_op_table: {:?}", op_table_start.elapsed());
 
             // Ensure WGSL blocks and colors are preserved in the final result

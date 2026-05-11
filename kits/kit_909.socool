@@ -1,0 +1,50 @@
+{ f: 80, l: 1/4, g: 1, p: 0 }
+
+-- Kit: TR-909 Style
+-- Punchy kick, cracking snare, bright hats
+-- Tight, electronic feel
+
+bd = {
+    Kick {
+        pitch_decay: 0.02,
+        pitch_range: 2.0,
+        amp_decay: 0.12,
+        click_amount: 0.5,
+        sub_amount: 0.1,
+        harmonic_damping: 2.0,
+        saturation: 0.5,
+        velocity_tilt: 0.6,
+        transient_curve: 1.8
+    }
+    | Gm 0.45
+}
+
+sn = {
+    Snare {
+        shell_decay: 0.06,
+        wire_decay: 0.04,
+        wire_mix: 0.45,
+        shell_pitch_decay: 50,
+        shell_pitch_range: 0.25,
+        crack: 0.5,
+        attack_amount: 0.4,
+        saturation: 0.15,
+        velocity_tilt: 0.6
+    }
+    | Fm 2
+    | Gm 0.5
+}
+
+hh = {
+    HiHat {
+        decay_rate: 35,
+        shimmer: 14,
+        brightness: 0.6,
+        pitch_drop: 0.015,
+        saturation: 0.03,
+        velocity_tilt: 0.5
+    }
+    | Gm 0.2
+}
+
+main = { Silence 1 }

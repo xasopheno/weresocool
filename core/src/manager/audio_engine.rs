@@ -4,11 +4,18 @@
 
 use crate::generation::{sum_all_waveforms, Normalizer};
 use crate::manager::resizeable_2d_vec::Resizeable2DVec;
+use rayon::prelude::*;
 use weresocool_ast::follow::evaluate::EvaluateAction;
 use weresocool_instrument::{Offset, RenderOp, StereoWaveform};
 use weresocool_instrument::renderable::render_voice::RenderVoice;
 use weresocool_instrument::renderable::Renderable;
 use weresocool_shared::{Settings, timing_print};
+
+/// Voice counts at or above this threshold use the rayon parallel
+/// voice-render path. Below it, the per-iteration overhead of work-
+/// stealing exceeds the gain (heuristic confirmed by bench at 8 vs 100
+/// voices). Tunable; the only correctness constraint is `>= 1`.
+const PARALLEL_VOICE_THRESHOLD: usize = 16;
 
 #[derive(Debug)]
 pub struct AudioEngine {
@@ -83,58 +90,78 @@ impl AudioEngine {
                         let mut rendered_per_voice: Vec<StereoWaveform> = Vec::with_capacity(render_voices.len());
                         let loop_play = !next_exists && Settings::global().loop_play;
                         let mut samples_rendered = 0usize;
+                        // Read once outside the (possibly parallel) inner closure.
+                        let vis_threshold = if collect_viz_ops {
+                            (Settings::global().vis_filter_rate * 1_000_000.0) as usize
+                        } else {
+                            0
+                        };
 
-                        for (i, voice) in render_voices.iter_mut().enumerate() {
-                            match voice.get_batch(
-                                remaining_buffer_size,
-                                None,
-                                loop_play,
-                            ) {
-                                Some(batch) => {
-                                    any_data_rendered = true;
-                                    let batch_samples: usize = batch.iter().map(|op| op.samples).sum();
-                                    samples_rendered = samples_rendered.max(batch_samples);
+                        // Render each voice. Voices own independent state
+                        // (oscillator, sample_index, op_index) and the
+                        // per-voice work — get_batch + audio_batch.render —
+                        // doesn't touch any shared state, so we can run it
+                        // across the rayon pool when the voice count is
+                        // large enough to amortize work-stealing overhead.
+                        //
+                        // All collected outputs are merged serially after
+                        // the parallel section. Merge operations
+                        // (midi_ops.extend, rendered_per_voice.push,
+                        // total_ops.extend_at, samples_rendered.max) are
+                        // commutative, so iteration order doesn't matter
+                        // for correctness.
+                        let per_voice: Vec<PerVoiceOutput> = if render_voices.len() >= PARALLEL_VOICE_THRESHOLD {
+                            render_voices
+                                .par_iter_mut()
+                                .enumerate()
+                                .map(|(i, voice)| {
+                                    render_one_voice(
+                                        i,
+                                        voice,
+                                        remaining_buffer_size,
+                                        loop_play,
+                                        &offset,
+                                        collect_viz_ops,
+                                        vis_threshold,
+                                    )
+                                })
+                                .collect()
+                        } else {
+                            render_voices
+                                .iter_mut()
+                                .enumerate()
+                                .map(|(i, voice)| {
+                                    render_one_voice(
+                                        i,
+                                        voice,
+                                        remaining_buffer_size,
+                                        loop_play,
+                                        &offset,
+                                        collect_viz_ops,
+                                        vis_threshold,
+                                    )
+                                })
+                                .collect()
+                        };
 
-                                    // Split MIDI-directed ops from audio-directed
-                                    let (midi_batch, mut audio_batch): (Vec<_>, Vec<_>) = batch
-                                        .into_iter()
-                                        .partition(|op| !op.midi.is_empty());
-
-                                    midi_ops.extend(midi_batch.into_iter());
-
-                                    let voice_rendered =
-                                        audio_batch.render(&mut voice.oscillator, Some(&offset));
-                                    rendered_per_voice.push(voice_rendered);
-
-                                    if collect_viz_ops {
-                                        // Use 1,000,000 scale to support filter rates as low as 0.000001
-                                        let vis_threshold = (Settings::global().vis_filter_rate * 1_000_000.0) as usize;
-                                        let b: Vec<_> = audio_batch
-                                            .iter()
-                                            .filter(|op| {
-                                                let hash = op.index.wrapping_mul(2654435761) % 1_000_000;
-                                                hash < vis_threshold
-                                            })
-                                            .cloned()
-                                            .map(|mut op| {
-                                                let follow_offset = op.follows.eval_value(
-                                                    offset.freq as f32,
-                                                    offset.gain as f32,
-                                                );
-                                                op.f *= follow_offset.0 as f64;
-                                                op.g = (
-                                                    op.g.0 * follow_offset.1 as f64,
-                                                    op.g.1 * follow_offset.1 as f64,
-                                                );
-                                                op
-                                            })
-                                            .collect();
-
-                                        total_ops.extend_at(i, b);
-                                    }
-                                }
-                                None => {
-                                    // Voice has finished
+                        for out in per_voice {
+                            let PerVoiceOutput {
+                                voice_index,
+                                rendered,
+                            } = out;
+                            if let Some(VoiceRenderData {
+                                batch_samples,
+                                midi_batch,
+                                voice_rendered,
+                                viz_ops,
+                            }) = rendered
+                            {
+                                any_data_rendered = true;
+                                samples_rendered = samples_rendered.max(batch_samples);
+                                midi_ops.extend(midi_batch);
+                                rendered_per_voice.push(voice_rendered);
+                                if collect_viz_ops {
+                                    total_ops.extend_at(voice_index, viz_ops);
                                 }
                             }
                         }
@@ -259,5 +286,78 @@ impl AudioEngine {
 impl Default for AudioEngine {
     fn default() -> Self {
         Self::new()
+    }
+}
+
+/// Output of a single voice's per-batch work. Returned from the
+/// (possibly parallel) per-voice section so the orchestrator can merge
+/// results serially.
+struct PerVoiceOutput {
+    voice_index: usize,
+    /// `None` if the voice ran out of ops this batch.
+    rendered: Option<VoiceRenderData>,
+}
+
+struct VoiceRenderData {
+    batch_samples: usize,
+    midi_batch: Vec<RenderOp>,
+    voice_rendered: StereoWaveform,
+    viz_ops: Vec<RenderOp>,
+}
+
+/// Pure (modulo each voice's own oscillator + indices) per-voice work.
+/// Safe to call in parallel because it only mutates the voice handed in.
+fn render_one_voice(
+    voice_index: usize,
+    voice: &mut RenderVoice,
+    remaining_buffer_size: usize,
+    loop_play: bool,
+    offset: &Offset,
+    collect_viz_ops: bool,
+    vis_threshold: usize,
+) -> PerVoiceOutput {
+    let Some(batch) = voice.get_batch(remaining_buffer_size, None, loop_play) else {
+        return PerVoiceOutput { voice_index, rendered: None };
+    };
+
+    let batch_samples: usize = batch.iter().map(|op| op.samples).sum();
+
+    // Split MIDI-directed ops from audio-directed.
+    let (midi_batch, mut audio_batch): (Vec<_>, Vec<_>) = batch
+        .into_iter()
+        .partition(|op| !op.midi.is_empty());
+
+    let voice_rendered = audio_batch.render(&mut voice.oscillator, Some(offset));
+
+    let viz_ops = if collect_viz_ops {
+        audio_batch
+            .iter()
+            .filter(|op| {
+                let hash = op.index.wrapping_mul(2654435761) % 1_000_000;
+                hash < vis_threshold
+            })
+            .cloned()
+            .map(|mut op| {
+                let follow_offset = op.follows.eval_value(offset.freq as f32, offset.gain as f32);
+                op.f *= follow_offset.0 as f64;
+                op.g = (
+                    op.g.0 * follow_offset.1 as f64,
+                    op.g.1 * follow_offset.1 as f64,
+                );
+                op
+            })
+            .collect()
+    } else {
+        Vec::new()
+    };
+
+    PerVoiceOutput {
+        voice_index,
+        rendered: Some(VoiceRenderData {
+            batch_samples,
+            midi_batch,
+            voice_rendered,
+            viz_ops,
+        }),
     }
 }

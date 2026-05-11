@@ -1,0 +1,50 @@
+{ f: 80, l: 1/4, g: 1, p: 0 }
+
+-- Kit: Acoustic Simulation
+-- Rounder kick attack, ringy snare, open hats
+-- More organic, live feel
+
+bd = {
+    Kick {
+        pitch_decay: 0.035,
+        pitch_range: 2.0,
+        amp_decay: 0.18,
+        click_amount: 0.25,
+        sub_amount: 0.15,
+        harmonic_damping: 1.5,
+        saturation: 0.15,
+        velocity_tilt: 0.85,
+        transient_curve: 1.0
+    }
+    | Gm 0.42
+}
+
+sn = {
+    Snare {
+        shell_decay: 0.1,
+        wire_decay: 0.07,
+        wire_mix: 0.5,
+        shell_pitch_decay: 35,
+        shell_pitch_range: 0.35,
+        crack: 0.4,
+        attack_amount: 0.3,
+        saturation: 0.08,
+        velocity_tilt: 0.75
+    }
+    | Fm 2.2
+    | Gm 0.45
+}
+
+hh = {
+    HiHat {
+        decay_rate: 25,
+        shimmer: 14,
+        brightness: 0.55,
+        pitch_drop: 0.012,
+        saturation: 0.02,
+        velocity_tilt: 0.6
+    }
+    | Gm 0.18
+}
+
+main = { Silence 1 }

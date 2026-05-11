@@ -14,6 +14,7 @@ use weresocool_instrument::renderable::nf_to_vec_renderable;
 use weresocool_instrument::{Basis, Normalize, StereoWaveform};
 use weresocool_parser::*;
 mod expect_tests;
+mod loudness_balance_test;
 
 type TestTable = IndexMap<String, CompositionHashes>;
 

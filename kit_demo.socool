@@ -1,0 +1,147 @@
+import kits/kit_909.socool as k909
+import kits/kit_808.socool as k808
+import kits/kit_acoustic.socool as acoustic
+import kits/kit_industrial.socool as industrial
+import kits/kit_minimal.socool as minimal
+
+{ f: 80, l: 1/4, g: 1, p: 0 }
+
+x = { Silence 1 }
+
+s = { Lm 1/4 }
+
+kick_pattern(bd) = {
+    Seq [
+        bd | s, x | s, x | s, x | s,
+        x | s, x | s, bd | Gm 0.5 | s, x | s,
+        bd | s, x | s, x | s, bd | s,
+        x | s, x | s, x | s, x | s
+    ]
+}
+
+kick_pattern_v2(bd) = {
+    Seq [
+        bd | s, x | s, bd | Gm 0.5 | s, x | s,
+        x | s, bd | Gm 0.5 | s, x | s, x | s,
+        bd | s, x | s, x | s, bd | s,
+        bd | Gm 0.5 | s, x | s, bd | s, x | s
+    ]
+}
+
+snare_pattern(sn) = {
+    Seq [
+        x | s, x | s, x | s, sn | Gm 0.55 | s,
+        sn | s, x | s, x | s, x | s,
+        x | s, sn | Gm 0.55 | s, x | s, x | s,
+        sn | s, x | s, x | s, x | s
+    ]
+}
+
+snare_fill(sn) = {
+    Seq [
+        x | s, x | s, x | s, x | s,
+        sn | s, x | s, sn | Gm 0.55 | s, sn | Gm 0.55 | s,
+        sn | s, sn | Gm 0.55 | s, sn | s, sn | Gm 0.55 | s,
+        sn | s, sn | s, sn | Gm 1.2 | s, sn | Gm 1.3 | s
+    ]
+}
+
+hat_pattern(hh) = {
+    Seq [
+        hh | Gm 1.5 | s, hh | Gm 0.5 | s, hh | s, hh | Gm 0.5 | s,
+        hh | s, hh | Gm 0.5 | s, hh | s, hh | Gm 0.5 | s,
+        hh | Gm 1.5 | s, hh | Gm 0.5 | s, hh | s, hh | Gm 0.5 | s,
+        hh | s, hh | Gm 0.5 | s, hh | Gm 1.3 | s, x | s
+    ]
+}
+
+bar(bd, sn, hh) = {
+    Overlay [
+        kick_pattern(bd),
+        snare_pattern(sn),
+        hat_pattern(hh)
+    ]
+}
+
+bar_v2(bd, sn, hh) = {
+    Overlay [
+        kick_pattern_v2(bd),
+        snare_pattern(sn),
+        hat_pattern(hh)
+    ]
+}
+
+fill_bar(bd, sn, hh) = {
+    Overlay [
+        kick_pattern(bd),
+        snare_fill(sn),
+        hat_pattern(hh)
+    ]
+}
+
+beat(bd, sn, hh) = {
+    Seq [
+        bar(bd, sn, hh),
+        bar(bd, sn, hh),
+        bar_v2(bd, sn, hh),
+        -- bar(bd, sn, hh),
+        -- bar(bd, sn, hh),
+        -- bar_v2(bd, sn, hh),
+        -- bar(bd, sn, hh),
+        fill_bar(bd, sn, hh)
+    ]
+}
+
+chords = {
+    Overlay [
+        { 2, 0.2, 1, 1/6 },
+        { 2, 3, 1, 1/6 },
+        { 1, 0.2, 1, 1/6 },
+        { 1, 2, 1, 1/6 },
+        { 1/2, 0.2, 1, 1/6 },
+        { 1/2, 0, 1, -1/6 },
+        { 1/4, 1, 1, 1/6 },
+        { 1/4, 0, 1, -1/6 },
+    ]
+    -- | Seq [
+    -- Fm 1, Fm 0, Fm 0, Fa -5,
+    -- ]
+    -- | Repeat 2
+    | Seq [
+        Fm 0, Fm 1 | Lm 2, Fm 9/8, Fm 0, Fm 3/4, Fm 2/3, Fm 5/8, Fm 7/12 | Lm 1/8,
+    ]
+    | Overlay [
+        -- Sine 3/2 | Gm 1/4,
+        Square | Gm 1/4,
+        Sine,
+    ]
+    | Gm 1/6
+    | Fm 3
+    | Repeat 4
+    | wgsl {
+        Direction(0, 0, -1);
+    }
+    | FitLength beat(k909.bd, k909.sn, k909.hh)
+}
+
+main = {
+    Overlay [
+        Seq [
+            -- TR-909 style
+            beat(k909.bd, k909.sn, k909.hh),
+            -- TR-808 style
+            beat(k808.bd, k808.sn, k808.hh),
+            -- Acoustic style
+            beat(acoustic.bd, acoustic.sn, acoustic.hh),
+            -- Industrial style
+            beat(industrial.bd, industrial.sn, industrial.hh),
+            -- Minimal style
+            beat(minimal.bd, minimal.sn, minimal.hh)
+        ]
+        | wgsl {
+            Direction(0, 0, -1);
+        },
+        -- chords | Repeat 5
+    ]
+    | Lm 2
+}

@@ -511,8 +511,10 @@ pub fn nf_to_vec_renderable(
     // The old code did `NormalForm::init() *= composition` which just copies
     // through expensive nested loops (O(n*m) for n voices, m ops).
     // Clone is much faster.
+    #[cfg(not(target_arch = "wasm32"))]
     let clone_start = std::time::Instant::now();
     let normal_form = composition.clone();
+    #[cfg(not(target_arch = "wasm32"))]
     timing_print!("[nf_to_vec_renderable] clone: {:?} ({} voices, {} total ops)",
         clone_start.elapsed(),
         normal_form.operations.len(),
@@ -520,6 +522,7 @@ pub fn nf_to_vec_renderable(
 
     let settings = Settings::global();
 
+    #[cfg(not(target_arch = "wasm32"))]
     let render_start = std::time::Instant::now();
     let result: Vec<Vec<RenderOp>> = normal_form
         .operations
@@ -536,6 +539,7 @@ pub fn nf_to_vec_renderable(
             )
         })
         .collect();
+    #[cfg(not(target_arch = "wasm32"))]
     timing_print!("[nf_to_vec_renderable] create_render_ops: {:?}", render_start.elapsed());
 
     Ok(result)

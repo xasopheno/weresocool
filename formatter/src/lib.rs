@@ -29,7 +29,15 @@ pub fn format_source(source: &str, config: &FormatConfig) -> Result<String, Form
     // Use original source for final output, but processed_source for span lookups
     // (spans are captured from processed source where WGSL is replaced with tokens)
     let span_source = result.processed_source.as_deref().unwrap_or(&result.source);
-    Ok(format::format_composition_with_source(&result.composition, &result.source, span_source, config))
+    let formatted = format::format_composition_with_source(&result.composition, &result.source, span_source, config);
+
+    // Prepend import statements if present
+    if result.imports.is_empty() {
+        Ok(formatted)
+    } else {
+        let imports_str = result.imports.join("\n");
+        Ok(format!("{}\n\n{}", imports_str, formatted))
+    }
 }
 
 /// Format with access to original source (for span-based text extraction)

@@ -58,7 +58,15 @@ fn bench_render_manager_read(c: &mut Criterion) {
     let sample_rate = 48_000.0;
     let buffer = 1024usize;
 
-    for &(voices, ops_per_voice, reads) in &[(2usize, 8usize, 256usize), (8, 8, 256), (8, 32, 128)] {
+    // Includes large-voice-count cases (100, 200) — the realistic target.
+    // Reads tuned so total work stays in a sane bench-time range.
+    for &(voices, ops_per_voice, reads) in &[
+        (2usize, 8usize, 256usize),
+        (8, 8, 256),
+        (8, 32, 128),
+        (100, 4, 16),
+        (200, 4, 8),
+    ] {
         let id = format!("v{}_o{}_r{}", voices, ops_per_voice, reads);
         group.throughput(Throughput::Bytes((reads * buffer * 2 * 4) as u64));
         group.bench_function(BenchmarkId::from_parameter(id), |b| {

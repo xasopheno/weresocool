@@ -6,12 +6,12 @@ kick = {
         pitch_range: 2.5,
         amp_decay: 0.15,
         click_amount: 0.35,
-        sub_amount: 0.2,
+        sub_amount: 0.0,
         harmonic_damping: 1.8,
         saturation: 0.45,
         velocity_tilt: 0.7,
         transient_curve: 1.5
-    }
+    } | Gm 0.4
 }
 
 ghost_kick = {
@@ -21,13 +21,13 @@ ghost_kick = {
         velocity_tilt: 0.8,
         transient_curve: 1.5
     }
-    | Gm 0.4
+    | Gm 0.2
 }
 
 snare = {
     Snare {
-        shell_decay: 0.1,
-        wire_decay: 0.12,
+        shell_decay: 0.08,
+        wire_decay: 0.05,
         wire_mix: 0.5,
         shell_pitch_decay: 40,
         shell_pitch_range: 0.3,
@@ -42,7 +42,7 @@ snare = {
 ghost_snare = {
     Snare {
         shell_decay: 0.08,
-        wire_decay: 0.10,
+        wire_decay: 0.05,
         wire_mix: 0.6,
         shell_pitch_range: 0.15,
         crack: 0.4,
@@ -63,7 +63,7 @@ hat = {
         saturation: 0.08,
         velocity_tilt: 0.4
     }
-    | Gm 0.7
+    | Gm 0.2
 }
 
 hat_accent = {
@@ -75,6 +75,7 @@ hat_accent = {
         saturation: 0.12,
         velocity_tilt: 0.5
     }
+    | Gm 0.3
 }
 
 hat_soft = {
@@ -86,7 +87,7 @@ hat_soft = {
         saturation: 0.05,
         velocity_tilt: 0.6
     }
-    | Gm 0.4
+    | Gm 0.1
 }
 
 open_hat = {
@@ -98,7 +99,7 @@ open_hat = {
         saturation: 0.1,
         velocity_tilt: 0.4
     }
-    | Gm 0.8
+    | Gm 0.3
 }
 
 x = { Silence 1 }
@@ -174,7 +175,7 @@ fill_bar = {
     ]
 }
 
-main = {
+drums = {
     Seq [
         bar,
         bar,
@@ -185,8 +186,53 @@ main = {
         bar,
         fill_bar
     ]
+    | Color [white, lightgray, gray]
+    | wgsl {
+        Direction(0, 0, -1);
+    }
+}
+
+chords = {
+    Overlay [
+        { 3/2, 3, 1, 1/5 },
+        { 3/2, 0, 1, -1/5 },
+        { 1, 0.2, 1, 1/6 },
+        { 1, 3, 1, 1/6 },
+        { 3/4, 3, 1, 1/5 },
+        { 3/4, 0, 1, -1/5 },
+        { 1/2, 0.2, 1, 1/6 },
+        { 1/2, 0, 1, -1/6 },
+        { 1/4, 3, 1, 1/6 },
+        { 1/4, 0, 1, -1/6 },
+    ]
+    -- | Seq [
+    -- Fm 1, Fm 0, Fm 0, Fa -5,
+    -- ]
+    -- | Repeat 2
+    | Seq [
+        Fm 0, Fm 1 | Lm 2, Fm 9/8, Fm 0, Fm 3/4, Fm 2/3, Fm 5/8, Fm 7/12 | Lm 1/8,
+    ]
+    | Overlay [
+        Sine 3/2 | Gm 1/4,
+        Square | Gm 1/4,
+        Sine,
+    ]
+    | Gm 1/2
+    | Repeat 4
+    | FitLength drums
+    | wgsl {
+        Direction(0, 0, -1);
+    }
+    | FitLength drums
+}
+
+main = {
+    Overlay [
+        drums,
+        chords
+    ]
     | Repeat 2
-    | Lm 1.8
+    | Lm 1.7
     | Overlay [
         Gm 2,
     ]

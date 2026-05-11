@@ -5,6 +5,12 @@ use weresocool_shared::r_to_f64;
 
 const TAU: f64 = PI * 2.0;
 
+// Loudness-balanced gain multipliers (calibrated via LUFS measurement)
+// Reduced to avoid ear pressure from sub-bass
+const KICK_GAIN: f64 = 1.0;
+const SNARE_GAIN: f64 = 2.25;
+const HIHAT_GAIN: f64 = 2.0;
+
 /// Fast deterministic noise from sample index using a simple hash function.
 /// Replaces per-sample RNG calls for better performance and reproducibility.
 #[inline]
@@ -251,7 +257,7 @@ impl Waveform for OscType {
                 // Add multi-stage transient
                 let output = tone + transient * attack_amount;
 
-                output * info.gain * 8.0
+                output * info.gain * KICK_GAIN
             }
 
             OscType::Snare { params } => {
@@ -404,7 +410,7 @@ impl Waveform for OscType {
                 let saturation_drive = 1.0 + saturation_amount * decay_progress;
                 let saturated = soft_saturate(tone, saturation_drive);
 
-                saturated * info.gain * 8.0
+                saturated * info.gain * SNARE_GAIN
             }
 
             OscType::HiHat { open, params } => {
@@ -503,7 +509,7 @@ impl Waveform for OscType {
                 // Mix shimmer and noise
                 let tone = shimmer * 0.4 + noise * noise_amp * 0.6 + attack_noise;
 
-                tone * info.gain * 6.0
+                tone * info.gain * HIHAT_GAIN
             }
         }
     }

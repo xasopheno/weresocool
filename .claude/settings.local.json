@@ -76,7 +76,8 @@
       "WebFetch(domain:www.instructables.com)",
       "WebFetch(domain:wiki.ljudmila.org)",
       "WebFetch(domain:nathan.ho.name)",
-      "Bash(git stash:*)"
+      "Bash(git stash:*)",
+      "Bash(cargo search:*)"
     ],
     "deny": [],
     "ask": []
