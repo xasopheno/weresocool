@@ -12,7 +12,7 @@ use weresocool_ast::{
 };
 use weresocool_error::Error;
 use weresocool_filter::BiquadFilterDef;
-pub(crate) use weresocool_shared::{lossy_rational_mul, r_to_f64, Settings, timing_print};
+pub(crate) use weresocool_shared::{lossy_rational_mul, r_to_f64, Settings, timing_now, timing_print};
 use weresocool_synth::{DistortionDef, Offset};
 
 #[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
@@ -520,8 +520,7 @@ pub fn nf_to_vec_renderable(
     // at all. Saves ~110ms on drum_sounds.socool (634 voices, 714k ops).
     let settings = Settings::global();
 
-    #[cfg(not(target_arch = "wasm32"))]
-    let render_start = std::time::Instant::now();
+    let render_start = timing_now!();
     let result: Vec<Vec<RenderOp>> = composition
         .operations
         .iter()
@@ -537,7 +536,6 @@ pub fn nf_to_vec_renderable(
             )
         })
         .collect();
-    #[cfg(not(target_arch = "wasm32"))]
     timing_print!("[nf_to_vec_renderable] create_render_ops: {:?} ({} voices, {} total ops)",
         render_start.elapsed(),
         composition.operations.len(),

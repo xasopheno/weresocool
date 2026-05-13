@@ -42,12 +42,21 @@ pub struct Settings {
     // Debug settings
     pub click_detection: bool,
     // Audio render parallelism. The voice-render loop in
-    // `audio_engine::render` parallelizes per-voice work when the voice
-    // count is at or above `parallel_voice_threshold`, using up to
-    // `audio_thread_count` worker threads. Defaults chosen from
-    // measured scaling on Apple Silicon (8 threads gives ~5.6× speedup
-    // at 100 voices with only +22% total CPU vs serial; 16 threads
-    // gives +112% CPU for marginally better wall time).
+    // `audio_engine::render` will parallelize per-voice work when:
+    //   - `audio_thread_count > 1`, AND
+    //   - voice count is at or above `parallel_voice_threshold`.
+    //
+    // **Default is `1` (serial)**. The audio engine is reached from the
+    // real-time playback path (RenderManager's background renderer
+    // thread); rayon dispatch overhead competes with the portaudio
+    // callback for cores and causes audible clicks even on heavy
+    // compositions where the serial render still runs >100× faster
+    // than real time. Bumping this past 1 helps batch benchmarks but
+    // hurts real-time playback — the trade is intentional.
+    //
+    // (Offline `parsed_to_render::render` doesn't use this pool — it
+    // parallelizes through rayon's global pool independently, so
+    // changing this number doesn't affect `kintaro print` speed.)
     pub audio_thread_count: usize,
     pub parallel_voice_threshold: usize,
 }
@@ -204,18 +213,21 @@ visual_mode = true
 # Instance lifetime (seconds before automatic removal)
 # max_instance_lifetime = 30.0
 
-# Audio render parallelism
-# audio_thread_count: how many worker threads the per-voice render uses.
-#   Default 8. Measured sweet spot on Apple Silicon (12+4 cores):
-#   ~5.6x speedup at 100 voices for only +22% total CPU vs serial.
-#   Above ~10 threads, total CPU keeps rising while wall time barely
-#   moves — i.e., laptop gets hot for no real value. Set to 1 to
-#   disable parallel rendering.
-# audio_thread_count = 8
+# Audio render parallelism (REAL-TIME PLAYBACK ONLY — does not affect
+# `kintaro print` / offline rendering, which parallelizes through rayon's
+# global pool independently of this).
+#
+# audio_thread_count: how many worker threads the per-voice real-time
+#   render uses. **Default 1 (serial)**. Going above 1 helps when the
+#   composition has many voices and the buffer_size is large, but rayon
+#   dispatch overhead competes with the portaudio callback thread for
+#   cores and causes audible clicks. Serial already renders >100× faster
+#   than real time on tested compositions, so the parallel knob is rarely
+#   worth turning up for playback.
+# audio_thread_count = 1
 #
 # parallel_voice_threshold: minimum voice count to fan out to the audio
-#   thread pool. Below this, voices render sequentially because work-
-#   stealing overhead would dominate. Default 32.
+#   thread pool (only consulted when audio_thread_count > 1). Default 32.
 # parallel_voice_threshold = 32
 "#;
         let _ = std::fs::write(&path, default_config);
@@ -253,7 +265,9 @@ pub const fn default_settings() -> Settings {
         cull_behind_threshold: 0.5,
         max_instance_lifetime: 30.0,
         click_detection: false,
-        audio_thread_count: 8,
+        // Serial by default — see comment on the struct field. Bumping
+        // this past 1 for real-time playback causes audible clicks.
+        audio_thread_count: 1,
         parallel_voice_threshold: 32,
     }
 }

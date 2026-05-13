@@ -4,36 +4,23 @@
 
 use crate::generation::{sum_all_waveforms, Normalizer};
 use crate::manager::resizeable_2d_vec::Resizeable2DVec;
-use rayon::prelude::*;
-use rayon::ThreadPool;
-use std::sync::OnceLock;
 use weresocool_ast::follow::evaluate::EvaluateAction;
 use weresocool_instrument::{Offset, RenderOp, StereoWaveform};
 use weresocool_instrument::renderable::render_voice::RenderVoice;
 use weresocool_instrument::renderable::Renderable;
 use weresocool_shared::{Settings, timing_print};
 
-/// Dedicated thread pool for the per-voice render fan-out. Sized by
-/// `Settings.audio_thread_count` (default 8) so audio rendering doesn't
-/// oversaturate efficiency cores or stomp on the global rayon pool used
-/// elsewhere in the workspace.
-///
-/// Scaling on Apple Silicon (12 perf + 4 efficiency cores) shows the
-/// useful range is 4-10 threads. Beyond ~10 the wall-clock gain
-/// flattens while total CPU time keeps rising (i.e., the user gets a
-/// hot laptop for ~no extra speed). 8 is the measured sweet spot:
-/// ~5.6× wall speedup at 100 voices for only +22% total CPU vs serial.
-fn audio_pool() -> &'static ThreadPool {
-    static POOL: OnceLock<ThreadPool> = OnceLock::new();
-    POOL.get_or_init(|| {
-        let n = Settings::global().audio_thread_count.max(1);
-        rayon::ThreadPoolBuilder::new()
-            .num_threads(n)
-            .thread_name(|i| format!("wsc-audio-{i}"))
-            .build()
-            .expect("failed to build audio render thread pool")
-    })
-}
+// NOTE: real-time audio rendering is intentionally **serial**. Earlier
+// versions of this file ran the per-voice loop on a dedicated rayon pool
+// for a benchmark-confirmed ~5.6× speedup at 100 voices — but that path
+// causes audible clicks during playback because rayon's work-stealing
+// scheduler competes with the portaudio callback thread for cores.
+//
+// Even on heavy compositions the serial path renders >100× faster than
+// real time, so the buffer queue stays full and there's no upside to
+// parallelizing here. Offline rendering (`parsed_to_render::render`) is
+// a separate code path that still uses rayon's global pool and is
+// unaffected by this comment.
 
 #[derive(Debug)]
 pub struct AudioEngine {
@@ -115,59 +102,23 @@ impl AudioEngine {
                             0
                         };
 
-                        // Render each voice. Voices own independent state
-                        // (oscillator, sample_index, op_index) and the
-                        // per-voice work — get_batch + audio_batch.render —
-                        // doesn't touch any shared state, so we can run it
-                        // across the rayon pool when the voice count is
-                        // large enough to amortize work-stealing overhead.
-                        //
-                        // All collected outputs are merged serially after
-                        // the parallel section. Merge operations
-                        // (midi_ops.extend, rendered_per_voice.push,
-                        // total_ops.extend_at, samples_rendered.max) are
-                        // commutative, so iteration order doesn't matter
-                        // for correctness.
-                        let parallel_threshold = Settings::global().parallel_voice_threshold;
-                        let per_voice: Vec<PerVoiceOutput> = if render_voices.len() >= parallel_threshold {
-                            // `install` runs the closure on our dedicated
-                            // audio pool. `par_iter_mut` inherits the
-                            // current pool, so this scopes the parallel
-                            // work to the configured thread count.
-                            audio_pool().install(|| {
-                                render_voices
-                                    .par_iter_mut()
-                                    .enumerate()
-                                    .map(|(i, voice)| {
-                                        render_one_voice(
-                                            i,
-                                            voice,
-                                            remaining_buffer_size,
-                                            loop_play,
-                                            &offset,
-                                            collect_viz_ops,
-                                            vis_threshold,
-                                        )
-                                    })
-                                    .collect()
+                        // Render each voice serially. See the file-level note —
+                        // rayon is intentionally absent from the real-time path.
+                        let per_voice: Vec<PerVoiceOutput> = render_voices
+                            .iter_mut()
+                            .enumerate()
+                            .map(|(i, voice)| {
+                                render_one_voice(
+                                    i,
+                                    voice,
+                                    remaining_buffer_size,
+                                    loop_play,
+                                    &offset,
+                                    collect_viz_ops,
+                                    vis_threshold,
+                                )
                             })
-                        } else {
-                            render_voices
-                                .iter_mut()
-                                .enumerate()
-                                .map(|(i, voice)| {
-                                    render_one_voice(
-                                        i,
-                                        voice,
-                                        remaining_buffer_size,
-                                        loop_play,
-                                        &offset,
-                                        collect_viz_ops,
-                                        vis_threshold,
-                                    )
-                                })
-                                .collect()
-                        };
+                            .collect();
 
                         for out in per_voice {
                             let PerVoiceOutput {

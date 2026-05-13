@@ -12,7 +12,7 @@ use std::io::BufReader;
 use std::path::PathBuf;
 use std::sync::{Arc, Mutex};
 use weresocool_error::{ColorError, Error, ParseError};
-use weresocool_shared::timing_print;
+use weresocool_shared::{timing_now, timing_print};
 use regex;
 
 /// Tracks offset adjustments when WGSL blocks are replaced with tokens.
@@ -68,8 +68,7 @@ fn process_op_table(mut defs: &mut Defs) -> Result<Defs, Error> {
     let mut result: Defs = Defs::default();
     result.colors = defs.colors.clone();
 
-    #[cfg(not(target_arch = "wasm32"))]
-    let total_start = std::time::Instant::now();
+    let total_start = timing_now!();
     let mut op_count = 0;
     let mut nf_count = 0;
     #[cfg(not(target_arch = "wasm32"))]
@@ -86,8 +85,7 @@ fn process_op_table(mut defs: &mut Defs) -> Result<Defs, Error> {
         .collect();
 
     for (scope_name, name, term) in entries {
-        #[cfg(not(target_arch = "wasm32"))]
-        let op_start = std::time::Instant::now();
+        let op_start = timing_now!();
         match term {
             Term::Nf(nf) => {
                 result.ops.insert(&scope_name, &name, Term::Nf(nf.to_owned()));
@@ -96,6 +94,8 @@ fn process_op_table(mut defs: &mut Defs) -> Result<Defs, Error> {
             Term::Op(op) => {
                 let mut nf = NormalForm::init();
                 op.apply_to_normal_form(&mut nf, &mut defs)?;
+                // Slowest-op tracking uses `elapsed` directly (not via timing_print!),
+                // so it must be cfg-gated — std::time isn't available on wasm32.
                 #[cfg(not(target_arch = "wasm32"))]
                 {
                     let elapsed = op_start.elapsed();
@@ -131,16 +131,10 @@ fn process_op_table(mut defs: &mut Defs) -> Result<Defs, Error> {
         };
     }
 
+    timing_print!("[process_op_table] Total: {:?} ({} ops, {} pre-normalized)", total_start.elapsed(), op_count, nf_count);
     #[cfg(not(target_arch = "wasm32"))]
-    {
-        timing_print!("[process_op_table] Total: {:?} ({} ops, {} pre-normalized)", total_start.elapsed(), op_count, nf_count);
-        if let Some((name, duration)) = slowest_op {
-            timing_print!("[process_op_table] Slowest op: '{}' took {:?}", name, duration);
-        }
-    }
-    #[cfg(target_arch = "wasm32")]
-    {
-        let _ = (op_count, nf_count);
+    if let Some((name, duration)) = slowest_op {
+        timing_print!("[process_op_table] Slowest op: '{}' took {:?}", name, duration);
     }
 
     result.ops.stems = defs.ops.stems.to_owned();
@@ -455,19 +449,15 @@ pub fn parse_file(
         Default::default()
     };
 
-    #[cfg(not(target_arch = "wasm32"))]
-    let ws_start = std::time::Instant::now();
+    let ws_start = timing_now!();
     let (imports_needed, composition) = handle_whitespace_and_imports(vec_string)?;
-    #[cfg(not(target_arch = "wasm32"))]
     timing_print!("[parse_file] handle_whitespace_and_imports: {:?}", ws_start.elapsed());
 
     // Process WGSL blocks - extract them and replace with IDs
     // This validates each WGSL block and fails fast on the first error
     // quiet=false to show errors during actual parsing
-    #[cfg(not(target_arch = "wasm32"))]
-    let wgsl_start = std::time::Instant::now();
+    let wgsl_start = timing_now!();
     let (processed_composition, source_map) = process_wgsl_blocks(&composition, &mut defs, false, false)?;
-    #[cfg(not(target_arch = "wasm32"))]
     timing_print!("[parse_file] process_wgsl_blocks: {:?}", wgsl_start.elapsed());
 
     for import in imports_needed {
@@ -504,18 +494,14 @@ pub fn parse_file(
         }
     }
 
-    #[cfg(not(target_arch = "wasm32"))]
-    let parse_start = std::time::Instant::now();
+    let parse_start = timing_now!();
     let init = socool::SoCoolParser::new().parse(&mut defs, &processed_composition);
-    #[cfg(not(target_arch = "wasm32"))]
     timing_print!("[parse_file] SoCoolParser::parse: {:?}", parse_start.elapsed());
 
     match init {
         Ok(init) => {
-            #[cfg(not(target_arch = "wasm32"))]
-            let op_table_start = std::time::Instant::now();
+            let op_table_start = timing_now!();
             let mut result_defs = process_op_table(&mut defs)?;
-            #[cfg(not(target_arch = "wasm32"))]
             timing_print!("[parse_file] process_op_table: {:?}", op_table_start.elapsed());
 
             // Ensure WGSL blocks and colors are preserved in the final result
