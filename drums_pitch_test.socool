@@ -1,0 +1,118 @@
+{ f: 60, l: 1/4, g: 1, p: 0 }
+
+-- Demonstrates that drum sounds respect language operations.
+-- Each kick should be audibly different in pitch.
+
+bd = {
+    Kick {
+        pitch_decay: 0.06,
+        pitch_range: 4.5,
+        amp_decay: 0.65,
+        click_amount: 0.18,
+        click_freq: 1800,
+        saturation: 0.35
+    }
+    | Gm 0.6
+}
+
+sn = {
+    Snare {
+        shell_decay: 0.16,
+        wire_decay: 0.20,
+        wire_mix: 0.55,
+        crack: 0.45,
+        attack_amount: 0.35
+    }
+    | Fm 3
+    | Gm 0.5
+}
+
+hh = {
+    HiHat {
+        decay_rate: 50,
+        shimmer: 18,
+        brightness: 0.55
+    }
+    | Fm 50
+    | Gm 0.22
+}
+
+x = { Silence 1 }
+
+-- Kick octave sweep: sub, low, normal, high
+kick_sweep = {
+    Seq [
+        bd | Fm 1/4,     -- 15 Hz fundamental (felt more than heard)
+        x,
+        bd | Fm 1/2,     -- 30 Hz sub kick
+        x,
+        bd,              -- 60 Hz default
+        x,
+        bd | Fm 2,       -- 120 Hz tom-like
+        x,
+        bd | Fm 4,       -- 240 Hz tight click
+        x
+    ]
+}
+
+-- Snare freq sweep
+snare_sweep = {
+    Seq [
+        sn | Fm 1/2,     -- snare detuned down
+        x,
+        sn,              -- default
+        x,
+        sn | Fm 2,       -- snare tuned up
+        x,
+        sn | Fm 4,       -- piccolo snare
+        x
+    ]
+}
+
+-- HiHat freq sweep
+hat_sweep = {
+    Seq [
+        hh | Fm 1/2,
+        x,
+        hh,
+        x,
+        hh | Fm 2,
+        x,
+        hh | Fm 4,
+        x
+    ]
+}
+
+-- Length test: does Lm work?
+length_test = {
+    Seq [
+        bd | Lm 1/2,
+        x,
+        bd,
+        x,
+        bd | Lm 2,
+        x,
+        bd | Lm 4,
+        x
+    ]
+}
+
+-- 808 beat using just the new sounds
+beat = {
+    Overlay [
+        Seq [ bd, x, x, x,   x, x, bd, x,   bd, x, x, bd,   x, x, x, x ],
+        Seq [ x, x, x, x,    sn, x, x, x,   x, x, x, x,     sn, x, x, x ],
+        Seq [ hh, hh, hh, hh,  hh, hh, hh, hh,  hh, hh, hh, hh,  hh, hh, hh, hh ]
+    ]
+}
+
+main = {
+    Seq [
+        kick_sweep,
+        snare_sweep,
+        hat_sweep,
+        length_test,
+        beat,
+        beat
+    ]
+}

@@ -3009,6 +3009,7 @@ name = "weresocool-from-sound"
 version = "0.1.0"
 dependencies = [
  "anyhow",
+ "bincode",
  "clap",
  "hound",
  "minimp3",

@@ -1,0 +1,19 @@
+{ f: 60, l: 1/2, g: 1, p: 0 }
+
+-- One hit of each drum, surrounded by silence, for clean analysis.
+
+bd = { Kick | Gm 0.7 }
+sn = { Snare | Fm 3 | Gm 0.6 }
+hh = { HiHat | Fm 50 | Gm 0.4 }
+oh = { OpenHat | Fm 50 | Gm 0.4 }
+
+x = { Silence 1 }
+
+main = {
+    Seq [
+        bd, x,
+        sn, x,
+        hh, x,
+        oh, x
+    ]
+}

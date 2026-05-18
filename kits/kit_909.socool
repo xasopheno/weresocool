@@ -38,12 +38,11 @@ sn = {
 hh = {
     HiHat {
         decay_rate: 35,
-        shimmer: 14,
         brightness: 0.6,
         pitch_drop: 0.015,
-        saturation: 0.03,
         velocity_tilt: 0.5
     }
+    | Fm 80
     | Gm 0.2
 }
 

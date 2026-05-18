@@ -12,6 +12,9 @@ impl Voice {
         match self.osc_type {
             OscType::Sine { .. } | OscType::None => match op.oscillator_type() {
                 OscType::Sine { .. } | OscType::None => self.current.gain,
+                // Drums calibrate their own perceived loudness via KICK_GAIN /
+                // SNARE_GAIN / HIHAT_GAIN — skip the /3 sine-vs-noise tilt.
+                OscType::Kick { .. } | OscType::Snare { .. } | OscType::HiHat { .. } => self.current.gain,
                 _ => self.current.gain / 3.0,
             },
             _ => self.current.gain,
@@ -27,6 +30,7 @@ impl Voice {
 
         gain = match op.oscillator_type() {
             OscType::Sine { .. } | OscType::None => gain,
+            OscType::Kick { .. } | OscType::Snare { .. } | OscType::HiHat { .. } => gain,
             _ => (gain.0 / 3.0, gain.1 / 3.0),
         };
 

@@ -122,13 +122,25 @@ impl Voice {
             self.offset_current.frequency,
         );
 
+        // Drum oscillators handle their own perceived loudness — the sine
+        // equal-loudness curve makes a 4 kHz hihat lose 9 dB before it even
+        // hits the synth, which fights against any Fm-based pitch movement.
+        let is_drum = matches!(
+            op.oscillator_type(),
+            OscType::Kick { .. } | OscType::Snare { .. } | OscType::HiHat { .. }
+        );
+        let loudness = if is_drum {
+            1.0
+        } else {
+            loudness_normalization(self.offset_current.frequency)
+        };
         let op_gain = self.calculate_op_gain(
             op.next_out(),
             self.silence_now(),
             self.silence_next(op),
             op.sample_index() + op.duration_samples(),
             op.total_samples(),
-        ) * loudness_normalization(self.offset_current.frequency);
+        ) * loudness;
 
         // self.reverb
         // .model
@@ -182,9 +194,24 @@ impl Voice {
                 f_target
             };
 
-            // Exponential smoothing - continuously approach target gain
-            self.smoothed_gain += GAIN_SMOOTHING_COEF * (gain_factor - self.smoothed_gain);
-            let gain = self.smoothed_gain;
+            // Exponential smoothing prevents pops on gain changes, but its
+            // ~10 ms time constant flattens drum transients — without this
+            // branch the first 25 ms of a kick is barely audible. For drums
+            // we let *rising* gain pass through instantly (transient survives)
+            // but still smooth *falling* gain so the tail doesn't click when
+            // a note ends. Sustained tones smooth in both directions.
+            let gain = if is_drum {
+                if gain_factor >= self.smoothed_gain {
+                    self.smoothed_gain = gain_factor;
+                } else {
+                    self.smoothed_gain += GAIN_SMOOTHING_COEF
+                        * (gain_factor - self.smoothed_gain);
+                }
+                self.smoothed_gain
+            } else {
+                self.smoothed_gain += GAIN_SMOOTHING_COEF * (gain_factor - self.smoothed_gain);
+                self.smoothed_gain
+            };
 
             let info = SampleInfo {
                 frequency,

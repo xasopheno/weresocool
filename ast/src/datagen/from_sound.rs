@@ -136,6 +136,7 @@ pub fn from_sound_to_normalform(path: &str, voices: usize, fps: usize) -> Result
         use_adaptive_window: true,
         use_phase_locking: true,
         use_mq_tracking: true,
+        high_precision: false,
     };
 
     let analysis_start = std::time::Instant::now();

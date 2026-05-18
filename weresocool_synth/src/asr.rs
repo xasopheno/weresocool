@@ -1,5 +1,5 @@
 use crate::{gain::gain_at_index, voice::Voice};
-use weresocool_ast::ASR;
+use weresocool_ast::{ASR, OscType};
 
 impl Voice {
     pub fn calculate_op_gain(
@@ -10,9 +10,20 @@ impl Voice {
         index: usize,
         total_length: usize,
     ) -> f64 {
+        // Drums have internal envelopes that already shape the attack — an
+        // outer attack ramp on top buries the transient. We pass past_gain =
+        // current_gain so `gain_at_index` in the attack branch becomes a no-op
+        // (start == target), while still letting the decay branch ramp down
+        // for click-free note endings.
+        let is_drum = matches!(
+            self.osc_type,
+            OscType::Kick { .. } | OscType::Snare { .. } | OscType::HiHat { .. }
+        );
+        let past_gain = if is_drum { self.current.gain } else { self.past.gain };
+
         if next_out || self.asr == ASR::Long {
             calculate_long_gain(
-                self.past.gain,
+                past_gain,
                 self.current.gain,
                 silence_now,
                 index,
@@ -22,7 +33,7 @@ impl Voice {
             )
         } else {
             calculate_short_gain(
-                self.past.gain,
+                past_gain,
                 self.current.gain,
                 silence_next,
                 index,

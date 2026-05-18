@@ -317,6 +317,8 @@ pub struct SnareParams {
     pub resonance: Option<Rational64>,
     /// Tonal crack amount (default: 0.2)
     pub crack: Option<Rational64>,
+    /// Tuning multiplier on info.frequency for shell fundamental (default: 1.0)
+    pub tune: Option<Rational64>,
     // Backwards compatibility aliases (deprecated)
     pub tone_decay: Option<Rational64>,
     pub noise_decay: Option<Rational64>,
@@ -352,6 +354,8 @@ pub struct HiHatParams {
     pub velocity_tilt: Option<Rational64>,
     /// Filter resonance Q (default: 0.5)
     pub resonance: Option<Rational64>,
+    /// Tuning multiplier on info.frequency for mode base (default: 1.0)
+    pub tune: Option<Rational64>,
 }
 
 #[derive(Clone, Debug, PartialEq, Serialize, Deserialize, Hash, Ord, PartialOrd, Eq)]

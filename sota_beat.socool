@@ -2,26 +2,27 @@
 
 kick = {
     Kick {
-        pitch_decay: 0.025,
-        pitch_range: 2.5,
-        amp_decay: 0.15,
-        click_amount: 0.35,
-        sub_amount: 0.0,
-        harmonic_damping: 1.8,
-        saturation: 0.45,
-        velocity_tilt: 0.7,
-        transient_curve: 1.5
-    } | Gm 0.4
+        pitch_decay: 0.05,
+        pitch_range: 4.0,
+        amp_decay: 0.45,
+        click_amount: 0.25,
+        click_freq: 2000,
+        saturation: 0.30,
+        velocity_tilt: 0.7
+    } | Gm 0.5
 }
 
 ghost_kick = {
     Kick {
-        harmonic_damping: 1.5,
-        saturation: 0.2,
-        velocity_tilt: 0.8,
-        transient_curve: 1.5
+        pitch_decay: 0.04,
+        pitch_range: 3.0,
+        amp_decay: 0.30,
+        click_amount: 0.10,
+        click_freq: 1500,
+        saturation: 0.18,
+        velocity_tilt: 0.8
     }
-    | Gm 0.2
+    | Gm 0.25
 }
 
 snare = {
@@ -57,48 +58,44 @@ ghost_snare = {
 hat = {
     HiHat {
         decay_rate: 25,
-        shimmer: 18,
         brightness: 0.9,
         pitch_drop: 0.015,
-        saturation: 0.08,
         velocity_tilt: 0.4
     }
+    | Fm 75
     | Gm 0.2
 }
 
 hat_accent = {
     HiHat {
         decay_rate: 30,
-        shimmer: 22,
         brightness: 1.1,
         pitch_drop: 0.02,
-        saturation: 0.12,
         velocity_tilt: 0.5
     }
+    | Fm 90
     | Gm 0.3
 }
 
 hat_soft = {
     HiHat {
         decay_rate: 35,
-        shimmer: 16,
         brightness: 0.7,
         pitch_drop: 0.01,
-        saturation: 0.05,
         velocity_tilt: 0.6
     }
+    | Fm 65
     | Gm 0.1
 }
 
 open_hat = {
     OpenHat {
         decay_rate: 8,
-        shimmer: 18,
         brightness: 1.0,
         pitch_drop: 0.025,
-        saturation: 0.1,
         velocity_tilt: 0.4
     }
+    | Fm 75
     | Gm 0.3
 }
 

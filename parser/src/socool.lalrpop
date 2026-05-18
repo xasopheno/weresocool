@@ -701,6 +701,7 @@ SnareParamList: SnareParams = {
                 "velocity_tilt" => result.velocity_tilt = Some(value),
                 "resonance" => result.resonance = Some(value),
                 "crack" => result.crack = Some(value),
+                "tune" => result.tune = Some(value),
                 // Backwards compatibility aliases
                 "tone_decay" => result.tone_decay = Some(value),
                 "noise_decay" => result.noise_decay = Some(value),
@@ -734,6 +735,7 @@ HiHatParamList: HiHatParams = {
                 "saturation" => result.saturation = Some(value),
                 "velocity_tilt" => result.velocity_tilt = Some(value),
                 "resonance" => result.resonance = Some(value),
+                "tune" => result.tune = Some(value),
                 _ => {}
             }
         }
