@@ -16,6 +16,7 @@ var z: f32 = 0.0;
 var r: f32 = 0.0;
 var life: f32 = 1.0;
 var scale: f32 = 1.0;
+var scale_vec: vec3<f32> = vec3<f32>(1.0, 1.0, 1.0);
 var time: f32 = 0.0;
 
 fn dummy_function() {

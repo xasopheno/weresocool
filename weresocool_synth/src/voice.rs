@@ -1,5 +1,5 @@
 use crate::{
-    sample::Waveform,
+    sample::{DrumState, Waveform},
     loudness::loudness_normalization,
     Offset, SynthOp,
 };
@@ -29,6 +29,7 @@ pub struct Voice {
     pub filter_crossfade_index: usize,
     pub osc_crossfade_index: usize,
     pub smoothed_gain: f64,  // Exponentially smoothed gain for click-free transitions
+    pub drum_state: DrumState,  // Per-voice biquad filter states for drum synth
 }
 
 #[derive(Clone, Debug, PartialEq, Copy)]
@@ -104,6 +105,7 @@ impl Voice {
             filter_crossfade_index: 0,
             osc_crossfade_index: 0,
             smoothed_gain: 0.0,
+            drum_state: DrumState::default(),
         }
     }
 
@@ -158,6 +160,14 @@ impl Voice {
 
         // Cache sample_rate once per op to avoid per-sample Settings lookup
         let sample_rate = Settings::global().sample_rate;
+
+        // Reset drum filter state at the start of each drum note so the
+        // resonant filters don't carry decay/ring from a previous note.
+        // The drum sample code re-coefficients the filters on this same
+        // first sample, so this just zeros the history.
+        if is_drum && op.sample_index() == 0 {
+            self.drum_state.reset();
+        }
 
         // Hoist loop-invariant op + voice state out of the per-sample loop.
         // All of these are constant within a single buffer render: op
@@ -223,12 +233,12 @@ impl Voice {
 
             self.phase = Voice::calculate_current_phase(&info, &self.osc_type, self.phase);
 
-            let mut new_sample = self.osc_type.generate_sample(info, self.phase);
+            let mut new_sample = self.osc_type.generate_sample(info, self.phase, &mut self.drum_state);
 
             if has_old_osc {
                 if let Some(old_osc_type) = &self.old_osc_type {
                     self.old_phase = Voice::calculate_current_phase(&info, old_osc_type, self.phase);
-                    let old_sample = old_osc_type.generate_sample(info, self.old_phase);
+                    let old_sample = old_osc_type.generate_sample(info, self.old_phase, &mut self.drum_state);
                     new_sample = if sound_to_silence {
                         old_sample
                     } else {

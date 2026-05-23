@@ -210,6 +210,10 @@ pub enum VisualOp {
         direction: Option<(WgslValue, WgslValue, WgslValue)>,
         scale_mul: Option<WgslValue>,
         scale_add: Option<WgslValue>,
+        /// Per-axis scale multipliers (Smx/Smy/Smz). Multiply on top of uniform scale.
+        scale_x_mul: Option<WgslValue>,
+        scale_y_mul: Option<WgslValue>,
+        scale_z_mul: Option<WgslValue>,
         velocity_mul: Option<WgslValue>,
         velocity_add: Option<WgslValue>,
         /// Bend: (bend_vector_x, bend_vector_y, bend_vector_z, strength)
@@ -253,6 +257,9 @@ impl Default for VisualOp {
             direction: None,
             scale_mul: None,
             scale_add: None,
+            scale_x_mul: None,
+            scale_y_mul: None,
+            scale_z_mul: None,
             velocity_mul: None,
             velocity_add: None,
             bend: None,
@@ -297,6 +304,10 @@ pub struct VisualPointOp {
     // Scalar modifiers
     pub scale_mul: Rational64,
     pub scale_add: Rational64,
+    // Per-axis scale multipliers (multiply on top of uniform scale_mul)
+    pub scale_x_mul: Rational64,
+    pub scale_y_mul: Rational64,
+    pub scale_z_mul: Rational64,
     pub velocity_mul: Rational64,
     pub velocity_add: Rational64,
     pub alpha_mul: Rational64,
@@ -321,6 +332,9 @@ impl Default for VisualPointOp {
             direction: None,
             scale_mul: Rational64::new(1, 1),
             scale_add: Rational64::new(0, 1),
+            scale_x_mul: Rational64::new(1, 1),
+            scale_y_mul: Rational64::new(1, 1),
+            scale_z_mul: Rational64::new(1, 1),
             velocity_mul: Rational64::new(1, 1),
             velocity_add: Rational64::new(0, 1),
             alpha_mul: Rational64::new(1, 1),
@@ -346,6 +360,9 @@ impl Mul for VisualPointOp {
             y_mul: self.y_mul * other.y_mul,
             z_mul: self.z_mul * other.z_mul,
             scale_mul: self.scale_mul * other.scale_mul,
+            scale_x_mul: self.scale_x_mul * other.scale_x_mul,
+            scale_y_mul: self.scale_y_mul * other.scale_y_mul,
+            scale_z_mul: self.scale_z_mul * other.scale_z_mul,
             velocity_mul: self.velocity_mul * other.velocity_mul,
             alpha_mul: self.alpha_mul * other.alpha_mul,
 
@@ -550,6 +567,15 @@ impl VisualPointOp {
         if self.scale_add != Rational64::new(0, 1) {
             lines.push(format!("    scale = scale + {:.6};", rational_to_f32(self.scale_add)));
         }
+        if self.scale_x_mul != Rational64::new(1, 1) {
+            lines.push(format!("    scale_vec.x = scale_vec.x * {:.6};", rational_to_f32(self.scale_x_mul)));
+        }
+        if self.scale_y_mul != Rational64::new(1, 1) {
+            lines.push(format!("    scale_vec.y = scale_vec.y * {:.6};", rational_to_f32(self.scale_y_mul)));
+        }
+        if self.scale_z_mul != Rational64::new(1, 1) {
+            lines.push(format!("    scale_vec.z = scale_vec.z * {:.6};", rational_to_f32(self.scale_z_mul)));
+        }
         if self.velocity_mul != Rational64::new(1, 1) {
             lines.push(format!("    velocity = velocity * {:.6};", rational_to_f32(self.velocity_mul)));
         }
@@ -628,6 +654,9 @@ impl VisualOp {
                 direction,
                 scale_mul,
                 scale_add,
+                scale_x_mul,
+                scale_y_mul,
+                scale_z_mul,
                 velocity_mul,
                 velocity_add,
                 bend,
@@ -677,6 +706,9 @@ impl VisualOp {
                     direction: dir,
                     scale_mul: get_rational(scale_mul, one),
                     scale_add: get_rational(scale_add, zero),
+                    scale_x_mul: get_rational(scale_x_mul, one),
+                    scale_y_mul: get_rational(scale_y_mul, one),
+                    scale_z_mul: get_rational(scale_z_mul, one),
                     velocity_mul: get_rational(velocity_mul, one),
                     velocity_add: get_rational(velocity_add, zero),
                     alpha_mul: get_rational(alpha_mul, one),
@@ -752,6 +784,9 @@ impl VisualOp {
                 direction,
                 scale_mul,
                 scale_add,
+                scale_x_mul,
+                scale_y_mul,
+                scale_z_mul,
                 velocity_mul,
                 velocity_add,
                 bend,
@@ -768,6 +803,9 @@ impl VisualOp {
                 direction,
                 scale_mul,
                 scale_add,
+                scale_x_mul,
+                scale_y_mul,
+                scale_z_mul,
                 velocity_mul,
                 velocity_add,
                 bend,
@@ -831,6 +869,9 @@ impl VisualOp {
                     direction: dir1,
                     scale_mul: scale_mul1,
                     scale_add: scale_add1,
+                    scale_x_mul: scale_x_mul1,
+                    scale_y_mul: scale_y_mul1,
+                    scale_z_mul: scale_z_mul1,
                     velocity_mul: vel_mul1,
                     velocity_add: vel_add1,
                     bend: bend1,
@@ -851,6 +892,9 @@ impl VisualOp {
                     direction: dir2,
                     scale_mul: scale_mul2,
                     scale_add: scale_add2,
+                    scale_x_mul: scale_x_mul2,
+                    scale_y_mul: scale_y_mul2,
+                    scale_z_mul: scale_z_mul2,
                     velocity_mul: vel_mul2,
                     velocity_add: vel_add2,
                     bend: bend2,
@@ -872,6 +916,9 @@ impl VisualOp {
                     direction: dir2.or(dir1), // Later wins
                     scale_mul: compose_mul(scale_mul1, scale_mul2),
                     scale_add: compose_add(scale_add1, scale_add2),
+                    scale_x_mul: compose_mul(scale_x_mul1, scale_x_mul2),
+                    scale_y_mul: compose_mul(scale_y_mul1, scale_y_mul2),
+                    scale_z_mul: compose_mul(scale_z_mul1, scale_z_mul2),
                     velocity_mul: compose_mul(vel_mul1, vel_mul2),
                     velocity_add: compose_add(vel_add1, vel_add2),
                     bend: bend2.or(bend1), // Later wins
@@ -962,6 +1009,9 @@ impl VisualOp {
                 z_add,
                 scale_mul,
                 scale_add,
+                scale_x_mul,
+                scale_y_mul,
+                scale_z_mul,
                 velocity_mul,
                 velocity_add,
                 bend,
@@ -984,6 +1034,9 @@ impl VisualOp {
                     && z_add.is_none()
                     && scale_mul.is_none()
                     && scale_add.is_none()
+                    && scale_x_mul.is_none()
+                    && scale_y_mul.is_none()
+                    && scale_z_mul.is_none()
                     && velocity_mul.is_none()
                     && velocity_add.is_none()
                     && bend.is_none()
@@ -1110,6 +1163,15 @@ z += pos.z;"#,
                 }
                 if let Some(v) = scale_add {
                     lines.push(format!("scale = scale + {};", v.to_wgsl()));
+                }
+                if let Some(v) = scale_x_mul {
+                    lines.push(format!("scale_vec.x = scale_vec.x * {};", v.to_wgsl()));
+                }
+                if let Some(v) = scale_y_mul {
+                    lines.push(format!("scale_vec.y = scale_vec.y * {};", v.to_wgsl()));
+                }
+                if let Some(v) = scale_z_mul {
+                    lines.push(format!("scale_vec.z = scale_vec.z * {};", v.to_wgsl()));
                 }
                 if let Some(v) = velocity_mul {
                     lines.push(format!("velocity = velocity * {};", v.to_wgsl()));
@@ -1261,6 +1323,9 @@ z += pos.z;"#,
             direction: None,
             scale_mul: None,
             scale_add: None,
+            scale_x_mul: None,
+            scale_y_mul: None,
+            scale_z_mul: None,
             velocity_mul: None,
             velocity_add: None,
             bend: None,
@@ -1340,6 +1405,30 @@ z += pos.z;"#,
     pub fn sa(v: impl Into<WgslValue>) -> Self {
         let mut op = Self::simple_default();
         if let VisualOp::Simple { scale_add: ref mut f, .. } = op {
+            *f = Some(v.into());
+        }
+        op
+    }
+
+    pub fn smx(v: impl Into<WgslValue>) -> Self {
+        let mut op = Self::simple_default();
+        if let VisualOp::Simple { scale_x_mul: ref mut f, .. } = op {
+            *f = Some(v.into());
+        }
+        op
+    }
+
+    pub fn smy(v: impl Into<WgslValue>) -> Self {
+        let mut op = Self::simple_default();
+        if let VisualOp::Simple { scale_y_mul: ref mut f, .. } = op {
+            *f = Some(v.into());
+        }
+        op
+    }
+
+    pub fn smz(v: impl Into<WgslValue>) -> Self {
+        let mut op = Self::simple_default();
+        if let VisualOp::Simple { scale_z_mul: ref mut f, .. } = op {
             *f = Some(v.into());
         }
         op
@@ -1440,6 +1529,9 @@ z += pos.z;"#,
                 z_add,
                 scale_mul,
                 scale_add,
+                scale_x_mul,
+                scale_y_mul,
+                scale_z_mul,
                 velocity_mul,
                 velocity_add,
                 bend,
@@ -1539,6 +1631,15 @@ z += pos.z;"#,
                 }
                 if let Some(v) = scale_mul {
                     segment_ops.push(format!("        scale = scale * {};", v.to_wgsl()));
+                }
+                if let Some(v) = scale_x_mul {
+                    segment_ops.push(format!("        scale_vec.x = scale_vec.x * {};", v.to_wgsl()));
+                }
+                if let Some(v) = scale_y_mul {
+                    segment_ops.push(format!("        scale_vec.y = scale_vec.y * {};", v.to_wgsl()));
+                }
+                if let Some(v) = scale_z_mul {
+                    segment_ops.push(format!("        scale_vec.z = scale_vec.z * {};", v.to_wgsl()));
                 }
                 if let Some(v) = velocity_mul {
                     segment_ops.push(format!("        velocity = velocity * {};", v.to_wgsl()));
@@ -1640,6 +1741,9 @@ z += pos.z;"#,
                 z_add,
                 scale_mul,
                 scale_add,
+                scale_x_mul,
+                scale_y_mul,
+                scale_z_mul,
                 velocity_mul,
                 velocity_add,
                 bend,
@@ -1784,6 +1888,15 @@ z += pos.z;"#,
                 }
                 if let Some(v) = scale_mul {
                     segment_ops.push(format!("            scale = scale * {};", v.to_wgsl()));
+                }
+                if let Some(v) = scale_x_mul {
+                    segment_ops.push(format!("            scale_vec.x = scale_vec.x * {};", v.to_wgsl()));
+                }
+                if let Some(v) = scale_y_mul {
+                    segment_ops.push(format!("            scale_vec.y = scale_vec.y * {};", v.to_wgsl()));
+                }
+                if let Some(v) = scale_z_mul {
+                    segment_ops.push(format!("            scale_vec.z = scale_vec.z * {};", v.to_wgsl()));
                 }
                 if let Some(v) = velocity_mul {
                     segment_ops.push(format!("            velocity = velocity * {};", v.to_wgsl()));
@@ -2024,6 +2137,7 @@ fn dummy_function() {
     var r: f32 = 0.01;
     var life: f32 = 1.0;
     var scale: f32 = 1.0;
+    var scale_vec: vec3<f32> = vec3<f32>(1.0, 1.0, 1.0);  // Per-axis scale (Smx/Smy/Smz)
     var time: f32 = 0.0;
     var velocity: f32 = 1.0;
     var seg_length: f32 = 1.0;  // Duration multiplier for Seq segments

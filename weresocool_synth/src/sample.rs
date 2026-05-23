@@ -113,6 +113,277 @@ fn transient_envelope(t: f64, spike_curve: f64, dip_amount: f64) -> f64 {
     }
 }
 
+// ═══════════════════════════════════════════════════════════════════════
+// BIQUAD FILTERS — RBJ Audio EQ Cookbook coefficients, TDF2 state
+//
+// Two state values per filter (`z1`, `z2`). Coefficients computed once at
+// note start from cutoff + Q. Stable, cheap, and gives real resonant filter
+// behaviour — the difference between "synth that sounds like a synth" and
+// "synth that sounds like a drum."
+// ═══════════════════════════════════════════════════════════════════════
+
+#[derive(Clone, Debug, Default, PartialEq)]
+pub struct Biquad {
+    b0: f64, b1: f64, b2: f64,
+    a1: f64, a2: f64,
+    z1: f64, z2: f64,
+}
+
+impl Biquad {
+    /// Resonant lowpass — natural for body/shell shaping.
+    pub fn lowpass(&mut self, sr: f64, cutoff: f64, q: f64) {
+        let cutoff = cutoff.clamp(20.0, sr * 0.45);
+        let omega = TAU * cutoff / sr;
+        let (so, co) = omega.sin_cos();
+        let alpha = so / (2.0 * q.max(0.1));
+        let a0 = 1.0 + alpha;
+        self.b0 = ((1.0 - co) * 0.5) / a0;
+        self.b1 = (1.0 - co) / a0;
+        self.b2 = self.b0;
+        self.a1 = (-2.0 * co) / a0;
+        self.a2 = (1.0 - alpha) / a0;
+    }
+
+    /// Constant-skirt-gain resonant bandpass — peaks at cutoff with bandwidth ~ cutoff/Q.
+    /// This is what turns "white noise" into "metallic noise."
+    pub fn bandpass(&mut self, sr: f64, cutoff: f64, q: f64) {
+        let cutoff = cutoff.clamp(20.0, sr * 0.45);
+        let omega = TAU * cutoff / sr;
+        let (so, co) = omega.sin_cos();
+        let alpha = so / (2.0 * q.max(0.1));
+        let a0 = 1.0 + alpha;
+        self.b0 = alpha / a0;
+        self.b1 = 0.0;
+        self.b2 = -alpha / a0;
+        self.a1 = (-2.0 * co) / a0;
+        self.a2 = (1.0 - alpha) / a0;
+    }
+
+    /// Highpass — used to keep the snare wires above the body.
+    pub fn highpass(&mut self, sr: f64, cutoff: f64, q: f64) {
+        let cutoff = cutoff.clamp(20.0, sr * 0.45);
+        let omega = TAU * cutoff / sr;
+        let (so, co) = omega.sin_cos();
+        let alpha = so / (2.0 * q.max(0.1));
+        let a0 = 1.0 + alpha;
+        self.b0 = ((1.0 + co) * 0.5) / a0;
+        self.b1 = -(1.0 + co) / a0;
+        self.b2 = self.b0;
+        self.a1 = (-2.0 * co) / a0;
+        self.a2 = (1.0 - alpha) / a0;
+    }
+
+    /// Reset filter state (history) without changing coefficients. Call at note start.
+    #[inline]
+    pub fn reset_state(&mut self) {
+        self.z1 = 0.0;
+        self.z2 = 0.0;
+    }
+
+    /// Direct Form II Transposed processing — numerically stable, single-sample.
+    #[inline]
+    pub fn process(&mut self, x: f64) -> f64 {
+        let y = self.b0 * x + self.z1;
+        self.z1 = self.b1 * x - self.a1 * y + self.z2;
+        self.z2 = self.b2 * x - self.a2 * y;
+        y
+    }
+}
+
+// ═══════════════════════════════════════════════════════════════════════
+// TPT STATE-VARIABLE FILTER — topology-preserving zero-delay design
+//
+// Unlike a fixed biquad, this filter's cutoff can be modulated per-sample
+// without aliasing or instability. That matters because the *signature*
+// sound of an analog drum machine is a filter whose cutoff sweeps with the
+// envelope (kick body darkens as it decays, snare shell loses brightness).
+// Static filters can't do that — they sound like a synth, not an instrument.
+// Reference: Vadim Zavalishin, "The Art of VA Filter Design," chapter 5.
+// ═══════════════════════════════════════════════════════════════════════
+#[derive(Clone, Debug, Default, PartialEq)]
+pub struct TptSvf {
+    ic1eq: f64,
+    ic2eq: f64,
+}
+
+impl TptSvf {
+    #[inline]
+    pub fn reset_state(&mut self) {
+        self.ic1eq = 0.0;
+        self.ic2eq = 0.0;
+    }
+
+    /// Process one sample as a resonant lowpass.
+    /// `cutoff` and `q` may change every call without artifacts.
+    #[inline]
+    pub fn process_lp(&mut self, x: f64, sr: f64, cutoff: f64, q: f64) -> f64 {
+        let g = (PI * cutoff.clamp(15.0, sr * 0.49) / sr).tan();
+        let k = 1.0 / q.max(0.1);
+        let a1 = 1.0 / (1.0 + g * (g + k));
+        let a2 = g * a1;
+        let v3 = x - self.ic2eq;
+        let v1 = a1 * self.ic1eq + a2 * v3;
+        let v2 = self.ic2eq + g * v1;
+        self.ic1eq = 2.0 * v1 - self.ic1eq;
+        self.ic2eq = 2.0 * v2 - self.ic2eq;
+        v2
+    }
+
+    /// Process one sample as a resonant bandpass.
+    #[inline]
+    pub fn process_bp(&mut self, x: f64, sr: f64, cutoff: f64, q: f64) -> f64 {
+        let g = (PI * cutoff.clamp(15.0, sr * 0.49) / sr).tan();
+        let k = 1.0 / q.max(0.1);
+        let a1 = 1.0 / (1.0 + g * (g + k));
+        let a2 = g * a1;
+        let v3 = x - self.ic2eq;
+        let v1 = a1 * self.ic1eq + a2 * v3;
+        let v2 = self.ic2eq + g * v1;
+        self.ic1eq = 2.0 * v1 - self.ic1eq;
+        self.ic2eq = 2.0 * v2 - self.ic2eq;
+        v1
+    }
+
+    /// Process one sample as a resonant highpass.
+    #[inline]
+    pub fn process_hp(&mut self, x: f64, sr: f64, cutoff: f64, q: f64) -> f64 {
+        let g = (PI * cutoff.clamp(15.0, sr * 0.49) / sr).tan();
+        let k = 1.0 / q.max(0.1);
+        let a1 = 1.0 / (1.0 + g * (g + k));
+        let a2 = g * a1;
+        let v3 = x - self.ic2eq;
+        let v1 = a1 * self.ic1eq + a2 * v3;
+        let v2 = self.ic2eq + g * v1;
+        self.ic1eq = 2.0 * v1 - self.ic1eq;
+        self.ic2eq = 2.0 * v2 - self.ic2eq;
+        x - k * v1 - v2
+    }
+}
+
+/// Asymmetric soft saturation — different bend on the positive and negative
+/// half-cycles, like an analog tube or transformer. Adds even-order harmonics
+/// (2nd, 4th) which read as "warmth" / "body" instead of the harsh-edged
+/// odd-only harmonics of symmetric tanh.
+#[inline]
+fn asym_saturate(x: f64, drive: f64, asymmetry: f64) -> f64 {
+    let d = x * drive;
+    // Bias the input — `asymmetry` shifts the operating point so the
+    // positive and negative halves bend through different parts of the
+    // tanh curve. The DC removal afterwards keeps the output centred.
+    let biased = d + asymmetry;
+    let shaped = biased.tanh();
+    let dc = asymmetry.tanh();
+    shaped - dc
+}
+
+/// One-pole envelope follower with asymmetric attack/release for compression.
+/// Stateless interface — call with previous env state, get back the new one.
+#[inline]
+fn peak_follow(prev_env: f64, x: f64, atk_coef: f64, rel_coef: f64) -> f64 {
+    let abs_x = x.abs();
+    let coef = if abs_x > prev_env { atk_coef } else { rel_coef };
+    prev_env + coef * (abs_x - prev_env)
+}
+
+/// Soft-knee compressor curve. Approximates a real compressor's gain
+/// reduction without per-sample log/exp. Returns the gain multiplier.
+/// `env`: detector level. `threshold`: where compression starts (linear).
+/// `ratio`: 1.0 = none, 4.0 = 4:1, etc.
+#[inline]
+fn compress_gain(env: f64, threshold: f64, ratio: f64) -> f64 {
+    let over = env - threshold;
+    if over <= 0.0 {
+        1.0
+    } else {
+        // Smooth gain reduction that approaches 1/ratio asymptotically.
+        // For small `over`, it's nearly linear pass-through; for large
+        // `over`, it pulls the signal toward threshold at the ratio.
+        1.0 / (1.0 + over * (ratio - 1.0))
+    }
+}
+
+/// Per-voice drum filter state. One block holds every filter any drum needs;
+/// unused slots are free (a few floats). Reset and re-coefficented at the
+/// start of each drum note in `Voice::generate_waveform`.
+#[derive(Clone, Debug, Default, PartialEq)]
+pub struct DrumState {
+    // Kick — TPT SVF so we can modulate the lowpass cutoff with the pitch
+    // envelope. As the kick body decays, the lowpass drops in cutoff.
+    pub kick_body: TptSvf,
+    // Bandpass for the kick click — excited by a brief impulse + noise burst
+    // at note start. The filter's impulse response IS the click, so it has
+    // natural chaotic ring instead of a smooth synthesized envelope.
+    pub kick_click_bp: Biquad,
+    // Per-drum compression envelope follower (parallel comp on the final mix).
+    pub kick_comp_env: f64,
+    // Snare wires bandpass cascade (fixed cutoff — wire metal resonance is
+    // a fixed mechanical property).
+    pub snare_wires: Biquad,
+    pub snare_wires_2: Biquad,
+    // Shell lowpass — modulated cutoff so the snare darkens as it decays.
+    pub snare_shell_lp: TptSvf,
+    // Beater bandpass — drives the initial stick impact. Excited by a brief
+    // noise burst at note start; filter ring gives a tonal "thwack."
+    pub snare_beater_bp: Biquad,
+    // Snare compression envelope.
+    pub snare_comp_env: f64,
+    // HiHat bandpasses on noise; TPT highpass on modes.
+    pub hihat_bp_low: Biquad,
+    pub hihat_bp_high: Biquad,
+    pub hihat_hp: TptSvf,
+    // Modal coupling feedback for the hi-hat.
+    pub coupling_z: f64,
+    // Per-note seed for phase randomization. Increments at each reset(),
+    // mixed into each mode's starting phase so no two hits are byte-identical.
+    // Without this, every drum hit has exactly the same waveform — the #1
+    // perceptual "synth tell" that the brain catches instantly.
+    pub note_counter: u32,
+}
+
+impl DrumState {
+    pub fn reset(&mut self) {
+        self.kick_body.reset_state();
+        self.kick_click_bp.reset_state();
+        self.kick_comp_env = 0.0;
+        self.snare_wires.reset_state();
+        self.snare_wires_2.reset_state();
+        self.snare_shell_lp.reset_state();
+        self.snare_beater_bp.reset_state();
+        self.snare_comp_env = 0.0;
+        self.hihat_bp_low.reset_state();
+        self.hihat_bp_high.reset_state();
+        self.hihat_hp.reset_state();
+        self.coupling_z = 0.0;
+        self.note_counter = self.note_counter.wrapping_add(1);
+    }
+
+    /// Generate a small phase offset (in radians) deterministic per-note,
+    /// per-filter-id. Two different ids on the same note get different
+    /// offsets; the same id on different notes gets different offsets.
+    /// Range ≈ [-π/30, +π/30] — small enough to not change pitch perception,
+    /// large enough to break the byte-identical-hit perceptual tell.
+    #[inline]
+    pub fn phase_jitter(&self, id: u64) -> f64 {
+        let mut x = (self.note_counter as u64).wrapping_mul(0x9E3779B97F4A7C15);
+        x = x.wrapping_add(id);
+        x ^= x >> 33;
+        x = x.wrapping_mul(0xff51afd7ed558ccd);
+        x ^= x >> 33;
+        let normalized = ((x as i64) as f64) / (i64::MAX as f64);  // [-1, 1]
+        normalized * (PI / 30.0)
+    }
+
+    /// Return a u64 seed unique per-note for noise functions that want
+    /// per-hit variation in their seed space.
+    #[inline]
+    pub fn noise_seed(&self, id: u64) -> u64 {
+        let mut x = (self.note_counter as u64).wrapping_mul(0x9E3779B97F4A7C15);
+        x ^= id;
+        x ^= x >> 33;
+        x.wrapping_mul(0xff51afd7ed558ccd)
+    }
+}
+
 impl Voice {
     #[inline]
     pub fn calculate_current_phase(info: &SampleInfo, osc_type: &OscType, prev_phase: f64) -> f64 {
@@ -131,12 +402,13 @@ impl Voice {
     }
 }
 pub trait Waveform {
-    fn generate_sample(&self, info: SampleInfo, phase: f64) -> f64;
+    /// `state` is per-voice drum filter state. Non-drum oscillators ignore it.
+    fn generate_sample(&self, info: SampleInfo, phase: f64, state: &mut DrumState) -> f64;
 }
 
 impl Waveform for OscType {
     #[inline]
-    fn generate_sample(&self, info: SampleInfo, phase: f64) -> f64 {
+    fn generate_sample(&self, info: SampleInfo, phase: f64, state: &mut DrumState) -> f64 {
         match self {
             OscType::None => phase.sin() * info.gain,
             OscType::Sine { pow } => {
@@ -249,13 +521,23 @@ impl Waveform for OscType {
                 let spectral_tilt = velocity.sqrt();
                 let click_amount_vel = click_amount * (0.6 + 0.4 * spectral_tilt * velocity_tilt);
 
+                // ─── Per-note setup: click bandpass tuned to click_freq ──────
+                // High-Q bandpass excited by a brief impulse gives us the
+                // click — the filter's impulse response IS the transient,
+                // which naturally has the chaotic ring of a real beater.
+                if info.sample_index == 0 {
+                    state.kick_click_bp.bandpass(info.sample_rate, click_freq, 6.0);
+                }
+
                 // ─── Pitch-envelope phase integration ─────────────────────────
                 //   freq(t) = f_base * (1 + (R-1) * exp(-t/τ))
                 //   τ = pitch_decay / 3 → ~95% settled at t = pitch_decay
                 let tau_p = pitch_decay / 3.0;
                 let exp_pd = (-t / tau_p).exp();
                 let env_factor = (pitch_range - 1.0) * tau_p * (1.0 - exp_pd);
-                let kick_phase = TAU * f_base * (t + env_factor);
+                // Phase jitter — per-note tiny offset so hits aren't identical.
+                let jitter = state.phase_jitter(0x1CC0_F00D);
+                let kick_phase = TAU * f_base * (t + env_factor) + jitter;
 
                 // ─── Self-FM during the pitch sweep ───────────────────────────
                 // Modulate the kick by a 2nd-harmonic sine whose depth tracks
@@ -276,26 +558,72 @@ impl Waveform for OscType {
                 let hump = hump_amount * (t / tau_h) * (-t / tau_h).exp() * std::f64::consts::E;
                 let body_env = body_decay_env * (1.0 + hump);
 
-                // ─── Click — short noisy-sine in the transient register ───────
-                // The click is a sine + a tiny noise burst on top, gated by a
-                // 3 ms envelope. The noise gives the click "beater" character
-                // instead of just being a clean tone.
-                let click_decay = 0.0025;
-                let click_env = (-t / click_decay).exp();
-                let click_noise = bright_noise(info.sample_index, 0xABCDEF0123456789) * 0.35;
-                let click = ((TAU * click_freq * t).sin() + click_noise)
-                          * click_env * click_amount_vel;
+                // ─── Click — bandpass-filtered impulse + brief noise burst ────
+                // Instead of synthesizing a smooth sine envelope, we feed a
+                // short impulse + chaotic noise into a high-Q bandpass and
+                // let the filter ring out at click_freq. The result is a
+                // tonal "thwack" with natural ring decay — much closer to a
+                // real beater hit than a clean sine envelope.
+                let click_excite = if info.sample_index < 4 {
+                    let ramp = 1.0 - info.sample_index as f64 * 0.25;
+                    let chaos = fast_noise(info.sample_index, state.noise_seed(0xC11C_BEEF));
+                    ramp + chaos * 0.5
+                } else if t < 0.001 {
+                    // Tiny continued noise excitation for the first ms,
+                    // gives the click "beater chatter" character.
+                    fast_noise(info.sample_index, state.noise_seed(0xC11C_FACE)) * 0.3
+                } else {
+                    0.0
+                };
+                let click_raw = state.kick_click_bp.process(click_excite);
+                let click = click_raw * click_amount_vel * 4.5;
 
-                // ─── Saturation — proper tanh, NOT level-normalised ───────────
-                // Drive scales with envelope so the loud part gets fat odd
-                // harmonics while the tail stays clean. Output level boost via
-                // (1 + sat) keeps perceived loudness consistent across sat
-                // settings.
+                // ─── Body: asymmetric saturation → modulated lowpass ──────────
+                // Two analog moves stacked here:
+                //
+                // 1) Asymmetric saturation instead of plain tanh. Real tubes
+                //    and transformers bend the positive and negative half-
+                //    cycles through different parts of the curve, producing
+                //    even-order harmonics (2nd, 4th) on top of the odd ones.
+                //    Perceived as "warmth" and "body" rather than the harsher
+                //    "fuzz" of pure odd-harmonic distortion.
+                //
+                // 2) The body lowpass cutoff TRACKS the pitch envelope. At
+                //    t=0 the cutoff is high (lets the transient click and
+                //    upper harmonics through); as the body decays the cutoff
+                //    drops, naturally darkening the tail. This is the
+                //    signature analog drum-machine sound — a static filter
+                //    sounds like a synth; a sweeping filter sounds like an
+                //    actual kick drum.
                 let body = fundamental * body_env;
-                let drive = 1.0 + saturation_amount * 2.5 * body_decay_env;
-                let body_sat = (body * drive).tanh() * (1.0 + saturation_amount * 0.4);
+                let drive = 1.0 + saturation_amount * 3.0 * body_decay_env;
+                let asym = saturation_amount * 0.4 * body_decay_env;
+                let body_sat = asym_saturate(body, drive, asym) * (1.0 + saturation_amount * 0.5);
 
-                (body_sat + click) * info.gain * KICK_GAIN
+                // Cutoff sweeps from ~6× fundamental during the transient
+                // down to ~1.5× as the body decays. Q stays near unity-and-
+                // a-bit — enough resonance to add weight, not so much that
+                // the kick whistles.
+                let pitch_env = 1.0 + (pitch_range - 1.0) * exp_pd;        // (R..1)
+                let cutoff_hi = f_base * 6.0 * pitch_env;
+                let cutoff_lo = f_base * 1.5;
+                let cutoff = cutoff_lo + (cutoff_hi - cutoff_lo) * body_decay_env;
+                let body_shaped = state.kick_body.process_lp(body_sat, info.sample_rate, cutoff, 1.2);
+
+                // ─── Parallel compression — lifts body, keeps transient ───────
+                // Fast attack so we catch the kick's initial spike; medium
+                // release so the body holds its energy through the decay.
+                // Then mix the compressed signal parallel with the dry: the
+                // dry preserves the transient shape, the compressed lifts the
+                // sustain. This is the classic "drum bus" compression sound.
+                let dry = body_shaped + click;
+                let atk = 1.0 - (-1.0 / (info.sample_rate * 0.0008)).exp();   // 0.8 ms
+                let rel = 1.0 - (-1.0 / (info.sample_rate * 0.080)).exp();    // 80 ms
+                state.kick_comp_env = peak_follow(state.kick_comp_env, dry, atk, rel);
+                let comp_gain = compress_gain(state.kick_comp_env, 0.25, 5.0);
+                let punchy = dry * 0.55 + (dry * comp_gain) * 0.90;
+
+                punchy * info.gain * KICK_GAIN
             }
 
             // ═════════════════════════════════════════════════════════════════════
@@ -327,6 +655,17 @@ impl Waveform for OscType {
                 let tune = params.as_ref().and_then(|p| p.tune.map(r_to_f64)).unwrap_or(1.0);
                 let info_freq = if info.frequency > 20.0 { info.frequency } else { SNARE_DEFAULT_FREQ };
                 let f_base = info_freq * tune;
+
+                // Per-note setup: wire bandpasses (fixed metal resonance),
+                // and a beater bandpass at 3.5 kHz with high Q. The beater
+                // BP is excited by a brief noise burst at note start; its
+                // ring is the "stick impact" tonal component.
+                if info.sample_index == 0 {
+                    let bright_shift = 1.0 + tone_spec * 0.4;
+                    state.snare_wires.bandpass(info.sample_rate, 5500.0 * bright_shift, 3.5);
+                    state.snare_wires_2.bandpass(info.sample_rate, 9000.0 * bright_shift, 2.8);
+                    state.snare_beater_bp.bandpass(info.sample_rate, 3500.0, 5.0);
+                }
 
                 let shell_decay = params.as_ref()
                     .and_then(|p| p.shell_decay.or(p.tone_decay).map(r_to_f64))
@@ -382,48 +721,64 @@ impl Waveform for OscType {
                 let bot_amp1 = (-t * 3.0 * head_damping_ratio / shell_decay).exp();
                 let bot_amp2 = (-t * 3.0 * head_damping_ratio * 1.6 / shell_decay).exp();
 
-                let head = (TAU * top_f1 * t).sin() * 0.42 * top_amp1
-                         + (TAU * top_f2 * t).sin() * 0.22 * top_amp2
-                         + (TAU * bot_f1 * t).sin() * 0.30 * bot_amp1
-                         + (TAU * bot_f2 * t).sin() * 0.16 * bot_amp2;
+                // Raw head — each mode gets a tiny per-note phase jitter so
+                // repeated hits are not byte-identical (key to escaping the
+                // "drum machine" tell). Then through the modulated shell LP.
+                let j1 = state.phase_jitter(0x5_DEAD_0001);
+                let j2 = state.phase_jitter(0x5_DEAD_0002);
+                let j3 = state.phase_jitter(0x5_DEAD_0003);
+                let j4 = state.phase_jitter(0x5_DEAD_0004);
+                let head_raw = (TAU * top_f1 * t + j1).sin() * 0.42 * top_amp1
+                             + (TAU * top_f2 * t + j2).sin() * 0.22 * top_amp2
+                             + (TAU * bot_f1 * t + j3).sin() * 0.30 * bot_amp1
+                             + (TAU * bot_f2 * t + j4).sin() * 0.16 * bot_amp2;
+                let shell_cutoff_hi = (f_base * 8.0).clamp(800.0, 6000.0);
+                let shell_cutoff_lo = (f_base * 2.5).clamp(300.0, 2500.0);
+                let shell_cutoff = shell_cutoff_lo + (shell_cutoff_hi - shell_cutoff_lo) * top_amp1;
+                let head = state.snare_shell_lp.process_lp(head_raw, info.sample_rate, shell_cutoff, 1.5);
 
-                // ─── Wires: bright bandpassed noise driven by the heads ───────
-                // The wire envelope has its OWN decay tail but is also gated
-                // by the bottom-head envelope (sympathetic drive). This is
-                // what makes the wires "rattle along" instead of hissing as a
-                // separate layer. Use bright_noise + a comb stage centred
-                // around 6-7 kHz for the proper "tsss" texture.
-                let raw_wire_noise = bright_noise(info.sample_index, 0xDEADBEEFCAFEBABE) * 0.5
-                                   + comb_noise(info.sample_index, 0xDEADBEEFCAFEBABE, 4) * 0.5;
-                let wire_attack = (-t * 3.0 / 0.006).exp();           // 6 ms snap
-                let wire_tail = (-t * 3.0 / wire_decay).exp();        // longer tail
-                // Sympathetic drive: when bot_amp1 dies, wires die with it.
+                // ─── Wires: white noise → resonant bandpass cascade ───────────
+                // Same as before, but noise seed is per-note via state.noise_seed.
+                // The two bandpasses (5.5 kHz + 9 kHz) carve out the metallic
+                // resonance from white noise.
+                let white = fast_noise(info.sample_index, state.noise_seed(0x717E_5));
+                let wires_filtered = state.snare_wires.process(white) * 2.2
+                                   + state.snare_wires_2.process(white) * 1.6;
+                let wire_attack = (-t * 3.0 / 0.006).exp();
+                let wire_tail = (-t * 3.0 / wire_decay).exp();
                 let sympathy = 0.4 + 0.6 * bot_amp1;
                 let wire_env = (wire_attack * 0.7 + wire_tail * 0.3) * sympathy;
-                let wires = raw_wire_noise * wire_env;
+                let wires = wires_filtered * wire_env;
 
-                // ─── Crack: noise burst, not pure sines ───────────────────────
-                // Real cracks are stick-on-head impacts — broadband noise with
-                // a fast envelope, not tonal. Two stages: a *very* fast attack
-                // spike (~1 ms, comb-shaped around 4-6 kHz) and a slightly
-                // slower body (~5 ms, broader). Crack peaks just above unity
-                // to compete with the head modes on the attack.
+                // ─── Crack: noise burst with per-note seed variation ──────────
+                // Two stages: a sub-ms spike (comb-shaped around 4-6 kHz) and
+                // a slightly slower body. The per-note noise seed means
+                // consecutive snare hits have DIFFERENT noise patterns —
+                // critical for breaking the "drum machine" perceptual tell.
                 let crack_spike_env = (-t / 0.0010).exp();
                 let crack_body_env = (-t / 0.0050).exp();
-                let crack_spike = (comb_noise(info.sample_index, 0x123456789ABCDEF0, 6) * 1.4
-                                +  bright_noise(info.sample_index, 0x123456789ABCDEF0) * 0.6)
+                let crack_seed = state.noise_seed(0xC4AC_BEEF);
+                let crack_spike = (comb_noise(info.sample_index, crack_seed, 6) * 1.4
+                                +  bright_noise(info.sample_index, crack_seed) * 0.6)
                                 * crack_spike_env;
-                let crack_body = comb_noise(info.sample_index, 0xCAFEBABEFEEDFACE, 10) * crack_body_env;
+                let crack_body = comb_noise(info.sample_index,
+                                             state.noise_seed(0xC4AC_FACE), 10) * crack_body_env;
                 let crack = (crack_spike + crack_body * 0.5) * crack_amount * 1.6;
 
-                // ─── Beater click — ultra-short stick contact ─────────────────
-                let beater_env = (-t / 0.0012).exp();
-                let beater = bright_noise(info.sample_index, 0xFEDCBA9876543210)
-                           * beater_env * attack_amount * 1.4;
+                // ─── Beater impact — bandpass filter excited by noise burst ───
+                // The high-Q bandpass at 3.5 kHz rings briefly when excited;
+                // we excite it with a sub-millisecond noise burst so the
+                // ring carries the chaotic stick character. Much more like
+                // a real beater than a bare bright-noise envelope.
+                let beater_excite = if info.sample_index < 6 {
+                    fast_noise(info.sample_index, state.noise_seed(0xBEAD_F00D)) * 1.2
+                } else {
+                    0.0
+                };
+                let beater_raw = state.snare_beater_bp.process(beater_excite);
+                let beater = beater_raw * attack_amount * 4.0;
 
-                // ─── Mix + saturation ─────────────────────────────────────────
-                // Head fades back slightly as wire content rises (real snares
-                // have wires masking the head ring at high wire_mix).
+                // ─── Mix + saturation + parallel compression ─────────────────
                 let head_component = head * (1.0 - wire_mix_vel * 0.35);
                 let wire_component = wires * (0.4 + wire_mix_vel * 0.9);
                 let tone = head_component + wire_component + crack + beater;
@@ -432,7 +787,15 @@ impl Waveform for OscType {
                 let drive = 1.0 + saturation_amount * (1.0 + decay_progress);
                 let saturated = soft_saturate(tone, drive);
 
-                saturated * info.gain * SNARE_GAIN
+                // Parallel comp — fast attack to catch the crack peak, medium
+                // release so the wire/body sustains push through.
+                let atk = 1.0 - (-1.0 / (info.sample_rate * 0.0005)).exp();   // 0.5 ms
+                let rel = 1.0 - (-1.0 / (info.sample_rate * 0.060)).exp();    // 60 ms
+                state.snare_comp_env = peak_follow(state.snare_comp_env, saturated, atk, rel);
+                let comp_gain = compress_gain(state.snare_comp_env, 0.30, 4.5);
+                let punchy = saturated * 0.55 + (saturated * comp_gain) * 0.90;
+
+                punchy * info.gain * SNARE_GAIN
             }
 
             // ═════════════════════════════════════════════════════════════════════
@@ -486,6 +849,16 @@ impl Waveform for OscType {
                     .and_then(|p| p.velocity_tilt.map(r_to_f64))
                     .unwrap_or(0.4);
 
+                // Bandpass cascade on noise = metallic "tssh." The mode
+                // highpass uses TPT SVF; we don't sweep it (cymbals don't),
+                // but the TPT version is more numerically robust for the
+                // very high cutoff we run.
+                if info.sample_index == 0 {
+                    state.hihat_bp_low.bandpass(info.sample_rate, 6000.0, 4.0);
+                    state.hihat_bp_high.bandpass(info.sample_rate, 11000.0, 3.0);
+                    state.coupling_z = 0.0;
+                }
+
                 let velocity = info.gain.clamp(0.0, 1.0);
                 let spectral_tilt = velocity.sqrt();
                 let brightness_vel = brightness * (0.7 + 0.6 * spectral_tilt * velocity_tilt);
@@ -494,41 +867,69 @@ impl Waveform for OscType {
                 let pitch_drop_mult = 1.0 + pitch_drop * (-t * 6.0).exp();
                 let base_freq = info_freq * tune * shimmer_mult * pitch_drop_mult;
 
-                // Mode set inspired by the first few Bessel-function zeros for
-                // a circular plate (cymbal physics) — plus a few intentionally
-                // close-pair detunings to create *beating*. Close pairs (e.g.
-                // 1.594 + 1.612) interfere as `cos(2π*Δf*t)`, producing the
-                // slow shimmer modulation we hear on real cymbals. Without
-                // beating, the modes just stack into a chord.
-                let modes: [(f64, f64, f64); 12] = [
-                    (1.000, 0.16, 1.0),
-                    (1.594, 0.22, 1.4),
-                    (1.612, 0.16, 1.5),      // beats with 1.594
-                    (2.135, 0.20, 2.0),
-                    (2.295, 0.22, 2.3),
-                    (2.310, 0.14, 2.4),      // beats with 2.295
-                    (2.653, 0.18 * brightness_vel, 2.9),
-                    (2.917, 0.16 * brightness_vel, 3.6),
-                    (3.156, 0.14 * brightness_vel, 4.3),
-                    (3.500, 0.11 * brightness_vel, 5.2),
-                    (3.598, 0.09 * brightness_vel, 5.8),  // beats with 3.500
-                    (4.060, 0.07 * brightness_vel, 7.0),
+                // 22-mode cymbal — first 22 Bessel-function zeros for a circular
+                // plate (the actual physics of cymbal vibration), with three
+                // intentional close pairs to create *beating*. Real cymbals have
+                // 50-100 modes; 22 is plenty for perceptual realism while
+                // keeping the compute reasonable.
+                //
+                // Each mode also receives a tiny phase modulation from
+                // `coupling_z` — the sum of the previous sample's mode outputs.
+                // This is the nonlinear coupling that makes modes "talk to each
+                // other" and creates the alive, shimmering character of real
+                // metal instead of a static stacked-sines chord.
+                let modes: [(f64, f64, f64); 22] = [
+                    (1.000, 0.14, 1.0),
+                    (1.594, 0.18, 1.3),
+                    (1.612, 0.13, 1.35),     // beats with 1.594
+                    (2.135, 0.16, 1.7),
+                    (2.295, 0.18, 1.9),
+                    (2.310, 0.12, 1.95),     // beats with 2.295
+                    (2.653, 0.15, 2.3),
+                    (2.917, 0.14, 2.7),
+                    (3.156, 0.13 * brightness_vel, 3.1),
+                    (3.500, 0.11 * brightness_vel, 3.6),
+                    (3.598, 0.09 * brightness_vel, 3.7),  // beats with 3.500
+                    (3.652, 0.08 * brightness_vel, 3.8),  // beats with 3.598
+                    (4.060, 0.09 * brightness_vel, 4.4),
+                    (4.131, 0.07 * brightness_vel, 4.5),  // beats with 4.060
+                    (4.601, 0.08 * brightness_vel, 5.2),
+                    (4.832, 0.07 * brightness_vel, 5.5),
+                    (5.158, 0.06 * brightness_vel, 6.0),
+                    (5.412, 0.05 * brightness_vel, 6.5),
+                    (5.872, 0.05 * brightness_vel, 7.0),
+                    (6.205, 0.04 * brightness_vel, 7.7),
+                    (6.560, 0.04 * brightness_vel, 8.4),
+                    (6.957, 0.03 * brightness_vel, 9.2),
                 ];
 
+                // Modal coupling — strong drive (0.06) so modes audibly
+                // interfere. Each mode also gets a per-note phase jitter
+                // unique to its id, so repeated hi-hat hits don't replay
+                // the exact same waveform.
+                let coupling_drive = state.coupling_z * 0.06;
+
                 let mut shimmer = 0.0;
-                for (ratio, amp, decay_mult) in modes {
+                for (i, (ratio, amp, decay_mult)) in modes.iter().copied().enumerate() {
                     let mode_freq = base_freq * ratio;
-                    // Skip aliased modes — anything above Nyquist would fold back.
                     if mode_freq >= info.sample_rate * 0.5 { continue; }
                     let mode_amp = (-t * decay_rate * decay_mult).exp();
-                    shimmer += (TAU * mode_freq * t).sin() * amp * mode_amp;
+                    let j = state.phase_jitter(0xCAFE_0000 ^ (i as u64).wrapping_mul(0x9E37));
+                    let phase = TAU * mode_freq * t + coupling_drive + j;
+                    shimmer += phase.sin() * amp * mode_amp;
                 }
+                state.coupling_z = shimmer;
 
-                // ─── Metallic noise — comb-filtered, modally gated ────────────
-                // metal_noise() emphasises the 6-12 kHz band. We then gate it
-                // by the slowest-decaying mode amplitude so the noise tracks
-                // the metal — when the cymbal energy fades, the noise fades.
-                let air = metal_noise(info.sample_index, 0xFEEDFACECAFED00D);
+                // Highpass at 1.5 kHz keeps modes out of the kick band.
+                let shimmer_hp = state.hihat_hp.process_hp(shimmer, info.sample_rate, 1500.0, 0.7);
+
+                // ─── Air — white noise → resonant bandpass cascade ────────────
+                // Per-note noise seed via state.noise_seed — consecutive hi-hat
+                // hits get different noise content, which is the difference
+                // between "drum machine" and "actual instrument."
+                let white = fast_noise(info.sample_index, state.noise_seed(0xCAFE_A11));
+                let air = state.hihat_bp_low.process(white) * 1.6
+                        + state.hihat_bp_high.process(white) * 1.2;
                 let air_env = (-t * decay_rate * 1.1).exp();
                 let air_signal = air * air_env;
 
@@ -537,9 +938,7 @@ impl Waveform for OscType {
                 let attack_noise =
                     bright_noise(info.sample_index, 0x1234567890ABCDEF) * attack_env * attack_amount;
 
-                // Mix — modes carry slightly less than noise so the result is
-                // perceptibly noisy/metallic rather than pitched.
-                let tone = shimmer * 0.45 + air_signal * 0.55 + attack_noise;
+                let tone = shimmer_hp * 0.45 + air_signal * 0.55 + attack_noise;
 
                 tone * info.gain * HIHAT_GAIN
             }
