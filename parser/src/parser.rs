@@ -181,6 +181,236 @@ fn count_lines_before(text: &str, offset: usize) -> usize {
 // If quiet is true, error display is suppressed (used in formatter)
 // Returns the processed string and a SourceMap for error position mapping
 // Fails fast on the first WGSL validation error
+/// Strip kintaro's `warp` extensions so vanilla weresocool can parse a file
+/// that uses them. Removes:
+///   - top-level `warp NAME = { ... }` blocks (collects names along the way)
+///   - inline `| warp { ... }` blocks within def bodies
+///   - `| <name>` chain ops where `<name>` is one of the collected warp names
+///
+/// Replaces removed regions with spaces so byte offsets in any downstream
+/// error messages still point to roughly the right place. Pure stripping —
+/// the audio interpretation is unaffected because warps never produce sound.
+pub fn strip_warp_extensions(src: &str) -> String {
+    let bytes = src.as_bytes();
+    let mut out: Vec<u8> = src.as_bytes().to_vec();
+
+    // Pass 1: find `warp NAME = { ... }` blocks. Collect names + blank them out.
+    let mut warp_names: std::collections::HashSet<String> = std::collections::HashSet::new();
+    let mut i = 0;
+    while i < bytes.len() {
+        // Word-boundary check before `warp` keyword.
+        let at_boundary = i == 0 || !is_socool_ident_byte(bytes[i - 1]);
+        if at_boundary && i + 4 <= bytes.len() && &bytes[i..i + 4] == b"warp" {
+            let after_kw = i + 4;
+            if after_kw < bytes.len() && !is_socool_ident_byte(bytes[after_kw]) {
+                // Eat whitespace, then read NAME.
+                let mut j = after_kw;
+                while j < bytes.len() && (bytes[j] as char).is_whitespace() { j += 1; }
+                let name_start = j;
+                while j < bytes.len() && is_socool_ident_byte(bytes[j]) { j += 1; }
+                if j > name_start {
+                    let name = std::str::from_utf8(&bytes[name_start..j]).unwrap().to_string();
+                    // Eat whitespace, expect `=`, then `{`.
+                    let mut k = j;
+                    while k < bytes.len() && (bytes[k] as char).is_whitespace() { k += 1; }
+                    if k < bytes.len() && bytes[k] == b'=' {
+                        k += 1;
+                        while k < bytes.len() && (bytes[k] as char).is_whitespace() { k += 1; }
+                        if k < bytes.len() && bytes[k] == b'{' {
+                            if let Some(close) = find_matching_brace(bytes, k) {
+                                warp_names.insert(name);
+                                blank_range(&mut out, i, close + 1);
+                                i = close + 1;
+                                continue;
+                            }
+                        }
+                    }
+                }
+            }
+        }
+        i += 1;
+    }
+
+    // Pass 2: find `| warp { ... }` inline blocks (anywhere in source).
+    let bytes2 = out.clone();
+    let mut i = 0;
+    while i < bytes2.len() {
+        if bytes2[i] == b'|' {
+            let mut j = i + 1;
+            while j < bytes2.len() && matches!(bytes2[j], b' ' | b'\t') { j += 1; }
+            if j + 4 <= bytes2.len() && &bytes2[j..j + 4] == b"warp" {
+                let after_kw = j + 4;
+                if after_kw >= bytes2.len() || !is_socool_ident_byte(bytes2[after_kw]) {
+                    let mut k = after_kw;
+                    while k < bytes2.len() && matches!(bytes2[k], b' ' | b'\t') { k += 1; }
+                    if k < bytes2.len() && bytes2[k] == b'{' {
+                        if let Some(close) = find_matching_brace(&bytes2, k) {
+                            blank_range(&mut out, i, close + 1);
+                            i = close + 1;
+                            continue;
+                        }
+                    }
+                }
+            }
+        }
+        i += 1;
+    }
+
+    // Pass 3: find `| <warpname>` chain refs and blank them.
+    if !warp_names.is_empty() {
+        let bytes3 = out.clone();
+        let mut i = 0;
+        while i < bytes3.len() {
+            if bytes3[i] == b'|' {
+                let mut j = i + 1;
+                while j < bytes3.len() && matches!(bytes3[j], b' ' | b'\t') { j += 1; }
+                let name_start = j;
+                while j < bytes3.len() && is_socool_ident_byte(bytes3[j]) { j += 1; }
+                if j > name_start {
+                    let candidate = std::str::from_utf8(&bytes3[name_start..j]).unwrap();
+                    if warp_names.contains(candidate) {
+                        blank_range(&mut out, i, j);
+                        i = j;
+                        continue;
+                    }
+                }
+            }
+            i += 1;
+        }
+    }
+
+    String::from_utf8(out).unwrap_or_else(|_| src.to_string())
+}
+
+/// Strip kintaro's `draw` extensions so vanilla weresocool can parse a file
+/// that uses them. Same pattern as `strip_warp_extensions` above — find the
+/// three syntactic forms (`draw NAME = { … }`, `| draw { … }`, `| <draw>`)
+/// and blank them in-place, preserving newlines so error spans stay aligned.
+pub fn strip_draw_extensions(src: &str) -> String {
+    let bytes = src.as_bytes();
+    let mut out: Vec<u8> = src.as_bytes().to_vec();
+
+    // Pass 1: `draw NAME = { … }` top-level blocks.
+    let mut draw_names: std::collections::HashSet<String> = std::collections::HashSet::new();
+    let mut i = 0;
+    while i < bytes.len() {
+        let at_boundary = i == 0 || !is_socool_ident_byte(bytes[i - 1]);
+        if at_boundary && i + 4 <= bytes.len() && &bytes[i..i + 4] == b"draw" {
+            let after_kw = i + 4;
+            if after_kw < bytes.len() && !is_socool_ident_byte(bytes[after_kw]) {
+                let mut j = after_kw;
+                while j < bytes.len() && (bytes[j] as char).is_whitespace() { j += 1; }
+                let name_start = j;
+                while j < bytes.len() && is_socool_ident_byte(bytes[j]) { j += 1; }
+                if j > name_start {
+                    let name = std::str::from_utf8(&bytes[name_start..j]).unwrap().to_string();
+                    let mut k = j;
+                    while k < bytes.len() && (bytes[k] as char).is_whitespace() { k += 1; }
+                    if k < bytes.len() && bytes[k] == b'=' {
+                        k += 1;
+                        while k < bytes.len() && (bytes[k] as char).is_whitespace() { k += 1; }
+                        if k < bytes.len() && bytes[k] == b'{' {
+                            if let Some(close) = find_matching_brace(bytes, k) {
+                                draw_names.insert(name);
+                                blank_range(&mut out, i, close + 1);
+                                i = close + 1;
+                                continue;
+                            }
+                        }
+                    }
+                }
+            }
+        }
+        i += 1;
+    }
+
+    // Pass 2: `| draw { … }` inline blocks.
+    let bytes2 = out.clone();
+    let mut i = 0;
+    while i < bytes2.len() {
+        if bytes2[i] == b'|' {
+            let mut j = i + 1;
+            while j < bytes2.len() && matches!(bytes2[j], b' ' | b'\t') { j += 1; }
+            if j + 4 <= bytes2.len() && &bytes2[j..j + 4] == b"draw" {
+                let after_kw = j + 4;
+                if after_kw >= bytes2.len() || !is_socool_ident_byte(bytes2[after_kw]) {
+                    let mut k = after_kw;
+                    while k < bytes2.len() && matches!(bytes2[k], b' ' | b'\t') { k += 1; }
+                    if k < bytes2.len() && bytes2[k] == b'{' {
+                        if let Some(close) = find_matching_brace(&bytes2, k) {
+                            blank_range(&mut out, i, close + 1);
+                            i = close + 1;
+                            continue;
+                        }
+                    }
+                }
+            }
+        }
+        i += 1;
+    }
+
+    // Pass 3: `| draw <name>` named chain refs.
+    if !draw_names.is_empty() {
+        let bytes3 = out.clone();
+        let mut i = 0;
+        while i < bytes3.len() {
+            if bytes3[i] == b'|' {
+                let mut j = i + 1;
+                while j < bytes3.len() && matches!(bytes3[j], b' ' | b'\t') { j += 1; }
+                if j + 4 <= bytes3.len() && &bytes3[j..j + 4] == b"draw" {
+                    let after_kw = j + 4;
+                    if after_kw < bytes3.len() && !is_socool_ident_byte(bytes3[after_kw]) {
+                        let mut k = after_kw;
+                        while k < bytes3.len() && matches!(bytes3[k], b' ' | b'\t') { k += 1; }
+                        let name_start = k;
+                        while k < bytes3.len() && is_socool_ident_byte(bytes3[k]) { k += 1; }
+                        if k > name_start {
+                            let candidate = std::str::from_utf8(&bytes3[name_start..k]).unwrap();
+                            if draw_names.contains(candidate) {
+                                blank_range(&mut out, i, k);
+                                i = k;
+                                continue;
+                            }
+                        }
+                    }
+                }
+            }
+            i += 1;
+        }
+    }
+
+    String::from_utf8(out).unwrap_or_else(|_| src.to_string())
+}
+
+fn is_socool_ident_byte(b: u8) -> bool {
+    (b as char).is_ascii_alphanumeric() || b == b'_'
+}
+
+fn find_matching_brace(bytes: &[u8], open: usize) -> Option<usize> {
+    debug_assert_eq!(bytes[open], b'{');
+    let mut depth = 1i32;
+    let mut i = open + 1;
+    while i < bytes.len() {
+        match bytes[i] {
+            b'{' => depth += 1,
+            b'}' => { depth -= 1; if depth == 0 { return Some(i); } }
+            _ => {}
+        }
+        i += 1;
+    }
+    None
+}
+
+/// Replace a byte range with spaces (preserving newlines) so positions in
+/// the rest of the source don't shift — error spans remain correct.
+fn blank_range(out: &mut [u8], start: usize, end: usize) {
+    for b in &mut out[start..end] {
+        if *b != b'\n' && *b != b'\r' {
+            *b = b' ';
+        }
+    }
+}
+
 pub fn process_wgsl_blocks(composition: &str, defs: &mut Defs, skip_validation: bool, quiet: bool) -> Result<(String, SourceMap), Error> {
     let mut result = String::new();
     let mut source_map = SourceMap::new();
@@ -452,6 +682,14 @@ pub fn parse_file(
     let ws_start = timing_now!();
     let (imports_needed, composition) = handle_whitespace_and_imports(vec_string)?;
     timing_print!("[parse_file] handle_whitespace_and_imports: {:?}", ws_start.elapsed());
+
+    // Strip kintaro-specific `warp NAME = { ... }` declarations, `| warp { ... }`
+    // inline blocks, and `| <warpname>` chain ops. Vanilla weresocool ignores
+    // them; tools like kintaro pre-extract them before passing source here.
+    let composition = strip_warp_extensions(&composition);
+    // Same pattern for `draw NAME = { … }`, `| draw { … }`, and
+    // `| draw <name>` — the second kintaro extension.
+    let composition = strip_draw_extensions(&composition);
 
     // Process WGSL blocks - extract them and replace with IDs
     // This validates each WGSL block and fails fast on the first error
