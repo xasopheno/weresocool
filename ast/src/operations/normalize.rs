@@ -31,6 +31,15 @@ impl Normalize for Op {
                 });
             }
             Op::AsIs => {}
+            // None (source keyword) / Mute (variant name): kill — silence.
+            // Same effect as `Gm 0`; preserves length. The semantic
+            // difference from Out is that None doesn't zero length, so
+            // `None | Lm 3` is "3 base units of silence."
+            Op::Mute => {
+                input.fmap_mut(|op| {
+                    op.g = Ratio::new(0, 1);
+                });
+            }
             Op::WGSL(wgsl_id) => {
                 // Prepend the WGSL id so outer transforms run first
                 // This allows outer Vm/Xm/etc to affect inner transforms

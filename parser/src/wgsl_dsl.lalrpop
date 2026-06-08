@@ -85,6 +85,12 @@ BaseOp: VisualOp = {
     "Lm" <v:WgslVal> => VisualOp::lm(v),
     "Alpha" <v:WgslVal> => VisualOp::alpha(v),
     "Am" <v:WgslVal> => VisualOp::am(v),
+    "Bm" <v:WgslVal> => VisualOp::bm(v),
+    "Ba" <v:WgslVal> => VisualOp::ba(v),
+    "AsIs" => VisualOp::AsIs,
+    // Source keyword `None` → AST variant `Mute` (renamed to avoid
+    // shadowing `Option::None` in lalrpop-generated parser code).
+    "None" => VisualOp::Mute,
     "Rx" <v:WgslVal> => VisualOp::rx(v),
     "Ry" <v:WgslVal> => VisualOp::ry(v),
     "Rz" <v:WgslVal> => VisualOp::rz(v),
@@ -117,9 +123,30 @@ SeqSep: () = {
 // Expressions include: identifiers (time, x), function calls (sin(time)), binary ops (time * 2)
 // Quoted strings are a fallback for edge cases (number-first, nested parens, commas)
 WgslVal: WgslValue = {
+    <e:SlewExpr> => WgslValue::Expr(e),
     <r:RatioValue> => WgslValue::Rational(r),
     <e:WgslExpr> => WgslValue::Expr(e),
     <s:QuotedStr> => WgslValue::Expr(s),
+};
+
+// Slew(target, rate) → starts at 1.0, exponentially relaxes toward `target`
+// at the given rate. Expands to:
+//     (target + exp(-time * rate) * (1.0 - target))
+//
+// Math: first-order low-pass response to a step input. Same shape as
+//   • modular-synth "slew limiter" (Doepfer A-170, Make Noise Maths)
+//   • SuperCollider `Lag.kr`
+//   • Unity `Mathf.SmoothDamp`
+//   • easings.net `easeOutExpo`
+//
+// Canonical use is the brush attack envelope `Bm Slew(0.18, 4)` — brightness
+// pops bright at attack (1.0) and slews toward 0.18 sustain at rate 4.
+SlewExpr: String = {
+    "Slew" "(" <t:RatioValue> "," <r:RatioValue> ")" => {
+        let t_f = (*t.numer() as f64) / (*t.denom() as f64);
+        let r_f = (*r.numer() as f64) / (*r.denom() as f64);
+        format!("({:.6} + exp(-time * {:.6}) * (1.0 - {:.6}))", t_f, r_f, t_f)
+    },
 };
 
 // Quoted string: anything in double quotes passes through as WGSL expression

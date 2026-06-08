@@ -328,6 +328,9 @@ BaseOperation: Term = {
       q_factor: q
     }),
     "AsIs" => Term::Op(AsIs {}),
+    // Source keyword `None` → AST variant `Mute` (renamed to avoid
+    // shadowing `Option::None` in the lalrpop-generated parser code).
+    "None" => Term::Op(Mute {}),
     "Out" => Term::Op(Out {}),
     "Sine" <pow: Rational?> => {
       Term::Op(Sine { pow })
@@ -640,31 +643,32 @@ Concat<T>: Vec<T> = {
     }
 };
 
-// Drum parameter lists
+// ─── Drum parameter lists ─────────────────────────────────────────────
+// See `KickParams`/`SnareParams`/`HiHatParams` in `ast/src/ast.rs` for
+// what each field does. Unknown keys are silently ignored (the AST
+// structs only carry the surface that exists).
 KickParamList: KickParams = {
     <params: Comma<KickParam>> => {
         let mut result = KickParams::default();
         for (name, value) in params {
             match name.as_str() {
-                // Spectrum controls (0-1 scale)
+                // Spectrum macros (0-1)
                 "attack" => result.attack = Some(value),
                 "body" => result.body = Some(value),
                 "tone" => result.tone = Some(value),
                 "length" => result.length = Some(value),
-                // Specific parameters (override spectrum mappings)
+                // Specific overrides
+                "tune" => result.tune = Some(value),
                 "pitch_decay" => result.pitch_decay = Some(value),
                 "pitch_range" => result.pitch_range = Some(value),
                 "amp_decay" => result.amp_decay = Some(value),
-                "sub_amount" => result.sub_amount = Some(value),
+                "saturation" => result.saturation = Some(value),
+                "hump" => result.hump = Some(value),
+                "shell" => result.shell = Some(value),
+                "ks_mix" => result.ks_mix = Some(value),
                 "click_amount" => result.click_amount = Some(value),
                 "click_freq" => result.click_freq = Some(value),
-                "harmonic_damping" => result.harmonic_damping = Some(value),
-                "saturation" => result.saturation = Some(value),
                 "velocity_tilt" => result.velocity_tilt = Some(value),
-                "transient_curve" => result.transient_curve = Some(value),
-                "tune" => result.tune = Some(value),
-                "resonance" => result.resonance = Some(value),
-                "hump" => result.hump = Some(value),
                 _ => {}
             }
         }
@@ -681,14 +685,13 @@ SnareParamList: SnareParams = {
         let mut result = SnareParams::default();
         for (name, value) in params {
             match name.as_str() {
-                // Spectrum controls (0-1 scale)
+                // Spectrum macros (0-1)
                 "attack" => result.attack = Some(value),
                 "wires" => result.wires = Some(value),
                 "tone" => result.tone = Some(value),
                 "length" => result.length = Some(value),
-                // Specific parameters (override spectrum mappings)
-                "pitch_decay" => result.pitch_decay = Some(value),
-                "pitch_range" => result.pitch_range = Some(value),
+                // Specific overrides
+                "tune" => result.tune = Some(value),
                 "shell_decay" => result.shell_decay = Some(value),
                 "wire_decay" => result.wire_decay = Some(value),
                 "wire_mix" => result.wire_mix = Some(value),
@@ -698,14 +701,10 @@ SnareParamList: SnareParams = {
                 "shell_pitch_range" => result.shell_pitch_range = Some(value),
                 "head_damping_ratio" => result.head_damping_ratio = Some(value),
                 "saturation" => result.saturation = Some(value),
-                "velocity_tilt" => result.velocity_tilt = Some(value),
-                "resonance" => result.resonance = Some(value),
                 "crack" => result.crack = Some(value),
-                "tune" => result.tune = Some(value),
-                // Backwards compatibility aliases
-                "tone_decay" => result.tone_decay = Some(value),
-                "noise_decay" => result.noise_decay = Some(value),
-                "noise_mix" => result.noise_mix = Some(value),
+                "crack_freq" => result.crack_freq = Some(value),
+                "ks_mix" => result.ks_mix = Some(value),
+                "velocity_tilt" => result.velocity_tilt = Some(value),
                 _ => {}
             }
         }
@@ -722,20 +721,19 @@ HiHatParamList: HiHatParams = {
         let mut result = HiHatParams::default();
         for (name, value) in params {
             match name.as_str() {
-                // Spectrum controls (0-1 scale)
+                // Spectrum macros (0-1)
                 "attack" => result.attack = Some(value),
                 "metal" => result.metal = Some(value),
                 "length" => result.length = Some(value),
-                // Specific parameters (override spectrum mappings)
+                // Specific overrides
+                "tune" => result.tune = Some(value),
                 "decay_rate" => result.decay_rate = Some(value),
                 "shimmer" => result.shimmer = Some(value),
                 "brightness" => result.brightness = Some(value),
                 "attack_amount" => result.attack_amount = Some(value),
+                "ping_amount" => result.ping_amount = Some(value),
                 "pitch_drop" => result.pitch_drop = Some(value),
-                "saturation" => result.saturation = Some(value),
                 "velocity_tilt" => result.velocity_tilt = Some(value),
-                "resonance" => result.resonance = Some(value),
-                "tune" => result.tune = Some(value),
                 _ => {}
             }
         }

@@ -105,7 +105,15 @@ impl Voice {
             filter_crossfade_index: 0,
             osc_crossfade_index: 0,
             smoothed_gain: 0.0,
-            drum_state: DrumState::default(),
+            drum_state: {
+                let mut s = DrumState::default();
+                s.voice_index = index as u32;
+                // Haas delay: left channel (voice 0) at zero, right (voice 1)
+                // lags by 3 samples (~62 µs at 48 kHz) on all noise reads.
+                // Brain reads this as "wide source," not as echo.
+                s.noise_delay_samples = (index as u32) * 3;
+                s
+            },
         }
     }
 

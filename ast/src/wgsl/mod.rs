@@ -219,10 +219,21 @@ pub enum VisualOp {
         /// Bend: (bend_vector_x, bend_vector_y, bend_vector_z, strength)
         /// Creates a curved path that bulges toward bend_vector while maintaining direction
         bend: Option<(WgslValue, WgslValue, WgslValue, WgslValue)>,
-        /// Alpha set: sets alpha directly (Alpha 0 = invisible, Alpha 1 = visible)
+        /// Alpha set: sets alpha directly (Alpha 0 = invisible, Alpha 1 = visible).
+        /// NOTE: in practice the kintaro warp pipeline derives final alpha from
+        /// `max(r, g, b)` per pixel, so writing `alpha = …` is effectively a
+        /// no-op for the final image. `Alpha` is rewired in codegen to scale
+        /// rgb instead, so it actually fades brushes.
         alpha_set: Option<WgslValue>,
-        /// Alpha multiply: multiplies alpha (Am 0.5 = fade to 50%)
+        /// Alpha multiply: multiplies alpha (Am 0.5 = fade to 50%).
+        /// Same caveat as `Alpha`: rewired to scale rgb.
         alpha_mul: Option<WgslValue>,
+        /// Brightness multiply: scales red, green, blue by the same factor.
+        /// `Bm 0.5` halves all three channels — the canonical way to fade
+        /// brushes given that final alpha follows `max(rgb)`.
+        brightness_mul: Option<WgslValue>,
+        /// Brightness add: offsets red, green, blue by the same amount.
+        brightness_add: Option<WgslValue>,
         /// Rotation around X axis (in full rotations: 1 = 360°)
         rx: Option<WgslValue>,
         /// Rotation around Y axis (in full rotations: 1 = 360°)
@@ -243,6 +254,15 @@ pub enum VisualOp {
     Raw {
         wgsl: String,
     },
+    /// Identity / pass-through. Useful as a slot marker in a Seq:
+    /// `Seq [AsIs | Lm 3, Bm 0.5]` means "no transformation for 3s,
+    /// then dim brightness." Emits nothing.
+    AsIs,
+    /// Kill — set rgb to zero so the brush contributes nothing for this
+    /// phase. `None | Lm 3` in a wgsl Seq = "brush is invisible for 3s."
+    /// AST variant is `Mute` to avoid shadowing `Option::None` in the
+    /// lalrpop-generated parser; source keyword is `None`.
+    Mute,
 }
 
 impl Default for VisualOp {
@@ -265,6 +285,8 @@ impl Default for VisualOp {
             bend: None,
             alpha_set: None,
             alpha_mul: None,
+            brightness_mul: None,
+            brightness_add: None,
             rx: None,
             ry: None,
             rz: None,
@@ -312,6 +334,10 @@ pub struct VisualPointOp {
     pub velocity_add: Rational64,
     pub alpha_mul: Rational64,
     pub alpha_set: Option<Rational64>,
+    // Brightness (rgb scaling) — what actually fades brushes given the warp's
+    // final `color.a = max(rgb)` policy. `brightness_mul == 1` means no scale.
+    pub brightness_mul: Rational64,
+    pub brightness_add: Rational64,
 
     // Space warps - CHAIN like audio filters
     pub warps: Vec<Warp>,
@@ -339,6 +365,8 @@ impl Default for VisualPointOp {
             velocity_add: Rational64::new(0, 1),
             alpha_mul: Rational64::new(1, 1),
             alpha_set: None,
+            brightness_mul: Rational64::new(1, 1),
+            brightness_add: Rational64::new(0, 1),
             warps: Vec::new(),
             length: Rational64::new(1, 1),
         }
@@ -365,6 +393,7 @@ impl Mul for VisualPointOp {
             scale_z_mul: self.scale_z_mul * other.scale_z_mul,
             velocity_mul: self.velocity_mul * other.velocity_mul,
             alpha_mul: self.alpha_mul * other.alpha_mul,
+            brightness_mul: self.brightness_mul * other.brightness_mul,
 
             // Additive fields
             x_add: self.x_add + other.x_add,
@@ -372,6 +401,7 @@ impl Mul for VisualPointOp {
             z_add: self.z_add + other.z_add,
             scale_add: self.scale_add + other.scale_add,
             velocity_add: self.velocity_add + other.velocity_add,
+            brightness_add: self.brightness_add + other.brightness_add,
 
             // Right-biased (last wins)
             direction: other.direction.or(self.direction),
@@ -582,11 +612,30 @@ impl VisualPointOp {
         if self.velocity_add != Rational64::new(0, 1) {
             lines.push(format!("    velocity = velocity + {:.6};", rational_to_f32(self.velocity_add)));
         }
+        // Alpha rewired to rgb scaling (warp clamps `color.a = max(rgb)`).
         if let Some(alpha) = self.alpha_set {
-            lines.push(format!("    alpha = {:.6};", rational_to_f32(alpha)));
+            let a = rational_to_f32(alpha);
+            lines.push(format!(
+                "    {{ let _rgb_max = max(max(red, green), max(blue, 1e-5)); let _k = {:.6} / _rgb_max; red = red * _k; green = green * _k; blue = blue * _k; }}",
+                a));
         }
         if self.alpha_mul != Rational64::new(1, 1) {
-            lines.push(format!("    alpha = alpha * {:.6};", rational_to_f32(self.alpha_mul)));
+            let f = rational_to_f32(self.alpha_mul);
+            lines.push(format!("    red   = red   * {:.6};", f));
+            lines.push(format!("    green = green * {:.6};", f));
+            lines.push(format!("    blue  = blue  * {:.6};", f));
+        }
+        if self.brightness_mul != Rational64::new(1, 1) {
+            let f = rational_to_f32(self.brightness_mul);
+            lines.push(format!("    red   = red   * {:.6};", f));
+            lines.push(format!("    green = green * {:.6};", f));
+            lines.push(format!("    blue  = blue  * {:.6};", f));
+        }
+        if self.brightness_add != Rational64::new(0, 1) {
+            let f = rational_to_f32(self.brightness_add);
+            lines.push(format!("    red   = red   + {:.6};", f));
+            lines.push(format!("    green = green + {:.6};", f));
+            lines.push(format!("    blue  = blue  + {:.6};", f));
         }
 
         lines.join("\n") + "\n"
@@ -613,6 +662,9 @@ impl VisualOp {
             }
             // Raw WGSL has no duration concept - use default of 1
             VisualOp::Raw { .. } => Rational64::new(1, 1),
+            // AsIs / Mute (None): default length of 1; rely on Lm to set duration
+            VisualOp::AsIs => Rational64::new(1, 1),
+            VisualOp::Mute => Rational64::new(1, 1),
         }
     }
 
@@ -636,6 +688,8 @@ impl VisualOp {
             }
             // Raw WGSL has no direction
             VisualOp::Raw { .. } => None,
+            // AsIs / Mute don't define direction
+            VisualOp::AsIs | VisualOp::Mute => None,
         }
     }
 
@@ -662,6 +716,8 @@ impl VisualOp {
                 bend,
                 alpha_set,
                 alpha_mul,
+                brightness_mul,
+                brightness_add,
                 rx: _,
                 ry: _,
                 rz: _,
@@ -713,6 +769,8 @@ impl VisualOp {
                     velocity_add: get_rational(velocity_add, zero),
                     alpha_mul: get_rational(alpha_mul, one),
                     alpha_set: alpha_set.as_ref().and_then(|w| w.as_rational()),
+                    brightness_mul: get_rational(brightness_mul, one),
+                    brightness_add: get_rational(brightness_add, zero),
                     warps,
                     length: length.as_rational().unwrap_or(one),
                 };
@@ -767,6 +825,21 @@ impl VisualOp {
                 // (Raw is only used for pass-through code)
                 VisualNormalForm::default()
             }
+            // AsIs normalizes to the identity Simple
+            VisualOp::AsIs => VisualNormalForm {
+                operations: vec![VisualPointOp::default()],
+                length: Rational64::new(1, 1),
+            },
+            // Mute (source `None`) normalizes to a Simple with brightness_mul = 0
+            // (kills rgb so no contribution).
+            VisualOp::Mute => {
+                let mut op = VisualPointOp::default();
+                op.brightness_mul = Rational64::new(0, 1);
+                VisualNormalForm {
+                    operations: vec![op],
+                    length: Rational64::new(1, 1),
+                }
+            }
         }
     }
 
@@ -792,6 +865,8 @@ impl VisualOp {
                 bend,
                 alpha_set,
                 alpha_mul,
+                brightness_mul,
+                brightness_add,
                 ..
             } => VisualOp::Simple {
                 x_mul,
@@ -811,6 +886,8 @@ impl VisualOp {
                 bend,
                 alpha_set,
                 alpha_mul,
+                brightness_mul,
+                brightness_add,
                 rx: None,
                 ry: None,
                 rz: None,
@@ -877,6 +954,8 @@ impl VisualOp {
                     bend: bend1,
                     alpha_set: alpha_set1,
                     alpha_mul: alpha_mul1,
+                    brightness_mul: bm1,
+                    brightness_add: ba1,
                     rx: rx1,
                     ry: ry1,
                     rz: rz1,
@@ -900,6 +979,8 @@ impl VisualOp {
                     bend: bend2,
                     alpha_set: alpha_set2,
                     alpha_mul: alpha_mul2,
+                    brightness_mul: bm2,
+                    brightness_add: ba2,
                     rx: rx2,
                     ry: ry2,
                     rz: rz2,
@@ -924,6 +1005,8 @@ impl VisualOp {
                     bend: bend2.or(bend1), // Later wins
                     alpha_set: alpha_set2.or(alpha_set1), // Later wins
                     alpha_mul: compose_mul(alpha_mul1, alpha_mul2),
+                    brightness_mul: compose_mul(bm1, bm2),
+                    brightness_add: compose_add(ba1, ba2),
                     rx: compose_add(rx1, rx2), // Rotations add
                     ry: compose_add(ry1, ry2),
                     rz: compose_add(rz1, rz2),
@@ -985,6 +1068,17 @@ impl VisualOp {
             (other, raw @ VisualOp::Raw { .. }) => {
                 VisualOp::Compose { operations: vec![other, raw] }
             }
+            // AsIs | anything → other (AsIs is identity, drops out of compose)
+            (VisualOp::AsIs, other) => other,
+            (other, VisualOp::AsIs) => other,
+            // Mute (None) | anything or anything | Mute → wrap in Compose; codegen
+            // handles emitting the kill (rgb = 0).
+            (m @ VisualOp::Mute, other) => {
+                VisualOp::Compose { operations: vec![m, other] }
+            }
+            (other, m @ VisualOp::Mute) => {
+                VisualOp::Compose { operations: vec![other, m] }
+            }
         }
     }
 
@@ -1017,6 +1111,8 @@ impl VisualOp {
                 bend,
                 alpha_set,
                 alpha_mul,
+                brightness_mul,
+                brightness_add,
                 rx,
                 ry,
                 rz,
@@ -1042,6 +1138,8 @@ impl VisualOp {
                     && bend.is_none()
                     && alpha_set.is_none()
                     && alpha_mul.is_none()
+                    && brightness_mul.is_none()
+                    && brightness_add.is_none()
                     && rx.is_none()
                     && ry.is_none()
                     && rz.is_none()
@@ -1179,11 +1277,34 @@ z += pos.z;"#,
                 if let Some(v) = velocity_add {
                     lines.push(format!("velocity = velocity + {};", v.to_wgsl()));
                 }
+                // Alpha is rewired to rgb scaling because the kintaro warp
+                // pipeline does `color.a = max(r,g,b)` per pixel — so writing
+                // to `alpha` is a no-op for the final image. Scaling rgb
+                // uniformly is the only thing that actually fades brushes.
                 if let Some(v) = alpha_set {
-                    lines.push(format!("alpha = {};", v.to_wgsl()));
+                    let e = v.to_wgsl();
+                    // `Alpha v` → renormalize rgb peak to v, preserving hue.
+                    lines.push(format!(
+                        "{{ let _rgb_max = max(max(red, green), max(blue, 1e-5)); let _k = ({}) / _rgb_max; red = red * _k; green = green * _k; blue = blue * _k; }}",
+                        e));
                 }
                 if let Some(v) = alpha_mul {
-                    lines.push(format!("alpha = alpha * {};", v.to_wgsl()));
+                    let e = v.to_wgsl();
+                    lines.push(format!("red   = red   * ({});", e));
+                    lines.push(format!("green = green * ({});", e));
+                    lines.push(format!("blue  = blue  * ({});", e));
+                }
+                if let Some(v) = brightness_mul {
+                    let e = v.to_wgsl();
+                    lines.push(format!("red   = red   * ({});", e));
+                    lines.push(format!("green = green * ({});", e));
+                    lines.push(format!("blue  = blue  * ({});", e));
+                }
+                if let Some(v) = brightness_add {
+                    let e = v.to_wgsl();
+                    lines.push(format!("red   = red   + ({});", e));
+                    lines.push(format!("green = green + ({});", e));
+                    lines.push(format!("blue  = blue  + ({});", e));
                 }
 
                 // Global rotation - rotates entire composition around origin
@@ -1308,6 +1429,14 @@ z += pos.z;"#,
                 // Raw WGSL passes through directly
                 wgsl.clone()
             }
+            VisualOp::AsIs => {
+                // Identity — no code, no transform
+                String::new()
+            }
+            VisualOp::Mute => {
+                // None (source) / Mute (AST): kill brightness
+                "red = 0.0;\ngreen = 0.0;\nblue = 0.0;".to_string()
+            }
         }
     }
 
@@ -1331,6 +1460,8 @@ z += pos.z;"#,
             bend: None,
             alpha_set: None,
             alpha_mul: None,
+            brightness_mul: None,
+            brightness_add: None,
             rx: None,
             ry: None,
             rz: None,
@@ -1478,10 +1609,31 @@ z += pos.z;"#,
         op
     }
 
-    /// Multiply alpha (Am 0.5 = fade to 50%)
+    /// Multiply alpha (Am 0.5 = fade to 50%). In practice compiles to rgb
+    /// scaling because the kintaro warp pipeline derives final alpha from
+    /// `max(r,g,b)`.
     pub fn am(v: impl Into<WgslValue>) -> Self {
         let mut op = Self::simple_default();
         if let VisualOp::Simple { alpha_mul: ref mut f, .. } = op {
+            *f = Some(v.into());
+        }
+        op
+    }
+
+    /// Brightness multiply: scales red, green, blue by `v`. The canonical
+    /// way to fade a brush. One verb instead of three rgb lines.
+    pub fn bm(v: impl Into<WgslValue>) -> Self {
+        let mut op = Self::simple_default();
+        if let VisualOp::Simple { brightness_mul: ref mut f, .. } = op {
+            *f = Some(v.into());
+        }
+        op
+    }
+
+    /// Brightness add: offsets red, green, blue by `v`.
+    pub fn ba(v: impl Into<WgslValue>) -> Self {
+        let mut op = Self::simple_default();
+        if let VisualOp::Simple { brightness_add: ref mut f, .. } = op {
             *f = Some(v.into());
         }
         op
@@ -1537,6 +1689,8 @@ z += pos.z;"#,
                 bend,
                 alpha_set,
                 alpha_mul,
+                brightness_mul,
+                brightness_add,
                 ..
             } => {
                 let duration = seg_end - seg_start;
@@ -1662,12 +1816,30 @@ z += pos.z;"#,
                     segment_ops.push(format!("        velocity = velocity + {};", v.to_wgsl()));
                 }
 
-                // Alpha: set directly or multiply
+                // Alpha rewired to rgb scaling (warp clamps `color.a = max(rgb)`).
                 if let Some(v) = alpha_set {
-                    segment_ops.push(format!("        alpha = {};", v.to_wgsl()));
+                    let e = v.to_wgsl();
+                    segment_ops.push(format!(
+                        "        {{ let _rgb_max = max(max(red, green), max(blue, 1e-5)); let _k = ({}) / _rgb_max; red = red * _k; green = green * _k; blue = blue * _k; }}",
+                        e));
                 }
                 if let Some(v) = alpha_mul {
-                    segment_ops.push(format!("        alpha = alpha * {};", v.to_wgsl()));
+                    let e = v.to_wgsl();
+                    segment_ops.push(format!("        red   = red   * ({});", e));
+                    segment_ops.push(format!("        green = green * ({});", e));
+                    segment_ops.push(format!("        blue  = blue  * ({});", e));
+                }
+                if let Some(v) = brightness_mul {
+                    let e = v.to_wgsl();
+                    segment_ops.push(format!("        red   = red   * ({});", e));
+                    segment_ops.push(format!("        green = green * ({});", e));
+                    segment_ops.push(format!("        blue  = blue  * ({});", e));
+                }
+                if let Some(v) = brightness_add {
+                    let e = v.to_wgsl();
+                    segment_ops.push(format!("        red   = red   + ({});", e));
+                    segment_ops.push(format!("        green = green + ({});", e));
+                    segment_ops.push(format!("        blue  = blue  + ({});", e));
                 }
 
                 // Wrap ops in time check - only apply when we've reached this segment
@@ -1715,6 +1887,16 @@ z += pos.z;"#,
                 // Raw WGSL passes through directly
                 wgsl.clone()
             }
+            VisualOp::AsIs => String::new(),
+            VisualOp::Mute => {
+                // Kill — gated by the segment's time window (same time-check
+                // as a Simple segment uses), so the kill only fires during
+                // this segment's phase.
+                let duration = seg_end - seg_start;
+                format!(
+                    "    let seg_start = {:.6};\n    let seg_end = {:.6};\n    if (time >= seg_start && time < seg_end) {{\n        red = 0.0; green = 0.0; blue = 0.0;\n    }}\n    let _ = {:.6};\n",
+                    seg_start, seg_end, duration)
+            }
         }
     }
 
@@ -1749,6 +1931,8 @@ z += pos.z;"#,
                 bend,
                 alpha_set,
                 alpha_mul,
+                brightness_mul,
+                brightness_add,
                 rx,
                 ry,
                 rz,
@@ -1916,11 +2100,30 @@ z += pos.z;"#,
                 if let Some(v) = velocity_add {
                     segment_ops.push(format!("            velocity = velocity + {};", v.to_wgsl()));
                 }
+                // Alpha rewired to rgb scaling (warp clamps `color.a = max(rgb)`).
                 if let Some(v) = alpha_set {
-                    segment_ops.push(format!("            alpha = {};", v.to_wgsl()));
+                    let e = v.to_wgsl();
+                    segment_ops.push(format!(
+                        "            {{ let _rgb_max = max(max(red, green), max(blue, 1e-5)); let _k = ({}) / _rgb_max; red = red * _k; green = green * _k; blue = blue * _k; }}",
+                        e));
                 }
                 if let Some(v) = alpha_mul {
-                    segment_ops.push(format!("            alpha = alpha * {};", v.to_wgsl()));
+                    let e = v.to_wgsl();
+                    segment_ops.push(format!("            red   = red   * ({});", e));
+                    segment_ops.push(format!("            green = green * ({});", e));
+                    segment_ops.push(format!("            blue  = blue  * ({});", e));
+                }
+                if let Some(v) = brightness_mul {
+                    let e = v.to_wgsl();
+                    segment_ops.push(format!("            red   = red   * ({});", e));
+                    segment_ops.push(format!("            green = green * ({});", e));
+                    segment_ops.push(format!("            blue  = blue  * ({});", e));
+                }
+                if let Some(v) = brightness_add {
+                    let e = v.to_wgsl();
+                    segment_ops.push(format!("            red   = red   + ({});", e));
+                    segment_ops.push(format!("            green = green + ({});", e));
+                    segment_ops.push(format!("            blue  = blue  + ({});", e));
                 }
 
                 // Global rotation - rotates entire composition around origin
@@ -2063,6 +2266,18 @@ z += pos.z;"#,
             {}
         }}"#,
                     base_start, base_end, base_duration, with_semi
+                )
+            }
+            VisualOp::AsIs => String::new(),
+            VisualOp::Mute => {
+                // Kill rgb during this phase's time window only.
+                format!(
+                    r#"        let seg_start = {:.6} * seg_length;
+        let seg_end = {:.6} * seg_length;
+        if (time >= seg_start && time < seg_end) {{
+            red = 0.0; green = 0.0; blue = 0.0;
+        }}"#,
+                    base_start, base_end
                 )
             }
         }
