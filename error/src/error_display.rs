@@ -1,10 +1,13 @@
 use colored::*;
 use std::io::Write;
+use strsim::jaro_winkler;
 
 /// Unified error display for all weresocool parser errors.
 ///
 /// Renders a source window around the error position with:
 ///
+///   - **Clickable file header** (`src/cull.socool:57:12`) when a path
+///     is supplied — terminals like iTerm/VS Code make this jumpable.
 ///   - **Line-number gutter** (` 54 │ … `) on every shown line.
 ///   - **Window snapped to whole lines** so the top and bottom are
 ///     clean — never starts mid-line.
@@ -12,6 +15,11 @@ use std::io::Write;
 ///     parser tripped on. This is the only thing that's truthful even
 ///     when the line/column count is slightly off, so we lean on it.
 ///   - **Caret** (`^`) directly under the error column on the bad line.
+///   - **Real message** (`Unexpected `;``) and **expected list**
+///     (`expected one of: `,`, `}`, …`) in the footer when the lalrpop
+///     parser hands them over.
+///   - **Did-you-mean** suggestion via Jaro-Winkler when the unexpected
+///     token is similar to one of the expected ones (`Decy` → `Decay`).
 ///   - **Line + column** in the footer.
 ///
 /// The byte-window split is preserved deliberately. A line-number-only
@@ -35,6 +43,40 @@ pub struct ErrorDisplay<'a> {
     pub label: &'a str,
     /// `true` = cyan/red palette (used by WGSL DSL); `false` = yellow/red.
     pub use_cyan: bool,
+    /// Tokens the parser was expecting at this position. lalrpop strings
+    /// are already quoted (e.g. `"\";\""`), and we unquote them for the
+    /// "did you mean" comparison while preserving display formatting.
+    /// Empty when the error site has no list (e.g. `InvalidToken`).
+    pub expected: Vec<String>,
+    /// The token that actually showed up at the error site, if known.
+    /// Used to build "Unexpected `X`" and to drive did-you-mean lookups.
+    pub unexpected: Option<String>,
+    /// Path to the source file. When set, renders as a clickable
+    /// `path:line:col` header that terminals can open in an editor.
+    pub file: Option<String>,
+    /// Optional extra hint line printed below the footer (renders as
+    /// `note: …`). The intelligence to build this lives in the parser
+    /// crate where the language vocabulary is known; the display just
+    /// shows it. Currently used to surface back-glance suggestions
+    /// ("parsed `m` as an operand at column 9 — did you mean `Fm`?")
+    /// for the LALR-trips-one-token-late case.
+    pub note: Option<String>,
+}
+
+impl<'a> Default for ErrorDisplay<'a> {
+    fn default() -> Self {
+        Self {
+            source: "",
+            line: 0,
+            column: 0,
+            label: "",
+            use_cyan: false,
+            expected: Vec::new(),
+            unexpected: None,
+            file: None,
+            note: None,
+        }
+    }
 }
 
 /// How many lines of context to show before/after the error line.
@@ -50,6 +92,18 @@ impl<'a> ErrorDisplay<'a> {
         // our window lands on stdout.
         println!("!");
         std::io::stdout().flush().ok();
+
+        // Clickable file header. `path:line:col` is the format every
+        // major terminal/editor recognises — iTerm, VS Code, JetBrains
+        // all jump straight to the right spot when cmd-clicked.
+        if let Some(file) = &self.file {
+            println!(
+                "{}",
+                format!("  {}:{}:{}", file, self.line, self.column)
+                    .bright_black()
+                    .underline(),
+            );
+        }
 
         let error_pos = self.find_error_position();
         let len = self.source.len();
@@ -109,19 +163,131 @@ impl<'a> ErrorDisplay<'a> {
         }
 
         // Footer — line + column, with the same color personality
-        // ("working ← label → broken at line N, column M").
+        // ("working ← <message> → broken at line N, column M"). The
+        // <message> is "Unexpected `X` (label)" when lalrpop told us
+        // what token tripped it; otherwise the bare label.
         println!();
+        let message = match &self.unexpected {
+            Some(tok) => format!(
+                "Unexpected {} ({})",
+                format!("`{}`", tok).red().bold(),
+                self.label,
+            ),
+            None => format!("{}", self.label.bold()),
+        };
         println!(
             "  {} ← {} → {} at line {}, column {}",
             "working".color(primary_color).underline(),
-            self.label.bold(),
+            message,
             "broken".red().underline(),
             self.line.to_string().red().bold(),
             self.column.to_string().red().bold(),
         );
+
+        // Expected-list line. lalrpop hands us its grammar-form
+        // strings (`"Then"`, `r#"[0-9]+"#`, …); `pretty_lalrpop_terminal`
+        // turns regex terminals into `<integer>` / `<number>` /
+        // `<identifier>` placeholders and strips the outer quotes off
+        // string terminals, then we de-dupe (multiple grammar rules
+        // can map to the same friendly name).
+        //
+        // We deliberately suppress the line when every alternative is
+        // pure separator/punctuation (`,`, `|`, `]`, …) AND we're not
+        // at end of input. In operand-list grammars the parser usually
+        // already consumed the offending operand, so the separators
+        // are what *would* let it continue — they read like
+        // recommendations but don't actually point at a fix.
+        //
+        // The EOF exception matters: when the source ends mid-expression
+        // (`{ ... Tm 2` with no closing `}`), the expected list IS the
+        // fix and we want to show `}` even though `}` is a separator.
+        if !self.expected.is_empty() {
+            let mut pretty: Vec<String> = self
+                .expected
+                .iter()
+                .map(|t| pretty_lalrpop_terminal(t))
+                .collect();
+            pretty.sort();
+            pretty.dedup();
+            let any_actionable = pretty
+                .iter()
+                .any(|s| s.chars().any(|c| c.is_alphabetic()));
+            let at_eof = self.unexpected.as_deref() == Some("end of input");
+            if any_actionable || at_eof {
+                let joined = pretty.join(", ");
+                println!(
+                    "  {} {}",
+                    "expected one of:".bright_black(),
+                    joined.color(primary_color),
+                );
+            }
+        }
+
+        // Caller-supplied note line. Used today for the back-glance
+        // hint ("parsed `m` as an operand at column 9 — did you mean
+        // `Fm`?") that catches LALR's one-token-late blind spot.
+        if let Some(note) = &self.note {
+            println!(
+                "  {} {}",
+                "note:".bright_blue().bold(),
+                note,
+            );
+        }
+
+        // Did-you-mean. Only when we have BOTH an actual unexpected
+        // token and a non-empty expected list, AND something is close
+        // enough to be a typo (Jaro-Winkler ≥ 0.75 is the usual
+        // threshold for "obviously the same word").
+        if let Some(hint) = self.did_you_mean() {
+            println!(
+                "  {} did you mean {}?",
+                "hint:".bright_blue().bold(),
+                format!("`{}`", hint).color(primary_color).bold(),
+            );
+        }
+
         println!();
 
         std::io::stdout().flush().ok();
+    }
+
+    /// Find the closest expected token to `unexpected` via Jaro-Winkler.
+    /// Returns `None` if nothing is similar enough — we'd rather stay
+    /// quiet than suggest something unrelated and confuse the user.
+    fn did_you_mean(&self) -> Option<String> {
+        let unexpected = self.unexpected.as_ref()?;
+        // Strip the lalrpop quoting (`"\";\""` → `;`) so we compare
+        // bare tokens. If the inner string is empty after unquoting
+        // (which happens for punctuation that's the same as its quote
+        // form), Jaro-Winkler is meaningless — skip.
+        let cmp_unexpected = unquote_lalrpop_terminal(unexpected);
+        if cmp_unexpected.is_empty() { return None; }
+        // Only ID-like tokens (alphanumeric, at least 3 chars) benefit
+        // from spelling suggestions. Suggesting "`;`" for a typo'd
+        // identifier or vice versa is more noise than signal.
+        if cmp_unexpected.len() < 3
+            || !cmp_unexpected.chars().any(|c| c.is_alphabetic())
+        {
+            return None;
+        }
+
+        let mut best: Option<(String, f64)> = None;
+        for expected in &self.expected {
+            let cmp_expected = unquote_lalrpop_terminal(expected);
+            if cmp_expected.len() < 3
+                || !cmp_expected.chars().any(|c| c.is_alphabetic())
+            {
+                continue;
+            }
+            let score = jaro_winkler(
+                &cmp_unexpected.to_lowercase(),
+                &cmp_expected.to_lowercase(),
+            );
+            if best.as_ref().map_or(true, |(_, s)| score > *s) {
+                best = Some((cmp_expected.to_string(), score));
+            }
+        }
+        best.and_then(|(s, score)| if score >= 0.75 { Some(s) } else { None })
     }
 
     /// Map (line, column) → byte offset into `source`. 1-based inputs.
@@ -187,6 +353,58 @@ fn forward_n_lines(source: &str, from: usize, n: usize) -> usize {
 fn count_newlines_before(source: &str, byte_offset: usize) -> usize {
     let end = byte_offset.min(source.len());
     source[..end].chars().filter(|&c| c == '\n').count()
+}
+
+/// Strip the outer quotes lalrpop adds to terminal strings in its
+/// "expected" list (`"Then"` → `Then`). Used for the did-you-mean
+/// similarity check, where we want to compare bare token text. Regex
+/// terminals (which start `r#"`) are passed through unchanged — their
+/// shape is not meaningful for spelling suggestions, and they get
+/// substituted to friendly names by `pretty_lalrpop_terminal` for
+/// display purposes.
+fn unquote_lalrpop_terminal(s: &str) -> &str {
+    let bytes = s.as_bytes();
+    if bytes.len() >= 2 && bytes[0] == b'"' && bytes[bytes.len() - 1] == b'"' {
+        &s[1..s.len() - 1]
+    } else {
+        s
+    }
+}
+
+/// Translate one lalrpop-style terminal into something a human can
+/// read. lalrpop hands us:
+///
+///   - `"Then"`               → `Then`
+///   - `r#"-?[0-9]+"#`        → `<integer>`
+///   - `r#"-?...\\.\\d+..."#` → `<number>`
+///   - `r#"[a-zA-Z_]..."#`    → `<identifier>`
+///   - anything else          → passed through
+///
+/// The heuristics here are tuned for weresocool's `socool.lalrpop`
+/// grammar specifically; adding new regex terminals there may want a
+/// new branch here too.
+fn pretty_lalrpop_terminal(s: &str) -> String {
+    if let Some(inner) = s.strip_prefix('"').and_then(|x| x.strip_suffix('"')) {
+        return inner.to_string();
+    }
+    if let Some(body) = s.strip_prefix("r#\"").and_then(|x| x.strip_suffix("\"#")) {
+        // Order matters: float patterns mention `[0-9]` too, so test
+        // for the float-specific marker first.
+        if body.contains("\\.") || body.contains("[eE]") {
+            return "<number>".to_string();
+        }
+        if body.contains("[0-9]") {
+            return "<integer>".to_string();
+        }
+        if body.contains("a-zA-Z") || body.contains("[_") {
+            return "<identifier>".to_string();
+        }
+        if body.contains("\\\"") {
+            return "<string>".to_string();
+        }
+        return "<token>".to_string();
+    }
+    s.to_string()
 }
 
 /// Advance `n` characters from `start` byte position in `source` and

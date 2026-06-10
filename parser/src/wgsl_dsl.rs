@@ -23,6 +23,7 @@ impl DslError {
             column: actual_column,
             label: "DSL error",
             use_cyan: true,
+            ..Default::default()
         }.display(quiet);
     }
 }

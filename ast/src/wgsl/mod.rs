@@ -115,6 +115,7 @@ impl WgslError {
             column: self.column,
             label: "WGSL errors",
             use_cyan: true,
+            ..Default::default()
         }.display(quiet);
     }
 

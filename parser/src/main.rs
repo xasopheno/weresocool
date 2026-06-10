@@ -24,7 +24,7 @@ fn main() -> ExitCode {
         }
     };
 
-    match parse_file(vec_string, None, None) {
+    match parse_file(vec_string, None, None, Some(filename.to_string())) {
         Ok(parsed) => {
             for (key, _val) in parsed.defs.ops.iter() {
                 println!("{}", key);

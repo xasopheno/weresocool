@@ -1,5 +1,5 @@
 lalrpop_mod!(pub socool);
-use crate::error_handling::handle_parse_error;
+use crate::error_handling::{handle_parse_error, ExtractedParseError};
 use crate::imports::{get_filepath_and_import_name, is_import};
 use colored::*;
 use num_rational::Rational64;
@@ -10,7 +10,6 @@ use std::fs::File;
 use std::io::prelude::*;
 use std::io::BufReader;
 use std::path::PathBuf;
-use std::sync::{Arc, Mutex};
 use weresocool_error::{ColorError, Error, ParseError};
 use weresocool_shared::{timing_now, timing_print};
 use regex;
@@ -633,7 +632,9 @@ fn parse_for_format_inner(
                             }
                         }
 
-                        // Display error
+                        // Display error. No source_name here — this path
+                        // is reached from the formatter as well, where
+                        // we don't have one and don't render anyway.
                         if !quiet {
                             weresocool_error::ErrorDisplay {
                                 source: &composition,
@@ -641,6 +642,7 @@ fn parse_for_format_inner(
                                 column,
                                 label: &format!("Invalid color '{}'", bad_color),
                                 use_cyan: false,
+                                ..Default::default()
                             }.display(false);
                         }
 
@@ -654,9 +656,13 @@ fn parse_for_format_inner(
                 }
             }
 
-            let location = Arc::new(Mutex::new(Vec::new()));
-            error.map_location(|l| location.lock().unwrap().push(l));
-            let (line, column) = handle_parse_error(location, &composition, &source_map, quiet);
+            // Extract everything we want to show (location + expected
+            // list + actual token) BEFORE handing off — the old code
+            // here used `error.map_location` (which consumes the error)
+            // just to get the location, throwing the rest away. Now we
+            // pattern-match by ref and keep all of it.
+            let extracted = ExtractedParseError::from_lalrpop(&error, &processed_composition);
+            let (line, column) = handle_parse_error(&extracted, &composition, &source_map, None, quiet);
 
             Err(ParseError {
                 message: "Unexpected Token".to_string(),
@@ -672,6 +678,7 @@ pub fn parse_file(
     vec_string: Vec<String>,
     prev_defs: Option<Defs>,
     working_path: Option<PathBuf>,
+    source_name: Option<String>,
 ) -> Result<ParsedComposition, Error> {
     let mut defs: Defs = if let Some(defs) = prev_defs {
         defs
@@ -706,7 +713,12 @@ pub fn parse_file(
         }
         // dbg!(&filepath);
         let vec_string = filename_to_vec_string(&filepath.to_string())?;
-        let parsed_composition = parse_file(vec_string, Some(defs.clone()), working_path.clone())?;
+        let parsed_composition = parse_file(
+            vec_string,
+            Some(defs.clone()),
+            working_path.clone(),
+            Some(filepath.to_string()),
+        )?;
 
         // Merge WGSL blocks from imported files
         for (id, code) in &parsed_composition.defs.wgsl.map {
@@ -782,6 +794,8 @@ pub fn parse_file(
                             column,
                             label: &format!("Invalid color '{}'", bad_color),
                             use_cyan: false,
+                            file: source_name.clone(),
+                            ..Default::default()
                         }.display(false);
 
                         return Err(ColorError {
@@ -794,9 +808,17 @@ pub fn parse_file(
                 }
             }
 
-            let location = Arc::new(Mutex::new(Vec::new()));
-            error.map_location(|l| location.lock().unwrap().push(l));
-            let (line, column) = handle_parse_error(location, &composition, &source_map, false);
+            // See the formatter site above: pattern-match the lalrpop
+            // error by ref so the expected/actual-token info survives
+            // into the display.
+            let extracted = ExtractedParseError::from_lalrpop(&error, &processed_composition);
+            let (line, column) = handle_parse_error(
+                &extracted,
+                &composition,
+                &source_map,
+                source_name.as_deref(),
+                false,
+            );
 
             Err(ParseError {
                 message: "Unexpected Token".to_string(),

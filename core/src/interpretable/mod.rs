@@ -31,7 +31,15 @@ impl Interpretable for InputType<'_> {
         timing_print!("[Interpretable] Read file: {:?}", read_start.elapsed());
 
         let parse_start = timing_now!();
-        let parsed_composition = parse_file(vec_string, None, working_path)?;
+        // For `Filename` we hand the actual path through so a parse
+        // error renders a clickable `file:line:col` header; for
+        // `Language` (an in-memory snippet) there is no file to point
+        // at, so we suppress the header by passing None.
+        let source_name = match &self {
+            InputType::Filename(filename) => Some(filename.to_string()),
+            InputType::Language(_) => None,
+        };
+        let parsed_composition = parse_file(vec_string, None, working_path, source_name)?;
         timing_print!("[Interpretable] parse_file: {:?}", parse_start.elapsed());
 
         let render_start = timing_now!();

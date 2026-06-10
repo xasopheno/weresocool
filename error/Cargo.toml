@@ -14,6 +14,10 @@ weresocool_lame = { path = "../lame", version = "^2.0.0", optional = true }
 
 [dependencies]
 colored = "2"
+# Used for did-you-mean suggestions in the error display:
+# Jaro-Winkler similarity against the parser's "expected" list
+# catches typos in keywords / op names (`Decy` → `Decay`).
+strsim = "0.11"
 scop = { path = "../scop", version = "^2.0.0" }
 weresocool_portaudio = { version = "1.0.47", optional = true, git = "https://github.com/xasopheno/weresocool_portaudio"}
 hound = "3.5"
