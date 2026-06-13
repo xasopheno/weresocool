@@ -31,6 +31,20 @@ impl Normalize for Op {
                 });
             }
             Op::AsIs => {}
+            // Positional playback-start marker. Capture the cumulative
+            // beat-time the NF has reached at this point — that's the
+            // time the renderer should seek to before the first frame.
+            // Multiple `Start` markers in the same NF overwrite this
+            // field, so the LAST one in the chain wins (which IS the
+            // composer's intent: "move the marker around to scrub").
+            // No-op for length: see get_length_ratio.rs (returns 1/1).
+            // Caveat: only useful at the top level of `main`. Inside
+            // Sequence/Lerp/Choose the sub-NF's start_at is dropped
+            // when composed into the outer NF (see the start_at: None
+            // fallback in the Mul/MulAssign/Overlay branches). Document.
+            Op::Start => {
+                input.start_at = Some(input.length_ratio);
+            }
             // None (source keyword) / Mute (variant name): kill — silence.
             // Same effect as `Gm 0`; preserves length. The semantic
             // difference from Out is that None doesn't zero length, so
@@ -304,6 +318,10 @@ impl Normalize for Op {
 
             Op::HiHat { open, params } => input.fmap_mut(|op| op.osc_type = OscType::HiHat { open: *open, params: params.clone() }),
 
+            Op::Clap { params } => input.fmap_mut(|op| op.osc_type = OscType::Clap { params: params.clone() }),
+
+            Op::Rimshot { params } => input.fmap_mut(|op| op.osc_type = OscType::Rimshot { params: params.clone() }),
+
             Op::TransposeM { m, .. } => input.fmap_mut(|op| {
                 op.fm = op
                     .fm
@@ -369,7 +387,31 @@ impl Normalize for Op {
                         input.clone()
                     };
                     op.apply_to_normal_form(&mut working, defs)?;
+
+                    // Propagate `Start` markers up through Sequence:
+                    // when one of the operands carried a positional
+                    // `| Start`, its inner `start_at` is the beat-time
+                    // of the marker WITHIN that operand. Translate to
+                    // outer time by adding `result.length_ratio` —
+                    // i.e. the cumulative offset of everything Seq has
+                    // already concatenated. Last-wins, so a marker
+                    // later in the list overwrites earlier ones.
+                    //
+                    // Without this, dropping `| Start` inside a Seq
+                    // would silently do nothing (`join_sequence` resets
+                    // `start_at` to None on the fresh result NF). With
+                    // it, the natural cull.socool pattern works:
+                    //   Seq [
+                    //       Fm 0 | Lm 3,
+                    //       Fm 3/2 | Lm 2 | Start,    -- play from here
+                    //       Fm 4/3 | Lm 2,
+                    //   ]
+                    let working_start_at = working.start_at;
+                    let offset_before_working = result.length_ratio;
                     result = join_sequence(result, working);
+                    if let Some(inner) = working_start_at {
+                        result.start_at = Some(offset_before_working + inner);
+                    }
                 }
                 defs.rand_ctx = saved_rand_ctx;
 
@@ -447,6 +489,16 @@ impl Normalize for Op {
                 // Simply add the color to the palette
                 input.fmap_mut(|op| {
                     op.colors.push(*color_id);
+                });
+            }
+
+            Op::FitVis { axis, a, b } => {
+                // Stamp the target band onto every note. Later (outer)
+                // applications overwrite — outer Fit wins per axis.
+                let band = Some((*a, *b));
+                let axis = *axis.min(&2);
+                input.fmap_mut(|op| {
+                    op.fit_vis[axis] = band;
                 });
             }
 
@@ -748,6 +800,11 @@ impl Normalize for Op {
                 *input = NormalForm {
                     operations: result,
                     length_ratio: max_lr,
+                    // This is the Overlay branch — overlay doesn't
+                    // emit a Start of its own; inherit nothing here.
+                    // The caller's Start (if any) survives because it
+                    // applies AFTER overlay returns.
+                    start_at: None,
                 };
             }
         }

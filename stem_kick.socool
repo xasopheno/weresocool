@@ -1,0 +1,20 @@
+{ f: 55, l: 1/12, g: 1, p: 0 }
+
+x = { Silence 1 }
+
+bd = { Kick 909 { length: 0.2 } }
+sn = { Snare 909 }
+hh = { HiHat 909 }
+oh = { OpenHat 909 }
+rs = { Rimshot 909 }
+
+main = {
+    Overlay [
+        Seq [
+            bd, x, x, x, x, x, x, bd | Gm 0.5, x, x, bd, x, x, x, x, x,
+            bd, x, x, x, Seq [bd | Gm 0.7, x] | Lm 1/2 | Repeat 2, x, x, x, x, bd, x, x | Lm 4,
+            bd | Fm 9/8, x, x, x, x, x, x, bd | Fm 9/8 | Gm 0.5, x, x, bd | Fm 9/8, x, x, x, x, x,
+            bd, x, x, x, x, x, x, x, bd | Fm 3/4 | Gm 0.6, x, bd | Fm 1/2 | Lm 2, x, x, x, x
+        ]
+    ]
+}

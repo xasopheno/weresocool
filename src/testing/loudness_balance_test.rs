@@ -1,8 +1,12 @@
 #[cfg(test)]
 mod loudness_balance_tests {
     use crate::generation::{RenderReturn, RenderType};
-    use crate::interpretable::{InputType::Filename, Interpretable};
+    use crate::interpretable::{
+        InputType::{Filename, Language},
+        Interpretable,
+    };
     use weresocool_analyze::measure_lufs;
+    use weresocool_ast::drum_presets::{CLAP_PRESETS, HIHAT_PRESETS, KICK_PRESETS, RIMSHOT_PRESETS, SNARE_PRESETS};
     use weresocool_instrument::StereoWaveform;
     use weresocool_shared::Settings;
 
@@ -21,6 +25,81 @@ mod loudness_balance_tests {
         let sw = render_socool_file(path);
         let sample_rate = Settings::global().sample_rate as u32;
         measure_lufs(&sw.l_buffer, &sw.r_buffer, sample_rate)
+    }
+
+    /// LUFS of a single preset hit — mirrors the loudness_tests/*.socool
+    /// shape ({ f: 80, l: 1/2 }, one bare hit at Gm 1).
+    fn preset_lufs(drum: &str, preset: &str) -> f64 {
+        let src = format!("{{ f: 80, l: 1/2, g: 1, p: 0 }}\n\nmain = {{ {drum} {preset} | Gm 1 }}\n");
+        let render_return = Language(&src)
+            .make(RenderType::StereoWaveform, None)
+            .unwrap_or_else(|e| panic!("{} {} failed to render: {:?}", drum, preset, e));
+        let sw = match render_return {
+            RenderReturn::StereoWaveform(sw) => sw,
+            _ => panic!("Expected StereoWaveform"),
+        };
+        let sample_rate = Settings::global().sample_rate as u32;
+        measure_lufs(&sw.l_buffer, &sw.r_buffer, sample_rate)
+    }
+
+    /// Prints suggested `gain_trim` values per preset (correction toward
+    /// that drum's wsc level). Run with:
+    /// cargo test --release measure_preset_loudness -- --nocapture
+    #[test]
+    fn measure_preset_loudness() {
+        let drums: [(&str, &[&str]); 5] = [
+            ("Kick", KICK_PRESETS),
+            ("Snare", SNARE_PRESETS),
+            ("HiHat", HIHAT_PRESETS),
+            ("Clap", CLAP_PRESETS),
+            ("Rimshot", RIMSHOT_PRESETS),
+        ];
+        println!("\n=== Preset Loudness (LUFS) — gain_trim corrections vs wsc ===");
+        for (drum, presets) in drums {
+            let target = preset_lufs(drum, "wsc");
+            println!("\n{} (wsc target {:.2} LUFS):", drum, target);
+            for preset in presets {
+                let lufs = preset_lufs(drum, preset);
+                let correction = 10_f64.powf((target - lufs) / 20.0);
+                println!(
+                    "  {:<10} {:>7.2} LUFS   gain_trim ×{:.3}",
+                    preset, lufs, correction
+                );
+            }
+        }
+    }
+
+    /// Switching presets must never blow up a mix: every preset lands
+    /// within 1.5 dB of its drum family's wsc voicing.
+    #[test]
+    fn verify_preset_balance() {
+        let drums: [(&str, &[&str]); 5] = [
+            ("Kick", KICK_PRESETS),
+            ("Snare", SNARE_PRESETS),
+            ("HiHat", HIHAT_PRESETS),
+            ("Clap", CLAP_PRESETS),
+            ("Rimshot", RIMSHOT_PRESETS),
+        ];
+        let mut failures = vec![];
+        for (drum, presets) in drums {
+            let target = preset_lufs(drum, "wsc");
+            for preset in presets {
+                let lufs = preset_lufs(drum, preset);
+                let dev = (lufs - target).abs();
+                println!("{} {:<10} {:>7.2} LUFS (Δ {:.2} dB)", drum, preset, lufs, dev);
+                if dev > 1.5 {
+                    failures.push(format!(
+                        "{} {} is {:.2} dB off wsc ({:.2} vs {:.2} LUFS)",
+                        drum, preset, dev, lufs, target
+                    ));
+                }
+            }
+        }
+        assert!(
+            failures.is_empty(),
+            "Presets out of balance:\n{}",
+            failures.join("\n")
+        );
     }
 
     /// Measures the LUFS of each drum and prints correction factors.

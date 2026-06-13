@@ -1,0 +1,109 @@
+{ f: 55, l: 1/12, g: 1, p: 0 }
+
+-- Aphex Twin study — drill'n'bass: halftime space torn open by sudden
+-- 32nd-note snare skitters, under a wistful just-intonation melody.
+-- The melody (lead + a slower counterline at the twelfth) floats on long
+-- notes while the drums alternate violently between sparse and frantic —
+-- the Drukqs move. Everything is sine + the drum synths; no samples.
+--
+-- Render: weresocool print kits/aphex.socool
+
+x = { Silence 1 }
+
+bd = { Kick wsc { length: 0.18 } }
+
+sn = { Snare wsc }
+
+hh = { HiHat acoustic }
+
+oh = { OpenHat acoustic }
+
+-- Rimshot lives inside the hat voice (| Fm 50); pre-divide so its rings
+-- land at the neutral 165 Hz now that rims track Fm like every drum.
+rs = { Rimshot acoustic | Fm 3/50 }
+
+drums = {
+    Overlay [
+        Seq [
+            bd, x, x, x, x, x, x, x, x, x, bd | Gm 0.5, x, x, x, x, x,
+            bd, x, x, x, x, x, x, bd | Gm 0.45, x, x, bd, x, x, x, x, x,
+            bd, x, x, x, x, x, x, x, x, x, bd | Gm 0.5, x, x, x, x, x,
+            bd, x, x, x, x, x, bd | Gm 0.5, x, x, x, x, bd | Gm 0.55, x, x, bd | Gm 0.4, x,
+            bd, x, x, x, x, x, x, x, x, x, bd | Gm 0.5, x, x, x, x, x,
+            bd, x, x, x, x, x, x, x, bd | Gm 0.55, x, x, x, x, x, x, x,
+            bd, x, x, x, x, bd | Gm 0.45, x, x, x, x, bd, x, bd | Gm 0.5, x, x, x,
+            bd, x, x, x, bd | Gm 0.6, x, x, x, bd | Gm 0.5, x, bd | Gm 0.65, x, bd | Gm 0.45, x, bd | Gm 0.7, x
+        ],
+        Seq [
+            x, x, x, x, x, x, x, x, sn, x, x, x, x, x, x, x,
+            x, x, x, x, x, x, x, x, sn, x, x, x, x, sn | Gm 0.2, x, sn | Gm 0.25,
+            x, x, x, x, x, x, x, x, sn, sn | Lm 1/8 | Repeat 8 | Gm 0.35, sn | Fm 9/8 | Lm 1/6 | Repeat 6 | Gm 0.3, x, x, x, x, x,
+            x, x, x, x, sn | Gm 0.25, x, x, x, sn, x, x, sn | Lm 1/4 | Repeat 4 | Gm 0.4, x, sn | Fm 6/5 | Lm 1/8 | Repeat 8 | Gm 0.45, sn | Fm 4/3 | Gm 0.6, sn | Lm 1/8 | Repeat 8 | Gm 0.5,
+            x, x, x, x, x, x, x, x, sn, x, x, x, x, x, x, x,
+            x, x, x, x, x, x, sn | Gm 0.2, x, sn, x, x, x, sn | Lm 1/6 | Repeat 6 | Gm 0.35, x, x, x,
+            x, x, sn | Lm 1/8 | Repeat 8 | Gm 0.3, x, x, x, x, x, sn, sn | Fm 3/4 | Lm 1/8 | Repeat 8 | Gm 0.4, x, x, x, sn | Gm 0.25, x, x,
+            sn | Lm 1/4 | Repeat 4 | Gm 0.3, x, x, x, sn | Gm 0.5, x, sn | Fm 9/8 | Lm 1/6 | Repeat 6 | Gm 0.4, x, sn, x, sn | Fm 6/5 | Lm 1/8 | Repeat 8 | Gm 0.5, x, sn | Fm 3/2 | Lm 1/8 | Repeat 8 | Gm 0.55, x, sn | Fm 2 | Lm 1/8 | Repeat 8 | Gm 0.6, sn | Fm 1/2 | Gm 0.85
+        ] | Fm 3 | Gm 0.8,
+        Seq [
+            x, x, hh | Gm 0.3, x, x, x, hh | Gm 0.4, x, x, x, hh | Gm 0.3, x, x, x, hh | Gm 0.4, x,
+            x, x, hh | Gm 0.3, x, x, x, hh | Gm 0.4, x, x, x, hh | Gm 0.3, x, x, hh | Lm 1/3 | Repeat 3 | Gm 0.35, hh | Gm 0.4, x,
+            x, x, hh | Gm 0.3, x, x, x, hh | Gm 0.4, x, x, hh | Lm 1/4 | Repeat 4 | Gm 0.3, hh | Gm 0.3, x, x, x, oh | Gm 0.4, x,
+            hh | Gm 0.45, hh | Gm 0.25, hh | Gm 0.3, hh | Gm 0.45, hh | Gm 0.25, hh | Gm 0.3, hh | Gm 0.45, hh | Gm 0.25, hh | Gm 0.3, hh | Gm 0.45, hh | Gm 0.25, hh | Gm 0.3, hh | Gm 0.45, hh | Gm 0.25, hh | Gm 0.3, hh | Gm 0.45,
+            x, x, hh | Gm 0.3, x, x, x, hh | Gm 0.4, x, x, x, hh | Gm 0.3, x, x, x, hh | Gm 0.4, x,
+            x, x, hh | Gm 0.3, x, x, rs | Pa 1/2 | Gm 0.4, x, x, x, x, hh | Gm 0.3, x, x, x, oh | Gm 0.35, x,
+            x, x, hh | Gm 0.3, x, x, x, hh | Gm 0.4, x, rs | Pa -1/2 | Gm 0.45, x, x, x, hh | Gm 0.35, x, x, x,
+            hh | Gm 0.5, hh | Gm 0.28, hh | Gm 0.33, hh | Gm 0.5, hh | Gm 0.28, hh | Gm 0.33, hh | Gm 0.5, hh | Gm 0.28, hh | Gm 0.33, hh | Gm 0.5, hh | Gm 0.28, hh | Gm 0.33, hh | Gm 0.5, hh | Gm 0.28, hh | Gm 0.33, hh | Gm 0.5
+        ] | Fm 50 | Gm 0.34
+    ]
+}
+
+-- The melody: 8 bars, minor-mode JI (1, 9/8, 6/5, 4/3, 3/2, 8/5, 9/5).
+-- Register Fm 8 over f 55 → 440 area. Long wistful notes.
+lead = {
+    Seq [
+        Fm 6/5 | Lm 12, Fm 9/8 | Lm 4,
+        Fm 1 | Lm 12, Fm 9/8 | Lm 4,
+        Fm 6/5 | Lm 8, Fm 4/3 | Lm 8,
+        Fm 3/2 | Lm 12, Fm 4/3 | Lm 4,
+        Fm 6/5 | Lm 12, Fm 9/8 | Lm 4,
+        Fm 1 | Lm 8, Fm 9/10 | Lm 8,
+        Fm 1 | Lm 12, Fm 9/8 | Lm 2, Fm 6/5 | Lm 2,
+        Fm 9/8 | Lm 16
+    ] | Fm 8 | Gm 0.14
+}
+
+-- Counterline: same shape displaced, a twelfth below, half speed feel.
+counter = {
+    Seq [
+        Fm 1 | Lm 16, Fm 9/10 | Lm 16,
+        Fm 4/5 | Lm 16, Fm 3/4 | Lm 16,
+        Fm 4/5 | Lm 16, Fm 9/10 | Lm 16,
+        Fm 1 | Lm 8, Fm 6/5 | Lm 8, Fm 9/8 | Lm 16
+    ] | Fm 8/3 | Gm 0.12
+}
+
+-- Sub pedal under it all.
+pedal = {
+    Seq [
+        Fm 1 | Lm 32, Fm 4/5 | Lm 32, Fm 9/10 | Lm 32, Fm 3/4 | Lm 16, Fm 1 | Lm 16
+    ] | Fm 1/2 | Gm 0.3
+}
+
+verse = {
+    Overlay [
+        drums,
+        lead,
+        counter,
+        pedal
+    ]
+}
+
+main = {
+    Seq [
+        Overlay [lead, pedal],
+        verse,
+        verse | Fm 9/8,
+        Overlay [lead, counter, pedal] | Fm 6/5,
+        verse
+    ]
+}

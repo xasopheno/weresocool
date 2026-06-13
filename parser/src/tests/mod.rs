@@ -1,2 +1,4 @@
 #[cfg(test)]
-mod wgsl_test; 
+mod drum_preset_test;
+#[cfg(test)]
+mod wgsl_test;

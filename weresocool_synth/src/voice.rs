@@ -132,13 +132,19 @@ impl Voice {
             self.offset_current.frequency,
         );
 
+        // `op_is_drum`: this op explicitly carries a drum oscillator (a real
+        // hit, or at least a drum-typed op). `is_drum`: the oscillator that
+        // will actually render — `self.osc_type` after `update()` resolves
+        // carry-over, so a kick ringing into a silence op still counts.
+        let op_is_drum = op.oscillator_type().is_drum();
+        let is_drum = self.osc_type.is_drum();
+        let silence_now = self.silence_now();
+
         // Drum oscillators handle their own perceived loudness — the sine
         // equal-loudness curve makes a 4 kHz hihat lose 9 dB before it even
         // hits the synth, which fights against any Fm-based pitch movement.
-        let is_drum = matches!(
-            op.oscillator_type(),
-            OscType::Kick { .. } | OscType::Snare { .. } | OscType::HiHat { .. }
-        );
+        // Keyed on the *rendered* osc so a drum tail carried into a silence
+        // op doesn't suddenly pick up the equal-loudness gain tilt.
         let loudness = if is_drum {
             1.0
         } else {
@@ -146,7 +152,7 @@ impl Voice {
         };
         let op_gain = self.calculate_op_gain(
             op.next_out(),
-            self.silence_now(),
+            silence_now,
             self.silence_next(op),
             op.sample_index() + op.duration_samples(),
             op.total_samples(),
@@ -169,11 +175,14 @@ impl Voice {
         // Cache sample_rate once per op to avoid per-sample Settings lookup
         let sample_rate = Settings::global().sample_rate;
 
-        // Reset drum filter state at the start of each drum note so the
-        // resonant filters don't carry decay/ring from a previous note.
-        // The drum sample code re-coefficients the filters on this same
-        // first sample, so this just zeros the history.
-        if is_drum && op.sample_index() == 0 {
+        // Reset drum state only on a true NOTE-ON: the op explicitly carries
+        // a drum oscillator AND has audible gain. Silence ops (Fm 0,
+        // Silence) keep a drum osc alive via carry-over, but resetting there
+        // would retrigger the attack inside the silence — the tail must keep
+        // ringing on the persistent note clock instead. The drum sample code
+        // re-coefficients the filters on the note's first sample, so this
+        // just zeros the history and advances the note counter.
+        if op_is_drum && op.sample_index() == 0 && !silence_now {
             self.drum_state.reset();
         }
 
@@ -197,6 +206,23 @@ impl Voice {
         let has_old_filters = self.old_filters.is_some();
         let has_old_osc = self.old_osc_type.is_some();
         let filter_branch_active = has_filters || has_old_filters;
+
+        // DRUM NOTE CLOCK — drum envelopes are functions of time since
+        // note-on, not time since op start. A real drum op renders on the
+        // op's own clock (identical to the note clock by construction); a
+        // tail carried into a silence op — or an old drum osc crossfading
+        // out under a new tone — continues from wherever the note left off
+        // instead of restarting at 0 and replaying the attack.
+        let old_is_drum = self.old_osc_type.as_ref().is_some_and(|o| o.is_drum());
+        let any_drum = is_drum || old_is_drum;
+        // Soft-choke decay: ~3 ms to 1/e at any sample rate.
+        let choke_coef = (-1.0 / (0.003 * sample_rate)).exp();
+        let drum_base = if op_is_drum {
+            op_sample_index
+        } else {
+            self.drum_state.note_sample
+        };
+        let sample_index_base = if any_drum { drum_base } else { op_sample_index };
         let mut last_gain_at_end = 0.0_f64;
         let mut last_freq_at_end = f_target;
 
@@ -234,7 +260,7 @@ impl Voice {
             let info = SampleInfo {
                 frequency,
                 gain,
-                sample_index: op_sample_index + index,
+                sample_index: sample_index_base + index,
                 total_samples: total_samples_for_info,
                 sample_rate,
             };
@@ -258,6 +284,17 @@ impl Voice {
                         )
                     };
                 }
+            }
+
+            // SOFT CHOKE — fold in the ~3 ms decaying tail of whatever this
+            // note-on cut (seeded by DrumState::reset()), and track the
+            // final drum output so the NEXT note-on can do the same. Turns
+            // the one-sample choke step (an audible pop on kick-after-kick
+            // and snare rolls) into a fast fade under the new transient.
+            if is_drum {
+                new_sample += self.drum_state.choke_z;
+                self.drum_state.choke_z *= choke_coef;
+                self.drum_state.last_out = new_sample;
             }
 
             if index == last_sample_index {
@@ -309,6 +346,13 @@ impl Voice {
         if duration_samples > 0 && buffer.len() > last_sample_index {
             self.offset_current.frequency = last_freq_at_end;
             self.offset_current.gain = last_gain_at_end;
+        }
+
+        // Advance the persistent drum note clock past this buffer so a tail
+        // carried into the next op (or the next batch of this op) continues
+        // from the right point in the note's envelope.
+        if any_drum {
+            self.drum_state.note_sample = drum_base + duration_samples;
         }
 
         buffer
@@ -364,17 +408,30 @@ impl Voice {
     }
 
     fn update_osc_type<Op: SynthOp>(&mut self, op: &Op) {
-        if self.osc_type != *op.oscillator_type() && self.osc_type.is_some() {
-            self.old_osc_type = Some(self.osc_type.clone());
-            self.osc_crossfade_index = 0;
-        }
-
-        self.osc_type = if self.past.osc_type.is_some() && op.oscillator_type().is_none() {
+        // Resolve what this op will actually render: the op's own oscillator
+        // if it has one, otherwise the previous oscillator carried forward
+        // (e.g. a tone or drum tail ringing into a silence op).
+        let resolved = if self.past.osc_type.is_some() && op.oscillator_type().is_none() {
             self.past.osc_type.clone()
         } else {
             op.oscillator_type().clone()
         };
 
+        // Crossfade only on a genuine change of the *rendered* oscillator.
+        // Comparing against `resolved` (not the op's raw osc) means an osc
+        // carried into silence no longer "crossfades" with itself — for
+        // drums that self-crossfade ran every stateful filter and the KS
+        // delay line twice per sample on shared state. Drum→drum changes
+        // also skip the crossfade: both sides would share one DrumState
+        // (state corruption), and the new hit's reset + transient masks
+        // the swap anyway — real drum machines choke the previous hit.
+        let drum_to_drum = self.osc_type.is_drum() && resolved.is_drum();
+        if resolved != self.osc_type && self.osc_type.is_some() && !drum_to_drum {
+            self.old_osc_type = Some(self.osc_type.clone());
+            self.osc_crossfade_index = 0;
+        }
+
+        self.osc_type = resolved;
         self.current.osc_type = op.oscillator_type().clone();
     }
 

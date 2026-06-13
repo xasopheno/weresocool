@@ -54,6 +54,10 @@ pub struct RenderOp {
     pub color_gradient: Option<(f32, f32, f32)>,
     /// Color mix: 0 = pure gradient, 1 = pure random
     pub color_mix: f32,
+    /// Visual Fit bands per axis (x, y, z) in world space — from
+    /// `FitX/FitY/FitZ`. Sound-inert; kintaro measures per-brush extents
+    /// over ops sharing a band and solves the affine.
+    pub fit_vis: [Option<(f64, f64)>; 3],
 }
 
 impl RenderOp {
@@ -87,6 +91,7 @@ impl RenderOp {
             midi: Vec::new(),
             gain_scalar: 1.0,
             color_gradient: None,
+            fit_vis: [None; 3],
             color_mix: 1.0,
         }
     }
@@ -121,6 +126,7 @@ impl RenderOp {
             midi: Vec::new(),
             gain_scalar: 1.0,
             color_gradient: None,
+            fit_vis: [None; 3],
             color_mix: 1.0,
         }
     }
@@ -154,6 +160,7 @@ impl RenderOp {
             midi: Vec::new(),
             gain_scalar: 0.0,
             color_gradient: None,
+            fit_vis: [None; 3],
             color_mix: 1.0,
         }
     }
@@ -194,6 +201,7 @@ impl RenderOp {
             midi: Vec::new(),
             gain_scalar: 0.0,
             color_gradient: None,
+            fit_vis: [None; 3],
             color_mix: 1.0,
         }
     }
@@ -434,6 +442,10 @@ fn pointop_to_renderop(
         midi: point_op.midi.clone(),
         gain_scalar: r_to_f64(point_op.g * basis.g).clamp(0.0, 2.0),
         color_gradient: point_op.color_distribution.gradient,
+        fit_vis: point_op.fit_vis.map(|band| band.map(|(a, b)| (
+            *a.numer() as f64 / *a.denom() as f64,
+            *b.numer() as f64 / *b.denom() as f64,
+        ))),
         color_mix: point_op.color_distribution.mix,
     };
 

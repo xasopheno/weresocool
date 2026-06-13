@@ -3,6 +3,7 @@ extern crate serde;
 pub mod ast;
 pub mod color;
 pub mod datagen;
+pub mod drum_presets;
 pub mod follow;
 pub mod generator;
 pub mod lists;
@@ -13,7 +14,8 @@ pub mod term;
 pub mod wgsl;
 pub use crate::{
     ast::{
-        Distortion, FmOscDef, FunDef, HiHatParams, KickParams, Op, Op::*, OscType, SnareParams, ASR,
+        ClapParams, Distortion, FmOscDef, FunDef, HiHatParams, KickParams, Op, Op::*, OscType,
+        RimshotParams, SnareParams, ASR,
     },
     color::{
         CssOrHex, Color, ColorMap, ColorSet, ColorSets, ColorValue, GradientColor, GenColor,

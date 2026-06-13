@@ -134,6 +134,17 @@ impl Default for Defs {
 pub struct NormalForm {
     pub operations: Vec<Vec<PointOp>>,
     pub length_ratio: Rational64,
+    /// Playback-start marker captured by the `Start` op. `None` (the
+    /// default) means "play from the beginning" — the historical
+    /// behaviour. `Some(beat_time)` means the renderer should seek the
+    /// audio + visual playhead to that position before the first frame.
+    ///
+    /// Units match `length_ratio`: both are in normalized beat-units
+    /// relative to the start of the piece. The fraction
+    /// `start_at / length_ratio` is the position in the rendered
+    /// timeline, which is what kintaro multiplies against the total
+    /// sample count to derive `seek_to_sample` input.
+    pub start_at: Option<Rational64>,
 }
 
 #[derive(Debug, Clone, Hash, Eq, Ord, PartialEq, PartialOrd)]
@@ -180,6 +191,19 @@ pub struct PointOp {
     pub color_grading: ColorGrading,
     /// Color distribution (gradient direction + randomness mix)
     pub color_distribution: ColorDistribution,
+    /// Visual Fit targets per axis (x, y, z): world-space `[a, b]` band the
+    /// voice's measured extent maps onto. Set by `FitX a b` / `FitY a b` /
+    /// `FitZ a b`; consumed by kintaro, inert for sound. Composition rule:
+    /// outer (later-applied) Fit wins per axis.
+    pub fit_vis: [Option<(Rational64, Rational64)>; 3],
+}
+
+/// Per-axis merge for `fit`: the *other* (outer) op's target wins when set.
+fn merge_fit(
+    a: &[Option<(Rational64, Rational64)>; 3],
+    b: &[Option<(Rational64, Rational64)>; 3],
+) -> [Option<(Rational64, Rational64)>; 3] {
+    [b[0].or(a[0]), b[1].or(a[1]), b[2].or(a[2])]
 }
 
 impl Default for PointOp {
@@ -207,6 +231,7 @@ impl Default for PointOp {
             midi: vec![],
             color_grading: ColorGrading::default(),
             color_distribution: ColorDistribution::default(),
+            fit_vis: [None; 3],
         }
     }
 }
@@ -288,6 +313,14 @@ impl Mul<NormalForm> for NormalForm {
         NormalForm {
             operations: nf_result,
             length_ratio: max_lr,
+            // Preserve `start_at` from `self` (the LHS, which by
+            // convention represents the running NF being modified).
+            // If both LHS and RHS carry a marker the LHS wins —
+            // matches "last-Start-wins" semantics: the LHS is the
+            // already-normalized running NF, so any Start it carries
+            // came from an op that's downstream of any Start inside
+            // the RHS (which would have been swallowed by composition).
+            start_at: self.start_at,
         }
     }
 }
@@ -318,6 +351,9 @@ impl MulAssign<&NormalForm> for NormalForm {
         *self = NormalForm {
             operations: nf_result,
             length_ratio: max_lr,
+            // Same as `Mul`: keep `self`'s start_at (which was the
+            // LHS before *= was called). See the Mul impl comment.
+            start_at: self.start_at,
         }
     }
 }
@@ -389,6 +425,7 @@ impl Mul<PointOp> for PointOp {
             } else {
                 self.color_distribution.clone()
             },
+            fit_vis: merge_fit(&self.fit_vis, &other.fit_vis),
         }
     }
 }
@@ -459,6 +496,7 @@ impl<'a> Mul<&'a PointOp> for &PointOp {
             } else {
                 self.color_distribution.clone()
             },
+            fit_vis: merge_fit(&self.fit_vis, &other.fit_vis),
         }
     }
 }
@@ -527,6 +565,7 @@ impl MulAssign for PointOp {
             } else {
                 self.color_distribution.clone()
             },
+            fit_vis: merge_fit(&self.fit_vis, &other.fit_vis),
         }
     }
 }
@@ -605,6 +644,7 @@ impl PointOp {
             } else {
                 self.color_distribution.clone()
             },
+            fit_vis: merge_fit(&self.fit_vis, &other.fit_vis),
         }
     }
 
@@ -709,6 +749,7 @@ impl NormalForm {
         NormalForm {
             operations: vec![vec![PointOp::init()]],
             length_ratio: Ratio::new(1, 1),
+            start_at: None,
         }
     }
 
@@ -718,6 +759,7 @@ impl NormalForm {
         NormalForm {
             operations: vec![],
             length_ratio: Ratio::new(0, 1),
+            start_at: None,
         }
     }
 

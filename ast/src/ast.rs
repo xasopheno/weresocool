@@ -20,6 +20,16 @@ pub enum Op {
     Color(u64),
     Follow(crate::follow::types::Follow),
     AsIs,
+    /// Positional playback-start marker. Source keyword: `Start`.
+    /// During normalization the handler does
+    /// `input.start_at = Some(input.length_ratio)` — capturing the
+    /// cumulative beat-time at the moment the marker appears in the
+    /// op chain. Multiple `Start` markers overwrite each other, so
+    /// the LAST one in the chain wins (i.e. the composer can move
+    /// `| Start` around to change the playback start). No-op for
+    /// length: `get_length_ratio` returns `1/1` (multiplicative
+    /// identity), so `Start` doesn't lengthen the piece.
+    Start,
     /// Kill — silence (semantic alias for `Gm 0` that also works in
     /// visual DSL contexts where `Gm` is meaningless). In ModBy/Seq
     /// chains, `None | Lm 3` means "no contribution for 3 base units."
@@ -98,6 +108,10 @@ pub enum Op {
     Snare { params: Option<SnareParams> },
     /// Hi-hat (closed or open)
     HiHat { open: bool, params: Option<HiHatParams> },
+    /// Clap - noise burst train + resonant tail
+    Clap { params: Option<ClapParams> },
+    /// Rimshot - short inharmonic resonator tock
+    Rimshot { params: Option<RimshotParams> },
 
     #[allow(clippy::upper_case_acronyms)]
     AD {
@@ -215,6 +229,15 @@ pub enum Op {
         y: Rational64,
         z: Rational64,
     },
+    /// Visual layout: map this op's measured note-anchor extent on one
+    /// axis onto the world-space band `[a, b]`. `axis` is 0=x, 1=y, 2=z.
+    /// Sound-inert; consumed by kintaro. `FitX -1 1`, `FitY -9/10 1/10`,
+    /// `FitZ -1/2 -1/2`.
+    FitVis {
+        axis: usize,
+        a: Rational64,
+        b: Rational64,
+    },
     ColorMix {
         amount: Rational64,
     },
@@ -245,6 +268,12 @@ pub struct FmOscDef {
 /// the spectrum mappings when you need precision.
 #[derive(Clone, Debug, PartialEq, Serialize, Deserialize, Hash, Ord, PartialOrd, Eq, Default)]
 pub struct KickParams {
+    /// Named voicing this drum starts from (`Kick 808`). Preset values are
+    /// the baseline; any params below override them. Valid names live in
+    /// `crate::drum_presets::KICK_PRESETS`; the parser rejects unknown names.
+    #[serde(default)]
+    pub preset: Option<String>,
+
     // ── Spectrum macro knobs (0-1) ────────────────────────────────────
     /// soft/round (0) → hard/clicky (1) — scales `click_amount` + transient.
     pub attack: Option<Rational64>,
@@ -288,6 +317,11 @@ pub struct KickParams {
 /// + mid-band crack waveshaping.
 #[derive(Clone, Debug, PartialEq, Serialize, Deserialize, Hash, Ord, PartialOrd, Eq, Default)]
 pub struct SnareParams {
+    /// Named voicing this drum starts from (`Snare trap`). See
+    /// `crate::drum_presets::SNARE_PRESETS`.
+    #[serde(default)]
+    pub preset: Option<String>,
+
     // ── Spectrum macro knobs (0-1) ────────────────────────────────────
     /// soft (0) → cracking (1) — scales beater click, crack, shell pitch range.
     pub attack: Option<Rational64>,
@@ -336,6 +370,11 @@ pub struct SnareParams {
 /// decay, and a brief pitched attack ping (stick-on-bell character).
 #[derive(Clone, Debug, PartialEq, Serialize, Deserialize, Hash, Ord, PartialOrd, Eq, Default)]
 pub struct HiHatParams {
+    /// Named voicing this drum starts from (`HiHat 909`, `OpenHat dust`).
+    /// See `crate::drum_presets::HIHAT_PRESETS`.
+    #[serde(default)]
+    pub preset: Option<String>,
+
     // ── Spectrum macro knobs (0-1) ────────────────────────────────────
     /// soft (0) → clicky (1) — scales `attack_amount`, `pitch_drop`, ping.
     pub attack: Option<Rational64>,
@@ -363,6 +402,61 @@ pub struct HiHatParams {
     pub velocity_tilt: Option<Rational64>,
 }
 
+/// Parameters for Clap synthesis.
+///
+/// Modeled as a short train of noise bursts (multiple hands striking a
+/// few milliseconds apart) into resonant bandpasses, followed by a longer
+/// noise tail — the classic analog clap architecture.
+#[derive(Clone, Debug, PartialEq, Serialize, Deserialize, Hash, Ord, PartialOrd, Eq, Default)]
+pub struct ClapParams {
+    /// Named voicing (`Clap 808`). See `crate::drum_presets::CLAP_PRESETS`.
+    #[serde(default)]
+    pub preset: Option<String>,
+
+    // ── Spectrum macro knobs (0-1) ────────────────────────────────────
+    /// soft (0) → sharp/spitty (1) — burst envelope speed.
+    pub attack: Option<Rational64>,
+    /// tight (0) → wide (1) — spacing between the burst-train hits.
+    pub spread: Option<Rational64>,
+    /// dark (0) → bright (1) — bandpass centers and top-band level.
+    pub tone: Option<Rational64>,
+    /// dry (0) → roomy (1) — noise tail length.
+    pub length: Option<Rational64>,
+
+    // ── Specific overrides ────────────────────────────────────────────
+    /// Pitch multiplier on the bandpass centers (default: 1.0).
+    pub tune: Option<Rational64>,
+    /// Output saturation drive (default: preset).
+    pub saturation: Option<Rational64>,
+    /// How dramatically velocity (`Gm`) changes timbre (default: 0.5).
+    pub velocity_tilt: Option<Rational64>,
+}
+
+/// Parameters for Rimshot synthesis.
+///
+/// A stick striking rim and head together: two short inharmonic resonator
+/// rings (woody/metallic "tock") plus a sharp click transient. Very short.
+#[derive(Clone, Debug, PartialEq, Serialize, Deserialize, Hash, Ord, PartialOrd, Eq, Default)]
+pub struct RimshotParams {
+    /// Named voicing (`Rimshot 808`). See `crate::drum_presets::RIMSHOT_PRESETS`.
+    #[serde(default)]
+    pub preset: Option<String>,
+
+    // ── Spectrum macro knobs (0-1) ────────────────────────────────────
+    /// woody (0) → metallic (1) — ring frequencies and balance.
+    pub tone: Option<Rational64>,
+    /// tick (0) → ring (1) — resonator decay time.
+    pub length: Option<Rational64>,
+
+    // ── Specific overrides ────────────────────────────────────────────
+    /// Pitch multiplier on the ring frequencies (default: 1.0).
+    pub tune: Option<Rational64>,
+    /// Click transient level (default: preset).
+    pub attack_amount: Option<Rational64>,
+    /// How dramatically velocity (`Gm`) changes timbre (default: 0.5).
+    pub velocity_tilt: Option<Rational64>,
+}
+
 #[derive(Clone, Debug, PartialEq, Serialize, Deserialize, Hash, Ord, PartialOrd, Eq)]
 /// Oscillator Type
 pub enum OscType {
@@ -379,6 +473,10 @@ pub enum OscType {
     Snare { params: Option<SnareParams> },
     /// Hi-hat - noise with metallic shimmer
     HiHat { open: bool, params: Option<HiHatParams> },
+    /// Clap - noise burst train + resonant tail
+    Clap { params: Option<ClapParams> },
+    /// Rimshot - short inharmonic resonator tock
+    Rimshot { params: Option<RimshotParams> },
 }
 
 impl OscType {
@@ -388,6 +486,21 @@ impl OscType {
 
     pub fn is_some(&self) -> bool {
         !matches!(self, OscType::None)
+    }
+
+    /// Drum oscillators are one-shot, self-enveloping instruments — the
+    /// renderer gives them different note-on/fade semantics than sustained
+    /// tones (no outer attack ramp, persistent note clock, no crossfade
+    /// between drum types).
+    pub fn is_drum(&self) -> bool {
+        matches!(
+            self,
+            OscType::Kick { .. }
+                | OscType::Snare { .. }
+                | OscType::HiHat { .. }
+                | OscType::Clap { .. }
+                | OscType::Rimshot { .. }
+        )
     }
 }
 

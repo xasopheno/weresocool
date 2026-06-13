@@ -1,49 +1,19 @@
 { f: 80, l: 1/4, g: 1, p: 0 }
 
--- Kit: TR-909 Style
--- Punchy kick, cracking snare, bright hats
--- Tight, electronic feel
+-- Kit: TR-909
+-- Punchy mid-forward kick (single-exponential pitch drop, hard beater
+-- click), tonal cracking snare, bright noisy hats. Tight electronic feel.
 
-bd = {
-    Kick {
-        pitch_decay: 0.02,
-        pitch_range: 2.0,
-        amp_decay: 0.12,
-        click_amount: 0.5,
-        sub_amount: 0.1,
-        harmonic_damping: 2.0,
-        saturation: 0.5,
-        velocity_tilt: 0.6,
-        transient_curve: 1.8
-    }
-    | Gm 0.45
-}
+bd = { Kick 909 | Gm 0.6 }
 
-sn = {
-    Snare {
-        shell_decay: 0.06,
-        wire_decay: 0.04,
-        wire_mix: 0.45,
-        shell_pitch_decay: 50,
-        shell_pitch_range: 0.25,
-        crack: 0.5,
-        attack_amount: 0.4,
-        saturation: 0.15,
-        velocity_tilt: 0.6
-    }
-    | Fm 2
-    | Gm 0.5
-}
+sn = { Snare 909 | Fm 3 | Gm 0.5 }
 
-hh = {
-    HiHat {
-        decay_rate: 35,
-        brightness: 0.6,
-        pitch_drop: 0.015,
-        velocity_tilt: 0.5
-    }
-    | Fm 80
-    | Gm 0.2
-}
+hh = { HiHat 909 | Fm 40 | Gm 0.2 }
+
+oh = { OpenHat 909 | Fm 40 | Gm 0.22 }
+
+cp = { Clap 909 | Fm 3 | Gm 0.5 }
+
+rs = { Rimshot 909 | Fm 3 | Gm 0.4 }
 
 main = { Silence 1 }

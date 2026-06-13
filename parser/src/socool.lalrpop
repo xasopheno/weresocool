@@ -24,13 +24,15 @@ use weresocool_ast::{
         KickParams,
         SnareParams,
         HiHatParams,
+        ClapParams,
+        RimshotParams,
 };
 use weresocool_ast::follow::types::{
   Follow, FollowRule, FollowCondition, FollowAction, FollowVariable, FollowExpr, FollowComparison, FollowSimpleCondition, FollowAndCondition
 };
 use weresocool_ast::color::*;
 use weresocool_ast::color_set;
-use crate::parser::{Init, handle_fit_length_recursively, handle_repeat_recursively};
+use crate::parser::{Init, handle_fit_length_recursively, handle_repeat_recursively, validate_drum_preset};
 use crate::indices::{et, random_seed};
 use crate::float_to_rational::helpers::*;
 use regex::Regex;
@@ -332,6 +334,14 @@ BaseOperation: Term = {
     // shadowing `Option::None` in the lalrpop-generated parser code).
     "None" => Term::Op(Mute {}),
     "Out" => Term::Op(Out {}),
+    // `Start` is a positional marker. It captures the cumulative
+    // length the NF has reached at this point in the op chain — the
+    // composer drops `| Start` where they want playback to begin.
+    // Optional: when absent, playback begins at t=0 as always. When
+    // multiple `Start` ops appear in the same NF, the last one wins
+    // (each `apply_to_normal_form` overwrites `start_at`). See
+    // ast/operations/normalize.rs for the handler.
+    "Start" => Term::Op(Start {}),
     "Sine" <pow: Rational?> => {
       Term::Op(Sine { pow })
     },
@@ -372,15 +382,60 @@ BaseOperation: Term = {
         Term::Op(Sequence { operations })
     },
     "Noise" => Term::Op(Noise {}),
-    // Drum synthesis - with optional configurable parameters
+    // Drum synthesis — with optional named preset and/or param overrides:
+    //   Kick                      best general-purpose voicing
+    //   Kick 808                  named preset
+    //   Kick 808 { tune: 1/2 }    preset + overrides
+    //   Kick { hump: 2 }          overrides on the default voicing
+    // Unknown preset names are a parse error listing the available presets.
     "Kick" => Term::Op(Kick { params: None }),
     "Kick" "{" <params: KickParamList> "}" => Term::Op(Kick { params: Some(params) }),
+    <start:@L> "Kick" <preset: DrumPreset> <params: ("{" <KickParamList> "}")?> =>? {
+        validate_drum_preset(start, "Kick", &preset, weresocool_ast::drum_presets::KICK_PRESETS)?;
+        let mut p = params.unwrap_or_default();
+        p.preset = Some(preset);
+        Ok(Term::Op(Kick { params: Some(p) }))
+    },
     "Snare" => Term::Op(Snare { params: None }),
     "Snare" "{" <params: SnareParamList> "}" => Term::Op(Snare { params: Some(params) }),
+    <start:@L> "Snare" <preset: DrumPreset> <params: ("{" <SnareParamList> "}")?> =>? {
+        validate_drum_preset(start, "Snare", &preset, weresocool_ast::drum_presets::SNARE_PRESETS)?;
+        let mut p = params.unwrap_or_default();
+        p.preset = Some(preset);
+        Ok(Term::Op(Snare { params: Some(p) }))
+    },
     "HiHat" => Term::Op(HiHat { open: false, params: None }),
     "HiHat" "{" <params: HiHatParamList> "}" => Term::Op(HiHat { open: false, params: Some(params) }),
+    <start:@L> "HiHat" <preset: DrumPreset> <params: ("{" <HiHatParamList> "}")?> =>? {
+        validate_drum_preset(start, "HiHat", &preset, weresocool_ast::drum_presets::HIHAT_PRESETS)?;
+        let mut p = params.unwrap_or_default();
+        p.preset = Some(preset);
+        Ok(Term::Op(HiHat { open: false, params: Some(p) }))
+    },
     "OpenHat" => Term::Op(HiHat { open: true, params: None }),
     "OpenHat" "{" <params: HiHatParamList> "}" => Term::Op(HiHat { open: true, params: Some(params) }),
+    <start:@L> "OpenHat" <preset: DrumPreset> <params: ("{" <HiHatParamList> "}")?> =>? {
+        validate_drum_preset(start, "OpenHat", &preset, weresocool_ast::drum_presets::HIHAT_PRESETS)?;
+        let mut p = params.unwrap_or_default();
+        p.preset = Some(preset);
+        Ok(Term::Op(HiHat { open: true, params: Some(p) }))
+    },
+    "Clap" => Term::Op(Clap { params: None }),
+    "Clap" "{" <params: ClapParamList> "}" => Term::Op(Clap { params: Some(params) }),
+    <start:@L> "Clap" <preset: DrumPreset> <params: ("{" <ClapParamList> "}")?> =>? {
+        validate_drum_preset(start, "Clap", &preset, weresocool_ast::drum_presets::CLAP_PRESETS)?;
+        let mut p = params.unwrap_or_default();
+        p.preset = Some(preset);
+        Ok(Term::Op(Clap { params: Some(p) }))
+    },
+    "Rimshot" => Term::Op(Rimshot { params: None }),
+    "Rimshot" "{" <params: RimshotParamList> "}" => Term::Op(Rimshot { params: Some(params) }),
+    <start:@L> "Rimshot" <preset: DrumPreset> <params: ("{" <RimshotParamList> "}")?> =>? {
+        validate_drum_preset(start, "Rimshot", &preset, weresocool_ast::drum_presets::RIMSHOT_PRESETS)?;
+        let mut p = params.unwrap_or_default();
+        p.preset = Some(preset);
+        Ok(Term::Op(Rimshot { params: Some(p) }))
+    },
     "Reverse" => Term::Op(Reverse {}),
     "Invert" => Term::Op(FInvert),
     "Repeat" <i: Int> => {
@@ -464,6 +519,11 @@ BaseOperation: Term = {
         }
     },
     "Gradient" "(" <x: Rational> "," <y: Rational> "," <z: Rational> ")" => Term::Op(ColorGradient { x, y, z }),
+    // Visual layout: map the voice's measured extent onto a world band.
+    // Sound-inert; consumed by kintaro. FitX -1 1 | FitY -9/10 1/10 | FitZ -1/2 -1/2
+    "FitX" <a: Rational> <b: Rational> => Term::Op(FitVis { axis: 0, a, b }),
+    "FitY" <a: Rational> <b: Rational> => Term::Op(FitVis { axis: 1, a, b }),
+    "FitZ" <a: Rational> <b: Rational> => Term::Op(FitVis { axis: 2, a, b }),
     "Mix" <amount: Rational> => Term::Op(ColorMix { amount }),
     "FitLength" <op: Composeable> => {
         Term::Op(
@@ -680,6 +740,13 @@ KickParam: (String, Rational64) = {
     <name: Name> ":" <value: Rational> => (name, value),
 };
 
+// Preset token after a drum keyword: bare lowercase names (`trap`, `dust`)
+// or numeric names (`808`, `909` — these lex as Int, not Name).
+DrumPreset: String = {
+    <name: Name> => name,
+    <n: Int> => n.to_string(),
+};
+
 SnareParamList: SnareParams = {
     <params: Comma<SnareParam>> => {
         let mut result = SnareParams::default();
@@ -742,6 +809,54 @@ HiHatParamList: HiHatParams = {
 };
 
 HiHatParam: (String, Rational64) = {
+    <name: Name> ":" <value: Rational> => (name, value),
+};
+
+ClapParamList: ClapParams = {
+    <params: Comma<ClapParam>> => {
+        let mut result = ClapParams::default();
+        for (name, value) in params {
+            match name.as_str() {
+                // Spectrum macros (0-1)
+                "attack" => result.attack = Some(value),
+                "spread" => result.spread = Some(value),
+                "tone" => result.tone = Some(value),
+                "length" => result.length = Some(value),
+                // Specific overrides
+                "tune" => result.tune = Some(value),
+                "saturation" => result.saturation = Some(value),
+                "velocity_tilt" => result.velocity_tilt = Some(value),
+                _ => {}
+            }
+        }
+        result
+    }
+};
+
+ClapParam: (String, Rational64) = {
+    <name: Name> ":" <value: Rational> => (name, value),
+};
+
+RimshotParamList: RimshotParams = {
+    <params: Comma<RimshotParam>> => {
+        let mut result = RimshotParams::default();
+        for (name, value) in params {
+            match name.as_str() {
+                // Spectrum macros (0-1)
+                "tone" => result.tone = Some(value),
+                "length" => result.length = Some(value),
+                // Specific overrides
+                "tune" => result.tune = Some(value),
+                "attack_amount" => result.attack_amount = Some(value),
+                "velocity_tilt" => result.velocity_tilt = Some(value),
+                _ => {}
+            }
+        }
+        result
+    }
+};
+
+RimshotParam: (String, Rational64) = {
     <name: Name> ":" <value: Rational> => (name, value),
 };
 

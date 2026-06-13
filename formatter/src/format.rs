@@ -643,13 +643,14 @@ fn format_op<'a>(arena: &'a Arena<'a>, ctx: &FormatContext, op: &Op) -> DocBuild
     match op {
         // Simple ops
         Op::AsIs => arena.text("AsIs"),
+        Op::Start => arena.text("Start"),
         Op::Mute => arena.text("None"),
         Op::Out => arena.text("Out"),
         Op::Reverse => arena.text("Reverse"),
         Op::FInvert => arena.text("FInvert"),
         Op::Noise => arena.text("Noise"),
         Op::Saw => arena.text("Saw"),
-        Op::Kick { params } => format_drum_op(arena, "Kick", params.as_ref().map(|p| {
+        Op::Kick { params } => format_drum_op(arena, "Kick", params.as_ref().and_then(|p| p.preset.as_deref()), params.as_ref().map(|p| {
             let mut v = vec![];
             // Spectrum macros
             if let Some(ref val) = p.attack { v.push(("attack", val)); }
@@ -670,7 +671,7 @@ fn format_op<'a>(arena: &'a Arena<'a>, ctx: &FormatContext, op: &Op) -> DocBuild
             if let Some(ref val) = p.velocity_tilt { v.push(("velocity_tilt", val)); }
             v
         })),
-        Op::Snare { params } => format_drum_op(arena, "Snare", params.as_ref().map(|p| {
+        Op::Snare { params } => format_drum_op(arena, "Snare", params.as_ref().and_then(|p| p.preset.as_deref()), params.as_ref().map(|p| {
             let mut v = vec![];
             // Spectrum macros
             if let Some(ref val) = p.attack { v.push(("attack", val)); }
@@ -696,7 +697,7 @@ fn format_op<'a>(arena: &'a Arena<'a>, ctx: &FormatContext, op: &Op) -> DocBuild
         })),
         Op::HiHat { open, params } => {
             let name = if *open { "OpenHat" } else { "HiHat" };
-            format_drum_op(arena, name, params.as_ref().map(|p| {
+            format_drum_op(arena, name, params.as_ref().and_then(|p| p.preset.as_deref()), params.as_ref().map(|p| {
                 let mut v = vec![];
                 // Spectrum macros
                 if let Some(ref val) = p.attack { v.push(("attack", val)); }
@@ -714,6 +715,30 @@ fn format_op<'a>(arena: &'a Arena<'a>, ctx: &FormatContext, op: &Op) -> DocBuild
                 v
             }))
         }
+        Op::Clap { params } => format_drum_op(arena, "Clap", params.as_ref().and_then(|p| p.preset.as_deref()), params.as_ref().map(|p| {
+            let mut v = vec![];
+            // Spectrum macros
+            if let Some(ref val) = p.attack { v.push(("attack", val)); }
+            if let Some(ref val) = p.spread { v.push(("spread", val)); }
+            if let Some(ref val) = p.tone { v.push(("tone", val)); }
+            if let Some(ref val) = p.length { v.push(("length", val)); }
+            // Specific overrides
+            if let Some(ref val) = p.tune { v.push(("tune", val)); }
+            if let Some(ref val) = p.saturation { v.push(("saturation", val)); }
+            if let Some(ref val) = p.velocity_tilt { v.push(("velocity_tilt", val)); }
+            v
+        })),
+        Op::Rimshot { params } => format_drum_op(arena, "Rimshot", params.as_ref().and_then(|p| p.preset.as_deref()), params.as_ref().map(|p| {
+            let mut v = vec![];
+            // Spectrum macros
+            if let Some(ref val) = p.tone { v.push(("tone", val)); }
+            if let Some(ref val) = p.length { v.push(("length", val)); }
+            // Specific overrides
+            if let Some(ref val) = p.tune { v.push(("tune", val)); }
+            if let Some(ref val) = p.attack_amount { v.push(("attack_amount", val)); }
+            if let Some(ref val) = p.velocity_tilt { v.push(("velocity_tilt", val)); }
+            v
+        })),
 
         // Identifiers
         Op::Id(name) => arena.text(name.clone()),
@@ -929,6 +954,10 @@ fn format_op<'a>(arena: &'a Arena<'a>, ctx: &FormatContext, op: &Op) -> DocBuild
         Op::ColorMix { amount } => {
             format_single_rational_op(arena, "Mix", amount)
         }
+        Op::FitVis { axis, a, b } => {
+            let kw = match axis { 0 => "FitX", 1 => "FitY", _ => "FitZ" };
+            arena.text(format!("{} {} {}", kw, a, b))
+        }
 
         // MIDI
         Op::Midi { channels } => {
@@ -1031,8 +1060,16 @@ fn format_single_rational_op<'a>(
 fn format_drum_op<'a>(
     arena: &'a Arena<'a>,
     name: &'a str,
+    preset: Option<&str>,
     params: Option<Vec<(&'a str, &Rational64)>>,
 ) -> DocBuilder<'a, Arena<'a>> {
+    // `Kick`, `Kick 808`, `Kick { ... }`, or `Kick 808 { ... }`. A params
+    // struct that only carries a preset must print WITHOUT braces so the
+    // output round-trips through the parser unchanged.
+    let head = match preset {
+        Some(p) => arena.text(name).append(arena.text(" ")).append(arena.text(p.to_string())),
+        None => arena.text(name),
+    };
     match params {
         Some(params) if !params.is_empty() => {
             let param_docs: Vec<_> = params
@@ -1045,13 +1082,11 @@ fn format_drum_op<'a>(
                 })
                 .collect();
             let inner = arena.intersperse(param_docs, arena.text(", "));
-            arena
-                .text(name)
-                .append(arena.text(" { "))
+            head.append(arena.text(" { "))
                 .append(inner)
                 .append(arena.text(" }"))
         }
-        _ => arena.text(name),
+        _ => head,
     }
 }
 

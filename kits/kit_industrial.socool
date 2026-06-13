@@ -1,49 +1,21 @@
 { f: 80, l: 1/4, g: 1, p: 0 }
 
 -- Kit: Industrial
--- Distorted kick, metallic snare, harsh hats
--- High saturation, aggressive transients
+-- 909 bones pushed harder: extra saturation on the kick, trap snare with
+-- the crack center dropped into its harshest register, tight bright hats.
+-- Demonstrates preset + override syntax: params after the preset name
+-- override that preset's values.
 
-bd = {
-    Kick {
-        pitch_decay: 0.015,
-        pitch_range: 1.8,
-        amp_decay: 0.1,
-        click_amount: 0.7,
-        sub_amount: 0.2,
-        harmonic_damping: 2.5,
-        saturation: 0.8,
-        velocity_tilt: 0.4,
-        transient_curve: 2.2
-    }
-    | Gm 0.4
-}
+bd = { Kick 909 { saturation: 0.9, hump: 1.2 } | Gm 0.6 }
 
-sn = {
-    Snare {
-        shell_decay: 0.05,
-        wire_decay: 0.03,
-        wire_mix: 0.55,
-        shell_pitch_decay: 60,
-        shell_pitch_range: 0.2,
-        crack: 0.6,
-        attack_amount: 0.5,
-        saturation: 0.3,
-        velocity_tilt: 0.4
-    }
-    | Fm 2.5
-    | Gm 0.45
-}
+sn = { Snare trap { saturation: 0.7, crack_freq: 3200 } | Fm 3 | Gm 0.5 }
 
-hh = {
-    HiHat {
-        decay_rate: 40,
-        brightness: 0.7,
-        pitch_drop: 0.018,
-        velocity_tilt: 0.4
-    }
-    | Fm 90
-    | Gm 0.15
-}
+hh = { HiHat trap | Fm 45 | Gm 0.2 }
+
+oh = { OpenHat 909 | Fm 45 | Gm 0.22 }
+
+cp = { Clap 909 | Fm 3 | Gm 0.5 }
+
+rs = { Rimshot 909 | Fm 3 | Gm 0.4 }
 
 main = { Silence 1 }

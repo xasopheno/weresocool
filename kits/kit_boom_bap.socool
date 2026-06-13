@@ -1,0 +1,20 @@
+{ f: 55, l: 1/4, g: 1, p: 0 }
+
+-- Kit: Boom Bap
+-- 90s hip-hop: a dusty punchy kick (dust bones with the attack opened
+-- up), a hard cracking snare, lofi hats. Demonstrates macro overrides:
+-- `attack`/`tone` bend the preset instead of replacing it.
+
+bd = { Kick dust { attack: 0.8, body: 0.7 } | Gm 0.65 }
+
+sn = { Snare wsc { attack: 0.85, tone: 0.6 } | Fm 7/2 | Gm 0.55 }
+
+hh = { HiHat dust { attack: 0.7 } | Fm 45 | Gm 0.2 }
+
+oh = { OpenHat dust | Fm 45 | Gm 0.22 }
+
+cp = { Clap dust | Fm 3 | Gm 0.5 }
+
+rs = { Rimshot acoustic | Fm 3 | Gm 0.4 }
+
+main = { Silence 1 }

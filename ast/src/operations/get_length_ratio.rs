@@ -12,6 +12,11 @@ impl GetLengthRatio for Op {
     ) -> Result<Rational64, Error> {
         match self {
             Op::AsIs {}
+            // Positional playback-start marker — see normalize.rs.
+            // Has multiplicative identity for length: dropping `Start`
+            // into a chain doesn't change the piece's duration, it just
+            // records WHERE in the chain to begin playback.
+            | Op::Start {}
             | Op::Mute {}
             | Op::Color(_)
             | Op::Follow(..)
@@ -30,6 +35,8 @@ impl GetLengthRatio for Op {
             | Op::Kick { .. }
             | Op::Snare { .. }
             | Op::HiHat { .. }
+            | Op::Clap { .. }
+            | Op::Rimshot { .. }
             | Op::FInvert {}
             | Op::Reverse {}
             | Op::Reverb { .. }
@@ -50,6 +57,7 @@ impl GetLengthRatio for Op {
             | Op::ColorBlend { .. }
             | Op::ColorAdd { .. }
             | Op::ColorGradient { .. }
+            | Op::FitVis { .. }
             | Op::ColorMix { .. }
             | Op::Wavefolder { .. }
             | Op::SoftClip { .. }

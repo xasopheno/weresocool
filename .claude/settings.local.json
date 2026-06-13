@@ -77,7 +77,8 @@
       "WebFetch(domain:wiki.ljudmila.org)",
       "WebFetch(domain:nathan.ho.name)",
       "Bash(git stash:*)",
-      "Bash(cargo search:*)"
+      "Bash(cargo search:*)",
+      "Bash(./target/release/weresocool print *)"
     ],
     "deny": [],
     "ask": []

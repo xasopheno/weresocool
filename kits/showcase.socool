@@ -1,0 +1,54 @@
+{ f: 60, l: 1/2, g: 1, p: 0 }
+
+-- Preset showcase: every built-in drum preset, one hit each, in the
+-- order: wsc, 808, 909, knock/trap, acoustic/brush, dust
+-- (claps: wsc, 808, 909, trap, dust; rimshots: wsc, 808, 909, acoustic).
+-- Render with: weresocool print kits/showcase.socool
+
+x = { Silence 1 }
+
+kicks = {
+    Seq [
+        Kick wsc, x, Kick 808, x, Kick 909, x,
+        Kick knock, x, Kick acoustic, x, Kick dust, x
+    ]
+}
+
+snares = {
+    Seq [
+        Snare wsc, x, Snare 808, x, Snare 909, x,
+        Snare trap, x, Snare brush, x, Snare dust, x
+    ] | Fm 3
+}
+
+hats = {
+    Seq [
+        HiHat wsc, x, HiHat 808, x, HiHat 909, x,
+        HiHat trap, x, HiHat acoustic, x, HiHat dust, x
+    ] | Fm 5
+}
+
+open_hats = {
+    Seq [
+        OpenHat wsc, x, OpenHat 808, x, OpenHat 909, x,
+        OpenHat trap, x, OpenHat acoustic, x, OpenHat dust, x
+    ] | Fm 5
+}
+
+claps = {
+    Seq [
+        Clap wsc, x, Clap 808, x, Clap 909, x,
+        Clap trap, x, Clap dust, x
+    ] | Fm 3
+}
+
+rimshots = {
+    Seq [
+        Rimshot wsc, x, Rimshot 808, x,
+        Rimshot 909, x, Rimshot acoustic, x
+    ] | Fm 3
+}
+
+main = {
+    Seq [kicks, snares, hats, open_hats, claps, rimshots]
+}

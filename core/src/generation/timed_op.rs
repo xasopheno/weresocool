@@ -69,6 +69,7 @@ impl TimedOp {
         PointOp {
             fm: self.fm,
             fa: self.fa,
+            fit_vis: [None; 3],
             pm: self.pm,
             pa: self.pa,
             g: self.g,

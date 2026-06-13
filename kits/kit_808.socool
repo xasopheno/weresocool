@@ -1,62 +1,25 @@
 { f: 60, l: 1/4, g: 1, p: 0 }
 
 -- Kit: TR-808
--- Sub-heavy kick, dusty snare, soft hats.
+-- Long sub-boom kick, tight dark snare, metallic square-bank hats.
 -- The header f:60 sets the kick fundamental. The snare and hi-hat
 -- multiply it up (Fm 3, Fm 50) to land in their respective registers.
 -- All drums respond to standard language ops:
 --   bd | Fm 1/2   -> octave-down sub kick
 --   bd | Lm 2     -> doubled note length
+-- The Gm values are MIX staging (presets are loudness-balanced at the
+-- engine level — switching presets never changes the balance).
 
-bd = {
-    Kick {
-        pitch_decay: 0.06,
-        pitch_range: 4.5,
-        amp_decay: 0.65,
-        click_amount: 0.18,
-        click_freq: 1800,
-        saturation: 0.35,
-        velocity_tilt: 0.7
-    }
-    | Gm 0.6
-}
+bd = { Kick 808 | Gm 0.6 }
 
-sn = {
-    Snare {
-        shell_decay: 0.16,
-        wire_decay: 0.20,
-        wire_mix: 0.55,
-        shell_tune: 1.71,
-        shell_pitch_range: 0.3,
-        crack: 0.45,
-        attack_amount: 0.35,
-        saturation: 0.18,
-        velocity_tilt: 0.6
-    }
-    | Fm 3
-    | Gm 0.5
-}
+sn = { Snare 808 | Fm 3 | Gm 0.5 }
 
-hh = {
-    HiHat {
-        decay_rate: 50,
-        brightness: 0.55,
-        pitch_drop: 0.012,
-        velocity_tilt: 0.5
-    }
-    | Fm 50
-    | Gm 0.22
-}
+hh = { HiHat 808 | Fm 50 | Gm 0.22 }
 
-oh = {
-    OpenHat {
-        decay_rate: 8,
-        brightness: 0.7,
-        pitch_drop: 0.02,
-        velocity_tilt: 0.5
-    }
-    | Fm 50
-    | Gm 0.25
-}
+oh = { OpenHat 808 | Fm 50 | Gm 0.25 }
+
+cp = { Clap 808 | Fm 3 | Gm 0.5 }
+
+rs = { Rimshot 808 | Fm 3 | Gm 0.4 }
 
 main = { Silence 1 }

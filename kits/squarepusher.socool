@@ -1,0 +1,72 @@
+{ f: 55, l: 1/14, g: 1, p: 0 }
+
+-- Squarepusher study — breakcore drums under a virtuosic funk bass lead.
+-- ~210 bpm 16ths (l: 1/14). The BASS is the lead instrument: fast JI
+-- runs, octave pops, syncopated 16ths — sine portamento gives the slides.
+-- Drums: relentless amen chop, snare rolls and flams in every bar, the
+-- roll cascade in bar 4 climbing 9/8 → 6/5 → 4/3 → 3/2.
+-- Arrangement: drums alone → bass enters → everything | Fm 6/5 (the key
+-- LIFTS, drums and all) → collapse.
+--
+-- Render: weresocool print kits/squarepusher.socool
+
+x = { Silence 1 }
+
+rs = { Rimshot 909 }
+
+cp = { Clap 909 }
+
+fury(bd, sn, hh, oh) = {
+    Overlay [
+        Seq [
+            bd, x, x, x, x, x, bd | Gm 0.55, x, x, x, bd, x, x, bd | Gm 0.5, x, x,
+            bd, x, x, x, x, bd | Gm 0.5, x, x, x, x, bd, bd | Gm 0.45, x, x, x, x,
+            bd, x, x, x, x, x, x, bd | Gm 0.6, x, bd, x, x, x, x, bd | Gm 0.5, x,
+            bd, x, x, x, bd | Gm 0.55, x, x, x, bd, x, bd | Gm 0.5, x, bd | Gm 0.65, x, x, x
+        ],
+        Seq [
+            x, x, x, x, sn, x, sn | Gm 0.2, sn | Lm 1/2 | Repeat 2 | Gm 0.35, x, x, x, x, sn, x, sn | Gm 0.25, sn | Lm 1/3 | Repeat 3 | Gm 0.3,
+            x, x, sn | Gm 0.18, x, sn, x, x, sn | Gm 0.25, x, sn | Lm 1/4 | Repeat 4 | Gm 0.4, x, x, sn, x, x, sn | Gm 0.3,
+            x, x, x, x, sn, sn | Lm 1/2 | Repeat 2 | Gm 0.3, x, x, sn | Gm 0.2, x, x, sn, x, sn | Lm 1/4 | Repeat 4 | Gm 0.45, x, sn | Fm 9/8 | Gm 0.7,
+            x, x, sn | Lm 1/3 | Repeat 3 | Gm 0.3, x, sn, x, sn | Fm 9/8 | Lm 1/4 | Repeat 4 | Gm 0.4, x, sn | Fm 6/5 | Lm 1/4 | Repeat 4 | Gm 0.5, x, sn | Fm 4/3 | Lm 1/6 | Repeat 6 | Gm 0.55, x, sn, sn | Lm 1/6 | Repeat 6 | Gm 0.5, sn | Fm 3/2 | Gm 0.8, sn | Lm 1/8 | Repeat 8 | Gm 0.6
+        ] | Fm 3 | Gm 0.78,
+        Seq [
+            hh | Gm 0.5, hh | Gm 0.26, hh | Gm 0.32, hh | Gm 0.5, hh | Gm 0.26, hh | Gm 0.32, hh | Gm 0.5, hh | Gm 0.26, hh | Gm 0.32, hh | Gm 0.5, hh | Gm 0.26, hh | Gm 0.32, hh | Gm 0.5, hh | Gm 0.26, hh | Gm 0.32, hh | Gm 0.5,
+            hh | Gm 0.26, hh | Gm 0.32, hh | Gm 0.5, hh | Gm 0.26, hh | Gm 0.32, hh | Gm 0.5, hh | Gm 0.26, hh | Gm 0.32, hh | Gm 0.5, hh | Gm 0.26, hh | Gm 0.32, hh | Gm 0.5, hh | Gm 0.26, hh | Gm 0.32, hh | Gm 0.5, oh | Gm 0.45,
+            hh | Gm 0.32, hh | Gm 0.5, hh | Gm 0.26, hh | Gm 0.32, hh | Gm 0.5, hh | Gm 0.26, hh | Gm 0.32, hh | Gm 0.5, hh | Gm 0.26, hh | Gm 0.32, hh | Gm 0.5, hh | Gm 0.26, hh | Gm 0.32, hh | Gm 0.5, hh | Gm 0.26, hh | Gm 0.32,
+            hh | Gm 0.5, hh | Gm 0.26, hh | Gm 0.32, hh | Gm 0.5, hh | Gm 0.26, hh | Gm 0.32, hh | Gm 0.5, hh | Gm 0.26, hh | Gm 0.32, hh | Gm 0.5, hh | Gm 0.26, hh | Gm 0.32, hh | Gm 0.5, hh | Gm 0.26, hh | Gm 0.32, oh | Gm 0.45
+        ] | Fm 50 | Gm 0.3
+    ]
+}
+
+percs = {
+    Seq [
+            x, x, x, rs | Pa 1/2 | Gm 0.5, x, x, x, x, x, x, x, rs | Pa -1/2 | Gm 0.6, x, x, cp | Gm 0.4, x,
+            x, x, x, rs | Pa 1/2 | Gm 0.5, x, x, x, cp | Gm 0.5, x, x, x, rs | Pa -1/2 | Gm 0.6, x, x, x, x,
+            x, x, rs | Pa 3/4 | Gm 0.45, x, x, x, x, x, cp | Gm 0.5, x, x, x, x, rs | Pa -3/4 | Gm 0.55, x, x,
+            x, x, x, rs | Lm 1/2 | Repeat 2 | Pa 1/2 | Gm 0.5, x, x, x, x, cp | Gm 0.55, x, x, x, rs | Pa -1/2 | Gm 0.5, x, x, x
+    ] | Fm 3 | Gm 0.8
+}
+
+bassline = {
+    Seq [
+            Fm 1 | Lm 2, x, Fm 2 | Gm 0.7, Fm 7/4, x, Fm 3/2 | Lm 2, x, Fm 1, Fm 6/5, Fm 4/3 | Lm 2, x, Fm 3/2, Fm 8/5,
+            Fm 9/5 | Lm 2, x, Fm 2 | Gm 0.7, x, Fm 1 | Lm 2, x, Fm 1 | Lm 2, x, Fm 9/8, Fm 6/5 | Lm 2, x, Fm 4/3,
+            Fm 7/5 | Lm 2, x, Fm 3/2, Fm 2 | Gm 0.7, x, Fm 3 | Gm 0.5, x, Fm 2, x, Fm 3/2 | Lm 2, x, Fm 4/3, Fm 6/5, Fm 9/8,
+            Fm 1 | Lm 3, x, Fm 1 | Lm 2, x, Fm 2 | Gm 0.7, Fm 9/5, x, Fm 8/5, Fm 3/2, Fm 7/5, Fm 4/3, Fm 6/5, Fm 9/8
+    ] | Gm 0.4
+}
+
+kit_fast = { fury(Kick wsc { length: 0.12 }, Snare 909, HiHat 909, OpenHat 909) }
+kit_hard = { fury(Kick knock { length: 0.18 }, Snare trap, HiHat trap, OpenHat trap) }
+
+main = {
+    Seq [
+        kit_fast,
+        Overlay [kit_fast, bassline],
+        Overlay [kit_hard, bassline, percs],
+        Overlay [kit_fast, bassline, percs] | Fm 6/5,
+        Overlay [kit_hard, bassline] | Fm 3/4,
+        Overlay [kit_fast, bassline, percs]
+    ]
+}

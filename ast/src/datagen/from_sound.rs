@@ -12,10 +12,10 @@ use std::fs;
 use std::time::SystemTime;
 use weresocool_error::Error;
 use weresocool_from_sound::{
-    Analyzer, AnalysisConfig, make_analyzer,
+    Analyzer, AnalysisConfig, AnalyzerParams,
     read_audio_mono,
     VoiceAllocator, VoiceAllocConfig,
-    TrackOut, AnalysisOutput,
+    TrackOut,
 };
 
 /// Cache entry for FromSound analysis results
@@ -126,35 +126,19 @@ pub fn from_sound_to_normalform(path: &str, voices: usize, fps: usize) -> Result
         .map_err(|e| Error::with_msg(format!("Failed to read audio file: {}", e)))?;
     eprintln!("[FromSound] WAV read: {:?}", read_start.elapsed());
 
+    // DDM (default on) supersedes the old reassignment / adaptive-window /
+    // phase-locking / mq-tracking flags.
     let config = AnalysisConfig {
         use_multi_res: true,
         use_esprit1: true,
-        use_esprit_multi: false,
-        use_harmonic: false,
-        use_lpc_noise: false,
-        use_reassignment: true,
-        use_adaptive_window: true,
-        use_phase_locking: true,
-        use_mq_tracking: true,
-        high_precision: false,
+        ..Default::default()
     };
 
     let analysis_start = std::time::Instant::now();
-    let analyzer = make_analyzer(
-        sample_rate,
-        2048, 512,      // FFT params
-        8192, 1024,     // High-res FFT params
-        120,            // max_peaks
-        -70.0,          // min_db
-        35.0,           // max_dev_hz
-        2,              // max_gap
-        3,              // min_len
-        40, 30.0,       // ESPRIT1 params
-        0, 40.0,        // ESPRIT multi params (unused)
-        20,             // LPC order (unused)
-        40.0, 1200.0, 12, 24, 0.03, 5.0, 0.04, 3,  // Harmonic params (unused)
-        config,
-    );
+    let analyzer = Analyzer::new(sample_rate, AnalyzerParams {
+        cfg: config,
+        ..Default::default()
+    });
 
     let analysis = analyzer.run(&samples)
         .map_err(|e| Error::with_msg(format!("Analysis failed: {}", e)))?;
@@ -179,7 +163,7 @@ pub fn from_sound_to_normalform(path: &str, voices: usize, fps: usize) -> Result
 
     // Convert to NormalForm
     let convert_start = std::time::Instant::now();
-    let nf = tracks_to_normalform(&selected_tracks, analysis.duration_sec, fps)?;
+    let nf = tracks_to_normalform(&selected_tracks, analysis.duration_sec, fps, sample_rate)?;
     eprintln!("[FromSound] Convert to NormalForm: {:?}", convert_start.elapsed());
 
     // Save to cache
@@ -192,7 +176,7 @@ pub fn from_sound_to_normalform(path: &str, voices: usize, fps: usize) -> Result
 }
 
 /// Convert analysis tracks to WereSoCool NormalForm
-fn tracks_to_normalform(tracks: &[TrackOut], duration_sec: f32, fps: usize) -> Result<NormalForm, Error> {
+fn tracks_to_normalform(tracks: &[TrackOut], _duration_sec: f32, fps: usize, sample_rate: u32) -> Result<NormalForm, Error> {
     let base_freq = 440.0_f32;
 
     let mut voices: Vec<Vec<PointOp>> = Vec::new();
@@ -235,7 +219,7 @@ fn tracks_to_normalform(tracks: &[TrackOut], duration_sec: f32, fps: usize) -> R
         }
 
         // Add track's PointOps
-        let track_ops = create_track_pointops(track, base_freq, fps);
+        let track_ops = create_track_pointops(track, base_freq, fps, sample_rate);
         let track_duration: f32 = track_ops.iter()
             .map(|op| rational_to_f32(op.l))
             .sum();
@@ -269,11 +253,13 @@ fn tracks_to_normalform(tracks: &[TrackOut], duration_sec: f32, fps: usize) -> R
     Ok(NormalForm {
         operations: voices,
         length_ratio: max_length,
+        // Datagen NFs are leaves — no Start marker.
+        start_at: None,
     })
 }
 
 /// Create PointOps for a single track with loudness pre-compensation
-fn create_track_pointops(track: &TrackOut, base_freq: f32, fps: usize) -> Vec<PointOp> {
+fn create_track_pointops(track: &TrackOut, base_freq: f32, fps: usize, sample_rate: u32) -> Vec<PointOp> {
     let mut ops = Vec::new();
 
     if track.points.len() < 2 {
@@ -318,7 +304,13 @@ fn create_track_pointops(track: &TrackOut, base_freq: f32, fps: usize) -> Vec<Po
             // Pre-compensate for loudness normalization
             let precomp_amp = final_amp * loudness_precompensation(interp_freq);
 
-            let is_first = i == 0 && step == 0;
+            // Glide frequency linearly across the whole op rather than snapping
+            // to it. weresocool's portamento is in samples/1024 (renderable/mod.rs:392),
+            // NOT seconds — so to span an op of `actual_step` seconds we need
+            // `actual_step * sample_rate / 1024`. The previous code passed
+            // `actual_step` directly (~34 samples), which made frequency step at
+            // every control point: the audible "grainy/lossy" contour.
+            let porta = actual_step * sample_rate as f32 / 1024.0;
 
             ops.push(PointOp {
                 fm: rational_from_f32(interp_freq / base_freq),
@@ -327,10 +319,14 @@ fn create_track_pointops(track: &TrackOut, base_freq: f32, fps: usize) -> Vec<Po
                 l: rational_from_f32(actual_step),
                 pm: Rational64::from_integer(1),
                 pa: Rational64::from_integer(0),
-                attack: if is_first { rational_from_f32(0.010) } else { Rational64::from_integer(0) },
+                // `attack` is in seconds (renderable/mod.rs:388). Ramping gain
+                // across the full op makes amplitude track the measured envelope
+                // linearly instead of jumping each control point and relying on
+                // the engine's ~11ms exponential smoother to (laggily) catch up.
+                attack: rational_from_f32(actual_step),
                 decay: Rational64::from_integer(0),
                 asr: ASR::Long,
-                portamento: rational_from_f32(actual_step),
+                portamento: rational_from_f32(porta),
                 osc_type: OscType::Sine { pow: None },
                 ..Default::default()
             });
@@ -439,6 +435,8 @@ fn load_from_cache(audio_path: &str, voices: usize, fps: usize) -> Result<Option
     Ok(Some(NormalForm {
         operations,
         length_ratio,
+        // Cache-reconstituted leaf — no Start marker.
+        start_at: None,
     }))
 }
 
@@ -597,6 +595,8 @@ fn yin_to_normalform(samples: &[f32], sample_rate: u32, fps: usize) -> Result<No
     Ok(NormalForm {
         operations: vec![ops], // Single voice
         length_ratio: total_length,
+        // Datagen NF — no Start marker.
+        start_at: None,
     })
 }
 
@@ -648,6 +648,8 @@ fn load_yin_from_cache(audio_path: &str, fps: usize) -> Result<Option<NormalForm
     Ok(Some(NormalForm {
         operations: vec![operations],
         length_ratio,
+        // Cache-reconstituted leaf — no Start marker.
+        start_at: None,
     }))
 }
 

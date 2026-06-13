@@ -1,0 +1,20 @@
+{ f: 55, l: 1/4, g: 1, p: 0 }
+
+-- Kit: Trap
+-- The knock kick (808 bones, driven hard into the tape stage — knocks on
+-- small speakers), bright aggressive snare, tight tick hats built for
+-- rolls (try: hh | Lm 1/4 | Repeat 4).
+
+bd = { Kick knock | Gm 0.65 }
+
+sn = { Snare trap | Fm 4 | Gm 0.5 }
+
+hh = { HiHat trap | Fm 55 | Gm 0.2 }
+
+oh = { OpenHat trap | Fm 55 | Gm 0.22 }
+
+cp = { Clap trap | Fm 3 | Gm 0.5 }
+
+rs = { Rimshot 909 | Fm 3 | Gm 0.4 }
+
+main = { Silence 1 }

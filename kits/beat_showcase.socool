@@ -1,0 +1,58 @@
+{ f: 60, l: 1/8, g: 1, p: 0 }
+
+-- Beat showcase: one groove, every kit.
+-- `beat` is a FUNCTION taking the four drums as arguments — pass any
+-- preset (or your own tweaked drum) and the same two-bar groove plays
+-- on it. main runs the groove through all six kits in sequence:
+-- wsc → 808 → 909 → trap → acoustic → dust. ~120 bpm, 4s per kit.
+--
+-- Render: weresocool print kits/beat_showcase.socool
+
+x = { Silence 1 }
+
+beat(bd, sn, hh, oh, cp, rs) = {
+    Overlay [
+        -- Kick: downbeats + a pushed soft hit and a syncopated 16th.
+        Seq [
+            bd, x, x, x,                x, x, bd | Gm 0.55, x,
+            x, x, bd, x,                x, x, x, x,
+            bd, x, x, x,                x, x, bd | Gm 0.55, x,
+            x, bd | Gm 0.4, x, x,       x, x, x, x
+        ],
+        -- Snare: backbeat with ghost notes — the ghosts (Gm 0.15-0.3)
+        -- show velocity→timbre: they round off, accents crack.
+        Seq [
+            x, x, x, x,                 sn, x, x, sn | Gm 0.18,
+            x, sn | Gm 0.15, x, x,      sn, x, x, x,
+            x, x, x, x,                 sn, x, x, sn | Gm 0.18,
+            x, sn | Gm 0.15, x, x,      sn, x, sn | Gm 0.3, sn
+        ] | Fm 3 | Gm 0.85,
+        -- Clap doubles the backbeat in bar two; rimshot plays the
+        -- off-beat pocket in bar one.
+        Seq [
+            x, x, x, x,                 x, x, x, x,
+            x, x, rs | Gm 0.6, x,       x, x, rs | Gm 0.45, x,
+            x, x, x, x,                 cp, x, x, x,
+            x, x, x, x,                 cp, x, x, x
+        ] | Fm 3 | Gm 0.8,
+        -- Hats: accented eighths, an open hat at each bar's tail, and a
+        -- little 16th run into bar two's backbeat.
+        Seq [
+            hh, x, hh | Gm 0.5, x,      hh, x, hh | Gm 0.5, x,
+            hh, x, hh | Gm 0.5, x,      hh, x, oh, x,
+            hh, x, hh | Gm 0.5, x,      hh, x, hh | Gm 0.5, x,
+            hh, hh | Gm 0.4, hh | Gm 0.6, hh | Gm 0.4,  hh, x, oh, x
+        ] | Fm 50 | Gm 0.4
+    ]
+}
+
+main = {
+    Seq [
+        beat(Kick wsc, Snare wsc, HiHat wsc, OpenHat wsc, Clap wsc, Rimshot wsc),
+        beat(Kick 808, Snare 808, HiHat 808, OpenHat 808, Clap 808, Rimshot 808),
+        beat(Kick 909, Snare 909, HiHat 909, OpenHat 909, Clap 909, Rimshot 909),
+        beat(Kick knock, Snare trap, HiHat trap, OpenHat trap, Clap trap, Rimshot 909),
+        beat(Kick acoustic, Snare brush, HiHat acoustic, OpenHat acoustic, Clap wsc, Rimshot acoustic),
+        beat(Kick dust, Snare dust, HiHat dust, OpenHat dust, Clap dust, Rimshot acoustic)
+    ]
+}

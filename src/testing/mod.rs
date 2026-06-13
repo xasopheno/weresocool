@@ -13,6 +13,8 @@ use weresocool_ast::{NormalForm, Normalize as NormalizeOp};
 use weresocool_instrument::renderable::nf_to_vec_renderable;
 use weresocool_instrument::{Basis, Normalize, StereoWaveform};
 use weresocool_parser::*;
+mod drum_preset_smoke_test;
+mod drum_transition_test;
 mod expect_tests;
 mod loudness_balance_test;
 

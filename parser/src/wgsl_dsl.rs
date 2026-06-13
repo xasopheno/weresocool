@@ -272,7 +272,7 @@ fn format_lalrpop_error<T: std::fmt::Debug>(e: &lalrpop_util::ParseError<usize, 
 /// Check if a line starts with a DSL command
 fn starts_with_dsl_command(line: &str) -> bool {
     // Short commands need whitespace/comma check to avoid false matches
-    let short_commands = ["Xm", "Xa", "Ym", "Ya", "Zm", "Za", "Smx", "Smy", "Smz", "Sm", "Sa", "Vm", "Va", "Lm", "Am", "Bm", "Ba", "Rx", "Ry", "Rz", "AsIs", "None"];
+    let short_commands = ["Xm", "Xa", "Ym", "Ya", "Zm", "Za", "Smx", "Smy", "Smz", "Sm", "Sa", "Vm", "Va", "Lm", "Am", "Bm", "Ba", "Die", "Rx", "Ry", "Rz", "AsIs", "None"];
     for cmd in &short_commands {
         if line.starts_with(cmd) {
             let rest = &line[cmd.len()..];
@@ -319,6 +319,23 @@ mod tests {
         let output = compile_dsl_to_wgsl(input).unwrap();
         assert!(output.contains("x = x * 2"));
         assert!(output.contains("y = y + 10"));
+    }
+
+    #[test]
+    fn test_die_lifetime() {
+        let input = "Die 4";
+        let output = compile_dsl_to_wgsl(input).unwrap();
+        assert!(output.contains("_die_end = (4"), "death time baked in: {output}");
+        assert!(output.contains("scale = 0.0"), "scale snaps to 0: {output}");
+        assert!(output.contains("smoothstep"), "fade before death: {output}");
+    }
+
+    #[test]
+    fn test_die_composes_with_pipe() {
+        let input = "Sm 0.3 | Die 2";
+        let output = compile_dsl_to_wgsl(input).unwrap();
+        assert!(output.contains("scale = scale * 0.3"), "{output}");
+        assert!(output.contains("_die_end = (2"), "{output}");
     }
 
     #[test]
@@ -515,32 +532,26 @@ mod tests {
         assert!(output.contains("b_perp"));
     }
 
+    // Alpha/Am were REMOVED from the language: per-stamp alpha cannot
+    // exist while chain coverage is derived from brightness (alpha :=
+    // max(rgb)), and after the rgb-rewire they were pure aliases of Bm.
+    // They stay in the command gate so use fails loudly as a DSL parse
+    // error instead of leaking through as raw WGSL.
     #[test]
-    fn test_alpha_set() {
-        let input = "Alpha 0";
-        let output = compile_dsl_to_wgsl(input).unwrap();
-        assert!(output.contains("alpha = 0"));
+    fn test_alpha_removed() {
+        assert!(compile_dsl_to_wgsl("Alpha 0").is_err(), "Alpha must be rejected");
+        assert!(compile_dsl_to_wgsl("Am 0.5").is_err(), "Am must be rejected");
     }
 
     #[test]
-    fn test_alpha_multiply() {
-        let input = "Am 0.5";
-        let output = compile_dsl_to_wgsl(input).unwrap();
-        assert!(output.contains("alpha = alpha * 0.5"));
-    }
-
-    #[test]
-    fn test_alpha_in_seq() {
+    fn test_alpha_in_seq_rejected() {
         let input = r#"
             Seq [
                 Vm 2 | Lm 1;
                 Alpha 0 | Lm 1;
             ]
         "#;
-        let output = compile_dsl_to_wgsl(input).unwrap();
-        assert!(output.contains("// Segment 0"));
-        assert!(output.contains("// Segment 1"));
-        assert!(output.contains("alpha = 0"));
+        assert!(compile_dsl_to_wgsl(input).is_err(), "Alpha inside Seq must be rejected");
     }
 
     #[test]
@@ -660,7 +671,7 @@ mod tests {
                 | Lm 2;
                 Direction(1, 0, 0)
                 | Lm 2;
-                Am 0.0;
+                Bm 0.0;
             ]
             | Seq [
                 Vm 1;
@@ -766,11 +777,11 @@ mod tests {
     fn test_am0_sm0_segments() {
         let input = r#"
             Seq [
-                Am 1
+                Bm 1
                 | Direction (1, 0, 0)
                 | Bend (0, -0.1, -0.1, 1) | Lm 4;
                 Direction (1, 0, 0) | Lm 3;
-                Am 0
+                Bm 0
                 | Sm 0 | Lm 2;
             ]
             | Seq [Ya 0; Ya 2]

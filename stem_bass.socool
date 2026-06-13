@@ -1,0 +1,14 @@
+{ f: 55, l: 1/12, g: 1, p: 0 }
+
+x = { Silence 1 }
+
+bass_a = {
+    Seq [
+            Fm 1/2 | Lm 3, x, x, x, x, Fm 3/5 | Lm 2, x, Fm 1/2 | Lm 3, x, x, x,
+            Fm 1/2 | Lm 2, x, x, x, x, x, x, x, Fm 2/3 | Lm 2, x, Fm 3/4 | Lm 2, Fm 4/5 | Lm 2,
+            Fm 1/2 | Lm 3, x, x, x, Fm 2/5 | Lm 2, x, x, Fm 1/2 | Lm 4, x, x,
+            Fm 1/2 | Lm 2, x, x, x, x, x, Fm 3/5 | Lm 2, x, Fm 2/3 | Lm 2, x, Fm 1/2 | Lm 3
+    ] | Gm 0.32
+}
+
+main = { bass_a }

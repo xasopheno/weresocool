@@ -28,7 +28,17 @@ pub struct AudioEngine {
     render_idx: usize,
     samples_processed: usize,
     normalizer: Normalizer,
+    /// Samples remaining in the post-seek fade-in. While >0 the rendered
+    /// waveform is multiplied by `(1 - remaining/ramp_total)` so a hard
+    /// seek (which zeroes oscillator state) doesn't produce a click.
+    /// 220 samples ≈ 5 ms at 44.1 kHz — long enough to mask the discontinuity,
+    /// short enough that the user's "I scrubbed to here" feedback is immediate.
+    seek_ramp_remaining: usize,
+    seek_ramp_total: usize,
 }
+
+/// Length of the post-seek gain ramp in samples. ~5 ms at 44.1 kHz.
+const SEEK_RAMP_SAMPLES: usize = 220;
 
 /// Result of a rendering operation
 pub struct RenderResult {
@@ -45,6 +55,46 @@ impl AudioEngine {
             render_idx: 0,
             samples_processed: 0,
             normalizer: Normalizer::default(),
+            seek_ramp_remaining: 0,
+            seek_ramp_total: 0,
+        }
+    }
+
+    /// Seek the audio playhead to `target_sample` (absolute, from the
+    /// start of the current render). Voices reset oscillator state and
+    /// reposition their per-op cursors; a ~5 ms gain ramp masks the
+    /// resulting click. Buffer queue must be drained by the caller
+    /// (typically `RenderManager::seek_to_sample`) so stale audio from
+    /// the old position doesn't play after the seek.
+    pub fn seek_to_sample(&mut self, target_sample: usize) {
+        if let Some(voices) = self.current_render().as_mut() {
+            for voice in voices.iter_mut() {
+                voice.seek(target_sample);
+            }
+        }
+        self.samples_processed = target_sample;
+        // Arm the ramp. If a previous ramp was still in flight (seek
+        // during seek), we restart it — the latest discontinuity is the
+        // one that matters.
+        self.seek_ramp_remaining = SEEK_RAMP_SAMPLES;
+        self.seek_ramp_total = SEEK_RAMP_SAMPLES;
+    }
+
+    /// Apply the post-seek gain ramp (in-place) to a freshly rendered
+    /// stereo buffer. Sample count of the buffer = `samples` (the
+    /// L and R buffers are equal-length). Called from `render`.
+    fn apply_seek_ramp(&mut self, sw: &mut StereoWaveform) {
+        if self.seek_ramp_remaining == 0 { return; }
+        let total = self.seek_ramp_total.max(1) as f32;
+        let n = sw.l_buffer.len().min(sw.r_buffer.len());
+        for i in 0..n {
+            if self.seek_ramp_remaining == 0 { break; }
+            // Linear ramp from 0 (just after seek) up to 1 (ramp done).
+            let consumed = self.seek_ramp_total - self.seek_ramp_remaining;
+            let g = (consumed as f32 / total).min(1.0);
+            sw.l_buffer[i] *= g as f64;
+            sw.r_buffer[i] *= g as f64;
+            self.seek_ramp_remaining -= 1;
         }
     }
 
@@ -54,6 +104,17 @@ impl AudioEngine {
 
     pub fn samples_processed(&self) -> usize {
         self.samples_processed
+    }
+
+    /// Total samples in the currently-loaded render — i.e. the timeline
+    /// length the slider should map its range to. Computed by summing
+    /// op `samples` for voice 0; the NF guarantees all voices in a
+    /// render share the same total length, so picking one is fine.
+    /// Returns `None` if no render is loaded yet.
+    pub fn total_samples(&self) -> Option<usize> {
+        self.current_render_ref().as_ref().and_then(|voices| {
+            voices.first().map(|v| v.ops.iter().map(|op| op.samples).sum())
+        })
     }
 
     /// Core audio rendering method
@@ -187,6 +248,13 @@ impl AudioEngine {
         // If we rendered anything, pad to the buffer size and return
         if combined_sw.l_buffer.len() > 0 {
             combined_sw.pad(buffer_size);
+
+            // Post-seek fade-in: masks the click from `seek_to_sample`
+            // having reset voice oscillator state. Applied after pad so
+            // the silence we just padded with also gets gated to zero
+            // during the ramp (matters only if the seek landed near the
+            // very end of the timeline, but cheap to do regardless).
+            self.apply_seek_ramp(&mut combined_sw);
 
             Some(RenderResult {
                 waveform: combined_sw,

@@ -79,6 +79,8 @@ impl VisualizationAdapter {
         let (visual_freq, visual_length) = match &render_op.osc_type {
             OscType::Kick { .. } => (render_op.f / 8.0, 0.01),
             OscType::Snare { .. } => (render_op.f / 2.5, 0.012),
+            OscType::Clap { .. } => (render_op.f / 2.0, 0.012),
+            OscType::Rimshot { .. } => (render_op.f / 1.5, 0.008),
             OscType::HiHat { open, .. } => {
                 let decay = if *open { 0.02 } else { 0.008 };
                 (render_op.f * 1.28, decay)
@@ -140,6 +142,8 @@ impl VisualizationAdapter {
         let (visual_freq, visual_length) = match &render_op.osc_type {
             OscType::Kick { .. } => (render_op.f / 8.0, 0.01),
             OscType::Snare { .. } => (render_op.f / 2.5, 0.012),
+            OscType::Clap { .. } => (render_op.f / 2.0, 0.012),
+            OscType::Rimshot { .. } => (render_op.f / 1.5, 0.008),
             OscType::HiHat { open, .. } => {
                 let decay = if *open { 0.02 } else { 0.008 };
                 (render_op.f * 1.28, decay)

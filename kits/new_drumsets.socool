@@ -1,0 +1,78 @@
+{ f: 60, l: 1/16, g: 1, p: 0 }
+
+-- ════════════════════════════════════════════════════════════════════
+-- FIVE NEW CHARACTER DRUMSETS — demo
+--
+-- Each section plays the SAME four-bar groove with a different drumset,
+-- so you can A/B the character directly. The drumsets:
+--
+--   glass   crystalline, bell-like, bright ringing resonances   (beautiful)
+--   doom    massive distorted industrial, heavy saturation      (heavy)
+--   tape    warm vintage saturation, rounded, rolled-off highs   (smooth)
+--   vapor   dreamy washy, detuned, long tails                   (ambient)
+--   neon    bright clean synthetic electro, punchy               (synthwave)
+--
+-- Every drum family (Kick/Snare/HiHat/OpenHat/Clap/Rimshot) has all five,
+-- so a whole kit is one word: `Kick glass`, `Snare glass`, …
+--
+-- Render: weresocool print kits/new_drumsets.socool
+-- ════════════════════════════════════════════════════════════════════
+
+x = { Silence 1 }
+
+-- One bar (16 sixteenths) of a groove that exercises the whole kit.
+groove(bd, sn, hh, oh, cp, rs) = {
+    Overlay [
+        Seq [
+            bd, x, x, x, x, x, bd | Gm 0.55, x, x, x, bd, x, x, x, bd | Gm 0.5, x
+        ],
+        Seq [
+            x, x, x, x, sn, x, x, sn | Gm 0.2, x, x, x, x, sn, x, sn | Gm 0.22, sn | Gm 0.5
+        ],
+        Seq [
+            hh | Gm 0.5, x, hh | Gm 0.3, x, hh | Gm 0.5, x, hh | Gm 0.3, x,
+            hh | Gm 0.5, x, hh | Gm 0.3, x, hh | Gm 0.5, x, oh | Gm 0.4, x
+        ],
+        Seq [
+            x, x, x, x, x, x, x, x, x, x, rs | Pa 1/4 | Gm 0.4, x, x, cp | Gm 0.3, x, x
+        ]
+    ]
+}
+
+-- Four bars of each drumset.
+glass_kit = {
+    groove(Kick glass, Snare glass, HiHat glass, OpenHat glass, Clap glass, Rimshot glass)
+    | Lm 1 | Repeat 4
+}
+
+doom_kit = {
+    groove(Kick doom, Snare doom, HiHat doom, OpenHat doom, Clap doom, Rimshot doom)
+    | Lm 1 | Repeat 4
+}
+
+tape_kit = {
+    groove(Kick tape, Snare tape, HiHat tape, OpenHat tape, Clap tape, Rimshot tape)
+    | Lm 1 | Repeat 4
+}
+
+vapor_kit = {
+    groove(Kick vapor, Snare vapor, HiHat vapor, OpenHat vapor, Clap vapor, Rimshot vapor)
+    | Lm 1 | Repeat 4
+}
+
+neon_kit = {
+    groove(Kick neon, Snare neon, HiHat neon, OpenHat neon, Clap neon, Rimshot neon)
+    | Lm 1 | Repeat 4
+}
+
+gap = { Silence 1 | Lm 8 }
+
+main = {
+    Seq [
+        glass_kit, gap,
+        doom_kit,  gap,
+        tape_kit,  gap,
+        vapor_kit, gap,
+        neon_kit
+    ]
+}

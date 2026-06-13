@@ -1,5 +1,5 @@
 use crate::{gain::gain_at_index, voice::Voice};
-use weresocool_ast::{ASR, OscType};
+use weresocool_ast::ASR;
 
 impl Voice {
     pub fn calculate_op_gain(
@@ -11,15 +11,18 @@ impl Voice {
         total_length: usize,
     ) -> f64 {
         // Drums have internal envelopes that already shape the attack — an
-        // outer attack ramp on top buries the transient. We pass past_gain =
-        // current_gain so `gain_at_index` in the attack branch becomes a no-op
-        // (start == target), while still letting the decay branch ramp down
-        // for click-free note endings.
-        let is_drum = matches!(
-            self.osc_type,
-            OscType::Kick { .. } | OscType::Snare { .. } | OscType::HiHat { .. }
-        );
-        let past_gain = if is_drum { self.current.gain } else { self.past.gain };
+        // outer attack ramp on top buries the transient. On a note-on we pass
+        // past_gain = current_gain so `gain_at_index` in the attack branch
+        // becomes a no-op (start == target). But NOT when fading into silence
+        // (current gain ≈ 0): there the attack branch IS the fade-out ramp
+        // from the previous note's gain, and zeroing past_gain would cut the
+        // drum's ring-out dead instead of fading it.
+        let is_drum = self.osc_type.is_drum();
+        let past_gain = if is_drum && !silence_now {
+            self.current.gain
+        } else {
+            self.past.gain
+        };
 
         if next_out || self.asr == ASR::Long {
             calculate_long_gain(

@@ -8,7 +8,13 @@ use crate::{
 };
 use std::sync::{mpsc::Sender, Arc, Mutex};
 use std::sync::atomic::{AtomicBool, Ordering};
+// std::time::Instant panics on wasm32; web-time is API-identical (reads
+// performance.now() in the browser). pause()/check_vis_ready() run on the
+// browser build's audio pump, so this path is wasm-reachable.
+#[cfg(not(target_arch = "wasm32"))]
 use std::time::{Duration, Instant};
+#[cfg(target_arch = "wasm32")]
+use web_time::{Duration, Instant};
 use std::{path::PathBuf, sync::mpsc::SendError};
 use weresocool_ast::Defs;
 use weresocool_error::Error;
@@ -286,6 +292,47 @@ impl RenderManager {
                 self.pause();
             }
         }
+    }
+
+    /// Seek the playback head to `target_sample` (absolute, from the
+    /// start of the current render). Used by scrubbing — the bevy
+    /// slider in kintaro calls this when the user releases a drag.
+    ///
+    /// Side effects:
+    ///   1. All voices reset oscillator state and reposition their cursors.
+    ///   2. `AudioEngine::samples_processed` jumps to `target_sample`.
+    ///   3. The post-seek gain ramp arms (5 ms fade-in masks the click).
+    ///   4. The pre-rendered buffer queue drains, so audio from BEFORE
+    ///      the seek doesn't keep playing for the lookahead window.
+    ///
+    /// What this does NOT touch:
+    ///   - Subscribers ARE notified via `RenderEvent::Reset` so visual
+    ///     pipelines (kintaro's brush pool, warp ping-pong) can wipe.
+    ///   - We do not pause: the background renderer will refill the
+    ///     queue from the new position on its next tick.
+    pub fn seek_to_sample(&mut self, target_sample: usize) {
+        self.audio_engine.seek_to_sample(target_sample);
+        self.drain_buffer_queue();
+        // Tell any subscribers (kintaro's brush pool, warp feedback) to
+        // wipe their accumulated state. Same channel `inc_render` uses
+        // for the same reason: state that depends on past frames is no
+        // longer valid past a discontinuity.
+        if self.events.render.has_subscribers() {
+            self.events.render.emit(RenderEvent::Reset);
+        }
+    }
+
+    /// Current playhead in samples. Exposed for the scrub UI so the
+    /// slider can track the live audio position between user drags.
+    pub fn samples_processed(&self) -> usize {
+        self.audio_engine.samples_processed()
+    }
+
+    /// Total samples in the currently-loaded render. Returns `None`
+    /// when no render is loaded yet (UI should hide the slider in
+    /// that case rather than showing 0).
+    pub fn total_samples(&self) -> Option<usize> {
+        self.audio_engine.total_samples()
     }
 
     pub fn push_render(&mut self, render: Vec<RenderVoice>, once: bool) {

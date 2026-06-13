@@ -51,6 +51,7 @@ mod eeg_test {
                     ..PointOp::default()
                 },
             ]],
+            start_at: None,
             length_ratio: Rational64::new(3, 50),
         };
         assert_eq!(result, expected);
@@ -86,6 +87,7 @@ mod eeg_test {
                     ..PointOp::default()
                 },
             ]],
+            start_at: None,
             length_ratio: Rational64::new(3, 50),
         };
         assert_eq!(result, expected);

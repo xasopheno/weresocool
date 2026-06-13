@@ -98,6 +98,7 @@ pub mod tests {
                     ..PointOp::init()
                 },
             ]],
+            start_at: None,
             length_ratio: Ratio::new(8, 1),
         };
 
@@ -171,6 +172,7 @@ pub mod tests {
                     },
                 ],
             ],
+            start_at: None,
             length_ratio: Ratio::new(8, 1),
         };
 
@@ -288,6 +290,7 @@ pub mod tests {
                     },
                 ],
             ],
+            start_at: None,
             length_ratio: Ratio::new(8, 1),
         };
 
@@ -301,6 +304,7 @@ pub mod tests {
         AsIs.apply_to_normal_form(&mut input, &mut pt).unwrap();
         let expected = NormalForm {
             operations: vec![vec![PointOp::init()]],
+            start_at: None,
             length_ratio: Ratio::new(1, 1),
         };
 
@@ -313,6 +317,7 @@ pub mod tests {
         Noise.apply_to_normal_form(&mut input, &mut pt).unwrap();
 
         let expected = NormalForm {
+            start_at: None,
             length_ratio: Ratio::new(1, 1),
             operations: vec![vec![PointOp {
                 osc_type: OscType::Noise,
@@ -327,6 +332,7 @@ pub mod tests {
             .unwrap();
 
         let expected = NormalForm {
+            start_at: None,
             length_ratio: Ratio::new(1, 1),
             operations: vec![vec![PointOp {
                 osc_type: OscType::Sine { pow: None },
@@ -348,6 +354,7 @@ pub mod tests {
         .unwrap();
 
         let expected = NormalForm {
+            start_at: None,
             length_ratio: Ratio::new(1, 1),
             operations: vec![vec![PointOp {
                 fm: Ratio::new(2, 1),
@@ -369,6 +376,7 @@ pub mod tests {
         .unwrap();
 
         let expected = NormalForm {
+            start_at: None,
             length_ratio: Ratio::new(1, 1),
             operations: vec![vec![PointOp {
                 portamento: Ratio::new(2, 1),
@@ -390,6 +398,7 @@ pub mod tests {
         .unwrap();
 
         let expected = NormalForm {
+            start_at: None,
             length_ratio: Ratio::new(1, 1),
             operations: vec![vec![PointOp {
                 fa: Ratio::new(2, 1),
@@ -411,6 +420,7 @@ pub mod tests {
         .unwrap();
 
         let expected = NormalForm {
+            start_at: None,
             length_ratio: Ratio::new(1, 1),
             operations: vec![vec![PointOp {
                 pm: Ratio::new(2, 1),
@@ -431,6 +441,7 @@ pub mod tests {
         .unwrap();
 
         let expected = NormalForm {
+            start_at: None,
             length_ratio: Ratio::new(1, 1),
             operations: vec![vec![PointOp {
                 pa: Ratio::new(2, 1),
@@ -451,6 +462,7 @@ pub mod tests {
         .unwrap();
 
         let expected = NormalForm {
+            start_at: None,
             length_ratio: Ratio::new(1, 1),
             operations: vec![vec![PointOp {
                 g: Ratio::new(2, 1),
@@ -471,6 +483,7 @@ pub mod tests {
         .unwrap();
 
         let expected = NormalForm {
+            start_at: None,
             length_ratio: Ratio::new(2, 1),
             operations: vec![vec![PointOp {
                 fm: Ratio::new(0, 1),
@@ -494,6 +507,7 @@ pub mod tests {
         .unwrap();
 
         let expected = NormalForm {
+            start_at: None,
             length_ratio: Ratio::new(2, 1),
             operations: vec![vec![PointOp {
                 l: Ratio::new(2, 1),
@@ -523,6 +537,7 @@ pub mod tests {
         .unwrap();
 
         let expected = NormalForm {
+            start_at: None,
             length_ratio: Ratio::new(2, 1),
             operations: vec![vec![PointOp {
                 fm: Ratio::new(2, 1),
@@ -553,6 +568,7 @@ pub mod tests {
         .unwrap();
 
         let expected = NormalForm {
+            start_at: None,
             length_ratio: Ratio::new(3, 1),
             operations: vec![vec![
                 PointOp {
@@ -589,6 +605,7 @@ pub mod tests {
         .unwrap();
 
         let expected = NormalForm {
+            start_at: None,
             length_ratio: Ratio::new(2, 1),
             operations: vec![
                 vec![
@@ -646,6 +663,7 @@ pub mod tests {
         .unwrap();
 
         let expected = NormalForm {
+            start_at: None,
             length_ratio: Ratio::new(9, 1),
             operations: vec![vec![PointOp {
                 fm: Ratio::new(3, 2),
@@ -684,6 +702,7 @@ pub mod tests {
         .unwrap();
 
         let expected = NormalForm {
+            start_at: None,
             length_ratio: Ratio::new(3, 1),
             operations: vec![vec![
                 PointOp {
@@ -739,6 +758,7 @@ pub mod tests {
         modulator.apply_to_normal_form(&mut input, &mut pt).unwrap();
 
         let expected = NormalForm {
+            start_at: None,
             length_ratio: Ratio::new(3, 1),
             operations: vec![vec![
                 PointOp {

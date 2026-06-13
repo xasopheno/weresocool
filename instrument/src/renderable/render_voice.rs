@@ -30,6 +30,41 @@ impl RenderVoice {
         }
     }
 
+    /// Move this voice's cursor to the absolute sample position
+    /// `target_sample` from the start of the voice's op list, resetting
+    /// oscillator state to silence any history-dependent artifacts.
+    ///
+    /// Used by `AudioEngine::seek_to_sample` for scrub. The oscillator
+    /// reset will produce an audible click — the AudioEngine layer
+    /// masks it with a short master gain ramp so we don't have to do it
+    /// here.
+    ///
+    /// If `target_sample` lies past the end of this voice's timeline,
+    /// the cursor parks at the end (the voice will produce no further
+    /// samples, which is the correct steady state).
+    pub fn seek(&mut self, target_sample: usize) {
+        // Reset oscillator state. `Oscillator::init` is what `RenderVoice`
+        // itself uses on construction; reusing it keeps the "fresh
+        // voice" semantics identical.
+        self.oscillator = Oscillator::init();
+
+        let mut cumulative: usize = 0;
+        for (i, op) in self.ops.iter().enumerate() {
+            let op_end = cumulative + op.samples;
+            if target_sample < op_end {
+                self.op_index = i;
+                self.sample_index = target_sample - cumulative;
+                return;
+            }
+            cumulative = op_end;
+        }
+        // Past the end of the timeline: park at the last op, fully consumed.
+        // `get_batch` returns `None` from here, which the engine treats as
+        // "voice finished" — the right behaviour for "scrub past the end."
+        self.op_index = self.ops.len();
+        self.sample_index = 0;
+    }
+
     /// Recursive function to prepare a batch of RenderOps for rendering
     /// Initially pass in None as result
     pub fn get_batch(

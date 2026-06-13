@@ -1,0 +1,23 @@
+{ f: 55, l: 1/12, g: 1, p: 0 }
+
+-- Clave test: ONLY the rimshot voice from dnb_showcase, exactly as it
+-- appears there (Rimshot 909, | Fm 3 | Gm 0.25, pans ±1/4).
+-- Eight isolated hits, one per second-ish, nothing else.
+-- If THIS is the sound you're hearing, it's the rimshot/clave voice.
+
+x = { Silence 1 }
+
+rs = { Rimshot 909 }
+
+main = {
+    Seq [
+        rs | Pa 1/4,  x | Lm 11,
+        rs | Pa -1/4, x | Lm 11,
+        rs | Pa 1/4 | Gm 0.6, x | Lm 11,
+        rs | Pa -1/4 | Gm 0.7, x | Lm 11,
+        rs | Pa 1/4 | Lm 1/2 | Repeat 2 | Gm 0.5, x | Lm 11,
+        rs | Lm 1/4 | Repeat 4 | Gm 0.45 | Pa 1/4, x | Lm 11,
+        rs | Pa 1/2 | Gm 0.5, x | Lm 11,
+        rs | Pa -1/2, x | Lm 11
+    ] | Fm 3 | Gm 0.25
+}

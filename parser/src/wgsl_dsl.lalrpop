@@ -83,10 +83,9 @@ BaseOp: VisualOp = {
     "Vm" <v:WgslVal> => VisualOp::vm(v),
     "Va" <v:WgslVal> => VisualOp::va(v),
     "Lm" <v:WgslVal> => VisualOp::lm(v),
-    "Alpha" <v:WgslVal> => VisualOp::alpha(v),
-    "Am" <v:WgslVal> => VisualOp::am(v),
     "Bm" <v:WgslVal> => VisualOp::bm(v),
     "Ba" <v:WgslVal> => VisualOp::ba(v),
+    "Die" <v:WgslVal> => VisualOp::die(v),
     "AsIs" => VisualOp::AsIs,
     // Source keyword `None` → AST variant `Mute` (renamed to avoid
     // shadowing `Option::None` in lalrpop-generated parser code).

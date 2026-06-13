@@ -7,6 +7,7 @@ mod frequency;
 mod gain;
 mod loudness;
 pub mod oscillator;
+pub mod presets;
 mod sample;
 pub mod stereo_waveform;
 pub mod voice;

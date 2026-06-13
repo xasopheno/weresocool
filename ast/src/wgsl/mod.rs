@@ -1640,6 +1640,35 @@ z += pos.z;"#,
         op
     }
 
+    /// `Die N` — the stamp dies N base units after spawn. Brightness fades
+    /// to zero over the final 0.3s (no pop), then `scale` snaps to 0 so the
+    /// vertex shader emits a degenerate triangle — the dead stamp costs no
+    /// fragment work. This is the composer-facing end of stamp lifetime:
+    /// without it, marks persist until the engine's pool ceiling
+    /// (12s for draw-routed brushes, 30s otherwise) ages them out.
+    ///
+    /// Emitted as a Raw block so it passes through compose/Seq machinery
+    /// untouched; inside a Seq phase it is time-gated like any Raw op, so
+    /// put `Die` OUTSIDE the Seq (`Seq [...] | Die 4`) for whole-life
+    /// behavior. `time` here is the stamp's age in seconds, consistent
+    /// with `Lm`'s base-unit clock.
+    ///
+    /// Caveat for SUSTAINED notes: held tones re-trigger their emits on a
+    /// ~2s quantum, so per-stamp age never exceeds ~2s and `Die N` with
+    /// N ≥ 2 won't fire on them. On discrete notes (the common case)
+    /// stamps age to the full pool lifetime and any N works.
+    pub fn die(v: impl Into<WgslValue>) -> Self {
+        let n = v.into().to_wgsl();
+        VisualOp::Raw {
+            wgsl: format!(
+                "{{ let _die_end = ({n}); \
+                 let _df = 1.0 - smoothstep(_die_end - 0.3, _die_end, time); \
+                 red = red * _df; green = green * _df; blue = blue * _df; \
+                 if (time >= _die_end) {{ scale = 0.0; }} }}"
+            ),
+        }
+    }
+
     /// Rotation around X axis (in full rotations: 1 = 360°)
     pub fn rx(v: impl Into<WgslValue>) -> Self {
         let mut op = Self::simple_default();

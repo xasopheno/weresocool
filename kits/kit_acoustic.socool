@@ -1,49 +1,20 @@
 { f: 80, l: 1/4, g: 1, p: 0 }
 
--- Kit: Acoustic Simulation
--- Rounder kick attack, ringy snare, open hats
--- More organic, live feel
+-- Kit: Acoustic
+-- Waveguide-dominant kick with wooden shell ring, head-dominant brushy
+-- snare, loose live hats with modal beating. Organic, played feel —
+-- velocity (Gm on individual hits) changes timbre strongly on this kit.
 
-bd = {
-    Kick {
-        pitch_decay: 0.035,
-        pitch_range: 2.0,
-        amp_decay: 0.18,
-        click_amount: 0.25,
-        sub_amount: 0.15,
-        harmonic_damping: 1.5,
-        saturation: 0.15,
-        velocity_tilt: 0.85,
-        transient_curve: 1.0
-    }
-    | Gm 0.42
-}
+bd = { Kick acoustic | Gm 0.6 }
 
-sn = {
-    Snare {
-        shell_decay: 0.1,
-        wire_decay: 0.07,
-        wire_mix: 0.5,
-        shell_pitch_decay: 35,
-        shell_pitch_range: 0.35,
-        crack: 0.4,
-        attack_amount: 0.3,
-        saturation: 0.08,
-        velocity_tilt: 0.75
-    }
-    | Fm 2.2
-    | Gm 0.45
-}
+sn = { Snare brush | Fm 3 | Gm 0.55 }
 
-hh = {
-    HiHat {
-        decay_rate: 25,
-        brightness: 0.55,
-        pitch_drop: 0.012,
-        velocity_tilt: 0.6
-    }
-    | Fm 70
-    | Gm 0.18
-}
+hh = { HiHat acoustic | Fm 40 | Gm 0.25 }
+
+oh = { OpenHat acoustic | Fm 40 | Gm 0.28 }
+
+cp = { Clap wsc | Fm 3 | Gm 0.5 }
+
+rs = { Rimshot acoustic | Fm 3 | Gm 0.4 }
 
 main = { Silence 1 }

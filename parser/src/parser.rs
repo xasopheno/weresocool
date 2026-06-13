@@ -209,8 +209,20 @@ pub fn strip_warp_extensions(src: &str) -> String {
                 while j < bytes.len() && is_socool_ident_byte(bytes[j]) { j += 1; }
                 if j > name_start {
                     let name = std::str::from_utf8(&bytes[name_start..j]).unwrap().to_string();
-                    // Eat whitespace, expect `=`, then `{`.
+                    // Optional blend-mode keyword between NAME and `=`
+                    // (kintaro's `warp shadow multiply = { ... }` form).
                     let mut k = j;
+                    while k < bytes.len() && (bytes[k] as char).is_whitespace() { k += 1; }
+                    let mode_start = k;
+                    let mut mode_end = k;
+                    while mode_end < bytes.len() && is_socool_ident_byte(bytes[mode_end]) { mode_end += 1; }
+                    if mode_end > mode_start {
+                        let word = std::str::from_utf8(&bytes[mode_start..mode_end]).unwrap();
+                        if matches!(word, "additive" | "add" | "over" | "multiply" | "mult" | "screen") {
+                            k = mode_end;
+                        }
+                    }
+                    // Eat whitespace, expect `=`, then `{`.
                     while k < bytes.len() && (bytes[k] as char).is_whitespace() { k += 1; }
                     if k < bytes.len() && bytes[k] == b'=' {
                         k += 1;
@@ -612,8 +624,25 @@ fn parse_for_format_inner(
                 eprintln!("\n");
             }
 
-            // Check if this is a color error (format: "location:colorname")
             if let lalrpop_util::ParseError::User { error: err_str } = &error {
+                // Drum preset error (format: "location:preset:message").
+                // Must be checked before the color shape — both start with
+                // a numeric location.
+                if let Some((line, column, msg)) = extract_preset_error(err_str, &composition, &source_map) {
+                    if !quiet {
+                        weresocool_error::ErrorDisplay {
+                            source: &composition,
+                            line,
+                            column,
+                            label: &msg,
+                            use_cyan: false,
+                            ..Default::default()
+                        }.display(false);
+                    }
+                    return Err(ParseError { message: msg, line, column }.into_error());
+                }
+
+                // Color error (format: "location:colorname").
                 if let Some((loc_str, bad_color)) = err_str.split_once(':') {
                     if let Ok(loc) = loc_str.parse::<usize>() {
                         let start = source_map.to_original(loc);
@@ -767,8 +796,23 @@ pub fn parse_file(
         Err(error) => {
             eprintln!("\n");
 
-            // Check if this is a color error (format: "location:colorname")
             if let lalrpop_util::ParseError::User { error: err_str } = &error {
+                // Drum preset error (format: "location:preset:message") —
+                // checked before the color shape.
+                if let Some((line, column, msg)) = extract_preset_error(err_str, &composition, &source_map) {
+                    weresocool_error::ErrorDisplay {
+                        source: &composition,
+                        line,
+                        column,
+                        label: &msg,
+                        use_cyan: false,
+                        file: source_name.clone(),
+                        ..Default::default()
+                    }.display(false);
+                    return Err(ParseError { message: msg, line, column }.into_error());
+                }
+
+                // Color error (format: "location:colorname").
                 if let Some((loc_str, bad_color)) = err_str.split_once(':') {
                     if let Ok(loc) = loc_str.parse::<usize>() {
                         let start = source_map.to_original(loc);
@@ -856,6 +900,63 @@ fn handle_whitespace_and_imports(lines: Vec<String>) -> Result<(Vec<String>, Str
     }
 
     Ok((imports_needed, composition))
+}
+
+/// Validate a drum preset name at parse time. Generic over the lexer token
+/// type so the lalrpop action's `?` can convert the error directly. Unknown
+/// names get an error listing the available presets — much better UX than
+/// a silent fallback (typos should never quietly change the sound).
+pub fn validate_drum_preset<T>(
+    location: usize,
+    drum: &str,
+    preset: &str,
+    available: &[&str],
+) -> Result<(), lalrpop_util::ParseError<usize, T, String>> {
+    if available.contains(&preset) {
+        Ok(())
+    } else {
+        // `location:preset:` marker — the error sites in this file key on
+        // it to render a preset-specific message (the bare `location:msg`
+        // shape is claimed by the color-error path).
+        Err(lalrpop_util::ParseError::User {
+            error: format!(
+                "{}:preset:unknown {} preset `{}` — available: {}",
+                location,
+                drum,
+                preset,
+                available.join(", ")
+            ),
+        })
+    }
+}
+
+/// Drum preset errors arrive as `location:preset:message` (see
+/// `validate_drum_preset`). Returns `(line, column, message)` when the
+/// User error is preset-shaped, mapping the location through the source
+/// map exactly like the color-error path does.
+fn extract_preset_error(
+    err_str: &str,
+    composition: &str,
+    source_map: &SourceMap,
+) -> Option<(usize, usize, String)> {
+    let (loc_str, rest) = err_str.split_once(':')?;
+    let msg = rest.strip_prefix("preset:")?;
+    let loc = loc_str.parse::<usize>().ok()?;
+    let start = source_map.to_original(loc);
+    let mut line: usize = 0;
+    let mut column: usize = 0;
+    for (n_c, c) in composition.chars().enumerate() {
+        if n_c >= start {
+            break;
+        }
+        if c == '\n' {
+            line += 1;
+            column = 0;
+        } else {
+            column += 1;
+        }
+    }
+    Some((line, column, msg.to_string()))
 }
 
 pub fn handle_fit_length_recursively(terms: Vec<Term>) -> Vec<Term> {

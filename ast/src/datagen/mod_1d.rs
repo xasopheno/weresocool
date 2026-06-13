@@ -66,6 +66,8 @@ pub fn eeg_data_to_normal_form(data: &CsvData, scale: f32, filename: &str) -> No
     NormalForm {
         length_ratio,
         operations: vec![point_ops],
+        // Datagen NFs are leaves — they never carry a Start marker.
+        start_at: None,
     }
 }
 
@@ -103,6 +105,7 @@ pub fn eeg_datum_to_point_op(
     PointOp {
         fm: Rational64::new(1, 1),
         fa,
+        fit_vis: [None; 3],
         l: Rational64::new(2, 100),
         g: Rational64::new(1, 1),
         pm: Rational64::new(1, 1),

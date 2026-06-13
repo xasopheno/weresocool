@@ -1,0 +1,146 @@
+{ f: 55, l: 1/12, g: 1, p: 0 }
+
+-- Avant drum & bass — ~180 bpm, dense chopped-break vocabulary.
+-- No bar repeats exactly. Sections are functions over the drums:
+--   break4   four bars of rolling amen-style chop, ghosts everywhere,
+--            hats on every 16th with a drifting 3-step accent cycle
+--   chop4    the edit bars: double-time stutters, a FULL-STOP cut,
+--            a tape-warped bar (whole kit | Fm 9/8), roll cascade
+--   low4     breakdown — the 808 kick's sub tail IS the bass line;
+--            wide claps, pitched clap-shard ping-pong, open-hat washes
+-- The finale plays chop4 with the ENTIRE KIT pitched 9/8 — drums are
+-- oscillators here, so the whole break tape-warps.
+-- bass_a is sparse kick-locked stabs; delete it from the Overlays for
+-- drums only.
+--
+-- Render: weresocool print kits/dnb_showcase.socool
+
+x = { Silence 1 }
+
+break4(bd, sn, hh, oh) = {
+    Overlay [
+        Seq [
+            bd, x, x, x, x, x, x, bd | Gm 0.5, x, x, bd, x, x, x, x, x,
+            bd, x, x, x, x, x, x, x, x, bd | Gm 0.6, bd | Gm 0.45, x, x, x, x, x,
+            bd, x, x, x, x, x, bd | Gm 0.5, x, x, x, bd, x, x, x, x, x,
+            bd, x, x, x, x, x, x, bd | Gm 0.5, x, x, bd, x, x, bd | Fm 1/2 | Lm 2 | Gm 0.4, x
+        ],
+        Seq [
+            x, x, x, x, sn, x, sn | Gm 0.18, x, x, x, x, x, sn, x, sn | Gm 0.25, x,
+            x, x, sn | Gm 0.15, x, sn, x, x, sn | Gm 0.22, x, x, x, sn | Gm 0.18, sn, x, x, sn | Gm 0.3,
+            x, x, x, x, sn, x, sn | Gm 0.2, x, x, sn | Gm 0.15, x, x, x, sn, x, sn | Gm 0.25,
+            x, x, x, x, sn, x, sn | Gm 0.2, x, x, x, x, sn | Gm 0.18, sn, x, sn | Lm 1/4 | Repeat 4 | Gm 0.45, sn | Fm 9/8 | Gm 0.7
+        ] | Fm 3 | Gm 0.8,
+        Seq [
+            hh | Gm 0.55, hh | Gm 0.28, hh | Gm 0.34, hh | Gm 0.55, hh | Gm 0.28, hh | Gm 0.34, hh | Gm 0.55, hh | Gm 0.28, hh | Gm 0.34, hh | Gm 0.55, hh | Gm 0.28, hh | Gm 0.34, hh | Gm 0.55, hh | Gm 0.28, hh | Gm 0.34, hh | Gm 0.55,
+            hh | Gm 0.28, hh | Gm 0.34, hh | Gm 0.55, hh | Gm 0.28, hh | Gm 0.34, hh | Gm 0.55, hh | Gm 0.28, hh | Gm 0.34, hh | Gm 0.55, hh | Gm 0.28, hh | Gm 0.34, hh | Gm 0.55, hh | Gm 0.28, hh | Gm 0.34, hh | Gm 0.55, oh | Gm 0.5,
+            hh | Gm 0.34, hh | Gm 0.55, hh | Gm 0.28, hh | Gm 0.34, hh | Gm 0.55, hh | Gm 0.28, hh | Gm 0.34, hh | Gm 0.55, hh | Gm 0.28, hh | Gm 0.34, hh | Gm 0.55, hh | Gm 0.28, hh | Gm 0.34, hh | Gm 0.55, hh | Gm 0.28, hh | Gm 0.34,
+            hh | Gm 0.55, hh | Gm 0.28, hh | Gm 0.34, hh | Gm 0.55, hh | Gm 0.28, hh | Gm 0.34, hh | Gm 0.55, hh | Gm 0.28, hh | Gm 0.34, hh | Gm 0.55, hh | Gm 0.28, hh | Gm 0.34, hh | Gm 0.55, hh | Gm 0.28, hh | Gm 0.34, oh | Gm 0.5
+        ] | Fm 50 | Gm 0.32
+    ]
+}
+
+chop4(bd, sn, hh, oh) = {
+    Overlay [
+        Seq [
+            bd, x, x, x, x, x, x, bd | Gm 0.5, x, x, bd, x, x, x, x, x,
+            bd, x, x, x, Seq [bd | Gm 0.7, x] | Lm 1/2 | Repeat 2, x, x, x, x, bd, x, x | Lm 4,
+            bd | Fm 9/8, x, x, x, x, x, x, bd | Fm 9/8 | Gm 0.5, x, x, bd | Fm 9/8, x, x, x, x, x,
+            bd, x, x, x, x, x, x, x, bd | Fm 3/4 | Gm 0.6, x, bd | Fm 1/2 | Lm 2, x, x, x, x
+        ],
+        Seq [
+            x, x, sn | Gm 0.15, x, sn, x, x, sn | Gm 0.22, x, x, x, sn | Gm 0.18, sn, x, x, sn | Gm 0.3,
+            x, x, x, x, Seq [sn, sn | Gm 0.25] | Lm 1/2, sn | Lm 1/2 | Repeat 2 | Gm 0.5, sn, x, x, x, x, x, x | Lm 4,
+            x, x, x, x, sn | Fm 9/8, x, sn | Fm 9/8 | Gm 0.2, x, x, x, x, x, sn | Fm 9/8, x, sn | Fm 6/5 | Gm 0.25, x,
+            x, x, sn | Fm 3/2 | Lm 1/3 | Repeat 3 | Gm 0.35, x, sn, x, sn | Fm 4/3 | Lm 1/4 | Repeat 4 | Gm 0.45, x, sn | Fm 9/8 | Lm 1/4 | Repeat 4 | Gm 0.55, x, sn | Lm 1/6 | Repeat 6 | Gm 0.6, x, sn, sn | Fm 3/4 | Lm 1/6 | Repeat 6 | Gm 0.5, sn | Fm 2/3 | Gm 0.8, sn | Fm 1/2 | Gm 0.9
+        ] | Fm 3 | Gm 0.8,
+        Seq [
+            hh | Gm 0.55, hh | Gm 0.28, hh | Gm 0.34, hh | Gm 0.55, hh | Gm 0.28, hh | Gm 0.34, hh | Gm 0.55, hh | Gm 0.28, hh | Gm 0.34, hh | Gm 0.55, hh | Gm 0.28, hh | Gm 0.34, hh | Gm 0.55, hh | Gm 0.28, hh | Gm 0.34, hh | Gm 0.55,
+            hh | Gm 0.5, x, x, hh | Gm 0.3, x, x, hh | Gm 0.5, x, x, hh | Gm 0.3, x, x, x | Lm 4,
+            hh | Gm 0.34, hh | Gm 0.55, hh | Gm 0.28, hh | Gm 0.34, hh | Gm 0.55, hh | Gm 0.28, hh | Gm 0.34, hh | Gm 0.55, hh | Gm 0.28, hh | Gm 0.34, hh | Gm 0.55, hh | Gm 0.28, hh | Gm 0.34, hh | Gm 0.55, hh | Gm 0.28, hh | Gm 0.34,
+            hh | Gm 0.5, x, x, hh | Gm 0.35, x, x, hh | Lm 1/4 | Repeat 4 | Gm 0.45, hh | Gm 0.55, x, x, hh | Lm 1/3 | Repeat 3 | Gm 0.4, x, hh | Gm 0.5, x, x, oh | Gm 0.55
+        ] | Fm 50 | Gm 0.32,
+        Seq [
+            x, x, x, x, x, x, x, x, x, x, x, x, x, sn | Fm 3/2 | Pa 1/4, x, x,
+            x, x, x, x, x, x, sn | Fm 3/2 | Pa -1/4 | Gm 0.6, x, x, x, x, sn | Fm 3/2 | Pa 1/4 | Lm 1/2 | Repeat 2 | Gm 0.5, x, x, x, x,
+            x, x, x, sn | Fm 5/4 | Pa 1/2 | Gm 0.5, x, x, x, x, x, x, x, x, x, sn | Fm 5/4 | Pa -1/2, x, x,
+            x, sn | Fm 3/2 | Lm 1/4 | Repeat 4 | Gm 0.45 | Pa 1/4, x, x, x, sn | Fm 3/2 | Pa -1/4 | Gm 0.7, x, x, x, x, x, x, x, x, x, x
+        ] | Fm 3 | Gm 0.3
+    ]
+}
+
+low4(bd, cp, oh) = {
+    Overlay [
+        Seq [
+            bd | Lm 4, x, x, x, x, x, x, bd | Fm 2/3 | Lm 3 | Gm 0.5, x, x, x,
+            bd | Fm 1/2 | Lm 6, x, x, x, x, x, x, bd | Fm 3/4 | Lm 4 | Gm 0.45,
+            bd | Lm 4, x, x, x, x, x, bd | Fm 5/6 | Lm 3 | Gm 0.55, x, x, bd | Fm 1/2 | Lm 2 | Gm 0.4,
+            bd | Fm 1/2 | Lm 8, x, x, x, x, bd | Fm 9/16 | Lm 4 | Gm 0.6
+        ],
+        Seq [
+            x, x, x, x, x, x, x, x, cp, x, x, x, x, x, x, x,
+            x, x, x, x, x, x, x, x, cp, x, x, x, x, x, cp | Gm 0.45, x,
+            x, x, x, x, x, x, x, x, cp, x, x, x, x, x, x, x,
+            x, x, x, x, x, x, x, x, cp, x, x, cp | Gm 0.4, x, cp | Gm 0.55, x, x
+        ] | Fm 3 | Gm 0.7,
+        Seq [
+            x, x, x, x, x, cp | Fm 3/2 | Pa 1/2 | Gm 0.5, x, x, x, x, x, x, oh | Gm 0.4, x, x, x,
+            x, x, x, cp | Fm 3/2 | Pa -1/2 | Gm 0.45, x, x, x, x, x, x, x, x, oh | Gm 0.4, x, x, x,
+            x, x, x, x, x, cp | Fm 3/2 | Pa 1/2 | Gm 0.5, x, x, x, x, cp | Fm 9/5 | Pa -1/4 | Gm 0.35, x, oh | Gm 0.4, x, x, x,
+            x, x, cp | Fm 3/2 | Pa -1/2 | Gm 0.4, x, x, x, cp | Fm 9/5 | Pa 1/4 | Gm 0.5, x, x, x, x, x, oh | Gm 0.45, x, x, x
+        ] | Fm 3 | Gm 0.6
+    ]
+}
+
+bass_a = {
+    Seq [
+            Fm 1/2 | Lm 3, x, x, x, x, Fm 3/5 | Lm 2, x, Fm 1/2 | Lm 3, x, x, x,
+            Fm 1/2 | Lm 2, x, x, x, x, x, x, x, Fm 2/3 | Lm 2, x, Fm 3/4 | Lm 2, Fm 4/5 | Lm 2,
+            Fm 1/2 | Lm 3, x, x, x, Fm 2/5 | Lm 2, x, x, Fm 1/2 | Lm 4, x, x,
+            Fm 1/2 | Lm 2, x, x, x, x, x, Fm 3/5 | Lm 2, x, Fm 2/3 | Lm 2, x, Fm 1/2 | Lm 3
+    ] | Gm 0.32
+}
+
+sec_a = {
+    Overlay [
+        break4(Kick wsc { length: 0.15 }, Snare wsc, HiHat wsc, OpenHat wsc),
+        bass_a
+    ]
+}
+
+sec_a9 = {
+    Overlay [
+        break4(Kick 909 { length: 0.2 }, Snare 909, HiHat 909, OpenHat 909),
+        bass_a
+    ]
+}
+
+sec_b = {
+    Overlay [
+        chop4(Kick 909 { length: 0.2 }, Snare 909, HiHat 909, OpenHat 909),
+        bass_a
+    ]
+}
+
+sec_low = {
+    low4(Kick 808, Clap 808, OpenHat 808)
+}
+
+-- The whole-kit tape-warp: every drum + the bass pitched up a major
+-- second (9/8). Drums respond to Fm like any oscillator.
+sec_b_warp = {
+    Overlay [
+        chop4(Kick knock { length: 0.25 }, Snare trap, HiHat trap, OpenHat trap),
+        bass_a
+    ] | Fm 9/8
+}
+
+main = {
+    Seq [
+        sec_a, sec_a9,
+        sec_b,
+        sec_low,
+        sec_b_warp,
+        sec_a9, sec_b
+    ]
+}
