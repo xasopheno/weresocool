@@ -1,0 +1,20 @@
+{ f: 110, l: 1/8, g: 1, p: 0 }
+
+-- SNARE FOCUS — clean single hits only (NO roll), so you judge the tone.
+-- Four spaced quarter-note hits per snare, tails allowed to ring out.
+-- glass=high bright ring · doom=deep dark long · crush=distorted ·
+-- air=soft brushed wash · snap=tight gated click.
+
+x = { Silence 1 }
+
+hits(sn) = { Seq [ sn, x, x, x, sn, x, x, x, sn, x, x, x, sn, x | Lm 7 ] }
+
+main = {
+    Seq [
+        hits(Snare glass), x | Lm 4,
+        hits(Snare doom),  x | Lm 4,
+        hits(Snare crush), x | Lm 4,
+        hits(Snare air),   x | Lm 4,
+        hits(Snare snap)
+    ]
+}

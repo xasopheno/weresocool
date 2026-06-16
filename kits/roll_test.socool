@@ -1,0 +1,6 @@
+{ f: 110, l: 1/8, g: 1, p: 0 }
+-- Beat-4 isolation: a single hit, then the SAME snare as a 4x roll.
+-- If the single hit snaps but the roll washes, the roll is the culprit.
+x = { Silence 1 }
+one_then_roll(sn) = { Seq [ sn, x, x, x, sn | Lm 1/4 | Repeat 4 | Gm 0.7, x | Lm 7 ] }
+main = { Seq [ one_then_roll(Snare wsc), x|Lm 4, one_then_roll(Snare snap), x|Lm 4, one_then_roll(Snare glass) ] }

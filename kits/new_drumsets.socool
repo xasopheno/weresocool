@@ -1,19 +1,21 @@
 { f: 60, l: 1/16, g: 1, p: 0 }
 
 -- ════════════════════════════════════════════════════════════════════
--- FIVE NEW CHARACTER DRUMSETS — demo
+-- FIVE CHARACTER DRUMSETS — demo  (v2: pushed into distinct spaces)
 --
--- Each section plays the SAME four-bar groove with a different drumset,
--- so you can A/B the character directly. The drumsets:
+-- Same four-bar groove with each drumset, so you can A/B the character.
+-- These are deliberately ORTHOGONAL — each one changes *which synthesis
+-- components dominate*, not just the EQ:
 --
---   glass   crystalline, bell-like, bright ringing resonances   (beautiful)
---   doom    massive distorted industrial, heavy saturation      (heavy)
---   tape    warm vintage saturation, rounded, rolled-off highs   (smooth)
---   vapor   dreamy washy, detuned, long tails                   (ambient)
---   neon    bright clean synthetic electro, punchy               (synthwave)
+--   glass   bright crystalline tonal RING — pitched modes, noise≈0   (bell)
+--   doom    deep dark cavernous BOOM — sub-tuned, very long, dark
+--   crush   distorted bit-crushed INDUSTRIAL — saturation/drive maxed
+--   air     soft breathy WASH — broadband noise only, NO transient
+--   snap    ultra-tight dry CLICK — transient only, NO tail
 --
--- Every drum family (Kick/Snare/HiHat/OpenHat/Clap/Rimshot) has all five,
--- so a whole kit is one word: `Kick glass`, `Snare glass`, …
+-- air and snap are opposites (all-tail vs all-transient); so are
+-- glass and doom (bright vs dark). Every drum family has all five, so a
+-- whole kit is one word: `Kick crush`, `Snare crush`, …
 --
 -- Render: weresocool print kits/new_drumsets.socool
 -- ════════════════════════════════════════════════════════════════════
@@ -39,7 +41,6 @@ groove(bd, sn, hh, oh, cp, rs) = {
     ]
 }
 
--- Four bars of each drumset.
 glass_kit = {
     groove(Kick glass, Snare glass, HiHat glass, OpenHat glass, Clap glass, Rimshot glass)
     | Lm 1 | Repeat 4
@@ -50,18 +51,18 @@ doom_kit = {
     | Lm 1 | Repeat 4
 }
 
-tape_kit = {
-    groove(Kick tape, Snare tape, HiHat tape, OpenHat tape, Clap tape, Rimshot tape)
+crush_kit = {
+    groove(Kick crush, Snare crush, HiHat crush, OpenHat crush, Clap crush, Rimshot crush)
     | Lm 1 | Repeat 4
 }
 
-vapor_kit = {
-    groove(Kick vapor, Snare vapor, HiHat vapor, OpenHat vapor, Clap vapor, Rimshot vapor)
+air_kit = {
+    groove(Kick air, Snare air, HiHat air, OpenHat air, Clap air, Rimshot air)
     | Lm 1 | Repeat 4
 }
 
-neon_kit = {
-    groove(Kick neon, Snare neon, HiHat neon, OpenHat neon, Clap neon, Rimshot neon)
+snap_kit = {
+    groove(Kick snap, Snare snap, HiHat snap, OpenHat snap, Clap snap, Rimshot snap)
     | Lm 1 | Repeat 4
 }
 
@@ -71,8 +72,8 @@ main = {
     Seq [
         glass_kit, gap,
         doom_kit,  gap,
-        tape_kit,  gap,
-        vapor_kit, gap,
-        neon_kit
+        crush_kit, gap,
+        air_kit,   gap,
+        snap_kit
     ]
 }

@@ -939,8 +939,15 @@ impl Waveform for OscType {
                 // snare spectra.
                 let info_freq = if info.frequency > 20.0 { info.frequency } else { SNARE_DEFAULT_FREQ };
                 if state.resolved_snare.is_none() {
-                    let rs = resolve_snare(params.as_ref());
+                    let mut rs = resolve_snare(params.as_ref());
                     let pre = rs.internal;
+                    // The snare's fundamental sits at its own register
+                    // (`base_pitch`), tracking the played note only as far as
+                    // `pitch_track` allows — so a low bass root doesn't drag
+                    // the snare into the mud. wsc (185 Hz, track 1.0) keeps
+                    // the exact historical `f_base = note · tune`.
+                    rs.base_freq = pre.base_pitch * rs.tune
+                        * (info_freq / SNARE_DEFAULT_FREQ).powf(pre.pitch_track);
                     state.snare_wires.bandpass(info.sample_rate, pre.wire_freqs[0] * rs.bright_shift, pre.wire_qs[0]);
                     state.snare_wires_2.bandpass(info.sample_rate, pre.wire_freqs[1] * rs.bright_shift, pre.wire_qs[1]);
                     state.snare_wires_3.bandpass(info.sample_rate, pre.wire_freqs[2] * rs.bright_shift, pre.wire_qs[2]);
@@ -952,7 +959,7 @@ impl Waveform for OscType {
                 }
                 let rs = state.resolved_snare.unwrap();
                 let pre = rs.internal;
-                let f_base = info_freq * rs.tune;
+                let f_base = rs.base_freq;
                 let (shell_decay, wire_decay, wire_mix) = (rs.shell_decay, rs.wire_decay, rs.wire_mix);
                 let (shell_tune, attack_amount) = (rs.shell_tune, rs.attack_amount);
                 let (shell_pitch_decay, shell_pitch_range) = (rs.shell_pitch_decay, rs.shell_pitch_range);

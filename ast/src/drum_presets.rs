@@ -10,19 +10,23 @@
 //! signature WereSoCool voicing and is also what a bare `Kick` / `Snare` /
 //! `HiHat` resolves to.
 
-/// The five "character" drumsets shared across every drum family: `glass`
-/// (crystalline, bell-like, ringing — beautiful), `doom` (massive,
-/// distorted, industrial — heavy), `tape` (warm vintage saturation,
-/// rolled-off — smooth), `vapor` (dreamy, washy, detuned, long tails —
-/// ambient), `neon` (bright clean synthetic electro — punchy).
-const CHARACTER: &[&str] = &["glass", "doom", "tape", "vapor", "neon"];
+/// The five "character" drumsets shared across every drum family, each
+/// occupying a deliberately distinct synthesis space (not just a different
+/// EQ of the same drum): `glass` (bright crystalline tonal ring — pitched
+/// modes dominate, noise near-zero), `doom` (deep dark cavernous boom —
+/// sub-dominant, low-tuned, very long, dark filters), `crush` (distorted
+/// bit-crushed industrial — saturation/drive pushed to clipping), `air`
+/// (soft breathy brushed wash — broadband noise only, NO transient), `snap`
+/// (ultra-tight dry gated click — transient only, NO tail). `air` and
+/// `snap` are opposites; so are `glass` and `doom`.
+const CHARACTER: &[&str] = &["glass", "doom", "crush", "air", "snap"];
 
 /// Kick presets: `wsc` (signature), `808` (long sub boom), `909` (hard
 /// beater click, tight), `knock` (trap: short, driven, speaker-knock),
 /// `acoustic` (shell ring, low saturation), `dust` (lofi: dark, soft),
 /// plus the five [`CHARACTER`] drumsets.
 pub const KICK_PRESETS: &[&str] = &[
-    "wsc", "808", "909", "knock", "acoustic", "dust", "glass", "doom", "tape", "vapor", "neon",
+    "wsc", "808", "909", "knock", "acoustic", "dust", "glass", "doom", "crush", "air", "snap",
 ];
 
 /// Snare presets: `wsc` (signature crack), `808` (tight dark snap),
@@ -30,7 +34,7 @@ pub const KICK_PRESETS: &[&str] = &[
 /// `brush` (head-dominant, soft beater), `dust` (lofi: dark wires), plus
 /// the five [`CHARACTER`] drumsets.
 pub const SNARE_PRESETS: &[&str] = &[
-    "wsc", "808", "909", "trap", "brush", "dust", "glass", "doom", "tape", "vapor", "neon",
+    "wsc", "808", "909", "trap", "brush", "dust", "glass", "doom", "crush", "air", "snap",
 ];
 
 /// HiHat presets (shared by `HiHat` and `OpenHat`): `wsc` (signature),
@@ -38,21 +42,21 @@ pub const SNARE_PRESETS: &[&str] = &[
 /// `acoustic` (loose, beating), `dust` (lofi: dark, airless), plus the
 /// five [`CHARACTER`] drumsets.
 pub const HIHAT_PRESETS: &[&str] = &[
-    "wsc", "808", "909", "trap", "acoustic", "dust", "glass", "doom", "tape", "vapor", "neon",
+    "wsc", "808", "909", "trap", "acoustic", "dust", "glass", "doom", "crush", "air", "snap",
 ];
 
 /// Clap presets: `wsc` (signature), `808` (the iconic spread clap),
 /// `909` (tighter, noisier), `trap` (bright layered snap), `dust`
 /// (lofi: dark, papery), plus the five [`CHARACTER`] drumsets.
 pub const CLAP_PRESETS: &[&str] = &[
-    "wsc", "808", "909", "trap", "dust", "glass", "doom", "tape", "vapor", "neon",
+    "wsc", "808", "909", "trap", "dust", "glass", "doom", "crush", "air", "snap",
 ];
 
 /// Rimshot presets: `wsc` (signature), `808` (tonal ping), `909`
 /// (brighter click), `acoustic` (woody side-stick), plus the five
 /// [`CHARACTER`] drumsets.
 pub const RIMSHOT_PRESETS: &[&str] = &[
-    "wsc", "808", "909", "acoustic", "glass", "doom", "tape", "vapor", "neon",
+    "wsc", "808", "909", "acoustic", "glass", "doom", "crush", "air", "snap",
 ];
 
 /// Keep the doc comment honest: every family exposes the character set.
