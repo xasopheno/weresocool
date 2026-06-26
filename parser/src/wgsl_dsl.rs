@@ -84,12 +84,58 @@ pub fn compile_dsl_to_wgsl(src: &str) -> Result<String, DslError> {
                 }
             }
         } else {
+            // Color-law guard: a color channel must never be set to an
+            // absolute constant in a wgsl block. Absolute sets discard the
+            // brush palette + draw tint and diverge between the renderer's two
+            // color-composition paths (the DSL color ops Bm/Ba/Die are all
+            // relative for exactly this reason). We reject only the
+            // unambiguous footgun — `red = 0.5` — and leave expressions alone.
+            if let Some(chan) = absolute_color_literal_channel(trimmed) {
+                return Err(DslError {
+                    message: format!(
+                        "color channel `{chan}` set to an absolute constant — color ops must be \
+                         relative (e.g. `{chan} = {chan} * 0.5`, or use `Bm`/`Ba`). An absolute \
+                         set wipes the brush palette and tint."
+                    ),
+                    line: *start_line,
+                    column: 1,
+                    context: trimmed.to_string(),
+                });
+            }
             // Pass through as raw WGSL (add semicolon back)
             result.push(format!("    {};", trimmed));
         }
     }
 
     Ok(result.join("\n"))
+}
+
+/// If `stmt` is `red|green|blue|alpha = <numeric literal>` (an absolute color
+/// set), return the channel name. Returns `None` for any expression RHS — only
+/// the unambiguous constant case is rejected, so relative forms like
+/// `red = red * f` or `red = some_var` still pass.
+fn absolute_color_literal_channel(stmt: &str) -> Option<&'static str> {
+    let (lhs, rhs) = stmt.split_once('=')?;
+    // Guard against `==`, `<=`, etc. — only a plain assignment.
+    if rhs.starts_with('=') || lhs.ends_with(['<', '>', '!']) {
+        return None;
+    }
+    // Only the palette channels (rgb). `alpha` is derived downstream from
+    // max(r,g,b), not a palette layer, so an absolute alpha set isn't the
+    // palette-stomp this guards (and shipped comps set it directly).
+    let channel = match lhs.trim() {
+        "red" => "red",
+        "green" => "green",
+        "blue" => "blue",
+        _ => return None,
+    };
+    // Absolute iff the RHS is purely a numeric literal (no identifiers/ops that
+    // could make it relative). `0.5`, `1`, `-0.2`, `.3` → absolute.
+    let rhs = rhs.trim().trim_end_matches(';').trim();
+    let is_number = !rhs.is_empty()
+        && rhs.chars().all(|c| c.is_ascii_digit() || c == '.' || c == '-' || c == '+')
+        && rhs.chars().any(|c| c.is_ascii_digit());
+    if is_number { Some(channel) } else { None }
 }
 
 /// Split source by semicolons, tracking which line each statement starts on.
@@ -899,6 +945,26 @@ mod tests {
         let output = result.unwrap();
         println!("=== Quoted with comma ===\n{}", output);
         assert!(output.contains("max(x, y)"), "Should have max(x, y)");
+    }
+
+    #[test]
+    fn color_law_rejects_absolute_set_but_allows_relative() {
+        // Absolute constant set on a palette channel → rejected.
+        for bad in ["red = 0.5", "green = 1", "blue = -0.2"] {
+            let r = compile_dsl_to_wgsl(bad);
+            assert!(r.is_err(), "`{bad}` should be rejected, got {:?}", r.ok());
+        }
+        // Relative forms + DSL color ops pass.
+        for ok in ["red = red * 0.5", "green = green + 0.1", "blue = blue * fade", "Bm 0.5", "Ba 0.1"] {
+            let r = compile_dsl_to_wgsl(ok);
+            assert!(r.is_ok(), "`{ok}` should pass, got {:?}", r.err());
+        }
+        // Expression RHS is left alone (only the constant footgun is caught) —
+        // e.g. rainforest's animated `red = 0.5 + sin(time*4)*0.5`.
+        assert!(compile_dsl_to_wgsl("red = some_var * 0.5").is_ok());
+        assert!(compile_dsl_to_wgsl("red = 0.5 + sin(time * 4.0) * 0.5").is_ok());
+        // `alpha` is derived downstream, not guarded.
+        assert!(compile_dsl_to_wgsl("alpha = 0.3").is_ok());
     }
 
     #[test]
