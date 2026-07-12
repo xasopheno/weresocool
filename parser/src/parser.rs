@@ -113,19 +113,32 @@ fn process_op_table(mut defs: &mut Defs) -> Result<Defs, Error> {
             Term::FunDef(fun) => {
                 result.ops.insert(&scope_name, &name, Term::FunDef(fun.to_owned()));
             }
+            // Lists and generators are STRUCTURAL, like FunDef — consumers
+            // need the term itself, not its flattened result: `*gen` must
+            // re-generate (seeded) per use, and named lists are indexed
+            // (`list @ [1, 2]`). Memoizing them to Nf broke both ("Using
+            // non-generator as generator" / list-index mocks). Pass through —
+            // EXCEPT the render roots (`main`, `expect`), which downstream
+            // code consumes as Nf.
             Term::Lop(lop) => {
-                let mut nf = NormalForm::init();
-                lop.apply_to_normal_form(&mut nf, &mut defs.clone())?;
-                // MEMOIZATION: Update defs for Lop too
-                defs.ops.insert(&scope_name, &name, Term::Nf(nf.clone()));
-                result.ops.insert(&scope_name, &name, Term::Nf(nf));
+                if name == "main" || name == "expect" {
+                    let mut nf = NormalForm::init();
+                    lop.apply_to_normal_form(&mut nf, &mut defs.clone())?;
+                    defs.ops.insert(&scope_name, &name, Term::Nf(nf.clone()));
+                    result.ops.insert(&scope_name, &name, Term::Nf(nf));
+                } else {
+                    result.ops.insert(&scope_name, &name, Term::Lop(lop.to_owned()));
+                }
             }
             Term::Gen(generator) => {
-                let mut nf = NormalForm::init();
-                generator.apply_to_normal_form(&mut nf, &mut defs.clone())?;
-                // MEMOIZATION: Update defs for Gen too
-                defs.ops.insert(&scope_name, &name, Term::Nf(nf.clone()));
-                result.ops.insert(&scope_name, &name, Term::Nf(nf));
+                if name == "main" || name == "expect" {
+                    let mut nf = NormalForm::init();
+                    generator.apply_to_normal_form(&mut nf, &mut defs.clone())?;
+                    defs.ops.insert(&scope_name, &name, Term::Nf(nf.clone()));
+                    result.ops.insert(&scope_name, &name, Term::Nf(nf));
+                } else {
+                    result.ops.insert(&scope_name, &name, Term::Gen(generator.to_owned()));
+                }
             }
         };
     }
