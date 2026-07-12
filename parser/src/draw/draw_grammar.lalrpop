@@ -15,13 +15,14 @@ use crate::draw::grammar_helpers as h;
 grammar;
 
 match {
-    "|", "(", ")", "{", "}", "[", "]", ",", ";", ":", ".", "+", "-", "*", "/",
+    "|", "(", ")", "{", "}", "[", "]", ",", ";", ":", "..", ".", "+", "-", "*", "/",
 
     // Generator + identity / mute
     "Point", "AsIs", "None",
 
     // Atoms / functions
     "Time", "Stroke", "clock", "mod", "Sin", "tau", "note", "Here",
+    "count", "phase", "cycle",
 
     // Note field names (matched after `note .`)
     "x", "y", "z", "l", "event", "voice", "direction",
@@ -414,6 +415,27 @@ Factor: DrawExpr = {
     <f:VariadicFn> "(" <a:Expr> <rest:("," <Expr>)+> ")" =>
         rest.into_iter().fold(a, |acc, e| DrawExpr::Call(f, vec![acc, e])),
     "note" "." <n:NoteFieldName> => DrawExpr::Note(n),
+    // Law-4 count sugar — all lower onto wrap(note.event, …):
+    //   count       = the note's index within its voice
+    //   phase(n)    = 0→1 across every n hits, then restart
+    //   cycle(a..b) = walk a, a+1, … b-1, one step per hit, repeat
+    "count" => DrawExpr::Note(NoteField::Event),
+    "phase" "(" <n:Expr> ")" => {
+        let wrapped = DrawExpr::Call(MathFn::Wrap,
+            vec![DrawExpr::Note(NoteField::Event), n.clone()]);
+        DrawExpr::Bin(BinOp::Div, Box::new(wrapped), Box::new(n))
+    },
+    "cycle" "(" "[" <first:Expr> <rest:("," <Expr>)*> "]" ")" => {
+        let mut vals = vec![first];
+        vals.extend(rest);
+        DrawExpr::Cycle(vals)
+    },
+    "cycle" "(" <a:Expr> ".." <b:Expr> ")" => {
+        let span = DrawExpr::Bin(BinOp::Sub, Box::new(b), Box::new(a.clone()));
+        let wrapped = DrawExpr::Call(MathFn::Wrap,
+            vec![DrawExpr::Note(NoteField::Event), span]);
+        DrawExpr::Bin(BinOp::Add, Box::new(a), Box::new(wrapped))
+    },
     "(" <e:Expr> ")" => e,
     "-" <f:Factor>   =>
         DrawExpr::Bin(BinOp::Sub, Box::new(DrawExpr::Lit(0.0)), Box::new(f)),

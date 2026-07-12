@@ -104,6 +104,10 @@ pub enum Expr {
     /// A literal promoted to a runtime-tweakable uniform slot — warp only,
     /// injected by `warp::promote`. Codegen emits `user_param(slot u)`.
     UserParam { slot: u32 },
+    /// `cycle([v0, v1, …])` — walk a list of values, one step per note,
+    /// repeating: value = list[count % len]. Draw + brush-wgsl only (warp
+    /// has no per-note count; its grammar never produces this).
+    Cycle(Vec<Expr>),
     /// A grammar-injected DEFAULT value for an omitted named arg — has NO
     /// counterpart in source text, so the promote pass must neither promote
     /// it nor advance its source-literal cursor over it. Everything else
@@ -201,6 +205,9 @@ pub fn to_wgsl(e: &Expr) -> String {
                 format!("{}", n)
             }
         }
+        // Draw-only (evaluated on the CPU); the warp grammar never
+        // produces Cycle, so this arm is a safe inert fallback.
+        Expr::Cycle(_) => "0.0".to_string(),
         Expr::Hit(ch) => format!("hit({}u)", ch.idx()),
         Expr::HitX(ch) => format!("hit_x({}u)", ch.idx()),
         Expr::HitY(ch) => format!("hit_y({}u)", ch.idx()),
@@ -222,6 +229,7 @@ pub fn as_const(e: &Expr) -> Option<f64> {
     match e {
         Expr::Lit(v) => Some(*v as f64),
         Expr::DefaultLit(v) => Some(*v as f64),
+        Expr::Cycle(_) => None,
         Expr::Bin(op, l, r) => {
             let (l, r) = (as_const(l)?, as_const(r)?);
             Some(match op {

@@ -18,12 +18,193 @@ pub enum WgslValue {
     Expr(String),
 }
 
+
+/// Law-4 count sugar for brush-wgsl expressions (quoted or bare):
+///   `count`         → `note_event`
+///   `phase(n)`      → `(wrap(note_event, (n)) / (n))`
+///   `cycle(a..b)`   → `((a) + wrap(note_event, (b) - (a)))`
+///   `cycle([v, …])` → nested `select(…)` chain indexed by
+///                     `wrap(note_event, k)`
+/// Quoted DSL strings pass to WGSL verbatim, so the sugar must be expanded
+/// textually here — the one choke point every brush-wgsl value flows
+/// through. Idempotent on text without the sugar.
+
+#[cfg(test)]
+mod count_sugar_tests {
+    use super::rewrite_count_sugar;
+
+    #[test]
+    fn phase_lowers_to_wrap_over_n() {
+        assert_eq!(
+            rewrite_count_sugar("(phase(12) - 0.5) * 1.7"),
+            "((wrap(note_event, (12)) / (12)) - 0.5) * 1.7"
+        );
+    }
+
+    #[test]
+    fn cycle_range_lowers_to_offset_wrap() {
+        assert_eq!(
+            rewrite_count_sugar("cycle(4..10)"),
+            "((4) + wrap(note_event, (10) - (4)))"
+        );
+    }
+
+    #[test]
+    fn cycle_list_lowers_to_select_chain() {
+        let out = rewrite_count_sugar("cycle([-1, 4, -4, 10])");
+        assert!(out.starts_with("select("));
+        assert!(out.contains("wrap(note_event, 4.0) >= 3.0"));
+        assert!(out.contains("(-1)"));
+        assert!(out.contains("(10)"));
+    }
+
+    #[test]
+    fn bare_count_becomes_note_event_with_boundaries() {
+        assert_eq!(rewrite_count_sugar("count * 0.9"), "note_event * 0.9");
+        // no rewrite inside longer identifiers
+        assert_eq!(rewrite_count_sugar("recount + counts"), "recount + counts");
+    }
+
+    #[test]
+    fn plain_text_untouched() {
+        let s = "0.42 + 0.6 * exp(-time * 5.0)";
+        assert_eq!(rewrite_count_sugar(s), s);
+    }
+}
+
+pub fn rewrite_count_sugar(src: &str) -> String {
+    fn find_close(bytes: &[u8], open: usize, open_ch: u8, close_ch: u8) -> Option<usize> {
+        let mut depth = 1usize;
+        let mut i = open + 1;
+        while i < bytes.len() {
+            let b = bytes[i];
+            if b == open_ch {
+                depth += 1;
+            } else if b == close_ch {
+                depth -= 1;
+                if depth == 0 {
+                    return Some(i);
+                }
+            }
+            i += 1;
+        }
+        None
+    }
+    fn ident_boundary(bytes: &[u8], start: usize, end: usize) -> bool {
+        let before_ok = start == 0
+            || !(bytes[start - 1].is_ascii_alphanumeric() || bytes[start - 1] == b'_');
+        let after_ok = end >= bytes.len()
+            || !(bytes[end].is_ascii_alphanumeric() || bytes[end] == b'_');
+        before_ok && after_ok
+    }
+    fn split_top_commas(inner: &str) -> Vec<String> {
+        let mut parts = Vec::new();
+        let mut depth = 0i32;
+        let mut cur = String::new();
+        for ch in inner.chars() {
+            match ch {
+                '(' | '[' => depth += 1,
+                ')' | ']' => depth -= 1,
+                ',' if depth == 0 => {
+                    parts.push(cur.trim().to_string());
+                    cur = String::new();
+                    continue;
+                }
+                _ => {}
+            }
+            cur.push(ch);
+        }
+        if !cur.trim().is_empty() {
+            parts.push(cur.trim().to_string());
+        }
+        parts
+    }
+
+    let mut out = String::with_capacity(src.len());
+    let bytes = src.as_bytes();
+    let mut i = 0;
+    while i < bytes.len() {
+        // cycle(…)
+        if src[i..].starts_with("cycle") && ident_boundary(bytes, i, i + 5) {
+            let mut j = i + 5;
+            while j < bytes.len() && bytes[j].is_ascii_whitespace() {
+                j += 1;
+            }
+            if j < bytes.len() && bytes[j] == b'(' {
+                if let Some(close) = find_close(bytes, j, b'(', b')') {
+                    let inner = src[j + 1..close].trim();
+                    if let Some(list) = inner
+                        .strip_prefix('[')
+                        .and_then(|r| r.strip_suffix(']'))
+                    {
+                        // cycle([v0, v1, …]) → select chain
+                        let vals: Vec<String> = split_top_commas(list)
+                            .into_iter()
+                            .map(|v| rewrite_count_sugar(&v))
+                            .collect();
+                        if !vals.is_empty() {
+                            let k = vals.len();
+                            let mut expr = format!("({})", vals[0]);
+                            for (idx, v) in vals.iter().enumerate().skip(1) {
+                                expr = format!(
+                                    "select({expr}, ({v}), wrap(note_event, {k}.0) >= {lo}.0)",
+                                    expr = expr, v = v, k = k, lo = idx
+                                );
+                            }
+                            out.push_str(&expr);
+                            i = close + 1;
+                            continue;
+                        }
+                    } else if let Some(dots) = inner.find("..") {
+                        // cycle(a..b) → ((a) + wrap(note_event, (b) - (a)))
+                        let a = rewrite_count_sugar(inner[..dots].trim());
+                        let b = rewrite_count_sugar(inner[dots + 2..].trim());
+                        out.push_str(&format!(
+                            "(({a}) + wrap(note_event, ({b}) - ({a})))",
+                            a = a, b = b
+                        ));
+                        i = close + 1;
+                        continue;
+                    }
+                }
+            }
+        }
+        // phase(n)
+        if src[i..].starts_with("phase") && ident_boundary(bytes, i, i + 5) {
+            let mut j = i + 5;
+            while j < bytes.len() && bytes[j].is_ascii_whitespace() {
+                j += 1;
+            }
+            if j < bytes.len() && bytes[j] == b'(' {
+                if let Some(close) = find_close(bytes, j, b'(', b')') {
+                    let n = rewrite_count_sugar(src[j + 1..close].trim());
+                    out.push_str(&format!(
+                        "(wrap(note_event, ({n})) / ({n}))",
+                        n = n
+                    ));
+                    i = close + 1;
+                    continue;
+                }
+            }
+        }
+        // bare `count`
+        if src[i..].starts_with("count") && ident_boundary(bytes, i, i + 5) {
+            out.push_str("note_event");
+            i += 5;
+            continue;
+        }
+        out.push(src[i..].chars().next().unwrap());
+        i += src[i..].chars().next().unwrap().len_utf8();
+    }
+    out
+}
+
 impl WgslValue {
     /// Convert to WGSL code string
     pub fn to_wgsl(&self) -> String {
         match self {
             WgslValue::Rational(r) => format!("{:.6}", rational_to_f32(*r)),
-            WgslValue::Expr(s) => s.clone(),
+            WgslValue::Expr(s) => rewrite_count_sugar(s),
         }
     }
 
