@@ -334,12 +334,16 @@ fn scan_def_body(body: &str, draw_names: &HashSet<String>) -> (String, Vec<DrawT
         match t {
             crate::dsl_extract::RefTag::Named(n) => tags.push(DrawTagSource::Named(n)),
             // Inline `| draw { … }` — parse the body into a pipeline. A
-            // malformed inline is dropped (the clause is still elided); no
-            // shipped composition has one, and the loud failure would surface
-            // elsewhere in the draw parse path.
+            // malformed inline is still elided from the audio (so playback
+            // continues), but the composer must HEAR about it — a silently
+            // dropped draw clause looks like "my visuals vanished".
             crate::dsl_extract::RefTag::Inline { body, .. } => {
-                if let Ok(pipe) = parse_pipeline(&body) {
-                    tags.push(DrawTagSource::Inline(pipe));
+                match parse_pipeline(&body) {
+                    Ok(pipe) => tags.push(DrawTagSource::Inline(pipe)),
+                    Err(e) => eprintln!(
+                        "[draw] inline `| draw {{ … }}` block failed to parse and was \
+                         skipped (brush falls back to default rendering): {e:?}"
+                    ),
                 }
             }
         }

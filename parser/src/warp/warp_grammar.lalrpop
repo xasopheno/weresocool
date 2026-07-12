@@ -204,11 +204,11 @@ Op: WarpOp = {
 
     // Stir(ch, ...) — a decaying vortex at channel ch's last note onset.
     "Stir" "(" <c:ChanRef> "," <a:NamedArgList> ")" => {
-        let (radius, strength) = h::extract_named_pair(a, "radius", "strength");
+        let (radius, strength) = h::extract_stir_args(a);
         WarpOp::Stir { ch: c, radius, strength }
     },
     "Stir" <c:ChanRef> "{" <a:NamedArgList> "}" => {
-        let (radius, strength) = h::extract_named_pair(a, "radius", "strength");
+        let (radius, strength) = h::extract_stir_args(a);
         WarpOp::Stir { ch: c, radius, strength }
     },
 
@@ -292,9 +292,9 @@ Op: WarpOp = {
     "Add"      "(" <p:Pipeline> ")" => WarpOp::Add(Box::new(p)),
     "Screen"   "(" <p:Pipeline> ")" => WarpOp::Screen(Box::new(p)),
     "Mix"      "(" <p:Pipeline> "," <e:Expr> ")" => WarpOp::Mix(Box::new(p), e),
-    "Mix"      "(" <p:Pipeline> ")"                => WarpOp::Mix(Box::new(p), WarpExpr::Lit(0.5)),
+    "Mix"      "(" <p:Pipeline> ")"                => WarpOp::Mix(Box::new(p), WarpExpr::DefaultLit(0.5)),
     "Modulate" "(" <p:Pipeline> "," <e:Expr> ")" => WarpOp::Modulate(Box::new(p), e),
-    "Modulate" "(" <p:Pipeline> ")" => WarpOp::Modulate(Box::new(p), WarpExpr::Lit(0.1)),
+    "Modulate" "(" <p:Pipeline> ")" => WarpOp::Modulate(Box::new(p), WarpExpr::DefaultLit(0.1)),
 
     // Iterate body: either a full pipeline (starts with a source) or
     // ops-only (synthesises `Source::Prev`). LR(1) chooses based on the
@@ -373,7 +373,7 @@ SeqPhaseItem: SeqPhase = {
         let explicit_length = length.is_some();
         SeqPhase {
             ops,
-            length: length.unwrap_or(WarpExpr::Lit(1.0)),
+            length: length.unwrap_or(WarpExpr::DefaultLit(1.0)),
             explicit_length,
         }
     },
@@ -482,7 +482,7 @@ Factor: WarpExpr = {
     "HitY" "(" <c:ChanRef> ")" => WarpExpr::HitY(c),
     "clock" => WarpExpr::Clock,
     "Sin" "(" <f:Expr> ")" =>
-        WarpExpr::Sin { freq: Box::new(f), amp: Box::new(WarpExpr::Lit(1.0)) },
+        WarpExpr::Sin { freq: Box::new(f), amp: Box::new(WarpExpr::DefaultLit(1.0)) },
     "Sin" "(" <f:Expr> "," <a:Expr> ")" =>
         WarpExpr::Sin { freq: Box::new(f), amp: Box::new(a) },
     <f:UnaryFn> "(" <a:Expr> ")" => WarpExpr::Call(f, vec![a]),
@@ -493,7 +493,7 @@ Factor: WarpExpr = {
         rest.into_iter().fold(a, |acc, e| WarpExpr::Call(f, vec![acc, e])),
     "(" <e:Expr> ")" => e,
     "-" <f:Factor>   =>
-        WarpExpr::Bin(BinOp::Sub, Box::new(WarpExpr::Lit(0.0)), Box::new(f)),
+        WarpExpr::Bin(BinOp::Sub, Box::new(WarpExpr::DefaultLit(0.0)), Box::new(f)),
 };
 
 // Math-function names grouped by arity (see `dsl_expr::MathFn`).
@@ -527,7 +527,7 @@ NonParenFactor: WarpExpr = {
     "HitY" "(" <c:ChanRef> ")" => WarpExpr::HitY(c),
     "clock" => WarpExpr::Clock,
     "Sin" "(" <f:Expr> ")" =>
-        WarpExpr::Sin { freq: Box::new(f), amp: Box::new(WarpExpr::Lit(1.0)) },
+        WarpExpr::Sin { freq: Box::new(f), amp: Box::new(WarpExpr::DefaultLit(1.0)) },
     "Sin" "(" <f:Expr> "," <a:Expr> ")" =>
         WarpExpr::Sin { freq: Box::new(f), amp: Box::new(a) },
     <f:UnaryFn> "(" <a:Expr> ")" => WarpExpr::Call(f, vec![a]),
@@ -536,7 +536,7 @@ NonParenFactor: WarpExpr = {
     <f:VariadicFn> "(" <a:Expr> <rest:("," <Expr>)+> ")" =>
         rest.into_iter().fold(a, |acc, e| WarpExpr::Call(f, vec![acc, e])),
     "-" <f:NonParenFactor> =>
-        WarpExpr::Bin(BinOp::Sub, Box::new(WarpExpr::Lit(0.0)), Box::new(f)),
+        WarpExpr::Bin(BinOp::Sub, Box::new(WarpExpr::DefaultLit(0.0)), Box::new(f)),
 };
 
 Num: f32 = {

@@ -146,7 +146,7 @@ Op: DrawOp = {
 
     // Tint — per-emit color multiply. Optional 4th arg (alpha) defaults to 1.0.
     "Tint" "(" <r:Expr> "," <g:Expr> "," <b:Expr> ")" =>
-        DrawOp::Tint { r, g, b, a: DrawExpr::Lit(1.0) },
+        DrawOp::Tint { r, g, b, a: DrawExpr::DefaultLit(1.0) },
     "Tint" "(" <r:Expr> "," <g:Expr> "," <b:Expr> "," <a:Expr> ")" =>
         DrawOp::Tint { r, g, b, a },
 
@@ -406,7 +406,7 @@ Factor: DrawExpr = {
     "mod" <name:Name> => DrawExpr::LoopName(name),
     "tau"   => DrawExpr::Lit(std::f32::consts::TAU),
     "Sin" "(" <f:Expr> ")" =>
-        DrawExpr::Sin { freq: Box::new(f), amp: Box::new(DrawExpr::Lit(1.0)) },
+        DrawExpr::Sin { freq: Box::new(f), amp: Box::new(DrawExpr::DefaultLit(1.0)) },
     "Sin" "(" <f:Expr> "," <a:Expr> ")" =>
         DrawExpr::Sin { freq: Box::new(f), amp: Box::new(a) },
     <f:UnaryFn> "(" <a:Expr> ")" => DrawExpr::Call(f, vec![a]),
@@ -438,7 +438,7 @@ Factor: DrawExpr = {
     },
     "(" <e:Expr> ")" => e,
     "-" <f:Factor>   =>
-        DrawExpr::Bin(BinOp::Sub, Box::new(DrawExpr::Lit(0.0)), Box::new(f)),
+        DrawExpr::Bin(BinOp::Sub, Box::new(DrawExpr::DefaultLit(0.0)), Box::new(f)),
 };
 
 // Math-function names grouped by arity (see `dsl_expr::MathFn`).
@@ -464,7 +464,7 @@ NonParenFactor: DrawExpr = {
     "mod" <name:Name> => DrawExpr::LoopName(name),
     "tau"   => DrawExpr::Lit(std::f32::consts::TAU),
     "Sin" "(" <f:Expr> ")" =>
-        DrawExpr::Sin { freq: Box::new(f), amp: Box::new(DrawExpr::Lit(1.0)) },
+        DrawExpr::Sin { freq: Box::new(f), amp: Box::new(DrawExpr::DefaultLit(1.0)) },
     "Sin" "(" <f:Expr> "," <a:Expr> ")" =>
         DrawExpr::Sin { freq: Box::new(f), amp: Box::new(a) },
     <f:UnaryFn> "(" <a:Expr> ")" => DrawExpr::Call(f, vec![a]),
@@ -473,8 +473,26 @@ NonParenFactor: DrawExpr = {
     <f:VariadicFn> "(" <a:Expr> <rest:("," <Expr>)+> ")" =>
         rest.into_iter().fold(a, |acc, e| DrawExpr::Call(f, vec![acc, e])),
     "note" "." <n:NoteFieldName> => DrawExpr::Note(n),
+    // count sugar — mirrors the Factor rules so bare op arguments accept it
+    "count" => DrawExpr::Note(NoteField::Event),
+    "phase" "(" <n:Expr> ")" => {
+        let wrapped = DrawExpr::Call(MathFn::Wrap,
+            vec![DrawExpr::Note(NoteField::Event), n.clone()]);
+        DrawExpr::Bin(BinOp::Div, Box::new(wrapped), Box::new(n))
+    },
+    "cycle" "(" "[" <first:Expr> <rest:("," <Expr>)*> "]" ")" => {
+        let mut vals = vec![first];
+        vals.extend(rest);
+        DrawExpr::Cycle(vals)
+    },
+    "cycle" "(" <a:Expr> ".." <b:Expr> ")" => {
+        let span = DrawExpr::Bin(BinOp::Sub, Box::new(b), Box::new(a.clone()));
+        let wrapped = DrawExpr::Call(MathFn::Wrap,
+            vec![DrawExpr::Note(NoteField::Event), span]);
+        DrawExpr::Bin(BinOp::Add, Box::new(a), Box::new(wrapped))
+    },
     "-" <f:NonParenFactor> =>
-        DrawExpr::Bin(BinOp::Sub, Box::new(DrawExpr::Lit(0.0)), Box::new(f)),
+        DrawExpr::Bin(BinOp::Sub, Box::new(DrawExpr::DefaultLit(0.0)), Box::new(f)),
 };
 
 NoteFieldName: NoteField = {

@@ -34,6 +34,17 @@ fn take_named_or<F: FnOnce() -> WarpExpr>(args: &mut Vec<(String, WarpExpr)>, ke
 
 /// Fold a `RATIONAL` token (`"a/b"`) to `a/b` as f32 — same arithmetic the hand
 /// tokenizer used when it collapsed `INT/INT` into one rational literal.
+/// Warn (loudly, once per call) about named args no extractor consumed —
+/// a typo'd key (`frq:`) must not vanish silently.
+fn warn_leftover(op: &str, args: &[(String, WarpExpr)], known: &[&str]) {
+    for (k, _) in args {
+        eprintln!(
+            "[warp] {}: unknown arg `{}:` ignored (known args: {})",
+            op, k, known.join(", ")
+        );
+    }
+}
+
 pub fn parse_rational(s: &str) -> f32 {
     let mut it = s.split('/');
     let a: f32 = it.next().unwrap().parse().unwrap();
@@ -52,11 +63,22 @@ pub fn extract_named_pair(args: Vec<(String, WarpExpr)>, name_a: &str, name_b: &
 
 /// `Osc(freq: 60.0, sync: 0.1, offset: 0.0)`.
 /// Ripple(ch, freq: 40, speed: 6, amp: 0.02) — all three tunables optional.
+/// Stir(radius: 0.25, strength: 1.0) — both optional with LIVE defaults
+/// (a bare `Stir bd { }` should visibly stir, not silently do nothing).
+pub fn extract_stir_args(mut args: Vec<(String, WarpExpr)>) -> (WarpExpr, WarpExpr) {
+    let radius = take_named_or(&mut args, "radius", || WarpExpr::DefaultLit(0.25));
+    let strength = take_named_or(&mut args, "strength", || WarpExpr::DefaultLit(1.0));
+    warn_leftover("Stir", &args, &["radius", "strength"]);
+    (radius, strength)
+}
+
 pub fn extract_ripple_args(mut args: Vec<(String, WarpExpr)>) -> (WarpExpr, WarpExpr, WarpExpr) {
     let freq = take_named_or(&mut args, "freq", || WarpExpr::DefaultLit(40.0));
     let speed = take_named_or(&mut args, "speed", || WarpExpr::DefaultLit(6.0));
     let amp = take_named_or(&mut args, "amp", || WarpExpr::DefaultLit(0.02));
+    warn_leftover("Ripple", &args, &["freq", "speed", "amp"]);
     (freq, speed, amp)
+
 }
 
 /// Glow(ch, r: 1, g: 0.9, b: 0.7, size: 0.25) — all tunables optional.
@@ -65,7 +87,9 @@ pub fn extract_glow_args(mut args: Vec<(String, WarpExpr)>) -> (WarpExpr, WarpEx
     let g = take_named_or(&mut args, "g", || WarpExpr::DefaultLit(0.9));
     let b = take_named_or(&mut args, "b", || WarpExpr::DefaultLit(0.7));
     let size = take_named_or(&mut args, "size", || WarpExpr::DefaultLit(0.25));
+    warn_leftover("Glow", &args, &["r", "g", "b", "size"]);
     (r, g, b, size)
+
 }
 
 /// Relief(height: 4, lx: 0.4, ly: 0.6, ambient: 0.35) — all optional.
@@ -74,7 +98,9 @@ pub fn extract_relief_args(mut args: Vec<(String, WarpExpr)>) -> (WarpExpr, Warp
     let lx = take_named_or(&mut args, "lx", || WarpExpr::DefaultLit(0.4));
     let ly = take_named_or(&mut args, "ly", || WarpExpr::DefaultLit(0.6));
     let ambient = take_named_or(&mut args, "ambient", || WarpExpr::DefaultLit(0.35));
+    warn_leftover("Relief", &args, &["height", "lx", "ly", "ambient"]);
     (height, lx, ly, ambient)
+
 }
 
 /// Stain(r: 0.93, g: 0.90, b: 0.84, strength: 2.2) — all optional.
@@ -84,7 +110,9 @@ pub fn extract_stain_args(mut args: Vec<(String, WarpExpr)>) -> (WarpExpr, WarpE
     let b = take_named_or(&mut args, "b", || WarpExpr::DefaultLit(0.84));
     let strength = take_named_or(&mut args, "strength", || WarpExpr::DefaultLit(2.2));
     let opacity = take_named_or(&mut args, "opacity", || WarpExpr::DefaultLit(0.35));
+    warn_leftover("Stain", &args, &["r", "g", "b", "strength", "opacity"]);
     (r, g, b, strength, opacity)
+
 }
 
 /// Watercolor(wet: 0.9, evap: 0.994, flow: 2.0, gain: 0.11) — all optional.
@@ -94,7 +122,9 @@ pub fn extract_watercolor_args(mut args: Vec<(String, WarpExpr)>) -> (WarpExpr, 
     let flow = take_named_or(&mut args, "flow", || WarpExpr::DefaultLit(2.0));
     let gain = take_named_or(&mut args, "gain", || WarpExpr::DefaultLit(0.11));
     let fade = take_named_or(&mut args, "fade", || WarpExpr::DefaultLit(1.0));
+    warn_leftover("Watercolor", &args, &["wet", "evap", "flow", "gain", "fade"]);
     (wet, evap, flow, gain, fade)
+
 }
 
 /// Bulge(ch, radius: 0.2, amount: 0.06, mirror: 0) — mirror=1 doubles the
@@ -103,7 +133,9 @@ pub fn extract_bulge_args(mut args: Vec<(String, WarpExpr)>) -> (WarpExpr, WarpE
     let radius = take_named_or(&mut args, "radius", || WarpExpr::DefaultLit(0.2));
     let amount = take_named_or(&mut args, "amount", || WarpExpr::DefaultLit(0.06));
     let mirror = take_named_or(&mut args, "mirror", || WarpExpr::DefaultLit(0.0));
+    warn_leftover("Bulge", &args, &["radius", "amount", "mirror"]);
     (radius, amount, mirror)
+
 }
 
 pub fn extract_osc_args(args: Vec<(String, WarpExpr)>) -> (WarpExpr, WarpExpr, WarpExpr) {
@@ -151,8 +183,8 @@ pub fn extract_background_args(args: Vec<(String, BgArgVal)>)
 {
     let mut top = (WarpExpr::DefaultLit(0.0), WarpExpr::DefaultLit(0.0), WarpExpr::DefaultLit(0.0));
     let mut bot = (WarpExpr::DefaultLit(0.0), WarpExpr::DefaultLit(0.0), WarpExpr::DefaultLit(0.0));
-    let mut split = WarpExpr::Lit(0.5);
-    let mut soft  = WarpExpr::Lit(0.05);
+    let mut split = WarpExpr::DefaultLit(0.5);
+    let mut soft  = WarpExpr::DefaultLit(0.05);
     for (name, val) in args {
         match (name.as_str(), val) {
             ("top",                BgArgVal::Tuple3(r,g,b)) => top = (r,g,b),

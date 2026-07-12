@@ -123,7 +123,7 @@ fn process_op_table(mut defs: &mut Defs) -> Result<Defs, Error> {
             Term::Lop(lop) => {
                 if name == "main" || name == "expect" {
                     let mut nf = NormalForm::init();
-                    lop.apply_to_normal_form(&mut nf, &mut defs.clone())?;
+                    lop.apply_to_normal_form(&mut nf, &mut defs)?;
                     defs.ops.insert(&scope_name, &name, Term::Nf(nf.clone()));
                     result.ops.insert(&scope_name, &name, Term::Nf(nf));
                 } else {
@@ -133,7 +133,7 @@ fn process_op_table(mut defs: &mut Defs) -> Result<Defs, Error> {
             Term::Gen(generator) => {
                 if name == "main" || name == "expect" {
                     let mut nf = NormalForm::init();
-                    generator.apply_to_normal_form(&mut nf, &mut defs.clone())?;
+                    generator.apply_to_normal_form(&mut nf, &mut defs)?;
                     defs.ops.insert(&scope_name, &name, Term::Nf(nf.clone()));
                     result.ops.insert(&scope_name, &name, Term::Nf(nf));
                 } else {
