@@ -129,6 +129,8 @@ pub mod tests {
                 names: vec![],
                 colors: vec![],
                 wgsl: vec![],
+                color_gradient: None,
+                color_mix: 1.0,
             },
             Op4D {
                 t: 1.5,
@@ -141,6 +143,8 @@ pub mod tests {
                 names: vec![],
                 colors: vec![],
                 wgsl: vec![],
+                color_gradient: None,
+                color_mix: 1.0,
             },
         ];
         assert_eq!(result, expected);

@@ -19,6 +19,8 @@ weresocool_shared = { path = "../shared", version = "^2.0.0" }
 scop = { path = "../scop", version = "^2.0.0" }
 lalrpop-util = { version="0.22.2", features=["lexer"]}
 regex = "1.11"
+# rustc-style colored multi-line reports for the kintaro-DSL front end
+ariadne = "0.6"
 colored = "2.1"
 # Jaro-Winkler similarity for the back-glance hint in error_handling.rs
 # (matches a stray identifier like `m` against the SoCool op vocab to

@@ -91,6 +91,7 @@ impl TimedOp {
             midi: vec![],
             color_grading: Default::default(),
             color_distribution: Default::default(),
+            phase: None,
         }
     }
 

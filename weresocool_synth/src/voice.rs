@@ -1,4 +1,5 @@
 use crate::{
+    gain::gain_at_index,
     sample::{DrumState, Waveform},
     loudness::loudness_normalization,
     Offset, SynthOp,
@@ -192,6 +193,11 @@ impl Voice {
         // osc state are mutated in `update*` methods, not inside this loop.
         let portamento_length = op.portamento();
         let duration_samples = op.duration_samples();
+        // Fade length for sustained tones: the gain ramps from the previous
+        // op's ending gain to this op's target across the WHOLE op duration
+        // (min 250 samples to keep very short ops click-free). This is what
+        // makes a long fade actually take its full written length.
+        let sample_limit = if duration_samples > 250 { duration_samples } else { 250 };
         let last_sample_index = duration_samples.saturating_sub(1);
         let total_samples_for_info = op.total_samples();
         let op_sample_index = op.sample_index();
@@ -226,6 +232,30 @@ impl Voice {
         let mut last_gain_at_end = 0.0_f64;
         let mut last_freq_at_end = f_target;
 
+        // Analyzer-measured initial phase to anchor at a voice birth, or None.
+        //
+        // We only seed at a TRUE birth — when the voice has actually decayed to
+        // silence. `silence_to_sound` is derived from the op's gain *parameters*,
+        // but the voice's rendered gain (`offset_past.gain`, where the gain ramp
+        // starts) can still carry a residual when a preceding gap was too short
+        // to ramp to zero. Anchoring the phase while that residual is audible
+        // steps the live waveform — a click. Gating on the prior gain being
+        // negligible vs this op's target keeps the seed at real births (the
+        // phase benefit) and skips voice-reuse boundaries (no click).
+        //
+        // The seed is applied AT index 0 below, not before the loop: the gain
+        // ramps from 0, so `calculate_current_phase` resets phase to 0 on the
+        // first (silent) sample and would wipe a pre-loop seed. Setting it as
+        // the index-0 phase anchors the trajectory so index 1+ carry the
+        // measured phase as the gain ramps up.
+        let seed_phase = if silence_to_sound
+            && self.offset_past.gain.abs() <= 0.05 * gain_factor.abs()
+        {
+            op.initial_phase()
+        } else {
+            None
+        };
+
         for (index, sample) in buffer.iter_mut().enumerate() {
             // Inlined `calculate_frequency` so the per-sample call doesn't
             // re-read `self.sound_to_silence()` / `self.silence_to_sound()`
@@ -253,8 +283,12 @@ impl Voice {
                 }
                 self.smoothed_gain
             } else {
-                self.smoothed_gain += GAIN_SMOOTHING_COEF * (gain_factor - self.smoothed_gain);
-                self.smoothed_gain
+                // Sustained tones: linear ramp from the previous op's ending
+                // gain to this op's target across the full op duration. This
+                // IS the fade envelope — using the fixed-time-constant
+                // exponential smoother here collapsed every fade (however
+                // long) into an ~11 ms glide, which broke fade rendering.
+                gain_at_index(self.offset_past.gain, gain_factor, index, sample_limit)
             };
 
             let info = SampleInfo {
@@ -265,7 +299,12 @@ impl Voice {
                 sample_rate,
             };
 
-            self.phase = Voice::calculate_current_phase(&info, &self.osc_type, self.phase);
+            self.phase = match seed_phase {
+                // Anchor the measured phase at the birth's first sample,
+                // bypassing the gain==0 reset; index 1+ advance normally.
+                Some(phi) if index == 0 => phi,
+                _ => Voice::calculate_current_phase(&info, &self.osc_type, self.phase),
+            };
 
             let mut new_sample = self.osc_type.generate_sample(info, self.phase, &mut self.drum_state);
 
@@ -395,6 +434,22 @@ impl Voice {
         self.current.gain = 0.0;
         self.current.frequency = 0.0;
         self.smoothed_gain = 0.0;
+    }
+
+    /// Re-latch this voice's per-op state (freq/gain/osc/envelope/filters)
+    /// from `op` after a mid-op seek. `update()` only latches at an op's
+    /// FIRST sample; a seek that lands inside an op never presents sample 0,
+    /// so a freshly-reset voice would render silence until the next op
+    /// boundary (inaudible on short notes, fatal on long held ones). The
+    /// voice was just re-init'd, so past state is zero and the gain ramps in
+    /// from silence — the engine's post-seek master ramp masks the join.
+    pub fn latch_for_seek<Op: SynthOp>(&mut self, op: &Op) {
+        self.update_current_and_past(op);
+        self.update_osc_type(op);
+        self.update_attack_decay_asr(op);
+        if self.should_update_filters(op) {
+            self.update_filters(op);
+        }
     }
 
     fn update_current_and_past<Op: SynthOp>(&mut self, op: &Op) {

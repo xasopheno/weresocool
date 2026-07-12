@@ -34,7 +34,7 @@ pub use crate::{
         helpers::{handle_id_error, join_sequence},
         substitute::substitute_operations,
         GetLengthRatio, NormalForm, Normalize, PointOp, Substitute,
-        Defs, Span, SpanMap,
+        Defs, RecordingRegistry, Span, SpanMap,
     },
     term::Term,
     wgsl::{WgslMap, validate_wgsl},

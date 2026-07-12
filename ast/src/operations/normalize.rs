@@ -166,6 +166,20 @@ impl Normalize for Op {
                 ));
             }
 
+            // Resolve a named recording from the registry the host seeded.
+            // Hit: apply its NormalForm like an inline def. Miss: do NOT
+            // error — leave the NF untouched (silent placeholder) and record
+            // the name so the host can pre-arm a track for it.
+            Op::Perform { name } => {
+                let recording = defs.recordings.get(name).cloned();
+                match recording {
+                    Some(nf) => nf.apply_to_normal_form(input, defs)?,
+                    None => {
+                        defs.pending_performs.insert(name.clone());
+                    }
+                }
+            }
+
             Op::FunctionCall { name, args } => {
                 let f = handle_id_error(name.to_string(), defs)?;
                 insert_function_args(&f, args, defs)?;

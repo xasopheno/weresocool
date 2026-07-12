@@ -100,6 +100,11 @@ impl SpanMap {
     }
 }
 
+/// Named, pre-transcribed recordings resolved by the `Perform("name")` op.
+/// Populated by a host (kintaro's DAW) before parsing; each value is a fully
+/// normalized recording. In-memory only — never serialized.
+pub type RecordingRegistry = HashMap<String, NormalForm>;
+
 #[derive(Clone, Debug, PartialEq)]
 pub struct Defs {
     pub ops: ScopDefs<Term>,
@@ -108,6 +113,12 @@ pub struct Defs {
     pub rand_ctx: RandCtx,
     /// Spans captured during parsing for formatting
     pub spans: SpanMap,
+    /// Recordings available to `Perform("name")`. Seeded by the host before
+    /// parse; consulted during normalization.
+    pub recordings: RecordingRegistry,
+    /// Names from `Perform("name")` that had no matching recording. Collected
+    /// during normalization and read back by the host to pre-arm a DAW track.
+    pub pending_performs: HashSet<String>,
 }
 
 impl Default for Defs {
@@ -124,6 +135,8 @@ impl Default for Defs {
             wgsl: WgslMap::new(),
             rand_ctx: RandCtx::from_u128(random_seed),
             spans: SpanMap::new(),
+            recordings: RecordingRegistry::new(),
+            pending_performs: HashSet::new(),
         }
     }
 }
@@ -196,6 +209,12 @@ pub struct PointOp {
     /// `FitZ a b`; consumed by kintaro, inert for sound. Composition rule:
     /// outer (later-applied) Fit wins per axis.
     pub fit_vis: [Option<(Rational64, Rational64)>; 3],
+    /// Initial oscillator phase in radians, seeded at the voice's birth
+    /// (silence→sound). `None` = legacy behavior (phase integrates from 0).
+    /// Set programmatically by `from_sound` to preserve analyzer-measured phase;
+    /// not expressible in `.socool` source. Composition: outer op wins if set,
+    /// else carried through (same rule as `reverb`/`osc_type`).
+    pub phase: Option<Rational64>,
 }
 
 /// Per-axis merge for `fit`: the *other* (outer) op's target wins when set.
@@ -232,6 +251,7 @@ impl Default for PointOp {
             color_grading: ColorGrading::default(),
             color_distribution: ColorDistribution::default(),
             fit_vis: [None; 3],
+            phase: None,
         }
     }
 }
@@ -426,6 +446,7 @@ impl Mul<PointOp> for PointOp {
                 self.color_distribution.clone()
             },
             fit_vis: merge_fit(&self.fit_vis, &other.fit_vis),
+            phase: other.phase.or(self.phase),
         }
     }
 }
@@ -497,6 +518,7 @@ impl<'a> Mul<&'a PointOp> for &PointOp {
                 self.color_distribution.clone()
             },
             fit_vis: merge_fit(&self.fit_vis, &other.fit_vis),
+            phase: other.phase.or(self.phase),
         }
     }
 }
@@ -566,6 +588,7 @@ impl MulAssign for PointOp {
                 self.color_distribution.clone()
             },
             fit_vis: merge_fit(&self.fit_vis, &other.fit_vis),
+            phase: other.phase.or(self.phase),
         }
     }
 }
@@ -645,6 +668,7 @@ impl PointOp {
                 self.color_distribution.clone()
             },
             fit_vis: merge_fit(&self.fit_vis, &other.fit_vis),
+            phase: other.phase.or(self.phase),
         }
     }
 

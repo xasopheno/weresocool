@@ -227,6 +227,38 @@ pub mod tests {
     }
 
     #[test]
+    fn point_op_phase_composition() {
+        // Phase carries through the op algebra with "outer wins if set, else
+        // carry": exactly the rule used for `reverb`/`osc_type`. This keeps
+        // analyzer-seeded phase intact under composition with phase-less ops.
+        let with_phase = PointOp {
+            phase: Some(Ratio::new(1, 4)),
+            ..PointOp::init()
+        };
+        let no_phase = PointOp::init();
+        assert_eq!(no_phase.phase, None);
+
+        // outer (rhs) carries the inner (lhs) phase when the outer is None
+        assert_eq!((&with_phase * &no_phase).phase, Some(Ratio::new(1, 4)));
+        // outer wins when it sets a phase
+        let other_phase = PointOp {
+            phase: Some(Ratio::new(1, 2)),
+            ..PointOp::init()
+        };
+        assert_eq!((&with_phase * &other_phase).phase, Some(Ratio::new(1, 2)));
+        // two phase-less ops stay phase-less (legacy behavior unchanged)
+        assert_eq!((&no_phase * &no_phase).phase, None);
+
+        // mod_by and MulAssign follow the same rule
+        let mut m = no_phase.clone();
+        m.mod_by(with_phase.clone(), m.l);
+        assert_eq!(m.phase, Some(Ratio::new(1, 4)));
+        let mut ma = with_phase.clone();
+        ma *= no_phase.clone();
+        assert_eq!(ma.phase, Some(Ratio::new(1, 4)));
+    }
+
+    #[test]
     fn normal_form_mul() {
         let (names_bar, names_foo_bar) = mock_names();
 

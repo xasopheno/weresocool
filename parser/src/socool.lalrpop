@@ -297,6 +297,7 @@ BaseOperation: Term = {
     "FromSound" "(" <voices: Int> "," <fps: Int> ")" <path: AudioImport>  => Term::Op(FromSound { path, voices: voices as usize, fps: fps as usize }),
     "FromSound" "(" <voices: Int> ")" <path: AudioImport>  => Term::Op(FromSound { path, voices: voices as usize, fps: 30 }),
     "FromSoundYin" "(" <fps: Int> ")" <path: AudioImport>  => Term::Op(FromSoundYin { path, fps: fps as usize }),
+    "Perform" "(" <name: StringLit> ")" => Term::Op(Perform { name }),
     //
     <wgsl_token: r"@WGSL@[0-9]+"> => {
         // Extract the u64 ID from the token
@@ -895,6 +896,8 @@ P: String = <s: r"p:"> => s.to_string();
 Import: String = <s:r"(\.?\./)+[a-zA-Z0-9_/]+\.csv"> => s.to_string();
 AudioImport: String = <s:r"(\.?\./)+[a-zA-Z0-9_/\-\.]+\.(wav|WAV|mp3|MP3)"> => s.to_string();
 Name: String = <s:r"[a-z_][a-zA-Z_0-9.]*"> => s.to_string();
+// Double-quoted string literal (used by `Perform("name")`). No escapes.
+StringLit: String = <s:r#""[^"]*""#> => s[1..s.len()-1].to_string();
 Float: String = <s:r"-?(0|([1-9]\d*))\.\d+"> => s.to_string();
 Exponential: String = <s:r"-?(0|([1-9]\d*))\.\d+(?:[eE]([-+]?\d+))"> => s.to_string();
 Int: i64 = <s:r"-?[0-9]+"> => i64::from_str(s).unwrap();

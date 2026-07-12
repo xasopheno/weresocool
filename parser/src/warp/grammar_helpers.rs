@@ -1,0 +1,167 @@
+//! Helpers for the lalrpop-generated warp grammar.
+//!
+//! Several warp ops accept order-independent named arguments with defaults
+//! (`Bloom(threshold: 0.5, strength: 0.6)`, `Fade(at: 30, dur: 1)` etc.).
+//! Encoding this in lalrpop directly would mean a combinatorial explosion of
+//! grammar rules. Instead, the grammar parses a flat `Vec<(String, WarpExpr)>`
+//! per call site and these helpers do the name lookup + default application.
+//!
+//! The semantics MUST match the hand-written parser in `parser.rs` exactly so
+//! that every existing `cull_*.socool` composition parses identically.
+
+use crate::warp::ast::WarpExpr;
+
+/// `Background` takes a mix of scalar args (`split`, `soft`) and 3-tuple
+/// args (`top: (r,g,b)`, `bottom: (r,g,b)`). The grammar tags each named
+/// arg with its shape via this enum.
+#[derive(Debug)]
+pub enum BgArgVal {
+    Scalar(WarpExpr),
+    Tuple3(WarpExpr, WarpExpr, WarpExpr),
+}
+
+fn take_named(args: &mut Vec<(String, WarpExpr)>, key: &str) -> Option<WarpExpr> {
+    if let Some(pos) = args.iter().position(|(n, _)| n == key) {
+        Some(args.remove(pos).1)
+    } else {
+        None
+    }
+}
+
+fn take_named_or<F: FnOnce() -> WarpExpr>(args: &mut Vec<(String, WarpExpr)>, key: &str, default: F) -> WarpExpr {
+    take_named(args, key).unwrap_or_else(default)
+}
+
+/// Fold a `RATIONAL` token (`"a/b"`) to `a/b` as f32 — same arithmetic the hand
+/// tokenizer used when it collapsed `INT/INT` into one rational literal.
+pub fn parse_rational(s: &str) -> f32 {
+    let mut it = s.split('/');
+    let a: f32 = it.next().unwrap().parse().unwrap();
+    let b: f32 = it.next().unwrap().parse().unwrap();
+    a / b
+}
+
+/// Extract two named args by name (order-independent). If both are missing,
+/// returns `(Lit(0.0), Lit(0.0))` — matches the hand-parser fallback shape.
+pub fn extract_named_pair(args: Vec<(String, WarpExpr)>, name_a: &str, name_b: &str) -> (WarpExpr, WarpExpr) {
+    let mut args = args;
+    let a = take_named_or(&mut args, name_a, || WarpExpr::DefaultLit(0.0));
+    let b = take_named_or(&mut args, name_b, || WarpExpr::DefaultLit(0.0));
+    (a, b)
+}
+
+/// `Osc(freq: 60.0, sync: 0.1, offset: 0.0)`.
+/// Ripple(ch, freq: 40, speed: 6, amp: 0.02) — all three tunables optional.
+pub fn extract_ripple_args(mut args: Vec<(String, WarpExpr)>) -> (WarpExpr, WarpExpr, WarpExpr) {
+    let freq = take_named_or(&mut args, "freq", || WarpExpr::DefaultLit(40.0));
+    let speed = take_named_or(&mut args, "speed", || WarpExpr::DefaultLit(6.0));
+    let amp = take_named_or(&mut args, "amp", || WarpExpr::DefaultLit(0.02));
+    (freq, speed, amp)
+}
+
+/// Glow(ch, r: 1, g: 0.9, b: 0.7, size: 0.25) — all tunables optional.
+pub fn extract_glow_args(mut args: Vec<(String, WarpExpr)>) -> (WarpExpr, WarpExpr, WarpExpr, WarpExpr) {
+    let r = take_named_or(&mut args, "r", || WarpExpr::DefaultLit(1.0));
+    let g = take_named_or(&mut args, "g", || WarpExpr::DefaultLit(0.9));
+    let b = take_named_or(&mut args, "b", || WarpExpr::DefaultLit(0.7));
+    let size = take_named_or(&mut args, "size", || WarpExpr::DefaultLit(0.25));
+    (r, g, b, size)
+}
+
+/// Relief(height: 4, lx: 0.4, ly: 0.6, ambient: 0.35) — all optional.
+pub fn extract_relief_args(mut args: Vec<(String, WarpExpr)>) -> (WarpExpr, WarpExpr, WarpExpr, WarpExpr) {
+    let height = take_named_or(&mut args, "height", || WarpExpr::DefaultLit(4.0));
+    let lx = take_named_or(&mut args, "lx", || WarpExpr::DefaultLit(0.4));
+    let ly = take_named_or(&mut args, "ly", || WarpExpr::DefaultLit(0.6));
+    let ambient = take_named_or(&mut args, "ambient", || WarpExpr::DefaultLit(0.35));
+    (height, lx, ly, ambient)
+}
+
+/// Stain(r: 0.93, g: 0.90, b: 0.84, strength: 2.2) — all optional.
+pub fn extract_stain_args(mut args: Vec<(String, WarpExpr)>) -> (WarpExpr, WarpExpr, WarpExpr, WarpExpr, WarpExpr) {
+    let r = take_named_or(&mut args, "r", || WarpExpr::DefaultLit(0.93));
+    let g = take_named_or(&mut args, "g", || WarpExpr::DefaultLit(0.90));
+    let b = take_named_or(&mut args, "b", || WarpExpr::DefaultLit(0.84));
+    let strength = take_named_or(&mut args, "strength", || WarpExpr::DefaultLit(2.2));
+    let opacity = take_named_or(&mut args, "opacity", || WarpExpr::DefaultLit(0.35));
+    (r, g, b, strength, opacity)
+}
+
+/// Watercolor(wet: 0.9, evap: 0.994, flow: 2.0, gain: 0.11) — all optional.
+pub fn extract_watercolor_args(mut args: Vec<(String, WarpExpr)>) -> (WarpExpr, WarpExpr, WarpExpr, WarpExpr, WarpExpr) {
+    let wet = take_named_or(&mut args, "wet", || WarpExpr::DefaultLit(0.9));
+    let evap = take_named_or(&mut args, "evap", || WarpExpr::DefaultLit(0.994));
+    let flow = take_named_or(&mut args, "flow", || WarpExpr::DefaultLit(2.0));
+    let gain = take_named_or(&mut args, "gain", || WarpExpr::DefaultLit(0.11));
+    let fade = take_named_or(&mut args, "fade", || WarpExpr::DefaultLit(1.0));
+    (wet, evap, flow, gain, fade)
+}
+
+/// Bulge(ch, radius: 0.2, amount: 0.06, mirror: 0) — mirror=1 doubles the
+/// swell at the horizontally mirrored position (for symmetric voices).
+pub fn extract_bulge_args(mut args: Vec<(String, WarpExpr)>) -> (WarpExpr, WarpExpr, WarpExpr) {
+    let radius = take_named_or(&mut args, "radius", || WarpExpr::DefaultLit(0.2));
+    let amount = take_named_or(&mut args, "amount", || WarpExpr::DefaultLit(0.06));
+    let mirror = take_named_or(&mut args, "mirror", || WarpExpr::DefaultLit(0.0));
+    (radius, amount, mirror)
+}
+
+pub fn extract_osc_args(args: Vec<(String, WarpExpr)>) -> (WarpExpr, WarpExpr, WarpExpr) {
+    let mut args = args;
+    let freq   = take_named_or(&mut args, "freq",   || WarpExpr::DefaultLit(60.0));
+    let sync   = take_named_or(&mut args, "sync",   || WarpExpr::DefaultLit(0.1));
+    let offset = take_named_or(&mut args, "offset", || WarpExpr::DefaultLit(0.0));
+    (freq, sync, offset)
+}
+
+/// `Noise(scale: 10.0, offset: 0.1)`.
+pub fn extract_noise_args(args: Vec<(String, WarpExpr)>) -> (WarpExpr, WarpExpr) {
+    let mut args = args;
+    let scale  = take_named_or(&mut args, "scale",  || WarpExpr::DefaultLit(10.0));
+    let offset = take_named_or(&mut args, "offset", || WarpExpr::DefaultLit(0.1));
+    (scale, offset)
+}
+
+/// `Clear(at?, every?, offset?)` — all optional, no defaults applied.
+pub fn extract_clear_args(args: Vec<(String, WarpExpr)>) -> (Option<WarpExpr>, Option<WarpExpr>, Option<WarpExpr>) {
+    let mut args = args;
+    let at     = take_named(&mut args, "at");
+    let every  = take_named(&mut args, "every");
+    let offset = take_named(&mut args, "offset");
+    (at, every, offset)
+}
+
+/// `Fade(at?, every?, offset?, dur: 1.0, to: 0.05)`.
+pub fn extract_fade_args(args: Vec<(String, WarpExpr)>)
+    -> (Option<WarpExpr>, Option<WarpExpr>, Option<WarpExpr>, WarpExpr, WarpExpr)
+{
+    let mut args = args;
+    let at     = take_named(&mut args, "at");
+    let every  = take_named(&mut args, "every");
+    let offset = take_named(&mut args, "offset");
+    let dur    = take_named_or(&mut args, "dur", || WarpExpr::DefaultLit(1.0));
+    let to     = take_named_or(&mut args, "to",  || WarpExpr::DefaultLit(0.05));
+    (at, every, offset, dur, to)
+}
+
+/// `Background(top: (r,g,b), bottom: (r,g,b), split: 0.5, soft: 0.05)`.
+/// `bot` is accepted as a short alias for `bottom` (matches hand-parser).
+pub fn extract_background_args(args: Vec<(String, BgArgVal)>)
+    -> (WarpExpr, WarpExpr, WarpExpr, WarpExpr, WarpExpr, WarpExpr, WarpExpr, WarpExpr)
+{
+    let mut top = (WarpExpr::DefaultLit(0.0), WarpExpr::DefaultLit(0.0), WarpExpr::DefaultLit(0.0));
+    let mut bot = (WarpExpr::DefaultLit(0.0), WarpExpr::DefaultLit(0.0), WarpExpr::DefaultLit(0.0));
+    let mut split = WarpExpr::Lit(0.5);
+    let mut soft  = WarpExpr::Lit(0.05);
+    for (name, val) in args {
+        match (name.as_str(), val) {
+            ("top",                BgArgVal::Tuple3(r,g,b)) => top = (r,g,b),
+            ("bottom", BgArgVal::Tuple3(r,g,b)) |
+            ("bot",                BgArgVal::Tuple3(r,g,b)) => bot = (r,g,b),
+            ("split",              BgArgVal::Scalar(e))     => split = e,
+            ("soft",               BgArgVal::Scalar(e))     => soft = e,
+            _ => { /* unknown / wrong shape — silently ignored, like hand-parser */ }
+        }
+    }
+    (top.0, top.1, top.2, bot.0, bot.1, bot.2, split, soft)
+}

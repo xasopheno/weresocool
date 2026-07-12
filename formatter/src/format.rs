@@ -1018,6 +1018,7 @@ fn format_op<'a>(arena: &'a Arena<'a>, ctx: &FormatContext, op: &Op) -> DocBuild
         Op::CSV2d { path, .. } => arena.text(format!("CSV2d \"{}\"", path)),
         Op::FromSound { path, voices, fps } => arena.text(format!("FromSound({}, {}) {}", voices, fps, path)),
         Op::FromSoundYin { path, fps } => arena.text(format!("FromSoundYin({}) {}", fps, path)),
+        Op::Perform { name } => arena.text(format!("Perform(\"{}\")", name)),
 
         // WithLengthRatioOf
         // Note: When this appears in a Compose, the `main` content is already

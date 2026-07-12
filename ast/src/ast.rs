@@ -61,6 +61,15 @@ pub enum Op {
         path: String,
         fps: usize,
     },
+    /// Perform a named, pre-transcribed recording from the DAW recordings
+    /// registry (see `Defs::recordings`). Resolves at normalization time:
+    /// a hit applies the recording's NormalForm (like an inline `Id`); a
+    /// miss is NOT an error — it renders silent and the name is collected
+    /// in `Defs::pending_performs` so a host (kintaro) can pre-arm it.
+    /// Source syntax: `Perform("name")`.
+    Perform {
+        name: String,
+    },
     //
     FMOsc {
         defs: Vec<FmOscDef>,

@@ -82,18 +82,59 @@ impl StereoWaveform {
     }
 }
 
+#[cfg(test)]
+mod normalize_tests {
+    use super::*;
+
+    #[test]
+    fn normalize_scales_negative_dominant_peak() {
+        // Dominant peak is negative (-1.4) and exceeds full scale; positive max
+        // is only 0.7. The old code stored the signed sample and missed the
+        // negative peak, leaving -1.4 to clip on playback. Correct behavior:
+        // scale so the peak magnitude lands at 1.0.
+        let mut sw = StereoWaveform {
+            l_buffer: vec![0.7, -1.4, 0.3],
+            r_buffer: vec![0.0, -0.5, 0.2],
+        };
+        sw.normalize();
+        let peak = sw
+            .l_buffer
+            .iter()
+            .chain(sw.r_buffer.iter())
+            .fold(0.0_f64, |m, s| m.max(s.abs()));
+        assert!((peak - 1.0).abs() < 1e-9, "peak should be 1.0, got {peak}");
+        // polarity preserved (no sign inversion from a negative ratio)
+        assert!(sw.l_buffer[1] < 0.0);
+    }
+
+    #[test]
+    fn normalize_leaves_subunity_untouched() {
+        let mut sw = StereoWaveform {
+            l_buffer: vec![0.5, -0.3],
+            r_buffer: vec![0.2, -0.1],
+        };
+        sw.normalize();
+        assert_eq!(sw.l_buffer, vec![0.5, -0.3]);
+    }
+}
+
 impl Normalize for StereoWaveform {
     fn normalize(&mut self) {
-        let mut max = f64::MIN;
+        // Track peak *magnitude*. Storing the signed sample here (the previous
+        // bug) ignored negative-dominant peaks: a waveform peaking at -1.4 with
+        // a +0.7 positive max would compute ratio = 1/0.7 > 1, clamp to 1.0, and
+        // leave the -1.4 sample to clip. Asymmetric peaks are common once a
+        // reconstruction is phase-coherent, so this surfaced as distortion.
+        let mut max = 0.0_f64;
         for sample in self.l_buffer.iter() {
             if (*sample).abs() > max {
-                max = *sample;
+                max = (*sample).abs();
             }
         }
 
         for sample in self.r_buffer.iter() {
             if (*sample).abs() > max {
-                max = *sample;
+                max = (*sample).abs();
             }
         }
 

@@ -113,6 +113,11 @@ mod tests {
                 wgsl: vec![],
                 midi: vec![],
                 gain_scalar: 1.0,
+                distortions: vec![],
+                color_gradient: None,
+                color_mix: 1.0,
+                fit_vis: [None; 3],
+                initial_phase: None,
             },
             RenderOp {
                 f: 330.0,
@@ -131,8 +136,9 @@ mod tests {
                 event: 1,
                 portamento: 1024,
                 osc_type: OscType::None,
-                next_l_silent: false,
-                next_r_silent: false,
+                // the following op is the zero-gain terminator
+                next_l_silent: true,
+                next_r_silent: true,
                 names: vec![],
                 filters: vec![],
                 next_out: false,
@@ -141,6 +147,11 @@ mod tests {
                 wgsl: vec![],
                 midi: vec![],
                 gain_scalar: 1.0,
+                distortions: vec![],
+                color_gradient: None,
+                color_mix: 1.0,
+                fit_vis: [None; 3],
+                initial_phase: None,
             },
             RenderOp {
                 f: 0.0,
@@ -169,6 +180,11 @@ mod tests {
                 wgsl: vec![],
                 midi: vec![],
                 gain_scalar: 0.0,
+                distortions: vec![],
+                color_gradient: None,
+                color_mix: 1.0,
+                fit_vis: [None; 3],
+                initial_phase: None,
             },
         ]];
         assert_eq!(result, expected);

@@ -175,6 +175,8 @@ main = {
         wgsl: weresocool_ast::wgsl::WgslMap::new(),
         rand_ctx: RandCtx::from_u128(seed),
         spans: weresocool_ast::SpanMap::new(),
+        recordings: Default::default(),
+        pending_performs: Default::default(),
     };
     let mut defs2 = Defs {
         ops: Default::default(),
@@ -182,6 +184,8 @@ main = {
         wgsl: weresocool_ast::wgsl::WgslMap::new(),
         rand_ctx: RandCtx::from_u128(seed),
         spans: weresocool_ast::SpanMap::new(),
+        recordings: Default::default(),
+        pending_performs: Default::default(),
     };
 
     let _init1 = socool::SoCoolParser::new().parse(&mut defs1, parse_str).unwrap();

@@ -35,6 +35,12 @@ pub struct AudioEngine {
     /// short enough that the user's "I scrubbed to here" feedback is immediate.
     seek_ramp_remaining: usize,
     seek_ramp_total: usize,
+    /// Optional sub-loop `[start, end)` in absolute samples. When set, playback
+    /// cycles within this window instead of the whole render — the DAW's
+    /// "loop a subset" feature. Repositioning is SILENT (no `Reset` event), so a
+    /// subscribed visualizer keeps its accumulated state (the painting doesn't
+    /// wipe every cycle). `None` = loop the whole render as usual.
+    loop_region: Option<(usize, usize)>,
 }
 
 /// Length of the post-seek gain ramp in samples. ~5 ms at 44.1 kHz.
@@ -57,7 +63,17 @@ impl AudioEngine {
             normalizer: Normalizer::default(),
             seek_ramp_remaining: 0,
             seek_ramp_total: 0,
+            loop_region: None,
         }
+    }
+
+    /// Set (or clear) the sub-loop window `[start, end)` in absolute samples.
+    /// `end <= start` clears it.
+    pub fn set_loop_region(&mut self, region: Option<(usize, usize)>) {
+        self.loop_region = match region {
+            Some((s, e)) if e > s => Some((s, e)),
+            _ => None,
+        };
     }
 
     /// Seek the audio playhead to `target_sample` (absolute, from the
@@ -228,6 +244,27 @@ impl AudioEngine {
                 remaining_buffer_size = remaining_buffer_size.saturating_sub(samples_processed);
             }
 
+            // Sub-loop wrap: if we've reached the region end, reposition the
+            // voices back to the region start (silently — no Reset, so the
+            // painting keeps its accumulated state). Batch-granular; the ~5ms
+            // seek ramp masks the oscillator phase discontinuity at the wrap.
+            if let Some((start, end)) = self.loop_region {
+                if self.samples_processed >= end {
+                    let overflow = self.samples_processed - end;
+                    let span = end - start;
+                    let target = start + overflow % span;
+                    if let Some(voices) = self.current_render().as_mut() {
+                        for v in voices.iter_mut() {
+                            v.seek(target);
+                        }
+                    }
+                    self.samples_processed = target;
+                    self.seek_ramp_remaining = SEEK_RAMP_SAMPLES;
+                    self.seek_ramp_total = SEEK_RAMP_SAMPLES;
+                    continue;
+                }
+            }
+
             if render_finished || (next_exists && !Settings::global().loop_play) {
                 if self.exists_next_render() {
                     weresocool_shared::timing_print!("[audio_engine] switching to next render (render_finished={}, next_exists={}, loop_play={})",
@@ -325,6 +362,61 @@ impl AudioEngine {
     pub fn push_render(&mut self, render: Vec<RenderVoice>) {
         *self.next_render() = Some(render);
     }
+
+    /// Set the runtime `gain_mul` on every voice in the *current* render whose
+    /// ops carry `tag` in their `names` (a `#tag` marker in the source). Used
+    /// for live per-voice faders (DAW mixer volume) — no re-render. Returns the
+    /// number of voices matched (0 if the tag isn't present / no render loaded).
+    pub fn set_gain_for_tagged_voices(&mut self, tag: &str, gain: f64) -> usize {
+        let mut matched = 0;
+        if let Some(voices) = self.current_render().as_mut() {
+            for voice in voices.iter_mut() {
+                if voice.ops.iter().any(|op| op.names.iter().any(|n| n == tag)) {
+                    voice.gain_mul = gain;
+                    matched += 1;
+                }
+            }
+        }
+        matched
+    }
+
+    /// Replace the *current* render's voices in place, preserving the playhead
+    /// (`samples_processed`). Each new voice is seeked to the current render
+    /// position so the timeline continues uninterrupted — used for live mix
+    /// changes (mute/solo/volume/arm in the DAW) where the composition length
+    /// is unchanged and playback must NOT jump back to the start.
+    ///
+    /// Unlike `inc_render`, this switches nothing and emits nothing: the render
+    /// index is untouched and no `Reset`/`AudioReady` events fire, so a
+    /// subscribed visualizer keeps all of its accumulated state (the painting
+    /// keeps building). The already-buffered old-mix audio plays out and the
+    /// new voices pick up exactly where it left off — so the caller must NOT
+    /// drain the buffer queue. The seek fade-in ramp masks the oscillator
+    /// phase discontinuity at the swap point.
+    pub fn swap_current_render(&mut self, mut render: Vec<RenderVoice>) {
+        let pos = self.samples_processed;
+        // In loop playback `samples_processed` grows unbounded across loops,
+        // but a voice's timeline is only `0..total`. Fold the playhead back
+        // into the loop with a modulo before seeking — otherwise the swapped
+        // voices would park past the end and restart from sample 0. All voices
+        // in a render share the same total length (NF guarantee), so voice 0's
+        // op-sample sum is the loop length.
+        let total: usize = render
+            .first()
+            .map(|v| v.ops.iter().map(|op| op.samples).sum())
+            .unwrap_or(0);
+        let seek_pos = if total > 0 { pos % total } else { pos };
+        for voice in render.iter_mut() {
+            voice.seek(seek_pos);
+        }
+        *self.current_render() = Some(render);
+        // Preserve the absolute playhead counter (it stays in phase with the
+        // looped voice position via the same modulo the render loop uses).
+        self.samples_processed = pos;
+        // Arm the ~5 ms ramp so the fresh oscillator state doesn't click.
+        self.seek_ramp_remaining = SEEK_RAMP_SAMPLES;
+        self.seek_ramp_total = SEEK_RAMP_SAMPLES;
+    }
 }
 
 impl Default for AudioEngine {
@@ -376,23 +468,45 @@ fn render_one_voice(
         (Vec::new(), batch)
     };
 
-    let voice_rendered = audio_batch.render(&mut voice.oscillator, Some(offset));
+    let mut voice_rendered = audio_batch.render(&mut voice.oscillator, Some(offset));
+
+    // Runtime per-voice fader (DAW mixer volume): scale the AUDIO only, leaving
+    // the viz ops below at their rendered gain so the fader doesn't resize the
+    // painting. Skip the multiply at unity — the overwhelmingly common case.
+    if voice.gain_mul != 1.0 {
+        let g = voice.gain_mul;
+        for s in voice_rendered.l_buffer.iter_mut() { *s *= g; }
+        for s in voice_rendered.r_buffer.iter_mut() { *s *= g; }
+    }
 
     let viz_ops = if collect_viz_ops {
         audio_batch
             .iter()
             .filter(|op| {
+                // A note's FIRST batch (index 0) always passes — every note
+                // announces its onset to the vis/envelope layer exactly once.
+                // Without this, short notes (drum hits) randomly vanish from
+                // the visuals entirely when the hash sampling skips them.
+                if op.index == 0 {
+                    return true;
+                }
                 let hash = op.index.wrapping_mul(2654435761) % 1_000_000;
                 hash < vis_threshold
             })
             .cloned()
             .map(|mut op| {
-                let follow_offset = op.follows.eval_value(offset.freq as f32, offset.gain as f32);
-                op.f *= follow_offset.0 as f64;
-                op.g = (
-                    op.g.0 * follow_offset.1 as f64,
-                    op.g.1 * follow_offset.1 as f64,
-                );
+                // Match the audio path: only Follow voices track the mic offset
+                // (empty follows would otherwise pass it through, shifting the
+                // whole piece's visuals).
+                if !op.follows.is_empty() {
+                    let follow_offset =
+                        op.follows.eval_value(offset.freq as f32, offset.gain as f32);
+                    op.f *= follow_offset.0 as f64;
+                    op.g = (
+                        op.g.0 * follow_offset.1 as f64,
+                        op.g.1 * follow_offset.1 as f64,
+                    );
+                }
                 op
             })
             .collect()

@@ -7,6 +7,12 @@ pub struct RenderVoice {
     pub op_index: usize,
     pub ops: Vec<RenderOp>,
     pub oscillator: Oscillator,
+    /// Runtime output gain multiplier applied to this voice's rendered audio
+    /// (viz ops are untouched). `1.0` = unity. Lets a host scale one voice
+    /// live — e.g. a DAW mixer fader — without re-rendering the composition.
+    /// Not part of the parsed material, so it survives a `seek` but resets to
+    /// unity on a fresh render (the host re-applies it).
+    pub gain_mul: f64,
 }
 
 impl Default for RenderVoice {
@@ -16,6 +22,7 @@ impl Default for RenderVoice {
             op_index: 0,
             ops: vec![],
             oscillator: Oscillator::init(),
+            gain_mul: 1.0,
         }
     }
 }
@@ -27,6 +34,7 @@ impl RenderVoice {
             op_index: 0,
             ops: ops.to_owned(),
             oscillator: Oscillator::init(),
+            gain_mul: 1.0,
         }
     }
 
@@ -49,11 +57,19 @@ impl RenderVoice {
         self.oscillator = Oscillator::init();
 
         let mut cumulative: usize = 0;
-        for (i, op) in self.ops.iter().enumerate() {
-            let op_end = cumulative + op.samples;
+        for i in 0..self.ops.len() {
+            let op_end = cumulative + self.ops[i].samples;
             if target_sample < op_end {
                 self.op_index = i;
                 self.sample_index = target_sample - cumulative;
+                if self.sample_index > 0 {
+                    // Mid-op landing: `Oscillator::update` only latches op
+                    // state (freq/gain/osc/envelope) at an op's first
+                    // sample, which this cursor will never present — latch
+                    // now or the voice renders silence until the next op
+                    // boundary.
+                    self.oscillator.latch_for_seek(&self.ops[i]);
+                }
                 return;
             }
             cumulative = op_end;
@@ -152,6 +168,7 @@ pub fn renderables_to_render_voices(renderables: Vec<Vec<RenderOp>>) -> Vec<Rend
             op_index: 0,
             ops,
             oscillator: Oscillator::init(),
+            gain_mul: 1.0,
         })
         .collect()
 }

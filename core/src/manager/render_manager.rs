@@ -7,7 +7,7 @@ use crate::{
     interpretable::{InputType, Interpretable},
 };
 use std::sync::{mpsc::Sender, Arc, Mutex};
-use std::sync::atomic::{AtomicBool, Ordering};
+use std::sync::atomic::{AtomicBool, AtomicU64, Ordering};
 // std::time::Instant panics on wasm32; web-time is API-identical (reads
 // performance.now() in the browser). pause()/check_vis_ready() run on the
 // browser build's audio pump, so this path is wasm-reachable.
@@ -31,11 +31,50 @@ pub type KillChannel = Option<Sender<bool>>;
 #[deprecated(since = "1.0.48", note = "Use RenderEvent instead")]
 pub type VisEvent = RenderEvent;
 
+/// Latest live-analysis offset (mic YIN → freq/gain), published lock-free by
+/// an audio callback and read by the background (lookahead) renderer. Lets
+/// `Follow` voices in a PRE-RENDERED composition track the mic: response lag
+/// is the lookahead depth (~90ms at 32×128), vs ~3ms on a direct-render
+/// path — fine for textural following, use a direct manager for tight
+/// monitoring. Neutral (1.0, 1.0) until something publishes.
+#[derive(Debug)]
+pub struct LiveOffset {
+    freq_bits: AtomicU64,
+    gain_bits: AtomicU64,
+}
+
+impl Default for LiveOffset {
+    fn default() -> Self {
+        Self {
+            freq_bits: AtomicU64::new(1.0_f64.to_bits()),
+            gain_bits: AtomicU64::new(1.0_f64.to_bits()),
+        }
+    }
+}
+
+impl LiveOffset {
+    pub fn set(&self, freq: f64, gain: f64) {
+        self.freq_bits.store(freq.to_bits(), Ordering::Relaxed);
+        self.gain_bits.store(gain.to_bits(), Ordering::Relaxed);
+    }
+
+    pub fn get(&self) -> Offset {
+        Offset {
+            freq: f64::from_bits(self.freq_bits.load(Ordering::Relaxed)),
+            gain: f64::from_bits(self.gain_bits.load(Ordering::Relaxed)),
+        }
+    }
+}
+
 #[derive(Debug, Clone)]
 pub struct PrerenderedBuffer {
     pub waveform: StereoWaveform,
     pub ramp: Vec<f32>,
     pub ops: Vec<Vec<RenderOp>>,
+    /// Composition playhead (samples) at the START of this buffer — stamped at
+    /// render time, so a consumer knows exactly which timeline slice it's
+    /// outputting (survives seeks/pauses; needs no RenderManager lock).
+    pub position: usize,
 }
 
 #[derive(Debug)]
@@ -55,6 +94,15 @@ pub struct RenderManager {
     buffer_manager: Option<BufferManager>,
     // Stream activity control - when false, audio callback skips processing
     stream_active: Arc<AtomicBool>,
+    // Master clock for cross-stream sync (DAW loop record). The output audio
+    // callback stores the absolute playhead (`samples_processed`) here after
+    // each render so a separate input-capture stream can tag mic frames with
+    // the playhead they were recorded against — without locking this manager.
+    played_frames: Arc<AtomicU64>,
+    // Latest mic-analysis offset for the background (lookahead) renderer, so
+    // Follow voices in the pre-rendered composition track the mic. See
+    // `LiveOffset`.
+    live_offset: Arc<LiveOffset>,
 }
 pub struct RenderManagerSettings {
     pub sample_rate: f64,
@@ -95,11 +143,17 @@ impl RenderManager {
                 .map(MidiController::new),
             buffer_manager,
             stream_active: Arc::new(AtomicBool::new(true)),
+            played_frames: Arc::new(AtomicU64::new(0)),
+            live_offset: Arc::new(LiveOffset::default()),
         }
     }
 
     pub fn init_wasm(settings: Option<RenderManagerSettings>) -> Self {
-        if !cfg!(test) {
+        // Same guard as `init`: a caller that already configured the
+        // process-wide Settings (e.g. the AU plugin, which must keep the
+        // HOST's sample rate) wins — re-running init here would reload
+        // config files over it.
+        if !cfg!(test) && !Settings::is_initialized() {
             if let Some(s) = settings {
                 Settings::init(s.sample_rate, s.buffer_size);
             } else {
@@ -123,6 +177,8 @@ impl RenderManager {
             midi_controller: None,
             buffer_manager,
             stream_active: Arc::new(AtomicBool::new(true)),
+            played_frames: Arc::new(AtomicU64::new(0)),
+            live_offset: Arc::new(LiveOffset::default()),
         }
     }
 
@@ -165,6 +221,22 @@ impl RenderManager {
     /// Set the stream active state
     pub fn set_stream_active(&self, active: bool) {
         self.stream_active.store(active, Ordering::SeqCst);
+    }
+
+    /// Master-clock handle for DAW cross-stream sync: a monotonic count of
+    /// frames sent to the DAC, advanced by the output audio callback. Read
+    /// lock-free by the input-capture stream to align recorded mic frames to
+    /// the composition loop (loop position = `played_frames % total_samples`).
+    pub fn played_frames(&self) -> Arc<AtomicU64> {
+        Arc::clone(&self.played_frames)
+    }
+
+    /// Handle for publishing the latest mic-analysis offset. An audio
+    /// callback that analyzes live input stores `(freq/f_basis, gain)` here;
+    /// the background (lookahead) renderer picks it up per slice so `Follow`
+    /// voices in the pre-rendered composition track the mic.
+    pub fn live_offset_handle(&self) -> Arc<LiveOffset> {
+        Arc::clone(&self.live_offset)
     }
 
     /// Check for VisReady event and unpause if received (non-blocking)
@@ -216,6 +288,13 @@ impl RenderManager {
         if let Some(manager) = &self.buffer_manager {
             manager.drain_buffer_queue();
         }
+    }
+
+    /// Lock-free pop handle for the pre-rendered buffer queue. An audio
+    /// callback holding this never touches the RenderManager mutex (which the
+    /// background render thread holds for whole render slices).
+    pub fn buffer_receiver(&self) -> Option<crossbeam_channel::Receiver<PrerenderedBuffer>> {
+        self.buffer_manager.as_ref().and_then(|bm| bm.receiver())
     }
 
     /// Start background rendering thread that pre-renders buffers
@@ -322,6 +401,15 @@ impl RenderManager {
         }
     }
 
+    /// Set (or clear with `None`) the sub-loop window `[start, end)` in samples.
+    /// Playback then cycles within it, silently (no `Reset` — the visualizer
+    /// keeps its state). NOT drained: a live handle-drag calls this every frame,
+    /// and draining each time would stutter; the new region just takes effect
+    /// within a lookahead's worth of already-buffered audio.
+    pub fn set_loop_region(&mut self, region: Option<(usize, usize)>) {
+        self.audio_engine.set_loop_region(region);
+    }
+
     /// Current playhead in samples. Exposed for the scrub UI so the
     /// slider can track the live audio position between user drags.
     pub fn samples_processed(&self) -> usize {
@@ -345,11 +433,36 @@ impl RenderManager {
             self.events.state.emit(StateEvent::Started);
         }
     }
+
+    /// Set the runtime output gain on every current-render voice tagged with
+    /// `tag` (a `#tag` marker in the source). Live per-voice fader for a DAW
+    /// mixer — no re-render, no events. Returns the number of voices matched.
+    pub fn set_gain_for_tagged_voices(&mut self, tag: &str, gain: f64) -> usize {
+        self.audio_engine.set_gain_for_tagged_voices(tag, gain)
+    }
+
+    /// Hot-swap the current render's voices in place, preserving the playhead
+    /// and emitting NO render events. See `AudioEngine::swap_current_render`.
+    ///
+    /// This is the live-mix-change path: a DAW mute/solo/volume/arm tweak
+    /// re-renders the composition with the new mix and swaps it in without a
+    /// timeline `Reset`, so a subscribed visualizer never wipes its accumulated
+    /// state and playback never jumps back to the start. Do NOT drain the
+    /// buffer queue — the already-buffered old-mix audio plays out seamlessly
+    /// into the swapped voices.
+    pub fn swap_current_render(&mut self, render: Vec<RenderVoice>) {
+        self.set_stream_active(true);
+        self.audio_engine.swap_current_render(render);
+    }
 }
 
 impl BackgroundRenderable for RenderManager {
     fn is_paused(&self) -> bool {
         self.paused
+    }
+
+    fn background_offset(&self) -> Offset {
+        self.live_offset.get()
     }
 
     fn render_buffer(&mut self, buffer_size: usize, offset: Offset) -> Option<(StereoWaveform, Vec<f32>, Vec<Vec<RenderOp>>)> {
@@ -358,6 +471,10 @@ impl BackgroundRenderable for RenderManager {
 
     fn has_current_render(&self) -> bool {
         self.audio_engine.exists_current_render()
+    }
+
+    fn position(&self) -> usize {
+        self.audio_engine.samples_processed()
     }
 }
 

@@ -2373,6 +2373,7 @@ fn cross(a: vec3<f32>, b: vec3<f32>) -> vec3<f32> { return vec3<f32>(a.y * b.z -
 fn dot(a: vec3<f32>, b: vec3<f32>) -> f32 { return a.x * b.x + a.y * b.y + a.z * b.z; }
 fn acos(v: f32) -> f32 { return 1.0; }
 fn clamp(v: f32, lo: f32, hi: f32) -> f32 { return v; }
+fn wrap(v: f32, p: f32) -> f32 { return v; }
 
 fn dummy_function() {
     // Variables that are modifiable
@@ -2391,6 +2392,21 @@ fn dummy_function() {
     var green: f32 = 1.0;
     var blue: f32 = 1.0;
     var alpha: f32 = 1.0;
+    // Per-note event data + live play clock (kintaro brush transform_N params).
+    // Read-only here; declared as vars so validation accepts references.
+    var note_l: f32 = 0.0;
+    var note_gain: f32 = 0.0;
+    var note_t: f32 = 0.0;
+    var note_event: f32 = 0.0;
+    var song_time: f32 = 0.0;
+    // The live HitField (kintaro brush_hits uniform): per-channel note-onset
+    // envelope + position, and the distance-shaped wave from THIS mark.
+    var hit0: f32 = 0.0; var hit0_x: f32 = 0.0; var hit0_y: f32 = 0.0;
+    var hit1: f32 = 0.0; var hit1_x: f32 = 0.0; var hit1_y: f32 = 0.0;
+    var hit2: f32 = 0.0; var hit2_x: f32 = 0.0; var hit2_y: f32 = 0.0;
+    var hit3: f32 = 0.0; var hit3_x: f32 = 0.0; var hit3_y: f32 = 0.0;
+    var hit_wave0: f32 = 0.0; var hit_wave1: f32 = 0.0;
+    var hit_wave2: f32 = 0.0; var hit_wave3: f32 = 0.0;
 ";
 
     // Count preamble lines (lines before user code)

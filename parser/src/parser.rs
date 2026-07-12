@@ -137,6 +137,11 @@ fn process_op_table(mut defs: &mut Defs) -> Result<Defs, Error> {
     }
 
     result.ops.stems = defs.ops.stems.to_owned();
+    // Carry the recordings registry forward and surface any unresolved
+    // `Perform("name")` names collected during normalization so the host
+    // (kintaro's DAW) can pre-arm tracks for them.
+    result.recordings = defs.recordings.clone();
+    result.pending_performs = defs.pending_performs.clone();
 
     Ok(result)
 }

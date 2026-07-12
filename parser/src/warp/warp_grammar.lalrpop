@@ -1,0 +1,546 @@
+// Warp DSL grammar — port of the hand-written recursive-descent parser at
+// `crates/kintaro/src/warp/parser.rs`. The output AST (`WarpPipeline`,
+// `WarpOp`, `Source`, `WarpExpr`, `SeqPhase`, `BinOp`) is unchanged so that
+// every existing cull_*.socool composition keeps parsing and rendering
+// bit-identically.
+//
+// Style notes
+// -----------
+//  * All ambiguous "bare-or-parenthesised scalar" forms are handled by a
+//    single `BareOrParenArg` non-terminal whose body is restricted to a
+//    *non-parenthesised* expression so it never conflicts with explicit
+//    parens used elsewhere (`Background(top: (1,0,0))`).
+//  * Order-independent named args are parsed flat as
+//    `Vec<(String, WarpExpr)>` and resolved into the AST by helpers in
+//    `grammar_helpers.rs`.
+//  * Mixed-shape named args (Background's tuple-or-scalar) are tagged with
+//    `BgArgVal` from `grammar_helpers`.
+//
+// Expression precedence: standard left-recursive `+/- < * / < unary-`.
+// The unary minus is the ONLY way to write negative literals; the number
+// regex matches unsigned digits only so that `5-5` and `5 - 5` tokenise
+// identically.
+
+use crate::warp::ast::{
+    WarpPipeline, WarpOp, WarpExpr, BinOp, MathFn, Source, SeqPhase, HitRef,
+};
+use crate::warp::grammar_helpers as h;
+use crate::warp::grammar_helpers::BgArgVal;
+
+grammar;
+
+// ---------------------------------------------------------------------------
+// Tokenizer — explicit keyword set so they take priority over IDENT; plus
+// regex tokens for numbers, identifiers, and backtick-delimited raw WGSL.
+// Whitespace and `// … / -- …` line comments are silently skipped.
+// ---------------------------------------------------------------------------
+match {
+    "|", "(", ")", "{", "}", "[", "]", ",", ";", ":", "+", "-", "*", "/",
+
+    "Prev", "Scene", "Osc", "Noise", "Gradient", "Solid",
+    "Time", "clock", "Sin", "Hit", "HitX", "HitY", "Ripple", "Glow", "Stir", "Bulge", "Relief", "Stain", "Watercolor",
+
+    "Scale", "Rotate", "Scroll", "Swirl", "Fold", "Kaleid",
+    "ChromaShift", "CurlFlow", "Wave", "Iterate",
+
+    "Decay", "Hue", "Gamma", "Knee", "Gain", "Palette", "Blur",
+    "Vignette", "Posterize", "Tint", "Bloom",
+    "Background", "Clear", "Fade",
+
+    "DepthVis", "Opaque",
+
+    "AsIs", "None",
+    "Seq", "Overlay", "Lm", "FitLength",
+    "Max", "Add", "Screen", "Mix", "Modulate",
+    "Raw",
+
+    // Pure math functions (lowercase — distinct from the capitalized ops/
+    // compositors like `Max`/`Mix`). Law-4 function set; see `dsl_expr::MathFn`.
+    "sin", "cos", "abs", "floor", "ceil", "sqrt", "min", "max", "pow", "wrap", "clamp", "mix",
+
+    r"\s+"          => { },
+    r"//[^\n]*"     => { },
+    r"--[^\n]*"     => { },
+} else {
+    r"`[^`]*`" => RAW_WGSL_LIT,
+    // Rational literal: `INT/INT` with NO surrounding whitespace folds to a
+    // single number, matching the hand tokenizer (`9/8` → 1.125). Longest-
+    // match beats `INT "/" INT`; the no-whitespace requirement keeps `9 / 8`
+    // a division op — byte-identical to the hand parser.
+    r"[0-9]+/[0-9]+"                    => RATIONAL,
+    r"[0-9]+\.[0-9]+([eE][+-]?[0-9]+)?" => FLOAT_LIT,
+    r"[0-9]+([eE][+-]?[0-9]+)?"         => INT_LIT,
+    r"[a-zA-Z_][a-zA-Z0-9_]*"           => IDENT,
+}
+
+// ---------------------------------------------------------------------------
+// Top-level entry points
+// ---------------------------------------------------------------------------
+
+pub Pipeline: WarpPipeline = {
+    <src:SrcExpr> <ops:PipeTail> => WarpPipeline { source: src, ops },
+};
+
+/// "Ops-only" pipeline used as an Iterate body when the first ident isn't a
+/// source keyword. Synthesises `Source::Prev`.
+pub OpsOnlyPipeline: WarpPipeline = {
+    <first:Op> <rest:PipeTail> => {
+        let mut ops = vec![first];
+        ops.extend(rest);
+        WarpPipeline { source: Source::Prev, ops }
+    },
+};
+
+PipeTail: Vec<WarpOp> = {
+    => vec![],
+    "|" <op:Op> <rest:PipeTail> => {
+        let mut v = vec![op];
+        v.extend(rest);
+        v
+    },
+};
+
+// ---------------------------------------------------------------------------
+// Sources
+// ---------------------------------------------------------------------------
+SrcExpr: Source = {
+    "Prev"  => Source::Prev,
+    "Scene" => Source::Scene,
+
+    "Osc" "(" <args:NamedArgList> ")" => {
+        let (freq, sync, offset) = h::extract_osc_args(args);
+        Source::Osc { freq, sync, offset }
+    },
+    "Osc" "{" <args:NamedArgList> "}" => {
+        let (freq, sync, offset) = h::extract_osc_args(args);
+        Source::Osc { freq, sync, offset }
+    },
+    "Noise" "(" <args:NamedArgList> ")" => {
+        let (scale, offset) = h::extract_noise_args(args);
+        Source::Noise { scale, offset }
+    },
+    "Noise" "{" <args:NamedArgList> "}" => {
+        let (scale, offset) = h::extract_noise_args(args);
+        Source::Noise { scale, offset }
+    },
+    "Gradient" "(" <x:Expr> "," <y:Expr> "," <z:Expr> ")" => Source::Gradient(x, y, z),
+    "Solid" "(" <r:Expr> "," <g:Expr> "," <b:Expr> ")" =>
+        Source::Solid(r, g, b),
+};
+
+// ---------------------------------------------------------------------------
+// Ops
+// ---------------------------------------------------------------------------
+Op: WarpOp = {
+    // Single-arg
+    "Scale"       <e:BareOrParenArg> => WarpOp::Scale(e),
+    "Rotate"      <e:BareOrParenArg> => WarpOp::Rotate(e),
+    "Swirl"       <e:BareOrParenArg> => WarpOp::Swirl(e),
+    "Fold"        <e:BareOrParenArg> => WarpOp::Fold(e),
+    "Kaleid"      <e:BareOrParenArg> => WarpOp::Kaleid(e),
+    "ChromaShift" <e:BareOrParenArg> => WarpOp::ChromaShift(e),
+    "Decay"       <e:BareOrParenArg> => WarpOp::Decay(e),
+    "Hue"         <e:BareOrParenArg> => WarpOp::Hue(e),
+    "Gamma"       <e:BareOrParenArg> => WarpOp::Gamma(e),
+    "Knee"        <e:BareOrParenArg> => WarpOp::Knee(e),
+    "Gain"        <e:BareOrParenArg> => WarpOp::Gain(e),
+    "Palette"     <e:BareOrParenArg> => WarpOp::Palette(e),
+    "Blur"        <e:BareOrParenArg> => WarpOp::Blur(e),
+    "Vignette"    <e:BareOrParenArg> => WarpOp::Vignette(e),
+    "Posterize"   <e:BareOrParenArg> => WarpOp::Posterize(e),
+
+    // Two-arg positional Scroll(x, y) — paren form only; the bare form
+    // (`Scroll 0.1 0.2` without parens) was an undocumented edge case of
+    // the hand parser that no shipped composition uses.
+    "Scroll" "(" <x:Expr> "," <y:Expr> ")" => WarpOp::Scroll(x, y),
+
+    // Three-arg positional Tint
+    "Tint" "(" <r:Expr> "," <g:Expr> "," <b:Expr> ")" => WarpOp::Tint(r, g, b),
+
+    // Named pairs — both shapes accepted:
+    //   Wave(freq: 3.5, amp: 0.1)    -- named, order-independent
+    //   Wave(3.5, 0.1)               -- positional, same order as AST fields
+    // Audio house style is positional; named is the readability escape hatch.
+    "Wave"     "(" <a:NamedArgList> ")" => {
+        let (freq, amp) = h::extract_named_pair(a, "freq", "amp");
+        WarpOp::Wave { freq, amp }
+    },
+    "Wave"     "{" <a:NamedArgList> "}" => {
+        let (freq, amp) = h::extract_named_pair(a, "freq", "amp");
+        WarpOp::Wave { freq, amp }
+    },
+    "Wave"     "(" <f:Expr> "," <a:Expr> ")" => WarpOp::Wave { freq: f, amp: a },
+
+    "CurlFlow" "(" <a:NamedArgList> ")" => {
+        let (amp, freq) = h::extract_named_pair(a, "amp", "freq");
+        WarpOp::CurlFlow { amp, freq }
+    },
+    "CurlFlow" "{" <a:NamedArgList> "}" => {
+        let (amp, freq) = h::extract_named_pair(a, "amp", "freq");
+        WarpOp::CurlFlow { amp, freq }
+    },
+    "CurlFlow" "(" <am:Expr> "," <fq:Expr> ")" => WarpOp::CurlFlow { amp: am, freq: fq },
+
+    // Ripple(ch, ...) — a radial wave from channel ch's last note onset.
+    // First arg is the hit channel (a literal); the rest named or positional.
+    "Ripple" "(" <c:ChanRef> "," <a:NamedArgList> ")" => {
+        let (freq, speed, amp) = h::extract_ripple_args(a);
+        WarpOp::Ripple { ch: c, freq, speed, amp }
+    },
+    "Ripple" <c:ChanRef> "{" <a:NamedArgList> "}" => {
+        let (freq, speed, amp) = h::extract_ripple_args(a);
+        WarpOp::Ripple { ch: c, freq, speed, amp }
+    },
+
+    // Glow(ch, ...) — colored light pooling at channel ch's last onset.
+    "Glow" "(" <c:ChanRef> "," <a:NamedArgList> ")" => {
+        let (r, g, b, size) = h::extract_glow_args(a);
+        WarpOp::Glow { ch: c, r, g, b, size }
+    },
+    "Glow" <c:ChanRef> "{" <a:NamedArgList> "}" => {
+        let (r, g, b, size) = h::extract_glow_args(a);
+        WarpOp::Glow { ch: c, r, g, b, size }
+    },
+
+    // Stir(ch, ...) — a decaying vortex at channel ch's last note onset.
+    "Stir" "(" <c:ChanRef> "," <a:NamedArgList> ")" => {
+        let (radius, strength) = h::extract_named_pair(a, "radius", "strength");
+        WarpOp::Stir { ch: c, radius, strength }
+    },
+    "Stir" <c:ChanRef> "{" <a:NamedArgList> "}" => {
+        let (radius, strength) = h::extract_named_pair(a, "radius", "strength");
+        WarpOp::Stir { ch: c, radius, strength }
+    },
+
+    // Bulge(ch, ...) — a soft local swell at channel ch's last onset.
+    "Bulge" "(" <c:ChanRef> "," <a:NamedArgList> ")" => {
+        let (radius, amount, mirror) = h::extract_bulge_args(a);
+        WarpOp::Bulge { ch: c, radius, amount, mirror }
+    },
+    "Bulge" <c:ChanRef> "{" <a:NamedArgList> "}" => {
+        let (radius, amount, mirror) = h::extract_bulge_args(a);
+        WarpOp::Bulge { ch: c, radius, amount, mirror }
+    },
+
+    // Relief(...) — collapse the source-as-height-field into lit 2D form.
+    "Relief" "(" <a:NamedArgList> ")" => {
+        let (height, lx, ly, ambient) = h::extract_relief_args(a);
+        WarpOp::Relief { height, lx, ly, ambient }
+    },
+    "Relief" "{" <a:NamedArgList> "}" => {
+        let (height, lx, ly, ambient) = h::extract_relief_args(a);
+        WarpOp::Relief { height, lx, ly, ambient }
+    },
+
+    // Stain(...) — soak the incoming field into a woven canvas as pigment.
+    "Stain" "(" <a:NamedArgList> ")" => {
+        let (r, g, b, strength, opacity) = h::extract_stain_args(a);
+        WarpOp::Stain { r, g, b, strength, opacity }
+    },
+    "Stain" "{" <a:NamedArgList> "}" => {
+        let (r, g, b, strength, opacity) = h::extract_stain_args(a);
+        WarpOp::Stain { r, g, b, strength, opacity }
+    },
+
+    // Watercolor(...) — one full sim step: water moves, pigment rides it.
+    "Watercolor" "(" <a:NamedArgList> ")" => {
+        let (wet, evap, flow, gain, fade) = h::extract_watercolor_args(a);
+        WarpOp::Watercolor { wet, evap, flow, gain, fade }
+    },
+    "Watercolor" "{" <a:NamedArgList> "}" => {
+        let (wet, evap, flow, gain, fade) = h::extract_watercolor_args(a);
+        WarpOp::Watercolor { wet, evap, flow, gain, fade }
+    },
+
+    "Bloom"    "(" <a:NamedArgList> ")" => {
+        let (threshold, strength) = h::extract_named_pair(a, "threshold", "strength");
+        WarpOp::Bloom { threshold, strength }
+    },
+    "Bloom"    "{" <a:NamedArgList> "}" => {
+        let (threshold, strength) = h::extract_named_pair(a, "threshold", "strength");
+        WarpOp::Bloom { threshold, strength }
+    },
+    "Bloom"    "(" <t:Expr> "," <s:Expr> ")" => WarpOp::Bloom { threshold: t, strength: s },
+
+    // Optional named-args with defaults
+    "Clear" "(" <a:NamedArgList> ")" => {
+        let (at, every, offset) = h::extract_clear_args(a);
+        WarpOp::Clear { at, every, offset }
+    },
+    "Fade" "(" <a:NamedArgList> ")" => {
+        let (at, every, offset, dur, to) = h::extract_fade_args(a);
+        WarpOp::Fade { at, every, offset, dur, to }
+    },
+    "Background" "(" <a:BgArgList> ")" => {
+        let f = h::extract_background_args(a);
+        WarpOp::Background {
+            top_r: f.0, top_g: f.1, top_b: f.2,
+            bot_r: f.3, bot_g: f.4, bot_b: f.5,
+            split: f.6, soft: f.7,
+        }
+    },
+    "DepthVis" => WarpOp::DepthVis,
+    "Opaque"   => WarpOp::Opaque,
+    "AsIs"     => WarpOp::AsIs,
+    "None"     => WarpOp::Mute,
+
+    "Raw" <s:RAW_WGSL_LIT> => WarpOp::Raw(s[1..s.len()-1].to_string()),
+
+    // Compositors taking a sub-pipeline. The "extra" expr is positional and
+    // separated by a comma; `Blend`/`Modulate` use it as their amount.
+    "Max"      "(" <p:Pipeline> ")" => WarpOp::Max(Box::new(p)),
+    "Add"      "(" <p:Pipeline> ")" => WarpOp::Add(Box::new(p)),
+    "Screen"   "(" <p:Pipeline> ")" => WarpOp::Screen(Box::new(p)),
+    "Mix"      "(" <p:Pipeline> "," <e:Expr> ")" => WarpOp::Mix(Box::new(p), e),
+    "Mix"      "(" <p:Pipeline> ")"                => WarpOp::Mix(Box::new(p), WarpExpr::Lit(0.5)),
+    "Modulate" "(" <p:Pipeline> "," <e:Expr> ")" => WarpOp::Modulate(Box::new(p), e),
+    "Modulate" "(" <p:Pipeline> ")" => WarpOp::Modulate(Box::new(p), WarpExpr::Lit(0.1)),
+
+    // Iterate body: either a full pipeline (starts with a source) or
+    // ops-only (synthesises `Source::Prev`). LR(1) chooses based on the
+    // first token's kind.
+    "Iterate" <n:BareOrParenArg> "{" <p:Pipeline>        "}" =>
+        WarpOp::Iterate(n, Box::new(p)),
+    "Iterate" <n:BareOrParenArg> "{" <p:OpsOnlyPipeline> "}" =>
+        WarpOp::Iterate(n, Box::new(p)),
+
+    // Composition primitives
+    "Overlay" "[" <layers:OverlayLayerList> "]" =>
+        WarpOp::Overlay { layers },
+    "Seq" "[" <phases:SeqPhaseList> "]" =>
+        WarpOp::Seq { phases },
+
+    // Cross-DSL FitLength: the rewrite pass in `warp::fit_length` consumes
+    // this and rescales the preceding Seq's Lm values. If left unrewritten
+    // (no preceding Seq, or name not in env), codegen emits nothing for it.
+    "FitLength" <name:Name> => WarpOp::FitLength(name),
+};
+
+// ---------------------------------------------------------------------------
+// Composition primitive bodies
+// ---------------------------------------------------------------------------
+
+OverlayLayerList: Vec<Vec<WarpOp>> = {
+    => vec![],
+    <first:OverlayLayer> <rest:OverlayTail> => {
+        let mut v = vec![first];
+        v.extend(rest);
+        v
+    },
+};
+OverlayTail: Vec<Vec<WarpOp>> = {
+    => vec![],
+    OverlaySep => vec![],
+    OverlaySep <l:OverlayLayer> <rest:OverlayTail> => {
+        let mut v = vec![l];
+        v.extend(rest);
+        v
+    },
+};
+OverlaySep: () = { "," => (), ";" => () };
+OverlayLayer: Vec<WarpOp> = {
+    <first:Op> <rest:PipeTail> => {
+        let mut v = vec![first];
+        v.extend(rest);
+        v
+    },
+};
+
+SeqPhaseList: Vec<SeqPhase> = {
+    => vec![],
+    <first:SeqPhaseItem> <rest:SeqPhaseTail> => {
+        let mut v = vec![first];
+        v.extend(rest);
+        v
+    },
+};
+SeqPhaseTail: Vec<SeqPhase> = {
+    => vec![],
+    SeqSep => vec![],
+    SeqSep <p:SeqPhaseItem> <rest:SeqPhaseTail> => {
+        let mut v = vec![p];
+        v.extend(rest);
+        v
+    },
+};
+SeqSep: () = { "," => (), ";" => () };
+
+/// A Seq phase: 1+ ops chained with `|`, optionally followed by `| Lm N`.
+SeqPhaseItem: SeqPhase = {
+    <first:Op> <body:SeqPhaseBody> => {
+        let (mut ops, length) = body;
+        ops.insert(0, first);
+        let explicit_length = length.is_some();
+        SeqPhase {
+            ops,
+            length: length.unwrap_or(WarpExpr::Lit(1.0)),
+            explicit_length,
+        }
+    },
+};
+SeqPhaseBody: (Vec<WarpOp>, Option<WarpExpr>) = {
+    => (vec![], None),
+    "|" "Lm" <e:BareOrParenArg> => (vec![], Some(e)),
+    "|" <op:Op> <rest:SeqPhaseBody> => {
+        let (mut ops, len) = rest;
+        ops.insert(0, op);
+        (ops, len)
+    },
+};
+
+// ---------------------------------------------------------------------------
+// Named-arg lists
+// ---------------------------------------------------------------------------
+NamedArgList: Vec<(String, WarpExpr)> = {
+    => vec![],
+    <first:NamedArg> <rest:NamedArgTail> => {
+        let mut v = vec![first];
+        v.extend(rest);
+        v
+    },
+};
+NamedArgTail: Vec<(String, WarpExpr)> = {
+    => vec![],
+    "," <n:NamedArg> <rest:NamedArgTail> => {
+        let mut v = vec![n];
+        v.extend(rest);
+        v
+    },
+};
+NamedArg: (String, WarpExpr) = {
+    <name:Name> ":" <e:Expr> => (name, e),
+};
+
+BgArgList: Vec<(String, BgArgVal)> = {
+    => vec![],
+    <first:BgArg> <rest:BgArgTail> => {
+        let mut v = vec![first];
+        v.extend(rest);
+        v
+    },
+};
+BgArgTail: Vec<(String, BgArgVal)> = {
+    => vec![],
+    "," <a:BgArg> <rest:BgArgTail> => {
+        let mut v = vec![a];
+        v.extend(rest);
+        v
+    },
+};
+BgArg: (String, BgArgVal) = {
+    <name:Name> ":" "(" <r:Expr> "," <g:Expr> "," <b:Expr> ")" =>
+        (name, BgArgVal::Tuple3(r, g, b)),
+    <name:Name> ":" <e:NonParenExpr> =>
+        (name, BgArgVal::Scalar(e)),
+};
+
+// ---------------------------------------------------------------------------
+// Common arg shapes
+// ---------------------------------------------------------------------------
+
+/// A scalar argument that may be bare or parenthesised. Both forms exist in
+/// the wild (`Scale 0.99`, `Scale(0.99)`, `Hue(Time)`).
+BareOrParenArg: WarpExpr = {
+    "(" <e:Expr> ")" => e,
+    <e:NonParenFactor> => e,
+};
+
+Name: String = { <s:IDENT> => s.to_string() };
+
+// A hit-channel reference: the part's NAME (normal) or a raw slot (escape
+// hatch). Kintaro resolves names to slots before codegen.
+ChanRef: HitRef = {
+    <s:IDENT> => HitRef::Name(s.to_string()),
+    <n:Num> => HitRef::Idx((n as u32).min(127)),
+};
+
+// ---------------------------------------------------------------------------
+// Expression grammar — standard precedence climbing with explicit levels.
+//
+// Two parallel grammars exist:
+//   * `Expr / Term / Factor` — full expression, may start with `(`.
+//   * `NonParenExpr / NonParenTerm / NonParenFactor` — same precedence but
+//     the leading atom cannot be `(`. Used wherever a leading `(` would
+//     conflict with a tuple syntax (Background, BareOrParenArg).
+// ---------------------------------------------------------------------------
+
+pub Expr: WarpExpr = {
+    <l:Expr> "+" <r:Term> => WarpExpr::Bin(BinOp::Add, Box::new(l), Box::new(r)),
+    <l:Expr> "-" <r:Term> => WarpExpr::Bin(BinOp::Sub, Box::new(l), Box::new(r)),
+    <t:Term> => t,
+};
+Term: WarpExpr = {
+    <l:Term> "*" <r:Factor> => WarpExpr::Bin(BinOp::Mul, Box::new(l), Box::new(r)),
+    <l:Term> "/" <r:Factor> => WarpExpr::Bin(BinOp::Div, Box::new(l), Box::new(r)),
+    <f:Factor> => f,
+};
+Factor: WarpExpr = {
+    <n:Num> => WarpExpr::Lit(n),
+    "Time"  => WarpExpr::Time,
+    "Hit" "(" <c:ChanRef> ")" => WarpExpr::Hit(c),
+    "HitX" "(" <c:ChanRef> ")" => WarpExpr::HitX(c),
+    "HitY" "(" <c:ChanRef> ")" => WarpExpr::HitY(c),
+    "clock" => WarpExpr::Clock,
+    "Sin" "(" <f:Expr> ")" =>
+        WarpExpr::Sin { freq: Box::new(f), amp: Box::new(WarpExpr::Lit(1.0)) },
+    "Sin" "(" <f:Expr> "," <a:Expr> ")" =>
+        WarpExpr::Sin { freq: Box::new(f), amp: Box::new(a) },
+    <f:UnaryFn> "(" <a:Expr> ")" => WarpExpr::Call(f, vec![a]),
+    <f:BinaryFn> "(" <a:Expr> "," <b:Expr> ")" => WarpExpr::Call(f, vec![a, b]),
+    <f:TernaryFn> "(" <a:Expr> "," <b:Expr> "," <c:Expr> ")" => WarpExpr::Call(f, vec![a, b, c]),
+    // Variadic min/max (≥2): left-fold into nested binary calls.
+    <f:VariadicFn> "(" <a:Expr> <rest:("," <Expr>)+> ")" =>
+        rest.into_iter().fold(a, |acc, e| WarpExpr::Call(f, vec![acc, e])),
+    "(" <e:Expr> ")" => e,
+    "-" <f:Factor>   =>
+        WarpExpr::Bin(BinOp::Sub, Box::new(WarpExpr::Lit(0.0)), Box::new(f)),
+};
+
+// Math-function names grouped by arity (see `dsl_expr::MathFn`).
+UnaryFn: MathFn = {
+    "sin" => MathFn::Sin, "cos" => MathFn::Cos, "abs" => MathFn::Abs,
+    "floor" => MathFn::Floor, "ceil" => MathFn::Ceil, "sqrt" => MathFn::Sqrt,
+};
+BinaryFn: MathFn = { "pow" => MathFn::Pow, "wrap" => MathFn::Wrap };
+TernaryFn: MathFn = { "clamp" => MathFn::Clamp, "mix" => MathFn::Mix };
+VariadicFn: MathFn = { "min" => MathFn::Min, "max" => MathFn::Max };
+
+NonParenExpr: WarpExpr = {
+    <l:NonParenExpr> "+" <r:Term> =>
+        WarpExpr::Bin(BinOp::Add, Box::new(l), Box::new(r)),
+    <l:NonParenExpr> "-" <r:Term> =>
+        WarpExpr::Bin(BinOp::Sub, Box::new(l), Box::new(r)),
+    <t:NonParenTerm> => t,
+};
+NonParenTerm: WarpExpr = {
+    <l:NonParenTerm> "*" <r:Factor> =>
+        WarpExpr::Bin(BinOp::Mul, Box::new(l), Box::new(r)),
+    <l:NonParenTerm> "/" <r:Factor> =>
+        WarpExpr::Bin(BinOp::Div, Box::new(l), Box::new(r)),
+    <f:NonParenFactor> => f,
+};
+NonParenFactor: WarpExpr = {
+    <n:Num> => WarpExpr::Lit(n),
+    "Time"  => WarpExpr::Time,
+    "Hit" "(" <c:ChanRef> ")" => WarpExpr::Hit(c),
+    "HitX" "(" <c:ChanRef> ")" => WarpExpr::HitX(c),
+    "HitY" "(" <c:ChanRef> ")" => WarpExpr::HitY(c),
+    "clock" => WarpExpr::Clock,
+    "Sin" "(" <f:Expr> ")" =>
+        WarpExpr::Sin { freq: Box::new(f), amp: Box::new(WarpExpr::Lit(1.0)) },
+    "Sin" "(" <f:Expr> "," <a:Expr> ")" =>
+        WarpExpr::Sin { freq: Box::new(f), amp: Box::new(a) },
+    <f:UnaryFn> "(" <a:Expr> ")" => WarpExpr::Call(f, vec![a]),
+    <f:BinaryFn> "(" <a:Expr> "," <b:Expr> ")" => WarpExpr::Call(f, vec![a, b]),
+    <f:TernaryFn> "(" <a:Expr> "," <b:Expr> "," <c:Expr> ")" => WarpExpr::Call(f, vec![a, b, c]),
+    <f:VariadicFn> "(" <a:Expr> <rest:("," <Expr>)+> ")" =>
+        rest.into_iter().fold(a, |acc, e| WarpExpr::Call(f, vec![acc, e])),
+    "-" <f:NonParenFactor> =>
+        WarpExpr::Bin(BinOp::Sub, Box::new(WarpExpr::Lit(0.0)), Box::new(f)),
+};
+
+Num: f32 = {
+    <s:INT_LIT>   => s.parse().unwrap(),
+    <s:FLOAT_LIT> => s.parse().unwrap(),
+    <s:RATIONAL>  => h::parse_rational(s),
+};

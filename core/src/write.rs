@@ -76,6 +76,28 @@ pub fn new_write_output_buffer(
     }
 }
 
+/// Sum up to two ramp-applied stereo buffers into `out_buffer` (the DAW two-path
+/// mix: pre-rendered comp+layers from `rm_main` + the direct live monitor from
+/// `rm_mon`). Each part carries its own crossfade ramp (stereo-interleaved, like
+/// `new_write_output_buffer`). Missing parts contribute silence.
+pub fn write_mixed_output_buffer(
+    out_buffer: &mut [f32],
+    parts: [Option<(StereoWaveform, Vec<f32>)>; 2],
+) {
+    for s in out_buffer.iter_mut() {
+        *s = 0.0;
+    }
+    for (wave, ramp) in parts.into_iter().flatten() {
+        let len = wave.l_buffer.len();
+        for i in 0..len {
+            let rl = ramp.get(i * 2).copied().unwrap_or(1.0);
+            let rr = ramp.get(i * 2 + 1).copied().unwrap_or(1.0);
+            out_buffer[i * 2] += rl * wave.l_buffer[i] as f32;
+            out_buffer[i * 2 + 1] += rr * wave.r_buffer[i] as f32;
+        }
+    }
+}
+
 pub fn filename_from_string(s: &str) -> &str {
     let split: Vec<&str> = s.split('.').collect();
     let filename: Vec<&str> = split[0].split('/').collect();

@@ -123,6 +123,13 @@ SeqSep: () = {
 // Quoted strings are a fallback for edge cases (number-first, nested parens, commas)
 WgslVal: WgslValue = {
     <e:SlewExpr> => WgslValue::Expr(e),
+    // `mod <name>` — loop the live clock over a named audio length. The seconds
+    // aren't known at weresocool parse time (they come from kintaro's cross-DSL
+    // length env), so emit `wrap(song_time, 1.0/*@klen:NAME@*/)`: a naga-valid
+    // expression carrying the name in a comment. Kintaro patches the `1.0`
+    // literal to the resolved period after building its length env.
+    "mod" <name:r"[a-z_][a-zA-Z0-9_]+"> =>
+        WgslValue::Expr(format!("wrap(song_time, 1.0/*@klen:{}@*/)", name)),
     <r:RatioValue> => WgslValue::Rational(r),
     <e:WgslExpr> => WgslValue::Expr(e),
     <s:QuotedStr> => WgslValue::Expr(s),

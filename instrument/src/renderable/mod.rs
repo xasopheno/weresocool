@@ -58,6 +58,10 @@ pub struct RenderOp {
     /// `FitX/FitY/FitZ`. Sound-inert; kintaro measures per-brush extents
     /// over ops sharing a band and solves the affine.
     pub fit_vis: [Option<(f64, f64)>; 3],
+    /// Initial oscillator phase (radians) to seed at voice birth, from
+    /// `PointOp.phase`. `None` = legacy behavior (integrate from 0).
+    #[serde(default)]
+    pub initial_phase: Option<f64>,
 }
 
 impl RenderOp {
@@ -93,6 +97,7 @@ impl RenderOp {
             color_gradient: None,
             fit_vis: [None; 3],
             color_mix: 1.0,
+            initial_phase: None,
         }
     }
 
@@ -128,6 +133,7 @@ impl RenderOp {
             color_gradient: None,
             fit_vis: [None; 3],
             color_mix: 1.0,
+            initial_phase: None,
         }
     }
     pub fn init_silent_with_length(l: f64) -> Self {
@@ -162,6 +168,7 @@ impl RenderOp {
             color_gradient: None,
             fit_vis: [None; 3],
             color_mix: 1.0,
+            initial_phase: None,
         }
     }
 
@@ -203,6 +210,7 @@ impl RenderOp {
             color_gradient: None,
             fit_vis: [None; 3],
             color_mix: 1.0,
+            initial_phase: None,
         }
     }
 }
@@ -217,15 +225,19 @@ pub trait Renderable<T> {
 
 impl Renderable<RenderOp> for RenderOp {
     fn render(&mut self, oscillator: &mut Oscillator, offset: Option<&Offset>) -> StereoWaveform {
+        // Only voices that author `Follow` respond to the external (mic)
+        // offset — everyone else plays as written. (An empty follow chain's
+        // `eval_value` passes the offset straight through, which would make
+        // the mic modulate the whole piece, so guard on non-empty.)
         let o = match offset {
-            Some(o) => {
+            Some(o) if !self.follows.is_empty() => {
                 let (f, g) = self.follows.eval_value(o.freq as f32, o.gain as f32);
                 Offset {
                     freq: f as f64,
                     gain: g as f64,
                 }
             }
-            None => Offset::default(),
+            _ => Offset::default(),
         };
 
         oscillator.update(self, &o);
@@ -310,6 +322,11 @@ impl weresocool_synth::SynthOp for RenderOp {
     #[inline(always)]
     fn reverb(&self) -> Option<f64> {
         self.reverb
+    }
+
+    #[inline(always)]
+    fn initial_phase(&self) -> Option<f64> {
+        self.initial_phase
     }
 
     #[inline(always)]
@@ -447,6 +464,7 @@ fn pointop_to_renderop(
             *b.numer() as f64 / *b.denom() as f64,
         ))),
         color_mix: point_op.color_distribution.mix,
+        initial_phase: point_op.phase.map(r_to_f64),
     };
 
     *time += point_op.l * basis.l;
@@ -612,4 +630,50 @@ fn create_render_ops(
     }
 
     result
+}
+
+#[cfg(test)]
+mod phase_tests {
+    use super::*;
+    use weresocool_synth::Oscillator;
+
+    /// A fresh `Oscillator` starts silent (`offset_past.gain == 0`), so the
+    /// first op is a true silence→sound birth and the phase seed fires. Gain
+    /// ramps linearly from 0, so sample[0] is 0 regardless of phase — the seed
+    /// shows from the next sample on: with `Some(π/2)` the waveform sits near
+    /// the sine peak (cos≈1), with `None` it starts near the zero crossing
+    /// (sin≈0). Gain ramps are identical, so seeded[1] dominates unseeded[1].
+    #[test]
+    fn initial_phase_seeds_birth_sample() {
+        Settings::init_test();
+        let sr = Settings::global().sample_rate;
+        let samples = (0.1 * sr) as usize;
+
+        let make_op = |phase: Option<f64>| {
+            let mut op = RenderOp::init_fglps(440.0, (1.0, 1.0), 0.1, 0.0, samples);
+            op.osc_type = OscType::Sine { pow: None };
+            op.initial_phase = phase;
+            op
+        };
+
+        let render = |phase: Option<f64>| {
+            let mut osc = Oscillator::init();
+            let op = make_op(phase);
+            osc.update(&op, &Offset::default());
+            osc.generate(&op, &Offset::default())
+        };
+
+        let seeded = render(Some(std::f64::consts::FRAC_PI_2));
+        let unseeded = render(None);
+
+        // sample[0] is 0 for both (gain ramp starts at 0); the seed's effect is
+        // visible once the ramp lifts off — compare the first non-zero sample.
+        assert_eq!(seeded.l_buffer[0], 0.0);
+        assert!(
+            seeded.l_buffer[1].abs() > unseeded.l_buffer[1].abs() * 5.0,
+            "seeded sample[1] {} should dominate unseeded {}",
+            seeded.l_buffer[1],
+            unseeded.l_buffer[1],
+        );
+    }
 }

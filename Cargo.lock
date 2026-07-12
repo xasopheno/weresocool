@@ -122,6 +122,16 @@ dependencies = [
 ]
 
 [[package]]
+name = "ariadne"
+version = "0.6.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "8454c8a44ce2cb9cc7e7fae67fc6128465b343b92c6631e94beca3c8d1524ea5"
+dependencies = [
+ "unicode-width",
+ "yansi",
+]
+
+[[package]]
 name = "arrayvec"
 version = "0.5.2"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -3065,6 +3075,7 @@ dependencies = [
  "num 0.4.3",
  "num-complex 0.4.6",
  "num-rational 0.4.2",
+ "num-traits",
  "once_cell",
  "opmap",
  "pbr",
@@ -3170,6 +3181,7 @@ dependencies = [
 name = "weresocool_parser"
 version = "2.0.0"
 dependencies = [
+ "ariadne",
  "colored",
  "indexmap",
  "lalrpop",

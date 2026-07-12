@@ -50,6 +50,11 @@ struct SerializedPointOp {
     decay_denom: i64,
     portamento_num: i64,
     portamento_denom: i64,
+    /// Analyzer-measured initial phase (radians), set only on a track's birth
+    /// op. `#[serde(default)]` keeps old JSON caches readable; positional
+    /// bincode caches are invalidated by this field and must be regenerated.
+    #[serde(default)]
+    phase: Option<f32>,
 }
 
 impl From<&PointOp> for SerializedPointOp {
@@ -73,6 +78,7 @@ impl From<&PointOp> for SerializedPointOp {
             decay_denom: *op.decay.denom(),
             portamento_num: *op.portamento.numer(),
             portamento_denom: *op.portamento.denom(),
+            phase: op.phase.map(rational_to_f32),
         }
     }
 }
@@ -95,6 +101,7 @@ impl SerializedPointOp {
             portamento: Rational64::new_raw(self.portamento_num, self.portamento_denom),
             asr: ASR::Long,
             osc_type: OscType::Sine { pow: None },
+            phase: self.phase.map(rational_from_f32),
             ..Default::default()
         }
     }
@@ -312,6 +319,17 @@ fn create_track_pointops(track: &TrackOut, base_freq: f32, fps: usize, sample_ra
             // every control point: the audible "grainy/lossy" contour.
             let porta = actual_step * sample_rate as f32 / 1024.0;
 
+            // Seed the analyzer-measured phase on the track's birth op only. The
+            // synth seeds initial phase at silence→sound (the first audible op);
+            // interior ops let phase integrate from the now-accurate frequency
+            // contour. `point_a` is `track.points[0]` here, whose phase was
+            // measured at the track's start time — where the voice is born.
+            let phase = if i == 0 && step == 0 {
+                Some(rational_from_f32(point_a.phase))
+            } else {
+                None
+            };
+
             ops.push(PointOp {
                 fm: rational_from_f32(interp_freq / base_freq),
                 fa: Rational64::from_integer(0),
@@ -328,6 +346,7 @@ fn create_track_pointops(track: &TrackOut, base_freq: f32, fps: usize, sample_ra
                 asr: ASR::Long,
                 portamento: rational_from_f32(porta),
                 osc_type: OscType::Sine { pow: None },
+                phase,
                 ..Default::default()
             });
         }

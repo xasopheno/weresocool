@@ -48,6 +48,13 @@ impl Oscillator {
         r_voice.update(op, offset);
     }
 
+    /// Re-latch per-op voice state after a mid-op seek — see
+    /// `Voice::latch_for_seek`.
+    pub fn latch_for_seek<Op: SynthOp>(&mut self, op: &Op) {
+        self.voices.0.latch_for_seek(op);
+        self.voices.1.latch_for_seek(op);
+    }
+
     pub fn generate<Op: SynthOp>(&mut self, op: &Op, offset: &Offset) -> StereoWaveform {
         let (ref mut l_voice, ref mut r_voice) = self.voices;
 
