@@ -24,11 +24,35 @@ impl Interpretable for InputType<'_> {
         working_path: Option<PathBuf>,
     ) -> Result<RenderReturn, Error> {
         let read_start = timing_now!();
-        let (filename, vec_string) = match &self {
-            InputType::Filename(filename) => (filename, filename_to_vec_string(filename)?),
-            InputType::Language(language) => (&"Language", language_to_vec_string(language)),
+        // Read RAW source: the kintaro-DSL front end below wants whole text.
+        let (filename, raw, base_dir, socool_path) = match &self {
+            InputType::Filename(filename) => {
+                let raw = std::fs::read_to_string(filename)
+                    .map_err(|_| Error::with_msg(format!("File not found: {}", filename)))?;
+                let path = std::path::PathBuf::from(filename);
+                let base = path
+                    .parent()
+                    .filter(|p| !p.as_os_str().is_empty())
+                    .map(|p| p.to_path_buf())
+                    .unwrap_or_else(|| std::path::PathBuf::from("."));
+                (*filename, raw, base, Some(path))
+            }
+            InputType::Language(language) => (
+                "Language",
+                language.to_string(),
+                std::path::PathBuf::from("."),
+                None,
+            ),
         };
         timing_print!("[Interpretable] Read file: {:?}", read_start.elapsed());
+
+        // THE front end (one pipeline for every host): on plain audio each
+        // stage is a no-op passthrough; on a kintaro composition it inlines
+        // `use` imports, injects DAW layers, expands parameterized defs,
+        // and strips warp/draw/surface/palette blocks. parse_file no longer
+        // carries its own duplicate strippers — this is the single place.
+        let audio = preprocess_for_audio(&raw, &base_dir, socool_path.as_deref())?;
+        let vec_string = language_to_vec_string(&audio.source);
 
         let parse_start = timing_now!();
         // For `Filename` we hand the actual path through so a parse
@@ -39,7 +63,12 @@ impl Interpretable for InputType<'_> {
             InputType::Filename(filename) => Some(filename.to_string()),
             InputType::Language(_) => None,
         };
-        let parsed_composition = parse_file(vec_string, None, working_path, source_name)?;
+        // Seed recorded layers (the `.socool.daw/` sidecar) so
+        // `Perform("name")` ops resolve during normalization.
+        let mut seed_defs = weresocool_ast::Defs::default();
+        seed_defs.recordings = audio.recordings;
+        let parsed_composition =
+            parse_file(vec_string, Some(seed_defs), working_path, source_name)?;
         timing_print!("[Interpretable] parse_file: {:?}", parse_start.elapsed());
 
         let render_start = timing_now!();

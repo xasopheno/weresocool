@@ -742,13 +742,12 @@ pub fn parse_file(
     let (imports_needed, composition) = handle_whitespace_and_imports(vec_string)?;
     timing_print!("[parse_file] handle_whitespace_and_imports: {:?}", ws_start.elapsed());
 
-    // Strip kintaro-specific `warp NAME = { ... }` declarations, `| warp { ... }`
-    // inline blocks, and `| <warpname>` chain ops. Vanilla weresocool ignores
-    // them; tools like kintaro pre-extract them before passing source here.
-    let composition = strip_warp_extensions(&composition);
-    // Same pattern for `draw NAME = { … }`, `| draw { … }`, and
-    // `| draw <name>` — the second kintaro extension.
-    let composition = strip_draw_extensions(&composition);
+    // NOTE: warp/draw stripping no longer happens here. The kintaro-DSL
+    // front end (`weresocool::interpretable::preprocess_for_audio`) is the
+    // ONE place visual blocks are extracted — every host runs it before
+    // parse_file (Interpretable::make does it automatically). The old
+    // strip_warp_extensions/strip_draw_extensions byte-scanners remain
+    // exported for external callers but are no longer part of parsing.
 
     // Process WGSL blocks - extract them and replace with IDs
     // This validates each WGSL block and fails fast on the first error
