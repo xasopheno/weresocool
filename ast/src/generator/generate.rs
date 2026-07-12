@@ -39,7 +39,7 @@ impl CoefState {
     }
 }
 
-pub fn bind_x(e: &meval::Expr, s: &str) -> Result<impl Fn(f64) -> f64, Error> {
+pub fn bind_x(e: &meval::Expr, s: &str) -> Result<impl Fn(f64) -> f64 + use<>, Error> {
     let func = e.to_owned().bind("x");
     match func {
         Ok(f) => Ok(f),

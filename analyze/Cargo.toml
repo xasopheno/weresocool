@@ -2,7 +2,7 @@
 name = "weresocool_analyze"
 version = "2.0.0"
 authors = ["Danny Meyer <weresocool@xasopheno.com>"]
-edition = "2021"
+edition = "2024"
 description = "audio analysis for WereSoCool"
 license = "GPL-3.0" 
 resolver="2"

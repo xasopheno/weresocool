@@ -386,13 +386,13 @@ pub fn parse_css_color(s: &str) -> Color {
 
 
 #[macro_export]
-macro_rules! color_gradient { ( $( $color:expr ),+ $(,)? ) => { GradientColor::init(vec![ $( $color ),+ ])
+macro_rules! color_gradient { ( $( $color:expr_2021 ),+ $(,)? ) => { GradientColor::init(vec![ $( $color ),+ ])
     };
 }
 
 #[macro_export]
 macro_rules! color_set {
-    ( $( $color:expr ),+ $(,)? ) => {
+    ( $( $color:expr_2021 ),+ $(,)? ) => {
         ColorSet::init(vec![ $( $color ),+ ])
     };
 }
@@ -408,7 +408,7 @@ macro_rules! rand_color {
 macro_rules! color {
     (
         $(
-            $name:ident : $value:expr
+            $name:ident : $value:expr_2021
         ),* $(,)?
     ) => {{
         let mut map: ColorMap = IndexMap::new();

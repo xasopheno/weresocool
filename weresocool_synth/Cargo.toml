@@ -2,7 +2,7 @@
 name = "weresocool_synth"
 version = "2.0.0"
 authors = ["Danny Meyer <weresocool@xasopheno.com>"]
-edition = "2021"
+edition = "2024"
 description = "Generic audio synthesis engine - standalone and reusable"
 license = "GPL-3.0"
 

@@ -601,7 +601,7 @@ fn format_term<'a>(arena: &'a Arena<'a>, ctx: &FormatContext, term: &Term) -> Do
         Term::Nf(_) => arena.text("<NormalForm>"), // NormalForms shouldn't appear in source
         Term::FunDef(fun) => format_fundef(arena, ctx, fun),
         Term::Lop(lop) => format_listop(arena, ctx, lop),
-        Term::Gen(gen) => format_genop(arena, ctx, gen),
+        Term::Gen(r#gen) => format_genop(arena, ctx, r#gen),
     }
 }
 
@@ -1353,8 +1353,8 @@ fn format_listop<'a>(arena: &'a Arena<'a>, ctx: &FormatContext, lop: &ListOp) ->
     }
 }
 
-fn format_genop<'a>(arena: &'a Arena<'a>, ctx: &FormatContext, gen: &GenOp) -> DocBuilder<'a, Arena<'a>> {
-    match gen {
+fn format_genop<'a>(arena: &'a Arena<'a>, ctx: &FormatContext, r#gen: &GenOp) -> DocBuilder<'a, Arena<'a>> {
+    match r#gen {
         GenOp::Named { name, .. } => arena.text(name.clone()),
         GenOp::Const { .. } => arena.text("<Generator>"),
         GenOp::Taken { generator, n, .. } => {

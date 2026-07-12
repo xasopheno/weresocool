@@ -1,7 +1,7 @@
 [package]
 name = "weresocool_formatter"
 version = "2.0.0"
-edition = "2021"
+edition = "2024"
 authors = ["Danny <weresocool@xasopheno.com>"]
 description = "Code formatter for WereSoCool .socool files"
 license = "GPL-3.0"

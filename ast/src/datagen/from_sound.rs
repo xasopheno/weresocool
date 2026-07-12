@@ -209,7 +209,7 @@ fn tracks_to_normalform(tracks: &[TrackOut], _duration_sec: f32, fps: usize, sam
         let voice_idx = voice_end_times
             .iter()
             .enumerate()
-            .find(|(_, &end)| end + 0.005 <= start_time)
+            .find(|&(_, &end)| end + 0.005 <= start_time)
             .map(|(i, _)| i)
             .unwrap_or_else(|| {
                 voices.push(Vec::new());

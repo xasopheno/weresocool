@@ -91,12 +91,12 @@ fn bench_render_manager_read(c: &mut Criterion) {
                 |mut rm| {
                     let mut produced = 0usize;
                     while produced < reads {
-                        if let Some((sw, _ramp, _ops)) = rm.read(buffer, Offset::default()) {
+                        match rm.read(buffer, Offset::default()) { Some((sw, _ramp, _ops)) => {
                             produced += 1;
                             criterion::black_box(sw);
-                        } else {
+                        } _ => {
                             break;
-                        }
+                        }}
                     }
                 },
                 BatchSize::SmallInput,

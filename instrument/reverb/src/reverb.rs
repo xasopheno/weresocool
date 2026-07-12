@@ -280,7 +280,7 @@ impl Reverb {
 
 /// Generates an implementation of Buffer for a fixed-size array with "$n" number of elements.
 macro_rules! impl_buffer {
-    ($n:expr) => {
+    ($n:expr_2021) => {
         impl Buffer for [f32; $n] {
             fn zeroed() -> Self {
                 [0.0; $n]

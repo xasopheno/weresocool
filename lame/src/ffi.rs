@@ -3,7 +3,7 @@ use std::os::raw::{c_int, c_void};
 pub type LamePtr = *mut c_void;
 
 #[link(name = "mp3lame")]
-extern "C" {
+unsafe extern "C" {
     pub fn lame_init() -> LamePtr;
     pub fn lame_close(ptr: LamePtr) -> c_int;
     pub fn lame_set_in_samplerate(ptr: LamePtr, samplerate: c_int) -> c_int;
