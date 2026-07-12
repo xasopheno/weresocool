@@ -365,7 +365,10 @@ pub fn strip_draw_extensions(src: &str) -> String {
         i += 1;
     }
 
-    // Pass 3: `| draw <name>` named chain refs.
+    // Pass 3: `| draw <name>` named chain refs, AND bare `| <name>` refs
+    // where <name> is a known draw def (the form compositions actually
+    // write: `bd = { ... | circles }`). Vanilla weresocool must drop both
+    // so the audio parses; kintaro re-derives the routing itself.
     if !draw_names.is_empty() {
         let bytes3 = out.clone();
         let mut i = 0;
@@ -373,21 +376,23 @@ pub fn strip_draw_extensions(src: &str) -> String {
             if bytes3[i] == b'|' {
                 let mut j = i + 1;
                 while j < bytes3.len() && matches!(bytes3[j], b' ' | b'\t') { j += 1; }
-                if j + 4 <= bytes3.len() && &bytes3[j..j + 4] == b"draw" {
-                    let after_kw = j + 4;
-                    if after_kw < bytes3.len() && !is_socool_ident_byte(bytes3[after_kw]) {
-                        let mut k = after_kw;
-                        while k < bytes3.len() && matches!(bytes3[k], b' ' | b'\t') { k += 1; }
-                        let name_start = k;
-                        while k < bytes3.len() && is_socool_ident_byte(bytes3[k]) { k += 1; }
-                        if k > name_start {
-                            let candidate = std::str::from_utf8(&bytes3[name_start..k]).unwrap();
-                            if draw_names.contains(candidate) {
-                                blank_range(&mut out, i, k);
-                                i = k;
-                                continue;
-                            }
-                        }
+                // Optional `draw` keyword before the name.
+                let mut k = j;
+                if k + 4 <= bytes3.len()
+                    && &bytes3[k..k + 4] == b"draw"
+                    && (k + 4 == bytes3.len() || !is_socool_ident_byte(bytes3[k + 4]))
+                {
+                    k += 4;
+                    while k < bytes3.len() && matches!(bytes3[k], b' ' | b'\t') { k += 1; }
+                }
+                let name_start = k;
+                while k < bytes3.len() && is_socool_ident_byte(bytes3[k]) { k += 1; }
+                if k > name_start {
+                    let candidate = std::str::from_utf8(&bytes3[name_start..k]).unwrap();
+                    if draw_names.contains(candidate) {
+                        blank_range(&mut out, i, k);
+                        i = k;
+                        continue;
                     }
                 }
             }
