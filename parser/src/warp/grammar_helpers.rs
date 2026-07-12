@@ -65,6 +65,15 @@ pub fn extract_named_pair(args: Vec<(String, WarpExpr)>, name_a: &str, name_b: &
 /// Ripple(ch, freq: 40, speed: 6, amp: 0.02) — all three tunables optional.
 /// Stir(radius: 0.25, strength: 1.0) — both optional with LIVE defaults
 /// (a bare `Stir bd { }` should visibly stir, not silently do nothing).
+/// Displace { radial: expr, tangent: expr } — either or both; defaults 0
+/// (a bare Displace is a no-op by design: the expressions ARE the op).
+pub fn extract_displace_args(mut args: Vec<(String, WarpExpr)>) -> (WarpExpr, WarpExpr) {
+    let radial = take_named_or(&mut args, "radial", || WarpExpr::DefaultLit(0.0));
+    let tangent = take_named_or(&mut args, "tangent", || WarpExpr::DefaultLit(0.0));
+    warn_leftover("Displace", &args, &["radial", "tangent"]);
+    (radial, tangent)
+}
+
 pub fn extract_stir_args(mut args: Vec<(String, WarpExpr)>) -> (WarpExpr, WarpExpr) {
     let radius = take_named_or(&mut args, "radius", || WarpExpr::DefaultLit(0.25));
     let strength = take_named_or(&mut args, "strength", || WarpExpr::DefaultLit(1.0));
@@ -117,14 +126,17 @@ pub fn extract_stain_args(mut args: Vec<(String, WarpExpr)>) -> (WarpExpr, WarpE
 
 /// Watercolor(wet: 0.9, evap: 0.994, flow: 2.0, gain: 0.11) — all optional.
 pub fn extract_watercolor_args(mut args: Vec<(String, WarpExpr)>) -> (WarpExpr, WarpExpr, WarpExpr, WarpExpr, WarpExpr) {
-    let wet = take_named_or(&mut args, "wet", || WarpExpr::DefaultLit(0.9));
-    let evap = take_named_or(&mut args, "evap", || WarpExpr::DefaultLit(0.994));
-    let flow = take_named_or(&mut args, "flow", || WarpExpr::DefaultLit(2.0));
-    let gain = take_named_or(&mut args, "gain", || WarpExpr::DefaultLit(0.11));
-    let fade = take_named_or(&mut args, "fade", || WarpExpr::DefaultLit(1.0));
-    warn_leftover("Watercolor", &args, &["wet", "evap", "flow", "gain", "fade"]);
-    (wet, evap, flow, gain, fade)
-
+    // Every knob points the intuitive way (bigger = more of the word):
+    // wetness = water per note, drying = per-frame water loss, bleed =
+    // how hard pigment chases water, deposit = pigment per note, lift =
+    // per-frame pigment loss (0 = the canvas keeps everything).
+    let wetness = take_named_or(&mut args, "wetness", || WarpExpr::DefaultLit(0.9));
+    let drying = take_named_or(&mut args, "drying", || WarpExpr::DefaultLit(0.006));
+    let bleed = take_named_or(&mut args, "bleed", || WarpExpr::DefaultLit(2.0));
+    let deposit = take_named_or(&mut args, "deposit", || WarpExpr::DefaultLit(0.11));
+    let lift = take_named_or(&mut args, "lift", || WarpExpr::DefaultLit(0.0));
+    warn_leftover("Watercolor", &args, &["wetness", "drying", "bleed", "deposit", "lift"]);
+    (wetness, drying, bleed, deposit, lift)
 }
 
 /// Bulge(ch, radius: 0.2, amount: 0.06, mirror: 0) — mirror=1 doubles the

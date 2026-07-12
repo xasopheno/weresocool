@@ -124,6 +124,14 @@ pub enum Expr {
     HitX(HitRef),
     /// The part's most recent onset y (warp uv space) — warp-only.
     HitY(HitRef),
+    /// Aspect-corrected distance from the current pixel to the part's most
+    /// recent onset — warp-only. The field primitive under Ripple/Glow/
+    /// Bulge: `exp(-Dist(bd) * 8.0)` is a falloff, `sin(Dist(bd) * 40.0)`
+    /// is rings.
+    Dist(HitRef),
+    /// Seconds since the part's most recent onset — warp-only. Pairs with
+    /// Dist for travelling waves: `sin(Dist(bd) * 40 - HitAge(bd) * 6)`.
+    HitAge(HitRef),
 }
 
 /// How a hit channel is referenced in source: by the part's NAME (the
@@ -211,6 +219,8 @@ pub fn to_wgsl(e: &Expr) -> String {
         Expr::Hit(ch) => format!("hit({}u)", ch.idx()),
         Expr::HitX(ch) => format!("hit_x({}u)", ch.idx()),
         Expr::HitY(ch) => format!("hit_y({}u)", ch.idx()),
+        Expr::Dist(ch) => format!("k_hit_dist({}u, uv)", ch.idx()),
+        Expr::HitAge(ch) => format!("hit_age({}u)", ch.idx()),
         // Unresolved loop placeholder (should be rewritten pre-codegen); the
         // warp live clock is `time`, so degrade to that.
         Expr::LoopName(_) => "time".into(),
@@ -275,7 +285,9 @@ pub fn as_const(e: &Expr) -> Option<f64> {
         | Expr::UserParam { .. }
         | Expr::Hit(_)
         | Expr::HitX(_)
-        | Expr::HitY(_) => None,
+        | Expr::HitY(_)
+        | Expr::Dist(_)
+        | Expr::HitAge(_) => None,
     }
 }
 

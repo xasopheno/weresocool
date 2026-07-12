@@ -126,6 +126,14 @@ pub enum WarpOp {
     /// stills as it fades. Negative `strength` = counter-clockwise.
     /// `Stir(0, radius: 0.3, strength: 1.0)`. UV op: place before Decay/Add.
     Stir { ch: HitRef, radius: WarpExpr, strength: WarpExpr },
+    /// THE generic hit-centered displacement primitive — Ripple, Bulge and
+    /// Stir are idioms of it. Displaces sampling around the part's most
+    /// recent onset: `radial` moves along the away-from-hit direction
+    /// (positive = outward), `tangent` around it (positive = counter-
+    /// clockwise). Both take full expressions; combine with Dist/HitAge/
+    /// Hit to build any impact response:
+    /// `Displace bd { radial: sin(Dist(bd) * 40 - HitAge(bd) * 6) * 0.02 * Hit(bd) }`.
+    Displace { ch: HitRef, radial: WarpExpr, tangent: WarpExpr },
     /// A soft local swell at channel `ch`'s most recent onset: the region
     /// magnifies/distorts gently (falloff over `radius`), gated by the hit
     /// envelope, relaxing as it fades. `Bulge(0, radius: 0.22, amount: 0.05)`.
@@ -145,14 +153,22 @@ pub enum WarpOp {
     Stain { r: WarpExpr, g: WarpExpr, b: WarpExpr, strength: WarpExpr, opacity: WarpExpr },
     /// A REAL watercolor simulation step, run every frame in the feedback:
     /// the state buffer holds pigment (rgb) and water (alpha). Water
-    /// diffuses and evaporates; pigment rides the water — it migrates
-    /// toward the drying edge (edge blooms), bleeds while wet, settles
-    /// into the paper's valleys (granulation), and STOPS where dry. Fresh
-    /// marks deposit pigment + water, so strokes into wet regions bleed
-    /// together and strokes onto dry paper stay crisp. Must live in a
-    /// Prev-sourced stage with `| Opaque` (water needs the alpha channel).
-    /// `Watercolor(wet: 0.9, evap: 0.994, flow: 2.0, gain: 0.11)`.
-    Watercolor { wet: WarpExpr, evap: WarpExpr, flow: WarpExpr, gain: WarpExpr, fade: WarpExpr },
+    /// diffuses and dries; pigment rides the water — it migrates toward
+    /// the drying edge (edge blooms), bleeds while wet, settles into the
+    /// paper's valleys (granulation), and STOPS where dry. Fresh marks
+    /// deposit pigment + water, so strokes into wet regions bleed together
+    /// and strokes onto dry paper stay crisp. Must live in a Prev-sourced
+    /// stage with `| Opaque` (water needs the alpha channel).
+    /// All knobs point the intuitive way (bigger = more of the word):
+    /// `Watercolor { wetness: 0.9, drying: 0.006, bleed: 2.0,
+    ///               deposit: 0.11, lift: 0.005 }`.
+    Watercolor {
+        wetness: WarpExpr,
+        drying: WarpExpr,
+        bleed: WarpExpr,
+        deposit: WarpExpr,
+        lift: WarpExpr,
+    },
     /// Bloom: `Bloom(threshold: 0.5, strength: 0.6)` — adds halo for bright pixels.
     Bloom { threshold: WarpExpr, strength: WarpExpr },
     /// Debug visualisation of the depth buffer (NDC depth stored in the
