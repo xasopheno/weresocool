@@ -113,8 +113,11 @@ SeqItems: Vec<VisualOp> = {
     },
 };
 
-// Separator for Seq items - comma or semicolon
+// Separator for Seq items — comma (matches warp/draw Seq) or semicolon.
+// `;` stays valid because it's also WGSL's real statement terminator; `,` is
+// the "one language" spelling shared with every other DSL's Seq.
 SeqSep: () = {
+    "," => (),
     ";" => (),
 };
 

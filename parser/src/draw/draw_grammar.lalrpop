@@ -25,7 +25,7 @@ match {
     "count", "phase", "cycle",
 
     // Note field names (matched after `note .`)
-    "x", "y", "z", "l", "t", "event", "voice", "direction",
+    "x", "y", "z", "l", "t", "voice", "direction",
 
     // Ops
     "Xa", "Ya", "Za", "Rx", "Ry", "Rz", "Sm", "Sa",
@@ -480,8 +480,9 @@ NoteFieldName: NoteField = {
     "z"     => NoteField::Z,
     "l"     => NoteField::L,
     "t"     => NoteField::T,
-    "event" => NoteField::Event,
     "voice" => NoteField::Voice,
+    // `note.event` (the index) is spelled `count` — see the count/phase/cycle
+    // sugar below, which lower onto NoteField::Event directly.
 };
 
 // Bare audio-op name (for `mod <name>`), mirrors warp's Name rule.
