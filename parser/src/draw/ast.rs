@@ -4,15 +4,16 @@
 //! ops left-to-right, each transforming the emit-set the previous op produced.
 //! `Each(sub_pipeline)` is the recursion combinator — for each emit in the
 //! current set, run `sub_pipeline` rebound to that emit's position, union the
-//! results. Numeric expressions can reference `Time` and per-note
-//! properties (`note.x`, `note.y`, `note.z`, `note.l`, `note.event`).
+//! results. Numeric expressions can reference per-note properties
+//! (`note.x`, `note.y`, `note.z`, `note.l`, `note.t`, `note.event`) and the
+//! live `clock`.
 //!
 //! See `docs/draw-dsl-design.md`.
 
 // The expression sublanguage is shared across the visual DSLs — see
 // `crate::dsl_expr` (DSL_STYLE Law 4). `DrawExpr` is an alias so draw keeps its
 // spelling while the AST stays single-source. draw's grammar produces the
-// full set MINUS `UserParam` (warp-only): `Lit`/`Time`/`Note`/`Stroke`/`Sin`/
+// full set MINUS `UserParam` (warp-only): `Lit`/`Clock`/`Note`/`Stroke`/`Sin`/
 // `Bin`. `Note(field)` is `note.x` etc.; `Stroke` is `0.0`→`1.0` along the
 // current expansion (only meaningful per-emit, inside `Tint`).
 pub use crate::dsl_expr::{BinOp, Expr as DrawExpr, MathFn, NoteField};
@@ -52,8 +53,6 @@ pub enum Increment {
     Rz(DrawExpr),
     Sm(DrawExpr),
     Sa(DrawExpr),
-    /// Temporal offset per copy. Turns `Spawn` into a temporal echo.
-    Time(DrawExpr),
     /// Apply multiple increments in parallel each step.
     Tuple(Vec<Increment>),
 }
@@ -72,7 +71,6 @@ pub enum Field {
     /// rather than scattering them. `seed` is per-note-stable.
     Flow { scale: DrawExpr, seed: Option<DrawExpr> },
     Const(DrawExpr),
-    Time,
     Note(NoteField),
 }
 

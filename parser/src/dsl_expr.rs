@@ -25,6 +25,9 @@ pub enum NoteField {
     Y,
     Z,
     L,
+    /// `note.t` — the note's onset (seconds). The per-note timestamp; was the
+    /// capital `Time` atom before Law 4 folded it into the `note.*` family.
+    T,
     Event,
     Voice,
 }
@@ -82,10 +85,10 @@ impl MathFn {
 #[derive(Debug, Clone, PartialEq)]
 pub enum Expr {
     Lit(f32),
-    /// Seconds since the element's birth.
-    Time,
-    /// The live play clock — seconds of song time elapsed (draw: `clock`,
-    /// warp/wgsl: `song_time`). Unlike `Time` (per-note onset, static) this
+    /// The live play clock — seconds of song time elapsed. The surface spelling
+    /// is `clock` in every DSL (in warp it coincides with the frame's `time`,
+    /// and lowers to `time`; in brush-wgsl the passthrough rewrites `clock` to
+    /// the `song_time` uniform). Unlike a note's onset (`note.t`, static) this
     /// advances every frame, so an expression built on it moves over time.
     Clock,
     /// `note.<field>` — draw only (needs a concrete note; CPU-evaluated).
@@ -178,10 +181,9 @@ pub fn to_wgsl(e: &Expr) -> String {
                 format!("{}", n)
             }
         }
-        Expr::Time => "time".into(),
         // warp is a fullscreen compositor with no per-element birth, so its
         // `params.time` (emitted as `time`) already IS the live play clock —
-        // `Clock` and `Time` coincide here. (The brush-wgsl live clock is a
+        // `clock` lowers to `time` here. (The brush-wgsl live clock is a
         // separate identifier, `song_time`, surfaced by weresocool's own
         // passthrough, not this backend.)
         Expr::Clock => "time".into(),
@@ -280,8 +282,7 @@ pub fn as_const(e: &Expr) -> Option<f64> {
             })
         }
         // Runtime references — not statically knowable.
-        Expr::Time
-        | Expr::Clock
+        Expr::Clock
         | Expr::LoopName(_)
         | Expr::Note(_)
         | Expr::Stroke
@@ -309,15 +310,15 @@ mod tests {
             Some(1.0)
         );
         // runtime refs poison the fold
-        assert_eq!(as_const(&Call(MathFn::Abs, vec![Time])), None);
+        assert_eq!(as_const(&Call(MathFn::Abs, vec![Clock])), None);
     }
 
     #[test]
     fn to_wgsl_function_set() {
         use Expr::*;
-        assert_eq!(to_wgsl(&Call(MathFn::Sin, vec![Time])), "sin(time)");
+        assert_eq!(to_wgsl(&Call(MathFn::Sin, vec![Clock])), "sin(time)");
         assert_eq!(
-            to_wgsl(&Call(MathFn::Clamp, vec![Time, Lit(0.0), Lit(1.0)])),
+            to_wgsl(&Call(MathFn::Clamp, vec![Clock, Lit(0.0), Lit(1.0)])),
             "clamp(time, 0.0, 1.0)"
         );
         // variadic max is stored (and emitted) as nested binary calls.

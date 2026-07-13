@@ -1,7 +1,7 @@
 //! Helpers for the lalrpop-generated warp grammar.
 //!
 //! Several warp ops accept order-independent named arguments with defaults
-//! (`Bloom(threshold: 0.5, strength: 0.6)`, `Fade(at: 30, dur: 1)` etc.).
+//! (`Bloom { threshold: 0.5, strength: 0.6 }`, `Fade { at: 30, dur: 1 }` etc.).
 //! Encoding this in lalrpop directly would mean a combinatorial explosion of
 //! grammar rules. Instead, the grammar parses a flat `Vec<(String, WarpExpr)>`
 //! per call site and these helpers do the name lookup + default application.
@@ -61,7 +61,7 @@ pub fn extract_named_pair(args: Vec<(String, WarpExpr)>, name_a: &str, name_b: &
     (a, b)
 }
 
-/// `Osc(freq: 60.0, sync: 0.1, offset: 0.0)`.
+/// `Osc { freq: 60.0, sync: 0.1, offset: 0.0 }`.
 /// Ripple(ch, freq: 40, speed: 6, amp: 0.02) — all three tunables optional.
 /// Stir(radius: 0.25, strength: 1.0) — both optional with LIVE defaults
 /// (a bare `Stir bd { }` should visibly stir, not silently do nothing).
@@ -177,7 +177,7 @@ pub fn extract_osc_args(args: Vec<(String, WarpExpr)>) -> (WarpExpr, WarpExpr, W
     (freq, sync, offset)
 }
 
-/// `Noise(scale: 10.0, offset: 0.1)`.
+/// `Noise { scale: 10.0, offset: 0.1 }`.
 pub fn extract_noise_args(args: Vec<(String, WarpExpr)>) -> (WarpExpr, WarpExpr) {
     let mut args = args;
     let scale  = take_named_or(&mut args, "scale",  || WarpExpr::DefaultLit(10.0));
@@ -207,7 +207,7 @@ pub fn extract_fade_args(args: Vec<(String, WarpExpr)>)
     (at, every, offset, dur, to)
 }
 
-/// `Background(top: (r,g,b), bottom: (r,g,b), split: 0.5, soft: 0.05)`.
+/// `Background { top: (r,g,b), bottom: (r,g,b), split: 0.5, soft: 0.05 }`.
 /// `bot` is accepted as a short alias for `bottom` (matches hand-parser).
 pub fn extract_background_args(args: Vec<(String, BgArgVal)>)
     -> (WarpExpr, WarpExpr, WarpExpr, WarpExpr, WarpExpr, WarpExpr, WarpExpr, WarpExpr)

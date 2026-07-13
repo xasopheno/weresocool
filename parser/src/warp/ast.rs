@@ -69,7 +69,7 @@ pub enum WarpOp {
     Fold(WarpExpr),
     Kaleid(WarpExpr),
     ChromaShift(WarpExpr),
-    /// Curl-noise displacement: `CurlFlow(amp: 0.012, freq: 9)`.
+    /// Curl-noise displacement: `CurlFlow { amp: 0.012, freq: 9 }`.
     CurlFlow { amp: WarpExpr, freq: WarpExpr },
     // Color ops
     Decay(WarpExpr),
@@ -169,7 +169,7 @@ pub enum WarpOp {
         deposit: WarpExpr,
         lift: WarpExpr,
     },
-    /// Bloom: `Bloom(threshold: 0.5, strength: 0.6)` — adds halo for bright pixels.
+    /// Bloom: `Bloom { threshold: 0.5, strength: 0.6 }` — adds halo for bright pixels.
     Bloom { threshold: WarpExpr, strength: WarpExpr },
     /// Debug visualisation of the depth buffer (NDC depth stored in the
     /// scene texture's `.a` channel by the brush fragment). Outputs a
@@ -222,12 +222,12 @@ pub enum WarpOp {
     /// 90… (modulo `every`). Set `offset` to phase-shift.
     Clear { at: Option<WarpExpr>, every: Option<WarpExpr>, offset: Option<WarpExpr> },
     /// Soft fade the field toward black over a window of composition time.
-    /// `Fade(at: 30, dur: 1.0)` — starting at t=30s, exponentially decay
+    /// `Fade { at: 30, dur: 1.0 }` — starting at t=30s, exponentially decay
     /// `Prev` faster than the steady-state `Decay` op for `dur` seconds,
     /// so the canvas darkens to near-zero by t=31s, then resumes normal
     /// accumulation. Composer-visible "soft reset between sections."
     /// `to` controls how dark we get (default 0.05 = 5% of original).
-    /// `Fade(every: 30, dur: 1.0)` for recurring fades aligned with
+    /// `Fade { every: 30, dur: 1.0 }` for recurring fades aligned with
     /// `Repeat` boundaries — set `every` to the composition's length per
     /// iteration.
     Fade {

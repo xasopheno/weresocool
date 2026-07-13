@@ -337,7 +337,7 @@ mod tests {
 
     #[test]
     fn same_args_dedupe_to_one_def() {
-        let src = "draw s(n) = { Point | Spawn(n, by: Rz(1/4)) }\n\
+        let src = "draw s(n) = { Point | Spawn(n, Rz(1/4)) }\n\
                    a = { s(8) }\nb = { s(8) }\nc = { s(6) }";
         let out = expand(src).unwrap();
         // Two distinct specializations: s(8) shared by a & b, s(6) for c.
@@ -348,7 +348,7 @@ mod tests {
     fn nested_param_call_expands() {
         // A template body that itself calls another template.
         let src = "draw dot(r) = { Point | Sm(r) }\n\
-                   draw ring(r) = { dot(r) | Spawn(6, by: Rz(1/6)) }\n\
+                   draw ring(r) = { dot(r) | Spawn(6, Rz(1/6)) }\n\
                    main = { ring(0.3) }";
         let out = expand(src).unwrap();
         assert!(out.contains("draw ring__"), "ring specialized: {out}");
@@ -361,9 +361,9 @@ mod tests {
     #[test]
     fn named_arg_key_not_substituted() {
         // `amp` is both a named-arg KEY and a VALUE — only the value expands.
-        let src = "warp g(amp) = { Prev | CurlFlow(amp: amp, freq: 6) }\nmain = { g(0.01) }";
+        let src = "warp g(amp) = { Prev | CurlFlow { amp: amp, freq: 6 } }\nmain = { g(0.01) }";
         let out = expand(src).unwrap();
-        assert!(out.contains("CurlFlow(amp: (0.01), freq: 6)"), "key kept, value expanded: {out}");
+        assert!(out.contains("CurlFlow { amp: (0.01), freq: 6 }"), "key kept, value expanded: {out}");
     }
 
     #[test]

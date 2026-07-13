@@ -358,7 +358,7 @@ mod tests {
     #[test]
     fn extracts_top_level_draw_block() {
         let src = "
-draw ring = { Point | Xa(0.3) | Spawn(8, by: Rz(1/8)) }
+draw ring = { Point | Xa(0.3) | Spawn(8, Rz(1/8)) }
 voice = { Color [red, blue] | draw ring }
 ";
         let pre = extract_draws(src).expect("preprocess");
@@ -376,7 +376,7 @@ voice = { Color [red, blue] | draw ring }
         // mirroring warp's bare `| warp_name`. Audio ops in the same chain
         // (here `Gain`) must NOT be swallowed.
         let src = "
-draw ring = { Point | Xa(0.3) | Spawn(8, by: Rz(1/8)) }
+draw ring = { Point | Xa(0.3) | Spawn(8, Rz(1/8)) }
 voice = { Color [red, blue] | Gain 1/2 | ring }
 ";
         let pre = extract_draws(src).expect("preprocess");
@@ -389,7 +389,7 @@ voice = { Color [red, blue] | Gain 1/2 | ring }
     #[test]
     fn routes_inline_draw_block() {
         let src = "
-voice = { Color [red] | draw { Point | Xa(0.3) | Spawn(8, by: Rz(1/8)) } }
+voice = { Color [red] | draw { Point | Xa(0.3) | Spawn(8, Rz(1/8)) } }
 ";
         let pre = extract_draws(src).expect("preprocess");
         // One synthesized inline def.
@@ -412,7 +412,7 @@ voice = { Color [red] | draw { Point | Xa(0.3) | Spawn(8, by: Rz(1/8)) } }
         // changing by design; this test pins the block-blanking path.)
         let src = "
 -- “détail” — smart quotes and é
-draw ring = { Point | Xa(0.3) | Spawn(8, by: Rz(1/8)) }
+draw ring = { Point | Xa(0.3) | Spawn(8, Rz(1/8)) }
 voice = { Color [red] }
 -- après
 ";
@@ -433,7 +433,7 @@ voice = { Color [red] }
     #[test]
     fn propagates_through_composition() {
         let src = "
-draw ring = { Point | Xa(0.3) | Spawn(8, by: Rz(1/8)) }
+draw ring = { Point | Xa(0.3) | Spawn(8, Rz(1/8)) }
 voice = { Color [red] }
 main = { voice | draw ring }
 ";

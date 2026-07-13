@@ -38,7 +38,7 @@ match {
     "|", "(", ")", "{", "}", "[", "]", ",", ";", ":", "+", "-", "*", "/",
 
     "Prev", "Scene", "Osc", "Noise", "Gradient", "Solid",
-    "Time", "time", "clock", "Sin", "Hit", "HitX", "HitY", "Dist", "HitAge", "Displace", "Ripple", "Glow", "Stir", "Bulge", "Relief", "Stain", "Watercolor",
+    "time", "clock", "Sin", "Hit", "HitX", "HitY", "Dist", "HitAge", "Displace", "Ripple", "Glow", "Stir", "Bulge", "Relief", "Stain", "Watercolor",
 
     "Scale", "Rotate", "Scroll", "Swirl", "Fold", "Kaleid",
     "ChromaShift", "CurlFlow", "Wave", "Iterate",
@@ -107,17 +107,9 @@ SrcExpr: Source = {
     "Prev"  => Source::Prev,
     "Scene" => Source::Scene,
 
-    "Osc" "(" <args:NamedArgList> ")" => {
-        let (freq, sync, offset) = h::extract_osc_args(args);
-        Source::Osc { freq, sync, offset }
-    },
     "Osc" "{" <args:NamedArgList> "}" => {
         let (freq, sync, offset) = h::extract_osc_args(args);
         Source::Osc { freq, sync, offset }
-    },
-    "Noise" "(" <args:NamedArgList> ")" => {
-        let (scale, offset) = h::extract_noise_args(args);
-        Source::Noise { scale, offset }
     },
     "Noise" "{" <args:NamedArgList> "}" => {
         let (scale, offset) = h::extract_noise_args(args);
@@ -157,24 +149,16 @@ Op: WarpOp = {
     // Three-arg positional Tint
     "Tint" "(" <r:Expr> "," <g:Expr> "," <b:Expr> ")" => WarpOp::Tint(r, g, b),
 
-    // Named pairs — both shapes accepted:
-    //   Wave(freq: 3.5, amp: 0.1)    -- named, order-independent
-    //   Wave(3.5, 0.1)               -- positional, same order as AST fields
-    // Audio house style is positional; named is the readability escape hatch.
-    "Wave"     "(" <a:NamedArgList> ")" => {
-        let (freq, amp) = h::extract_named_pair(a, "freq", "amp");
-        WarpOp::Wave { freq, amp }
-    },
+    // Named (brace) or positional (paren) — audio house style is positional;
+    // braces are the order-independent readability escape hatch:
+    //   Wave { freq: 3.5, amp: 0.1 }   -- named, order-independent
+    //   Wave(3.5, 0.1)                 -- positional, same order as AST fields
     "Wave"     "{" <a:NamedArgList> "}" => {
         let (freq, amp) = h::extract_named_pair(a, "freq", "amp");
         WarpOp::Wave { freq, amp }
     },
     "Wave"     "(" <f:Expr> "," <a:Expr> ")" => WarpOp::Wave { freq: f, amp: a },
 
-    "CurlFlow" "(" <a:NamedArgList> ")" => {
-        let (amp, freq) = h::extract_named_pair(a, "amp", "freq");
-        WarpOp::CurlFlow { amp, freq }
-    },
     "CurlFlow" "{" <a:NamedArgList> "}" => {
         let (amp, freq) = h::extract_named_pair(a, "amp", "freq");
         WarpOp::CurlFlow { amp, freq }
@@ -183,20 +167,12 @@ Op: WarpOp = {
 
     // Ripple(ch, ...) — a radial wave from channel ch's last note onset.
     // First arg is the hit channel (a literal); the rest named or positional.
-    "Ripple" "(" <c:ChanRef> "," <a:NamedArgList> ")" => {
-        let (freq, speed, amp) = h::extract_ripple_args(a);
-        WarpOp::Ripple { ch: c, freq, speed, amp }
-    },
     "Ripple" <c:ChanRef> "{" <a:NamedArgList> "}" => {
         let (freq, speed, amp) = h::extract_ripple_args(a);
         WarpOp::Ripple { ch: c, freq, speed, amp }
     },
 
     // Glow(ch, ...) — colored light pooling at channel ch's last onset.
-    "Glow" "(" <c:ChanRef> "," <a:NamedArgList> ")" => {
-        let (r, g, b, size) = h::extract_glow_args(a);
-        WarpOp::Glow { ch: c, r, g, b, size }
-    },
     "Glow" <c:ChanRef> "{" <a:NamedArgList> "}" => {
         let (r, g, b, size) = h::extract_glow_args(a);
         WarpOp::Glow { ch: c, r, g, b, size }
@@ -207,81 +183,53 @@ Op: WarpOp = {
         let (radial, tangent) = h::extract_displace_args(a);
         WarpOp::Displace { ch: c, radial, tangent }
     },
-    "Displace" "(" <c:ChanRef> "," <a:NamedArgList> ")" => {
-        let (radial, tangent) = h::extract_displace_args(a);
-        WarpOp::Displace { ch: c, radial, tangent }
-    },
 
     // Stir(ch, ...) — a decaying vortex at channel ch's last note onset.
-    "Stir" "(" <c:ChanRef> "," <a:NamedArgList> ")" => {
-        let (radius, strength) = h::extract_stir_args(a);
-        WarpOp::Stir { ch: c, radius, strength }
-    },
     "Stir" <c:ChanRef> "{" <a:NamedArgList> "}" => {
         let (radius, strength) = h::extract_stir_args(a);
         WarpOp::Stir { ch: c, radius, strength }
     },
 
     // Bulge(ch, ...) — a soft local swell at channel ch's last onset.
-    "Bulge" "(" <c:ChanRef> "," <a:NamedArgList> ")" => {
-        let (radius, amount, mirror) = h::extract_bulge_args(a);
-        WarpOp::Bulge { ch: c, radius, amount, mirror }
-    },
     "Bulge" <c:ChanRef> "{" <a:NamedArgList> "}" => {
         let (radius, amount, mirror) = h::extract_bulge_args(a);
         WarpOp::Bulge { ch: c, radius, amount, mirror }
     },
 
     // Relief(...) — collapse the source-as-height-field into lit 2D form.
-    "Relief" "(" <a:NamedArgList> ")" => {
-        let (height, lx, ly, ambient) = h::extract_relief_args(a);
-        WarpOp::Relief { height, lx, ly, ambient }
-    },
     "Relief" "{" <a:NamedArgList> "}" => {
         let (height, lx, ly, ambient) = h::extract_relief_args(a);
         WarpOp::Relief { height, lx, ly, ambient }
     },
 
     // Stain(...) — soak the incoming field into a woven canvas as pigment.
-    "Stain" "(" <a:NamedArgList> ")" => {
-        let (r, g, b, strength, opacity) = h::extract_stain_args(a);
-        WarpOp::Stain { r, g, b, strength, opacity }
-    },
     "Stain" "{" <a:NamedArgList> "}" => {
         let (r, g, b, strength, opacity) = h::extract_stain_args(a);
         WarpOp::Stain { r, g, b, strength, opacity }
     },
 
     // Watercolor(...) — one full sim step: water moves, pigment rides it.
-    "Watercolor" "(" <a:NamedArgList> ")" => {
-        let (wetness, drying, bleed, deposit, lift) = h::extract_watercolor_args(a);
-        WarpOp::Watercolor { wetness, drying, bleed, deposit, lift }
-    },
     "Watercolor" "{" <a:NamedArgList> "}" => {
         let (wetness, drying, bleed, deposit, lift) = h::extract_watercolor_args(a);
         WarpOp::Watercolor { wetness, drying, bleed, deposit, lift }
     },
 
-    "Bloom"    "(" <a:NamedArgList> ")" => {
-        let (threshold, strength) = h::extract_named_pair(a, "threshold", "strength");
-        WarpOp::Bloom { threshold, strength }
-    },
     "Bloom"    "{" <a:NamedArgList> "}" => {
         let (threshold, strength) = h::extract_named_pair(a, "threshold", "strength");
         WarpOp::Bloom { threshold, strength }
     },
     "Bloom"    "(" <t:Expr> "," <s:Expr> ")" => WarpOp::Bloom { threshold: t, strength: s },
 
-    // Optional named-args with defaults
-    "Clear" "(" <a:NamedArgList> ")" => {
+    // Optional named-args with defaults — brace bags (Law 6).
+    "Clear" "{" <a:NamedArgList> "}" => {
         let (at, every, offset) = h::extract_clear_args(a);
         WarpOp::Clear { at, every, offset }
     },
-    "Fade" "(" <a:NamedArgList> ")" => {
+    "Fade" "{" <a:NamedArgList> "}" => {
         let (at, every, offset, dur, to) = h::extract_fade_args(a);
         WarpOp::Fade { at, every, offset, dur, to }
     },
-    "Background" "(" <a:BgArgList> ")" => {
+    "Background" "{" <a:BgArgList> "}" => {
         let f = h::extract_background_args(a);
         WarpOp::Background {
             top_r: f.0, top_g: f.1, top_b: f.2,
@@ -486,8 +434,9 @@ Term: WarpExpr = {
 };
 Factor: WarpExpr = {
     <n:Num> => WarpExpr::Lit(n),
-    "Time"  => WarpExpr::Time,
-    "time"  => WarpExpr::Time,
+    // warp has no per-element birth, so the frame clock is the only time —
+    // `time` and `clock` are the same thing here (both lower to `time`).
+    "time"  => WarpExpr::Clock,
     "Hit" "(" <c:ChanRef> ")" => WarpExpr::Hit(c),
     "HitX" "(" <c:ChanRef> ")" => WarpExpr::HitX(c),
     "HitY" "(" <c:ChanRef> ")" => WarpExpr::HitY(c),
@@ -534,8 +483,7 @@ NonParenTerm: WarpExpr = {
 };
 NonParenFactor: WarpExpr = {
     <n:Num> => WarpExpr::Lit(n),
-    "Time"  => WarpExpr::Time,
-    "time"  => WarpExpr::Time,
+    "time"  => WarpExpr::Clock,
     "Hit" "(" <c:ChanRef> ")" => WarpExpr::Hit(c),
     "HitX" "(" <c:ChanRef> ")" => WarpExpr::HitX(c),
     "HitY" "(" <c:ChanRef> ")" => WarpExpr::HitY(c),

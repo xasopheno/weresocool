@@ -107,7 +107,34 @@ pub fn compile_dsl_to_wgsl(src: &str) -> Result<String, DslError> {
         }
     }
 
-    Ok(result.join("\n"))
+    Ok(rewrite_surface_idents(&result.join("\n")))
+}
+
+/// Rewrite the Law-4 surface identifiers to the raw WGSL uniform/instance
+/// field names naga actually sees. A brush `wgsl { … }` block is raw WGSL
+/// underneath, so the dotted note fields (`note.t`, `note.l`, `note.gain`)
+/// and the shared live-clock name (`clock`) can't reach the shader verbatim —
+/// this boundary maps them onto the instance struct's flat fields. The old
+/// underscore spellings already match those fields, so they pass through
+/// untouched and keep working. Word-bounded so `account`/`clockwise`/etc. are
+/// safe; the dotted forms are matched literally.
+fn rewrite_surface_idents(wgsl: &str) -> String {
+    use regex::Regex;
+    let mut out = wgsl.to_string();
+    // Dotted note fields → flat instance-struct fields.
+    for (from, to) in [
+        (r"\bnote\.t\b", "note_t"),
+        (r"\bnote\.l\b", "note_l"),
+        (r"\bnote\.gain\b", "note_gain"),
+        (r"\bnote\.event\b", "note_event"),
+    ] {
+        out = Regex::new(from).unwrap().replace_all(&out, to).into_owned();
+    }
+    // Bare atoms: `count` is the note-index sugar; `clock` is the live play
+    // clock (the `song_time` uniform in the brush shader).
+    out = Regex::new(r"\bcount\b").unwrap().replace_all(&out, "note_event").into_owned();
+    out = Regex::new(r"\bclock\b").unwrap().replace_all(&out, "song_time").into_owned();
+    out
 }
 
 /// If `stmt` is `red|green|blue|alpha = <numeric literal>` (an absolute color
@@ -382,6 +409,26 @@ mod tests {
         let output = compile_dsl_to_wgsl(input).unwrap();
         assert!(output.contains("scale = scale * 0.3"), "{output}");
         assert!(output.contains("_die_end = (2"), "{output}");
+    }
+
+    #[test]
+    fn note_dot_fields_rewrite_to_instance_fields() {
+        // Law-4 surface: `note.t/l/gain` and `clock` are the beautiful spelling;
+        // they lower to the flat instance-struct fields naga sees.
+        // Quoted expression:
+        let o = compile_dsl_to_wgsl(r#"Sm "0.9 + note.gain * 0.9""#).unwrap();
+        assert!(o.contains("note_gain"), "quoted note.gain -> note_gain: {o}");
+        assert!(!o.contains("note.gain"), "dotted form must not survive: {o}");
+        // Bare leading dotted identifier (the grammar-extension case):
+        let o = compile_dsl_to_wgsl("Bm note.gain * 1.0 + 0.3").unwrap();
+        assert!(o.contains("note_gain"), "bare note.gain -> note_gain: {o}");
+        // Simple bare dotted value + the other fields + clock:
+        let o = compile_dsl_to_wgsl("Sm note.t | Vm note.l | Xa clock").unwrap();
+        assert!(o.contains("note_t") && o.contains("note_l") && o.contains("song_time"),
+            "note.t/note.l/clock all rewrite: {o}");
+        // `count` sugar and passthrough RawWgsl RHS both get rewritten:
+        let o = compile_dsl_to_wgsl("red = red * note.gain;").unwrap();
+        assert!(o.contains("note_gain"), "raw-wgsl RHS note.gain -> note_gain: {o}");
     }
 
     #[test]

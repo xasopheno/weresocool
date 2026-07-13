@@ -164,14 +164,21 @@ QuotedStr: String = {
 // WGSL expression: identifier, function call, or compound expression
 // Matches things like: sin(time), time * x * 2, x + y, etc.
 // Must start with a letter (not a digit) to distinguish from literals
+// A leading identifier may carry ONE dotted field — `note.t`, `note.gain` —
+// the Law-4 note.* surface. The wgsl_dsl.rs passthrough rewrites those dotted
+// names (and `clock`) to the raw instance-struct fields naga sees.
 WgslExpr: String = {
     // Function call: identifier(args) - matches sin(time), cos(x * 2), etc.
     <s:r"[a-z_][a-zA-Z0-9_]*\s*\([^)]*\)"> => s.to_string(),
     // Binary expression: identifier followed by operators and operands
-    // Matches: time * 2, x + y * z, progress * 0.5
-    <s:r"[a-z_][a-zA-Z0-9_]*(\s*[\+\-\*\/]\s*[a-zA-Z0-9_\.]+)+"> => s.to_string(),
-    // Simple identifier: time, x, y, progress, etc. (at least 2 chars to avoid single-letter numbers being captured)
+    // Matches: time * 2, note.gain * 0.5, x + y * z, progress * 0.5
+    <s:r"[a-z_][a-zA-Z0-9_]*(\.[a-zA-Z0-9_]+)?(\s*[\+\-\*\/]\s*[a-zA-Z0-9_\.]+)+"> => s.to_string(),
+    // Simple identifier: time, progress, etc. (at least 2 chars to avoid single-letter numbers being captured)
     <s:r"[a-z_][a-zA-Z0-9_]+"> => s.to_string(),
+    // Dotted note field: note.t, note.gain — the Law-4 note.* surface (rewritten
+    // to the flat instance field downstream). A separate terminal from the plain
+    // identifier (it always carries a `.`) to avoid lexer ambiguity.
+    <s:r"[a-z_][a-zA-Z0-9_]*\.[a-zA-Z0-9_]+"> => s.to_string(),
 };
 
 // Parse rational values: 1/2, 0.5, 2, -1

@@ -21,11 +21,11 @@ match {
     "Point", "AsIs", "None",
 
     // Atoms / functions
-    "Time", "Stroke", "clock", "mod", "Sin", "tau", "note", "Here",
+    "Stroke", "clock", "mod", "Sin", "tau", "note", "Here",
     "count", "phase", "cycle",
 
     // Note field names (matched after `note .`)
-    "x", "y", "z", "l", "event", "voice", "direction",
+    "x", "y", "z", "l", "t", "event", "voice", "direction",
 
     // Ops
     "Xa", "Ya", "Za", "Rx", "Ry", "Rz", "Sm", "Sa",
@@ -137,8 +137,7 @@ Op: DrawOp = {
     // non-trailing `| Lm N` is this op and adjusts emit timing.
     "Lm" <e:BareOrParenArg> => DrawOp::Lm(e),
 
-    // Mirror — named or positional. Audio house style is positional.
-    "Mirror" "(" "axis" ":" <a:AxisLit> ")" => DrawOp::Mirror(a),
+    // Mirror — brace-named or positional. Audio house style is positional.
     "Mirror" "{" "axis" ":" <a:AxisLit> "}" => DrawOp::Mirror(a),
     "Mirror" "(" <a:AxisLit> ")" => DrawOp::Mirror(a),
 
@@ -153,42 +152,31 @@ Op: DrawOp = {
     // Lerp — named or positional. AnchorExpr's first-token set (Here, Xa,
     // Ya, Za, Direction, note) doesn't collide with the `to` keyword, so
     // LR(1) picks the right rule from the first token after `(`.
-    "Lerp" "(" "to" ":" <a:AnchorExpr> "," "n" ":" <n:Expr> ")" =>
-        DrawOp::Lerp { to: a, n },
     "Lerp" "{" "to" ":" <a:AnchorExpr> "," "n" ":" <n:Expr> "}" =>
         DrawOp::Lerp { to: a, n },
     "Lerp" "(" <a:AnchorExpr> "," <n:Expr> ")" => DrawOp::Lerp { to: a, n },
 
     // Spawn — `by:` named form, or positional (the `by` keyword is just
     // a label here; the value is an IncrementExpr either way).
-    "Spawn" "(" <n:Expr> "," "by" ":" <by:IncrementExpr> ")" =>
-        DrawOp::Spawn { n, by },
     "Spawn" "{" "n" ":" <n:Expr> "," "by" ":" <by:IncrementExpr> "}" =>
         DrawOp::Spawn { n, by },
     "Spawn" "(" <n:Expr> "," <by:IncrementExpr> ")" => DrawOp::Spawn { n, by },
 
-    // Echo — named (with optional decay) or positional.
-    "Echo" "(" "n" ":" <n:Expr> "," "dt" ":" <dt:Expr> ")" =>
-        DrawOp::Echo { n, dt, decay: None },
+    // Echo — brace-named (with optional decay) or positional.
     "Echo" "{" "n" ":" <n:Expr> "," "dt" ":" <dt:Expr> "}" =>
         DrawOp::Echo { n, dt, decay: None },
     "Echo" "{" "n" ":" <n:Expr> "," "dt" ":" <dt:Expr> "," "decay" ":" <d:Expr> "}" =>
-        DrawOp::Echo { n, dt, decay: Some(d) },
-    "Echo" "(" "n" ":" <n:Expr> "," "dt" ":" <dt:Expr> "," "decay" ":" <d:Expr> ")" =>
         DrawOp::Echo { n, dt, decay: Some(d) },
     "Echo" "(" <n:Expr> "," <dt:Expr> ")" =>
         DrawOp::Echo { n, dt, decay: None },
     "Echo" "(" <n:Expr> "," <dt:Expr> "," <d:Expr> ")" =>
         DrawOp::Echo { n, dt, decay: Some(d) },
 
-    // Stagger — named or positional (single arg, both equivalent shapes).
-    "Stagger" "(" "over" ":" <o:Expr> ")" => DrawOp::Stagger { over: o },
+    // Stagger — brace-named or positional (single arg, both equivalent shapes).
     "Stagger" "{" "over" ":" <o:Expr> "}" => DrawOp::Stagger { over: o },
     "Stagger" "(" <o:Expr> ")" => DrawOp::Stagger { over: o },
 
-    // Drag — named or positional. AST field order: over, n, dv.
-    "Drag" "(" "over" ":" <o:Expr> "," "n" ":" <n:Expr> "," "dv" ":" <dv:Expr> ")" =>
-        DrawOp::Drag { over: o, n, dv },
+    // Drag — brace-named or positional. AST field order: over, n, dv.
     "Drag" "{" "over" ":" <o:Expr> "," "n" ":" <n:Expr> "," "dv" ":" <dv:Expr> "}" =>
         DrawOp::Drag { over: o, n, dv },
     "Drag" "(" <o:Expr> "," <n:Expr> "," <dv:Expr> ")" =>
@@ -357,7 +345,6 @@ IncrementAtom: Increment = {
     "Rz" <e:BareOrParenArg> => Increment::Rz(e),
     "Sm" <e:BareOrParenArg> => Increment::Sm(e),
     "Sa" <e:BareOrParenArg> => Increment::Sa(e),
-    "Time" <e:BareOrParenArg> => Increment::Time(e),
     "Direction" "(" <x:Expr> "," <y:Expr> "," <z:Expr> ")" =>
         Increment::Direction(x, y, z),
 };
@@ -368,20 +355,13 @@ IncrementAtom: Increment = {
 FieldExpr: Field = {
     "Sin" "(" <e:Expr> ")" => Field::Sin { freq: e },
     "Sin" "{" "freq" ":" <e:Expr> "}" => Field::Sin { freq: e },
-    "Noise" "(" "scale" ":" <s:Expr> ")" => Field::Noise { scale: s, seed: None },
     "Noise" "{" "scale" ":" <s:Expr> "}" => Field::Noise { scale: s, seed: None },
     "Noise" "{" "scale" ":" <s:Expr> "," "seed" ":" <d:Expr> "}" =>
         Field::Noise { scale: s, seed: Some(d) },
-    "Noise" "(" "scale" ":" <s:Expr> "," "seed" ":" <d:Expr> ")" =>
-        Field::Noise { scale: s, seed: Some(d) },
-    "Flow" "(" "scale" ":" <s:Expr> ")" => Field::Flow { scale: s, seed: None },
     "Flow" "{" "scale" ":" <s:Expr> "}" => Field::Flow { scale: s, seed: None },
     "Flow" "{" "scale" ":" <s:Expr> "," "seed" ":" <d:Expr> "}" =>
         Field::Flow { scale: s, seed: Some(d) },
-    "Flow" "(" "scale" ":" <s:Expr> "," "seed" ":" <d:Expr> ")" =>
-        Field::Flow { scale: s, seed: Some(d) },
     "Const" "(" <e:Expr> ")" => Field::Const(e),
-    "Time" => Field::Time,
     "note" "." <n:NoteFieldName> => Field::Note(n),
 };
 
@@ -400,7 +380,6 @@ Term: DrawExpr = {
 };
 Factor: DrawExpr = {
     <n:Num> => DrawExpr::Lit(n),
-    "Time"  => DrawExpr::Time,
     "Stroke" => DrawExpr::Stroke,
     "clock" => DrawExpr::Clock,
     "mod" <name:Name> => DrawExpr::LoopName(name),
@@ -459,7 +438,6 @@ BareOrParenArg: DrawExpr = {
 };
 NonParenFactor: DrawExpr = {
     <n:Num> => DrawExpr::Lit(n),
-    "Time"  => DrawExpr::Time,
     "Stroke" => DrawExpr::Stroke,
     "clock" => DrawExpr::Clock,
     "mod" <name:Name> => DrawExpr::LoopName(name),
@@ -501,6 +479,7 @@ NoteFieldName: NoteField = {
     "y"     => NoteField::Y,
     "z"     => NoteField::Z,
     "l"     => NoteField::L,
+    "t"     => NoteField::T,
     "event" => NoteField::Event,
     "voice" => NoteField::Voice,
 };
