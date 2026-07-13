@@ -22,7 +22,7 @@ match {
 
     // Atoms / functions
     "Stroke", "clock", "mod", "Sin", "tau", "note", "Here",
-    "count", "cycle",
+    "count", "cycle", "rand", "choose",
 
     // Note field names (matched after `note .`)
     "x", "y", "z", "l", "t", "voice", "direction",
@@ -31,6 +31,7 @@ match {
     "Xa", "Ya", "Za", "Rx", "Ry", "Rz", "Sm", "Sa",
     "Direction", "Jitter", "Mirror", "Modulate", "Tint",
     "Lerp", "Spawn", "Echo", "Stagger", "Drag", "Each",
+    "Every", "Sometimes",
     "Seq", "Overlay", "Lm",
     "Path", "Smooth", "Pin", "Pick",
 
@@ -100,6 +101,17 @@ PipeTail: Vec<DrawOp> = {
     => vec![],
     "|" <op:Op> <rest:PipeTail> => {
         let mut v = vec![op];
+        v.extend(rest);
+        v
+    },
+};
+
+// A generator-less chain of ops (`Xa(1) | Sm 2`) — the sub-pipeline for the
+// higher-order combinators, which modify the EXISTING emit set rather than
+// generating from a Point.
+OpChain: Vec<DrawOp> = {
+    <first:Op> <rest:PipeTail> => {
+        let mut v = vec![first];
         v.extend(rest);
         v
     },
@@ -183,6 +195,13 @@ Op: DrawOp = {
         DrawOp::Drag { over: o, n, dv },
 
     "Each" "(" <p:Pipeline> ")" => DrawOp::Each(Box::new(p)),
+
+    // Higher-order combinators — conditionally apply a sub-chain of ops to the
+    // current emit set (no leading generator; they transform, not create).
+    "Every" "(" <n:Expr> "," <ops:OpChain> ")" =>
+        DrawOp::Every(n, Box::new(DrawPipeline { ops })),
+    "Sometimes" "(" <pr:Expr> "," <ops:OpChain> ")" =>
+        DrawOp::Sometimes(pr, Box::new(DrawPipeline { ops })),
 
     // Composition primitives — same shapes as warp Seq/Overlay.
     "Seq"     "[" <phases:SeqPhaseList>      "]" => DrawOp::Seq { phases },
@@ -414,6 +433,13 @@ Factor: DrawExpr = {
     },
     "cycle" "(" <n:Expr> ")" => DrawExpr::Call(MathFn::Wrap,
         vec![DrawExpr::Note(NoteField::Event), n]),
+    // Randomness — deterministic per-note (hashed from count):
+    "rand" "(" <s:Expr> ")" => DrawExpr::Rand(Box::new(s)),
+    "choose" "(" "[" <first:Expr> <rest:("," <Expr>)*> "]" ")" => {
+        let mut vals = vec![first];
+        vals.extend(rest);
+        DrawExpr::Choose(vals)
+    },
     "(" <e:Expr> ")" => e,
     "-" <f:Factor>   =>
         DrawExpr::Bin(BinOp::Sub, Box::new(DrawExpr::DefaultLit(0.0)), Box::new(f)),
@@ -466,6 +492,12 @@ NonParenFactor: DrawExpr = {
     },
     "cycle" "(" <n:Expr> ")" => DrawExpr::Call(MathFn::Wrap,
         vec![DrawExpr::Note(NoteField::Event), n]),
+    "rand" "(" <s:Expr> ")" => DrawExpr::Rand(Box::new(s)),
+    "choose" "(" "[" <first:Expr> <rest:("," <Expr>)*> "]" ")" => {
+        let mut vals = vec![first];
+        vals.extend(rest);
+        DrawExpr::Choose(vals)
+    },
     "-" <f:NonParenFactor> =>
         DrawExpr::Bin(BinOp::Sub, Box::new(DrawExpr::DefaultLit(0.0)), Box::new(f)),
 };

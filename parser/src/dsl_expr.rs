@@ -114,6 +114,13 @@ pub enum Expr {
     /// repeating: value = list[count % len]. Draw + brush-wgsl only (warp
     /// has no per-note count; its grammar never produces this).
     Cycle(Vec<Expr>),
+    /// `rand(seed)` — deterministic per-note pseudo-random in `[0, 1)`, hashed
+    /// from `count` and the seed. Same note → same value every frame (no
+    /// flicker); different seeds are independent streams. Draw + brush-wgsl.
+    Rand(Box<Expr>),
+    /// `choose([v0, v1, …])` — random pick per note (the random sibling of
+    /// `cycle([…])`): value = list[floor(rand * len)]. Draw + brush-wgsl.
+    Choose(Vec<Expr>),
     /// A grammar-injected DEFAULT value for an omitted named arg — has NO
     /// counterpart in source text, so the promote pass must neither promote
     /// it nor advance its source-literal cursor over it. Everything else
@@ -219,8 +226,8 @@ pub fn to_wgsl(e: &Expr) -> String {
             }
         }
         // Draw-only (evaluated on the CPU); the warp grammar never
-        // produces Cycle, so this arm is a safe inert fallback.
-        Expr::Cycle(_) => "0.0".to_string(),
+        // produces these, so the arms are safe inert fallbacks.
+        Expr::Cycle(_) | Expr::Rand(_) | Expr::Choose(_) => "0.0".to_string(),
         Expr::Hit(ch) => format!("hit({}u)", ch.idx()),
         Expr::HitX(ch) => format!("hit_x({}u)", ch.idx()),
         Expr::HitY(ch) => format!("hit_y({}u)", ch.idx()),
@@ -244,7 +251,7 @@ pub fn as_const(e: &Expr) -> Option<f64> {
     match e {
         Expr::Lit(v) => Some(*v as f64),
         Expr::DefaultLit(v) => Some(*v as f64),
-        Expr::Cycle(_) => None,
+        Expr::Cycle(_) | Expr::Rand(_) | Expr::Choose(_) => None,
         Expr::Bin(op, l, r) => {
             let (l, r) = (as_const(l)?, as_const(r)?);
             Some(match op {

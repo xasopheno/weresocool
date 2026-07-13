@@ -144,6 +144,15 @@ pub enum DrawOp {
     /// position. Union the results.
     Each(Box<DrawPipeline>),
 
+    // === Higher-order combinators (conditional sub-pipeline application) ===
+    /// `Every(n, sub)` — apply `sub` to the emit set only on notes where
+    /// `count % n == 0`; pass through otherwise. Periodic accents.
+    Every(DrawExpr, Box<DrawPipeline>),
+    /// `Sometimes(p, sub)` — apply `sub` with probability `p` (0–1), decided
+    /// by a per-note deterministic hash (stable across frames, not per-frame
+    /// flicker). `Sometimes(0.3, Jitter(0.1))` roughens ~30% of notes.
+    Sometimes(DrawExpr, Box<DrawPipeline>),
+
     /// Length multiply — scales each emit's `time_offset` by N.
     /// Audio-aligned: `Lm` is the universal "scale temporal extent"
     /// op. A draw chain that ends in `Stagger(over: 1)` puts 5 emits
