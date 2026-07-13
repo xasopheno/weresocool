@@ -152,6 +152,11 @@ pub enum DrawOp {
     /// by a per-note deterministic hash (stable across frames, not per-frame
     /// flicker). `Sometimes(0.3, Jitter(0.1))` roughens ~30% of notes.
     Sometimes(DrawExpr, Box<DrawPipeline>),
+    /// `Jux(sub)` — keep the current emit set AND a copy with `sub` applied,
+    /// unioned. The "two versions" combinator: `Jux(Xa(0.4) | Bm 0.5)` leaves a
+    /// dimmer shifted ghost beside the original. Generalises `Mirror` (which is
+    /// `Jux` with a fixed reflection).
+    Jux(Box<DrawPipeline>),
 
     /// Length multiply — scales each emit's `time_offset` by N.
     /// Audio-aligned: `Lm` is the universal "scale temporal extent"

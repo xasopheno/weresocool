@@ -31,7 +31,7 @@ match {
     "Xa", "Ya", "Za", "Rx", "Ry", "Rz", "Sm", "Sa",
     "Direction", "Jitter", "Mirror", "Modulate", "Tint",
     "Lerp", "Spawn", "Echo", "Stagger", "Drag", "Each",
-    "Every", "Sometimes",
+    "Every", "Sometimes", "Jux",
     "Seq", "Overlay", "Lm",
     "Path", "Smooth", "Pin", "Pick",
 
@@ -202,6 +202,8 @@ Op: DrawOp = {
         DrawOp::Every(n, Box::new(DrawPipeline { ops })),
     "Sometimes" "(" <pr:Expr> "," <ops:OpChain> ")" =>
         DrawOp::Sometimes(pr, Box::new(DrawPipeline { ops })),
+    "Jux" "(" <ops:OpChain> ")" =>
+        DrawOp::Jux(Box::new(DrawPipeline { ops })),
 
     // Composition primitives — same shapes as warp Seq/Overlay.
     "Seq"     "[" <phases:SeqPhaseList>      "]" => DrawOp::Seq { phases },
