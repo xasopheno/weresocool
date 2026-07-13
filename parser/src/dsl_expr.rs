@@ -101,6 +101,11 @@ pub enum Expr {
     /// skipped, so they degrade gracefully (treat as the raw clock) rather than
     /// panic — this is a live instrument.
     LoopName(String),
+    /// `cycle(<name>)` — your position through a named audio cycle as `0.0→1.0`
+    /// (the time-sibling of `cycle(n)`). A parse-time placeholder; the length
+    /// pass rewrites it to `wrap(clock, secs) / secs`. Degrades to `0.0` if the
+    /// name is unknown. Drive cycle-locked color/shape with it.
+    LoopPhase(String),
     /// `Sin(freq)` / `Sin(freq, amp)` — time-driven oscillation convenience
     /// (`sin(time*freq)*amp`). Distinct from `Call(MathFn::Sin, …)` (raw sine).
     Sin { freq: Box<Expr>, amp: Box<Expr> },
@@ -233,9 +238,10 @@ pub fn to_wgsl(e: &Expr) -> String {
         Expr::HitY(ch) => format!("hit_y({}u)", ch.idx()),
         Expr::Dist(ch) => format!("k_hit_dist({}u, uv)", ch.idx()),
         Expr::HitAge(ch) => format!("hit_age({}u)", ch.idx()),
-        // Unresolved loop placeholder (should be rewritten pre-codegen); the
+        // Unresolved loop placeholders (should be rewritten pre-codegen); the
         // warp live clock is `time`, so degrade to that.
         Expr::LoopName(_) => "time".into(),
+        Expr::LoopPhase(_) => "0.0".into(),
         // draw-only; the warp grammar never produces these.
         Expr::Note(_) | Expr::Stroke => {
             unreachable!("draw-only expr (note.*/Stroke) in a warp expression")
@@ -291,6 +297,7 @@ pub fn as_const(e: &Expr) -> Option<f64> {
         // Runtime references — not statically knowable.
         Expr::Clock
         | Expr::LoopName(_)
+        | Expr::LoopPhase(_)
         | Expr::Note(_)
         | Expr::Stroke
         | Expr::Sin { .. }

@@ -435,6 +435,9 @@ Factor: DrawExpr = {
     },
     "cycle" "(" <n:Expr> ")" => DrawExpr::Call(MathFn::Wrap,
         vec![DrawExpr::Note(NoteField::Event), n]),
+    // cycle(<name>) — 0→1 phase through a named audio cycle (time-sibling of
+    // cycle(n)); resolved against the length env like `mod`.
+    "cycle" "(" <name:Name> ")" => DrawExpr::LoopPhase(name),
     // Randomness — deterministic per-note (hashed from count):
     "rand" "(" <s:Expr> ")" => DrawExpr::Rand(Box::new(s)),
     "choose" "(" "[" <first:Expr> <rest:("," <Expr>)*> "]" ")" => {
@@ -494,6 +497,9 @@ NonParenFactor: DrawExpr = {
     },
     "cycle" "(" <n:Expr> ")" => DrawExpr::Call(MathFn::Wrap,
         vec![DrawExpr::Note(NoteField::Event), n]),
+    // cycle(<name>) — 0→1 phase through a named audio cycle (time-sibling of
+    // cycle(n)); resolved against the length env like `mod`.
+    "cycle" "(" <name:Name> ")" => DrawExpr::LoopPhase(name),
     "rand" "(" <s:Expr> ")" => DrawExpr::Rand(Box::new(s)),
     "choose" "(" "[" <first:Expr> <rest:("," <Expr>)*> "]" ")" => {
         let mut vals = vec![first];
