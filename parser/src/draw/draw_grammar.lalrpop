@@ -22,7 +22,7 @@ match {
 
     // Atoms / functions
     "Stroke", "clock", "mod", "Sin", "tau", "note", "Here",
-    "count", "phase", "cycle",
+    "count", "cycle",
 
     // Note field names (matched after `note .`)
     "x", "y", "z", "l", "t", "voice", "direction",
@@ -394,16 +394,13 @@ Factor: DrawExpr = {
     <f:VariadicFn> "(" <a:Expr> <rest:("," <Expr>)+> ")" =>
         rest.into_iter().fold(a, |acc, e| DrawExpr::Call(f, vec![acc, e])),
     "note" "." <n:NoteFieldName> => DrawExpr::Note(n),
-    // Law-4 count sugar — all lower onto wrap(note.event, …):
-    //   count       = the note's index within its voice
-    //   phase(n)    = 0→1 across every n hits, then restart
-    //   cycle(a..b) = walk a, a+1, … b-1, one step per hit, repeat
+    // Law-4 note-index vocabulary:
+    //   count       = the raw accumulating index (0,1,2,… unbounded)
+    //   cycle(n)    = walk 0,1,… n-1, one per hit, repeat   (= cycle(0..n))
+    //   cycle(a..b) = walk a, a+1, … b-1, one per hit, repeat
+    //   cycle([…])  = walk an explicit list of values, repeat
+    // cycle lowers onto wrap(count, …); count keeps growing (use for spirals).
     "count" => DrawExpr::Note(NoteField::Event),
-    "phase" "(" <n:Expr> ")" => {
-        let wrapped = DrawExpr::Call(MathFn::Wrap,
-            vec![DrawExpr::Note(NoteField::Event), n.clone()]);
-        DrawExpr::Bin(BinOp::Div, Box::new(wrapped), Box::new(n))
-    },
     "cycle" "(" "[" <first:Expr> <rest:("," <Expr>)*> "]" ")" => {
         let mut vals = vec![first];
         vals.extend(rest);
@@ -415,6 +412,8 @@ Factor: DrawExpr = {
             vec![DrawExpr::Note(NoteField::Event), span]);
         DrawExpr::Bin(BinOp::Add, Box::new(a), Box::new(wrapped))
     },
+    "cycle" "(" <n:Expr> ")" => DrawExpr::Call(MathFn::Wrap,
+        vec![DrawExpr::Note(NoteField::Event), n]),
     "(" <e:Expr> ")" => e,
     "-" <f:Factor>   =>
         DrawExpr::Bin(BinOp::Sub, Box::new(DrawExpr::DefaultLit(0.0)), Box::new(f)),
@@ -452,13 +451,8 @@ NonParenFactor: DrawExpr = {
     <f:VariadicFn> "(" <a:Expr> <rest:("," <Expr>)+> ")" =>
         rest.into_iter().fold(a, |acc, e| DrawExpr::Call(f, vec![acc, e])),
     "note" "." <n:NoteFieldName> => DrawExpr::Note(n),
-    // count sugar — mirrors the Factor rules so bare op arguments accept it
+    // count/cycle sugar — mirrors the Factor rules so bare op arguments accept it
     "count" => DrawExpr::Note(NoteField::Event),
-    "phase" "(" <n:Expr> ")" => {
-        let wrapped = DrawExpr::Call(MathFn::Wrap,
-            vec![DrawExpr::Note(NoteField::Event), n.clone()]);
-        DrawExpr::Bin(BinOp::Div, Box::new(wrapped), Box::new(n))
-    },
     "cycle" "(" "[" <first:Expr> <rest:("," <Expr>)*> "]" ")" => {
         let mut vals = vec![first];
         vals.extend(rest);
@@ -470,6 +464,8 @@ NonParenFactor: DrawExpr = {
             vec![DrawExpr::Note(NoteField::Event), span]);
         DrawExpr::Bin(BinOp::Add, Box::new(a), Box::new(wrapped))
     },
+    "cycle" "(" <n:Expr> ")" => DrawExpr::Call(MathFn::Wrap,
+        vec![DrawExpr::Note(NoteField::Event), n]),
     "-" <f:NonParenFactor> =>
         DrawExpr::Bin(BinOp::Sub, Box::new(DrawExpr::DefaultLit(0.0)), Box::new(f)),
 };
@@ -481,7 +477,7 @@ NoteFieldName: NoteField = {
     "l"     => NoteField::L,
     "t"     => NoteField::T,
     "voice" => NoteField::Voice,
-    // `note.event` (the index) is spelled `count` — see the count/phase/cycle
+    // `note.event` (the index) is spelled `count` — see the count/cycle
     // sugar below, which lower onto NoteField::Event directly.
 };
 

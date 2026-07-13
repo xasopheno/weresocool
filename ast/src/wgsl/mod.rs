@@ -20,8 +20,8 @@ pub enum WgslValue {
 
 
 /// Law-4 count sugar for brush-wgsl expressions (quoted or bare):
-///   `count`         → `note_event`
-///   `phase(n)`      → `(wrap(note_event, (n)) / (n))`
+///   `count`         → `note_event`  (the raw accumulating index)
+///   `cycle(n)`      → `wrap(note_event, (n))`             [= cycle(0..n)]
 ///   `cycle(a..b)`   → `((a) + wrap(note_event, (b) - (a)))`
 ///   `cycle([v, …])` → nested `select(…)` chain indexed by
 ///                     `wrap(note_event, k)`
@@ -34,10 +34,10 @@ mod count_sugar_tests {
     use super::rewrite_count_sugar;
 
     #[test]
-    fn phase_lowers_to_wrap_over_n() {
+    fn cycle_n_lowers_to_wrap() {
         assert_eq!(
-            rewrite_count_sugar("(phase(12) - 0.5) * 1.7"),
-            "((wrap(note_event, (12)) / (12)) - 0.5) * 1.7"
+            rewrite_count_sugar("cycle(12) - 0.5"),
+            "wrap(note_event, (12)) - 0.5"
         );
     }
 
@@ -165,25 +165,13 @@ pub fn rewrite_count_sugar(src: &str) -> String {
                         ));
                         i = close + 1;
                         continue;
+                    } else if !inner.is_empty() {
+                        // cycle(n) → wrap(note_event, (n))   [= cycle(0..n)]
+                        let n = rewrite_count_sugar(inner);
+                        out.push_str(&format!("wrap(note_event, ({n}))", n = n));
+                        i = close + 1;
+                        continue;
                     }
-                }
-            }
-        }
-        // phase(n)
-        if src[i..].starts_with("phase") && ident_boundary(bytes, i, i + 5) {
-            let mut j = i + 5;
-            while j < bytes.len() && bytes[j].is_ascii_whitespace() {
-                j += 1;
-            }
-            if j < bytes.len() && bytes[j] == b'(' {
-                if let Some(close) = find_close(bytes, j, b'(', b')') {
-                    let n = rewrite_count_sugar(src[j + 1..close].trim());
-                    out.push_str(&format!(
-                        "(wrap(note_event, ({n})) / ({n}))",
-                        n = n
-                    ));
-                    i = close + 1;
-                    continue;
                 }
             }
         }
