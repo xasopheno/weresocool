@@ -56,7 +56,7 @@ match {
 
     // Pure math functions (lowercase — distinct from the capitalized ops/
     // compositors like `Max`/`Mix`). Law-4 function set; see `dsl_expr::MathFn`.
-    "sin", "cos", "abs", "floor", "ceil", "sqrt", "min", "max", "pow", "wrap", "clamp", "mix",
+    "sin", "cos", "abs", "floor", "ceil", "sqrt", "exp", "min", "max", "pow", "wrap", "clamp", "mix",
 
     r"\s+"          => { },
     r"//[^\n]*"     => { },
@@ -512,7 +512,7 @@ Factor: WarpExpr = {
 // Math-function names grouped by arity (see `dsl_expr::MathFn`).
 UnaryFn: MathFn = {
     "sin" => MathFn::Sin, "cos" => MathFn::Cos, "abs" => MathFn::Abs,
-    "floor" => MathFn::Floor, "ceil" => MathFn::Ceil, "sqrt" => MathFn::Sqrt,
+    "floor" => MathFn::Floor, "ceil" => MathFn::Ceil, "sqrt" => MathFn::Sqrt, "exp" => MathFn::Exp,
 };
 BinaryFn: MathFn = { "pow" => MathFn::Pow, "wrap" => MathFn::Wrap };
 TernaryFn: MathFn = { "clamp" => MathFn::Clamp, "mix" => MathFn::Mix };

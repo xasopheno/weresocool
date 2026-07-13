@@ -42,6 +42,8 @@ pub enum MathFn {
     Floor,
     Ceil,
     Sqrt,
+    /// `exp(x)` — e^x. The falloff primitive: `exp(-Dist(bd) * 8.0)`.
+    Exp,
     // binary
     Min,
     Max,
@@ -64,6 +66,7 @@ impl MathFn {
             MathFn::Floor => "floor",
             MathFn::Ceil => "ceil",
             MathFn::Sqrt => "sqrt",
+            MathFn::Exp => "exp",
             MathFn::Min => "min",
             MathFn::Max => "max",
             MathFn::Pow => "pow",
@@ -264,6 +267,7 @@ pub fn as_const(e: &Expr) -> Option<f64> {
                 MathFn::Floor => g(0).floor(),
                 MathFn::Ceil => g(0).ceil(),
                 MathFn::Sqrt => g(0).max(0.0).sqrt(),
+                MathFn::Exp => g(0).exp(),
                 MathFn::Min => g(0).min(g(1)),
                 MathFn::Max => g(0).max(g(1)),
                 MathFn::Pow => g(0).powf(g(1)),

@@ -168,12 +168,21 @@ pub fn preprocess_for_audio(
     let source = dsl_params::expand(&source)
         .map_err(|e| Error::with_msg(format!("parameterized def: {e}")))?;
 
-    let warp_pre = warp::extract_warps(&source)
-        .map_err(|e| Error::with_msg(format!("warp: {e:?}")))?;
-    let draw_pre = draw::extract_draws(&warp_pre.stripped)
-        .map_err(|e| Error::with_msg(format!("draw: {e:?}")))?;
-    let surface_pre = surface_dsl::extract_surfaces(&draw_pre.stripped)
-        .map_err(|e| Error::with_msg(format!("surface: {e:?}")))?;
+    // Each extractor's `display(false)` prints the rich file:line:col report
+    // (same renderer kintaro's extract path uses); the Error we bubble up
+    // only needs to say which DSL failed.
+    let warp_pre = warp::extract_warps(&source).map_err(|e| {
+        e.display(false);
+        Error::with_msg("warp block failed to parse (see report above)")
+    })?;
+    let draw_pre = draw::extract_draws(&warp_pre.stripped).map_err(|e| {
+        e.display(false);
+        Error::with_msg("draw block failed to parse (see report above)")
+    })?;
+    let surface_pre = surface_dsl::extract_surfaces(&draw_pre.stripped).map_err(|e| {
+        e.display(false);
+        Error::with_msg("surface block failed to parse (see report above)")
+    })?;
     let palette = palette::extract_palette(&surface_pre.stripped);
 
     Ok(AudioSource {

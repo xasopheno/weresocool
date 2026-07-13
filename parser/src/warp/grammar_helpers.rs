@@ -124,12 +124,31 @@ pub fn extract_stain_args(mut args: Vec<(String, WarpExpr)>) -> (WarpExpr, WarpE
 
 }
 
-/// Watercolor(wet: 0.9, evap: 0.994, flow: 2.0, gain: 0.11) — all optional.
+/// Watercolor { wetness: 0.9, drying: 0.006, bleed: 2.0, deposit: 0.11, lift: 0.0 } — all optional.
 pub fn extract_watercolor_args(mut args: Vec<(String, WarpExpr)>) -> (WarpExpr, WarpExpr, WarpExpr, WarpExpr, WarpExpr) {
     // Every knob points the intuitive way (bigger = more of the word):
     // wetness = water per note, drying = per-frame water loss, bleed =
     // how hard pigment chases water, deposit = pigment per note, lift =
     // per-frame pigment loss (0 = the canvas keeps everything).
+    // Old knob names get a SPECIFIC migration message — a generic
+    // "unknown arg" would silently substitute defaults with inverted
+    // semantics (fade 0.963 ≠ lift default 0 — a never-fading canvas).
+    for (old, new_name, invert) in [
+        ("wet", "wetness", false),
+        ("evap", "drying", true),
+        ("flow", "bleed", false),
+        ("gain", "deposit", false),
+        ("fade", "lift", true),
+    ] {
+        if let Some(i) = args.iter().position(|(k, _)| k == old) {
+            args.remove(i);
+            eprintln!(
+                "[warp] Watercolor: `{old}:` was renamed to `{new_name}:`{} — \
+                 the old value is IGNORED and the default used; update the piece",
+                if invert { " (inverted: new = 1 - old)" } else { "" }
+            );
+        }
+    }
     let wetness = take_named_or(&mut args, "wetness", || WarpExpr::DefaultLit(0.9));
     let drying = take_named_or(&mut args, "drying", || WarpExpr::DefaultLit(0.006));
     let bleed = take_named_or(&mut args, "bleed", || WarpExpr::DefaultLit(2.0));
