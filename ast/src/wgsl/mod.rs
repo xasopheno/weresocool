@@ -25,6 +25,9 @@ pub enum WgslValue {
 ///   `cycle(a..b)`   → `((a) + wrap(note_event, (b) - (a)))`
 ///   `cycle([v, …])` → nested `select(…)` chain indexed by
 ///                     `wrap(note_event, k)`
+///   `rand(seed)`    → `k_rand(note_event, (seed))`  (deterministic [0,1))
+///   `choose([v,…])` → `select(…)` chain indexed by `floor(k_rand(…) * k)`
+///                     (the random sibling of `cycle([…])`)
 /// Quoted DSL strings pass to WGSL verbatim, so the sugar must be expanded
 /// textually here — the one choke point every brush-wgsl value flows
 /// through. Idempotent on text without the sugar.
@@ -56,6 +59,24 @@ mod count_sugar_tests {
         assert!(out.contains("wrap(note_event, 4.0) >= 3.0"));
         assert!(out.contains("(-1)"));
         assert!(out.contains("(10)"));
+    }
+
+    #[test]
+    fn rand_lowers_to_k_rand() {
+        assert_eq!(
+            rewrite_count_sugar("rand(1) * 0.5"),
+            "k_rand(note_event, (1)) * 0.5"
+        );
+        // seed can itself be sugar
+        assert_eq!(rewrite_count_sugar("rand(count)"), "k_rand(note_event, (note_event))");
+    }
+
+    #[test]
+    fn choose_lowers_to_k_rand_select_chain() {
+        let out = rewrite_count_sugar("choose([-1, 4, 10])");
+        assert!(out.starts_with("select("));
+        assert!(out.contains("k_rand(note_event, 0.618034)"));
+        assert!(out.contains("(-1)") && out.contains("(10)"));
     }
 
     #[test]
@@ -172,6 +193,57 @@ pub fn rewrite_count_sugar(src: &str) -> String {
                         i = close + 1;
                         continue;
                     }
+                }
+            }
+        }
+        // choose([v0, v1, …]) → random pick via a select chain (the random
+        // sibling of cycle's ordered walk); index = floor(k_rand * len).
+        if src[i..].starts_with("choose") && ident_boundary(bytes, i, i + 6) {
+            let mut j = i + 6;
+            while j < bytes.len() && bytes[j].is_ascii_whitespace() {
+                j += 1;
+            }
+            if j < bytes.len() && bytes[j] == b'(' {
+                if let Some(close) = find_close(bytes, j, b'(', b')') {
+                    let inner = src[j + 1..close].trim();
+                    if let Some(list) =
+                        inner.strip_prefix('[').and_then(|r| r.strip_suffix(']'))
+                    {
+                        let vals: Vec<String> = split_top_commas(list)
+                            .into_iter()
+                            .map(|v| rewrite_count_sugar(&v))
+                            .collect();
+                        if !vals.is_empty() {
+                            let k = vals.len();
+                            let idx =
+                                format!("floor(k_rand(note_event, 0.618034) * {k}.0)");
+                            let mut expr = format!("({})", vals[0]);
+                            for (n, v) in vals.iter().enumerate().skip(1) {
+                                expr = format!(
+                                    "select({expr}, ({v}), {idx} >= {lo}.0)",
+                                    expr = expr, v = v, idx = idx, lo = n
+                                );
+                            }
+                            out.push_str(&expr);
+                            i = close + 1;
+                            continue;
+                        }
+                    }
+                }
+            }
+        }
+        // rand(seed) → k_rand(note_event, (seed))
+        if src[i..].starts_with("rand") && ident_boundary(bytes, i, i + 4) {
+            let mut j = i + 4;
+            while j < bytes.len() && bytes[j].is_ascii_whitespace() {
+                j += 1;
+            }
+            if j < bytes.len() && bytes[j] == b'(' {
+                if let Some(close) = find_close(bytes, j, b'(', b')') {
+                    let seed = rewrite_count_sugar(src[j + 1..close].trim());
+                    out.push_str(&format!("k_rand(note_event, ({seed}))"));
+                    i = close + 1;
+                    continue;
                 }
             }
         }
@@ -2543,6 +2615,7 @@ fn dot(a: vec3<f32>, b: vec3<f32>) -> f32 { return a.x * b.x + a.y * b.y + a.z *
 fn acos(v: f32) -> f32 { return 1.0; }
 fn clamp(v: f32, lo: f32, hi: f32) -> f32 { return v; }
 fn wrap(v: f32, p: f32) -> f32 { return v; }
+fn k_rand(a: f32, b: f32) -> f32 { return b; }
 
 fn dummy_function() {
     // Variables that are modifiable
