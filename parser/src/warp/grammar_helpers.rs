@@ -9,7 +9,28 @@
 //! The semantics MUST match the hand-written parser in `parser.rs` exactly so
 //! that every existing `cull_*.socool` composition parses identically.
 
-use crate::warp::ast::WarpExpr;
+use crate::warp::ast::{Chan, WarpExpr};
+
+/// Parse a channel selector for the substance verbs (`r/g/b/a/rg/gb/rgb`).
+/// Unknown → `R` with a loud warning (a typo'd channel mustn't fail silently).
+pub fn parse_chan(s: &str) -> Chan {
+    match s {
+        "r" => Chan::R, "g" => Chan::G, "b" => Chan::B, "a" => Chan::A,
+        "rg" => Chan::Rg, "gb" => Chan::Gb, "rgb" => Chan::Rgb,
+        _ => {
+            eprintln!("[warp] unknown channel `{}` (use r/g/b/a/rg/gb/rgb) — defaulting to r", s);
+            Chan::R
+        }
+    }
+}
+
+/// Pull one named knob (with a default) for a single-arg substance verb, and
+/// warn about any leftover keys.
+pub fn take_medium_arg(mut args: Vec<(String, WarpExpr)>, op: &str, key: &str, default: f32) -> WarpExpr {
+    let v = take_named_or(&mut args, key, || WarpExpr::DefaultLit(default));
+    warn_leftover(op, &args, &[key]);
+    v
+}
 
 /// `Background` takes a mix of scalar args (`split`, `soft`) and 3-tuple
 /// args (`top: (r,g,b)`, `bottom: (r,g,b)`). The grammar tags each named

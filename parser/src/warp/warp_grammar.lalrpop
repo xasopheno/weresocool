@@ -21,6 +21,7 @@
 // regex matches unsigned digits only so that `5-5` and `5 - 5` tokenise
 // identically.
 
+use crate::warp::ast;
 use crate::warp::ast::{
     WarpPipeline, WarpOp, WarpExpr, BinOp, MathFn, Source, SeqPhase, HitRef,
 };
@@ -53,6 +54,9 @@ match {
     "Seq", "Overlay", "Lm", "FitLength",
     "Max", "Add", "Screen", "Mix", "Modulate",
     "Raw",
+
+    // Substance verbs (MEDIUM.md M1) + their structural keywords.
+    "Diffuse", "Advect", "Force", "grad", "lap", "by", "from", "gated",
 
     // Pure math functions (lowercase — distinct from the capitalized ops/
     // compositors like `Max`/`Mix`). Law-4 function set; see `dsl_expr::MathFn`.
@@ -213,6 +217,18 @@ Op: WarpOp = {
         let (wetness, drying, bleed, deposit, lift) = h::extract_watercolor_args(a);
         WarpOp::Watercolor { wetness, drying, bleed, deposit, lift }
     },
+
+    // --- Substance verbs (MEDIUM.md M1). Structural args (channel, velocity)
+    // are positional; the scalar knob is a brace bag (Law 6).
+    "Diffuse" <f:Chan> "{" <a:NamedArgList> "}" =>
+        WarpOp::Diffuse { field: f, rate: h::take_medium_arg(a, "Diffuse", "rate", 0.3), gated: None },
+    "Diffuse" <f:Chan> "gated" <g:Chan> "{" <a:NamedArgList> "}" =>
+        WarpOp::Diffuse { field: f, rate: h::take_medium_arg(a, "Diffuse", "rate", 0.3), gated: Some(g) },
+    "Advect" <f:Chan> "by" <v:FieldSrc> "{" <a:NamedArgList> "}" =>
+        WarpOp::Advect { field: f, by: v, amount: h::take_medium_arg(a, "Advect", "amount", 1.0) },
+    "Force" <f:Chan> "from" <v:FieldSrc> "{" <a:NamedArgList> "}" =>
+        WarpOp::Force { field: f, from: v, gain: h::take_medium_arg(a, "Force", "gain", 1.0) },
+    "Decay" <f:Chan> <e:BareOrParenArg> => WarpOp::DecayField { field: f, by: e },
 
     "Bloom"    "{" <a:NamedArgList> "}" => {
         let (threshold, strength) = h::extract_named_pair(a, "threshold", "strength");
@@ -410,6 +426,16 @@ Name: String = { <s:IDENT> => s.to_string() };
 ChanRef: HitRef = {
     <s:IDENT> => HitRef::Name(s.to_string()),
     <n:Num> => HitRef::Idx((n as u32).min(127)),
+};
+
+// A field channel selector for substance verbs (r/g/b/a/rg/gb/rgb).
+Chan: ast::Chan = { <s:IDENT> => h::parse_chan(&s) };
+
+// A velocity / force source: a scalar field's gradient, or a 2-ch field.
+FieldSrc: ast::FieldSrc = {
+    "grad" "(" <c:Chan> ")" => ast::FieldSrc::Grad(c),
+    "lap" "(" <c:Chan> ")"  => ast::FieldSrc::Lap(c),
+    <c:Chan>                => ast::FieldSrc::Field(c),
 };
 
 // ---------------------------------------------------------------------------

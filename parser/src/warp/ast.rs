@@ -58,6 +58,19 @@ pub enum Source {
     Solid(WarpExpr, WarpExpr, WarpExpr),
 }
 
+/// Which channel(s) of the field a **substance verb** (MEDIUM.md M1) targets.
+/// The `field2d` backend packs state into one RGBA16F: scalar fields are single
+/// channels (`R/G/B/A`), a packed 2D velocity is `Gb`/`Rg`, a color is `Rgb`.
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+pub enum Chan { R, G, B, A, Rg, Gb, Rgb }
+
+/// The velocity / force a substance verb reads: a scalar field's gradient
+/// (`grad(height)`, a vec2 pointing uphill), its laplacian (`lap(height)`, a
+/// scalar — the restoring force that makes waves oscillate rather than merely
+/// spread), or a 2-channel field used directly as a vector (`gb`).
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub enum FieldSrc { Grad(Chan), Lap(Chan), Field(Chan) }
+
 /// One op in a pipeline.
 #[derive(Debug, Clone, PartialEq)]
 pub enum WarpOp {
@@ -169,6 +182,22 @@ pub enum WarpOp {
         deposit: WarpExpr,
         lift: WarpExpr,
     },
+
+    // --- Substance verbs (MEDIUM.md M1) — the generic field-simulation core.
+    // They read the feedback buffer (Prev) and mutate the working `color` field.
+    /// Spread a field to its 5-tap neighbours: `F ← mix(F, avg, rate·gate)`.
+    /// `gated` masks the rate by another field's value (0 = frozen, 1 = full) —
+    /// e.g. watercolor pigment is mobile only where wet (`gated: a`).
+    Diffuse { field: Chan, rate: WarpExpr, gated: Option<Chan> },
+    /// Carry a field along a velocity by backward-trace resample:
+    /// `F ← sample(F, uv − V·amount)`. `V` is a field's `grad` or a 2-ch field.
+    Advect { field: Chan, by: FieldSrc, amount: WarpExpr },
+    /// Accumulate a force into a (vec2) field: `F ← F + src·gain`. Pair with
+    /// `Advect` for the wave equation (ripples) / buoyancy.
+    Force { field: Chan, from: FieldSrc, gain: WarpExpr },
+    /// Per-channel fade: `F ← F·(1 − by)`. The channel form `Decay a { by: … }`
+    /// (the scalar-arg `Decay 0.95` stays the whole-rgb color op).
+    DecayField { field: Chan, by: WarpExpr },
     /// Bloom: `Bloom { threshold: 0.5, strength: 0.6 }` — adds halo for bright pixels.
     Bloom { threshold: WarpExpr, strength: WarpExpr },
     /// Debug visualisation of the depth buffer (NDC depth stored in the
