@@ -208,6 +208,19 @@ pub enum WarpOp {
     /// deposit by static paper-noise (granulation/tooth, 0 = smooth); `cap`
     /// rescales multi-channel buildup that exceeds it (0 = uncapped).
     Deposit { field: Chan, gain: WarpExpr, grain: WarpExpr, cap: WarpExpr },
+    /// Excitable travelling wave in a scalar field: rest (0) cells ignite to 1
+    /// when a neighbouring cell holds a front (>0.85); ignited cells decay by
+    /// `dry` each frame (the refractory tail) until they return to rest.
+    /// Deposit into the field to FIRE a ring from every mark; the front then
+    /// travels `step` pixels/frame outward. The medium's heartbeat primitive —
+    /// pair with `Diffuse gated`/`Advect by grad`/`Flow gated` so the wave
+    /// modulates the painting as it passes. Needs `Persist`.
+    Propagate { field: Chan, step: WarpExpr, dry: WarpExpr },
+    /// Constant-direction drift (gravity, wind, current): sample the field
+    /// upstream by (x, y) uv/frame, optionally gated by another field so only
+    /// e.g. WET pigment runs. `Flow rgb gated a { y: 0.005 }` = wet ink weeps
+    /// downward.
+    Flow { field: Chan, x: WarpExpr, y: WarpExpr, gated: Option<Chan> },
     /// Terminal marker: store the pipeline's alpha UNTOUCHED as hidden state.
     /// Unlike `Opaque` (alpha = mark presence) or the default epilogue
     /// (alpha = brightness), `Persist` lets a medium keep true internal state

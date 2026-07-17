@@ -56,7 +56,7 @@ match {
     "Raw",
 
     // Substance verbs (MEDIUM.md M1) + their structural keywords.
-    "Diffuse", "Advect", "Force", "Deposit", "grad", "lap", "by", "from", "gated",
+    "Diffuse", "Advect", "Force", "Deposit", "Propagate", "Flow", "grad", "lap", "by", "from", "gated",
 
     // Pure math functions (lowercase — distinct from the capitalized ops/
     // compositors like `Max`/`Mix`). Law-4 function set; see `dsl_expr::MathFn`.
@@ -234,6 +234,18 @@ Op: WarpOp = {
     "Deposit" <f:Chan> "{" <a:NamedArgList> "}" => {
         let (gain, grain, cap) = h::take_medium_arg3(a, "Deposit", "gain", 0.2, "grain", 0.0, "cap", 0.0);
         WarpOp::Deposit { field: f, gain, grain, cap }
+    },
+    "Propagate" <f:Chan> "{" <a:NamedArgList> "}" => {
+        let (step, dry) = h::take_medium_arg2(a, "Propagate", "step", 3.0, "dry", 0.97);
+        WarpOp::Propagate { field: f, step, dry }
+    },
+    "Flow" <f:Chan> "{" <a:NamedArgList> "}" => {
+        let (x, y) = h::take_medium_arg2(a, "Flow", "x", 0.0, "y", 0.003);
+        WarpOp::Flow { field: f, x, y, gated: None }
+    },
+    "Flow" <f:Chan> "gated" <g:Chan> "{" <a:NamedArgList> "}" => {
+        let (x, y) = h::take_medium_arg2(a, "Flow", "x", 0.0, "y", 0.003);
+        WarpOp::Flow { field: f, x, y, gated: Some(g) }
     },
 
     "Bloom"    "{" <a:NamedArgList> "}" => {
