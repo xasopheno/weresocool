@@ -45,6 +45,18 @@ pub fn take_medium_arg2(
     (a, b)
 }
 
+/// Three-knob variant (`Deposit { gain, grain, cap }`).
+pub fn take_medium_arg3(
+    mut args: Vec<(String, WarpExpr)>, op: &str,
+    k1: &str, d1: f32, k2: &str, d2: f32, k3: &str, d3: f32,
+) -> (WarpExpr, WarpExpr, WarpExpr) {
+    let a = take_named_or(&mut args, k1, || WarpExpr::DefaultLit(d1));
+    let b = take_named_or(&mut args, k2, || WarpExpr::DefaultLit(d2));
+    let c = take_named_or(&mut args, k3, || WarpExpr::DefaultLit(d3));
+    warn_leftover(op, &args, &[k1, k2, k3]);
+    (a, b, c)
+}
+
 /// `Background` takes a mix of scalar args (`split`, `soft`) and 3-tuple
 /// args (`top: (r,g,b)`, `bottom: (r,g,b)`). The grammar tags each named
 /// arg with its shape via this enum.

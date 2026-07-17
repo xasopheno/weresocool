@@ -201,6 +201,13 @@ pub enum WarpOp {
     /// Per-channel fade: `F ← F·(1 − by)`. The channel form `Decay a { by: … }`
     /// (the scalar-arg `Decay 0.95` stays the whole-rgb color op).
     DecayField { field: Chan, by: WarpExpr },
+    /// Write the composition's marks (Scene) into a field — the one step every
+    /// medium needs, previously hand-rolled in Raw. A multi-channel field takes
+    /// Scene's matching channels; a single channel takes Scene's luminance
+    /// (clamped 0‥1 — water/height/density semantics). `grain` modulates the
+    /// deposit by static paper-noise (granulation/tooth, 0 = smooth); `cap`
+    /// rescales multi-channel buildup that exceeds it (0 = uncapped).
+    Deposit { field: Chan, gain: WarpExpr, grain: WarpExpr, cap: WarpExpr },
     /// Bloom: `Bloom { threshold: 0.5, strength: 0.6 }` — adds halo for bright pixels.
     Bloom { threshold: WarpExpr, strength: WarpExpr },
     /// Debug visualisation of the depth buffer (NDC depth stored in the

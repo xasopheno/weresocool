@@ -56,7 +56,7 @@ match {
     "Raw",
 
     // Substance verbs (MEDIUM.md M1) + their structural keywords.
-    "Diffuse", "Advect", "Force", "grad", "lap", "by", "from", "gated",
+    "Diffuse", "Advect", "Force", "Deposit", "grad", "lap", "by", "from", "gated",
 
     // Pure math functions (lowercase — distinct from the capitalized ops/
     // compositors like `Max`/`Mix`). Law-4 function set; see `dsl_expr::MathFn`.
@@ -231,6 +231,10 @@ Op: WarpOp = {
     "Force" <f:Chan> "from" <v:FieldSrc> "{" <a:NamedArgList> "}" =>
         WarpOp::Force { field: f, from: v, gain: h::take_medium_arg(a, "Force", "gain", 1.0) },
     "Decay" <f:Chan> <e:BareOrParenArg> => WarpOp::DecayField { field: f, by: e },
+    "Deposit" <f:Chan> "{" <a:NamedArgList> "}" => {
+        let (gain, grain, cap) = h::take_medium_arg3(a, "Deposit", "gain", 0.2, "grain", 0.0, "cap", 0.0);
+        WarpOp::Deposit { field: f, gain, grain, cap }
+    },
 
     "Bloom"    "{" <a:NamedArgList> "}" => {
         let (threshold, strength) = h::extract_named_pair(a, "threshold", "strength");
