@@ -208,6 +208,12 @@ pub enum WarpOp {
     /// deposit by static paper-noise (granulation/tooth, 0 = smooth); `cap`
     /// rescales multi-channel buildup that exceeds it (0 = uncapped).
     Deposit { field: Chan, gain: WarpExpr, grain: WarpExpr, cap: WarpExpr },
+    /// Terminal marker: store the pipeline's alpha UNTOUCHED as hidden state.
+    /// Unlike `Opaque` (alpha = mark presence) or the default epilogue
+    /// (alpha = brightness), `Persist` lets a medium keep true internal state
+    /// in the alpha channel across frames — cellular-automaton cells,
+    /// excitation phase, age. Purely a codegen directive; emits nothing.
+    Persist,
     /// Bloom: `Bloom { threshold: 0.5, strength: 0.6 }` — adds halo for bright pixels.
     Bloom { threshold: WarpExpr, strength: WarpExpr },
     /// Debug visualisation of the depth buffer (NDC depth stored in the
