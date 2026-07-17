@@ -224,8 +224,10 @@ Op: WarpOp = {
         WarpOp::Diffuse { field: f, rate: h::take_medium_arg(a, "Diffuse", "rate", 0.3), gated: None },
     "Diffuse" <f:Chan> "gated" <g:Chan> "{" <a:NamedArgList> "}" =>
         WarpOp::Diffuse { field: f, rate: h::take_medium_arg(a, "Diffuse", "rate", 0.3), gated: Some(g) },
-    "Advect" <f:Chan> "by" <v:FieldSrc> "{" <a:NamedArgList> "}" =>
-        WarpOp::Advect { field: f, by: v, amount: h::take_medium_arg(a, "Advect", "amount", 1.0) },
+    "Advect" <f:Chan> "by" <v:FieldSrc> "{" <a:NamedArgList> "}" => {
+        let (amount, blend) = h::take_medium_arg2(a, "Advect", "amount", 1.0, "blend", 1.0);
+        WarpOp::Advect { field: f, by: v, amount, blend }
+    },
     "Force" <f:Chan> "from" <v:FieldSrc> "{" <a:NamedArgList> "}" =>
         WarpOp::Force { field: f, from: v, gain: h::take_medium_arg(a, "Force", "gain", 1.0) },
     "Decay" <f:Chan> <e:BareOrParenArg> => WarpOp::DecayField { field: f, by: e },

@@ -190,8 +190,11 @@ pub enum WarpOp {
     /// e.g. watercolor pigment is mobile only where wet (`gated: a`).
     Diffuse { field: Chan, rate: WarpExpr, gated: Option<Chan> },
     /// Carry a field along a velocity by backward-trace resample:
-    /// `F ← sample(F, uv − V·amount)`. `V` is a field's `grad` or a 2-ch field.
-    Advect { field: Chan, by: FieldSrc, amount: WarpExpr },
+    /// `F ← mix(F, sample(F, uv − V·amount), blend)`. `V` is a field's `grad`
+    /// or a 2-ch field. `blend` (default 1) is how far to move toward the
+    /// traced sample: 1 = full transport (wave height), <1 = a gentle pull
+    /// (watercolor pigment edge-bloom, which must not teleport).
+    Advect { field: Chan, by: FieldSrc, amount: WarpExpr, blend: WarpExpr },
     /// Accumulate a force into a (vec2) field: `F ← F + src·gain`. Pair with
     /// `Advect` for the wave equation (ripples) / buoyancy.
     Force { field: Chan, from: FieldSrc, gain: WarpExpr },

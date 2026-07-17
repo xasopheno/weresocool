@@ -32,6 +32,19 @@ pub fn take_medium_arg(mut args: Vec<(String, WarpExpr)>, op: &str, key: &str, d
     v
 }
 
+/// Like `take_medium_arg` but for an op with two named scalar knobs — pull both
+/// from one arg bag so leftover-checking sees them both (calling the single
+/// version twice would spuriously flag the second key as unknown).
+pub fn take_medium_arg2(
+    mut args: Vec<(String, WarpExpr)>, op: &str,
+    k1: &str, d1: f32, k2: &str, d2: f32,
+) -> (WarpExpr, WarpExpr) {
+    let a = take_named_or(&mut args, k1, || WarpExpr::DefaultLit(d1));
+    let b = take_named_or(&mut args, k2, || WarpExpr::DefaultLit(d2));
+    warn_leftover(op, &args, &[k1, k2]);
+    (a, b)
+}
+
 /// `Background` takes a mix of scalar args (`split`, `soft`) and 3-tuple
 /// args (`top: (r,g,b)`, `bottom: (r,g,b)`). The grammar tags each named
 /// arg with its shape via this enum.
