@@ -17,8 +17,10 @@ pub fn parse_chan(s: &str) -> Chan {
     match s {
         "r" => Chan::R, "g" => Chan::G, "b" => Chan::B, "a" => Chan::A,
         "rg" => Chan::Rg, "gb" => Chan::Gb, "rgb" => Chan::Rgb,
+        "sx" => Chan::Sx, "sy" => Chan::Sy, "sz" => Chan::Sz, "sw" => Chan::Sw,
+        "sxy" => Chan::Sxy, "szw" => Chan::Szw,
         _ => {
-            eprintln!("[warp] unknown channel `{}` (use r/g/b/a/rg/gb/rgb) — defaulting to r", s);
+            eprintln!("[warp] unknown channel `{}` (use r/g/b/a/rg/gb/rgb or state sx/sy/sz/sw/sxy/szw) — defaulting to r", s);
             Chan::R
         }
     }

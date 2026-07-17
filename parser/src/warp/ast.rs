@@ -61,8 +61,13 @@ pub enum Source {
 /// Which channel(s) of the field a **substance verb** (MEDIUM.md M1) targets.
 /// The `field2d` backend packs state into one RGBA16F: scalar fields are single
 /// channels (`R/G/B/A`), a packed 2D velocity is `Gb`/`Rg`, a color is `Rgb`.
+/// A field address for the substance verbs. `r/g/b/a/rg/gb/rgb` live in the
+/// visible color buffer; `sx/sy/sz/sw/sxy/szw` live in the STATE texture — a
+/// second full-precision feedback target that is never displayed, never
+/// alpha-crushed, and needs no `Persist`: four true simulation channels
+/// (Gray-Scott u/v, CA cells, height+velocity...).
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
-pub enum Chan { R, G, B, A, Rg, Gb, Rgb }
+pub enum Chan { R, G, B, A, Rg, Gb, Rgb, Sx, Sy, Sz, Sw, Sxy, Szw }
 
 /// The velocity / force a substance verb reads: a scalar field's gradient
 /// (`grad(height)`, a vec2 pointing uphill), its laplacian (`lap(height)`, a
