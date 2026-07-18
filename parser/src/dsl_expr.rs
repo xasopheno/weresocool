@@ -54,9 +54,13 @@ pub enum MathFn {
     /// `wrap(x, period)` — euclidean modulo (`x mod period`, always ≥0). The
     /// time-`mod` / loop primitive. No WGSL builtin, so `to_wgsl` special-cases it.
     Wrap,
+    /// `step(edge, x)` — 0 below the edge, 1 at/above. The threshold primitive.
+    Step,
     // ternary
     Clamp,
     Mix,
+    /// `smoothstep(e0, e1, x)` — the smooth threshold; gates and masks.
+    Smoothstep,
 }
 
 impl MathFn {
@@ -76,6 +80,8 @@ impl MathFn {
             MathFn::Wrap => "wrap",
             MathFn::Clamp => "clamp",
             MathFn::Mix => "mix",
+            MathFn::Step => "step",
+            MathFn::Smoothstep => "smoothstep",
         }
     }
 }
@@ -115,6 +121,13 @@ pub enum Expr {
     /// A literal promoted to a runtime-tweakable uniform slot — warp only,
     /// injected by `warp::promote`. Codegen emits `user_param(slot u)`.
     UserParam { slot: u32 },
+    /// A FIELD read by name — warp only. The current value of a single
+    /// medium channel at this pixel: a builtin ("r", "a", "sx"…) or a
+    /// `state {}`-declared name ("water", "organism") that kintaro's
+    /// resolve-fields pass canonicalises to a builtin before codegen.
+    /// Lets gates, reaction terms and knobs read the medium itself:
+    /// `Decay rgb (0.07 * (1.0 - smoothstep(0.03, 0.2, organism)))`.
+    Field(String),
     /// `cycle([v0, v1, …])` — walk a list of values, one step per note,
     /// repeating: value = list[count % len]. Draw + brush-wgsl only (warp
     /// has no per-note count; its grammar never produces this).
@@ -223,6 +236,23 @@ pub fn to_wgsl(e: &Expr) -> String {
             format!("(({}) {} ({}))", to_wgsl(l), sym, to_wgsl(r))
         }
         Expr::UserParam { slot } => format!("user_param({}u)", slot),
+        // Field reads — canonical channel names (kintaro's resolve-fields
+        // pass rewrote `state {}` names to these before codegen). Warp-only:
+        // `color`/`state` are the warp step's working variables.
+        Expr::Field(name) => match name.as_str() {
+            "r" => "color.r".into(),
+            "g" => "color.g".into(),
+            "b" => "color.b".into(),
+            "a" => "color.a".into(),
+            "sx" => "state.x".into(),
+            "sy" => "state.y".into(),
+            "sz" => "state.z".into(),
+            "sw" => "state.w".into(),
+            other => {
+                eprintln!("[warp] unresolved field `{}` in expression — emitting 0.0", other);
+                "0.0".into()
+            }
+        },
         Expr::DefaultLit(n) => {
             if n.fract() == 0.0 && n.abs() < 1e6 {
                 format!("{:.1}", n)
@@ -292,6 +322,11 @@ pub fn as_const(e: &Expr) -> Option<f64> {
                 }
                 MathFn::Clamp => g(0).clamp(g(1).min(g(2)), g(1).max(g(2))),
                 MathFn::Mix => g(0) + (g(1) - g(0)) * g(2),
+                MathFn::Step => if g(1) >= g(0) { 1.0 } else { 0.0 },
+                MathFn::Smoothstep => {
+                    let t = ((g(2) - g(0)) / (g(1) - g(0)).max(1e-9)).clamp(0.0, 1.0);
+                    t * t * (3.0 - 2.0 * t)
+                }
             })
         }
         // Runtime references — not statically knowable.
@@ -306,7 +341,8 @@ pub fn as_const(e: &Expr) -> Option<f64> {
         | Expr::HitX(_)
         | Expr::HitY(_)
         | Expr::Dist(_)
-        | Expr::HitAge(_) => None,
+        | Expr::HitAge(_)
+        | Expr::Field(_) => None,
     }
 }
 

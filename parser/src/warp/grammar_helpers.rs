@@ -19,10 +19,10 @@ pub fn parse_chan(s: &str) -> Chan {
         "rg" => Chan::Rg, "gb" => Chan::Gb, "rgb" => Chan::Rgb,
         "sx" => Chan::Sx, "sy" => Chan::Sy, "sz" => Chan::Sz, "sw" => Chan::Sw,
         "sxy" => Chan::Sxy, "szw" => Chan::Szw,
-        _ => {
-            eprintln!("[warp] unknown channel `{}` (use r/g/b/a/rg/gb/rgb or state sx/sy/sz/sw/sxy/szw) — defaulting to r", s);
-            Chan::R
-        }
+        // Anything else is (potentially) a `state {}`-declared field name —
+        // kintaro's resolve-fields pass maps it to a concrete channel, and
+        // warns loudly if the name is unknown there.
+        _ => Chan::Named(s.to_string()),
     }
 }
 

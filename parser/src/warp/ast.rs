@@ -66,8 +66,14 @@ pub enum Source {
 /// second full-precision feedback target that is never displayed, never
 /// alpha-crushed, and needs no `Persist`: four true simulation channels
 /// (Gray-Scott u/v, CA cells, height+velocity...).
-#[derive(Debug, Clone, Copy, PartialEq, Eq)]
-pub enum Chan { R, G, B, A, Rg, Gb, Rgb, Sx, Sy, Sz, Sw, Sxy, Szw }
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub enum Chan {
+    R, G, B, A, Rg, Gb, Rgb, Sx, Sy, Sz, Sw, Sxy, Szw,
+    /// An unresolved `state {}`-declared field name ("water", "organism").
+    /// kintaro's resolve-fields pass rewrites it to a concrete variant
+    /// before codegen; surviving to codegen is a bug (warn + treat as R).
+    Named(String),
+}
 
 /// The velocity / force a substance verb reads: a scalar field's gradient
 /// (`grad(height)`, a vec2 pointing uphill), its laplacian (`lap(height)`, a
@@ -206,6 +212,12 @@ pub enum WarpOp {
     /// Per-channel fade: `F ← F·(1 − by)`. The channel form `Decay a { by: … }`
     /// (the scalar-arg `Decay 0.95` stays the whole-rgb color op).
     DecayField { field: Chan, by: WarpExpr },
+    /// Pointwise write: `F ← expr` (scalar, broadcast across F's components).
+    /// The expr may read fields — `Set organism (clamp(organism + food *
+    /// organism * organism - 0.11 * organism, 0.0, 1.0))` — which makes
+    /// reaction terms, custom gates and init idioms expressible without Raw.
+    /// SEQUENTIAL semantics: later ops (and later Sets) see the new value.
+    Set { field: Chan, value: WarpExpr },
     /// Write the composition's marks (Scene) into a field — the one step every
     /// medium needs, previously hand-rolled in Raw. A multi-channel field takes
     /// Scene's matching channels; a single channel takes Scene's luminance
@@ -376,5 +388,9 @@ pub struct SeqPhase {
 #[derive(Debug, Clone, PartialEq)]
 pub struct WarpDef {
     pub name: String,
+    /// `state { water: a, organism: sy }` — composer-chosen field names for
+    /// channels. Empty when the block is absent. Names are usable anywhere a
+    /// channel selector or a field expression appears in this def.
+    pub state_names: Vec<(String, Chan)>,
     pub pipeline: WarpPipeline,
 }

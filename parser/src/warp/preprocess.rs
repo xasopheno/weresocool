@@ -8,6 +8,7 @@
 use super::ast::{WarpBlendMode, WarpDef, WarpPipeline};
 use super::parser_lalrpop::ParseError;
 use super::parser_lalrpop::parse_pipeline_lalrpop as parse_pipeline;
+use super::parser_lalrpop::parse_pipeline_with_state_lalrpop as parse_pipeline_with_state;
 use crate::dsl_extract::{
     collect_refs, find_matching_brace, is_ident_byte, is_ident_start, matches_keyword, skip_ws,
 };
@@ -158,13 +159,13 @@ pub fn extract_warps(source: &str) -> Result<Preprocessed, PreprocessError> {
             };
 
             let body = &source[body_start..body_end];
-            let pipeline = parse_pipeline(body)
+            let (state_names, pipeline) = parse_pipeline_with_state(body)
                 .map_err(|err| PreprocessError::Parse { name: name.clone(), err })?;
             if blend_mode != WarpBlendMode::Additive {
                 warp_blend_modes.insert(name.clone(), blend_mode);
             }
             warp_body_spans.insert(name.clone(), (body_start, body_end));
-            warps.push(WarpDef { name, pipeline });
+            warps.push(WarpDef { name, state_names, pipeline });
 
             // Replace the skipped warp block with spaces (newlines preserved
             // for line-number-fidelity) so `out` stays byte-aligned with the
@@ -331,6 +332,7 @@ fn strip_chain_warp_ops(
                     let anon = format!("__inline_{}_{}", name, i);
                     inline_warps.push(WarpDef {
                         name: anon.clone(),
+                        state_names: Vec::new(),
                         pipeline: pipeline.clone(),
                     });
                     inline_attachments.insert(anon.clone(), name.clone());

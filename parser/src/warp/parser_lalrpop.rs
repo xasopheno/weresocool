@@ -2,8 +2,8 @@
 //! This is the sole warp parser (the old hand-written `parser.rs` was removed
 //! once the differential test proved AST parity across every shipped `.socool`).
 
-use crate::warp::ast::WarpPipeline;
-use crate::warp::warp_grammar::PipelineParser;
+use crate::warp::ast::{Chan, WarpPipeline};
+use crate::warp::warp_grammar::{PipelineParser, PipelineWithStateParser};
 
 /// Warp parse errors go through `dsl_parse_error::DslParseError` for consistent
 /// pretty source-context display across all kintaro DSLs.
@@ -11,6 +11,15 @@ pub use crate::dsl_parse_error::DslParseError as ParseError;
 
 pub fn parse_pipeline_lalrpop(src: &str) -> Result<WarpPipeline, ParseError> {
     PipelineParser::new()
+        .parse(src)
+        .map_err(|e| ParseError::from_lalrpop("warp", e, src))
+}
+
+/// Parse a warp body that may begin with a `state { name: chan, ... }` block.
+pub fn parse_pipeline_with_state_lalrpop(
+    src: &str,
+) -> Result<(Vec<(String, Chan)>, WarpPipeline), ParseError> {
+    PipelineWithStateParser::new()
         .parse(src)
         .map_err(|e| ParseError::from_lalrpop("warp", e, src))
 }

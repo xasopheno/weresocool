@@ -56,11 +56,11 @@ match {
     "Raw",
 
     // Substance verbs (MEDIUM.md M1) + their structural keywords.
-    "Diffuse", "Advect", "Force", "Deposit", "Propagate", "Flow", "grad", "lap", "by", "from", "gated",
+    "Diffuse", "Advect", "Force", "Deposit", "Propagate", "Flow", "Set", "state", "grad", "lap", "by", "from", "gated",
 
     // Pure math functions (lowercase — distinct from the capitalized ops/
     // compositors like `Max`/`Mix`). Law-4 function set; see `dsl_expr::MathFn`.
-    "sin", "cos", "abs", "floor", "ceil", "sqrt", "exp", "min", "max", "pow", "wrap", "clamp", "mix",
+    "sin", "cos", "abs", "floor", "ceil", "sqrt", "exp", "min", "max", "pow", "wrap", "clamp", "mix", "step", "smoothstep",
 
     r"\s+"          => { },
     r"//[^\n]*"     => { },
@@ -83,6 +83,33 @@ match {
 
 pub Pipeline: WarpPipeline = {
     <src:SrcExpr> <ops:PipeTail> => WarpPipeline { source: src, ops },
+};
+
+// `state { water: a, organism: sy }` — composer-chosen names for channels.
+StateEntry: (String, ast::Chan) = {
+    <n:IDENT> ":" <c:IDENT> => (n.to_string(), h::parse_chan(&c)),
+};
+StateTail: Vec<(String, ast::Chan)> = {
+    => vec![],
+    "," => vec![],
+    "," <e:StateEntry> <rest:StateTail> => {
+        let mut v = vec![e];
+        v.extend(rest);
+        v
+    },
+};
+StateBlock: Vec<(String, ast::Chan)> = {
+    "state" "{" <first:StateEntry> <rest:StateTail> "}" => {
+        let mut v = vec![first];
+        v.extend(rest);
+        v
+    },
+};
+
+// Entry used by the preprocessor: optional state block, then the pipeline.
+pub PipelineWithState: (Vec<(String, ast::Chan)>, WarpPipeline) = {
+    <p:Pipeline> => (vec![], p),
+    <sb:StateBlock> <p:Pipeline> => (sb, p),
 };
 
 /// "Ops-only" pipeline used as an Iterate body when the first ident isn't a
@@ -235,6 +262,7 @@ Op: WarpOp = {
         let (gain, grain, cap) = h::take_medium_arg3(a, "Deposit", "gain", 0.2, "grain", 0.0, "cap", 0.0);
         WarpOp::Deposit { field: f, gain, grain, cap }
     },
+    "Set" <f:Chan> <e:BareOrParenArg> => WarpOp::Set { field: f, value: e },
     "Propagate" <f:Chan> "{" <a:NamedArgList> "}" => {
         let (step, dry) = h::take_medium_arg2(a, "Propagate", "step", 3.0, "dry", 0.97);
         WarpOp::Propagate { field: f, step, dry }
@@ -402,6 +430,10 @@ NamedArgTail: Vec<(String, WarpExpr)> = {
 };
 NamedArg: (String, WarpExpr) = {
     <name:Name> ":" <e:Expr> => (name, e),
+    // `step` became a math-fn keyword (step(edge, x)) — but it's also the
+    // established arg key of `Propagate { step: … }`. Accept the keyword
+    // spelling as a key so existing files keep parsing (the `by` lesson).
+    "step" ":" <e:Expr> => ("step".to_string(), e),
 };
 
 BgArgList: Vec<(String, BgArgVal)> = {
@@ -501,6 +533,9 @@ Factor: WarpExpr = {
     "(" <e:Expr> ")" => e,
     "-" <f:Factor>   =>
         WarpExpr::Bin(BinOp::Sub, Box::new(WarpExpr::DefaultLit(0.0)), Box::new(f)),
+    // A field read by name — builtin channel ("a", "sx") or a `state {}`
+    // declared name ("water"). Canonicalised by kintaro's resolve-fields pass.
+    <s:IDENT> => WarpExpr::Field(s.to_string()),
 };
 
 // Math-function names grouped by arity (see `dsl_expr::MathFn`).
@@ -508,8 +543,8 @@ UnaryFn: MathFn = {
     "sin" => MathFn::Sin, "cos" => MathFn::Cos, "abs" => MathFn::Abs,
     "floor" => MathFn::Floor, "ceil" => MathFn::Ceil, "sqrt" => MathFn::Sqrt, "exp" => MathFn::Exp,
 };
-BinaryFn: MathFn = { "pow" => MathFn::Pow, "wrap" => MathFn::Wrap };
-TernaryFn: MathFn = { "clamp" => MathFn::Clamp, "mix" => MathFn::Mix };
+BinaryFn: MathFn = { "pow" => MathFn::Pow, "wrap" => MathFn::Wrap, "step" => MathFn::Step };
+TernaryFn: MathFn = { "clamp" => MathFn::Clamp, "mix" => MathFn::Mix, "smoothstep" => MathFn::Smoothstep };
 VariadicFn: MathFn = { "min" => MathFn::Min, "max" => MathFn::Max };
 
 NonParenExpr: WarpExpr = {
