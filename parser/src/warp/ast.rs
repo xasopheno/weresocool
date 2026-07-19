@@ -44,6 +44,10 @@ impl WarpBlendMode {
 pub enum Source {
     Prev,
     Scene,
+    /// The 3D backend (MEDIUM.md's field3d): this def's fields live in a
+    /// volume lattice; marks deposit at their true depth; display is a
+    /// raymarched projection. The source picks the backend (Law 7).
+    Volume,
     /// Sine-wave pattern oscillator. `freq` = spatial frequency,
     /// `sync` = temporal scroll, `offset` = phase.
     Osc { freq: WarpExpr, sync: WarpExpr, offset: WarpExpr },
@@ -238,6 +242,9 @@ pub enum WarpOp {
     /// e.g. WET pigment runs. `Flow rgb gated a { y: 0.005 }` = wet ink weeps
     /// downward.
     Flow { field: Chan, x: WarpExpr, y: WarpExpr, gated: Option<Chan> },
+    /// Volume-backend terminal: raymarch the volume into the composite.
+    /// `fog` = extinction per unit depth, `gain` = emission scale.
+    Raymarch { fog: WarpExpr, gain: WarpExpr },
     /// Terminal marker: store the pipeline's alpha UNTOUCHED as hidden state.
     /// Unlike `Opaque` (alpha = mark presence) or the default epilogue
     /// (alpha = brightness), `Persist` lets a medium keep true internal state

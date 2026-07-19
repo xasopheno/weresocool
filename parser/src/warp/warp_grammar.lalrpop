@@ -38,7 +38,7 @@ grammar;
 match {
     "|", "(", ")", "{", "}", "[", "]", ",", ";", ":", "+", "-", "*", "/",
 
-    "Prev", "Scene", "Osc", "Noise", "Gradient", "Solid",
+    "Prev", "Scene", "Volume", "Raymarch", "Osc", "Noise", "Gradient", "Solid",
     "time", "clock", "Sin", "Hit", "HitX", "HitY", "Dist", "HitAge", "Displace", "Ripple", "Glow", "Stir", "Bulge", "Relief", "Stain", "Watercolor",
 
     "Scale", "Rotate", "Scroll", "Swirl", "Fold", "Kaleid",
@@ -137,6 +137,7 @@ PipeTail: Vec<WarpOp> = {
 SrcExpr: Source = {
     "Prev"  => Source::Prev,
     "Scene" => Source::Scene,
+    "Volume" => Source::Volume,
 
     "Osc" "{" <args:NamedArgList> "}" => {
         let (freq, sync, offset) = h::extract_osc_args(args);
@@ -263,6 +264,10 @@ Op: WarpOp = {
         WarpOp::Deposit { field: f, gain, grain, cap }
     },
     "Set" <f:Chan> <e:BareOrParenArg> => WarpOp::Set { field: f, value: e },
+    "Raymarch" "{" <a:NamedArgList> "}" => {
+        let (fog, gain) = h::take_medium_arg2(a, "Raymarch", "fog", 1.2, "gain", 1.0);
+        WarpOp::Raymarch { fog, gain }
+    },
     "Propagate" <f:Chan> "{" <a:NamedArgList> "}" => {
         let (step, dry) = h::take_medium_arg2(a, "Propagate", "step", 3.0, "dry", 0.97);
         WarpOp::Propagate { field: f, step, dry }
