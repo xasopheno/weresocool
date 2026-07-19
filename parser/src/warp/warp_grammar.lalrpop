@@ -56,7 +56,7 @@ match {
     "Raw",
 
     // Substance verbs (MEDIUM.md M1) + their structural keywords.
-    "Diffuse", "Advect", "Force", "Deposit", "Propagate", "Flow", "Set", "state", "grad", "lap", "by", "from", "gated",
+    "Diffuse", "Advect", "Force", "Deposit", "Propagate", "Flow", "Set", "state", "grad", "lap", "by", "from", "gated", "cycle", "mod",
 
     // Pure math functions (lowercase — distinct from the capitalized ops/
     // compositors like `Max`/`Mix`). Law-4 function set; see `dsl_expr::MathFn`.
@@ -533,6 +533,10 @@ Factor: WarpExpr = {
     "(" <e:Expr> ")" => e,
     "-" <f:Factor>   =>
         WarpExpr::Bin(BinOp::Sub, Box::new(WarpExpr::DefaultLit(0.0)), Box::new(f)),
+    // Musical clocks (Law-4 parity with draw/wgsl): position through a named
+    // audio cycle. Placeholders — kintaro rewrites them with the length env.
+    "cycle" "(" <n:IDENT> ")" => WarpExpr::LoopPhase(n.to_string()),
+    "mod" <n:IDENT> => WarpExpr::LoopName(n.to_string()),
     // A field read by name — builtin channel ("a", "sx") or a `state {}`
     // declared name ("water"). Canonicalised by kintaro's resolve-fields pass.
     <s:IDENT> => WarpExpr::Field(s.to_string()),
@@ -581,6 +585,10 @@ NonParenFactor: WarpExpr = {
         rest.into_iter().fold(a, |acc, e| WarpExpr::Call(f, vec![acc, e])),
     "-" <f:NonParenFactor> =>
         WarpExpr::Bin(BinOp::Sub, Box::new(WarpExpr::DefaultLit(0.0)), Box::new(f)),
+    // Musical clocks (Law-4 parity with draw/wgsl): position through a named
+    // audio cycle. Placeholders — kintaro rewrites them with the length env.
+    "cycle" "(" <n:IDENT> ")" => WarpExpr::LoopPhase(n.to_string()),
+    "mod" <n:IDENT> => WarpExpr::LoopName(n.to_string()),
 };
 
 Num: f32 = {
