@@ -240,14 +240,17 @@ pub fn to_wgsl(e: &Expr) -> String {
         // pass rewrote `state {}` names to these before codegen). Warp-only:
         // `color`/`state` are the warp step's working variables.
         Expr::Field(name) => match name.as_str() {
-            "r" => "color.r".into(),
-            "g" => "color.g".into(),
-            "b" => "color.b".into(),
-            "a" => "color.a".into(),
-            "sx" => "state.x".into(),
-            "sy" => "state.y".into(),
-            "sz" => "state.z".into(),
-            "sw" => "state.w".into(),
+            "R" => "color.r".into(),
+            "G" => "color.g".into(),
+            "B" => "color.b".into(),
+            "A" => "color.a".into(),
+            "Sx" => "state.x".into(),
+            "Sy" => "state.y".into(),
+            "Sz" => "state.z".into(),
+            "Sw" => "state.w".into(),
+            // The l-basis (seconds per base length unit) — codegen emits a
+            // `let LBase = <value>;` prologue into every warp fn.
+            "LBase" => "LBase".into(),
             other => {
                 eprintln!("[warp] unresolved field `{}` in expression — emitting 0.0", other);
                 "0.0".into()

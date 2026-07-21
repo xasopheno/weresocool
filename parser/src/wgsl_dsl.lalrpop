@@ -57,8 +57,9 @@ Term: VisualOp = {
 // Note: [^;|]+ stops at semicolon or pipe (so pipes can be used with DSL commands)
 RawWgsl: String = {
     // Assignment: identifier = expression (stops at ; or | for pipe composition)
-    <s:r"[a-z_][a-zA-Z0-9_]*\s*=\s*[^;|]+"> => s.to_string(),
-    // Function call: identifier(...)
+    <s:r"[a-zA-Z_][a-zA-Z0-9_]*\s*=\s*[^;|]+"> => s.to_string(),
+    // Function call: identifier(...) — lowercase start (host fns); uppercase
+    // + parens are op keywords.
     <s:r"[a-z_][a-zA-Z0-9_]*\s*\([^)]*\)"> => s.to_string(),
 };
 
@@ -131,7 +132,7 @@ WgslVal: WgslValue = {
     // length env), so emit `wrap(song_time, 1.0/*@klen:NAME@*/)`: a naga-valid
     // expression carrying the name in a comment. Kintaro patches the `1.0`
     // literal to the resolved period after building its length env.
-    "mod" <name:r"[a-z_][a-zA-Z0-9_]+"> =>
+    "Mod" <name:r"[a-zA-Z_][a-zA-Z0-9_]+"> =>
         WgslValue::Expr(format!("wrap(song_time, 1.0/*@klen:{}@*/)", name)),
     <r:RatioValue> => WgslValue::Rational(r),
     <e:WgslExpr> => WgslValue::Expr(e),
@@ -171,17 +172,20 @@ QuotedStr: String = {
 // the Law-4 note.* surface. The wgsl_dsl.rs passthrough rewrites those dotted
 // names (and `clock`) to the raw instance-struct fields naga sees.
 WgslExpr: String = {
-    // Function call: identifier(args) - matches sin(time), cos(x * 2), etc.
+    // Function call: identifier(args) — LOWERCASE start only (host fns like
+    // sin/cos). Uppercase-with-parens are OP keywords (Direction, Slew, Sin)
+    // and must lex as keywords, not swallowed by this terminal. Uppercase
+    // language fns (Cycle/Rand/Choose/Wrap) ride the QUOTED-expr path.
     <s:r"[a-z_][a-zA-Z0-9_]*\s*\([^)]*\)"> => s.to_string(),
     // Binary expression: identifier followed by operators and operands
     // Matches: time * 2, note.gain * 0.5, x + y * z, progress * 0.5
-    <s:r"[a-z_][a-zA-Z0-9_]*(\.[a-zA-Z0-9_]+)?(\s*[\+\-\*\/]\s*[a-zA-Z0-9_\.]+)+"> => s.to_string(),
+    <s:r"[a-zA-Z_][a-zA-Z0-9_]*(\.[a-zA-Z0-9_]+)?(\s*[\+\-\*\/]\s*[a-zA-Z0-9_\.]+)+"> => s.to_string(),
     // Simple identifier: time, progress, etc. (at least 2 chars to avoid single-letter numbers being captured)
-    <s:r"[a-z_][a-zA-Z0-9_]+"> => s.to_string(),
+    <s:r"[a-zA-Z_][a-zA-Z0-9_]+"> => s.to_string(),
     // Dotted note field: note.t, note.gain — the Law-4 note.* surface (rewritten
     // to the flat instance field downstream). A separate terminal from the plain
     // identifier (it always carries a `.`) to avoid lexer ambiguity.
-    <s:r"[a-z_][a-zA-Z0-9_]*\.[a-zA-Z0-9_]+"> => s.to_string(),
+    <s:r"[a-zA-Z_][a-zA-Z0-9_]*\.[a-zA-Z0-9_]+"> => s.to_string(),
 };
 
 // Parse rational values: 1/2, 0.5, 2, -1

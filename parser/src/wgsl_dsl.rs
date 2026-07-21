@@ -122,18 +122,24 @@ fn rewrite_surface_idents(wgsl: &str) -> String {
     use regex::Regex;
     let mut out = wgsl.to_string();
     // Dotted note fields → flat instance-struct fields.
+    // CASE LAW v2: language-provided terms are UPPERCASE (Note.t, Count,
+    // Clock, Time) — lowercase belongs to the composer and to WGSL itself.
     for (from, to) in [
-        (r"\bnote\.t\b", "note_t"),
-        (r"\bnote\.l\b", "note_l"),
-        (r"\bnote\.gain\b", "note_gain"),
-        (r"\bnote\.event\b", "note_event"),
+        (r"\bNote\.t\b", "note_t"),
+        (r"\bNote\.l\b", "note_l"),
+        (r"\bNote\.gain\b", "note_gain"),
+        (r"\bNote\.event\b", "note_event"),
     ] {
         out = Regex::new(from).unwrap().replace_all(&out, to).into_owned();
     }
     // Bare atoms: `count` is the note-index sugar; `clock` is the live play
     // clock (the `song_time` uniform in the brush shader).
-    out = Regex::new(r"\bcount\b").unwrap().replace_all(&out, "note_event").into_owned();
-    out = Regex::new(r"\bclock\b").unwrap().replace_all(&out, "song_time").into_owned();
+    out = Regex::new(r"\bCount\b").unwrap().replace_all(&out, "note_event").into_owned();
+    out = Regex::new(r"\bClock\b").unwrap().replace_all(&out, "song_time").into_owned();
+    // `Time` (stamp age) → the shader's lowercase `time` local.
+    out = Regex::new(r"\bTime\b").unwrap().replace_all(&out, "time").into_owned();
+    // `Tau` → the constant.
+    out = Regex::new(r"\bTau\b").unwrap().replace_all(&out, "6.28318530718").into_owned();
     out
 }
 

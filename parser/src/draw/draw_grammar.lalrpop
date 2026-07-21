@@ -21,8 +21,8 @@ match {
     "Point", "AsIs", "None",
 
     // Atoms / functions
-    "Stroke", "clock", "mod", "Sin", "tau", "note", "Here",
-    "count", "cycle", "rand", "choose",
+    "Stroke", "Clock", "Mod", "Sin", "Tau", "Note", "Here",
+    "Count", "Cycle", "Rand", "Choose",
 
     // Note field names (matched after `note .`)
     "x", "y", "z", "l", "t", "voice", "direction",
@@ -46,7 +46,7 @@ match {
     "axis", "scale", "seed", "freq",
 
     // Pure math functions (lowercase) — Law-4 set; see dsl_expr::MathFn.
-    "sin", "cos", "abs", "floor", "ceil", "sqrt", "exp", "min", "max", "pow", "wrap", "clamp", "mix",
+    "sin", "cos", "abs", "floor", "ceil", "sqrt", "exp", "min", "max", "pow", "Wrap", "clamp", "mix",
 
     r"\s+"          => { },
     r"//[^\n]*"     => { },
@@ -312,7 +312,7 @@ AnchorAtom: Anchor = {
     "Za" "(" <e:Expr> ")" => Anchor::Za(e),
     "Direction" "(" <x:Expr> "," <y:Expr> "," <z:Expr> ")" => Anchor::Direction(x, y, z),
     // `note.direction` is sugar for `Direction(note.x, note.y, note.z)`
-    "note" "." "direction" =>
+    "Note" "." "direction" =>
         Anchor::Direction(
             DrawExpr::Note(NoteField::X),
             DrawExpr::Note(NoteField::Y),
@@ -383,7 +383,7 @@ FieldExpr: Field = {
     "Flow" "{" "scale" ":" <s:Expr> "," "seed" ":" <d:Expr> "}" =>
         Field::Flow { scale: s, seed: Some(d) },
     "Const" "(" <e:Expr> ")" => Field::Const(e),
-    "note" "." <n:NoteFieldName> => Field::Note(n),
+    "Note" "." <n:NoteFieldName> => Field::Note(n),
 };
 
 // ---------------------------------------------------------------------------
@@ -402,9 +402,9 @@ Term: DrawExpr = {
 Factor: DrawExpr = {
     <n:Num> => DrawExpr::Lit(n),
     "Stroke" => DrawExpr::Stroke,
-    "clock" => DrawExpr::Clock,
-    "mod" <name:Name> => DrawExpr::LoopName(name),
-    "tau"   => DrawExpr::Lit(std::f32::consts::TAU),
+    "Clock" => DrawExpr::Clock,
+    "Mod" <name:Name> => DrawExpr::LoopName(name),
+    "Tau"   => DrawExpr::Lit(std::f32::consts::TAU),
     "Sin" "(" <f:Expr> ")" =>
         DrawExpr::Sin { freq: Box::new(f), amp: Box::new(DrawExpr::DefaultLit(1.0)) },
     "Sin" "(" <f:Expr> "," <a:Expr> ")" =>
@@ -414,33 +414,33 @@ Factor: DrawExpr = {
     <f:TernaryFn> "(" <a:Expr> "," <b:Expr> "," <c:Expr> ")" => DrawExpr::Call(f, vec![a, b, c]),
     <f:VariadicFn> "(" <a:Expr> <rest:("," <Expr>)+> ")" =>
         rest.into_iter().fold(a, |acc, e| DrawExpr::Call(f, vec![acc, e])),
-    "note" "." <n:NoteFieldName> => DrawExpr::Note(n),
+    "Note" "." <n:NoteFieldName> => DrawExpr::Note(n),
     // Law-4 note-index vocabulary:
     //   count       = the raw accumulating index (0,1,2,… unbounded)
     //   cycle(n)    = walk 0,1,… n-1, one per hit, repeat   (= cycle(0..n))
     //   cycle(a..b) = walk a, a+1, … b-1, one per hit, repeat
     //   cycle([…])  = walk an explicit list of values, repeat
     // cycle lowers onto wrap(count, …); count keeps growing (use for spirals).
-    "count" => DrawExpr::Note(NoteField::Event),
-    "cycle" "(" "[" <first:Expr> <rest:("," <Expr>)*> "]" ")" => {
+    "Count" => DrawExpr::Note(NoteField::Event),
+    "Cycle" "(" "[" <first:Expr> <rest:("," <Expr>)*> "]" ")" => {
         let mut vals = vec![first];
         vals.extend(rest);
         DrawExpr::Cycle(vals)
     },
-    "cycle" "(" <a:Expr> ".." <b:Expr> ")" => {
+    "Cycle" "(" <a:Expr> ".." <b:Expr> ")" => {
         let span = DrawExpr::Bin(BinOp::Sub, Box::new(b), Box::new(a.clone()));
         let wrapped = DrawExpr::Call(MathFn::Wrap,
             vec![DrawExpr::Note(NoteField::Event), span]);
         DrawExpr::Bin(BinOp::Add, Box::new(a), Box::new(wrapped))
     },
-    "cycle" "(" <n:Expr> ")" => DrawExpr::Call(MathFn::Wrap,
+    "Cycle" "(" <n:Expr> ")" => DrawExpr::Call(MathFn::Wrap,
         vec![DrawExpr::Note(NoteField::Event), n]),
     // cycle(<name>) — 0→1 phase through a named audio cycle (time-sibling of
     // cycle(n)); resolved against the length env like `mod`.
-    "cycle" "(" <name:Name> ")" => DrawExpr::LoopPhase(name),
+    "Cycle" "(" <name:Name> ")" => DrawExpr::LoopPhase(name),
     // Randomness — deterministic per-note (hashed from count):
-    "rand" "(" <s:Expr> ")" => DrawExpr::Rand(Box::new(s)),
-    "choose" "(" "[" <first:Expr> <rest:("," <Expr>)*> "]" ")" => {
+    "Rand" "(" <s:Expr> ")" => DrawExpr::Rand(Box::new(s)),
+    "Choose" "(" "[" <first:Expr> <rest:("," <Expr>)*> "]" ")" => {
         let mut vals = vec![first];
         vals.extend(rest);
         DrawExpr::Choose(vals)
@@ -456,7 +456,7 @@ UnaryFn: MathFn = {
     "floor" => MathFn::Floor, "ceil" => MathFn::Ceil, "sqrt" => MathFn::Sqrt,
     "exp" => MathFn::Exp,
 };
-BinaryFn: MathFn = { "pow" => MathFn::Pow, "wrap" => MathFn::Wrap };
+BinaryFn: MathFn = { "pow" => MathFn::Pow, "Wrap" => MathFn::Wrap };
 TernaryFn: MathFn = { "clamp" => MathFn::Clamp, "mix" => MathFn::Mix };
 VariadicFn: MathFn = { "min" => MathFn::Min, "max" => MathFn::Max };
 
@@ -469,9 +469,9 @@ BareOrParenArg: DrawExpr = {
 NonParenFactor: DrawExpr = {
     <n:Num> => DrawExpr::Lit(n),
     "Stroke" => DrawExpr::Stroke,
-    "clock" => DrawExpr::Clock,
-    "mod" <name:Name> => DrawExpr::LoopName(name),
-    "tau"   => DrawExpr::Lit(std::f32::consts::TAU),
+    "Clock" => DrawExpr::Clock,
+    "Mod" <name:Name> => DrawExpr::LoopName(name),
+    "Tau"   => DrawExpr::Lit(std::f32::consts::TAU),
     "Sin" "(" <f:Expr> ")" =>
         DrawExpr::Sin { freq: Box::new(f), amp: Box::new(DrawExpr::DefaultLit(1.0)) },
     "Sin" "(" <f:Expr> "," <a:Expr> ")" =>
@@ -481,27 +481,27 @@ NonParenFactor: DrawExpr = {
     <f:TernaryFn> "(" <a:Expr> "," <b:Expr> "," <c:Expr> ")" => DrawExpr::Call(f, vec![a, b, c]),
     <f:VariadicFn> "(" <a:Expr> <rest:("," <Expr>)+> ")" =>
         rest.into_iter().fold(a, |acc, e| DrawExpr::Call(f, vec![acc, e])),
-    "note" "." <n:NoteFieldName> => DrawExpr::Note(n),
+    "Note" "." <n:NoteFieldName> => DrawExpr::Note(n),
     // count/cycle sugar — mirrors the Factor rules so bare op arguments accept it
-    "count" => DrawExpr::Note(NoteField::Event),
-    "cycle" "(" "[" <first:Expr> <rest:("," <Expr>)*> "]" ")" => {
+    "Count" => DrawExpr::Note(NoteField::Event),
+    "Cycle" "(" "[" <first:Expr> <rest:("," <Expr>)*> "]" ")" => {
         let mut vals = vec![first];
         vals.extend(rest);
         DrawExpr::Cycle(vals)
     },
-    "cycle" "(" <a:Expr> ".." <b:Expr> ")" => {
+    "Cycle" "(" <a:Expr> ".." <b:Expr> ")" => {
         let span = DrawExpr::Bin(BinOp::Sub, Box::new(b), Box::new(a.clone()));
         let wrapped = DrawExpr::Call(MathFn::Wrap,
             vec![DrawExpr::Note(NoteField::Event), span]);
         DrawExpr::Bin(BinOp::Add, Box::new(a), Box::new(wrapped))
     },
-    "cycle" "(" <n:Expr> ")" => DrawExpr::Call(MathFn::Wrap,
+    "Cycle" "(" <n:Expr> ")" => DrawExpr::Call(MathFn::Wrap,
         vec![DrawExpr::Note(NoteField::Event), n]),
     // cycle(<name>) — 0→1 phase through a named audio cycle (time-sibling of
     // cycle(n)); resolved against the length env like `mod`.
-    "cycle" "(" <name:Name> ")" => DrawExpr::LoopPhase(name),
-    "rand" "(" <s:Expr> ")" => DrawExpr::Rand(Box::new(s)),
-    "choose" "(" "[" <first:Expr> <rest:("," <Expr>)*> "]" ")" => {
+    "Cycle" "(" <name:Name> ")" => DrawExpr::LoopPhase(name),
+    "Rand" "(" <s:Expr> ")" => DrawExpr::Rand(Box::new(s)),
+    "Choose" "(" "[" <first:Expr> <rest:("," <Expr>)*> "]" ")" => {
         let mut vals = vec![first];
         vals.extend(rest);
         DrawExpr::Choose(vals)

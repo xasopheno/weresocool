@@ -39,7 +39,7 @@ mod count_sugar_tests {
     #[test]
     fn cycle_n_lowers_to_wrap() {
         assert_eq!(
-            rewrite_count_sugar("cycle(12) - 0.5"),
+            rewrite_count_sugar("Cycle(12) - 0.5"),
             "wrap(note_event, (12)) - 0.5"
         );
     }
@@ -47,14 +47,14 @@ mod count_sugar_tests {
     #[test]
     fn cycle_range_lowers_to_offset_wrap() {
         assert_eq!(
-            rewrite_count_sugar("cycle(4..10)"),
+            rewrite_count_sugar("Cycle(4..10)"),
             "((4) + wrap(note_event, (10) - (4)))"
         );
     }
 
     #[test]
     fn cycle_list_lowers_to_select_chain() {
-        let out = rewrite_count_sugar("cycle([-1, 4, -4, 10])");
+        let out = rewrite_count_sugar("Cycle([-1, 4, -4, 10])");
         assert!(out.starts_with("select("));
         assert!(out.contains("wrap(note_event, 4.0) >= 3.0"));
         assert!(out.contains("(-1)"));
@@ -64,16 +64,16 @@ mod count_sugar_tests {
     #[test]
     fn rand_lowers_to_k_rand() {
         assert_eq!(
-            rewrite_count_sugar("rand(1) * 0.5"),
+            rewrite_count_sugar("Rand(1) * 0.5"),
             "k_rand(note_event, (1)) * 0.5"
         );
         // seed can itself be sugar
-        assert_eq!(rewrite_count_sugar("rand(count)"), "k_rand(note_event, (note_event))");
+        assert_eq!(rewrite_count_sugar("Rand(Count)"), "k_rand(note_event, (note_event))");
     }
 
     #[test]
     fn choose_lowers_to_k_rand_select_chain() {
-        let out = rewrite_count_sugar("choose([-1, 4, 10])");
+        let out = rewrite_count_sugar("Choose([-1, 4, 10])");
         assert!(out.starts_with("select("));
         assert!(out.contains("k_rand(note_event, 0.618034)"));
         assert!(out.contains("(-1)") && out.contains("(10)"));
@@ -81,7 +81,7 @@ mod count_sugar_tests {
 
     #[test]
     fn bare_count_becomes_note_event_with_boundaries() {
-        assert_eq!(rewrite_count_sugar("count * 0.9"), "note_event * 0.9");
+        assert_eq!(rewrite_count_sugar("Count * 0.9"), "note_event * 0.9");
         // no rewrite inside longer identifiers
         assert_eq!(rewrite_count_sugar("recount + counts"), "recount + counts");
     }
@@ -146,7 +146,7 @@ pub fn rewrite_count_sugar(src: &str) -> String {
     let mut i = 0;
     while i < bytes.len() {
         // cycle(…)
-        if src[i..].starts_with("cycle") && ident_boundary(bytes, i, i + 5) {
+        if src[i..].starts_with("Cycle") && ident_boundary(bytes, i, i + 5) {
             let mut j = i + 5;
             while j < bytes.len() && bytes[j].is_ascii_whitespace() {
                 j += 1;
@@ -198,7 +198,7 @@ pub fn rewrite_count_sugar(src: &str) -> String {
         }
         // choose([v0, v1, …]) → random pick via a select chain (the random
         // sibling of cycle's ordered walk); index = floor(k_rand * len).
-        if src[i..].starts_with("choose") && ident_boundary(bytes, i, i + 6) {
+        if src[i..].starts_with("Choose") && ident_boundary(bytes, i, i + 6) {
             let mut j = i + 6;
             while j < bytes.len() && bytes[j].is_ascii_whitespace() {
                 j += 1;
@@ -233,7 +233,7 @@ pub fn rewrite_count_sugar(src: &str) -> String {
             }
         }
         // rand(seed) → k_rand(note_event, (seed))
-        if src[i..].starts_with("rand") && ident_boundary(bytes, i, i + 4) {
+        if src[i..].starts_with("Rand") && ident_boundary(bytes, i, i + 4) {
             let mut j = i + 4;
             while j < bytes.len() && bytes[j].is_ascii_whitespace() {
                 j += 1;
@@ -248,7 +248,7 @@ pub fn rewrite_count_sugar(src: &str) -> String {
             }
         }
         // bare `count`
-        if src[i..].starts_with("count") && ident_boundary(bytes, i, i + 5) {
+        if src[i..].starts_with("Count") && ident_boundary(bytes, i, i + 5) {
             out.push_str("note_event");
             i += 5;
             continue;
