@@ -14,6 +14,7 @@ pub mod dsl_params;
 pub mod dsl_parse_error;
 pub mod palette;
 pub mod surface_dsl;
+pub mod layer;
 pub mod warp;
 
 pub mod error_handling;

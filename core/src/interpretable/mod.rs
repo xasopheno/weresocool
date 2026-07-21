@@ -128,8 +128,9 @@ pub struct AudioSource {
 ///   → dsl_imports::resolve        (`use "std/warp"` → inlined text)
 ///   → daw::injection_for + apply  (recorded layers → __layer defs + registry)
 ///   → dsl_params::expand          (templates → specialized defs)
-///   → warp/draw/surface extraction (strip blocks; ASTs go to the visual host)
+///   → warp/draw/surface/layer extraction (strip blocks; ASTs go to the visual host)
 ///   → palette::extract_palette    (strip wrapper, hoist instrument defs)
+///   → layer stubs appended        (visual def names resolve as terms)
 /// ```
 ///
 /// `base_dir` anchors `use` imports (usually the composition's directory);
@@ -142,7 +143,7 @@ pub fn preprocess_for_audio(
     base_dir: &std::path::Path,
     socool_path: Option<&std::path::Path>,
 ) -> Result<AudioSource, Error> {
-    use weresocool_parser::{dsl_imports, dsl_params, draw, palette, surface_dsl, warp};
+    use weresocool_parser::{dsl_imports, dsl_params, draw, layer, palette, surface_dsl, warp};
 
     let source = dsl_imports::resolve(raw, base_dir)
         .map_err(|e| Error::with_msg(format!("import: {e}")))?;
@@ -183,10 +184,29 @@ pub fn preprocess_for_audio(
         e.display(false);
         Error::with_msg("surface block failed to parse (see report above)")
     })?;
-    let palette = palette::extract_palette(&surface_pre.stripped);
+    let layer_pre = layer::extract_layers(&surface_pre.stripped)
+        .map_err(|e| Error::with_msg(format!("layer block failed to parse: {e}")))?;
+    let palette = palette::extract_palette(&layer_pre.stripped);
+
+    // LAYER STUBS: visual def names are first-class terms (`veil | FitLength
+    // drums | Gm 1/2`). The stub's body is the real `Layer` op, so the audio
+    // parse resolves them; their points are silenced BY TYPE downstream.
+    // Appended (offset-stable) for every warp + layer def, same as kintaro's
+    // visual path does — an audio-only host hears the identical piece.
+    let mut source = palette.stripped;
+    for name in warp_pre
+        .warps
+        .iter()
+        .map(|w| &w.name)
+        .chain(layer_pre.warp_defs.iter().map(|d| &d.name))
+    {
+        if !name.contains("__") {
+            source.push_str(&format!("\n{} = {{ Layer(\"{}\") }}", name, name));
+        }
+    }
 
     Ok(AudioSource {
-        source: palette.stripped,
+        source,
         recordings,
     })
 }
