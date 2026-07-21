@@ -38,8 +38,8 @@ grammar;
 match {
     "|", "(", ")", "{", "}", "[", "]", ",", ";", ":", "+", "-", "*", "/",
 
-    "Prev", "Scene", "Volume", "Raymarch", "Osc", "Noise", "Gradient", "Solid",
-    "time", "clock", "Sin", "Hit", "HitX", "HitY", "Dist", "HitAge", "Displace", "Ripple", "Glow", "Stir", "Bulge", "Relief", "Stain", "Watercolor",
+    "Prev", "Scene", "Volume", "Fluid", "Raymarch", "Osc", "Noise", "Gradient", "Solid",
+    "Time", "Clock", "Sin", "Hit", "HitX", "HitY", "Dist", "HitAge", "Displace", "Ripple", "Glow", "Stir", "Bulge", "Relief", "Stain", "Watercolor",
 
     "Scale", "Rotate", "Scroll", "Swirl", "Fold", "Kaleid",
     "ChromaShift", "CurlFlow", "Wave", "Iterate",
@@ -52,15 +52,16 @@ match {
 
     "AsIs", "None",
     "Seq", "Overlay", "Lm", "FitLength",
-    "Max", "Add", "Screen", "Mix", "Modulate",
+    "Max", "Add", "Screen", "Mix", "Modulate", "Mask", "Multiply", "Over",
     "Raw",
 
     // Substance verbs (MEDIUM.md M1) + their structural keywords.
     "Diffuse", "Advect", "Force", "Deposit", "Propagate", "Flow", "Set", "state", "grad", "lap", "by", "from", "gated",
+    "Relax",
 
     // Pure math functions (lowercase — distinct from the capitalized ops/
     // compositors like `Max`/`Mix`). Law-4 function set; see `dsl_expr::MathFn`.
-    "sin", "cos", "abs", "floor", "ceil", "sqrt", "exp", "min", "max", "pow", "wrap", "clamp", "mix", "step", "smoothstep",
+    "sin", "cos", "abs", "floor", "ceil", "sqrt", "exp", "min", "max", "pow", "Wrap", "clamp", "mix", "step", "smoothstep",
 
     r"\s+"          => { },
     r"//[^\n]*"     => { },
@@ -80,6 +81,15 @@ match {
 // ---------------------------------------------------------------------------
 // Top-level entry points
 // ---------------------------------------------------------------------------
+
+// A compositor's operand: a full sub-pipeline, or a bare def name — sugar
+// for `Scene(name)` (tap that def's image). Bare names are unambiguous
+// HERE (the operand is an image by construction); at pipeline-head position
+// they stay invalid (program-vs-tap ambiguity).
+SubPipe: WarpPipeline = {
+    <p:Pipeline> => p,
+    <n:Name> => WarpPipeline { source: Source::SceneOf(n.to_string()), ops: Vec::new() },
+};
 
 pub Pipeline: WarpPipeline = {
     <src:SrcExpr> <ops:PipeTail> => WarpPipeline { source: src, ops },
@@ -131,13 +141,25 @@ PipeTail: Vec<WarpOp> = {
     },
 };
 
+// Relax body: a `|`-chain of ops inside `[ … ]` (first op has no leading `|`).
+RelaxBody: Vec<WarpOp> = {
+    <op:Op> <rest:PipeTail> => {
+        let mut v = vec![op];
+        v.extend(rest);
+        v
+    },
+};
+
 // ---------------------------------------------------------------------------
 // Sources
 // ---------------------------------------------------------------------------
 SrcExpr: Source = {
     "Prev"  => Source::Prev,
     "Scene" => Source::Scene,
+    // A NAMED def's image as input — the image face of the projection law.
+    "Scene" "(" <n:Name> ")" => Source::SceneOf(n.to_string()),
     "Volume" => Source::Volume,
+    "Fluid" => Source::Fluid,
 
     "Osc" "{" <args:NamedArgList> "}" => {
         let (freq, sync, offset) = h::extract_osc_args(args);
@@ -281,6 +303,11 @@ Op: WarpOp = {
         WarpOp::Flow { field: f, x, y, gated: Some(g) }
     },
 
+    // ITERATION (RELAX.md): run `body` N times per frame, ping-ponging the
+    // full state between passes. `N` is a constant expr (const-folded to u32
+    // downstream). Body is a `|`-chain of substance verbs.
+    "Relax" <n:Expr> "[" <body:RelaxBody> "]" => WarpOp::Relax { steps: n, body },
+
     "Bloom"    "{" <a:NamedArgList> "}" => {
         let (threshold, strength) = h::extract_named_pair(a, "threshold", "strength");
         WarpOp::Bloom { threshold, strength }
@@ -314,13 +341,16 @@ Op: WarpOp = {
 
     // Compositors taking a sub-pipeline. The "extra" expr is positional and
     // separated by a comma; `Blend`/`Modulate` use it as their amount.
-    "Max"      "(" <p:Pipeline> ")" => WarpOp::Max(Box::new(p)),
-    "Add"      "(" <p:Pipeline> ")" => WarpOp::Add(Box::new(p)),
-    "Screen"   "(" <p:Pipeline> ")" => WarpOp::Screen(Box::new(p)),
-    "Mix"      "(" <p:Pipeline> "," <e:Expr> ")" => WarpOp::Mix(Box::new(p), e),
-    "Mix"      "(" <p:Pipeline> ")"                => WarpOp::Mix(Box::new(p), WarpExpr::DefaultLit(0.5)),
-    "Modulate" "(" <p:Pipeline> "," <e:Expr> ")" => WarpOp::Modulate(Box::new(p), e),
-    "Modulate" "(" <p:Pipeline> ")" => WarpOp::Modulate(Box::new(p), WarpExpr::DefaultLit(0.1)),
+    "Max"      "(" <p:SubPipe> ")" => WarpOp::Max(Box::new(p)),
+    "Add"      "(" <p:SubPipe> ")" => WarpOp::Add(Box::new(p)),
+    "Screen"   "(" <p:SubPipe> ")" => WarpOp::Screen(Box::new(p)),
+    "Mask"     "(" <p:SubPipe> ")" => WarpOp::Mask(Box::new(p)),
+    "Multiply" "(" <p:SubPipe> ")" => WarpOp::Multiply(Box::new(p)),
+    "Over"     "(" <p:SubPipe> ")" => WarpOp::Over(Box::new(p)),
+    "Mix"      "(" <p:SubPipe> "," <e:Expr> ")" => WarpOp::Mix(Box::new(p), e),
+    "Mix"      "(" <p:SubPipe> ")"                => WarpOp::Mix(Box::new(p), WarpExpr::DefaultLit(0.5)),
+    "Modulate" "(" <p:SubPipe> "," <e:Expr> ")" => WarpOp::Modulate(Box::new(p), e),
+    "Modulate" "(" <p:SubPipe> ")" => WarpOp::Modulate(Box::new(p), WarpExpr::DefaultLit(0.1)),
 
     // Iterate body: either a full pipeline (starts with a source) or
     // ops-only (synthesises `Source::Prev`). LR(1) chooses based on the
@@ -518,13 +548,13 @@ Factor: WarpExpr = {
     <n:Num> => WarpExpr::Lit(n),
     // warp has no per-element birth, so the frame clock is the only time —
     // `time` and `clock` are the same thing here (both lower to `time`).
-    "time"  => WarpExpr::Clock,
+    "Time"  => WarpExpr::Clock,
     "Hit" "(" <c:ChanRef> ")" => WarpExpr::Hit(c),
     "HitX" "(" <c:ChanRef> ")" => WarpExpr::HitX(c),
     "HitY" "(" <c:ChanRef> ")" => WarpExpr::HitY(c),
     "Dist" "(" <c:ChanRef> ")" => WarpExpr::Dist(c),
     "HitAge" "(" <c:ChanRef> ")" => WarpExpr::HitAge(c),
-    "clock" => WarpExpr::Clock,
+    "Clock" => WarpExpr::Clock,
     "Sin" "(" <f:Expr> ")" =>
         WarpExpr::Sin { freq: Box::new(f), amp: Box::new(WarpExpr::DefaultLit(1.0)) },
     "Sin" "(" <f:Expr> "," <a:Expr> ")" =>
@@ -548,7 +578,7 @@ UnaryFn: MathFn = {
     "sin" => MathFn::Sin, "cos" => MathFn::Cos, "abs" => MathFn::Abs,
     "floor" => MathFn::Floor, "ceil" => MathFn::Ceil, "sqrt" => MathFn::Sqrt, "exp" => MathFn::Exp,
 };
-BinaryFn: MathFn = { "pow" => MathFn::Pow, "wrap" => MathFn::Wrap, "step" => MathFn::Step };
+BinaryFn: MathFn = { "pow" => MathFn::Pow, "Wrap" => MathFn::Wrap, "step" => MathFn::Step };
 TernaryFn: MathFn = { "clamp" => MathFn::Clamp, "mix" => MathFn::Mix, "smoothstep" => MathFn::Smoothstep };
 VariadicFn: MathFn = { "min" => MathFn::Min, "max" => MathFn::Max };
 
@@ -568,13 +598,13 @@ NonParenTerm: WarpExpr = {
 };
 NonParenFactor: WarpExpr = {
     <n:Num> => WarpExpr::Lit(n),
-    "time"  => WarpExpr::Clock,
+    "Time"  => WarpExpr::Clock,
     "Hit" "(" <c:ChanRef> ")" => WarpExpr::Hit(c),
     "HitX" "(" <c:ChanRef> ")" => WarpExpr::HitX(c),
     "HitY" "(" <c:ChanRef> ")" => WarpExpr::HitY(c),
     "Dist" "(" <c:ChanRef> ")" => WarpExpr::Dist(c),
     "HitAge" "(" <c:ChanRef> ")" => WarpExpr::HitAge(c),
-    "clock" => WarpExpr::Clock,
+    "Clock" => WarpExpr::Clock,
     "Sin" "(" <f:Expr> ")" =>
         WarpExpr::Sin { freq: Box::new(f), amp: Box::new(WarpExpr::DefaultLit(1.0)) },
     "Sin" "(" <f:Expr> "," <a:Expr> ")" =>

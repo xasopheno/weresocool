@@ -44,10 +44,23 @@ impl WarpBlendMode {
 pub enum Source {
     Prev,
     Scene,
+    /// A NAMED def's image as this pipeline's input — the image face of the
+    /// projection law (`Scene(veil)` = tap veil's live output). Resolved to
+    /// a (chain, stage) by kintaro's resolve-refs pass; the runtime rebinds
+    /// the scene slot every frame. Reads the referenced def's most recent
+    /// output; mutual references are legal (one-frame-delayed coupling).
+    SceneOf(String),
     /// The 3D backend (MEDIUM.md's field3d): this def's fields live in a
     /// volume lattice; marks deposit at their true depth; display is a
     /// raymarched projection. The source picks the backend (Law 7).
     Volume,
+    /// The 2D fluid backend (RELAX.md): this def's fields (velocity, dye,
+    /// pressure) live in a compute-managed 2D lattice; each frame runs a
+    /// semi-Lagrangian advection + an N-iteration Jacobi PRESSURE SOLVE
+    /// (the `Relax` axis, expressible here because a compute node can loop
+    /// N ping-ponged dispatches within one frame) → true divergence-free
+    /// flow. The source picks the backend (Law 7); no 2D fragment stage.
+    Fluid,
     /// Sine-wave pattern oscillator. `freq` = spatial frequency,
     /// `sync` = temporal scroll, `offset` = phase.
     Osc { freq: WarpExpr, sync: WarpExpr, offset: WarpExpr },
@@ -242,6 +255,17 @@ pub enum WarpOp {
     /// e.g. WET pigment runs. `Flow rgb gated a { y: 0.005 }` = wet ink weeps
     /// downward.
     Flow { field: Chan, x: WarpExpr, y: WarpExpr, gated: Option<Chan> },
+    /// ITERATION (RELAX.md) — the generic "time-within-a-frame" primitive.
+    /// Run `body` `steps` times per frame: iteration k reads iteration k−1's
+    /// COMPLETE state (full-grid ping-pong between passes), so neighbour-coupled
+    /// relaxation (diffusion to equilibrium, Jacobi pressure, distance fronts)
+    /// converges in ONE frame instead of crawling ~2 px/frame. `steps` is a
+    /// compile-time constant (const-folded to u32; a field-driven count is
+    /// illegal — the pass count can't vary per frame). Channels the body does
+    /// not write pass through unchanged. At runtime this expands into `steps`
+    /// cascaded sub-passes on a scratch ping-pong pair (a relaxation iteration
+    /// IS a degenerate extra stage — see RELAX.md).
+    Relax { steps: WarpExpr, body: Vec<WarpOp> },
     /// Volume-backend terminal: raymarch the volume into the composite.
     /// `fog` = extinction per unit depth, `gain` = emission scale.
     Raymarch { fog: WarpExpr, gain: WarpExpr },
@@ -357,6 +381,15 @@ pub enum WarpOp {
     Max(Box<WarpPipeline>),
     Add(Box<WarpPipeline>),
     Screen(Box<WarpPipeline>),
+    /// COVERAGE combine — the mask: C × luminance(sub), rgb AND a
+    /// (premultiplied: emission and coverage scale together, no fringes).
+    /// The compositor that makes a layer exist-SOMEWHERE. Sub-pipeline is
+    /// the mask image; `Mask(name)` sugars to `Mask(Scene(name))`.
+    Mask(Box<WarpPipeline>),
+    /// COLOR combine: C.rgb × sub.rgb (tint/darken). Alpha untouched.
+    Multiply(Box<WarpPipeline>),
+    /// Porter-Duff composite: the sub-pipeline's image lands ON TOP.
+    Over(Box<WarpPipeline>),
     /// Mix two pipelines: `Mix(p, amount)` — `amount` ∈ [0,1] picks the
     /// weighting between the current source and the sub-pipeline's output
     /// (0 = current only, 1 = sub only). Renamed from `Blend` to avoid

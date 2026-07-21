@@ -14,11 +14,13 @@ use crate::warp::ast::{Chan, WarpExpr};
 /// Parse a channel selector for the substance verbs (`r/g/b/a/rg/gb/rgb`).
 /// Unknown → `R` with a loud warning (a typo'd channel mustn't fail silently).
 pub fn parse_chan(s: &str) -> Chan {
+    // CASE LAW v2: channels are language-provided → UPPERCASE. Lowercase
+    // falls through to Named — the composer's own `state {}` field names.
     match s {
-        "r" => Chan::R, "g" => Chan::G, "b" => Chan::B, "a" => Chan::A,
-        "rg" => Chan::Rg, "gb" => Chan::Gb, "rgb" => Chan::Rgb,
-        "sx" => Chan::Sx, "sy" => Chan::Sy, "sz" => Chan::Sz, "sw" => Chan::Sw,
-        "sxy" => Chan::Sxy, "szw" => Chan::Szw,
+        "R" => Chan::R, "G" => Chan::G, "B" => Chan::B, "A" => Chan::A,
+        "RG" => Chan::Rg, "GB" => Chan::Gb, "RGB" => Chan::Rgb,
+        "Sx" => Chan::Sx, "Sy" => Chan::Sy, "Sz" => Chan::Sz, "Sw" => Chan::Sw,
+        "Sxy" => Chan::Sxy, "Szw" => Chan::Szw,
         // Anything else is (potentially) a `state {}`-declared field name —
         // kintaro's resolve-fields pass maps it to a concrete channel, and
         // warns loudly if the name is unknown there.
