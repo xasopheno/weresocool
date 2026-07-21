@@ -114,9 +114,7 @@ impl RenderVoice {
                 distortions: current_op.distortions.clone(),
                 osc_type: current_op.osc_type.clone(),
                 follows: current_op.follows.clone(),
-                colors: current_op.colors.clone(),
-                wgsl: current_op.wgsl.clone(),
-                midi: current_op.midi.clone(),
+                ext: current_op.ext.clone(),
                 ..*current_op
             });
             self.sample_index += samples_left_in_batch;
@@ -130,9 +128,7 @@ impl RenderVoice {
                 distortions: current_op.distortions.clone(),
                 osc_type: current_op.osc_type.clone(),
                 follows: current_op.follows.clone(),
-                colors: current_op.colors.clone(),
-                wgsl: current_op.wgsl.clone(),
-                midi: current_op.midi.clone(),
+                ext: current_op.ext.clone(),
                 ..*current_op
             });
 

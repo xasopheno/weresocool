@@ -1,4 +1,4 @@
-use crate::{color::{ColorMap, ColorDistribution}, NameSet, OscType, Term, ASR, Distortion, wgsl::WgslMap, rand_ctx::RandCtx};
+use crate::{color::ColorMap, NameSet, OscType, Term, ASR, Distortion, wgsl::WgslMap, rand_ctx::RandCtx};
 use num_rational::{Ratio, Rational64};
 use scop::Defs as ScopDefs;
 use std::{
@@ -7,10 +7,13 @@ use std::{
 };
 use weresocool_error::Error;
 use weresocool_filter::BiquadFilterDef;
+pub mod ext;
 mod get_length_ratio;
 pub mod helpers;
 mod normalize;
 pub mod substitute;
+
+pub use ext::{Ext, ExtensionPayload, MidiExt, VisualExt};
 
 #[derive(Debug, Clone, Hash, Eq, Ord, PartialEq, PartialOrd)]
 pub struct ColorGrading {
@@ -195,34 +198,16 @@ pub struct PointOp {
     /// Should fade out to nothing
     pub is_out: bool,
     pub follows: Vec<crate::follow::types::FollowNF>,
-    pub colors: Vec<u64>,
-    /// WGSL block IDs
-    pub wgsl: Vec<u64>,
-    /// MIDI targets (channels)
-    pub midi: Vec<u8>,
-    /// Color grading adjustments
-    pub color_grading: ColorGrading,
-    /// Color distribution (gradient direction + randomness mix)
-    pub color_distribution: ColorDistribution,
-    /// Visual Fit targets per axis (x, y, z): world-space `[a, b]` band the
-    /// voice's measured extent maps onto. Set by `FitX a b` / `FitY a b` /
-    /// `FitZ a b`; consumed by kintaro, inert for sound. Composition rule:
-    /// outer (later-applied) Fit wins per axis.
-    pub fit_vis: [Option<(Rational64, Rational64)>; 3],
+    /// The EXTENSION REGISTRY — non-audio payloads riding this point
+    /// (kintaro visual extension, MIDI side-channel). See `ext.rs` for the
+    /// invariant: nothing in here may parameterize synthesis.
+    pub ext: Ext,
     /// Initial oscillator phase in radians, seeded at the voice's birth
     /// (silence→sound). `None` = legacy behavior (phase integrates from 0).
     /// Set programmatically by `from_sound` to preserve analyzer-measured phase;
     /// not expressible in `.socool` source. Composition: outer op wins if set,
     /// else carried through (same rule as `reverb`/`osc_type`).
     pub phase: Option<Rational64>,
-}
-
-/// Per-axis merge for `fit`: the *other* (outer) op's target wins when set.
-fn merge_fit(
-    a: &[Option<(Rational64, Rational64)>; 3],
-    b: &[Option<(Rational64, Rational64)>; 3],
-) -> [Option<(Rational64, Rational64)>; 3] {
-    [b[0].or(a[0]), b[1].or(a[1]), b[2].or(a[2])]
 }
 
 impl Default for PointOp {
@@ -245,12 +230,7 @@ impl Default for PointOp {
             distortions: vec![],
             is_out: false,
             follows: vec![],
-            colors: vec![],
-            wgsl: vec![],
-            midi: vec![],
-            color_grading: ColorGrading::default(),
-            color_distribution: ColorDistribution::default(),
-            fit_vis: [None; 3],
+            ext: Ext::default(),
             phase: None,
         }
     }
@@ -436,16 +416,7 @@ impl Mul<PointOp> for PointOp {
                 .cloned()
                 .chain(other.follows.iter().cloned())
                 .collect(),
-            colors: self.colors.iter().chain(&other.colors).map(|c| c.to_owned()).collect(),
-            wgsl: self.wgsl.iter().chain(&other.wgsl).map(|c| c.to_owned()).collect(),
-            midi: self.midi.iter().chain(&other.midi).cloned().collect(),
-            color_grading: self.color_grading * other.color_grading,
-            color_distribution: if other.color_distribution.gradient.is_some() {
-                other.color_distribution
-            } else {
-                self.color_distribution.clone()
-            },
-            fit_vis: merge_fit(&self.fit_vis, &other.fit_vis),
+            ext: self.ext.compose(&other.ext),
             phase: other.phase.or(self.phase),
         }
     }
@@ -498,26 +469,7 @@ impl<'a> Mul<&'a PointOp> for &PointOp {
                 .cloned()
                 .chain(other.follows.iter().cloned())
                 .collect(),
-            colors: self
-                .colors
-                .iter()
-                .chain(&other.colors)
-                .map(|c| c.to_owned())
-                .collect(),
-            wgsl: self
-                .wgsl
-                .iter()
-                .chain(&other.wgsl)
-                .map(|c| c.to_owned())
-                .collect(),
-            midi: self.midi.iter().chain(&other.midi).cloned().collect(),
-            color_grading: self.color_grading.clone() * other.color_grading.clone(),
-            color_distribution: if other.color_distribution.gradient.is_some() {
-                other.color_distribution.clone()
-            } else {
-                self.color_distribution.clone()
-            },
-            fit_vis: merge_fit(&self.fit_vis, &other.fit_vis),
+            ext: self.ext.compose(&other.ext),
             phase: other.phase.or(self.phase),
         }
     }
@@ -568,26 +520,7 @@ impl MulAssign for PointOp {
                 .cloned()
                 .chain(other.follows.iter().cloned())
                 .collect(),
-            colors: self
-                .colors
-                .iter()
-                .chain(&other.colors)
-                .map(|c| c.to_owned())
-                .collect(),
-            wgsl: self
-                .wgsl
-                .iter()
-                .chain(&other.wgsl)
-                .map(|c| c.to_owned())
-                .collect(),
-            midi: self.midi.iter().chain(&other.midi).cloned().collect(),
-            color_grading: self.color_grading.clone() * other.color_grading,
-            color_distribution: if other.color_distribution.gradient.is_some() {
-                other.color_distribution
-            } else {
-                self.color_distribution.clone()
-            },
-            fit_vis: merge_fit(&self.fit_vis, &other.fit_vis),
+            ext: self.ext.compose(&other.ext),
             phase: other.phase.or(self.phase),
         }
     }
@@ -648,26 +581,7 @@ impl PointOp {
                 .cloned()
                 .chain(other.follows.iter().cloned())
                 .collect(),
-            colors: self
-                .colors
-                .iter()
-                .chain(&other.colors)
-                .map(|c| c.to_owned())
-                .collect(),
-            wgsl: self
-                .wgsl
-                .iter()
-                .chain(&other.wgsl)
-                .map(|c| c.to_owned())
-                .collect(),
-            midi: self.midi.iter().chain(&other.midi).cloned().collect(),
-            color_grading: self.color_grading.clone() * other.color_grading,
-            color_distribution: if other.color_distribution.gradient.is_some() {
-                other.color_distribution
-            } else {
-                self.color_distribution.clone()
-            },
-            fit_vis: merge_fit(&self.fit_vis, &other.fit_vis),
+            ext: self.ext.compose(&other.ext),
             phase: other.phase.or(self.phase),
         }
     }
@@ -680,8 +594,6 @@ impl PointOp {
             pa: Ratio::new(0, 1),
             g: Ratio::new(1, 1),
             l: Ratio::new(1, 1),
-            wgsl: vec![],
-            midi: vec![],
             ..Default::default()
         }
     }
@@ -693,8 +605,6 @@ impl PointOp {
             pa: Ratio::new(0, 1),
             g: Ratio::new(0, 1),
             l: Ratio::new(1, 1),
-            wgsl: vec![],
-            midi: vec![],
             ..Default::default()
         }
     }
@@ -709,11 +619,11 @@ impl PointOp {
     pub fn get_transformed_colors<'a>(&'a self, color_map: &mut ColorMap) -> std::borrow::Cow<'a, [u64]> {
         use crate::color::{apply_color_grading, ColorValue};
 
-        if self.color_grading.is_identity() {
-            return std::borrow::Cow::Borrowed(&self.colors);
+        if self.ext.visual.color_grading.is_identity() {
+            return std::borrow::Cow::Borrowed(&self.ext.visual.colors);
         }
 
-        let transformed: Vec<u64> = self.colors
+        let transformed: Vec<u64> = self.ext.visual.colors
             .iter()
             .map(|color_id| {
                 // Look up the original color
@@ -724,7 +634,7 @@ impl PointOp {
                     let color = cv.extract_color();
 
                     // Apply color grading transformations
-                    let transformed = apply_color_grading(&color, &self.color_grading);
+                    let transformed = apply_color_grading(&color, &self.ext.visual.color_grading);
 
                     // Insert back into ColorMap as a ColorSet with single element
                     // This will reuse existing ID if same transformed color exists

@@ -4,6 +4,7 @@ use std::string::String;
 use weresocool_shared::helpers::generate_random_hash_string;
 use weresocool_ast::{
         Op::*,
+        ExtOp::*,
         Term,
         ASR,
         FunDef,
@@ -118,8 +119,11 @@ LetDef: () = {
 
 
 Operation: Term = {
-    <op1: Operation> ">" "FitGain" <op2: ComposeOperation> => {
-      unimplemented!()
+    <start:@L> <op1: Operation> ">" "FitGain" <op2: ComposeOperation> =>? {
+      let _ = (op1, op2);
+      Err(lalrpop_util::ParseError::User {
+          error: format!("{}:FitGain is not implemented", start)
+      })
     },
 
     // TODO: Revisit Focus/Lens
@@ -302,7 +306,7 @@ BaseOperation: Term = {
     <wgsl_token: r"@WGSL@[0-9]+"> => {
         // Extract the u64 ID from the token
         let id = wgsl_token.trim_start_matches("@WGSL@").parse::<u64>().unwrap();
-        Term::Op(WGSL(id))
+        Term::Op(Ext(WGSL(id)))
     },
     //
     r"\\|Lambda" <input_name: Parenthesized<Name>?> "{" <term: Operation> "}" => Term::Op(Lambda { term: Box::new(term),
@@ -454,6 +458,13 @@ BaseOperation: Term = {
           Term::Op(AD {attack, decay, asr})
         },
     "Portamento" <m:Rational> => Term::Op(Portamento {m}),
+    "Fade" <m:Rational> => Term::Op(Ext(Fade {m})),
+    "Layer" "(" <name: StringLit> ")" => Term::Op(Ext(Layer { name })),
+    "Attach" "(" <name: StringLit> ")" => Term::Op(Ext(Attach { name })),
+    "Sm" <m:Rational> => Term::Op(Ext(LayerSm { m })),
+    "Xa" <a:Rational> => Term::Op(Ext(LayerXa { a })),
+    "Ya" <a:Rational> => Term::Op(Ext(LayerYa { a })),
+    "Rz" <a:Rational> => Term::Op(Ext(LayerRz { a })),
     "Reverb" <m:Rational> => Term::Op(Reverb {m: Some(m)}),
     "Wavefolder" "(" <threshold:Rational> "," <stages:Int> <gains:("," Rational "," Rational)?> ")" => {
         let (input_gain, output_gain) = gains
@@ -490,20 +501,20 @@ BaseOperation: Term = {
     r"(ModulateBy|ModBy)" "[" <operations: Operations> "]" => Term::Op(ModulateBy { operations: operations, output: None }),
     "Choose" "[" <operations: Operations> "]" => Term::Op(Choose { operations: operations }),
     // Midi pipe: Midi(10) or Midi[10,11]
-    r"Midi" "(" <ch: Int> ")" => Term::Op(Midi { channels: vec![(ch as i64).clamp(1, 16) as u8] }),
-    r"Midi" "[" <chs: Comma<Int>> "]" => Term::Op(Midi { channels: chs.into_iter().map(|c| (c as i64).clamp(1,16) as u8).collect() }),
+    r"Midi" "(" <ch: Int> ")" => Term::Op(Ext(Midi { channels: vec![(ch as i64).clamp(1, 16) as u8] })),
+    r"Midi" "[" <chs: Comma<Int>> "]" => Term::Op(Ext(Midi { channels: chs.into_iter().map(|c| (c as i64).clamp(1,16) as u8).collect() })),
     // Color grading operations
-    "Hue" <value: Rational> => Term::Op(Hue { value }),
-    "Saturation" <value: Rational> => Term::Op(Saturation { value }),
-    "Brightness" <value: Rational> => Term::Op(Brightness { value }),
-    "Vibrance" <value: Rational> => Term::Op(Vibrance { value }),
-    "Gamma" <value: Rational> => Term::Op(Gamma { value }),
+    "Hue" <value: Rational> => Term::Op(Ext(Hue { value })),
+    "Saturation" <value: Rational> => Term::Op(Ext(Saturation { value })),
+    "Brightness" <value: Rational> => Term::Op(Ext(Brightness { value })),
+    "Vibrance" <value: Rational> => Term::Op(Ext(Vibrance { value })),
+    "Gamma" <value: Rational> => Term::Op(Ext(Gamma { value })),
     <start:@L> "Blend" <color: CssOrHex> <amount: Rational> =>? {
         match parse_color_set(vec![color], None) {
-            Ok(cv) => Ok(Term::Op(ColorBlend {
+            Ok(cv) => Ok(Term::Op(Ext(ColorBlend {
                 color_id: defs.colors.insert(cv),
                 amount
-            })),
+            }))),
             Err(bad_color) => Err(lalrpop_util::ParseError::User {
                 error: format!("{}:{}", start, bad_color)
             })
@@ -511,21 +522,21 @@ BaseOperation: Term = {
     },
     <start:@L> "AddColor" <color: CssOrHex> =>? {
         match parse_color_set(vec![color], None) {
-            Ok(cv) => Ok(Term::Op(ColorAdd {
+            Ok(cv) => Ok(Term::Op(Ext(ColorAdd {
                 color_id: defs.colors.insert(cv)
-            })),
+            }))),
             Err(bad_color) => Err(lalrpop_util::ParseError::User {
                 error: format!("{}:{}", start, bad_color)
             })
         }
     },
-    "Gradient" "(" <x: Rational> "," <y: Rational> "," <z: Rational> ")" => Term::Op(ColorGradient { x, y, z }),
+    "Gradient" "(" <x: Rational> "," <y: Rational> "," <z: Rational> ")" => Term::Op(Ext(ColorGradient { x, y, z })),
     // Visual layout: map the voice's measured extent onto a world band.
     // Sound-inert; consumed by kintaro. FitX -1 1 | FitY -9/10 1/10 | FitZ -1/2 -1/2
-    "FitX" <a: Rational> <b: Rational> => Term::Op(FitVis { axis: 0, a, b }),
-    "FitY" <a: Rational> <b: Rational> => Term::Op(FitVis { axis: 1, a, b }),
-    "FitZ" <a: Rational> <b: Rational> => Term::Op(FitVis { axis: 2, a, b }),
-    "Mix" <amount: Rational> => Term::Op(ColorMix { amount }),
+    "FitX" <a: Rational> <b: Rational> => Term::Op(Ext(FitVis { axis: 0, a, b })),
+    "FitY" <a: Rational> <b: Rational> => Term::Op(Ext(FitVis { axis: 1, a, b })),
+    "FitZ" <a: Rational> <b: Rational> => Term::Op(Ext(FitVis { axis: 2, a, b })),
+    "Mix" <amount: Rational> => Term::Op(Ext(ColorMix { amount })),
     "FitLength" <op: Composeable> => {
         Term::Op(
             WithLengthRatioOf { with_length_of: Box::new(op), main: None }
@@ -657,13 +668,17 @@ ColorValue: Term = {
     //"ColorGrad[" <colors: Comma<CssOrHex>> "]" => todo!(),
     <start:@L> "Color" "[" <colors: Comma<CssOrHex>> "]" =>? {
         match parse_color_set(colors, None) {
-            Ok(cv) => Ok(Term::Op(Color(defs.colors.insert(cv)))),
+            Ok(cv) => Ok(Term::Op(Ext(Color(defs.colors.insert(cv))))),
             Err(bad_color) => Err(lalrpop_util::ParseError::User {
                 error: format!("{}:{}", start, bad_color)
             })
         }
     },
-    "RandColor" => todo!(),
+    <start:@L> "RandColor" =>? {
+        Err(lalrpop_util::ParseError::User {
+            error: format!("{}:RandColor is not implemented", start)
+        })
+    },
 };
 
 CssOrHex: CssOrHex = {

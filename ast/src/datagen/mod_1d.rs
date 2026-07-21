@@ -105,7 +105,6 @@ pub fn eeg_datum_to_point_op(
     PointOp {
         fm: Rational64::new(1, 1),
         fa,
-        fit_vis: [None; 3],
         l: Rational64::new(2, 100),
         g: Rational64::new(1, 1),
         pm: Rational64::new(1, 1),
@@ -121,11 +120,7 @@ pub fn eeg_datum_to_point_op(
         distortions: vec![],
         is_out: false,
         follows: vec![],
-        colors: vec![],
-        wgsl: vec![],
-        midi: vec![],
-        color_grading: Default::default(),
-        color_distribution: Default::default(),
+        ext: Default::default(),
         phase: None,
     }
 }

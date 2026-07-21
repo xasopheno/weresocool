@@ -17,7 +17,8 @@ pub struct FunDef {
 
 #[derive(Clone, PartialEq, Debug, Hash)]
 pub enum Op {
-    Color(u64),
+    /// Extension ops (visual + midi) — see `ExtOp`.
+    Ext(ExtOp),
     Follow(crate::follow::types::Follow),
     AsIs,
     /// Positional playback-start marker. Source keyword: `Start`.
@@ -42,7 +43,6 @@ pub enum Op {
     /// Marker for Slice keepers - $name syntax
     Keeper(String),
     //
-    WGSL(u64),
     //
     CSV1d {
         path: String,
@@ -206,11 +206,63 @@ pub enum Op {
         operations: Vec<Term>,
         count: i64,
     },
+    //
+    //
+    WithLengthRatioOf {
+        main: Option<Box<Term>>,
+        with_length_of: Box<Term>,
+    },
+
+    Focus {
+        name: String,
+        main: Box<Term>,
+        op_to_apply: Box<Term>,
+    },
+}
+
+/// EXTENSION OPS — every op that writes the point's `Ext` registry (kintaro
+/// visual extension + the MIDI side-channel), grouped so the core `Op` enum
+/// stays the sounds language. One delegating arm in normalize
+/// (`ext::normalize_ext_op`) owns all of their normalization; none of them
+/// affect length (`get_length_ratio` = 1) or synthesis.
+#[derive(Clone, PartialEq, Debug, Hash)]
+pub enum ExtOp {
+    Color(u64),
+    WGSL(u64),
+    /// Visual crossfade length as a RATIO of the l-basis (synthesis-inert;
+    /// consumed by the kintaro backdrop layer). Composes multiplicatively
+    /// like Lm/Fm: `| Fade 1/2 | Fade 1/2` == `Fade 1/4`.
+    Fade {
+        m: Rational64,
+    },
+    /// A VISUAL LAYER CLIP as a first-class term: normalizes to a single
+    /// point with the `layer` payload set (l=1 unit, g=1 → full opacity)
+    /// and NO audio payload. All structural ops (Seq/Overlay/Lm/FitLength/
+    /// Gm/Fade) compose over it exactly like a note — because it is one.
+    Layer {
+        name: String,
+    },
+    /// ATTACH a layer to sounding notes: the notes keep their audio and
+    /// additionally DRIVE the named layer's visibility while they sound.
+    /// `bd | pulse` is sugar for stamping this onto bd's points; the
+    /// switching timeline is read straight off the NormalForm. The dual of
+    /// `Layer` (clip = silent point IS the layer; attach = sounding point
+    /// drives the layer).
+    Attach {
+        name: String,
+    },
+    /// LAYER PLACEMENT (term level, the transform family on layers):
+    /// `Sm` scale (multiplies), `Xa`/`Ya` offset in screen fractions
+    /// (adds), `Rz` rotation in turns (adds). Photoshop/Premiere position
+    /// + scale, through normalization — schedulable per clip via Seq.
+    LayerSm { m: Rational64 },
+    LayerXa { a: Rational64 },
+    LayerYa { a: Rational64 },
+    LayerRz { a: Rational64 },
     /// Annotate ops to be sent to MIDI channels
     Midi {
         channels: Vec<u8>,
     },
-    //
     Hue {
         value: Rational64,
     },
@@ -249,17 +301,6 @@ pub enum Op {
     },
     ColorMix {
         amount: Rational64,
-    },
-    //
-    WithLengthRatioOf {
-        main: Option<Box<Term>>,
-        with_length_of: Box<Term>,
-    },
-
-    Focus {
-        name: String,
-        main: Box<Term>,
-        op_to_apply: Box<Term>,
     },
 }
 

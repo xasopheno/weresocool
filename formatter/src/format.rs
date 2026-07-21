@@ -8,6 +8,7 @@ use num_rational::Rational64;
 use pretty::{Arena, DocAllocator, DocBuilder};
 use std::collections::HashSet;
 use weresocool_ast::{
+    ExtOp,
     FunDef, ListOp, GenOp, Op, Term,
     color::{ColorValue, CssOrHex},
     operations::Defs,
@@ -760,6 +761,13 @@ fn format_op<'a>(arena: &'a Arena<'a>, ctx: &FormatContext, op: &Op) -> DocBuild
         Op::Length { m } => format_single_rational_op(arena, "Lm", m),
         Op::Silence { m } => format_single_rational_op(arena, "Silence", m),
         Op::Portamento { m } => format_single_rational_op(arena, "Portamento", m),
+        Op::Ext(ExtOp::Fade { m }) => format_single_rational_op(arena, "Fade", m),
+        Op::Ext(ExtOp::Layer { name }) => arena.text(format!("Layer(\"{}\")", name)),
+        Op::Ext(ExtOp::Attach { name }) => arena.text(format!("Attach(\"{}\")", name)),
+        Op::Ext(ExtOp::LayerSm { m }) => format_single_rational_op(arena, "Sm", m),
+        Op::Ext(ExtOp::LayerXa { a }) => format_single_rational_op(arena, "Xa", a),
+        Op::Ext(ExtOp::LayerYa { a }) => format_single_rational_op(arena, "Ya", a),
+        Op::Ext(ExtOp::LayerRz { a }) => format_single_rational_op(arena, "Rz", a),
 
         Op::Reverb { m } => {
             if let Some(val) = m {
@@ -895,7 +903,7 @@ fn format_op<'a>(arena: &'a Arena<'a>, ctx: &FormatContext, op: &Op) -> DocBuild
         }
 
         // WGSL - lookup the ORIGINAL source from defs (preserves DSL syntax like Ym 2/3)
-        Op::WGSL(id) => {
+        Op::Ext(ExtOp::WGSL(id)) => {
             if let Some(code) = ctx.defs.wgsl.get_original(&(*id as u8)) {
                 // Normalize WGSL code: trim each line
                 let lines: Vec<String> = code.lines()
@@ -926,41 +934,41 @@ fn format_op<'a>(arena: &'a Arena<'a>, ctx: &FormatContext, op: &Op) -> DocBuild
         }
 
         // Color operations - lookup from defs
-        Op::Color(id) => {
+        Op::Ext(ExtOp::Color(id)) => {
             if let Some(color) = ctx.defs.colors.get_by_hash(id.to_string()) {
                 format_color_value(arena, color)
             } else {
                 arena.text(format!("Color {}", id))
             }
         }
-        Op::Hue { value } => format_single_rational_op(arena, "Hue", value),
-        Op::Saturation { value } => format_single_rational_op(arena, "Saturation", value),
-        Op::Brightness { value } => format_single_rational_op(arena, "Brightness", value),
-        Op::Vibrance { value } => format_single_rational_op(arena, "Vibrance", value),
-        Op::Gamma { value } => format_single_rational_op(arena, "Gamma", value),
-        Op::ColorBlend { color_id, amount } => {
+        Op::Ext(ExtOp::Hue { value }) => format_single_rational_op(arena, "Hue", value),
+        Op::Ext(ExtOp::Saturation { value }) => format_single_rational_op(arena, "Saturation", value),
+        Op::Ext(ExtOp::Brightness { value }) => format_single_rational_op(arena, "Brightness", value),
+        Op::Ext(ExtOp::Vibrance { value }) => format_single_rational_op(arena, "Vibrance", value),
+        Op::Ext(ExtOp::Gamma { value }) => format_single_rational_op(arena, "Gamma", value),
+        Op::Ext(ExtOp::ColorBlend { color_id, amount }) => {
             arena
                 .text("ColorBlend ")
                 .append(arena.text(color_id.to_string()))
                 .append(arena.text(", "))
                 .append(format_rational(arena, amount))
         }
-        Op::ColorAdd { color_id } => {
+        Op::Ext(ExtOp::ColorAdd { color_id }) => {
             arena.text("ColorAdd ").append(arena.text(color_id.to_string()))
         }
-        Op::ColorGradient { x, y, z } => {
+        Op::Ext(ExtOp::ColorGradient { x, y, z }) => {
             arena.text(format!("Gradient({}, {}, {})", x, y, z))
         }
-        Op::ColorMix { amount } => {
+        Op::Ext(ExtOp::ColorMix { amount }) => {
             format_single_rational_op(arena, "Mix", amount)
         }
-        Op::FitVis { axis, a, b } => {
+        Op::Ext(ExtOp::FitVis { axis, a, b }) => {
             let kw = match axis { 0 => "FitX", 1 => "FitY", _ => "FitZ" };
             arena.text(format!("{} {} {}", kw, a, b))
         }
 
         // MIDI
-        Op::Midi { channels } => {
+        Op::Ext(ExtOp::Midi { channels }) => {
             let chs = channels.iter().map(|c| c.to_string()).collect::<Vec<_>>().join(", ");
             arena.text(format!("Midi [{}]", chs))
         }

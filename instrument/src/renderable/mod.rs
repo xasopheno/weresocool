@@ -41,15 +41,47 @@ pub struct RenderOp {
     pub distortions: Vec<DistortionDef>,
     pub next_out: bool,
     pub follows: Vec<FollowNF>,
+    /// Scalar gain (pre-pan), derived from g * basis.g
+    pub gain_scalar: f64,
+    /// The extension registry (visual + midi payloads) in render space.
+    /// Synthesis never reads it. See `RenderExt`.
+    #[serde(default)]
+    pub ext: RenderExt,
+    /// Initial oscillator phase (radians) to seed at voice birth, from
+    /// `PointOp.phase`. `None` = legacy behavior (integrate from 0).
+    #[serde(default)]
+    pub initial_phase: Option<f64>,
+}
+
+/// The EXTENSION REGISTRY in f64/render space — the projection of
+/// `weresocool_ast::Ext` across the rational→float boundary. One projection
+/// (`RenderExt::from_point_op`) owns every conversion (color grading applied,
+/// gradient/mix flattened, fit bands to f64); nothing is inlined at call
+/// sites, so a new ext field that must reach the renderer has exactly one
+/// place to live.
+///
+/// Synthesis reads NOTHING in here (same invariant as `Ext`). The one
+/// documented exception: `layer`'s presence types the point as a clip
+/// upstream, which zeroes the RenderOp's audio gains at conversion.
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
+pub struct RenderExt {
+    /// Visual crossfade ratio of the l-basis (synthesis-inert; kintaro reads it)
+    pub fade: f64,
+    /// Visual payload: Some(layer) = this op is a LAYER CLIP. Audio gains are
+    /// ZEROED at conversion (silence by type); opacity rides layer_opacity.
+    pub layer: Option<String>,
+    pub layer_opacity: f64,
+    /// Layers this (sounding) note DRIVES while it plays — `bd | pulse`
+    /// stamped through the NormalForm. The switching timeline reads these.
+    pub attach: Vec<String>,
     /// Color hash IDs (kept as `Vec<u64>` to avoid ~4.3M stringification allocations
     /// per render on a typical heavy composition). The conversion to `Vec<String>`
     /// happens at the visualization boundary in `VisualizationAdapter`, where it's
-    /// memoized over the small set of distinct IDs.
+    /// memoized over the small set of distinct IDs. Color grading is already
+    /// APPLIED here (`get_transformed_colors`) — these are post-grade IDs.
     pub colors: Vec<u64>,
     pub wgsl: Vec<u64>,
     pub midi: Vec<u8>,
-    /// Scalar gain (pre-pan), derived from g * basis.g
-    pub gain_scalar: f64,
     /// Color gradient direction (if Some, use gradient distribution)
     pub color_gradient: Option<(f32, f32, f32)>,
     /// Color mix: 0 = pure gradient, 1 = pure random
@@ -58,10 +90,68 @@ pub struct RenderOp {
     /// `FitX/FitY/FitZ`. Sound-inert; kintaro measures per-brush extents
     /// over ops sharing a band and solves the affine.
     pub fit_vis: [Option<(f64, f64)>; 3],
-    /// Initial oscillator phase (radians) to seed at voice birth, from
-    /// `PointOp.phase`. `None` = legacy behavior (integrate from 0).
-    #[serde(default)]
-    pub initial_phase: Option<f64>,
+    /// Layer placement: scale (Sm), offset in screen fractions (Xa/Ya),
+    /// rotation in turns (Rz).
+    pub scale: f64,
+    pub xa: f64,
+    pub ya: f64,
+    pub rot: f64,
+}
+
+impl RenderExt {
+    /// Const identity — usable from RenderOp's `const fn` constructors.
+    pub const fn init() -> Self {
+        Self {
+            fade: 1.0,
+            layer: None,
+            layer_opacity: 1.0,
+            attach: Vec::new(),
+            colors: Vec::new(),
+            wgsl: Vec::new(),
+            midi: Vec::new(),
+            color_gradient: None,
+            color_mix: 1.0,
+            fit_vis: [None; 3],
+            scale: 1.0,
+            xa: 0.0,
+            ya: 0.0,
+            rot: 0.0,
+        }
+    }
+
+    /// THE projection: `PointOp.ext` (rational world) → `RenderExt` (f64
+    /// world). Grading applied to colors, distribution flattened, fit bands
+    /// converted. `layer_opacity` is computed by the caller (it needs the
+    /// basis-scaled gains).
+    pub fn from_point_op(
+        point_op: &PointOp,
+        color_map: &mut weresocool_ast::color::ColorMap,
+        layer_opacity: f64,
+    ) -> Self {
+        let v = &point_op.ext.visual;
+        Self {
+            fade: r_to_f64(v.fade),
+            layer: v.layer.clone(),
+            layer_opacity,
+            attach: v.attach.clone(),
+            colors: point_op.get_transformed_colors(color_map).into_owned(),
+            wgsl: v.wgsl.clone(),
+            midi: point_op.ext.midi.channels.clone(),
+            color_gradient: v.color_distribution.gradient,
+            color_mix: v.color_distribution.mix,
+            fit_vis: v.fit_vis.map(|band| band.map(|(a, b)| (r_to_f64(a), r_to_f64(b)))),
+            scale: r_to_f64(v.scale),
+            xa: r_to_f64(v.xa),
+            ya: r_to_f64(v.ya),
+            rot: r_to_f64(v.rot),
+        }
+    }
+}
+
+impl Default for RenderExt {
+    fn default() -> Self {
+        Self::init()
+    }
 }
 
 impl RenderOp {
@@ -90,13 +180,8 @@ impl RenderOp {
             filters: Vec::new(),
             distortions: Vec::new(),
             follows: Vec::new(),
-            colors: Vec::new(),
-            wgsl: Vec::new(),
-            midi: Vec::new(),
             gain_scalar: 1.0,
-            color_gradient: None,
-            fit_vis: [None; 3],
-            color_mix: 1.0,
+            ext: RenderExt::init(),
             initial_phase: None,
         }
     }
@@ -126,13 +211,8 @@ impl RenderOp {
             filters: Vec::new(),
             distortions: Vec::new(),
             follows: Vec::new(),
-            colors: Vec::new(),
-            wgsl: Vec::new(),
-            midi: Vec::new(),
             gain_scalar: 1.0,
-            color_gradient: None,
-            fit_vis: [None; 3],
-            color_mix: 1.0,
+            ext: RenderExt::init(),
             initial_phase: None,
         }
     }
@@ -161,13 +241,8 @@ impl RenderOp {
             filters: Vec::new(),
             distortions: Vec::new(),
             follows: Vec::new(),
-            colors: Vec::new(),
-            wgsl: Vec::new(),
-            midi: Vec::new(),
             gain_scalar: 0.0,
-            color_gradient: None,
-            fit_vis: [None; 3],
-            color_mix: 1.0,
+            ext: RenderExt::init(),
             initial_phase: None,
         }
     }
@@ -203,13 +278,8 @@ impl RenderOp {
             filters,
             distortions: vec![],
             follows: vec![],
-            colors: vec![],
-            wgsl: Vec::new(),
-            midi: Vec::new(),
             gain_scalar: 0.0,
-            color_gradient: None,
-            fit_vis: [None; 3],
-            color_mix: 1.0,
+            ext: RenderExt::init(),
             initial_phase: None,
         }
     }
@@ -392,9 +462,22 @@ fn pointop_to_renderop(
 
     let (f, g, p, l) = calculate_fgpl(basis, point_op);
 
+    // LAYER CLIPS: silence by TYPE — audio gains zeroed here, the point's g
+    // (basis-scaled) rides as OPACITY instead. Synthesis can't hear a clip.
+    // Opacity comes from the point's OWN g, not the audio gains: a layer
+    // point is frequency-silent by construction (fm=0), so calculate_fgpl
+    // zeroes its audio gains — the Gm-composed g survives on the point.
+    let is_layer = point_op.ext.visual.layer.is_some();
+    let audio_g = if is_layer { (0.0, 0.0) } else { g };
+    let layer_opacity = if is_layer {
+        r_to_f64(point_op.g * basis.g).clamp(0.0, 1.0)
+    } else {
+        1.0
+    };
+
     let render_op = RenderOp {
         f,
-        g,
+        g: audio_g,
         p,
         l,
         t: r_to_f64(*time),
@@ -454,16 +537,8 @@ fn pointop_to_renderop(
             .collect(),
         next_out,
         follows: point_op.follows.clone(),
-        colors: point_op.get_transformed_colors(color_map).into_owned(),
-        wgsl: point_op.wgsl.clone(),
-        midi: point_op.midi.clone(),
         gain_scalar: r_to_f64(point_op.g * basis.g).clamp(0.0, 2.0),
-        color_gradient: point_op.color_distribution.gradient,
-        fit_vis: point_op.fit_vis.map(|band| band.map(|(a, b)| (
-            *a.numer() as f64 / *a.denom() as f64,
-            *b.numer() as f64 / *b.denom() as f64,
-        ))),
-        color_mix: point_op.color_distribution.mix,
+        ext: RenderExt::from_point_op(point_op, color_map, layer_opacity),
         initial_phase: point_op.phase.map(r_to_f64),
     };
 

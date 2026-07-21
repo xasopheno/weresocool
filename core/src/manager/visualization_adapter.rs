@@ -42,7 +42,7 @@ impl VisualizationAdapter {
             if let Some(o) = op {
                 // Borrow the cached name *after* the conversion so the two `&mut` borrows
                 // of `color_cache` don't overlap.
-                let name: &str = match v.colors.last() {
+                let name: &str = match v.ext.colors.last() {
                     Some(id) => color_cache.get(*id),
                     None => "nameless",
                 };
@@ -59,7 +59,7 @@ impl VisualizationAdapter {
         color_cache: &mut ColorStringCache,
     ) -> Option<Op4D> {
         let mut op4d = Self::render_op_to_normalized_op4d(render_op, normalizer)?;
-        op4d.colors = color_cache.convert(&render_op.colors);
+        op4d.colors = color_cache.convert(&render_op.ext.colors);
         Some(op4d)
     }
 
@@ -99,10 +99,10 @@ impl VisualizationAdapter {
             names: render_op.names.to_vec(),
             // Colors filled in by the caller (typically via the cached path); empty here
             // is fine because the single-op variant is rarely the visualization driver.
-            colors: render_op.colors.iter().map(|c| c.to_string()).collect(),
-            wgsl: render_op.wgsl.clone(),
-            color_gradient: render_op.color_gradient,
-            color_mix: render_op.color_mix,
+            colors: render_op.ext.colors.iter().map(|c| c.to_string()).collect(),
+            wgsl: render_op.ext.wgsl.clone(),
+            color_gradient: render_op.ext.color_gradient,
+            color_mix: render_op.ext.color_mix,
         };
 
         op4d.normalize(normalizer);
@@ -164,7 +164,7 @@ impl VisualizationAdapter {
 
         // Convert color hash IDs to their decimal-string form once per RenderOp
         // rather than once per output slice (a single op can produce dozens of slices).
-        let colors_strings: Vec<String> = render_op.colors.iter().map(|c| c.to_string()).collect();
+        let colors_strings: Vec<String> = render_op.ext.colors.iter().map(|c| c.to_string()).collect();
 
         while remaining > 0.0 {
             // Take either a full frame_length or whatever leftover remains
@@ -185,9 +185,9 @@ impl VisualizationAdapter {
                 event: render_op.event,
                 names: render_op.names.clone(),
                 colors: colors_strings.clone(),
-                wgsl: render_op.wgsl.clone(),
-                color_gradient: render_op.color_gradient,
-                color_mix: render_op.color_mix,
+                wgsl: render_op.ext.wgsl.clone(),
+                color_gradient: render_op.ext.color_gradient,
+                color_mix: render_op.ext.color_mix,
             };
 
             // Apply normalization

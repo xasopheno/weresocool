@@ -14,7 +14,7 @@ pub mod term;
 pub mod wgsl;
 pub use crate::{
     ast::{
-        ClapParams, Distortion, FmOscDef, FunDef, HiHatParams, KickParams, Op, Op::*, OscType,
+        ClapParams, Distortion, ExtOp, ExtOp::*, FmOscDef, FunDef, HiHatParams, KickParams, Op, Op::*, OscType,
         RimshotParams, SnareParams, ASR,
     },
     color::{
@@ -35,6 +35,7 @@ pub use crate::{
         substitute::substitute_operations,
         GetLengthRatio, NormalForm, Normalize, PointOp, Substitute,
         Defs, RecordingRegistry, Span, SpanMap,
+        Ext, ExtensionPayload, MidiExt, VisualExt,
     },
     term::Term,
     wgsl::{WgslMap, validate_wgsl},

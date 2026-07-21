@@ -98,8 +98,7 @@ pub mod tests {
             portamento: Rational64::new(1, 1),
             osc_type: OscType::None,
             names: vec![],
-            colors: vec![],
-            wgsl: vec![],
+            ext: Default::default(),
         };
 
         let vec_timed_op = vec![
@@ -148,5 +147,73 @@ pub mod tests {
             },
         ];
         assert_eq!(result, expected);
+    }
+}
+
+#[cfg(test)]
+mod ext_round_trip {
+    use crate::generation::TimedOp;
+    use num_rational::Rational64;
+    use weresocool_ast::PointOp;
+    use weresocool_instrument::renderable::RenderExt;
+    use weresocool_instrument::Basis;
+
+    /// ROUND-TRIP COMPLETENESS: a PointOp with every ext field non-default
+    /// must survive → TimedOp → Op4D and → RenderExt with nothing dropped.
+    /// This converts the historical silent export data loss (midi, fade,
+    /// layer, fit_vis, grading never reached TimedOp/JSON) into a permanent
+    /// test failure.
+    #[test]
+    fn nothing_dropped() {
+        let mut op = PointOp::init();
+        op.ext.visual.fade = Rational64::new(1, 2);
+        op.ext.visual.layer = Some("veil".to_string());
+        op.ext.visual.colors = vec![7];
+        op.ext.visual.wgsl = vec![9];
+        op.ext.midi.channels = vec![3];
+        op.ext.visual.color_distribution.gradient = Some((1.0, 0.0, 0.0));
+        op.ext.visual.color_distribution.mix = 0.25;
+        op.ext.visual.color_grading.hue = Rational64::new(1, 8);
+        op.ext.visual.fit_vis[1] = Some((Rational64::new(0, 1), Rational64::new(1, 2)));
+
+        // PointOp → TimedOp: ext carried WHOLESALE.
+        let mut t = Rational64::new(0, 1);
+        let timed = TimedOp::from_point_op(&op, &mut t, 0, 0);
+        assert_eq!(timed.ext, op.ext, "TimedOp must carry ext wholesale");
+
+        // TimedOp → PointOp: ext comes back intact.
+        assert_eq!(timed.to_point_op().ext, op.ext);
+
+        // TimedOp → Op4D: the f32 projection carries colors/wgsl/gradient/mix
+        // (gradient+mix were historically hardcoded to None/1.0 here).
+        let basis = Basis {
+            f: Rational64::new(311, 1),
+            g: Rational64::new(1, 1),
+            l: Rational64::new(1, 1),
+            p: Rational64::new(0, 1),
+            a: Rational64::new(1, 1),
+            d: Rational64::new(1, 1),
+        };
+        let op4d = timed.to_op_4d(&basis);
+        assert_eq!(op4d.colors, vec!["7".to_string()]);
+        assert_eq!(op4d.wgsl, vec![9]);
+        assert_eq!(op4d.color_gradient, Some((1.0, 0.0, 0.0)));
+        assert_eq!(op4d.color_mix, 0.25);
+
+        // PointOp → RenderExt: THE projection to render space, every field.
+        // (Grading is non-identity but color id 7 isn't in the map, so the
+        // id passes through unchanged — grading carriage is asserted by the
+        // TimedOp equality above.)
+        let mut cm = weresocool_ast::ColorMap::new();
+        let re = RenderExt::from_point_op(&op, &mut cm, 0.8);
+        assert_eq!(re.fade, 0.5);
+        assert_eq!(re.layer.as_deref(), Some("veil"));
+        assert_eq!(re.layer_opacity, 0.8);
+        assert_eq!(re.colors, vec![7]);
+        assert_eq!(re.wgsl, vec![9]);
+        assert_eq!(re.midi, vec![3]);
+        assert_eq!(re.color_gradient, Some((1.0, 0.0, 0.0)));
+        assert_eq!(re.color_mix, 0.25);
+        assert_eq!(re.fit_vis, [None, Some((0.0, 0.5)), None]);
     }
 }

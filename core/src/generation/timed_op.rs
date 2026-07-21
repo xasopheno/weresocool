@@ -1,7 +1,7 @@
 use crate::generation::Op4D;
 use num_rational::Rational64;
 use serde::{Deserialize, Serialize};
-use weresocool_ast::{NameSet, OscType, PointOp, ASR};
+use weresocool_ast::{Ext, NameSet, OscType, PointOp, ASR};
 use weresocool_instrument::Basis;
 use weresocool_shared::r_to_f64;
 
@@ -30,8 +30,11 @@ pub struct TimedOp {
     pub g: Rational64,
     pub l: Rational64,
     pub names: Vec<String>,
-    pub colors: Vec<String>,
-    pub wgsl: Vec<u64>,
+    /// The extension registry, carried WHOLESALE from the PointOp — one field
+    /// list exists (Ext's own), so nothing is silently dropped on the way to
+    /// Op4D/JSON/CSV. (Historically colors+wgsl were hand-copied here and
+    /// fade/layer/midi/fit/grading were lost.)
+    pub ext: Ext,
 }
 
 impl TimedOp {
@@ -57,10 +60,12 @@ impl TimedOp {
             voice: self.voice,
             event: self.event,
             names: self.names.to_owned(),
-            colors: self.colors.to_owned(),
-            wgsl: self.wgsl.to_owned(),
-            color_gradient: None,
-            color_mix: 1.0,
+            colors: self.ext.visual.colors.iter().map(|c| c.to_string()).collect(),
+            wgsl: self.ext.visual.wgsl.clone(),
+            // Carried from the ext registry (historically hardcoded to
+            // None/1.0 here — gradient data silently never reached JSON).
+            color_gradient: self.ext.visual.color_distribution.gradient,
+            color_mix: self.ext.visual.color_distribution.mix,
         }
     }
 
@@ -69,7 +74,6 @@ impl TimedOp {
         PointOp {
             fm: self.fm,
             fa: self.fa,
-            fit_vis: [None; 3],
             pm: self.pm,
             pa: self.pa,
             g: self.g,
@@ -86,11 +90,7 @@ impl TimedOp {
             //TODO
             is_out: false,
             follows: vec![],
-            colors: vec![],
-            wgsl: vec![],
-            midi: vec![],
-            color_grading: Default::default(),
-            color_distribution: Default::default(),
+            ext: self.ext.clone(),
             phase: None,
         }
     }
@@ -121,8 +121,7 @@ impl TimedOp {
             voice,
             event,
             names: point_op.names.to_vec(),
-            colors: point_op.colors.iter().map(|c| c.to_string()).collect(),
-            wgsl: point_op.wgsl.clone(),
+            ext: point_op.ext.clone(),
         };
 
         *time += point_op.l;

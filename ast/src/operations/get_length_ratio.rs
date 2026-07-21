@@ -17,8 +17,9 @@ impl GetLengthRatio for Op {
             // into a chain doesn't change the piece's duration, it just
             // records WHERE in the chain to begin playback.
             | Op::Start {}
+            // Extension ops (visual + midi) never affect length.
+            | Op::Ext(_)
             | Op::Mute {}
-            | Op::Color(_)
             | Op::Follow(..)
             | Op::Out {}
             | Op::Lowpass { .. }
@@ -46,19 +47,7 @@ impl GetLengthRatio for Op {
             | Op::PanM { .. }
             | Op::Tag(_)
             | Op::Keeper(_)
-            | Op::WGSL(_)
             | Op::Gain { .. }
-            | Op::Midi { .. }
-            | Op::Hue { .. }
-            | Op::Saturation { .. }
-            | Op::Brightness { .. }
-            | Op::Vibrance { .. }
-            | Op::Gamma { .. }
-            | Op::ColorBlend { .. }
-            | Op::ColorAdd { .. }
-            | Op::ColorGradient { .. }
-            | Op::FitVis { .. }
-            | Op::ColorMix { .. }
             | Op::Wavefolder { .. }
             | Op::SoftClip { .. }
             | Op::Overdrive { .. }

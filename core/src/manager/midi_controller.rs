@@ -88,16 +88,16 @@ impl MidiController {
         let sr = Settings::global().sample_rate as f64;
 
         for op in midi_ops {
-            if op.midi.is_empty() {
+            if op.ext.midi.is_empty() {
                 continue;
             }
 
             // Voice→channel mapping (overlay):
-            let ch1: u8 = if op.midi.len() == 1 {
-                let base = op.midi[0].max(1).min(16);
+            let ch1: u8 = if op.ext.midi.len() == 1 {
+                let base = op.ext.midi[0].max(1).min(16);
                 (((base - 1) as usize + op.voice) % 16) as u8 + 1
             } else {
-                op.midi[op.voice % op.midi.len()]
+                op.ext.midi[op.voice % op.ext.midi.len()]
             };
             let ch = (ch1.saturating_sub(1)).min(15);
 

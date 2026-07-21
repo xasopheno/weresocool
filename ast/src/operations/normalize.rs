@@ -19,10 +19,10 @@ impl Normalize for Op {
         defs: &mut Defs,
     ) -> Result<(), Error> {
         match self {
-            Op::Color(color) => {
-                input.fmap_mut(|op| {
-                    op.colors.push(*color);
-                });
+            // EXTENSION OPS — one arm; all bodies live in ext::normalize_ext_op
+            // (the extension module owns its own normalization).
+            Op::Ext(ext_op) => {
+                crate::operations::ext::normalize_ext_op(ext_op, input, defs);
             }
             Op::Follow(follow) => {
                 let fnf = follow.to_nf(Some(Default::default()));
@@ -54,13 +54,6 @@ impl Normalize for Op {
                     op.g = Ratio::new(0, 1);
                 });
             }
-            Op::WGSL(wgsl_id) => {
-                // Prepend the WGSL id so outer transforms run first
-                // This allows outer Vm/Xm/etc to affect inner transforms
-                input.fmap_mut(|op| {
-                    op.wgsl.insert(0, *wgsl_id);
-                });
-            },
             Op::Out => {
                 input.fmap_mut(|op| {
                     op.is_out = true;
@@ -312,6 +305,7 @@ impl Normalize for Op {
                 op.portamento *= m;
             }),
 
+
             Op::Sine { pow } => input.fmap_mut(|op| op.osc_type = OscType::Sine { pow: *pow }),
 
             Op::Triangle { pow } => {
@@ -373,6 +367,7 @@ impl Normalize for Op {
 
                 input.length_ratio *= m;
             }
+
 
             Op::Silence { m } => {
                 input.fmap_mut(|op| {
@@ -442,117 +437,16 @@ impl Normalize for Op {
                 defs.rand_ctx = saved_rand_ctx;
             }
 
-            Op::Midi { channels } => {
-                // Attach midi channels to each PointOp
-                let chans = channels.clone();
-                input.fmap_mut(|op| {
-                    op.midi.extend(chans.iter().cloned());
-                });
-            }
 
-            // Color grading operations
-            Op::Hue { value } => {
-                input.fmap_mut(|op| {
-                    op.color_grading.hue += value;
-                });
-            }
 
-            Op::Saturation { value } => {
-                input.fmap_mut(|op| {
-                    op.color_grading.saturation = op
-                        .color_grading
-                        .saturation
-                        .checked_mul(value)
-                        .unwrap_or_else(|| lossy_rational_mul(op.color_grading.saturation, *value));
-                });
-            }
 
-            Op::Brightness { value } => {
-                input.fmap_mut(|op| {
-                    op.color_grading.brightness += value;
-                });
-            }
 
-            Op::Vibrance { value } => {
-                input.fmap_mut(|op| {
-                    op.color_grading.vibrance += value;
-                });
-            }
 
-            Op::Gamma { value } => {
-                input.fmap_mut(|op| {
-                    op.color_grading.gamma = op
-                        .color_grading
-                        .gamma
-                        .checked_mul(value)
-                        .unwrap_or_else(|| lossy_rational_mul(op.color_grading.gamma, *value));
-                });
-            }
 
-            Op::ColorBlend { color_id, amount: _ } => {
-                // Add the blend color and amount to colors
-                // We'll store the color_id and handle blending at render time
-                input.fmap_mut(|op| {
-                    op.colors.push(*color_id);
-                    // Store blend amount in a special way - we'll need to track this
-                    // For now, just add the color; blending logic will be in render
-                });
-            }
 
-            Op::ColorAdd { color_id } => {
-                // Simply add the color to the palette
-                input.fmap_mut(|op| {
-                    op.colors.push(*color_id);
-                });
-            }
 
-            Op::FitVis { axis, a, b } => {
-                // Stamp the target band onto every note. Later (outer)
-                // applications overwrite — outer Fit wins per axis.
-                let band = Some((*a, *b));
-                let axis = *axis.min(&2);
-                input.fmap_mut(|op| {
-                    op.fit_vis[axis] = band;
-                });
-            }
 
-            Op::ColorGradient { x, y, z } => {
-                // Set gradient direction for color distribution
-                let gx = rational_to_f32(*x);
-                let gy = rational_to_f32(*y);
-                let gz = rational_to_f32(*z);
-                let gradient = (gx, gy, gz);
 
-                // Collect color_ids that need gradient update
-                let color_ids_to_update: Vec<u64> = input.operations
-                    .iter()
-                    .flat_map(|seq| seq.iter())
-                    .filter_map(|op| op.colors.last().copied())
-                    .collect();
-
-                // Update the gradient on colors in the ColorMap
-                // This associates the gradient with the brush definition, not per-operation
-                for color_id in color_ids_to_update {
-                    defs.colors.set_gradient(color_id, gradient);
-                }
-
-                // Also keep setting op.color_distribution for backwards compatibility
-                input.fmap_mut(|op| {
-                    op.color_distribution.gradient = Some(gradient);
-                    // Set mix to 0 (pure gradient) when gradient is applied
-                    if op.color_distribution.mix == 1.0 {
-                        op.color_distribution.mix = 0.0;
-                    }
-                });
-            }
-
-            Op::ColorMix { amount } => {
-                // Set the mix amount for color distribution (0 = pure gradient, 1 = pure random)
-                let mix = rational_to_f32(*amount);
-                input.fmap_mut(|op| {
-                    op.color_distribution.mix = mix;
-                });
-            }
 
             Op::WithLengthRatioOf {
                 with_length_of,

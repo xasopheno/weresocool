@@ -461,9 +461,9 @@ fn render_one_voice(
     // Split MIDI-directed ops from audio-directed. The MIDI case is rare
     // in most pieces, so a quick scan first lets us skip the partition
     // (and its two Vec allocations) for the common all-audio path.
-    let has_midi = batch.iter().any(|op| !op.midi.is_empty());
+    let has_midi = batch.iter().any(|op| !op.ext.midi.is_empty());
     let (midi_batch, mut audio_batch): (Vec<RenderOp>, Vec<RenderOp>) = if has_midi {
-        batch.into_iter().partition(|op| !op.midi.is_empty())
+        batch.into_iter().partition(|op| !op.ext.midi.is_empty())
     } else {
         (Vec::new(), batch)
     };
