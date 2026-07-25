@@ -419,22 +419,22 @@ mod tests {
 
     #[test]
     fn note_dot_fields_rewrite_to_instance_fields() {
-        // Law-4 surface: `note.t/l/gain` and `clock` are the beautiful spelling;
+        // Law-4 surface: `Note.t/l/gain` and `Clock` are the beautiful spelling;
         // they lower to the flat instance-struct fields naga sees.
         // Quoted expression:
-        let o = compile_dsl_to_wgsl(r#"Sm "0.9 + note.gain * 0.9""#).unwrap();
-        assert!(o.contains("note_gain"), "quoted note.gain -> note_gain: {o}");
-        assert!(!o.contains("note.gain"), "dotted form must not survive: {o}");
+        let o = compile_dsl_to_wgsl(r#"Sm "0.9 + Note.gain * 0.9""#).unwrap();
+        assert!(o.contains("note_gain"), "quoted Note.gain -> note_gain: {o}");
+        assert!(!o.contains("Note.gain"), "dotted form must not survive: {o}");
         // Bare leading dotted identifier (the grammar-extension case):
-        let o = compile_dsl_to_wgsl("Bm note.gain * 1.0 + 0.3").unwrap();
-        assert!(o.contains("note_gain"), "bare note.gain -> note_gain: {o}");
-        // Simple bare dotted value + the other fields + clock:
-        let o = compile_dsl_to_wgsl("Sm note.t | Vm note.l | Xa clock").unwrap();
+        let o = compile_dsl_to_wgsl("Bm Note.gain * 1.0 + 0.3").unwrap();
+        assert!(o.contains("note_gain"), "bare Note.gain -> note_gain: {o}");
+        // Simple bare dotted value + the other fields + the clock:
+        let o = compile_dsl_to_wgsl("Sm Note.t | Vm Note.l | Xa Clock").unwrap();
         assert!(o.contains("note_t") && o.contains("note_l") && o.contains("song_time"),
-            "note.t/note.l/clock all rewrite: {o}");
-        // `count` sugar and passthrough RawWgsl RHS both get rewritten:
-        let o = compile_dsl_to_wgsl("red = red * note.gain;").unwrap();
-        assert!(o.contains("note_gain"), "raw-wgsl RHS note.gain -> note_gain: {o}");
+            "Note.t/Note.l/Clock all rewrite: {o}");
+        // Passthrough RawWgsl RHS gets rewritten too:
+        let o = compile_dsl_to_wgsl("red = red * Note.gain;").unwrap();
+        assert!(o.contains("note_gain"), "raw-wgsl RHS Note.gain -> note_gain: {o}");
     }
 
     #[test]

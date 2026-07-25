@@ -179,7 +179,14 @@ WgslExpr: String = {
     <s:r"[a-z_][a-zA-Z0-9_]*\s*\([^)]*\)"> => s.to_string(),
     // Binary expression: identifier followed by operators and operands
     // Matches: time * 2, note.gain * 0.5, x + y * z, progress * 0.5
-    <s:r"[a-zA-Z_][a-zA-Z0-9_]*(\.[a-zA-Z0-9_]+)?(\s*[\+\-\*\/]\s*[a-zA-Z0-9_\.]+)+"> => s.to_string(),
+    // Lowercase-start ONLY (case law: language ops are Uppercase) — else
+    // `Ya -0.15` lexes as the arithmetic expression "Ya minus 0.15" and
+    // swallows the op keyword. Uppercase vars in bare exprs use quotes.
+    <s:r"[a-z_][a-zA-Z0-9_]*(\.[a-zA-Z0-9_]+)?(\s*[\+\-\*\/]\s*[a-zA-Z0-9_\.]+)+"> => s.to_string(),
+    // Uppercase heads are allowed back in when they carry a DOT — `Note.gain
+    // * 1.0`. An op keyword is always bare, so a dotted uppercase name is
+    // unambiguously the Law-4 note surface and never `Ya -0.15`.
+    <s:r"[A-Z][a-zA-Z0-9_]*\.[a-zA-Z0-9_]+(\s*[\+\-\*\/]\s*[a-zA-Z0-9_\.]+)+"> => s.to_string(),
     // Simple identifier: time, progress, etc. (at least 2 chars to avoid single-letter numbers being captured)
     <s:r"[a-zA-Z_][a-zA-Z0-9_]+"> => s.to_string(),
     // Dotted note field: note.t, note.gain — the Law-4 note.* surface (rewritten

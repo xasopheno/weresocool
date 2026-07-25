@@ -158,7 +158,12 @@ pub fn extract_warps(source: &str) -> Result<Preprocessed, PreprocessError> {
                 None => return Err(PreprocessError::UnbalancedBraces { start: block_start }),
             };
 
-            let body = &source[body_start..body_end];
+            // `Raw { … }` brace form → the lexer's backtick form, byte-count
+            // preserved (brace→tick) so spans stay stable. Braces are the
+            // language surface everywhere — layer defs already did this;
+            // warp defs get the same law.
+            let body_owned = rawify_raw_blocks(&source[body_start..body_end]);
+            let body = body_owned.as_str();
             let (state_names, pipeline) = parse_pipeline_with_state(body)
                 .map_err(|err| PreprocessError::Parse { name: name.clone(), err })?;
             if blend_mode != WarpBlendMode::Additive {
@@ -456,3 +461,30 @@ fn find_matching_bracket(bytes: &[u8], open: usize) -> Option<usize> {
     None
 }
 
+
+
+/// Convert every `Raw { … }` in a warp body to ``Raw `…` `` IN PLACE
+/// (open/close brace each become a backtick — byte count unchanged).
+/// Arbitrary WGSL can't pass through the warp lexer; backticks are its raw
+/// escape, but braces are the language surface (no backticks in source).
+pub fn rawify_raw_blocks(body: &str) -> String {
+    let mut out = body.as_bytes().to_vec();
+    let mut i = 0usize;
+    while i < out.len() {
+        if matches_keyword(&out, i, b"Raw") {
+            let mut j = skip_ws(&out, i + 3);
+            if j < out.len() && out[j] == b'{' {
+                if let Some(close) = find_matching_brace(&out, j) {
+                    out[j] = b'`';
+                    out[close] = b'`';
+                    i = close + 1;
+                    continue;
+                }
+            }
+            i = j.max(i + 3);
+        } else {
+            i += 1;
+        }
+    }
+    String::from_utf8_lossy(&out).into_owned()
+}
