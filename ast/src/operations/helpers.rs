@@ -15,11 +15,11 @@ pub fn handle_id_error<S: Into<String> + Clone + Display + std::fmt::Debug>(
     match defs.ops.get(&id.clone().into()) {
         Some(result) => Ok(result.to_owned()),
         None => {
-            println!(
-                "Not able to find {} in let defs",
-                id.to_string().red().bold()
-            );
-            Err(IdError { id: id.into() }.into_error())
+            let name: String = id.into();
+            let known = defs.ops.visible_names();
+            let did_you_mean = weresocool_error::nearest_names(&name, known.iter());
+            println!("Not able to find {} in let defs", name.red().bold());
+            Err(IdError { id: name, did_you_mean }.into_error())
         }
     }
 }

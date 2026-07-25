@@ -14,7 +14,7 @@ pub mod portaudio_error;
 pub use color_error::ColorError;
 pub use error::Error;
 pub use error_inner::ErrorInner;
-pub use id_error::IdError;
+pub use id_error::{nearest_names, IdError};
 pub use index_error::IndexError;
 pub use parse_error::ParseError;
 

@@ -103,6 +103,23 @@ where
         }
     }
 
+    /// Every name `get` could find, inner scope first. For diagnostics —
+    /// when a lookup fails, this is the list of names the composer could
+    /// have meant.
+    pub fn visible_names(&self) -> Vec<String> {
+        let mut seen = std::collections::HashSet::new();
+        let mut out = Vec::new();
+        for scope in self.scopes.iter().rev() {
+            let Some(current) = self.defs.get(scope) else { continue };
+            for name in current.keys() {
+                if seen.insert(name.clone()) {
+                    out.push(name.clone());
+                }
+            }
+        }
+        out
+    }
+
     /// Searches through inner -> outer scopes looking for the given id.
     pub fn get(&self, id: &str) -> Option<&T> {
         for scope in self.scopes.iter().rev() {

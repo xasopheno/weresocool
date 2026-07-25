@@ -130,7 +130,7 @@ pub fn parsed_to_render(
     let parsed_main = parsed_composition.defs.ops.get("main");
 
     if parsed_main.is_none() {
-        return Err(IdError { id: "main".into() }.into_error());
+        return Err(IdError { id: "main".into(), did_you_mean: vec![] }.into_error());
     };
 
     let nf = match parsed_main.unwrap().to_owned() {

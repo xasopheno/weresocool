@@ -20,6 +20,9 @@ pub mod layer;
 pub mod warp;
 
 pub mod error_handling;
+/// Re-exported so hosts that only depend on the parser (kintaro) can offer
+/// the same did-you-mean suggestions the audio front end does.
+pub use weresocool_error::nearest_names;
 pub mod float_to_rational;
 pub mod imports;
 pub mod indices;
