@@ -28,7 +28,7 @@ match {
     "x", "y", "z", "l", "t", "voice", "direction",
 
     // Ops
-    "Xa", "Ya", "Za", "Rx", "Ry", "Rz", "Sm", "Sa",
+    "Xa", "Ya", "AtY", "Za", "Rx", "Ry", "Rz", "Sm", "Sa",
     "Direction", "Jitter", "Mirror", "Modulate", "Tint",
     "Lerp", "Spawn", "Echo", "Stagger", "Drag", "Each",
     "Every", "Sometimes", "Jux",
@@ -124,6 +124,7 @@ Op: DrawOp = {
     // Single-arg translations / rotations / scale
     "Xa" <e:BareOrParenArg> => DrawOp::Xa(e),
     "Ya" <e:BareOrParenArg> => DrawOp::Ya(e),
+    "AtY" <e:BareOrParenArg> => DrawOp::AtY(e),
     "Za" <e:BareOrParenArg> => DrawOp::Za(e),
     "Rx" <e:BareOrParenArg> => DrawOp::Rx(e),
     "Ry" <e:BareOrParenArg> => DrawOp::Ry(e),

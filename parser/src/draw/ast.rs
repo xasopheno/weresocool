@@ -104,6 +104,12 @@ pub enum DrawOp {
     // === Set translations (move every emit) ===
     Xa(DrawExpr),
     Ya(DrawExpr),
+    /// Absolute vertical placement in WORLD units. `Ya` moves in the note's
+    /// own [0,1] space (which the shader maps to [-1,1] via y*2-1); `AtY`
+    /// takes the world number you actually mean and shifts the whole set so
+    /// this note's anchor lands there — so every pitch can share one line.
+    /// Same units as a wgsl `Ya`, so a height means the same in both DSLs.
+    AtY(DrawExpr),
     Za(DrawExpr),
     Direction(DrawExpr, DrawExpr, DrawExpr),
     // === Set rotations (rotate every emit around origin) ===

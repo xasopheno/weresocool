@@ -10,6 +10,8 @@ pub mod draw;
 pub mod dsl_expr;
 pub mod dsl_extract;
 pub mod dsl_imports;
+pub mod dsl_compose;
+pub mod dsl_let;
 pub mod dsl_params;
 pub mod dsl_parse_error;
 pub mod palette;
