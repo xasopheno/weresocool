@@ -32,7 +32,7 @@ match {
     "Direction", "Jitter", "Mirror", "Modulate", "Tint",
     "Lerp", "Spawn", "Echo", "Stagger", "Drag", "Each",
     "Every", "Sometimes", "Jux",
-    "Seq", "Overlay", "Lm",
+    "Seq", "Overlay", "Alt", "Lm",
     "Path", "Smooth", "Pin", "Pick",
 
     // Mirror axes (parsed as bare identifiers)
@@ -209,6 +209,7 @@ Op: DrawOp = {
     // Composition primitives — same shapes as warp Seq/Overlay.
     "Seq"     "[" <phases:SeqPhaseList>      "]" => DrawOp::Seq { phases },
     "Overlay" "[" <layers:OverlayLayerList>  "]" => DrawOp::Overlay { layers },
+    "Alt"     "[" <branches:OverlayLayerList> "]" => DrawOp::Alt { branches },
 };
 
 // ---------------------------------------------------------------------------

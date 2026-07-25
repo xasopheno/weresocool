@@ -193,6 +193,14 @@ pub enum DrawOp {
     /// from the current set, runs independently, then results are
     /// concatenated. Form: `Overlay [ops_chain, ops_chain, …]`.
     Overlay { layers: Vec<Vec<DrawOp>> },
+    /// Per-NOTE alternation — `Seq`'s sibling. Where `Seq` multiplexes over
+    /// TIME and `Overlay` unions every branch at once, `Alt` picks exactly
+    /// ONE branch per note and walks to the next on the next note, looping.
+    /// The idiom it replaces: cycling a family of genuinely different shapes
+    /// (a flat slab, a stepped ziggurat, a masted needle) instead of faking
+    /// it with `Cycle([…])` lists that zero parts of one shape out.
+    /// Form: `Alt [ops_chain, ops_chain, …]`.
+    Alt { branches: Vec<Vec<DrawOp>> },
 }
 
 /// One phase of a draw `Seq`. Same shape as warp `SeqPhase`.
