@@ -5,7 +5,7 @@ use dyn_clone::DynClone;
 use rand::prelude::*;
 use rand::seq::SliceRandom;
 use std::fmt::Debug;
-use bimap::BiHashMap;
+use indexmap::IndexMap;
 use num_rational::Rational64;
 // use indexmap::IndexMap;
 
@@ -14,36 +14,60 @@ pub use xkcd::{lookup_xkcd_color, all_xkcd_colors, XKCD_COLORS};
 
 // pub type GenColorMap = IndexMap<String, Box<dyn GenColor>>;
 
+/// Palette table: id → colour, plus the id counter.
+///
+/// IDENTITY. A colour id is a BRUSH's identity downstream — warp chains, draw
+/// routing and the GPU instance pool are all keyed by it. That makes the
+/// question "when are two colours the same colour?" a question about the
+/// PIECE, not about arithmetic on the values, and the two answers differ:
+///
+///   * `insert_unique` — one id per PLACE the composer wrote a palette. Two
+///     voices that each write `Color [#ff0000]` are two voices with a red
+///     brush each, not one brush with two voices pointing at it. Value-dedup
+///     here silently merged them, and with them their warp chains and draw
+///     routing: a voice would vanish into another voice's brush, which is
+///     exactly how the bass got lost twice.
+///   * `insert` — dedup by VALUE, for derived colours. Colour grading
+///     re-inserts its transformed result for every PointOp on every render;
+///     without dedup the table would grow without bound. There the value IS
+///     the identity, because nobody wrote it down anywhere.
+///
+/// The table is insertion-ordered (`IndexMap`), so iteration is stable across
+/// runs — a hash map's order would leak into brush order and from there into
+/// blend order.
 #[derive(Debug, Clone, PartialEq)]
 pub struct ColorMap {
-    pub map: BiHashMap<String, ColorValue>,
+    pub map: IndexMap<String, ColorValue>,
     next_id: u64,
 }
 
 impl ColorMap {
     pub fn new() -> Self {
         Self {
-            map: BiHashMap::new(),
+            map: IndexMap::new(),
             next_id: 0,
         }
     }
 
-    // ─────────────────────────────────────────────
-    //  PUBLIC API (unchanged signatures)
-    // ─────────────────────────────────────────────
-
-    /// Return an id for the colour, reusing an existing one if present.
-    pub fn insert(&mut self, value: ColorValue) -> u64 {
-        // fast path: have we seen this colour before?
-        if let Some(id_str) = self.map.get_by_right(&value) {
-            return id_str.parse::<u64>().expect("ids stay numeric");
-        }
-
-        // new colour – assign next available id
+    /// A fresh id for a palette written in the source. Never reuses — see the
+    /// identity note on the type.
+    pub fn insert_unique(&mut self, value: ColorValue) -> u64 {
         let id = self.next_id;
         self.next_id += 1;
         self.map.insert(id.to_string(), value);
         id
+    }
+
+    /// An id for a DERIVED colour, reusing an existing one with the same
+    /// value. For colour grading and the blend operands, where the value is
+    /// all the identity there is.
+    pub fn insert(&mut self, value: ColorValue) -> u64 {
+        if let Some(id) = self.get_id_for_color(&value) {
+            if let Ok(n) = id.parse::<u64>() {
+                return n;
+            }
+        }
+        self.insert_unique(value)
     }
 
     /// Associate an *explicit* name ("red", "my_accent_colour", …) with a colour.
@@ -54,13 +78,14 @@ impl ColorMap {
 
     /// Look up a colour by the string id you got from `insert()`.
     pub fn get_by_hash(&self, hash: String) -> Option<&ColorValue> {
-        self.map.get_by_left(&hash)
+        self.map.get(&hash)
     }
 
-    /// Get the string id that `insert()` (or a previous call to this fn) produced
-    /// for the given colour, if any.
+    /// The FIRST id holding this colour, if any. Several ids may hold equal
+    /// values now (that is the point), so this answers "an id", not "the id" —
+    /// only the value-dedup path should care.
     pub fn get_id_for_color(&self, color: &ColorValue) -> Option<String> {
-        self.map.get_by_right(color).cloned()
+        self.map.iter().find(|(_, v)| *v == color).map(|(k, _)| k.clone())
     }
 
     /// Update next_id to be at least the given value
@@ -80,10 +105,8 @@ impl ColorMap {
     /// Returns true if the update was successful
     pub fn set_gradient(&mut self, id: u64, gradient: (f32, f32, f32)) -> bool {
         let id_str = id.to_string();
-        if let Some(value) = self.map.get_by_left(&id_str).cloned() {
-            if let ColorValue::ColorSet { colors, .. } = value {
-                // Remove old entry and insert updated one
-                self.map.remove_by_left(&id_str);
+        if let Some(value) = self.map.get(&id_str) {
+            if let ColorValue::ColorSet { colors, .. } = value.clone() {
                 self.map.insert(id_str, ColorValue::ColorSet {
                     colors,
                     gradient: Some(gradient),

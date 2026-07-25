@@ -668,7 +668,9 @@ ColorValue: Term = {
     //"ColorGrad[" <colors: Comma<CssOrHex>> "]" => todo!(),
     <start:@L> "Color" "[" <colors: Comma<CssOrHex>> "]" =>? {
         match parse_color_set(colors, None) {
-            Ok(cv) => Ok(Term::Op(Ext(Color(defs.colors.insert(cv))))),
+            // insert_unique: identity is WHERE the palette was written, not
+            // its value — two voices writing the same red are two brushes.
+            Ok(cv) => Ok(Term::Op(Ext(Color(defs.colors.insert_unique(cv))))),
             Err(bad_color) => Err(lalrpop_util::ParseError::User {
                 error: format!("{}:{}", start, bad_color)
             })
