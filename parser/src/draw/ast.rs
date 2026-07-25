@@ -201,6 +201,14 @@ pub enum DrawOp {
     /// it with `Cycle([…])` lists that zero parts of one shape out.
     /// Form: `Alt [ops_chain, ops_chain, …]`.
     Alt { branches: Vec<Vec<DrawOp>> },
+    /// Fit the preceding `Seq`'s cycle to a named def's LENGTH — the same
+    /// op, spelled the same way, as in audio and in warp. The phases keep
+    /// their proportions; only the absolute cycle changes, so a draw can be
+    /// written in ratios and land on the music.
+    ///
+    /// Rewritten away before compile (`crate::draw::fit_length`), exactly as
+    /// the warp one is; a `FitLength` that survives is a no-op.
+    FitLength(String),
 }
 
 /// One phase of a draw `Seq`. Same shape as warp `SeqPhase`.

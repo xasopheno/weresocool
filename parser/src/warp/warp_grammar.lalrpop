@@ -39,7 +39,7 @@ match {
     "|", "(", ")", "{", "}", "[", "]", ",", ";", ":", "+", "-", "*", "/",
 
     "Prev", "Scene", "Volume", "Fluid", "Raymarch", "Osc", "Noise", "Gradient", "Solid",
-    "Time", "Clock", "Sin", "Hit", "HitX", "HitY", "Dist", "HitAge", "Displace", "Ripple", "Glow", "Stir", "Bulge", "Relief", "Stain", "Watercolor",
+    "Time", "Clock", "Sin", "Cycle", "Choose", "Rand", "Hit", "HitX", "HitY", "Dist", "HitAge", "Displace", "Ripple", "Glow", "Stir", "Bulge", "Relief", "Stain", "Watercolor",
 
     "Scale", "Rotate", "Scroll", "Swirl", "Fold", "Kaleid",
     "ChromaShift", "CurlFlow", "Wave", "Iterate",
@@ -501,6 +501,21 @@ BgArg: (String, BgArgVal) = {
 /// A scalar argument that may be bare or parenthesised. Both forms exist in
 /// the wild (`Scale 0.99`, `Scale(0.99)`, `Hue(Time)`).
 BareOrParenArg: WarpExpr = {
+    // VALUE COMBINATORS — the same three draw has, stepping on warp's own
+    // index. Draw steps per NOTE; a warp has no notes, so it steps per whole
+    // unit of the clock (`Clock` is in l-basis units, so one step is one
+    // length-unit of the piece). Same spelling, same law, different substrate.
+    "Cycle" "(" "[" <first:Expr> <rest:("," <Expr>)*> "]" ")" => {
+        let mut vals = vec![first];
+        vals.extend(rest);
+        WarpExpr::Cycle(vals)
+    },
+    "Choose" "(" "[" <first:Expr> <rest:("," <Expr>)*> "]" ")" => {
+        let mut vals = vec![first];
+        vals.extend(rest);
+        WarpExpr::Choose(vals)
+    },
+    "Rand" "(" <s:Expr> ")" => WarpExpr::Rand(Box::new(s)),
     "(" <e:Expr> ")" => e,
     <e:NonParenFactor> => e,
 };
@@ -565,6 +580,21 @@ Factor: WarpExpr = {
     // Variadic min/max (≥2): left-fold into nested binary calls.
     <f:VariadicFn> "(" <a:Expr> <rest:("," <Expr>)+> ")" =>
         rest.into_iter().fold(a, |acc, e| WarpExpr::Call(f, vec![acc, e])),
+    // VALUE COMBINATORS — the same three draw has, stepping on warp's own
+    // index. Draw steps per NOTE; a warp has no notes, so it steps per whole
+    // unit of the clock (`Clock` is in l-basis units, so one step is one
+    // length-unit of the piece). Same spelling, same law, different substrate.
+    "Cycle" "(" "[" <first:Expr> <rest:("," <Expr>)*> "]" ")" => {
+        let mut vals = vec![first];
+        vals.extend(rest);
+        WarpExpr::Cycle(vals)
+    },
+    "Choose" "(" "[" <first:Expr> <rest:("," <Expr>)*> "]" ")" => {
+        let mut vals = vec![first];
+        vals.extend(rest);
+        WarpExpr::Choose(vals)
+    },
+    "Rand" "(" <s:Expr> ")" => WarpExpr::Rand(Box::new(s)),
     "(" <e:Expr> ")" => e,
     "-" <f:Factor>   =>
         WarpExpr::Bin(BinOp::Sub, Box::new(WarpExpr::DefaultLit(0.0)), Box::new(f)),
