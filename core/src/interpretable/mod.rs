@@ -143,7 +143,7 @@ pub fn preprocess_for_audio(
     base_dir: &std::path::Path,
     socool_path: Option<&std::path::Path>,
 ) -> Result<AudioSource, Error> {
-    use weresocool_parser::{dsl_imports, dsl_params, draw, layer, palette, surface_dsl, warp};
+    use weresocool_parser::{dsl_compose, dsl_imports, dsl_let, dsl_params, draw, layer, palette, surface_dsl, warp};
 
     let source = dsl_imports::resolve(raw, base_dir)
         .map_err(|e| Error::with_msg(format!("import: {e}")))?;
@@ -168,6 +168,17 @@ pub fn preprocess_for_audio(
 
     let source = dsl_params::expand(&source)
         .map_err(|e| Error::with_msg(format!("parameterized def: {e}")))?;
+
+    // `let` preludes and draw composition, in the same order kintaro runs
+    // them: params first (so a binding may use a template's argument), then
+    // bindings, then composition. These lived only in kintaro's front end,
+    // so every audio-only host — `print --wav` among them — choked on a
+    // piece that used `let`, and the two front ends disagreed about what
+    // the language IS. One pipeline, one answer.
+    let source = dsl_let::expand(&source)
+        .map_err(|e| Error::with_msg(format!("let binding: {e}")))?;
+    let source = dsl_compose::expand(&source)
+        .map_err(|e| Error::with_msg(format!("draw composition: {e}")))?;
 
     // Each extractor's `display(false)` prints the rich file:line:col report
     // (same renderer kintaro's extract path uses); the Error we bubble up
