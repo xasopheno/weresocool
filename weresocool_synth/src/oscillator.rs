@@ -15,11 +15,20 @@ pub struct Basis {
     pub l: Rational64,
     pub a: Rational64,
     pub d: Rational64,
+    /// THE VISUAL BASIS — the frame's half-extents, carried alongside the
+    /// audio basis because it is the same kind of thing: the piece declaring
+    /// its own units. `None` for every piece that does not say, and the
+    /// renderer then derives the frame from resolution as it always did.
+    /// Audio never reads these.
+    pub w: Option<Rational64>,
+    pub h: Option<Rational64>,
 }
 
 impl Basis {
     pub fn from_init(init: &Init) -> Self {
         Self {
+            w: init.w,
+            h: init.h,
             f: init.f,
             g: init.g,
             l: init.l,

@@ -67,20 +67,37 @@ Point: Init = {
          <l_axis: L> <l: Rational> ","
          <g_axis: G> <g: Rational> ","
          <p_axis: P> <p: Rational>
-         <opt_bg: OptionalBackgroundColor>  
+         <tail: OptionalHeaderTail>
     "}" ";"? => Init {
          f,
          l,
          g,
          p,
-         background_color: opt_bg
+         background_color: tail.0,
+         w: tail.1.map(|(w, _)| w),
+         h: tail.1.map(|(_, h)| h),
     }
 }
 
-OptionalBackgroundColor: Option<ColorValue> = {
-    "," "background_color:" <bg: CssOrHex> => Some(ColorValue::Color(bg)),
-    => None
+// Everything optional after `p:`, in ONE rule. Two separate optional tails
+// both starting with "," is a local ambiguity — LALR(1) cannot see far enough
+// to know which it is looking at.
+//
+// The VISUAL BASIS (`w:`, `h:`) gives the frame's half-extents, in the same
+// spirit as f/l/g/p give the audio's. A piece that declares them is saying
+// where its edges ARE, so a visual op can name a place: `Xa(1)` is the right
+// edge whatever the render resolution. Both or neither; either order with
+// `background_color`.
+OptionalHeaderTail: (Option<ColorValue>, Option<(Rational64, Rational64)>) = {
+    => (None, None),
+    "," "background_color:" <bg: CssOrHex> => (Some(ColorValue::Color(bg)), None),
+    "," "w:" <w: Rational> "," "h:" <h: Rational> => (None, Some((w, h))),
+    "," "background_color:" <bg: CssOrHex> "," "w:" <w: Rational> "," "h:" <h: Rational>
+        => (Some(ColorValue::Color(bg)), Some((w, h))),
+    "," "w:" <w: Rational> "," "h:" <h: Rational> "," "background_color:" <bg: CssOrHex>
+        => (Some(ColorValue::Color(bg)), Some((w, h))),
 };
+
 
 LetDefs = Lets<LetDef>;
 LetDef: () = {

@@ -54,7 +54,18 @@ pub struct Init {
     pub l: Rational64,
     pub g: Rational64,
     pub p: Rational64,
-    pub background_color: Option<ColorValue>
+    pub background_color: Option<ColorValue>,
+    /// THE VISUAL BASIS — half-width and half-height of the frame, in the
+    /// same spirit as `f`, `l`, `g` and `p` are the audio basis. A piece that
+    /// declares `w: 16/9, h: 1` is saying where its edges are, so a visual
+    /// op can name a PLACE: `Xa(1)` is the right edge, whatever the render
+    /// resolution happens to be.
+    ///
+    /// Optional, and absent in every piece written before it existed — when
+    /// it is absent the renderer keeps deriving the frame from resolution,
+    /// exactly as it always has.
+    pub w: Option<Rational64>,
+    pub h: Option<Rational64>,
 }
 
 #[derive(Clone, PartialEq, Debug)]

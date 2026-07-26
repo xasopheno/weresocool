@@ -72,6 +72,8 @@ pub mod tests {
     #[test]
     fn to_vec_op4d_test() {
         let basis = Basis {
+            w: None,
+            h: None,
             f: Rational64::new(100, 1),
             g: Rational64::new(1, 1),
             p: Rational64::new(0, 1),
@@ -187,6 +189,8 @@ mod ext_round_trip {
         // TimedOp → Op4D: the f32 projection carries colors/wgsl/gradient/mix
         // (gradient+mix were historically hardcoded to None/1.0 here).
         let basis = Basis {
+            w: None,
+            h: None,
             f: Rational64::new(311, 1),
             g: Rational64::new(1, 1),
             l: Rational64::new(1, 1),
