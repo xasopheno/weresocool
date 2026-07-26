@@ -32,7 +32,7 @@ match {
     "Direction", "Jitter", "Mirror", "Modulate", "Tint",
     "Lerp", "Spawn", "Echo", "Stagger", "Drag", "Each",
     "Every", "Sometimes", "Jux",
-    "Seq", "Overlay", "Alt", "Lm", "FitLength",
+    "Seq", "Overlay", "Alt", "Lm", "FitLength", "Iterate",
     "Path", "Smooth", "Pin", "Pick",
 
     // Mirror axes (parsed as bare identifiers)
@@ -211,6 +211,8 @@ Op: DrawOp = {
     "Overlay" "[" <layers:OverlayLayerList>  "]" => DrawOp::Overlay { layers },
     "Alt"     "[" <branches:OverlayLayerList> "]" => DrawOp::Alt { branches },
     "FitLength" <name:Name>                       => DrawOp::FitLength(name),
+    // `Iterate n { ops }` — same spelling as warp's.
+    "Iterate" <n:Factor> "{" <ops:OpChain> "}"    => DrawOp::Iterate { n, ops },
 };
 
 // ---------------------------------------------------------------------------

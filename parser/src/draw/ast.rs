@@ -209,6 +209,15 @@ pub enum DrawOp {
     /// Rewritten away before compile (`crate::draw::fit_length`), exactly as
     /// the warp one is; a `FitLength` that survives is a no-op.
     FitLength(String),
+    /// Apply a chain of ops `n` times over, compounding. `Iterate 5 { Rz(0.02)
+    /// | Sm(0.94) }` is the same shape written five times, and the same op
+    /// warp has — there it repeats UV transforms, here it repeats emit-set
+    /// transforms.
+    ///
+    /// NOT `Spawn`: Spawn makes n COPIES, each offset from the original.
+    /// Iterate keeps one set and transforms it again and again, so the effect
+    /// accumulates — a spiral rather than a fan.
+    Iterate { n: DrawExpr, ops: Vec<DrawOp> },
 }
 
 /// One phase of a draw `Seq`. Same shape as warp `SeqPhase`.
