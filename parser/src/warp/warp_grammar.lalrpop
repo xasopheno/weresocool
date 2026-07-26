@@ -41,7 +41,7 @@ match {
     "Prev", "Scene", "Volume", "Fluid", "Raymarch", "Osc", "Noise", "Gradient", "Solid",
     "Time", "Clock", "Sin", "Cycle", "Choose", "Rand", "Hit", "HitX", "HitY", "Dist", "HitAge", "Displace", "Ripple", "Glow", "Stir", "Bulge", "Relief", "Stain", "Watercolor",
 
-    "Scale", "Rotate", "Scroll", "Swirl", "Fold", "Kaleid",
+    "Scale", "Zoom", "Rotate", "Scroll", "Swirl", "Fold", "Kaleid",
     "ChromaShift", "CurlFlow", "Wave", "Iterate",
 
     "Decay", "Hue", "Gamma", "Knee", "Gain", "Palette", "Blur",
@@ -180,6 +180,14 @@ SrcExpr: Source = {
 Op: WarpOp = {
     // Single-arg
     "Scale"       <e:BareOrParenArg> => WarpOp::Scale(e),
+    // ZOOM is Scale the way a lens works: above 1 comes CLOSER, below 1
+    // pulls back. `Scale` is the sampling factor underneath — it scales the
+    // uv you read FROM, so its sense is inverted, which reads backwards to
+    // everyone including the person who wrote this. Zoom is the same op with
+    // the argument the right way up; `Scale` stays for what is already
+    // written, and is documented as the inverse.
+    "Zoom"        <e:BareOrParenArg> =>
+        WarpOp::Scale(WarpExpr::Bin(BinOp::Div, Box::new(WarpExpr::Lit(1.0)), Box::new(e))),
     "Rotate"      <e:BareOrParenArg> => WarpOp::Rotate(e),
     "Swirl"       <e:BareOrParenArg> => WarpOp::Swirl(e),
     "Fold"        <e:BareOrParenArg> => WarpOp::Fold(e),
