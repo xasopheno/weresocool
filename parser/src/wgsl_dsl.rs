@@ -110,6 +110,129 @@ pub fn compile_dsl_to_wgsl(src: &str) -> Result<String, DslError> {
     Ok(rewrite_surface_idents(&result.join("\n")))
 }
 
+/// Lower a brush-wgsl expression through the SHARED expression grammar.
+///
+/// Returns `None` when the text is not an expression in the language — raw
+/// WGSL (`vec4<f32>(…)`, a swizzle, a `let`) still passes through verbatim,
+/// which is what `Raw` and the quoted form are for.
+///
+/// The point is Law 4: one expression language across the visual DSLs. wgsl
+/// had drifted into its own dialect because it captured expressions with
+/// regexes instead of parsing them — so `min(a, b, c)` folded in draw and
+/// not here, and every fix to the shared grammar stopped at this boundary.
+/// Now the same grammar parses both, and only the LOWERING differs, because
+/// only the host names differ: a brush's clock is `song_time`, its age is
+/// `time`, its note fields are flat struct members.
+pub fn lower_shared_expr(src: &str) -> Option<String> {
+    let e = crate::draw::parser_lalrpop::parse_expr_lalrpop(src).ok()?;
+    Some(to_wgsl_brush(&e))
+}
+
+/// `Rand(seed)` for a brush: `k_rand` is defined in the brush shaders and
+/// matches the CPU hash in `dsl_expr_eval` exactly, so a draw and a brush
+/// resolve the same note to the same value.
+fn brush_rand(seed: &str) -> String {
+    format!("k_rand(f32(note_event), ({seed}))")
+}
+
+/// Pick one of `vals` by a u32 index, as a nested `select`. WGSL cannot index
+/// a value array dynamically in an expression, and naga has returned garbage
+/// for dynamic indexing into `var` arrays.
+fn brush_pick(vals: &[String], index_wgsl: &str) -> String {
+    match vals.len() {
+        0 => "0.0".to_string(),
+        1 => vals[0].clone(),
+        n => {
+            let idx = format!("(({index_wgsl}) % {n}u)");
+            let mut out = vals[0].clone();
+            for (i, v) in vals.iter().enumerate().skip(1) {
+                out = format!("select({out}, {v}, {idx} == {i}u)");
+            }
+            out
+        }
+    }
+}
+
+/// The BRUSH's lowering of the shared expression AST.
+///
+/// One grammar, one lowering per host — hosts differ in NAMES, not in
+/// language. warp's lowering is `dsl_expr::to_wgsl` (its clock is `time`, its
+/// fields are compositor channels); a brush's clock is `song_time`, its age
+/// is `time`, its note fields are flat instance-struct members, and its
+/// per-note combinators lower onto `k_rand`/`wrap`/`select`. Everything
+/// structural — literals, arithmetic, function calls — is shared.
+fn to_wgsl_brush(e: &crate::dsl_expr::Expr) -> String {
+    use crate::dsl_expr::{BinOp, Expr, MathFn, NoteField};
+    match e {
+        Expr::Lit(n) | Expr::DefaultLit(n) => {
+            if !n.is_finite() {
+                "0.0".into()
+            } else if n.fract() == 0.0 {
+                format!("{n:.1}")
+            } else {
+                format!("{n}")
+            }
+        }
+        Expr::Clock => "song_time".into(),
+        // a stamp's own age, which is what the brush shader calls `time`
+        Expr::Age => "time".into(),
+        Expr::Note(f) => match f {
+            NoteField::X => "note_x".into(),
+            NoteField::Y => "note_y".into(),
+            NoteField::Z => "note_gain".into(),
+            NoteField::L => "note_l".into(),
+            NoteField::T => "note_t".into(),
+            NoteField::Event => "note_event".into(),
+            _ => "0.0".into(),
+        },
+        // a brush has no stroke parameter — that belongs to a draw's trail
+        Expr::Stroke => "0.0".into(),
+        Expr::Rand(seed) => brush_rand(&to_wgsl_brush(seed)),
+        Expr::Cycle(vals) => {
+            let v: Vec<String> = vals.iter().map(to_wgsl_brush).collect();
+            brush_pick(&v, "u32(max(f32(note_event), 0.0))")
+        }
+        Expr::Choose(vals) => {
+            let v: Vec<String> = vals.iter().map(to_wgsl_brush).collect();
+            let idx = format!("u32(k_rand(f32(note_event), 0.0) * {}.0)", v.len().max(1));
+            brush_pick(&v, &idx)
+        }
+        Expr::Sin { freq, amp } => format!(
+            "(sin(song_time * ({})) * ({}))",
+            to_wgsl_brush(freq),
+            to_wgsl_brush(amp)
+        ),
+        Expr::Call(MathFn::Wrap, args) => {
+            let x = args.first().map(to_wgsl_brush).unwrap_or_else(|| "0.0".into());
+            let p = args.get(1).map(to_wgsl_brush).unwrap_or_else(|| "1.0".into());
+            format!("((({x}) % ({p}) + ({p})) % ({p}))")
+        }
+        Expr::Call(f, args) => {
+            let a: Vec<String> = args.iter().map(to_wgsl_brush).collect();
+            format!("{}({})", f.name(), a.join(", "))
+        }
+        Expr::Bin(op, l, r) => {
+            let sym = match op {
+                BinOp::Add => "+",
+                BinOp::Sub => "-",
+                BinOp::Mul => "*",
+                BinOp::Div => "/",
+            };
+            format!("(({}) {} ({}))", to_wgsl_brush(l), sym, to_wgsl_brush(r))
+        }
+        // `mod name` / `cycle(name)` are resolved against the length env by
+        // the host before codegen; untouched they degrade to the raw clock.
+        Expr::LoopName(_) => "song_time".into(),
+        Expr::LoopPhase(_) => "0.0".into(),
+        Expr::Field(name) => name.clone(),
+        Expr::UserParam { slot } => format!("user_param({slot}u)"),
+        // warp-only atoms have no meaning on a stamp
+        Expr::Hit(_) | Expr::HitX(_) | Expr::HitY(_) | Expr::Dist(_) | Expr::HitAge(_) => {
+            "0.0".into()
+        }
+    }
+}
+
 /// Rewrite the Law-4 surface identifiers to the raw WGSL uniform/instance
 /// field names naga actually sees. A brush `wgsl { … }` block is raw WGSL
 /// underneath, so the dotted note fields (`note.t`, `note.l`, `note.gain`)
@@ -443,6 +566,28 @@ mod tests {
         assert!(o.contains("normalize"), "Direction stays an op: {o}");
         let o = compile_dsl_to_wgsl("Bm Slew(0.18, 4)").unwrap();
         assert!(o.contains("exp(-time"), "Slew stays an op: {o}");
+    }
+
+    #[test]
+    fn the_shared_grammar_parses_brush_expressions() {
+        // Ordinary expressions go through the one grammar now.
+        for src in ["0.9 + Note.gain * 0.9", "sin(Clock * 2.0)", "clamp(Note.l, 0, 1)",
+                    "min(0.2, 0.5, 0.9)", "1.0 - exp(0.0 - Time * 4.0)"] {
+            assert!(lower_shared_expr(src).is_some(), "should parse: {src}");
+        }
+        // and the host's own names come out, not the language's spelling
+        let o = lower_shared_expr("Clock * 2.0").unwrap();
+        assert!(o.contains("song_time"), "clock is the brush's song_time: {o}");
+        let o = lower_shared_expr("Note.gain").unwrap();
+        assert!(o.contains("note_gain"), "note fields are flat here: {o}");
+    }
+
+    #[test]
+    fn raw_wgsl_is_left_for_the_raw_path() {
+        // Not expressions in the language — these must fall through, not fail.
+        for src in ["vec4<f32>(1.0, 0.0, 0.0, 1.0)", "color.rgb", "let x = 3;"] {
+            assert!(lower_shared_expr(src).is_none(), "should not claim: {src}");
+        }
     }
 
     #[test]

@@ -22,10 +22,10 @@ match {
 
     // Atoms / functions
     "Stroke", "Clock", "Mod", "Sin", "Tau", "Note", "Here",
-    "Count", "Cycle", "Rand", "Choose",
+    "Count", "Cycle", "Rand", "Choose", "Time",
 
     // Note field names (matched after `note .`)
-    "x", "y", "z", "l", "t", "voice", "direction",
+    "x", "y", "z", "l", "t", "gain", "voice", "direction",
 
     // Ops
     "Xa", "Ya", "AtY", "Za", "Rx", "Ry", "Rz", "Sm", "Sa",
@@ -408,6 +408,8 @@ Factor: DrawExpr = {
     <n:Num> => DrawExpr::Lit(n),
     "Stroke" => DrawExpr::Stroke,
     "Clock" => DrawExpr::Clock,
+    // an element's own age — a stamp has one; a draw's marks do not
+    "Time"  => DrawExpr::Age,
     "Mod" <name:Name> => DrawExpr::LoopName(name),
     "Tau"   => DrawExpr::Lit(std::f32::consts::TAU),
     "Sin" "(" <f:Expr> ")" =>
@@ -475,6 +477,8 @@ NonParenFactor: DrawExpr = {
     <n:Num> => DrawExpr::Lit(n),
     "Stroke" => DrawExpr::Stroke,
     "Clock" => DrawExpr::Clock,
+    // an element's own age — a stamp has one; a draw's marks do not
+    "Time"  => DrawExpr::Age,
     "Mod" <name:Name> => DrawExpr::LoopName(name),
     "Tau"   => DrawExpr::Lit(std::f32::consts::TAU),
     "Sin" "(" <f:Expr> ")" =>
@@ -521,6 +525,10 @@ NoteFieldName: NoteField = {
     "z"     => NoteField::Z,
     "l"     => NoteField::L,
     "t"     => NoteField::T,
+    // `gain` is what brush-wgsl has always called `z`. One field, one
+    // meaning, two spellings — the alias keeps both working while the
+    // grammar knows they are the same thing.
+    "gain"  => NoteField::Z,
     "voice" => NoteField::Voice,
     // `note.event` (the index) is spelled `count` — see the count/cycle
     // sugar below, which lower onto NoteField::Event directly.

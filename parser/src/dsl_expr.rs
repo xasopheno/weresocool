@@ -101,6 +101,12 @@ pub enum Expr {
     Note(NoteField),
     /// `Stroke` — `0.0`→`1.0` along the current expansion — draw only.
     Stroke,
+    /// `Time` — the ELEMENT'S OWN AGE. A stamp has one (seconds since it was
+    /// laid down); a draw's marks do not age, and a warp frame's age is its
+    /// clock. Host-specific like `Stroke` and `Hit`, and in the shared AST
+    /// for the same reason: one grammar parses every DSL, and each host
+    /// lowers the atoms it has.
+    Age,
     /// `mod <name>` — loop the live clock over a named audio length. A parse-time
     /// placeholder: a later pass (with the length env) rewrites it to
     /// `wrap(Clock, Lit(seconds))`. The backends only see it if that pass was
@@ -212,6 +218,8 @@ pub fn to_wgsl(e: &Expr) -> String {
         // separate identifier, `song_time`, surfaced by weresocool's own
         // passthrough, not this backend.)
         Expr::Clock => "time".into(),
+        // a compositor has no per-element birth: its age IS its clock
+        Expr::Age => "time".into(),
         Expr::Sin { freq, amp } => {
             format!("(sin(time * ({})) * ({}))", to_wgsl(freq), to_wgsl(amp))
         }
@@ -265,7 +273,7 @@ pub fn to_wgsl(e: &Expr) -> String {
         }
         // Draw-only (evaluated on the CPU); the warp grammar never
         // produces these, so the arms are safe inert fallbacks.
-        Expr::Cycle(_) | Expr::Rand(_) | Expr::Choose(_) => "0.0".to_string(),
+        Expr::Cycle(_) | Expr::Rand(_) | Expr::Choose(_) | Expr::Age => "0.0".to_string(),
         Expr::Hit(ch) => format!("hit({}u)", ch.idx()),
         Expr::HitX(ch) => format!("hit_x({}u)", ch.idx()),
         Expr::HitY(ch) => format!("hit_y({}u)", ch.idx()),
@@ -310,7 +318,7 @@ pub fn as_const(e: &Expr) -> Option<f64> {
     match e {
         Expr::Lit(v) => Some(*v as f64),
         Expr::DefaultLit(v) => Some(*v as f64),
-        Expr::Cycle(_) | Expr::Rand(_) | Expr::Choose(_) => None,
+        Expr::Cycle(_) | Expr::Rand(_) | Expr::Choose(_) | Expr::Age => None,
         Expr::Bin(op, l, r) => {
             let (l, r) = (as_const(l)?, as_const(r)?);
             Some(match op {
