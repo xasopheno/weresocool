@@ -286,6 +286,26 @@ pub fn to_wgsl(e: &Expr) -> String {
 /// references. `Time`/`Note`/`Stroke`/`Sin`/`UserParam` make it `None`; `Bin`
 /// and pure `Call`s fold when all their operands do. Used by the FitLength
 /// rescale and the stability lint (both need static values).
+/// Does this expression read `Stroke`?
+///
+/// `Stroke` is the only atom whose value differs BETWEEN EMITS of one note —
+/// everything else (note fields, the clock, rand) is constant across the set.
+/// So it is also the only reason an op has to evaluate its argument per emit
+/// instead of once, and the difference is worth knowing: a 2000-mark set would
+/// otherwise pay for 2000 evaluations of an expression that cannot change.
+pub fn uses_stroke(e: &Expr) -> bool {
+    match e {
+        Expr::Stroke => true,
+        Expr::Sin { freq, amp } => uses_stroke(freq) || uses_stroke(amp),
+        Expr::Call(_, args) | Expr::Cycle(args) | Expr::Choose(args) => {
+            args.iter().any(uses_stroke)
+        }
+        Expr::Bin(_, a, b) => uses_stroke(a) || uses_stroke(b),
+        Expr::Rand(a) => uses_stroke(a),
+        _ => false,
+    }
+}
+
 pub fn as_const(e: &Expr) -> Option<f64> {
     match e {
         Expr::Lit(v) => Some(*v as f64),
