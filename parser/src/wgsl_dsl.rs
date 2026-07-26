@@ -418,6 +418,34 @@ mod tests {
     }
 
     #[test]
+    fn combinators_parse_bare_and_lower_like_the_quoted_form() {
+        // The bare and quoted spellings must produce the SAME WGSL — the
+        // quotes were the only difference, and a brush that hashed
+        // differently from a draw would drift apart on the same note.
+        for (bare, quoted) in [
+            ("Sm Cycle([0.6, 1.2, 0.9])", r#"Sm "Cycle([0.6, 1.2, 0.9])""#),
+            ("Ya Rand(2)", r#"Ya "Rand(2)""#),
+            ("Bm Choose([0.3, 1.0])", r#"Bm "Choose([0.3, 1.0])""#),
+            ("Rz Cycle(4)", r#"Rz "Cycle(4)""#),
+            ("Sm Cycle(2..6)", r#"Sm "Cycle(2..6)""#),
+        ] {
+            let a = compile_dsl_to_wgsl(bare).unwrap_or_else(|e| panic!("{bare}: {e:?}"));
+            let b = compile_dsl_to_wgsl(quoted).unwrap();
+            assert_eq!(a, b, "bare and quoted must agree for {bare}");
+        }
+    }
+
+    #[test]
+    fn op_keywords_with_parens_are_still_ops() {
+        // The combinator terminal is anchored to three names precisely so it
+        // cannot outrun these.
+        let o = compile_dsl_to_wgsl("Direction(0, -1, 0)").unwrap();
+        assert!(o.contains("normalize"), "Direction stays an op: {o}");
+        let o = compile_dsl_to_wgsl("Bm Slew(0.18, 4)").unwrap();
+        assert!(o.contains("exp(-time"), "Slew stays an op: {o}");
+    }
+
+    #[test]
     fn note_dot_fields_rewrite_to_instance_fields() {
         // Law-4 surface: `Note.t/l/gain` and `Clock` are the beautiful spelling;
         // they lower to the flat instance-struct fields naga sees.

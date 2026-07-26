@@ -127,6 +127,19 @@ SeqSep: () = {
 // Quoted strings are a fallback for edge cases (number-first, nested parens, commas)
 WgslVal: WgslValue = {
     <e:SlewExpr> => WgslValue::Expr(e),
+    // The value combinators, written BARE — `Sm Cycle([0.6, 1.2])` rather
+    // than `Sm "Cycle([0.6, 1.2])"`. The lowering is unchanged: the text goes
+    // through `rewrite_count_sugar` exactly as the quoted form does, so a
+    // brush and a draw still hash identically (`k_rand`) and still agree on
+    // what a step is. Only the quotes were the difference, and requiring them
+    // in one DSL and not the other is the kind of seam a composer has to
+    // memorise for no reason.
+    //
+    // Anchored to the three names so it cannot swallow an op keyword the way
+    // a general `Uppercase(…)` terminal would (`Direction(…)`, `Bend(…)`,
+    // `Slew(…)` are ops, and the regex would outrun the literal).
+    // Nested parens inside the arguments still need the quoted form.
+    <s:r"(Cycle|Choose|Rand)\s*\([^)]*\)"> => WgslValue::Expr(s.to_string()),
     // `mod <name>` — loop the live clock over a named audio length. The seconds
     // aren't known at weresocool parse time (they come from kintaro's cross-DSL
     // length env), so emit `wrap(song_time, 1.0/*@klen:NAME@*/)`: a naga-valid
