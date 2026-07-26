@@ -33,7 +33,7 @@ use weresocool_ast::follow::types::{
 };
 use weresocool_ast::color::*;
 use weresocool_ast::color_set;
-use crate::parser::{Init, handle_fit_length_recursively, handle_repeat_recursively, validate_drum_preset};
+use crate::parser::{Init, HeaderTerm, handle_fit_length_recursively, handle_repeat_recursively, validate_drum_preset};
 use crate::indices::{et, random_seed};
 use crate::float_to_rational::helpers::*;
 use regex::Regex;
@@ -67,37 +67,39 @@ Point: Init = {
          <l_axis: L> <l: Rational> ","
          <g_axis: G> <g: Rational> ","
          <p_axis: P> <p: Rational>
-         <tail: OptionalHeaderTail>
-    "}" ";"? => Init {
-         f,
-         l,
-         g,
-         p,
-         background_color: tail.0,
-         w: tail.1.map(|(w, _)| w),
-         h: tail.1.map(|(_, h)| h),
+         <terms: HeaderTerms>
+    "}" ";"? => {
+        let mut init = Init { f, l, g, p, background_color: None, w: None, h: None, d: None };
+        for t in terms {
+            match t {
+                HeaderTerm::Bg(c) => init.background_color = Some(c),
+                HeaderTerm::W(r)  => init.w = Some(r),
+                HeaderTerm::H(r)  => init.h = Some(r),
+                HeaderTerm::D(r)  => init.d = Some(r),
+            }
+        }
+        init
     }
 }
 
-// Everything optional after `p:`, in ONE rule. Two separate optional tails
-// both starting with "," is a local ambiguity — LALR(1) cannot see far enough
-// to know which it is looking at.
+// Everything after `p:` is optional, independent, and order-free — each term
+// is introduced by its own keyword, so one lookahead is enough and the
+// combinations do not have to be spelled out.
 //
-// The VISUAL BASIS (`w:`, `h:`) gives the frame's half-extents, in the same
-// spirit as f/l/g/p give the audio's. A piece that declares them is saying
-// where its edges ARE, so a visual op can name a place: `Xa(1)` is the right
-// edge whatever the render resolution. Both or neither; either order with
-// `background_color`.
-OptionalHeaderTail: (Option<ColorValue>, Option<(Rational64, Rational64)>) = {
-    => (None, None),
-    "," "background_color:" <bg: CssOrHex> => (Some(ColorValue::Color(bg)), None),
-    "," "w:" <w: Rational> "," "h:" <h: Rational> => (None, Some((w, h))),
-    "," "background_color:" <bg: CssOrHex> "," "w:" <w: Rational> "," "h:" <h: Rational>
-        => (Some(ColorValue::Color(bg)), Some((w, h))),
-    "," "w:" <w: Rational> "," "h:" <h: Rational> "," "background_color:" <bg: CssOrHex>
-        => (Some(ColorValue::Color(bg)), Some((w, h))),
+// The VISUAL BASIS (`w`, `h`, `d`) gives the frame's half-extents in world
+// units, the same way f/l/g/p give the audio's: the piece declaring its own
+// units. Say one and the rest follow (see the renderer's defaults) — say
+// none and the frame is derived from the resolution, as it always was.
+HeaderTerms: Vec<HeaderTerm> = {
+    <ts: ("," <HeaderTerm>)*> => ts,
 };
 
+HeaderTerm: HeaderTerm = {
+    "background_color:" <bg: CssOrHex> => HeaderTerm::Bg(ColorValue::Color(bg)),
+    "w:" <r: Rational> => HeaderTerm::W(r),
+    "h:" <r: Rational> => HeaderTerm::H(r),
+    "d:" <r: Rational> => HeaderTerm::D(r),
+};
 
 LetDefs = Lets<LetDef>;
 LetDef: () = {

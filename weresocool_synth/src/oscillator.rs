@@ -17,18 +17,26 @@ pub struct Basis {
     pub d: Rational64,
     /// THE VISUAL BASIS — the frame's half-extents, carried alongside the
     /// audio basis because it is the same kind of thing: the piece declaring
-    /// its own units. `None` for every piece that does not say, and the
-    /// renderer then derives the frame from resolution as it always did.
-    /// Audio never reads these.
+    /// its own units. Grouped rather than three loose fields because `d` is
+    /// already taken here (audio decay), and because they are one idea.
+    /// Audio never reads it.
+    pub frame: VisualFrame,
+}
+
+/// The frame a piece declares for itself, in world units, as half-extents.
+/// Every term is optional and they complete each other — see the renderer,
+/// which fills the gaps so units stay square.
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Default)]
+pub struct VisualFrame {
     pub w: Option<Rational64>,
     pub h: Option<Rational64>,
+    pub d: Option<Rational64>,
 }
 
 impl Basis {
     pub fn from_init(init: &Init) -> Self {
         Self {
-            w: init.w,
-            h: init.h,
+            frame: VisualFrame { w: init.w, h: init.h, d: init.d },
             f: init.f,
             g: init.g,
             l: init.l,

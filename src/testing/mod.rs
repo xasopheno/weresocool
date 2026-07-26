@@ -72,8 +72,7 @@ fn generate_render_hashes(p: &str) -> CompositionHashes {
     let nf_hash = calculate_hash(&normal_form);
 
     let origin = Basis {
-            w: None,
-            h: None,
+            frame: Default::default(),
         f: init.f,
         g: init.g,
         l: init.l,

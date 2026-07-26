@@ -66,6 +66,20 @@ pub struct Init {
     /// exactly as it always has.
     pub w: Option<Rational64>,
     pub h: Option<Rational64>,
+    /// Depth half-extent. This is a 3D space — marks travel in z (`Za`,
+    /// `Direction`, the volume backend raymarches through it) — so the frame
+    /// has three dimensions, not two.
+    pub d: Option<Rational64>,
+}
+
+/// One optional header term. They are independent and order-free, so the
+/// grammar collects them and the `Init` is folded together afterwards.
+#[derive(Clone, PartialEq, Debug)]
+pub enum HeaderTerm {
+    Bg(ColorValue),
+    W(Rational64),
+    H(Rational64),
+    D(Rational64),
 }
 
 #[derive(Clone, PartialEq, Debug)]

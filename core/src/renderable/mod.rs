@@ -21,8 +21,7 @@ mod tests {
         Settings::init_test();
 
         let basis = Basis {
-            w: None,
-            h: None,
+            frame: Default::default(),
             f: Rational64::new(100, 1),
             g: Rational64::new(1, 1),
             p: Rational64::new(0, 1),
