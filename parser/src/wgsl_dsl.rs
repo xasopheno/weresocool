@@ -474,7 +474,7 @@ fn format_lalrpop_error<T: std::fmt::Debug>(e: &lalrpop_util::ParseError<usize, 
 /// Check if a line starts with a DSL command
 fn starts_with_dsl_command(line: &str) -> bool {
     // Short commands need whitespace/comma check to avoid false matches
-    let short_commands = ["Xm", "Xa", "Ym", "Ya", "Zm", "Za", "Smx", "Smy", "Smz", "Sm", "Sa", "Vm", "Va", "Lm", "Am", "Bm", "Ba", "Die", "Rx", "Ry", "Rz", "Swing", "AsIs", "None"];
+    let short_commands = ["Xm", "Xa", "Ym", "Ya", "Zm", "Za", "Smx", "Smy", "Smz", "Sm", "Sa", "Vm", "Va", "Lm", "Am", "Bm", "Ba", "Die", "Rx", "Ry", "Rz", "SwingX", "SwingY", "Swing", "AsIs", "None"];
     for cmd in &short_commands {
         if line.starts_with(cmd) {
             let rest = &line[cmd.len()..];

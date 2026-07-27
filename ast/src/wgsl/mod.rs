@@ -482,6 +482,13 @@ pub enum VisualOp {
         ry: Option<WgslValue>,
         /// Rotation around Z axis (in full rotations: 1 = 360°)
         rz: Option<WgslValue>,
+        /// Tip the mark forward and back about its own note's place: a
+        /// rotation about the HORIZONTAL axis through that point, so the
+        /// figure leans into and out of the screen. In full rotations.
+        swing_x: Option<WgslValue>,
+        /// Turn the mark about the VERTICAL axis through its own note's
+        /// place — the figure swings edge-on and back. In full rotations.
+        swing_y: Option<WgslValue>,
         /// Turn the mark about ITS OWN note's place, in full rotations.
         ///
         /// `Rz` rotates about the world origin, which keeps a mark's radius
@@ -542,6 +549,8 @@ impl Default for VisualOp {
             ry: None,
             rz: None,
             swing: None,
+            swing_x: None,
+            swing_y: None,
             length: WgslValue::one(),
         }
     }
@@ -974,6 +983,8 @@ impl VisualOp {
                 ry: _,
                 rz: _,
                 swing: _,
+                swing_x: _,
+                swing_y: _,
                 length,
             } => {
                 // Helper to extract rational or default
@@ -1145,6 +1156,8 @@ impl VisualOp {
                 ry: None,
                 rz: None,
                 swing: None,
+                swing_x: None,
+                swing_y: None,
                 length: new_length,
             },
             // For Seq/Compose, we could scale all children, but for now just return unchanged
@@ -1214,6 +1227,8 @@ impl VisualOp {
                     ry: ry1,
                     rz: rz1,
                     swing: swing1,
+                    swing_x: swing_x1,
+                    swing_y: swing_y1,
                     length: len1,
                 },
                 VisualOp::Simple {
@@ -1240,6 +1255,8 @@ impl VisualOp {
                     ry: ry2,
                     rz: rz2,
                     swing: swing2,
+                    swing_x: swing_x2,
+                    swing_y: swing_y2,
                     length: len2,
                 },
             ) => {
@@ -1267,6 +1284,8 @@ impl VisualOp {
                     ry: compose_add(ry1, ry2),
                     rz: compose_add(rz1, rz2),
                     swing: compose_add(swing1, swing2), // turns add, like the others
+                    swing_x: compose_add(swing_x1, swing_x2),
+                    swing_y: compose_add(swing_y1, swing_y2),
                     length: len1.mul(&len2), // Multiply lengths
                 }
             }
@@ -1374,6 +1393,8 @@ impl VisualOp {
                 ry,
                 rz,
                 swing,
+                swing_x,
+                swing_y,
                 length,
             } => {
                 let mut lines = Vec::new();
@@ -1585,6 +1606,32 @@ z += pos.z;"#,
                     lines.push("}".to_string());
                 }
 
+                // Depth turns about the same pivot: the figure tips forward
+                // and back (`SwingX`) or swings edge-on (`SwingY`). The pivot
+                // plane is z = 0, the frame's own plane.
+                if let Some(v) = swing_x {
+                    let a = v.to_wgsl();
+                    lines.push("// SwingX (tip about the note's own place)".to_string());
+                    lines.push("{".to_string());
+                    lines.push(format!("    let ang = ({}) * 6.28318;", a));
+                    lines.push("    let c = cos(ang); let s = sin(ang);".to_string());
+                    lines.push("    let dy = y - note_y;".to_string());
+                    lines.push("    y = note_y + dy * c - z * s;".to_string());
+                    lines.push("    z = dy * s + z * c;".to_string());
+                    lines.push("}".to_string());
+                }
+                if let Some(v) = swing_y {
+                    let a = v.to_wgsl();
+                    lines.push("// SwingY (swing about the note's own place)".to_string());
+                    lines.push("{".to_string());
+                    lines.push(format!("    let ang = ({}) * 6.28318;", a));
+                    lines.push("    let c = cos(ang); let s = sin(ang);".to_string());
+                    lines.push("    let dx = x - note_x;".to_string());
+                    lines.push("    x = note_x + dx * c + z * s;".to_string());
+                    lines.push("    z = 0.0 - dx * s + z * c;".to_string());
+                    lines.push("}".to_string());
+                }
+
                 // Global rotation - rotates entire composition around origin
                 // Values are in full rotations (1 = 360°), converted to radians
                 let has_rotation = rx.is_some() || ry.is_some() || rz.is_some();
@@ -1744,6 +1791,8 @@ z += pos.z;"#,
             ry: None,
             rz: None,
             swing: None,
+            swing_x: None,
+            swing_y: None,
             length: WgslValue::one(),
         }
     }
@@ -1977,6 +2026,22 @@ z += pos.z;"#,
     pub fn swing(v: impl Into<WgslValue>) -> Self {
         let mut op = Self::simple_default();
         if let VisualOp::Simple { swing: ref mut f, .. } = op {
+            *f = Some(v.into());
+        }
+        op
+    }
+
+    pub fn swing_x(v: impl Into<WgslValue>) -> Self {
+        let mut op = Self::simple_default();
+        if let VisualOp::Simple { swing_x: ref mut f, .. } = op {
+            *f = Some(v.into());
+        }
+        op
+    }
+
+    pub fn swing_y(v: impl Into<WgslValue>) -> Self {
+        let mut op = Self::simple_default();
+        if let VisualOp::Simple { swing_y: ref mut f, .. } = op {
             *f = Some(v.into());
         }
         op
@@ -2253,6 +2318,8 @@ z += pos.z;"#,
                 ry,
                 rz,
                 swing,
+                swing_x,
+                swing_y,
                 ..
             } => {
                 let base_duration = base_end - base_start;
@@ -2453,6 +2520,27 @@ z += pos.z;"#,
                     segment_ops.push("                let dx = x - note_x; let dy = y - note_y;".to_string());
                     segment_ops.push("                x = note_x + dx * c - dy * s;".to_string());
                     segment_ops.push("                y = note_y + dx * s + dy * c;".to_string());
+                    segment_ops.push("            }".to_string());
+                }
+
+                if let Some(v) = swing_x {
+                    let a = v.to_wgsl();
+                    segment_ops.push("            {".to_string());
+                    segment_ops.push(format!("                let ang = ({}) * 6.28318;", a));
+                    segment_ops.push("                let c = cos(ang); let s = sin(ang);".to_string());
+                    segment_ops.push("                let dy = y - note_y;".to_string());
+                    segment_ops.push("                y = note_y + dy * c - z * s;".to_string());
+                    segment_ops.push("                z = dy * s + z * c;".to_string());
+                    segment_ops.push("            }".to_string());
+                }
+                if let Some(v) = swing_y {
+                    let a = v.to_wgsl();
+                    segment_ops.push("            {".to_string());
+                    segment_ops.push(format!("                let ang = ({}) * 6.28318;", a));
+                    segment_ops.push("                let c = cos(ang); let s = sin(ang);".to_string());
+                    segment_ops.push("                let dx = x - note_x;".to_string());
+                    segment_ops.push("                x = note_x + dx * c + z * s;".to_string());
+                    segment_ops.push("                z = 0.0 - dx * s + z * c;".to_string());
                     segment_ops.push("            }".to_string());
                 }
 

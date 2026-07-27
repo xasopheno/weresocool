@@ -95,6 +95,8 @@ BaseOp: VisualOp = {
     "Ry" <v:WgslVal> => VisualOp::ry(v),
     "Rz" <v:WgslVal> => VisualOp::rz(v),
     "Swing" <v:WgslVal> => VisualOp::swing(v),
+    "SwingX" <v:WgslVal> => VisualOp::swing_x(v),
+    "SwingY" <v:WgslVal> => VisualOp::swing_y(v),
 };
 
 // Seq expression (contains comma-separated expressions)
