@@ -88,6 +88,12 @@ pub struct RenderManager {
     once: bool,
     paused: bool,
     paused_at: Option<Instant>,
+    /// How long a `pause()` may wait for `VisReady` before giving up and
+    /// playing anyway. One second is right for a CLI that has no renderer to
+    /// wait for; a windowed session needs longer, because wgpu pipeline
+    /// creation on a cold start costs seconds and the whole point of the
+    /// handshake is to wait for exactly that.
+    vis_ready_timeout: Duration,
     // MIDI
     midi_controller: Option<MidiController>,
     // Background rendering
@@ -138,6 +144,7 @@ impl RenderManager {
             once,
             paused: false,
             paused_at: None,
+            vis_ready_timeout: Duration::from_secs(1),
             midi_controller: crate::manager::midi_controller::MidiClient::new("127.0.0.1:6479")
                 .ok()
                 .map(MidiController::new),
@@ -174,6 +181,7 @@ impl RenderManager {
             once: false,
             paused: false,
             paused_at: None,
+            vis_ready_timeout: Duration::from_secs(1),
             midi_controller: None,
             buffer_manager,
             stream_active: Arc::new(AtomicBool::new(true)),
@@ -202,6 +210,11 @@ impl RenderManager {
         if self.events.state.has_subscribers() {
             self.events.state.emit(StateEvent::Paused(false));
         }
+    }
+
+    /// How long `pause()` waits for `VisReady` before playing anyway.
+    pub fn set_vis_ready_timeout(&mut self, timeout: Duration) {
+        self.vis_ready_timeout = timeout;
     }
 
     pub fn pause(&mut self) {
@@ -244,7 +257,7 @@ impl RenderManager {
     pub fn check_vis_ready(&mut self) -> bool {
         // Check for timeout - auto-unpause after 1 second if VisReady never arrives
         if let Some(paused_time) = self.paused_at {
-            if paused_time.elapsed() > Duration::from_secs(1) {
+            if paused_time.elapsed() > self.vis_ready_timeout {
                 self.play();
                 return true; // Indicate unpause happened (via timeout)
             }
