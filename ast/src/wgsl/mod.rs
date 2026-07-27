@@ -482,6 +482,15 @@ pub enum VisualOp {
         ry: Option<WgslValue>,
         /// Rotation around Z axis (in full rotations: 1 = 360°)
         rz: Option<WgslValue>,
+        /// Turn the mark about ITS OWN note's place, in full rotations.
+        ///
+        /// `Rz` rotates about the world origin, which keeps a mark's radius
+        /// and can only swing it around the canvas centre — a composition
+        /// using the full width cannot use it without throwing marks off the
+        /// edges. `Swing` rotates about `note_x`/`note_y`, the point the draw
+        /// placed the figure at, so a figure turns where it stands and its
+        /// distance from the centre is untouched.
+        swing: Option<WgslValue>,
         length: WgslValue, // duration in seconds (Lm modifier)
     },
     /// Sequence of operations (time-divided)
@@ -532,6 +541,7 @@ impl Default for VisualOp {
             rx: None,
             ry: None,
             rz: None,
+            swing: None,
             length: WgslValue::one(),
         }
     }
@@ -963,6 +973,7 @@ impl VisualOp {
                 rx: _,
                 ry: _,
                 rz: _,
+                swing: _,
                 length,
             } => {
                 // Helper to extract rational or default
@@ -1133,6 +1144,7 @@ impl VisualOp {
                 rx: None,
                 ry: None,
                 rz: None,
+                swing: None,
                 length: new_length,
             },
             // For Seq/Compose, we could scale all children, but for now just return unchanged
@@ -1201,6 +1213,7 @@ impl VisualOp {
                     rx: rx1,
                     ry: ry1,
                     rz: rz1,
+                    swing: swing1,
                     length: len1,
                 },
                 VisualOp::Simple {
@@ -1226,6 +1239,7 @@ impl VisualOp {
                     rx: rx2,
                     ry: ry2,
                     rz: rz2,
+                    swing: swing2,
                     length: len2,
                 },
             ) => {
@@ -1252,6 +1266,7 @@ impl VisualOp {
                     rx: compose_add(rx1, rx2), // Rotations add
                     ry: compose_add(ry1, ry2),
                     rz: compose_add(rz1, rz2),
+                    swing: compose_add(swing1, swing2), // turns add, like the others
                     length: len1.mul(&len2), // Multiply lengths
                 }
             }
@@ -1358,6 +1373,7 @@ impl VisualOp {
                 rx,
                 ry,
                 rz,
+                swing,
                 length,
             } => {
                 let mut lines = Vec::new();
@@ -1549,6 +1565,26 @@ z += pos.z;"#,
                     lines.push(format!("blue  = blue  + ({});", e));
                 }
 
+
+                // Swing: turn the mark about its own note's place. Same
+                // rotation, different centre — and because the distance from
+                // the canvas centre never changes, a figure anywhere in the
+                // frame stays where it was put.
+                if let Some(v) = swing {
+                    let a = v.to_wgsl();
+                    lines.push("// Swing (about the note's own place)".to_string());
+                    lines.push("{".to_string());
+                    lines.push(format!("    let ang = ({}) * 6.28318;", a));
+                    lines.push("    let c = cos(ang); let s = sin(ang);".to_string());
+                    // Both x and y are WORLD here: the vertex shader maps y
+                    // out of the note's [0,1] space before any transform runs.
+                    // `note_x`/`note_y` are written in the same units.
+                    lines.push("    let dx = x - note_x; let dy = y - note_y;".to_string());
+                    lines.push("    x = note_x + dx * c - dy * s;".to_string());
+                    lines.push("    y = note_y + dx * s + dy * c;".to_string());
+                    lines.push("}".to_string());
+                }
+
                 // Global rotation - rotates entire composition around origin
                 // Values are in full rotations (1 = 360°), converted to radians
                 let has_rotation = rx.is_some() || ry.is_some() || rz.is_some();
@@ -1707,6 +1743,7 @@ z += pos.z;"#,
             rx: None,
             ry: None,
             rz: None,
+            swing: None,
             length: WgslValue::one(),
         }
     }
@@ -1932,6 +1969,14 @@ z += pos.z;"#,
     pub fn rz(v: impl Into<WgslValue>) -> Self {
         let mut op = Self::simple_default();
         if let VisualOp::Simple { rz: ref mut f, .. } = op {
+            *f = Some(v.into());
+        }
+        op
+    }
+
+    pub fn swing(v: impl Into<WgslValue>) -> Self {
+        let mut op = Self::simple_default();
+        if let VisualOp::Simple { swing: ref mut f, .. } = op {
             *f = Some(v.into());
         }
         op
@@ -2207,6 +2252,7 @@ z += pos.z;"#,
                 rx,
                 ry,
                 rz,
+                swing,
                 ..
             } => {
                 let base_duration = base_end - base_start;
@@ -2395,6 +2441,19 @@ z += pos.z;"#,
                     segment_ops.push(format!("            red   = red   + ({});", e));
                     segment_ops.push(format!("            green = green + ({});", e));
                     segment_ops.push(format!("            blue  = blue  + ({});", e));
+                }
+
+
+                if let Some(v) = swing {
+                    let a = v.to_wgsl();
+                    segment_ops.push("            // Swing (about the note's own place)".to_string());
+                    segment_ops.push("            {".to_string());
+                    segment_ops.push(format!("                let ang = ({}) * 6.28318;", a));
+                    segment_ops.push("                let c = cos(ang); let s = sin(ang);".to_string());
+                    segment_ops.push("                let dx = x - note_x; let dy = y - note_y;".to_string());
+                    segment_ops.push("                x = note_x + dx * c - dy * s;".to_string());
+                    segment_ops.push("                y = note_y + dx * s + dy * c;".to_string());
+                    segment_ops.push("            }".to_string());
                 }
 
                 // Global rotation - rotates entire composition around origin
@@ -2640,6 +2699,9 @@ fn dummy_function() {
     var note_gain: f32 = 0.0;
     var note_t: f32 = 0.0;
     var note_event: f32 = 0.0;
+    // Where the draw placed this mark's figure — what `Swing` turns about.
+    var note_x: f32 = 0.0;
+    var note_y: f32 = 0.0;
     var song_time: f32 = 0.0;
     // The live HitField (kintaro brush_hits uniform): per-channel note-onset
     // envelope + position, and the distance-shaped wave from THIS mark.
