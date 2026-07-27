@@ -104,6 +104,14 @@ pub enum DrawOp {
     // === Set translations (move every emit) ===
     Xa(DrawExpr),
     Ya(DrawExpr),
+    /// Placement in CANVAS FRACTIONS: -1 is the left edge, +1 the right.
+    /// `Xf(0.3)` is thirty percent of the way from centre to the right edge,
+    /// whatever the frame's size — so the composer never computes against
+    /// `w`, and a placement built from bounded terms cannot leave the canvas
+    /// by construction. `Xa` remains for distances in frame units.
+    Xf(DrawExpr),
+    /// Placement in canvas fractions: -1 is the bottom edge, +1 the top.
+    Yf(DrawExpr),
     /// Absolute vertical placement in WORLD units. `Ya` moves in the note's
     /// own [0,1] space (which the shader maps to [-1,1] via y*2-1); `AtY`
     /// takes the world number you actually mean and shifts the whole set so

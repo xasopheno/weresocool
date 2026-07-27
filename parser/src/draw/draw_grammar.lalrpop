@@ -28,7 +28,7 @@ match {
     "x", "y", "z", "l", "t", "gain", "voice", "direction",
 
     // Ops
-    "Xa", "Ya", "AtY", "Za", "Rx", "Ry", "Rz", "Sm", "Sa",
+    "Xa", "Ya", "Xf", "Yf", "AtY", "Za", "Rx", "Ry", "Rz", "Sm", "Sa",
     "Direction", "Jitter", "Mirror", "Modulate", "Tint",
     "Lerp", "Spawn", "Echo", "Stagger", "Drag", "Each",
     "Every", "Sometimes", "Jux",
@@ -123,6 +123,9 @@ OpChain: Vec<DrawOp> = {
 Op: DrawOp = {
     // Single-arg translations / rotations / scale
     "Xa" <e:BareOrParenArg> => DrawOp::Xa(e),
+    // placement in canvas fractions: ±1 is an edge, whatever the frame
+    "Xf" <e:BareOrParenArg> => DrawOp::Xf(e),
+    "Yf" <e:BareOrParenArg> => DrawOp::Yf(e),
     "Ya" <e:BareOrParenArg> => DrawOp::Ya(e),
     "AtY" <e:BareOrParenArg> => DrawOp::AtY(e),
     "Za" <e:BareOrParenArg> => DrawOp::Za(e),
