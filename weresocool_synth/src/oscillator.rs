@@ -31,12 +31,17 @@ pub struct VisualFrame {
     pub w: Option<Rational64>,
     pub h: Option<Rational64>,
     pub d: Option<Rational64>,
+    /// Where the light falls from. The frame says where the edges are; this
+    /// says how it is lit. Rides here because both are the same kind of
+    /// thing — the piece declaring its own visual basis — and both are
+    /// read at the same moment by the renderer.
+    pub light: Option<(Rational64, Rational64, Rational64)>,
 }
 
 impl Basis {
     pub fn from_init(init: &Init) -> Self {
         Self {
-            frame: VisualFrame { w: init.w, h: init.h, d: init.d },
+            frame: VisualFrame { w: init.w, h: init.h, d: init.d, light: init.light },
             f: init.f,
             g: init.g,
             l: init.l,
