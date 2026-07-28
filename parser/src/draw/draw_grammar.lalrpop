@@ -29,7 +29,7 @@ match {
 
     // Ops
     "Xa", "Ya", "Xf", "Yf", "AtY", "Za", "Rx", "Ry", "Rz", "Sm", "Sa",
-    "Direction", "Jitter", "Mirror", "Modulate", "Tint",
+    "Direction", "Jitter", "Mirror", "Modulate", "Tint", "Gradient",
     "Lerp", "Spawn", "Echo", "Stagger", "Drag", "Each",
     "Every", "Sometimes", "Jux",
     "Seq", "Overlay", "Alt", "Lm", "FitLength", "Iterate",
@@ -164,6 +164,16 @@ Op: DrawOp = {
         DrawOp::Tint { r, g, b, a: DrawExpr::DefaultLit(1.0) },
     "Tint" "(" <r:Expr> "," <g:Expr> "," <b:Expr> "," <a:Expr> ")" =>
         DrawOp::Tint { r, g, b, a },
+
+    // Gradient — ramp the VOICE's palette across THIS FIGURE, along a
+    // direction. Same word as the voice-chain `Gradient`, and the same idea:
+    // a palette ramp along an axis. What differs is the DOMAIN, and the
+    // domain is given by where it is written — in the voice chain the ramp
+    // spans one stamp, here it spans the whole set of marks the note emits.
+    // A bare `Gradient` takes the piece's `light` direction.
+    "Gradient" "(" <x:Expr> "," <y:Expr> "," <z:Expr> ")" =>
+        DrawOp::Gradient { x: Some(x), y: Some(y), z: Some(z) },
+    "Gradient" => DrawOp::Gradient { x: None, y: None, z: None },
 
     // Lerp — named or positional. AnchorExpr's first-token set (Here, Xa,
     // Ya, Za, Direction, note) doesn't collide with the `to` keyword, so

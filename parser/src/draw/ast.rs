@@ -141,6 +141,25 @@ pub enum DrawOp {
     /// reddens toward the stroke's end), or note fields for per-note shifts.
     /// Alpha defaults to `1.0` when omitted.
     Tint { r: DrawExpr, g: DrawExpr, b: DrawExpr, a: DrawExpr },
+
+    /// Ramp the voice's PALETTE across this figure, along a direction.
+    ///
+    /// `Color [...]` states what a voice is made of; where the gradient is
+    /// WRITTEN says what it spans. In the voice chain it spans one stamp —
+    /// which is what it always did, and when a note was one mark that read as
+    /// light falling on the form. A note is now hundreds of marks, so at that
+    /// scale the ramp is microscopic and averages out to one flat hue. Here
+    /// it spans the FIGURE: each emit takes its colour from where it sits
+    /// along the direction, so the first colour is at one end of the drawn
+    /// form and the last at the other.
+    ///
+    /// The projection is normalised over the figure's own extent, so a quiet
+    /// note and a loud one read as the same object under the same light
+    /// rather than as differently-lit ones.
+    ///
+    /// `None` on all three axes means "take the piece's `light`" — a bare
+    /// `Gradient` is lit by whatever the composition declared.
+    Gradient { x: Option<DrawExpr>, y: Option<DrawExpr>, z: Option<DrawExpr> },
     // === Expansion: 1 emit → many ===
     /// Replace each emit with `n` samples linearly from `Here` to `Anchor`.
     Lerp { to: Anchor, n: DrawExpr },
