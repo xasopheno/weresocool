@@ -89,6 +89,11 @@ pub mod test {
                 g: Ratio::from_integer(1),
                 p: Ratio::from_integer(0),
                 background_color: None,
+                // the visual basis is optional and absent here — this header
+                // declares only the audio one
+                w: None,
+                h: None,
+                d: None,
             }
         );
     }
@@ -399,7 +404,7 @@ pub mod test {
         let main = defs.ops.get("main").expect("main not found in defs");
         
         // Verify that an ID was assigned for the WGSL code
-        if let Op(WGSL(id)) = main {
+        if let Op(Ext(ExtOp::WGSL(id))) = main {
             assert!(*id > 0, "WGSL id should be greater than 0");
         } else {
             panic!("Expected WGSL operation, got something else")
@@ -409,7 +414,7 @@ pub mod test {
 
 mod tests {
     use crate::parser::process_wgsl_blocks;
-    use weresocool_ast::Defs;
+    use weresocool_ast::{Defs, ExtOp, Op, Op::Ext, Term::Op as TermOp};
     
     #[test]
     fn test_wgsl_parsing() {

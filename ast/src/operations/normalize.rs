@@ -330,6 +330,16 @@ impl Normalize for Op {
 
             Op::Rimshot { params } => input.fmap_mut(|op| op.osc_type = OscType::Rimshot { params: params.clone() }),
 
+            Op::Tom { params } => input.fmap_mut(|op| op.osc_type = OscType::Tom { params: params.clone() }),
+
+            Op::Ride { params } => input.fmap_mut(|op| op.osc_type = OscType::Ride { params: params.clone() }),
+
+            Op::Crash { params } => input.fmap_mut(|op| op.osc_type = OscType::Crash { params: params.clone() }),
+
+            Op::Shaker { params } => input.fmap_mut(|op| op.osc_type = OscType::Shaker { params: params.clone() }),
+
+            Op::Cowbell { params } => input.fmap_mut(|op| op.osc_type = OscType::Cowbell { params: params.clone() }),
+
             Op::TransposeM { m, .. } => input.fmap_mut(|op| {
                 op.fm = op
                     .fm

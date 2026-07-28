@@ -27,6 +27,11 @@ use weresocool_ast::{
         HiHatParams,
         ClapParams,
         RimshotParams,
+        TomParams,
+        RideParams,
+        CrashParams,
+        ShakerParams,
+        CowbellParams,
 };
 use weresocool_ast::follow::types::{
   Follow, FollowRule, FollowCondition, FollowAction, FollowVariable, FollowExpr, FollowComparison, FollowSimpleCondition, FollowAndCondition
@@ -459,6 +464,46 @@ BaseOperation: Term = {
         let mut p = params.unwrap_or_default();
         p.preset = Some(preset);
         Ok(Term::Op(Rimshot { params: Some(p) }))
+    },
+    "Tom" => Term::Op(Tom { params: None }),
+    "Tom" "{" <params: TomParamList> "}" => Term::Op(Tom { params: Some(params) }),
+    <start:@L> "Tom" <preset: DrumPreset> <params: ("{" <TomParamList> "}")?> =>? {
+        validate_drum_preset(start, "Tom", &preset, weresocool_ast::drum_presets::TOM_PRESETS)?;
+        let mut p = params.unwrap_or_default();
+        p.preset = Some(preset);
+        Ok(Term::Op(Tom { params: Some(p) }))
+    },
+    "Ride" => Term::Op(Ride { params: None }),
+    "Ride" "{" <params: RideParamList> "}" => Term::Op(Ride { params: Some(params) }),
+    <start:@L> "Ride" <preset: DrumPreset> <params: ("{" <RideParamList> "}")?> =>? {
+        validate_drum_preset(start, "Ride", &preset, weresocool_ast::drum_presets::RIDE_PRESETS)?;
+        let mut p = params.unwrap_or_default();
+        p.preset = Some(preset);
+        Ok(Term::Op(Ride { params: Some(p) }))
+    },
+    "Crash" => Term::Op(Crash { params: None }),
+    "Crash" "{" <params: CrashParamList> "}" => Term::Op(Crash { params: Some(params) }),
+    <start:@L> "Crash" <preset: DrumPreset> <params: ("{" <CrashParamList> "}")?> =>? {
+        validate_drum_preset(start, "Crash", &preset, weresocool_ast::drum_presets::CRASH_PRESETS)?;
+        let mut p = params.unwrap_or_default();
+        p.preset = Some(preset);
+        Ok(Term::Op(Crash { params: Some(p) }))
+    },
+    "Shaker" => Term::Op(Shaker { params: None }),
+    "Shaker" "{" <params: ShakerParamList> "}" => Term::Op(Shaker { params: Some(params) }),
+    <start:@L> "Shaker" <preset: DrumPreset> <params: ("{" <ShakerParamList> "}")?> =>? {
+        validate_drum_preset(start, "Shaker", &preset, weresocool_ast::drum_presets::SHAKER_PRESETS)?;
+        let mut p = params.unwrap_or_default();
+        p.preset = Some(preset);
+        Ok(Term::Op(Shaker { params: Some(p) }))
+    },
+    "Cowbell" => Term::Op(Cowbell { params: None }),
+    "Cowbell" "{" <params: CowbellParamList> "}" => Term::Op(Cowbell { params: Some(params) }),
+    <start:@L> "Cowbell" <preset: DrumPreset> <params: ("{" <CowbellParamList> "}")?> =>? {
+        validate_drum_preset(start, "Cowbell", &preset, weresocool_ast::drum_presets::COWBELL_PRESETS)?;
+        let mut p = params.unwrap_or_default();
+        p.preset = Some(preset);
+        Ok(Term::Op(Cowbell { params: Some(p) }))
     },
     "Reverse" => Term::Op(Reverse {}),
     "Invert" => Term::Op(FInvert),
@@ -894,6 +939,146 @@ RimshotParamList: RimshotParams = {
 };
 
 RimshotParam: (String, Rational64) = {
+    <name: Name> ":" <value: Rational> => (name, value),
+};
+
+TomParamList: TomParams = {
+    <params: Comma<TomParam>> => {
+        let mut result = TomParams::default();
+        for (name, value) in params {
+            match name.as_str() {
+                // Spectrum macros (0-1)
+                "attack" => result.attack = Some(value),
+                "body" => result.body = Some(value),
+                "tone" => result.tone = Some(value),
+                "length" => result.length = Some(value),
+                // Specific overrides
+                "tune" => result.tune = Some(value),
+                "pitch_decay" => result.pitch_decay = Some(value),
+                "pitch_range" => result.pitch_range = Some(value),
+                "amp_decay" => result.amp_decay = Some(value),
+                "saturation" => result.saturation = Some(value),
+                "ks_mix" => result.ks_mix = Some(value),
+                "attack_amount" => result.attack_amount = Some(value),
+                "shell" => result.shell = Some(value),
+                "velocity_tilt" => result.velocity_tilt = Some(value),
+                _ => {}
+            }
+        }
+        result
+    }
+};
+
+TomParam: (String, Rational64) = {
+    <name: Name> ":" <value: Rational> => (name, value),
+};
+
+RideParamList: RideParams = {
+    <params: Comma<RideParam>> => {
+        let mut result = RideParams::default();
+        for (name, value) in params {
+            match name.as_str() {
+                // Spectrum macros (0-1)
+                "attack" => result.attack = Some(value),
+                "metal" => result.metal = Some(value),
+                "length" => result.length = Some(value),
+                // Specific overrides
+                "tune" => result.tune = Some(value),
+                "decay_rate" => result.decay_rate = Some(value),
+                "shimmer" => result.shimmer = Some(value),
+                "brightness" => result.brightness = Some(value),
+                "attack_amount" => result.attack_amount = Some(value),
+                "bell_amount" => result.bell_amount = Some(value),
+                "wash" => result.wash = Some(value),
+                "velocity_tilt" => result.velocity_tilt = Some(value),
+                _ => {}
+            }
+        }
+        result
+    }
+};
+
+RideParam: (String, Rational64) = {
+    <name: Name> ":" <value: Rational> => (name, value),
+};
+
+CrashParamList: CrashParams = {
+    <params: Comma<CrashParam>> => {
+        let mut result = CrashParams::default();
+        for (name, value) in params {
+            match name.as_str() {
+                // Spectrum macros (0-1)
+                "attack" => result.attack = Some(value),
+                "metal" => result.metal = Some(value),
+                "length" => result.length = Some(value),
+                // Specific overrides
+                "tune" => result.tune = Some(value),
+                "decay_rate" => result.decay_rate = Some(value),
+                "shimmer" => result.shimmer = Some(value),
+                "brightness" => result.brightness = Some(value),
+                "swell" => result.swell = Some(value),
+                "wash" => result.wash = Some(value),
+                "velocity_tilt" => result.velocity_tilt = Some(value),
+                _ => {}
+            }
+        }
+        result
+    }
+};
+
+CrashParam: (String, Rational64) = {
+    <name: Name> ":" <value: Rational> => (name, value),
+};
+
+ShakerParamList: ShakerParams = {
+    <params: Comma<ShakerParam>> => {
+        let mut result = ShakerParams::default();
+        for (name, value) in params {
+            match name.as_str() {
+                // Spectrum macros (0-1)
+                "attack" => result.attack = Some(value),
+                "tone" => result.tone = Some(value),
+                "length" => result.length = Some(value),
+                // Specific overrides
+                "tune" => result.tune = Some(value),
+                "decay" => result.decay = Some(value),
+                "density" => result.density = Some(value),
+                "brightness" => result.brightness = Some(value),
+                "jingle" => result.jingle = Some(value),
+                "velocity_tilt" => result.velocity_tilt = Some(value),
+                _ => {}
+            }
+        }
+        result
+    }
+};
+
+ShakerParam: (String, Rational64) = {
+    <name: Name> ":" <value: Rational> => (name, value),
+};
+
+CowbellParamList: CowbellParams = {
+    <params: Comma<CowbellParam>> => {
+        let mut result = CowbellParams::default();
+        for (name, value) in params {
+            match name.as_str() {
+                // Spectrum macros (0-1)
+                "tone" => result.tone = Some(value),
+                "length" => result.length = Some(value),
+                // Specific overrides
+                "tune" => result.tune = Some(value),
+                "decay" => result.decay = Some(value),
+                "ratio" => result.ratio = Some(value),
+                "attack_amount" => result.attack_amount = Some(value),
+                "velocity_tilt" => result.velocity_tilt = Some(value),
+                _ => {}
+            }
+        }
+        result
+    }
+};
+
+CowbellParam: (String, Rational64) = {
     <name: Name> ":" <value: Rational> => (name, value),
 };
 

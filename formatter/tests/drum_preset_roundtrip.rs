@@ -21,7 +21,7 @@ fn assert_roundtrip(body: &str) {
 
 #[test]
 fn bare_drums_roundtrip() {
-    for body in ["Kick", "Snare", "HiHat", "OpenHat", "Clap", "Rimshot"] {
+    for body in ["Kick", "Snare", "HiHat", "OpenHat", "Clap", "Rimshot", "Tom", "Ride", "Crash", "Shaker", "Cowbell"] {
         let out = fmt(&wrap(body));
         assert!(out.contains(body), "output should contain `{}`:\n{}", body, out);
         assert_roundtrip(body);
@@ -50,7 +50,11 @@ fn preset_with_overrides_roundtrips() {
 
 #[test]
 fn named_presets_roundtrip() {
-    for body in ["Snare trap", "HiHat dust", "OpenHat 909", "Snare wsc", "Clap 808", "Rimshot acoustic", "Clap trap { spread: 0.8 }"] {
+    for body in [
+        "Snare trap", "HiHat dust", "OpenHat 909", "Snare wsc", "Clap 808", "Rimshot acoustic",
+        "Clap trap { spread: 0.8 }", "Tom conga", "Tom acoustic { shell: 0.7 }", "Ride bell",
+        "Crash splash", "Shaker tambourine", "Shaker maraca { density: 0.2 }", "Cowbell 808",
+    ] {
         let out = fmt(&wrap(body));
         assert!(out.contains(body), "output should contain `{}`:\n{}", body, out);
         assert_roundtrip(body);

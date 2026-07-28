@@ -6,7 +6,25 @@ mod loudness_balance_tests {
         Interpretable,
     };
     use weresocool_analyze::measure_lufs;
-    use weresocool_ast::drum_presets::{CLAP_PRESETS, HIHAT_PRESETS, KICK_PRESETS, RIMSHOT_PRESETS, SNARE_PRESETS};
+    use weresocool_ast::drum_presets::{
+        CLAP_PRESETS, COWBELL_PRESETS, CRASH_PRESETS, HIHAT_PRESETS, KICK_PRESETS, RIDE_PRESETS,
+        RIMSHOT_PRESETS, SHAKER_PRESETS, SNARE_PRESETS, TOM_PRESETS,
+    };
+
+    /// Every drum family and its presets. `OpenHat` shares HiHat's table and
+    /// is covered by the HiHat row.
+    const FAMILIES: [(&str, &[&str]); 10] = [
+        ("Kick", KICK_PRESETS),
+        ("Snare", SNARE_PRESETS),
+        ("HiHat", HIHAT_PRESETS),
+        ("Clap", CLAP_PRESETS),
+        ("Rimshot", RIMSHOT_PRESETS),
+        ("Tom", TOM_PRESETS),
+        ("Ride", RIDE_PRESETS),
+        ("Crash", CRASH_PRESETS),
+        ("Shaker", SHAKER_PRESETS),
+        ("Cowbell", COWBELL_PRESETS),
+    ];
     use weresocool_instrument::StereoWaveform;
     use weresocool_shared::Settings;
 
@@ -47,15 +65,8 @@ mod loudness_balance_tests {
     /// cargo test --release measure_preset_loudness -- --nocapture
     #[test]
     fn measure_preset_loudness() {
-        let drums: [(&str, &[&str]); 5] = [
-            ("Kick", KICK_PRESETS),
-            ("Snare", SNARE_PRESETS),
-            ("HiHat", HIHAT_PRESETS),
-            ("Clap", CLAP_PRESETS),
-            ("Rimshot", RIMSHOT_PRESETS),
-        ];
         println!("\n=== Preset Loudness (LUFS) — gain_trim corrections vs wsc ===");
-        for (drum, presets) in drums {
+        for (drum, presets) in FAMILIES {
             let target = preset_lufs(drum, "wsc");
             println!("\n{} (wsc target {:.2} LUFS):", drum, target);
             for preset in presets {
@@ -73,15 +84,8 @@ mod loudness_balance_tests {
     /// within 1.5 dB of its drum family's wsc voicing.
     #[test]
     fn verify_preset_balance() {
-        let drums: [(&str, &[&str]); 5] = [
-            ("Kick", KICK_PRESETS),
-            ("Snare", SNARE_PRESETS),
-            ("HiHat", HIHAT_PRESETS),
-            ("Clap", CLAP_PRESETS),
-            ("Rimshot", RIMSHOT_PRESETS),
-        ];
         let mut failures = vec![];
-        for (drum, presets) in drums {
+        for (drum, presets) in FAMILIES {
             let target = preset_lufs(drum, "wsc");
             for preset in presets {
                 let lufs = preset_lufs(drum, preset);
@@ -144,6 +148,61 @@ mod loudness_balance_tests {
         println!("const KICK_GAIN: f64 = {:.1};   // Was {}", kick_new, kick_current);
         println!("const SNARE_GAIN: f64 = {:.1};  // Was {}", snare_new, snare_current);
         println!("const HIHAT_GAIN: f64 = {:.1};  // Was {}", hihat_new, hihat_current);
+    }
+
+    /// Prints each family's `wsc` LUFS against the kick anchor, and the
+    /// correction each `*_GAIN` constant in `sample.rs` needs to join it.
+    /// Run with:
+    /// cargo test --release measure_kit_balance -- --nocapture
+    #[test]
+    fn measure_kit_balance() {
+        let anchor = preset_lufs("Kick", "wsc");
+        println!("\n=== Kit Balance (LUFS at Gm 1, anchor = Kick) ===");
+        println!("anchor {:.2} LUFS\n", anchor);
+        for (drum, _) in FAMILIES {
+            let lufs = preset_lufs(drum, "wsc");
+            println!(
+                "{:<9} {:>7.2} LUFS   Δ {:>6.2} dB   *_GAIN ×{:.3}",
+                drum,
+                lufs,
+                lufs - anchor,
+                10_f64.powf((anchor - lufs) / 20.0)
+            );
+        }
+    }
+
+    /// Every drum sits close enough to every other at `Gm 1` that a pattern
+    /// balances by musical intent rather than by hunting for the gain that
+    /// stops the cowbell burying the kick.
+    ///
+    /// Two bars, because the kit is not calibrated on one basis. Kick,
+    /// Snare, HiHat, Tom, Ride, Crash, Shaker and Cowbell are matched to the
+    /// kick to within a fraction of a dB. Clap and Rimshot were calibrated
+    /// against peak level rather than LUFS and read ~3.2 dB low here; they
+    /// sound right in a mix, so the wide bar records that rather than
+    /// pretending otherwise. Tighten them and this test tightens with them.
+    #[test]
+    fn verify_kit_balance() {
+        const LOOSE: [&str; 2] = ["Clap", "Rimshot"];
+        let anchor = preset_lufs("Kick", "wsc");
+        let mut measured = vec![];
+        for (drum, _) in FAMILIES {
+            let lufs = preset_lufs(drum, "wsc");
+            println!("{:<9} {:>7.2} LUFS (Δ {:>6.2} dB)", drum, lufs, lufs - anchor);
+            measured.push((drum, lufs));
+        }
+        let mut failures = vec![];
+        for (drum, lufs) in &measured {
+            let dev = (lufs - anchor).abs();
+            let bar = if LOOSE.contains(drum) { 3.5 } else { 1.5 };
+            if dev > bar {
+                failures.push(format!(
+                    "  {:<9} {:.2} LUFS is {:.2} dB off the kick (bar {:.1} dB)",
+                    drum, lufs, dev, bar
+                ));
+            }
+        }
+        assert!(failures.is_empty(), "Kit not balanced:\n{}", failures.join("\n"));
     }
 
     /// Verifies that all drums are within 1 dB of each other.

@@ -18,4 +18,28 @@ cp = { Clap 909 | Fm 3 | Gm 0.5 }
 
 rs = { Rimshot 909 | Fm 3 | Gm 0.4 }
 
+
+-- ── the rest of the kit ──────────────────────────────────────────────
+-- `crush` across the board — the whole kit is one word.
+--
+-- The toms are one voice at three registers: `Tom` tracks the played
+-- note fully (pitch_track 1.0), so `Fm 2/3` and `Fm 3/2` are honest
+-- intervals off the middle drum. The cymbals and shaker anchor
+-- themselves against the f:60 header instead — `Fm` colours the metal
+-- without transposing it off the map — so they need no `Fm` at all.
+
+lt = { Tom crush | Fm 2/3 | Gm 0.7 }
+
+mt = { Tom crush | Gm 0.7 }
+
+ht = { Tom crush | Fm 3/2 | Gm 0.7 }
+
+rd = { Ride crush | Gm 0.28 }
+
+cr = { Crash crush | Gm 0.3 }
+
+sh = { Shaker crush | Gm 0.3 }
+
+cb = { Cowbell crush | Gm 0.45 }
+
 main = { Silence 1 }

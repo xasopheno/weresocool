@@ -11,7 +11,10 @@
 mod drum_preset_smoke_tests {
     use crate::generation::{RenderReturn, RenderType};
     use crate::interpretable::{InputType::Language, Interpretable};
-    use weresocool_ast::drum_presets::{CLAP_PRESETS, HIHAT_PRESETS, KICK_PRESETS, RIMSHOT_PRESETS, SNARE_PRESETS};
+    use weresocool_ast::drum_presets::{
+        CLAP_PRESETS, COWBELL_PRESETS, CRASH_PRESETS, HIHAT_PRESETS, KICK_PRESETS, RIDE_PRESETS,
+        RIMSHOT_PRESETS, SHAKER_PRESETS, SNARE_PRESETS, TOM_PRESETS,
+    };
 
     fn render_mono(drum: &str, preset: &str) -> Vec<f64> {
         let src = format!(
@@ -37,13 +40,18 @@ mod drum_preset_smoke_tests {
 
     #[test]
     fn every_preset_renders_clean() {
-        let drums: [(&str, &[&str]); 6] = [
+        let drums: [(&str, &[&str]); 11] = [
             ("Kick", KICK_PRESETS),
             ("Snare", SNARE_PRESETS),
             ("HiHat", HIHAT_PRESETS),
             ("OpenHat", HIHAT_PRESETS),
             ("Clap", CLAP_PRESETS),
             ("Rimshot", RIMSHOT_PRESETS),
+            ("Tom", TOM_PRESETS),
+            ("Ride", RIDE_PRESETS),
+            ("Crash", CRASH_PRESETS),
+            ("Shaker", SHAKER_PRESETS),
+            ("Cowbell", COWBELL_PRESETS),
         ];
         for (drum, presets) in drums {
             for preset in presets {
@@ -65,12 +73,17 @@ mod drum_preset_smoke_tests {
     /// render against wsc's via normalized sample-wise difference.
     #[test]
     fn every_preset_is_audibly_distinct_from_wsc() {
-        let drums: [(&str, &[&str]); 5] = [
+        let drums: [(&str, &[&str]); 10] = [
             ("Kick", KICK_PRESETS),
             ("Snare", SNARE_PRESETS),
             ("HiHat", HIHAT_PRESETS),
             ("Clap", CLAP_PRESETS),
             ("Rimshot", RIMSHOT_PRESETS),
+            ("Tom", TOM_PRESETS),
+            ("Ride", RIDE_PRESETS),
+            ("Crash", CRASH_PRESETS),
+            ("Shaker", SHAKER_PRESETS),
+            ("Cowbell", COWBELL_PRESETS),
         ];
         for (drum, presets) in drums {
             let base = render_mono(drum, "wsc");

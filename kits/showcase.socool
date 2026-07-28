@@ -49,6 +49,45 @@ rimshots = {
     ] | Fm 3
 }
 
+-- The five drums added to the kit. Toms track the note, so this line is
+-- one drum at one register; the cymbals and shaker anchor themselves
+-- against the f:60 header and need no `Fm`.
+
+toms = {
+    Seq [
+        Tom wsc, x, Tom 808, x, Tom 909, x,
+        Tom acoustic, x, Tom conga, x, Tom dust, x
+    ]
+}
+
+rides = {
+    Seq [
+        Ride wsc, x, Ride 909, x, Ride acoustic, x,
+        Ride bell, x, Ride dark, x
+    ]
+}
+
+crashes = {
+    Seq [
+        Crash wsc, x, Crash 909, x, Crash acoustic, x,
+        Crash splash, x, Crash china, x
+    ]
+}
+
+shakers = {
+    Seq [
+        Shaker wsc, x, Shaker tambourine, x, Shaker maraca, x,
+        Shaker cabasa, x, Shaker 808, x
+    ]
+}
+
+cowbells = {
+    Seq [
+        Cowbell wsc, x, Cowbell 808, x, Cowbell acoustic, x
+    ]
+}
+
 main = {
-    Seq [kicks, snares, hats, open_hats, claps, rimshots]
+    Seq [kicks, snares, hats, open_hats, claps, rimshots,
+         toms, rides, crashes, shakers, cowbells]
 }

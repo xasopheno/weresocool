@@ -1,4 +1,9 @@
-use crate::presets::{resolve_clap, resolve_hihat, resolve_kick, resolve_rimshot, resolve_snare, ResolvedClap, ResolvedHiHat, ResolvedKick, ResolvedRimshot, ResolvedSnare};
+use crate::presets::{
+    resolve_clap, resolve_cowbell, resolve_crash, resolve_hihat, resolve_kick, resolve_ride,
+    resolve_rimshot, resolve_shaker, resolve_snare, resolve_tom, ResolvedClap, ResolvedCowbell,
+    ResolvedCrash, ResolvedHiHat, ResolvedKick, ResolvedRide, ResolvedRimshot, ResolvedShaker,
+    ResolvedSnare, ResolvedTom,
+};
 use crate::voice::{SampleInfo, Voice};
 use std::f64::consts::PI;
 use weresocool_ast::OscType;
@@ -17,6 +22,11 @@ const SNARE_GAIN: f64 = 0.67;
 const HIHAT_GAIN: f64 = 1.18;
 const CLAP_GAIN: f64 = 1.07;
 const RIMSHOT_GAIN: f64 = 1.39;
+const TOM_GAIN: f64 = 0.403;
+const RIDE_GAIN: f64 = 1.377;
+const CRASH_GAIN: f64 = 0.667;
+const SHAKER_GAIN: f64 = 1.238;
+const COWBELL_GAIN: f64 = 0.407;
 
 // Default tuning when info.frequency falls outside the musical range we trust
 // (e.g. silence ops setting freq to 0). Lets `Kick` still sound like a kick
@@ -29,6 +39,25 @@ const HIHAT_DEFAULT_FREQ: f64 = 320.0;
 // section warps move them with the rest of the kit.
 const CLAP_DEFAULT_FREQ: f64 = 165.0;
 const RIMSHOT_DEFAULT_FREQ: f64 = 165.0;
+
+/// The canonical drum-header frequency (`{ f: 60, ... }` — what every kit
+/// in `kits/` uses). Tom, Ride, Crash, Shaker, and Cowbell are anchored to
+/// their own register rather than reading `info.frequency` raw:
+///
+///   `f_base = base_pitch · tune · (note / 60)^pitch_track`
+///
+/// so `base_pitch` reads directly as "what Hz this drum is at a standard
+/// header," and `pitch_track` decides how much the note moves it. Toms
+/// track fully (1.0 — they are pitched instruments, and `Tom | Fm 2` is an
+/// honest octave); cymbals and shakers track weakly (0.25-0.3), so `Fm`
+/// colours the metal without transposing an unpitched sound off the map.
+const DRUM_REF_FREQ: f64 = 60.0;
+
+/// Resolve a drum's register: anchor Hz, tuned, tracking the played note.
+#[inline]
+fn drum_register(base_pitch: f64, tune: f64, note_freq: f64, pitch_track: f64) -> f64 {
+    base_pitch * tune * (note_freq / DRUM_REF_FREQ).powf(pitch_track)
+}
 
 /// Fast deterministic noise from sample index using a simple hash function.
 /// Replaces per-sample RNG calls for better performance and reproducibility.
@@ -499,6 +528,41 @@ pub struct DrumState {
     // Rimshot resonators — high-Q bandpasses rung by an impulse.
     pub rim_bp1: Biquad,
     pub rim_bp2: Biquad,
+    // TOM — same architecture as the kick (waveguide + swept body lowpass +
+    // shell ring + filter-excited click), retuned for a musical pitch bend
+    // and a long open decay. Its own waveguide rather than the kick's: a
+    // still-ringing kick tail can coexist with a tom note on one voice, and
+    // sharing the delay line would splice one drum's energy into the other.
+    pub tom_body: TptSvf,
+    pub tom_ks: KarplusStrong,
+    pub tom_click_bp: Biquad,
+    pub tom_shell_bp: Biquad,
+    pub tom_comp_env: f64,
+    // RIDE — the plate bank's wash bands, a highpass, and the stick-ping
+    // resonator. Separate from the crash's set for the same tail-overlap
+    // reason as the tom.
+    pub ride_bp_low: Biquad,
+    pub ride_bp_high: Biquad,
+    pub ride_hp: TptSvf,
+    pub ride_ping_bp: Biquad,
+    pub ride_coupling_z: f64,
+    // CRASH — wash bands, highpass, plus the whole-cymbal lowpass whose
+    // cutoff falls through the decay (the tail darkening).
+    pub crash_bp_low: Biquad,
+    pub crash_bp_high: Biquad,
+    pub crash_hp: TptSvf,
+    pub crash_lp: TptSvf,
+    pub crash_coupling_z: f64,
+    // SHAKER — two particle bands, the shell resonance under them, and the
+    // pair of high-Q jingle rings that turn the family into a tambourine.
+    pub shaker_bp_low: Biquad,
+    pub shaker_bp_high: Biquad,
+    pub shaker_shell_bp: Biquad,
+    pub shaker_jingle_1: Biquad,
+    pub shaker_jingle_2: Biquad,
+    // COWBELL — the hollow "cup" bandpass and the mallet click resonator.
+    pub cowbell_bp: Biquad,
+    pub cowbell_click_bp: Biquad,
     // Modal coupling feedback for the hi-hat.
     pub coupling_z: f64,
     // Per-note seed for phase randomization. Increments at each reset(),
@@ -531,6 +595,11 @@ pub struct DrumState {
     pub resolved_hihat: Option<ResolvedHiHat>,
     pub resolved_clap: Option<ResolvedClap>,
     pub resolved_rimshot: Option<ResolvedRimshot>,
+    pub resolved_tom: Option<ResolvedTom>,
+    pub resolved_ride: Option<ResolvedRide>,
+    pub resolved_crash: Option<ResolvedCrash>,
+    pub resolved_shaker: Option<ResolvedShaker>,
+    pub resolved_cowbell: Option<ResolvedCowbell>,
     // SOFT CHOKE — when a note-on cuts a still-ringing drum, the old
     // output used to vanish in ONE sample (a 0.08-amplitude step at a
     // kick boundary = an audible broadband pop). Real drum machines
@@ -566,6 +635,28 @@ impl DrumState {
         self.clap_bp2.reset_state();
         self.rim_bp1.reset_state();
         self.rim_bp2.reset_state();
+        self.tom_body.reset_state();
+        self.tom_ks.reset_state();
+        self.tom_click_bp.reset_state();
+        self.tom_shell_bp.reset_state();
+        self.tom_comp_env = 0.0;
+        self.ride_bp_low.reset_state();
+        self.ride_bp_high.reset_state();
+        self.ride_hp.reset_state();
+        self.ride_ping_bp.reset_state();
+        self.ride_coupling_z = 0.0;
+        self.crash_bp_low.reset_state();
+        self.crash_bp_high.reset_state();
+        self.crash_hp.reset_state();
+        self.crash_lp.reset_state();
+        self.crash_coupling_z = 0.0;
+        self.shaker_bp_low.reset_state();
+        self.shaker_bp_high.reset_state();
+        self.shaker_shell_bp.reset_state();
+        self.shaker_jingle_1.reset_state();
+        self.shaker_jingle_2.reset_state();
+        self.cowbell_bp.reset_state();
+        self.cowbell_click_bp.reset_state();
         self.coupling_z = 0.0;
         self.note_counter = self.note_counter.wrapping_add(1);
         self.note_sample = 0;
@@ -574,6 +665,11 @@ impl DrumState {
         self.resolved_hihat = None;
         self.resolved_clap = None;
         self.resolved_rimshot = None;
+        self.resolved_tom = None;
+        self.resolved_ride = None;
+        self.resolved_crash = None;
+        self.resolved_shaker = None;
+        self.resolved_cowbell = None;
         // Seed the choke tail with the final output of the note being cut
         // (last_out already folds in any previous, still-decaying choke).
         self.choke_z = self.last_out;
@@ -1384,6 +1480,594 @@ impl Waveform for OscType {
                     * onset_ramp(t);
 
                 tape_sat(rings + click) * info.gain * RIMSHOT_GAIN * pre.gain_trim
+            }
+
+            // ═════════════════════════════════════════════════════════════════════
+            // TOM — a struck membrane with nothing to hide behind.
+            //
+            // Architecturally the kick's sibling: Karplus-Strong waveguide body,
+            // sine modes on top, a lowpass that closes as the drum decays, a
+            // wooden shell ring, and a filter-excited stick click. Three things
+            // make it a tom rather than a high kick:
+            //
+            //   1. The pitch bend is MUSICAL (~a whole tone, `pitch_range` 1.22)
+            //      instead of the kick's two-octave drop. A tom that swoops is a
+            //      tom that sounds broken.
+            //   2. The modes are the real circular-membrane ratios and they are
+            //      LOUD — a kick buries them under the sub, a tom is mostly them.
+            //   3. Higher modes decay faster than the fundamental (`mode_decays`),
+            //      which is what makes the tail settle toward pure pitch the way
+            //      a real head does.
+            // ═════════════════════════════════════════════════════════════════════
+            OscType::Tom { params } => {
+                let t = info.sample_index as f64 / info.sample_rate;
+
+                let note_freq = if info.frequency > 20.0 { info.frequency } else { DRUM_REF_FREQ };
+                if state.resolved_tom.is_none() {
+                    let mut rt = resolve_tom(params.as_ref());
+                    let pre = rt.internal;
+                    rt.base_freq =
+                        drum_register(pre.base_pitch, rt.tune, note_freq, pre.pitch_track);
+                    state.tom_click_bp.bandpass(info.sample_rate, pre.click_bp.0, pre.click_bp.1);
+                    let shell_hz = (rt.base_freq * pre.shell_ratio).clamp(80.0, 5000.0);
+                    state.tom_shell_bp.bandpass(info.sample_rate, shell_hz, pre.shell_q);
+                    state.resolved_tom = Some(rt);
+                }
+                let rt = state.resolved_tom.unwrap();
+                let pre = rt.internal;
+                let f_base = rt.base_freq;
+                let amp_decay = rt.amp_decay;
+
+                let velocity = info.gain.clamp(0.0, 1.0);
+                let aggression = vel_curve(velocity);
+                let click_vel = 0.25 + 1.05 * aggression * rt.velocity_tilt;
+                let sat_vel = 0.45 + 0.75 * aggression;
+                // Harder hits bend further — a real head stretches more under a
+                // heavier stroke. This is most of why an accented tom reads as
+                // "hit harder" rather than just "louder".
+                let bend = 1.0 + (rt.pitch_range - 1.0) * (0.55 + 0.75 * aggression);
+
+                // Waveguide excitation. Voice-independent seed: the tom body is
+                // a low, centred sound, and decorrelating it across L/R would
+                // smear the pitch rather than widen it.
+                // `KarplusStrong::process` returns the buffer contents one full
+                // delay period back, so the loop outputs literal silence until
+                // the first circulation completes — 9 ms at 110 Hz. On a kick
+                // that is hidden under a long envelope; on a tom it splits the
+                // hit into an audible "tk … boom". Feeding the burst straight
+                // through as well as into the loop closes the gap, and it is
+                // physically right: the strike is heard at the head before the
+                // wave has been anywhere.
+                let mut ks_direct = 0.0;
+                if t < 0.003 {
+                    let mono_seed =
+                        (state.note_counter as u64).wrapping_mul(0x70A2_5EED_1234_ABCD);
+                    let burst = fast_noise(info.sample_index, mono_seed) * 0.55;
+                    state.tom_ks.excite(burst);
+                    ks_direct = burst;
+                }
+
+                // ─── Pitch bend ──────────────────────────────────────────────
+                // Single exponential with its closed-form integral, so the mode
+                // phases stay continuous while the pitch moves.
+                let exp_pd = (-t / rt.pitch_decay).exp();
+                let pd_integral = rt.pitch_decay * (1.0 - exp_pd);
+                let env_factor = (bend - 1.0) * pd_integral;
+                let pitch_now = 1.0 + (bend - 1.0) * exp_pd;
+
+                // ─── Membrane modes ──────────────────────────────────────────
+                let mut modes = 0.0;
+                for i in 0..4 {
+                    let id = 0x70_0000 ^ (i as u64).wrapping_mul(0x9E37);
+                    let mode_f = f_base * pre.mode_ratios[i] * state.freq_jitter(id);
+                    if mode_f >= info.sample_rate * 0.45 {
+                        continue;
+                    }
+                    let phase = TAU * mode_f * (t + env_factor) + state.phase_jitter(id);
+                    let amp = (-t * 3.0 * pre.mode_decays[i] / amp_decay).exp();
+                    modes += phase.sin() * pre.mode_amps[i] * amp;
+                }
+
+                // ─── Waveguide body ──────────────────────────────────────────
+                let freq_now = f_base * pitch_now;
+                let delay_samps = info.sample_rate / freq_now.max(20.0);
+                let loop_gain = 0.05_f64
+                    .powf(delay_samps / (amp_decay * info.sample_rate))
+                    .clamp(0.80, 0.998);
+                let body_decay_env = (-t * 3.0 / amp_decay).exp();
+                let lp_coef = 0.30 + 0.28 * (1.0 - body_decay_env);
+                let ks_voice =
+                    state.tom_ks.process(delay_samps, loop_gain, lp_coef) + ks_direct;
+                let fundamental = modes * pre.sine_level + ks_voice * rt.ks_mix;
+                let body = fundamental * body_decay_env;
+
+                // ─── Stick click ─────────────────────────────────────────────
+                let click_excite = if info.sample_index < 4 {
+                    let ramp = 1.0 - info.sample_index as f64 * 0.25;
+                    let chaos = fast_noise(info.sample_index, state.noise_seed(0x70C1_1CC0));
+                    ramp + chaos * 0.5
+                } else if t < 0.001 {
+                    fast_noise(info.sample_index, state.noise_seed(0x70C1_FACE)) * 0.3
+                } else {
+                    0.0
+                };
+                // Resonator ring for the pitch of the contact, plus a short
+                // broadband burst for its texture. The ring alone lasts well
+                // under a millisecond at any Q that isn't audibly tonal, which
+                // is far too narrow to read as a stick against a 110 Hz body.
+                // The noise half is the one part of the tom that is
+                // stereo-decorrelated — body centred, contact wide.
+                // Comb-shaped rather than `bright_noise`: differentiated noise
+                // centres around 5-6 kHz, which is a rimshot, not wood on a
+                // head. A tap of 8 puts the peak near 3 kHz.
+                let stick = comb_noise(
+                    state.haas_index(info.sample_index),
+                    state.noise_seed(0x70_57_1C_C0),
+                    8,
+                ) * (-t / 0.0013).exp()
+                    * pre.stick_gain
+                    * onset_ramp(t);
+                let click = (state.tom_click_bp.process(click_excite) * pre.click_gain + stick)
+                    * rt.attack_amount
+                    * click_vel;
+
+                // ─── Saturation into a closing lowpass ───────────────────────
+                let sat_eff = rt.saturation * sat_vel;
+                let drive = 1.0 + sat_eff * 3.0 * body_decay_env;
+                let asym = sat_eff * 0.35 * body_decay_env;
+                let body_sat = asym_saturate(body, drive, asym) * (1.0 + sat_eff * 0.5);
+                let cutoff_hi = f_base * pre.cutoff_mult.0 * rt.tone_scale * pitch_now;
+                let cutoff_lo = f_base * pre.cutoff_mult.1 * rt.tone_scale;
+                let cutoff = cutoff_lo + (cutoff_hi - cutoff_lo) * body_decay_env;
+                let body_shaped =
+                    state.tom_body.process_lp(body_sat, info.sample_rate, cutoff, pre.body_q);
+
+                // ─── Wooden shell ────────────────────────────────────────────
+                let shell_excite = if info.sample_index < 8 {
+                    fast_noise(info.sample_index, state.noise_seed(0x70_5BE1_1F00))
+                } else {
+                    0.0
+                };
+                let shell = state.tom_shell_bp.process(shell_excite)
+                    * (-t * 3.0 / (amp_decay * 0.5)).exp()
+                    * rt.shell;
+
+                // ─── Parallel compression + output stage ─────────────────────
+                let dry = body_shaped + click + shell;
+                let atk = 1.0 - (-1.0 / (info.sample_rate * pre.comp.attack_s)).exp();
+                let rel = 1.0 - (-1.0 / (info.sample_rate * pre.comp.release_s)).exp();
+                state.tom_comp_env = peak_follow(state.tom_comp_env, dry, atk, rel);
+                let comp_gain =
+                    compress_gain(state.tom_comp_env, pre.comp.threshold, pre.comp.ratio);
+                let punchy = dry * pre.comp.dry + (dry * comp_gain) * pre.comp.wet;
+
+                tape_sat(punchy * pre.drive_out) * info.gain * TOM_GAIN * pre.gain_trim
+            }
+
+            // ═════════════════════════════════════════════════════════════════════
+            // RIDE — articulation first, wash second.
+            //
+            // A ride is identified by its PING: a clear, repeatable, pitched
+            // stroke that survives inside a dense mix. The wash is what the
+            // pattern accumulates into over a phrase, not what a single hit
+            // sounds like. So the ping is synthesized explicitly (a decaying
+            // sine at the strike frequency, plus a bandpass rung by a sub-
+            // millisecond noise burst for the chaotic stick contact), the bell
+            // partials sustain underneath it, and the noise wash BUILDS from
+            // nothing over `wash_build` rather than starting at full level.
+            //
+            // The 22-mode Bessel plate bank is shared with the hi-hat, run at a
+            // much lower `mode_freq_scale` (a bigger cymbal) and a far slower
+            // decay, with heavier nonlinear coupling — large plates are more
+            // nonlinear, which is where the shimmer and beating come from.
+            // ═════════════════════════════════════════════════════════════════════
+            OscType::Ride { params } => {
+                let t = info.sample_index as f64 / info.sample_rate;
+
+                let note_freq = if info.frequency > 20.0 { info.frequency } else { DRUM_REF_FREQ };
+                if state.resolved_ride.is_none() {
+                    let mut rr = resolve_ride(params.as_ref());
+                    let pre = rr.internal;
+                    rr.base_freq =
+                        drum_register(pre.base_pitch, rr.tune, note_freq, pre.pitch_track);
+                    let track = rr.base_freq / pre.base_pitch;
+                    state.ride_bp_low.bandpass(info.sample_rate, pre.wash_lo.0 * track, pre.wash_lo.1);
+                    state.ride_bp_high.bandpass(info.sample_rate, pre.wash_hi.0 * track, pre.wash_hi.1);
+                    state.ride_ping_bp.bandpass(info.sample_rate, pre.ping_bp.0 * track, pre.ping_bp.1);
+                    state.ride_coupling_z = 0.0;
+                    state.resolved_ride = Some(rr);
+                }
+                let rr = state.resolved_ride.unwrap();
+                let pre = rr.internal;
+                let f_base = rr.base_freq * rr.shimmer;
+                let decay_rate = rr.decay_rate;
+
+                let velocity = info.gain.clamp(0.0, 1.0);
+                let aggression = vel_curve(velocity);
+                let brightness_vel = rr.brightness * (0.55 + 0.85 * aggression * rr.velocity_tilt);
+                // A ride's dynamic range lives almost entirely in the ping. Soft
+                // strokes are nearly pure wash; hard strokes are all articulation.
+                let ping_vel = 0.20 + 1.35 * aggression;
+                let bell_vel = 0.45 + 0.90 * aggression;
+
+                // ─── Plate modes ─────────────────────────────────────────────
+                let coupling_drive = state.ride_coupling_z * pre.coupling;
+                let nyquist = info.sample_rate * 0.5;
+                let mut shimmer = 0.0;
+                for (i, (ratio, _, decay_mult)) in
+                    crate::presets::HIHAT_MODES.iter().copied().enumerate()
+                {
+                    let amp = rr.mode_amp[i] * if i >= 8 { brightness_vel } else { 1.0 };
+                    let id = 0x21DE_0000 ^ (i as u64).wrapping_mul(0x9E37);
+                    let mode_freq = f_base * ratio * pre.mode_freq_scale * state.freq_jitter(id);
+                    // Fade modes out as they approach Nyquist instead of cutting
+                    // them: `mode_freq` moves with `tune`/`Fm`, and a hard cull
+                    // makes a mode appear or vanish on a step.
+                    let rolloff = ((nyquist * 0.92 - mode_freq) / (nyquist * 0.08)).clamp(0.0, 1.0);
+                    if rolloff <= 0.0 {
+                        continue;
+                    }
+                    let mode_amp = (-t * decay_rate * decay_mult).exp();
+                    let phase =
+                        TAU * mode_freq * t + coupling_drive + state.phase_jitter(id);
+                    shimmer += phase.sin() * amp * mode_amp * rolloff;
+                }
+                state.ride_coupling_z = shimmer;
+
+                // ─── Bell partials ───────────────────────────────────────────
+                // Low, inharmonic, and much longer-lived than the plate modes.
+                // This is the sustained tone you hear under a ride pattern — the
+                // thing that makes repeated hits sound like one instrument
+                // ringing rather than a series of separate noises.
+                let mut bell = 0.0;
+                for i in 0..4 {
+                    let id = 0xBE11_0000 ^ (i as u64).wrapping_mul(0x9E37);
+                    let bf = f_base * pre.bell_ratios[i] * state.freq_jitter(id);
+                    if bf >= nyquist * 0.9 {
+                        continue;
+                    }
+                    let env = (-t * decay_rate * pre.bell_decay * (1.0 + i as f64 * 0.35)).exp();
+                    bell += (TAU * bf * t + state.phase_jitter(id)).sin() * pre.bell_amps[i] * env;
+                }
+                bell *= rr.bell_amount * bell_vel;
+
+                let plate = state.ride_hp.process_hp(
+                    shimmer + bell,
+                    info.sample_rate,
+                    pre.hp_cutoff,
+                    0.7,
+                );
+
+                // ─── Wash — two bands, building, then decaying ────────────────
+                let white = fast_noise(
+                    state.haas_index(info.sample_index),
+                    state.noise_seed(0x21DE_A11),
+                );
+                let build = 1.0 - (-t / pre.wash_build).exp();
+                let wash_lo = state.ride_bp_low.process(white)
+                    * (-t * decay_rate * pre.wash_lo.3).exp()
+                    * pre.wash_lo.2;
+                let wash_hi = state.ride_bp_high.process(white)
+                    * (-t * decay_rate * pre.wash_hi.3).exp()
+                    * pre.wash_hi.2;
+                let wash = (wash_lo + wash_hi) * build * rr.wash * onset_ramp(t);
+
+                // ─── Stick ping ──────────────────────────────────────────────
+                // Two parts. The sine carries the PITCH of the stroke (a filter
+                // ring at a usable Q dies in about a millisecond — far too fast
+                // to read as pitched), and the bandpass rung by a short noise
+                // burst carries the chaotic contact grit on top of it.
+                let ping_freq = (pre.ping_bp.0 * (rr.base_freq / pre.base_pitch))
+                    .clamp(300.0, nyquist * 0.8);
+                let ping_env = (-t / pre.ping_tau).exp();
+                let ping_tone =
+                    (TAU * ping_freq * t + state.phase_jitter(0x21DE_9146)).sin() * ping_env;
+                let ping_excite = if info.sample_index < 6 {
+                    fast_noise(
+                        state.haas_index(info.sample_index),
+                        (state.note_counter as u64).wrapping_mul(0x21DE_F00D_0001),
+                    ) * 1.2
+                } else {
+                    0.0
+                };
+                let ping_grit = state.ride_ping_bp.process(ping_excite) * pre.ping_gain;
+                let ping = (ping_tone * 0.75 + ping_grit * 0.55)
+                    * rr.attack_amount
+                    * ping_vel
+                    * onset_ramp(t);
+
+                let tone = plate * pre.mix.0 + wash * pre.mix.1 + ping;
+
+                tape_sat(tone) * info.gain * RIDE_GAIN * pre.gain_trim
+            }
+
+            // ═════════════════════════════════════════════════════════════════════
+            // CRASH — the same plate, played to explode.
+            //
+            // The defining feature is the SWELL. A crash does not begin at full
+            // level: the strike injects energy at one point and it spreads
+            // across the plate over 5-20 ms, so the level RISES into a peak and
+            // only then decays. Skip that and the result reads as "someone
+            // turned up a hi-hat," no matter how long the tail is.
+            //
+            // The second feature is that the tail darkens fast. Per-mode decay
+            // multipliers already shed the high modes first; on top of that the
+            // whole cymbal runs through a lowpass whose cutoff falls from
+            // `lp_sweep.0` to `lp_sweep.1` as it rings out.
+            // ═════════════════════════════════════════════════════════════════════
+            OscType::Crash { params } => {
+                let t = info.sample_index as f64 / info.sample_rate;
+
+                let note_freq = if info.frequency > 20.0 { info.frequency } else { DRUM_REF_FREQ };
+                if state.resolved_crash.is_none() {
+                    let mut rc = resolve_crash(params.as_ref());
+                    let pre = rc.internal;
+                    rc.base_freq =
+                        drum_register(pre.base_pitch, rc.tune, note_freq, pre.pitch_track);
+                    let track = rc.base_freq / pre.base_pitch;
+                    state.crash_bp_low.bandpass(info.sample_rate, pre.wash_lo.0 * track, pre.wash_lo.1);
+                    state.crash_bp_high.bandpass(info.sample_rate, pre.wash_hi.0 * track, pre.wash_hi.1);
+                    state.crash_coupling_z = 0.0;
+                    state.resolved_crash = Some(rc);
+                }
+                let rc = state.resolved_crash.unwrap();
+                let pre = rc.internal;
+                let f_base = rc.base_freq * rc.shimmer;
+                let decay_rate = rc.decay_rate;
+
+                let velocity = info.gain.clamp(0.0, 1.0);
+                let aggression = vel_curve(velocity);
+                let brightness_vel = rc.brightness * (0.55 + 0.85 * aggression * rc.velocity_tilt);
+                // Hitting a cymbal harder does not just raise its level — it
+                // drives more energy into the high modes and shortens the swell.
+                let swell = (rc.swell * (1.35 - 0.65 * aggression)).max(0.0002);
+
+                // ─── Swell × decay ───────────────────────────────────────────
+                let swell_env = 1.0 - (-t / swell).exp();
+                let decay_env = (-t * decay_rate).exp();
+
+                // ─── Plate modes ─────────────────────────────────────────────
+                let coupling_drive = state.crash_coupling_z * pre.coupling;
+                let nyquist = info.sample_rate * 0.5;
+                let mut shimmer = 0.0;
+                for (i, (ratio, _, decay_mult)) in
+                    crate::presets::HIHAT_MODES.iter().copied().enumerate()
+                {
+                    let amp = rc.mode_amp[i] * if i >= 8 { brightness_vel } else { 1.0 };
+                    let id = 0xC2A5_0000 ^ (i as u64).wrapping_mul(0x9E37);
+                    let mode_freq = f_base * ratio * pre.mode_freq_scale * state.freq_jitter(id);
+                    let rolloff = ((nyquist * 0.92 - mode_freq) / (nyquist * 0.08)).clamp(0.0, 1.0);
+                    if rolloff <= 0.0 {
+                        continue;
+                    }
+                    let mode_amp = (-t * decay_rate * decay_mult).exp();
+                    let phase = TAU * mode_freq * t + coupling_drive + state.phase_jitter(id);
+                    shimmer += phase.sin() * amp * mode_amp * rolloff;
+                }
+                state.crash_coupling_z = shimmer;
+
+                let plate =
+                    state.crash_hp.process_hp(shimmer, info.sample_rate, pre.hp_cutoff, 0.7);
+
+                // ─── Wash ────────────────────────────────────────────────────
+                let white = fast_noise(
+                    state.haas_index(info.sample_index),
+                    state.noise_seed(0xC2A5_A11),
+                );
+                let wash_lo = state.crash_bp_low.process(white)
+                    * (-t * decay_rate * pre.wash_lo.3).exp()
+                    * pre.wash_lo.2;
+                let wash_hi = state.crash_bp_high.process(white)
+                    * (-t * decay_rate * pre.wash_hi.3).exp()
+                    * pre.wash_hi.2;
+                let wash = (wash_lo + wash_hi) * rc.wash;
+
+                let mixed = (plate * pre.mix.0 + wash * pre.mix.1) * swell_env * onset_ramp(t);
+
+                // ─── Tail darkening ──────────────────────────────────────────
+                // Cutoff falls with the decay envelope, so the cymbal loses its
+                // top long before it loses its level — exactly how a real plate
+                // sheds energy.
+                let cutoff = pre.lp_sweep.1 + (pre.lp_sweep.0 - pre.lp_sweep.1) * decay_env;
+                let shaped = state.crash_lp.process_lp(mixed, info.sample_rate, cutoff, 0.7);
+
+                tape_sat(shaped) * info.gain * CRASH_GAIN * pre.gain_trim
+            }
+
+            // ═════════════════════════════════════════════════════════════════════
+            // SHAKER — a cloud of impacts, not noise with an envelope.
+            //
+            // The ear hears granularity directly: what separates a maraca (a few
+            // big seeds) from a cabasa (hundreds of tiny beads) is the DENSITY of
+            // the impact cloud, not the filter. Two cheap mechanisms model it:
+            //
+            //   GRAIN   — the noise is amplitude-modulated by a sample-and-hold
+            //             random signal held for `grain_period` samples. Short
+            //             hold = fine sand; long hold = big rattling seeds.
+            //   BURSTS  — a handful of jittered sub-hits inside the one stroke,
+            //             because particles do not all land at the same instant.
+            //
+            // `tambourine` adds two high-Q rings that outlive the cloud exciting
+            // them: the jingles.
+            // ═════════════════════════════════════════════════════════════════════
+            OscType::Shaker { params } => {
+                let t = info.sample_index as f64 / info.sample_rate;
+
+                let note_freq = if info.frequency > 20.0 { info.frequency } else { DRUM_REF_FREQ };
+                if state.resolved_shaker.is_none() {
+                    let rs = resolve_shaker(params.as_ref());
+                    let pre = rs.internal;
+                    // Unpitched: `tune`/`Fm` colour the bands, they do not
+                    // transpose them.
+                    let shift = rs.band_shift
+                        * rs.tune
+                        * (note_freq / DRUM_REF_FREQ).powf(pre.pitch_track);
+                    state.shaker_bp_low.bandpass(info.sample_rate, pre.band_lo.0 * shift, pre.band_lo.1);
+                    state.shaker_bp_high.bandpass(info.sample_rate, pre.band_hi.0 * shift, pre.band_hi.1);
+                    state.shaker_shell_bp.bandpass(info.sample_rate, pre.shell.0 * shift, pre.shell.1);
+                    state.shaker_jingle_1.bandpass(info.sample_rate, (pre.jingle_bp.0).0 * shift, (pre.jingle_bp.0).1);
+                    state.shaker_jingle_2.bandpass(info.sample_rate, (pre.jingle_bp.1).0 * shift, (pre.jingle_bp.1).1);
+                    state.resolved_shaker = Some(rs);
+                }
+                let rs = state.resolved_shaker.unwrap();
+                let pre = rs.internal;
+                let decay = rs.decay;
+
+                let velocity = info.gain.clamp(0.0, 1.0);
+                let aggression = vel_curve(velocity);
+                let bright_vel = rs.brightness * (0.55 + 0.85 * aggression * rs.velocity_tilt);
+                // A hard shake throws the particles together — denser cloud,
+                // faster onset. A soft one lets them spill.
+                let density_vel = (rs.density * (0.60 + 0.75 * aggression)).clamp(0.0, 1.0);
+                let attack_tau = (rs.attack_tau * (1.30 - 0.55 * aggression)).max(0.00005);
+
+                // ─── Burst train — the macro grain ───────────────────────────
+                let n = pre.bursts.max(1);
+                let mut env = 0.0;
+                let mut burst_start = 0.0;
+                for k in 0..n {
+                    if t >= burst_start {
+                        let local = t - burst_start;
+                        let level = pre.burst_falloff.powi(k as i32);
+                        env += level
+                            * (-local * 3.0 / decay).exp()
+                            * (1.0 - (-local / attack_tau).exp());
+                    }
+                    let jit = state.phase_jitter(0x5AA4_0000 ^ (k as u64))
+                        / (std::f64::consts::PI / 15.0); // [-1, 1]
+                    burst_start += pre.burst_spacing * (1.0 + jit * pre.burst_jitter);
+                }
+                // Bursts overlap, so normalise by √n rather than n — matches how
+                // uncorrelated impacts actually sum in level.
+                env /= (n as f64).sqrt();
+
+                // ─── Grain — the micro texture ───────────────────────────────
+                // Sample-and-hold on a deterministic hash: free, reproducible,
+                // and the hold length maps directly onto particle size.
+                let idx = state.haas_index(info.sample_index);
+                let hold = (pre.grain_period.max(1) as f64 * info.sample_rate / 48000.0).max(1.0)
+                    as usize;
+                let sh = fast_noise(idx / hold, state.noise_seed(0x5AA4_6241));
+                let grain = (1.0 + pre.grain_depth * density_vel * sh).max(0.0);
+
+                let white = fast_noise(idx, state.noise_seed(0x5AA4_A11)) * grain;
+
+                let lo = state.shaker_bp_low.process(white)
+                    * pre.band_lo.2
+                    * (-t * 3.0 * pre.band_lo.3 / decay).exp();
+                let hi = state.shaker_bp_high.process(white)
+                    * pre.band_hi.2
+                    * bright_vel
+                    * (-t * 3.0 * pre.band_hi.3 / decay).exp();
+                let shell = state.shaker_shell_bp.process(white) * pre.shell.2;
+                let cloud = (lo + hi + shell) * env * onset_ramp(t);
+
+                // ─── Jingles ─────────────────────────────────────────────────
+                // Rung by the same particle cloud that drives the shells, but
+                // with their own much slower decay — a tambourine's rings carry
+                // long after the beads have stopped.
+                let jingle = if rs.jingle > 0.0 {
+                    let ring_env = (-t * 3.0 * pre.jingle_decay / decay).exp();
+                    let exc = white * (-t * 3.0 / decay).exp();
+                    (state.shaker_jingle_1.process(exc) + state.shaker_jingle_2.process(exc) * 0.8)
+                        * ring_env
+                        * rs.jingle
+                        * onset_ramp(t)
+                } else {
+                    0.0
+                };
+
+                tape_sat(cloud + jingle) * info.gain * SHAKER_GAIN * pre.gain_trim
+            }
+
+            // ═════════════════════════════════════════════════════════════════════
+            // COWBELL — struck metal with two deliberately unrelated partials.
+            //
+            // The 808 recipe is a pair of detuned squares (~540 and ~800 Hz — a
+            // ratio near a fifth but pointedly not one) through a bandpass with a
+            // fast attack and a two-stage decay. Real squares would alias badly
+            // up here, so each partial is a soft-clipped sine instead: the shaper
+            // supplies the odd harmonics that make it read as "square" while the
+            // series still dies off fast enough to stay clean. The shaping drive
+            // is scaled down on the upper partials, which both keeps their
+            // harmonics under Nyquist and matches how struck metal actually
+            // distributes its energy.
+            // ═════════════════════════════════════════════════════════════════════
+            OscType::Cowbell { params } => {
+                let t = info.sample_index as f64 / info.sample_rate;
+
+                let note_freq = if info.frequency > 20.0 { info.frequency } else { DRUM_REF_FREQ };
+                if state.resolved_cowbell.is_none() {
+                    let mut rc = resolve_cowbell(params.as_ref());
+                    let pre = rc.internal;
+                    rc.base_freq =
+                        drum_register(pre.base_pitch, rc.tune, note_freq, pre.pitch_track);
+                    let track = rc.base_freq / pre.base_pitch;
+                    state.cowbell_bp.bandpass(info.sample_rate, pre.bp.0 * track, pre.bp.1);
+                    state
+                        .cowbell_click_bp
+                        .bandpass(info.sample_rate, pre.click_bp.0 * track, pre.click_bp.1);
+                    state.resolved_cowbell = Some(rc);
+                }
+                let rc = state.resolved_cowbell.unwrap();
+                let pre = rc.internal;
+                let f_base = rc.base_freq;
+                let decay = rc.decay;
+
+                let velocity = info.gain.clamp(0.0, 1.0);
+                let aggression = vel_curve(velocity);
+                let click_vel = 0.30 + 1.15 * aggression * rc.velocity_tilt;
+                // Struck harder = driven further into the shaper = clangier.
+                let shape_vel = 0.55 + 0.85 * aggression;
+
+                let nyquist = info.sample_rate * 0.5;
+                let mut partials = 0.0;
+                for i in 0..4 {
+                    let ratio = if i == 1 { rc.ratio } else { pre.partial_ratios[i] };
+                    let id = 0xC0B0_0000 ^ (i as u64).wrapping_mul(0x9E37);
+                    let freq = f_base * ratio * state.freq_jitter(id);
+                    if freq >= nyquist * 0.9 {
+                        continue;
+                    }
+                    let phase = TAU * freq * t + state.phase_jitter(id);
+                    let s = phase.sin();
+                    // Cap the drive so the shaper's harmonic series stays under
+                    // Nyquist: a partial at f driven to D generates content out
+                    // to roughly 3·D·f.
+                    let headroom = (nyquist * 0.85 / (freq * 3.0)).clamp(0.0, 1.0);
+                    let d = pre.shape_drive * shape_vel * headroom / (1.0 + ratio * 0.6);
+                    let shaped = if d > 0.01 { (s * (1.0 + d)).tanh() } else { s };
+                    let env = (-t * 3.0 * pre.partial_decays[i] / decay).exp();
+                    partials += shaped * pre.partial_amps[i] * env;
+                }
+
+                // The "cup": a resonant bump mixed against the dry partials
+                // rather than replacing them — a straight bandpass at the body
+                // frequency would gut the fundamental it is supposed to sit on.
+                let cup = state.cowbell_bp.process(partials);
+                let body = partials * 0.55 + cup * 0.90;
+
+                // Two-stage amplitude: a fast initial snap over the main decay.
+                let main_env = (-t * 3.0 / decay).exp();
+                let snap_env = pre.snap.0 * (-t / pre.snap.1).exp();
+                let voiced = body * (main_env + snap_env);
+
+                // Mallet click.
+                let click_excite = if info.sample_index < 4 {
+                    let ramp = 1.0 - info.sample_index as f64 * 0.25;
+                    ramp + fast_noise(info.sample_index, state.noise_seed(0xC0B0_1CC0)) * 0.45
+                } else {
+                    0.0
+                };
+                let click = state.cowbell_click_bp.process(click_excite)
+                    * rc.attack_amount
+                    * click_vel
+                    * pre.click_gain;
+
+                tape_sat((voiced + click) * pre.drive_out)
+                    * info.gain
+                    * COWBELL_GAIN
+                    * pre.gain_trim
             }
         }
     }

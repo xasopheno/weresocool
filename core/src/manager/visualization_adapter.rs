@@ -81,6 +81,11 @@ impl VisualizationAdapter {
             OscType::Snare { .. } => (render_op.f / 2.5, 0.012),
             OscType::Clap { .. } => (render_op.f / 2.0, 0.012),
             OscType::Rimshot { .. } => (render_op.f / 1.5, 0.008),
+            OscType::Tom { .. } => (render_op.f / 4.0, 0.018),
+            OscType::Ride { .. } => (render_op.f * 1.0, 0.05),
+            OscType::Crash { .. } => (render_op.f * 0.9, 0.09),
+            OscType::Shaker { .. } => (render_op.f * 1.6, 0.006),
+            OscType::Cowbell { .. } => (render_op.f / 1.2, 0.016),
             OscType::HiHat { open, .. } => {
                 let decay = if *open { 0.02 } else { 0.008 };
                 (render_op.f * 1.28, decay)
@@ -144,6 +149,11 @@ impl VisualizationAdapter {
             OscType::Snare { .. } => (render_op.f / 2.5, 0.012),
             OscType::Clap { .. } => (render_op.f / 2.0, 0.012),
             OscType::Rimshot { .. } => (render_op.f / 1.5, 0.008),
+            OscType::Tom { .. } => (render_op.f / 4.0, 0.018),
+            OscType::Ride { .. } => (render_op.f * 1.0, 0.05),
+            OscType::Crash { .. } => (render_op.f * 0.9, 0.09),
+            OscType::Shaker { .. } => (render_op.f * 1.6, 0.006),
+            OscType::Cowbell { .. } => (render_op.f / 1.2, 0.016),
             OscType::HiHat { open, .. } => {
                 let decay = if *open { 0.02 } else { 0.008 };
                 (render_op.f * 1.28, decay)

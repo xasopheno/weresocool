@@ -17,4 +17,30 @@ cp = { Clap trap | Fm 3 | Gm 0.5 }
 
 rs = { Rimshot 909 | Fm 3 | Gm 0.4 }
 
+
+-- ── the rest of the kit ──────────────────────────────────────────────
+-- No trap preset exists in these five families, so this follows the
+-- handoff mapping: 909 where a machine voice fits, `snap` where the
+-- kit wants the transient and none of the tail.
+--
+-- The toms are one voice at three registers: `Tom` tracks the played
+-- note fully (pitch_track 1.0), so `Fm 2/3` and `Fm 3/2` are honest
+-- intervals off the middle drum. The cymbals and shaker anchor
+-- themselves against the f:60 header instead — `Fm` colours the metal
+-- without transposing it off the map — so they need no `Fm` at all.
+
+lt = { Tom 909 | Fm 2/3 | Gm 0.68 }
+
+mt = { Tom 909 | Gm 0.68 }
+
+ht = { Tom 909 | Fm 3/2 | Gm 0.68 }
+
+rd = { Ride snap | Gm 0.26 }
+
+cr = { Crash 909 | Gm 0.3 }
+
+sh = { Shaker snap | Gm 0.3 }
+
+cb = { Cowbell 808 | Gm 0.5 }
+
 main = { Silence 1 }

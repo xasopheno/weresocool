@@ -135,3 +135,69 @@ fn clap_and_rimshot_presets_parse() {
         other => panic!("expected Clap, got {:?}", other),
     }
 }
+
+#[test]
+fn tom_ride_crash_shaker_cowbell_parse_bare() {
+    assert!(matches!(single_osc("Tom"), OscType::Tom { params: None }));
+    assert!(matches!(single_osc("Ride"), OscType::Ride { params: None }));
+    assert!(matches!(single_osc("Crash"), OscType::Crash { params: None }));
+    assert!(matches!(single_osc("Shaker"), OscType::Shaker { params: None }));
+    assert!(matches!(single_osc("Cowbell"), OscType::Cowbell { params: None }));
+}
+
+#[test]
+fn tom_preset_and_overrides() {
+    match single_osc("Tom conga { shell: 3/4 }") {
+        OscType::Tom { params } => {
+            let p = params.expect("params");
+            assert_eq!(p.preset.as_deref(), Some("conga"));
+            assert_eq!(p.shell, Some(Rational64::new(3, 4)));
+        }
+        other => panic!("expected Tom, got {:?}", other),
+    }
+}
+
+#[test]
+fn cymbal_and_percussion_presets_parse() {
+    match single_osc("Ride bell { bell_amount: 1 }") {
+        OscType::Ride { params } => {
+            let p = params.expect("params");
+            assert_eq!(p.preset.as_deref(), Some("bell"));
+            assert_eq!(p.bell_amount, Some(Rational64::new(1, 1)));
+        }
+        other => panic!("expected Ride, got {:?}", other),
+    }
+    match single_osc("Crash splash") {
+        OscType::Crash { params } => {
+            assert_eq!(params.expect("params").preset.as_deref(), Some("splash"))
+        }
+        other => panic!("expected Crash, got {:?}", other),
+    }
+    match single_osc("Shaker tambourine { jingle: 1/2 }") {
+        OscType::Shaker { params } => {
+            let p = params.expect("params");
+            assert_eq!(p.preset.as_deref(), Some("tambourine"));
+            assert_eq!(p.jingle, Some(Rational64::new(1, 2)));
+        }
+        other => panic!("expected Shaker, got {:?}", other),
+    }
+    match single_osc("Cowbell 808") {
+        OscType::Cowbell { params } => {
+            assert_eq!(params.expect("params").preset.as_deref(), Some("808"))
+        }
+        other => panic!("expected Cowbell, got {:?}", other),
+    }
+}
+
+/// Unknown preset names are parse errors for the new families too, not a
+/// silent fallback to `wsc`.
+#[test]
+fn unknown_preset_on_new_drums_is_an_error() {
+    for body in ["Tom 909909", "Ride sizzle", "Crash gong", "Shaker beans", "Cowbell moo"] {
+        assert!(
+            parse_main(body).is_err(),
+            "`{}` should be a parse error",
+            body
+        );
+    }
+}

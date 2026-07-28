@@ -740,6 +740,86 @@ fn format_op<'a>(arena: &'a Arena<'a>, ctx: &FormatContext, op: &Op) -> DocBuild
             if let Some(ref val) = p.velocity_tilt { v.push(("velocity_tilt", val)); }
             v
         })),
+        Op::Tom { params } => format_drum_op(arena, "Tom", params.as_ref().and_then(|p| p.preset.as_deref()), params.as_ref().map(|p| {
+            let mut v = vec![];
+            // Spectrum macros
+            if let Some(ref val) = p.attack { v.push(("attack", val)); }
+            if let Some(ref val) = p.body { v.push(("body", val)); }
+            if let Some(ref val) = p.tone { v.push(("tone", val)); }
+            if let Some(ref val) = p.length { v.push(("length", val)); }
+            // Specific overrides
+            if let Some(ref val) = p.tune { v.push(("tune", val)); }
+            if let Some(ref val) = p.pitch_decay { v.push(("pitch_decay", val)); }
+            if let Some(ref val) = p.pitch_range { v.push(("pitch_range", val)); }
+            if let Some(ref val) = p.amp_decay { v.push(("amp_decay", val)); }
+            if let Some(ref val) = p.saturation { v.push(("saturation", val)); }
+            if let Some(ref val) = p.ks_mix { v.push(("ks_mix", val)); }
+            if let Some(ref val) = p.attack_amount { v.push(("attack_amount", val)); }
+            if let Some(ref val) = p.shell { v.push(("shell", val)); }
+            if let Some(ref val) = p.velocity_tilt { v.push(("velocity_tilt", val)); }
+            v
+        })),
+        Op::Ride { params } => format_drum_op(arena, "Ride", params.as_ref().and_then(|p| p.preset.as_deref()), params.as_ref().map(|p| {
+            let mut v = vec![];
+            // Spectrum macros
+            if let Some(ref val) = p.attack { v.push(("attack", val)); }
+            if let Some(ref val) = p.metal { v.push(("metal", val)); }
+            if let Some(ref val) = p.length { v.push(("length", val)); }
+            // Specific overrides
+            if let Some(ref val) = p.tune { v.push(("tune", val)); }
+            if let Some(ref val) = p.decay_rate { v.push(("decay_rate", val)); }
+            if let Some(ref val) = p.shimmer { v.push(("shimmer", val)); }
+            if let Some(ref val) = p.brightness { v.push(("brightness", val)); }
+            if let Some(ref val) = p.attack_amount { v.push(("attack_amount", val)); }
+            if let Some(ref val) = p.bell_amount { v.push(("bell_amount", val)); }
+            if let Some(ref val) = p.wash { v.push(("wash", val)); }
+            if let Some(ref val) = p.velocity_tilt { v.push(("velocity_tilt", val)); }
+            v
+        })),
+        Op::Crash { params } => format_drum_op(arena, "Crash", params.as_ref().and_then(|p| p.preset.as_deref()), params.as_ref().map(|p| {
+            let mut v = vec![];
+            // Spectrum macros
+            if let Some(ref val) = p.attack { v.push(("attack", val)); }
+            if let Some(ref val) = p.metal { v.push(("metal", val)); }
+            if let Some(ref val) = p.length { v.push(("length", val)); }
+            // Specific overrides
+            if let Some(ref val) = p.tune { v.push(("tune", val)); }
+            if let Some(ref val) = p.decay_rate { v.push(("decay_rate", val)); }
+            if let Some(ref val) = p.shimmer { v.push(("shimmer", val)); }
+            if let Some(ref val) = p.brightness { v.push(("brightness", val)); }
+            if let Some(ref val) = p.swell { v.push(("swell", val)); }
+            if let Some(ref val) = p.wash { v.push(("wash", val)); }
+            if let Some(ref val) = p.velocity_tilt { v.push(("velocity_tilt", val)); }
+            v
+        })),
+        Op::Shaker { params } => format_drum_op(arena, "Shaker", params.as_ref().and_then(|p| p.preset.as_deref()), params.as_ref().map(|p| {
+            let mut v = vec![];
+            // Spectrum macros
+            if let Some(ref val) = p.attack { v.push(("attack", val)); }
+            if let Some(ref val) = p.tone { v.push(("tone", val)); }
+            if let Some(ref val) = p.length { v.push(("length", val)); }
+            // Specific overrides
+            if let Some(ref val) = p.tune { v.push(("tune", val)); }
+            if let Some(ref val) = p.decay { v.push(("decay", val)); }
+            if let Some(ref val) = p.density { v.push(("density", val)); }
+            if let Some(ref val) = p.brightness { v.push(("brightness", val)); }
+            if let Some(ref val) = p.jingle { v.push(("jingle", val)); }
+            if let Some(ref val) = p.velocity_tilt { v.push(("velocity_tilt", val)); }
+            v
+        })),
+        Op::Cowbell { params } => format_drum_op(arena, "Cowbell", params.as_ref().and_then(|p| p.preset.as_deref()), params.as_ref().map(|p| {
+            let mut v = vec![];
+            // Spectrum macros
+            if let Some(ref val) = p.tone { v.push(("tone", val)); }
+            if let Some(ref val) = p.length { v.push(("length", val)); }
+            // Specific overrides
+            if let Some(ref val) = p.tune { v.push(("tune", val)); }
+            if let Some(ref val) = p.decay { v.push(("decay", val)); }
+            if let Some(ref val) = p.ratio { v.push(("ratio", val)); }
+            if let Some(ref val) = p.attack_amount { v.push(("attack_amount", val)); }
+            if let Some(ref val) = p.velocity_tilt { v.push(("velocity_tilt", val)); }
+            v
+        })),
 
         // Identifiers
         Op::Id(name) => arena.text(name.clone()),

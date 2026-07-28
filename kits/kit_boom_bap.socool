@@ -17,4 +17,28 @@ cp = { Clap dust | Fm 3 | Gm 0.5 }
 
 rs = { Rimshot acoustic | Fm 3 | Gm 0.4 }
 
+
+-- ── the rest of the kit ──────────────────────────────────────────────
+-- Dusty toms, a dark ride, a cabasa for the shuffle.
+--
+-- The toms are one voice at three registers: `Tom` tracks the played
+-- note fully (pitch_track 1.0), so `Fm 2/3` and `Fm 3/2` are honest
+-- intervals off the middle drum. The cymbals and shaker anchor
+-- themselves against the f:60 header instead — `Fm` colours the metal
+-- without transposing it off the map — so they need no `Fm` at all.
+
+lt = { Tom dust | Fm 2/3 | Gm 0.68 }
+
+mt = { Tom dust | Gm 0.68 }
+
+ht = { Tom dust | Fm 3/2 | Gm 0.68 }
+
+rd = { Ride dark | Gm 0.28 }
+
+cr = { Crash acoustic | Gm 0.3 }
+
+sh = { Shaker cabasa | Gm 0.3 }
+
+cb = { Cowbell acoustic | Gm 0.42 }
+
 main = { Silence 1 }

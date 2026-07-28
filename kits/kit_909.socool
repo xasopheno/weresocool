@@ -16,4 +16,29 @@ cp = { Clap 909 | Fm 3 | Gm 0.5 }
 
 rs = { Rimshot 909 | Fm 3 | Gm 0.4 }
 
+
+-- ── the rest of the kit ──────────────────────────────────────────────
+-- 909 toms and cymbals throughout; the 909 had no shaker or
+-- cowbell, so those keep the signature voice.
+--
+-- The toms are one voice at three registers: `Tom` tracks the played
+-- note fully (pitch_track 1.0), so `Fm 2/3` and `Fm 3/2` are honest
+-- intervals off the middle drum. The cymbals and shaker anchor
+-- themselves against the f:60 header instead — `Fm` colours the metal
+-- without transposing it off the map — so they need no `Fm` at all.
+
+lt = { Tom 909 | Fm 2/3 | Gm 0.7 }
+
+mt = { Tom 909 | Gm 0.7 }
+
+ht = { Tom 909 | Fm 3/2 | Gm 0.7 }
+
+rd = { Ride 909 | Gm 0.3 }
+
+cr = { Crash 909 | Gm 0.32 }
+
+sh = { Shaker wsc | Gm 0.32 }
+
+cb = { Cowbell wsc | Gm 0.45 }
+
 main = { Silence 1 }

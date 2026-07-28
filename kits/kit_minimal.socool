@@ -17,4 +17,30 @@ cp = { Clap dust | Fm 3 | Gm 0.5 }
 
 rs = { Rimshot acoustic | Fm 3 | Gm 0.4 }
 
+
+-- ── the rest of the kit ──────────────────────────────────────────────
+-- Sparse and soft: `air` is all wash and no transient, which is what
+-- this kit is for. The cowbell takes `glass` so its one appearance rings
+-- rather than clanks.
+--
+-- The toms are one voice at three registers: `Tom` tracks the played
+-- note fully (pitch_track 1.0), so `Fm 2/3` and `Fm 3/2` are honest
+-- intervals off the middle drum. The cymbals and shaker anchor
+-- themselves against the f:60 header instead — `Fm` colours the metal
+-- without transposing it off the map — so they need no `Fm` at all.
+
+lt = { Tom dust | Fm 2/3 | Gm 0.5 }
+
+mt = { Tom dust | Gm 0.5 }
+
+ht = { Tom dust | Fm 3/2 | Gm 0.5 }
+
+rd = { Ride air | Gm 0.2 }
+
+cr = { Crash air | Gm 0.22 }
+
+sh = { Shaker air | Gm 0.22 }
+
+cb = { Cowbell glass | Gm 0.3 }
+
 main = { Silence 1 }

@@ -121,6 +121,16 @@ pub enum Op {
     Clap { params: Option<ClapParams> },
     /// Rimshot - short inharmonic resonator tock
     Rimshot { params: Option<RimshotParams> },
+    /// Tom - pitched membrane, no wires
+    Tom { params: Option<TomParams> },
+    /// Ride cymbal - stick ping + bell + long wash
+    Ride { params: Option<RideParams> },
+    /// Crash cymbal - swelling broadband wash
+    Crash { params: Option<CrashParams> },
+    /// Shaker - dense granular particle noise
+    Shaker { params: Option<ShakerParams> },
+    /// Cowbell - two inharmonic square partials through a bandpass
+    Cowbell { params: Option<CowbellParams> },
 
     #[allow(clippy::upper_case_acronyms)]
     AD {
@@ -507,6 +517,193 @@ pub struct RimshotParams {
     pub velocity_tilt: Option<Rational64>,
 }
 
+/// Parameters for Tom synthesis.
+///
+/// A single struck membrane with no snare wires: six circular-membrane
+/// Bessel modes over a Karplus-Strong waveguide body, a downward pitch
+/// bend (the tom "voice"), a wooden shell resonance, and a mallet click.
+/// Congas and bongos live here as presets — same physics, higher tuning
+/// and a hand strike instead of a stick.
+#[derive(Clone, Debug, PartialEq, Serialize, Deserialize, Hash, Ord, PartialOrd, Eq, Default)]
+pub struct TomParams {
+    /// Named voicing (`Tom acoustic`). See `crate::drum_presets::TOM_PRESETS`.
+    #[serde(default)]
+    pub preset: Option<String>,
+
+    // ── Spectrum macro knobs (0-1) ────────────────────────────────────
+    /// soft/mallet (0) → hard stick (1) — scales the click and pitch bend.
+    pub attack: Option<Rational64>,
+    /// thin (0) → thick/resonant (1) — scales saturation and shell ring.
+    pub body: Option<Rational64>,
+    /// dark (0) → bright (1) — scales body cutoff range and mode tilt.
+    pub tone: Option<Rational64>,
+    /// tight (0) → long/booming (1) — scales `amp_decay`.
+    pub length: Option<Rational64>,
+
+    // ── Specific overrides ────────────────────────────────────────────
+    /// Pitch multiplier on `info.frequency` (default: 1.0).
+    pub tune: Option<Rational64>,
+    /// Pitch-bend decay time in SECONDS (default: 0.10).
+    pub pitch_decay: Option<Rational64>,
+    /// Pitch-bend depth — starting multiple of the fundamental (default: 1.22).
+    pub pitch_range: Option<Rational64>,
+    /// Body amplitude decay time in SECONDS (default: 0.30-0.95, length-dependent).
+    pub amp_decay: Option<Rational64>,
+    /// Asymmetric soft-saturation drive (default: 0.25-0.55 from `body`).
+    pub saturation: Option<Rational64>,
+    /// Karplus-Strong waveguide body blend (default: 0.60).
+    pub ks_mix: Option<Rational64>,
+    /// Stick/mallet click level (default: 0.15-0.55 from `attack`).
+    pub attack_amount: Option<Rational64>,
+    /// Wooden shell-ring level (default: 0.30-0.45 from `body`).
+    pub shell: Option<Rational64>,
+    /// How dramatically velocity (`Gm`) changes timbre (default: 0.6).
+    pub velocity_tilt: Option<Rational64>,
+}
+
+/// Parameters for Ride cymbal synthesis.
+///
+/// A large plate: a defined stick *ping* (the articulation you actually
+/// hear on a ride), a low group of long-decaying bell partials, and a
+/// broad wash that accumulates under repeated hits. Shares the 22-mode
+/// Bessel bank with the hi-hat but runs it bigger, longer, and with much
+/// stronger nonlinear coupling.
+#[derive(Clone, Debug, PartialEq, Serialize, Deserialize, Hash, Ord, PartialOrd, Eq, Default)]
+pub struct RideParams {
+    /// Named voicing (`Ride bell`). See `crate::drum_presets::RIDE_PRESETS`.
+    #[serde(default)]
+    pub preset: Option<String>,
+
+    // ── Spectrum macro knobs (0-1) ────────────────────────────────────
+    /// washy (0) → sharply articulated stick ping (1).
+    pub attack: Option<Rational64>,
+    /// dull (0) → shimmery (1) — scales `shimmer` and `brightness`.
+    pub metal: Option<Rational64>,
+    /// short (0) → long ring (1) — scales `decay_rate`.
+    pub length: Option<Rational64>,
+
+    // ── Specific overrides ────────────────────────────────────────────
+    /// Pitch multiplier on `info.frequency` (default: 1.0).
+    pub tune: Option<Rational64>,
+    /// Modal/noise decay rate per second (default: 1.6-4.0 from `length`).
+    pub decay_rate: Option<Rational64>,
+    /// Fine multiplier on the mode base after `tune` (default: 0.9-1.2).
+    pub shimmer: Option<Rational64>,
+    /// High-mode amplitude scaling (default: 0.45-1.05 from `metal`).
+    pub brightness: Option<Rational64>,
+    /// Stick ping level — the articulation (default: 0.30-0.85 from `attack`).
+    pub attack_amount: Option<Rational64>,
+    /// Bell-partial level — the low sustained "gong" under the ping (default: 0.35).
+    pub bell_amount: Option<Rational64>,
+    /// Broadband wash level (default: 0.30-0.55).
+    pub wash: Option<Rational64>,
+    /// How dramatically velocity (`Gm`) changes timbre (default: 0.55).
+    pub velocity_tilt: Option<Rational64>,
+}
+
+/// Parameters for Crash cymbal synthesis.
+///
+/// The opposite articulation to the ride: no defined ping, a *swell* into
+/// a dense broadband explosion, then a long dark-tilting decay. The swell
+/// is what stops a crash from reading as "a very loud hi-hat."
+#[derive(Clone, Debug, PartialEq, Serialize, Deserialize, Hash, Ord, PartialOrd, Eq, Default)]
+pub struct CrashParams {
+    /// Named voicing (`Crash splash`). See `crate::drum_presets::CRASH_PRESETS`.
+    #[serde(default)]
+    pub preset: Option<String>,
+
+    // ── Spectrum macro knobs (0-1) ────────────────────────────────────
+    /// slow swell (0) → immediate explosion (1) — scales `swell`.
+    pub attack: Option<Rational64>,
+    /// dull (0) → shimmery (1) — scales `shimmer` and `brightness`.
+    pub metal: Option<Rational64>,
+    /// short (0) → very long (1) — scales `decay_rate`.
+    pub length: Option<Rational64>,
+
+    // ── Specific overrides ────────────────────────────────────────────
+    /// Pitch multiplier on `info.frequency` (default: 1.0).
+    pub tune: Option<Rational64>,
+    /// Modal/noise decay rate per second (default: 0.9-2.6 from `length`).
+    pub decay_rate: Option<Rational64>,
+    /// Fine multiplier on the mode base after `tune` (default: 0.85-1.15).
+    pub shimmer: Option<Rational64>,
+    /// High-mode amplitude scaling (default: 0.55-1.20 from `metal`).
+    pub brightness: Option<Rational64>,
+    /// Swell rise time in SECONDS — 0 is an instant hit (default: 0.004-0.020).
+    pub swell: Option<Rational64>,
+    /// Broadband wash level (default: 0.55-0.85).
+    pub wash: Option<Rational64>,
+    /// How dramatically velocity (`Gm`) changes timbre (default: 0.5).
+    pub velocity_tilt: Option<Rational64>,
+}
+
+/// Parameters for Shaker synthesis.
+///
+/// Many small particles striking a shell within a few milliseconds. Built
+/// as a jittered micro-burst train through a band-limited noise path, so
+/// the "grain" of the sound is real granular density rather than a single
+/// enveloped hiss. Tambourine, maraca, and cabasa are presets: the same
+/// particle model with different shells and — for the tambourine — a pair
+/// of ringing jingle bands on top.
+#[derive(Clone, Debug, PartialEq, Serialize, Deserialize, Hash, Ord, PartialOrd, Eq, Default)]
+pub struct ShakerParams {
+    /// Named voicing (`Shaker tambourine`). See `crate::drum_presets::SHAKER_PRESETS`.
+    #[serde(default)]
+    pub preset: Option<String>,
+
+    // ── Spectrum macro knobs (0-1) ────────────────────────────────────
+    /// soft (0) → sharp/snappy (1) — scales the onset burst weighting.
+    pub attack: Option<Rational64>,
+    /// dark/woody (0) → bright/metallic (1) — scales the band centers.
+    pub tone: Option<Rational64>,
+    /// tight (0) → long/spilling (1) — scales `decay`.
+    pub length: Option<Rational64>,
+
+    // ── Specific overrides ────────────────────────────────────────────
+    /// Pitch multiplier on the noise band centers (default: 1.0).
+    pub tune: Option<Rational64>,
+    /// Overall decay time in SECONDS (default: 0.045-0.16, length-dependent).
+    pub decay: Option<Rational64>,
+    /// Particle density — micro-bursts per hit, 0 = one smooth burst (default: 0.55).
+    pub density: Option<Rational64>,
+    /// Top-band level (default: 0.35-0.95 from `tone`).
+    pub brightness: Option<Rational64>,
+    /// Metallic jingle-ring level — what makes a tambourine (default: 0.0).
+    pub jingle: Option<Rational64>,
+    /// How dramatically velocity (`Gm`) changes timbre (default: 0.45).
+    pub velocity_tilt: Option<Rational64>,
+}
+
+/// Parameters for Cowbell synthesis.
+///
+/// Two strongly inharmonic square-ish partials through a bandpass, plus a
+/// mallet click — the 808 recipe, generalised. `acoustic` swaps the pure
+/// pair for a clangier, denser set of struck-metal partials.
+#[derive(Clone, Debug, PartialEq, Serialize, Deserialize, Hash, Ord, PartialOrd, Eq, Default)]
+pub struct CowbellParams {
+    /// Named voicing (`Cowbell 808`). See `crate::drum_presets::COWBELL_PRESETS`.
+    #[serde(default)]
+    pub preset: Option<String>,
+
+    // ── Spectrum macro knobs (0-1) ────────────────────────────────────
+    /// dull (0) → clangy/bright (1) — partial ratio and bandpass center.
+    pub tone: Option<Rational64>,
+    /// tick (0) → long clank (1) — scales `decay`.
+    pub length: Option<Rational64>,
+
+    // ── Specific overrides ────────────────────────────────────────────
+    /// Pitch multiplier on the partial frequencies (default: 1.0).
+    pub tune: Option<Rational64>,
+    /// Decay time in SECONDS (default: 0.10-0.40, length-dependent).
+    pub decay: Option<Rational64>,
+    /// Upper-partial frequency ratio — inharmonic by design (default: 1.48).
+    pub ratio: Option<Rational64>,
+    /// Mallet click level (default: 0.30-0.70 from `tone`).
+    pub attack_amount: Option<Rational64>,
+    /// How dramatically velocity (`Gm`) changes timbre (default: 0.5).
+    pub velocity_tilt: Option<Rational64>,
+}
+
 #[derive(Clone, Debug, PartialEq, Serialize, Deserialize, Hash, Ord, PartialOrd, Eq)]
 /// Oscillator Type
 pub enum OscType {
@@ -527,6 +724,16 @@ pub enum OscType {
     Clap { params: Option<ClapParams> },
     /// Rimshot - short inharmonic resonator tock
     Rimshot { params: Option<RimshotParams> },
+    /// Tom - struck membrane, no wires
+    Tom { params: Option<TomParams> },
+    /// Ride cymbal - stick ping + bell partials + wash
+    Ride { params: Option<RideParams> },
+    /// Crash cymbal - swelling broadband wash
+    Crash { params: Option<CrashParams> },
+    /// Shaker - granular particle noise (also tambourine/maraca/cabasa)
+    Shaker { params: Option<ShakerParams> },
+    /// Cowbell - two inharmonic partials through a bandpass
+    Cowbell { params: Option<CowbellParams> },
 }
 
 impl OscType {
@@ -550,6 +757,11 @@ impl OscType {
                 | OscType::HiHat { .. }
                 | OscType::Clap { .. }
                 | OscType::Rimshot { .. }
+                | OscType::Tom { .. }
+                | OscType::Ride { .. }
+                | OscType::Crash { .. }
+                | OscType::Shaker { .. }
+                | OscType::Cowbell { .. }
         )
     }
 }

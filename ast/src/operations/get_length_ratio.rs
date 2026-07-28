@@ -38,6 +38,11 @@ impl GetLengthRatio for Op {
             | Op::HiHat { .. }
             | Op::Clap { .. }
             | Op::Rimshot { .. }
+            | Op::Tom { .. }
+            | Op::Ride { .. }
+            | Op::Crash { .. }
+            | Op::Shaker { .. }
+            | Op::Cowbell { .. }
             | Op::FInvert {}
             | Op::Reverse {}
             | Op::Reverb { .. }

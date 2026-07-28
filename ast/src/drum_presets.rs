@@ -59,13 +59,61 @@ pub const RIMSHOT_PRESETS: &[&str] = &[
     "wsc", "808", "909", "acoustic", "glass", "doom", "crush", "air", "snap",
 ];
 
+/// Tom presets: `wsc` (signature), `808` (long tuned sine boom), `909`
+/// (punchy synthetic), `acoustic` (a real struck drum — modes and shell),
+/// `conga` (high hand drum, dry), `dust` (lofi: dark, damped), plus the
+/// five [`CHARACTER`] drumsets.
+pub const TOM_PRESETS: &[&str] = &[
+    "wsc", "808", "909", "acoustic", "conga", "dust", "glass", "doom", "crush", "air", "snap",
+];
+
+/// Ride presets: `wsc` (signature), `909` (bright machine ride),
+/// `acoustic` (jazz ride — pingy, complex wash), `bell` (bell-forward),
+/// `dark` (low, dry, washy), plus the five [`CHARACTER`] drumsets.
+pub const RIDE_PRESETS: &[&str] = &[
+    "wsc", "909", "acoustic", "bell", "dark", "glass", "doom", "crush", "air", "snap",
+];
+
+/// Crash presets: `wsc` (signature), `909` (bright machine crash),
+/// `acoustic` (big struck plate), `splash` (small, fast, bright),
+/// `china` (trashy, very inharmonic), plus the five [`CHARACTER`] drumsets.
+pub const CRASH_PRESETS: &[&str] = &[
+    "wsc", "909", "acoustic", "splash", "china", "glass", "doom", "crush", "air", "snap",
+];
+
+/// Shaker presets: `wsc` (signature), `tambourine` (jingle rings),
+/// `maraca` (dry, woody, seed-rattle), `cabasa` (gritty bead-on-metal),
+/// `808` (the machine's band-limited tick), plus the five [`CHARACTER`]
+/// drumsets.
+pub const SHAKER_PRESETS: &[&str] = &[
+    "wsc", "tambourine", "maraca", "cabasa", "808", "glass", "doom", "crush", "air", "snap",
+];
+
+/// Cowbell presets: `wsc` (signature), `808` (the iconic pair of detuned
+/// squares), `acoustic` (clangy struck metal), plus the five [`CHARACTER`]
+/// drumsets.
+pub const COWBELL_PRESETS: &[&str] = &[
+    "wsc", "808", "acoustic", "glass", "doom", "crush", "air", "snap",
+];
+
 /// Keep the doc comment honest: every family exposes the character set.
 #[cfg(test)]
 mod character_coverage {
     use super::*;
     #[test]
     fn every_family_has_the_character_drumsets() {
-        for fam in [KICK_PRESETS, SNARE_PRESETS, HIHAT_PRESETS, CLAP_PRESETS, RIMSHOT_PRESETS] {
+        for fam in [
+            KICK_PRESETS,
+            SNARE_PRESETS,
+            HIHAT_PRESETS,
+            CLAP_PRESETS,
+            RIMSHOT_PRESETS,
+            TOM_PRESETS,
+            RIDE_PRESETS,
+            CRASH_PRESETS,
+            SHAKER_PRESETS,
+            COWBELL_PRESETS,
+        ] {
             for c in CHARACTER {
                 assert!(fam.contains(c), "family missing character preset `{}`", c);
             }
