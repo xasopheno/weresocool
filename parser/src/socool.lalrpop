@@ -74,13 +74,14 @@ Point: Init = {
          <p_axis: P> <p: Rational>
          <terms: HeaderTerms>
     "}" ";"? => {
-        let mut init = Init { f, l, g, p, background_color: None, w: None, h: None, d: None };
+        let mut init = Init { f, l, g, p, background_color: None, w: None, h: None, d: None, light: None };
         for t in terms {
             match t {
                 HeaderTerm::Bg(c) => init.background_color = Some(c),
                 HeaderTerm::W(r)  => init.w = Some(r),
                 HeaderTerm::H(r)  => init.h = Some(r),
                 HeaderTerm::D(r)  => init.d = Some(r),
+                HeaderTerm::Light(x, y, z) => init.light = Some((x, y, z)),
             }
         }
         init
@@ -95,6 +96,10 @@ Point: Init = {
 // units, the same way f/l/g/p give the audio's: the piece declaring its own
 // units. Say one and the rest follow (see the renderer's defaults) — say
 // none and the frame is derived from the resolution, as it always was.
+//
+// `light` is the other half of that basis: the frame says where the edges
+// are, the light says where it falls from. A visual op that ramps along a
+// direction and is not told which takes this one.
 HeaderTerms: Vec<HeaderTerm> = {
     <ts: ("," <HeaderTerm>)*> => ts,
 };
@@ -104,6 +109,11 @@ HeaderTerm: HeaderTerm = {
     "w:" <r: Rational> => HeaderTerm::W(r),
     "h:" <r: Rational> => HeaderTerm::H(r),
     "d:" <r: Rational> => HeaderTerm::D(r),
+    // `light: (-1, 1, 0.3)` — the direction light falls from. Parenthesised
+    // because it is one value with three parts, like `Direction`, not three
+    // independent header terms.
+    "light:" "(" <x: Rational> "," <y: Rational> "," <z: Rational> ")" =>
+        HeaderTerm::Light(x, y, z),
 };
 
 LetDefs = Lets<LetDef>;

@@ -70,6 +70,16 @@ pub struct Init {
     /// `Direction`, the volume backend raymarches through it) — so the frame
     /// has three dimensions, not two.
     pub d: Option<Rational64>,
+    /// WHERE THE LIGHT COMES FROM, as a direction in the same world the
+    /// frame describes.
+    ///
+    /// A painting has one light and everything else is value. This is that
+    /// light: any visual op that ramps along a direction and is not told
+    /// which direction takes this one, so a piece can say `Gradient` and
+    /// mean "lit the way this composition is lit". Absent → straight down
+    /// the y axis, light from above, which is what every painting
+    /// convention assumes unless told otherwise.
+    pub light: Option<(Rational64, Rational64, Rational64)>,
 }
 
 /// One optional header term. They are independent and order-free, so the
@@ -80,6 +90,7 @@ pub enum HeaderTerm {
     W(Rational64),
     H(Rational64),
     D(Rational64),
+    Light(Rational64, Rational64, Rational64),
 }
 
 #[derive(Clone, PartialEq, Debug)]

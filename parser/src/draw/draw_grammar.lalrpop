@@ -30,6 +30,7 @@ match {
     // Ops
     "Xa", "Ya", "Xf", "Yf", "AtY", "Za", "Rx", "Ry", "Rz", "Sm", "Sa",
     "Direction", "Jitter", "Mirror", "Modulate", "Tint", "Gradient",
+    "Warm", "Cool",
     "Lerp", "Spawn", "Echo", "Stagger", "Drag", "Each",
     "Every", "Sometimes", "Jux",
     "Seq", "Overlay", "Alt", "Lm", "FitLength", "Iterate",
@@ -174,6 +175,15 @@ Op: DrawOp = {
     "Gradient" "(" <x:Expr> "," <y:Expr> "," <z:Expr> ")" =>
         DrawOp::Gradient { x: Some(x), y: Some(y), z: Some(z) },
     "Gradient" => DrawOp::Gradient { x: None, y: None, z: None },
+
+    // Warm / Cool — one axis, two directions. They are the same operation
+    // (`Cool(t)` is exactly `Warm(-t)`) and would be one keyword if a draw
+    // expression could be negative — literals are unsigned and there is no
+    // unary minus, so `Warm(-0.3)` cannot be written. Two names is the
+    // honest way to reach both ends of an axis this grammar can only walk
+    // one way.
+    "Warm" <e:BareOrParenArg> => DrawOp::Temperature { amount: e, warm: true },
+    "Cool" <e:BareOrParenArg> => DrawOp::Temperature { amount: e, warm: false },
 
     // Lerp — named or positional. AnchorExpr's first-token set (Here, Xa,
     // Ya, Za, Direction, note) doesn't collide with the `to` keyword, so

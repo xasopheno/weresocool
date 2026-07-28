@@ -160,6 +160,19 @@ pub enum DrawOp {
     /// `None` on all three axes means "take the piece's `light`" — a bare
     /// `Gradient` is lit by whatever the composition declared.
     Gradient { x: Option<DrawExpr>, y: Option<DrawExpr>, z: Option<DrawExpr> },
+
+    /// Shift the mark's colour along the WARM–COOL axis, holding its
+    /// lightness. `Warm` and `Cool` are the two directions of one axis.
+    ///
+    /// Painters do not think in red-green-blue, they think in warm and cool,
+    /// and the axis does real work: warm advances, cool recedes. Written
+    /// after a `Gradient` it warms what the ramp chose; written alone it
+    /// tints a neutral mark.
+    ///
+    /// Holding lightness is the point — a warm shift that also brightens is
+    /// two decisions wearing one name, and value is what a painting is
+    /// composed in.
+    Temperature { amount: DrawExpr, warm: bool },
     // === Expansion: 1 emit → many ===
     /// Replace each emit with `n` samples linearly from `Here` to `Anchor`.
     Lerp { to: Anchor, n: DrawExpr },
