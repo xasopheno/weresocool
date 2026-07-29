@@ -1,0 +1,81 @@
+// The body of `text NAME = { "STRING", size: …, at: (x, y) }`.
+//
+// A brace bag (Law 6) whose first term is the string itself — the one thing a
+// text def cannot do without, so it is positional and everything else is named
+// and order-free.
+
+use crate::dsl_expr::{Expr, BinOp, MathFn};
+use crate::text_def::ast::TextField;
+use std::str::FromStr;
+
+grammar;
+
+match {
+    "(", ")", ",", ":", "+", "-", "*", "/",
+    "size", "at", "tracking",
+    "clock", "Sin",
+    "sin", "cos", "abs", "floor", "ceil", "sqrt", "exp",
+    "min", "max", "pow", "wrap", "clamp", "mix", "step", "smoothstep",
+
+    r"\s+"      => { },
+    r"//[^\n]*" => { },
+    r"--[^\n]*" => { },
+} else {
+    r#""[^"]*""#                        => STR_LIT,
+    r"[0-9]+/[0-9]+"                    => RATIONAL,
+    r"[0-9]+\.[0-9]+([eE][+-]?[0-9]+)?" => FLOAT_LIT,
+    r"[0-9]+([eE][+-]?[0-9]+)?"         => INT_LIT,
+    r"[a-zA-Z_][a-zA-Z0-9_]*"           => IDENT,
+}
+
+pub Body: (String, Vec<TextField>) = {
+    <s:STR_LIT> <fs:("," <Field>)*> ","? => (s[1..s.len()-1].to_string(), fs),
+};
+
+Field: TextField = {
+    "size" ":" <e:Expr> => TextField::Size(e),
+    // frame fractions, the same space `Xf`/`Yf` place in
+    "at" ":" "(" <x:Expr> "," <y:Expr> ")" => TextField::At(x, y),
+    "tracking" ":" <e:Expr> => TextField::Tracking(e),
+};
+
+Expr: Expr = {
+    <l:Expr> "+" <r:Term> => Expr::Bin(BinOp::Add, Box::new(l), Box::new(r)),
+    <l:Expr> "-" <r:Term> => Expr::Bin(BinOp::Sub, Box::new(l), Box::new(r)),
+    <t:Term> => t,
+};
+Term: Expr = {
+    <l:Term> "*" <r:Factor> => Expr::Bin(BinOp::Mul, Box::new(l), Box::new(r)),
+    <l:Term> "/" <r:Factor> => Expr::Bin(BinOp::Div, Box::new(l), Box::new(r)),
+    <f:Factor> => f,
+};
+Factor: Expr = {
+    <n:Num> => Expr::Lit(n),
+    "clock" => Expr::Clock,
+    "Sin" "(" <f:Expr> ")" =>
+        Expr::Sin { freq: Box::new(f), amp: Box::new(Expr::DefaultLit(1.0)) },
+    <f:UnaryFn> "(" <a:Expr> ")" => Expr::Call(f, vec![a]),
+    <f:BinaryFn> "(" <a:Expr> "," <b:Expr> ")" => Expr::Call(f, vec![a, b]),
+    <f:TernaryFn> "(" <a:Expr> "," <b:Expr> "," <c:Expr> ")" => Expr::Call(f, vec![a, b, c]),
+    <f:VariadicFn> "(" <a:Expr> <rest:("," <Expr>)+> ")" =>
+        rest.into_iter().fold(a, |acc, e| Expr::Call(f, vec![acc, e])),
+    "(" <e:Expr> ")" => e,
+    "-" <f:Factor> => Expr::Bin(BinOp::Sub, Box::new(Expr::DefaultLit(0.0)), Box::new(f)),
+};
+UnaryFn: MathFn = {
+    "sin" => MathFn::Sin, "cos" => MathFn::Cos, "abs" => MathFn::Abs,
+    "floor" => MathFn::Floor, "ceil" => MathFn::Ceil,
+    "sqrt" => MathFn::Sqrt, "exp" => MathFn::Exp,
+};
+BinaryFn: MathFn = { "pow" => MathFn::Pow, "wrap" => MathFn::Wrap, "step" => MathFn::Step };
+TernaryFn: MathFn = { "clamp" => MathFn::Clamp, "mix" => MathFn::Mix, "smoothstep" => MathFn::Smoothstep };
+VariadicFn: MathFn = { "min" => MathFn::Min, "max" => MathFn::Max };
+
+Num: f32 = {
+    <s:INT_LIT>   => f32::from_str(s).unwrap(),
+    <s:FLOAT_LIT> => f32::from_str(s).unwrap(),
+    <s:RATIONAL>  => {
+        let (n, d) = s.split_once('/').unwrap();
+        f32::from_str(n).unwrap() / f32::from_str(d).unwrap()
+    },
+};

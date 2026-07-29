@@ -16,6 +16,7 @@ pub mod dsl_params;
 pub mod dsl_parse_error;
 pub mod color_def;
 pub mod light;
+pub mod text_def;
 pub mod palette;
 pub mod surface_dsl;
 pub mod layer;

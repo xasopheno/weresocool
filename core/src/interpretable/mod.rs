@@ -143,7 +143,7 @@ pub fn preprocess_for_audio(
     base_dir: &std::path::Path,
     socool_path: Option<&std::path::Path>,
 ) -> Result<AudioSource, Error> {
-    use weresocool_parser::{color_def, dsl_compose, dsl_imports, dsl_let, dsl_params, draw, layer, light, palette, surface_dsl, warp};
+    use weresocool_parser::{color_def, dsl_compose, dsl_imports, dsl_let, dsl_params, draw, layer, light, palette, surface_dsl, text_def, warp};
 
     let source = dsl_imports::resolve(raw, base_dir)
         .map_err(|e| Error::with_msg(format!("import: {e}")))?;
@@ -199,6 +199,12 @@ pub fn preprocess_for_audio(
         Error::with_msg("light block failed to parse (see report above)")
     })?;
     let source = light_pre.stripped;
+    // Words too — a leaf like a light, and the audio path has no use for one.
+    let text_pre = text_def::extract_texts(&source).map_err(|e| {
+        e.display(false);
+        Error::with_msg("text block failed to parse (see report above)")
+    })?;
+    let source = text_pre.stripped;
     let warp_pre = warp::extract_warps(&source).map_err(|e| {
         e.display(false);
         Error::with_msg("warp block failed to parse (see report above)")

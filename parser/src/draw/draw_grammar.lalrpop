@@ -29,7 +29,7 @@ match {
 
     // Ops
     "Xa", "Ya", "Xf", "Yf", "AtY", "Za", "Rx", "Ry", "Rz", "Sm", "Sa",
-    "Direction", "Jitter", "Mirror", "Modulate", "Tint", "Gradient",
+    "Direction", "Jitter", "Mirror", "Modulate", "Tint", "Gradient", "Into",
     "Warm", "Cool",
     "Lerp", "Spawn", "Echo", "Stagger", "Drag", "Each",
     "Every", "Sometimes", "Jux",
@@ -179,6 +179,11 @@ Op: DrawOp = {
     "Gradient" "(" <n:Name> ")" =>
         DrawOp::Gradient { x: None, y: None, z: None, light: Some(n) },
     "Gradient" => DrawOp::Gradient { x: None, y: None, z: None, light: None },
+
+    // Into — the marks fall into a `text` def's letterforms. A bare form
+    // means all the way there.
+    "Into" "(" <n:Name> "," <t:Expr> ")" => DrawOp::Into { name: n, t },
+    "Into" "(" <n:Name> ")" => DrawOp::Into { name: n, t: DrawExpr::DefaultLit(1.0) },
 
     // Warm / Cool — one axis, two directions. They are the same operation
     // (`Cool(t)` is exactly `Warm(-t)`) and would be one keyword if a draw

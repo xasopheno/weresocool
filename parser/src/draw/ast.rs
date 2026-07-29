@@ -171,6 +171,23 @@ pub enum DrawOp {
         light: Option<String>,
     },
 
+    /// THE MARKS FALL INTO A WORD.
+    ///
+    /// `Into(secret, t)` migrates this note's figure onto one pen stroke of a
+    /// `text` def — `t` 0 leaves it where the music put it, 1 lands it on the
+    /// letterform, and anything between is on its way. `t` is an expression,
+    /// so the reveal is COMPOSED rather than scripted: `Into(secret,
+    /// cycle(drums))` assembles the word once per drum loop and disperses it
+    /// again, and `Into(secret, smoothstep(6, 10, clock))` has it arrive at
+    /// bar six.
+    ///
+    /// WHICH stroke is the note's own index, so the word is written in the
+    /// order the music plays it — the text is not drawn onto the piece, it is
+    /// spelled by it. Within the stroke, an emit's `Stroke` parameter is where
+    /// it lands, so the draw's sense of "along the expansion" and the font's
+    /// sense of "along the pen stroke" turn out to be the same idea.
+    Into { name: String, t: DrawExpr },
+
     /// Shift the mark's colour along the WARM–COOL axis, holding its
     /// lightness. `Warm` and `Cool` are the two directions of one axis.
     ///
