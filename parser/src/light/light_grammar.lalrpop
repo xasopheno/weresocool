@@ -14,7 +14,7 @@ grammar;
 
 match {
     "(", ")", ",", ":", "+", "-", "*", "/",
-    "from", "color", "gain", "ambient",
+    "from", "point", "falloff", "color", "gain", "ambient",
     "clock", "Sin",
     "sin", "cos", "abs", "floor", "ceil", "sqrt", "exp",
     "min", "max", "pow", "wrap", "clamp", "mix", "step", "smoothstep",
@@ -44,6 +44,11 @@ Field: LightField = {
     // Whence — the direction it falls FROM. One value with three parts, so
     // parenthesised, exactly like the header form it replaces.
     "from" ":" "(" <x:Expr> "," <y:Expr> "," <z:Expr> ")" => LightField::From(x, y, z),
+    // `from` is then WHERE IT STANDS rather than which way it arrives. A point
+    // light's direction is different for every mark, so it is the only kind
+    // that can cross a scene. Same marker slot as `ambient`.
+    "point" => LightField::Point,
+    "falloff" ":" <k:Expr> => LightField::Falloff(k),
     // `#ffd9a8`, or any CSS / xkcd colour name — the same spellings
     // `Color [...]` accepts, resolved by the host with `parse_css_color`.
     "color" ":" <c:ColorLit> => LightField::Color(c),
