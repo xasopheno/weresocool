@@ -474,7 +474,7 @@ fn format_lalrpop_error<T: std::fmt::Debug>(e: &lalrpop_util::ParseError<usize, 
 /// Check if a line starts with a DSL command
 fn starts_with_dsl_command(line: &str) -> bool {
     // Short commands need whitespace/comma check to avoid false matches
-    let short_commands = ["Xm", "Xa", "Ym", "Ya", "Zm", "Za", "Smx", "Smy", "Smz", "Sm", "Sa", "Vm", "Va", "Lm", "Am", "Bm", "Ba", "Die", "Rx", "Ry", "Rz", "SwingX", "SwingY", "SwingZ", "AsIs", "None"];
+    let short_commands = ["Xm", "Xa", "Ym", "Ya", "Zm", "Za", "Smx", "Smy", "Smz", "Sm", "Sa", "Vm", "Va", "Lm", "Am", "Bm", "Ba", "Die", "Rx", "Ry", "Rz", "SwingX", "SwingY", "SwingZ", "AsIs", "None", "Shade"];
     for cmd in &short_commands {
         if line.starts_with(cmd) {
             let rest = &line[cmd.len()..];
@@ -493,6 +493,14 @@ fn starts_with_dsl_command(line: &str) -> bool {
 #[cfg(test)]
 mod tests {
     use super::*;
+
+    #[test]
+    fn shade_names_a_light_and_rides_out_as_a_marker() {
+        // The light table lives in the visual host, so the name leaves here as
+        // a comment — inert WGSL, read by kintaro when it bakes the shader.
+        let out = compile_dsl_to_wgsl("Sm 0.4; Shade sun").unwrap();
+        assert!(out.contains("/*@shade:sun@*/"), "{out}");
+    }
 
     #[test]
     fn test_simple_multiply() {

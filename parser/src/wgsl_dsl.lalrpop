@@ -87,6 +87,14 @@ BaseOp: VisualOp = {
     "Bm" <v:WgslVal> => VisualOp::bm(v),
     "Ba" <v:WgslVal> => VisualOp::ba(v),
     "Die" <v:WgslVal> => VisualOp::die(v),
+    // `Shade sun` — aim THIS brush's marks at one declared light instead of
+    // every light at once. The name can't be resolved to an index here (the
+    // light table lives in the visual host), so it rides out as a comment
+    // marker the way `Mod <name>` does; kintaro reads it when it bakes the
+    // mark shader. A comment is inert in both templates that compile this
+    // code, which is why it can be one.
+    "Shade" <name:r"[a-zA-Z_][a-zA-Z0-9_]+"> =>
+        VisualOp::Raw { wgsl: format!("/*@shade:{}@*/", name) },
     "AsIs" => VisualOp::AsIs,
     // Source keyword `None` → AST variant `Mute` (renamed to avoid
     // shadowing `Option::None` in lalrpop-generated parser code).

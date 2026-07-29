@@ -171,10 +171,14 @@ Op: DrawOp = {
     // a palette ramp along an axis. What differs is the DOMAIN, and the
     // domain is given by where it is written — in the voice chain the ramp
     // spans one stamp, here it spans the whole set of marks the note emits.
-    // A bare `Gradient` takes the piece's `light` direction.
+    // A bare `Gradient` takes the piece's first declared light; `Gradient(sun)`
+    // names WHICH light the ramp follows — a piece can light itself from two
+    // sides and say which side a figure answers to.
     "Gradient" "(" <x:Expr> "," <y:Expr> "," <z:Expr> ")" =>
-        DrawOp::Gradient { x: Some(x), y: Some(y), z: Some(z) },
-    "Gradient" => DrawOp::Gradient { x: None, y: None, z: None },
+        DrawOp::Gradient { x: Some(x), y: Some(y), z: Some(z), light: None },
+    "Gradient" "(" <n:Name> ")" =>
+        DrawOp::Gradient { x: None, y: None, z: None, light: Some(n) },
+    "Gradient" => DrawOp::Gradient { x: None, y: None, z: None, light: None },
 
     // Warm / Cool — one axis, two directions. They are the same operation
     // (`Cool(t)` is exactly `Warm(-t)`) and would be one keyword if a draw

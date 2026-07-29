@@ -159,7 +159,17 @@ pub enum DrawOp {
     ///
     /// `None` on all three axes means "take the piece's `light`" — a bare
     /// `Gradient` is lit by whatever the composition declared.
-    Gradient { x: Option<DrawExpr>, y: Option<DrawExpr>, z: Option<DrawExpr> },
+    ///
+    /// `light` names WHICH one: `Gradient(sun)` ramps along the light called
+    /// `sun`, which is the whole reason a light has a name. Absent, the ramp
+    /// follows the first directional light, which is what a piece with one
+    /// light has always meant.
+    Gradient {
+        x: Option<DrawExpr>,
+        y: Option<DrawExpr>,
+        z: Option<DrawExpr>,
+        light: Option<String>,
+    },
 
     /// Shift the mark's colour along the WARM–COOL axis, holding its
     /// lightness. `Warm` and `Cool` are the two directions of one axis.

@@ -143,7 +143,7 @@ pub fn preprocess_for_audio(
     base_dir: &std::path::Path,
     socool_path: Option<&std::path::Path>,
 ) -> Result<AudioSource, Error> {
-    use weresocool_parser::{dsl_compose, dsl_imports, dsl_let, dsl_params, draw, layer, palette, surface_dsl, warp};
+    use weresocool_parser::{dsl_compose, dsl_imports, dsl_let, dsl_params, draw, layer, light, palette, surface_dsl, warp};
 
     let source = dsl_imports::resolve(raw, base_dir)
         .map_err(|e| Error::with_msg(format!("import: {e}")))?;
@@ -183,6 +183,16 @@ pub fn preprocess_for_audio(
     // Each extractor's `display(false)` prints the rich file:line:col report
     // (same renderer kintaro's extract path uses); the Error we bubble up
     // only needs to say which DSL failed.
+    //
+    // Lights first: they are leaves (nothing refers to a light from inside a
+    // warp or a draw body) and the audio path has no use for them at all, so
+    // getting them out of the way early keeps every later extractor unaware
+    // that the keyword exists.
+    let light_pre = light::extract_lights(&source).map_err(|e| {
+        e.display(false);
+        Error::with_msg("light block failed to parse (see report above)")
+    })?;
+    let source = light_pre.stripped;
     let warp_pre = warp::extract_warps(&source).map_err(|e| {
         e.display(false);
         Error::with_msg("warp block failed to parse (see report above)")
