@@ -143,7 +143,7 @@ pub fn preprocess_for_audio(
     base_dir: &std::path::Path,
     socool_path: Option<&std::path::Path>,
 ) -> Result<AudioSource, Error> {
-    use weresocool_parser::{dsl_compose, dsl_imports, dsl_let, dsl_params, draw, layer, light, palette, surface_dsl, warp};
+    use weresocool_parser::{color_def, dsl_compose, dsl_imports, dsl_let, dsl_params, draw, layer, light, palette, surface_dsl, warp};
 
     let source = dsl_imports::resolve(raw, base_dir)
         .map_err(|e| Error::with_msg(format!("import: {e}")))?;
@@ -179,6 +179,12 @@ pub fn preprocess_for_audio(
         .map_err(|e| Error::with_msg(format!("let binding: {e}")))?;
     let source = dsl_compose::expand(&source)
         .map_err(|e| Error::with_msg(format!("draw composition: {e}")))?;
+
+    // Named palettes expand to the `Color [ … ]` clauses the audio grammar
+    // already reads, so this has to run before it — and before the visual
+    // extractors, so a `| zorn` never reaches one looking for a warp.
+    let source = color_def::expand(&source)
+        .map_err(|e| Error::with_msg(format!("color def: {e}")))?;
 
     // Each extractor's `display(false)` prints the rich file:line:col report
     // (same renderer kintaro's extract path uses); the Error we bubble up

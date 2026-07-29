@@ -12,6 +12,10 @@ use num_rational::Rational64;
 pub mod xkcd;
 pub use xkcd::{lookup_xkcd_color, all_xkcd_colors, XKCD_COLORS};
 
+// The perceptual space. Shared with the renderer so "what colour is halfway"
+// has exactly one answer in this language.
+pub mod oklab;
+
 // pub type GenColorMap = IndexMap<String, Box<dyn GenColor>>;
 
 /// Palette table: id → colour, plus the id counter.

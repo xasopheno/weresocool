@@ -14,6 +14,7 @@ pub mod dsl_compose;
 pub mod dsl_let;
 pub mod dsl_params;
 pub mod dsl_parse_error;
+pub mod color_def;
 pub mod light;
 pub mod palette;
 pub mod surface_dsl;

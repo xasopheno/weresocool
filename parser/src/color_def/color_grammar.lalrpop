@@ -1,0 +1,69 @@
+// The right-hand side of `color NAME = …`.
+//
+// Two levels, because they are two jobs: COLOUR functions build one colour
+// out of others (lowercase — they are pure math, Law 4's convention), and
+// PALETTE ops transform a whole ramp (Uppercase — they are language ops).
+
+use crate::color_def::ast::{ColorExpr, PaletteBase, PaletteExpr, PaletteOp};
+use std::str::FromStr;
+
+grammar;
+
+match {
+    "[", "]", "(", ")", ",", "|", ".", "/",
+    "mix", "complement", "shade", "tint", "desaturate", "rotate",
+    "Reverse", "Complement", "Desaturate", "Rotate",
+
+    r"\s+"      => { },
+    r"//[^\n]*" => { },
+    r"--[^\n]*" => { },
+} else {
+    r"#[0-9a-fA-F]{6}"                  => HEX_LIT,
+    r"[0-9]+\.[0-9]+([eE][+-]?[0-9]+)?" => FLOAT_LIT,
+    r"[0-9]+"                           => INT_LIT,
+    r"[a-zA-Z_][a-zA-Z0-9_]*"           => IDENT,
+}
+
+pub Palette: PaletteExpr = {
+    <base:Base> <ops:("|" <Op>)*> => PaletteExpr { base, ops },
+};
+
+Base: PaletteBase = {
+    "[" <first:Color> <rest:("," <Color>)*> ","? "]" => {
+        let mut v = vec![first];
+        v.extend(rest);
+        PaletteBase::List(v)
+    },
+    <n:IDENT> => PaletteBase::Named(n.to_string()),
+};
+
+Op: PaletteOp = {
+    "Reverse" => PaletteOp::Reverse,
+    "Complement" => PaletteOp::Complement,
+    "Desaturate" "(" <t:Num> ")" => PaletteOp::Desaturate(t),
+    "Rotate" "(" <t:Num> ")" => PaletteOp::Rotate(t),
+};
+
+Color: ColorExpr = {
+    <h:HEX_LIT> => ColorExpr::Literal(h.to_string()),
+    // `zorn.2` — the nth colour of a named palette. Checked at expansion, so
+    // an out-of-range index names the palette and its length in the error.
+    <n:IDENT> "." <i:INT_LIT> =>
+        ColorExpr::Element(n.to_string(), usize::from_str(i).unwrap()),
+    // A bare name inside a list is a CSS or xkcd colour — outside a list it
+    // would be a palette, and the brackets are what tell them apart.
+    <n:IDENT> => ColorExpr::Literal(n.to_string()),
+    "mix" "(" <a:Color> "," <b:Color> "," <t:Num> ")" =>
+        ColorExpr::Mix(Box::new(a), Box::new(b), t),
+    "complement" "(" <c:Color> ")" => ColorExpr::Complement(Box::new(c)),
+    "shade" "(" <c:Color> "," <t:Num> ")" => ColorExpr::Shade(Box::new(c), t),
+    "tint" "(" <c:Color> "," <t:Num> ")" => ColorExpr::Tint(Box::new(c), t),
+    "desaturate" "(" <c:Color> "," <t:Num> ")" => ColorExpr::Desaturate(Box::new(c), t),
+    "rotate" "(" <c:Color> "," <t:Num> ")" => ColorExpr::Rotate(Box::new(c), t),
+};
+
+Num: f32 = {
+    <s:INT_LIT>   => f32::from_str(s).unwrap(),
+    <s:FLOAT_LIT> => f32::from_str(s).unwrap(),
+    <n:INT_LIT> "/" <d:INT_LIT> => f32::from_str(n).unwrap() / f32::from_str(d).unwrap(),
+};
