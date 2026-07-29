@@ -263,6 +263,13 @@ fn rewrite_surface_idents(wgsl: &str) -> String {
     out = Regex::new(r"\bTime\b").unwrap().replace_all(&out, "time").into_owned();
     // `Tau` → the constant.
     out = Regex::new(r"\bTau\b").unwrap().replace_all(&out, "6.28318530718").into_owned();
+    // `Wrap` → the shader's `wrap` helper. Capitalised by the case-law sweep
+    // (language terms are Uppercase) everywhere INCLUDING inside quoted brush
+    // expressions, which pass through verbatim — so every piece that loops a
+    // brush value has been handing naga an undefined `Wrap` since. The
+    // shared-grammar path already lowers `MathFn::Wrap`; this is the quoted
+    // path catching up with it.
+    out = Regex::new(r"\bWrap\b").unwrap().replace_all(&out, "wrap").into_owned();
     out
 }
 
