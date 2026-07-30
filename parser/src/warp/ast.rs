@@ -183,6 +183,22 @@ pub enum WarpOp {
     /// = elevation) and render it as a lit 3D relief flattened to 2D — the
     /// Lieberman move: form shown as smooth gradient, not as objects.
     /// `height` scales the terrain steepness; `lx`/`ly` aim the light.
+    /// RAKING LIGHT — the third face of a `light` def, on the CANVAS.
+    ///
+    /// `Raking { from: h, light: sun, depth: 0.04 }` reads a channel as a
+    /// HEIGHT FIELD, builds the surface normal from its gradient, and lights
+    /// it with a light the piece already declared. `Gradient(sun)` lights the
+    /// figure, `Shade sun` lights the mark, this lights the paint's surface —
+    /// one name, three receivers.
+    ///
+    /// It is not a new kind of lighting. `grad()` already existed as a
+    /// velocity source for the substance verbs and never as an expression;
+    /// this is that gradient turned into a normal and handed to the same
+    /// half-lambert the marks use. Height is a state channel like any other,
+    /// so anything that can write a channel can emboss the surface — a noise,
+    /// a mask, a word.
+    Raking { from: Chan, light: String, depth: WarpExpr },
+
     /// `Relief(height: 4, lx: 0.4, ly: 0.6)`.
     Relief { height: WarpExpr, lx: WarpExpr, ly: WarpExpr, ambient: WarpExpr },
     /// THE CLOTH: composite the incoming field as PIGMENT soaked into a

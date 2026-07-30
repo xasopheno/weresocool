@@ -39,7 +39,7 @@ match {
     "|", "(", ")", "{", "}", "[", "]", ",", ";", ":", "+", "-", "*", "/",
 
     "Prev", "Scene", "Volume", "Fluid", "Raymarch", "Osc", "Noise", "Gradient", "Solid",
-    "Time", "Clock", "Sin", "Cycle", "Choose", "Rand", "Hit", "HitX", "HitY", "Dist", "HitAge", "Displace", "Ripple", "Glow", "Stir", "Bulge", "Relief", "Stain", "Watercolor",
+    "Time", "Clock", "Sin", "Cycle", "Choose", "Rand", "Hit", "HitX", "HitY", "Dist", "HitAge", "Displace", "Ripple", "Glow", "Stir", "Bulge", "Relief", "Raking", "Stain", "Watercolor",
 
     "Scale", "Zoom", "Rotate", "Scroll", "Swirl", "Fold", "Kaleid",
     "ChromaShift", "CurlFlow", "Wave", "Iterate",
@@ -56,7 +56,7 @@ match {
     "Raw",
 
     // Substance verbs (MEDIUM.md M1) + their structural keywords.
-    "Diffuse", "Advect", "Force", "Deposit", "Propagate", "Flow", "Set", "state", "grad", "lap", "by", "from", "gated",
+    "Diffuse", "Advect", "Force", "Deposit", "Propagate", "Flow", "Set", "state", "grad", "lap", "by", "from", "gated", "light", "depth",
     "Relax",
 
     // Pure math functions (lowercase — distinct from the capitalized ops/
@@ -257,6 +257,12 @@ Op: WarpOp = {
         let (radius, amount, mirror) = h::extract_bulge_args(a);
         WarpOp::Bulge { ch: c, radius, amount, mirror }
     },
+
+    // Raking(...) — light a channel's height field with a NAMED light.
+    "Raking" "{" "from" ":" <c:Chan> "," "light" ":" <n:Name> "}" =>
+        WarpOp::Raking { from: c, light: n.to_string(), depth: WarpExpr::DefaultLit(0.04) },
+    "Raking" "{" "from" ":" <c:Chan> "," "light" ":" <n:Name> "," "depth" ":" <d:Expr> "}" =>
+        WarpOp::Raking { from: c, light: n.to_string(), depth: d },
 
     // Relief(...) — collapse the source-as-height-field into lit 2D form.
     "Relief" "{" <a:NamedArgList> "}" => {
