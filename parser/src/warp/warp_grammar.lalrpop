@@ -260,9 +260,14 @@ Op: WarpOp = {
 
     // Raking(...) — light a channel's height field with a NAMED light.
     "Raking" "{" "from" ":" <c:Chan> "," "light" ":" <n:Name> "}" =>
-        WarpOp::Raking { from: c, light: n.to_string(), depth: WarpExpr::DefaultLit(0.04) },
+        WarpOp::Raking { from: c, image: None, light: n.to_string(), depth: WarpExpr::DefaultLit(0.04) },
     "Raking" "{" "from" ":" <c:Chan> "," "light" ":" <n:Name> "," "depth" ":" <d:Expr> "}" =>
-        WarpOp::Raking { from: c, light: n.to_string(), depth: d },
+        WarpOp::Raking { from: c, image: None, light: n.to_string(), depth: d },
+    // AN IMAGE AS A HEIGHT FIELD — a word, a mask, another def's picture.
+    "Raking" "{" "from" ":" "Scene" "(" <i:Name> ")" "," "light" ":" <n:Name> "}" =>
+        WarpOp::Raking { from: ast::Chan::A, image: Some(i.to_string()), light: n.to_string(), depth: WarpExpr::DefaultLit(0.04) },
+    "Raking" "{" "from" ":" "Scene" "(" <i:Name> ")" "," "light" ":" <n:Name> "," "depth" ":" <d:Expr> "}" =>
+        WarpOp::Raking { from: ast::Chan::A, image: Some(i.to_string()), light: n.to_string(), depth: d },
 
     // Relief(...) — collapse the source-as-height-field into lit 2D form.
     "Relief" "{" <a:NamedArgList> "}" => {

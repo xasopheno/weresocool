@@ -197,7 +197,13 @@ pub enum WarpOp {
     /// half-lambert the marks use. Height is a state channel like any other,
     /// so anything that can write a channel can emboss the surface — a noise,
     /// a mask, a word.
-    Raking { from: Chan, light: String, depth: WarpExpr },
+    /// `from` is a state channel; `image` names a def whose IMAGE is read as
+    /// the height instead — `Raking { from: Scene(secret), light: sun }`. The
+    /// second form is what lets a word be SUNKEN into the surface rather than
+    /// painted on it: an image becomes a height field, and the crossing point
+    /// between the image world (masks, layers, words) and the field world
+    /// (channels, substance verbs) is exactly here.
+    Raking { from: Chan, image: Option<String>, light: String, depth: WarpExpr },
 
     /// `Relief(height: 4, lx: 0.4, ly: 0.6)`.
     Relief { height: WarpExpr, lx: WarpExpr, ly: WarpExpr, ambient: WarpExpr },
