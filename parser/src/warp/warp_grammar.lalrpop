@@ -61,7 +61,7 @@ match {
 
     // Pure math functions (lowercase — distinct from the capitalized ops/
     // compositors like `Max`/`Mix`). Law-4 function set; see `dsl_expr::MathFn`.
-    "sin", "cos", "abs", "floor", "ceil", "sqrt", "exp", "min", "max", "pow", "Wrap", "clamp", "mix", "step", "smoothstep", "slope",
+    "sin", "cos", "abs", "floor", "ceil", "sqrt", "exp", "min", "max", "pow", "Wrap", "clamp", "mix", "step", "smoothstep", "slope", "gradx", "grady",
 
     r"\s+"          => { },
     r"//[^\n]*"     => { },
@@ -594,6 +594,13 @@ Factor: WarpExpr = {
     // composes with every op that takes a number. Paint pools where the
     // surface is flat and runs where it is steep, and that is now sayable.
     "slope" "(" <c:Chan> ")" => WarpExpr::Field(format!("slope:{:?}", c)),
+    // The gradient's COMPONENTS. `slope` is its magnitude — how steep; these
+    // are which way, and they are what a scalar expression language can hold
+    // of a vector without growing a vector type. Downhill is the negative
+    // gradient, so `Scroll(gradx(h) * -k, grady(h) * -k)` runs a wash the way
+    // water actually goes.
+    "gradx" "(" <c:Chan> ")" => WarpExpr::Field(format!("gradx:{:?}", c)),
+    "grady" "(" <c:Chan> ")" => WarpExpr::Field(format!("grady:{:?}", c)),
     "Clock" => WarpExpr::Clock,
     "Sin" "(" <f:Expr> ")" =>
         WarpExpr::Sin { freq: Box::new(f), amp: Box::new(WarpExpr::DefaultLit(1.0)) },
