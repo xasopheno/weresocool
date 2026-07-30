@@ -278,3 +278,16 @@ pub fn extract_background_args(args: Vec<(String, BgArgVal)>)
     }
     (top.0, top.1, top.2, bot.0, bot.1, bot.2, split, soft)
 }
+
+/// The key a channel is written under inside a `slope:`/`gradx:`/`grady:`
+/// marker. A declared `state {}` name keeps its NAME so kintaro's
+/// resolve-fields pass can canonicalise it like every other channel
+/// reference; a builtin keeps its spelling. Stringifying the Debug repr
+/// instead — which is what this did first — produced `Named("h")`, which no
+/// resolver recognises, so `slope(h)` silently read the wrong channel.
+pub fn chan_key(c: &crate::warp::ast::Chan) -> String {
+    match c {
+        crate::warp::ast::Chan::Named(n) => n.clone(),
+        other => format!("{:?}", other),
+    }
+}
