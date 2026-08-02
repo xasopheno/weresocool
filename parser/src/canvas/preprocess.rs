@@ -66,6 +66,22 @@ pub fn extract_canvases(source: &str) -> Result<CanvasPreprocessed, CanvasPrepro
     let mut i = 0usize;
 
     while i < bytes.len() {
+        // COMMENTS ARE NOT SOURCE. A line comment gets copied through
+        // verbatim without being scanned, because prose talks about code:
+        // the medium library's own documentation says
+        // "write your own `canvas linen = { … }`", and a comment-blind
+        // scanner reads that as a def and then fails to parse `…`. Cost an
+        // afternoon the first time; the same blindness is a known trap in
+        // the other extractors.
+        if bytes[i] == b'-' && i + 1 < bytes.len() && bytes[i + 1] == b'-'
+            || bytes[i] == b'/' && i + 1 < bytes.len() && bytes[i + 1] == b'/'
+        {
+            while i < bytes.len() && bytes[i] != b'\n' {
+                out.push(bytes[i]);
+                i += 1;
+            }
+            continue;
+        }
         // `canvas` at a word boundary — an audio def called `canvassing` must
         // survive untouched, and so must the many pieces with a local
         // `warp canvas = { … }`, which does not start with the bare keyword.
@@ -185,6 +201,16 @@ mod tests {
         // Six pieces ship `warp canvas = { … }`. The keyword only binds at the
         // start of a def, so those must survive this pass untouched.
         let src = "warp canvas = { Scene }";
+        let pre = extract_canvases(src).unwrap();
+        assert!(pre.canvases.is_empty());
+        assert_eq!(pre.stripped, src);
+    }
+
+    #[test]
+    fn a_canvas_named_in_a_comment_is_prose_not_a_def() {
+        // The medium library's own docs say this. A comment-blind scan reads
+        // it as a def and dies on the ellipsis.
+        let src = "-- shadow it by writing `canvas linen = { … }` in the piece.\nx = { Fm 1 }";
         let pre = extract_canvases(src).unwrap();
         assert!(pre.canvases.is_empty());
         assert_eq!(pre.stripped, src);

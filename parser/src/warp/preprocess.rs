@@ -117,6 +117,26 @@ pub fn extract_warps(source: &str) -> Result<Preprocessed, PreprocessError> {
     let mut i = 0usize;
 
     while i < bytes.len() {
+        // COMMENTS ARE NOT SOURCE. Copy a line comment through verbatim
+        // without scanning it: prose talks about code, and a comment-blind
+        // scan turns documentation into a def. The medium library documents
+        // its own idiom as
+        //
+        //     --     warp paint = { Prev | Lay { … } | Paint(linen) }
+        //
+        // which this used to extract as a real warp named `paint` and then
+        // fail to parse, taking the whole piece down. It also meant a
+        // commented-out warp was still applied — you could not switch one off
+        // by commenting it out, which is the first thing anyone tries.
+        if (bytes[i] == b'-' && i + 1 < bytes.len() && bytes[i + 1] == b'-')
+            || (bytes[i] == b'/' && i + 1 < bytes.len() && bytes[i + 1] == b'/')
+        {
+            while i < bytes.len() && bytes[i] != b'\n' {
+                out.push(bytes[i]);
+                i += 1;
+            }
+            continue;
+        }
         // Look for the keyword `warp` at a word boundary.
         if matches_keyword(bytes, i, b"warp") {
             let block_start = i;
