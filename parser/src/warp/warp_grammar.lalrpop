@@ -48,7 +48,7 @@ match {
     "Vignette", "Posterize", "Tint", "Bloom",
     "Background", "Clear", "Fade",
 
-    "DepthVis", "Opaque", "Persist",
+    "Opaque", "Persist",
 
     "AsIs", "None",
     "Seq", "Overlay", "Lm", "FitLength",
@@ -350,7 +350,6 @@ Op: WarpOp = {
             split: f.6, soft: f.7,
         }
     },
-    "DepthVis" => WarpOp::DepthVis,
     "Opaque"   => WarpOp::Opaque,
     "Persist"  => WarpOp::Persist,
     "AsIs"     => WarpOp::AsIs,

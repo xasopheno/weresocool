@@ -299,20 +299,13 @@ pub enum WarpOp {
     Persist,
     /// Bloom: `Bloom { threshold: 0.5, strength: 0.6 }` — adds halo for bright pixels.
     Bloom { threshold: WarpExpr, strength: WarpExpr },
-    /// Debug visualisation of the depth buffer (NDC depth stored in the
-    /// scene texture's `.a` channel by the brush fragment). Outputs a
-    /// turbo-style heatmap so you can verify depth is meaningful for the
-    /// composition — near brushes show one colour, far brushes another.
-    /// Replaces whatever colour was sampled this step. Drop it from the
-    /// warp chain once you've confirmed depth makes sense.
-    DepthVis,
     /// Decouple this chain's coverage from its brightness: alpha = "the
     /// scene has geometry here" instead of the default `max(rgb)`.
     ///
-    /// Presence is `max(scene luminance, scene depth)` — the brush
-    /// fragment stores NDC depth in the scene texture's `.a`, so even a
-    /// pitch-black stamp registers. A chain containing `Opaque` skips the
-    /// `alpha = max(rgb)` epilogue (which would otherwise overwrite it).
+    /// Presence is `max(scene luminance, scene coverage)` — the brush
+    /// fragment stores the mark's own coverage in the scene texture's `.a`,
+    /// so even a pitch-black stamp registers. A chain containing `Opaque`
+    /// skips the `alpha = max(rgb)` epilogue (which would overwrite it).
     ///
     /// This is what makes the `over` / `multiply` blend modes able to
     /// OCCLUDE: a dark silhouette layer (`warp trees over = { ... | Opaque }`)
