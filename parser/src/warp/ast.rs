@@ -85,7 +85,7 @@ pub enum Source {
 /// (Gray-Scott u/v, CA cells, height+velocity...).
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub enum Chan {
-    R, G, B, A, Rg, Gb, Rgb, Sx, Sy, Sz, Sw, Sxy, Szw,
+    R, G, B, A, Rg, Gb, Rgb, Sx, Sy, Sz, Sw, Sxy, Sxyz, Szw,
     /// An unresolved `state {}`-declared field name ("water", "organism").
     /// kintaro's resolve-fields pass rewrites it to a concrete variant
     /// before codegen; surviving to codegen is a bug (warn + treat as R).

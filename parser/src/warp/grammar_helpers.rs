@@ -20,7 +20,7 @@ pub fn parse_chan(s: &str) -> Chan {
         "R" => Chan::R, "G" => Chan::G, "B" => Chan::B, "A" => Chan::A,
         "RG" => Chan::Rg, "GB" => Chan::Gb, "RGB" => Chan::Rgb,
         "Sx" => Chan::Sx, "Sy" => Chan::Sy, "Sz" => Chan::Sz, "Sw" => Chan::Sw,
-        "Sxy" => Chan::Sxy, "Szw" => Chan::Szw,
+        "Sxy" => Chan::Sxy, "Sxyz" => Chan::Sxyz, "Szw" => Chan::Szw,
         // Anything else is (potentially) a `state {}`-declared field name —
         // kintaro's resolve-fields pass maps it to a concrete channel, and
         // warns loudly if the name is unknown there.
