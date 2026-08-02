@@ -1,0 +1,151 @@
+// Canvas DSL grammar — the body of `canvas NAME = { … }`.
+//
+// A brace bag (DSL_STYLE Law 6): order-free `key: value` terms, comma
+// separated, where a value may itself be a brace bag (`absorb: { density: 9,
+// neutral: 0.2 }`). Nesting is what lets a surface have eight knobs without
+// eight top-level names — the ones that belong together are written together.
+//
+// Every key and every inner key is optional; the defaults live in
+// `canvas::ast::defaults` so grammar, docs and codegen cannot drift.
+//
+// The value sublanguage is the shared `dsl_expr::Expr` (Law 4) restricted to
+// what a surface can have: numbers, arithmetic, `clock`, and the pure math
+// functions. No `note.*` — a canvas does not belong to a note; it is the thing
+// notes are painted ON.
+
+use crate::dsl_expr::{Expr, BinOp, MathFn};
+use crate::canvas::ast::CanvasField;
+use crate::canvas::helpers::{SubVal, weave_of, absorb_of, sheen_of, relief_of, reflect_of};
+use std::str::FromStr;
+
+grammar;
+
+match {
+    "(", ")", "{", "}", ",", ":", "+", "-", "*", "/",
+    "ground", "weave", "tooth", "absorb", "sheen", "edge", "relief", "reflect",
+    "scale", "depth", "slub", "density", "neutral", "chroma",
+    "knee", "gain", "tint", "sharp", "light",
+    "clock", "Sin",
+    "sin", "cos", "abs", "floor", "ceil", "sqrt", "exp",
+    "min", "max", "pow", "wrap", "clamp", "mix", "step", "smoothstep",
+
+    r"\s+"      => { },
+    r"//[^\n]*" => { },
+    r"--[^\n]*" => { },
+} else {
+    r"#[0-9a-fA-F]{6}"                  => HEX_LIT,
+    r"[0-9]+/[0-9]+"                    => RATIONAL,
+    r"[0-9]+\.[0-9]+([eE][+-]?[0-9]+)?" => FLOAT_LIT,
+    r"[0-9]+([eE][+-]?[0-9]+)?"         => INT_LIT,
+    r"[a-zA-Z_][a-zA-Z0-9_]*"           => IDENT,
+}
+
+/// The whole body: zero or more fields, trailing comma allowed.
+pub Fields: Vec<CanvasField> = {
+    => Vec::new(),
+    <first:Field> <rest:("," <Field>)*> ","? => {
+        let mut v = vec![first];
+        v.extend(rest);
+        v
+    },
+};
+
+Field: CanvasField = {
+    "ground" ":" <c:ColorLit>            => CanvasField::Ground(c),
+    "tooth"  ":" <e:Expr>                => CanvasField::Tooth(e),
+    "edge"   ":" <e:Expr>                => CanvasField::Edge(e),
+    "weave"   ":" "{" <a:SubArgs> "}"    => CanvasField::Weave(weave_of(a)),
+    "absorb"  ":" "{" <a:SubArgs> "}"    => CanvasField::Absorb(absorb_of(a)),
+    "sheen"   ":" "{" <a:SubArgs> "}"    => CanvasField::Sheen(sheen_of(a)),
+    "relief"  ":" "{" <a:SubArgs> "}"    => CanvasField::Relief(relief_of(a)),
+    "reflect" ":" "{" <a:SubArgs> "}"    => CanvasField::Reflect(reflect_of(a)),
+};
+
+/// An inner brace bag: `key: expr` or `light: name`, order-free. Parsed flat
+/// and sorted out by the `*_of` helpers below, exactly like the warp grammar's
+/// `NamedArgList` — encoding optionality in the grammar itself would mean a
+/// rule per subset.
+SubArgs: Vec<(String, SubVal)> = {
+    => Vec::new(),
+    <first:SubArg> <rest:("," <SubArg>)*> ","? => {
+        let mut v = vec![first];
+        v.extend(rest);
+        v
+    },
+};
+
+SubArg: (String, SubVal) = {
+    "light" ":" <n:IDENT> => ("light".to_string(), SubVal::Name(n.to_string())),
+    <k:SubKey> ":" <e:Expr> => (k, SubVal::Num(e)),
+};
+
+SubKey: String = {
+    "scale" => "scale".to_string(),
+    "depth" => "depth".to_string(),
+    "slub" => "slub".to_string(),
+    "density" => "density".to_string(),
+    "neutral" => "neutral".to_string(),
+    "chroma" => "chroma".to_string(),
+    "knee" => "knee".to_string(),
+    "gain" => "gain".to_string(),
+    "tint" => "tint".to_string(),
+    "sharp" => "sharp".to_string(),
+    // Anything else is a typo. Keep it rather than failing: `take_num` warns
+    // and uses the default, which beats taking the whole piece down.
+    <s:IDENT> => s.to_string(),
+};
+
+ColorLit: String = {
+    <h:HEX_LIT> => h.to_string(),
+    <n:IDENT>   => n.to_string(),
+};
+
+// --------------------------------------------------------------- expressions
+
+Expr: Expr = {
+    <l:Expr> "+" <r:Term> => Expr::Bin(BinOp::Add, Box::new(l), Box::new(r)),
+    <l:Expr> "-" <r:Term> => Expr::Bin(BinOp::Sub, Box::new(l), Box::new(r)),
+    <t:Term> => t,
+};
+
+Term: Expr = {
+    <l:Term> "*" <r:Factor> => Expr::Bin(BinOp::Mul, Box::new(l), Box::new(r)),
+    <l:Term> "/" <r:Factor> => Expr::Bin(BinOp::Div, Box::new(l), Box::new(r)),
+    <f:Factor> => f,
+};
+
+Factor: Expr = {
+    <n:Num> => Expr::Lit(n),
+    "clock" => Expr::Clock,
+    "Sin" "(" <f:Expr> ")" =>
+        Expr::Sin { freq: Box::new(f), amp: Box::new(Expr::DefaultLit(1.0)) },
+    "Sin" "(" <f:Expr> "," <a:Expr> ")" =>
+        Expr::Sin { freq: Box::new(f), amp: Box::new(a) },
+    <f:UnaryFn> "(" <a:Expr> ")" => Expr::Call(f, vec![a]),
+    <f:BinaryFn> "(" <a:Expr> "," <b:Expr> ")" => Expr::Call(f, vec![a, b]),
+    <f:TernaryFn> "(" <a:Expr> "," <b:Expr> "," <c:Expr> ")" => Expr::Call(f, vec![a, b, c]),
+    <f:VariadicFn> "(" <a:Expr> <rest:("," <Expr>)+> ")" =>
+        rest.into_iter().fold(a, |acc, e| Expr::Call(f, vec![acc, e])),
+    "(" <e:Expr> ")" => e,
+    // Unary minus is the only way to write a negative — the number regexes
+    // match unsigned digits so `1-1` and `1 - 1` tokenise identically.
+    "-" <f:Factor> => Expr::Bin(BinOp::Sub, Box::new(Expr::DefaultLit(0.0)), Box::new(f)),
+};
+
+UnaryFn: MathFn = {
+    "sin" => MathFn::Sin, "cos" => MathFn::Cos, "abs" => MathFn::Abs,
+    "floor" => MathFn::Floor, "ceil" => MathFn::Ceil,
+    "sqrt" => MathFn::Sqrt, "exp" => MathFn::Exp,
+};
+BinaryFn: MathFn = { "pow" => MathFn::Pow, "wrap" => MathFn::Wrap, "step" => MathFn::Step };
+TernaryFn: MathFn = { "clamp" => MathFn::Clamp, "mix" => MathFn::Mix, "smoothstep" => MathFn::Smoothstep };
+VariadicFn: MathFn = { "min" => MathFn::Min, "max" => MathFn::Max };
+
+Num: f32 = {
+    <s:INT_LIT>   => f32::from_str(s).unwrap(),
+    <s:FLOAT_LIT> => f32::from_str(s).unwrap(),
+    <s:RATIONAL>  => {
+        let (n, d) = s.split_once('/').unwrap();
+        f32::from_str(n).unwrap() / f32::from_str(d).unwrap()
+    },
+};

@@ -45,7 +45,7 @@ match {
     "ChromaShift", "CurlFlow", "Wave", "Iterate",
 
     "Decay", "Hue", "Gamma", "Knee", "Gain", "Palette", "Blur",
-    "Vignette", "Posterize", "Tint", "Bloom",
+    "Vignette", "Posterize", "Tint", "Bloom", "Lay", "Paint",
     "Background", "Clear", "Fade",
 
     "Opaque", "Persist",
@@ -332,6 +332,15 @@ Op: WarpOp = {
         WarpOp::Bloom { threshold, strength }
     },
     "Bloom"    "(" <t:Expr> "," <s:Expr> ")" => WarpOp::Bloom { threshold: t, strength: s },
+    // The density accumulator and the surface it lands on (MEDIUM/COLOR: the
+    // subtractive pair). `Lay` sums marks into the hidden pigment field;
+    // `Paint` reads that field through a named `canvas` def.
+    "Lay" "{" <a:NamedArgList> "}" => {
+        let (keep, gain, cap) =
+            h::take_medium_arg3(a, "Lay", "keep", 0.995, "gain", 1.0, "cap", 2.0);
+        WarpOp::Lay { keep, gain, cap }
+    },
+    "Paint" "(" <n:IDENT> ")" => WarpOp::Paint(n.to_string()),
 
     // Optional named-args with defaults — brace bags (Law 6).
     "Clear" "{" <a:NamedArgList> "}" => {

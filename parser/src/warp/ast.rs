@@ -299,6 +299,33 @@ pub enum WarpOp {
     Persist,
     /// Bloom: `Bloom { threshold: 0.5, strength: 0.6 }` — adds halo for bright pixels.
     Bloom { threshold: WarpExpr, strength: WarpExpr },
+    /// THE DENSITY ACCUMULATOR. `Lay { keep: 0.995, gain: 1.0 }` sums each
+    /// frame's marks into the hidden pigment field: colour into `Sxyz`,
+    /// coverage into `Sw`. `keep` is what survives to the next frame.
+    ///
+    /// It has to be the STATE buffer and not the visible one. The visible
+    /// buffer's epilogue puts rgb through `k_loop_guard` (tanh, ceiling 6.0)
+    /// and alpha through `clamp(0,1)` — two different nonlinearities — so the
+    /// instant an accumulating chain saturates, the colour/coverage ratio
+    /// comes apart and the tint drifts to white. State is stored verbatim.
+    ///
+    /// Colour and coverage decay by the SAME factor, which is the point: the
+    /// ratio between them IS the pigment's tint, and a wash that dries must
+    /// get fainter without changing colour. `cap` bounds the pile and scales
+    /// colour with it, for the same reason: the visible buffer had an implicit
+    /// ceiling in `k_loop_guard`, and a field with no ceiling at all runs to
+    /// whatever the decay rate implies, which puts every calibrated number in
+    /// a canvas out of range.
+    Lay { keep: WarpExpr, gain: WarpExpr, cap: WarpExpr },
+    /// `Paint(linen)` — read the pigment field a `Lay` accumulated and render
+    /// it as paint sitting on a named `canvas` def.
+    ///
+    /// This is where a picture stops being emitted light and becomes a
+    /// substance on a ground: Beer-Lambert absorption of the pigment's own
+    /// complement, the substrate's weave and tooth, the wet-strike sheen, and
+    /// optionally relief and specular return. The name is a `canvas` def;
+    /// unknown names fall back to the default ground with a warning.
+    Paint(String),
     /// Decouple this chain's coverage from its brightness: alpha = "the
     /// scene has geometry here" instead of the default `max(rgb)`.
     ///
