@@ -317,8 +317,20 @@ impl Voice {
             if has_old_osc {
                 if let Some(old_osc_type) = &self.old_osc_type {
                     if !old_osc_type.is_drum() {
+                        // Advance the OUTGOING voice from its OWN phase. This
+                        // read `self.phase` — the INCOMING voice's — so the
+                        // fading-out tone was re-seeded from the new
+                        // oscillator every sample. Harmless while both are
+                        // tonal and their phases track each other; ruinous
+                        // into a drum, because a drum does not advance
+                        // `self.phase` at all. The outgoing tone was then
+                        // evaluated at one frozen phase for the whole
+                        // crossfade — a constant, i.e. DC, ~0.2 full scale
+                        // for ~85 ms at 48 kHz on every tone-to-drum
+                        // transition. `pop_check`'s 0.20 threshold sits just
+                        // above it, so nothing caught it.
                         self.old_phase =
-                            Voice::calculate_current_phase(&info, old_osc_type, self.phase);
+                            Voice::calculate_current_phase(&info, old_osc_type, self.old_phase);
                     }
                     let old_sample = old_osc_type.generate_sample(info, self.old_phase, &mut self.drum_state);
                     new_sample = if sound_to_silence {
