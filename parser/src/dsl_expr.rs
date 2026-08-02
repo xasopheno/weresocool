@@ -198,6 +198,30 @@ impl HitRef {
 
 /// **warp backend** — lower to a WGSL expression string.
 pub fn to_wgsl(e: &Expr) -> String {
+    to_wgsl_with(e, &|_| None)
+}
+
+/// The same lowering, with a HOOK the caller gets to answer with first.
+///
+/// A substrate knows things this crate cannot. `slope(c)` needs to know which
+/// TEXTURE a channel lives in; `Cycle`/`Choose`/`Rand` need a step index. Those
+/// live in kintaro, so kintaro used to special-case them before delegating here
+/// for everything else — which worked only when the special node was the WHOLE
+/// expression. The moment it appeared inside arithmetic, as in
+///
+///     Decay RGB (0.94 - slope(h) * 30.0)
+///
+/// the top node was a subtraction, the whole tree came here, and this walker
+/// recursed with ITSELF — so the nested `slope` fell through to the unresolved
+/// -field arm and silently became 0.0. Two walkers, one of them blind.
+///
+/// The hook is consulted at EVERY node on the way down, so a substrate's nodes
+/// survive at any depth. Returning `None` means "you handle it".
+pub fn to_wgsl_with(e: &Expr, hook: &dyn Fn(&Expr) -> Option<String>) -> String {
+    if let Some(s) = hook(e) {
+        return s;
+    }
+    let to_wgsl = |e: &Expr| to_wgsl_with(e, hook);
     match e {
         Expr::Lit(n) => {
             // inf/NaN would print as `inf`/`NaN` — invalid WGSL that only fails
