@@ -299,18 +299,27 @@ impl Voice {
                 sample_rate,
             };
 
-            self.phase = match seed_phase {
-                // Anchor the measured phase at the birth's first sample,
-                // bypassing the gain==0 reset; index 1+ advance normally.
-                Some(phi) if index == 0 => phi,
-                _ => Voice::calculate_current_phase(&info, &self.osc_type, self.phase),
-            };
+            // Drum oscillators derive everything from the note clock
+            // (`info.sample_index`) and never read `phase` — computing it for
+            // them costs a `fmod` and an `OscType` comparison per sample per
+            // voice, which is real money once a piece carries a kit per line.
+            if !is_drum {
+                self.phase = match seed_phase {
+                    // Anchor the measured phase at the birth's first sample,
+                    // bypassing the gain==0 reset; index 1+ advance normally.
+                    Some(phi) if index == 0 => phi,
+                    _ => Voice::calculate_current_phase(&info, &self.osc_type, self.phase),
+                };
+            }
 
             let mut new_sample = self.osc_type.generate_sample(info, self.phase, &mut self.drum_state);
 
             if has_old_osc {
                 if let Some(old_osc_type) = &self.old_osc_type {
-                    self.old_phase = Voice::calculate_current_phase(&info, old_osc_type, self.phase);
+                    if !old_osc_type.is_drum() {
+                        self.old_phase =
+                            Voice::calculate_current_phase(&info, old_osc_type, self.phase);
+                    }
                     let old_sample = old_osc_type.generate_sample(info, self.old_phase, &mut self.drum_state);
                     new_sample = if sound_to_silence {
                         old_sample

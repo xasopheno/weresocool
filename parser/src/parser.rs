@@ -141,8 +141,20 @@ fn process_op_table(mut defs: &mut Defs) -> Result<Defs, Error> {
                         slowest_op = Some((name.clone(), elapsed));
                     }
                 }
-                // MEMOIZATION: Update defs so subsequent lookups get the normalized form
-                defs.ops.insert(&scope_name, &name, Term::Nf(nf.clone()));
+                // The normalized form goes into `result` (what downstream
+                // consumers read) but NOT back into `defs`.
+                //
+                // Writing it back memoized the def — and changed what the
+                // language means. A def resolved to `Term::Nf` is applied by
+                // `NormalForm * NormalForm`, which turns each op of the
+                // running NF into its own VOICE. Every voice starts at zero,
+                // so `Seq [...] | some_def` collapsed a sequence into a
+                // stack: `Seq` of six ops then `| d` where `d = { Gm 1/2 }`
+                // played 2 seconds of six simultaneous voices (clipping)
+                // instead of 7 seconds of six successive ones. Inlining the
+                // same `Gm 1/2` was correct, so naming a thing changed how it
+                // sounded. Defs stay `Term::Op` here and are applied as
+                // operations, which is what `Op::Id` has always meant.
                 result.ops.insert(&scope_name, &name, Term::Nf(nf));
                 op_count += 1;
             }

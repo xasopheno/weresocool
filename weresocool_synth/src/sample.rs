@@ -1,3 +1,4 @@
+use crate::tables::{fast_exp, fast_sin, fast_tanh, svf_tan};
 use crate::presets::{
     resolve_clap, resolve_cowbell, resolve_crash, resolve_hihat, resolve_kick, resolve_ride,
     resolve_rimshot, resolve_shaker, resolve_snare, resolve_tom, ResolvedClap, ResolvedCowbell,
@@ -52,6 +53,25 @@ const RIMSHOT_DEFAULT_FREQ: f64 = 165.0;
 /// honest octave); cymbals and shakers track weakly (0.25-0.3), so `Fm`
 /// colours the metal without transposing an unpitched sound off the map.
 const DRUM_REF_FREQ: f64 = 60.0;
+
+/// Number of plate modes in `presets::HIHAT_MODES` — shared by the hi-hat,
+/// ride, and crash, and the width of the per-note mode cache in `DrumState`.
+/// Waveguide loop gain: the feedback that leaves ~5% of the energy after
+/// `decay_seconds`, for a loop `delay_samps` long. `0.05^x` written as
+/// `exp(x·ln 0.05)` — the delay moves with the pitch envelope, so this is a
+/// per-sample call on every kick, snare, and tom, and `exp` is several times
+/// cheaper than the general `powf`.
+#[inline]
+fn ks_loop_gain(delay_samps: f64, decay_seconds: f64, sample_rate: f64) -> f64 {
+    const LN_005: f64 = -2.995_732_273_553_991;
+    fast_exp(LN_005 * delay_samps / (decay_seconds * sample_rate))
+}
+
+const HIHAT_MODE_COUNT: usize = 22;
+/// Owners of the `DrumState` mode cache. 0 means "empty".
+const MODE_KIND_HIHAT: u8 = 1;
+const MODE_KIND_RIDE: u8 = 2;
+const MODE_KIND_CRASH: u8 = 3;
 
 /// Resolve a drum's register: anchor Hz, tuned, tracking the played note.
 #[inline]
@@ -256,7 +276,7 @@ impl TptSvf {
     /// `cutoff` and `q` may change every call without artifacts.
     #[inline]
     pub fn process_lp(&mut self, x: f64, sr: f64, cutoff: f64, q: f64) -> f64 {
-        let g = (PI * cutoff.clamp(15.0, sr * 0.49) / sr).tan();
+        let g = svf_tan(cutoff.clamp(15.0, sr * 0.49) / sr);
         let k = 1.0 / q.max(0.1);
         let a1 = 1.0 / (1.0 + g * (g + k));
         let a2 = g * a1;
@@ -271,7 +291,7 @@ impl TptSvf {
     /// Process one sample as a resonant bandpass.
     #[inline]
     pub fn process_bp(&mut self, x: f64, sr: f64, cutoff: f64, q: f64) -> f64 {
-        let g = (PI * cutoff.clamp(15.0, sr * 0.49) / sr).tan();
+        let g = svf_tan(cutoff.clamp(15.0, sr * 0.49) / sr);
         let k = 1.0 / q.max(0.1);
         let a1 = 1.0 / (1.0 + g * (g + k));
         let a2 = g * a1;
@@ -286,7 +306,7 @@ impl TptSvf {
     /// Process one sample as a resonant highpass.
     #[inline]
     pub fn process_hp(&mut self, x: f64, sr: f64, cutoff: f64, q: f64) -> f64 {
-        let g = (PI * cutoff.clamp(15.0, sr * 0.49) / sr).tan();
+        let g = svf_tan(cutoff.clamp(15.0, sr * 0.49) / sr);
         let k = 1.0 / q.max(0.1);
         let a1 = 1.0 / (1.0 + g * (g + k));
         let a2 = g * a1;
@@ -310,8 +330,8 @@ fn asym_saturate(x: f64, drive: f64, asymmetry: f64) -> f64 {
     // positive and negative halves bend through different parts of the
     // tanh curve. The DC removal afterwards keeps the output centred.
     let biased = d + asymmetry;
-    let shaped = biased.tanh();
-    let dc = asymmetry.tanh();
+    let shaped = fast_tanh(biased);
+    let dc = fast_tanh(asymmetry);
     shaped - dc
 }
 
@@ -392,7 +412,7 @@ impl KarplusStrong {
 
         // Soft saturation in the loop adds harmonic richness and stabilises
         // the energy (prevents blowup if loop_gain is briefly > 1).
-        let feedback = (self.lp_z * loop_gain).tanh() * 0.95;
+        let feedback = fast_tanh(self.lp_z * loop_gain) * 0.95;
 
         // REPLACE the slot content (feedback + any new excitation). This
         // write must not accumulate onto the stale value from one buffer
@@ -609,7 +629,71 @@ pub struct DrumState {
     // a fast fade under the new transient.
     pub choke_z: f64,
     pub last_out: f64,
+    // PER-NOTE MODE CACHE — the plate-mode loop (hi-hat, ride, crash) reads
+    // 22 modes every sample. Everything about a mode except its envelope
+    // level is fixed for the whole note: the frequency multiplier, the phase
+    // jitter, the amplitude tilt. Recomputing them per sample cost 22 `exp`
+    // and 44 hash calls per sample per voice, which made a six-voice hat
+    // pattern roughly four times the cost of an eight-voice kick pattern.
+    //
+    // `mode_kind` tags which family owns the cache (0 = empty, 1 = hi-hat,
+    // 2 = ride, 3 = crash); a different family reseeds it. Only one family
+    // sounds per voice at a time — drum→drum crossfade is suppressed in
+    // `Voice::update`, so two drum voices never share one DrumState mid-note.
+    pub mode_kind: u8,
+    /// `ratio · mode_freq_scale · freq_jitter` — multiply by the (moving)
+    /// base frequency to get the mode's frequency.
+    pub mode_k: [f64; 22],
+    /// Per-mode phase jitter, radians.
+    pub mode_j: [f64; 22],
+    /// `exp(-t · decay_rate · decay_mult)` at `mode_env_sample`.
+    pub mode_env: [f64; 22],
+    /// Per-sample decay multiplier: `exp(-decay_rate · decay_mult / sr)`.
+    pub mode_env_coef: [f64; 22],
+    /// Note-relative sample index `mode_env` currently holds. `usize::MAX`
+    /// means "not seeded." Advancing by one sample multiplies; any other
+    /// step (a seek, a crossfade re-read of the same sample) recomputes or
+    /// reuses exactly, so the cache never desynchronizes from `t`.
+    pub mode_env_sample: usize,
+    /// The note's per-mode amplitudes, kept so the mode loop can be trimmed
+    /// as modes fall silent.
+    pub mode_amp: [f64; 22],
+    /// How many leading modes are still audible. The mode table is ordered
+    /// by decay rate, so the top modes die first (mode 21 sheds energy 9.2×
+    /// faster than the fundamental) and the loop shrinks as the hit rings
+    /// out. Only ever decreases within a note.
+    pub mode_active: usize,
+    // PER-NOTE ENVELOPE CACHE — every drum voice is a stack of exponential
+    // decays, `exp(-t · rate)`, whose rates are fixed once the note's params
+    // resolve. Evaluating them with `exp` per sample cost the snare eleven
+    // transcendental calls a sample; stepped multiplicatively they cost one
+    // multiply each. Same ownership tag and same exact-resync rules as the
+    // mode cache above.
+    pub env_kind: u8,
+    pub env_val: [f64; DRUM_ENV_COUNT],
+    pub env_coef: [f64; DRUM_ENV_COUNT],
+    pub env_sample: usize,
+    /// Per-note phase and frequency jitter for the snare's four head modes,
+    /// and its compressor coefficients — all constant for the note.
+    pub snare_jit: [f64; 4],
+    pub snare_fjit: [f64; 4],
+    pub snare_comp_atk: f64,
+    pub snare_comp_rel: f64,
 }
+
+/// Envelope slots per drum voice. The snare uses the most (nine).
+const DRUM_ENV_COUNT: usize = 10;
+/// Owners of the `DrumState` envelope cache. 0 means "empty".
+/// Envelope level under which a drum voice is treated as finished. −120 dB
+/// relative to the note's own peak.
+const DRUM_SILENCE: f64 = 1e-6;
+const ENV_KIND_SNARE: u8 = 1;
+const ENV_KIND_HIHAT: u8 = 2;
+
+/// A mode is dropped once its remaining amplitude falls below this. At a
+/// -180 dBFS contribution it is 60 dB under the noise floor of 24-bit audio
+/// and some 200 dB under the drum's own peak.
+const MODE_SILENCE: f64 = 1e-9;
 
 impl DrumState {
     pub fn reset(&mut self) {
@@ -674,6 +758,100 @@ impl DrumState {
         // (last_out already folds in any previous, still-decaying choke).
         self.choke_z = self.last_out;
         self.last_out = 0.0;
+        self.mode_kind = 0;
+        self.mode_env_sample = usize::MAX;
+        self.env_kind = 0;
+        self.env_sample = usize::MAX;
+    }
+
+    /// Bring the exponential-envelope cache in sync with sample `idx` of this
+    /// note. `rates` are the per-note decay rates, in `exp(-t · rate)` form.
+    /// Advancing one sample is one multiply per envelope; a re-read of the
+    /// same sample, or any jump, resolves exactly — same contract as
+    /// `sync_modes`.
+    #[inline]
+    pub fn sync_envs(&mut self, kind: u8, rates: &[f64], sample_rate: f64, idx: usize) {
+        debug_assert!(rates.len() <= DRUM_ENV_COUNT);
+        if self.env_kind == kind && self.env_sample != usize::MAX {
+            if idx == self.env_sample {
+                return;
+            }
+            if idx == self.env_sample + 1 {
+                for i in 0..rates.len() {
+                    self.env_val[i] *= self.env_coef[i];
+                }
+                self.env_sample = idx;
+                return;
+            }
+        }
+
+        let t = idx as f64 / sample_rate;
+        for (i, rate) in rates.iter().enumerate() {
+            self.env_val[i] = (-t * rate).exp();
+            self.env_coef[i] = (-rate / sample_rate).exp();
+        }
+        self.env_kind = kind;
+        self.env_sample = idx;
+    }
+
+    /// Bring the plate-mode cache in sync with sample `idx` of this note.
+    ///
+    /// Seeds it if a different family (or a new note) owns it, advances the
+    /// envelopes by one multiply on the common case of a forward sample, and
+    /// recomputes them exactly on any other jump. Re-reading the same sample
+    /// — which happens when a crossfade renders the old and new oscillator
+    /// against one shared DrumState — leaves the envelopes untouched, so the
+    /// second read sees the same values as the first.
+    #[inline]
+    pub fn sync_modes(
+        &mut self,
+        kind: u8,
+        id_base: u64,
+        mode_freq_scale: f64,
+        decay_rate: f64,
+        sample_rate: f64,
+        idx: usize,
+        amps: &[f64; HIHAT_MODE_COUNT],
+    ) {
+        if self.mode_kind == kind && self.mode_env_sample != usize::MAX {
+            if idx == self.mode_env_sample {
+                return;
+            }
+            if idx == self.mode_env_sample + 1 {
+                for i in 0..self.mode_active {
+                    self.mode_env[i] *= self.mode_env_coef[i];
+                }
+                self.mode_env_sample = idx;
+                self.trim_modes();
+                return;
+            }
+        }
+
+        let t = idx as f64 / sample_rate;
+        for (i, (ratio, _, decay_mult)) in crate::presets::HIHAT_MODES.iter().copied().enumerate() {
+            let id = id_base ^ (i as u64).wrapping_mul(0x9E37);
+            self.mode_k[i] = ratio * mode_freq_scale * self.freq_jitter(id);
+            self.mode_j[i] = self.phase_jitter(id);
+            let d = decay_rate * decay_mult;
+            self.mode_env[i] = (-t * d).exp();
+            self.mode_env_coef[i] = (-d / sample_rate).exp();
+            self.mode_amp[i] = amps[i];
+        }
+        self.mode_kind = kind;
+        self.mode_env_sample = idx;
+        self.mode_active = HIHAT_MODE_COUNT;
+        self.trim_modes();
+    }
+
+    /// Drop trailing modes that have decayed below audibility.
+    #[inline]
+    fn trim_modes(&mut self) {
+        while self.mode_active > 0
+            && self.mode_env[self.mode_active - 1] * self.mode_amp[self.mode_active - 1].abs()
+                < MODE_SILENCE
+        {
+            self.mode_active -= 1;
+        }
     }
 
     /// Generate a small phase offset (in radians) deterministic per-note,
@@ -890,28 +1068,28 @@ impl Waveform for OscType {
                 // injection keeps the loop alive past the initial burst.
                 let freq_now = f_base * (1.0 + (pitch_range - 1.0) * exp_pd);
                 let delay_samps = info.sample_rate / freq_now.max(20.0);
-                let loop_gain = 0.05_f64.powf(delay_samps / (amp_decay * info.sample_rate))
+                let loop_gain = ks_loop_gain(delay_samps, amp_decay, info.sample_rate)
                                   .clamp(0.80, 0.998);
                 // LP coef: more damping as the body decays → settling sound.
                 // Use the amp-decay envelope hoisted up from below.
-                let body_decay_env = (-t * 3.0 / amp_decay).exp();
+                let body_decay_env = fast_exp(-t * 3.0 / amp_decay);
                 let lp_coef = 0.30 + 0.25 * (1.0 - body_decay_env);
 
                 // Additive sine still contributes — gives us a tunable,
                 // predictable fundamental. KS layer adds physical-model
                 // character on top. Blend is a preset knob: 808 is sine-
                 // dominant (predictable sub), acoustic is KS-dominant.
-                let fm_mod = (kick_phase * 2.0).sin() * pre.fm_depth * exp_pd;
-                let sine_fundamental = (kick_phase + fm_mod).sin();
+                let fm_mod = fast_sin(kick_phase * 2.0) * pre.fm_depth * exp_pd;
+                let sine_fundamental = fast_sin(kick_phase + fm_mod);
                 let ks_voice = state.kick_ks.process(delay_samps, loop_gain, lp_coef);
                 let fundamental = sine_fundamental * pre.sine_level + ks_voice * ks_mix;
 
                 // ─── Amplitude envelope with initial punch hump + body LFO ────
                 // body_decay_env was computed above for the KS lp_coef.
                 let tau_h = 0.004;
-                let hump = hump_amount * (t / tau_h) * (-t / tau_h).exp() * std::f64::consts::E;
+                let hump = hump_amount * (t / tau_h) * fast_exp(-t / tau_h) * std::f64::consts::E;
                 let lfo_phase = TAU * 7.0 * t + state.phase_jitter(0x1CC0_AAAA);
-                let body_lfo = 1.0 + 0.04 * lfo_vel * lfo_phase.sin() * (1.0 - body_decay_env);
+                let body_lfo = 1.0 + 0.04 * lfo_vel * fast_sin(lfo_phase) * (1.0 - body_decay_env);
                 let body_env = body_decay_env * (1.0 + hump) * body_lfo;
 
                 // ─── Click — bandpass-filtered impulse + brief noise burst ────
@@ -982,7 +1160,7 @@ impl Waveform for OscType {
                 };
                 let shell_ring = state.kick_shell_bp.process(shell_excite);
                 // Slow exponential decay on top of the BP's natural ring.
-                let shell_env = (-t * 3.0 / (amp_decay * 0.7)).exp();
+                let shell_env = fast_exp(-t * 3.0 / (amp_decay * 0.7));
                 let shell = shell_ring * shell_env * shell_amount;
 
                 // ─── Parallel compression — lifts body, keeps transient ───────
@@ -992,8 +1170,8 @@ impl Waveform for OscType {
                 // dry preserves the transient shape, the compressed lifts the
                 // sustain. This is the classic "drum bus" compression sound.
                 let dry = body_shaped + click + shell;
-                let atk = 1.0 - (-1.0 / (info.sample_rate * pre.comp.attack_s)).exp();
-                let rel = 1.0 - (-1.0 / (info.sample_rate * pre.comp.release_s)).exp();
+                let atk = 1.0 - fast_exp(-1.0 / (info.sample_rate * pre.comp.attack_s));
+                let rel = 1.0 - fast_exp(-1.0 / (info.sample_rate * pre.comp.release_s));
                 state.kick_comp_env = peak_follow(state.kick_comp_env, dry, atk, rel);
                 let comp_gain = compress_gain(state.kick_comp_env, pre.comp.threshold, pre.comp.ratio);
                 let punchy = dry * pre.comp.dry + (dry * comp_gain) * pre.comp.wet;
@@ -1051,6 +1229,16 @@ impl Waveform for OscType {
                     state.snare_wire_hp.highpass(info.sample_rate, 2800.0 * rs.bright_shift, 0.7);
                     state.snare_beater_bp.bandpass(info.sample_rate, pre.beater_bp.0, pre.beater_bp.1);
                     state.snare_crack_bp.bandpass(info.sample_rate, rs.crack_freq, 1.4);
+                    // Head-mode jitter and the compressor's time constants are
+                    // fixed for the note — resolved here rather than re-derived
+                    // (eight hashes and two `exp`) on every sample.
+                    for i in 0..4 {
+                        let id = 0x5_DEAD_0001 + i as u64;
+                        state.snare_jit[i] = state.phase_jitter(id);
+                        state.snare_fjit[i] = state.freq_jitter(id);
+                    }
+                    state.snare_comp_atk = 1.0 - fast_exp(-1.0 / (info.sample_rate * pre.comp.attack_s));
+                    state.snare_comp_rel = 1.0 - fast_exp(-1.0 / (info.sample_rate * pre.comp.release_s));
                     state.resolved_snare = Some(rs);
                 }
                 let rs = state.resolved_snare.unwrap();
@@ -1077,30 +1265,50 @@ impl Waveform for OscType {
                 // circular membrane. The top head carries the fundamental and
                 // a brighter overtone; the bottom head sits an octave-ish above
                 // and decays faster.
-                let pitch_mult = 1.0 + shell_pitch_range * (-t * shell_pitch_decay).exp();
+                // Every exponential this voice needs, stepped in one pass.
+                // Order is the cache's contract — keep it in sync with the
+                // reads below.
+                let env_rates = [
+                    shell_pitch_decay,
+                    3.0 / shell_decay,
+                    3.0 * 1.4 / shell_decay,
+                    3.0 * head_damping_ratio / shell_decay,
+                    3.0 * head_damping_ratio * 1.6 / shell_decay,
+                    3.0 / 0.006,
+                    3.0 / wire_decay,
+                    1.0 / 0.0010,
+                    1.0 / 0.0050,
+                ];
+                state.sync_envs(ENV_KIND_SNARE, &env_rates, info.sample_rate, info.sample_index);
+                let env = state.env_val;
+
+                // Nothing left to render: every envelope that drives this
+                // voice — head, wires, crack — is past audibility, so the
+                // rest of the chain can only produce silence. A drum note
+                // that rings out under a long op used to keep paying full
+                // price for the remainder.
+                if env[1] < DRUM_SILENCE && env[6] < DRUM_SILENCE && env[8] < DRUM_SILENCE {
+                    return 0.0;
+                }
+
+                let pitch_mult = 1.0 + shell_pitch_range * env[0];
                 let top_f1 = f_base * pitch_mult;
                 let top_f2 = f_base * pre.mode_ratios.0 * pitch_mult;          // (1,1) mode
                 let bot_f1 = f_base * shell_tune * pitch_mult;
                 let bot_f2 = f_base * shell_tune * pre.mode_ratios.1 * pitch_mult;
 
-                let top_amp1 = (-t * 3.0 / shell_decay).exp();
-                let top_amp2 = (-t * 3.0 * 1.4 / shell_decay).exp();
-                let bot_amp1 = (-t * 3.0 * head_damping_ratio / shell_decay).exp();
-                let bot_amp2 = (-t * 3.0 * head_damping_ratio * 1.6 / shell_decay).exp();
+                let top_amp1 = env[1];
+                let top_amp2 = env[2];
+                let bot_amp1 = env[3];
+                let bot_amp2 = env[4];
 
                 // Raw head — sine modes with phase + freq jitter for L/R width.
-                let j1 = state.phase_jitter(0x5_DEAD_0001);
-                let j2 = state.phase_jitter(0x5_DEAD_0002);
-                let j3 = state.phase_jitter(0x5_DEAD_0003);
-                let j4 = state.phase_jitter(0x5_DEAD_0004);
-                let fj1 = state.freq_jitter(0x5_DEAD_0001);
-                let fj2 = state.freq_jitter(0x5_DEAD_0002);
-                let fj3 = state.freq_jitter(0x5_DEAD_0003);
-                let fj4 = state.freq_jitter(0x5_DEAD_0004);
-                let head_sines = (TAU * top_f1 * fj1 * t + j1).sin() * pre.mode_amps[0] * top_amp1
-                               + (TAU * top_f2 * fj2 * t + j2).sin() * pre.mode_amps[1] * top_amp2
-                               + (TAU * bot_f1 * fj3 * t + j3).sin() * pre.mode_amps[2] * bot_amp1
-                               + (TAU * bot_f2 * fj4 * t + j4).sin() * pre.mode_amps[3] * bot_amp2;
+                let [j1, j2, j3, j4] = state.snare_jit;
+                let [fj1, fj2, fj3, fj4] = state.snare_fjit;
+                let head_sines = fast_sin(TAU * top_f1 * fj1 * t + j1) * pre.mode_amps[0] * top_amp1
+                               + fast_sin(TAU * top_f2 * fj2 * t + j2) * pre.mode_amps[1] * top_amp2
+                               + fast_sin(TAU * bot_f1 * fj3 * t + j3) * pre.mode_amps[2] * bot_amp1
+                               + fast_sin(TAU * bot_f2 * fj4 * t + j4) * pre.mode_amps[3] * bot_amp2;
 
                 // ─── KS body — physical-model membrane character ─────────────
                 // Voice-independent excitation seed so L and R produce the
@@ -1113,8 +1321,7 @@ impl Waveform for OscType {
                     state.snare_ks.excite(burst * 0.5);
                 }
                 let snare_delay = info.sample_rate / (top_f1 * pitch_mult).max(40.0);
-                let snare_lg = 0.05_f64
-                    .powf(snare_delay / (shell_decay * info.sample_rate))
+                let snare_lg = ks_loop_gain(snare_delay, shell_decay, info.sample_rate)
                     .clamp(0.70, 0.985);
                 let snare_lp = 0.35 + 0.20 * (1.0 - top_amp1);
                 let ks_body = state.snare_ks.process(snare_delay, snare_lg, snare_lp) * snare_ks_mix;
@@ -1149,8 +1356,8 @@ impl Waveform for OscType {
                 // "snap" of a snare — the tail is sizzle, not snap. The
                 // attack component scales with velocity aggression so hard
                 // hits pop and ghosts stay smooth.
-                let wire_attack = (-t * 3.0 / 0.006).exp();
-                let wire_tail = (-t * 3.0 / wire_decay).exp();
+                let wire_attack = env[5];
+                let wire_tail = env[6];
                 let sympathy = 0.4 + 0.6 * bot_amp1;
                 let wire_snap = 0.85 * (0.6 + 0.6 * aggression);
                 let wire_env = (wire_attack * wire_snap + wire_tail * 0.30) * sympathy * onset_ramp(t);
@@ -1161,8 +1368,8 @@ impl Waveform for OscType {
                 // a slightly slower body. The per-note noise seed means
                 // consecutive snare hits have DIFFERENT noise patterns —
                 // critical for breaking the "drum machine" perceptual tell.
-                let crack_spike_env = (-t / 0.0010).exp();
-                let crack_body_env = (-t / 0.0050).exp();
+                let crack_spike_env = env[7];
+                let crack_body_env = env[8];
                 // TRANSIENTS MONO, TAILS WIDE: short noise bursts with
                 // independent L/R noise have RANDOM interaural correlation —
                 // each hit localizes randomly hard-left or hard-right, which
@@ -1218,14 +1425,13 @@ impl Waveform for OscType {
                 // stay round); at high velocity it's the dominant character.
                 let mid = state.snare_crack_bp.process(tone);
                 let crack_drive = pre.mid_crack_drive_k.0 + mid_crack_vel * pre.mid_crack_drive_k.1;
-                let mid_crushed = (mid * crack_drive).tanh() * 0.5;
+                let mid_crushed = fast_tanh(mid * crack_drive) * 0.5;
                 let saturated = tone + mid_crushed * (pre.mid_crack_mix_k.0 + mid_crack_vel * pre.mid_crack_mix_k.1);
 
                 // Parallel comp — fast attack to catch the crack peak, medium
                 // release so the wire/body sustains push through.
-                let atk = 1.0 - (-1.0 / (info.sample_rate * pre.comp.attack_s)).exp();
-                let rel = 1.0 - (-1.0 / (info.sample_rate * pre.comp.release_s)).exp();
-                state.snare_comp_env = peak_follow(state.snare_comp_env, saturated, atk, rel);
+                state.snare_comp_env = peak_follow(
+                    state.snare_comp_env, saturated, state.snare_comp_atk, state.snare_comp_rel);
                 let comp_gain = compress_gain(state.snare_comp_env, pre.comp.threshold, pre.comp.ratio);
                 let punchy = saturated * pre.comp.dry + (saturated * comp_gain) * pre.comp.wet;
 
@@ -1278,8 +1484,21 @@ impl Waveform for OscType {
                 let attack_vel = 0.35 + 1.20 * aggression;
                 let ping_vel = 0.15 + 1.30 * aggression;
 
+                // Every exponential this voice needs, stepped in one pass —
+                // the order here is the cache's contract, matching the reads
+                // below.
+                let env_rates = [
+                    6.0,
+                    decay_rate * pre.air_lo.3,
+                    decay_rate * pre.air_hi.3,
+                    1.0 / pre.ping_tau,
+                    1.0 / 0.0015,
+                ];
+                state.sync_envs(ENV_KIND_HIHAT, &env_rates, info.sample_rate, info.sample_index);
+                let env = state.env_val;
+
                 // Slight pitch droop — cymbals lose high-end energy first.
-                let pitch_drop_mult = 1.0 + pitch_drop * (-t * 6.0).exp();
+                let pitch_drop_mult = 1.0 + pitch_drop * env[0];
                 let base_freq = info_freq * tune * shimmer_mult * pitch_drop_mult;
 
                 // 22-mode cymbal — first 22 Bessel-function zeros for a circular
@@ -1299,17 +1518,26 @@ impl Waveform for OscType {
                 // metal instead of a static stacked-sines chord.
                 let coupling_drive = state.coupling_z * pre.coupling;
 
-                let mut shimmer = 0.0;
-                for (i, (ratio, _, decay_mult)) in crate::presets::HIHAT_MODES.iter().copied().enumerate() {
-                    let amp = rh.mode_amp[i] * if i >= 8 { brightness_vel } else { 1.0 };
-                    let id = 0xCAFE_0000 ^ (i as u64).wrapping_mul(0x9E37);
-                    let mode_freq = base_freq * ratio * pre.mode_freq_scale * state.freq_jitter(id);
-                    if mode_freq >= info.sample_rate * 0.5 { continue; }
-                    let mode_amp = (-t * decay_rate * decay_mult).exp();
-                    let j = state.phase_jitter(id);
-                    let phase = TAU * mode_freq * t + coupling_drive + j;
-                    shimmer += phase.sin() * amp * mode_amp;
+                // Per-note constants (mode multipliers, phase jitter, decay
+                // envelopes) come from the cache; per sample only the moving
+                // base frequency and the coupling phase change. `w` folds
+                // `TAU · base_freq · t` so each mode costs one multiply for
+                // its frequency, one for its phase, and one `sin`.
+                state.sync_modes(MODE_KIND_HIHAT, 0xCAFE_0000, pre.mode_freq_scale, decay_rate, info.sample_rate, info.sample_index, &rh.mode_amp);
+                let w = TAU * base_freq * t;
+                let nyquist = info.sample_rate * 0.5;
+                let mut shimmer_low = 0.0;
+                let mut shimmer_high = 0.0;
+                for i in 0..state.mode_active {
+                    let k = state.mode_k[i];
+                    if base_freq * k >= nyquist { continue; }
+                    let phase = w * k + coupling_drive + state.mode_j[i];
+                    let voice = fast_sin(phase) * rh.mode_amp[i] * state.mode_env[i];
+                    if i >= 8 { shimmer_high += voice } else { shimmer_low += voice }
                 }
+                // Brightness scales modes 8+ only — folded in once instead of
+                // per mode.
+                let shimmer = shimmer_low + shimmer_high * brightness_vel;
                 state.coupling_z = shimmer;
 
                 // Highpass keeps modes out of the kick band.
@@ -1325,8 +1553,8 @@ impl Waveform for OscType {
                                         state.noise_seed(0xCAFE_A11));
                 let air_lo = state.hihat_bp_low.process(white);
                 let air_hi = state.hihat_bp_high.process(white);
-                let air_lo_env = (-t * decay_rate * pre.air_lo.3).exp(); // low band lingers
-                let air_hi_env = (-t * decay_rate * pre.air_hi.3).exp(); // high band dies faster
+                let air_lo_env = env[1]; // low band lingers
+                let air_hi_env = env[2]; // high band dies faster
                 let air_signal = (air_lo * air_lo_env * pre.air_lo.2
                                + air_hi * air_hi_env * pre.air_hi.2)
                                * onset_ramp(t);
@@ -1337,12 +1565,12 @@ impl Waveform for OscType {
                 // burst with a ~3ms decay; scaled hard by velocity so soft
                 // hits stay airy and hard hits have a clearly audible "ting."
                 let ping_freq = (info_freq * tune * pre.ping_freq_mult).clamp(pre.ping_clamp.0, pre.ping_clamp.1);
-                let ping_env = (-t / pre.ping_tau).exp();
+                let ping_env = env[3];
                 let ping_jit = state.phase_jitter(0x9_1B_F00D);
-                let ping = (TAU * ping_freq * t + ping_jit).sin() * ping_env * ping_vel * ping_amount;
+                let ping = fast_sin(TAU * ping_freq * t + ping_jit) * ping_env * ping_vel * ping_amount;
 
                 // ─── Sharp attack — stick contact noise ───────────────────────
-                let attack_env = (-t / 0.0015).exp();
+                let attack_env = env[4];
                 let attack_noise = bright_noise(state.haas_index(info.sample_index),
                                                  (state.note_counter as u64).wrapping_mul(0x1234_56_F00D))
                                  * attack_env * attack_amount * attack_vel
@@ -1403,7 +1631,7 @@ impl Waveform for OscType {
                         // Each burst replaces the envelope (retrigger), the
                         // hallmark sawtooth-envelope shape of analog claps.
                         // Micro-ramped so the retrigger is not a step.
-                        env = level * (-local / burst_tau).exp() * onset_ramp(local);
+                        env = level * fast_exp(-local / burst_tau) * onset_ramp(local);
                         last_start = burst_start;
                         last_level = level;
                     }
@@ -1411,7 +1639,7 @@ impl Waveform for OscType {
                 }
                 // Tail takes over after the final burst's fast decay.
                 let since_last = (t - last_start).max(0.0);
-                let tail = last_level * pre.tail_level * (-since_last / rc.tail_tau).exp();
+                let tail = last_level * pre.tail_level * fast_exp(-since_last / rc.tail_tau);
                 let env = env.max(tail);
 
                 // ─── Noise through the clap bands ────────────────────────────
@@ -1465,7 +1693,7 @@ impl Waveform for OscType {
                 } else {
                     0.0
                 };
-                let ring_env = (-t / rr.ring_tau).exp();
+                let ring_env = fast_exp(-t / rr.ring_tau);
                 let ring1 = state.rim_bp1.process(excite) * pre.ring_mix.0;
                 let ring2 = state.rim_bp2.process(excite) * pre.ring_mix.1 * rr.ring2_gain;
                 // The TOCK must clearly carry — a click 10× the ring reads
@@ -1473,7 +1701,7 @@ impl Waveform for OscType {
                 let rings = (ring1 + ring2) * ring_env * 34.0;
 
                 // Stick click — 1 ms of bright noise.
-                let click_env = (-t / 0.0010).exp();
+                let click_env = fast_exp(-t / 0.0010);
                 let click = bright_noise(state.haas_index(info.sample_index),
                                           (state.note_counter as u64).wrapping_mul(0x4131_F00D))
                     * click_env * rr.attack_amount * click_vel * 0.65
@@ -1550,7 +1778,7 @@ impl Waveform for OscType {
                 // ─── Pitch bend ──────────────────────────────────────────────
                 // Single exponential with its closed-form integral, so the mode
                 // phases stay continuous while the pitch moves.
-                let exp_pd = (-t / rt.pitch_decay).exp();
+                let exp_pd = fast_exp(-t / rt.pitch_decay);
                 let pd_integral = rt.pitch_decay * (1.0 - exp_pd);
                 let env_factor = (bend - 1.0) * pd_integral;
                 let pitch_now = 1.0 + (bend - 1.0) * exp_pd;
@@ -1564,17 +1792,16 @@ impl Waveform for OscType {
                         continue;
                     }
                     let phase = TAU * mode_f * (t + env_factor) + state.phase_jitter(id);
-                    let amp = (-t * 3.0 * pre.mode_decays[i] / amp_decay).exp();
-                    modes += phase.sin() * pre.mode_amps[i] * amp;
+                    let amp = fast_exp(-t * 3.0 * pre.mode_decays[i] / amp_decay);
+                    modes += fast_sin(phase) * pre.mode_amps[i] * amp;
                 }
 
                 // ─── Waveguide body ──────────────────────────────────────────
                 let freq_now = f_base * pitch_now;
                 let delay_samps = info.sample_rate / freq_now.max(20.0);
-                let loop_gain = 0.05_f64
-                    .powf(delay_samps / (amp_decay * info.sample_rate))
+                let loop_gain = ks_loop_gain(delay_samps, amp_decay, info.sample_rate)
                     .clamp(0.80, 0.998);
-                let body_decay_env = (-t * 3.0 / amp_decay).exp();
+                let body_decay_env = fast_exp(-t * 3.0 / amp_decay);
                 let lp_coef = 0.30 + 0.28 * (1.0 - body_decay_env);
                 let ks_voice =
                     state.tom_ks.process(delay_samps, loop_gain, lp_coef) + ks_direct;
@@ -1604,7 +1831,7 @@ impl Waveform for OscType {
                     state.haas_index(info.sample_index),
                     state.noise_seed(0x70_57_1C_C0),
                     8,
-                ) * (-t / 0.0013).exp()
+                ) * fast_exp(-t / 0.0013)
                     * pre.stick_gain
                     * onset_ramp(t);
                 let click = (state.tom_click_bp.process(click_excite) * pre.click_gain + stick)
@@ -1629,13 +1856,13 @@ impl Waveform for OscType {
                     0.0
                 };
                 let shell = state.tom_shell_bp.process(shell_excite)
-                    * (-t * 3.0 / (amp_decay * 0.5)).exp()
+                    * fast_exp(-t * 3.0 / (amp_decay * 0.5))
                     * rt.shell;
 
                 // ─── Parallel compression + output stage ─────────────────────
                 let dry = body_shaped + click + shell;
-                let atk = 1.0 - (-1.0 / (info.sample_rate * pre.comp.attack_s)).exp();
-                let rel = 1.0 - (-1.0 / (info.sample_rate * pre.comp.release_s)).exp();
+                let atk = 1.0 - fast_exp(-1.0 / (info.sample_rate * pre.comp.attack_s));
+                let rel = 1.0 - fast_exp(-1.0 / (info.sample_rate * pre.comp.release_s));
                 state.tom_comp_env = peak_follow(state.tom_comp_env, dry, atk, rel);
                 let comp_gain =
                     compress_gain(state.tom_comp_env, pre.comp.threshold, pre.comp.ratio);
@@ -1693,13 +1920,13 @@ impl Waveform for OscType {
                 // ─── Plate modes ─────────────────────────────────────────────
                 let coupling_drive = state.ride_coupling_z * pre.coupling;
                 let nyquist = info.sample_rate * 0.5;
-                let mut shimmer = 0.0;
-                for (i, (ratio, _, decay_mult)) in
-                    crate::presets::HIHAT_MODES.iter().copied().enumerate()
-                {
-                    let amp = rr.mode_amp[i] * if i >= 8 { brightness_vel } else { 1.0 };
-                    let id = 0x21DE_0000 ^ (i as u64).wrapping_mul(0x9E37);
-                    let mode_freq = f_base * ratio * pre.mode_freq_scale * state.freq_jitter(id);
+                state.sync_modes(MODE_KIND_RIDE, 0x21DE_0000, pre.mode_freq_scale, decay_rate, info.sample_rate, info.sample_index, &rr.mode_amp);
+                let w = TAU * f_base * t;
+                let mut shimmer_low = 0.0;
+                let mut shimmer_high = 0.0;
+                for i in 0..state.mode_active {
+                    let k = state.mode_k[i];
+                    let mode_freq = f_base * k;
                     // Fade modes out as they approach Nyquist instead of cutting
                     // them: `mode_freq` moves with `tune`/`Fm`, and a hard cull
                     // makes a mode appear or vanish on a step.
@@ -1707,11 +1934,11 @@ impl Waveform for OscType {
                     if rolloff <= 0.0 {
                         continue;
                     }
-                    let mode_amp = (-t * decay_rate * decay_mult).exp();
-                    let phase =
-                        TAU * mode_freq * t + coupling_drive + state.phase_jitter(id);
-                    shimmer += phase.sin() * amp * mode_amp * rolloff;
+                    let phase = w * k + coupling_drive + state.mode_j[i];
+                    let voice = fast_sin(phase) * rr.mode_amp[i] * state.mode_env[i] * rolloff;
+                    if i >= 8 { shimmer_high += voice } else { shimmer_low += voice }
                 }
+                let shimmer = shimmer_low + shimmer_high * brightness_vel;
                 state.ride_coupling_z = shimmer;
 
                 // ─── Bell partials ───────────────────────────────────────────
@@ -1726,8 +1953,8 @@ impl Waveform for OscType {
                     if bf >= nyquist * 0.9 {
                         continue;
                     }
-                    let env = (-t * decay_rate * pre.bell_decay * (1.0 + i as f64 * 0.35)).exp();
-                    bell += (TAU * bf * t + state.phase_jitter(id)).sin() * pre.bell_amps[i] * env;
+                    let env = fast_exp(-t * decay_rate * pre.bell_decay * (1.0 + i as f64 * 0.35));
+                    bell += fast_sin(TAU * bf * t + state.phase_jitter(id)) * pre.bell_amps[i] * env;
                 }
                 bell *= rr.bell_amount * bell_vel;
 
@@ -1743,12 +1970,12 @@ impl Waveform for OscType {
                     state.haas_index(info.sample_index),
                     state.noise_seed(0x21DE_A11),
                 );
-                let build = 1.0 - (-t / pre.wash_build).exp();
+                let build = 1.0 - fast_exp(-t / pre.wash_build);
                 let wash_lo = state.ride_bp_low.process(white)
-                    * (-t * decay_rate * pre.wash_lo.3).exp()
+                    * fast_exp(-t * decay_rate * pre.wash_lo.3)
                     * pre.wash_lo.2;
                 let wash_hi = state.ride_bp_high.process(white)
-                    * (-t * decay_rate * pre.wash_hi.3).exp()
+                    * fast_exp(-t * decay_rate * pre.wash_hi.3)
                     * pre.wash_hi.2;
                 let wash = (wash_lo + wash_hi) * build * rr.wash * onset_ramp(t);
 
@@ -1759,9 +1986,9 @@ impl Waveform for OscType {
                 // burst carries the chaotic contact grit on top of it.
                 let ping_freq = (pre.ping_bp.0 * (rr.base_freq / pre.base_pitch))
                     .clamp(300.0, nyquist * 0.8);
-                let ping_env = (-t / pre.ping_tau).exp();
+                let ping_env = fast_exp(-t / pre.ping_tau);
                 let ping_tone =
-                    (TAU * ping_freq * t + state.phase_jitter(0x21DE_9146)).sin() * ping_env;
+                    fast_sin(TAU * ping_freq * t + state.phase_jitter(0x21DE_9146)) * ping_env;
                 let ping_excite = if info.sample_index < 6 {
                     fast_noise(
                         state.haas_index(info.sample_index),
@@ -1823,27 +2050,28 @@ impl Waveform for OscType {
                 let swell = (rc.swell * (1.35 - 0.65 * aggression)).max(0.0002);
 
                 // ─── Swell × decay ───────────────────────────────────────────
-                let swell_env = 1.0 - (-t / swell).exp();
-                let decay_env = (-t * decay_rate).exp();
+                let swell_env = 1.0 - fast_exp(-t / swell);
+                let decay_env = fast_exp(-t * decay_rate);
 
                 // ─── Plate modes ─────────────────────────────────────────────
                 let coupling_drive = state.crash_coupling_z * pre.coupling;
                 let nyquist = info.sample_rate * 0.5;
-                let mut shimmer = 0.0;
-                for (i, (ratio, _, decay_mult)) in
-                    crate::presets::HIHAT_MODES.iter().copied().enumerate()
-                {
-                    let amp = rc.mode_amp[i] * if i >= 8 { brightness_vel } else { 1.0 };
-                    let id = 0xC2A5_0000 ^ (i as u64).wrapping_mul(0x9E37);
-                    let mode_freq = f_base * ratio * pre.mode_freq_scale * state.freq_jitter(id);
+                state.sync_modes(MODE_KIND_CRASH, 0xC2A5_0000, pre.mode_freq_scale, decay_rate, info.sample_rate, info.sample_index, &rc.mode_amp);
+                let w = TAU * f_base * t;
+                let mut shimmer_low = 0.0;
+                let mut shimmer_high = 0.0;
+                for i in 0..state.mode_active {
+                    let k = state.mode_k[i];
+                    let mode_freq = f_base * k;
                     let rolloff = ((nyquist * 0.92 - mode_freq) / (nyquist * 0.08)).clamp(0.0, 1.0);
                     if rolloff <= 0.0 {
                         continue;
                     }
-                    let mode_amp = (-t * decay_rate * decay_mult).exp();
-                    let phase = TAU * mode_freq * t + coupling_drive + state.phase_jitter(id);
-                    shimmer += phase.sin() * amp * mode_amp * rolloff;
+                    let phase = w * k + coupling_drive + state.mode_j[i];
+                    let voice = fast_sin(phase) * rc.mode_amp[i] * state.mode_env[i] * rolloff;
+                    if i >= 8 { shimmer_high += voice } else { shimmer_low += voice }
                 }
+                let shimmer = shimmer_low + shimmer_high * brightness_vel;
                 state.crash_coupling_z = shimmer;
 
                 let plate =
@@ -1855,10 +2083,10 @@ impl Waveform for OscType {
                     state.noise_seed(0xC2A5_A11),
                 );
                 let wash_lo = state.crash_bp_low.process(white)
-                    * (-t * decay_rate * pre.wash_lo.3).exp()
+                    * fast_exp(-t * decay_rate * pre.wash_lo.3)
                     * pre.wash_lo.2;
                 let wash_hi = state.crash_bp_high.process(white)
-                    * (-t * decay_rate * pre.wash_hi.3).exp()
+                    * fast_exp(-t * decay_rate * pre.wash_hi.3)
                     * pre.wash_hi.2;
                 let wash = (wash_lo + wash_hi) * rc.wash;
 
@@ -1930,8 +2158,8 @@ impl Waveform for OscType {
                         let local = t - burst_start;
                         let level = pre.burst_falloff.powi(k as i32);
                         env += level
-                            * (-local * 3.0 / decay).exp()
-                            * (1.0 - (-local / attack_tau).exp());
+                            * fast_exp(-local * 3.0 / decay)
+                            * (1.0 - fast_exp(-local / attack_tau));
                     }
                     let jit = state.phase_jitter(0x5AA4_0000 ^ (k as u64))
                         / (std::f64::consts::PI / 15.0); // [-1, 1]
@@ -1954,11 +2182,11 @@ impl Waveform for OscType {
 
                 let lo = state.shaker_bp_low.process(white)
                     * pre.band_lo.2
-                    * (-t * 3.0 * pre.band_lo.3 / decay).exp();
+                    * fast_exp(-t * 3.0 * pre.band_lo.3 / decay);
                 let hi = state.shaker_bp_high.process(white)
                     * pre.band_hi.2
                     * bright_vel
-                    * (-t * 3.0 * pre.band_hi.3 / decay).exp();
+                    * fast_exp(-t * 3.0 * pre.band_hi.3 / decay);
                 let shell = state.shaker_shell_bp.process(white) * pre.shell.2;
                 let cloud = (lo + hi + shell) * env * onset_ramp(t);
 
@@ -1967,8 +2195,8 @@ impl Waveform for OscType {
                 // with their own much slower decay — a tambourine's rings carry
                 // long after the beads have stopped.
                 let jingle = if rs.jingle > 0.0 {
-                    let ring_env = (-t * 3.0 * pre.jingle_decay / decay).exp();
-                    let exc = white * (-t * 3.0 / decay).exp();
+                    let ring_env = fast_exp(-t * 3.0 * pre.jingle_decay / decay);
+                    let exc = white * fast_exp(-t * 3.0 / decay);
                     (state.shaker_jingle_1.process(exc) + state.shaker_jingle_2.process(exc) * 0.8)
                         * ring_env
                         * rs.jingle
@@ -2030,14 +2258,14 @@ impl Waveform for OscType {
                         continue;
                     }
                     let phase = TAU * freq * t + state.phase_jitter(id);
-                    let s = phase.sin();
+                    let s = fast_sin(phase);
                     // Cap the drive so the shaper's harmonic series stays under
                     // Nyquist: a partial at f driven to D generates content out
                     // to roughly 3·D·f.
                     let headroom = (nyquist * 0.85 / (freq * 3.0)).clamp(0.0, 1.0);
                     let d = pre.shape_drive * shape_vel * headroom / (1.0 + ratio * 0.6);
-                    let shaped = if d > 0.01 { (s * (1.0 + d)).tanh() } else { s };
-                    let env = (-t * 3.0 * pre.partial_decays[i] / decay).exp();
+                    let shaped = if d > 0.01 { fast_tanh(s * (1.0 + d)) } else { s };
+                    let env = fast_exp(-t * 3.0 * pre.partial_decays[i] / decay);
                     partials += shaped * pre.partial_amps[i] * env;
                 }
 
@@ -2048,8 +2276,8 @@ impl Waveform for OscType {
                 let body = partials * 0.55 + cup * 0.90;
 
                 // Two-stage amplitude: a fast initial snap over the main decay.
-                let main_env = (-t * 3.0 / decay).exp();
-                let snap_env = pre.snap.0 * (-t / pre.snap.1).exp();
+                let main_env = fast_exp(-t * 3.0 / decay);
+                let snap_env = pre.snap.0 * fast_exp(-t / pre.snap.1);
                 let voiced = body * (main_env + snap_env);
 
                 // Mallet click.

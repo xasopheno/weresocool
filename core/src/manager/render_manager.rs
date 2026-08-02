@@ -474,6 +474,10 @@ impl BackgroundRenderable for RenderManager {
         self.paused
     }
 
+    fn poll_vis_ready(&mut self) {
+        self.check_vis_ready();
+    }
+
     fn background_offset(&self) -> Offset {
         self.live_offset.get()
     }

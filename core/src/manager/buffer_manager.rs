@@ -68,6 +68,10 @@ impl BufferManager {
 /// This allows BufferManager to be independent of RenderManager's full implementation
 pub trait BackgroundRenderable {
     fn is_paused(&self) -> bool;
+    /// Poll for the visualizer's readiness (or its timeout) and unpause.
+    /// Lives on the render thread because it needs the RenderManager lock,
+    /// which the audio callback must never take. Default: nothing to poll.
+    fn poll_vis_ready(&mut self) {}
     fn render_buffer(&mut self, buffer_size: usize, offset: Offset) -> Option<(StereoWaveform, Vec<f32>, Vec<Vec<RenderOp>>)>;
     fn has_current_render(&self) -> bool;
     /// Composition playhead (samples) — read AFTER render_buffer to stamp the
@@ -107,6 +111,7 @@ where
                 // Try to render the next buffer
                 let (should_continue, buffer_result, is_paused, position) = match renderable.lock() {
                     Ok(mut rm) => {
+                        rm.poll_vis_ready();
                         let paused = rm.is_paused();
                         if paused {
                             // When paused, don't render - just check state periodically

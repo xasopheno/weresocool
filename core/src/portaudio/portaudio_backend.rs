@@ -78,6 +78,16 @@ impl PortAudioBackend {
             // Get stream_active flag for fast-path check in callback
             let stream_active = render_manager.lock().unwrap().stream_active();
 
+            // The audio callback pops straight off the crossbeam queue. It
+            // must NOT lock the RenderManager: the background render thread
+            // holds that lock for a whole buffer render (tens of
+            // milliseconds on a dense composition), so locking here made the
+            // callback wait on the renderer — the classic priority
+            // inversion, heard as clicks and dropouts under load. VisReady
+            // is control-plane state and is polled by the render thread,
+            // which already holds the lock each iteration.
+            let buffer_rx = render_manager.lock().unwrap().buffer_receiver();
+
             // Use background rendering with lookahead buffers
             let _render_thread =
                 RenderManager::start_background_rendering(Arc::clone(&render_manager), Arc::clone(&stream_active));
@@ -91,19 +101,7 @@ impl PortAudioBackend {
                     return pa::Continue;
                 }
 
-                // Check for VisReady or timeout before reading buffer
-                if let Ok(mut rm) = render_manager.lock() {
-                    rm.check_vis_ready();
-                }
-
-                // Handle lock failure gracefully - output silence instead of panicking
-                let buffer = match render_manager.lock() {
-                    Ok(rm) => rm.pop_buffer(),
-                    Err(e) => {
-                        eprintln!("ERROR: RenderManager lock poisoned in audio callback: {}", e);
-                        None
-                    }
-                };
+                let buffer = buffer_rx.as_ref().and_then(|rx| rx.try_recv().ok());
 
                 if let Some(prerendered) = buffer {
                     new_write_output_buffer(args.buffer, prerendered.waveform, prerendered.ramp);
