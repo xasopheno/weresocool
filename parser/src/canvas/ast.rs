@@ -51,6 +51,20 @@ pub struct Absorb {
     pub density: Expr,
     pub neutral: Expr,
     pub chroma: Expr,
+    /// THE BLACK KNOB. How much pigment a mark carries per unit of COVERAGE
+    /// when it has no brightness to declare it with.
+    ///
+    /// A subtractive canvas reads "how much paint" as `max(r,g,b)`, and
+    /// #000000 has none — so black paint and bare ground are the same three
+    /// numbers and no amount of tuning can separate them. Coverage is an
+    /// independent witness that pigment is there, and this is how much it is
+    /// worth. A coloured mark never touches it (its own brightness already
+    /// exceeds the floor); only a dark one does.
+    ///
+    /// ZERO BY DEFAULT, and that default is load-bearing: at 0 a surface is
+    /// exactly the canvas every existing palette was authored against. Turn
+    /// it up to paint in blacks and greys.
+    pub black: Expr,
 }
 
 /// A strike is wet, and a wet surface catches the light.
@@ -140,6 +154,8 @@ pub mod defaults {
     /// Zero — see `Absorb`. The complement term already darkens greys.
     pub const ABSORB_NEUTRAL: f32 = 0.0;
     pub const ABSORB_CHROMA: f32 = 1.45;
+    /// Zero — see `Absorb::black`. Off means "behave exactly as before".
+    pub const ABSORB_BLACK: f32 = 0.0;
     pub const SHEEN_KNEE: f32 = 2.2;
     pub const SHEEN_GAIN: f32 = 0.95;
     pub const SHEEN_TINT: f32 = 0.25;

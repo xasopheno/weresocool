@@ -24,7 +24,7 @@ match {
     "(", ")", "{", "}", ",", ":", "+", "-", "*", "/",
     "ground", "weave", "tooth", "absorb", "sheen", "edge", "relief", "reflect",
     "scale", "depth", "slub", "density", "neutral", "chroma",
-    "knee", "gain", "tint", "sharp", "light",
+    "knee", "gain", "tint", "sharp", "light", "black",
     "clock", "Sin",
     "sin", "cos", "abs", "floor", "ceil", "sqrt", "exp",
     "min", "max", "pow", "wrap", "clamp", "mix", "step", "smoothstep",
@@ -90,6 +90,7 @@ SubKey: String = {
     "gain" => "gain".to_string(),
     "tint" => "tint".to_string(),
     "sharp" => "sharp".to_string(),
+    "black" => "black".to_string(),
     // Anything else is a typo. Keep it rather than failing: `take_num` warns
     // and uses the default, which beats taking the whole piece down.
     <s:IDENT> => s.to_string(),

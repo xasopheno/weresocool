@@ -76,8 +76,9 @@ pub fn absorb_of(mut a: Vec<(String, SubVal)>) -> Absorb {
         density: take_num(&mut a, "density", defaults::ABSORB_DENSITY),
         neutral: take_num(&mut a, "neutral", defaults::ABSORB_NEUTRAL),
         chroma: take_num(&mut a, "chroma", defaults::ABSORB_CHROMA),
+        black: take_num(&mut a, "black", defaults::ABSORB_BLACK),
     };
-    warn_leftover("absorb", &a, &["density", "neutral", "chroma"]);
+    warn_leftover("absorb", &a, &["density", "neutral", "chroma", "black"]);
     v
 }
 
