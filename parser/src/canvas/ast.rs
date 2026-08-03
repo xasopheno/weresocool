@@ -164,7 +164,7 @@ pub mod defaults {
     /// most pieces want, and both cost a gradient read.
     pub const RELIEF_DEPTH: f32 = 0.0;
     pub const REFLECT_GAIN: f32 = 0.0;
-    pub const REFLECT_SHARP: f32 = 24.0;
+    pub const REFLECT_SHARP: f32 = 8.0;
 }
 
 impl CanvasDef {
