@@ -21,6 +21,12 @@ pub struct CanvasPreprocessed {
     pub stripped: String,
     /// Parsed canvas defs, in source order.
     pub canvases: Vec<CanvasDef>,
+    /// `(name, body byte-range)` in the ORIGINAL source, in source order —
+    /// what the canvas promote-pass needs to find a knob's literal and record
+    /// a save-back span. A Vec and not a map because the prelude is appended
+    /// to the piece, so a name can appear twice and FIRST WINS (the same
+    /// shadowing rule `canvas_map` applies).
+    pub body_spans: Vec<(String, (usize, usize))>,
 }
 
 #[derive(Debug)]
@@ -63,7 +69,9 @@ pub fn extract_canvases(source: &str) -> Result<CanvasPreprocessed, CanvasPrepro
     let (stripped, blocks) = scan_def_blocks(source, "canvas")
         .map_err(|e| CanvasPreprocessError::UnbalancedBraces { start: e.0 })?;
     let mut canvases = Vec::with_capacity(blocks.len());
+    let mut body_spans = Vec::with_capacity(blocks.len());
     for b in blocks {
+        body_spans.push((b.name.clone(), b.body_span));
         let fields = FieldsParser::new().parse(&b.body).map_err(|e| {
             CanvasPreprocessError::Parse {
                 name: b.name.clone(),
@@ -72,7 +80,7 @@ pub fn extract_canvases(source: &str) -> Result<CanvasPreprocessed, CanvasPrepro
         })?;
         canvases.push(CanvasDef::from_fields(b.name, fields));
     }
-    Ok(CanvasPreprocessed { stripped, canvases })
+    Ok(CanvasPreprocessed { stripped, canvases, body_spans })
 }
 
 #[cfg(test)]
