@@ -143,7 +143,7 @@ pub fn preprocess_for_audio(
     base_dir: &std::path::Path,
     socool_path: Option<&std::path::Path>,
 ) -> Result<AudioSource, Error> {
-    use weresocool_parser::{color_def, dsl_compose, dsl_imports, dsl_let, dsl_params, draw, layer, light, palette, surface_dsl, text_def, warp};
+    use weresocool_parser::{canvas, color_def, dsl_compose, dsl_imports, dsl_let, dsl_params, draw, layer, light, palette, surface_dsl, text_def, warp};
 
     let source = dsl_imports::resolve(raw, base_dir)
         .map_err(|e| Error::with_msg(format!("import: {e}")))?;
@@ -205,6 +205,22 @@ pub fn preprocess_for_audio(
         Error::with_msg("text block failed to parse (see report above)")
     })?;
     let source = text_pre.stripped;
+    // And the surfaces the words and the marks are painted ON. A leaf for the
+    // same reason: only `Paint(name)` inside a warp body refers to one, and
+    // that body is already gone by the time this runs.
+    //
+    // EVERY DEF KIND HAS TO BE LISTED HERE. This function and kintaro's
+    // `Processor::visual_front_end` are two doors into the same audio grammar,
+    // and a kind added to one and not the other does not degrade — the grammar
+    // has no rule for the keyword, so the export dies on a piece that renders
+    // perfectly. `canvas` was missing, and `print --wav` on a piece with a
+    // local surface answered `Unexpected Token, line 51, column 8`, line 51
+    // being `canvas sized = {`.
+    let canvas_pre = canvas::extract_canvases(&source).map_err(|e| {
+        e.display(false);
+        Error::with_msg("canvas block failed to parse (see report above)")
+    })?;
+    let source = canvas_pre.stripped;
     let warp_pre = warp::extract_warps(&source).map_err(|e| {
         e.display(false);
         Error::with_msg("warp block failed to parse (see report above)")

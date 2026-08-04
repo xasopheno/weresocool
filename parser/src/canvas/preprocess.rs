@@ -115,6 +115,38 @@ mod tests {
     }
 
     #[test]
+    fn the_fibre_runs_one_way_and_the_pigment_granulates() {
+        // The two properties four pieces needed and could not say: `run` is
+        // the paper's fibre direction, `grain` is the pigment settling into
+        // it. Both were `Raw { }` before there was anywhere to put them.
+        let pre = extract_canvases(
+            "canvas rag = { weave: { scale: 420, run: 90/420 }, grain: { scale: 210, slub: 47, amount: 0.56 } }",
+        )
+        .unwrap();
+        let c = &pre.canvases[0];
+        let w = c.weave.clone().unwrap();
+        assert_eq!(w.scale, Expr::Lit(420.0));
+        assert_eq!(w.run, Expr::Lit(90.0 / 420.0));
+        let g = c.grain.clone().unwrap();
+        assert_eq!(g.scale, Expr::Lit(210.0));
+        assert_eq!(g.amount, Expr::Lit(0.56));
+    }
+
+    #[test]
+    fn a_surface_that_says_neither_is_cloth_with_an_even_film() {
+        // Both defaults are exact no-ops in the shader — `run: 1` samples the
+        // noise square and `amount: 0` multiplies absorption by 1 — which is
+        // what keeps every already-authored surface bit-identical.
+        let pre = extract_canvases("canvas duck = { weave: { scale: 300 } }").unwrap();
+        let c = &pre.canvases[0];
+        assert_eq!(
+            c.weave.clone().unwrap().run,
+            Expr::DefaultLit(crate::canvas::ast::defaults::WEAVE_RUN)
+        );
+        assert!(c.grain.is_none());
+    }
+
+    #[test]
     fn relief_and_reflect_name_a_light() {
         let pre = extract_canvases(
             "canvas gilt = { relief: { depth: 6, light: studio }, reflect: { gain: 0.8, sharp: 60, light: studio } }",

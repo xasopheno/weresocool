@@ -10,7 +10,7 @@
 //! surface is a set of adjustments to a working ground, so a typo should cost
 //! you one property, not the whole piece.
 
-use crate::canvas::ast::{defaults, Absorb, Reflect, Relief, Sheen, Weave};
+use crate::canvas::ast::{defaults, Absorb, Grain, Reflect, Relief, Sheen, Weave};
 use crate::dsl_expr::Expr;
 
 /// A value inside an inner brace bag: a number-ish expression, or the name of
@@ -66,8 +66,9 @@ pub fn weave_of(mut a: Vec<(String, SubVal)>) -> Weave {
         scale: take_num(&mut a, "scale", defaults::WEAVE_SCALE),
         depth: take_num(&mut a, "depth", defaults::WEAVE_DEPTH),
         slub: take_num(&mut a, "slub", defaults::WEAVE_SLUB),
+        run: take_num(&mut a, "run", defaults::WEAVE_RUN),
     };
-    warn_leftover("weave", &a, &["scale", "depth", "slub"]);
+    warn_leftover("weave", &a, &["scale", "depth", "slub", "run"]);
     w
 }
 
@@ -79,6 +80,16 @@ pub fn absorb_of(mut a: Vec<(String, SubVal)>) -> Absorb {
         black: take_num(&mut a, "black", defaults::ABSORB_BLACK),
     };
     warn_leftover("absorb", &a, &["density", "neutral", "chroma", "black"]);
+    v
+}
+
+pub fn grain_of(mut a: Vec<(String, SubVal)>) -> Grain {
+    let v = Grain {
+        scale: take_num(&mut a, "scale", defaults::GRAIN_SCALE),
+        slub: take_num(&mut a, "slub", defaults::GRAIN_SLUB),
+        amount: take_num(&mut a, "amount", defaults::GRAIN_AMOUNT),
+    };
+    warn_leftover("grain", &a, &["scale", "slub", "amount"]);
     v
 }
 

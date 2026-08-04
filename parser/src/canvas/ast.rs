@@ -19,11 +19,44 @@ use crate::dsl_expr::Expr;
 /// The substrate's own texture — the weave of cloth, the fibre of paper.
 /// `scale` is spatial frequency, `depth` how deep the trough, `slub` the
 /// second, coarser frequency that keeps it from reading as graph paper.
+///
+/// `run` is THE DIRECTION THE FIBRE RUNS, as the ratio of the vertical scale
+/// to the horizontal one. 1.0 is cloth: woven both ways, so the texture has no
+/// grain. Paper is not cloth — it is pulp settled on a screen, and its fibres
+/// lie down mostly one way — so `scale: 420, run: 0.21` samples 420 across and
+/// 90 along, and the surface reads as a SHEET rather than as canvas. Four
+/// pieces wrote that anisotropy by hand as `k_vnoise(vec2(uv.x * 420.0, uv.y *
+/// 90.0))` and could not say it any other way.
 #[derive(Debug, Clone, PartialEq)]
 pub struct Weave {
     pub scale: Expr,
     pub depth: Expr,
     pub slub: Expr,
+    pub run: Expr,
+}
+
+/// GRANULATION — pigment settling into the tooth instead of lying flat.
+///
+/// This is not the weave breaking the paint FILM (that is `tooth`, and it
+/// happens at the surface). This is the pigment itself pooling in the low
+/// places while the high places stay clear, so ABSORPTION varies at grain
+/// scale — and it is the single thing that makes a wash read as watercolour
+/// and not as airbrush. Which pigments granulate, and how coarsely, is a
+/// property of the paper as much as of the paint.
+///
+/// `amount` is the swing about nominal: 0 is a perfectly even film, 0.56 is
+/// the value `jdbeck_orbit` measured. `scale` and `slub` are its own two
+/// frequencies, INDEPENDENT of the weave's — pigment settles at a coarser
+/// scale than the fibre it settles into, and the pieces that hand-rolled this
+/// used 210/47 against a 420/90 weave.
+///
+/// The mean is exactly 1, so turning `amount` up varies the absorption
+/// without darkening or lightening the passage overall.
+#[derive(Debug, Clone, PartialEq)]
+pub struct Grain {
+    pub scale: Expr,
+    pub slub: Expr,
+    pub amount: Expr,
 }
 
 /// Beer–Lambert: how the pigment takes light out of the ground.
@@ -118,6 +151,8 @@ pub struct CanvasDef {
     /// proud, less pigment sits in the trough.
     pub tooth: Option<Expr>,
     pub absorb: Option<Absorb>,
+    /// Granulation: how unevenly the pigment settles into the tooth.
+    pub grain: Option<Grain>,
     pub sheen: Option<Sheen>,
     /// Stretcher shading — a canvas is a physical object and its edges are
     /// where it is nailed to a frame. 0 is a surface with no edges.
@@ -135,6 +170,7 @@ pub enum CanvasField {
     Weave(Weave),
     Tooth(Expr),
     Absorb(Absorb),
+    Grain(Grain),
     Sheen(Sheen),
     Edge(Expr),
     Relief(Relief),
@@ -149,6 +185,8 @@ pub mod defaults {
     pub const WEAVE_SCALE: f32 = 300.0;
     pub const WEAVE_DEPTH: f32 = 0.055;
     pub const WEAVE_SLUB: f32 = 41.0;
+    /// 1.0 — cloth, woven both ways. Below 1 the fibre runs across.
+    pub const WEAVE_RUN: f32 = 1.0;
     pub const TOOTH: f32 = 0.16;
     pub const ABSORB_DENSITY: f32 = 6.5;
     /// Zero — see `Absorb`. The complement term already darkens greys.
@@ -156,6 +194,11 @@ pub mod defaults {
     pub const ABSORB_CHROMA: f32 = 1.45;
     /// Zero — see `Absorb::black`. Off means "behave exactly as before".
     pub const ABSORB_BLACK: f32 = 0.0;
+    /// Granulation is OFF by default: an even film is what a `canvas foo = {}`
+    /// should be, and every existing surface was authored without one.
+    pub const GRAIN_SCALE: f32 = 210.0;
+    pub const GRAIN_SLUB: f32 = 47.0;
+    pub const GRAIN_AMOUNT: f32 = 0.0;
     pub const SHEEN_KNEE: f32 = 2.2;
     pub const SHEEN_GAIN: f32 = 0.95;
     pub const SHEEN_TINT: f32 = 0.25;
@@ -178,6 +221,7 @@ impl CanvasDef {
             weave: None,
             tooth: None,
             absorb: None,
+            grain: None,
             sheen: None,
             edge: None,
             relief: None,
@@ -189,6 +233,7 @@ impl CanvasDef {
                 CanvasField::Weave(w) => out.weave = Some(w),
                 CanvasField::Tooth(t) => out.tooth = Some(t),
                 CanvasField::Absorb(a) => out.absorb = Some(a),
+                CanvasField::Grain(g) => out.grain = Some(g),
                 CanvasField::Sheen(s) => out.sheen = Some(s),
                 CanvasField::Edge(e) => out.edge = Some(e),
                 CanvasField::Relief(r) => out.relief = Some(r),

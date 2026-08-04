@@ -15,15 +15,15 @@
 
 use crate::dsl_expr::{Expr, BinOp, MathFn};
 use crate::canvas::ast::CanvasField;
-use crate::canvas::helpers::{SubVal, weave_of, absorb_of, sheen_of, relief_of, reflect_of};
+use crate::canvas::helpers::{SubVal, weave_of, absorb_of, grain_of, sheen_of, relief_of, reflect_of};
 use std::str::FromStr;
 
 grammar;
 
 match {
     "(", ")", "{", "}", ",", ":", "+", "-", "*", "/",
-    "ground", "weave", "tooth", "absorb", "sheen", "edge", "relief", "reflect",
-    "scale", "depth", "slub", "density", "neutral", "chroma",
+    "ground", "weave", "tooth", "absorb", "grain", "sheen", "edge", "relief", "reflect",
+    "scale", "depth", "slub", "run", "density", "neutral", "chroma", "amount",
     "knee", "gain", "tint", "sharp", "light", "black",
     "clock", "Sin",
     "sin", "cos", "abs", "floor", "ceil", "sqrt", "exp",
@@ -56,6 +56,7 @@ Field: CanvasField = {
     "edge"   ":" <e:Expr>                => CanvasField::Edge(e),
     "weave"   ":" "{" <a:SubArgs> "}"    => CanvasField::Weave(weave_of(a)),
     "absorb"  ":" "{" <a:SubArgs> "}"    => CanvasField::Absorb(absorb_of(a)),
+    "grain"   ":" "{" <a:SubArgs> "}"    => CanvasField::Grain(grain_of(a)),
     "sheen"   ":" "{" <a:SubArgs> "}"    => CanvasField::Sheen(sheen_of(a)),
     "relief"  ":" "{" <a:SubArgs> "}"    => CanvasField::Relief(relief_of(a)),
     "reflect" ":" "{" <a:SubArgs> "}"    => CanvasField::Reflect(reflect_of(a)),
@@ -83,6 +84,8 @@ SubKey: String = {
     "scale" => "scale".to_string(),
     "depth" => "depth".to_string(),
     "slub" => "slub".to_string(),
+    "run" => "run".to_string(),
+    "amount" => "amount".to_string(),
     "density" => "density".to_string(),
     "neutral" => "neutral".to_string(),
     "chroma" => "chroma".to_string(),
