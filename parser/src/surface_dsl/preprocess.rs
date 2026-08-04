@@ -7,8 +7,8 @@
 
 use super::ast::{SurfaceDef, SurfacePipeline};
 use super::parser::{parse_surface_pipeline, ParseError};
-use crate::dsl_extract::{
-    collect_refs, find_matching_brace, is_ident_byte, is_ident_start, matches_keyword, skip_ws,
+use crate::dsl_extract::{scan_def_blocks, 
+    collect_refs, find_matching_brace, is_ident_byte, is_ident_start, skip_ws,
 };
 use std::collections::{HashMap, HashSet};
 
@@ -63,75 +63,13 @@ impl SurfacePreprocessError {
 }
 
 pub fn extract_surfaces(source: &str) -> Result<SurfacePreprocessed, SurfacePreprocessError> {
-    let bytes = source.as_bytes();
-    let mut out = String::with_capacity(source.len());
-    let mut surfaces: Vec<SurfaceDef> = Vec::new();
-    let mut i = 0usize;
-
-    // Pass 1: scan for `surface NAME = { ... }` blocks. Same shape as the
-    // warp preprocessor — look for the `surface` keyword at a word
-    // boundary, then ident, `=`, `{ … }`. Parse the body as a
-    // SurfacePipeline; on success strip it from the source.
-    while i < bytes.len() {
-        // Skip line comments so a `surface` mentioned in a `--`/`//` comment
-        // (e.g. "routed to the surface") isn't mistaken for a def header.
-        if (bytes[i] == b'-' && i + 1 < bytes.len() && bytes[i + 1] == b'-')
-            || (bytes[i] == b'/' && i + 1 < bytes.len() && bytes[i + 1] == b'/')
-        {
-            while i < bytes.len() && bytes[i] != b'\n' {
-                out.push(bytes[i] as char);
-                i += 1;
-            }
-            continue;
-        }
-        if matches_keyword(bytes, i, b"surface") {
-            let block_start = i;
-            let mut j = i + 7; // len("surface")
-            j = skip_ws(bytes, j);
-
-            let name_start = j;
-            while j < bytes.len() && is_ident_byte(bytes[j]) { j += 1; }
-            if j == name_start {
-                // No identifier — fall through as plain text.
-                out.push(bytes[i] as char); i += 1; continue;
-            }
-            let name = source[name_start..j].to_string();
-
-            // `=`
-            let k = skip_ws(bytes, j);
-            if k >= bytes.len() || bytes[k] != b'=' {
-                out.push(bytes[i] as char); i += 1; continue;
-            }
-            let k = skip_ws(bytes, k + 1);
-
-            // `{`
-            if k >= bytes.len() || bytes[k] != b'{' {
-                out.push(bytes[i] as char); i += 1; continue;
-            }
-            let body_start = k + 1;
-            let body_end = match find_matching_brace(bytes, k) {
-                Some(e) => e,
-                None => return Err(SurfacePreprocessError::UnbalancedBraces { start: block_start }),
-            };
-
-            let body = &source[body_start..body_end];
-            let pipeline = parse_surface_pipeline(body)
-                .map_err(|err| SurfacePreprocessError::Parse { name: name.clone(), err })?;
-            surfaces.push(SurfaceDef { name, pipeline });
-
-            // Preserve newlines so downstream parse errors still report
-            // the right line. Without this, a multi-line `surface NAME = { ... }`
-            // strips N newlines and the weresocool parser reports errors
-            // N lines earlier than they really are. Mirrors warp's stripper.
-            let block_end = body_end + 1; // include the `}`
-            for p in i..block_end {
-                out.push(if bytes[p] == b'\n' { '\n' } else { ' ' });
-            }
-            i = block_end;
-        } else {
-            out.push(bytes[i] as char);
-            i += 1;
-        }
+    let (out, blocks) = scan_def_blocks(source, "surface")
+        .map_err(|e| SurfacePreprocessError::UnbalancedBraces { start: e.0 })?;
+    let mut surfaces: Vec<SurfaceDef> = Vec::with_capacity(blocks.len());
+    for b in blocks {
+        let pipeline = parse_surface_pipeline(&b.body)
+            .map_err(|err| SurfacePreprocessError::Parse { name: b.name.clone(), err })?;
+        surfaces.push(SurfaceDef { name: b.name, pipeline });
     }
 
     // Pass 2: strip `| surface NAME` clauses from voice bodies and collect

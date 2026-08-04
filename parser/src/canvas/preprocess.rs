@@ -12,7 +12,7 @@
 
 use crate::canvas::ast::CanvasDef;
 use crate::canvas::canvas_grammar::FieldsParser;
-use crate::dsl_extract::{find_matching_brace, is_ident_byte, matches_keyword, skip_ws};
+use crate::dsl_extract::scan_def_blocks;
 use crate::dsl_parse_error::DslParseError;
 
 #[derive(Debug)]
@@ -60,88 +60,19 @@ impl std::fmt::Display for CanvasPreprocessError {
 }
 
 pub fn extract_canvases(source: &str) -> Result<CanvasPreprocessed, CanvasPreprocessError> {
-    let bytes = source.as_bytes();
-    let mut out: Vec<u8> = Vec::with_capacity(bytes.len());
-    let mut canvases: Vec<CanvasDef> = Vec::new();
-    let mut i = 0usize;
-
-    while i < bytes.len() {
-        // COMMENTS ARE NOT SOURCE. A line comment gets copied through
-        // verbatim without being scanned, because prose talks about code:
-        // the medium library's own documentation says
-        // "write your own `canvas linen = { … }`", and a comment-blind
-        // scanner reads that as a def and then fails to parse `…`. Cost an
-        // afternoon the first time; the same blindness is a known trap in
-        // the other extractors.
-        if bytes[i] == b'-' && i + 1 < bytes.len() && bytes[i + 1] == b'-'
-            || bytes[i] == b'/' && i + 1 < bytes.len() && bytes[i + 1] == b'/'
-        {
-            while i < bytes.len() && bytes[i] != b'\n' {
-                out.push(bytes[i]);
-                i += 1;
+    let (stripped, blocks) = scan_def_blocks(source, "canvas")
+        .map_err(|e| CanvasPreprocessError::UnbalancedBraces { start: e.0 })?;
+    let mut canvases = Vec::with_capacity(blocks.len());
+    for b in blocks {
+        let fields = FieldsParser::new().parse(&b.body).map_err(|e| {
+            CanvasPreprocessError::Parse {
+                name: b.name.clone(),
+                err: DslParseError::from_lalrpop("canvas", e, &b.body),
             }
-            continue;
-        }
-        // `canvas` at a word boundary — an audio def called `canvassing` must
-        // survive untouched, and so must the many pieces with a local
-        // `warp canvas = { … }`, which does not start with the bare keyword.
-        if !matches_keyword(bytes, i, b"canvas") {
-            out.push(bytes[i]);
-            i += 1;
-            continue;
-        }
-
-        let block_start = i;
-        let mut j = skip_ws(bytes, i + 6);
-        let name_start = j;
-        while j < bytes.len() && is_ident_byte(bytes[j]) {
-            j += 1;
-        }
-        if j == name_start {
-            out.push(bytes[i]);
-            i += 1;
-            continue;
-        }
-        let name = source[name_start..j].to_string();
-
-        let k = skip_ws(bytes, j);
-        if k >= bytes.len() || bytes[k] != b'=' {
-            out.push(bytes[i]);
-            i += 1;
-            continue;
-        }
-        let k = skip_ws(bytes, k + 1);
-        if k >= bytes.len() || bytes[k] != b'{' {
-            out.push(bytes[i]);
-            i += 1;
-            continue;
-        }
-
-        let body_start = k + 1;
-        let body_end = match find_matching_brace(bytes, k) {
-            Some(e) => e,
-            None => return Err(CanvasPreprocessError::UnbalancedBraces { start: block_start }),
-        };
-        let body = &source[body_start..body_end];
-        let fields = FieldsParser::new()
-            .parse(body)
-            .map_err(|e| CanvasPreprocessError::Parse {
-                name: name.clone(),
-                err: DslParseError::from_lalrpop("canvas", e, body),
-            })?;
-        canvases.push(CanvasDef::from_fields(name, fields));
-
-        let block_end = body_end + 1;
-        for p in block_start..block_end {
-            out.push(if bytes[p] == b'\n' { b'\n' } else { b' ' });
-        }
-        i = block_end;
+        })?;
+        canvases.push(CanvasDef::from_fields(b.name, fields));
     }
-
-    Ok(CanvasPreprocessed {
-        stripped: String::from_utf8(out).expect("canvas stripper preserves UTF-8"),
-        canvases,
-    })
+    Ok(CanvasPreprocessed { stripped, canvases })
 }
 
 #[cfg(test)]

@@ -11,7 +11,7 @@
 //! downstream byte offset — the promote pass's source scan above all — stays
 //! aligned with the original file.
 
-use crate::dsl_extract::{find_matching_brace, is_ident_byte, matches_keyword, skip_ws};
+use crate::dsl_extract::scan_def_blocks;
 use crate::dsl_parse_error::DslParseError;
 use crate::light::ast::LightDef;
 use crate::light::light_grammar::FieldsParser;
@@ -61,73 +61,19 @@ impl std::fmt::Display for LightPreprocessError {
 }
 
 pub fn extract_lights(source: &str) -> Result<LightPreprocessed, LightPreprocessError> {
-    let bytes = source.as_bytes();
-    let mut out: Vec<u8> = Vec::with_capacity(bytes.len());
-    let mut lights: Vec<LightDef> = Vec::new();
-    let mut i = 0usize;
-
-    while i < bytes.len() {
-        // `light` at a word boundary — `lighthouse = {…}` is an audio def and
-        // must survive untouched.
-        if !matches_keyword(bytes, i, b"light") {
-            out.push(bytes[i]);
-            i += 1;
-            continue;
-        }
-
-        let block_start = i;
-        let mut j = skip_ws(bytes, i + 5);
-        let name_start = j;
-        while j < bytes.len() && is_ident_byte(bytes[j]) {
-            j += 1;
-        }
-        if j == name_start {
-            out.push(bytes[i]);
-            i += 1;
-            continue;
-        }
-        let name = source[name_start..j].to_string();
-
-        let k = skip_ws(bytes, j);
-        if k >= bytes.len() || bytes[k] != b'=' {
-            out.push(bytes[i]);
-            i += 1;
-            continue;
-        }
-        let k = skip_ws(bytes, k + 1);
-        if k >= bytes.len() || bytes[k] != b'{' {
-            out.push(bytes[i]);
-            i += 1;
-            continue;
-        }
-
-        let body_start = k + 1;
-        let body_end = match find_matching_brace(bytes, k) {
-            Some(e) => e,
-            None => {
-                return Err(LightPreprocessError::UnbalancedBraces { start: block_start })
+    let (stripped, blocks) = scan_def_blocks(source, "light")
+        .map_err(|e| LightPreprocessError::UnbalancedBraces { start: e.0 })?;
+    let mut lights = Vec::with_capacity(blocks.len());
+    for b in blocks {
+        let fields = FieldsParser::new().parse(&b.body).map_err(|e| {
+            LightPreprocessError::Parse {
+                name: b.name.clone(),
+                err: DslParseError::from_lalrpop("light", e, &b.body),
             }
-        };
-        let body = &source[body_start..body_end];
-        let fields = FieldsParser::new()
-            .parse(body)
-            .map_err(|e| LightPreprocessError::Parse {
-                name: name.clone(),
-                err: DslParseError::from_lalrpop("light", e, body),
-            })?;
-        lights.push(LightDef::from_fields(name, fields));
-
-        let block_end = body_end + 1;
-        for p in block_start..block_end {
-            out.push(if bytes[p] == b'\n' { b'\n' } else { b' ' });
-        }
-        i = block_end;
+        })?;
+        lights.push(LightDef::from_fields(b.name, fields));
     }
-
-    Ok(LightPreprocessed {
-        stripped: String::from_utf8(out).expect("light stripper preserves UTF-8"),
-        lights,
-    })
+    Ok(LightPreprocessed { stripped, lights })
 }
 
 #[cfg(test)]

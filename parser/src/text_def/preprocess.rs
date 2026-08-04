@@ -5,7 +5,7 @@
 //! body, and the audio path has no use for it. Blocks are replaced byte for
 //! byte with spaces so every downstream byte-span stays aligned.
 
-use crate::dsl_extract::{find_matching_brace, is_ident_byte, matches_keyword, skip_ws};
+use crate::dsl_extract::scan_def_blocks;
 use crate::dsl_parse_error::DslParseError;
 use crate::text_def::ast::TextDef;
 use crate::text_def::text_grammar::BodyParser;
@@ -47,53 +47,19 @@ impl std::fmt::Display for TextPreprocessError {
 }
 
 pub fn extract_texts(source: &str) -> Result<TextPreprocessed, TextPreprocessError> {
-    let bytes = source.as_bytes();
-    let mut out: Vec<u8> = Vec::with_capacity(bytes.len());
-    let mut texts: Vec<TextDef> = Vec::new();
-    let mut i = 0usize;
-
-    while i < bytes.len() {
-        if !matches_keyword(bytes, i, b"text") {
-            out.push(bytes[i]);
-            i += 1;
-            continue;
-        }
-        let block_start = i;
-        let mut j = skip_ws(bytes, i + 4);
-        let name_start = j;
-        while j < bytes.len() && is_ident_byte(bytes[j]) { j += 1; }
-        if j == name_start { out.push(bytes[i]); i += 1; continue; }
-        let name = source[name_start..j].to_string();
-        let k = skip_ws(bytes, j);
-        if k >= bytes.len() || bytes[k] != b'=' { out.push(bytes[i]); i += 1; continue; }
-        let k = skip_ws(bytes, k + 1);
-        if k >= bytes.len() || bytes[k] != b'{' { out.push(bytes[i]); i += 1; continue; }
-
-        let body_start = k + 1;
-        let body_end = match find_matching_brace(bytes, k) {
-            Some(e) => e,
-            None => return Err(TextPreprocessError::UnbalancedBraces { start: block_start }),
-        };
-        let body = &source[body_start..body_end];
-        let (string, fields) = BodyParser::new().parse(body).map_err(|e| {
+    let (stripped, blocks) = scan_def_blocks(source, "text")
+        .map_err(|e| TextPreprocessError::UnbalancedBraces { start: e.0 })?;
+    let mut texts = Vec::with_capacity(blocks.len());
+    for b in blocks {
+        let (string, fields) = BodyParser::new().parse(&b.body).map_err(|e| {
             TextPreprocessError::Parse {
-                name: name.clone(),
-                err: DslParseError::from_lalrpop("text", e, body),
+                name: b.name.clone(),
+                err: DslParseError::from_lalrpop("text", e, &b.body),
             }
         })?;
-        texts.push(TextDef::from_fields(name, string, fields));
-
-        let block_end = body_end + 1;
-        for p in block_start..block_end {
-            out.push(if bytes[p] == b'\n' { b'\n' } else { b' ' });
-        }
-        i = block_end;
+        texts.push(TextDef::from_fields(b.name, string, fields));
     }
-
-    Ok(TextPreprocessed {
-        stripped: String::from_utf8(out).expect("text stripper preserves UTF-8"),
-        texts,
-    })
+    Ok(TextPreprocessed { stripped, texts })
 }
 
 #[cfg(test)]

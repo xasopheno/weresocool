@@ -11,8 +11,8 @@
 use super::ast::{DrawDef, DrawPipeline};
 use super::parser_lalrpop::ParseError;
 use super::parser_lalrpop::parse_pipeline_lalrpop as parse_pipeline;
-use crate::dsl_extract::{
-    collect_refs, find_matching_brace, is_ident_byte, is_ident_start, matches_keyword, skip_ws,
+use crate::dsl_extract::{scan_def_blocks, 
+    collect_refs, find_matching_brace, is_ident_byte, is_ident_start, skip_ws,
 };
 use std::collections::{HashMap, HashSet};
 
@@ -64,77 +64,14 @@ impl PreprocessError {
 }
 
 pub fn extract_draws(source: &str) -> Result<Preprocessed, PreprocessError> {
-    let bytes = source.as_bytes();
-    let mut out = String::with_capacity(source.len());
-    let mut draws = Vec::new();
-    let mut i = 0usize;
-    // Pass-through is copied as string SLICES between edit points (never
-    // byte-by-byte `as char` casts, which would re-encode UTF-8 bytes ≥ 0x80
-    // as two-byte mojibake and break the byte-offset invariant documented on
-    // `Preprocessed::stripped`). `cursor` marks the start of the pending
-    // untouched slice.
-    let mut cursor = 0usize;
-
-    while i < bytes.len() {
-        if matches_keyword(bytes, i, b"draw") {
-            let block_start = i;
-            let mut j = i + 4;
-            j = skip_ws(bytes, j);
-
-            // Identifier.
-            let name_start = j;
-            while j < bytes.len() && is_ident_byte(bytes[j]) { j += 1; }
-            if j == name_start {
-                // Not a `draw NAME = …` block (could be `| draw { … }` inline
-                // form — handled in pass 2 below). Don't eat the keyword.
-                i += 1;
-                continue;
-            }
-            let name = source[name_start..j].to_string();
-
-            // `=`
-            let k = skip_ws(bytes, j);
-            if k >= bytes.len() || bytes[k] != b'=' {
-                i += 1; continue;
-            }
-            let k = skip_ws(bytes, k + 1);
-
-            // `{`
-            if k >= bytes.len() || bytes[k] != b'{' {
-                i += 1; continue;
-            }
-            let body_start = k + 1;
-            let body_end = match find_matching_brace(bytes, k) {
-                Some(e) => e,
-                None => return Err(PreprocessError::UnbalancedBraces { start: block_start }),
-            };
-
-            let body = &source[body_start..body_end];
-            let pipeline = parse_pipeline(body)
-                .map_err(|err| PreprocessError::Parse { name: name.clone(), err })?;
-            draws.push(DrawDef { name, pipeline });
-
-            // Flush everything untouched up to the block start.
-            out.push_str(&source[cursor..i]);
-            // Preserve newlines so error spans downstream of the stripped
-            // block still point at the right line in the original source.
-            // Otherwise a multi-line `draw NAME = { ... }` swallows N
-            // newlines and weresocool reports parse errors N lines earlier
-            // than they really are. See the parallel logic in
-            // warp::preprocess::extract_warps. Blanking is per-BYTE (one
-            // space per source byte) so byte offsets stay aligned even if
-            // the block body contained multi-byte UTF-8.
-            let block_end = body_end + 1; // include the `}`
-            for p in i..block_end {
-                out.push(if bytes[p] == b'\n' { '\n' } else { ' ' });
-            }
-            i = block_end;
-            cursor = block_end;
-        } else {
-            i += 1;
-        }
+    let (out, blocks) = scan_def_blocks(source, "draw")
+        .map_err(|e| PreprocessError::UnbalancedBraces { start: e.0 })?;
+    let mut draws = Vec::with_capacity(blocks.len());
+    for b in blocks {
+        let pipeline = parse_pipeline(&b.body)
+            .map_err(|err| PreprocessError::Parse { name: b.name.clone(), err })?;
+        draws.push(DrawDef { name: b.name, pipeline });
     }
-    out.push_str(&source[cursor..]);
 
     let name_set: HashSet<String> = draws.iter().map(|d| d.name.clone()).collect();
     let (stripped, color_to_draw, inline_draws) =

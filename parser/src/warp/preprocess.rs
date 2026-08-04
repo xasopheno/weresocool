@@ -10,7 +10,8 @@ use super::parser_lalrpop::ParseError;
 use super::parser_lalrpop::parse_pipeline_lalrpop as parse_pipeline;
 use super::parser_lalrpop::parse_pipeline_with_state_lalrpop as parse_pipeline_with_state;
 use crate::dsl_extract::{
-    collect_refs, find_matching_brace, is_ident_byte, is_ident_start, matches_keyword, skip_ws,
+    collect_refs, find_matching_brace, is_ident_byte, is_ident_start, matches_keyword,
+    scan_def_blocks, skip_ws,
 };
 use std::collections::{HashMap, HashSet};
 
@@ -103,123 +104,51 @@ impl PreprocessError {
 /// `color → warp_name`. The chain `| warp X` is also stripped so weresocool
 /// doesn't see it.
 pub fn extract_warps(source: &str) -> Result<Preprocessed, PreprocessError> {
-    let bytes = source.as_bytes();
-    // `out` is built as a Vec<u8> so byte-length matches the source exactly
-    // — critical for byte-span correctness. The naive `String + push(bytes[i] as char)`
-    // approach inflates non-ASCII (em dashes, arrows) when re-encoding, which
-    // would break offset alignment for the promote-pass.
-    let mut out: Vec<u8> = Vec::with_capacity(bytes.len());
-    let mut warps = Vec::new();
+    let (out_str, blocks) = scan_def_blocks(source, "warp")
+        .map_err(|e| PreprocessError::UnbalancedBraces { start: e.0 })?;
+
+    let mut warps = Vec::with_capacity(blocks.len());
     let mut warp_blend_modes: HashMap<String, WarpBlendMode> = HashMap::new();
-    // warp name → (body_start, body_end) in the ORIGINAL source — used by
-    // the promote-pass to scope its source-literal scan to just the warp body.
+    // warp name → (body_start, body_end) in the ORIGINAL source — the
+    // promote-pass scopes its literal scan with this, which is why the
+    // scanner blanks blocks byte-for-byte instead of deleting them.
     let mut warp_body_spans: HashMap<String, (usize, usize)> = HashMap::new();
-    let mut i = 0usize;
 
-    while i < bytes.len() {
-        // COMMENTS ARE NOT SOURCE. Copy a line comment through verbatim
-        // without scanning it: prose talks about code, and a comment-blind
-        // scan turns documentation into a def. The medium library documents
-        // its own idiom as
-        //
-        //     --     warp paint = { Prev | Lay { … } | Paint(linen) }
-        //
-        // which this used to extract as a real warp named `paint` and then
-        // fail to parse, taking the whole piece down. It also meant a
-        // commented-out warp was still applied — you could not switch one off
-        // by commenting it out, which is the first thing anyone tries.
-        if (bytes[i] == b'-' && i + 1 < bytes.len() && bytes[i + 1] == b'-')
-            || (bytes[i] == b'/' && i + 1 < bytes.len() && bytes[i + 1] == b'/')
-        {
-            while i < bytes.len() && bytes[i] != b'\n' {
-                out.push(bytes[i]);
-                i += 1;
-            }
-            continue;
-        }
-        // Look for the keyword `warp` at a word boundary.
-        if matches_keyword(bytes, i, b"warp") {
-            let block_start = i;
-            let mut j = i + 4;
-            j = skip_ws(bytes, j);
-
-            let name_start = j;
-            while j < bytes.len() && is_ident_byte(bytes[j]) { j += 1; }
-            if j == name_start {
-                out.push(bytes[i]);
-                i += 1;
-                continue;
-            }
-            let name = source[name_start..j].to_string();
-
-            let mut blend_mode = WarpBlendMode::Additive;
-            let mut after = skip_ws(bytes, j);
-            let mode_start = after;
-            while after < bytes.len() && is_ident_byte(bytes[after]) { after += 1; }
-            if after > mode_start {
-                if let Some(m) = WarpBlendMode::from_keyword(&source[mode_start..after]) {
-                    blend_mode = m;
-                    j = after;
+    for b in blocks {
+        // `warp shadow multiply = { … }` — the tail is the blend mode.
+        let blend_mode = if b.tail.is_empty() {
+            WarpBlendMode::Additive
+        } else {
+            match WarpBlendMode::from_keyword(&b.tail) {
+                Some(m) => m,
+                None => {
+                    eprintln!(
+                        "[warp] `{}`: unknown blend mode `{}` — using additive \
+                         (known: additive, over, multiply, screen)",
+                        b.name, b.tail
+                    );
+                    WarpBlendMode::Additive
                 }
             }
+        };
 
-            let k = skip_ws(bytes, j);
-            if k >= bytes.len() || bytes[k] != b'=' {
-                out.push(bytes[i]); i += 1; continue;
-            }
-            let k = skip_ws(bytes, k + 1);
-
-            if k >= bytes.len() || bytes[k] != b'{' {
-                out.push(bytes[i]); i += 1; continue;
-            }
-            let body_start = k + 1;
-            let body_end = match find_matching_brace(bytes, k) {
-                Some(e) => e,
-                None => return Err(PreprocessError::UnbalancedBraces { start: block_start }),
-            };
-
-            // `Raw { … }` brace form → the lexer's backtick form, byte-count
-            // preserved (brace→tick) so spans stay stable. Braces are the
-            // language surface everywhere — layer defs already did this;
-            // warp defs get the same law.
-            let body_owned = rawify_raw_blocks(&source[body_start..body_end]);
-            let body = body_owned.as_str();
-            let (state_names, pipeline) = parse_pipeline_with_state(body)
-                .map_err(|err| PreprocessError::Parse { name: name.clone(), err })?;
-            if blend_mode != WarpBlendMode::Additive {
-                warp_blend_modes.insert(name.clone(), blend_mode);
-            }
-            warp_body_spans.insert(name.clone(), (body_start, body_end));
-            warps.push(WarpDef { name, state_names, pipeline });
-
-            // Replace the skipped warp block with spaces (newlines preserved
-            // for line-number-fidelity) so `out` stays byte-aligned with the
-            // original source. weresocool sees a stretch of whitespace where
-            // the warp def used to be — semantically equivalent to elision,
-            // structurally byte-identical to source. This means inline-warp
-            // body spans recorded later (against `out`-coords) ARE source
-            // coords, so the promote-pass can scope correctly.
-            let block_end = body_end + 1;
-            for p in i..block_end {
-                out.push(if bytes[p] == b'\n' { b'\n' } else { b' ' });
-            }
-            i = block_end;
-            if i < bytes.len() && bytes[i] == b'\n' {
-                out.push(b'\n');
-                i += 1;
-            }
-        } else {
-            out.push(bytes[i]);
-            i += 1;
+        // `Raw { … }` brace form → the lexer's backtick form, byte-count
+        // preserved (brace→tick) so spans stay stable. Braces are the
+        // language surface everywhere; warp defs get the same law as layers.
+        let body = rawify_raw_blocks(&b.body);
+        let (state_names, pipeline) = parse_pipeline_with_state(&body)
+            .map_err(|err| PreprocessError::Parse { name: b.name.clone(), err })?;
+        if blend_mode != WarpBlendMode::Additive {
+            warp_blend_modes.insert(b.name.clone(), blend_mode);
         }
+        warp_body_spans.insert(b.name.clone(), b.body_span);
+        warps.push(WarpDef { name: b.name, state_names, pipeline });
     }
 
     let warp_name_set: HashSet<String> = warps.iter().map(|w| w.name.clone()).collect();
-    // `out` is now byte-aligned with the original source (warp blocks replaced
-    // by spaces, multi-byte UTF-8 preserved verbatim), so positions returned
-    // by strip_chain_warp_ops are valid original-source byte offsets.
-    let out_str = String::from_utf8(out)
-        .expect("warp stripper preserves UTF-8 byte sequences");
+    // `out_str` is byte-aligned with the original source (blocks replaced by
+    // spaces, multi-byte UTF-8 verbatim), so positions returned by
+    // strip_chain_warp_ops are valid original-source byte offsets.
     let (second_pass_out, color_to_chain, inline_warps, inline_warp_attachments, inline_body_spans, name_to_brush_idx) =
         strip_chain_warp_ops(&out_str, &warp_name_set);
     // Merge inline body spans into the warp_body_spans map (which already
