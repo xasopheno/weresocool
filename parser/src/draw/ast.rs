@@ -307,3 +307,256 @@ pub struct DrawDef {
     pub name: String,
     pub pipeline: DrawPipeline,
 }
+
+// ---------------------------------------------------------------------------
+// THE ONE WALKER
+// ---------------------------------------------------------------------------
+//
+// The twin of `warp::ast`'s. Same problem, same answer: "what does this op
+// contain" was answered separately in every pass that needed it, and the
+// answers had drifted. `draw::fit_length::recurse_into` descended into `Seq`,
+// `Overlay`, `Alt` and `Iterate` and stopped — so a `FitLength` written inside
+// an `Each` or a `Jux` silently never resolved. `diagnose` went exactly one
+// level into two of the eight. Both are the same bug: a match arm forgotten in
+// a file nobody was editing.
+
+/// A child of a draw op: a whole sub-pipeline (`Each`'s body and its three
+/// higher-order siblings) or a bare op list (a `Seq` phase, an `Overlay` layer,
+/// an `Alt` branch, an `Iterate` body).
+pub enum Nested<'a> {
+    Pipeline(&'a DrawPipeline),
+    Ops(&'a [DrawOp]),
+}
+
+/// Visit every sub-structure an op contains.
+///
+/// THIS MATCH IS EXHAUSTIVE ON PURPOSE — no `_` arm, and the leaves are listed
+/// individually. A new nesting op is a compile error here rather than a silent
+/// gap somewhere else.
+pub fn for_each_child<'a>(op: &'a DrawOp, f: &mut dyn FnMut(Nested<'a>)) {
+    match op {
+        DrawOp::Each(sub)
+        | DrawOp::Every(_, sub)
+        | DrawOp::Sometimes(_, sub)
+        | DrawOp::Jux(sub) => f(Nested::Pipeline(sub)),
+        DrawOp::Seq { phases } => {
+            for p in phases {
+                f(Nested::Ops(&p.ops));
+            }
+        }
+        DrawOp::Overlay { layers } => {
+            for l in layers {
+                f(Nested::Ops(l));
+            }
+        }
+        DrawOp::Alt { branches } => {
+            for b in branches {
+                f(Nested::Ops(b));
+            }
+        }
+        DrawOp::Iterate { ops, .. } => f(Nested::Ops(ops)),
+
+        // Leaves. Listed rather than caught by `_` so a NEW op has to say
+        // which it is.
+        DrawOp::Path { .. }
+        | DrawOp::Smooth { .. }
+        | DrawOp::Pick { .. }
+        | DrawOp::Pin
+        | DrawOp::Xa { .. }
+        | DrawOp::Ya { .. }
+        | DrawOp::Xf { .. }
+        | DrawOp::Yf { .. }
+        | DrawOp::AtY { .. }
+        | DrawOp::Za { .. }
+        | DrawOp::Direction { .. }
+        | DrawOp::Rx { .. }
+        | DrawOp::Ry { .. }
+        | DrawOp::Rz { .. }
+        | DrawOp::Sm { .. }
+        | DrawOp::Sa { .. }
+        | DrawOp::Mirror { .. }
+        | DrawOp::Jitter { .. }
+        | DrawOp::Modulate { .. }
+        | DrawOp::Tint { .. }
+        | DrawOp::Gradient { .. }
+        | DrawOp::Into { .. }
+        | DrawOp::Temperature { .. }
+        | DrawOp::Lerp { .. }
+        | DrawOp::Spawn { .. }
+        | DrawOp::Echo { .. }
+        | DrawOp::Stagger { .. }
+        | DrawOp::Drag { .. }
+        | DrawOp::Lm { .. }
+        | DrawOp::AsIs
+        | DrawOp::Mute
+        | DrawOp::FitLength { .. } => {}
+    }
+}
+
+/// Depth-first over every op in a chain, including nested ones.
+pub fn visit_ops<'a>(ops: &'a [DrawOp], f: &mut dyn FnMut(&'a DrawOp)) {
+    for op in ops {
+        f(op);
+        for_each_child(op, &mut |child| match child {
+            Nested::Pipeline(p) => visit_ops(&p.ops, f),
+            Nested::Ops(o) => visit_ops(o, f),
+        });
+    }
+}
+
+/// True if any op in the chain (at any depth) satisfies `pred`.
+pub fn any_op(ops: &[DrawOp], pred: &mut dyn FnMut(&DrawOp) -> bool) -> bool {
+    let mut found = false;
+    visit_ops(ops, &mut |op| {
+        if pred(op) {
+            found = true;
+        }
+    });
+    found
+}
+
+/// Mutable twin of [`Nested`].
+pub enum NestedMut<'a> {
+    Pipeline(&'a mut DrawPipeline),
+    Ops(&'a mut Vec<DrawOp>),
+}
+
+/// Mutable twin of [`for_each_child`]. Also exhaustive — the rewrite passes
+/// forget nesting sites exactly as readily as the read-only ones do, and
+/// `fit_length` is the proof.
+pub fn for_each_child_mut<'a>(op: &'a mut DrawOp, f: &mut dyn FnMut(NestedMut<'a>)) {
+    match op {
+        DrawOp::Each(sub)
+        | DrawOp::Every(_, sub)
+        | DrawOp::Sometimes(_, sub)
+        | DrawOp::Jux(sub) => f(NestedMut::Pipeline(sub)),
+        DrawOp::Seq { phases } => {
+            for p in phases {
+                f(NestedMut::Ops(&mut p.ops));
+            }
+        }
+        DrawOp::Overlay { layers } => {
+            for l in layers {
+                f(NestedMut::Ops(l));
+            }
+        }
+        DrawOp::Alt { branches } => {
+            for b in branches {
+                f(NestedMut::Ops(b));
+            }
+        }
+        DrawOp::Iterate { ops, .. } => f(NestedMut::Ops(ops)),
+
+        DrawOp::Path { .. }
+        | DrawOp::Smooth { .. }
+        | DrawOp::Pick { .. }
+        | DrawOp::Pin
+        | DrawOp::Xa { .. }
+        | DrawOp::Ya { .. }
+        | DrawOp::Xf { .. }
+        | DrawOp::Yf { .. }
+        | DrawOp::AtY { .. }
+        | DrawOp::Za { .. }
+        | DrawOp::Direction { .. }
+        | DrawOp::Rx { .. }
+        | DrawOp::Ry { .. }
+        | DrawOp::Rz { .. }
+        | DrawOp::Sm { .. }
+        | DrawOp::Sa { .. }
+        | DrawOp::Mirror { .. }
+        | DrawOp::Jitter { .. }
+        | DrawOp::Modulate { .. }
+        | DrawOp::Tint { .. }
+        | DrawOp::Gradient { .. }
+        | DrawOp::Into { .. }
+        | DrawOp::Temperature { .. }
+        | DrawOp::Lerp { .. }
+        | DrawOp::Spawn { .. }
+        | DrawOp::Echo { .. }
+        | DrawOp::Stagger { .. }
+        | DrawOp::Drag { .. }
+        | DrawOp::Lm { .. }
+        | DrawOp::AsIs
+        | DrawOp::Mute
+        | DrawOp::FitLength { .. } => {}
+    }
+}
+
+#[cfg(test)]
+mod walker_tests {
+    use super::*;
+
+    fn lit(v: f32) -> DrawExpr {
+        DrawExpr::Lit(v)
+    }
+
+    /// The gap that motivated this: `fit_length` descended into four of the
+    /// eight nesting ops, so an op inside `Each` was invisible to it.
+    #[test]
+    fn descends_into_each() {
+        let ops = vec![DrawOp::Each(Box::new(DrawPipeline {
+            ops: vec![DrawOp::FitLength("drums".into())],
+        }))];
+        assert!(any_op(&ops, &mut |o| matches!(o, DrawOp::FitLength(_))));
+    }
+
+    #[test]
+    fn descends_into_every_sometimes_and_jux() {
+        for op in [
+            DrawOp::Every(lit(2.0), Box::new(DrawPipeline { ops: vec![DrawOp::Pin] })),
+            DrawOp::Sometimes(lit(0.3), Box::new(DrawPipeline { ops: vec![DrawOp::Pin] })),
+            DrawOp::Jux(Box::new(DrawPipeline { ops: vec![DrawOp::Pin] })),
+        ] {
+            assert!(any_op(&[op], &mut |o| matches!(o, DrawOp::Pin)));
+        }
+    }
+
+    #[test]
+    fn descends_into_the_op_list_forms() {
+        let inner = vec![DrawOp::Pin];
+        for op in [
+            DrawOp::Seq { phases: vec![DrawPhase { ops: inner.clone(), length: lit(1.0) }] },
+            DrawOp::Overlay { layers: vec![inner.clone()] },
+            DrawOp::Alt { branches: vec![inner.clone()] },
+            DrawOp::Iterate { n: lit(3.0), ops: inner.clone() },
+        ] {
+            assert!(any_op(&[op], &mut |o| matches!(o, DrawOp::Pin)));
+        }
+    }
+
+    #[test]
+    fn nesting_compounds() {
+        let ops = vec![DrawOp::Overlay {
+            layers: vec![vec![DrawOp::Each(Box::new(DrawPipeline {
+                ops: vec![DrawOp::Iterate { n: lit(2.0), ops: vec![DrawOp::Into { name: "word".into(), t: lit(1.0) }] }],
+            }))]],
+        }];
+        let mut found = None;
+        visit_ops(&ops, &mut |o| {
+            if let DrawOp::Into { name, .. } = o {
+                found = Some(name.clone());
+            }
+        });
+        assert_eq!(found.as_deref(), Some("word"));
+    }
+
+    #[test]
+    fn the_mutable_twin_reaches_the_same_places() {
+        let mut ops = vec![DrawOp::Jux(Box::new(DrawPipeline {
+            ops: vec![DrawOp::Lm(lit(1.0))],
+        }))];
+        fn scale(ops: &mut Vec<DrawOp>) {
+            for op in ops.iter_mut() {
+                if let DrawOp::Lm(e) = op {
+                    *e = DrawExpr::Lit(4.0);
+                }
+                for_each_child_mut(op, &mut |c| match c {
+                    NestedMut::Pipeline(p) => scale(&mut p.ops),
+                    NestedMut::Ops(o) => scale(o),
+                });
+            }
+        }
+        scale(&mut ops);
+        assert!(any_op(&ops, &mut |o| matches!(o, DrawOp::Lm(DrawExpr::Lit(v)) if *v == 4.0)));
+    }
+}
