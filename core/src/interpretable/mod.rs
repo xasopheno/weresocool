@@ -119,6 +119,37 @@ pub struct AudioSource {
     pub recordings: weresocool_ast::RecordingRegistry,
 }
 
+/// Append `mediums.socool` from `base_dir`, under the same two rules kintaro's
+/// `with_prelude` follows.
+///
+/// APPENDED, not prepended: a piece's own byte offsets have to stay stable,
+/// because the tweak panel writes edits back at recorded spans in the piece
+/// file. Templates are position-independent, so the end is as good as the
+/// start.
+#[cfg(not(target_arch = "wasm32"))]
+fn with_medium_library(source: String, base_dir: &std::path::Path) -> String {
+    // A piece that imports the library explicitly already has it; appending
+    // again gives every template a duplicate twin.
+    if source.contains("use \"mediums\"") {
+        return source;
+    }
+    // And rendering the library ITSELF must not append it to itself — keyed on
+    // the banner rather than the filename, because it can arrive either way.
+    if source.contains("MEDIUMS — the standard library of canvases.") {
+        return source;
+    }
+    match std::fs::read_to_string(base_dir.join("mediums.socool")) {
+        Ok(lib) => format!("{source}\n{lib}"),
+        Err(_) => source,
+    }
+}
+
+/// wasm has no filesystem; the browser host supplies the library itself.
+#[cfg(target_arch = "wasm32")]
+fn with_medium_library(source: String, _base_dir: &std::path::Path) -> String {
+    source
+}
+
 /// Run the audio-relevant half of the kintaro-DSL front end
 /// (`weresocool_parser::{dsl_imports, dsl_params, warp, draw, surface_dsl,
 /// palette}` + the DAW sidecar from `crate::daw`):
@@ -165,6 +196,28 @@ pub fn preprocess_for_audio(
         let _ = socool_path;
         (source, weresocool_ast::RecordingRegistry::new())
     };
+
+    // THE MEDIUM LIBRARY IS PART OF THE LANGUAGE, so this door has to open it
+    // too.
+    //
+    // Adding the missing extractor kind closed half the gap between this
+    // function and kintaro's `visual_front_end`; this is the other half.
+    // kintaro opens with `with_prelude`, appending `mediums.socool` so a piece
+    // can call `watercolor(…)` or paint on `linen` without saying where either
+    // came from. This door did not, and `dsl_params::expand` short-circuits on
+    // an empty template map — so the call sailed through to the audio grammar:
+    //
+    //     weresocool print --wav jdbeck_lib.socool
+    //     Parse error: Unexpected Token, line 220, column 22
+    //
+    // on `| watercolor(0.55, …)`, in a piece that renders perfectly.
+    //
+    // Read from `base_dir` — the composition's own directory — because the
+    // library is a file that ships next to the pieces. kintaro additionally
+    // carries an embedded copy for when there is no file; that is kintaro's
+    // to own, and a missing library here simply means no prelude, which is
+    // exactly what a plain audio piece wants.
+    let source = with_medium_library(source, base_dir);
 
     let source = dsl_params::expand(&source)
         .map_err(|e| Error::with_msg(format!("parameterized def: {e}")))?;

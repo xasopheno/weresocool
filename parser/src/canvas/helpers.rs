@@ -21,10 +21,28 @@ pub enum SubVal {
     Name(String),
 }
 
+/// Take EVERY occurrence of `key` and keep the LAST.
+///
+/// Last-wins is the documented law for the outer bag (`CanvasDef::from_fields`
+/// says so and implements it), and an inner bag that quietly did the opposite
+/// was two bugs in one line: `weave: { scale: 420, scale: 210 }` used 420, and
+/// then `warn_leftover` printed the survivor as
+///
+///     [canvas] weave: unknown key `scale:` ignored (known: scale, depth, …)
+///
+/// naming the key in both halves of the same sentence. Draining fixes the
+/// warning as a side effect: there is nothing left over to misreport.
 fn take(args: &mut Vec<(String, SubVal)>, key: &str) -> Option<SubVal> {
-    args.iter()
-        .position(|(k, _)| k == key)
-        .map(|p| args.remove(p).1)
+    let mut last = None;
+    args.retain(|(k, v)| {
+        if k == key {
+            last = Some(v.clone());
+            false
+        } else {
+            true
+        }
+    });
+    last
 }
 
 /// One numeric knob, or its default. A `light: foo` written where a number
@@ -32,6 +50,11 @@ fn take(args: &mut Vec<(String, SubVal)>, key: &str) -> Option<SubVal> {
 fn take_num(args: &mut Vec<(String, SubVal)>, key: &str, default: f32) -> Expr {
     match take(args, key) {
         Some(SubVal::Num(e)) => e,
+        // REACHABLE NOW. While every key word was stolen from the IDENT
+        // position, `SubVal::Name` could only ever come from the hardcoded
+        // `light:` rule, so this arm was dead and `reflect: { light: 3 }` was
+        // a whole-piece parse error instead of the one-property warning this
+        // module promises. Re-admitting keywords as names made both arms live.
         Some(SubVal::Name(n)) => {
             eprintln!("[canvas] `{key}:` wants a number, got the name `{n}` — using default");
             Expr::DefaultLit(default)
@@ -77,9 +100,14 @@ pub fn absorb_of(mut a: Vec<(String, SubVal)>) -> Absorb {
         density: take_num(&mut a, "density", defaults::ABSORB_DENSITY),
         neutral: take_num(&mut a, "neutral", defaults::ABSORB_NEUTRAL),
         chroma: take_num(&mut a, "chroma", defaults::ABSORB_CHROMA),
+        complement: take_num(&mut a, "complement", defaults::ABSORB_COMPLEMENT),
         black: take_num(&mut a, "black", defaults::ABSORB_BLACK),
     };
-    warn_leftover("absorb", &a, &["density", "neutral", "chroma", "black"]);
+    warn_leftover(
+        "absorb",
+        &a,
+        &["density", "neutral", "chroma", "complement", "black"],
+    );
     v
 }
 

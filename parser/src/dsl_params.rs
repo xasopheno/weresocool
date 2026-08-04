@@ -175,7 +175,23 @@ fn find_call(src: &str, templates: &HashMap<String, Template>) -> Option<CallSit
             }
             let name = &src[i..k];
             if templates.contains_key(name) {
-                let p = skip_ws(bytes, k);
+                // A CALL IS `name(` WITH NO GAP.
+                //
+                // This used to `skip_ws` between the name and the paren, and
+                // that is not a stylistic nicety — it collides with the shape
+                // `VERB channel (expr)`, which the substance verbs use
+                // constantly:
+                //
+                //     | Decay pigment (1.0 - (lift))
+                //
+                // `pigment` is a state channel there AND the name of a warp
+                // template in the medium library, so the whole line read as a
+                // one-argument call to a two-argument template and the piece
+                // died with "parameterized `pigment` expects 2 arg(s), got 1".
+                // The library's own body does this, and so does
+                // `jdbeck_orchestra`. Every call in the corpus is written
+                // tight, which is also how every other language spells one.
+                let p = k;
                 if p < bytes.len() && bytes[p] == b'(' {
                     if let Some(close) = find_matching_paren(bytes, p) {
                         return Some(CallSite {

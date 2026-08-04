@@ -23,7 +23,7 @@ grammar;
 match {
     "(", ")", "{", "}", ",", ":", "+", "-", "*", "/",
     "ground", "weave", "tooth", "absorb", "grain", "sheen", "edge", "relief", "reflect",
-    "scale", "depth", "slub", "run", "density", "neutral", "chroma", "amount",
+    "scale", "depth", "slub", "run", "density", "neutral", "chroma", "complement", "amount",
     "knee", "gain", "tint", "sharp", "light", "black",
     "clock", "Sin",
     "sin", "cos", "abs", "floor", "ceil", "sqrt", "exp",
@@ -76,8 +76,38 @@ SubArgs: Vec<(String, SubVal)> = {
 };
 
 SubArg: (String, SubVal) = {
-    "light" ":" <n:IDENT> => ("light".to_string(), SubVal::Name(n.to_string())),
+    "light" ":" <n:Name> => ("light".to_string(), SubVal::Name(n)),
     <k:SubKey> ":" <e:Expr> => (k, SubVal::Num(e)),
+};
+
+/// ANY NAME, INCLUDING ONE THIS GRAMMAR ALSO USES AS A KEY.
+///
+/// The `match` block outranks the IDENT regex, so every key word here — and
+/// there are seventeen — stops being lexable as an identifier ANYWHERE this
+/// grammar reaches. `SubKey` has an IDENT fallback and was fine; the two
+/// positions that take a bare name had none, so
+///
+///     light run = { … }        in the piece
+///     reflect: { light: run }  in a canvas
+///
+/// was not a warning, it was `UnrecognizedToken` — the whole piece refused to
+/// load because a composer named a light after a word this grammar happens to
+/// use. Re-admitting the keywords as names costs one rule and closes the hole
+/// for every key at once, including the ones added later.
+Name: String = {
+    // `SubKey` already carries the bare-IDENT fallback; taking IDENT here as
+    // well would give `light: foo` two derivations and lalrpop says so.
+    <k:SubKey> => k,
+    "ground" => "ground".to_string(),
+    "weave" => "weave".to_string(),
+    "tooth" => "tooth".to_string(),
+    "absorb" => "absorb".to_string(),
+    "grain" => "grain".to_string(),
+    "sheen" => "sheen".to_string(),
+    "edge" => "edge".to_string(),
+    "relief" => "relief".to_string(),
+    "reflect" => "reflect".to_string(),
+    "light" => "light".to_string(),
 };
 
 SubKey: String = {
@@ -89,6 +119,7 @@ SubKey: String = {
     "density" => "density".to_string(),
     "neutral" => "neutral".to_string(),
     "chroma" => "chroma".to_string(),
+    "complement" => "complement".to_string(),
     "knee" => "knee".to_string(),
     "gain" => "gain".to_string(),
     "tint" => "tint".to_string(),
@@ -101,7 +132,10 @@ SubKey: String = {
 
 ColorLit: String = {
     <h:HEX_LIT> => h.to_string(),
-    <n:IDENT>   => n.to_string(),
+    // A CSS/xkcd colour name — and `Name`, not IDENT, for the same reason:
+    // xkcd ships colours called `sand`, `tan`, `rust`. One of them is one
+    // keyword away from being unwritable.
+    <n:Name>    => n,
 };
 
 // --------------------------------------------------------------- expressions

@@ -106,6 +106,26 @@ mod tests {
     }
 
     #[test]
+    fn a_repeated_inner_key_is_last_wins_like_the_outer_bag() {
+        let pre = extract_canvases("canvas p = { weave: { scale: 420, scale: 210 } }").unwrap();
+        assert_eq!(pre.canvases[0].weave.clone().unwrap().scale, Expr::Lit(210.0));
+    }
+
+    #[test]
+    fn a_key_word_is_still_usable_as_a_name() {
+        // Seventeen words are keys in this grammar. Naming a light after one
+        // of them used to be `UnrecognizedToken` — the whole piece refused to
+        // load — because the two bare-name positions had no keyword fallback.
+        let pre = extract_canvases(
+            "canvas gilt = { reflect: { gain: 0.8, light: run }, ground: tan }",
+        )
+        .unwrap();
+        let c = &pre.canvases[0];
+        assert_eq!(c.reflect.clone().unwrap().light.as_deref(), Some("run"));
+        assert_eq!(c.ground.as_deref(), Some("tan"));
+    }
+
+    #[test]
     fn an_empty_body_is_a_usable_ground() {
         let pre = extract_canvases("canvas bare = { }").unwrap();
         let c = &pre.canvases[0];

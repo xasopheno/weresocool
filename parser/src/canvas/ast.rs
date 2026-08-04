@@ -84,6 +84,20 @@ pub struct Absorb {
     pub density: Expr,
     pub neutral: Expr,
     pub chroma: Expr,
+    /// How hard the CHROMATIC half of the absorption pulls, on its own.
+    ///
+    /// `density` is how much paint is there, and it is read twice: it sets the
+    /// absorption AND it sets `1 - exp(-density * load)`, the coverage that
+    /// drives the tooth mix and the loaded-passage darkening. Several
+    /// hand-rolled canvases wrote `(1 - hue) * dens * 0.90` — the complement
+    /// scaled and the neutral not — and porting that by folding 0.90 into
+    /// `density` gets the absorption right and silently moves the coverage,
+    /// because only one of the two readings wanted the 0.90.
+    ///
+    /// So the complement gets its own number. 1.0 — the default — is an exact
+    /// no-op, and a surface can now say "6.5 of paint, absorbing at nine
+    /// tenths" in the two numbers that actually mean those things.
+    pub complement: Expr,
     /// THE BLACK KNOB. How much pigment a mark carries per unit of COVERAGE
     /// when it has no brightness to declare it with.
     ///
@@ -192,6 +206,8 @@ pub mod defaults {
     /// Zero — see `Absorb`. The complement term already darkens greys.
     pub const ABSORB_NEUTRAL: f32 = 0.0;
     pub const ABSORB_CHROMA: f32 = 1.45;
+    /// 1.0 — the complement absorbs at full strength. An exact no-op.
+    pub const ABSORB_COMPLEMENT: f32 = 1.0;
     /// Zero — see `Absorb::black`. Off means "behave exactly as before".
     pub const ABSORB_BLACK: f32 = 0.0;
     /// Granulation is OFF by default: an even film is what a `canvas foo = {}`
