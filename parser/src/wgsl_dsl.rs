@@ -819,15 +819,20 @@ mod tests {
         assert!(output.contains("b_perp"));
     }
 
-    // Alpha/Am were REMOVED from the language: per-stamp alpha cannot
-    // exist while chain coverage is derived from brightness (alpha :=
-    // max(rgb)), and after the rgb-rewire they were pure aliases of Bm.
-    // They stay in the command gate so use fails loudly as a DSL parse
-    // error instead of leaking through as raw WGSL.
+    // `Am` IS BACK. It was removed because chain coverage was derived from
+    // brightness, which made per-stamp alpha a pure alias of `Bm`. Coverage
+    // is its own channel now, so `Am` means what it says: less paint, not
+    // darker paint. `Alpha` stays gone — one spelling per thing.
+    #[test]
+    fn test_am_scales_coverage_not_brightness() {
+        let out = compile_dsl_to_wgsl("Am 0.5").expect("Am must compile");
+        assert!(out.contains("alpha = alpha * (0.500000)"), "Am must write alpha, got:\n{out}");
+        assert!(!out.contains("red   = red"), "Am must not touch rgb, got:\n{out}");
+    }
+
     #[test]
     fn test_alpha_removed() {
         assert!(compile_dsl_to_wgsl("Alpha 0").is_err(), "Alpha must be rejected");
-        assert!(compile_dsl_to_wgsl("Am 0.5").is_err(), "Am must be rejected");
     }
 
     #[test]

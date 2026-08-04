@@ -881,11 +881,14 @@ impl VisualPointOp {
                 "    {{ let _rgb_max = max(max(red, green), max(blue, 1e-5)); let _k = {:.6} / _rgb_max; red = red * _k; green = green * _k; blue = blue * _k; }}",
                 a));
         }
+        // `Am` WRITES ALPHA, which is COVERAGE — how much pigment the mark
+        // lays down. It used to multiply rgb, which made it an exact alias of
+        // `Bm` and the reason it was removed. The fragment shader premultiplies
+        // this into rgb and also writes it to the alpha channel, so a mark with
+        // `Am 0.4` is a thinner mark rather than a darker one.
         if self.alpha_mul != Rational64::new(1, 1) {
             let f = rational_to_f32(self.alpha_mul);
-            lines.push(format!("    red   = red   * {:.6};", f));
-            lines.push(format!("    green = green * {:.6};", f));
-            lines.push(format!("    blue  = blue  * {:.6};", f));
+            lines.push(format!("    alpha = alpha * {:.6};", f));
         }
         if self.brightness_mul != Rational64::new(1, 1) {
             let f = rational_to_f32(self.brightness_mul);
@@ -1569,10 +1572,8 @@ z += pos.z;"#,
                         e));
                 }
                 if let Some(v) = alpha_mul {
-                    let e = v.to_wgsl();
-                    lines.push(format!("red   = red   * ({});", e));
-                    lines.push(format!("green = green * ({});", e));
-                    lines.push(format!("blue  = blue  * ({});", e));
+                    // Coverage, not brightness — see `VisualOp::am`.
+                    lines.push(format!("alpha = alpha * ({});", v.to_wgsl()));
                 }
                 if let Some(v) = brightness_mul {
                     let e = v.to_wgsl();
@@ -1938,9 +1939,11 @@ z += pos.z;"#,
         op
     }
 
-    /// Multiply alpha (Am 0.5 = fade to 50%). In practice compiles to rgb
-    /// scaling because the kintaro warp pipeline derives final alpha from
-    /// `max(r,g,b)`.
+    /// `Am v` — scale the mark's COVERAGE: how much pigment it lays down.
+    /// It used to compile to rgb scaling, because chain coverage was derived
+    /// from `max(r,g,b)` and there was nowhere else for it to go — which made
+    /// it an exact alias of `Bm`. Coverage is its own channel now, so this
+    /// writes alpha and means "less paint" rather than "darker paint".
     pub fn am(v: impl Into<WgslValue>) -> Self {
         let mut op = Self::simple_default();
         if let VisualOp::Simple { alpha_mul: ref mut f, .. } = op {
@@ -2206,10 +2209,7 @@ z += pos.z;"#,
                         e));
                 }
                 if let Some(v) = alpha_mul {
-                    let e = v.to_wgsl();
-                    segment_ops.push(format!("        red   = red   * ({});", e));
-                    segment_ops.push(format!("        green = green * ({});", e));
-                    segment_ops.push(format!("        blue  = blue  * ({});", e));
+                    segment_ops.push(format!("        alpha = alpha * ({});", v.to_wgsl()));
                 }
                 if let Some(v) = brightness_mul {
                     let e = v.to_wgsl();
@@ -2493,10 +2493,7 @@ z += pos.z;"#,
                         e));
                 }
                 if let Some(v) = alpha_mul {
-                    let e = v.to_wgsl();
-                    segment_ops.push(format!("            red   = red   * ({});", e));
-                    segment_ops.push(format!("            green = green * ({});", e));
-                    segment_ops.push(format!("            blue  = blue  * ({});", e));
+                    segment_ops.push(format!("            alpha = alpha * ({});", v.to_wgsl()));
                 }
                 if let Some(v) = brightness_mul {
                     let e = v.to_wgsl();

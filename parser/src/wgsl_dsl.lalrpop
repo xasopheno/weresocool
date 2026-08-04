@@ -84,6 +84,11 @@ BaseOp: VisualOp = {
     "Vm" <v:WgslVal> => VisualOp::vm(v),
     "Va" <v:WgslVal> => VisualOp::va(v),
     "Lm" <v:WgslVal> => VisualOp::lm(v),
+    // `Am` — per-stamp COVERAGE. It says "less paint", where `Bm` says
+    // "darker paint"; on a subtractive surface those are different pictures.
+    // It was removed when chain coverage was derived from brightness, which
+    // made it a pure alias of `Bm`. Coverage is its own channel now.
+    "Am" <v:WgslVal> => VisualOp::am(v),
     "Bm" <v:WgslVal> => VisualOp::bm(v),
     "Ba" <v:WgslVal> => VisualOp::ba(v),
     "Die" <v:WgslVal> => VisualOp::die(v),
