@@ -476,3 +476,205 @@ pub struct WarpDef {
     pub state_names: Vec<(String, Chan)>,
     pub pipeline: WarpPipeline,
 }
+
+// ---------------------------------------------------------------------------
+// THE ONE WALKER
+// ---------------------------------------------------------------------------
+
+/// A child of an op: either a whole sub-pipeline (a compositor's operand) or a
+/// bare op list (a `Seq` phase, an `Overlay` layer, a `Relax` body).
+pub enum Nested<'a> {
+    Pipeline(&'a WarpPipeline),
+    Ops(&'a [WarpOp]),
+}
+
+/// Visit every sub-structure an op contains.
+///
+/// THIS MATCH IS EXHAUSTIVE ON PURPOSE — no `_` arm. Adding a nesting op used
+/// to mean remembering nine hand-synced walkers, of which only four were
+/// compiler-enforced; the other five had `_ => {}` and silently did nothing,
+/// so a new verb would work everywhere except inside `Iterate`, or be
+/// invisible to the stability lint, or `FitLength` would not descend into it.
+/// Every one of those bugs is "someone forgot a match arm in a file they were
+/// not editing". Now there is one arm to forget, and the compiler catches it.
+pub fn for_each_child<'a>(op: &'a WarpOp, f: &mut dyn FnMut(Nested<'a>)) {
+    match op {
+        WarpOp::Max(sub)
+        | WarpOp::Mask(sub)
+        | WarpOp::Multiply(sub)
+        | WarpOp::Over(sub)
+        | WarpOp::Add(sub)
+        | WarpOp::Screen(sub)
+        | WarpOp::Mix(sub, _)
+        | WarpOp::Modulate(sub, _)
+        | WarpOp::Iterate(_, sub) => f(Nested::Pipeline(sub)),
+        WarpOp::Overlay { layers } => {
+            for l in layers {
+                f(Nested::Ops(l));
+            }
+        }
+        WarpOp::Seq { phases } => {
+            for p in phases {
+                f(Nested::Ops(&p.ops));
+            }
+        }
+        WarpOp::Relax { body, .. } => f(Nested::Ops(body)),
+
+        // Leaves. Listed rather than caught by `_` so a NEW op has to say
+        // which it is.
+        WarpOp::Scale { .. }
+        | WarpOp::Rotate { .. }
+        | WarpOp::Scroll { .. }
+        | WarpOp::Swirl { .. }
+        | WarpOp::Fold { .. }
+        | WarpOp::Kaleid { .. }
+        | WarpOp::ChromaShift { .. }
+        | WarpOp::CurlFlow { .. }
+        | WarpOp::Decay { .. }
+        | WarpOp::Hue { .. }
+        | WarpOp::Gamma { .. }
+        | WarpOp::Knee { .. }
+        | WarpOp::Gain { .. }
+        | WarpOp::Tint { .. }
+        | WarpOp::Palette { .. }
+        | WarpOp::Blur { .. }
+        | WarpOp::Vignette { .. }
+        | WarpOp::Posterize { .. }
+        | WarpOp::Wave { .. }
+        | WarpOp::Ripple { .. }
+        | WarpOp::Glow { .. }
+        | WarpOp::Stir { .. }
+        | WarpOp::Displace { .. }
+        | WarpOp::Bulge { .. }
+        | WarpOp::Raking { .. }
+        | WarpOp::Relief { .. }
+        | WarpOp::Stain { .. }
+        | WarpOp::Watercolor { .. }
+        | WarpOp::Diffuse { .. }
+        | WarpOp::Advect { .. }
+        | WarpOp::Force { .. }
+        | WarpOp::DecayField { .. }
+        | WarpOp::Set { .. }
+        | WarpOp::Deposit { .. }
+        | WarpOp::Propagate { .. }
+        | WarpOp::Flow { .. }
+        | WarpOp::Raymarch { .. }
+        | WarpOp::Persist { .. }
+        | WarpOp::Bloom { .. }
+        | WarpOp::Lay { .. }
+        | WarpOp::Paint { .. }
+        | WarpOp::Opaque { .. }
+        | WarpOp::Raw { .. }
+        | WarpOp::Background { .. }
+        | WarpOp::Clear { .. }
+        | WarpOp::Fade { .. }
+        | WarpOp::FitLength { .. }
+        | WarpOp::AsIs { .. }
+        | WarpOp::Mute { .. } => {}
+    }
+}
+
+/// Depth-first over every op in a pipeline, including nested ones.
+pub fn visit_ops<'a>(ops: &'a [WarpOp], f: &mut dyn FnMut(&'a WarpOp)) {
+    for op in ops {
+        f(op);
+        for_each_child(op, &mut |child| match child {
+            Nested::Pipeline(p) => visit_ops(&p.ops, f),
+            Nested::Ops(o) => visit_ops(o, f),
+        });
+    }
+}
+
+/// True if any op in the pipeline (at any depth) satisfies `pred`.
+pub fn any_op(ops: &[WarpOp], pred: &mut dyn FnMut(&WarpOp) -> bool) -> bool {
+    let mut found = false;
+    visit_ops(ops, &mut |op| {
+        if pred(op) {
+            found = true;
+        }
+    });
+    found
+}
+
+/// Mutable twin of [`Nested`].
+pub enum NestedMut<'a> {
+    Pipeline(&'a mut WarpPipeline),
+    Ops(&'a mut Vec<WarpOp>),
+}
+
+/// Mutable twin of [`for_each_child`]. Also exhaustive, for the same reason —
+/// the rewrite passes (`fit_length`, the resolve passes) forget nesting sites
+/// exactly as readily as the read-only ones do.
+pub fn for_each_child_mut<'a>(op: &'a mut WarpOp, f: &mut dyn FnMut(NestedMut<'a>)) {
+    match op {
+        WarpOp::Max(sub)
+        | WarpOp::Mask(sub)
+        | WarpOp::Multiply(sub)
+        | WarpOp::Over(sub)
+        | WarpOp::Add(sub)
+        | WarpOp::Screen(sub)
+        | WarpOp::Mix(sub, _)
+        | WarpOp::Modulate(sub, _)
+        | WarpOp::Iterate(_, sub) => f(NestedMut::Pipeline(sub)),
+        WarpOp::Overlay { layers } => {
+            for l in layers.iter_mut() {
+                f(NestedMut::Ops(l));
+            }
+        }
+        WarpOp::Seq { phases } => {
+            for p in phases.iter_mut() {
+                f(NestedMut::Ops(&mut p.ops));
+            }
+        }
+        WarpOp::Relax { body, .. } => f(NestedMut::Ops(body)),
+        WarpOp::Scale { .. }
+        | WarpOp::Rotate { .. }
+        | WarpOp::Scroll { .. }
+        | WarpOp::Swirl { .. }
+        | WarpOp::Fold { .. }
+        | WarpOp::Kaleid { .. }
+        | WarpOp::ChromaShift { .. }
+        | WarpOp::CurlFlow { .. }
+        | WarpOp::Decay { .. }
+        | WarpOp::Hue { .. }
+        | WarpOp::Gamma { .. }
+        | WarpOp::Knee { .. }
+        | WarpOp::Gain { .. }
+        | WarpOp::Tint { .. }
+        | WarpOp::Palette { .. }
+        | WarpOp::Blur { .. }
+        | WarpOp::Vignette { .. }
+        | WarpOp::Posterize { .. }
+        | WarpOp::Wave { .. }
+        | WarpOp::Ripple { .. }
+        | WarpOp::Glow { .. }
+        | WarpOp::Stir { .. }
+        | WarpOp::Displace { .. }
+        | WarpOp::Bulge { .. }
+        | WarpOp::Raking { .. }
+        | WarpOp::Relief { .. }
+        | WarpOp::Stain { .. }
+        | WarpOp::Watercolor { .. }
+        | WarpOp::Diffuse { .. }
+        | WarpOp::Advect { .. }
+        | WarpOp::Force { .. }
+        | WarpOp::DecayField { .. }
+        | WarpOp::Set { .. }
+        | WarpOp::Deposit { .. }
+        | WarpOp::Propagate { .. }
+        | WarpOp::Flow { .. }
+        | WarpOp::Raymarch { .. }
+        | WarpOp::Persist { .. }
+        | WarpOp::Bloom { .. }
+        | WarpOp::Lay { .. }
+        | WarpOp::Paint { .. }
+        | WarpOp::Opaque { .. }
+        | WarpOp::Raw { .. }
+        | WarpOp::Background { .. }
+        | WarpOp::Clear { .. }
+        | WarpOp::Fade { .. }
+        | WarpOp::FitLength { .. }
+        | WarpOp::AsIs { .. }
+        | WarpOp::Mute { .. } => {}
+    }
+}
