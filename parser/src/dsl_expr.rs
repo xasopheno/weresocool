@@ -326,16 +326,61 @@ pub fn to_wgsl_with(e: &Expr, hook: &dyn Fn(&Expr) -> Option<String>) -> String 
 /// instead of once, and the difference is worth knowing: a 2000-mark set would
 /// otherwise pay for 2000 evaluations of an expression that cannot change.
 pub fn uses_stroke(e: &Expr) -> bool {
-    match e {
-        Expr::Stroke => true,
-        Expr::Sin { freq, amp } => uses_stroke(freq) || uses_stroke(amp),
-        Expr::Call(_, args) | Expr::Cycle(args) | Expr::Choose(args) => {
-            args.iter().any(uses_stroke)
+    let mut found = false;
+    visit_expr(e, &mut |x| {
+        if matches!(x, Expr::Stroke) {
+            found = true;
         }
-        Expr::Bin(_, a, b) => uses_stroke(a) || uses_stroke(b),
-        Expr::Rand(a) => uses_stroke(a),
-        _ => false,
+    });
+    found
+}
+
+/// Visit an expression's DIRECT sub-expressions.
+///
+/// EXHAUSTIVE, no `_` arm — the same discipline as `warp::ast::for_each_child`
+/// and for the same reason. Every "does this expression contain X" question
+/// (`uses_stroke`, the field table's channel reads) was a separate recursive
+/// match with a `_ => false` floor, so a new nesting variant would quietly
+/// answer "no" in each of them.
+pub fn for_each_subexpr<'a>(e: &'a Expr, f: &mut dyn FnMut(&'a Expr)) {
+    match e {
+        Expr::Sin { freq, amp } => {
+            f(freq);
+            f(amp);
+        }
+        Expr::Call(_, args) | Expr::Cycle(args) | Expr::Choose(args) => {
+            for a in args {
+                f(a);
+            }
+        }
+        Expr::Bin(_, a, b) => {
+            f(a);
+            f(b);
+        }
+        Expr::Rand(a) => f(a),
+        // Atoms.
+        Expr::Lit(_)
+        | Expr::DefaultLit(_)
+        | Expr::Clock
+        | Expr::Note(_)
+        | Expr::Stroke
+        | Expr::Age
+        | Expr::LoopName(_)
+        | Expr::LoopPhase(_)
+        | Expr::UserParam { .. }
+        | Expr::Field(_)
+        | Expr::Hit(_)
+        | Expr::HitX(_)
+        | Expr::HitY(_)
+        | Expr::Dist(_)
+        | Expr::HitAge(_) => {}
     }
+}
+
+/// Depth-first over an expression and every sub-expression, itself included.
+pub fn visit_expr<'a>(e: &'a Expr, f: &mut dyn FnMut(&'a Expr)) {
+    f(e);
+    for_each_subexpr(e, &mut |c| visit_expr(c, f));
 }
 
 pub fn as_const(e: &Expr) -> Option<f64> {

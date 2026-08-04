@@ -687,3 +687,414 @@ pub fn for_each_child_mut<'a>(op: &'a mut WarpOp, f: &mut dyn FnMut(NestedMut<'a
         | WarpOp::Mute { .. } => {}
     }
 }
+
+// ---------------------------------------------------------------------------
+// THE ONE OPERAND WALKER
+// ---------------------------------------------------------------------------
+
+/// How an op touches a channel: as the field it WRITES, or as something it
+/// READS (a velocity source, a gate, a height field).
+///
+/// The distinction is not cosmetic. `Advect RGB by grad(height)` writes the
+/// VISIBLE buffer and reads the STATE one, and a reader that cannot tell the
+/// two positions apart cannot see that the line crosses buffers at all.
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+pub enum ChanRole {
+    /// The field this op assigns to. `Diffuse f` reads `f` too — it is
+    /// reported as a Write, because same-buffer self-reads are not a fact
+    /// anyone needs.
+    Write,
+    /// A channel this op reads and does not write.
+    Read,
+}
+
+/// A leaf argument of an op: a channel selector (with its role) or an
+/// expression. Sub-pipelines and op lists are NOT operands — those are
+/// [`Nested`], and the two walkers are meant to be used together.
+pub enum Operand<'a> {
+    Chan(&'a Chan, ChanRole),
+    Expr(&'a WarpExpr),
+}
+
+/// Visit every channel selector and every expression an op holds DIRECTLY
+/// (not through a sub-pipeline).
+///
+/// EXHAUSTIVE, no `_` arm, for the same reason as [`for_each_child`]: the
+/// resolve passes and the field table both need "where are the channels in an
+/// op", and hand-syncing that answer across files is how `slope(h)` came to
+/// silently read a default channel. One arm to forget, and the compiler
+/// catches it.
+///
+/// `Lay` and `Paint` hold no `Chan` and appear here as expressions only —
+/// their channels (`Sxyz`/`Sw`) are hardcoded in the emitter, which is a real
+/// asymmetry and is documented at the ops themselves.
+pub fn for_each_operand<'a>(op: &'a WarpOp, f: &mut dyn FnMut(Operand<'a>)) {
+    let mut e = |x: &'a WarpExpr, f: &mut dyn FnMut(Operand<'a>)| f(Operand::Expr(x));
+    let mut src = |s: &'a FieldSrc, f: &mut dyn FnMut(Operand<'a>)| match s {
+        FieldSrc::Grad(c) | FieldSrc::Lap(c) | FieldSrc::Field(c) => {
+            f(Operand::Chan(c, ChanRole::Read))
+        }
+    };
+    match op {
+        // Single-expression ops.
+        WarpOp::Scale(x)
+        | WarpOp::Rotate(x)
+        | WarpOp::Swirl(x)
+        | WarpOp::Fold(x)
+        | WarpOp::Kaleid(x)
+        | WarpOp::ChromaShift(x)
+        | WarpOp::Decay(x)
+        | WarpOp::Hue(x)
+        | WarpOp::Gamma(x)
+        | WarpOp::Knee(x)
+        | WarpOp::Gain(x)
+        | WarpOp::Palette(x)
+        | WarpOp::Blur(x)
+        | WarpOp::Vignette(x)
+        | WarpOp::Posterize(x)
+        | WarpOp::Iterate(x, _)
+        | WarpOp::Mix(_, x)
+        | WarpOp::Modulate(_, x)
+        | WarpOp::Relax { steps: x, .. } => e(x, f),
+
+        WarpOp::Scroll(a, b)
+        | WarpOp::CurlFlow { amp: a, freq: b }
+        | WarpOp::Wave { freq: a, amp: b }
+        | WarpOp::Raymarch { fog: a, gain: b }
+        | WarpOp::Bloom { threshold: a, strength: b } => {
+            e(a, f);
+            e(b, f);
+        }
+
+        WarpOp::Tint(a, b, c) | WarpOp::Lay { keep: a, gain: b, cap: c } => {
+            e(a, f);
+            e(b, f);
+            e(c, f);
+        }
+
+        WarpOp::Ripple { freq, speed, amp, .. } => {
+            e(freq, f);
+            e(speed, f);
+            e(amp, f);
+        }
+        WarpOp::Glow { r, g, b, size, .. } => {
+            e(r, f);
+            e(g, f);
+            e(b, f);
+            e(size, f);
+        }
+        WarpOp::Stir { radius, strength, .. } => {
+            e(radius, f);
+            e(strength, f);
+        }
+        WarpOp::Displace { radial, tangent, .. } => {
+            e(radial, f);
+            e(tangent, f);
+        }
+        WarpOp::Bulge { radius, amount, mirror, .. } => {
+            e(radius, f);
+            e(amount, f);
+            e(mirror, f);
+        }
+        WarpOp::Relief { height, lx, ly, ambient } => {
+            e(height, f);
+            e(lx, f);
+            e(ly, f);
+            e(ambient, f);
+        }
+        WarpOp::Stain { r, g, b, strength, opacity } => {
+            e(r, f);
+            e(g, f);
+            e(b, f);
+            e(strength, f);
+            e(opacity, f);
+        }
+        WarpOp::Watercolor { wetness, drying, bleed, deposit, lift } => {
+            e(wetness, f);
+            e(drying, f);
+            e(bleed, f);
+            e(deposit, f);
+            e(lift, f);
+        }
+        WarpOp::Background { top_r, top_g, top_b, bot_r, bot_g, bot_b, split, soft } => {
+            for x in [top_r, top_g, top_b, bot_r, bot_g, bot_b, split, soft] {
+                e(x, f);
+            }
+        }
+        WarpOp::Clear { at, every, offset } => {
+            for x in [at, every, offset].into_iter().flatten() {
+                e(x, f);
+            }
+        }
+        WarpOp::Fade { at, every, offset, dur, to } => {
+            for x in [at, every, offset].into_iter().flatten() {
+                e(x, f);
+            }
+            e(dur, f);
+            e(to, f);
+        }
+        // A phase's OPS are a child; its LENGTH is an operand of the Seq.
+        WarpOp::Seq { phases } => {
+            for p in phases {
+                e(&p.length, f);
+            }
+        }
+
+        // Channel-bearing ops — the substance verbs and raking light.
+        WarpOp::Raking { from, depth, .. } => {
+            f(Operand::Chan(from, ChanRole::Read));
+            e(depth, f);
+        }
+        WarpOp::Diffuse { field, rate, gated } => {
+            f(Operand::Chan(field, ChanRole::Write));
+            if let Some(g) = gated {
+                f(Operand::Chan(g, ChanRole::Read));
+            }
+            e(rate, f);
+        }
+        WarpOp::Advect { field, by, amount, blend } => {
+            f(Operand::Chan(field, ChanRole::Write));
+            src(by, f);
+            e(amount, f);
+            e(blend, f);
+        }
+        WarpOp::Force { field, from, gain } => {
+            f(Operand::Chan(field, ChanRole::Write));
+            src(from, f);
+            e(gain, f);
+        }
+        WarpOp::DecayField { field, by } => {
+            f(Operand::Chan(field, ChanRole::Write));
+            e(by, f);
+        }
+        WarpOp::Set { field, value } => {
+            f(Operand::Chan(field, ChanRole::Write));
+            e(value, f);
+        }
+        WarpOp::Deposit { field, gain, grain, cap } => {
+            f(Operand::Chan(field, ChanRole::Write));
+            e(gain, f);
+            e(grain, f);
+            e(cap, f);
+        }
+        WarpOp::Propagate { field, step, dry } => {
+            f(Operand::Chan(field, ChanRole::Write));
+            e(step, f);
+            e(dry, f);
+        }
+        WarpOp::Flow { field, x, y, gated } => {
+            f(Operand::Chan(field, ChanRole::Write));
+            if let Some(g) = gated {
+                f(Operand::Chan(g, ChanRole::Read));
+            }
+            e(x, f);
+            e(y, f);
+        }
+
+        // Operand-free. Listed rather than caught by `_` so a NEW op has to
+        // say it holds nothing.
+        WarpOp::Max(_)
+        | WarpOp::Add(_)
+        | WarpOp::Screen(_)
+        | WarpOp::Mask(_)
+        | WarpOp::Multiply(_)
+        | WarpOp::Over(_)
+        | WarpOp::Overlay { .. }
+        | WarpOp::Paint(_)
+        | WarpOp::Persist
+        | WarpOp::Opaque
+        | WarpOp::Raw(_)
+        | WarpOp::FitLength(_)
+        | WarpOp::AsIs
+        | WarpOp::Mute => {}
+    }
+}
+
+/// Mutable twin of [`Operand`].
+pub enum OperandMut<'a> {
+    Chan(&'a mut Chan, ChanRole),
+    Expr(&'a mut WarpExpr),
+}
+
+/// Mutable twin of [`for_each_operand`] — what the resolve passes rewrite
+/// through. Also exhaustive, same reason.
+pub fn for_each_operand_mut<'a>(op: &'a mut WarpOp, f: &mut dyn FnMut(OperandMut<'a>)) {
+    fn e<'a>(x: &'a mut WarpExpr, f: &mut dyn FnMut(OperandMut<'a>)) {
+        f(OperandMut::Expr(x))
+    }
+    fn src<'a>(s: &'a mut FieldSrc, f: &mut dyn FnMut(OperandMut<'a>)) {
+        match s {
+            FieldSrc::Grad(c) | FieldSrc::Lap(c) | FieldSrc::Field(c) => {
+                f(OperandMut::Chan(c, ChanRole::Read))
+            }
+        }
+    }
+    match op {
+        WarpOp::Scale(x)
+        | WarpOp::Rotate(x)
+        | WarpOp::Swirl(x)
+        | WarpOp::Fold(x)
+        | WarpOp::Kaleid(x)
+        | WarpOp::ChromaShift(x)
+        | WarpOp::Decay(x)
+        | WarpOp::Hue(x)
+        | WarpOp::Gamma(x)
+        | WarpOp::Knee(x)
+        | WarpOp::Gain(x)
+        | WarpOp::Palette(x)
+        | WarpOp::Blur(x)
+        | WarpOp::Vignette(x)
+        | WarpOp::Posterize(x)
+        | WarpOp::Iterate(x, _)
+        | WarpOp::Mix(_, x)
+        | WarpOp::Modulate(_, x)
+        | WarpOp::Relax { steps: x, .. } => e(x, f),
+
+        WarpOp::Scroll(a, b)
+        | WarpOp::CurlFlow { amp: a, freq: b }
+        | WarpOp::Wave { freq: a, amp: b }
+        | WarpOp::Raymarch { fog: a, gain: b }
+        | WarpOp::Bloom { threshold: a, strength: b } => {
+            e(a, f);
+            e(b, f);
+        }
+
+        WarpOp::Tint(a, b, c) | WarpOp::Lay { keep: a, gain: b, cap: c } => {
+            e(a, f);
+            e(b, f);
+            e(c, f);
+        }
+
+        WarpOp::Ripple { freq, speed, amp, .. } => {
+            e(freq, f);
+            e(speed, f);
+            e(amp, f);
+        }
+        WarpOp::Glow { r, g, b, size, .. } => {
+            e(r, f);
+            e(g, f);
+            e(b, f);
+            e(size, f);
+        }
+        WarpOp::Stir { radius, strength, .. } => {
+            e(radius, f);
+            e(strength, f);
+        }
+        WarpOp::Displace { radial, tangent, .. } => {
+            e(radial, f);
+            e(tangent, f);
+        }
+        WarpOp::Bulge { radius, amount, mirror, .. } => {
+            e(radius, f);
+            e(amount, f);
+            e(mirror, f);
+        }
+        WarpOp::Relief { height, lx, ly, ambient } => {
+            e(height, f);
+            e(lx, f);
+            e(ly, f);
+            e(ambient, f);
+        }
+        WarpOp::Stain { r, g, b, strength, opacity } => {
+            e(r, f);
+            e(g, f);
+            e(b, f);
+            e(strength, f);
+            e(opacity, f);
+        }
+        WarpOp::Watercolor { wetness, drying, bleed, deposit, lift } => {
+            e(wetness, f);
+            e(drying, f);
+            e(bleed, f);
+            e(deposit, f);
+            e(lift, f);
+        }
+        WarpOp::Background { top_r, top_g, top_b, bot_r, bot_g, bot_b, split, soft } => {
+            for x in [top_r, top_g, top_b, bot_r, bot_g, bot_b, split, soft] {
+                e(x, f);
+            }
+        }
+        WarpOp::Clear { at, every, offset } => {
+            for x in [at, every, offset].into_iter().flatten() {
+                e(x, f);
+            }
+        }
+        WarpOp::Fade { at, every, offset, dur, to } => {
+            for x in [at, every, offset].into_iter().flatten() {
+                e(x, f);
+            }
+            e(dur, f);
+            e(to, f);
+        }
+        WarpOp::Seq { phases } => {
+            for p in phases.iter_mut() {
+                e(&mut p.length, f);
+            }
+        }
+
+        WarpOp::Raking { from, depth, .. } => {
+            f(OperandMut::Chan(from, ChanRole::Read));
+            e(depth, f);
+        }
+        WarpOp::Diffuse { field, rate, gated } => {
+            f(OperandMut::Chan(field, ChanRole::Write));
+            if let Some(g) = gated {
+                f(OperandMut::Chan(g, ChanRole::Read));
+            }
+            e(rate, f);
+        }
+        WarpOp::Advect { field, by, amount, blend } => {
+            f(OperandMut::Chan(field, ChanRole::Write));
+            src(by, f);
+            e(amount, f);
+            e(blend, f);
+        }
+        WarpOp::Force { field, from, gain } => {
+            f(OperandMut::Chan(field, ChanRole::Write));
+            src(from, f);
+            e(gain, f);
+        }
+        WarpOp::DecayField { field, by } => {
+            f(OperandMut::Chan(field, ChanRole::Write));
+            e(by, f);
+        }
+        WarpOp::Set { field, value } => {
+            f(OperandMut::Chan(field, ChanRole::Write));
+            e(value, f);
+        }
+        WarpOp::Deposit { field, gain, grain, cap } => {
+            f(OperandMut::Chan(field, ChanRole::Write));
+            e(gain, f);
+            e(grain, f);
+            e(cap, f);
+        }
+        WarpOp::Propagate { field, step, dry } => {
+            f(OperandMut::Chan(field, ChanRole::Write));
+            e(step, f);
+            e(dry, f);
+        }
+        WarpOp::Flow { field, x, y, gated } => {
+            f(OperandMut::Chan(field, ChanRole::Write));
+            if let Some(g) = gated {
+                f(OperandMut::Chan(g, ChanRole::Read));
+            }
+            e(x, f);
+            e(y, f);
+        }
+
+        WarpOp::Max(_)
+        | WarpOp::Add(_)
+        | WarpOp::Screen(_)
+        | WarpOp::Mask(_)
+        | WarpOp::Multiply(_)
+        | WarpOp::Over(_)
+        | WarpOp::Overlay { .. }
+        | WarpOp::Paint(_)
+        | WarpOp::Persist
+        | WarpOp::Opaque
+        | WarpOp::Raw(_)
+        | WarpOp::FitLength(_)
+        | WarpOp::AsIs
+        | WarpOp::Mute => {}
+    }
+}
