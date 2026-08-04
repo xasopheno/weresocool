@@ -470,9 +470,18 @@ pub struct SeqPhase {
 #[derive(Debug, Clone, PartialEq)]
 pub struct WarpDef {
     pub name: String,
-    /// `state { water: a, organism: sy }` — composer-chosen field names for
+    /// `fields { water: A, organism: Sy }` — composer-chosen names for
     /// channels. Empty when the block is absent. Names are usable anywhere a
     /// channel selector or a field expression appears in this def.
+    ///
+    /// THE BLOCK NAMES CHANNELS; IT DOES NOT CHOOSE A BUFFER. The right-hand
+    /// side does that, via `chan_var` — `A` is the visible buffer's alpha,
+    /// `Sy` is the state texture's y. Spelled `state { … }` this reads as
+    /// though the block selects the state buffer, and it does not: of the 36
+    /// defs in the corpus that use it, seventeen name only VISIBLE channels.
+    /// `fields` is the honest keyword; `state` remains an alias so those
+    /// seventeen keep working. The field name here is unchanged because
+    /// renaming it would touch every consumer for no behaviour.
     pub state_names: Vec<(String, Chan)>,
     pub pipeline: WarpPipeline,
 }

@@ -56,7 +56,7 @@ match {
     "Raw",
 
     // Substance verbs (MEDIUM.md M1) + their structural keywords.
-    "Diffuse", "Advect", "Force", "Deposit", "Propagate", "Flow", "Set", "state", "grad", "lap", "by", "from", "gated", "light", "depth",
+    "Diffuse", "Advect", "Force", "Deposit", "Propagate", "Flow", "Set", "state", "fields", "grad", "lap", "by", "from", "gated", "light", "depth",
     "Relax",
 
     // Pure math functions (lowercase — distinct from the capitalized ops/
@@ -95,9 +95,32 @@ pub Pipeline: WarpPipeline = {
     <src:SrcExpr> <ops:PipeTail> => WarpPipeline { source: src, ops },
 };
 
-// `state { water: a, organism: sy }` — composer-chosen names for channels.
+// `fields { water: A, organism: Sy }` — composer-chosen names for channels.
+//
+// THE BLOCK NAMES CHANNELS. IT DOES NOT CHOOSE A BUFFER — the right-hand side
+// does, and `state` was a misleading word for that: of the 36 defs in the
+// corpus that use this block, SEVENTEEN name only VISIBLE channels
+// (`state { pigment: RGB, water: A }`), fourteen name only state channels,
+// and five name both. `fields` is the honest spelling. `state` stays as an
+// alias, because those seventeen are correct and must keep working.
 StateEntry: (String, ast::Chan) = {
-    <n:IDENT> ":" <c:IDENT> => (n.to_string(), h::parse_chan(&c)),
+    <n:FieldName> ":" <c:IDENT> => (n, h::parse_chan(&c)),
+};
+
+/// A field's NAME. Accepts the two block keywords as well as a bare ident,
+/// because promoting a word to a keyword otherwise steals it from every name
+/// position — `fields { fields: Sx }` would be `UnrecognizedToken` and the
+/// whole piece would refuse to load. (The same trap was found and closed in
+/// the canvas grammar, where seventeen key words had eaten the two positions
+/// that take a bare name.)
+///
+/// Scoped to the words THIS change adds. The warp grammar reserves about a
+/// hundred others — `Diffuse`, `grad`, `by`, `depth` — which have never been
+/// usable as field names; that is a real and separate hole, not this one.
+FieldName: String = {
+    <s:IDENT> => s.to_string(),
+    "fields" => "fields".to_string(),
+    "state" => "state".to_string(),
 };
 StateTail: Vec<(String, ast::Chan)> = {
     => vec![],
@@ -108,8 +131,9 @@ StateTail: Vec<(String, ast::Chan)> = {
         v
     },
 };
+StateBlockKw: () = { "fields" => (), "state" => () };
 StateBlock: Vec<(String, ast::Chan)> = {
-    "state" "{" <first:StateEntry> <rest:StateTail> "}" => {
+    StateBlockKw "{" <first:StateEntry> <rest:StateTail> "}" => {
         let mut v = vec![first];
         v.extend(rest);
         v
