@@ -678,6 +678,19 @@ impl Normalize for Op {
                 *input = result
             }
 
+            Op::Zip { operations } => {
+                if operations.is_empty() {
+                    return Err(Error::with_msg("Empty Zip!"));
+                }
+                // Each operand gets its own rand_ctx branch, same as Seq and
+                // Overlay, so a `Choose` inside one operand does not shift
+                // when a sibling operand changes.
+                let saved_rand_ctx = defs.rand_ctx;
+                let result = zip_terms(operations, input, defs)?;
+                defs.rand_ctx = saved_rand_ctx;
+                *input = result;
+            }
+
             Op::Overlay { operations, .. } => {
                 if operations.is_empty() {
                     return Err(Error::with_msg("Empty Overlay!"));

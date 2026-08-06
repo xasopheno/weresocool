@@ -1,4 +1,4 @@
-use crate::{GetLengthRatio, NormalForm, PointOp, Term, Defs};
+use crate::{GetLengthRatio, NormalForm, Normalize, PointOp, Term, Defs};
 use colored::*;
 use num_rational::{Ratio, Rational64};
 use std::{
@@ -205,4 +205,119 @@ pub fn join_sequence(mut l: NormalForm, mut r: NormalForm) -> NormalForm {
     result.length_ratio += l.length_ratio;
 
     result
+}
+
+/// ZIP — element-wise combination of op sequences (isorhythm).
+///
+/// `Zip [A, B, C]` pairs A's events with B's and C's by position and
+/// multiplies them together, cycling the later operands against the first.
+/// The classical name for the two-operand case is isorhythm: a *color* (the
+/// pitch series) running against a *talea* (the rhythm series) of a
+/// different length, so the accents land somewhere new each time round.
+///
+/// ```text
+/// Zip [ Seq [Fm 1, Fm 2, Fm 3, Fm 4, Fm 5, Fm 6, Fm 7],
+///       Seq [Lm 3, Lm 2] | Lm 1/5 ]
+/// ```
+///
+/// WHY THIS WORKS AT ALL: unused fields are identity. A rhythm written with
+/// only `Lm` normalizes to points with `fm = 1, g = 1, pm = 1`, so
+/// multiplying it into the melody contributes ONLY length. No field
+/// selectors and no masks are needed — the identity elements do the routing.
+/// The flip side, worth knowing: an operand that carries incidental gain or
+/// pan WILL impose it. That is a feature (a dynamic contour is just another
+/// operand) but it surprises the first time.
+///
+/// TWO RULES, AND THEY ARE THE SAME RULE:
+///
+/// 1. The FIRST operand is the subject. It receives whatever was piped in;
+///    the rest normalize on their own against a unit form, because they are
+///    patterns rather than subjects. So `Zip [x]` is exactly `x`.
+/// 2. The first operand governs LENGTH. Later operands cycle under it and
+///    never extend it.
+///
+/// Rule 2 is why there is no lcm here. Running 7 against 2 to their
+/// realignment at 14 is the musically interesting case, but making that the
+/// default hides the piece's duration (11 against 13 silently becomes 143
+/// events) and you cannot read the length off the page. Phasing is opt-in
+/// with an op that already exists:
+///
+/// ```text
+/// Zip [ Seq [...7 pitches] | Repeat 2, Seq [Lm 3, Lm 2] | Lm 1/5 ]
+/// ```
+pub fn zip_terms(
+    operations: &[Term],
+    input: &NormalForm,
+    defs: &mut Defs,
+) -> Result<NormalForm, Error> {
+    let Some((subject_term, pattern_terms)) = operations.split_first() else {
+        return Ok(input.clone());
+    };
+
+    let mut subject = input.clone();
+    subject_term.apply_to_normal_form(&mut subject, defs)?;
+
+    // Patterns normalize against a UNIT form, not against `input`. Zipping
+    // them against `input` too would multiply the input's own fm and length
+    // into the result once per operand.
+    let mut patterns: Vec<NormalForm> = Vec::with_capacity(pattern_terms.len());
+    for term in pattern_terms {
+        let mut nf = NormalForm::init();
+        term.apply_to_normal_form(&mut nf, defs)?;
+        patterns.push(nf);
+    }
+
+    for (v, voice) in subject.operations.iter_mut().enumerate() {
+        for (i, point) in voice.iter_mut().enumerate() {
+            for pattern in &patterns {
+                if pattern.operations.is_empty() {
+                    continue;
+                }
+                let pattern_voice = &pattern.operations[v % pattern.operations.len()];
+                if pattern_voice.is_empty() {
+                    continue;
+                }
+                // PointOp's own `Mul`: fm/pm/g/l multiply, fa/pa add, names
+                // union. Non-multiplicative fields (osc_type, asr, is_out)
+                // take the RIGHT operand, so a later operand in the Zip wins
+                // for those — same precedence as writing it later in a pipe.
+                *point = point.clone() * pattern_voice[i % pattern_voice.len()].clone();
+            }
+        }
+    }
+
+    // Voices can come out of the zip at different total lengths: the subject's
+    // voices need not hold the same number of points, and each one cycles the
+    // patterns on its own index. A NormalForm's voices are parallel, so the
+    // short ones get padded with silence rather than left ragged.
+    let totals: Vec<Rational64> = subject
+        .operations
+        .iter()
+        .map(|voice| {
+            voice
+                .iter()
+                .fold(Ratio::new(0, 1), |acc, point| acc + point.l)
+        })
+        .collect();
+    let max = totals
+        .iter()
+        .copied()
+        .max()
+        .unwrap_or_else(|| Ratio::new(0, 1));
+    for (voice, total) in subject.operations.iter_mut().zip(totals) {
+        if total < max {
+            voice.push(PointOp {
+                fm: Ratio::new(0, 1),
+                fa: Ratio::new(0, 1),
+                pm: Ratio::new(1, 1),
+                pa: Ratio::new(0, 1),
+                g: Ratio::new(0, 1),
+                l: max - total,
+                ..Default::default()
+            });
+        }
+    }
+    subject.length_ratio = max;
+
+    Ok(subject)
 }

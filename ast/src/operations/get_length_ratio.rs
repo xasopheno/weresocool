@@ -127,6 +127,24 @@ impl GetLengthRatio for Op {
                 Ok(new_total)
             }
 
+            // Zip's length cannot be derived from its operands' length
+            // ratios: it is the sum of PER-SLOT products, so it depends on
+            // which pattern event each subject event happens to land on.
+            // The zip has to actually run. `WithLengthRatioOf` and
+            // `ModulateBy` already pay this cost.
+            Op::Zip { operations } => {
+                if operations.is_empty() {
+                    return Ok(Rational64::from_integer(1));
+                }
+                let saved_rand_ctx = defs.rand_ctx;
+                let zipped = zip_terms(operations, normal_form, defs)?;
+                defs.rand_ctx = saved_rand_ctx;
+                if normal_form.length_ratio == Rational64::from_integer(0) {
+                    return Ok(zipped.length_ratio);
+                }
+                Ok(zipped.length_ratio / normal_form.length_ratio)
+            }
+
             Op::Compose { operations, .. } => {
                 let mut new_total = Ratio::from_integer(1);
                 for operation in operations {

@@ -200,6 +200,18 @@ pub enum Op {
     Overlay {
         operations: Vec<Term>,
     },
+    /// ISORHYTHM — combine sequences element-wise rather than end-to-end.
+    /// `Seq` concatenates and `Overlay` stacks; `Zip` pairs events by
+    /// position and multiplies them, cycling the later operands under the
+    /// first. A pitch series of 7 against a rhythm of 2 is the classical
+    /// color-and-talea, and swing is `Zip [tune, Seq [Lm 4/3, Lm 2/3]]`.
+    ///
+    /// The first operand is the subject: it receives what was piped in, and
+    /// it alone governs length. See `helpers::zip_terms` for why there is no
+    /// lcm and why unused fields being identity is what makes it work.
+    Zip {
+        operations: Vec<Term>,
+    },
     Compose {
         operations: Vec<Term>,
     },

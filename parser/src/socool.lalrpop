@@ -571,6 +571,7 @@ BaseOperation: Term = {
         operations: operations
     }),
     "Overlay" "[" <operations: Operations> "]" => Term::Op(Overlay { operations: operations }),
+    "Zip" "[" <operations: Operations> "]" => Term::Op(Zip { operations: operations }),
     r"(ModulateBy|ModBy)" "[" <operations: Operations> "]" "->" "[" <output: Operations> "]" => Term::Op(ModulateBy { operations: operations, output: Some(output) }),
     r"(ModulateBy|ModBy)" "[" <operations: Operations> "]" => Term::Op(ModulateBy { operations: operations, output: None }),
     "Choose" "[" <operations: Operations> "]" => Term::Op(Choose { operations: operations }),

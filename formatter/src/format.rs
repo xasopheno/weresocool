@@ -886,6 +886,7 @@ fn format_op<'a>(arena: &'a Arena<'a>, ctx: &FormatContext, op: &Op) -> DocBuild
             }
         }
         Op::Overlay { operations } => format_collection(arena, ctx, "Overlay", operations),
+        Op::Zip { operations } => format_collection(arena, ctx, "Zip", operations),
         Op::Choose { operations } => format_collection(arena, ctx, "Choose", operations),
 
         // Compose (pipe chains)

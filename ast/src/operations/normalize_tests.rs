@@ -2,7 +2,7 @@
 pub mod tests {
     extern crate num_rational;
     extern crate pretty_assertions;
-    use crate::{NameSet, NormalForm, Normalize, Op::*, OscType, PointOp, Term::*, Defs};
+    use crate::{GetLengthRatio, NameSet, NormalForm, Normalize, Op::*, OscType, PointOp, Term::*, Defs};
     use num_rational::{Ratio, Rational64};
 
     fn make_parse_table() -> Defs {
@@ -817,5 +817,171 @@ pub mod tests {
         };
 
         assert_eq!(input, expected);
+    }
+
+    /// THE ISORHYTHM. Seven pitches against two durations: the pitches come
+    /// from the subject, the lengths cycle under them, and the pattern's own
+    /// `fm = 1` means it contributes nothing but length. This is the case the
+    /// op exists for.
+    #[test]
+    fn zip_runs_a_rhythm_under_a_melody() {
+        let mut input = NormalForm::init();
+        let mut pt = make_parse_table();
+
+        Zip {
+            operations: vec![
+                Op(Sequence {
+                    operations: (1..=7)
+                        .map(|n| {
+                            Op(TransposeM {
+                                m: Rational64::new(n, 1),
+                            })
+                        })
+                        .collect(),
+                }),
+                Op(Compose {
+                    operations: vec![
+                        Op(Sequence {
+                            operations: vec![
+                                Op(Length {
+                                    m: Rational64::new(3, 1),
+                                }),
+                                Op(Length {
+                                    m: Rational64::new(2, 1),
+                                }),
+                            ],
+                        }),
+                        Op(Length {
+                            m: Rational64::new(1, 5),
+                        }),
+                    ],
+                }),
+            ],
+        }
+        .apply_to_normal_form(&mut input, &mut pt)
+        .unwrap();
+
+        let voice = &input.operations[0];
+        assert_eq!(voice.len(), 7, "length comes from the SUBJECT, not from an lcm");
+
+        let pitches: Vec<Rational64> = voice.iter().map(|p| p.fm).collect();
+        assert_eq!(
+            pitches,
+            (1..=7).map(|n| Rational64::new(n, 1)).collect::<Vec<_>>()
+        );
+
+        let lengths: Vec<Rational64> = voice.iter().map(|p| p.l).collect();
+        let long = Rational64::new(3, 5);
+        let short = Rational64::new(2, 5);
+        assert_eq!(lengths, vec![long, short, long, short, long, short, long]);
+
+        // 4 longs + 3 shorts
+        assert_eq!(input.length_ratio, Rational64::new(18, 5));
+    }
+
+    /// `Zip [x]` has to be exactly `x`. The subject receives the piped-in
+    /// input just as `Seq` does — if that ever stops being true, the first
+    /// operand has become something other than the subject.
+    #[test]
+    fn zip_of_one_operand_is_that_operand() {
+        let seq = Sequence {
+            operations: vec![
+                Op(TransposeM {
+                    m: Rational64::new(3, 2),
+                }),
+                Op(Length {
+                    m: Rational64::new(2, 1),
+                }),
+            ],
+        };
+
+        let mut pt = make_parse_table();
+        let mut with_seq = NormalForm::init();
+        seq.clone().apply_to_normal_form(&mut with_seq, &mut pt).unwrap();
+
+        let mut pt2 = make_parse_table();
+        let mut with_zip = NormalForm::init();
+        Zip {
+            operations: vec![Op(seq)],
+        }
+        .apply_to_normal_form(&mut with_zip, &mut pt2)
+        .unwrap();
+
+        assert_eq!(with_zip, with_seq);
+    }
+
+    /// THE DOUBLE-APPLICATION TRAP. Patterns normalize against a UNIT form,
+    /// not against the input — otherwise whatever is piped in gets multiplied
+    /// into the result once per operand, and `bd | Zip [a, b]` squares bd's
+    /// own fm.
+    #[test]
+    fn a_pattern_does_not_receive_the_piped_in_input() {
+        let mut input = NormalForm::init();
+        let mut pt = make_parse_table();
+
+        // Pipe in a fifth, then zip a length-only pattern under a flat subject.
+        Compose {
+            operations: vec![
+                Op(TransposeM {
+                    m: Rational64::new(3, 2),
+                }),
+                Op(Zip {
+                    operations: vec![
+                        Op(Sequence {
+                            operations: vec![Op(AsIs), Op(AsIs)],
+                        }),
+                        Op(Length {
+                            m: Rational64::new(2, 1),
+                        }),
+                    ],
+                }),
+            ],
+        }
+        .apply_to_normal_form(&mut input, &mut pt)
+        .unwrap();
+
+        for point in &input.operations[0] {
+            assert_eq!(
+                point.fm,
+                Rational64::new(3, 2),
+                "the input's fm must be applied ONCE, not once per operand"
+            );
+        }
+    }
+
+    /// `get_length_ratio` cannot derive Zip's length from its operands'
+    /// ratios — it re-runs the zip. That makes it the arm most likely to
+    /// drift away from what normalize actually produces, so pin them together.
+    #[test]
+    fn zip_length_ratio_agrees_with_normalize() {
+        let zip = Zip {
+            operations: vec![
+                Op(Sequence {
+                    operations: vec![Op(AsIs), Op(AsIs), Op(AsIs), Op(AsIs), Op(AsIs)],
+                }),
+                Op(Sequence {
+                    operations: vec![
+                        Op(Length {
+                            m: Rational64::new(3, 1),
+                        }),
+                        Op(Length {
+                            m: Rational64::new(1, 2),
+                        }),
+                    ],
+                }),
+            ],
+        };
+
+        let mut pt = make_parse_table();
+        let input = NormalForm::init();
+
+        let mut normalized = input.clone();
+        zip.apply_to_normal_form(&mut normalized, &mut pt).unwrap();
+
+        let ratio = zip.get_length_ratio(&input, &mut pt).unwrap();
+
+        assert_eq!(ratio * input.length_ratio, normalized.length_ratio);
+        // 3, 1/2, 3, 1/2, 3
+        assert_eq!(normalized.length_ratio, Rational64::new(10, 1));
     }
 }
