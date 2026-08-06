@@ -220,9 +220,13 @@ impl Voice {
         let gate_end = op.gate_end();
         let gated = gate_end < total_samples_for_info;
         // Release into the gate's edge instead of cutting, or a staccato is
-        // a click. Bounded by the room the window actually leaves.
-        let gate_release = (sample_rate * 0.004) as usize;
-        let gate_release = gate_release.min(gate_end / 2).max(1);
+        // a click. 12 ms rather than something shorter because the release
+        // has to span a whole cycle of the lowest note in play — at 80 Hz a
+        // 4 ms ramp is a third of a cycle, which cuts mid-waveform and reads
+        // as a thump. Bounded by the room the window actually leaves, so a
+        // very short gate still gets a third of itself to fade in.
+        let gate_release = (sample_rate * 0.012) as usize;
+        let gate_release = gate_release.min(gate_end / 3).max(1);
         let f_past = self.offset_past.frequency;
         // `f_target` is only mutated on the loop's final iteration via the
         // index == last_sample_index branch — we replicate that update
