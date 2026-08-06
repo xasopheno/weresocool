@@ -201,6 +201,28 @@ impl Voice {
         let last_sample_index = duration_samples.saturating_sub(1);
         let total_samples_for_info = op.total_samples();
         let op_sample_index = op.sample_index();
+        // THE ARTICULATION WINDOW — the reason `Gate` exists.
+        //
+        // `calculate_op_gain` above is evaluated ONCE per buffer, with the
+        // index at the buffer's END, so a window test up there silences a
+        // whole note rather than the tail of one. The gate has to be a
+        // per-sample decision, and it belongs here for a second reason: both
+        // envelope branches in `asr.rs` can only end a note when
+        // `silence_next` is true, i.e. a note's release is a property of its
+        // NEIGHBOUR. That is exactly why composers wrote
+        // `Overlay [Seq [Fm 1, Fm 0, Fm 0] | Lm 1/3, Fm 0]` — the `Fm 0`
+        // events were there to MANUFACTURE the silence that lets a note
+        // stop, at three events per note. A gated note ends on its own edge
+        // and asks its neighbour nothing.
+        //
+        // Measured against the SLOT, never against `duration_samples`: the
+        // slot is what the composer wrote, and nothing downstream moves.
+        let gate_end = op.gate_end();
+        let gated = gate_end < total_samples_for_info;
+        // Release into the gate's edge instead of cutting, or a staccato is
+        // a click. Bounded by the room the window actually leaves.
+        let gate_release = (sample_rate * 0.004) as usize;
+        let gate_release = gate_release.min(gate_end / 2).max(1);
         let f_past = self.offset_past.frequency;
         // `f_target` is only mutated on the loop's final iteration via the
         // index == last_sample_index branch — we replicate that update
@@ -289,6 +311,23 @@ impl Voice {
                 // exponential smoother here collapsed every fade (however
                 // long) into an ~11 ms glide, which broke fade rendering.
                 gain_at_index(self.offset_past.gain, gain_factor, index, sample_limit)
+            };
+
+            // Close the articulation window. `op_sample_index + index` is
+            // the position within the NOTE, so this survives the chunking a
+            // held note gets in live playback — every chunk carries the same
+            // slot and the same window.
+            let gain = if gated {
+                let pos = op_sample_index + index;
+                if pos >= gate_end {
+                    0.0
+                } else if pos + gate_release > gate_end {
+                    gain * ((gate_end - pos) as f64 / gate_release as f64)
+                } else {
+                    gain
+                }
+            } else {
+                gain
             };
 
             let info = SampleInfo {

@@ -361,3 +361,239 @@ pub fn zip_terms(
 
     Ok(subject)
 }
+
+/// One `[check]` pass over a voice's articulation. Called beside
+/// `apply_nudges` at both doors out of a finished NormalForm.
+///
+/// `Gate` is clamped where the sample window is built, never in the algebra
+/// — `Gate 2 | Gate 1/2` must stay exactly `Gate 1` — so an out-of-range
+/// gate is silent by construction unless something says so here.
+pub fn check_articulation(points: &[PointOp], voice: usize) {
+    let one = Ratio::new(1, 1);
+    let zero = Ratio::new(0, 1);
+    if let Some(p) = points.iter().find(|p| p.gate > one) {
+        println!(
+            "{} voice {}: `Gate {}` is more than the whole note, so it was clamped to 1. \
+             A gate cannot ring past its slot — the voice is monophonic and the next note \
+             already owns the oscillator.",
+            "[check]".yellow().bold(),
+            voice,
+            p.gate,
+        );
+    }
+    if let Some(p) = points.iter().find(|p| p.gate < zero) {
+        println!(
+            "{} voice {}: `Gate {}` is negative, so it was clamped to 0 and that note is \
+             silent. Did you mean `Nudge` for a negative offset?",
+            "[check]".yellow().bold(),
+            voice,
+            p.gate,
+        );
+    }
+}
+
+/// NUDGE — turn each point's accumulated `nudge` into a boundary exchange,
+/// for one voice. Returns `None` when the voice has no nudges at all, which
+/// is every voice in every existing piece, so the caller can skip the clone.
+///
+/// Onsets are cumulative sums of `l`, so moving note *i* later by δ means
+/// giving δ to the note before it. Doing ONLY that would also shorten note
+/// *i* — its end would not move — which is rubato, not microtiming, and it
+/// would silently shrink `Gate`'s sounding time along with it. So the delta
+/// is repaid by the note AFTER:
+///
+/// ```text
+/// l[i-1] += δ        borrow from the note before
+/// l[i]    unchanged  this note keeps its duration
+/// l[i+1] -= δ        repay the note after
+/// ```
+///
+/// Note *i* slides, everything after it stays where it was, and the voice's
+/// total is **provably** unchanged — every unit taken is given back. In
+/// `Rational64` the exchange is exact, so nothing drifts over a long piece,
+/// and the invariant can be asserted as an equality rather than a tolerance.
+///
+/// Negative δ needs no special case: the same arithmetic with the sign
+/// flipped borrows from the note after and repays the one before.
+///
+/// A consequence worth knowing: nudging EVERY note by the same amount does
+/// nothing, because each interior note borrows δ and repays δ. That is
+/// correct — a uniform shift of everything is a global offset, and one
+/// cannot exist without changing the total.
+///
+/// All δ are computed from the ORIGINAL lengths before any is applied, so
+/// they are independent of each other and order does not matter.
+pub fn apply_nudges(points: &[PointOp], voice: usize) -> Option<Vec<PointOp>> {
+    let zero = Ratio::new(0, 1);
+    if points.iter().all(|p| p.nudge == zero) {
+        return None;
+    }
+
+    let n = points.len();
+    let mut lengths: Vec<Rational64> = points.iter().map(|p| p.l).collect();
+    let before: Rational64 = lengths.iter().fold(zero, |a, l| a + *l);
+
+    for (i, p) in points.iter().enumerate() {
+        if p.nudge == zero {
+            continue;
+        }
+        // The edges have no one to trade with. Skipping is deliberate:
+        // prepending a rest would honour the request but ADD AN EVENT, and
+        // not adding events is the entire reason this feature exists — an
+        // extra event at the front puts `Zip` and `Reverse` back on the
+        // wrong grain.
+        if i == 0 || i + 1 >= n {
+            println!(
+                "{} voice {}: `Nudge` on the {} note of a voice has no neighbour to trade \
+                 with, so it was skipped. Write the rest yourself if you want the part to \
+                 start or end offset — that way the extra event is visible.",
+                "[check]".yellow().bold(),
+                voice,
+                if i == 0 { "first" } else { "last" },
+            );
+            continue;
+        }
+        let delta = p.nudge * points[i].l;
+        lengths[i - 1] += delta;
+        lengths[i + 1] -= delta;
+    }
+
+    // Checked on the ACCUMULATED result, not per nudge: two adjacent notes
+    // can each ask for something affordable alone and jointly overdraw the
+    // `l` they share. Skipping the whole voice keeps the exchange exact —
+    // a partial application would break zero-sum, and then the invariant
+    // could no longer be asserted as an equality.
+    if let Some(bad) = lengths.iter().position(|l| *l <= zero) {
+        println!(
+            "{} voice {}: `Nudge` would leave note {} with length {} — skipped every nudge \
+             in this voice rather than apply some of them, because a partial exchange would \
+             not preserve the voice's total. Reduce the nudge, or the notes around it.",
+            "[check]".yellow().bold(),
+            voice,
+            bad,
+            lengths[bad],
+        );
+        return None;
+    }
+
+    let after: Rational64 = lengths.iter().fold(zero, |a, l| a + *l);
+    debug_assert_eq!(
+        before, after,
+        "Nudge must be zero-sum: a voice's total length cannot move"
+    );
+
+    let mut out = points.to_vec();
+    for (p, l) in out.iter_mut().zip(lengths) {
+        p.l = l;
+    }
+    Some(out)
+}
+
+#[cfg(test)]
+mod nudge_tests {
+    use super::*;
+    use num_rational::Ratio;
+
+    fn voice(lengths: &[(i64, i64)], nudges: &[(i64, i64)]) -> Vec<PointOp> {
+        lengths
+            .iter()
+            .zip(nudges)
+            .map(|(&(ln, ld), &(nn, nd))| PointOp {
+                l: Ratio::new(ln, ld),
+                nudge: Ratio::new(nn, nd),
+                ..PointOp::init()
+            })
+            .collect()
+    }
+
+    fn total(points: &[PointOp]) -> Rational64 {
+        points.iter().fold(Ratio::new(0, 1), |a, p| a + p.l)
+    }
+
+    /// THE INVARIANT. A voice's total length is exact rational arithmetic, so
+    /// this is an equality and not a tolerance. If it ever fails, `Nudge` has
+    /// become a translation instead of an exchange.
+    #[test]
+    fn nudging_never_changes_a_voices_total_length() {
+        let lengths = [(1, 1), (1, 1), (1, 1), (1, 1), (1, 1), (1, 1)];
+        // A deliberate mix: positive, negative, adjacent, and zero.
+        let nudges = [(0, 1), (1, 8), (-1, 4), (1, 16), (0, 1), (0, 1)];
+        let points = voice(&lengths, &nudges);
+        let before = total(&points);
+
+        let out = apply_nudges(&points, 0).expect("this voice has nudges");
+        assert_eq!(total(&out), before, "zero-sum, exactly");
+    }
+
+    /// The nudged note SLIDES: its own duration is untouched, so `Gate`'s
+    /// sounding time rides along unchanged. Only the neighbours absorb it.
+    #[test]
+    fn a_nudged_note_keeps_its_own_duration() {
+        let points = voice(&[(1, 1), (1, 1), (1, 1)], &[(0, 1), (1, 4), (0, 1)]);
+        let out = apply_nudges(&points, 0).unwrap();
+
+        assert_eq!(out[0].l, Ratio::new(5, 4), "the note before lends 1/4");
+        assert_eq!(out[1].l, Ratio::new(1, 1), "the nudged note is unchanged");
+        assert_eq!(out[2].l, Ratio::new(3, 4), "the note after is repaid from");
+    }
+
+    /// Negative needs no special case — the same exchange with the sign
+    /// flipped, so the note begins early.
+    #[test]
+    fn a_negative_nudge_moves_the_onset_earlier() {
+        let points = voice(&[(1, 1), (1, 1), (1, 1)], &[(0, 1), (-1, 4), (0, 1)]);
+        let out = apply_nudges(&points, 0).unwrap();
+
+        assert_eq!(out[0].l, Ratio::new(3, 4), "the note before is shortened");
+        assert_eq!(out[1].l, Ratio::new(1, 1));
+        assert_eq!(out[2].l, Ratio::new(5, 4));
+        assert_eq!(total(&out), Ratio::new(3, 1));
+    }
+
+    /// Nudging every note by the same amount CANCELS IN THE INTERIOR — each
+    /// note there borrows δ and is repaid δ — but the edges cannot trade, so
+    /// the first note absorbs a lend it is never repaid and the last absorbs
+    /// a repayment it never lent.
+    ///
+    /// That asymmetry is the honest cost of refusing to invent an event at
+    /// the boundary. A uniform shift of everything is a global offset, and a
+    /// global offset cannot exist without changing the total — so something
+    /// has to give, and it is better that it be visible at the two ends than
+    /// hidden in a silently prepended rest.
+    #[test]
+    fn a_uniform_nudge_cancels_in_the_interior_only() {
+        let points = voice(
+            &[(1, 1), (1, 1), (1, 1), (1, 1), (1, 1)],
+            &[(1, 8), (1, 8), (1, 8), (1, 8), (1, 8)],
+        );
+        let before = total(&points);
+        let out = apply_nudges(&points, 0).unwrap();
+
+        assert_eq!(out[2].l, Ratio::new(1, 1), "interior nets to zero");
+        assert_eq!(out[0].l, Ratio::new(9, 8), "lent to note 1, never repaid");
+        assert_eq!(out[4].l, Ratio::new(7, 8), "repaid note 3, never lent");
+        assert_eq!(total(&out), before, "and the voice still totals the same");
+    }
+
+    /// A voice with no nudges must return `None` so the caller can skip the
+    /// clone — this is the path every existing composition takes.
+    #[test]
+    fn a_voice_without_nudges_does_no_work() {
+        let points = voice(&[(1, 1), (1, 2)], &[(0, 1), (0, 1)]);
+        assert!(apply_nudges(&points, 0).is_none());
+    }
+
+    /// Two adjacent nudges can each be affordable alone and jointly overdraw
+    /// the `l` they share. The whole voice is skipped rather than partly
+    /// applied, because a partial exchange would not be zero-sum.
+    #[test]
+    fn an_overdrawn_neighbour_skips_the_whole_voice() {
+        // Both notes 1 and 3 take from note 2, which only has 1/2 to give.
+        let points = voice(
+            &[(1, 1), (1, 2), (1, 1), (1, 1), (1, 1)],
+            &[(0, 1), (0, 1), (-1, 1), (0, 1), (0, 1)],
+        );
+        let out = apply_nudges(&points, 0);
+        assert!(out.is_none(), "skipped, not clamped");
+    }
+}

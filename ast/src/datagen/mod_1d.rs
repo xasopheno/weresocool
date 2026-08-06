@@ -110,6 +110,8 @@ pub fn eeg_datum_to_point_op(
         pm: Rational64::new(1, 1),
         pa: Rational64::new(0, 1),
         names: nameset,
+        gate: Ratio::new(1, 1),
+        nudge: Ratio::new(0, 1),
         attack: Ratio::new(1, 1),
         decay: Ratio::new(1, 1),
         asr: ASR::Long,

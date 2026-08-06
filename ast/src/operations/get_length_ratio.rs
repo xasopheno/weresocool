@@ -28,6 +28,10 @@ impl GetLengthRatio for Op {
             | Op::Bandpass { .. }
             | Op::AD { .. }
             | Op::Portamento { .. }
+            // Articulation moves the envelope inside the slot; it never
+            // touches `l`, so both are length-identity.
+            | Op::Gate { .. }
+            | Op::Nudge { .. }
             | Op::Sine { .. }
             | Op::Triangle { .. }
             | Op::Square { .. }

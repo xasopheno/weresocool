@@ -180,6 +180,8 @@ impl Substitute for Op {
             | Op::Cowbell { .. }
             | Op::AD { .. }
             | Op::Portamento { .. }
+            | Op::Gate { .. }
+            | Op::Nudge { .. }
             | Op::Silence { .. }
             | Op::TransposeM { .. }
             | Op::TransposeA { .. }

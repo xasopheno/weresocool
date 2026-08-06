@@ -177,6 +177,31 @@ pub struct PointOp {
     pub g: Rational64,
     /// Length Multiply
     pub l: Rational64,
+    /// ARTICULATION — the fraction of this note's slot that actually SOUNDS.
+    /// Identity `1` (sounds the whole way). `Gate 1/3` is a staccato third.
+    ///
+    /// This is note DURATION as distinct from note VALUE, which every
+    /// notation system separates and this language previously could not.
+    /// Before it existed the only way to end a note early was to follow it
+    /// with a silent one — the synth's decay branch is gated on
+    /// `silence_next` (`weresocool_synth/src/asr.rs`) — so composers wrote
+    /// `Overlay [Seq [Fm 1, Fm 0, Fm 0] | Lm 1/3, Fm 0]` and paid THREE
+    /// events per note for it. That is not just verbose: it lies to the
+    /// event model, and every op that counts events (`Zip`, `Reverse`)
+    /// then lands on the wrong grain.
+    ///
+    /// Cannot affect `length_ratio`: it moves the envelope's window INSIDE
+    /// the slot and never touches `l`.
+    pub gate: Rational64,
+    /// MICROTIMING — how late this note starts, as a fraction of its own
+    /// slot. Identity `0`. Negative plays early.
+    ///
+    /// ZERO-SUM: it shifts the BOUNDARY with the previous note rather than
+    /// translating this one, so `prev.l += a*l` and `this.l -= a*l` and the
+    /// voice's total is provably unchanged. That is why it can be negative
+    /// at all — a window clamped inside its own slot could never begin
+    /// before the slot did.
+    pub nudge: Rational64,
     /// Attack Length
     pub attack: Rational64,
     /// Decay Length
@@ -219,6 +244,8 @@ impl Default for PointOp {
             pa: Ratio::new(0, 1),
             g: Ratio::new(1, 1),
             l: Ratio::new(1, 1),
+            gate: Ratio::new(1, 1),
+            nudge: Ratio::new(0, 1),
             reverb: None,
             attack: Ratio::new(1, 1),
             decay: Ratio::new(1, 1),
@@ -382,6 +409,8 @@ impl Mul<PointOp> for PointOp {
             pa: self.pa + other.pa,
             g: self.g * other.g,
             l: self.l * other.l,
+            gate: self.gate * other.gate,
+            nudge: self.nudge + other.nudge,
             reverb: if other.reverb.is_none() {
                 self.reverb
             } else {
@@ -435,6 +464,8 @@ impl<'a> Mul<&'a PointOp> for &PointOp {
             pa: self.pa + other.pa,
             g: self.g * other.g,
             l: self.l * other.l,
+            gate: self.gate * other.gate,
+            nudge: self.nudge + other.nudge,
             reverb: if other.reverb.is_none() {
                 self.reverb
             } else {
@@ -486,6 +517,8 @@ impl MulAssign for PointOp {
             pa: self.pa + other.pa,
             g: self.g * other.g,
             l: self.l * other.l,
+            gate: self.gate * other.gate,
+            nudge: self.nudge + other.nudge,
             reverb: if other.reverb.is_none() {
                 self.reverb
             } else {
@@ -529,7 +562,13 @@ impl MulAssign for PointOp {
 impl PointOp {
     pub fn is_silent(&self) -> bool {
         let zero = Rational64::new(0, 1);
-        self.fm == zero && self.fa < Rational64::new(20, 1) || self.g == zero
+        // `Gate 0` counts here for a reason beyond tidiness: this predicate
+        // is what `silence_next` reads (`renderable/mod.rs`), and
+        // `silence_next` is what releases the PREVIOUS note. A gate-0 note
+        // has to free its predecessor exactly as an `Fm 0` does, or the new
+        // op and the idiom it replaces behave differently in a way nobody
+        // would guess from either spelling.
+        self.fm == zero && self.fa < Rational64::new(20, 1) || self.g == zero || self.gate <= zero
     }
 
     pub fn silence(&mut self) {
@@ -547,6 +586,11 @@ impl PointOp {
             pa: self.pa + other.pa,
             g: self.g * other.g,
             l,
+            // `mod_by` is a SECOND combiner, separate from `Mul` — a field
+            // added to one and not the other composes correctly everywhere
+            // except through `ModBy`, which is a hard bug to see.
+            gate: self.gate * other.gate,
+            nudge: self.nudge + other.nudge,
             reverb: if other.reverb.is_none() {
                 self.reverb
             } else {
@@ -594,6 +638,8 @@ impl PointOp {
             pa: Ratio::new(0, 1),
             g: Ratio::new(1, 1),
             l: Ratio::new(1, 1),
+            gate: Ratio::new(1, 1),
+            nudge: Ratio::new(0, 1),
             ..Default::default()
         }
     }
@@ -605,6 +651,8 @@ impl PointOp {
             pa: Ratio::new(0, 1),
             g: Ratio::new(0, 1),
             l: Ratio::new(1, 1),
+            gate: Ratio::new(1, 1),
+            nudge: Ratio::new(0, 1),
             ..Default::default()
         }
     }

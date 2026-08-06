@@ -841,6 +841,8 @@ fn format_op<'a>(arena: &'a Arena<'a>, ctx: &FormatContext, op: &Op) -> DocBuild
         Op::Length { m } => format_single_rational_op(arena, "Lm", m),
         Op::Silence { m } => format_single_rational_op(arena, "Silence", m),
         Op::Portamento { m } => format_single_rational_op(arena, "Portamento", m),
+        Op::Gate { m } => format_single_rational_op(arena, "Gate", m),
+        Op::Nudge { a } => format_single_rational_op(arena, "Nudge", a),
         Op::Ext(ExtOp::Fade { m }) => format_single_rational_op(arena, "Fade", m),
         Op::Ext(ExtOp::Layer { name }) => arena.text(format!("Layer(\"{}\")", name)),
         Op::Ext(ExtOp::Attach { name }) => arena.text(format!("Attach(\"{}\")", name)),
