@@ -819,16 +819,16 @@ pub mod tests {
         assert_eq!(input, expected);
     }
 
-    /// THE ISORHYTHM. Seven pitches against two durations: the pitches come
-    /// from the subject, the lengths cycle under them, and the pattern's own
-    /// `fm = 1` means it contributes nothing but length. This is the case the
-    /// op exists for.
+    /// THE ISORHYTHM. Seven pitches under two durations: the pitches are the
+    /// subject and arrive through the pipe, the lengths cycle under them, and
+    /// the pattern's own `fm = 1` means it contributes nothing but length.
+    /// This is the case the op exists for.
     #[test]
     fn zip_runs_a_rhythm_under_a_melody() {
         let mut input = NormalForm::init();
         let mut pt = make_parse_table();
 
-        Zip {
+        Compose {
             operations: vec![
                 Op(Sequence {
                     operations: (1..=7)
@@ -839,22 +839,24 @@ pub mod tests {
                         })
                         .collect(),
                 }),
-                Op(Compose {
-                    operations: vec![
-                        Op(Sequence {
-                            operations: vec![
-                                Op(Length {
-                                    m: Rational64::new(3, 1),
-                                }),
-                                Op(Length {
-                                    m: Rational64::new(2, 1),
-                                }),
-                            ],
-                        }),
-                        Op(Length {
-                            m: Rational64::new(1, 5),
-                        }),
-                    ],
+                Op(Zip {
+                    operations: vec![Op(Compose {
+                        operations: vec![
+                            Op(Sequence {
+                                operations: vec![
+                                    Op(Length {
+                                        m: Rational64::new(3, 1),
+                                    }),
+                                    Op(Length {
+                                        m: Rational64::new(2, 1),
+                                    }),
+                                ],
+                            }),
+                            Op(Length {
+                                m: Rational64::new(1, 5),
+                            }),
+                        ],
+                    })],
                 }),
             ],
         }
@@ -862,7 +864,7 @@ pub mod tests {
         .unwrap();
 
         let voice = &input.operations[0];
-        assert_eq!(voice.len(), 7, "length comes from the SUBJECT, not from an lcm");
+        assert_eq!(voice.len(), 7, "the SUBJECT's event count, not an lcm");
 
         let pitches: Vec<Rational64> = voice.iter().map(|p| p.fm).collect();
         assert_eq!(
@@ -879,61 +881,91 @@ pub mod tests {
         assert_eq!(input.length_ratio, Rational64::new(18, 5));
     }
 
-    /// `Zip [x]` has to be exactly `x`. The subject receives the piped-in
-    /// input just as `Seq` does — if that ever stops being true, the first
-    /// operand has become something other than the subject.
+    /// THE INVARIANT, stated as a test: a pattern only multiplies fields into
+    /// events that already exist, so applying two patterns in sequence is
+    /// applying both at once. `x | Zip [a] | Zip [b]` == `x | Zip [a, b]`.
+    /// This equality is the reason the subject comes through the pipe; if it
+    /// ever breaks, the op has become a constructor.
     #[test]
-    fn zip_of_one_operand_is_that_operand() {
-        let seq = Sequence {
+    fn chaining_zips_equals_one_zip_of_both() {
+        let subject = Sequence {
+            operations: vec![Op(AsIs), Op(AsIs), Op(AsIs), Op(AsIs), Op(AsIs)],
+        };
+        let rhythm = Op(Sequence {
             operations: vec![
-                Op(TransposeM {
-                    m: Rational64::new(3, 2),
+                Op(Length {
+                    m: Rational64::new(3, 1),
                 }),
                 Op(Length {
-                    m: Rational64::new(2, 1),
+                    m: Rational64::new(1, 2),
                 }),
             ],
-        };
+        });
+        let dynamics = Op(Sequence {
+            operations: vec![
+                Op(Gain {
+                    m: Rational64::new(1, 1),
+                }),
+                Op(Gain {
+                    m: Rational64::new(1, 2),
+                }),
+                Op(Gain {
+                    m: Rational64::new(3, 4),
+                }),
+            ],
+        });
 
-        let mut pt = make_parse_table();
-        let mut with_seq = NormalForm::init();
-        seq.clone().apply_to_normal_form(&mut with_seq, &mut pt).unwrap();
-
-        let mut pt2 = make_parse_table();
-        let mut with_zip = NormalForm::init();
-        Zip {
-            operations: vec![Op(seq)],
+        let mut chained = NormalForm::init();
+        Compose {
+            operations: vec![
+                Op(subject.clone()),
+                Op(Zip {
+                    operations: vec![rhythm.clone()],
+                }),
+                Op(Zip {
+                    operations: vec![dynamics.clone()],
+                }),
+            ],
         }
-        .apply_to_normal_form(&mut with_zip, &mut pt2)
+        .apply_to_normal_form(&mut chained, &mut make_parse_table())
         .unwrap();
 
-        assert_eq!(with_zip, with_seq);
+        let mut together = NormalForm::init();
+        Compose {
+            operations: vec![
+                Op(subject),
+                Op(Zip {
+                    operations: vec![rhythm, dynamics],
+                }),
+            ],
+        }
+        .apply_to_normal_form(&mut together, &mut make_parse_table())
+        .unwrap();
+
+        assert_eq!(chained, together);
     }
 
     /// THE DOUBLE-APPLICATION TRAP. Patterns normalize against a UNIT form,
-    /// not against the input — otherwise whatever is piped in gets multiplied
-    /// into the result once per operand, and `bd | Zip [a, b]` squares bd's
-    /// own fm.
+    /// never against the input — otherwise the subject's own fm gets
+    /// multiplied back into the result once per pattern, and a fifth becomes
+    /// a ninth.
     #[test]
-    fn a_pattern_does_not_receive_the_piped_in_input() {
+    fn a_pattern_does_not_receive_the_subject() {
         let mut input = NormalForm::init();
         let mut pt = make_parse_table();
 
-        // Pipe in a fifth, then zip a length-only pattern under a flat subject.
         Compose {
             operations: vec![
                 Op(TransposeM {
                     m: Rational64::new(3, 2),
                 }),
+                Op(Sequence {
+                    operations: vec![Op(AsIs), Op(AsIs)],
+                }),
                 Op(Zip {
-                    operations: vec![
-                        Op(Sequence {
-                            operations: vec![Op(AsIs), Op(AsIs)],
-                        }),
-                        Op(Length {
-                            m: Rational64::new(2, 1),
-                        }),
-                    ],
+                    operations: vec![Op(Length {
+                        m: Rational64::new(2, 1),
+                    })],
                 }),
             ],
         }
@@ -944,30 +976,32 @@ pub mod tests {
             assert_eq!(
                 point.fm,
                 Rational64::new(3, 2),
-                "the input's fm must be applied ONCE, not once per operand"
+                "the subject's fm must appear ONCE, not once per pattern"
             );
         }
     }
 
-    /// `get_length_ratio` cannot derive Zip's length from its operands'
+    /// `get_length_ratio` cannot derive Zip's length from its patterns'
     /// ratios — it re-runs the zip. That makes it the arm most likely to
     /// drift away from what normalize actually produces, so pin them together.
     #[test]
     fn zip_length_ratio_agrees_with_normalize() {
-        let zip = Zip {
+        let zip = Compose {
             operations: vec![
                 Op(Sequence {
                     operations: vec![Op(AsIs), Op(AsIs), Op(AsIs), Op(AsIs), Op(AsIs)],
                 }),
-                Op(Sequence {
-                    operations: vec![
-                        Op(Length {
-                            m: Rational64::new(3, 1),
-                        }),
-                        Op(Length {
-                            m: Rational64::new(1, 2),
-                        }),
-                    ],
+                Op(Zip {
+                    operations: vec![Op(Sequence {
+                        operations: vec![
+                            Op(Length {
+                                m: Rational64::new(3, 1),
+                            }),
+                            Op(Length {
+                                m: Rational64::new(1, 2),
+                            }),
+                        ],
+                    })],
                 }),
             ],
         };

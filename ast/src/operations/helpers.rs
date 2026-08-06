@@ -207,80 +207,107 @@ pub fn join_sequence(mut l: NormalForm, mut r: NormalForm) -> NormalForm {
     result
 }
 
-/// ZIP — element-wise combination of op sequences (isorhythm).
+/// ZIP — multiply patterns into the events a subject already has (isorhythm).
 ///
-/// `Zip [A, B, C]` pairs A's events with B's and C's by position and
-/// multiplies them together, cycling the later operands against the first.
-/// The classical name for the two-operand case is isorhythm: a *color* (the
-/// pitch series) running against a *talea* (the rhythm series) of a
-/// different length, so the accents land somewhere new each time round.
+/// `x | Zip [a, b]` walks x's events and multiplies the *i*th one by a's
+/// *i*th and b's *i*th, cycling a and b when they run short. The classical
+/// name for the one-pattern case is isorhythm: a *color* (the pitch series)
+/// running against a *talea* (the rhythm series) of a different length, so
+/// the accents land somewhere new each time round.
 ///
 /// ```text
-/// Zip [ Seq [Fm 1, Fm 2, Fm 3, Fm 4, Fm 5, Fm 6, Fm 7],
-///       Seq [Lm 3, Lm 2] | Lm 1/5 ]
+/// Seq [Fm 1, Fm 2, Fm 3, Fm 4, Fm 5, Fm 6, Fm 7]
+///   | Zip [Seq [Lm 3, Lm 2] | Lm 1/5]
 /// ```
 ///
-/// WHY THIS WORKS AT ALL: unused fields are identity. A rhythm written with
-/// only `Lm` normalizes to points with `fm = 1, g = 1, pm = 1`, so
-/// multiplying it into the melody contributes ONLY length. No field
-/// selectors and no masks are needed — the identity elements do the routing.
-/// The flip side, worth knowing: an operand that carries incidental gain or
-/// pan WILL impose it. That is a feature (a dynamic contour is just another
-/// operand) but it surprises the first time.
+/// THE INVARIANT, and the reason this op takes its subject through the pipe
+/// rather than as a first argument:
 ///
-/// TWO RULES, AND THEY ARE THE SAME RULE:
+/// > **Zip never adds or removes events. It multiplies fields into the
+/// > events already there.**
 ///
-/// 1. The FIRST operand is the subject. It receives whatever was piped in;
-///    the rest normalize on their own against a unit form, because they are
-///    patterns rather than subjects. So `Zip [x]` is exactly `x`.
-/// 2. The first operand governs LENGTH. Later operands cycle under it and
-///    never extend it.
+/// That makes Zip a MODIFIER — it belongs with `Lm`, `Gm` and `Reverse`, not
+/// with `Seq` and `Overlay`, which build events. Writing the subject inside
+/// the bracket list would dress it as a constructor and force a "the first
+/// one is special" rule that cannot be read off the page.
 ///
-/// Rule 2 is why there is no lcm here. Running 7 against 2 to their
-/// realignment at 14 is the musically interesting case, but making that the
-/// default hides the piece's duration (11 against 13 silently becomes 143
-/// events) and you cannot read the length off the page. Phasing is opt-in
-/// with an op that already exists:
+/// It also makes chaining exact:
 ///
 /// ```text
-/// Zip [ Seq [...7 pitches] | Repeat 2, Seq [Lm 3, Lm 2] | Lm 1/5 ]
+/// x | Zip [a] | Zip [b]   ==   x | Zip [a, b]
+/// ```
+///
+/// — identical, because a pattern only multiplies fields and never changes
+/// the count, so applying two in sequence is applying both at once.
+///
+/// WHY IT WORKS AT ALL: unused fields are identity. A rhythm written with
+/// only `Lm` normalizes to points with `fm = 1, g = 1, pm = 1`, so
+/// multiplying it into a melody contributes ONLY length. No field selectors
+/// and no masks are needed — the identity elements do the routing. The flip
+/// side, worth knowing: a pattern that carries incidental gain or pan WILL
+/// impose it. That is a feature (a dynamic contour is just another pattern)
+/// but it surprises the first time.
+///
+/// Patterns CYCLE and never extend the subject, so the piece's length is the
+/// subject's length and you can read it off the page. Running 7 against 2 to
+/// their realignment at 14 is the musically interesting case, but as a
+/// default it would hide the duration — 11 against 13 would silently become
+/// 143 events. So it is opt-in, with an op that already exists:
+///
+/// ```text
+/// tune | Repeat 2 | Zip [talea]
 /// ```
 pub fn zip_terms(
     operations: &[Term],
     input: &NormalForm,
     defs: &mut Defs,
 ) -> Result<NormalForm, Error> {
-    let Some((subject_term, pattern_terms)) = operations.split_first() else {
-        return Ok(input.clone());
-    };
-
     let mut subject = input.clone();
-    subject_term.apply_to_normal_form(&mut subject, defs)?;
 
-    // Patterns normalize against a UNIT form, not against `input`. Zipping
-    // them against `input` too would multiply the input's own fm and length
-    // into the result once per operand.
-    let mut patterns: Vec<NormalForm> = Vec::with_capacity(pattern_terms.len());
-    for term in pattern_terms {
+    // Patterns normalize against a UNIT form, never against `input`. Zipping
+    // them against the input too would multiply the subject's own fm and
+    // length back into the result once per pattern.
+    let mut patterns: Vec<NormalForm> = Vec::with_capacity(operations.len());
+    for term in operations {
         let mut nf = NormalForm::init();
         term.apply_to_normal_form(&mut nf, defs)?;
         patterns.push(nf);
     }
 
-    for (v, voice) in subject.operations.iter_mut().enumerate() {
+    // A single-event subject is almost always a mistake: `Zip [a, b]` written
+    // standalone, where the intended subject is sitting in the bracket list
+    // instead of arriving through the pipe. Say so — the result would be one
+    // note, and nothing else would explain why.
+    let subject_events = subject.operations.iter().map(|v| v.len()).max().unwrap_or(0);
+    let pattern_events = patterns
+        .iter()
+        .filter_map(|p| p.operations.iter().map(|v| v.len()).max())
+        .max()
+        .unwrap_or(0);
+    if subject_events <= 1 && pattern_events > 1 {
+        println!(
+            "{} Zip's subject has {} event(s) but a pattern has {}. Zip multiplies \
+             patterns into the events the SUBJECT already has, and the subject comes \
+             through the pipe: `melody | Zip [rhythm]`, not `Zip [melody, rhythm]`.",
+            "[check]".yellow().bold(),
+            subject_events,
+            pattern_events,
+        );
+    }
+
+    for voice in subject.operations.iter_mut() {
         for (i, point) in voice.iter_mut().enumerate() {
             for pattern in &patterns {
-                if pattern.operations.is_empty() {
+                let Some(pattern_voice) = pattern.operations.first() else {
                     continue;
-                }
-                let pattern_voice = &pattern.operations[v % pattern.operations.len()];
+                };
                 if pattern_voice.is_empty() {
                     continue;
                 }
                 // PointOp's own `Mul`: fm/pm/g/l multiply, fa/pa add, names
                 // union. Non-multiplicative fields (osc_type, asr, is_out)
-                // take the RIGHT operand, so a later operand in the Zip wins
-                // for those — same precedence as writing it later in a pipe.
+                // take the RIGHT operand, so a later pattern in the list wins
+                // for those — the same precedence as writing it later in a pipe.
                 *point = point.clone() * pattern_voice[i % pattern_voice.len()].clone();
             }
         }

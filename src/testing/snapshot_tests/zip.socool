@@ -1,30 +1,37 @@
 { f: 220, l: 1, g: 1, p: 0 }
 
--- Zip: isorhythm. Events pair up by position and multiply; the later
--- operands cycle under the first, which alone governs length.
+-- Zip: isorhythm. Patterns multiply into the events the SUBJECT already has,
+-- pairing by position and cycling when they run short. The subject arrives
+-- through the pipe, because Zip never changes the event count.
 
--- A color of 7 pitches against a talea of 2 durations. Seven events, not
--- fourteen: the subject sets the length and the rhythm cycles under it.
+-- A color of 7 pitches under a talea of 2 durations. Seven events, not
+-- fourteen: the patterns cycle and never extend the subject.
 color = { Seq [Fm 1, Fm 9/8, Fm 5/4, Fm 4/3, Fm 3/2, Fm 5/3, Fm 15/8] }
 talea = { Seq [Lm 3, Lm 2] | Lm 1/5 }
 
 -- Swing: the pair sums to 2, same as two straight notes, so the bar length
 -- is untouched and only the placement moves.
-swing = { Zip [color, Seq [Lm 4/3, Lm 2/3]] }
+swing = { color | Zip [Seq [Lm 4/3, Lm 2/3]] }
 
--- A third operand rides along on a cycle of its own — 7 against 2 against 3.
+-- A third pattern rides along on a cycle of its own — 7 against 2 against 3.
 -- A pattern of only `Gm` has fm = 1, so it contributes nothing but gain.
-dynamics = { Zip [color, talea, Seq [Gm 1, Gm 1/2, Gm 3/4]] }
+dynamics = { color | Zip [talea, Seq [Gm 1, Gm 1/2, Gm 3/4]] }
 
--- The phasing is opt-in and visible: repeat the subject and the accents
--- land somewhere new the second time round.
-phased = { Zip [color | Repeat 2, talea] }
+-- The same thing written as a chain. `x | Zip [a] | Zip [b]` is EXACTLY
+-- `x | Zip [a, b]` — a pattern only multiplies fields into events that are
+-- already there, so applying two in turn is applying both at once.
+chained = { color | Zip [talea] | Zip [Seq [Gm 1, Gm 1/2, Gm 3/4]] }
+
+-- The phasing is opt-in and visible: repeat the subject and the accents land
+-- somewhere new the second time round.
+phased = { color | Repeat 2 | Zip [talea] }
 
 main = {
     Overlay [
-        Zip [color, talea],
+        color | Zip [talea],
         swing | Tm 2 | Gm 1/2,
         dynamics | Tm 1/2,
+        chained | Tm 1/2 | Gm 1/2,
         phased | Tm 3 | Gm 1/3,
     ]
 }
