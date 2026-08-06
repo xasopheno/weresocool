@@ -207,21 +207,26 @@ pub fn join_sequence(mut l: NormalForm, mut r: NormalForm) -> NormalForm {
     result
 }
 
-/// ZIP — multiply patterns into the events a subject already has (isorhythm).
+/// ZIP — run a rhythm under a melody (isorhythm).
 ///
-/// `x | Zip [a, b]` walks x's events and multiplies the *i*th one by a's
-/// *i*th and b's *i*th, cycling a and b when they run short. The classical
-/// name for the one-pattern case is isorhythm: a *color* (the pitch series)
-/// running against a *talea* (the rhythm series) of a different length, so
-/// the accents land somewhere new each time round.
+/// `x | Zip [Lm 3, Lm 1]` walks x's events and applies the bracket list to
+/// them in turn — long, short, long, short — cycling the list when it runs
+/// short. THE BRACKET LIST IS THE RHYTHM, one step per element:
 ///
 /// ```text
 /// Seq [Fm 1, Fm 2, Fm 3, Fm 4, Fm 5, Fm 6, Fm 7]
-///   | Zip [Seq [Lm 3, Lm 2] | Lm 1/5]
+///   | Zip [Lm 3, Lm 2]
 /// ```
 ///
-/// THE INVARIANT, and the reason this op takes its subject through the pipe
-/// rather than as a first argument:
+/// Seven pitches under a two-step talea. The classical name is isorhythm: a
+/// *color* (the pitch series) running against a *talea* (the rhythm series)
+/// of a different length, so the accents land somewhere new each time round.
+/// Swing is the two-step case, `Zip [Lm 4/3, Lm 2/3]` — the pair sums to 2,
+/// same as two straight notes, so the phrase length does not move and only
+/// the placement does.
+///
+/// THE INVARIANT, and the reason the subject comes through the pipe rather
+/// than as a first argument:
 ///
 /// > **Zip never adds or removes events. It multiplies fields into the
 /// > events already there.**
@@ -231,31 +236,28 @@ pub fn join_sequence(mut l: NormalForm, mut r: NormalForm) -> NormalForm {
 /// the bracket list would dress it as a constructor and force a "the first
 /// one is special" rule that cannot be read off the page.
 ///
-/// It also makes chaining exact:
+/// WHY IT WORKS AT ALL: unused fields are identity. A rhythm written with
+/// only `Lm` normalizes to points with `fm = 1, g = 1, pm = 1`, so applying
+/// it to a melody contributes ONLY length. No field selectors and no masks
+/// are needed — the identity elements do the routing. The flip side, worth
+/// knowing: a step that carries incidental gain or pan WILL impose it. That
+/// is a feature (a dynamic contour is just another cycle) but it surprises
+/// the first time.
+///
+/// Want several cycles at once? Chain them. Each `Zip` is one talea:
 ///
 /// ```text
-/// x | Zip [a] | Zip [b]   ==   x | Zip [a, b]
+/// tune | Zip [Lm 4/3, Lm 2/3] | Zip [Gm 1, Gm 1/2, Gm 3/4]
 /// ```
 ///
-/// — identical, because a pattern only multiplies fields and never changes
-/// the count, so applying two in sequence is applying both at once.
-///
-/// WHY IT WORKS AT ALL: unused fields are identity. A rhythm written with
-/// only `Lm` normalizes to points with `fm = 1, g = 1, pm = 1`, so
-/// multiplying it into a melody contributes ONLY length. No field selectors
-/// and no masks are needed — the identity elements do the routing. The flip
-/// side, worth knowing: a pattern that carries incidental gain or pan WILL
-/// impose it. That is a feature (a dynamic contour is just another pattern)
-/// but it surprises the first time.
-///
-/// Patterns CYCLE and never extend the subject, so the piece's length is the
-/// subject's length and you can read it off the page. Running 7 against 2 to
-/// their realignment at 14 is the musically interesting case, but as a
+/// The talea CYCLES and never extends the subject, so the piece's length is
+/// the subject's length and you can read it off the page. Running 7 against
+/// 2 to their realignment at 14 is the musically interesting case, but as a
 /// default it would hide the duration — 11 against 13 would silently become
 /// 143 events. So it is opt-in, with an op that already exists:
 ///
 /// ```text
-/// tune | Repeat 2 | Zip [talea]
+/// tune | Repeat 2 | Zip [Lm 3, Lm 2]
 /// ```
 pub fn zip_terms(
     operations: &[Term],
@@ -264,15 +266,26 @@ pub fn zip_terms(
 ) -> Result<NormalForm, Error> {
     let mut subject = input.clone();
 
-    // Patterns normalize against a UNIT form, never against `input`. Zipping
-    // them against the input too would multiply the subject's own fm and
-    // length back into the result once per pattern.
-    let mut patterns: Vec<NormalForm> = Vec::with_capacity(operations.len());
-    for term in operations {
-        let mut nf = NormalForm::init();
-        term.apply_to_normal_form(&mut nf, defs)?;
-        patterns.push(nf);
+    // THE BRACKET LIST IS THE RHYTHM. `Zip [Lm 3, Lm 1]` is one talea of two
+    // steps — long, short, long, short — not two separate patterns.
+    //
+    // It read the other way first, as a list of patterns applied at once, and
+    // that multiplied them: `Zip [Lm 3, Lm 1]` gave every note l * 3 * 1, a
+    // uniform stretch with no alternation whatsoever. It rendered, it sounded
+    // nearly right, and nothing said the rhythm had not been applied. Wanting
+    // several cycles at once is the rarer thing and it chains:
+    //
+    //     tune | Zip [Lm 4/3, Lm 2/3] | Zip [Gm 1, Gm 1/2, Gm 3/4]
+    //
+    // The pattern normalizes against a UNIT form, never against `input`.
+    // Zipping it against the input too would multiply the subject's own fm
+    // and length back into the result.
+    let mut pattern = NormalForm::init();
+    crate::ast::Op::Sequence {
+        operations: operations.to_vec(),
     }
+    .apply_to_normal_form(&mut pattern, defs)?;
+    let patterns = [pattern];
 
     // A single-event subject is almost always a mistake: `Zip [a, b]` written
     // standalone, where the intended subject is sitting in the bracket list

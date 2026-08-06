@@ -1,37 +1,39 @@
 { f: 220, l: 1, g: 1, p: 0 }
 
--- Zip: isorhythm. Patterns multiply into the events the SUBJECT already has,
--- pairing by position and cycling when they run short. The subject arrives
--- through the pipe, because Zip never changes the event count.
+-- Zip: isorhythm. The bracket list IS the rhythm — one step per element,
+-- applied to the subject's events in turn and cycled when it runs short.
+-- The subject arrives through the pipe, because Zip never changes the
+-- event count; it only multiplies fields into the events already there.
 
--- A color of 7 pitches under a talea of 2 durations. Seven events, not
--- fourteen: the patterns cycle and never extend the subject.
+-- A color of 7 pitches under a talea of 2 steps. Seven events, not
+-- fourteen: the talea cycles and never extends the subject.
 color = { Seq [Fm 1, Fm 9/8, Fm 5/4, Fm 4/3, Fm 3/2, Fm 5/3, Fm 15/8] }
 talea = { Seq [Lm 3, Lm 2] | Lm 1/5 }
 
--- Swing: the pair sums to 2, same as two straight notes, so the bar length
--- is untouched and only the placement moves.
-swing = { color | Zip [Seq [Lm 4/3, Lm 2/3]] }
+isorhythm = { color | Zip [Lm 3/5, Lm 2/5] }
 
--- A third pattern rides along on a cycle of its own — 7 against 2 against 3.
--- A pattern of only `Gm` has fm = 1, so it contributes nothing but gain.
-dynamics = { color | Zip [talea, Seq [Gm 1, Gm 1/2, Gm 3/4]] }
+-- A named talea is the same thing: `Zip [a, b]` is `Zip [Seq [a, b]]`.
+named = { color | Zip [talea] }
 
--- The same thing written as a chain. `x | Zip [a] | Zip [b]` is EXACTLY
--- `x | Zip [a, b]` — a pattern only multiplies fields into events that are
--- already there, so applying two in turn is applying both at once.
-chained = { color | Zip [talea] | Zip [Seq [Gm 1, Gm 1/2, Gm 3/4]] }
+-- Swing: the pair sums to 2, same as two straight notes, so the phrase
+-- length is untouched and only the placement moves.
+swing = { color | Zip [Lm 4/3, Lm 2/3] }
 
--- The phasing is opt-in and visible: repeat the subject and the accents land
--- somewhere new the second time round.
-phased = { color | Repeat 2 | Zip [talea] }
+-- Several cycles at once is what chaining is for. Each Zip is one talea,
+-- and they layer because a talea only multiplies fields into events that
+-- are already there — 7 against 2 against 3.
+layered = { color | Zip [Lm 3/5, Lm 2/5] | Zip [Gm 1, Gm 1/2, Gm 3/4] }
+
+-- The phasing is opt-in and visible: repeat the subject and the accents
+-- land somewhere new the second time round.
+phased = { color | Repeat 2 | Zip [Lm 3/5, Lm 2/5] }
 
 main = {
     Overlay [
-        color | Zip [talea],
-        swing | Tm 2 | Gm 1/2,
-        dynamics | Tm 1/2,
-        chained | Tm 1/2 | Gm 1/2,
+        isorhythm,
+        named | Tm 2 | Gm 1/2,
+        swing | Tm 1/2,
+        layered | Tm 1/2 | Gm 1/2,
         phased | Tm 3 | Gm 1/3,
     ]
 }

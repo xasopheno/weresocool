@@ -200,15 +200,16 @@ pub enum Op {
     Overlay {
         operations: Vec<Term>,
     },
-    /// ISORHYTHM — multiply patterns into the events a subject already has.
-    /// `Seq` concatenates and `Overlay` stacks; `Zip` pairs by POSITION.
-    /// A pitch series of 7 under a rhythm of 2 is the classical
-    /// color-and-talea, and swing is `tune | Zip [Seq [Lm 4/3, Lm 2/3]]`.
+    /// ISORHYTHM — run a rhythm under a melody. `Seq` concatenates and
+    /// `Overlay` stacks; `Zip` applies its bracket list to the subject's
+    /// events IN TURN, cycling when the list runs short. The list IS the
+    /// rhythm, one step per element: `tune | Zip [Lm 3, Lm 1]` is long,
+    /// short, long, short. Swing is `Zip [Lm 4/3, Lm 2/3]`.
     ///
     /// The subject arrives through the pipe, because Zip never adds or
     /// removes events — it is a modifier like `Lm`, not a constructor like
-    /// `Seq`. Consequence: `x | Zip [a] | Zip [b]` == `x | Zip [a, b]`.
-    /// See `helpers::zip_terms` for the whole argument.
+    /// `Seq`. Several cycles at once is what chaining is for; each `Zip` is
+    /// one talea. See `helpers::zip_terms` for the whole argument.
     Zip {
         operations: Vec<Term>,
     },

@@ -144,9 +144,9 @@
     "pop_check": true
   },
   "./src/testing/snapshot_tests/zip.socool": {
-    "op": 8319582630379203476,
-    "normal_form": 11228045208787492788,
-    "stereo_waveform": 1.1512568932,
+    "op": 12879103100163319330,
+    "normal_form": 7055978768295018816,
+    "stereo_waveform": -0.528123208,
     "pop_check": true
   }
 }

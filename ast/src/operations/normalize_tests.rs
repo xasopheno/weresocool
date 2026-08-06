@@ -840,23 +840,28 @@ pub mod tests {
                         .collect(),
                 }),
                 Op(Zip {
-                    operations: vec![Op(Compose {
-                        operations: vec![
-                            Op(Sequence {
-                                operations: vec![
-                                    Op(Length {
-                                        m: Rational64::new(3, 1),
-                                    }),
-                                    Op(Length {
-                                        m: Rational64::new(2, 1),
-                                    }),
-                                ],
-                            }),
-                            Op(Length {
-                                m: Rational64::new(1, 5),
-                            }),
-                        ],
-                    })],
+                    operations: vec![
+                        Op(Compose {
+                            operations: vec![
+                                Op(Length {
+                                    m: Rational64::new(3, 1),
+                                }),
+                                Op(Length {
+                                    m: Rational64::new(1, 5),
+                                }),
+                            ],
+                        }),
+                        Op(Compose {
+                            operations: vec![
+                                Op(Length {
+                                    m: Rational64::new(2, 1),
+                                }),
+                                Op(Length {
+                                    m: Rational64::new(1, 5),
+                                }),
+                            ],
+                        }),
+                    ],
                 }),
             ],
         }
@@ -881,68 +886,154 @@ pub mod tests {
         assert_eq!(input.length_ratio, Rational64::new(18, 5));
     }
 
-    /// THE INVARIANT, stated as a test: a pattern only multiplies fields into
-    /// events that already exist, so applying two patterns in sequence is
-    /// applying both at once. `x | Zip [a] | Zip [b]` == `x | Zip [a, b]`.
-    /// This equality is the reason the subject comes through the pipe; if it
-    /// ever breaks, the op has become a constructor.
+    /// THE BRACKET LIST IS THE RHYTHM — one step per element, cycled. It read
+    /// the other way first (a list of patterns, all applied at once) and that
+    /// MULTIPLIED them: `Zip [Lm 3, Lm 1]` gave every note l * 3 * 1, a
+    /// uniform stretch with no alternation. It rendered and sounded nearly
+    /// right, which is what made it worth a test of its own.
     #[test]
-    fn chaining_zips_equals_one_zip_of_both() {
+    fn the_bracket_list_is_one_rhythm_not_several_patterns() {
+        let mut input = NormalForm::init();
+        let mut pt = make_parse_table();
+
+        Compose {
+            operations: vec![
+                Op(Sequence {
+                    operations: vec![Op(AsIs), Op(AsIs), Op(AsIs), Op(AsIs)],
+                }),
+                Op(Zip {
+                    operations: vec![
+                        Op(Length {
+                            m: Rational64::new(3, 1),
+                        }),
+                        Op(Length {
+                            m: Rational64::new(1, 1),
+                        }),
+                    ],
+                }),
+            ],
+        }
+        .apply_to_normal_form(&mut input, &mut pt)
+        .unwrap();
+
+        let lengths: Vec<Rational64> = input.operations[0].iter().map(|p| p.l).collect();
+        assert_eq!(
+            lengths,
+            vec![
+                Rational64::new(3, 1),
+                Rational64::new(1, 1),
+                Rational64::new(3, 1),
+                Rational64::new(1, 1),
+            ],
+            "alternating, NOT four notes of 3 * 1 = 3"
+        );
+    }
+
+    /// `Zip [a, b]` is `Zip [Seq [a, b]]` — the list is sugar for the
+    /// sequence, so a named talea and an inline one are the same thing.
+    #[test]
+    fn an_inline_list_equals_a_named_sequence() {
+        let steps = vec![
+            Op(Length {
+                m: Rational64::new(3, 1),
+            }),
+            Op(Length {
+                m: Rational64::new(1, 2),
+            }),
+        ];
         let subject = Sequence {
             operations: vec![Op(AsIs), Op(AsIs), Op(AsIs), Op(AsIs), Op(AsIs)],
         };
-        let rhythm = Op(Sequence {
-            operations: vec![
-                Op(Length {
-                    m: Rational64::new(3, 1),
-                }),
-                Op(Length {
-                    m: Rational64::new(1, 2),
-                }),
-            ],
-        });
-        let dynamics = Op(Sequence {
-            operations: vec![
-                Op(Gain {
-                    m: Rational64::new(1, 1),
-                }),
-                Op(Gain {
-                    m: Rational64::new(1, 2),
-                }),
-                Op(Gain {
-                    m: Rational64::new(3, 4),
-                }),
-            ],
-        });
 
-        let mut chained = NormalForm::init();
+        let mut inline = NormalForm::init();
         Compose {
             operations: vec![
                 Op(subject.clone()),
                 Op(Zip {
-                    operations: vec![rhythm.clone()],
-                }),
-                Op(Zip {
-                    operations: vec![dynamics.clone()],
+                    operations: steps.clone(),
                 }),
             ],
         }
-        .apply_to_normal_form(&mut chained, &mut make_parse_table())
+        .apply_to_normal_form(&mut inline, &mut make_parse_table())
         .unwrap();
 
-        let mut together = NormalForm::init();
+        let mut named = NormalForm::init();
         Compose {
             operations: vec![
                 Op(subject),
                 Op(Zip {
-                    operations: vec![rhythm, dynamics],
+                    operations: vec![Op(Sequence { operations: steps })],
                 }),
             ],
         }
-        .apply_to_normal_form(&mut together, &mut make_parse_table())
+        .apply_to_normal_form(&mut named, &mut make_parse_table())
         .unwrap();
 
-        assert_eq!(chained, together);
+        assert_eq!(inline, named);
+    }
+
+    /// Several cycles at once is what CHAINING is for — each `Zip` is one
+    /// talea, and they layer because a talea only multiplies fields into
+    /// events that already exist.
+    #[test]
+    fn chained_zips_layer_independent_cycles() {
+        let mut input = NormalForm::init();
+        let mut pt = make_parse_table();
+
+        Compose {
+            operations: vec![
+                Op(Sequence {
+                    operations: vec![Op(AsIs), Op(AsIs), Op(AsIs), Op(AsIs), Op(AsIs), Op(AsIs)],
+                }),
+                // a 2-step rhythm
+                Op(Zip {
+                    operations: vec![
+                        Op(Length {
+                            m: Rational64::new(2, 1),
+                        }),
+                        Op(Length {
+                            m: Rational64::new(1, 1),
+                        }),
+                    ],
+                }),
+                // under a 3-step dynamic
+                Op(Zip {
+                    operations: vec![
+                        Op(Gain {
+                            m: Rational64::new(1, 1),
+                        }),
+                        Op(Gain {
+                            m: Rational64::new(1, 2),
+                        }),
+                        Op(Gain {
+                            m: Rational64::new(1, 4),
+                        }),
+                    ],
+                }),
+            ],
+        }
+        .apply_to_normal_form(&mut input, &mut pt)
+        .unwrap();
+
+        let voice = &input.operations[0];
+        assert_eq!(voice.len(), 6, "neither cycle changes the event count");
+        let lengths: Vec<Rational64> = voice.iter().map(|p| p.l).collect();
+        let gains: Vec<Rational64> = voice.iter().map(|p| p.g).collect();
+        let two = Rational64::new(2, 1);
+        let one = Rational64::new(1, 1);
+        assert_eq!(lengths, vec![two, one, two, one, two, one], "period 2");
+        assert_eq!(
+            gains,
+            vec![
+                one,
+                Rational64::new(1, 2),
+                Rational64::new(1, 4),
+                one,
+                Rational64::new(1, 2),
+                Rational64::new(1, 4)
+            ],
+            "period 3, running against the period-2 rhythm"
+        );
     }
 
     /// THE DOUBLE-APPLICATION TRAP. Patterns normalize against a UNIT form,
@@ -992,16 +1083,14 @@ pub mod tests {
                     operations: vec![Op(AsIs), Op(AsIs), Op(AsIs), Op(AsIs), Op(AsIs)],
                 }),
                 Op(Zip {
-                    operations: vec![Op(Sequence {
-                        operations: vec![
-                            Op(Length {
-                                m: Rational64::new(3, 1),
-                            }),
-                            Op(Length {
-                                m: Rational64::new(1, 2),
-                            }),
-                        ],
-                    })],
+                    operations: vec![
+                        Op(Length {
+                            m: Rational64::new(3, 1),
+                        }),
+                        Op(Length {
+                            m: Rational64::new(1, 2),
+                        }),
+                    ],
                 }),
             ],
         };
