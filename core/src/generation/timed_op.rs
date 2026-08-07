@@ -78,14 +78,6 @@ impl TimedOp {
             pa: self.pa,
             g: self.g,
             l: self.l,
-            // Identities. `TimedOp` carries no articulation, and its two
-            // real callers are the `FromSound` transcription caches
-            // (`datagen/from_sound.rs:445,662`) — analysed audio, which has
-            // no notion of a written gate. If `TimedOp` ever becomes a
-            // round-trip format for composed material, these need real
-            // fields or the articulation is silently dropped.
-            gate: Rational64::new(1, 1),
-            nudge: Rational64::new(0, 1),
             reverb: Some(self.reverb),
             attack: self.decay,
             decay: self.decay,

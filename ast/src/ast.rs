@@ -141,25 +141,6 @@ pub enum Op {
     Portamento {
         m: Rational64,
     },
-    /// ARTICULATION — the fraction of a note's slot that SOUNDS. `Gate 1/3`
-    /// is a staccato third; identity is `1`. Multiplies, so
-    /// `Gate 1/2 | Gate 1/2` == `Gate 1/4`.
-    ///
-    /// Replaces `Overlay [Seq [Fm 1, Fm 0, Fm 0] | Lm 1/3, Fm 0]`, which
-    /// cost three events per note and therefore lied to every op that
-    /// counts events. Creates no events, and cannot reach `length_ratio`.
-    Gate {
-        m: Rational64,
-    },
-    /// MICROTIMING — how late a note starts, as a fraction of its own slot.
-    /// Identity `0`; negative plays early. Adds, so
-    /// `Nudge 1/8 | Nudge 1/8` == `Nudge 1/4`.
-    ///
-    /// ZERO-SUM: it shifts the BOUNDARY with the previous note, so the
-    /// voice's total is provably unchanged. See `PointOp::nudge`.
-    Nudge {
-        a: Rational64,
-    },
     //
     Reverse,
     FInvert,

@@ -93,13 +93,6 @@ pub trait SynthOp: Send + Sync {
     /// Total samples in the operation
     fn total_samples(&self) -> usize;
 
-    /// ARTICULATION WINDOW — the sample span within this op that actually
-    /// sounds. Defaulted to the whole op so every existing implementor and
-    /// every ungated note keeps its exact behaviour.
-    fn gate_end(&self) -> usize {
-        self.total_samples()
-    }
-
     /// Whether the next operation's left channel is silent (for envelope)
     fn next_left_silent(&self) -> bool;
 

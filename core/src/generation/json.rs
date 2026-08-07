@@ -37,20 +37,6 @@ pub fn composition_to_vec_timed_op(
             let mut time = Rational64::new(0, 1);
             let mut out = Vec::new();
 
-            // MICROTIMING, resolved here as well as in the render path.
-            // There are TWO doors out of a finished NormalForm — this one
-            // (JSON / the visual data export) and `nf_to_vec_renderable`
-            // (audio, and kintaro's live marks) — and a `Nudge` applied at
-            // only one of them would move the sound without moving the
-            // picture. Returns `None` when the voice has no nudge, which is
-            // every voice in every existing piece.
-            let nudged = weresocool_ast::operations::helpers::apply_nudges(
-                ops_for_this_voice,
-                voice_idx,
-            );
-            let ops_for_this_voice: &[weresocool_ast::PointOp] =
-                nudged.as_deref().unwrap_or(ops_for_this_voice);
-
             for (event_idx, p_op) in ops_for_this_voice.iter().enumerate() {
                 // The total length of the original PointOp
                 let mut leftover = p_op.l;

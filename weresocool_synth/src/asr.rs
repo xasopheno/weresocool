@@ -10,6 +10,13 @@ impl Voice {
         index: usize,
         total_length: usize,
     ) -> f64 {
+        // Drums have internal envelopes that already shape the attack — an
+        // outer attack ramp on top buries the transient. On a note-on we pass
+        // past_gain = current_gain so `gain_at_index` in the attack branch
+        // becomes a no-op (start == target). But NOT when fading into silence
+        // (current gain ≈ 0): there the attack branch IS the fade-out ramp
+        // from the previous note's gain, and zeroing past_gain would cut the
+        // drum's ring-out dead instead of fading it.
         let is_drum = self.osc_type.is_drum();
         let past_gain = if is_drum && !silence_now {
             self.current.gain

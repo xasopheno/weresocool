@@ -29,16 +29,6 @@ pub struct RenderOp {
     pub samples: usize,
     pub index: usize,
     pub total_samples: usize,
-    /// ARTICULATION WINDOW, in samples from the start of the slot: the span
-    /// that actually sounds. `(0, total_samples)` is the ungated default
-    /// and must render byte-for-byte as before.
-    ///
-    /// Deliberately NOT `samples`: that field advances the timeline
-    /// (`render_voice.rs:61,108,122`), so shortening it would slide every
-    /// following note. The slot keeps its length; only the envelope's
-    /// window moves inside it.
-    pub gate_start: usize,
-    pub gate_end: usize,
     pub voice: usize,
     pub event: usize,
     pub portamento: usize,
@@ -178,8 +168,6 @@ impl RenderOp {
             asr: ASR::Long,
             samples: s,
             total_samples: s,
-            gate_start: 0,
-            gate_end: s,
             index: 0,
             voice: 0,
             event: 0,
@@ -211,8 +199,6 @@ impl RenderOp {
             asr: ASR::Long,
             samples: settings.sample_rate as usize,
             total_samples: settings.sample_rate as usize,
-            gate_start: 0,
-            gate_end: settings.sample_rate as usize,
             index: 0,
             voice: 0,
             event: 0,
@@ -243,8 +229,6 @@ impl RenderOp {
             asr: ASR::Long,
             samples: Settings::global().sample_rate as usize,
             total_samples: Settings::global().sample_rate as usize,
-            gate_start: 0,
-            gate_end: Settings::global().sample_rate as usize,
             index: 0,
             voice: 0,
             event: 0,
@@ -282,8 +266,6 @@ impl RenderOp {
             asr: ASR::Long,
             samples: sample_rate as usize,
             total_samples: sample_rate as usize,
-            gate_start: 0,
-            gate_end: sample_rate as usize,
             index: 0,
             voice: 0,
             event: 0,
@@ -428,11 +410,6 @@ impl weresocool_synth::SynthOp for RenderOp {
     }
 
     #[inline(always)]
-    fn gate_end(&self) -> usize {
-        self.gate_end
-    }
-
-    #[inline(always)]
     fn next_left_silent(&self) -> bool {
         self.next_l_silent
     }
@@ -508,19 +485,6 @@ fn pointop_to_renderop(
         index: 0,
         samples: (l * sample_rate).round() as usize,
         total_samples: (l * sample_rate).round() as usize,
-        // THE ARTICULATION WINDOW. `gate` accumulates unclamped through the
-        // op algebra so that `Gate 2 | Gate 1/2` is exactly `Gate 1`; the
-        // clamp belongs here, at the edge, and nowhere else.
-        //
-        // `Gate 2` cannot mean "ring into the next note" — a voice is
-        // monophonic and the next note already owns the oscillator — so past
-        // 1 it simply means "the whole slot".
-        gate_start: 0,
-        gate_end: {
-            let total = (l * sample_rate).round() as usize;
-            let gate = r_to_f64(point_op.gate).clamp(0.0, 1.0);
-            (total as f64 * gate).round() as usize
-        },
         attack: r_to_f64(point_op.attack * basis.a) * sample_rate,
         decay: r_to_f64(point_op.decay * basis.d) * sample_rate,
         osc_type: point_op.osc_type.clone(),
@@ -667,16 +631,9 @@ pub fn nf_to_vec_renderable(
         .iter()
         .enumerate()
         .map(|(voice, vec_point_op)| {
-            // MICROTIMING, resolved here because it needs the finished voice
-            // — a `Nudge` trades length with its neighbours, and inside a
-            // `Seq` operand a note has none yet. Returns `None` when the
-            // voice carries no nudge at all, which is every voice in every
-            // existing piece, so the common path never clones.
-            weresocool_ast::operations::helpers::check_articulation(vec_point_op, voice);
-            let nudged = weresocool_ast::operations::helpers::apply_nudges(vec_point_op, voice);
             create_render_ops(
                 voice,
-                nudged.as_deref().unwrap_or(vec_point_op),
+                vec_point_op,
                 basis,
                 settings.sample_rate,
                 settings.pad_end,

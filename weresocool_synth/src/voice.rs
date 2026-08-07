@@ -193,59 +193,11 @@ impl Voice {
         // osc state are mutated in `update*` methods, not inside this loop.
         let portamento_length = op.portamento();
         let duration_samples = op.duration_samples();
-        // THE ARTICULATION WINDOW — the reason `Gate` exists.
-        //
-        // `calculate_op_gain` above is evaluated ONCE per buffer, with the
-        // index at the buffer's END, so a window test up there silences a
-        // whole note rather than the tail of one. The gate has to be a
-        // per-sample decision, and it belongs here for a second reason: both
-        // envelope branches in `asr.rs` can only end a note when
-        // `silence_next` is true, i.e. a note's release is a property of its
-        // NEIGHBOUR. That is exactly why composers wrote
-        // `Overlay [Seq [Fm 1, Fm 0, Fm 0] | Lm 1/3, Fm 0]` — the `Fm 0`
-        // events were there to MANUFACTURE the silence that lets a note
-        // stop, at three events per note. A gated note ends on its own edge
-        // and asks its neighbour nothing.
-        //
-        // Measured against the SLOT, never against `duration_samples`: the
-        // slot is what the composer wrote, and nothing downstream moves.
-        let gate_end = op.gate_end();
-        let gated = gate_end < op.total_samples();
-        // THE RELEASE IS THE NOTE'S OWN DECAY, measured against the WINDOW.
-        //
-        // The idiom this replaces —
-        // `Overlay [Seq [Fm 1, Fm 0, Fm 0] | Lm 1/3, Fm 0]` — made a short
-        // sub-event whose neighbour was silent, so it took the real decay
-        // path in `asr.rs`, and `is_short` gave it `total/2` to fade in.
-        // That is a release of tens of milliseconds, not a few, and it is
-        // why the old spelling sounded clean.
-        //
-        // A fixed short ramp here (12 ms was the first attempt) cuts a
-        // sustained tone an order of magnitude faster than the thing it
-        // replaces, and that difference IS the click. So the window is
-        // treated as the note's length for envelope purposes, which is the
-        // same rule `is_short` applies to a genuinely short note.
-        let gate_release = self.decay.min(gate_end / 2).max(1);
-
         // Fade length for sustained tones: the gain ramps from the previous
         // op's ending gain to this op's target across the WHOLE op duration
         // (min 250 samples to keep very short ops click-free). This is what
         // makes a long fade actually take its full written length.
         let sample_limit = if duration_samples > 250 { duration_samples } else { 250 };
-        // A GATED NOTE RISES INSIDE ITS WINDOW, not across its slot.
-        //
-        // The ramp above spans the whole op, so a note gated to a third of
-        // its slot was still climbing when the window closed — it reached a
-        // sixth of the amplitude the old spelling gave it AND got cut on the
-        // way up, which is what made it click. The idiom this replaces
-        // (`Seq [Fm 1, Fm 0, Fm 0] | Lm 1/3`) made a genuinely SHORT note,
-        // so its envelope compressed into that length: full rise, full fall.
-        // Matching that is the whole job.
-        let sample_limit = if gated {
-            if gate_end > 250 { gate_end } else { 250 }
-        } else {
-            sample_limit
-        };
         let last_sample_index = duration_samples.saturating_sub(1);
         let total_samples_for_info = op.total_samples();
         let op_sample_index = op.sample_index();
@@ -337,23 +289,6 @@ impl Voice {
                 // exponential smoother here collapsed every fade (however
                 // long) into an ~11 ms glide, which broke fade rendering.
                 gain_at_index(self.offset_past.gain, gain_factor, index, sample_limit)
-            };
-
-            // Close the articulation window. `op_sample_index + index` is
-            // the position within the NOTE, so this survives the chunking a
-            // held note gets in live playback — every chunk carries the same
-            // slot and the same window.
-            let gain = if gated {
-                let pos = op_sample_index + index;
-                if pos >= gate_end {
-                    0.0
-                } else if pos + gate_release > gate_end {
-                    gain * ((gate_end - pos) as f64 / gate_release as f64)
-                } else {
-                    gain
-                }
-            } else {
-                gain
             };
 
             let info = SampleInfo {

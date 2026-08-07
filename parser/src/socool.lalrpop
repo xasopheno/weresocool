@@ -532,11 +532,6 @@ BaseOperation: Term = {
           Term::Op(AD {attack, decay, asr})
         },
     "Portamento" <m:Rational> => Term::Op(Portamento {m}),
-    // ARTICULATION. `Gate 1/3` = sounds for a third of its slot; `Nudge 1/8`
-    // = starts an eighth of a slot late (negative plays early). Neither
-    // creates an event, and neither can move a voice's total length.
-    "Gate" <m:Rational> => Term::Op(Gate {m}),
-    "Nudge" <a:Rational> => Term::Op(Nudge {a}),
     "Fade" <m:Rational> => Term::Op(Ext(Fade {m})),
     "Layer" "(" <name: StringLit> ")" => Term::Op(Ext(Layer { name })),
     "Attach" "(" <name: StringLit> ")" => Term::Op(Ext(Attach { name })),

@@ -305,18 +305,6 @@ impl Normalize for Op {
                 op.portamento *= m;
             }),
 
-            // Pointwise, and deliberately so: neither op touches `l`, so
-            // neither can move a voice's total. `Nudge` becomes a boundary
-            // transfer later, in one pass over the finished voice — see
-            // `helpers::apply_nudges`.
-            Op::Gate { m } => input.fmap_mut(|op| {
-                op.gate *= m;
-            }),
-
-            Op::Nudge { a } => input.fmap_mut(|op| {
-                op.nudge += a;
-            }),
-
 
             Op::Sine { pow } => input.fmap_mut(|op| op.osc_type = OscType::Sine { pow: *pow }),
 
