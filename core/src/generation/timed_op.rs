@@ -79,8 +79,19 @@ impl TimedOp {
             g: self.g,
             l: self.l,
             reverb: Some(self.reverb),
+            // NOTE (pre-existing): `attack` is filled from `decay` because
+            // `TimedOp` has never carried an attack of its own.
             attack: self.decay,
             decay: self.decay,
+            // `TimedOp` is the JSON/CSV/FromSound shape, and it does not carry
+            // the envelope. Identity here, deliberately: a round-trip through
+            // this type returns an UNARTICULATED note rather than a randomly
+            // shaped one. If `Env` should survive `FromSound`, these three
+            // have to be added to `TimedOp` itself — which changes the
+            // exported JSON schema, so it is not a silent decision.
+            sustain: Rational64::new(1, 1),
+            release: Rational64::new(1, 1),
+            gate: Rational64::new(1, 1),
             asr: self.asr,
             portamento: self.portamento,
             osc_type: self.osc_type.clone(),

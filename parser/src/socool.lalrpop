@@ -32,13 +32,14 @@ use weresocool_ast::{
         CrashParams,
         ShakerParams,
         CowbellParams,
+
 };
 use weresocool_ast::follow::types::{
   Follow, FollowRule, FollowCondition, FollowAction, FollowVariable, FollowExpr, FollowComparison, FollowSimpleCondition, FollowAndCondition
 };
 use weresocool_ast::color::*;
 use weresocool_ast::color_set;
-use crate::parser::{Init, HeaderTerm, handle_fit_length_recursively, handle_repeat_recursively, validate_drum_preset};
+use crate::parser::{Init, HeaderTerm, handle_fit_length_recursively, handle_repeat_recursively, validate_drum_preset, env_params_from_pairs};
 use crate::indices::{et, random_seed};
 use crate::float_to_rational::helpers::*;
 use regex::Regex;
@@ -531,6 +532,13 @@ BaseOperation: Term = {
           let asr = if decay_type == 2 {ASR::Long} else {ASR::Short};
           Term::Op(AD {attack, decay, asr})
         },
+    // The envelope. Every key optional, every key a multiplier — see
+    // `EnvParams` in `ast/src/ast.rs` for units and identities. Unknown keys
+    // are an error, not a silent ignore: a typo must never quietly change
+    // (or fail to change) how a piece sounds.
+    <start:@L> "Env" "{" <params: EnvParamList> "}" =>? {
+        Ok(Term::Op(Env { params: env_params_from_pairs(start, params)? }))
+    },
     "Portamento" <m:Rational> => Term::Op(Portamento {m}),
     "Fade" <m:Rational> => Term::Op(Ext(Fade {m})),
     "Layer" "(" <name: StringLit> ")" => Term::Op(Ext(Layer { name })),
@@ -830,6 +838,17 @@ KickParamList: KickParams = {
 };
 
 KickParam: (String, Rational64) = {
+    <name: Name> ":" <value: Rational> => (name, value),
+};
+
+// ─── The envelope ─────────────────────────────────────────────────────
+// Unlike the drum parameter lists above, unknown keys here are rejected
+// (`env_params_from_pairs`) rather than dropped.
+EnvParamList: Vec<(String, Rational64)> = {
+    <params: Comma<EnvParam>> => params,
+};
+
+EnvParam: (String, Rational64) = {
     <name: Name> ":" <value: Rational> => (name, value),
 };
 

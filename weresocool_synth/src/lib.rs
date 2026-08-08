@@ -1,7 +1,7 @@
 // weresocool_synth - Generic audio synthesis engine
 // Standalone and reusable, independent of WereSoCool language types
 
-mod asr;
+mod envelope;
 pub mod distortion;
 mod frequency;
 mod gain;
@@ -12,9 +12,6 @@ mod sample;
 pub mod tables;
 pub mod stereo_waveform;
 pub mod voice;
-
-#[cfg(test)]
-mod asr_test;
 
 // Re-export key types
 pub use self::{
@@ -66,6 +63,22 @@ pub trait SynthOp: Send + Sync {
 
     /// Decay envelope duration in samples
     fn envelope_decay(&self) -> f64;
+
+    /// Level held after the decay, as a fraction of the note's peak gain.
+    fn envelope_sustain(&self) -> f64 {
+        1.0
+    }
+
+    /// Samples spent falling from the sustain level to silence once the gate
+    /// closes.
+    fn envelope_release(&self) -> f64 {
+        0.0
+    }
+
+    /// The fraction of the note the key is held. 1.0 = the whole note.
+    fn envelope_gate(&self) -> f64 {
+        1.0
+    }
 
     /// ASR (Attack/Sustain/Release) envelope type
     fn asr_type(&self) -> ASR;

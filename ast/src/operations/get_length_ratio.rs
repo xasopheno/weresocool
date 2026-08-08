@@ -27,6 +27,10 @@ impl GetLengthRatio for Op {
             | Op::Highpass { .. }
             | Op::Bandpass { .. }
             | Op::AD { .. }
+            // `Env` shapes a note; it never changes how long the note is.
+            // `gate` shortens what SOUNDS, not what the note occupies — the
+            // silence it leaves is part of the note's length.
+            | Op::Env { .. }
             | Op::Portamento { .. }
             | Op::Sine { .. }
             | Op::Triangle { .. }

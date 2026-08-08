@@ -550,6 +550,126 @@ pub mod tests {
         assert_eq!(input, expected);
     }
 
+    /// A written key multiplies; an absent key multiplies by nothing.
+    #[test]
+    fn normalize_env_only_touches_the_keys_that_were_written() {
+        let mut input = NormalForm::init();
+        let mut pt = make_parse_table();
+
+        Env {
+            params: crate::EnvParams {
+                attack: Some(Ratio::new(1, 3)),
+                gate: Some(Ratio::new(2, 3)),
+                ..Default::default()
+            },
+        }
+        .apply_to_normal_form(&mut input, &mut pt)
+        .unwrap();
+
+        let expected = NormalForm {
+            start_at: None,
+            length_ratio: Ratio::new(1, 1),
+            operations: vec![vec![PointOp {
+                attack: Ratio::new(1, 3),
+                gate: Ratio::new(2, 3),
+                // decay, sustain and release stay at identity
+                ..PointOp::init()
+            }]],
+        };
+
+        assert_eq!(input, expected);
+    }
+
+    /// `Env | Env` composes the way `Fm | Fm` does. This is the reason the
+    /// envelope is five multipliers on the point rather than a struct that
+    /// gets overwritten.
+    #[test]
+    fn normalize_env_composes_multiplicatively() {
+        let mut input = NormalForm::init();
+        let mut pt = make_parse_table();
+
+        Compose {
+            operations: vec![
+                Op(Env {
+                    params: crate::EnvParams {
+                        attack: Some(Ratio::new(1, 3)),
+                        gate: Some(Ratio::new(1, 2)),
+                        ..Default::default()
+                    },
+                }),
+                Op(Env {
+                    params: crate::EnvParams {
+                        attack: Some(Ratio::new(1, 2)),
+                        gate: Some(Ratio::new(1, 2)),
+                        sustain: Some(Ratio::new(3, 4)),
+                        ..Default::default()
+                    },
+                }),
+            ],
+        }
+        .apply_to_normal_form(&mut input, &mut pt)
+        .unwrap();
+
+        assert_eq!(input.operations[0][0].attack, Ratio::new(1, 6));
+        assert_eq!(input.operations[0][0].gate, Ratio::new(1, 4));
+        assert_eq!(input.operations[0][0].sustain, Ratio::new(3, 4));
+    }
+
+    /// `mod_by` is a SECOND combiner, separate from `Mul`. A field added to
+    /// one and not the other composes correctly everywhere except through
+    /// `ModBy`, which is a hard bug to see — so it gets its own test.
+    #[test]
+    fn env_survives_mod_by() {
+        let mut a = PointOp {
+            attack: Ratio::new(1, 3),
+            sustain: Ratio::new(1, 2),
+            release: Ratio::new(1, 4),
+            gate: Ratio::new(2, 3),
+            ..PointOp::init()
+        };
+        let b = PointOp {
+            attack: Ratio::new(1, 2),
+            gate: Ratio::new(1, 2),
+            ..PointOp::init()
+        };
+
+        a.mod_by(b, Ratio::new(1, 1));
+
+        assert_eq!(a.attack, Ratio::new(1, 6));
+        assert_eq!(a.gate, Ratio::new(1, 3));
+        assert_eq!(a.sustain, Ratio::new(1, 2));
+        assert_eq!(a.release, Ratio::new(1, 4));
+    }
+
+    /// A shut gate has to read as silence, because `is_silent` is what tells
+    /// the PREVIOUS note it may release.
+    #[test]
+    fn a_shut_gate_is_silence() {
+        let op = PointOp {
+            gate: Ratio::new(0, 1),
+            ..PointOp::init()
+        };
+        assert!(op.is_silent());
+        assert!(!PointOp::init().is_silent());
+    }
+
+    /// `Env` shapes a note; it never changes how long the note is. The
+    /// silence a gate leaves is part of the note's length.
+    #[test]
+    fn env_does_not_change_the_length() {
+        let mut pt = make_parse_table();
+        let ratio = Env {
+            params: crate::EnvParams {
+                gate: Some(Ratio::new(1, 4)),
+                ..Default::default()
+            },
+        }
+        .get_length_ratio(&NormalForm::init(), &mut pt)
+        .unwrap();
+
+        assert_eq!(ratio, Ratio::new(1, 1));
+    }
+
     #[test]
     fn normalize_compose() {
         let mut input = NormalForm::init();

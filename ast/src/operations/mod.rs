@@ -177,10 +177,19 @@ pub struct PointOp {
     pub g: Rational64,
     /// Length Multiply
     pub l: Rational64,
-    /// Attack Length
+    /// Attack Length, in l-basis units. Time to climb to the note's peak.
     pub attack: Rational64,
-    /// Decay Length
+    /// Decay Length, in l-basis units. Time to fall from the peak to
+    /// `sustain` — and no time at all when `sustain` is 1.
     pub decay: Rational64,
+    /// The level held after the decay, as a fraction of the note's peak gain.
+    pub sustain: Rational64,
+    /// Release Length, in l-basis units. Time to fall from `sustain` to
+    /// silence once the gate closes.
+    pub release: Rational64,
+    /// The fraction of the note the key is held. Everything after
+    /// `gate + release` is silence, and that silence is the articulation.
+    pub gate: Rational64,
     /// Attack/Sustain/Release Type
     pub asr: ASR,
     /// Portamento Length
@@ -222,6 +231,9 @@ impl Default for PointOp {
             reverb: None,
             attack: Ratio::new(1, 1),
             decay: Ratio::new(1, 1),
+            sustain: Ratio::new(1, 1),
+            release: Ratio::new(1, 1),
+            gate: Ratio::new(1, 1),
             asr: ASR::Long,
             portamento: Ratio::new(1, 1),
             osc_type: OscType::None,
@@ -394,6 +406,9 @@ impl Mul<PointOp> for PointOp {
             },
             attack: self.attack * other.attack,
             decay: self.decay * other.decay,
+            sustain: self.sustain * other.sustain,
+            release: self.release * other.release,
+            gate: self.gate * other.gate,
             asr: other.asr,
             portamento: self.portamento * other.portamento,
             names,
@@ -447,6 +462,9 @@ impl<'a> Mul<&'a PointOp> for &PointOp {
             },
             attack: self.attack * other.attack,
             decay: self.decay * other.decay,
+            sustain: self.sustain * other.sustain,
+            release: self.release * other.release,
+            gate: self.gate * other.gate,
             asr: other.asr,
             portamento: self.portamento * other.portamento,
             names,
@@ -498,6 +516,9 @@ impl MulAssign for PointOp {
             },
             attack: self.attack * other.attack,
             decay: self.decay * other.decay,
+            sustain: self.sustain * other.sustain,
+            release: self.release * other.release,
+            gate: self.gate * other.gate,
             asr: other.asr,
             portamento: self.portamento * other.portamento,
             names,
@@ -529,7 +550,13 @@ impl MulAssign for PointOp {
 impl PointOp {
     pub fn is_silent(&self) -> bool {
         let zero = Rational64::new(0, 1);
-        self.fm == zero && self.fa < Rational64::new(20, 1) || self.g == zero
+        // A shut gate has to count as silence. `is_silent` is what feeds
+        // `next_l_silent` → `silence_next`, which is how the PREVIOUS note
+        // learns it may release — a note that never sounds must free its
+        // predecessor exactly the way an `Fm 0` does.
+        self.gate <= zero
+            || self.fm == zero && self.fa < Rational64::new(20, 1)
+            || self.g == zero
     }
 
     pub fn silence(&mut self) {
@@ -559,6 +586,9 @@ impl PointOp {
             },
             attack: self.attack * other.attack,
             decay: self.decay * other.decay,
+            sustain: self.sustain * other.sustain,
+            release: self.release * other.release,
+            gate: self.gate * other.gate,
             asr: other.asr,
             portamento: self.portamento * other.portamento,
             names,

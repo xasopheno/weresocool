@@ -1000,10 +1000,43 @@ pub fn validate_drum_preset<T>(
     }
 }
 
-/// Drum preset errors arrive as `location:preset:message` (see
-/// `validate_drum_preset`). Returns `(line, column, message)` when the
-/// User error is preset-shaped, mapping the location through the source
-/// map exactly like the color-error path does.
+/// Build an `EnvParams` from the key/value pairs inside `Env { … }`,
+/// rejecting any key that is not part of an envelope.
+///
+/// Drum parameter lists silently drop unknown keys; this does not. An
+/// envelope has five keys and a typo in one of them either changes the sound
+/// in a way you did not ask for or fails to change it at all — both are worse
+/// than a parse error naming the five.
+pub fn env_params_from_pairs<T>(
+    location: usize,
+    pairs: Vec<(String, num_rational::Rational64)>,
+) -> Result<weresocool_ast::EnvParams, lalrpop_util::ParseError<usize, T, String>> {
+    let mut params = weresocool_ast::EnvParams::default();
+    for (name, value) in pairs {
+        match name.as_str() {
+            "attack" => params.attack = Some(value),
+            "decay" => params.decay = Some(value),
+            "sustain" => params.sustain = Some(value),
+            "release" => params.release = Some(value),
+            "gate" => params.gate = Some(value),
+            _ => {
+                return Err(lalrpop_util::ParseError::User {
+                    error: format!(
+                        "{}:preset:`{}` is not part of an envelope — the keys \
+                         are attack, decay, sustain, release, gate",
+                        location, name
+                    ),
+                })
+            }
+        }
+    }
+    Ok(params)
+}
+
+/// Located parse errors arrive as `location:preset:message` (see
+/// `validate_drum_preset` and `env_params_from_pairs`). Returns
+/// `(line, column, message)` when the User error is that shape, mapping the
+/// location through the source map exactly like the color-error path does.
 fn extract_preset_error(
     err_str: &str,
     composition: &str,

@@ -96,6 +96,11 @@ mod tests {
                 reverb: None,
                 attack: 44_100.0,
                 decay: 44_100.0,
+                sustain: 1.0,
+                // Identity: one l-basis unit. An open gate leaves no room for
+                // it, so it never fires until a note is articulated short.
+                release: 44_100.0,
+                gate: 1.0,
                 asr: ASR::Long,
                 samples: 44_100,
                 total_samples: 44_100,
@@ -124,6 +129,11 @@ mod tests {
                 reverb: None,
                 attack: 44_100.0,
                 decay: 44_100.0,
+                sustain: 1.0,
+                // Identity: one l-basis unit. An open gate leaves no room for
+                // it, so it never fires until a note is articulated short.
+                release: 44_100.0,
+                gate: 1.0,
                 asr: ASR::Long,
                 samples: 44_100,
                 total_samples: 44_100,
@@ -153,6 +163,14 @@ mod tests {
                 reverb: None,
                 attack: 44_100.0,
                 decay: 44_100.0,
+                sustain: 1.0,
+                // Identity: one l-basis unit. An open gate leaves no room for
+                // it, so it never fires until a note is articulated short.
+                // The trailing silence is built by a constructor, not from a
+                // PointOp, so it carries the constructor's 0.0 rather than
+                // the score's identity.
+                release: 0.0,
+                gate: 1.0,
                 asr: ASR::Long,
                 samples: 44_100,
                 index: 0,

@@ -872,6 +872,34 @@ fn format_op<'a>(arena: &'a Arena<'a>, ctx: &FormatContext, op: &Op) -> DocBuild
                 .append(arena.text(asr_str))
         }
 
+        // The envelope. Only the keys that were written are printed, in the
+        // order they occur in the envelope itself rather than the order they
+        // were typed — an envelope reads as a shape, not as a diff.
+        Op::Env { params } => {
+            let written: Vec<(&str, &Rational64)> = [
+                ("attack", params.attack.as_ref()),
+                ("decay", params.decay.as_ref()),
+                ("sustain", params.sustain.as_ref()),
+                ("release", params.release.as_ref()),
+                ("gate", params.gate.as_ref()),
+            ]
+            .into_iter()
+            .filter_map(|(name, value)| value.map(|v| (name, v)))
+            .collect();
+
+            let mut doc = arena.text("Env { ");
+            for (i, (name, value)) in written.iter().enumerate() {
+                if i > 0 {
+                    doc = doc.append(arena.text(", "));
+                }
+                doc = doc
+                    .append(arena.text(*name))
+                    .append(arena.text(": "))
+                    .append(format_rational(arena, value));
+            }
+            doc.append(arena.text(" }"))
+        }
+
         // Collections
         // NOTE: Syntax preservation will be implemented in Phase 4 using FormatTree
         Op::Sequence { operations } => {

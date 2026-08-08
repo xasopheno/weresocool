@@ -138,6 +138,12 @@ pub enum Op {
         decay: Rational64,
         asr: ASR,
     },
+    /// The gain envelope. Every key is optional and MULTIPLIES what the point
+    /// already carries, so `Env` composes the way `Fm` and `Lm` do:
+    /// `Env { attack: 1/3 } | Env { attack: 1/2 }` is an attack of 1/6.
+    Env {
+        params: EnvParams,
+    },
     Portamento {
         m: Rational64,
     },
@@ -785,6 +791,43 @@ impl OscType {
 pub enum ASR {
     Short,
     Long,
+}
+
+/// The gain envelope, as written. Every key is optional — an absent key
+/// multiplies by nothing — and every value is a MULTIPLIER on what the point
+/// already carries, which is what makes `Env | Env` compose.
+///
+/// UNITS. `attack`, `decay` and `release` are in **l-basis units**: the `l` in
+/// the piece's header is the tempo knob, so speeding a piece up speeds its
+/// envelopes with it. They are not seconds (that would pin articulation to the
+/// wall clock) and not fractions of the note (that would make every note's
+/// attack scale with its own length). `sustain` is a LEVEL, a fraction of the
+/// note's peak gain. `gate` is a fraction of the NOTE — how much of it the key
+/// is held — because that is the articulation axis: staccato shortens
+/// proportionally.
+///
+/// Identity for every key is 1. `Env {}` and no `Env` at all are the same
+/// thing, and that identity is exactly the envelope this language had before
+/// `Env` existed: an attack of one l-unit, fit to the note.
+#[derive(Copy, Clone, Debug, Default, PartialEq, Serialize, Deserialize, Hash, Ord, PartialOrd, Eq)]
+pub struct EnvParams {
+    /// Time to climb from the gain this voice is already emitting to the
+    /// note's peak. Starting from where the voice IS, rather than from zero,
+    /// is what makes a note after a rest a true attack and a note joined to
+    /// its neighbour a glide.
+    pub attack: Option<Rational64>,
+    /// Time to fall from the peak to `sustain`. Consumes no time at all when
+    /// `sustain` is 1, since there is nothing to fall to.
+    pub decay: Option<Rational64>,
+    /// The level held between the decay and the gate closing.
+    pub sustain: Option<Rational64>,
+    /// Time to fall from `sustain` to silence once the gate closes. A `gate`
+    /// of 1 leaves no room for it, so a release only exists once you have
+    /// shortened the note.
+    pub release: Option<Rational64>,
+    /// The fraction of the note the key is held. Whatever is left after the
+    /// release is silence — and that silence is the articulation.
+    pub gate: Option<Rational64>,
 }
 
 /// Distortion effect type - stackable, applied after oscillator before filters

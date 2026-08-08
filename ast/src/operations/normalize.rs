@@ -301,6 +301,26 @@ impl Normalize for Op {
                 op.asr = *asr;
             }),
 
+            // Every key MULTIPLIES, which is what makes `Env | Env` compose
+            // the way `Fm | Fm` does. An absent key multiplies by nothing.
+            Op::Env { params } => input.fmap_mut(|op| {
+                if let Some(a) = params.attack {
+                    op.attack *= a;
+                }
+                if let Some(d) = params.decay {
+                    op.decay *= d;
+                }
+                if let Some(s) = params.sustain {
+                    op.sustain *= s;
+                }
+                if let Some(r) = params.release {
+                    op.release *= r;
+                }
+                if let Some(g) = params.gate {
+                    op.gate *= g;
+                }
+            }),
+
             Op::Portamento { m } => input.fmap_mut(|op| {
                 op.portamento *= m;
             }),

@@ -189,11 +189,14 @@ impl Voice {
         } else {
             self.note_start_gain
         };
-        let env_long = op.next_out() || self.asr == ASR::Long;
-        let env_silence_next = self.silence_next(op);
-        let env_attack = self.attack;
-        let env_decay = self.decay;
-        let env_total = op.total_samples();
+        let envelope = crate::envelope::Envelope::new(
+            op.envelope_attack(),
+            op.envelope_decay(),
+            op.envelope_sustain(),
+            op.envelope_release(),
+            op.envelope_gate(),
+            op.total_samples(),
+        );
 
         // self.reverb
         // .model
@@ -302,27 +305,7 @@ impl Voice {
             // NOTE — not within the buffer. `op_sample_index` is the offset of
             // this buffer inside the note, so `op_sample_index + index` is the
             // same number no matter how the note was sliced.
-            let env = if env_long {
-                crate::asr::calculate_long_gain(
-                    env_start,
-                    env_target,
-                    silence_now,
-                    op_sample_index + index,
-                    env_attack,
-                    env_decay,
-                    env_total,
-                )
-            } else {
-                crate::asr::calculate_short_gain(
-                    env_start,
-                    env_target,
-                    env_silence_next,
-                    op_sample_index + index,
-                    env_attack,
-                    env_decay,
-                    env_total,
-                )
-            };
+            let env = envelope.at(op_sample_index + index, env_start, env_target);
 
             // Exponential smoothing prevents pops on gain changes, but its
             // ~10 ms time constant flattens drum transients — without this
