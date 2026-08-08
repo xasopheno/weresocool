@@ -1,52 +1,20 @@
-use crate::{gain::gain_at_index, voice::Voice};
-use weresocool_ast::ASR;
+//! The gain envelope, as a pure function of position WITHIN THE NOTE.
+//!
+//! Nothing here may read a buffer length. These functions used to be reached
+//! through `Voice::calculate_op_gain`, called once per buffer with the index
+//! at the buffer's end — which made the envelope a block-rate staircase and,
+//! on the unchunked path, a single sample of itself. They are now called from
+//! inside the per-sample loop in `voice.rs` with `op.sample_index() + i`, the
+//! same note-scoped clock the drum oscillators have always used.
+//!
+//! `past_gain` is supplied by the caller in RENDERED gain space — the value
+//! the voice was actually emitting when this note began. Drums pass
+//! `past_gain == current_gain` on a note-on so the attack branch collapses to
+//! a no-op (their oscillators shape their own attack, and an outer ramp on top
+//! buries the transient), but NOT when fading into silence: there this ramp is
+//! the tail's fade-out, and flattening it would cut the ring dead.
 
-impl Voice {
-    pub fn calculate_op_gain(
-        &mut self,
-        next_out: bool,
-        silence_now: bool,
-        silence_next: bool,
-        index: usize,
-        total_length: usize,
-    ) -> f64 {
-        // Drums have internal envelopes that already shape the attack — an
-        // outer attack ramp on top buries the transient. On a note-on we pass
-        // past_gain = current_gain so `gain_at_index` in the attack branch
-        // becomes a no-op (start == target). But NOT when fading into silence
-        // (current gain ≈ 0): there the attack branch IS the fade-out ramp
-        // from the previous note's gain, and zeroing past_gain would cut the
-        // drum's ring-out dead instead of fading it.
-        let is_drum = self.osc_type.is_drum();
-        let past_gain = if is_drum && !silence_now {
-            self.current.gain
-        } else {
-            self.past.gain
-        };
-
-        if next_out || self.asr == ASR::Long {
-            calculate_long_gain(
-                past_gain,
-                self.current.gain,
-                silence_now,
-                index,
-                self.attack,
-                self.decay,
-                total_length,
-            )
-        } else {
-            calculate_short_gain(
-                past_gain,
-                self.current.gain,
-                silence_next,
-                index,
-                self.attack,
-                self.decay,
-                total_length,
-            )
-        }
-    }
-}
+use crate::gain::gain_at_index;
 
 /// Calculate gain when decay happens during current op
 pub fn calculate_short_gain(
