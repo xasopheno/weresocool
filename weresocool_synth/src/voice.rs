@@ -35,6 +35,11 @@ pub struct Voice {
     /// Latched once per note (at `sample_index == 0`), never per buffer — the
     /// whole point is that it does not move when the block size does.
     pub note_start_gain: f64,
+    /// The frequency this voice was emitting when the current note began — the
+    /// portamento glide's starting pitch. Latched with `note_start_gain`, and
+    /// for the same reason: the glide must be a property of the note, not of
+    /// however the audio device sliced it.
+    pub note_start_frequency: f64,
     pub drum_state: DrumState,  // Per-voice biquad filter states for drum synth
 }
 
@@ -112,6 +117,7 @@ impl Voice {
             osc_crossfade_index: 0,
             smoothed_gain: 0.0,
             note_start_gain: 0.0,
+            note_start_frequency: 0.0,
             drum_state: {
                 let mut s = DrumState::default();
                 s.voice_index = index as u32;
@@ -133,9 +139,24 @@ impl Voice {
     pub fn generate_waveform<Op: SynthOp>(&mut self, op: &Op, offset: &Offset) -> Vec<f64> {
         let mut buffer: Vec<f64> = vec![0.0; op.duration_samples()];
 
+        // THE GLIDE RUNS ON THE NOTE CLOCK TOO.
+        //
+        // This used to be `calculate_portamento_delta(len, offset_past.frequency,
+        // offset_current.frequency)`, stepped by the BUFFER-local index. Both
+        // halves were buffer-scoped: `offset_past.frequency` is the previous
+        // BUFFER's ending frequency, and the ramp restarted at index 0 every
+        // buffer, so each buffer covered `block/portamento_length` of whatever
+        // gap remained. That makes the glide an exponential approach whose time
+        // constant is set by the audio device's block size — the same defect
+        // the envelope had, in the other dimension.
+        //
+        // `note_start_frequency` is the pitch this voice was actually emitting
+        // when the note began, latched once. The ramp is a straight line from
+        // there to the target over `portamento_length`, indexed by position in
+        // the note, so it is the same line at any block size.
         let p_delta = self.calculate_portamento_delta(
             op.portamento(),
-            self.offset_past.frequency,
+            self.note_start_frequency,
             self.offset_current.frequency,
         );
 
@@ -205,7 +226,28 @@ impl Voice {
         // let apply_reverb = self.reverb.state.map_or(false, |s| s > 0.0);
 
         let sound_to_silence = self.sound_to_silence();
-        let silence_to_sound = self.silence_to_sound();
+
+        // DID THIS NOTE BEGIN FROM SILENCE?
+        //
+        // `silence_to_sound()` answers a narrower question: was the PREVIOUS
+        // OP's gain *parameter* zero. That was a good enough proxy while the
+        // only way to write a short note was to follow it with a rest — the
+        // rest was a real op with `g == 0`, so every note after one counted as
+        // a birth and skipped the portamento glide and got its phase seeded.
+        //
+        // `Env`'s gate breaks the proxy. A gated note has a perfectly ordinary
+        // gain parameter; it just stops sounding before its time is up. The
+        // note after it would glide up from the previous pitch, because by the
+        // parameters the two notes are adjacent — even though the voice has
+        // been silent for a third of a note. That is audible as a scoop into
+        // every note, and it is not what the score says.
+        //
+        // So ask the voice, not the parameters: `note_start_gain` is what this
+        // voice was ACTUALLY emitting when the note began. Near zero means it
+        // was silent, whatever the ops claim. The relative test is the same
+        // one the phase seed already used.
+        let silence_to_sound = self.silence_to_sound()
+            || self.note_start_gain.abs() <= 0.05 * env_target.abs();
 
         // Exponential smoothing coefficient for click-free gain transitions
         // ~500 samples (~11ms at 44.1kHz) to reach 63% of target
@@ -293,10 +335,12 @@ impl Voice {
             // Inlined `calculate_frequency` so the per-sample call doesn't
             // re-read `self.sound_to_silence()` / `self.silence_to_sound()`
             // each iteration (those bools are loop-invariant).
+            // Position within the NOTE, the same clock the envelope reads.
+            let pos = op_sample_index + index;
             let frequency = if sound_to_silence {
                 f_past
-            } else if index < portamento_length && !silence_to_sound {
-                (index as f64).mul_add(p_delta, f_past)
+            } else if pos < portamento_length && !silence_to_sound {
+                (pos as f64).mul_add(p_delta, self.note_start_frequency)
             } else {
                 f_target
             };
@@ -466,6 +510,7 @@ impl Voice {
             // actually rendered (written at the end of `generate_waveform`),
             // which is where the new note's attack has to begin.
             self.note_start_gain = self.offset_current.gain;
+            self.note_start_frequency = self.offset_current.frequency;
 
             self.update_current_and_past(op);
             self.update_osc_type(op);
@@ -498,6 +543,7 @@ impl Voice {
         self.current.frequency = 0.0;
         self.smoothed_gain = 0.0;
         self.note_start_gain = 0.0;
+        self.note_start_frequency = 0.0;
     }
 
     /// Re-latch this voice's per-op state (freq/gain/osc/envelope/filters)
@@ -511,6 +557,7 @@ impl Voice {
         // The voice was just re-init'd, so it is emitting nothing: the
         // envelope has to start from silence, not from a stale anchor.
         self.note_start_gain = 0.0;
+        self.note_start_frequency = 0.0;
         self.update_current_and_past(op);
         self.update_osc_type(op);
         self.update_attack_decay_asr(op);

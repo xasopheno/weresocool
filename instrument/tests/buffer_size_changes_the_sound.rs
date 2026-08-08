@@ -101,24 +101,29 @@ fn block_size_does_not_change_the_sound() {
     }
 }
 
-/// A note whose gain the envelope has to ramp INTO — the previous note's
-/// ending gain is the attack's starting point, and that anchor is latched once
-/// per note. If it were re-latched per buffer, chunked and whole would part
-/// company here even though the single-note test above passed.
+/// The same notes through ONE oscillator, which is how playback actually
+/// works — and the only way to exercise what happens ACROSS a note boundary.
+///
+/// This test used to build a fresh `Oscillator` per note. That made every note
+/// a voice birth, which silently skipped both things that carry state from one
+/// note to the next: the portamento glide (suppressed at a birth) and
+/// `note_start_gain` (zero at a birth). So it could not have caught a
+/// buffer-dependency in either, and one was there — portamento's ramp is
+/// indexed by the BUFFER, not the note. One oscillator, notes end to end.
 #[test]
 fn block_size_does_not_change_a_sequence() {
     Settings::init_test();
 
     let notes = [
         real_note(55.0, 0.25),
-        real_note(110.0, 0.25),
+        real_note(110.0, 0.25), // a pitch change, so portamento has work to do
         real_note(55.0, 0.5),
     ];
 
-    let reference: Vec<f64> = notes.iter().flat_map(|n| render(vec![n.clone()])).collect();
+    let reference = render(notes.iter().map(|n| n.clone()).collect());
 
     for block in [128usize, 256, 12288] {
-        let chunked: Vec<f64> = notes.iter().flat_map(|n| render(chunk(n, block))).collect();
+        let chunked = render(notes.iter().flat_map(|n| chunk(n, block)).collect());
         let diff = worst_diff(&reference, &chunked);
         assert!(
             diff < 1e-9,
@@ -126,4 +131,38 @@ fn block_size_does_not_change_a_sequence() {
              the same notes rendered whole (worst sample difference {diff:.6})",
         );
     }
+}
+
+/// A gated note is silent before its time is up. The note after it therefore
+/// begins from silence — no portamento glide up from the previous pitch — even
+/// though by the OPS the two are adjacent and neither has a zero gain.
+///
+/// This is what the `Fm 0` rests used to provide for free, and losing it was
+/// audible as a scoop into every note in lulupea.
+#[test]
+fn a_note_after_a_gated_one_does_not_glide() {
+    Settings::init_test();
+
+    let mut low = real_note(55.0, 0.25);
+    low.gate = 1.0 / 3.0; // sounds for a third, silent for the rest
+    let high = real_note(220.0, 0.25);
+
+    let buf = render(vec![low, high.clone()]);
+
+    // Frequency at the top of the second note, read off the zero crossings of
+    // its first 20 ms. A glide from 55 Hz would put this far below 220.
+    let sr = Settings::global().sample_rate;
+    let start = (0.25 * sr) as usize;
+    let window = &buf[start..start + (0.02 * sr) as usize];
+    let crossings = window
+        .windows(2)
+        .filter(|w| w[0] <= 0.0 && w[1] > 0.0)
+        .count();
+    let hz = crossings as f64 / 0.02;
+
+    assert!(
+        hz > 200.0,
+        "the note after a gated one glided instead of starting at pitch \
+         (measured {hz:.0} Hz, expected ~220)",
+    );
 }
