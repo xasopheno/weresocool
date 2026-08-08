@@ -308,6 +308,36 @@ pub fn zip_terms(
         );
     }
 
+    // THE TALEA DOES NOT CLOSE.
+    //
+    // A pattern of N steps over a subject of M events leaves the last cycle
+    // partial whenever N does not divide M. That is legitimate isorhythm on
+    // its own — the phase relationship is the point. It becomes a surprise the
+    // moment the zipped material is REPEATED, because `Repeat` copies what the
+    // zip already produced, so the talea restarts at step 0 in every copy and
+    // the seam gets two of the same step back to back:
+    //
+    //     Seq [5 notes] | Zip [Lm 11/20, Lm 9/20] | Repeat 2
+    //     0.55 0.45 0.55 0.45 0.55 │ 0.55 0.45 …
+    //                              ^ two longs, at the phrase boundary
+    //
+    // Repeating BEFORE the zip runs one talea across the whole thing and the
+    // seam disappears. That is a real compositional choice, not a bug, so this
+    // says what happened rather than changing it.
+    if pattern_events > 1 && subject_events > 1 && subject_events % pattern_events != 0 {
+        println!(
+            "{} Zip's talea has {} steps but the subject has {} events, so the \
+             cycle does not close ({} left over). Fine on its own — but a \
+             `Repeat` AFTER this zip restarts the talea each copy, which puts \
+             two of the same step together at the seam. `| Repeat n | Zip [...]` \
+             runs one talea across the whole phrase instead.",
+            "[check]".yellow().bold(),
+            pattern_events,
+            subject_events,
+            subject_events % pattern_events,
+        );
+    }
+
     for voice in subject.operations.iter_mut() {
         for (i, point) in voice.iter_mut().enumerate() {
             for pattern in &patterns {

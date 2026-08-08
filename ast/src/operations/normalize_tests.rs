@@ -550,6 +550,46 @@ pub mod tests {
         assert_eq!(input, expected);
     }
 
+    /// A two-step talea over an ODD number of events leaves the cycle open —
+    /// the last event takes step 0 again. This is what makes a later `Repeat`
+    /// put two identical steps at the phrase seam, and it is why `Repeat`
+    /// belongs BEFORE the zip when you want one talea across the whole thing.
+    #[test]
+    fn zip_over_an_odd_subject_leaves_the_cycle_open() {
+        let mut input = NormalForm::init();
+        let mut pt = make_parse_table();
+
+        Compose {
+            operations: vec![
+                Op(Sequence {
+                    operations: vec![
+                        Op(TransposeM { m: Ratio::new(1, 1) }),
+                        Op(TransposeM { m: Ratio::new(5, 4) }),
+                        Op(TransposeM { m: Ratio::new(3, 2) }),
+                    ],
+                }),
+                Op(Zip {
+                    operations: vec![
+                        Op(Length { m: Ratio::new(11, 20) }),
+                        Op(Length { m: Ratio::new(9, 20) }),
+                    ],
+                }),
+            ],
+        }
+        .apply_to_normal_form(&mut input, &mut pt)
+        .unwrap();
+
+        let lengths: Vec<Rational64> = input.operations[0].iter().map(|p| p.l).collect();
+        assert_eq!(
+            lengths,
+            vec![Ratio::new(11, 20), Ratio::new(9, 20), Ratio::new(11, 20)],
+            "three events against a two-step talea: long, short, long"
+        );
+        // And the form's length is the SUM of the per-slot products, not a
+        // product of ratios — 11/20 + 9/20 + 11/20, not 3 x anything.
+        assert_eq!(input.length_ratio, Ratio::new(31, 20));
+    }
+
     /// A written key multiplies; an absent key multiplies by nothing.
     #[test]
     fn normalize_env_only_touches_the_keys_that_were_written() {
