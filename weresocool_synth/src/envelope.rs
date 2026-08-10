@@ -62,10 +62,31 @@ impl Envelope {
         // rule below for no audible reason.
         let decay = if sustain >= 1.0 { 0 } else { decay.max(0.0) as usize };
 
-        // The release has to fit in what the gate left behind. `gate == total`
-        // — an unarticulated note — leaves nothing, so the note simply runs
-        // into the next one. That is legato, and it is the default.
-        let release = (release.max(0.0) as usize).min(total.saturating_sub(gate));
+        // THE RELEASE MAY NOT OUTLAST THE KEY PRESS.
+        //
+        // Two clamps, and the second one exists because the first was not
+        // enough. `total - gate` keeps the release inside the note. But
+        // `release`'s identity is ONE L-BASIS UNIT — the same identity every
+        // other key has — and one l-unit is enormous next to a gated note. So
+        // `Env { gate: 1/3 }` on its own used to ramp up over the first third
+        // and then take a full unit to fall, which for any note of an l-unit
+        // or less meant the sound filled the WHOLE note and the gate did
+        // nothing audible. Shorter notes got no silence at all while longer
+        // ones did, so the articulation changed with the note length — which
+        // under a `Zip` means it changes note to note.
+        //
+        // Clamping to the gate makes the identity case exactly the idiom this
+        // op replaced: rise over `gate`, fall over `gate`, silence for the
+        // rest. `Env { gate: 1/3 }` IS `Seq [Fm 1, Fm 0, Fm 0] | Lm 1/3`.
+        //
+        // The cost, stated plainly: a short key press with a long tail — a
+        // piano — cannot be written yet. `Env { gate: 1/4, release: 2 }` gets
+        // its release cut to a quarter of the note. Lifting that needs a
+        // release that can ring past its own note, which the renderer cannot
+        // do today (a voice renders one op at a time).
+        let release = (release.max(0.0) as usize)
+            .min(total.saturating_sub(gate))
+            .min(gate.max(1));
 
         // Everything that sounds has to fit inside the gate. Scaling both
         // rather than truncating one keeps the envelope's SHAPE when a note is
@@ -157,6 +178,49 @@ mod test {
         assert!((e.at(3000, 0.0, 1.0) - 0.5).abs() < 0.01); // mid-release
         assert_eq!(e.at(4001, 0.0, 1.0), 0.0); // and then nothing
         assert_eq!(e.at(total - 1, 0.0, 1.0), 0.0);
+    }
+
+    /// `Env { gate: 1/3 }` and nothing else has to produce a SHORT note. Every
+    /// key's identity is 1, and for `release` that is one l-basis unit — long
+    /// enough to swallow a whole note, which made a bare gate inaudible.
+    #[test]
+    fn a_bare_gate_actually_shortens_the_note() {
+        let total = 9000;
+        // Identity everywhere except the gate: attack, decay, sustain and
+        // release all 1, exactly as `Env { gate: 1/3 }` normalizes.
+        let e = Envelope::new(SR, SR, 1.0, SR, 1.0 / 3.0, total);
+
+        let third = total / 3;
+        assert!(
+            (e.at(third, 0.0, 1.0) - 1.0).abs() < 0.01,
+            "the note should peak as the gate closes"
+        );
+        assert!(
+            e.at(2 * third + 100, 0.0, 1.0) < 1e-9,
+            "and be silent for the last third — a bare gate that leaves no \
+             silence is a gate that does nothing"
+        );
+        // Which is precisely the three-event idiom `Env` replaced:
+        // rise over a third, fall over a third, rest for a third.
+        assert!((e.at(third + third / 2, 0.0, 1.0) - 0.5).abs() < 0.02);
+    }
+
+    /// The same articulation on notes of different lengths has to leave the
+    /// same PROPORTION of silence, or a `Zip` (which varies note length) makes
+    /// the articulation wander note to note.
+    #[test]
+    fn a_gate_is_proportional_across_note_lengths() {
+        for total in [3000usize, 9000, 30000] {
+            let e = Envelope::new(SR, SR, 1.0, SR, 1.0 / 3.0, total);
+            let sounding = (0..total).filter(|i| e.at(*i, 0.0, 1.0) > 1e-9).count();
+            let ratio = sounding as f64 / total as f64;
+            assert!(
+                (ratio - 2.0 / 3.0).abs() < 0.05,
+                "a note of {total} samples sounded for {:.0}% of its length; \
+                 gate 1/3 should always sound for about two thirds",
+                ratio * 100.0
+            );
+        }
     }
 
     #[test]
