@@ -166,3 +166,49 @@ fn a_note_after_a_gated_one_does_not_glide() {
          (measured {hz:.0} Hz, expected ~220)",
     );
 }
+
+/// A NOTE IS NOT AN EVENT.
+///
+/// `ModBy` subdivides — it cuts an event wherever a modulator boundary falls,
+/// so one written note arrives as several adjacent PointOps with identical
+/// pitch and gain. That was invisible while notes were legato: the pieces ran
+/// together and you heard one note. `Env`'s gate made it audible and wrong —
+/// each piece got its own attack, release and silence, so a single written
+/// note sounded twice, in the same place, every cycle.
+///
+/// Adjacent events that agree on everything the ear can hear are ONE note:
+/// they share a `total_samples` and are distinguished by `note_offset`, so the
+/// envelope spans the note as written rather than re-articulating each piece.
+#[test]
+fn a_subdivided_note_is_articulated_once() {
+    Settings::init_test();
+
+    let sr = Settings::global().sample_rate;
+    let whole = (0.5 * sr).round() as usize;
+
+    // The same note, cut in two the way `ModBy` cuts it.
+    let half = whole / 2;
+    let mut a = real_note(220.0, 0.25);
+    let mut b = real_note(220.0, 0.25);
+    for (op, off) in [(&mut a, 0usize), (&mut b, half)] {
+        op.samples = half;
+        op.total_samples = whole; // ONE note...
+        op.note_offset = off; // ...in two pieces
+        op.gate = 1.0 / 3.0;
+    }
+
+    let split = render(vec![a, b]);
+
+    // And the same note, written as one event.
+    let mut single = real_note(220.0, 0.5);
+    single.gate = 1.0 / 3.0;
+    let intact = render(vec![single]);
+
+    let diff = worst_diff(&intact, &split);
+    assert!(
+        diff < 1e-9,
+        "a note cut in two by a modulator sounded different from the same note \
+         written whole (worst sample difference {diff:.6}) — the gate \
+         re-articulated the second piece",
+    );
+}

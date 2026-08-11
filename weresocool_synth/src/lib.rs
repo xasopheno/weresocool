@@ -64,6 +64,11 @@ pub trait SynthOp: Send + Sync {
     /// Decay envelope duration in samples
     fn envelope_decay(&self) -> f64;
 
+    /// Where this event starts inside its note (see `RenderOp.note_offset`).
+    fn note_offset(&self) -> usize {
+        0
+    }
+
     /// Level held after the decay, as a fraction of the note's peak gain.
     fn envelope_sustain(&self) -> f64 {
         1.0

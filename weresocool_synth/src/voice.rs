@@ -219,6 +219,31 @@ impl Voice {
             op.total_samples(),
         );
 
+        // DIAGNOSTIC (WSC_STEP=<threshold>, off unless set). The envelope is a
+        // pure function of note position; `offset_current.gain` is what this
+        // voice ACTUALLY emitted on its last sample. Those two must agree at a
+        // buffer boundary, or the output steps — which is a click. Anything
+        // this prints is a real defect, not a rounding artifact.
+        {
+            if let Ok(t) = std::env::var("WSC_STEP") {
+                let thr: f64 = t.parse().unwrap_or(0.01);
+                let first = envelope.at(op.sample_index(), env_start, env_target);
+                let last = self.offset_current.gain;
+                if (first - last).abs() > thr {
+                    println!(
+                        "[step] voice {} note_pos {} of {}  emitted {:.4} -> envelope {:.4}  (jump {:.4})  f={:.1}",
+                        self.index,
+                        op.sample_index(),
+                        op.total_samples(),
+                        last,
+                        first,
+                        first - last,
+                        self.offset_current.frequency,
+                    );
+                }
+            }
+        }
+
         // self.reverb
         // .model
         // .update(self.current.reverb.unwrap_or(0.0) as f32);
@@ -275,7 +300,7 @@ impl Voice {
         let duration_samples = op.duration_samples();
         let last_sample_index = duration_samples.saturating_sub(1);
         let total_samples_for_info = op.total_samples();
-        let op_sample_index = op.sample_index();
+        let op_sample_index = op.note_offset() + op.sample_index();
         let f_past = self.offset_past.frequency;
         // `f_target` is only mutated on the loop's final iteration via the
         // index == last_sample_index branch — we replicate that update
