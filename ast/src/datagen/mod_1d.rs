@@ -116,6 +116,7 @@ pub fn eeg_datum_to_point_op(
         release: Ratio::new(1, 1),
         gate: Ratio::new(1, 1),
         asr: ASR::Long,
+        continues: false,
         portamento: Ratio::new(1, 1),
         reverb: None,
         osc_type: OscType::None,

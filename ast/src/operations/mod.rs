@@ -192,6 +192,12 @@ pub struct PointOp {
     pub gate: Rational64,
     /// Attack/Sustain/Release Type
     pub asr: ASR,
+    /// This event is the CONTINUATION of the one before it — the middle of a
+    /// note that a modulator cut, not a note of its own. Set only by
+    /// `helpers::modulate`, which is the only code that knows. The renderer
+    /// uses it to give the whole run one envelope; without it a gated note
+    /// re-articulates at every cut, which is audible as a flutter.
+    pub continues: bool,
     /// Portamento Length
     pub portamento: Rational64,
     /// Reverb Multiplier
@@ -235,6 +241,7 @@ impl Default for PointOp {
             release: Ratio::new(1, 1),
             gate: Ratio::new(1, 1),
             asr: ASR::Long,
+            continues: false,
             portamento: Ratio::new(1, 1),
             osc_type: OscType::None,
             names: NameSet::new(),
@@ -410,6 +417,10 @@ impl Mul<PointOp> for PointOp {
             release: self.release * other.release,
             gate: self.gate * other.gate,
             asr: other.asr,
+            // EITHER side: composition (Overlay, Compose, Seq) puts the
+            // modulated point on the right as often as the left, and an
+            // identity point on the other side would otherwise erase the mark.
+            continues: self.continues || other.continues,
             portamento: self.portamento * other.portamento,
             names,
             filters: self
@@ -466,6 +477,10 @@ impl<'a> Mul<&'a PointOp> for &PointOp {
             release: self.release * other.release,
             gate: self.gate * other.gate,
             asr: other.asr,
+            // EITHER side: composition (Overlay, Compose, Seq) puts the
+            // modulated point on the right as often as the left, and an
+            // identity point on the other side would otherwise erase the mark.
+            continues: self.continues || other.continues,
             portamento: self.portamento * other.portamento,
             names,
             filters: self
@@ -520,6 +535,10 @@ impl MulAssign for PointOp {
             release: self.release * other.release,
             gate: self.gate * other.gate,
             asr: other.asr,
+            // EITHER side: composition (Overlay, Compose, Seq) puts the
+            // modulated point on the right as often as the left, and an
+            // identity point on the other side would otherwise erase the mark.
+            continues: self.continues || other.continues,
             portamento: self.portamento * other.portamento,
             names,
             filters: self
@@ -590,6 +609,10 @@ impl PointOp {
             release: self.release * other.release,
             gate: self.gate * other.gate,
             asr: other.asr,
+            // EITHER side: composition (Overlay, Compose, Seq) puts the
+            // modulated point on the right as often as the left, and an
+            // identity point on the other side would otherwise erase the mark.
+            continues: self.continues || other.continues,
             portamento: self.portamento * other.portamento,
             names,
             filters: self

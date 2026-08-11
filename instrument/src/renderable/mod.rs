@@ -52,6 +52,9 @@ pub struct RenderOp {
     /// that is a single event, which is almost all of them.
     #[serde(default)]
     pub note_offset: usize,
+    /// This event continues the previous one — see `PointOp.continues`.
+    #[serde(default)]
+    pub continues: bool,
     pub samples: usize,
     pub index: usize,
     pub total_samples: usize,
@@ -196,6 +199,7 @@ impl RenderOp {
             gate: 1.0,
             asr: ASR::Long,
             note_offset: 0,
+            continues: false,
             samples: s,
             total_samples: s,
             index: 0,
@@ -231,6 +235,7 @@ impl RenderOp {
             gate: 1.0,
             asr: ASR::Long,
             note_offset: 0,
+            continues: false,
             samples: settings.sample_rate as usize,
             total_samples: settings.sample_rate as usize,
             index: 0,
@@ -265,6 +270,7 @@ impl RenderOp {
             gate: 1.0,
             asr: ASR::Long,
             note_offset: 0,
+            continues: false,
             samples: Settings::global().sample_rate as usize,
             total_samples: Settings::global().sample_rate as usize,
             index: 0,
@@ -306,6 +312,7 @@ impl RenderOp {
             gate: 1.0,
             asr: ASR::Long,
             note_offset: 0,
+            continues: false,
             samples: sample_rate as usize,
             total_samples: sample_rate as usize,
             index: 0,
@@ -561,6 +568,7 @@ fn pointop_to_renderop(
         // scales with the note rather than with the piece.
         gate: r_to_f64(point_op.gate).clamp(0.0, 1.0),
         note_offset: 0,
+        continues: point_op.continues,
         osc_type: point_op.osc_type.clone(),
         asr: point_op.asr,
         portamento: (r_to_f64(point_op.portamento) * 1024_f64) as usize,
@@ -783,23 +791,12 @@ fn create_render_ops(
     // nothing about scheduling, visuals or event counts moves.
     let mut run_start = 0usize;
     for i in 1..=result.len() {
-        let ends_run = i == result.len() || {
-            let (a, b) = (&result[i - 1], &result[i]);
-            // Deliberately NOT comparing `samples` or `t` — those differ by
-            // construction. `next_*_silent` is excluded too: it describes the
-            // run's neighbours, and only the last event of a run has the
-            // right answer.
-            !((a.f - b.f).abs() < f64::EPSILON
-                && a.g == b.g
-                && a.gain_scalar == b.gain_scalar
-                && a.osc_type == b.osc_type
-                && (a.attack - b.attack).abs() < f64::EPSILON
-                && (a.decay - b.decay).abs() < f64::EPSILON
-                && (a.sustain - b.sustain).abs() < f64::EPSILON
-                && (a.release - b.release).abs() < f64::EPSILON
-                && (a.gate - b.gate).abs() < f64::EPSILON
-                && a.asr == b.asr)
-        };
+        // A run ends where the next event is NOT marked as a continuation.
+        // This is the composer's structure, not a guess from field values: an
+        // earlier version compared pitch and gain, which merged the easy cases
+        // and missed exactly the ones that matter — a modulator that changes
+        // the note's gain partway is precisely where the pieces differ.
+        let ends_run = i == result.len() || !result[i].continues;
 
         if ends_run {
             if i - run_start > 1 {

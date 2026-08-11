@@ -966,6 +966,11 @@ pub mod tests {
                     fm: Ratio::new(9, 8),
                     g: Ratio::new(1, 2),
                     l: Ratio::new(1, 2),
+                    // The modulator cut the `9/8` note in half and dropped the
+                    // gain on the second piece. That piece is the MIDDLE of a
+                    // note, not a note — which is exactly what a renderer needs
+                    // to know before it articulates one.
+                    continues: true,
                     ..PointOp::init()
                 },
                 PointOp {

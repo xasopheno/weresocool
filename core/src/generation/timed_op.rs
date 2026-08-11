@@ -93,6 +93,8 @@ impl TimedOp {
             release: Rational64::new(1, 1),
             gate: Rational64::new(1, 1),
             asr: self.asr,
+            // TimedOp is the JSON/CSV shape and carries no subdivision info.
+            continues: false,
             portamento: self.portamento,
             osc_type: self.osc_type.clone(),
             names: NameSet::new(),

@@ -33,7 +33,23 @@ mod generated_tests {
         };
 
         println!("\n\n\t{}\n\n", input);
-        assert_eq!(nf, expected.clone());
+
+        // `continues` is DERIVED, not authored: `helpers::modulate` sets it on
+        // the pieces of a note it cut, and there is no `.socool` syntax for it,
+        // so an `expect` block can never carry it. These tests compare musical
+        // content; the marker is a renderer hint about structure. Normalize it
+        // away on both sides rather than leave every ModBy mock permanently red.
+        let mut nf = nf;
+        let mut expected = expected.clone();
+        for form in [&mut nf, &mut expected] {
+            for voice in form.operations.iter_mut() {
+                for point in voice.iter_mut() {
+                    point.continues = false;
+                }
+            }
+        }
+
+        assert_eq!(nf, expected);
         Ok(())
     }
 

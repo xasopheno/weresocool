@@ -33,7 +33,7 @@ fn dump_events() {
                 p.fa,
                 p.g,
                 p.gate,
-                if p.is_silent() { "SILENT" } else { "" },
+                if p.continues { "CONTINUES" } else if p.is_silent() { "SILENT" } else { "" },
             );
             t += p.l;
         }
