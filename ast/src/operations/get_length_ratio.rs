@@ -127,49 +127,7 @@ impl GetLengthRatio for Op {
                 Ok(new_total)
             }
 
-            // Zip's length cannot be derived from its operands' length
-            // ratios: it is the sum of PER-SLOT products, so it depends on
-            // which pattern event each subject event happens to land on.
-            // The zip has to actually run. `WithLengthRatioOf` and
-            // `ModulateBy` already pay this cost.
-            Op::Zip { operations } => {
-                if operations.is_empty() {
-                    return Ok(Rational64::from_integer(1));
-                }
-                let saved_rand_ctx = defs.rand_ctx;
-                let zipped = zip_terms(operations, normal_form, defs)?;
-                defs.rand_ctx = saved_rand_ctx;
-                if normal_form.length_ratio == Rational64::from_integer(0) {
-                    return Ok(zipped.length_ratio);
-                }
-                Ok(zipped.length_ratio / normal_form.length_ratio)
-            }
-
             Op::Compose { operations, .. } => {
-                // The product below assumes every operand's length ratio is
-                // INDEPENDENT of what the operand is applied to — true for
-                // `Lm 2`, `Seq [...]`, and everything else in the language.
-                //
-                // `Zip` breaks that: its ratio depends on how many events the
-                // subject has, and inside a chain the subject is the previous
-                // operand's output, not this chain's input. Asking a `Zip` for
-                // its ratio against the wrong form gives the wrong number
-                // (`Seq [5 events] | Zip [Lm 3, Lm 1/2]` came out 15 instead
-                // of 10), so a chain containing one has to be run instead of
-                // multiplied out.
-                if operations
-                    .iter()
-                    .any(|t| matches!(t, Term::Op(Op::Zip { .. })))
-                {
-                    let mut measured = normal_form.clone();
-                    self.apply_to_normal_form(&mut measured, defs)?;
-                    return if normal_form.length_ratio == Rational64::from_integer(0) {
-                        Ok(measured.length_ratio)
-                    } else {
-                        Ok(measured.length_ratio / normal_form.length_ratio)
-                    };
-                }
-
                 let mut new_total = Ratio::from_integer(1);
                 for operation in operations {
                     new_total *= operation.get_length_ratio(normal_form, defs)?;

@@ -142,11 +142,5 @@
     "normal_form": 13463827947679756994,
     "stereo_waveform": -0.418864025,
     "pop_check": true
-  },
-  "./src/testing/snapshot_tests/zip.socool": {
-    "op": 12879103100163319330,
-    "normal_form": 7055978768295018816,
-    "stereo_waveform": -0.528123208,
-    "pop_check": true
   }
 }

@@ -200,19 +200,6 @@ pub enum Op {
     Overlay {
         operations: Vec<Term>,
     },
-    /// ISORHYTHM — run a rhythm under a melody. `Seq` concatenates and
-    /// `Overlay` stacks; `Zip` applies its bracket list to the subject's
-    /// events IN TURN, cycling when the list runs short. The list IS the
-    /// rhythm, one step per element: `tune | Zip [Lm 3, Lm 1]` is long,
-    /// short, long, short. Swing is `Zip [Lm 4/3, Lm 2/3]`.
-    ///
-    /// The subject arrives through the pipe, because Zip never adds or
-    /// removes events — it is a modifier like `Lm`, not a constructor like
-    /// `Seq`. Several cycles at once is what chaining is for; each `Zip` is
-    /// one talea. See `helpers::zip_terms` for the whole argument.
-    Zip {
-        operations: Vec<Term>,
-    },
     Compose {
         operations: Vec<Term>,
     },

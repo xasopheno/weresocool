@@ -94,9 +94,6 @@ impl Substitute for Op {
             Op::Overlay { operations } => Ok(Term::Op(Op::Overlay {
                 operations: substitute_operations(operations.to_vec(), normal_form, defs)?,
             })),
-            Op::Zip { operations } => Ok(Term::Op(Op::Zip {
-                operations: substitute_operations(operations.to_vec(), normal_form, defs)?,
-            })),
             Op::Compose { operations } => Ok(Term::Op(Op::Compose {
                 operations: substitute_operations(operations.to_vec(), normal_form, defs)?,
             })),
@@ -136,63 +133,7 @@ impl Substitute for Op {
                     scope: scope.into(),
                 }))
             }
-            // LEAVES — ops with no operands to descend into, so substituting
-            // one is substituting nothing. Listed rather than caught by a
-            // `_` arm ON PURPOSE: this match is the only place a container
-            // op's children get resolved, and a `_` here does not fail to
-            // build when a new container forgets its arm — it silently stops
-            // substituting that op's operands, so the op works everywhere
-            // except inside a lambda or a function call. Exhaustive means the
-            // next one is a compile error in this file instead.
-            Op::AsIs
-            | Op::Start
-            | Op::Mute
-            | Op::Out
-            | Op::Noise
-            | Op::Saw
-            | Op::Reverse
-            | Op::FInvert
-            | Op::Ext(..)
-            | Op::Follow(..)
-            | Op::Tag(..)
-            | Op::Keeper(..)
-            | Op::CSV1d { .. }
-            | Op::CSV2d { .. }
-            | Op::FromSound { .. }
-            | Op::FromSoundYin { .. }
-            | Op::Perform { .. }
-            | Op::FMOsc { .. }
-            | Op::Lowpass { .. }
-            | Op::Highpass { .. }
-            | Op::Bandpass { .. }
-            | Op::Sine { .. }
-            | Op::Triangle { .. }
-            | Op::Square { .. }
-            | Op::Kick { .. }
-            | Op::Snare { .. }
-            | Op::HiHat { .. }
-            | Op::Clap { .. }
-            | Op::Rimshot { .. }
-            | Op::Tom { .. }
-            | Op::Ride { .. }
-            | Op::Crash { .. }
-            | Op::Shaker { .. }
-            | Op::Cowbell { .. }
-            | Op::AD { .. }
-            | Op::Portamento { .. }
-            | Op::Silence { .. }
-            | Op::TransposeM { .. }
-            | Op::TransposeA { .. }
-            | Op::PanM { .. }
-            | Op::PanA { .. }
-            | Op::Gain { .. }
-            | Op::Length { .. }
-            | Op::Reverb { .. }
-            | Op::Wavefolder { .. }
-            | Op::SoftClip { .. }
-            | Op::Overdrive { .. }
-            | Op::Bitcrusher { .. }
-            | Op::Tanh { .. } => Ok(Term::Op(self.clone())),
+            _ => Ok(Term::Op(self.clone())),
         }
     }
 }
