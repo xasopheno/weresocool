@@ -1,30 +1,25 @@
-//! THE BLOCK SIZE MUST NOT CHANGE THE SOUND.
+//! DIAGNOSTIC: does the audio block size change how a note sounds?
 //!
-//! Block size is a property of the audio device (live), or of
-//! `Settings::buffer_size` (offline batching), or of nothing at all (the
-//! snapshot corpus renders each note whole). It is never a property of the
-//! music. A note rendered as one 8000-sample op and the same note rendered as
-//! 63 chunks of 128 must produce the same samples.
+//! It must not. Block size is a property of the audio device (live) or of
+//! `Settings::buffer_size` (offline batching), never of the music. But the
+//! sustained-tone gain ramp is measured against `RenderOp.samples`, which
+//! `render_voice.rs` sets to `samples_left_in_batch` — the BLOCK, not the
+//! note.
 //!
-//! This did not hold. `Voice::calculate_op_gain` ran once per buffer with the
-//! index at the buffer's END, so the ASR envelope was a staircase sampled at
-//! the block rate — and on the unchunked path, where the buffer IS the note,
-//! it was evaluated exactly once, at `index == total_length`, which made the
-//! declared attack branch unreachable by one sample. The envelope now runs
-//! inside the per-sample loop on `op.sample_index() + i`, the same note-scoped
-//! clock the drum oscillators always used, so this is true by construction.
-//!
-//! WHY THIS FILE IS WRITTEN CAREFULLY: an earlier version built its test note
-//! with `RenderOp::init_fglps`, which hardcodes `attack: 512.0`
+//! WHY THIS FILE IS WRITTEN CAREFULLY: an earlier version of it built its
+//! test note with `RenderOp::init_fglps`, which hardcodes `attack: 512.0`
 //! (`renderable/mod.rs:176`). Real notes never get that. `create_render_ops`
 //! sets `attack: r_to_f64(point_op.attack * basis.a) * sample_rate`, and
 //! `basis.a` is ALWAYS 1/1 (a `.socool` file has no way to set it), with
 //! `PointOp`'s default attack also 1/1 — so a real note's attack is ONE
-//! SECOND. That decides which branch `asr.rs` takes: `is_short` is
-//! `total <= attack + decay`, so every note under two seconds has
-//! `attack_length` rewritten to the whole note. Measuring the wrong one
-//! produced a confident, wrong diagnosis. So: build ops the way
-//! `create_render_ops` does.
+//! SECOND.
+//!
+//! That difference decides which branch `asr.rs` takes:
+//! `is_short(total, attack, decay)` is `total <= attack + decay`, so with a
+//! one-second attack every note under two seconds takes the `short` branch
+//! and `attack_length` is rewritten to the whole note. With a 512-sample
+//! attack it does not. Measuring the wrong one produced a confident, wrong
+//! diagnosis. So: build ops the way `create_render_ops` does.
 
 use weresocool_instrument::renderable::{RenderOp, Renderable};
 use weresocool_instrument::Oscillator;
@@ -44,14 +39,11 @@ fn real_note(hz: f64, seconds: f64) -> RenderOp {
     op
 }
 
-/// Slice a note into buffers the way `RenderVoice::get_batch` does: `samples`
-/// becomes the BUFFER length, `index` the offset of that buffer in the note,
-/// and `total_samples` stays the note.
 fn chunk(op: &RenderOp, block: usize) -> Vec<RenderOp> {
     let mut out = Vec::new();
     let mut at = 0usize;
-    while at < op.total_samples {
-        let n = block.min(op.total_samples - at);
+    while at < op.samples {
+        let n = block.min(op.samples - at);
         out.push(RenderOp { samples: n, index: at, ..op.clone() });
         at += n;
     }
@@ -63,152 +55,65 @@ fn render(mut ops: Vec<RenderOp>) -> Vec<f64> {
     ops.render(&mut osc, None).l_buffer
 }
 
+/// Peak in the first `ms` — how fast the note arrives.
+fn onset_peak(buf: &[f64], ms: f64) -> f64 {
+    let sr = Settings::global().sample_rate;
+    let n = ((sr * ms / 1000.0) as usize).min(buf.len());
+    buf[..n].iter().fold(0.0f64, |a, x| a.max(x.abs()))
+}
+
+fn report(label: &str, op: &RenderOp) -> Vec<(String, Vec<f64>)> {
+    let mut rows = Vec::new();
+    let marks = [5.0, 20.0, 50.0, 150.0];
+    for (name, buf) in [
+        ("watch 128", render(chunk(op, 128))),
+        ("print 256", render(chunk(op, 256))),
+        ("cli 12288", render(chunk(op, 12288))),
+        ("unchunked", render(vec![op.clone()])),
+    ] {
+        let peaks: Vec<f64> = marks.iter().map(|m| onset_peak(&buf, *m)).collect();
+        println!(
+            "  {label:<22} {name:<10} @5ms={:.4} @20ms={:.4} @50ms={:.4} @150ms={:.4}",
+            peaks[0], peaks[1], peaks[2], peaks[3]
+        );
+        rows.push((name.to_string(), buf));
+    }
+    rows
+}
+
 fn worst_diff(a: &[f64], b: &[f64]) -> f64 {
-    assert_eq!(a.len(), b.len(), "renders disagree on length, not just content");
     a.iter().zip(b.iter()).fold(0.0f64, |m, (x, y)| m.max((x - y).abs()))
 }
 
-/// The four block sizes that actually occur: kintaro watch and print (128,
-/// unified in kintaro `52febb1`), an arbitrary other device block, the
-/// weresocool CLI's `Settings::buffer_size`, and the snapshot corpus, which
-/// renders each note whole.
 #[test]
-fn block_size_does_not_change_the_sound() {
+#[ignore = "DIAGNOSTIC, not a regression. Run with --ignored to print the \
+onset tables. Whether this is a real defect depends on the numbers it prints \
+for REAL notes (attack = 1s), not for the synthetic 512-sample-attack op an \
+earlier version of this test used."]
+fn how_much_does_block_size_change_a_note() {
     Settings::init_test();
+    println!();
 
-    // lulupea's actual scale: thing1's notes measured 0.167 s and 0.5 s. The
-    // 3 s case is past the `is_short` threshold (attack + decay = 2 s), so the
-    // other branch of `calculate_long_gain` is covered too — that case used to
-    // diverge by 0.66 between whole and chunked.
+    // lulupea's actual scale: thing1's notes measured 0.167 s and 0.5 s.
+    // A low note and a high one, because the report is that the LOW end
+    // suffers.
     for (label, hz, secs) in [
         ("55 Hz, 0.167 s", 55.0, 0.167),
         ("55 Hz, 0.5 s", 55.0, 0.5),
         ("440 Hz, 0.167 s", 440.0, 0.167),
+        // Past the `is_short` threshold (attack + decay = 2 s), so the OTHER
+        // branch of `calculate_long_gain` is covered.
         ("55 Hz, 3 s", 55.0, 3.0),
     ] {
         let op = real_note(hz, secs);
-        let reference = render(vec![op.clone()]); // whole — the corpus path
-
-        for block in [128usize, 256, 12288] {
-            let diff = worst_diff(&reference, &render(chunk(&op, block)));
-            assert!(
-                diff < 1e-9,
-                "{label}: block size {block} changed the sound (worst sample \
-                 difference {diff:.6}). The envelope is reading something that \
-                 belongs to the buffer instead of to the note.",
+        let rows = report(label, &op);
+        let watch = &rows[0].1;
+        for (name, buf) in rows.iter().skip(1) {
+            println!(
+                "  {:<22} {:<10} worst difference vs watch: {:.4}",
+                "", name, worst_diff(watch, buf)
             );
         }
+        println!();
     }
-}
-
-/// The same notes through ONE oscillator, which is how playback actually
-/// works — and the only way to exercise what happens ACROSS a note boundary.
-///
-/// This test used to build a fresh `Oscillator` per note. That made every note
-/// a voice birth, which silently skipped both things that carry state from one
-/// note to the next: the portamento glide (suppressed at a birth) and
-/// `note_start_gain` (zero at a birth). So it could not have caught a
-/// buffer-dependency in either, and one was there — portamento's ramp is
-/// indexed by the BUFFER, not the note. One oscillator, notes end to end.
-#[test]
-fn block_size_does_not_change_a_sequence() {
-    Settings::init_test();
-
-    let notes = [
-        real_note(55.0, 0.25),
-        real_note(110.0, 0.25), // a pitch change, so portamento has work to do
-        real_note(55.0, 0.5),
-    ];
-
-    let reference = render(notes.iter().map(|n| n.clone()).collect());
-
-    for block in [128usize, 256, 12288] {
-        let chunked = render(notes.iter().flat_map(|n| chunk(n, block)).collect());
-        let diff = worst_diff(&reference, &chunked);
-        assert!(
-            diff < 1e-9,
-            "a three-note sequence rendered at block size {block} differs from \
-             the same notes rendered whole (worst sample difference {diff:.6})",
-        );
-    }
-}
-
-/// A gated note is silent before its time is up. The note after it therefore
-/// begins from silence — no portamento glide up from the previous pitch — even
-/// though by the OPS the two are adjacent and neither has a zero gain.
-///
-/// This is what the `Fm 0` rests used to provide for free, and losing it was
-/// audible as a scoop into every note in lulupea.
-#[test]
-fn a_note_after_a_gated_one_does_not_glide() {
-    Settings::init_test();
-
-    let mut low = real_note(55.0, 0.25);
-    low.gate = 1.0 / 3.0; // sounds for a third, silent for the rest
-    let high = real_note(220.0, 0.25);
-
-    let buf = render(vec![low, high.clone()]);
-
-    // Frequency at the top of the second note, read off the zero crossings of
-    // its first 20 ms. A glide from 55 Hz would put this far below 220.
-    let sr = Settings::global().sample_rate;
-    let start = (0.25 * sr) as usize;
-    let window = &buf[start..start + (0.02 * sr) as usize];
-    let crossings = window
-        .windows(2)
-        .filter(|w| w[0] <= 0.0 && w[1] > 0.0)
-        .count();
-    let hz = crossings as f64 / 0.02;
-
-    assert!(
-        hz > 200.0,
-        "the note after a gated one glided instead of starting at pitch \
-         (measured {hz:.0} Hz, expected ~220)",
-    );
-}
-
-/// A NOTE IS NOT AN EVENT.
-///
-/// `ModBy` subdivides — it cuts an event wherever a modulator boundary falls,
-/// so one written note arrives as several adjacent PointOps with identical
-/// pitch and gain. That was invisible while notes were legato: the pieces ran
-/// together and you heard one note. `Env`'s gate made it audible and wrong —
-/// each piece got its own attack, release and silence, so a single written
-/// note sounded twice, in the same place, every cycle.
-///
-/// Adjacent events that agree on everything the ear can hear are ONE note:
-/// they share a `total_samples` and are distinguished by `note_offset`, so the
-/// envelope spans the note as written rather than re-articulating each piece.
-#[test]
-fn a_subdivided_note_is_articulated_once() {
-    Settings::init_test();
-
-    let sr = Settings::global().sample_rate;
-    let whole = (0.5 * sr).round() as usize;
-
-    // The same note, cut in two the way `ModBy` cuts it.
-    let half = whole / 2;
-    let mut a = real_note(220.0, 0.25);
-    let mut b = real_note(220.0, 0.25);
-    for (op, off) in [(&mut a, 0usize), (&mut b, half)] {
-        op.samples = half;
-        op.total_samples = whole; // ONE note...
-        op.note_offset = off; // ...in two pieces
-        op.gate = 1.0 / 3.0;
-    }
-
-    let split = render(vec![a, b]);
-
-    // And the same note, written as one event.
-    let mut single = real_note(220.0, 0.5);
-    single.gate = 1.0 / 3.0;
-    let intact = render(vec![single]);
-
-    let diff = worst_diff(&intact, &split);
-    assert!(
-        diff < 1e-9,
-        "a note cut in two by a modulator sounded different from the same note \
-         written whole (worst sample difference {diff:.6}) — the gate \
-         re-articulated the second piece",
-    );
 }

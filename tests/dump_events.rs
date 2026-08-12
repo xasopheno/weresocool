@@ -27,13 +27,13 @@ fn dump_events() {
         let mut t = num_rational::Rational64::new(0, 1);
         for (i, p) in voice.iter().enumerate() {
             println!(
-                "  {i:>3}  t={t:>8}  l={:>8}  fm={:>8}  fa={:>5}  g={:>6}  gate={:>5}  {}",
+                "  {i:>3}  t={t:>8}  l={:>8}  fm={:>8}  fa={:>5}  g={:>6}  {}",
                 p.l,
                 p.fm,
                 p.fa,
                 p.g,
-                p.gate,
-                if p.continues { "CONTINUES" } else if p.is_silent() { "SILENT" } else { "" },
+
+                if p.is_silent() { "SILENT" } else { "" },
             );
             t += p.l;
         }

@@ -30,20 +30,6 @@ pub fn modulate(input: &[PointOp], modulator: &[PointOp]) -> Vec<PointOp> {
     let mut i: VecDeque<PointOp> = input.iter().cloned().collect();
     let mut result = Vec::with_capacity(input.len() + modulator.len());
 
-    // MODULATION SUBDIVIDES, AND THE PIECES ARE STILL ONE NOTE.
-    //
-    // When a modulator step is shorter than the note it lands on, the note is
-    // CUT: a piece is emitted and the remainder stays at the front of the
-    // queue to be cut again. Those pieces are not separate notes — they are
-    // one written note whose gain or pitch changes partway through, which
-    // under legato is a swell inside a single sustained tone.
-    //
-    // Only this loop knows that. Downstream, the pieces are indistinguishable
-    // from adjacent notes that happen to differ, so an envelope applied
-    // per-event re-articulates each one: attack, release, silence, attack —
-    // a flutter where the score says one note. `continues` is how a piece
-    // tells the renderer it is the middle of something.
-    let mut continuing = false;
     while let (Some(i_front), Some(m_front)) = (i.front_mut(), m.front()) {
         let mut inpu = i_front.clone();
         let modu = m_front.clone();
@@ -52,29 +38,22 @@ pub fn modulate(input: &[PointOp], modulator: &[PointOp]) -> Vec<PointOp> {
 
         if modu_l < inpu_l {
             inpu.mod_by(modu, modu_l);
-            inpu.continues = continuing;
             result.push(inpu);
             i_front.l -= modu_l;
             m.pop_front();
-            // The input note was cut; what follows is its remainder.
-            continuing = true;
         } else if modu_l > inpu_l {
             inpu.mod_by(modu, inpu_l);
-            inpu.continues = continuing;
             result.push(inpu);
             // Need to re-borrow m mutably after the immutable borrow ends
             if let Some(m_front_mut) = m.front_mut() {
                 m_front_mut.l -= inpu_l;
             }
             i.pop_front();
-            continuing = false;
         } else {
             inpu.mod_by(modu, inpu_l);
-            inpu.continues = continuing;
             result.push(inpu);
             i.pop_front();
             m.pop_front();
-            continuing = false;
         }
     }
 

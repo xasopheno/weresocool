@@ -177,27 +177,12 @@ pub struct PointOp {
     pub g: Rational64,
     /// Length Multiply
     pub l: Rational64,
-    /// Attack Length, in l-basis units. Time to climb to the note's peak.
+    /// Attack Length
     pub attack: Rational64,
-    /// Decay Length, in l-basis units. Time to fall from the peak to
-    /// `sustain` — and no time at all when `sustain` is 1.
+    /// Decay Length
     pub decay: Rational64,
-    /// The level held after the decay, as a fraction of the note's peak gain.
-    pub sustain: Rational64,
-    /// Release Length, in l-basis units. Time to fall from `sustain` to
-    /// silence once the gate closes.
-    pub release: Rational64,
-    /// The fraction of the note the key is held. Everything after
-    /// `gate + release` is silence, and that silence is the articulation.
-    pub gate: Rational64,
     /// Attack/Sustain/Release Type
     pub asr: ASR,
-    /// This event is the CONTINUATION of the one before it — the middle of a
-    /// note that a modulator cut, not a note of its own. Set only by
-    /// `helpers::modulate`, which is the only code that knows. The renderer
-    /// uses it to give the whole run one envelope; without it a gated note
-    /// re-articulates at every cut, which is audible as a flutter.
-    pub continues: bool,
     /// Portamento Length
     pub portamento: Rational64,
     /// Reverb Multiplier
@@ -237,11 +222,7 @@ impl Default for PointOp {
             reverb: None,
             attack: Ratio::new(1, 1),
             decay: Ratio::new(1, 1),
-            sustain: Ratio::new(1, 1),
-            release: Ratio::new(1, 1),
-            gate: Ratio::new(1, 1),
             asr: ASR::Long,
-            continues: false,
             portamento: Ratio::new(1, 1),
             osc_type: OscType::None,
             names: NameSet::new(),
@@ -413,14 +394,7 @@ impl Mul<PointOp> for PointOp {
             },
             attack: self.attack * other.attack,
             decay: self.decay * other.decay,
-            sustain: self.sustain * other.sustain,
-            release: self.release * other.release,
-            gate: self.gate * other.gate,
             asr: other.asr,
-            // EITHER side: composition (Overlay, Compose, Seq) puts the
-            // modulated point on the right as often as the left, and an
-            // identity point on the other side would otherwise erase the mark.
-            continues: self.continues || other.continues,
             portamento: self.portamento * other.portamento,
             names,
             filters: self
@@ -473,14 +447,7 @@ impl<'a> Mul<&'a PointOp> for &PointOp {
             },
             attack: self.attack * other.attack,
             decay: self.decay * other.decay,
-            sustain: self.sustain * other.sustain,
-            release: self.release * other.release,
-            gate: self.gate * other.gate,
             asr: other.asr,
-            // EITHER side: composition (Overlay, Compose, Seq) puts the
-            // modulated point on the right as often as the left, and an
-            // identity point on the other side would otherwise erase the mark.
-            continues: self.continues || other.continues,
             portamento: self.portamento * other.portamento,
             names,
             filters: self
@@ -531,14 +498,7 @@ impl MulAssign for PointOp {
             },
             attack: self.attack * other.attack,
             decay: self.decay * other.decay,
-            sustain: self.sustain * other.sustain,
-            release: self.release * other.release,
-            gate: self.gate * other.gate,
             asr: other.asr,
-            // EITHER side: composition (Overlay, Compose, Seq) puts the
-            // modulated point on the right as often as the left, and an
-            // identity point on the other side would otherwise erase the mark.
-            continues: self.continues || other.continues,
             portamento: self.portamento * other.portamento,
             names,
             filters: self
@@ -569,13 +529,7 @@ impl MulAssign for PointOp {
 impl PointOp {
     pub fn is_silent(&self) -> bool {
         let zero = Rational64::new(0, 1);
-        // A shut gate has to count as silence. `is_silent` is what feeds
-        // `next_l_silent` → `silence_next`, which is how the PREVIOUS note
-        // learns it may release — a note that never sounds must free its
-        // predecessor exactly the way an `Fm 0` does.
-        self.gate <= zero
-            || self.fm == zero && self.fa < Rational64::new(20, 1)
-            || self.g == zero
+        self.fm == zero && self.fa < Rational64::new(20, 1) || self.g == zero
     }
 
     pub fn silence(&mut self) {
@@ -605,14 +559,7 @@ impl PointOp {
             },
             attack: self.attack * other.attack,
             decay: self.decay * other.decay,
-            sustain: self.sustain * other.sustain,
-            release: self.release * other.release,
-            gate: self.gate * other.gate,
             asr: other.asr,
-            // EITHER side: composition (Overlay, Compose, Seq) puts the
-            // modulated point on the right as often as the left, and an
-            // identity point on the other side would otherwise erase the mark.
-            continues: self.continues || other.continues,
             portamento: self.portamento * other.portamento,
             names,
             filters: self

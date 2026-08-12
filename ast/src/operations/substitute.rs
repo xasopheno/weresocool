@@ -179,7 +179,6 @@ impl Substitute for Op {
             | Op::Shaker { .. }
             | Op::Cowbell { .. }
             | Op::AD { .. }
-            | Op::Env { .. }
             | Op::Portamento { .. }
             | Op::Silence { .. }
             | Op::TransposeM { .. }

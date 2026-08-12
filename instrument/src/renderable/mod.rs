@@ -15,11 +15,6 @@ use weresocool_filter::BiquadFilterDef;
 pub(crate) use weresocool_shared::{lossy_rational_mul, r_to_f64, Settings, timing_now, timing_print};
 use weresocool_synth::{DistortionDef, Offset};
 
-/// serde default for the envelope's identity values (see `EnvParams`).
-const fn one() -> f64 {
-    1.0
-}
-
 #[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
 pub struct RenderOp {
     pub f: f64,
@@ -28,33 +23,9 @@ pub struct RenderOp {
     pub g: (f64, f64),
     /// Time
     pub t: f64,
-    /// THE ENVELOPE, in samples and levels. Every one of these is a property
-    /// of the NOTE — none of them may ever be derived from `samples`, which is
-    /// the audio buffer. See `weresocool_synth::envelope`.
     pub attack: f64,
     pub decay: f64,
-    /// Level held after the decay, as a fraction of the note's peak gain.
-    #[serde(default = "one")]
-    pub sustain: f64,
-    /// Samples spent falling from `sustain` to silence once the gate closes.
-    #[serde(default)]
-    pub release: f64,
-    /// The fraction of the note the key is held. `1.0` runs the full length;
-    /// anything less leaves silence, and that silence is the articulation.
-    /// Kept as a fraction rather than a sample count so it stays meaningful
-    /// without `total_samples` beside it.
-    #[serde(default = "one")]
-    pub gate: f64,
     pub asr: ASR,
-    /// Where this EVENT begins inside its NOTE. `ModBy` and friends subdivide,
-    /// so one written note can arrive as several adjacent events; they share a
-    /// `total_samples` and are distinguished by this offset. Zero for a note
-    /// that is a single event, which is almost all of them.
-    #[serde(default)]
-    pub note_offset: usize,
-    /// This event continues the previous one — see `PointOp.continues`.
-    #[serde(default)]
-    pub continues: bool,
     pub samples: usize,
     pub index: usize,
     pub total_samples: usize,
@@ -194,12 +165,7 @@ impl RenderOp {
             reverb: None,
             attack: 512_f64,
             decay: 512_f64,
-            sustain: 1.0,
-            release: 0.0,
-            gate: 1.0,
             asr: ASR::Long,
-            note_offset: 0,
-            continues: false,
             samples: s,
             total_samples: s,
             index: 0,
@@ -230,12 +196,7 @@ impl RenderOp {
             reverb: None,
             attack: settings.sample_rate,
             decay: settings.sample_rate,
-            sustain: 1.0,
-            release: 0.0,
-            gate: 1.0,
             asr: ASR::Long,
-            note_offset: 0,
-            continues: false,
             samples: settings.sample_rate as usize,
             total_samples: settings.sample_rate as usize,
             index: 0,
@@ -265,12 +226,7 @@ impl RenderOp {
             reverb: None,
             attack: Settings::global().sample_rate,
             decay: Settings::global().sample_rate,
-            sustain: 1.0,
-            release: 0.0,
-            gate: 1.0,
             asr: ASR::Long,
-            note_offset: 0,
-            continues: false,
             samples: Settings::global().sample_rate as usize,
             total_samples: Settings::global().sample_rate as usize,
             index: 0,
@@ -307,12 +263,7 @@ impl RenderOp {
             reverb,
             attack: sample_rate,
             decay: sample_rate,
-            sustain: 1.0,
-            release: 0.0,
-            gate: 1.0,
             asr: ASR::Long,
-            note_offset: 0,
-            continues: false,
             samples: sample_rate as usize,
             total_samples: sample_rate as usize,
             index: 0,
@@ -429,26 +380,6 @@ impl weresocool_synth::SynthOp for RenderOp {
     }
 
     #[inline(always)]
-    fn note_offset(&self) -> usize {
-        self.note_offset
-    }
-
-    #[inline(always)]
-    fn envelope_sustain(&self) -> f64 {
-        self.sustain
-    }
-
-    #[inline(always)]
-    fn envelope_release(&self) -> f64 {
-        self.release
-    }
-
-    #[inline(always)]
-    fn envelope_gate(&self) -> f64 {
-        self.gate
-    }
-
-    #[inline(always)]
     fn asr_type(&self) -> ASR {
         self.asr
     }
@@ -554,21 +485,8 @@ fn pointop_to_renderop(
         index: 0,
         samples: (l * sample_rate).round() as usize,
         total_samples: (l * sample_rate).round() as usize,
-        // ENVELOPE TIMES ARE IN L-BASIS UNITS. `basis.l` is the piece's tempo
-        // knob, so speeding a piece up speeds its envelopes with it. They used
-        // to ride `basis.a` / `basis.d`, which are ALWAYS 1/1 — no `.socool`
-        // file can set them — so those two atoms were a unit that could never
-        // be chosen, sitting next to `l`, which is the one everything else in
-        // the language is measured in.
-        attack: r_to_f64(point_op.attack * basis.l) * sample_rate,
-        decay: r_to_f64(point_op.decay * basis.l) * sample_rate,
-        sustain: r_to_f64(point_op.sustain),
-        release: r_to_f64(point_op.release * basis.l) * sample_rate,
-        // `gate` is a fraction of the NOTE — the articulation axis — so it
-        // scales with the note rather than with the piece.
-        gate: r_to_f64(point_op.gate).clamp(0.0, 1.0),
-        note_offset: 0,
-        continues: point_op.continues,
+        attack: r_to_f64(point_op.attack * basis.a) * sample_rate,
+        decay: r_to_f64(point_op.decay * basis.d) * sample_rate,
         osc_type: point_op.osc_type.clone(),
         asr: point_op.asr,
         portamento: (r_to_f64(point_op.portamento) * 1024_f64) as usize,
@@ -767,51 +685,6 @@ fn create_render_ops(
             sample_rate,
         );
         result.push(op);
-    }
-
-    // A NOTE IS NOT AN EVENT.
-    //
-    // `ModBy` subdivides: it cuts an event wherever a modulator boundary
-    // falls, so one written note can arrive here as two or three adjacent
-    // PointOps with identical pitch and gain. `Zip` and any other op that
-    // intersects two event grids does the same. That never mattered while
-    // notes were legato — the pieces ran together and you heard one note.
-    //
-    // `Env`'s gate made it matter, badly: each piece got its own attack,
-    // its own release and its own silence, so a single written note came
-    // out as two, every cycle, in the same place. That is what a note being
-    // "repeated" sounded like, and it is a fault in treating the event as
-    // the unit of articulation.
-    //
-    // A note is a run of adjacent events that agree on everything the ear
-    // can hear — pitch, gain, oscillator, envelope. Give each run ONE
-    // `total_samples` (the whole run) and an `index` that continues across
-    // it, and the envelope spans the note exactly as written. `samples`
-    // is untouched: it still advances the timeline event by event, so
-    // nothing about scheduling, visuals or event counts moves.
-    let mut run_start = 0usize;
-    for i in 1..=result.len() {
-        // A run ends where the next event is NOT marked as a continuation.
-        // This is the composer's structure, not a guess from field values: an
-        // earlier version compared pitch and gain, which merged the easy cases
-        // and missed exactly the ones that matter — a modulator that changes
-        // the note's gain partway is precisely where the pieces differ.
-        let ends_run = i == result.len() || !result[i].continues;
-
-        if ends_run {
-            if i - run_start > 1 {
-                let total: usize = result[run_start..i].iter().map(|op| op.samples).sum();
-                let mut at = 0usize;
-                for op in &mut result[run_start..i] {
-                    op.total_samples = total;
-                    // NOT `index`: that belongs to the chunker, which
-                    // overwrites it per buffer. `note_offset` is ours.
-                    op.note_offset = at;
-                    at += op.samples;
-                }
-            }
-            run_start = i;
-        }
     }
 
     if pad_end {

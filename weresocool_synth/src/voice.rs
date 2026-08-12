@@ -1,4 +1,5 @@
 use crate::{
+    gain::gain_at_index,
     sample::{DrumState, Waveform},
     loudness::loudness_normalization,
     Offset, SynthOp,
@@ -29,17 +30,6 @@ pub struct Voice {
     pub filter_crossfade_index: usize,
     pub osc_crossfade_index: usize,
     pub smoothed_gain: f64,  // Exponentially smoothed gain for click-free transitions
-    /// The rendered gain this voice was emitting when the current note began.
-    /// The envelope's attack ramps FROM here, which is what makes a note after
-    /// a gap a true attack and a note joined to the one before it a glide.
-    /// Latched once per note (at `sample_index == 0`), never per buffer — the
-    /// whole point is that it does not move when the block size does.
-    pub note_start_gain: f64,
-    /// The frequency this voice was emitting when the current note began — the
-    /// portamento glide's starting pitch. Latched with `note_start_gain`, and
-    /// for the same reason: the glide must be a property of the note, not of
-    /// however the audio device sliced it.
-    pub note_start_frequency: f64,
     pub drum_state: DrumState,  // Per-voice biquad filter states for drum synth
 }
 
@@ -116,8 +106,6 @@ impl Voice {
             filter_crossfade_index: 0,
             osc_crossfade_index: 0,
             smoothed_gain: 0.0,
-            note_start_gain: 0.0,
-            note_start_frequency: 0.0,
             drum_state: {
                 let mut s = DrumState::default();
                 s.voice_index = index as u32;
@@ -139,24 +127,9 @@ impl Voice {
     pub fn generate_waveform<Op: SynthOp>(&mut self, op: &Op, offset: &Offset) -> Vec<f64> {
         let mut buffer: Vec<f64> = vec![0.0; op.duration_samples()];
 
-        // THE GLIDE RUNS ON THE NOTE CLOCK TOO.
-        //
-        // This used to be `calculate_portamento_delta(len, offset_past.frequency,
-        // offset_current.frequency)`, stepped by the BUFFER-local index. Both
-        // halves were buffer-scoped: `offset_past.frequency` is the previous
-        // BUFFER's ending frequency, and the ramp restarted at index 0 every
-        // buffer, so each buffer covered `block/portamento_length` of whatever
-        // gap remained. That makes the glide an exponential approach whose time
-        // constant is set by the audio device's block size — the same defect
-        // the envelope had, in the other dimension.
-        //
-        // `note_start_frequency` is the pitch this voice was actually emitting
-        // when the note began, latched once. The ramp is a straight line from
-        // there to the target over `portamento_length`, indexed by position in
-        // the note, so it is the same line at any block size.
         let p_delta = self.calculate_portamento_delta(
             op.portamento(),
-            self.note_start_frequency,
+            self.offset_past.frequency,
             self.offset_current.frequency,
         );
 
@@ -178,101 +151,23 @@ impl Voice {
         } else {
             loudness_normalization(self.offset_current.frequency)
         };
-        // THE ENVELOPE RUNS ON THE NOTE CLOCK.
-        //
-        // `calculate_op_gain` used to be called right here — once per buffer,
-        // with the index at the buffer's END. That made the declared ASR
-        // envelope a staircase sampled at the block rate; and in the unchunked
-        // path, where the buffer IS the note, it was evaluated exactly once at
-        // `index == total_length`, so `index < attack_length` failed by one
-        // sample and the attack branch was unreachable. Two render paths, two
-        // different envelopes, from the same score.
-        //
-        // Drums never had this problem. They read `info.sample_index` — a
-        // note-scoped clock — and evaluate `exp(-t · rate)` per sample, which
-        // is why a kick sounds identical at any block size. Tonal voices now
-        // read that same clock. Every input below is note-scoped, so the
-        // rendered samples no longer depend on how the audio device happens to
-        // slice them.
-        //
-        // `env_target` and `env_start` are in RENDERED gain space (loudness
-        // and the offset already folded in), so the ramp begins at the value
-        // this voice actually last emitted rather than at the previous op's
-        // gain *parameter* rescaled by this note's loudness curve. That
-        // rescale was a step, and the old per-buffer `gain_at_index` ramp
-        // existed to smooth it away.
-        let env_target = self.current.gain * loudness * offset.gain;
-        // Drums carry their own attack, so starting the outer ramp at the
-        // target makes it a no-op. Not when fading into silence: there this
-        // ramp IS the fade-out of the tail.
-        let env_start = if is_drum && !silence_now {
-            env_target
-        } else {
-            self.note_start_gain
-        };
-        let envelope = crate::envelope::Envelope::new(
-            op.envelope_attack(),
-            op.envelope_decay(),
-            op.envelope_sustain(),
-            op.envelope_release(),
-            op.envelope_gate(),
+        let op_gain = self.calculate_op_gain(
+            op.next_out(),
+            silence_now,
+            self.silence_next(op),
+            op.sample_index() + op.duration_samples(),
             op.total_samples(),
-        );
-
-        // DIAGNOSTIC (WSC_STEP=<threshold>, off unless set). The envelope is a
-        // pure function of note position; `offset_current.gain` is what this
-        // voice ACTUALLY emitted on its last sample. Those two must agree at a
-        // buffer boundary, or the output steps — which is a click. Anything
-        // this prints is a real defect, not a rounding artifact.
-        {
-            if let Ok(t) = std::env::var("WSC_STEP") {
-                let thr: f64 = t.parse().unwrap_or(0.01);
-                let first = envelope.at(op.sample_index(), env_start, env_target);
-                let last = self.offset_current.gain;
-                if (first - last).abs() > thr {
-                    println!(
-                        "[step] voice {} note_pos {} of {}  emitted {:.4} -> envelope {:.4}  (jump {:.4})  f={:.1}",
-                        self.index,
-                        op.sample_index(),
-                        op.total_samples(),
-                        last,
-                        first,
-                        first - last,
-                        self.offset_current.frequency,
-                    );
-                }
-            }
-        }
+        ) * loudness;
 
         // self.reverb
         // .model
         // .update(self.current.reverb.unwrap_or(0.0) as f32);
 
+        let gain_factor = op_gain * offset.gain;
         // let apply_reverb = self.reverb.state.map_or(false, |s| s > 0.0);
 
         let sound_to_silence = self.sound_to_silence();
-
-        // DID THIS NOTE BEGIN FROM SILENCE?
-        //
-        // `silence_to_sound()` answers a narrower question: was the PREVIOUS
-        // OP's gain *parameter* zero. That was a good enough proxy while the
-        // only way to write a short note was to follow it with a rest — the
-        // rest was a real op with `g == 0`, so every note after one counted as
-        // a birth and skipped the portamento glide and got its phase seeded.
-        //
-        // `Env`'s gate breaks the proxy. A gated note has a perfectly ordinary
-        // gain parameter; it just stops sounding before its time is up. The
-        // note after it would glide up from the previous pitch, because by the
-        // parameters the two notes are adjacent — even though the voice has
-        // been silent for a third of a note. That is audible as a scoop into
-        // every note, and it is not what the score says.
-        //
-        // So ask the voice, not the parameters: `note_start_gain` is what this
-        // voice was ACTUALLY emitting when the note began. Near zero means it
-        // was silent, whatever the ops claim. The relative test is the same
-        // one the phase seed already used.
-        let silence_to_sound = self.silence_to_sound()
-            || self.note_start_gain.abs() <= 0.05 * env_target.abs();
+        let silence_to_sound = self.silence_to_sound();
 
         // Exponential smoothing coefficient for click-free gain transitions
         // ~500 samples (~11ms at 44.1kHz) to reach 63% of target
@@ -298,9 +193,14 @@ impl Voice {
         // osc state are mutated in `update*` methods, not inside this loop.
         let portamento_length = op.portamento();
         let duration_samples = op.duration_samples();
+        // Fade length for sustained tones: the gain ramps from the previous
+        // op's ending gain to this op's target across the WHOLE op duration
+        // (min 250 samples to keep very short ops click-free). This is what
+        // makes a long fade actually take its full written length.
+        let sample_limit = if duration_samples > 250 { duration_samples } else { 250 };
         let last_sample_index = duration_samples.saturating_sub(1);
         let total_samples_for_info = op.total_samples();
-        let op_sample_index = op.note_offset() + op.sample_index();
+        let op_sample_index = op.sample_index();
         let f_past = self.offset_past.frequency;
         // `f_target` is only mutated on the loop's final iteration via the
         // index == last_sample_index branch — we replicate that update
@@ -349,7 +249,7 @@ impl Voice {
         // the index-0 phase anchors the trajectory so index 1+ carry the
         // measured phase as the gain ramps up.
         let seed_phase = if silence_to_sound
-            && self.offset_past.gain.abs() <= 0.05 * env_target.abs()
+            && self.offset_past.gain.abs() <= 0.05 * gain_factor.abs()
         {
             op.initial_phase()
         } else {
@@ -360,40 +260,35 @@ impl Voice {
             // Inlined `calculate_frequency` so the per-sample call doesn't
             // re-read `self.sound_to_silence()` / `self.silence_to_sound()`
             // each iteration (those bools are loop-invariant).
-            // Position within the NOTE, the same clock the envelope reads.
-            let pos = op_sample_index + index;
             let frequency = if sound_to_silence {
                 f_past
-            } else if pos < portamento_length && !silence_to_sound {
-                (pos as f64).mul_add(p_delta, self.note_start_frequency)
+            } else if index < portamento_length && !silence_to_sound {
+                (index as f64).mul_add(p_delta, f_past)
             } else {
                 f_target
             };
-
-            // The envelope, evaluated at this sample's position WITHIN THE
-            // NOTE — not within the buffer. `op_sample_index` is the offset of
-            // this buffer inside the note, so `op_sample_index + index` is the
-            // same number no matter how the note was sliced.
-            let env = envelope.at(op_sample_index + index, env_start, env_target);
 
             // Exponential smoothing prevents pops on gain changes, but its
             // ~10 ms time constant flattens drum transients — without this
             // branch the first 25 ms of a kick is barely audible. For drums
             // we let *rising* gain pass through instantly (transient survives)
             // but still smooth *falling* gain so the tail doesn't click when
-            // a note ends. Tonal voices take the envelope as it is: it is
-            // already a continuous function of note position, and it already
-            // starts at the gain this voice last emitted, so there is nothing
-            // left for a smoother to fix.
+            // a note ends. Sustained tones smooth in both directions.
             let gain = if is_drum {
-                if env >= self.smoothed_gain {
-                    self.smoothed_gain = env;
+                if gain_factor >= self.smoothed_gain {
+                    self.smoothed_gain = gain_factor;
                 } else {
-                    self.smoothed_gain += GAIN_SMOOTHING_COEF * (env - self.smoothed_gain);
+                    self.smoothed_gain += GAIN_SMOOTHING_COEF
+                        * (gain_factor - self.smoothed_gain);
                 }
                 self.smoothed_gain
             } else {
-                env
+                // Sustained tones: linear ramp from the previous op's ending
+                // gain to this op's target across the full op duration. This
+                // IS the fade envelope — using the fixed-time-constant
+                // exponential smoother here collapsed every fade (however
+                // long) into an ~11 ms glide, which broke fade rendering.
+                gain_at_index(self.offset_past.gain, gain_factor, index, sample_limit)
             };
 
             let info = SampleInfo {
@@ -530,13 +425,6 @@ impl Voice {
         }
 
         if op.sample_index() == 0 {
-            // Anchor the envelope before anything else moves. At this point
-            // `offset_current.gain` still holds the last gain this voice
-            // actually rendered (written at the end of `generate_waveform`),
-            // which is where the new note's attack has to begin.
-            self.note_start_gain = self.offset_current.gain;
-            self.note_start_frequency = self.offset_current.frequency;
-
             self.update_current_and_past(op);
             self.update_osc_type(op);
             // self.update_reverb(op);
@@ -567,8 +455,6 @@ impl Voice {
         self.current.gain = 0.0;
         self.current.frequency = 0.0;
         self.smoothed_gain = 0.0;
-        self.note_start_gain = 0.0;
-        self.note_start_frequency = 0.0;
     }
 
     /// Re-latch this voice's per-op state (freq/gain/osc/envelope/filters)
@@ -579,10 +465,6 @@ impl Voice {
     /// voice was just re-init'd, so past state is zero and the gain ramps in
     /// from silence — the engine's post-seek master ramp masks the join.
     pub fn latch_for_seek<Op: SynthOp>(&mut self, op: &Op) {
-        // The voice was just re-init'd, so it is emitting nothing: the
-        // envelope has to start from silence, not from a stale anchor.
-        self.note_start_gain = 0.0;
-        self.note_start_frequency = 0.0;
         self.update_current_and_past(op);
         self.update_osc_type(op);
         self.update_attack_decay_asr(op);
