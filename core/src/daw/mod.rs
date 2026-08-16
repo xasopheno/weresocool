@@ -9,6 +9,10 @@
 pub mod inject;
 pub mod push;
 pub mod store;
+// Transcription rides on from_sound, which only the desktop feature sets
+// carry (weresocool_ast/app) — the wasm/mobile set builds this module
+// without it, and legacy WAV-only recordings simply stay pending there.
+#[cfg(any(feature = "app", feature = "windows"))]
 pub mod transcribe;
 
 pub use inject::{apply_injection, LayerInjection};
@@ -49,15 +53,23 @@ pub fn build_recordings_registry(store: &DawStore) -> RecordingRegistry {
             registry.insert(rec.name.clone(), inject::events_to_normalform(&rec.events));
             continue;
         }
-        let Some(path) = store.recording_wav(&rec.name) else {
-            continue;
-        };
-        match transcribe::transcribe_wav(&path, rec.fps) {
-            Ok(nf) => {
-                registry.insert(rec.name.clone(), nf);
+        #[cfg(any(feature = "app", feature = "windows"))]
+        {
+            let Some(path) = store.recording_wav(&rec.name) else {
+                continue;
+            };
+            match transcribe::transcribe_wav(&path, rec.fps) {
+                Ok(nf) => {
+                    registry.insert(rec.name.clone(), nf);
+                }
+                Err(e) => eprintln!("[daw] transcribe '{}' failed: {}", rec.name, e),
             }
-            Err(e) => eprintln!("[daw] transcribe '{}' failed: {}", rec.name, e),
         }
+        #[cfg(not(any(feature = "app", feature = "windows")))]
+        eprintln!(
+            "[daw] '{}' has no frozen events and this build cannot transcribe",
+            rec.name
+        );
     }
     registry
 }

@@ -345,7 +345,20 @@ impl RenderManager {
         let has_render_subscribers = self.events.render.has_subscribers();
 
         // Delegate to AudioEngine for rendering
-        let result = self.audio_engine.render(buffer_size, offset, has_render_subscribers)?;
+        let result = match self.audio_engine.render(buffer_size, offset, has_render_subscribers) {
+            Some(result) => result,
+            None => {
+                // Composition exhausted: in "once" mode this is the completion
+                // signal. An early `?` return here used to skip the kill check
+                // below, leaving `play` blocked on its kill channel forever.
+                // Ignore the send result: the receiver is gone once the main
+                // thread has already begun exiting.
+                if self.once && !self.audio_engine.exists_next_render() {
+                    let _ = self.kill();
+                }
+                return None;
+            }
+        };
 
         // Handle "once" mode - kill if rendering is complete
         if self.once && !self.audio_engine.exists_current_render() && !self.audio_engine.exists_next_render() {
