@@ -23,6 +23,7 @@ grammar;
 match {
     "(", ")", "{", "}", ",", ":", "+", "-", "*", "/",
     "ground", "weave", "tooth", "absorb", "grain", "sheen", "edge", "relief", "reflect",
+    "see_through",
     "scale", "depth", "slub", "run", "density", "neutral", "chroma", "complement", "amount",
     "knee", "gain", "tint", "sharp", "light", "black",
     "clock", "Sin",
@@ -52,6 +53,9 @@ pub Fields: Vec<CanvasField> = {
 
 Field: CanvasField = {
     "ground" ":" <c:ColorLit>            => CanvasField::Ground(c),
+    // A bare marker, like `ambient` on a light: it takes no value because it
+    // is not a quantity, it is a decision about what the surface IS.
+    "see_through"                        => CanvasField::SeeThrough,
     "tooth"  ":" <e:Expr>                => CanvasField::Tooth(e),
     "edge"   ":" <e:Expr>                => CanvasField::Edge(e),
     "weave"   ":" "{" <a:SubArgs> "}"    => CanvasField::Weave(weave_of(a)),

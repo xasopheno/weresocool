@@ -173,6 +173,17 @@ pub struct CanvasDef {
     pub edge: Option<Expr>,
     pub relief: Option<Relief>,
     pub reflect: Option<Reflect>,
+    /// `see_through` — emit COVERAGE as alpha instead of a solid frame.
+    ///
+    /// A canvas is normally the whole picture: paint on a ground, opaque
+    /// everywhere, and `Paint` hard-codes alpha 1 for exactly that reason. But
+    /// a piece that has to be composited somewhere else wants the paint and
+    /// not the ground, and the pigment field already knows the difference —
+    /// its `w` channel IS accumulated coverage. With this set, the ground
+    /// still does its job in the COLOUR (absorption is against it, the raking
+    /// light and relief still read it), it simply stops being opaque where no
+    /// paint was ever laid.
+    pub see_through: bool,
 }
 
 /// One `key: value` inside a canvas body. Flat and order-free, folded into
@@ -181,6 +192,7 @@ pub struct CanvasDef {
 #[derive(Debug, Clone, PartialEq)]
 pub enum CanvasField {
     Ground(String),
+    SeeThrough,
     Weave(Weave),
     Tooth(Expr),
     Absorb(Absorb),
@@ -242,10 +254,12 @@ impl CanvasDef {
             edge: None,
             relief: None,
             reflect: None,
+            see_through: false,
         };
         for f in fields {
             match f {
                 CanvasField::Ground(c) => out.ground = Some(c),
+                CanvasField::SeeThrough => out.see_through = true,
                 CanvasField::Weave(w) => out.weave = Some(w),
                 CanvasField::Tooth(t) => out.tooth = Some(t),
                 CanvasField::Absorb(a) => out.absorb = Some(a),
