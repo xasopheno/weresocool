@@ -74,7 +74,7 @@ Point: Init = {
          <p_axis: P> <p: Rational>
          <terms: HeaderTerms>
     "}" ";"? => {
-        let mut init = Init { f, l, g, p, background_color: None, w: None, h: None, d: None, light: None };
+        let mut init = Init { f, l, g, p, background_color: None, w: None, h: None, d: None, light: None, rand_seed: None };
         for t in terms {
             match t {
                 HeaderTerm::Bg(c) => init.background_color = Some(c),
@@ -82,6 +82,16 @@ Point: Init = {
                 HeaderTerm::H(r)  => init.h = Some(r),
                 HeaderTerm::D(r)  => init.d = Some(r),
                 HeaderTerm::Light(x, y, z) => init.light = Some((x, y, z)),
+                HeaderTerm::Seed(n) => {
+                    init.rand_seed = Some(n);
+                    // The piece's own seed pins the run's randomness. The
+                    // WSC_SEED env var, when set, has already seeded
+                    // defs.rand_ctx and outranks the file, so a different
+                    // seed can be auditioned without editing the header.
+                    if std::env::var("WSC_SEED").is_err() {
+                        defs.rand_ctx = weresocool_ast::rand_ctx::RandCtx::from_u128(n);
+                    }
+                }
             }
         }
         init
@@ -114,6 +124,10 @@ HeaderTerm: HeaderTerm = {
     // independent header terms.
     "light:" "(" <x: Rational> "," <y: Rational> "," <z: Rational> ")" =>
         HeaderTerm::Light(x, y, z),
+    // `rand_seed: 42` — the piece carries its own seed: every Choose draw
+    // is pinned, so separate renders of the file (audio stems, video)
+    // make the same decisions. No seed → truly random per run.
+    "rand_seed:" <n: Int> => HeaderTerm::Seed(n as u128),
 };
 
 LetDefs = Lets<LetDef>;

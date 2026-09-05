@@ -499,6 +499,17 @@ fn format_init<'a>(arena: &'a Arena<'a>, init: &Init) -> DocBuilder<'a, Arena<'a
         base_fields
     };
 
+    // Keep the piece's seed through a reformat — dropping it would silently
+    // turn a pinned composition back into a random one.
+    let fields = if let Some(seed) = init.rand_seed {
+        fields
+            .append(arena.text(","))
+            .append(arena.space())
+            .append(arena.text(format!("rand_seed: {}", seed)))
+    } else {
+        fields
+    };
+
     arena
         .text("{ ")
         .append(fields)

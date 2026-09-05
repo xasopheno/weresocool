@@ -80,6 +80,12 @@ pub struct Init {
     /// the y axis, light from above, which is what every painting
     /// convention assumes unless told otherwise.
     pub light: Option<(Rational64, Rational64, Rational64)>,
+    /// THE PIECE'S OWN SEED — `rand_seed: 42` in the header pins every
+    /// `Choose` draw, so separate renders of the same file (audio stems,
+    /// video) make the same decisions. Absent → fresh entropy per run: an
+    /// unseeded piece stays truly random. The `WSC_SEED` env var, when
+    /// set, overrides this, for auditioning seeds without editing the file.
+    pub rand_seed: Option<u128>,
 }
 
 /// One optional header term. They are independent and order-free, so the
@@ -91,6 +97,7 @@ pub enum HeaderTerm {
     H(Rational64),
     D(Rational64),
     Light(Rational64, Rational64, Rational64),
+    Seed(u128),
 }
 
 #[derive(Clone, PartialEq, Debug)]

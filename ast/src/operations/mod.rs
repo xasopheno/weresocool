@@ -126,10 +126,27 @@ pub struct Defs {
 
 impl Default for Defs {
     fn default() -> Self {
-        let random_seed: u128 = {
-            let mut buf = [0u8; 16];
-            getrandom::getrandom(&mut buf).expect("Failed to get random bytes");
-            u128::from_le_bytes(buf)
+        // WSC_SEED makes a run reproducible: the same seed gives the same
+        // Choose draws, so audio stems and a video render can be printed
+        // in separate runs and match. Accepts a u128 or any string (hashed
+        // FNV-1a). Unset = fresh entropy per run, as before.
+        let random_seed: u128 = match std::env::var("WSC_SEED") {
+            Ok(s) => {
+                let s = s.trim();
+                s.parse::<u128>().unwrap_or_else(|_| {
+                    let mut h: u128 = 0x6c62272e07bb014262b821756295c58d;
+                    for b in s.bytes() {
+                        h ^= b as u128;
+                        h = h.wrapping_mul(0x0000000001000000000000000000013b);
+                    }
+                    h
+                })
+            }
+            Err(_) => {
+                let mut buf = [0u8; 16];
+                getrandom::getrandom(&mut buf).expect("Failed to get random bytes");
+                u128::from_le_bytes(buf)
+            }
         };
 
         Defs {

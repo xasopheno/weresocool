@@ -94,6 +94,8 @@ pub mod test {
                 w: None,
                 h: None,
                 d: None,
+                light: None,
+                rand_seed: None,
             }
         );
     }
